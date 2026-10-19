@@ -2,18 +2,18 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
-$otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+// Tamberlyn Pictures theme: deep plum primary with a coral accent.
+$brand-plum-palette: (
+  50: #f6f3f8,
+  100: #ebe4f0,
+  200: #d4c5de,
+  300: #b29cc3,
+  400: #8a6ea3,
+  500: #36244b,
+  600: #2f1f42,
+  700: #2a1b3b,
+  800: #221631,
+  900: #1d122a,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
@@ -28,8 +28,33 @@ $otter-navy-palette: (
   ),
 );
 
-$admin-primary: mat.define-palette($otter-navy-palette, 500);
-$admin-accent: mat.define-palette(mat.$amber-palette, 700);
+$brand-coral-palette: (
+  50: #fdf0eb,
+  100: #fad9cd,
+  200: #f6b9a3,
+  300: #f39a7b,
+  400: #f0805c,
+  500: #e2623b,
+  600: #c24b28,
+  700: #a33d20,
+  800: #84311a,
+  900: #662613,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+  ),
+);
+
+$admin-primary: mat.define-palette($brand-plum-palette, 500);
+$admin-accent: mat.define-palette($brand-coral-palette, 500);
 $admin-warn: mat.define-palette(mat.$red-palette);
 
 $admin-theme: mat.define-light-theme((
@@ -52,7 +77,7 @@ $admin-theme: mat.define-light-theme((
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family: 'Avenir Next', 'Segoe UI', Helvetica, Arial, sans-serif;
   font-size: 13.5px;
   background: #f4f5f7;
   color: #212529;

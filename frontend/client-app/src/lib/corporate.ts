@@ -1,54 +1,54 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
-// figures are fictional and exist only for the product's marketing surfaces.
+// Tamberlyn Pictures corporate identity content. All names, people, titles,
+// events, and figures are fictional and exist only for the marketing pages.
 
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Tamberlyn Pictures",
+  tagline: "Films, series and the rights behind them",
+  founded: 1979,
+  headquarters: "Stage 4, Harbor Lot, Port Calder",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Tamberlyn Pictures is a fictional company. All people, places, titles, and events described here are invented.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "Tamberlyn Pictures started in 1979 as a two-stage rental lot on the Port Calder waterfront. Producers came for the stages and kept asking us to hold their negatives, contracts and cue sheets between shoots, so we built a vault for them.",
+  "We made our first feature in 1986 and our first series in 1998. When our streaming service launched in 2016, the vault held 37 years of masters, and the hard part of the business had become knowing which territories each title could play in, and for how long.",
+  "Today 2,300 people work across production, rights, content operations and ad sales. Scripts, cuts, licenses and ad orders all live in one system, so the team selling a window sees the same paperwork the crew signed on set.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Odette Varga", title: "Chief Executive Officer", bio: "Ran physical production for 14 years before taking the top job in 2019. Still reads every greenlight memo." },
+  { name: "Ravi Ashcombe", title: "Chief Technology Officer", bio: "Moved the vault from tape to object storage in 2012. Runs the platform team that keeps 1.8 petabytes of masters online." },
+  { name: "Lena Moravec", title: "Chief Financial Officer", bio: "Came over from distribution. Owns the rights ledger and the quarterly participation statements." },
+  { name: "Desmond Hale", title: "President, Ad Sales", bio: "Built the upfronts business for the streaming service, which now sells against 9 million monthly viewers." },
+  { name: "Marguerite Sallow", title: "Head of Content Operations", bio: "Runs delivery, subtitles and quality control for every title we ship to a partner." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Production", description: "Development, physical production and post for our features and series." },
+  { name: "Rights & Clearances", description: "Licenses, windows, territories and music clearances for every title in the library." },
+  { name: "Content Operations", description: "Masters, subtitles, key art and delivery to distribution partners." },
+  { name: "Ad Sales", description: "Upfront and scatter sales, campaign trafficking and delivery reports for the streaming service." },
+  { name: "Studio Services", description: "Stage bookings, finance, legal and people operations on the Harbor Lot." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Vault", description: "Masters, dailies, key art and contracts in one folder tree, with version history and preview." },
+  { name: "Script Room", description: "Scripts, treatments and notes edited together in real time, with every change tracked." },
+  { name: "Library Search", description: "Find a title, a clause or a cue sheet across every file and document." },
+  { name: "Studio Admin", description: "Users, storage quotas, audit logs and service health for the whole lot." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Tamberlyn Pictures opens Stage 9, its first virtual production volume" },
+  { date: "November 2025", title: "Our streaming service passes 9 million monthly viewers" },
+  { date: "June 2025", title: "Season three of The Saltwater Ledger wraps two weeks early on the Harbor Lot" },
+  { date: "January 2025", title: "Rights team closes 140 new territory licenses for the library" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Post Production Coordinator", team: "Production", location: "Harbor Lot, Port Calder" },
+  { role: "Rights Analyst", team: "Rights & Clearances", location: "Port Calder office" },
+  { role: "Media Asset Engineer", team: "Content Operations", location: "Remote" },
+  { role: "Ad Operations Specialist", team: "Ad Sales", location: "Midtown sales office" },
 ];

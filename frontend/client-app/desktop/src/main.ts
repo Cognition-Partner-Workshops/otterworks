@@ -47,7 +47,7 @@ function createWindow(url: string): BrowserWindow {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
-    title: "OtterWorks",
+    title: "Tamberlyn",
     ...(HAS_DEV_ICON ? { icon: DEV_ICON } : {}),
     webPreferences: {
       contextIsolation: true,
@@ -123,7 +123,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() =>
     start().catch((err) => {
-      dialog.showErrorBox("OtterWorks failed to start", err.message);
+      dialog.showErrorBox("Tamberlyn failed to start", err.message);
       app.exit(1);
     })
   );

@@ -36,7 +36,7 @@ interface NavGroup {
 
 const navGroups: NavGroup[] = [
   {
-    label: "Workspace",
+    label: "Production",
     items: [
       { href: "/dashboard", label: "Dashboard", icon: Home },
       { href: "/recent", label: "Recent", icon: Clock },
@@ -47,7 +47,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "Collaboration",
+    label: "Crew",
     items: [
       { href: "/shared", label: "Shared with me", icon: Share2 },
       { href: "/starred", label: "Starred", icon: Star },
@@ -90,7 +90,7 @@ export function Sidebar() {
           {sidebarOpen && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <Logo size={28} className="rounded-sm bg-white" />
-              <span className="font-semibold text-white text-sm">OtterWorks</span>
+              <span className="font-semibold text-white text-sm">Tamberlyn</span>
             </Link>
           )}
           <button
