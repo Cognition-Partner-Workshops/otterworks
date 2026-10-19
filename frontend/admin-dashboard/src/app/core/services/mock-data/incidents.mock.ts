@@ -4,7 +4,7 @@ export const MOCK_INCIDENTS: Incident[] = [
   {
     id: 'inc-001',
     title: 'Search service returning 500 errors on autocomplete',
-    description: 'Users are reporting that the autocomplete/suggest endpoint in the search service is returning HTTP 500 errors intermittently. The full-text search endpoint appears to work fine. MeiliSearch health check passes but the Flask application may have a bug in the suggest route handler.',
+    description: 'Users report intermittent HTTP 500 errors when searching by SKU or brand. Full-text search works. The search health check passes, but the suggestion route may be failing.',
     severity: 'high',
     status: 'open',
     affectedService: 'search-service',
@@ -21,7 +21,7 @@ export const MOCK_INCIDENTS: Incident[] = [
   {
     id: 'inc-002',
     title: 'File upload fails for files larger than 50MB',
-    description: 'The file service is rejecting multipart uploads exceeding 50MB with a 413 Payload Too Large error. The Actix-Web configuration may have a body size limit that needs to be increased. S3 presigned uploads are not affected.',
+    description: 'The file service rejects uploads larger than 50 MB with a 413 Payload Too Large error. S3 presigned uploads are not affected.',
     severity: 'medium',
     status: 'open',
     affectedService: 'file-service',
@@ -38,7 +38,7 @@ export const MOCK_INCIDENTS: Incident[] = [
   {
     id: 'inc-003',
     title: 'Notification service SQS consumer backlog growing',
-    description: 'The SQS queue otterworks-notifications has over 5000 messages in backlog. The Kotlin notification service consumer appears to be processing messages slowly. Possible memory pressure or SES rate limiting causing delays in email delivery.',
+    description: 'The Fernwold notification queue has over 5000 messages waiting. The service is processing them slowly, delaying email delivery.',
     severity: 'critical',
     status: 'open',
     affectedService: 'notification-service',

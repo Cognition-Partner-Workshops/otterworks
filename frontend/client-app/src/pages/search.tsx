@@ -96,7 +96,7 @@ function SearchContent() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search files, documents, and folders..."
+          placeholder="Search specs, promo plans or distributor files..."
           className="w-full pl-12 pr-20 py-3 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent"
           autoFocus
         />
@@ -140,7 +140,11 @@ function SearchContent() {
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               )}
             >
-              {type === "all" ? "All types" : type.charAt(0).toUpperCase() + type.slice(1) + "s"}
+              {type === "document"
+                ? "Specs"
+                : type === "all"
+                  ? "All types"
+                  : type.charAt(0).toUpperCase() + type.slice(1) + "s"}
             </button>
           ))}
         </div>
@@ -167,8 +171,8 @@ function SearchContent() {
       ) : (
         <EmptyState
           icon={Search}
-          title="Search OtterWorks"
-          description="Find files, documents, and folders across your workspace"
+          title="Search Fernwold"
+          description="Find a spec, promo plan or distributor file by SKU, brand or keyword."
         />
       )}
     </div>

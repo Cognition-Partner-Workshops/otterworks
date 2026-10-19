@@ -83,7 +83,7 @@ function NotificationsContent() {
         <EmptyState
           icon={Bell}
           title="No notifications"
-          description="You&apos;re all caught up! New notifications will appear here."
+          description="You are all caught up. New notifications will appear here."
         />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">

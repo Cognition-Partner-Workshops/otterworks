@@ -8,27 +8,27 @@ export const MOCK_AUDIT_EVENTS: AuditEvent[] = [
   },
   {
     id: 'aud-002', timestamp: '2026-04-17T11:00:00Z', userId: 'usr-009', userName: 'Irene Garcia',
-    action: 'upload', resourceType: 'File', resourceName: 'Blog-Post-Draft.docx',
+    action: 'upload', resourceType: 'File', resourceName: 'Little-Sprig-Packaging-Review.docx',
     details: 'Uploaded new file (2.4 MB)', ipAddress: '172.16.0.12', severity: 'info',
   },
   {
     id: 'aud-003', timestamp: '2026-04-17T10:30:00Z', userId: 'usr-001', userName: 'Alice Johnson',
-    action: 'upload', resourceType: 'File', resourceName: 'Q4-Report.docx',
+    action: 'upload', resourceType: 'File', resourceName: 'Hearthmill-Label-Proof.pdf',
     details: 'Uploaded new file (5.1 MB)', ipAddress: '192.168.1.10', severity: 'info',
   },
   {
     id: 'aud-004', timestamp: '2026-04-17T09:15:00Z', userId: 'usr-001', userName: 'Alice Johnson',
-    action: 'share', resourceType: 'Document', resourceName: 'Budget-2026.xlsx',
-    details: 'Shared with bob.martinez@otterworks.io (editor)', ipAddress: '192.168.1.10', severity: 'info',
+    action: 'share', resourceType: 'Document', resourceName: 'Brightrinse-Retail-Plan.xlsx',
+    details: 'Shared with bob.martinez@fernwold.example (editor)', ipAddress: '192.168.1.10', severity: 'info',
   },
   {
     id: 'aud-005', timestamp: '2026-04-17T09:00:00Z', userId: 'usr-002', userName: 'Bob Martinez',
-    action: 'create', resourceType: 'Folder', resourceName: 'Marketing-Assets',
+    action: 'create', resourceType: 'Folder', resourceName: 'Retail-Launch-Assets',
     details: 'Created new folder', ipAddress: '10.0.0.25', severity: 'info',
   },
   {
     id: 'aud-006', timestamp: '2026-04-17T08:20:00Z', userId: 'usr-005', userName: 'Emily Davis',
-    action: 'share', resourceType: 'Document', resourceName: 'Product-Roadmap.docx',
+    action: 'share', resourceType: 'Document', resourceName: 'Copper-Kettle-Product-Plan.docx',
     details: 'Shared with engineering team (viewer)', ipAddress: '172.16.0.5', severity: 'info',
   },
   {
@@ -38,12 +38,12 @@ export const MOCK_AUDIT_EVENTS: AuditEvent[] = [
   },
   {
     id: 'aud-008', timestamp: '2026-04-16T22:15:00Z', userId: 'usr-004', userName: 'David Kim',
-    action: 'suspend', resourceType: 'User', resourceName: 'david.kim@otterworks.io',
+    action: 'suspend', resourceType: 'User', resourceName: 'david.kim@fernwold.example',
     details: 'Account suspended by admin due to policy violation', ipAddress: '192.168.1.15', severity: 'critical',
   },
   {
     id: 'aud-009', timestamp: '2026-04-16T16:45:00Z', userId: 'usr-003', userName: 'Carol Chen',
-    action: 'download', resourceType: 'File', resourceName: 'Design-System.fig',
+    action: 'download', resourceType: 'File', resourceName: 'Fernwold-Packaging-Guidelines.pdf',
     details: 'Downloaded file (45.2 MB)', ipAddress: '10.0.0.42', severity: 'info',
   },
   {

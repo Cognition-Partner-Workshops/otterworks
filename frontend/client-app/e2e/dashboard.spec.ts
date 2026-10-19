@@ -8,28 +8,28 @@ test.describe("Dashboard", () => {
   test("shows the Dashboard heading", async ({ page }) => {
     // Dashboard may redirect to login if unauthenticated, or show the page
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to Fernwold");
 
     // Either we see the dashboard or we get redirected to login
     await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
   });
 
-  test("displays Upload file and New document buttons", async ({ page }) => {
+  test("displays Upload file and New spec buttons", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to Fernwold");
     const target = heading.or(loginHeading);
     await expect(target).toBeVisible({ timeout: 10_000 });
 
     // Only check buttons if we're on the dashboard (not redirected to login)
     if (await heading.isVisible().catch(() => false)) {
       await expect(page.getByRole("link", { name: /Upload file/i })).toBeVisible();
-      await expect(page.getByRole("link", { name: /New document/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: /New spec/i })).toBeVisible();
     }
   });
 
   test("renders stat cards or loading state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to Fernwold");
     const loader = page.locator("[class*='animate-spin']");
     // Dashboard may show heading, loader, or redirect to login
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
@@ -43,7 +43,7 @@ test.describe("Dashboard", () => {
 
   test("shows Recent files section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to Fernwold");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
@@ -54,22 +54,22 @@ test.describe("Dashboard", () => {
     }
   });
 
-  test("shows Recent documents section or empty state", async ({ page }) => {
+  test("shows Recent specs and briefs section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to Fernwold");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 
     if (await heading.isVisible().catch(() => false)) {
-      const recentDocs = page.getByRole("heading", { name: "Recent documents" });
-      const noDocs = page.getByText("No recent documents");
+      const recentDocs = page.getByRole("heading", { name: "Recent specs & briefs" });
+      const noDocs = page.getByText("No recent specs or briefs");
       await expect(recentDocs.or(noDocs)).toBeVisible({ timeout: 10_000 });
     }
   });
 
   test("shows Activity section or empty state", async ({ page }) => {
     const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+    const loginHeading = page.getByText("Sign in to Fernwold");
     const loader = page.locator("[class*='animate-spin']");
     await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
 

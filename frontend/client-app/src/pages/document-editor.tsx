@@ -107,7 +107,7 @@ function DocumentEditorContent() {
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <p className="text-gray-500">Document not found</p>
         <Link to="/documents" className="text-otter-600 hover:underline mt-2 text-sm">
-          Back to documents
+          Back to specs
         </Link>
       </div>
     );
@@ -119,7 +119,7 @@ function DocumentEditorContent() {
     <div className="max-w-5xl mx-auto space-y-4">
       <Breadcrumb
         items={[
-          { label: "Documents", href: "/documents" },
+          { label: "Specs & briefs", href: "/documents" },
           { label: document.title },
         ]}
       />
@@ -225,7 +225,7 @@ function DocumentEditorContent() {
       {shareOpen && (
         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-gray-900">Share document</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Share spec</h3>
             <button onClick={() => setShareOpen(false)} className="p-1 rounded hover:bg-gray-100 text-gray-400">
               <X size={16} />
             </button>

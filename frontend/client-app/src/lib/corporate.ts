@@ -1,54 +1,53 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
-// figures are fictional and exist only for the product's marketing surfaces.
+// Fictional company details used by the public landing page.
 
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Fernwold Goods Co.",
+  tagline: "Pantry and household brands, from spec sheet to shelf",
+  founded: 1962,
+  headquarters: "Millrace Yard, Harlow Junction",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Fernwold Goods Co. is a fictional company. All people, places, brands and events described here are invented.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "A single pancake-mix plant opened in 1962 and supplied local grocers and regional distributors.",
+  "The company grew into a house of pantry and household brands sold through regional distributors and grocery chains.",
+  "Today the portfolio includes about 40 brands, 2,300 SKUs and 180 distributor partners. It includes Hearthmill baking mixes, Brightrinse dish soap, Copper Kettle Pantry soups and Little Sprig baby snacks.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Dana Okafor", title: "CEO", bio: "Reviews category sales and sets the annual plan for Fernwold's grocery brands." },
+  { name: "Luis Ferrante", title: "CTO", bio: "Leads the systems used to track product specs and retailer launches." },
+  { name: "Priya Natarajan", title: "CFO", bio: "Reviews product costs and distributor margins with finance teams." },
+  { name: "Grant Hollis", title: "COO", bio: "Coordinates plant moves and supply plans across the product range." },
+  { name: "Meg Sorensen", title: "VP Brand", bio: "Plans retailer launches and packaging updates across Fernwold brands." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Brand Management", description: "Plans category reviews and packaging updates for the Fernwold portfolio." },
+  { name: "R&D and Quality", description: "Maintains product formulas, ingredient records and quality checks." },
+  { name: "Trade Marketing", description: "Prepares retailer promotions and launch materials." },
+  { name: "Sales and Distributor Relations", description: "Coordinates grocery chain accounts and 180 distributor partners." },
+  { name: "Supply Chain", description: "Plans plant schedules, packaging orders and product shipments." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Fernwold Files", description: "Shared drive for artwork, label proofs and spec sheets." },
+  { name: "Fernwold Specs", description: "Product spec and formula documents, edited together with change history." },
+  { name: "Fernwold Search", description: "Find any spec, promo plan or distributor file by SKU, brand or keyword." },
+  { name: "Fernwold Admin", description: "Admin console for Fernwold staff, with user, quota and audit controls." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Hearthmill moves to fully recyclable cartons" },
+  { date: "December 2025", title: "Fernwold opens a second R&D kitchen in Harlow Junction" },
+  { date: "August 2025", title: "Brightrinse refill pouches reach 1,200 stores" },
+  { date: "May 2025", title: "Fernwold signs 14 new distributor partners in the Southeast" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Product Developer", team: "R&D and Quality", location: "Harlow Junction" },
+  { role: "Packaging Technologist", team: "Supply Chain", location: "Harlow Junction" },
+  { role: "Retail Account Manager", team: "Sales and Distributor Relations", location: "Remote" },
+  { role: "Brand Coordinator", team: "Brand Management", location: "Harlow Junction" },
 ];

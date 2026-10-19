@@ -1,7 +1,5 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
 const config: Config = {
   content: [
     "./index.html",
@@ -10,33 +8,33 @@ const config: Config = {
   theme: {
     borderRadius: {
       none: "0",
-      sm: "1px",
-      DEFAULT: "2px",
-      md: "2px",
-      lg: "2px",
-      xl: "2px",
-      "2xl": "2px",
-      "3xl": "2px",
+      sm: "4px",
+      DEFAULT: "6px",
+      md: "8px",
+      lg: "10px",
+      xl: "14px",
+      "2xl": "18px",
+      "3xl": "24px",
       full: "9999px",
     },
     extend: {
       colors: {
         otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
+          50: "#f2f7f3",
+          100: "#e0ece3",
+          200: "#c0d9c7",
+          300: "#93bea0",
+          400: "#5f9a71",
+          500: "#3b7a4f",
+          600: "#24603a",
+          700: "#1d4e30",
+          800: "#173e27",
+          900: "#12311f",
         },
         accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
+          400: "#e8774f",
+          500: "#d95f33",
+          600: "#b84a23",
         },
       },
       fontFamily: {

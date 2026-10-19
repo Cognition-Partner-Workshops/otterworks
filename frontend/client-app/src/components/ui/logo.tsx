@@ -1,4 +1,4 @@
-import otterLogo from "@/assets/otter-logo.png";
+import fernwoldMark from "@/assets/fernwold-mark.svg";
 import { cn } from "@/lib/utils";
 
 interface LogoProps {
@@ -9,8 +9,8 @@ interface LogoProps {
 export function Logo({ size = 32, className }: LogoProps) {
   return (
     <img
-      src={otterLogo}
-      alt="OtterWorks logo"
+      src={fernwoldMark}
+      alt="Fernwold mark"
       width={size}
       height={size}
       className={cn("shrink-0 select-none", className)}

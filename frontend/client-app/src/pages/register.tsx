@@ -62,9 +62,9 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
             <Logo size={40} />
-            <span className="text-2xl font-bold text-gray-900">OtterWorks</span>
+            <span className="text-2xl font-bold text-gray-900">Fernwold</span>
           </Link>
-          <p className="text-gray-500 mt-2">Create your account</p>
+          <p className="text-gray-500 mt-2">Create your Fernwold account</p>
         </div>
 
         {/* Form */}
@@ -107,7 +107,7 @@ export default function RegisterPage() {
                 type="email"
                 {...register("email")}
                 className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
-                placeholder="you@example.com"
+                placeholder="name@fernwold.example"
               />
               {errors.email && (
                 <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>

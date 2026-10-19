@@ -10,42 +10,39 @@ export default function TermsPage() {
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
             <Logo size={28} />
-            <span className="font-semibold text-gray-900">OtterWorks, Inc.</span>
+            <span className="font-semibold text-gray-900">Fernwold Goods Co.</span>
           </Link>
         </div>
       </header>
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-10">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Terms of Service</h1>
         <p className="text-xs text-gray-400 mb-6">
-          Fictional legal document — {COMPANY.disclaimer}
+          Fictional legal document: {COMPANY.disclaimer}
         </p>
         <div className="bg-white border border-gray-300 rounded p-6 space-y-4 text-sm text-gray-600 leading-relaxed">
           <p>
             <strong className="text-gray-900">1. Acceptance of Terms.</strong>{" "}
-            By accessing OtterWorks, you agree to conduct all clam-related and
-            document-related commerce in accordance with the customs of the
-            waterways. These terms are entirely fictional and carry no legal
-            force anywhere, wet or dry.
+            By using Fernwold, you agree to use the workspace for product files,
+            specs and retailer materials. These terms are a fictional example.
           </p>
           <p>
             <strong className="text-gray-900">2. Use of the Service.</strong>{" "}
-            You may store files, edit documents, and collaborate with other
-            otters. You may not dam the service, hoard shared pebbles, or
-            misrepresent your den affiliation.
+            You may store files, edit specs and collaborate with coworkers.
+            Upload material only when you have permission to share it.
           </p>
           <p>
             <strong className="text-gray-900">3. Accounts.</strong> You are
-            responsible for keeping your password drier than your fur. Notify
-            us of any unauthorized access to your holt immediately.
+            responsible for keeping your password safe. Report unauthorized
+            access to your account.
           </p>
           <p>
             <strong className="text-gray-900">4. Termination.</strong>{" "}
-            OtterWorks, Inc. may suspend accounts that disturb the ecosystem.
-            Suspended otters retain the right to appeal to the River Council.
+            Fernwold may suspend accounts that break these terms. Contact
+            support if you think an account was suspended by mistake.
           </p>
           <p>
             <strong className="text-gray-900">5. Governing Law.</strong> These
-            terms are governed by the fictional statutes of Estuary Bay.
+            terms are governed by fictional statutes in Harlow Junction.
           </p>
         </div>
       </div>

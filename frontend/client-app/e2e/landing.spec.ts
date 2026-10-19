@@ -7,11 +7,14 @@ test.describe("Landing Page", () => {
   });
 
   // AC-01 / BDD-01
-  test("displays the corporate hero with the otter logo", async ({ page }) => {
+  test("displays the corporate hero with the Fernwold mark", async ({ page }) => {
     await expect(
-      page.getByRole("heading", { name: "OtterWorks", exact: true })
+      page.getByRole("heading", {
+        name: "Every spec, label proof and promo plan, in one place",
+        exact: true,
+      })
     ).toBeVisible();
-    await expect(page.getByAltText("OtterWorks logo").first()).toBeVisible();
+    await expect(page.getByAltText("Fernwold mark").first()).toBeVisible();
     await expect(
       page.getByText("Enterprise retail products for otters").first()
     ).toBeVisible();
@@ -55,7 +58,9 @@ test.describe("Landing Page", () => {
   test("corporate footer shows company, version and legal links", async ({
     page,
   }) => {
-    await expect(page.getByText("© OtterWorks, Inc.").first()).toBeVisible();
+    await expect(
+      page.getByText("(c) 2026 Fernwold Goods Co. Fictional company for demo use.").first()
+    ).toBeVisible();
     await expect(page.getByText(/v\d+\.\d+\.\d+/).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Terms" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Privacy" }).first()).toBeVisible();

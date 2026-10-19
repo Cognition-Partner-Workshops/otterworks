@@ -149,7 +149,7 @@ function StarredContent() {
           {documents.length > 0 && (
             <section>
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                Documents
+                Specs & briefs
               </h2>
               <div
                 className={cn(

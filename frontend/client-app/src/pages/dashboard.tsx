@@ -78,7 +78,7 @@ function DashboardContent() {
             className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm font-medium"
           >
             <FileText size={16} />
-            New document
+            New spec
           </Link>
         </div>
       </div>
@@ -93,7 +93,7 @@ function DashboardContent() {
         />
         <StatCard
           icon={FileText}
-          label="Documents"
+          label="Specs & briefs"
           value={storage?.documentCount?.toString() || "0"}
           color="purple"
         />
@@ -181,7 +181,7 @@ function DashboardContent() {
       {/* Recent documents */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recent documents</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Recent specs &amp; briefs</h2>
           <Link
             to="/documents"
             className="flex items-center gap-1 text-sm text-otter-600 hover:text-otter-700 font-medium"
@@ -198,8 +198,8 @@ function DashboardContent() {
         ) : (
           <EmptyState
             icon={FileText}
-            title="No recent documents"
-            description="Create a document to start collaborating"
+            title="No recent specs or briefs"
+            description="Create a spec for a new SKU or a brief for a promo plan."
           />
         )}
       </section>

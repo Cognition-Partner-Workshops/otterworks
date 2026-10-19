@@ -68,15 +68,15 @@ function DocumentsContent() {
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Specs &amp; briefs</h1>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => createMutation.mutate("Untitled document")}
+            onClick={() => createMutation.mutate("Untitled spec")}
             disabled={createMutation.isPending}
             className="flex items-center gap-2 px-3 py-2 text-sm text-white bg-otter-600 rounded-lg hover:bg-otter-700 disabled:opacity-50 transition"
           >
             <Plus size={16} />
-            New document
+            New spec
           </button>
           <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden ml-2">
             <ViewBtn
@@ -105,7 +105,7 @@ function DocumentsContent() {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter documents..."
+          placeholder="Filter specs and briefs..."
           className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent"
         />
       </div>
@@ -116,7 +116,7 @@ function DocumentsContent() {
         documents={filtered}
         searchQuery={searchQuery}
         viewMode={viewMode}
-        onCreate={() => createMutation.mutate("Untitled document")}
+        onCreate={() => createMutation.mutate("Untitled spec")}
         onDelete={(id) => deleteMutation.mutate(id)}
       />
     </div>
@@ -146,17 +146,17 @@ function DocumentListing({
     return (
       <EmptyState
         icon={FileText}
-        title={searchQuery ? "No matching documents" : "No documents yet"}
+        title={searchQuery ? "No matching specs" : "No specs or briefs yet"}
         description={
           searchQuery
             ? "Try a different search term"
-            : "Create your first document to start collaborating"
+            : "Start one for a new SKU or a promo plan."
         }
         action={
           searchQuery
             ? undefined
             : {
-                label: "Create document",
+                label: "Create spec",
                 onClick: onCreate,
               }
         }

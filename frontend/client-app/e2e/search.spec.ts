@@ -14,16 +14,16 @@ test.describe("Search Page", () => {
 
   test("displays search input with placeholder", async ({ page }) => {
     await expect(
-      page.getByPlaceholder("Search files, documents, and folders...")
+      page.getByPlaceholder("Search specs, promo plans or distributor files...")
     ).toBeVisible({ timeout: 10_000 });
   });
 
   test("shows empty state before searching", async ({ page }) => {
-    await expect(page.getByText("Search OtterWorks")).toBeVisible({
+    await expect(page.getByText("Search Fernwold")).toBeVisible({
       timeout: 10_000,
     });
     await expect(
-      page.getByText("Find files, documents, and folders across your workspace")
+      page.getByText("Find a spec, promo plan or distributor file by SKU, brand or keyword.")
     ).toBeVisible();
   });
 
@@ -35,7 +35,7 @@ test.describe("Search Page", () => {
 
   test("can type a query in the search input", async ({ page }) => {
     const searchInput = page.getByPlaceholder(
-      "Search files, documents, and folders..."
+      "Search specs, promo plans or distributor files..."
     );
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
     await searchInput.fill("test query");
@@ -44,7 +44,7 @@ test.describe("Search Page", () => {
 
   test("shows no results for gibberish query", async ({ page }) => {
     const searchInput = page.getByPlaceholder(
-      "Search files, documents, and folders..."
+      "Search specs, promo plans or distributor files..."
     );
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
     await searchInput.fill("xyznonexistent9999");

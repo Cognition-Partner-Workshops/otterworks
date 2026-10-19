@@ -2,24 +2,23 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
-$otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+$fernwold-palette: (
+  50: #f2f7f3,
+  100: #e0ece3,
+  200: #c0d9c7,
+  300: #93bea0,
+  400: #5f9a71,
+  500: #3b7a4f,
+  600: #24603a,
+  700: #1d4e30,
+  800: #173e27,
+  900: #12311f,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
     200: rgba(0, 0, 0, 0.87),
     300: rgba(0, 0, 0, 0.87),
-    400: #ffffff,
+    400: rgba(0, 0, 0, 0.87),
     500: #ffffff,
     600: #ffffff,
     700: #ffffff,
@@ -28,8 +27,33 @@ $otter-navy-palette: (
   ),
 );
 
-$admin-primary: mat.define-palette($otter-navy-palette, 500);
-$admin-accent: mat.define-palette(mat.$amber-palette, 700);
+$fernwold-accent-palette: (
+  50: #fdf4f1,
+  100: #fbe2d9,
+  200: #f7c4b3,
+  300: #f19c7e,
+  400: #e8774f,
+  500: #d95f33,
+  600: #b84a23,
+  700: #943c1d,
+  800: #77311a,
+  900: #5e2918,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: #ffffff,
+    600: #ffffff,
+    700: #ffffff,
+    800: #ffffff,
+    900: #ffffff,
+  ),
+);
+
+$admin-primary: mat.define-palette($fernwold-palette, 500);
+$admin-accent: mat.define-palette($fernwold-accent-palette, 500);
 $admin-warn: mat.define-palette(mat.$red-palette);
 
 $admin-theme: mat.define-light-theme((
@@ -54,8 +78,8 @@ html, body {
   height: 100%;
   font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
   font-size: 13.5px;
-  background: #f4f5f7;
-  color: #212529;
+  background: #f2f7f3;
+  color: #202b23;
 }
 
 body {
@@ -111,12 +135,12 @@ app-sidebar .mat-mdc-list-item:hover .mat-icon {
 app-sidebar .active-link,
 app-sidebar .active-link .mdc-list-item__primary-text,
 app-sidebar .active-link .mat-mdc-list-item-title {
-  color: #d99a3d !important;
-  background: rgba(217, 154, 61, 0.18) !important;
+  color: #e8774f !important;
+  background: rgba(232, 119, 79, 0.18) !important;
 }
 
 app-sidebar .active-link .mat-icon {
-  color: #d99a3d !important;
+  color: #e8774f !important;
 }
 
 /* Ripple / focus state should also be light */
