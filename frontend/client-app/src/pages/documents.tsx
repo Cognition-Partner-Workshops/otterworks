@@ -68,7 +68,7 @@ function DocumentsContent() {
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Case files</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => createMutation.mutate("Untitled document")}
@@ -76,7 +76,7 @@ function DocumentsContent() {
             className="flex items-center gap-2 px-3 py-2 text-sm text-white bg-otter-600 rounded-lg hover:bg-otter-700 disabled:opacity-50 transition"
           >
             <Plus size={16} />
-            New document
+            New case file
           </button>
           <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden ml-2">
             <ViewBtn
@@ -105,7 +105,7 @@ function DocumentsContent() {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter documents..."
+          placeholder="Filter case files..."
           className="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent"
         />
       </div>
@@ -146,17 +146,17 @@ function DocumentListing({
     return (
       <EmptyState
         icon={FileText}
-        title={searchQuery ? "No matching documents" : "No documents yet"}
+        title={searchQuery ? "No matching case files" : "No case files yet"}
         description={
           searchQuery
             ? "Try a different search term"
-            : "Create your first document to start collaborating"
+            : "Open a case file to start tracking a resident's case"
         }
         action={
           searchQuery
             ? undefined
             : {
-                label: "Create document",
+                label: "Create case file",
                 onClick: onCreate,
               }
         }

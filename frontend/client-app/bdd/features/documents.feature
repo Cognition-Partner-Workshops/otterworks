@@ -1,19 +1,19 @@
-Feature: Document Management
+Feature: Case File Management
   As an authenticated user
   I want to manage my documents
   So that I can create, edit, and organize my work
 
-  Scenario: Documents page shows heading or login redirect
+  Scenario: Case files page shows heading or login redirect
     Given I navigate to "/documents"
-    Then I should see the text "Documents" or "Sign in with your staff or resident account"
+    Then I should see the text "Case files" or "Sign in with your staff or resident account"
 
-  Scenario: Documents page has a New document button
+  Scenario: Case files page has a New case file button
     Given I navigate to "/documents"
-    Then I should see the text "Documents" or "Sign in with your staff or resident account"
+    Then I should see the text "Case files" or "Sign in with your staff or resident account"
 
-  Scenario: Documents page has a filter input
+  Scenario: Case files page has a filter input
     Given I navigate to "/documents"
-    Then I should see the text "Documents" or "Sign in with your staff or resident account"
+    Then I should see the text "Case files" or "Sign in with your staff or resident account"
 
   Scenario: Search page shows search input
     Given I navigate to "/search"

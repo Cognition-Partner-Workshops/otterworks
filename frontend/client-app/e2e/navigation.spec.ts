@@ -27,14 +27,14 @@ test.describe("Navigation & Routing", () => {
 
   test("/documents loads or redirects to login", async ({ page }) => {
     await page.goto("/documents");
-    const docs = page.getByRole("heading", { name: "Documents" });
+    const docs = page.getByRole("heading", { name: "Case files" });
     const login = page.getByText("Sign in with your staff or resident account");
     await expect(docs.or(login)).toBeVisible({ timeout: 10_000 });
   });
 
   test("/files loads or redirects to login", async ({ page }) => {
     await page.goto("/files");
-    const files = page.getByRole("heading", { name: /Files|My Files/i });
+    const files = page.getByRole("heading", { name: "Records" });
     const login = page.getByText("Sign in with your staff or resident account");
     await expect(files.or(login)).toBeVisible({ timeout: 10_000 });
   });

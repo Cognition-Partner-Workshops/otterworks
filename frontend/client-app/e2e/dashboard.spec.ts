@@ -36,7 +36,7 @@ test.describe("Dashboard", () => {
 
     if (await heading.isVisible().catch(() => false)) {
       // Stat card labels appear inside stat cards as combined text
-      await expect(page.getByText(/Total files/i)).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText("Records")).toBeVisible({ timeout: 10_000 });
       await expect(page.getByText(/Storage used/i)).toBeVisible();
     }
   });

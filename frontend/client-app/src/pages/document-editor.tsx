@@ -107,7 +107,7 @@ function DocumentEditorContent() {
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <p className="text-gray-500">Document not found</p>
         <Link to="/documents" className="text-otter-600 hover:underline mt-2 text-sm">
-          Back to documents
+          Back to case files
         </Link>
       </div>
     );
@@ -119,7 +119,7 @@ function DocumentEditorContent() {
     <div className="max-w-5xl mx-auto space-y-4">
       <Breadcrumb
         items={[
-          { label: "Documents", href: "/documents" },
+          { label: "Case files", href: "/documents" },
           { label: document.title },
         ]}
       />

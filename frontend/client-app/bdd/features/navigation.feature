@@ -19,13 +19,13 @@ Feature: Application Navigation
     Given I navigate to "/dashboard"
     Then I should see the text "Dashboard" or "Sign in with your staff or resident account"
 
-  Scenario: Documents page loads or redirects
+  Scenario: Case files page loads or redirects
     Given I navigate to "/documents"
-    Then I should see the text "Documents" or "Sign in with your staff or resident account"
+    Then I should see the text "Case files" or "Sign in with your staff or resident account"
 
-  Scenario: Files page loads or redirects
+  Scenario: Records page loads or redirects
     Given I navigate to "/files"
-    Then I should see the text "Files" or "Sign in with your staff or resident account"
+    Then I should see the text "Records" or "Sign in with your staff or resident account"
 
   Scenario: Search page loads or redirects
     Given I navigate to "/search"

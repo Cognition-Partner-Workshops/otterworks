@@ -87,13 +87,13 @@ function DashboardContent() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={FolderOpen}
-          label="Total files"
+          label="Records"
           value={storage?.fileCount?.toString() || "0"}
           color="blue"
         />
         <StatCard
           icon={FileText}
-          label="Documents"
+          label="Case files"
           value={storage?.documentCount?.toString() || "0"}
           color="purple"
         />

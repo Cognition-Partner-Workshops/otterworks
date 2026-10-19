@@ -161,7 +161,7 @@ function FileBrowserContent() {
   }, [queryClient]);
 
   const breadcrumbs: BreadcrumbItem[] | null = folderId
-    ? [{ label: "Files", href: "/files" }, { label: currentFolder?.name ?? "\u2026" }]
+    ? [{ label: "Records", href: "/files" }, { label: currentFolder?.name ?? "\u2026" }]
     : null;
 
   const folders = folderItems ?? [];
@@ -314,7 +314,7 @@ function FileBrowserContent() {
 
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Files</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Records</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -432,9 +432,9 @@ function FileBrowserContent() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={FolderOpen}
-          title="This folder is empty"
-          description="Upload files or create folders to get started"
-          action={{ label: "Upload files", onClick: () => setShowUpload(true) }}
+          title="No records yet"
+          description="Upload a record to get started"
+          action={{ label: "Upload a record", onClick: () => setShowUpload(true) }}
         />
       ) : (
         <div className="space-y-6">
@@ -475,10 +475,10 @@ function FileBrowserContent() {
             </section>
           )}
 
-          {/* Files */}
+          {/* Records */}
           {files.length > 0 && (
             <section>
-              {viewMode === "grid" && <h2 className="text-sm font-medium text-gray-500 mb-3">Files</h2>}
+              {viewMode === "grid" && <h2 className="text-sm font-medium text-gray-500 mb-3">Records</h2>}
               <div
                 className={cn(
                   viewMode === "grid"
