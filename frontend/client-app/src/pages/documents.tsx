@@ -146,11 +146,11 @@ function DocumentListing({
     return (
       <EmptyState
         icon={FileText}
-        title={searchQuery ? "No matching documents" : "No documents yet"}
+        title={searchQuery ? "No matching work packs" : "No work packs yet"}
         description={
           searchQuery
-            ? "Try a different search term"
-            : "Create your first document to start collaborating"
+            ? "Try another work order or feeder name."
+            : "Create a work pack for a switching plan or outage report."
         }
         action={
           searchQuery

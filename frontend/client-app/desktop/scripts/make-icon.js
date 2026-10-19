@@ -1,4 +1,4 @@
-/* Generates the app icons from the web app's otter (../public/favicon.svg).
+/* Generates the app icons from the web app's Hollinmere mark (../public/favicon.svg).
  *
  * Runs under Electron so it works on macOS, Windows, and Linux with no native
  * SVG tooling: the SVG is drawn onto a <canvas> in a hidden window and read

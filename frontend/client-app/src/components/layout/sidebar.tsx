@@ -40,8 +40,8 @@ const navGroups: NavGroup[] = [
     items: [
       { href: "/dashboard", label: "Dashboard", icon: Home },
       { href: "/recent", label: "Recent", icon: Clock },
-      { href: "/files", label: "Files", icon: FolderOpen },
-      { href: "/documents", label: "Documents", icon: FileText },
+      { href: "/files", label: "Records", icon: FolderOpen },
+      { href: "/documents", label: "Work packs", icon: FileText },
       { href: "/search", label: "Search", icon: Search },
       { href: "/margins", label: "Margins", icon: TrendingUp },
     ],
@@ -90,7 +90,7 @@ export function Sidebar() {
           {sidebarOpen && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <Logo size={28} className="rounded-sm bg-white" />
-              <span className="font-semibold text-white text-sm">OtterWorks</span>
+              <span className="font-semibold text-white text-sm">Hollinmere</span>
             </Link>
           )}
           <button

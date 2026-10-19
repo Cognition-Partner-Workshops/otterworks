@@ -62,9 +62,9 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2">
             <Logo size={40} />
-            <span className="text-2xl font-bold text-gray-900">OtterWorks</span>
+            <span className="text-2xl font-bold text-gray-900">Hollinmere</span>
           </Link>
-          <p className="text-gray-500 mt-2">Create your account</p>
+          <p className="text-gray-500 mt-2">Create your account to review utility work records</p>
         </div>
 
         {/* Form */}

@@ -82,8 +82,8 @@ function NotificationsContent() {
       ) : notifications.length === 0 ? (
         <EmptyState
           icon={Bell}
-          title="No notifications"
-          description="You&apos;re all caught up! New notifications will appear here."
+          title="No service updates"
+          description="Crew dispatch and outage notices will appear here."
         />
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">

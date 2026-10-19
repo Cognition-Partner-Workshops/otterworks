@@ -3,7 +3,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { startAppServer, AppServer } from "./server";
 
-// OtterWorks desktop shell. Serves the client-app web build (`../dist`) from an
+// Hollinmere desktop shell. Serves the client-app web build (`../dist`) from an
 // embedded local server that also proxies /api/v1/* to the API gateway - the
 // same same-origin model used by the Vite dev server and the production nginx
 // container - then points a BrowserWindow at it.
@@ -20,7 +20,7 @@ const PREFERRED_PORT = Number(process.env.OTTER_DESKTOP_PORT) || 34117;
 const START_URL = process.env.ELECTRON_START_URL;
 const SMOKE_TEST = process.argv.includes("--smoke-test");
 
-// Otter icons for unpackaged (npm start) runs; packaged builds get the platform
+// App icons for unpackaged (npm start) runs; packaged builds get the platform
 // formats electron-builder derives from assets/ at build time. Windows/Linux
 // icons are full-bleed, while the macOS Dock uses the Apple-grid variant.
 const DEV_ICON = path.resolve(__dirname, "..", "assets", "icon.png");
@@ -47,7 +47,7 @@ function createWindow(url: string): BrowserWindow {
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
-    title: "OtterWorks",
+    title: "Hollinmere",
     ...(HAS_DEV_ICON ? { icon: DEV_ICON } : {}),
     webPreferences: {
       contextIsolation: true,
@@ -123,7 +123,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() =>
     start().catch((err) => {
-      dialog.showErrorBox("OtterWorks failed to start", err.message);
+      dialog.showErrorBox("Hollinmere failed to start", err.message);
       app.exit(1);
     })
   );

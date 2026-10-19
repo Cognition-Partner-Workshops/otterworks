@@ -106,8 +106,8 @@ function RecentContent() {
       {!isLoading && totalItems === 0 && (
         <EmptyState
           icon={Clock}
-          title="No recent items"
-          description="Files and documents you open or edit will appear here."
+          title="No recent work"
+          description="Work orders and work packs you open will appear here."
         />
       )}
 

@@ -62,7 +62,7 @@ function DashboardContent() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Welcome back! Here&apos;s your latest activity.
+            Review today&apos;s field work and grid records.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -172,8 +172,8 @@ function DashboardContent() {
         ) : (
           <EmptyState
             icon={FolderOpen}
-            title="No recent files"
-            description="Upload files to get started"
+            title="No recent records"
+            description="Upload a switching order, line drawing, or inspection photo."
           />
         )}
       </section>
@@ -198,8 +198,8 @@ function DashboardContent() {
         ) : (
           <EmptyState
             icon={FileText}
-            title="No recent documents"
-            description="Create a document to start collaborating"
+            title="No recent work packs"
+            description="Create a work pack for switching notes or outage reports."
           />
         )}
       </section>
@@ -216,8 +216,8 @@ function DashboardContent() {
         ) : (
           <EmptyState
             icon={Clock}
-            title="No recent activity"
-            description="Your activity will appear here"
+            title="No recent work"
+            description="Crew dispatch and record updates will appear here."
           />
         )}
       </section>

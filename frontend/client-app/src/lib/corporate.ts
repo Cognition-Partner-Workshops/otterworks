@@ -1,54 +1,51 @@
-// OtterWorks, Inc. corporate identity content. All names, people, events, and
-// figures are fictional and exist only for the product's marketing surfaces.
-
 export const COMPANY = {
-  name: "OtterWorks, Inc.",
-  tagline: "Enterprise retail products for otters",
-  founded: 1987,
-  headquarters: "Riverbend Plaza, Clamshell City, Estuary Bay",
+  name: "Hollinmere Power & Light",
+  tagline: "Power, grid and field crews for the Hollin Valley",
+  founded: 1952,
+  headquarters: "Weir Street Operations Centre, Hollinbridge",
   disclaimer:
-    "OtterWorks, Inc. is a fictional company. All people, places, products, and events described here are invented.",
+    "Hollinmere Power & Light is a fictional utility. This page contains sample people and utility records.",
 };
 
 export const FOUNDING_STORY = [
-  "OtterWorks was founded in 1987 on the banks of the Silverstream, when a small raft of entrepreneurial otters grew tired of losing their favorite clams, tools, and pebble collections to the current. What began as a waterproof ledger for tracking inventory between dens grew into the leading enterprise platform for otter-run retail operations.",
-  "Through the Great Kelp Shortage of 1994 and the River Delta expansion of 2003, OtterWorks kept one principle constant: every otter business, from a single clam cart to a thousand-den retail network, deserves dependable systems of record.",
-  "Today OtterWorks serves over 12,000 fictional storefronts across forty waterways, processing millions of documents, files, and inventory records every day — securely, collaboratively, and always afloat.",
+  "Hollinmere Power & Light began in 1952 as a valley co-op. Local farms and mills pooled funds to bring electric service to Hollinbridge and nearby settlements.",
+  "Crews extended the distribution network as new homes and workshops connected to the grid. The co-op added generation, metering, and a control room for daily operations.",
+  "Today, Hollinmere operates generation assets, substations, feeders, and field service across the Hollin Valley.",
 ];
 
 export const LEADERSHIP = [
-  { name: "Marina Lutra", title: "Chief Executive Officer", bio: "Co-founded OtterWorks after a decade running the Silverstream Clam Exchange. Believes every den deserves enterprise-grade tooling." },
-  { name: "Pebble Holt", title: "Chief Technology Officer", bio: "Architect of the original waterproof ledger. Leads platform engineering across all eleven product services." },
-  { name: "Wren Riverstone", title: "Chief Financial Officer", bio: "Former treasurer of the Estuary Bay Merchants Guild. Keeps OtterWorks profitable through every tide." },
-  { name: "Cobble Whiskerton", title: "Chief Operating Officer", bio: "Scaled OtterWorks from three dens to forty waterways. Obsessed with reliable logistics and tidy burrows." },
-  { name: "Sedge Brookmarsh", title: "VP of Product", bio: "Champions table-first design and dense, useful interfaces for working otters everywhere." },
+  { name: "Mara Ellery", title: "General Manager", bio: "Leads the co-op and works with valley towns on service plans and capital projects." },
+  { name: "Jonah Reed", title: "Director of Grid Operations", bio: "Oversees control room operations, feeder maintenance, and switching procedures." },
+  { name: "Priya Nair", title: "Director of Customer Care", bio: "Runs account services, meter support, and outage communications." },
+  { name: "Caleb Wren", title: "Director of Field Services", bio: "Coordinates line crews, inspections, and storm response across the valley." },
+  { name: "Elena Moss", title: "Finance Director", bio: "Manages rate planning, purchasing, and the co-op's annual budget." },
 ];
 
 export const DEPARTMENTS = [
-  { name: "Platform Engineering", description: "Builds and operates the core file, document, and collaboration services." },
-  { name: "Retail Solutions", description: "Point-of-sale, inventory, and merchandising products for otter storefronts." },
-  { name: "Trust & Compliance", description: "Audit, security, and regulatory tooling for waterway commerce." },
-  { name: "Customer Success", description: "Onboarding, training, and support for every den, large or small." },
-  { name: "Corporate Services", description: "Finance, legal, people operations, and facilities across our riverbank campuses." },
+  { name: "Generation", description: "Operates local generation assets and plans scheduled maintenance." },
+  { name: "Grid Operations", description: "Monitors substations and feeders, then coordinates switching orders." },
+  { name: "Metering", description: "Schedules meter reads, investigates usage exceptions, and maintains meter records." },
+  { name: "Field Services", description: "Dispatches crews for inspections, repairs, and outage response." },
+  { name: "Customer Care", description: "Handles service requests, billing questions, and outage updates." },
 ];
 
 export const PRODUCTS = [
-  { name: "OtterWorks Drive", description: "Secure file storage and sharing with folder trees, version history, and instant preview." },
-  { name: "OtterWorks Docs", description: "Rich-text documents with real-time collaborative editing and change tracking." },
-  { name: "OtterWorks Search", description: "Full-text search across every file and document with smart filters." },
-  { name: "OtterWorks Admin", description: "Fleet-wide administration: users, quotas, audit logs, and system health." },
+  { name: "Hollinmere Records", description: "Stores work orders, line drawings, inspection photos, and equipment records." },
+  { name: "Hollinmere Docs", description: "Lets teams prepare switching plans and outage reports together." },
+  { name: "Hollinmere Search", description: "Finds feeder records, meter reads, and work packs across the utility." },
+  { name: "Hollinmere Admin", description: "Manages user access, service settings, and system health." },
 ];
 
 export const PRESS_RELEASES = [
-  { date: "March 2026", title: "OtterWorks announces the Riverbend Data Center, its fifth flood-proof facility" },
-  { date: "November 2025", title: "OtterWorks Drive surpasses 2 billion stored pebble-inventory records" },
-  { date: "June 2025", title: "OtterWorks named 'Most Dependable Platform' by the Waterway Commerce Journal" },
-  { date: "January 2025", title: "OtterWorks opens its Estuary Bay engineering campus to 400 new hires" },
+  { date: "March 2026", title: "Hollinmere starts feeder inspection work in the north valley" },
+  { date: "November 2025", title: "Metering team completes the Hollinbridge meter-read cycle" },
+  { date: "June 2025", title: "Grid Operations updates switching plans for three substations" },
+  { date: "January 2025", title: "Field crews replace storm-damaged line hardware near West Weir" },
 ];
 
 export const CAREERS = [
-  { role: "Senior Platform Engineer", team: "Platform Engineering", location: "Riverbend Plaza HQ" },
-  { role: "Enterprise Account Manager", team: "Retail Solutions", location: "Delta District Office" },
-  { role: "Compliance Analyst", team: "Trust & Compliance", location: "Remote (any waterway)" },
-  { role: "Support Specialist", team: "Customer Success", location: "Estuary Bay Campus" },
+  { role: "Distribution Line Technician", team: "Field Services", location: "Hollinbridge" },
+  { role: "Grid Operations Engineer", team: "Grid Operations", location: "Weir Street Operations Centre" },
+  { role: "Metering Specialist", team: "Metering", location: "Hollinbridge" },
+  { role: "Customer Care Representative", team: "Customer Care", location: "Hollin Valley" },
 ];

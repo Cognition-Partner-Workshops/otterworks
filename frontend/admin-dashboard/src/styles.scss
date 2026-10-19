@@ -2,24 +2,23 @@
 
 @include mat.core();
 
-// OtterWorks classic-enterprise theme: navy/steel primary with a muted amber accent.
 $otter-navy-palette: (
-  50: #f4f5f7,
-  100: #e7eaef,
-  200: #c8d1dd,
-  300: #a1b0c4,
-  400: #6d84a4,
-  500: #1f3a5f,
-  600: #1a3252,
-  700: #152a45,
-  800: #102138,
-  900: #0c192b,
+  50: #eef7f7,
+  100: #d5ecec,
+  200: #a9d6d7,
+  300: #74b9bc,
+  400: #3f9599,
+  500: #1f777c,
+  600: #0f5f66,
+  700: #0c4c52,
+  800: #0a3d42,
+  900: #072e32,
   contrast: (
     50: rgba(0, 0, 0, 0.87),
     100: rgba(0, 0, 0, 0.87),
     200: rgba(0, 0, 0, 0.87),
     300: rgba(0, 0, 0, 0.87),
-    400: #ffffff,
+    400: rgba(0, 0, 0, 0.87),
     500: #ffffff,
     600: #ffffff,
     700: #ffffff,
@@ -29,7 +28,17 @@ $otter-navy-palette: (
 );
 
 $admin-primary: mat.define-palette($otter-navy-palette, 500);
-$admin-accent: mat.define-palette(mat.$amber-palette, 700);
+$hollinmere-accent-palette: (
+  400: #f5c043,
+  500: #eeab12,
+  600: #c98d07,
+  contrast: (
+    400: rgba(0, 0, 0, 0.87),
+    500: rgba(0, 0, 0, 0.87),
+    600: rgba(0, 0, 0, 0.87),
+  ),
+);
+$admin-accent: mat.define-palette($hollinmere-accent-palette, 500, 400, 600);
 $admin-warn: mat.define-palette(mat.$red-palette);
 
 $admin-theme: mat.define-light-theme((
@@ -38,7 +47,9 @@ $admin-theme: mat.define-light-theme((
     accent: $admin-accent,
     warn: $admin-warn,
   ),
-  typography: mat.define-typography-config(),
+  typography: mat.define-typography-config(
+    $font-family: "'Inter', 'Segoe UI', Helvetica, Arial, sans-serif",
+  ),
   density: 0,
 ));
 
@@ -52,9 +63,9 @@ $admin-theme: mat.define-light-theme((
 
 html, body {
   height: 100%;
-  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
   font-size: 13.5px;
-  background: #f4f5f7;
+  background: #eef7f7;
   color: #212529;
 }
 
@@ -111,12 +122,12 @@ app-sidebar .mat-mdc-list-item:hover .mat-icon {
 app-sidebar .active-link,
 app-sidebar .active-link .mdc-list-item__primary-text,
 app-sidebar .active-link .mat-mdc-list-item-title {
-  color: #d99a3d !important;
-  background: rgba(217, 154, 61, 0.18) !important;
+  color: #f5c043 !important;
+  background: rgba(245, 192, 67, 0.18) !important;
 }
 
 app-sidebar .active-link .mat-icon {
-  color: #d99a3d !important;
+  color: #f5c043 !important;
 }
 
 /* Ripple / focus state should also be light */

@@ -96,7 +96,7 @@ function SearchContent() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search files, documents, and folders..."
+          placeholder="Search work orders, line drawings, meter reads..."
           className="w-full pl-12 pr-20 py-3 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent"
           autoFocus
         />
@@ -167,8 +167,8 @@ function SearchContent() {
       ) : (
         <EmptyState
           icon={Search}
-          title="Search OtterWorks"
-          description="Find files, documents, and folders across your workspace"
+          title="Search Hollinmere"
+          description="Find work orders, line drawings, and inspection photos in your workspace"
         />
       )}
     </div>

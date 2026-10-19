@@ -432,8 +432,8 @@ function FileBrowserContent() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={FolderOpen}
-          title="This folder is empty"
-          description="Upload files or create folders to get started"
+          title="No records in this folder"
+          description="Add a switching order, line drawing, or inspection photo."
           action={{ label: "Upload files", onClick: () => setShowUpload(true) }}
         />
       ) : (

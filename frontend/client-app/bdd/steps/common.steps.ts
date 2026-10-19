@@ -49,8 +49,8 @@ Then("I should see the text {string}", async function (this: OtterWorld, text: s
   await expect(this.page.getByText(text).first()).toBeVisible({ timeout: 10_000 });
 });
 
-Then("I should see the otter logo", async function (this: OtterWorld) {
-  await expect(this.page.getByAltText("OtterWorks logo").first()).toBeVisible({
+Then("I should see the Hollinmere logo", async function (this: OtterWorld) {
+  await expect(this.page.getByAltText("Hollinmere logo").first()).toBeVisible({
     timeout: 10_000,
   });
 });

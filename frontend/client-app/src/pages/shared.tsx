@@ -63,8 +63,8 @@ function SharedContent() {
       ) : files.length === 0 ? (
         <EmptyState
           icon={Share2}
-          title="Nothing shared with you yet"
-          description="Files and documents shared with you will appear here"
+          title="No shared work packs"
+          description="Switching plans and outage reports shared with you will appear here."
         />
       ) : (
         <div

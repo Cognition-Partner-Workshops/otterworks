@@ -117,8 +117,8 @@ function StarredContent() {
       ) : isEmpty ? (
         <EmptyState
           icon={Star}
-          title="No starred items"
-          description="Star files and documents for quick access. They will appear here."
+          title="No saved records"
+          description="Save work orders and line drawings for quick access."
         />
       ) : (
         <div className="space-y-8">

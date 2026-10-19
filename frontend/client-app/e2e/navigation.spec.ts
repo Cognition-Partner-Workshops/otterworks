@@ -4,7 +4,7 @@ test.describe("Navigation & Routing", () => {
   test("landing page loads at /", async ({ page }) => {
     await page.goto("/");
     await expect(
-      page.getByRole("heading", { name: "OtterWorks", exact: true })
+      page.getByRole("heading", { name: "Hollinmere Power & Light", exact: true })
     ).toBeVisible();
   });
 
