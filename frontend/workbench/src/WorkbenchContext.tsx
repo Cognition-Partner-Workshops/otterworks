@@ -28,7 +28,7 @@ function staticUser(fixtures: Fixtures): WorkbenchUser {
 
 const defaultContext: WorkbenchContextValue = {
   fixtures: baseFixtures,
-  user: { sub: "dwhitfield", name: "Dana Whitfield", email: "" },
+  user: staticUser(baseFixtures),
   mode: "static",
   tenantId: "",
   setTenantId: () => undefined,
