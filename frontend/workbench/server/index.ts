@@ -29,7 +29,7 @@ export interface ServerConfig {
   clientId?: string;
   clientSecret?: string;
   publicUrl: string;
-  sessionSecret: string;
+  sessionSecret?: string;
   store: "dynamodb" | "memory";
   table: string;
   region?: string;
@@ -38,14 +38,15 @@ export interface ServerConfig {
 }
 
 export function readConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
+  const auth = env.WORKBENCH_AUTH === "none" ? "none" : "oidc";
   const publicUrl = env.WORKBENCH_PUBLIC_URL ?? "http://localhost:3002";
   return {
-    auth: env.WORKBENCH_AUTH === "none" ? "none" : "oidc",
+    auth,
     issuer: env.OIDC_ISSUER ?? "https://fieldkit.devin.ai",
     clientId: env.OIDC_CLIENT_ID,
     clientSecret: env.OIDC_CLIENT_SECRET,
     publicUrl,
-    sessionSecret: env.SESSION_SECRET ?? "local-workbench-session-secret",
+    sessionSecret: env.SESSION_SECRET || (auth === "none" ? "local-workbench-session-secret" : undefined),
     store: env.WORKBENCH_STORE === "memory" ? "memory" : "dynamodb",
     table: env.WORKBENCH_TABLE ?? "workbench-attendee-state",
     region: env.AWS_REGION,
@@ -194,8 +195,10 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
   ? new MemoryStore()
   : new DynamoStore(config.table, config.region)) {
   const app = express();
-  const configured = config.auth === "none" || Boolean(config.clientId && config.clientSecret);
+  const sessionSecret = config.sessionSecret || (config.auth === "none" ? "local-workbench-session-secret" : undefined);
+  const configured = config.auth === "none" || Boolean(config.clientId && config.clientSecret && sessionSecret);
 
+  app.set("trust proxy", 1);
   app.disable("x-powered-by");
   app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader("Cache-Control", "no-store");
@@ -205,14 +208,16 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     next();
   });
-  app.use(cookieSession({
-    name: "workbench_session",
-    keys: [config.sessionSecret],
-    maxAge: SESSION_TTL_MS,
-    httpOnly: true,
-    secure: config.publicUrl.startsWith("https://"),
-    sameSite: "lax",
-  }));
+  if (sessionSecret) {
+    app.use(cookieSession({
+      name: "workbench_session",
+      keys: [sessionSecret],
+      maxAge: SESSION_TTL_MS,
+      httpOnly: true,
+      secure: config.publicUrl.startsWith("https://"),
+      sameSite: "lax",
+    }));
+  }
   app.use(express.json({
     limit: "350kb",
     verify: (req, _res, buffer) => {
@@ -266,10 +271,19 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
     }
   });
 
-  app.get("/auth/callback", async (req, res, next) => {
+  app.get("/auth/callback", async (req, res) => {
+    if (!configured) {
+      sendPage(res, "Sign-in is not configured yet", "<p>Sign-in is not configured yet.</p>", 503);
+      return;
+    }
     const authRequest = (req.session as SessionState | null)?.authRequest;
     if (!authRequest || authRequest.expiresAt < Date.now() || req.query.state !== authRequest.state) {
       res.status(400).type("text").send("Invalid sign-in state");
+      return;
+    }
+    if (typeof req.query.error === "string") {
+      const loginUrl = `/auth/login?returnTo=${encodeURIComponent(authRequest.returnTo)}`;
+      sendPage(res, "Sign-in did not complete", `<p>Sign-in did not complete.</p><p><a href="${loginUrl}">Try again</a></p>`, 400);
       return;
     }
     try {
@@ -287,12 +301,17 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
       const user = userFromClaims(claims, userInfo);
       req.session = { user } as SessionState;
       res.redirect(authRequest.returnTo);
-    } catch (error) {
-      next(error);
+    } catch {
+      const loginUrl = `/auth/login?returnTo=${encodeURIComponent(authRequest.returnTo)}`;
+      sendPage(res, "Sign-in did not complete", `<p>Sign-in did not complete.</p><p><a href="${loginUrl}">Try again</a></p>`, 400);
     }
   });
 
   app.get("/auth/logout", (req, res) => {
+    if (!configured) {
+      sendPage(res, "Sign-in is not configured yet", "<p>Sign-in is not configured yet.</p>", 503);
+      return;
+    }
     req.session = null;
     res.redirect("/signed-out");
   });
@@ -357,7 +376,6 @@ export function createApp(config = readConfig(), store: StateStore = config.stor
       res.status(404).end();
       return;
     }
-    if (req.path === "/signed-out") return;
     if (!configured) {
       sendPage(res, "Sign-in is not configured yet", "<p>Sign-in is not configured yet.</p>", 503);
       return;

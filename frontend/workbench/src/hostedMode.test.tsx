@@ -60,6 +60,34 @@ describe("hosted workbench client", () => {
     expect(fetchMock.mock.calls.map(([, options]) => options?.method)).toEqual(["PUT", "DELETE"]);
   });
 
+  it("redirects expired PUT and DELETE sessions back to the current route", async () => {
+    const assign = vi.fn();
+    vi.stubGlobal("window", {
+      location: {
+        pathname: "/boards/OW/OW-42",
+        search: "?view=history",
+        assign,
+      },
+    });
+    const fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 401 });
+    vi.stubGlobal("fetch", fetchMock);
+    const storage = new RemoteStorage();
+    storage.setItem("workbench.chat.v1", "[]");
+    await vi.waitFor(() => expect(assign).toHaveBeenCalledTimes(1));
+
+    await storage.reset();
+    expect(assign).toHaveBeenCalledTimes(2);
+    expect(assign).toHaveBeenNthCalledWith(
+      1,
+      "/auth/login?returnTo=%2Fboards%2FOW%2FOW-42%3Fview%3Dhistory",
+    );
+    expect(assign).toHaveBeenNthCalledWith(
+      2,
+      "/auth/login?returnTo=%2Fboards%2FOW%2FOW-42%3Fview%3Dhistory",
+    );
+    expect(fetchMock.mock.calls.map(([, options]) => options?.method)).toEqual(["PUT", "DELETE"]);
+  });
+
   it("attributes new chat, comment, and activity records to the hosted attendee", () => {
     const attendee = { id: "user-alice", name: "Alice Attendee", initials: "AA", title: "alice@example.com", kind: "human" as const };
     const hostedFixtures: Fixtures = {

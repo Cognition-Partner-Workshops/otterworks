@@ -58,6 +58,10 @@ export class RemoteStorage implements Storage {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed),
       });
+      if (response.status === 401) {
+        redirectToLogin();
+        return;
+      }
       if (!response.ok) throw new Error(`State save failed: ${response.status}`);
     }).catch((error: unknown) => console.error(error));
   }
@@ -72,12 +76,21 @@ export class RemoteStorage implements Storage {
     this.resetStarted = true;
     this.pendingWrites = this.pendingWrites.then(async () => {
       const response = await fetch("/api/state", { method: "DELETE", credentials: "same-origin" });
+      if (response.status === 401) {
+        redirectToLogin();
+        return;
+      }
       if (!response.ok) throw new Error(`State reset failed: ${response.status}`);
     }).catch((error: unknown) => console.error(error)).finally(() => {
       this.resetStarted = false;
     });
     return this.pendingWrites;
   }
+}
+
+function redirectToLogin(): void {
+  const returnTo = `${window.location.pathname}${window.location.search}`;
+  window.location.assign(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`);
 }
 
 let workbenchStorage: Storage | undefined;

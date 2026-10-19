@@ -13,8 +13,8 @@ ENV NODE_ENV=production PORT=3002
 WORKDIR /app
 COPY package.json package-lock.json .npmrc ./
 RUN npm ci --omit=dev --ignore-scripts \
-  && addgroup -S workbench \
-  && adduser -S -G workbench workbench
+  && addgroup -S -g 10001 workbench \
+  && adduser -S -u 10001 -G workbench workbench
 COPY --from=build --chown=workbench:workbench /app/dist ./dist
 COPY --from=build --chown=workbench:workbench /app/server/dist ./server/dist
 

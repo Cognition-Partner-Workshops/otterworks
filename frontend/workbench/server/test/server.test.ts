@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createApp, MemoryStore, safeReturnTo, userKey, type ServerConfig } from "../index.js";
+import { createApp, MemoryStore, readConfig, safeReturnTo, userKey, type ServerConfig } from "../index.js";
 import { createFakeIdp } from "../dev/fake-idp.js";
 
 let idpServer: Server;
@@ -89,6 +89,39 @@ describe("workbench server", () => {
       name: "Alice Example",
       email: "alice@example.com",
     });
+  });
+
+  it("sets a secure session cookie behind the trusted TLS proxy", async () => {
+    const app = createApp(config({ publicUrl: "https://workbench.example.test" }), new MemoryStore());
+    const response = await request(app)
+      .get("/auth/login")
+      .set("X-Forwarded-Proto", "https")
+      .expect(302);
+    expect(response.headers["set-cookie"]).toEqual(expect.arrayContaining([
+      expect.stringMatching(/\bsecure\b/i),
+    ]));
+  });
+
+  it("requires an OIDC session secret and keeps a default only for no-auth mode", async () => {
+    expect(readConfig({ WORKBENCH_AUTH: "oidc" }).sessionSecret).toBeUndefined();
+    expect(readConfig({ WORKBENCH_AUTH: "oidc", SESSION_SECRET: "" }).sessionSecret).toBeUndefined();
+    expect(readConfig({ WORKBENCH_AUTH: "none" }).sessionSecret).toBe("local-workbench-session-secret");
+    expect(readConfig({ WORKBENCH_AUTH: "none", SESSION_SECRET: "" }).sessionSecret).toBe("local-workbench-session-secret");
+
+    const app = createApp(config({ sessionSecret: undefined }), new MemoryStore());
+    await request(app).get("/").set("Accept", "text/html").expect(503)
+      .expect(/Sign-in is not configured yet/);
+  });
+
+  it("shows a retry link with the saved destination when the provider denies sign-in", async () => {
+    const agent = request.agent(createApp(config(), new MemoryStore()));
+    const login = await agent.get("/auth/login?returnTo=%2Fboards%2FOW%2FOW-42").expect(302);
+    const state = new URL(login.headers.location).searchParams.get("state");
+    const response = await agent.get("/auth/callback")
+      .query({ error: "access_denied", state })
+      .expect(400);
+    expect(response.text).toContain("Sign-in did not complete");
+    expect(response.text).toContain('href="/auth/login?returnTo=%2Fboards%2FOW%2FOW-42">Try again</a>');
   });
 
   it("rejects bad state and unsafe return destinations", async () => {
