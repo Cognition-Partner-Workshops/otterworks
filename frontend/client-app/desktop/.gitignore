@@ -5,3 +5,6 @@ build/
 release/
 
 node_modules/
+
+# Playwright Electron e2e output
+e2e-results/
