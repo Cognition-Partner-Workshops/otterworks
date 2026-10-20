@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import sys
+from collections import Counter
 from decimal import Decimal
 from pathlib import Path
 
@@ -187,7 +188,8 @@ def build_checks(ora, dw, pg, c: dict, accepted: dict) -> list[dict]:
     checks.append({"table": "claims.adjuster_assignments", "measure": "rows whose adjuster differs from the notice",
                    "kind": "rows", "source": "corpus golden/assignment-notice AdjusterId",
                    "source_value": Decimal(0),
-                   "target_value": Decimal(sum(1 for a, b in zip(c["notice_pairs"], target_pairs) if a != b))})
+                   "target_value": Decimal(max(sum((Counter(c["notice_pairs"]) - Counter(target_pairs)).values()),
+                                               sum((Counter(target_pairs) - Counter(c["notice_pairs"])).values())))})
     add("claims.adjuster_assignments", "sum(estimated_amount)", "money", "corpus inputs/assignment EstimatedAmount",
         c["request_estimate"], "SELECT sum(estimated_amount) FROM claims.adjuster_assignments")
 
