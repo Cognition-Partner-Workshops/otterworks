@@ -22,6 +22,8 @@
     <camel.version>4.8.9</camel.version>
     <!-- Same Saxon line as saxonche 12.5.0, which wrote corpus/golden. -->
     <saxon.version>12.5</saxon.version>
+    <!-- 1.19.8 from the Boot BOM cannot talk to Docker 29 (minimum API 1.44). -->
+    <testcontainers.version>1.21.4</testcontainers.version>
     <claims.fixture.dir>${project.basedir}/../biztalk-claims-intake</claims.fixture.dir>
   </properties>
 
@@ -63,6 +65,31 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.angus</groupId>
+      <artifactId>jakarta.mail</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
