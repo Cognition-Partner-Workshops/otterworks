@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:msxsl="urn:schemas-microsoft-com:xslt" xmlns:var="http://schemas.microsoft.com/BizTalk/2003/var" exclude-result-prefixes="msxsl var s0" version="1.0" xmlns:s0="http://schemas.thistlecombe.example/canonical/payment" xmlns:ns0="http://schemas.thistlecombe.example/vendor/remittance">
   <xsl:output omit-xml-declaration="yes" method="xml" version="1.0" />
-  <!-- BizTalk map Payment_to_VendorRemittance.btm: a Looping functoid drives one Payment record per Line; Record Count, Cumulative Sum, Multiplication, Round, Date Format and Value Mapping functoids fill the trailer. Credits (salvage recoveries) are written as absolute cents with indicator C. -->
+  <!-- BizTalk map Payment_to_VendorRemittance.btm: a Looping functoid drives one Payment record per Line; Record Count, Round and Cumulative Sum (over the rounded cents), Multiplication, Date Format and Value Mapping functoids fill the trailer. Credits (salvage recoveries) are written as absolute cents with indicator C. -->
   <xsl:template match="/">
     <xsl:apply-templates select="/s0:PaymentInstruction" />
   </xsl:template>
@@ -12,9 +12,30 @@
       <xsl:otherwise><xsl:value-of select="round($amount * 100)" /></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
+  <!-- Cumulative Sum over the Round functoid's output: the trailer adds the cents each PAY record carries, so it always agrees with the body. -->
+  <xsl:template name="sumCents">
+    <xsl:param name="lines" />
+    <xsl:param name="acc" select="0" />
+    <xsl:choose>
+      <xsl:when test="not($lines)"><xsl:value-of select="$acc" /></xsl:when>
+      <xsl:otherwise>
+        <xsl:variable name="first">
+          <xsl:call-template name="cents"><xsl:with-param name="amount" select="$lines[1]/Amount" /></xsl:call-template>
+        </xsl:variable>
+        <xsl:call-template name="sumCents">
+          <xsl:with-param name="lines" select="$lines[position() &gt; 1]" />
+          <xsl:with-param name="acc" select="$acc + number($first)" />
+        </xsl:call-template>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
   <xsl:template match="/s0:PaymentInstruction">
-    <xsl:variable name="debitCents" select="round(sum(Line[Amount &gt;= 0]/Amount) * 100)" />
-    <xsl:variable name="creditCents" select="round((0 - sum(Line[Amount &lt; 0]/Amount)) * 100)" />
+    <xsl:variable name="debitCents">
+      <xsl:call-template name="sumCents"><xsl:with-param name="lines" select="Line[Amount &gt;= 0]" /></xsl:call-template>
+    </xsl:variable>
+    <xsl:variable name="creditCents">
+      <xsl:call-template name="sumCents"><xsl:with-param name="lines" select="Line[Amount &lt; 0]" /></xsl:call-template>
+    </xsl:variable>
     <ns0:Remittance>
       <Header>
         <RecordType>HDR</RecordType>
@@ -48,7 +69,7 @@
         <PaymentCount><xsl:value-of select="count(Line)" /></PaymentCount>
         <DebitTotalCents><xsl:value-of select="$debitCents" /></DebitTotalCents>
         <CreditTotalCents><xsl:value-of select="$creditCents" /></CreditTotalCents>
-        <HashTotal><xsl:value-of select="($debitCents + $creditCents) mod 10000000000" /></HashTotal>
+        <HashTotal><xsl:value-of select="format-number((number($debitCents) + number($creditCents)) mod 10000000000, '0')" /></HashTotal>
       </Trailer>
     </ns0:Remittance>
   </xsl:template>
