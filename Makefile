@@ -97,8 +97,9 @@ INSURANCE_DBT_ENV = COMMISSION_DW_PG_HOST=127.0.0.1 COMMISSION_DW_PG_PORT=$(INSU
 INSURANCE_DBT = uv run --frozen dbt
 
 insurance-pg-up: procs-validate ## Start the PostgreSQL 16 commission warehouse target (NS=<namespace>)
-	@mkdir -p $(dir $(INSURANCE_PG_SECRET))
-	@test -s $(INSURANCE_PG_SECRET) || python3 -c "import secrets; print(secrets.token_urlsafe(24))" > $(INSURANCE_PG_SECRET)
+	@mkdir -p $(dir $(INSURANCE_PG_SECRET)) && chmod 700 $(dir $(INSURANCE_PG_SECRET))
+	@test -s $(INSURANCE_PG_SECRET) || (umask 077 && python3 -c "import secrets; print(secrets.token_urlsafe(24))" > $(INSURANCE_PG_SECRET))
+	@chmod 600 $(INSURANCE_PG_SECRET)
 	$(INSURANCE_PG_ENV) $(INSURANCE_PG_COMPOSE) up -d --wait --wait-timeout 120
 	@echo "insurance-pg NS=$(NS): 127.0.0.1:$(INSURANCE_PG_PORT) db=commission user=commission_dw (password in $(INSURANCE_PG_SECRET))"
 
