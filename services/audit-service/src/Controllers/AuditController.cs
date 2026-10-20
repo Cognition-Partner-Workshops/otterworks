@@ -14,6 +14,7 @@ public static class AuditController
         group.MapPost("/events", RecordEvent)
             .WithName("RecordAuditEvent")
             .Produces<AuditEventResponse>(StatusCodes.Status201Created)
+            .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status400BadRequest);
 
         group.MapGet("/events", QueryEvents)
@@ -53,14 +54,26 @@ public static class AuditController
 
     private static async Task<IResult> RecordEvent(
         AuditEventRequest request,
+        ClaimsPrincipal caller,
         IAuditService auditService)
     {
+        if (string.IsNullOrWhiteSpace(request.UserId))
+        {
+            request.UserId = AuditAuthorization.UserId(caller) ?? string.Empty;
+        }
+
         if (string.IsNullOrWhiteSpace(request.UserId) ||
             string.IsNullOrWhiteSpace(request.Action) ||
             string.IsNullOrWhiteSpace(request.ResourceType) ||
             string.IsNullOrWhiteSpace(request.ResourceId))
         {
             return Results.BadRequest(new { error = "UserId, Action, ResourceType, and ResourceId are required." });
+        }
+
+        // Non-admins cannot write events into another user's audit trail.
+        if (!AuditAuthorization.CanReadUser(caller, request.UserId))
+        {
+            return Forbidden();
         }
 
         var response = await auditService.RecordEventAsync(request);

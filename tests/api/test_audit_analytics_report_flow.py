@@ -68,6 +68,13 @@ def test_audit_event_query_reports_export_and_archive(api_client):
     )
     assert cross_user_query.status_code == 403, cross_user_query.text
 
+    forged_event = api_client.client.post(
+        "/api/v1/audit/events",
+        headers=other_user.auth_headers,
+        json={"userId": user.id, "action": "create", "resourceType": "document", "resourceId": resource_id},
+    )
+    assert forged_event.status_code == 403, forged_event.text
+
     # Org-wide reports, export and archive are admin-only; a self-registered USER is refused.
     compliance_response = api_client.client.get(
         "/api/v1/audit/reports/compliance",
