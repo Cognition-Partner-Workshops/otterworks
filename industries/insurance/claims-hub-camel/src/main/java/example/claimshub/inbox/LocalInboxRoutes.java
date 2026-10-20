@@ -23,8 +23,8 @@ public class LocalInboxRoutes extends RouteBuilder {
 
     @Override
     public void configure() {
-        // delete, not archive: the FNOL carries the unmasked TaxId
-        from("file:{{claimshub.local-inbox.dir}}/fnol?include=.*\\.xml&delete=true&moveFailed=.error")
+        // .done is the only durable copy while the claim waits in the in-memory correction-window aggregator
+        from("file:{{claimshub.local-inbox.dir}}/fnol?include=.*\\.xml&move=.done&moveFailed=.error")
                 .routeId("inbox.fnol")
                 .convertBodyTo(String.class)
                 .to(FnolIntakeRoute.FNOL_IN);
