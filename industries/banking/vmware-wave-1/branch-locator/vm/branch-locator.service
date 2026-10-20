@@ -1,0 +1,12 @@
+# /etc/systemd/system/branch-locator.service on web-02
+[Unit]
+Description=Branch locator
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/branch-locator/app
+ExecStart=/usr/bin/python2.7 /opt/branch-locator/app/locator.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

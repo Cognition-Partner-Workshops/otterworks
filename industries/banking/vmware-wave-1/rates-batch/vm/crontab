@@ -1,0 +1,3 @@
+# root crontab on rates-01 (crontab -l)
+MAILTO=ops-batch
+0 2 * * * /opt/rates/bin/run-rates.sh

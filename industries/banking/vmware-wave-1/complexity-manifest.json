@@ -1,0 +1,71 @@
+{
+  "wave": "vmware-wave-1",
+  "description": "Six applications as they run on their VMs today. Each entry lists what a container platform will not give the application for free, where it lives in the source, and the readiness outcome the wave expects.",
+  "applications": [
+    {
+      "app": "statements-web",
+      "runtime": "Java 8 WAR on Tomcat 8.5",
+      "expected": "replatform",
+      "conditions": [
+        {"id": "host-path", "where": "src/main/java/com/bank/statements/AppConfig.java", "detail": "settings read from an absolute path under /opt/app/conf"},
+        {"id": "container-datasource", "where": "vm/conf/context.xml", "detail": "JNDI datasource and its password defined in the Tomcat config"},
+        {"id": "file-logging", "where": "src/main/resources/log4j.properties", "detail": "daily rolling file under /var/log"},
+        {"id": "session-affinity", "where": "src/main/java/com/bank/statements/StatementServlet.java", "detail": "last viewed account kept in the HTTP session; the load balancer pins users"},
+        {"id": "missing-probe", "where": "src/main/webapp/WEB-INF/web.xml", "detail": "no health endpoint; the first pipeline run is expected to fail the probe policy"}
+      ]
+    },
+    {
+      "app": "rates-batch",
+      "runtime": "Java 11 JAR with a shell wrapper",
+      "expected": "replatform",
+      "conditions": [
+        {"id": "host-scheduling", "where": "vm/crontab", "detail": "runs from root's crontab at 02:00"},
+        {"id": "local-state", "where": "vm/run-rates.sh", "detail": "output spool on local disk, read by another job over NFS"},
+        {"id": "host-timezone", "where": "src/main/java/com/bank/rates/RatesJob.java", "detail": "business date taken from the host clock and zone"}
+      ]
+    },
+    {
+      "app": "branch-locator",
+      "runtime": "Python 2.7 Flask",
+      "expected": "replatform",
+      "conditions": [
+        {"id": "credential-in-source", "where": "app/settings.py", "detail": "database password committed with the code"},
+        {"id": "host-path", "where": "app/settings.py", "detail": "template and log paths are absolute"},
+        {"id": "name-resolution", "where": "vm/etc-hosts", "detail": "geocoder hostname exists only in /etc/hosts"},
+        {"id": "eol-runtime", "where": "requirements.txt", "detail": "Python 2.7 and pins from 2020"}
+      ]
+    },
+    {
+      "app": "notify-svc",
+      "runtime": "Node 12 under PM2",
+      "expected": "replatform",
+      "conditions": [
+        {"id": "process-manager-runbook", "where": "ecosystem.config.js", "detail": "cluster mode, nightly restart and log paths only recorded here"},
+        {"id": "fixed-port", "where": "src/server.js", "detail": "port 3000 hard-coded"},
+        {"id": "local-dependency", "where": "src/server.js", "detail": "Redis assumed on localhost with no password"},
+        {"id": "eol-runtime", "where": "package.json", "detail": "Node 12"}
+      ]
+    },
+    {
+      "app": "kyc-docs",
+      "runtime": "Spring Boot 2.3 fat JAR",
+      "expected": "replatform",
+      "conditions": [
+        {"id": "local-state", "where": "src/main/resources/application.properties", "detail": "uploads written to local disk"},
+        {"id": "self-managed-tls", "where": "vm/Dockerfile", "detail": "self-signed certificate in a keystore on the VM"},
+        {"id": "missing-probe", "where": "pom.xml", "detail": "no health endpoint; the load balancer only checks TCP"},
+        {"id": "file-logging", "where": "src/main/resources/application.properties", "detail": "log file under /var/log"}
+      ]
+    },
+    {
+      "app": "fx-report",
+      "runtime": "Perl CGI behind Apache 2.2",
+      "expected": "retain-or-rewrite",
+      "conditions": [
+        {"id": "web-server-modules", "where": "vm/fx-report.conf", "detail": "mod_cgi, mod_authnz_ldap and mod_expires carry sign-in and caching"},
+        {"id": "shared-filesystem", "where": "cgi-bin/fx-report.cgi", "detail": "reads rates-batch output from an NFS mount"},
+        {"id": "eol-runtime", "where": "HOST.md", "detail": "RHEL 6, system Perl 5.10"}
+      ]
+    }
+  ]
+}
