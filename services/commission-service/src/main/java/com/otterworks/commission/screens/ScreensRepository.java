@@ -70,9 +70,12 @@ public class ScreensRepository {
     }
 
     public List<RateRow> rateHistory(long agentId) {
-        return jdbc.query(RATES_SQL, (rs, i) -> new RateRow(rs.getLong(1), rs.getString(2),
-                (Long) rs.getObject(3) == null ? null : rs.getLong(3), rs.getString(4), rs.getBigDecimal(5),
-                toDate(rs.getTimestamp(6)), toDate(rs.getTimestamp(7))), agentId);
+        return jdbc.query(RATES_SQL, (rs, i) -> {
+            long rateAgent = rs.getLong(3);
+            Long agent = rs.wasNull() ? null : rateAgent;
+            return new RateRow(rs.getLong(1), rs.getString(2), agent, rs.getString(4), rs.getBigDecimal(5),
+                    toDate(rs.getTimestamp(6)), toDate(rs.getTimestamp(7)));
+        }, agentId);
     }
 
     public Database database() {
