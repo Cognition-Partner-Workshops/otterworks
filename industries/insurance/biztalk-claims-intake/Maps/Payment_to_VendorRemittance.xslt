@@ -8,8 +8,8 @@
   <xsl:template name="cents">
     <xsl:param name="amount" />
     <xsl:choose>
-      <xsl:when test="$amount &lt; 0"><xsl:value-of select="round(-1 * $amount * 100)" /></xsl:when>
-      <xsl:otherwise><xsl:value-of select="round($amount * 100)" /></xsl:otherwise>
+      <xsl:when test="$amount &lt; 0"><xsl:value-of select="format-number(round(-1 * $amount * 100), '0')" /></xsl:when>
+      <xsl:otherwise><xsl:value-of select="format-number(round($amount * 100), '0')" /></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
   <!-- Cumulative Sum over the Round functoid's output: the trailer adds the cents each PAY record carries, so it always agrees with the body. -->
@@ -17,7 +17,7 @@
     <xsl:param name="lines" />
     <xsl:param name="acc" select="0" />
     <xsl:choose>
-      <xsl:when test="not($lines)"><xsl:value-of select="$acc" /></xsl:when>
+      <xsl:when test="not($lines)"><xsl:value-of select="format-number($acc, '0')" /></xsl:when>
       <xsl:otherwise>
         <xsl:variable name="first">
           <xsl:call-template name="cents"><xsl:with-param name="amount" select="$lines[1]/Amount" /></xsl:call-template>
