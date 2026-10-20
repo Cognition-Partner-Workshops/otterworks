@@ -83,6 +83,79 @@ END commission_pkg;
 
 CREATE OR REPLACE PACKAGE BODY commission_pkg AS
 
+    -- The extracted rule owner. Resolvable on the fixture's Compose network;
+    -- the network ACL that permits these callouts is granted in
+    -- ../setup/02_service_acl.sql.
+    c_service_url CONSTANT VARCHAR2(200) := 'http://commission-service:8000';
+    c_timeout_s   CONSTANT PLS_INTEGER   := 60;
+    c_date_fmt    CONSTANT VARCHAR2(30)  := 'YYYY-MM-DD HH24:MI:SS';
+
+    -- Strangler route: a rule group moves to commission-service when its
+    -- procedure body here is replaced by a call_service delegate. Groups not
+    -- yet moved keep their PL/SQL rules unchanged below.
+    --
+    -- Marshals a call to the rule owner and re-raises its verdict. A 200 hands
+    -- back the response body; an application error is re-raised with the code
+    -- and message the service chose, so callers see the same ORA-20xxx they saw
+    -- when the rules ran in this package.
+    FUNCTION call_service (
+        p_path   IN VARCHAR2,
+        p_method IN VARCHAR2,
+        p_body   IN VARCHAR2 DEFAULT NULL
+    ) RETURN CLOB IS
+        l_req    UTL_HTTP.req;
+        l_res    UTL_HTTP.resp;
+        l_chunk  VARCHAR2(32767);
+        l_reply  CLOB;
+        l_status PLS_INTEGER;
+        l_code   NUMBER;
+        l_msg    VARCHAR2(1800);
+        l_bytes  RAW(32767);
+    BEGIN
+        UTL_HTTP.set_transfer_timeout(c_timeout_s);
+        l_req := UTL_HTTP.begin_request(c_service_url || p_path, p_method, UTL_HTTP.HTTP_VERSION_1_1);
+        UTL_HTTP.set_header(l_req, 'Accept', 'application/json');
+        IF p_body IS NOT NULL THEN
+            -- Send UTF-8 bytes and declare their exact count; write_text would
+            -- convert with the body charset after LENGTHB counted DB bytes.
+            l_bytes := UTL_I18N.string_to_raw(p_body, 'AL32UTF8');
+            UTL_HTTP.set_header(l_req, 'Content-Type', 'application/json; charset=utf-8');
+            UTL_HTTP.set_header(l_req, 'Content-Length', UTL_RAW.length(l_bytes));
+            UTL_HTTP.write_raw(l_req, l_bytes);
+        ELSE
+            UTL_HTTP.set_header(l_req, 'Content-Length', 0);
+        END IF;
+
+        l_res := UTL_HTTP.get_response(l_req);
+        UTL_HTTP.set_body_charset(l_res, 'UTF-8');
+        l_status := l_res.status_code;
+        DBMS_LOB.createtemporary(l_reply, TRUE);
+        BEGIN
+            LOOP
+                UTL_HTTP.read_text(l_res, l_chunk, 32767);
+                EXIT WHEN l_chunk IS NULL;
+                DBMS_LOB.writeappend(l_reply, LENGTH(l_chunk), l_chunk);
+            END LOOP;
+        EXCEPTION
+            WHEN UTL_HTTP.end_of_body THEN NULL;
+        END;
+        UTL_HTTP.end_response(l_res);
+
+        IF l_status = 200 THEN
+            RETURN l_reply;
+        END IF;
+
+        l_code := JSON_VALUE(l_reply, '$.ora_code' RETURNING NUMBER);
+        l_msg  := NVL(JSON_VALUE(l_reply, '$.message' RETURNING VARCHAR2(1800)),
+                      DBMS_LOB.SUBSTR(l_reply, 1000, 1));
+        DBMS_LOB.freetemporary(l_reply);
+        IF l_code BETWEEN -20999 AND -20001 THEN
+            RAISE_APPLICATION_ERROR(l_code, l_msg);
+        END IF;
+        RAISE_APPLICATION_ERROR(-20000,
+            'commission-service HTTP ' || l_status || ': ' || l_msg);
+    END call_service;
+
     PROCEDURE log_action (
         p_action       IN VARCHAR2,
         p_product_code IN VARCHAR2,
@@ -127,47 +200,19 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         p_actor          IN VARCHAR2,
         o_rate_id        OUT commission_rates.rate_id%TYPE
     ) IS
+        l_reply CLOB;
     BEGIN
-        IF p_rate_pct IS NULL OR p_rate_pct <= 0 OR p_rate_pct > 50 THEN
-            RAISE_APPLICATION_ERROR(-20001,
-                'Rate must be in (0, 50]: ' || NVL(TO_CHAR(p_rate_pct), 'NULL'));
-        END IF;
-        assert_product(p_product_code);
-        IF p_agent_id IS NOT NULL THEN
-            assert_active_agent(p_agent_id);
-        END IF;
-
-        -- Same-day correction: an open rate that already starts on
-        -- p_effective_from is amended in place rather than superseded.
-        UPDATE commission_rates
-           SET rate_pct = p_rate_pct,
-               created_by = p_actor
-         WHERE product_code = p_product_code
-           AND NVL(agent_id, -1) = NVL(p_agent_id, -1)
-           AND effective_to IS NULL
-           AND effective_from = p_effective_from
-        RETURNING rate_id INTO o_rate_id;
-
-        IF o_rate_id IS NULL THEN
-            -- Supersede: close the open rate for this scope the day before
-            -- the new one begins.
-            UPDATE commission_rates
-               SET effective_to = p_effective_from - 1
-             WHERE product_code = p_product_code
-               AND NVL(agent_id, -1) = NVL(p_agent_id, -1)
-               AND effective_to IS NULL
-               AND effective_from < p_effective_from;
-
-            INSERT INTO commission_rates
-                (product_code, agent_id, rate_pct, effective_from, effective_to, created_by)
-            VALUES
-                (p_product_code, p_agent_id, p_rate_pct, p_effective_from, NULL, p_actor)
-            RETURNING rate_id INTO o_rate_id;
-        END IF;
-
-        log_action('RATE_UPSERT', p_product_code, p_agent_id, NULL,
-                   'rate_id=' || o_rate_id || ' pct=' || p_rate_pct
-                   || ' from=' || TO_CHAR(p_effective_from, 'YYYY-MM-DD'), p_actor);
+        -- Delegated: rules R1-R8 run in commission-service (POST /rates/upsert).
+        l_reply := call_service('/rates/upsert', 'POST',
+            JSON_OBJECT(
+                'product_code'   VALUE p_product_code,
+                'agent_id'       VALUE p_agent_id,
+                'rate_pct'       VALUE TO_CHAR(p_rate_pct),
+                'effective_from' VALUE TO_CHAR(p_effective_from, c_date_fmt),
+                'actor'          VALUE p_actor
+                NULL ON NULL RETURNING VARCHAR2(32767)));
+        o_rate_id := JSON_VALUE(l_reply, '$.rate_id' RETURNING NUMBER);
+        DBMS_LOB.freetemporary(l_reply);
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
@@ -181,18 +226,17 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         p_effective_to IN DATE,
         p_actor        IN VARCHAR2
     ) IS
+        l_reply CLOB;
     BEGIN
-        UPDATE commission_rates
-           SET effective_to = p_effective_to
-         WHERE product_code = p_product_code
-           AND NVL(agent_id, -1) = NVL(p_agent_id, -1)
-           AND effective_to IS NULL;
-        IF SQL%ROWCOUNT = 0 THEN
-            RAISE_APPLICATION_ERROR(-20007,
-                'No open rate for ' || p_product_code || '/' || NVL(TO_CHAR(p_agent_id), 'default'));
-        END IF;
-        log_action('RATE_END', p_product_code, p_agent_id, NULL,
-                   'to=' || TO_CHAR(p_effective_to, 'YYYY-MM-DD'), p_actor);
+        -- Delegated: rules R10-R12 run in commission-service (POST /rates/end).
+        l_reply := call_service('/rates/end', 'POST',
+            JSON_OBJECT(
+                'product_code' VALUE p_product_code,
+                'agent_id'     VALUE p_agent_id,
+                'effective_to' VALUE TO_CHAR(p_effective_to, c_date_fmt),
+                'actor'        VALUE p_actor
+                NULL ON NULL RETURNING VARCHAR2(32767)));
+        DBMS_LOB.freetemporary(l_reply);
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
@@ -261,25 +305,20 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         p_agent_id     IN commission_rates.agent_id%TYPE,
         p_as_of        IN DATE
     ) RETURN commission_rates.rate_id%TYPE IS
+        l_amp     CONSTANT VARCHAR2(1) := CHR(38);
+        l_reply   CLOB;
         l_rate_id commission_rates.rate_id%TYPE;
     BEGIN
-        -- Agent-specific rate wins over the product default.
-        SELECT rate_id INTO l_rate_id
-          FROM (SELECT rate_id
-                  FROM commission_rates
-                 WHERE product_code = p_product_code
-                   AND (agent_id = p_agent_id OR agent_id IS NULL)
-                   AND effective_from <= p_as_of
-                   AND (effective_to IS NULL OR effective_to >= p_as_of)
-                 ORDER BY agent_id NULLS LAST, effective_from DESC)
-         WHERE ROWNUM = 1;
+        -- Delegated: rules R22-R24 run in commission-service (GET /rates/resolve).
+        -- Neither commits nor rolls back: the caller's transaction stays open.
+        l_reply := call_service(
+            '/rates/resolve?product_code=' || UTL_URL.escape(p_product_code, TRUE, 'AL32UTF8')
+            || l_amp || 'agent_id=' || TO_CHAR(p_agent_id)
+            || l_amp || 'as_of=' || UTL_URL.escape(TO_CHAR(p_as_of, c_date_fmt), TRUE, 'AL32UTF8'),
+            'GET');
+        l_rate_id := JSON_VALUE(l_reply, '$.rate_id' RETURNING NUMBER);
+        DBMS_LOB.freetemporary(l_reply);
         RETURN l_rate_id;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RAISE_APPLICATION_ERROR(-20007,
-                'No rate in force for ' || p_product_code || '/agent '
-                || NVL(TO_CHAR(p_agent_id), 'default') || ' on '
-                || TO_CHAR(p_as_of, 'YYYY-MM-DD'));
     END resolve_rate;
 
     PROCEDURE calculate_policy_commission (
