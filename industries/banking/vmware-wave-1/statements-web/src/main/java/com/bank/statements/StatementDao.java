@@ -8,20 +8,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 public class StatementDao {
     private final DataSource ds;
-
-    public StatementDao() {
-        try {
-            ds = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/StatementsDB");
-        } catch (NamingException e) {
-            throw new IllegalStateException("datasource jdbc/StatementsDB not bound", e);
-        }
-    }
 
     public StatementDao(DataSource ds) {
         this.ds = ds;

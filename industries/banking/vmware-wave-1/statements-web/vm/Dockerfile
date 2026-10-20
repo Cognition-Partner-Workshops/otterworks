@@ -1,12 +1,14 @@
 # Stand-in for the VM: Tomcat 8.5 on JRE 8, running as root, configuration
-# and log directories laid out as they are on the host.
+# and log directories laid out as they are on the host. It builds the
+# application as it was before the replatform (vm/legacy/), so the before
+# state stays runnable next to the container build in this folder.
 FROM docker.io/library/maven:3.9-eclipse-temurin-8@sha256:0f402712b7a469189cfea5ec69cdcadcb32b22aaf1ea62777ab925c3d8470175 AS build
 ARG MAVEN_MIRROR=""
 WORKDIR /src
 RUN if [ -n "$MAVEN_MIRROR" ]; then mkdir -p /root/.m2 && printf '<settings><mirrors><mirror><id>m</id><mirrorOf>central</mirrorOf><url>%s</url></mirror></mirrors></settings>' "$MAVEN_MIRROR" > /root/.m2/settings.xml; fi
-COPY pom.xml .
+COPY vm/legacy/pom.xml .
 RUN mvn -q -B dependency:go-offline
-COPY src src
+COPY vm/legacy/src src
 RUN mvn -q -B package && mvn -q -B org.apache.maven.plugins:maven-dependency-plugin:3.6.1:copy \
       -Dartifact=org.postgresql:postgresql:42.2.27.jre7 -DoutputDirectory=/src/lib
 

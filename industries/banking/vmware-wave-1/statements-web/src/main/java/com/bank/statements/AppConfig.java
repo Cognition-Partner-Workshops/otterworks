@@ -1,35 +1,62 @@
 package com.bank.statements;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.util.Map;
 
+/** Settings from the environment; the password arrives from a Kubernetes Secret reference. */
 public final class AppConfig {
-    private static final String CONF_FILE = "/opt/app/conf/statements.properties";
-    private static Properties props;
+    static final String BANK_NAME = "STATEMENTS_BANK_NAME";
+    static final String PAGE_SIZE = "STATEMENTS_PAGE_SIZE";
+    static final String DB_URL = "STATEMENTS_DB_URL";
+    static final String DB_USER = "STATEMENTS_DB_USER";
+    static final String DB_PASSWORD = "STATEMENTS_DB_PASSWORD";
 
-    private AppConfig() {
+    private final String bankName;
+    private final int pageSize;
+    private final String dbUrl;
+    private final String dbUser;
+    private final String dbPassword;
+
+    private AppConfig(Map<String, String> env) {
+        bankName = env.getOrDefault(BANK_NAME, "Statements");
+        pageSize = Integer.parseInt(env.getOrDefault(PAGE_SIZE, "50"));
+        dbUrl = required(env, DB_URL);
+        dbUser = required(env, DB_USER);
+        dbPassword = required(env, DB_PASSWORD);
     }
 
-    public static synchronized Properties get() {
-        if (props == null) {
-            Properties p = new Properties();
-            try (InputStream in = new FileInputStream(CONF_FILE)) {
-                p.load(in);
-            } catch (IOException e) {
-                throw new IllegalStateException("cannot read " + CONF_FILE, e);
-            }
-            props = p;
+    public static AppConfig fromEnv() {
+        return from(System.getenv());
+    }
+
+    static AppConfig from(Map<String, String> env) {
+        return new AppConfig(env);
+    }
+
+    private static String required(Map<String, String> env, String name) {
+        String v = env.get(name);
+        if (v == null || v.isEmpty()) {
+            throw new IllegalStateException("environment variable " + name + " is not set");
         }
-        return props;
+        return v;
     }
 
-    public static String bankName() {
-        return get().getProperty("bank.name", "Statements");
+    public String bankName() {
+        return bankName;
     }
 
-    public static int pageSize() {
-        return Integer.parseInt(get().getProperty("statement.page.size", "50"));
+    public int pageSize() {
+        return pageSize;
+    }
+
+    String dbUrl() {
+        return dbUrl;
+    }
+
+    String dbUser() {
+        return dbUser;
+    }
+
+    String dbPassword() {
+        return dbPassword;
     }
 }
