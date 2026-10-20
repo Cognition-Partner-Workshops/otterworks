@@ -79,7 +79,8 @@ insurance-golden-check: procs-validate ## Rebuild a fresh fixture, rerun scenari
 	$(MAKE) --no-print-directory insurance-golden NS=$(NS) GOLDEN_OUT=$$out && \
 	diff -r --exclude=README.md $(INSURANCE_GOLDEN_DIR) $$out && \
 	echo "GOLDEN CHECK: byte-identical ($$(ls $$out | wc -l) files)" || status=1; \
-	$(MAKE) --no-print-directory insurance-down NS=$(NS); rm -rf $$out; \
+	$(MAKE) --no-print-directory insurance-down NS=$(NS) || { echo "GOLDEN CHECK: insurance-down NS=$(NS) failed, fixture may still be running" >&2; status=1; }; \
+	rm -rf $$out; \
 	test $$status -eq 0 || { echo "GOLDEN CHECK: FAILED" >&2; exit 1; }
 
 # --- Local Development ---
