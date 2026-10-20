@@ -12,6 +12,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.bindy.fixed.BindyFixedLengthDataFormat;
 import org.apache.camel.model.SagaPropagation;
 import org.apache.camel.saga.InMemorySagaService;
+import org.apache.camel.util.ObjectHelper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -76,7 +77,7 @@ public class ClaimPaymentRoutes extends RouteBuilder {
                 .setProperty(LEDGER_DOCUMENT, body())
                 .doTry()
                     .to(PAYMENT_TX)
-                .doCatch(VendorUnreachableException.class)
+                .doCatch(VendorUnreachableException.class, TrailerTotalsException.class)
                     .to(OPS_NOTIFY)
                 .end();
 
@@ -142,10 +143,14 @@ public class ClaimPaymentRoutes extends RouteBuilder {
                     }
                 });
 
-        // sp_Ops_PaymentHeld_SMTP; runs after the saga has compensated
+        // sp_Ops_PaymentHeld_SMTP; runs after the saga has compensated, for an unreachable vendor or a refused file
         from(OPS_NOTIFY).routeId("ops.PaymentHeld")
                 .process(e -> {
-                    OpsMail.Note note = OpsMail.paymentHeld(e.getProperty(INSTRUCTION, String.class), e.getProperty(ATTEMPTS, Integer.class));
+                    String instruction = e.getProperty(INSTRUCTION, String.class);
+                    TrailerTotalsException refused = ObjectHelper.getException(TrailerTotalsException.class, e.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class));
+                    OpsMail.Note note = refused != null
+                            ? OpsMail.fileRefused(instruction, refused.getMessage())
+                            : OpsMail.paymentHeld(instruction, e.getProperty(ATTEMPTS, Integer.class));
                     e.getMessage().removeHeaders("*");
                     e.getMessage().setHeader("Subject", note.subject());
                     e.getMessage().setBody(note.body());
