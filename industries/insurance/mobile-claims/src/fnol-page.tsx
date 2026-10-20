@@ -122,7 +122,7 @@ export function FnolForm({ submit = submitFnol }: { submit?: (xml: string) => Pr
         <dl className="bg-white border border-gray-200 rounded-lg p-4 text-sm space-y-2">
           <div className="flex justify-between gap-4">
             <dt className="text-gray-500">Claim number</dt>
-            <dd className="font-mono">{submitted.claimNumber}</dd>
+            <dd className="font-mono break-all text-right">{submitted.claimNumber}</dd>
           </div>
           <div className="flex justify-between gap-4">
             <dt className="text-gray-500">Request id</dt>
@@ -170,7 +170,7 @@ export function FnolForm({ submit = submitFnol }: { submit?: (xml: string) => Pr
               {...register("policyNumber", {
                 onChange: (e) => {
                   const lob = lineOfBusinessFor(e.target.value);
-                  if (lob) setValue("lineOfBusiness", lob);
+                  if (lob) setValue("lineOfBusiness", lob, { shouldValidate: true });
                 },
               })}
             />

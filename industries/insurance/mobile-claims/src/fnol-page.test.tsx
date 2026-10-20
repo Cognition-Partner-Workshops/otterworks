@@ -61,6 +61,14 @@ describe("FnolForm", () => {
     expect(screen.getByLabelText(/line of business/i)).toHaveValue("HOME");
   });
 
+  it("clears the line-of-business error once the policy prefix fills it", async () => {
+    render(<FnolForm submit={vi.fn()} />);
+    fireEvent.click(screen.getByRole("button", { name: /submit first notice/i }));
+    expect(await screen.findByText("Choose a line of business")).toBeInTheDocument();
+    change(/policy number/i, "POL-AUTO-48100");
+    await waitFor(() => expect(screen.queryByText("Choose a line of business")).not.toBeInTheDocument());
+  });
+
   it("masks the tax id on the device and posts the ACORD request", async () => {
     const submit = vi.fn().mockResolvedValue({});
     render(<FnolForm submit={submit} />);
