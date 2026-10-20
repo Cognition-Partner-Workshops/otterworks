@@ -8,9 +8,6 @@ import com.otterworks.report.util.ReportDateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -117,7 +114,7 @@ public class ReportDataFetcher {
                 logger.info("Fetching audit data from: {}", url);
 
                 // Let RestClientException propagate so fallback data is NOT cached.
-                ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, auditServiceRequest(), Map.class);
+                ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
                 if (response.getBody() != null && response.getBody().containsKey("events")) {
                     return (List<Map<String, Object>>) response.getBody().get("events");
                 }
@@ -127,20 +124,6 @@ public class ReportDataFetcher {
             logger.error("Failed to fetch audit data, using sample data: {}", e.getMessage());
             return generateSampleAuditData(dateFrom, dateTo);
         }
-    }
-
-    /**
-     * audit-service only serves org-wide event queries to ADMIN callers, so the worker presents a
-     * short-lived service token signed with the shared platform JWT key.
-     */
-    private HttpEntity<Void> auditServiceRequest() {
-        HttpHeaders headers = new HttpHeaders();
-        if (StringUtils.isNotBlank(appConfig.getJwtSecret())) {
-            headers.setBearerAuth(ServiceToken.mint(appConfig.getJwtSecret(), "report-service"));
-        } else {
-            logger.warn("JWT_SECRET is not set; audit-service will refuse the report worker's request");
-        }
-        return new HttpEntity<>(headers);
     }
 
     /**

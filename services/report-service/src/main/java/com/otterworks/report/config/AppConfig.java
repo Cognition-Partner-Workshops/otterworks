@@ -33,9 +33,6 @@ public class AppConfig {
     @Value("${otterworks.auth-service.url:http://auth-service:8081}")
     private String authServiceUrl;
 
-    @Value("${otterworks.jwt.secret:}")
-    private String jwtSecret;
-
     @Value("${otterworks.report.output-dir:/tmp/reports}")
     private String reportOutputDir;
 
@@ -76,10 +73,6 @@ public class AppConfig {
 
     public String getAuthServiceUrl() {
         return authServiceUrl;
-    }
-
-    public String getJwtSecret() {
-        return jwtSecret;
     }
 
     public String getReportOutputDir() {
