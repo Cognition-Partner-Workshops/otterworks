@@ -1,0 +1,7 @@
+target/
+characterization/
+deploy/
+vm/
+*.md
+Dockerfile
+.dockerignore

@@ -1,0 +1,33 @@
+app: kyc-docs
+owner: TODO-owner-team        # placeholder: the owning team must fill this in
+costCenter: TODO-cost-center  # placeholder: finance code for the namespace bill
+workload: web
+
+replicas: 2
+
+# Documents live in S3 (replaces the VM's /var/kyc/uploads + snapshot backup).
+# Bucket name, prefix and region are placeholders for the owners and platform team.
+env:
+  KYC_STORE: s3
+  KYC_S3_BUCKET: TODO-kyc-docs-bucket
+  KYC_S3_PREFIX: uploads/
+  AWS_REGION: us-east-1
+
+# S3 credentials by reference only. Drop these once workload identity (IRSA)
+# is granted to the kyc-docs service account; the AWS SDK default chain picks
+# up either.
+secretEnv:
+  AWS_ACCESS_KEY_ID: {secret: kyc-docs-s3, key: access-key-id}
+  AWS_SECRET_ACCESS_KEY: {secret: kyc-docs-s3, key: secret-access-key}
+
+# Multipart uploads and the S3 upload spool (up to 10 MB per request).
+writablePaths:
+  - /tmp
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
