@@ -22,6 +22,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -37,13 +38,23 @@ HOOK = re.compile(r"(public static ByteComparison of\(byte\[\] (\w+), byte\[\] (
 
 
 def run(cmd, cwd=None, env=None, log: Path | None = None, timeout=None) -> tuple[int, str]:
-    proc = subprocess.run(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                          text=True, timeout=timeout, shell=isinstance(cmd, str))
+    # Own process group, so a timeout also kills forked children (Maven's surefire JVM) instead of orphaning them.
+    proc = subprocess.Popen(cmd, cwd=cwd, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            text=True, shell=isinstance(cmd, str), start_new_session=True)
+    try:
+        stdout, _ = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        os.killpg(proc.pid, signal.SIGKILL)
+        stdout, _ = proc.communicate()
+        if log:
+            with log.open("a") as fh:
+                fh.write(f"$ {cmd if isinstance(cmd, str) else ' '.join(cmd)}\n{stdout}\n[killed after {timeout}s]\n")
+        raise
     if log:
         log.parent.mkdir(parents=True, exist_ok=True)
         with log.open("a") as fh:
-            fh.write(f"$ {cmd if isinstance(cmd, str) else ' '.join(cmd)}\n{proc.stdout}\n[exit {proc.returncode}]\n")
-    return proc.returncode, proc.stdout
+            fh.write(f"$ {cmd if isinstance(cmd, str) else ' '.join(cmd)}\n{stdout}\n[exit {proc.returncode}]\n")
+    return proc.returncode, stdout
 
 
 def git(repo: Path, *args) -> str:
