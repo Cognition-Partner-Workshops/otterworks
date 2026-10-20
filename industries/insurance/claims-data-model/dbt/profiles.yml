@@ -1,0 +1,12 @@
+carrier_warehouse:
+  target: local
+  outputs:
+    local:
+      type: postgres
+      host: localhost
+      port: "{{ env_var('CDM_PG_PORT') | int }}"
+      user: carrier
+      password: carrier
+      dbname: carrier
+      schema: public
+      threads: 4

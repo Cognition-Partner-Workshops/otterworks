@@ -1,0 +1,21 @@
+# Claims data model target: PostgreSQL 16, local-only, one Compose project per namespace.
+# The image is the official postgres:16 served from Google's Docker Hub mirror (Docker Hub rate-limits this VM).
+services:
+  cdm-postgres:
+    image: ${CDM_PG_IMAGE:-mirror.gcr.io/library/postgres:16}
+    environment:
+      POSTGRES_DB: carrier
+      POSTGRES_USER: carrier
+      POSTGRES_PASSWORD: carrier
+    ports:
+      - "127.0.0.1:${CDM_PG_PORT:-55432}:5432"
+    volumes:
+      - cdm-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U carrier -d carrier"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+volumes:
+  cdm-postgres-data:

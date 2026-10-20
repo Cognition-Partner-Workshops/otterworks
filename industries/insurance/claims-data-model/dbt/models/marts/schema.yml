@@ -1,0 +1,68 @@
+version: 2
+
+models:
+  - name: commission_by_agent_period
+    description: Commission per agent per ledger period (Oracle ledger, no re-rounding).
+    tests:
+      - unique_combination: {columns: [agent_id, period_month]}
+    columns:
+      - name: agent_id
+        tests:
+          - not_null
+          - relationships: {to: ref('stg_commission__agents'), field: agent_id}
+      - name: period_month
+        tests: [not_null]
+      - name: total_commission
+        tests:
+          - not_null
+          - money_scale_2
+          - sum_equals: {to: ref('stg_commission__ledger'), to_column: commission_amt}
+      - name: ledger_rows
+        tests:
+          - sum_equals: {to: ref('stg_commission__ledger'), to_column: 1}
+  - name: loss_ratio_by_product_period
+    description: Paid loss ratio per line of business per month on hub policies that carry premium, commission paid alongside.
+    tests:
+      - unique_combination: {columns: [line_of_business, period_month]}
+    columns:
+      - name: line_of_business
+        tests: [not_null]
+      - name: period_month
+        tests: [not_null]
+      - name: earned_premium
+        tests: [not_null, money_scale_2]
+      - name: paid_loss
+        tests:
+          - not_null
+          - money_scale_2
+          - sum_equals: {to: ref('stg_claims__claim_payments'), to_column: net_amount}
+      - name: unpriced_paid_loss
+        tests: [not_null, money_scale_2]
+      - name: claims_reported
+        tests:
+          - sum_equals: {to: ref('stg_claims__claims'), to_column: 1}
+      - name: claims_declined
+        tests:
+          - sum_equals: {to: ref('stg_claims__claims'), to_column: "case when entered_claims_system then 0 else 1 end"}
+      - name: vendor_rounding_difference
+        tests:
+          - money_scale_2
+          - sum_equals: {to: ref('stg_claims__claim_payments'), to_column: vendor_rounding_difference}
+      - name: paid_indemnity
+        tests:
+          - sum_equals: {to: ref('stg_claims__claim_payments'), to_column: indemnity_amount}
+      - name: paid_expense
+        tests:
+          - sum_equals: {to: ref('stg_claims__claim_payments'), to_column: expense_amount}
+      - name: salvage_recovered
+        tests:
+          - sum_equals: {to: ref('stg_claims__claim_payments'), to_column: salvage_credit}
+      - name: reserve_reported
+        tests:
+          - not_null
+          - money_scale_2
+          - sum_equals: {to: ref('stg_claims__claims'), to_column: "case when entered_claims_system then reserve_estimate else 0 end"}
+      - name: commission_paid
+        tests:
+          - money_scale_2
+          - sum_equals: {to: ref('stg_commission__ledger'), to_column: commission_amt}

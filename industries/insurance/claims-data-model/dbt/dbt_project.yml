@@ -1,0 +1,19 @@
+name: carrier_warehouse
+version: "1.0.0"
+config-version: 2
+profile: carrier_warehouse
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: target
+clean-targets: [target, logs]
+
+models:
+  carrier_warehouse:
+    staging:
+      +schema: stg
+      +materialized: view
+    marts:
+      +schema: marts
+      +materialized: table
