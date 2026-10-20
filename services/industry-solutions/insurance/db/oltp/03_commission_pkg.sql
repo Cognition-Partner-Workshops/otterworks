@@ -110,19 +110,24 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         l_status PLS_INTEGER;
         l_code   NUMBER;
         l_msg    VARCHAR2(1800);
+        l_bytes  RAW(32767);
     BEGIN
         UTL_HTTP.set_transfer_timeout(c_timeout_s);
         l_req := UTL_HTTP.begin_request(c_service_url || p_path, p_method, UTL_HTTP.HTTP_VERSION_1_1);
         UTL_HTTP.set_header(l_req, 'Accept', 'application/json');
         IF p_body IS NOT NULL THEN
-            UTL_HTTP.set_header(l_req, 'Content-Type', 'application/json');
-            UTL_HTTP.set_header(l_req, 'Content-Length', LENGTHB(p_body));
-            UTL_HTTP.write_text(l_req, p_body);
+            -- Send UTF-8 bytes and declare their exact count; write_text would
+            -- convert with the body charset after LENGTHB counted DB bytes.
+            l_bytes := UTL_I18N.string_to_raw(p_body, 'AL32UTF8');
+            UTL_HTTP.set_header(l_req, 'Content-Type', 'application/json; charset=utf-8');
+            UTL_HTTP.set_header(l_req, 'Content-Length', UTL_RAW.length(l_bytes));
+            UTL_HTTP.write_raw(l_req, l_bytes);
         ELSE
             UTL_HTTP.set_header(l_req, 'Content-Length', 0);
         END IF;
 
         l_res := UTL_HTTP.get_response(l_req);
+        UTL_HTTP.set_body_charset(l_res, 'UTF-8');
         l_status := l_res.status_code;
         DBMS_LOB.createtemporary(l_reply, TRUE);
         BEGIN
@@ -141,13 +146,14 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         END IF;
 
         l_code := JSON_VALUE(l_reply, '$.ora_code' RETURNING NUMBER);
-        l_msg  := JSON_VALUE(l_reply, '$.message' RETURNING VARCHAR2(1800));
+        l_msg  := NVL(JSON_VALUE(l_reply, '$.message' RETURNING VARCHAR2(1800)),
+                      DBMS_LOB.SUBSTR(l_reply, 1000, 1));
+        DBMS_LOB.freetemporary(l_reply);
         IF l_code BETWEEN -20999 AND -20001 THEN
             RAISE_APPLICATION_ERROR(l_code, l_msg);
         END IF;
         RAISE_APPLICATION_ERROR(-20000,
-            'commission-service HTTP ' || l_status || ': '
-            || NVL(l_msg, DBMS_LOB.SUBSTR(l_reply, 1000, 1)));
+            'commission-service HTTP ' || l_status || ': ' || l_msg);
     END call_service;
 
     PROCEDURE log_action (

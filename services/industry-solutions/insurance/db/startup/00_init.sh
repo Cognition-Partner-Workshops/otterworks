@@ -29,7 +29,9 @@ SQL
   marker=$(echo "${marker}" | tr -d '[:space:]')
   case "${marker}" in
     0) ;;
-    1) echo "== insurance fixture already initialized, skipping"; exit 0 ;;
+    1) echo "== insurance fixture already initialized, skipping"
+       sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" @"${SQL_DIR}/setup/02_service_acl.sql"
+       exit 0 ;;
     *) echo "== could not determine fixture state: ${marker}" >&2; exit 1 ;;
   esac
 

@@ -28,8 +28,10 @@ healthCheck:
 
 networkPolicy:
   enabled: true
-  ingressNamespace: ingress-nginx
   monitoringNamespace: monitoring
+  # Address range(s) of the Oracle host running COMMISSION_PKG, set at deploy
+  # time. Nothing else may reach the rule endpoints.
+  callerCIDRs: []
 
 # Non-sensitive configuration rendered into {{ .Release.Name }}-config and
 # injected via envFrom, e.g. COMMISSION_DB_URL. Populate at deploy time.

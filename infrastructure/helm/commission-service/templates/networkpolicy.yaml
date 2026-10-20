@@ -14,10 +14,13 @@ spec:
   policyTypes:
     - Ingress
   ingress:
+    # No ingress-controller source: the only caller is COMMISSION_PKG in the
+    # database, admitted by address. Monitoring scrapes the health endpoint.
     - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: {{ .Values.networkPolicy.ingressNamespace }}
+        {{- range .Values.networkPolicy.callerCIDRs }}
+        - ipBlock:
+            cidr: {{ . }}
+        {{- end }}
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: {{ .Values.networkPolicy.monitoringNamespace }}
