@@ -1,0 +1,5 @@
+# Pipeline settings read by .github/workflows/platform-app-pipeline.yml
+# rates-batch is a CronJob: kind-verify runs one Job from it and needs it to
+# Complete; there is no HTTP endpoint to smoke.
+app: rates-batch
+smoke: []

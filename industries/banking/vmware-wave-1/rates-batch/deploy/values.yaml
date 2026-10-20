@@ -1,0 +1,32 @@
+# rates-batch on the platform chart (platform/standards/helm/app).
+# A nightly CronJob replaces root's crontab on rates-01 (0 2 * * *).
+app: rates-batch
+owner: OWNER-TBD          # placeholder: team that answers for the FX rates batch
+costCenter: CC-TBD        # placeholder: finance code for the namespace bill
+workload: cronjob
+
+cronjob:
+  schedule: "0 2 * * *"
+  timeZone: Europe/London # rates-01 runs cron on host time; set to the zone rates-01 uses
+  command: []             # image ENTRYPOINT; arguments come from env below
+
+env:
+  RATES_TZ: Europe/London # zone for the default business date (yesterday), same as cronjob.timeZone
+  RATES_IN: /var/spool/rates/in
+  RATES_OUT: /var/spool/rates/out
+
+secretEnv: {}             # the job reads no credentials
+
+# /tmp for the JVM; the out spool is an emptyDir until the shared-store
+# decision for fx-report is made (see the PR).
+writablePaths:
+  - /tmp
+  - /var/spool/rates/out
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
