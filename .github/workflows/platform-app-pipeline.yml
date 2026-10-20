@@ -1,0 +1,203 @@
+# The platform team's one pipeline template. Application repositories call it
+# with `uses: Cognition-Partner-Workshops/otterworks/.github/workflows/platform-app-pipeline.yml@<sha>`
+# and pass the same sha as standards_ref, so the policies, base images and
+# chart always match the template version.
+name: platform-app-pipeline
+
+on:
+  workflow_call:
+    inputs:
+      app_dir:
+        description: Application directory holding Dockerfile and deploy/
+        required: true
+        type: string
+      standards_ref:
+        description: Commit of platform/standards to verify against
+        required: true
+        type: string
+      run_token:
+        description: Run token for tagged cloud resources (EKS stage)
+        required: false
+        type: string
+        default: ""
+      eks_deploy:
+        description: Deploy to an ephemeral namespace on otterworks-dev after the kind stage passes
+        required: false
+        type: boolean
+        default: false
+    outputs:
+      policy:
+        value: ${{ jobs.verify.outputs.policy }}
+      runtime:
+        value: ${{ jobs.verify.outputs.runtime }}
+
+env:
+  REGISTRY: 599083837640.dkr.ecr.us-east-1.amazonaws.com
+  AWS_REGION: us-east-1
+  CONFTEST_VERSION: 0.56.0
+  TRIVY_VERSION: 0.73.0
+  SYFT_VERSION: 1.14.0
+
+jobs:
+  verify:
+    name: verify (${{ inputs.app_dir }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      policy: ${{ steps.policy.outcome }}
+      runtime: ${{ steps.kind.outcome }}
+      app: ${{ steps.meta.outputs.app }}
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Check out platform standards at ${{ inputs.standards_ref }}
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          repository: Cognition-Partner-Workshops/otterworks
+          ref: ${{ inputs.standards_ref }}
+          path: .standards
+          sparse-checkout: platform/standards
+      - name: Install conftest, Trivy and Syft
+        run: |
+          mkdir -p "$HOME/bin" && echo "$HOME/bin" >> "$GITHUB_PATH"
+          curl -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz" | tar xz -C "$HOME/bin" conftest
+          curl -sSL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" | tar xz -C "$HOME/bin" trivy
+          curl -sSL "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_linux_amd64.tar.gz" | tar xz -C "$HOME/bin" syft
+      - id: meta
+        name: Image name
+        run: |
+          app="$(basename "${{ inputs.app_dir }}")"
+          echo "app=$app" >> "$GITHUB_OUTPUT"
+          echo "image=${REGISTRY}/otterworks/bank-${app}" >> "$GITHUB_OUTPUT"
+          echo "tag=${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+      - id: unit
+        name: Unit tests (Dockerfile test stage)
+        run: docker build --target test --progress plain "${{ inputs.app_dir }}"
+      - id: build
+        name: Container build
+        run: docker build --progress plain -t "${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}" "${{ inputs.app_dir }}"
+      - id: trivy
+        name: Image scan (Trivy, vulnerabilities and secrets)
+        run: |
+          trivy image --no-progress --scanners vuln,secret \
+            --secret-config .standards/platform/standards/policy/trivy/secret-rules.yaml \
+            --severity CRITICAL --ignore-unfixed --exit-code 1 \
+            --format table --output trivy.txt "${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}"; rc=$?
+          cat trivy.txt; exit $rc
+      - id: sbom
+        name: SBOM (Syft)
+        if: always() && steps.build.outcome == 'success'
+        run: syft "${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}" -o spdx-json=sbom.spdx.json -q && jq '.packages | length' sbom.spdx.json
+      - id: policy
+        name: Policy gate (conftest)
+        if: always() && steps.build.outcome == 'success'
+        run: |
+          .standards/platform/standards/scripts/policy-check.sh "${{ inputs.app_dir }}" \
+            "${{ steps.meta.outputs.image }}" "${{ steps.meta.outputs.tag }}" 2>&1 | tee policy.txt
+          exit "${PIPESTATUS[0]}"
+      - name: Create kind cluster
+        if: steps.policy.outcome == 'success' && steps.trivy.outcome == 'success'
+        uses: helm/kind-action@0025e74a8c7512023d06dc019c617aa3cf561fde # v1.10.0
+        with:
+          cluster_name: platform-verify
+      - id: kind
+        name: Runtime verification (kind + Kyverno + smoke)
+        if: steps.policy.outcome == 'success' && steps.trivy.outcome == 'success'
+        env:
+          OUT: ${{ runner.temp }}/runtime
+        run: .standards/platform/standards/scripts/kind-verify.sh "${{ inputs.app_dir }}" "${{ steps.meta.outputs.image }}" "${{ steps.meta.outputs.tag }}"
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        with:
+          name: evidence-${{ steps.meta.outputs.app }}
+          path: |
+            trivy.txt
+            sbom.spdx.json
+            policy.txt
+            ${{ runner.temp }}/runtime
+          if-no-files-found: ignore
+      - name: Report to the pull request
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mark() { case "$1" in success) echo "pass";; failure) echo "**FAIL**";; *) echo "skipped";; esac; }
+          {
+            echo "### Platform pipeline: \`${{ steps.meta.outputs.app }}\`"
+            echo
+            echo "| Stage | Result |"
+            echo "|---|---|"
+            echo "| Unit tests | $(mark '${{ steps.unit.outcome }}') |"
+            echo "| Container build | $(mark '${{ steps.build.outcome }}') |"
+            echo "| Image scan (Trivy) | $(mark '${{ steps.trivy.outcome }}') |"
+            echo "| SBOM (Syft) | $(mark '${{ steps.sbom.outcome }}') |"
+            echo "| Policy gate (conftest) | $(mark '${{ steps.policy.outcome }}') |"
+            echo "| Runtime on kind (Kyverno + smoke) | $(mark '${{ steps.kind.outcome }}') |"
+            echo
+            echo "Standards commit \`${{ inputs.standards_ref }}\`, image \`${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}\`. Evidence (scan, SBOM, policy output, pod logs and events) is in the run's \`evidence-${{ steps.meta.outputs.app }}\` artifact: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            if [ -s policy.txt ] && grep -q '^FAIL' policy.txt; then echo; echo '```'; grep '^FAIL' policy.txt; echo '```'; fi
+            if [ -s trivy.txt ] && [ '${{ steps.trivy.outcome }}' = failure ]; then echo; echo '<details><summary>Trivy findings</summary>'; echo; echo '```'; head -60 trivy.txt; echo '```'; echo '</details>'; fi
+          } > report.md
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+          gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body-file report.md || true
+      - name: Fail when a gate failed
+        if: always()
+        run: |
+          for s in '${{ steps.unit.outcome }}' '${{ steps.build.outcome }}' '${{ steps.trivy.outcome }}' '${{ steps.policy.outcome }}' '${{ steps.kind.outcome }}'; do
+            [ "$s" = failure ] && exit 1
+          done; exit 0
+
+  eks:
+    name: ephemeral namespace (${{ inputs.app_dir }})
+    needs: verify
+    if: inputs.eks_deploy && vars.BANK_W1_EKS == 'true' && needs.verify.result == 'success' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    env:
+      APP: ${{ needs.verify.outputs.app }}
+      IMAGE: ${{ needs.verify.outputs.image }}
+      NAMESPACE: bank-w1-${{ inputs.run_token }}-pr${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          repository: Cognition-Partner-Workshops/otterworks
+          ref: ${{ inputs.standards_ref }}
+          path: .standards
+          sparse-checkout: platform/standards
+      - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Push the image to ECR
+        run: |
+          tag="${GITHUB_SHA::12}"
+          aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY"
+          docker build -q -t "$IMAGE:$tag" "${{ inputs.app_dir }}"
+          docker push -q "$IMAGE:$tag"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+      - name: Deploy with Helm to ${{ env.NAMESPACE }}
+        run: |
+          aws eks update-kubeconfig --name otterworks-dev --region "$AWS_REGION"
+          host="${APP}-pr${{ github.event.pull_request.number }}.${{ inputs.run_token }}.bank-w1.otterworks.app"
+          values=(-f "${{ inputs.app_dir }}/deploy/values.yaml")
+          [ -f "${{ inputs.app_dir }}/deploy/values-eks.yaml" ] && values+=(-f "${{ inputs.app_dir }}/deploy/values-eks.yaml")
+          helm upgrade --install "$APP" .standards/platform/standards/helm/app -n "$NAMESPACE" "${values[@]}" \
+            --set image.repository="$IMAGE" --set image.tag="$TAG" \
+            --set ingress.enabled=true --set ingress.host="$host" --wait --timeout 5m
+          echo "HOST=$host" >> "$GITHUB_ENV"
+      - name: Smoke test through the shared ingress
+        run: |
+          for i in $(seq 1 30); do code=$(curl -sk -o /dev/null -w '%{http_code}' "https://$HOST/health"); [ "$code" = 200 ] && break; sleep 10; done
+          echo "https://$HOST/health -> $code"; [ "$code" = 200 ]
+      - name: Report hostname
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --body "Ephemeral namespace \`$NAMESPACE\`: https://${HOST:-not-deployed}/health (${{ job.status }})" || true

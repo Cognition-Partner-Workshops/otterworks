@@ -1,0 +1,5 @@
+app: sample-service
+owner: platform-team
+costCenter: PLAT-0001
+env:
+  GREETING: hello from the platform chart

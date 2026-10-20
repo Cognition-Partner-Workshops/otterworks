@@ -1,0 +1,159 @@
+# Admission policies for namespaces labelled platform.otterworks.dev/policy=enforced.
+# They mirror policy/conftest/kubernetes.rego, so a manifest that passes the
+# pipeline gate is admitted and one that skipped the gate is refused.
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: platform-require-labels
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: labels
+      match:
+        any:
+          - resources:
+              kinds: [Deployment, CronJob, Job, StatefulSet]
+              namespaceSelector:
+                matchLabels:
+                  platform.otterworks.dev/policy: enforced
+      validate:
+        message: "LABEL-01 workloads carry the app, owner and cost-center labels"
+        pattern:
+          metadata:
+            labels:
+              app: "?*"
+              owner: "?*"
+              cost-center: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: platform-pod-security
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: non-root-read-only-limits
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchLabels:
+                  platform.otterworks.dev/policy: enforced
+      validate:
+        message: "SEC-01/SEC-02/RES-01 containers run as non-root on a read-only root filesystem with requests and limits"
+        pattern:
+          spec:
+            containers:
+              - securityContext:
+                  runAsNonRoot: true
+                  readOnlyRootFilesystem: true
+                resources:
+                  requests:
+                    cpu: "?*"
+                    memory: "?*"
+                  limits:
+                    cpu: "?*"
+                    memory: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: platform-require-probes
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: probes
+      match:
+        any:
+          - resources:
+              kinds: [Deployment, StatefulSet]
+              namespaceSelector:
+                matchLabels:
+                  platform.otterworks.dev/policy: enforced
+      validate:
+        message: "PROBE-01 every long-running service has liveness and readiness probes"
+        pattern:
+          spec:
+            template:
+              spec:
+                containers:
+                  - livenessProbe:
+                      httpGet:
+                        path: "?*"
+                    readinessProbe:
+                      httpGet:
+                        path: "?*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: platform-restrict-registry
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: approved-registry
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchLabels:
+                  platform.otterworks.dev/policy: enforced
+      validate:
+        message: "REG-01 images come from the approved registry"
+        pattern:
+          spec:
+            containers:
+              - image: "599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks/*"
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: platform-no-secret-literals
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: env-secret-literal
+      match:
+        any:
+          - resources:
+              kinds: [Pod]
+              namespaceSelector:
+                matchLabels:
+                  platform.otterworks.dev/policy: enforced
+      validate:
+        message: "SECRET-01 secret-like settings come from a secretKeyRef, never a literal value"
+        deny:
+          conditions:
+            any:
+              - key: "{{ request.object.spec.containers[].env[] | [?value && (contains(to_lower(name), 'password') || contains(to_lower(name), 'secret') || contains(to_lower(name), 'token'))] | length(@) }}"
+                operator: GreaterThan
+                value: 0
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: platform-clusterip-only
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: no-loadbalancer
+      match:
+        any:
+          - resources:
+              kinds: [Service]
+              namespaceSelector:
+                matchLabels:
+                  platform.otterworks.dev/policy: enforced
+      validate:
+        message: "NET-01 services are ClusterIP behind the shared ingress-nginx"
+        pattern:
+          spec:
+            =(type): "ClusterIP"
