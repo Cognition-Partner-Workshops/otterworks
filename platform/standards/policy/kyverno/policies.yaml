@@ -5,7 +5,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: platform-require-labels
-spec:  # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+# nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+spec:
   validationFailureAction: Enforce
   background: false
   rules:
@@ -30,7 +31,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: platform-pod-security
-spec:  # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+# nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+spec:
   validationFailureAction: Enforce
   background: false
   rules:
@@ -62,7 +64,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: platform-require-probes
-spec:  # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+# nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+spec:
   validationFailureAction: Enforce
   background: false
   rules:
@@ -92,7 +95,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: platform-restrict-registry
-spec:  # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+# nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+spec:
   validationFailureAction: Enforce
   background: false
   rules:
@@ -115,7 +119,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: platform-no-secret-literals
-spec:  # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+# nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+spec:
   validationFailureAction: Enforce
   background: false
   rules:
@@ -140,7 +145,8 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: platform-clusterip-only
-spec:  # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+# nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
+spec:
   validationFailureAction: Enforce
   background: false
   rules:
