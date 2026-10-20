@@ -75,3 +75,6 @@ BEGIN
     RETURN matched;
 END
 $$;
+
+-- Only the owner (and functions it defines) may purge; it can open the audit gate.
+REVOKE EXECUTE ON FUNCTION compliance.purge(text, regclass, text, date, boolean, text, text[], text) FROM PUBLIC;
