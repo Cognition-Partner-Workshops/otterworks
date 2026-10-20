@@ -21,6 +21,9 @@ const FNOL_XSD =
   process.env.FNOL_XSD ??
   join(dirname(fileURLToPath(import.meta.url)), "..", "contract", "ACORD_ClaimsNotificationAddRq.xsd");
 
+// The Capacitor web views and the Vite dev server only.
+const LOCAL_ORIGIN = /^(capacitor|ionic):\/\/localhost$|^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+
 const b64url = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
 const USER = {
   id: "u-adjuster-01",
@@ -70,12 +73,12 @@ function handleFnol(body, res) {
   mkdirSync(FNOL_OUT, { recursive: true });
   const rq = (body.match(/<RqUID>([^<]+)<\/RqUID>/) || [])[1] || `rq-${Date.now()}`;
   const claim = (body.match(/<ClaimNumber>([^<]+)<\/ClaimNumber>/) || [])[1] || "";
-  const path = join(FNOL_OUT, `${rq}.xml`);
-  writeFileSync(path, body);
   if (/<TaxId>[^<]*\d{5,}[^<]*<\/TaxId>|<TaxId>\d{3}-\d{2}-\d{4}<\/TaxId>/.test(body)) {
-    console.log(`  fnol ${rq}: REJECTED unmasked TaxId`);
+    console.log(`  fnol ${rq}: REJECTED unmasked TaxId (not saved)`);
     return send(res, 422, { error: "unmasked_tax_id" });
   }
+  const path = join(FNOL_OUT, `${rq}.xml`);
+  writeFileSync(path, body);
   if (FNOL_XSD) {
     try {
       execFileSync("xmllint", ["--noout", "--schema", FNOL_XSD, path], { stdio: "pipe" });
@@ -159,7 +162,8 @@ function route(req, res, body) {
 }
 
 createServer((req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
+  const origin = String(req.headers.origin || "");
+  if (LOCAL_ORIGIN.test(origin)) res.setHeader("Access-Control-Allow-Origin", origin);
   res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   if (req.method === "OPTIONS") { res.writeHead(204); return res.end(); }

@@ -96,4 +96,29 @@ describe("FnolForm", () => {
     expect(await screen.findByText("Claims hub rejected the notice: schema_invalid")).toBeInTheDocument();
     expect(screen.getByLabelText(/policy number/i)).toHaveValue("POL-AUTO-48100");
   });
+
+  it("retries with the same request id and claim number", async () => {
+    const submit = vi.fn().mockRejectedValueOnce(new Error("timeout")).mockResolvedValue({});
+    render(<FnolForm submit={submit} />);
+    fillValid();
+    fireEvent.click(screen.getByRole("button", { name: /submit first notice/i }));
+    expect(await screen.findByText("Could not reach the claims hub. Try again.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /submit first notice/i }));
+    await waitFor(() => expect(submit).toHaveBeenCalledTimes(2));
+    const ids = submit.mock.calls.map((call) => {
+      const xml = String(call[0]);
+      return [/<RqUID>([^<]+)</.exec(xml)?.[1], /<ClaimNumber>([^<]+)</.exec(xml)?.[1]];
+    });
+    expect(ids[1]).toEqual(ids[0]);
+  });
+
+  it("rejects a line of business that contradicts the policy number", async () => {
+    const submit = vi.fn();
+    render(<FnolForm submit={submit} />);
+    fillValid();
+    fireEvent.change(screen.getByLabelText(/line of business/i), { target: { value: "HOME" } });
+    fireEvent.click(screen.getByRole("button", { name: /submit first notice/i }));
+    expect(await screen.findByText("Line of business does not match the policy number")).toBeInTheDocument();
+    expect(submit).not.toHaveBeenCalled();
+  });
 });

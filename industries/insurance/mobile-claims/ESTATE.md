@@ -9,7 +9,7 @@ This is the screen adjusters use to file a first notice of loss from the Capacit
 | Screen | ACORD | Notes |
 |---|---|---|
 | Policy number | `Policy/PolicyNumber` | upper-cased, `POL-<LOB>-<n>` |
-| Line of business | `Policy/LOBCd` | `AUTO` / `HOME`, filled from the policy prefix |
+| Line of business | `Policy/LOBCd` | `AUTO` / `HOME`, filled from the policy prefix; a choice that contradicts the prefix is rejected |
 | Insured given name, surname | `InsuredOrPrincipal/GivenName`, `Surname` | |
 | Tax id (optional) | `InsuredOrPrincipal/TaxId` | masked on the device with the hub's `PiiMaskingComponent.Mask(v, 4)` rule (`123-45-6789` -> `XXX-XX-6789`); left out when blank |
 | Loss date | `ClaimsOccurrence/LossDt` | not in the future |
@@ -19,7 +19,7 @@ This is the screen adjusters use to file a first notice of loss from the Capacit
 | Injuries yes/no | `InjuryInd` | required, no default |
 | City, state, postal code | `Addr/*` | |
 | Photos | none | placeholder only; capture is not built yet |
-| (device) | `RqUID`, `TransactionRequestDt`, `ReportedDt` | UUID and local clock |
+| (device) | `RqUID`, `TransactionRequestDt`, `ReportedDt` | UUID and local clock; a retry after a failed or unacknowledged submit reuses the same `RqUID` and claim number |
 | (device) | `ClaimNumber` | `CLM-<yyyy>-M<8 hex of RqUID>` |
 | (device) | `Producer` | `AG-MOBILE` / `Thistlecombe field adjusters` |
 
@@ -45,6 +45,7 @@ The mock (`tools/gateway-mock.mjs`, no dependencies) serves register, login, pro
 
 ## Open decisions
 
+- No route for `/api/v1/claims/fnol` exists in `services/api-gateway` yet; only the local mock serves it. Which service should front the hub's receive port (and whether through the generic gateway at all) is still to be decided.
 - Should `TOWG` be offered? The hub's `FastTrack` triage rule lists it and the corpus contains it. The screen offers the eight causes it was asked for.
 - Police report and prior-fraud flag are not captured, so the hub defaults them to `false`. Across the corpus that changes 5 police-report values and 1 fraud flag from `true`.
 - The claim number and producer id are minted on the device. The hub may want to assign them itself.

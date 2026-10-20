@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,6 +14,7 @@ import {
   newEnvelope,
   todayLocal,
   type FnolDraft,
+  type FnolEnvelope,
 } from "./acord";
 import { submitFnol } from "./fnol-api";
 
@@ -35,6 +36,9 @@ export const fnolSchema = z.object({
   city: required("City"),
   stateProvCd: required("State").regex(/^[A-Za-z]{2}$/, "Two-letter state"),
   postalCode: required("Postal code"),
+}).refine((v) => (lineOfBusinessFor(v.policyNumber) ?? v.lineOfBusiness) === v.lineOfBusiness, {
+  path: ["lineOfBusiness"],
+  message: "Line of business does not match the policy number",
 });
 
 export type FnolFormValues = z.infer<typeof fnolSchema>;
@@ -83,6 +87,9 @@ interface Submitted {
 export function FnolForm({ submit = submitFnol }: { submit?: (xml: string) => Promise<unknown> }) {
   const [submitted, setSubmitted] = useState<Submitted | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
+  // Reused across retries so a notice the hub accepted but never acknowledged
+  // is resent with the same RqUID and claim number, not filed twice.
+  const pending = useRef<FnolEnvelope | null>(null);
   const {
     register,
     handleSubmit,
@@ -96,7 +103,7 @@ export function FnolForm({ submit = submitFnol }: { submit?: (xml: string) => Pr
 
   const onSubmit = async (values: FnolFormValues) => {
     setServerError(null);
-    const env = newEnvelope();
+    const env = (pending.current ??= newEnvelope());
     const xml = buildClaimsSvcRq(toDraft(values), env);
     try {
       await submit(xml);
@@ -105,6 +112,7 @@ export function FnolForm({ submit = submitFnol }: { submit?: (xml: string) => Pr
         rqUID: env.rqUID,
         maskedTaxId: values.taxId ? maskTaxId(values.taxId) : undefined,
       });
+      pending.current = null;
       reset();
     } catch (e) {
       const detail = (e as { response?: { data?: { error?: string } } }).response?.data?.error;
