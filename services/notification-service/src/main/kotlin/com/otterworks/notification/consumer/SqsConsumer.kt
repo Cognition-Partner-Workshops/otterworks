@@ -48,13 +48,10 @@ class SqsConsumer(
         isLenient = true
     }
 
-    // CHAOS: strict parser that rejects messages whose timestamp field is not
-    // a valid RFC 3339 string.  Legacy events emitted by older service versions
-    // use Unix epoch integers for timestamps, which are rejected here.
-    // When the chaos flag is active, every such message throws
-    // SerializationException, is never deleted from the queue, and becomes
-    // visible again after the SQS visibility timeout — causing queue depth to
-    // climb indefinitely while the consumer appears healthy.
+    // CHAOS: strict parser (no lenient literals, no unknown keys) selected while the
+    // chaos flag is set. It enforces the published date-time contract, so legacy
+    // epoch-int timestamps are rejected; those messages are counted, logged and left
+    // for the queue's redrive policy to dead-letter after maxReceiveCount attempts.
     private val strictJson = Json {
         ignoreUnknownKeys = false
         isLenient = false
@@ -94,10 +91,14 @@ class SqsConsumer(
                                 sqsClient.deleteMessage(deleteRequest)
                                 logger.debug { "Deleted SQS message: ${msg.messageId}" }
                             } else {
+                                // Not deleted: the redrive policy moves it to the DLQ after
+                                // maxReceiveCount receives, so the payload is kept for inspection
+                                // without cycling on the main queue forever.
                                 processingErrorsCounter?.increment()
-                                logger.warn { "Failed to parse SQS message: ${msg.messageId}" }
+                                logger.warn { "Failed to parse SQS message ${msg.messageId}; leaving it for the redrive policy" }
                             }
                         } catch (e: Exception) {
+                            processingErrorsCounter?.increment()
                             logger.error(e) { "Error processing SQS message: ${msg.messageId}" }
                         }
                     }
