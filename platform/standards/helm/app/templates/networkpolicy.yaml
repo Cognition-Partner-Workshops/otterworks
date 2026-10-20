@@ -17,5 +17,7 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: {{ . }}
         {{- end }}
+        {{- if .Values.networkPolicy.allowSameNamespace }}
         - podSelector: {}
+        {{- end }}
 {{- end }}

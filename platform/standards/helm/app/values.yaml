@@ -55,6 +55,7 @@ ingress:
 
 networkPolicy:
   enabled: true
+  allowSameNamespace: false
   ingressNamespaces:
     - ingress-nginx
     - monitoring

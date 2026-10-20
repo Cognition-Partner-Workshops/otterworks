@@ -91,7 +91,11 @@ jobs:
             --secret-config .standards/platform/standards/policy/trivy/secret-rules.yaml \
             --severity CRITICAL --ignore-unfixed --exit-code 1 \
             --format table --output trivy.txt "$IMAGE:$TAG"; rc=$?
-          cat trivy.txt; exit $rc
+          trivy image --no-progress --scanners secret \
+            --secret-config .standards/platform/standards/policy/trivy/secret-rules.yaml \
+            --severity HIGH,CRITICAL --exit-code 1 \
+            --format table --output trivy-secrets.txt "$IMAGE:$TAG" || rc=1
+          cat trivy-secrets.txt >> trivy.txt; cat trivy.txt; exit $rc
       - id: sbom
         name: SBOM (Syft)
         if: always() && steps.build.outcome == 'success'
@@ -165,7 +169,7 @@ jobs:
           OUT_POLICY: ${{ steps.policy.outcome }}
           OUT_KIND: ${{ steps.kind.outcome }}
         run: |
-          for s in "$OUT_UNIT" "$OUT_BUILD" "$OUT_TRIVY" "$OUT_POLICY" "$OUT_KIND"; do
+          for s in "$OUT_UNIT" "$OUT_BUILD" "$OUT_TRIVY" "$OUT_SBOM" "$OUT_POLICY" "$OUT_KIND"; do
             [ "$s" = failure ] && exit 1
           done; exit 0
 
@@ -187,6 +191,9 @@ jobs:
       IMAGE: ${{ needs.verify.outputs.image }}
       NAMESPACE: bank-w1-${{ inputs.run_token }}-pr${{ github.event.pull_request.number }}
     steps:
+      - name: Check the run token
+        run: |
+          [[ "$RUN_TOKEN" =~ ^[a-z0-9]{3,12}$ ]] || { echo "eks_deploy needs a run_token of 3-12 lowercase letters or digits"; exit 1; }
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -194,31 +201,50 @@ jobs:
           ref: ${{ inputs.standards_ref }}
           path: .standards
           sparse-checkout: platform/standards
+      - name: Build the image before any cloud credentials exist
+        run: |
+          tag="${GITHUB_SHA::12}"
+          docker build -q -t "$IMAGE:$tag" "$APP_DIR"
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+          workload=$(sed -n 's/^workload:[[:space:]]*\([a-z]*\).*/\1/p' "$APP_DIR/deploy/values.yaml" | head -1)
+          echo "WORKLOAD=${workload:-web}" >> "$GITHUB_ENV"
       - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Push the image to ECR
         run: |
-          tag="${GITHUB_SHA::12}"
           aws ecr get-login-password | docker login --username AWS --password-stdin "$REGISTRY"
-          docker build -q -t "$IMAGE:$tag" "$APP_DIR"
-          docker push -q "$IMAGE:$tag"
-          echo "TAG=$tag" >> "$GITHUB_ENV"
+          docker push -q "$IMAGE:$TAG"
       - name: Deploy with Helm to ${{ env.NAMESPACE }}
         run: |
           aws eks update-kubeconfig --name otterworks-dev --region "$AWS_REGION"
-          host="${APP}-pr$PR_NUMBER.$RUN_TOKEN.bank-w1.otterworks.app"
+          epoch=$(( $(date -u +%s) + 72 * 3600 ))
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl label namespace "$NAMESPACE" --overwrite demo/run-token="$RUN_TOKEN" \
+            platform.otterworks.dev/policy=enforced app.kubernetes.io/part-of=bank-wave1
+          kubectl annotate namespace "$NAMESPACE" --overwrite \
+            demo/expires-at="$(date -u -d "@$epoch" +%Y-%m-%dT%H:%M:%SZ)" demo/expires-at-epoch="$epoch"
           values=(-f "$APP_DIR/deploy/values.yaml")
           [ -f "$APP_DIR/deploy/values-eks.yaml" ] && values+=(-f "$APP_DIR/deploy/values-eks.yaml")
-          helm upgrade --install "$APP" .standards/platform/standards/helm/app -n "$NAMESPACE" "${values[@]}" \
-            --set image.repository="$IMAGE" --set image.tag="$TAG" \
-            --set ingress.enabled=true --set ingress.host="$host" --wait --timeout 5m
-          echo "HOST=$host" >> "$GITHUB_ENV"
-      - name: Smoke test through the shared ingress
+          extra=()
+          if [ "$WORKLOAD" = web ]; then
+            host="${APP}-pr$PR_NUMBER.$RUN_TOKEN.bank-w1.otterworks.app"
+            extra=(--set ingress.enabled=true --set ingress.host="$host")
+            echo "HOST=$host" >> "$GITHUB_ENV"
+          fi
+          helm upgrade --install "$APP" .standards/platform/standards/helm/app -n "$NAMESPACE" --create-namespace "${values[@]}" \
+            --set image.repository="$IMAGE" --set image.tag="$TAG" "${extra[@]}" --wait --timeout 5m
+      - name: Smoke test
         run: |
-          for i in $(seq 1 30); do code=$(curl -sk -o /dev/null -w '%{http_code}' "https://$HOST/health"); [ "$code" = 200 ] && break; sleep 10; done
-          echo "https://$HOST/health -> $code"; [ "$code" = 200 ]
+          if [ "$WORKLOAD" = web ]; then
+            for i in $(seq 1 30); do code=$(curl -s -o /dev/null -w '%{http_code}' "https://$HOST/health"); [ "$code" = 200 ] && break; sleep 10; done
+            echo "https://$HOST/health -> $code"; [ "$code" = 200 ]
+          else
+            cj=$(kubectl -n "$NAMESPACE" get cronjob -o name | head -1)
+            kubectl -n "$NAMESPACE" create job "smoke-${GITHUB_RUN_ID}" --from="$cj"
+            kubectl -n "$NAMESPACE" wait --for=condition=complete "job/smoke-${GITHUB_RUN_ID}" --timeout=10m
+          fi
       - name: Report hostname
         if: always()
         env:
