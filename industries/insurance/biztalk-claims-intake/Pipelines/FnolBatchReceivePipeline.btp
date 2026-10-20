@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" PolicyFilePath="BTSReceivePolicy.xml" MajorVersion="1" MinorVersion="0">
+  <Description>Receive pipeline for the nightly agency FNOL batch: masks tax ids before tracking, debatches the envelope into one ClaimsSvcRq per message, validates against the ACORD schema.</Description>
+  <Stages>
+    <Stage CategoryId="9d0e4103-4cce-4536-83fa-4a5040674ad6">
+      <PolicyFileStage _locAttrData="Name" _locID="1" Name="Decode" minOccurs="0" maxOccurs="-1" execMethod="All" />
+      <Components>
+        <Component>
+          <Name>ThistlecombeMutual.ClaimsHub.Pipelines.Components.PiiMaskingComponent</Name>
+          <ComponentName>PII masking</ComponentName>
+          <Description>Rewrites InsuredOrPrincipal/TaxId to XXX-XX-nnnn so the MessageBox and tracking database never hold a full tax id.</Description>
+          <Version>1.0</Version>
+          <Properties>
+            <Property Name="MaskedElementXPath"><Value xsi:type="xsd:string">//*[local-name()='TaxId']</Value></Property>
+            <Property Name="VisibleSuffixLength"><Value xsi:type="xsd:int">4</Value></Property>
+          </Properties>
+          <CachedDisplayName>PII masking</CachedDisplayName>
+          <CachedIsManaged>true</CachedIsManaged>
+        </Component>
+      </Components>
+    </Stage>
+    <Stage CategoryId="9d0e4105-4cce-4536-83fa-4a5040674ad6">
+      <PolicyFileStage _locAttrData="Name" _locID="3" Name="Disassemble" minOccurs="0" maxOccurs="-1" execMethod="FirstMatch" />
+      <Components>
+        <Component>
+          <Name>Microsoft.BizTalk.Component.XmlDasmComp</Name>
+          <ComponentName>XML disassembler</ComponentName>
+          <Description>Debatches FnolBatch/Body into individual ClaimsSvcRq messages and promotes BatchHeader properties onto each.</Description>
+          <Version>1.0</Version>
+          <Properties>
+            <Property Name="EnvelopeSpecNames"><Value xsi:type="xsd:string">ThistlecombeMutual.ClaimsHub.Schemas.FnolBatchEnvelope, ThistlecombeMutual.ClaimsHub.Schemas, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f</Value></Property>
+            <Property Name="DocumentSpecNames"><Value xsi:type="xsd:string">ThistlecombeMutual.ClaimsHub.Schemas.ACORD_ClaimsNotificationAddRq, ThistlecombeMutual.ClaimsHub.Schemas, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f</Value></Property>
+            <Property Name="AllowUnrecognizedMessage"><Value xsi:type="xsd:boolean">false</Value></Property>
+            <Property Name="ValidateDocument"><Value xsi:type="xsd:boolean">true</Value></Property>
+            <Property Name="RecoverableInterchangeProcessing"><Value xsi:type="xsd:boolean">true</Value></Property>
+          </Properties>
+          <CachedDisplayName>XML disassembler</CachedDisplayName>
+          <CachedIsManaged>true</CachedIsManaged>
+        </Component>
+      </Components>
+    </Stage>
+    <Stage CategoryId="9d0e410d-4cce-4536-83fa-4a5040674ad6">
+      <PolicyFileStage _locAttrData="Name" _locID="5" Name="Validate" minOccurs="0" maxOccurs="-1" execMethod="All" />
+      <Components />
+    </Stage>
+    <Stage CategoryId="9d0e410e-4cce-4536-83fa-4a5040674ad6">
+      <PolicyFileStage _locAttrData="Name" _locID="7" Name="ResolveParty" minOccurs="0" maxOccurs="-1" execMethod="All" />
+      <Components />
+    </Stage>
+  </Stages>
+</Document>
