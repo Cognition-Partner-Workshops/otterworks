@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test insurance-scenario insurance-golden insurance-golden-check insurance-pg-up insurance-pg-down insurance-dbt-build deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
 
@@ -54,6 +54,65 @@ insurance-down: procs-validate ## Stop the Oracle insurance fixture and drop its
 insurance-test: procs-validate ## Run the Commission Pay OLTP + OLAP test suites (NS=<namespace>)
 	$(INSURANCE_SQLPLUS) commission_pay/commission_pay@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/tests/run_tests.sql
 	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/tests/run_olap_tests.sql
+
+insurance-scenario: procs-validate ## Run the 2025 month-end scenario, ETL and MV refresh on a fresh fixture (NS=<namespace>)
+	$(INSURANCE_SQLPLUS) commission_pay/commission_pay@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/olap/scenario/01_month_end_ledger.sql
+	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/olap/scenario/02_load_warehouse.sql
+	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/olap/scenario/03_mv_report.sql
+
+INSURANCE_CONTAINER = otterworks-insurance-$(NS)-insurance-oracle-1
+INSURANCE_GOLDEN_DIR = services/industry-solutions/insurance/dbt/commission_dw/golden
+GOLDEN_OUT ?= $(INSURANCE_GOLDEN_DIR)
+
+insurance-golden: procs-validate ## Export the golden source extract, facts and MV as CSV after insurance-scenario (NS=<namespace>, GOLDEN_OUT=<dir>)
+	docker exec $(INSURANCE_CONTAINER) sh -c 'rm -rf /tmp/golden && mkdir -p /tmp/golden'
+	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/olap/golden/export_golden.sql
+	mkdir -p $(GOLDEN_OUT)
+	docker cp $(INSURANCE_CONTAINER):/tmp/golden/. $(GOLDEN_OUT)/
+	wc -l $(GOLDEN_OUT)/*.csv
+
+insurance-golden-check: procs-validate ## Rebuild a fresh fixture, rerun scenario + export, diff byte-for-byte against the committed golden files, tear down (NS=<namespace>)
+	@out=$$(mktemp -d); status=0; \
+	$(MAKE) --no-print-directory insurance-down NS=$(NS) && \
+	$(MAKE) --no-print-directory insurance-up NS=$(NS) && \
+	$(MAKE) --no-print-directory insurance-scenario NS=$(NS) && \
+	$(MAKE) --no-print-directory insurance-golden NS=$(NS) GOLDEN_OUT=$$out && \
+	diff -r --exclude=README.md $(INSURANCE_GOLDEN_DIR) $$out && \
+	echo "GOLDEN CHECK: byte-identical ($$(ls $$out | wc -l) files)" || status=1; \
+	$(MAKE) --no-print-directory insurance-down NS=$(NS) || { echo "GOLDEN CHECK: insurance-down NS=$(NS) failed, fixture may still be running" >&2; status=1; }; \
+	rm -rf $$out; \
+	test $$status -eq 0 || { echo "GOLDEN CHECK: FAILED" >&2; exit 1; }
+
+# --- Industry Solutions: insurance Commission warehouse (dbt-postgres on PostgreSQL 16) ---
+
+INSURANCE_DBT_DIR = services/industry-solutions/insurance/dbt/commission_dw
+INSURANCE_PG_COMPOSE = docker compose -f docker-compose.insurance-pg.yml -p otterworks-insurance-pg-$(NS)
+INSURANCE_PG_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(57432 + $(PROCS_PORT_OFFSET))")
+INSURANCE_PG_SECRET = $(INSURANCE_DBT_DIR)/.local/$(NS).pgpass
+INSURANCE_PG_ENV = NS=$(NS) INSURANCE_PG_PORT=$(INSURANCE_PG_PORT) INSURANCE_PG_PASSWORD="$$(cat $(INSURANCE_PG_SECRET))"
+INSURANCE_DBT_ENV = COMMISSION_DW_PG_HOST=127.0.0.1 COMMISSION_DW_PG_PORT=$(INSURANCE_PG_PORT) \
+	COMMISSION_DW_PG_USER=commission_dw COMMISSION_DW_PG_PASSWORD="$$(cat $(abspath $(INSURANCE_PG_SECRET)))" \
+	COMMISSION_DW_PG_DBNAME=commission COMMISSION_DW_PG_SCHEMA=commission_dw \
+	DBT_PROFILES_DIR=. UV_PYTHON=3.12 RUST_LOG=warn
+INSURANCE_DBT = uv run --frozen dbt
+
+insurance-pg-up: procs-validate ## Start the PostgreSQL 16 commission warehouse target (NS=<namespace>)
+	@mkdir -p $(dir $(INSURANCE_PG_SECRET)) && chmod 700 $(dir $(INSURANCE_PG_SECRET))
+	@test -s $(INSURANCE_PG_SECRET) || (umask 077 && python3 -c "import secrets; print(secrets.token_urlsafe(24))" > $(INSURANCE_PG_SECRET))
+	@chmod 600 $(INSURANCE_PG_SECRET)
+	$(INSURANCE_PG_ENV) $(INSURANCE_PG_COMPOSE) up -d --wait --wait-timeout 120
+	@echo "insurance-pg NS=$(NS): 127.0.0.1:$(INSURANCE_PG_PORT) db=commission user=commission_dw (password in $(INSURANCE_PG_SECRET))"
+
+insurance-pg-down: procs-validate ## Stop the PostgreSQL 16 warehouse target and drop its data (NS=<namespace>)
+	NS=$(NS) INSURANCE_PG_PORT=$(INSURANCE_PG_PORT) INSURANCE_PG_PASSWORD=unused $(INSURANCE_PG_COMPOSE) down -v
+	rm -f $(INSURANCE_PG_SECRET)
+
+insurance-dbt-build: procs-validate ## dbt deps, debug, seed, then build of commission_dw against insurance-pg-up (NS=<namespace>)
+	@test -s $(INSURANCE_PG_SECRET) || (echo "no password for NS=$(NS); run make insurance-pg-up NS=$(NS) first" >&2; exit 2)
+	cd $(INSURANCE_DBT_DIR) && $(INSURANCE_DBT_ENV) $(INSURANCE_DBT) deps
+	cd $(INSURANCE_DBT_DIR) && $(INSURANCE_DBT_ENV) $(INSURANCE_DBT) debug
+	cd $(INSURANCE_DBT_DIR) && $(INSURANCE_DBT_ENV) $(INSURANCE_DBT) seed
+	cd $(INSURANCE_DBT_DIR) && $(INSURANCE_DBT_ENV) $(INSURANCE_DBT) build --exclude resource_type:seed
 
 # --- Local Development ---
 

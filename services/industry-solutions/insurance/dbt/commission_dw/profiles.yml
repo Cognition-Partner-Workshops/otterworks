@@ -1,0 +1,15 @@
+# Every connection value comes from the environment; nothing secret is committed.
+# `make insurance-dbt-build NS=<ns>` exports these for the local PostgreSQL 16 fixture.
+commission_dw:
+  target: local
+  outputs:
+    local:
+      type: postgres
+      host: "{{ env_var('COMMISSION_DW_PG_HOST') }}"
+      port: "{{ env_var('COMMISSION_DW_PG_PORT') | as_number }}"
+      user: "{{ env_var('COMMISSION_DW_PG_USER') }}"
+      password: "{{ env_var('COMMISSION_DW_PG_PASSWORD') }}"
+      dbname: "{{ env_var('COMMISSION_DW_PG_DBNAME') }}"
+      schema: "{{ env_var('COMMISSION_DW_PG_SCHEMA') }}"
+      threads: "{{ env_var('COMMISSION_DW_PG_THREADS', '4') | as_number }}"
+      sslmode: "{{ env_var('COMMISSION_DW_PG_SSLMODE', 'disable') }}"

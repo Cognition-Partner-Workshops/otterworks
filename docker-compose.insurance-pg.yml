@@ -1,0 +1,26 @@
+# OtterWorks Industry Solutions — insurance Commission Pay warehouse target.
+# PostgreSQL 16 for the dbt-postgres port of COMMISSION_DW (DW_ETL_PKG +
+# MV_AGENT_COMMISSION_SUMMARY). Local-only and disposable: loopback port
+# derived from NS, per-namespace Compose project, volume dropped by
+# `make insurance-pg-down`. The password is generated per namespace by
+# `make insurance-pg-up` and never committed.
+services:
+  insurance-pg:
+    image: ${INSURANCE_PG_IMAGE:-postgres:16}
+    environment:
+      POSTGRES_USER: commission_dw
+      POSTGRES_PASSWORD: ${INSURANCE_PG_PASSWORD:?run make insurance-pg-up NS=<ns>, which generates it}
+      POSTGRES_DB: commission
+    ports:
+      - "127.0.0.1:${INSURANCE_PG_PORT:-57432}:5432"
+    volumes:
+      - ./services/industry-solutions/insurance/dbt/commission_dw/pg/init:/docker-entrypoint-initdb.d:ro
+      - insurance-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U commission_dw -d commission && psql -U commission_dw -d commission -tAc \"SELECT count(*) FROM pg_namespace WHERE nspname IN ('commission_pay','commission_dw')\" | grep -q '^2$'"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+volumes:
+  insurance-pg-data:
