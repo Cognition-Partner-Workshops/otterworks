@@ -15,10 +15,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param completedUri where a finished instance is reported (COMPLETED or TERMINATED)
  * @param suspendedUri where an instance that failed is reported, BizTalk's suspended queue
  * @param assignmentUri Assignment.RequestAssignment, until AdjusterAssignment is converted
+ * @param rejectedUri where a correction from a different agency than the original FNOL's is sent for review
  */
 @ConfigurationProperties("claimshub.fnol")
 public record FnolIntakeProperties(Duration correctionWindow, String fixtureDir, String outDir, String completedUri,
-        String suspendedUri, String assignmentUri) {
+        String suspendedUri, String assignmentUri, String rejectedUri) {
 
     public Path fixturePath() {
         return Path.of(fixtureDir).toAbsolutePath().normalize();

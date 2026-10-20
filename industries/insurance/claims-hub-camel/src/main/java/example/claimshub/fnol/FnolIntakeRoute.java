@@ -2,11 +2,13 @@ package example.claimshub.fnol;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,8 +19,9 @@ import org.springframework.stereotype.Component;
  *
  * <ul>
  * <li>{@code fnol.receive}: Receive_Fnol and Listen_Correction. The ClaimNumberCorrelation becomes an
- * aggregator on the promoted claim number; the correlated receive is completion on the second message (the
- * correction replaces the first), the Delay is the completion timeout.</li>
+ * aggregator on the promoted claim number; the correlated receive is completion on a correction from the agency
+ * (ProducerId) that sent the original, which replaces the first; the Delay is the completion timeout. A correction
+ * from any other agency is refused and sent to {@code rejectedUri} for review; the window stays open.</li>
  * <li>{@code fnol.intake}: the instance, from Construct_Canonical to Decide_Assignment.</li>
  * <li>{@code messagebox.triage-facts}, {@code messagebox.insert-claim}: the content-based send ports
  * sp_Fraud_Referral_FILE, sp_Declines_FILE and sp_GlassVendor_FastTrack_SFTP.</li>
@@ -35,6 +38,8 @@ public class FnolIntakeRoute extends RouteBuilder {
     static final String DECLINE = "DECLINE_NOT_IN_FORCE";
     static final String FRAUD = "FRAUD_REVIEW";
     static final String FAST_TRACK = "FAST_TRACK";
+    static final String CORRECTION_REJECTED = "CORRECTION_REJECTED";
+    static final String CORRECTED = "FnolCorrected";
 
     private static final String FNOL = "/*[local-name()='ClaimsSvcRq']/*[local-name()='ClaimsNotificationAddRq']";
     private static final String AGGREGATE_NS = "http://schemas.microsoft.com/BizTalk/2003/aggschema";
@@ -50,6 +55,7 @@ public class FnolIntakeRoute extends RouteBuilder {
 
     @Override
     public void configure() {
+        ProducerTemplate review = getContext().createProducerTemplate();
         if (!Files.isDirectory(properties.mapsDir())) {
             // The image carries no fixture; FnolIntake waits for the converted maps instead of failing the context.
             log.warn("FnolIntake routes not started: no BizTalk maps at {} (set claimshub.fnol.fixture-dir)", properties.mapsDir());
@@ -62,8 +68,9 @@ public class FnolIntakeRoute extends RouteBuilder {
                 .setHeader("LossCauseCd").xpath(FNOL + "/*[local-name()='ClaimsOccurrence']/*[local-name()='LossCauseCd']", String.class)
                 .setHeader("AgencyId").xpath(FNOL + "/*[local-name()='Producer']/*[local-name()='ProducerId']", String.class)
                 // Listen_Correction: Receive_Correction (follows the correlation) or Delay_CorrectionWindow.
-                .aggregate(header("ClaimNumber"), correctionReplacesFirst())
-                    .completionSize(2)
+                .aggregate(header("ClaimNumber"), correctionReplacesFirst((original, refused) ->
+                        review.send(properties.rejectedUri(), rejectedCorrection(original, refused))))
+                    .completionPredicate(exchangeProperty(CORRECTED).isEqualTo(true))
                     .completionTimeout(properties.correctionWindow().toMillis())
                     .completionTimeoutCheckerInterval(250)
                     .parallelProcessing()
@@ -163,9 +170,37 @@ public class FnolIntakeRoute extends RouteBuilder {
         return "file:" + dir + "?fileName=" + fileName;
     }
 
-    /** A second FNOL inside the window replaces the first one (msgFnolCorrection wins). */
-    static AggregationStrategy correctionReplacesFirst() {
-        return (oldExchange, newExchange) -> newExchange;
+    /**
+     * A second FNOL inside the window replaces the first one (msgFnolCorrection wins), but only when it comes from the
+     * agency that sent the first. Any other sender's FNOL is handed to {@code onRejected} and the first one stays.
+     */
+    static AggregationStrategy correctionReplacesFirst(BiConsumer<Exchange, Exchange> onRejected) {
+        return (oldExchange, newExchange) -> {
+            if (oldExchange == null) {
+                return newExchange;
+            }
+            if (sameAgency(oldExchange, newExchange)) {
+                newExchange.setProperty(CORRECTED, true);
+                return newExchange;
+            }
+            onRejected.accept(oldExchange, newExchange);
+            return oldExchange;
+        };
+    }
+
+    private static boolean sameAgency(Exchange original, Exchange correction) {
+        String agency = original.getMessage().getHeader("AgencyId", String.class);
+        return agency != null && !agency.isBlank() && agency.equals(correction.getMessage().getHeader("AgencyId", String.class));
+    }
+
+    private static Exchange rejectedCorrection(Exchange original, Exchange refused) {
+        Exchange copy = refused.copy();
+        String originalAgency = original.getMessage().getHeader("AgencyId", String.class);
+        copy.getMessage().setHeader("FnolStatus", CORRECTION_REJECTED);
+        copy.getMessage().setHeader("OriginalAgencyId", originalAgency);
+        copy.getMessage().setHeader("FnolRejectedReason", "correction for " + refused.getMessage().getHeader("ClaimNumber")
+                + " from " + refused.getMessage().getHeader("AgencyId") + " refused: the original FNOL came from " + originalAgency);
+        return copy;
     }
 
     private void aggregateClaimAndPolicy(Exchange exchange) {

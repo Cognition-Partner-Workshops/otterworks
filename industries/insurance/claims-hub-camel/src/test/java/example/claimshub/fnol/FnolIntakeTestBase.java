@@ -33,6 +33,8 @@ import example.claimshub.golden.CorpusManifest;
  *   {@code msgClaim}, {@code msgPolicyRq}, {@code msgPolicyRs}, {@code msgInsertClaim} (map output) and
  *   {@code msgTriageFacts} (before the policy runs), and {@code triageOutcome}.
  * - {@code mock:fnol.suspended} gets an instance that failed, header {@code FnolSuspendedReason}.
+ * - {@code mock:fnol.rejected} gets a correction refused because it came from another agency than the
+ *   original FNOL, headers {@code AgencyId} (the sender) and {@code OriginalAgencyId}.
  * - {@code mock:fnol.assignment} gets the usp_InsertClaim of every claim sent on to adjuster assignment.
  * - Fraud referrals, declines and glass fast tracks are written as files, laid out like the binding's
  *   FILE and SFTP addresses, under {@link #OUT}.
@@ -43,7 +45,8 @@ import example.claimshub.golden.CorpusManifest;
         "claimshub.fnol.correction-window=4s",
         "claimshub.fnol.completed-uri=mock:fnol.completed",
         "claimshub.fnol.suspended-uri=mock:fnol.suspended",
-        "claimshub.fnol.assignment-uri=mock:fnol.assignment"})
+        "claimshub.fnol.assignment-uri=mock:fnol.assignment",
+        "claimshub.fnol.rejected-uri=mock:fnol.rejected"})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class FnolIntakeTestBase {
 
@@ -80,6 +83,10 @@ abstract class FnolIntakeTestBase {
 
     protected MockEndpoint suspended() {
         return camelContext.getEndpoint("mock:fnol.suspended", MockEndpoint.class);
+    }
+
+    protected MockEndpoint rejected() {
+        return camelContext.getEndpoint("mock:fnol.rejected", MockEndpoint.class);
     }
 
     protected MockEndpoint assignment() {
