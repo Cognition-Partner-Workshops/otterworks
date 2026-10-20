@@ -14,18 +14,13 @@ from decimal import Decimal
 from pathlib import Path
 
 import psycopg
+import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "loader"))
 from common import corpus_dir, oracle_connect, pg_dsn, read_xml, text  # noqa: E402
 
-# A red row keeps its cause in the same row. Causes are written only for divergences that have been explained;
-# anything else that goes red reports as unexplained and is a question for the owner.
-CAUSES = {
-    "claim_payments.net_amount_vs_vendor_file": (
-        "PI-2026-880107: the vendor file rounds each line half up on its absolute cents (XSLT round(): 0.015 -> "
-        "0.02, 1234.565 -> 1234.57, total 1235.09); the ledger post sums indemnity first and rounds half to even "
-        "(.NET Math.Round: 1234.58, net 1235.08). The legacy hub has no rule for this cent. Decision pending."),
-}
+ACCEPTED = Path(__file__).resolve().parent / "accepted_differences.yaml"
+UNEXPLAINED = "UNEXPLAINED: question for the owner"
 
 
 def ora_scalar(ora, sql, **binds):
@@ -55,11 +50,17 @@ def corpus_measures(corpus: Path) -> dict:
     notices = [read_xml(p) for p in sorted((corpus / "golden" / "assignment-notice").glob("*.xml"))]
     triage = [json.loads(p.read_text()) for p in sorted((corpus / "golden" / "triage").glob("*.json"))]
     trailers = []
+    vendor_net_by_instruction = {}
     for p in sorted((corpus / "golden" / "vendor-remittance-ff").glob("*.txt")):
         trl = [ln for ln in p.read_text().splitlines() if ln.startswith("TRL")][0]
         # Trailer per Schemas/PaymentVendor_Remittance_FF.xsd: TRL, PaymentCount(6) at 3, DebitTotalCents(14) at 9,
         # CreditTotalCents(14) at 23, HashTotal(10) at 37.
         trailers.append((int(trl[3:9]), Decimal(int(trl[9:23])) / 100, Decimal(int(trl[23:37])) / 100))
+        vendor_net_by_instruction[p.stem] = trailers[-1][1] - trailers[-1][2]
+    ledger_net_by_instruction = {p.stem: Decimal(text(read_xml(p), "NetAmount"))
+                                 for p in sorted((corpus / "golden" / "ledger-post").glob("*.xml"))}
+    gap_by_instruction = {k: vendor_net_by_instruction[k] - ledger_net_by_instruction[k]
+                          for k in ledger_net_by_instruction}
     stub_docs = [read_xml(p) for p in stubs]
     m = {
         "fnol_messages": len(fnol),
@@ -82,6 +83,7 @@ def corpus_measures(corpus: Path) -> dict:
         "vendor_debit": sum(t[1] for t in trailers),
         "vendor_credit": sum(t[2] for t in trailers),
         "vendor_net": sum(t[1] - t[2] for t in trailers),
+        "gap_by_instruction": gap_by_instruction,
         "assignment_requests": len(requests),
         "notices_escalated": sum(1 for n in notices if text(n, "Escalated") == "true"),
         "notice_pairs": sorted((text(n, "ClaimNumber"), text(n, "AdjusterId")) for n in notices),
@@ -91,7 +93,7 @@ def corpus_measures(corpus: Path) -> dict:
     return m
 
 
-def build_checks(ora, dw, pg, c: dict) -> list[dict]:
+def build_checks(ora, dw, pg, c: dict, accepted: dict) -> list[dict]:
     checks: list[dict] = []
 
     def add(table, measure, kind, source_label, source_value, target_sql):
@@ -156,6 +158,17 @@ def build_checks(ora, dw, pg, c: dict) -> list[dict]:
                    "source": "corpus golden/vendor-remittance-ff TRL debit - credit",
                    "source_value": c["vendor_net"],
                    "target_value": dec(pg_scalar(pg, "SELECT sum(net_amount) FROM claims.claim_payments")[0])})
+    add("claims.claim_payments", "gap_equals_vendor_rounding_difference", "money",
+        "corpus golden vendor-remittance-ff net - golden ledger-post NetAmount",
+        sum(c["gap_by_instruction"].values()), "SELECT sum(vendor_rounding_difference) FROM claims.claim_payments")
+    with pg.cursor() as cur:
+        cur.execute("SELECT instruction_id, vendor_rounding_difference FROM claims.claim_payments")
+        target_gap = dict(cur.fetchall())
+    keys = set(target_gap) | set(c["gap_by_instruction"])
+    checks.append({"table": "claims.claim_payments", "measure": "rows whose vendor_rounding_difference differs from the golden gap",
+                   "kind": "rows", "source": "corpus golden vendor-remittance-ff, ledger-post per instruction",
+                   "source_value": Decimal(0),
+                   "target_value": Decimal(sum(1 for k in keys if target_gap.get(k) != c["gap_by_instruction"].get(k)))})
     add("claims.adjuster_assignments", "rows", "rows", "corpus inputs/assignment requests",
         c["assignment_requests"], "SELECT count(*) FROM claims.adjuster_assignments")
     add("claims.adjuster_assignments", "rows escalated", "rows", "corpus golden/assignment-notice Escalated",
@@ -204,19 +217,41 @@ def build_checks(ora, dw, pg, c: dict) -> list[dict]:
     for chk in checks:
         chk["difference"] = chk["target_value"] - chk["source_value"]
         key = f"{chk['table'].split('.', 1)[1]}.{chk['measure']}"
+        chk["row"], chk["accepted"] = key, False
         if chk["difference"] == 0:
             chk["verdict"], chk["cause"] = "MATCH", ""
+            continue
+        chk["verdict"] = "RED"
+        entry = accepted.get(key)
+        if entry is None:
+            chk["cause"] = UNEXPLAINED
+        elif Decimal(str(entry["difference"])) != chk["difference"]:
+            chk["cause"] = (f"{UNEXPLAINED}; accepted_differences.yaml records {entry['difference']} for this row, "
+                            f"the difference is now {chk['difference']}")
         else:
-            chk["verdict"] = "RED"
-            chk["cause"] = CAUSES.get(key, "UNEXPLAINED: question for the owner")
+            chk["accepted"] = True
+            chk["cause"] = (f"{entry['reason']} Accepted {entry['decided_on']} "
+                            f"(parity/accepted_differences.yaml): {entry['decision']}")
     return checks
+
+
+def gate(checks: list[dict], accepted: dict) -> tuple[bool, str]:
+    red = [c for c in checks if c["verdict"] == "RED"]
+    unaccepted = [c["row"] for c in red if not c["accepted"]]
+    stale = sorted(set(accepted) - {c["row"] for c in red})
+    ok = not unaccepted and not stale
+    line = (f"**Gate: {'PASS' if ok else 'FAIL'}.** {len(red)} RED row(s): {len(red) - len(unaccepted)} listed in "
+            f"`parity/accepted_differences.yaml` with their reason, {len(unaccepted)} not listed"
+            f"{' (' + ', '.join(unaccepted) + ')' if unaccepted else ''}; {len(stale)} accepted entr"
+            f"{'y' if len(stale) == 1 else 'ies'} no longer RED{' (' + ', '.join(stale) + ')' if stale else ''}.")
+    return ok, line
 
 
 def fmt(v: Decimal, kind: str) -> str:
     return f"{v:,.0f}" if kind == "rows" else f"{v:,.2f}"
 
 
-def render(checks: list[dict], corpus_ref: str) -> str:
+def render(checks: list[dict], corpus_ref: str, gate_line: str) -> str:
     out = [
         "| # | Table | Measure | Source | Source value | Target value | Difference | Verdict | Cause |",
         "| ---: | --- | --- | --- | ---: | ---: | ---: | --- | --- |",
@@ -235,7 +270,7 @@ def render(checks: list[dict], corpus_ref: str) -> str:
     out.append(f"| | **Total** | {len(checks)} checks | | | | | **{len(checks) - red} MATCH, {red} RED** | |")
     header = (f"Parity: claims data model against the fixture (corpus at `{corpus_ref[:12]}`). "
               "Money to the cent, no tolerance.\n\n")
-    return header + "\n".join(out) + "\n"
+    return header + "\n".join(out) + "\n\n" + gate_line + "\n"
 
 
 def main() -> None:
@@ -246,13 +281,15 @@ def main() -> None:
     ref_file = corpus.parent / "REF"
     corpus_ref = ref_file.read_text().strip() if ref_file.exists() else os.environ.get("CORPUS_REF", "")
     c = corpus_measures(corpus)
+    accepted = {e["row"]: e for e in (yaml.safe_load(ACCEPTED.read_text()) or [])}
     with oracle_connect() as ora, oracle_connect("commission_dw") as dw, psycopg.connect(pg_dsn()) as pg:
-        checks = build_checks(ora, dw, pg, c)
-    report = render(checks, corpus_ref)
+        checks = build_checks(ora, dw, pg, c, accepted)
+    ok, gate_line = gate(checks, accepted)
+    report = render(checks, corpus_ref, gate_line)
     Path(args.out).write_text(report)
     Path(args.out).with_suffix(".json").write_text(json.dumps(checks, default=str, indent=1) + "\n")
     print(report)
-    sys.exit(1 if any(c["verdict"] == "RED" for c in checks) else 0)
+    sys.exit(0 if ok else 1)
 
 
 if __name__ == "__main__":

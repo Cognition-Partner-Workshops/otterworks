@@ -8,5 +8,6 @@ select instruction_id,
        net_amount,
        vendor_debit_total,
        vendor_credit_total,
-       vendor_debit_total - vendor_credit_total as vendor_net_amount
+       vendor_debit_total - vendor_credit_total as vendor_net_amount,
+       vendor_rounding_difference
   from {{ source('claims', 'claim_payments') }}

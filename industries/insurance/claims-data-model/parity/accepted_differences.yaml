@@ -1,0 +1,13 @@
+# Parity rows that are RED by decision. A RED row stays RED in the report; make check passes only when every
+# RED row is listed here with its exact difference and reason. An entry whose row is no longer RED, or whose
+# difference has changed, fails the gate too.
+- row: claim_payments.net_amount_vs_vendor_file
+  difference: "-0.01"
+  instruction_id: PI-2026-880107
+  decided_on: "2026-10-20"
+  decided_by: claims and finance owner (session timeline)
+  decision: The ledger is the book of record. Paid loss is the ledger post's net_amount (1235.08); the vendor
+    file's cent (1235.09) is carried in claim_payments.vendor_rounding_difference and not allocated.
+  reason: The vendor file rounds each line half up on its absolute cents (XSLT round(); 0.015 -> 0.02,
+    1234.565 -> 1234.57), the ledger post sums indemnity first and rounds half to even (.NET Math.Round;
+    1234.58). The legacy hub has no allocation rule for the cent.

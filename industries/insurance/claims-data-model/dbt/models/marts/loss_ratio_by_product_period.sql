@@ -4,6 +4,8 @@
 --                  issue month (Postgres round on numeric is half away from zero, the same as Oracle ROUND;
 --                  annual_premium / 12 is the base COMMISSION_PKG uses).
 -- paid_loss      = claim_payments.net_amount by value-date month, attributed through the claim's policy.
+--                  The ledger is the book of record; vendor_rounding_difference shows the cent the vendor
+--                  file carries on top (PI-2026-880107), it is not added to paid_loss.
 -- loss_ratio     = paid_loss / earned_premium, 4 decimals, half away from zero; null without premium.
 with spine as (
     select period_month from {{ ref('int_period_spine') }}
@@ -28,7 +30,8 @@ paid as (
            sum(pay.indemnity_amount) as paid_indemnity,
            sum(pay.expense_amount)   as paid_expense,
            sum(pay.salvage_credit)   as salvage_recovered,
-           sum(pay.net_amount)       as paid_loss
+           sum(pay.net_amount)       as paid_loss,
+           sum(pay.vendor_rounding_difference) as vendor_rounding_difference
       from {{ ref('stg_claims__claim_payments') }} pay
       join {{ ref('stg_claims__claims') }} c using (claim_number)
      group by c.line_of_business, pay.payment_period
@@ -57,6 +60,7 @@ select ln.line_of_business,
        coalesce(pd.paid_expense, 0)      as paid_expense,
        coalesce(pd.salvage_recovered, 0) as salvage_recovered,
        coalesce(pd.paid_loss, 0)         as paid_loss,
+       coalesce(pd.vendor_rounding_difference, 0) as vendor_rounding_difference,
        coalesce(cm.commission_paid, 0)   as commission_paid,
        case when coalesce(e.earned_premium, 0) > 0
             then round(coalesce(pd.paid_loss, 0) / e.earned_premium, 4) end as loss_ratio

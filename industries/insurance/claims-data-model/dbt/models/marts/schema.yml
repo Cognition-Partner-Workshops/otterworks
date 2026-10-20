@@ -36,6 +36,10 @@ models:
           - not_null
           - money_scale_2
           - sum_equals: {to: ref('stg_claims__claim_payments'), to_column: net_amount}
+      - name: vendor_rounding_difference
+        tests:
+          - money_scale_2
+          - sum_equals: {to: ref('stg_claims__claim_payments'), to_column: vendor_rounding_difference}
       - name: paid_indemnity
         tests:
           - sum_equals: {to: ref('stg_claims__claim_payments'), to_column: indemnity_amount}

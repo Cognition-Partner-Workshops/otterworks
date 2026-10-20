@@ -115,7 +115,9 @@ CREATE TABLE claims.claims (
 
 -- One row per payment instruction. The ledger columns are what usp_PostClaimPayment receives (summed per
 -- line type, then rounded half to even, .NET Math.Round); the vendor columns are what the remittance file
--- carries (each line rounded half up on its absolute value, XSLT round(), then summed).
+-- carries (each line rounded half up on its absolute value, XSLT round(), then summed). The ledger is the book
+-- of record (decided 2026-10-20); vendor_rounding_difference is the vendor file's net less net_amount, shown
+-- rather than allocated (non-zero only for PI-2026-880107: 0.01).
 CREATE TABLE claims.claim_payments (
     instruction_id        varchar(20)   PRIMARY KEY,
     claim_number          varchar(20)   NOT NULL REFERENCES claims.claims (claim_number),
@@ -131,7 +133,9 @@ CREATE TABLE claims.claim_payments (
     salvage_credit        numeric(12,2) NOT NULL,
     net_amount            numeric(12,2) NOT NULL,
     vendor_debit_total    numeric(12,2) NOT NULL,
-    vendor_credit_total   numeric(12,2) NOT NULL
+    vendor_credit_total   numeric(12,2) NOT NULL,
+    vendor_rounding_difference numeric(12,2) NOT NULL,
+    CHECK (vendor_rounding_difference = vendor_debit_total - vendor_credit_total - net_amount)
 );
 
 CREATE TABLE claims.adjuster_assignments (

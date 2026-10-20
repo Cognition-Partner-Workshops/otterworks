@@ -84,6 +84,14 @@ models:
         tests: [not_null, money_scale_2]
       - name: salvage_credit
         tests: [not_null, money_scale_2]
+      - name: vendor_rounding_difference
+        tests:
+          - not_null
+          - money_scale_2
+          - sum_equals:
+              name: vendor_rounding_difference_closes_ledger_to_vendor_file
+              to: ref('stg_claims__claim_payments')
+              to_column: vendor_net_amount - net_amount
   - name: stg_claims__adjuster_assignments
     columns:
       - name: request_id

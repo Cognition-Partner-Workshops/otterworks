@@ -103,10 +103,10 @@ def load_payments(cur, corpus) -> None:
         debit = sum((half_up(abs(a)) for _, a in lines if a >= 0), Decimal("0.00"))
         credit = sum((half_up(abs(a)) for _, a in lines if a < 0), Decimal("0.00"))
         cur.execute(
-            "INSERT INTO claims.claim_payments VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            "INSERT INTO claims.claim_payments VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
             (text(pi, "InstructionId"), text(pi, "ClaimNumber"), text(pi, "PolicyNumber"), text(pi, "VendorCode"),
              text(pi, "Payee/Name"), text(pi, "Payee/PayeeType"), day(text(pi, "ValueDate")), text(pi, "CurrencyCd"),
-             len(lines), indemnity, expense, salvage, net, debit, credit))
+             len(lines), indemnity, expense, salvage, net, debit, credit, debit - credit - net))
 
 
 def load_assignments(cur, corpus) -> None:

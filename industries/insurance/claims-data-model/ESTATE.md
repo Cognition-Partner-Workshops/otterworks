@@ -29,7 +29,7 @@ in the parity report.
 | `schema` | `sql/01_schema.sql`: drops and recreates schemas `commission`, `claims`, `stg`, `marts` |
 | `load` | `loader/load_oracle.py` (Oracle to `commission`), then `loader/load_corpus.py` (corpus and Commission Pay policies to `claims`) |
 | `dbt` | `dbt build` over `dbt/` (models and tests) |
-| `parity` | `parity/parity.py` writes `parity/REPORT.md` and `parity/REPORT.json` |
+| `parity` | `parity/parity.py` writes `parity/REPORT.md` and `parity/REPORT.json`; reads `parity/accepted_differences.yaml` |
 
 ## Schemas and tables
 
@@ -39,7 +39,7 @@ in the parity report.
 | `claims` | `policyholders` | one insured party | `CP-<policy_id>` per Commission Pay policy; `InsuredPartyId` from `stubs/policy` |
 | `claims` | `policies` | one policy | Commission Pay `POLICIES` (premium, product) and `stubs/policy` (deductible, limit, expiry) |
 | `claims` | `claims` | one FNOL claim number (16) | `inputs/fnol` with its policy stub; `triage_outcome` from `golden/triage` |
-| `claims` | `claim_payments` | one payment instruction (14) | `inputs/payment` |
+| `claims` | `claim_payments` | one payment instruction (14) | `inputs/payment`; `vendor_rounding_difference` = vendor file net - `net_amount` |
 | `claims` | `adjuster_assignments` | one assignment request (10) | `inputs/assignment` with `stubs/roster` |
 
 The loader derives every claims column from the corpus inputs and stubs with the hub's own rules (net
@@ -59,6 +59,7 @@ Money is `numeric(12,2)` everywhere. Where a value is rounded, the mode is the o
 | `claims.reserve_estimate` | C# functoid `ComputeReserve`, .NET `Math.Round` | **HALF_EVEN**, differs from Oracle |
 | `claim_payments.indemnity_amount`, `expense_amount`, `salvage_credit`, `net_amount` | C# functoid `FormatMoney` on the per-type sums, .NET `Math.Round` | **HALF_EVEN**, differs from Oracle |
 | `claim_payments.vendor_debit_total`, `vendor_credit_total` | XSLT `round()` on each line's absolute cents, then summed | HALF_UP per line on the absolute value |
+| `claim_payments.vendor_rounding_difference` | difference of the two rows above, no rounding of its own | none (HALF_UP vendor net less HALF_EVEN ledger net) |
 | `loss_ratio_by_product_period.loss_ratio` | new; ratio, not money | half away from zero, 4 decimals |
 
 `loader/common.py` names the two Python modes (`half_even`, `half_up`); no call site rounds without one of them.
@@ -71,15 +72,17 @@ Money is `numeric(12,2)` everywhere. Where a value is rounded, the mode is the o
 | `stg_claims__policies`, `stg_claims__claims`, `stg_claims__claim_payments`, `stg_claims__adjuster_assignments` | `stg` | view | source grain |
 | `int_period_spine` | none | ephemeral | one calendar month, first to last ledger period or payment month |
 | `commission_by_agent_period` | `marts` | table | agent x ledger period |
-| `loss_ratio_by_product_period` | `marts` | table | line of business x month; earned premium, reported claims and reserve, paid indemnity, expense, salvage and net loss, commission paid, paid loss ratio |
+| `loss_ratio_by_product_period` | `marts` | table | line of business x month; earned premium, reported claims and reserve, paid indemnity, expense, salvage and net loss, vendor rounding difference, commission paid, paid loss ratio |
 
 "Product" in `loss_ratio_by_product_period` is the line of business: the claims hub policies carry `LOBCd`
 and no Commission Pay product code, so line of business is the only key both sides share.
 
 Tests: `unique` and `not_null` on every key, `relationships` on every foreign key, `unique_combination` on
 every mart grain, `money_scale_2` on every money column, `sum_equals` from each mart money column back to
-the staging column it summarises, and `earned_premium_matches_policy_months`. `ledger_net_equals_vendor_file_net`
-is severity `warn`: it is the `PI-2026-880107` cent below, and stays a warning until that decision is made.
+the staging column it summarises, `earned_premium_matches_policy_months`, and
+`vendor_rounding_difference_closes_ledger_to_vendor_file` with `vendor_rounding_difference_per_payment` (net
+plus the difference is the vendor net, in total and row by row). `ledger_net_equals_vendor_file_net` is
+severity `warn` and stays a warning by decision: it is the `PI-2026-880107` cent below.
 
 ## Parity (`parity/parity.py`)
 
@@ -87,14 +90,19 @@ One row per table and measure: row count, and the sum of each money column, sour
 at the bottom; to the cent with no tolerance. Sources are Oracle `COMMISSION_PAY` / `COMMISSION_DW` for the
 commission side and the corpus (inputs, stubs and the hub's goldens: `insert-claim`, `triage-facts`,
 `triage`, `ledger-post`, `vendor-remittance-ff`, `assignment-notice`) for the claims side. A row that does
-not match is RED and carries its cause; a RED row with no explained cause reads `UNEXPLAINED`. Any RED row
-fails `make check`.
+not match is RED and stays RED. `make check` passes only when every RED row is listed in
+`parity/accepted_differences.yaml` (`row`, exact `difference`, `decided_on`, `decided_by`, `decision`,
+`reason`); the row's cause is then that reason and decision. A RED row that is not listed, or whose difference
+no longer equals the listed one, reads `UNEXPLAINED` and fails the gate; so does a listed row that is no
+longer RED. The line under the totals states the gate and its counts.
 
-## Open decision
+## Accepted differences
 
 `PI-2026-880107` (claim `CLM-2026-100405`, policy `POL-AUTO-48177`, value date 2026-10-08) has indemnity
 lines 0.015 and 1234.565 and an expense line 0.50. The ledger post sums indemnity first and rounds half to even
 (1234.58), netting **1235.08**; the vendor file rounds each line half up (0.02, 1234.57, 0.50), netting
-**1235.09**. Both values are loaded as the hub produced them (`net_amount` and `vendor_debit_total -
-vendor_credit_total`), and parity row `claim_payments.net_amount_vs_vendor_file` stays RED until the owner
-decides which figure the warehouse reports and where the cent goes.
+**1235.09**. Decided 2026-10-20 by the claims and finance owner: **the ledger is the book of record.** Paid
+loss in the marts is `net_amount`; the cent is carried in `vendor_rounding_difference` and not allocated.
+Parity row `claim_payments.net_amount_vs_vendor_file` stays RED with this cause and is listed in
+`parity/accepted_differences.yaml`; row `claim_payments.gap_equals_vendor_rounding_difference` checks that the
+gap is exactly the carried difference.
