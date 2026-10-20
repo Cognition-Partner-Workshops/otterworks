@@ -1,0 +1,9 @@
+# Pipeline settings read by .github/workflows/platform-app-pipeline.yml
+app: kyc-docs
+smoke:
+  - path: /health
+    expect: 200
+  - path: /documents/HG611000001
+    expect: 200
+  - path: /documents/bad
+    expect: 400

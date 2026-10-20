@@ -1,0 +1,7 @@
+# kind run: the S3 stub from kind-deps/ (throwaway, in-memory).
+replicas: 1
+env:
+  KYC_S3_BUCKET: kyc-docs-ci
+  KYC_S3_ENDPOINT: http://s3.deps.svc.cluster.local:9000
+  KYC_S3_PATH_STYLE: "true"
+  KYC_S3_CREATE_BUCKET: "true"
