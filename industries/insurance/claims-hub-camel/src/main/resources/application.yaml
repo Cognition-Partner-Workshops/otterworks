@@ -30,6 +30,7 @@ claimshub:
     correction-window: 15m
     fixture-dir: ${claims.fixture.dir:../biztalk-claims-intake}
     out-dir: ${claimshub.out-dir:${CLAIMS_OUT_DIR:target/claims-hub-out}}
-    completed-uri: log:fnol.completed
-    suspended-uri: log:fnol.suspended?level=ERROR
-    assignment-uri: log:assignment.request
+    # The reported bodies are the claim documents (InsertClaim carries ClaimantName): log the exchange, not the body.
+    completed-uri: log:fnol.completed?showBody=false&showHeaders=false
+    suspended-uri: log:fnol.suspended?level=ERROR&showBody=false&showHeaders=false
+    assignment-uri: log:assignment.request?showBody=false&showHeaders=false
