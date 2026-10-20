@@ -122,7 +122,7 @@ public class ClaimPaymentRoutes extends RouteBuilder {
                                 + "&knownHostsFile={{claims.payment.vendor.known-hosts-file}}"
                                 + "&strictHostKeyChecking=yes&useUserKnownHostsFile=false"
                                 + "&tempFileName={{claims.payment.vendor.temporary-folder}}/$simple{file:onlyname}"
-                                + "&fileExist=Fail&binary=true&disconnect=true"
+                                + "&fileExist=Ignore&binary=true&disconnect=true"
                                 + "&maximumReconnectAttempts=0&connectTimeout=10000&jschLoggingLevel=WARN")
                         .setProperty(DELIVERED, constant(true))
                     .doCatch(Exception.class)
