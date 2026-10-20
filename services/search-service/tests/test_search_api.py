@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -103,6 +105,23 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    @pytest.mark.parametrize(
+        "hits",
+        [[], [{"title": "Test Doc 1"}, {"title": "Test Doc 2"}]],
+        ids=["empty-index", "with-hits"],
+    )
+    def test_suggest_never_5xx_with_chaos_flag_set(
+        self, client, mock_meilisearch_client, monkeypatch, hits
+    ):
+        """SearchSuggestErrors: suggest must not 5xx when chaos:search-service:suggest_500 is set in Redis."""
+        monkeypatch.setattr("app.api.search._chaos_active", lambda key: True)
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {"estimatedTotalHits": len(hits), "hits": hits}
+
+        response = client.get("/api/v1/search/suggest?q=te", headers={"X-User-ID": "user-1"})
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == [hit["title"] for hit in hits]
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
