@@ -1,0 +1,6 @@
+apiVersion: v2
+name: claims-hub-camel
+description: OtterWorks claims hub - BizTalk maps re-hosted on Java 21, Spring Boot 3.3 and Apache Camel 4
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

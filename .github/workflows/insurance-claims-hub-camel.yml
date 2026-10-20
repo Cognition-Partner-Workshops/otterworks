@@ -1,0 +1,61 @@
+name: Insurance claims hub (Camel)
+
+on:
+  push:
+    paths:
+      - "industries/insurance/claims-hub-camel/**"
+      - "industries/insurance/biztalk-claims-intake/corpus/**"
+      - "infrastructure/helm/claims-hub-camel/**"
+      - ".github/workflows/insurance-claims-hub-camel.yml"
+  pull_request:
+    paths:
+      - "industries/insurance/claims-hub-camel/**"
+      - "industries/insurance/biztalk-claims-intake/corpus/**"
+      - "infrastructure/helm/claims-hub-camel/**"
+      - ".github/workflows/insurance-claims-hub-camel.yml"
+
+jobs:
+  golden:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: industries/insurance/claims-hub-camel
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Golden tests
+        run: ./mvnw -B verify
+      - name: Per-map golden tables
+        if: always()
+        run: cat target/golden-report/*.md >> "$GITHUB_STEP_SUMMARY" || true
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Build image
+        run: docker build -t claims-hub-camel:ci industries/insurance/claims-hub-camel
+      - name: Container health
+        run: |
+          docker run -d --name claims-hub -p 8092:8092 claims-hub-camel:ci
+          for i in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' claims-hub)
+            [ "$status" = healthy ] && break
+            sleep 5
+          done
+          docker inspect -f '{{.State.Health.Status}} user={{.Config.User}}' claims-hub
+          curl -fsS http://localhost:8092/health
+          [ "$(docker inspect -f '{{.State.Health.Status}}' claims-hub)" = healthy ]
+      - name: Stop container
+        if: always()
+        run: docker rm -f claims-hub || true
+      - name: Helm template and kubeconform
+        run: |
+          curl -fsSL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz | tar xz -C /usr/local/bin kubeconform
+          helm lint infrastructure/helm/claims-hub-camel --set image.tag=ci
+          helm template claims-hub-camel infrastructure/helm/claims-hub-camel --set image.tag=ci | kubeconform -strict -summary
+

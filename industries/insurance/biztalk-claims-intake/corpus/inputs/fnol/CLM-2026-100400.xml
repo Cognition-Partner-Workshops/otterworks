@@ -1,0 +1,39 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000000</RqUID>
+  <TransactionRequestDt>2026-09-02T08:15:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0417</ProducerId>
+      <ProducerName>Harbourline Brokers</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-AUTO-48100</PolicyNumber>
+      <LOBCd>AUTO</LOBCd>
+        <EffectiveDt>2026-01-15</EffectiveDt>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Imogen</GivenName>
+      <Surname>Castellanos</Surname>
+      <TaxId>100-40-7000</TaxId>
+        <PriorFraudFlagInd>false</PriorFraudFlagInd>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100400</ClaimNumber>
+      <LossDt>2026-09-02</LossDt>
+      <ReportedDt>2026-09-02</ReportedDt>
+      <LossCauseCd>GLAS</LossCauseCd>
+      <IncidentDesc>Windscreen cracked by road debris on the interstate</IncidentDesc>
+      <EstimatedLossAmt>412.00</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+      <Addr>
+        <City>Bristol</City>
+        <StateProvCd>RI</StateProvCd>
+        <PostalCode>02809</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+      <AutoLossInfo>
+        <VIN>1HGCM82633A100000</VIN>
+        <DriveableInd>true</DriveableInd>
+      </AutoLossInfo>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>
