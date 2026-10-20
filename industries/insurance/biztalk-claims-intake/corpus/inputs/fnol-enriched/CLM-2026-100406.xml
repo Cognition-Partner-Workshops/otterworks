@@ -1,0 +1,26 @@
+<ns0:Root xmlns:ns0="http://schemas.microsoft.com/BizTalk/2003/aggschema">
+  <InputMessagePart_0>
+    <ns0:Claim xmlns:ns0="http://schemas.thistlecombe.example/canonical/claim"><ClaimNumber>CLM-2026-100406</ClaimNumber><SourceRqUID>6f1c3a2e-0000-4b1a-9c0d-000000000006</SourceRqUID><Agency><Id>AG-0417</Id><Name>Harbourline Brokers</Name></Agency><PolicyNumber>POL-HOME-48142</PolicyNumber><LineOfBusiness>HOME</LineOfBusiness><Claimant><FullName>Declan Ashworth</FullName><TaxIdMasked>***-**-7078</TaxIdMasked><Email>declan.ashworth@example.net</Email><PriorFraudFlag>false</PriorFraudFlag></Claimant><Loss><LossDate>2026-09-11</LossDate><ReportedDate>2026-09-12</ReportedDate><CauseCode>WIND</CauseCode><Description>Shingles and a section of fence lost in the overnight storm</Description><EstimatedAmount>2501.50</EstimatedAmount><Injury>false</Injury><PoliceReport>false</PoliceReport><City>Portsmouth</City><State>NH</State><PostalCode>03801</PostalCode></Loss></ns0:Claim>
+  </InputMessagePart_0>
+  <InputMessagePart_1>
+    <ns0:PolicyInqRs xmlns:ns0="http://schemas.thistlecombe.example/acord/policy">
+      <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000006</RqUID>
+      <PolicyNumber>POL-HOME-48142</PolicyNumber>
+      <PolicyStatusCd>Active</PolicyStatusCd>
+      <LOBCd>HOME</LOBCd>
+      <EffectiveDt>2026-09-01</EffectiveDt>
+      <ExpirationDt>2027-08-31</ExpirationDt>
+      <DeductibleAmt>1000.00</DeductibleAmt>
+      <CoverageLimitAmt>300000.00</CoverageLimitAmt>
+      <InsuredPartyId>PTY-070186</InsuredPartyId>
+      <Coverage>
+        <CoverageCd>DWELL</CoverageCd>
+        <LimitAmt>300000.00</LimitAmt>
+      </Coverage>
+      <Coverage>
+        <CoverageCd>LIAB</CoverageCd>
+        <LimitAmt>300000.00</LimitAmt>
+      </Coverage>
+    </ns0:PolicyInqRs>
+  </InputMessagePart_1>
+</ns0:Root>
