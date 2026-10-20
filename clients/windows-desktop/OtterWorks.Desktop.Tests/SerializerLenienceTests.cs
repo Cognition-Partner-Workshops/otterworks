@@ -77,6 +77,35 @@ namespace OtterWorks.Desktop.Tests
             }
         }
 
+        [Theory]
+        [InlineData("2026-10-02T14:05:12.12345675Z", 1234568L)]
+        [InlineData("2026-10-02T14:05:12.12345665Z", 1234567L)]
+        [InlineData("2026-10-02T14:05:12.12345664999Z", 1234566L)]
+        [InlineData("2026-10-02T14:05:12.99999995Z", 10000000L)]
+        public async Task Sub_tick_digits_round_on_the_eighth_digit(string stamp, long ticksAfterSecond)
+        {
+            string body = "{\"files\":[{\"id\":\"f\",\"created_at\":\"" + stamp + "\"}],\"total\":1}";
+            using (var server = new RecordingServer(200, body))
+            {
+                FileListResponse r = await Client(server).GetFilesAsync();
+
+                Assert.Equal(new DateTimeOffset(2026, 10, 2, 14, 5, 12, TimeSpan.Zero).AddTicks(ticksAfterSecond), r.Files[0].CreatedAt);
+            }
+        }
+
+        [Fact]
+        public async Task Numeric_ids_are_read_into_string_members()
+        {
+            string body = "{\"items\":[{\"id\":1042,\"title\":\"t\",\"owner_id\":7,\"version\":1}],\"total\":1}";
+            using (var server = new RecordingServer(200, body))
+            {
+                DocumentListResponse r = await Client(server).GetDocumentsAsync();
+
+                Assert.Equal("1042", r.Items[0].Id);
+                Assert.Equal("7", r.Items[0].OwnerId);
+            }
+        }
+
         [Fact]
         public async Task Non_ascii_title_is_sent_unescaped()
         {
