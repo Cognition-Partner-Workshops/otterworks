@@ -19,8 +19,8 @@ up() {
   python3 "$HERE/seed.py" | compose exec -T postgres psql -q -v ON_ERROR_STOP=1 -U claimshub -d claimshub >/dev/null
   for i in $(seq 1 30); do ssh-keyscan -p 2222 127.0.0.1 2>/dev/null | sed 's/^127.0.0.1/[127.0.0.1]:2222/' > "$RUN/keys/known_hosts"; [ -s "$RUN/keys/known_hosts" ] && break; sleep 1; done
   [ -f "$HUB/target/claims-hub-camel.jar" ] || (cd "$HUB" && ./mvnw -B -q -DskipTests package)
-  (cd "$RUN" && \
-    CLAIMS_DB_URL=jdbc:postgresql://127.0.0.1:55432/claimshub CLAIMS_DB_USER=claimshub CLAIMS_DB_PASSWORD=claimshub \
+  (cd "$RUN"
+       CLAIMS_DB_URL=jdbc:postgresql://127.0.0.1:55432/claimshub CLAIMS_DB_USER=claimshub CLAIMS_DB_PASSWORD=claimshub \
     CLAIMS_LEDGER_MIGRATE=true \
     CLAIMS_FIXTURE_DIR="$INS/biztalk-claims-intake" \
     CLAIMSHUB_FNOL_FIXTURE_DIR="$INS/biztalk-claims-intake" \
