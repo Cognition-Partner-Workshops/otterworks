@@ -177,6 +177,13 @@ in the body, and parity uses the one report shape (one row per unit, with source
 difference, verdict, and totals). Parity is to the cent with no tolerance band. A red row names its
 cause.
 
+> **Q1 (open, waiting on you):** Is the target for `COMMISSION_DW` still **dbt-postgres on
+> PostgreSQL 16**, as `carrier-modernization-standard` names it, or **Databricks**, which PRs
+> #1413/#1414 already scoped and approved for setup? With dbt-postgres, the warehouse moves first
+> and Oracle leaves entirely in this plan. With Databricks, this plan covers `COMMISSION_PAY`
+> only, Wave 1 changes, and the renewal must keep `COMMISSION_DW` licensed on the Databricks
+> track's timeline.
+
 ### Wave 1: Pin the legacy and prove the harness (no money moves)  — **OPEN on Q1**
 
 Always in Wave 1, whatever the answer:
