@@ -1,0 +1,118 @@
+version: 2
+
+# Oracle COMMISSION_PAY source extract (golden/*.csv, plan step s1.2), landed by
+# `dbt seed` into commission_pay. Column names are the Oracle ones from
+# db/oltp/01_tables.sql. Identity keys that are not natural keys (ledger_id,
+# rate_id) and calculated_at are not in the extract. Expected row counts and the
+# ledger total are the golden extract's (golden/README.md); regenerate them only
+# together with the golden files.
+sources:
+  - name: commission_pay
+    schema: commission_pay
+    description: Landed Oracle COMMISSION_PAY extract (OLTP system of record).
+    tables:
+      - name: agents
+        data_tests:
+          - row_count_equals:
+              arguments:
+                expected: 4
+        columns:
+          - name: agent_id
+            data_tests: [not_null, unique]
+          - name: agent_code
+            data_tests: [not_null, unique]
+          - name: full_name
+            data_tests: [not_null]
+          - name: license_no
+            data_tests: [not_null, unique]
+          - name: status
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ['ACTIVE', 'SUSPENDED', 'TERMINATED']
+          - name: hired_date
+            data_tests: [not_null]
+
+      - name: products
+        data_tests:
+          - row_count_equals:
+              arguments:
+                expected: 4
+        columns:
+          - name: product_code
+            data_tests: [not_null, unique]
+          - name: product_name
+            data_tests: [not_null]
+          - name: line_of_business
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ['AUTO', 'HOME', 'LIFE', 'COMMERCIAL']
+
+      - name: policies
+        data_tests:
+          - row_count_equals:
+              arguments:
+                expected: 7
+        columns:
+          - name: policy_id
+            data_tests: [not_null, unique]
+          - name: policy_no
+            data_tests: [not_null, unique]
+          - name: product_code
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('commission_pay', 'products')
+                    field: product_code
+          - name: holder_name
+            data_tests: [not_null]
+          - name: annual_premium
+            data_tests: [not_null]
+          - name: issued_date
+            data_tests: [not_null]
+          - name: status
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ['IN_FORCE', 'LAPSED', 'CANCELLED']
+
+      - name: commission_ledger
+        data_tests:
+          - row_count_equals:
+              arguments:
+                expected: 115
+          - unique_combination:
+              arguments:
+                columns: [policy_id, agent_id, period_month]
+        columns:
+          - name: policy_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('commission_pay', 'policies')
+                    field: policy_id
+          - name: agent_id
+            data_tests:
+              - not_null
+              - relationships:
+                  arguments:
+                    to: source('commission_pay', 'agents')
+                    field: agent_id
+          - name: period_month
+            data_tests: [not_null]
+          - name: split_pct
+            data_tests: [not_null]
+          - name: base_premium
+            data_tests: [not_null]
+          - name: commission_amt
+            data_tests:
+              - not_null
+              - column_total_equals:
+                  arguments:
+                    expected: 2328.31

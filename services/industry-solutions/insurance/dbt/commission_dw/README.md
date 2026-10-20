@@ -15,6 +15,28 @@ Models use `+schema` verbatim (`macros/generate_schema_name.sql`), so they land
 in `commission_dw`, not `<target>_commission_dw`. `packages.yml` is empty until
 a model needs `dbt_utils`.
 
+## Sources
+
+The Oracle `COMMISSION_PAY` extract (`golden/agents.csv`, `products.csv`,
+`policies.csv`, `commission_ledger.csv`) is loaded by `dbt seed` straight from
+`golden/` into `commission_pay`, and declared in `models/sources.yml` as
+`source('commission_pay', <table>)` with the Oracle column names. Every seed
+column has an explicit `column_types` entry in `dbt_project.yml` (money
+`numeric(12,2)`, `split_pct` `numeric(5,2)`, `period_month` `varchar(7)`), so dbt
+never infers a type. `fact_commission.csv` and `mv_agent_commission_summary.csv`
+are the Oracle outputs models are compared against and are not seeded.
+
+Source tests: `not_null`, `unique` on natural keys, `accepted_values` mirroring
+the Oracle CHECK constraints, `relationships` for the foreign keys, the ledger's
+`(policy_id, agent_id, period_month)` uniqueness, and row counts and the ledger
+`commission_amt` total (2328.31) pinned to the golden extract
+(`tests/generic/`). If the golden files are regenerated with different counts,
+update `models/sources.yml` in the same change.
+
+```bash
+dbt seed && dbt test --select 'source:*'
+```
+
 ## Run it
 
 From the repo root:

@@ -7,7 +7,8 @@ profile: commission_dw
 
 model-paths: ["models"]
 macro-paths: ["macros"]
-seed-paths: ["seeds"]
+# Seeds are read straight from the pinned Oracle extract; the CSVs are never edited.
+seed-paths: ["golden"]
 test-paths: ["tests"]
 analysis-paths: ["analyses"]
 snapshot-paths: ["snapshots"]
@@ -20,3 +21,49 @@ models:
   commission_dw:
     +schema: commission_dw
     +materialized: table
+
+# Landed source extract (s1.2): the four COMMISSION_PAY tables, loaded into
+# commission_pay with the Oracle column names. Every column has an explicit type
+# so dbt never infers one (inferred numerics would be float). Money is
+# numeric(12,2) and split_pct numeric(5,2), as NUMBER(12,2) / NUMBER(5,2) in
+# db/oltp/01_tables.sql. fact_commission and mv_agent_commission_summary are
+# the Oracle outputs the models are compared against, not sources, so they are
+# not seeded here.
+seeds:
+  commission_dw:
+    +schema: commission_pay
+    +quote_columns: false
+    fact_commission:
+      +enabled: false
+    mv_agent_commission_summary:
+      +enabled: false
+    agents:
+      +column_types:
+        agent_id: bigint
+        agent_code: varchar(16)
+        full_name: varchar(120)
+        license_no: varchar(32)
+        status: varchar(12)
+        hired_date: date
+    products:
+      +column_types:
+        product_code: varchar(16)
+        product_name: varchar(120)
+        line_of_business: varchar(24)
+    policies:
+      +column_types:
+        policy_id: bigint
+        policy_no: varchar(24)
+        product_code: varchar(16)
+        holder_name: varchar(120)
+        annual_premium: numeric(12,2)
+        issued_date: date
+        status: varchar(12)
+    commission_ledger:
+      +column_types:
+        policy_id: bigint
+        agent_id: bigint
+        period_month: varchar(7)
+        split_pct: numeric(5,2)
+        base_premium: numeric(12,2)
+        commission_amt: numeric(12,2)
