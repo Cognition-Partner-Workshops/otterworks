@@ -49,6 +49,8 @@ def corpus_measures(corpus: Path) -> dict:
     ledger = [read_xml(p) for p in sorted((corpus / "golden" / "ledger-post").glob("*.xml"))]
     notices = [read_xml(p) for p in sorted((corpus / "golden" / "assignment-notice").glob("*.xml"))]
     triage = [json.loads(p.read_text()) for p in sorted((corpus / "golden" / "triage").glob("*.json"))]
+    declined = {p.stem for p in (corpus / "golden" / "triage").glob("*.json")
+                if json.loads(p.read_text())["Outcome"] == "DECLINE_NOT_IN_FORCE"}
     trailers = []
     vendor_net_by_instruction = {}
     for p in sorted((corpus / "golden" / "vendor-remittance-ff").glob("*.txt")):
@@ -73,6 +75,10 @@ def corpus_measures(corpus: Path) -> dict:
         "claims_inserted": sum(1 for t in triage if t["Outcome"] != "DECLINE_NOT_IN_FORCE"),
         "net_exposure": sum(Decimal(text(d, "NetExposure")) for d in insert),
         "reserve": sum(Decimal(text(d, "ReserveEstimate")) for d in facts),
+        "reserve_entered": sum(Decimal(text(read_xml(p), "ReserveEstimate"))
+                               for p in sorted((corpus / "golden" / "triage-facts").glob("*.xml"))
+                               if p.stem not in declined),
+        "claims_declined": len(declined),
         "payment_instructions": len(payments),
         "ledger_posts": len(ledger),
         "ledger_lines": sum(int(text(d, "LineCount")) for d in ledger),
@@ -212,6 +218,20 @@ def build_checks(ora, dw, pg, c: dict, accepted: dict) -> list[dict]:
         "SELECT sum(earned_premium) FROM marts.loss_ratio_by_product_period")
     add("marts.loss_ratio_by_product_period", "sum(paid_loss)", "money", "corpus golden/ledger-post NetAmount",
         c["ledger_net"], "SELECT sum(paid_loss) FROM marts.loss_ratio_by_product_period")
+    add("marts.loss_ratio_by_product_period", "sum(unpriced_paid_loss)", "money",
+        "corpus golden/ledger-post NetAmount (stubs/policy carry no premium)", c["ledger_net"],
+        "SELECT sum(unpriced_paid_loss) FROM marts.loss_ratio_by_product_period")
+    add("marts.loss_ratio_by_product_period", "rows with loss_ratio", "rows",
+        "corpus stubs/policy carry no premium, so no hub premium base", 0,
+        "SELECT count(*) FROM marts.loss_ratio_by_product_period WHERE loss_ratio IS NOT NULL")
+    add("marts.loss_ratio_by_product_period", "sum(claims_reported)", "rows", "corpus inputs/fnol messages",
+        c["fnol_messages"], "SELECT sum(claims_reported) FROM marts.loss_ratio_by_product_period")
+    add("marts.loss_ratio_by_product_period", "sum(claims_declined)", "rows",
+        "corpus golden/triage, outcome DECLINE_NOT_IN_FORCE", c["claims_declined"],
+        "SELECT sum(claims_declined) FROM marts.loss_ratio_by_product_period")
+    add("marts.loss_ratio_by_product_period", "sum(reserve_reported)", "money",
+        "corpus golden/triage-facts ReserveEstimate, claims not declined", c["reserve_entered"],
+        "SELECT sum(reserve_reported) FROM marts.loss_ratio_by_product_period")
     add("marts.loss_ratio_by_product_period", "sum(commission_paid)", "money",
         "Oracle COMMISSION_PAY.COMMISSION_LEDGER", ora_q("SELECT SUM(commission_amt) FROM commission_ledger"),
         "SELECT sum(commission_paid) FROM marts.loss_ratio_by_product_period")

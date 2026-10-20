@@ -60,7 +60,7 @@ Money is `numeric(12,2)` everywhere. Where a value is rounded, the mode is the o
 | `claim_payments.indemnity_amount`, `expense_amount`, `salvage_credit`, `net_amount` | C# functoid `FormatMoney` on the per-type sums, .NET `Math.Round` | **HALF_EVEN**, differs from Oracle |
 | `claim_payments.vendor_debit_total`, `vendor_credit_total` | XSLT `round()` on each line's absolute cents, then summed | HALF_UP per line on the absolute value |
 | `claim_payments.vendor_rounding_difference` | difference of the two rows above, no rounding of its own | none (HALF_UP vendor net less HALF_EVEN ledger net) |
-| `loss_ratio_by_product_period.loss_ratio` | new; ratio, not money | half away from zero, 4 decimals |
+| `loss_ratio_by_product_period.loss_ratio` | new; ratio, not money | half away from zero, 4 decimals; hub earned premium is `round(annual_premium / 12, 2)`, HALF_UP as Oracle |
 
 `loader/common.py` names the two Python modes (`half_even`, `half_up`); no call site rounds without one of them.
 
@@ -70,16 +70,28 @@ Money is `numeric(12,2)` everywhere. Where a value is rounded, the mode is the o
 | --- | --- | --- | --- |
 | `stg_commission__ledger`, `stg_commission__agents`, `stg_commission__policies`, `stg_commission__products` | `stg` | view | source grain |
 | `stg_claims__policies`, `stg_claims__claims`, `stg_claims__claim_payments`, `stg_claims__adjuster_assignments` | `stg` | view | source grain |
-| `int_period_spine` | none | ephemeral | one calendar month, first to last ledger period or payment month |
+| `int_period_spine` | none | ephemeral | one calendar month, first to last ledger period, payment month or loss month |
 | `commission_by_agent_period` | `marts` | table | agent x ledger period |
-| `loss_ratio_by_product_period` | `marts` | table | line of business x month; earned premium, reported claims and reserve, paid indemnity, expense, salvage and net loss, vendor rounding difference, commission paid, paid loss ratio |
+| `loss_ratio_by_product_period` | `marts` | table | line of business x month; earned premium, claims reported and declined, reserve reported, paid indemnity, expense, salvage and net loss, unpriced paid loss, vendor rounding difference, commission paid, paid loss ratio |
 
 "Product" in `loss_ratio_by_product_period` is the line of business: the claims hub policies carry `LOBCd`
 and no Commission Pay product code, so line of business is the only key both sides share.
 
+Decided 2026-10-20 by the claims and finance owner:
+
+- `loss_ratio` is paid loss on claims hub policies that carry premium over the same policies' earned premium
+  (`round(annual_premium / 12, 2)` per in-force month of the term). Commission Pay premium (`earned_premium`)
+  is a different book and is never its denominator. The hub's policy stubs carry no premium today, so
+  `loss_ratio` is null in every row until they do; `unpriced_paid_loss` is the paid loss outside that premium
+  base (today all of `paid_loss`), so the hub's losses stay visible.
+- `claims_reported` counts every first notice of loss by loss month; `claims_declined` counts those triaged
+  `DECLINE_NOT_IN_FORCE` (4 in the corpus); `reserve_reported` sums `reserve_estimate` only for claims with
+  `entered_claims_system`.
+
 Tests: `unique` and `not_null` on every key, `relationships` on every foreign key, `unique_combination` on
 every mart grain, `money_scale_2` on every money column, `sum_equals` from each mart money column back to
-the staging column it summarises, `earned_premium_matches_policy_months`, and
+the staging column it summarises, `earned_premium_matches_policy_months`, `unpriced_paid_loss_is_paid_loss_without_hub_premium`,
+`loss_ratio_empty_without_hub_premium`, and
 `vendor_rounding_difference_closes_ledger_to_vendor_file` with `vendor_rounding_difference_per_payment` (net
 plus the difference is the vendor net, in total and row by row). `ledger_net_equals_vendor_file_net` is
 severity `warn` and stays a warning by decision: it is the `PI-2026-880107` cent below.
