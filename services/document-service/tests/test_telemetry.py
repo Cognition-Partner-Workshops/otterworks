@@ -5,14 +5,18 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import auth_headers
+
 
 @pytest.mark.asyncio
 async def test_list_reports_query_count(client: AsyncClient, owner_id: uuid.UUID):
     for i in range(3):
-        await client.post(
+        created = await client.post(
             "/api/v1/documents/",
-            json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
+            json={"title": f"Doc {i}", "content": ""},
+            headers=auth_headers(owner_id),
         )
+        assert created.status_code == 201
     resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
     assert resp.status_code == 200
     assert int(resp.headers["X-DB-Queries"]) >= 2
