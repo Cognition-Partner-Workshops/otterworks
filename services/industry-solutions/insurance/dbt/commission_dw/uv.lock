@@ -2,6 +2,10 @@ version = 1
 revision = 5
 requires-python = "==3.12.*"
 
+[options]
+exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
+exclude-newer-span = "P7D"
+
 [[package]]
 name = "agate"
 version = "1.9.1"
@@ -49,11 +53,11 @@ wheels = [
 
 [[package]]
 name = "certifi"
-version = "2026.10.19"
+version = "2026.7.22"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a6/bd/1436c50cc46699de0230fbaacc1d1de7bfec413176099949e9d5112e88f2/certifi-2026.10.19.tar.gz", hash = "sha256:035c1e85572b141bf1c3a3eff0e33a8eb74917522f2559075ff8d2fea780a1ae", size = 137598, upload-time = "2026-10-20T02:24:16.604Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a3/c2/24167ea9858356b47a87a50d39908bfdb72ceeefe0041586e704e5376b3a/certifi-2026.7.22.tar.gz", hash = "sha256:741e2c3b351ddf169a738da9f2c048608ff7f2c5cc02f1ebc6b118bb090d5d55", size = 138112, upload-time = "2026-07-22T03:35:12.644Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/51/29046e48f693c54e5b7412216d447a1d8362c9653148d98c02cdf65fa733/certifi-2026.10.19-py3-none-any.whl", hash = "sha256:42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b", size = 136464, upload-time = "2026-10-20T02:24:15.072Z" },
+    { url = "https://files.pythonhosted.org/packages/0b/a7/71ac2cff56fec219ed242bb11b8efb69fcc4bec75db06fb7bfe35de520e6/certifi-2026.7.22-py3-none-any.whl", hash = "sha256:62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775", size = 136983, upload-time = "2026-07-22T03:35:11.276Z" },
 ]
 
 [[package]]
@@ -126,7 +130,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "dbt-core", specifier = "==1.12.6" },
+    { name = "dbt-core", specifier = "==1.12.5" },
     { name = "dbt-postgres", specifier = "==1.11.0" },
 ]
 
@@ -184,7 +188,7 @@ wheels = [
 
 [[package]]
 name = "dbt-core"
-version = "1.12.6"
+version = "1.12.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "agate" },
@@ -213,16 +217,16 @@ dependencies = [
     { name = "sqlparse" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/47/85/37a226ed7c80dd83775f74bca99a42be9ec38e10fa4e21ef421da4e6e6c8/dbt_core-1.12.6.tar.gz", hash = "sha256:e4378ecde4740d6b6a5b706ad25162272e28dc20ee8390c42c1ebd637752574f", size = 1040922, upload-time = "2026-10-14T10:24:54.298Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/87/4b/92569e1b74c81578d4c699ce1ad04b47084d6cc78e6d9846a17c8536fba1/dbt_core-1.12.5.tar.gz", hash = "sha256:f17f662aed7b6a8b0d267ecf07448ad1ec03edf147a52abbdf5ee48d25999bb6", size = 1036303, upload-time = "2026-09-15T19:08:28.036Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/57/9a/db7029272bd80bde5d7e80588bfea5a031762f4180764f50bb4e473a8634/dbt_core-1.12.6-py3-none-any.whl", hash = "sha256:a14fb6724a557dea781afa19171869a1b0b286a396d5dc012e74b8bd3596325e", size = 1137877, upload-time = "2026-10-14T10:24:52.426Z" },
+    { url = "https://files.pythonhosted.org/packages/98/8e/90f07667fdc1b448f167a48f53bc0db3641cd4eb9ab5f1af2c1a2171f754/dbt_core-1.12.5-py3-none-any.whl", hash = "sha256:77661a8c9ee1d1ec7a8ed904d15a0937289d12ba6fd2d86d6f36d3eea735ce3d", size = 1132717, upload-time = "2026-09-15T19:08:26.36Z" },
 ]
 
 [[package]]
 name = "dbt-core-experimental-parser"
-version = "2.0.8"
+version = "2.0.5"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/cc/5d/7b4abb8623fae9159c5791959c9f9c0b5ead9e5590111bdaa451edbd2835/dbt_core_experimental_parser-2.0.8.tar.gz", hash = "sha256:35b7760967f9542fd0b1a3cd742ffd24e8e08a18473a84a891a3bc8a9d6b2910", size = 4776, upload-time = "2026-10-14T07:50:40.698Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/44/22/43a63fb0cd40dba713dba46c83e860924b42e90be0b9af00afc7482ac21d/dbt_core_experimental_parser-2.0.5.tar.gz", hash = "sha256:b6ad345dc5bf187d8324d2f643ba6aad274eeb51e5c3b7c17780ea62338b069c", size = 4835, upload-time = "2026-09-18T15:49:27.495Z" }
 
 [[package]]
 name = "dbt-extractor"
@@ -265,14 +269,14 @@ wheels = [
 
 [[package]]
 name = "dbt-protos"
-version = "1.0.607"
+version = "1.0.594"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "protobuf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/37/08/e89755cfd7ad1a86e608cec777b36c5902eb06f8e413e09b9d8e27bdf0bb/dbt_protos-1.0.607.tar.gz", hash = "sha256:96fa629cbfb6006fc52bc66b503486f291ed252a382de415b7e56b8ed33dabe5", size = 218766, upload-time = "2026-10-19T13:42:22.539Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/18/09863423806b83d24e1e36f3b00495a10eff7557de739dd25b87992a0533/dbt_protos-1.0.594.tar.gz", hash = "sha256:23140898ff8bcbb9291f087c9f344c0a4a4279e31639916196ff98fb2e41967d", size = 203550, upload-time = "2026-10-06T13:27:20.007Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/82/f1/49d8c5cc7e4f0dd1267c3bfb5313085adbc9cbbc2413b30dda8beced4799/dbt_protos-1.0.607-py3-none-any.whl", hash = "sha256:e3327b42e6225a3663d32982368d4ba03988be8ed9a0af3eee90c1ab4e20b673", size = 295525, upload-time = "2026-10-19T13:42:20.992Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/f9/0061d9f37ceda97a2a113c1824351dff5a1865e78050eaeadd45178b0378/dbt_protos-1.0.594-py3-none-any.whl", hash = "sha256:2c50d479eb4f56737881c346c95cc3bfcb0c3f814360a88a0e9e463203f64b76", size = 277290, upload-time = "2026-10-06T13:27:18.615Z" },
 ]
 
 [[package]]
@@ -627,11 +631,11 @@ wheels = [
 
 [[package]]
 name = "pytimeparse"
-version = "1.1.10"
+version = "1.1.9"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/92/bf/87bd96fd60abf241cae10e6f7fc3882c8a81ebdbe76f49f9c3116b5b38ab/pytimeparse-1.1.10.tar.gz", hash = "sha256:ecf0ee613a72cb0b1d3d5404bd398a64266576fc36ccf3149178af6f2ec6f736", size = 11613, upload-time = "2026-10-17T12:38:58.437Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/25/54/09a581001791222c59d26f6317fc42955f011e79de2be933dfbf12bee3ed/pytimeparse-1.1.9.tar.gz", hash = "sha256:1f1c0bedcfbe481b78f7cb11dba7d81039455af8ba014eafc6df060c9c0ab156", size = 10955, upload-time = "2026-10-03T08:41:40.365Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b1/e4/507b557e0f2a8dcddb14bb951bcf2ac04afc229e73c7256ccbc3a930ca58/pytimeparse-1.1.10-py3-none-any.whl", hash = "sha256:a9f9117a02eaa32efd268e70af29bc3ec1e84f473d3edef6d9809b36793b1c5d", size = 10661, upload-time = "2026-10-17T12:38:57.254Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/3e/4b31b0368f0a8796506337bd3a44fd9a524de1adb82e108ad29caafd0bf2/pytimeparse-1.1.9-py3-none-any.whl", hash = "sha256:627b2f483d8b713cc86d78f95c17d5acc06794949afc51ad8dabfa9655e3c8ba", size = 9957, upload-time = "2026-10-03T08:41:39.237Z" },
 ]
 
 [[package]]
@@ -772,11 +776,11 @@ wheels = [
 
 [[package]]
 name = "sqlglot"
-version = "30.23.0"
+version = "30.22.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/0c/40/4afe7d21cdf3dbb5a7529ea33a0e07055081fb3d37bc0550e7c2278d6ec0/sqlglot-30.23.0.tar.gz", hash = "sha256:34b5b62fa4cbf042ee6b9e829236577b2f8db4538dd20007de2aa5383c92e845", size = 6108071, upload-time = "2026-10-14T21:48:38.209Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/94/e0/db58fbf2527426758dc1e862ce538736978e100e4e78fc9657e9661826ee/sqlglot-30.22.0.tar.gz", hash = "sha256:ec4b83ca8236ea8867f574a382dc15ce35b071c977fecfcc66482d9a3f500661", size = 6088770, upload-time = "2026-10-09T16:09:01.04Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/73/9e749f3e57ca471bf663eb6d51fbe79b9921c5b7376706cd1cac999c8e2e/sqlglot-30.23.0-py3-none-any.whl", hash = "sha256:b5a645722cb4c6b649e9131b94830d9df9a557e87be63713179d848320f2baa1", size = 783709, upload-time = "2026-10-14T21:48:36.327Z" },
+    { url = "https://files.pythonhosted.org/packages/b4/4c/b8474b02b572d9c7a2903e364335d566d52b6128b834b92a7cdfe5597823/sqlglot-30.22.0-py3-none-any.whl", hash = "sha256:90aa461490fcd95d14ec3842a97506ae20f6d3e9313307ad31be793d479cca65", size = 777816, upload-time = "2026-10-09T16:08:59.07Z" },
 ]
 
 [[package]]

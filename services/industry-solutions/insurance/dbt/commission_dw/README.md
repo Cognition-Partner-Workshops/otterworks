@@ -7,7 +7,7 @@ pinned Oracle baseline it is measured against is in `golden/`.
 | Piece | Version / value |
 |---|---|
 | Python | 3.12 via `uv` (`.python-version`, `pyproject.toml`, `uv.lock`; `requirements.txt` is `uv export` of the lock) |
-| dbt | `dbt-core==1.12.6`, `dbt-postgres==1.11.0` |
+| dbt | `dbt-core==1.12.5`, `dbt-postgres==1.11.0` |
 | Database | `postgres:16`, db `commission`, login `commission_dw` |
 | Schemas | `commission_pay` (landed sources, Oracle `COMMISSION_PAY`), `commission_dw` (models, Oracle `COMMISSION_DW`) |
 
