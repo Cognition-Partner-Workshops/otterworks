@@ -33,6 +33,31 @@ impl S3Client {
         }
     }
 
+    /// Confirm the configured bucket exists and is reachable with the current
+    /// credentials. Called once at startup so a misconfigured `S3_BUCKET`
+    /// (NoSuchBucket / AccessDenied) fails the deploy instead of surfacing as
+    /// a 500 on every upload.
+    pub async fn verify_bucket(&self) -> Result<(), ServiceError> {
+        self.client
+            .head_bucket()
+            .bucket(&self.bucket)
+            .send()
+            .await
+            .map_err(|e| {
+                let detail = e
+                    .as_service_error()
+                    .map(|se| se.to_string())
+                    .unwrap_or_else(|| e.to_string());
+                ServiceError::S3Error(format!(
+                    "bucket '{}' is not accessible: {detail}",
+                    self.bucket
+                ))
+            })?;
+
+        tracing::info!(bucket = %self.bucket, "Verified S3 bucket");
+        Ok(())
+    }
+
     /// Upload file content to S3.
     pub async fn upload_object(
         &self,

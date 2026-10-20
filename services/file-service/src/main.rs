@@ -12,6 +12,28 @@ mod middleware;
 mod models;
 mod storage;
 
+const BUCKET_CHECK_ATTEMPTS: u32 = 5;
+const BUCKET_CHECK_BACKOFF: std::time::Duration = std::time::Duration::from_secs(2);
+
+/// LocalStack and friends may still be initialising when the service boots,
+/// so give the bucket check a few tries before declaring the config broken.
+async fn verify_bucket_with_retry(s3: &storage::S3Client) -> Result<(), errors::ServiceError> {
+    let mut last_err = None;
+    for attempt in 1..=BUCKET_CHECK_ATTEMPTS {
+        match s3.verify_bucket().await {
+            Ok(()) => return Ok(()),
+            Err(err) => {
+                tracing::warn!(attempt, max = BUCKET_CHECK_ATTEMPTS, error = %err, "S3 bucket check failed");
+                last_err = Some(err);
+                if attempt < BUCKET_CHECK_ATTEMPTS {
+                    tokio::time::sleep(BUCKET_CHECK_BACKOFF).await;
+                }
+            }
+        }
+    }
+    Err(last_err.expect("at least one attempt"))
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenvy::dotenv().ok();
@@ -25,7 +47,20 @@ async fn main() -> std::io::Result<()> {
         .init();
 
     let app_config = config::AppConfig::from_env();
+    if let Err(reason) = app_config.aws.validate() {
+        tracing::error!(%reason, "Invalid AWS configuration; refusing to start");
+        std::process::exit(1);
+    }
+
     let s3_client = storage::S3Client::new(&app_config.aws).await;
+    if let Err(err) = verify_bucket_with_retry(&s3_client).await {
+        tracing::error!(
+            bucket = %s3_client.bucket,
+            error = %err,
+            "S3_BUCKET is not usable; check the env var / Helm value against the Terraform s3_file_bucket output. Refusing to start"
+        );
+        std::process::exit(1);
+    }
     let meta_client = metadata::MetadataClient::new(&app_config.aws).await;
     let event_publisher = events::EventPublisher::new(&app_config.sns, &app_config.aws).await;
 
