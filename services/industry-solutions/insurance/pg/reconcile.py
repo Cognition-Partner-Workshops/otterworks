@@ -15,17 +15,23 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
-from common import RELATIONS, control_metrics, fetch_rows, oracle_columns, oracle_connect, pg_connect, query
+from common import LEDGER, RATES, RELATIONS, control_metrics, fetch_rows, oracle_columns, oracle_connect, pg_connect, query
 
 HERE = Path(__file__).parent
 GOLDEN = HERE / "golden" / "oracle_baseline.json"
 REPORTS = HERE / "reports"
 
-OK, RED, ACCEPTED = "MATCH", "MISMATCH", "ACCEPTED"
+OK, RED, ACCEPTED, INFO = "MATCH", "MISMATCH", "ACCEPTED", "INFO"
 
 # Divergences decided by Commission Pay owners. A probe whose outcomes differ
 # is red until its decision is recorded here.
-DECISIONS: dict[str, str] = {}
+DECISIONS: dict[str, str] = {
+    "D1": "A, plain identity; an explicit NULL id is rejected",
+    "D2": "A, varchar(n) counts characters",
+    "D3": "B, CHECK (col <> '') on NOT NULL strings",
+    "D4": "A, commission_amount reproduces Oracle NUMBER arithmetic",
+    "D5": "A, bare NUMBER id columns are bigint",
+}
 
 STRING_MAX = "ñ" * 120  # 120 characters, 240 bytes in AL32UTF8 / UTF8
 
@@ -54,8 +60,12 @@ PROBES = [
       "SELECT annual_premium FROM commission_pay.policies WHERE policy_id IN (901, 902) ORDER BY policy_id"]),
     ("P6", None, "ROUND(x, 2) at the half cent: 2.345, 0.125, -2.345, 2.3449999",
      [("SELECT ROUND(2.345, 2), ROUND(0.125, 2), ROUND(-2.345, 2), ROUND(2.3449999, 2){dual}", None)]),
-    ("P7", "D4", "legacy formula at a half cent: premium 10003.00, rate 10, split 60 (exact 50.015)",
-     [("SELECT ROUND(10003.00 / 12 * 10 / 100 * 60 / 100, 2), 10003.00 / 12 * 10 / 100 * 60 / 100{dual}", None)]),
+    ("P7", "D4", "commission at a half cent: premium 10003.00, rate 10, split 60 (exact 50.015)",
+     [{"oracle": "SELECT ROUND(10003.00 / 12 * 10 / 100 * 60 / 100, 2) FROM dual",
+       "pg": "SELECT commission_pay.commission_amount(10003.00, 10, 60)"}]),
+    ("P7b", None, "the same with PostgreSQL's native numeric (what a naive port gives; not used)",
+     [{"oracle": "SELECT ROUND(10003.00 / 12 * 10 / 100 * 60 / 100, 2) FROM dual",
+       "pg": "SELECT ROUND(10003.00 / 12 * 10 / 100 * 60 / 100, 2)"}]),
     ("P8", "D5", "non-integer into an unconstrained NUMBER id column (rate_audit_log.agent_id = 1.5)",
      ["INSERT INTO commission_pay.rate_audit_log (action, agent_id, actor) VALUES ('PROBE', 1.5, 'probe')",
       "SELECT agent_id FROM commission_pay.rate_audit_log WHERE action = 'PROBE'"]),
@@ -67,6 +77,8 @@ def run_probe(conn, engine: str, statements) -> str:
     try:
         for stmt in statements:
             param = None
+            if isinstance(stmt, dict):
+                stmt = stmt[engine]
             if isinstance(stmt, tuple):
                 stmt, param = stmt
             if "{s}" in stmt:
@@ -160,14 +172,17 @@ def schema_rows(ora, pg, ora_pay) -> list[dict]:
                            AND constraint_type = 'R') FROM dual""", {"o": schema.upper(), "t": table.upper()})[0]
             p_cnt = query(pg, """
                 SELECT (SELECT COUNT(*) FROM pg_index WHERE indrelid = %(t)s::regclass AND indisunique),
-                       (SELECT COUNT(*) FROM pg_constraint WHERE conrelid = %(t)s::regclass AND contype = 'c'),
-                       (SELECT COUNT(*) FROM pg_constraint WHERE conrelid = %(t)s::regclass AND contype = 'f')""",
+                       (SELECT COUNT(*) FROM pg_constraint WHERE conrelid = %(t)s::regclass AND contype = 'c'
+                           AND conname NOT LIKE '%%\\_nonempty'),
+                       (SELECT COUNT(*) FROM pg_constraint WHERE conrelid = %(t)s::regclass AND contype = 'f'),
+                       (SELECT COUNT(*) FROM pg_constraint WHERE conrelid = %(t)s::regclass AND contype = 'c'
+                           AND conname LIKE '%%\\_nonempty')""",
                           {"t": f"{schema}.{table}"})[0]
-            if tuple(int(x) for x in o_cnt) != tuple(int(x) for x in p_cnt):
+            if tuple(int(x) for x in o_cnt) != tuple(int(x) for x in p_cnt[:3]):
                 problems.append(f"unique/check/FK counts {tuple(o_cnt)} vs {tuple(p_cnt)}")
             src = f"{len(o_cols)} cols, {o_ident} identity, unique {o_cnt[0]}, check {o_cnt[1]}, FK {o_cnt[2]}"
             tgt = f"{len(p_cols)} cols, {sum(1 for c in p_cols if c[3])} identity, unique {p_cnt[0]}, " \
-                  f"check {p_cnt[1]}, FK {p_cnt[2]}"
+                  f"check {p_cnt[1]} (+{p_cnt[3]} non-empty, D3), FK {p_cnt[2]}"
         rows.append({"unit": f"{schema}.{table}", "source": src, "target": tgt,
                      "difference": "; ".join(problems) or "none", "verdict": RED if problems else OK})
 
@@ -287,6 +302,10 @@ def probe_rows() -> list[dict]:
         for pid, decision, what, statements in PROBES:
             o = run_probe(ora, "oracle", statements)
             p = run_probe(pg, "pg", statements)
+            if pid == "P7b":
+                rows.append({"unit": f"{pid} {what}", "source": o, "target": p,
+                             "difference": "same outcome" if o == p else "outcome differs", "verdict": INFO})
+                continue
             same = o.split(" (")[0] == p.split(" (")[0] if o.startswith("rejected") else o == p
             if same:
                 verdict = OK
@@ -297,6 +316,74 @@ def probe_rows() -> list[dict]:
             rows.append({"unit": f"{pid} {what}", "source": o, "target": p,
                          "difference": "same outcome" if same else "outcome differs", "verdict": verdict})
     return rows
+
+
+# --- half-cent rounding (decision D4) -----------------------------------------
+
+GRID_RATES = ["8", "8.5", "8.75", "9.5", "10", "15", "12.25", "7.33"]
+GRID_SPLITS = ["20", "30", "35", "40", "50", "60", "65", "100", "33.33", "12.5"]
+GRID_CENTS = (1_000_000, 1_020_000)  # premiums 10,000.00 to 10,200.00 in steps of one cent
+
+# COMMISSION_PKG's own arithmetic: PL/SQL NUMBER variables, the package's expression.
+ORACLE_GRID = """WITH FUNCTION pkg_amt(p NUMBER, r NUMBER, s NUMBER) RETURN NUMBER IS
+    BEGIN RETURN ROUND(p / 12 * r / 100 * s / 100, 2); END;
+SELECT pc, r, s, pkg_amt(pc / 100, r, s) FROM
+  (SELECT {lo} - 1 + LEVEL AS pc FROM dual CONNECT BY LEVEL <= {n}),
+  (SELECT TO_NUMBER(COLUMN_VALUE) r FROM TABLE(sys.odcivarchar2list({rates}))),
+  (SELECT TO_NUMBER(COLUMN_VALUE) s FROM TABLE(sys.odcivarchar2list({splits})))"""
+PG_GRID = """SELECT pc, r, s, commission_pay.commission_amount(pc / 100.0, r, s),
+       ROUND(pc / 100.0 / 12 * r / 100 * s / 100, 2), ROUND(pc * r * s / 12000000.0, 2)
+  FROM generate_series({lo}, {hi}) pc,
+       unnest(ARRAY[{rates}]::numeric[]) r, unnest(ARRAY[{splits}]::numeric[]) s"""
+
+
+def grid_rows(ora, pg) -> list[dict]:
+    lo, hi = GRID_CENTS
+    lits = {"rates": ",".join(f"'{x}'" for x in GRID_RATES),
+            "splits": ",".join(f"'{x}'" for x in GRID_SPLITS)}
+
+    def key(pc, r, s):
+        return int(pc), Decimal(r).normalize(), Decimal(s).normalize()
+
+    ora_amt = {key(pc, r, s): Decimal(a) for pc, r, s, a in
+               query(ora, ORACLE_GRID.format(lo=lo, n=hi - lo + 1, **lits))}
+    pg_rows = {key(pc, r, s): tuple(Decimal(x) for x in v) for pc, r, s, *v in
+               query(pg, PG_GRID.format(lo=lo, hi=hi, **lits))}
+    n = len(ora_amt)
+    missing = len(set(ora_amt) ^ set(pg_rows))
+    spec = (f"{n:,} combinations: premium {lo / 100:,.2f} to {hi / 100:,.2f} by 0.01 x "
+            f"{len(GRID_RATES)} rates x {len(GRID_SPLITS)} splits")
+
+    def compare(i):
+        diff = [k for k in ora_amt if k in pg_rows and pg_rows[k][i] != ora_amt[k]]
+        ex = ""
+        if diff:
+            pc, r, s = min(diff)
+            ex = f" (e.g. premium {pc / 100:,.2f} rate {r:f} split {s:f}: Oracle {ora_amt[min(diff)]}, " \
+                 f"PG {pg_rows[min(diff)][i]})"
+        return len(diff), ex
+
+    d_a, ex_a = compare(0)
+    d_n, ex_n = compare(1)
+    d_b, ex_b = compare(2)
+    ledger = query(pg, f"""
+        SELECT COUNT(*), COUNT(*) FILTER (WHERE commission_pay.commission_amount(l.base_premium, r.rate_pct,
+                                                l.split_pct) = l.commission_amt)
+          FROM {LEDGER} l JOIN {RATES} r ON r.rate_id = l.rate_id""")[0]
+    return [
+        {"unit": "D4 A: PG commission_amount vs Oracle COMMISSION_PKG arithmetic (must be 0)",
+         "source": spec, "target": f"{n - d_a - missing:,} identical", "difference": f"{d_a + missing} differ{ex_a}",
+         "verdict": OK if d_a + missing == 0 else RED},
+        {"unit": "PG commission_amount on every stored ledger row", "source": f"{ledger[0]} stored amounts",
+         "target": f"{ledger[1]} recomputed equal", "difference": f"{ledger[0] - ledger[1]} differ",
+         "verdict": OK if ledger[0] == ledger[1] and ledger[0] > 0 else RED},
+        {"unit": "Not used: PG native numeric ROUND(premium / 12 * rate / 100 * split / 100, 2)",
+         "source": spec, "target": f"{n - d_n:,} identical", "difference": f"{d_n} differ by one cent{ex_n}",
+         "verdict": INFO},
+        {"unit": "Not chosen, option B: exact ROUND(premium x rate x split / 120000, 2), half up",
+         "source": spec, "target": f"{n - d_b:,} identical", "difference": f"{d_b} differ by one cent{ex_b}",
+         "verdict": INFO},
+    ]
 
 
 # --- report -------------------------------------------------------------------
@@ -324,6 +411,7 @@ def main() -> int:
     with oracle_connect() as ora, pg_connect() as pg:
         o_m, p_m = control_metrics(ora), control_metrics(pg)
         tables = table_rows(ora, pg, o_m, p_m)
+        rounding = grid_rows(ora, pg)
         with oracle_connect("commission_pay") as ora_pay:
             schema = schema_rows(ora, pg, ora_pay)
     probes = probe_rows()
@@ -334,10 +422,10 @@ def main() -> int:
     golden = golden_rows(o_m)
     recompute = recompute_rows(o_m, p_m)
 
-    sections = [tables, schema, probes, agents, periods, agent_periods, mv, golden, recompute]
+    sections = [tables, schema, probes, agents, periods, agent_periods, mv, golden, recompute, rounding]
     red = sum(1 for s in sections for r in s if str(r["verdict"]).startswith(RED))
 
-    for r in tables + schema + probes + golden + recompute:
+    for r in tables + schema + probes + golden + recompute + rounding:
         r["verdict"] = verdict_cell(r["verdict"])
     t_red = sum(1 for r in tables if r["verdict"].startswith("**"))
     tables_total = {"unit": "**Total (13 relations)**",
@@ -365,6 +453,8 @@ def main() -> int:
     md += md_table(agent_periods + [total_row(agent_periods)], std, ["Agent period", *hdr]) + ["", "</details>", ""]
     md += ["### Ledger recomputed from premium, rate and split", ""]
     md += md_table(recompute, std, ["Check", *hdr])
+    md += ["", "### Half-cent rounding (decision D4)", ""]
+    md += md_table(rounding, std, ["Check", *hdr])
     md += ["", "### Schema translation", ""]
     md += md_table(schema, std, ["Object", *hdr])
     md += ["", "### Constraint and rounding behaviour (probes, rolled back)", ""]

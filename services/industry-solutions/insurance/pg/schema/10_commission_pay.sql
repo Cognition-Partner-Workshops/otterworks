@@ -54,6 +54,11 @@ CREATE TABLE commission_rates (
 
 -- Oracle: UNIQUE INDEX ux_rates_open (product_code, NVL(agent_id, -1),
 --         CASE WHEN effective_to IS NULL THEN 0 END)
+-- Translated as is, legacy behaviour included: Oracle indexes a row whose
+-- key is partly NULL, so closed rates of one scope collide with each other
+-- and upsert_commission_rate can supersede a scope only once. NULLS NOT
+-- DISTINCT makes PostgreSQL reject the second closed rate the same way.
+-- This is the legacy behaviour reproduced, not a fix.
 CREATE UNIQUE INDEX ux_rates_open ON commission_rates (
     product_code,
     COALESCE(agent_id, -1),
@@ -110,6 +115,45 @@ CREATE TABLE rate_audit_log (
 CREATE TABLE fixture_meta (
     initialized_at timestamp(6) DEFAULT LOCALTIMESTAMP NOT NULL
 );
+
+-- Oracle NUMBER arithmetic, reproduced (decision D4 A). Oracle holds every
+-- intermediate result of an expression in a NUMBER: a mantissa of 20 base-100
+-- digits (38 to 40 significant decimal digits), rounded half up. PostgreSQL
+-- numeric keeps a different number of digits, so the legacy formula
+-- annual_premium / 12 * rate_pct / 100 * split_pct / 100 rounded to cents can
+-- land on the other side of a half cent. ora_number rounds a value the way
+-- Oracle stores it; commission_amount applies it after every operation in the
+-- order COMMISSION_PKG.CALCULATE_POLICY_COMMISSION evaluates them.
+CREATE FUNCTION ora_number(x numeric) RETURNS numeric
+LANGUAGE plpgsql IMMUTABLE STRICT PARALLEL SAFE AS $$
+DECLARE
+    e10  integer;
+    e100 integer;
+BEGIN
+    IF x = 0 THEN
+        RETURN 0;
+    END IF;
+    e10 := floor(log(abs(x)));
+    IF abs(x) >= power(10::numeric, e10 + 1) THEN
+        e10 := e10 + 1;
+    ELSIF abs(x) < power(10::numeric, e10) THEN
+        e10 := e10 - 1;
+    END IF;
+    e100 := floor(e10 / 2.0);
+    RETURN round(x, 2 * (19 - e100));
+END;
+$$;
+
+CREATE FUNCTION commission_amount(annual_premium numeric, rate_pct numeric, split_pct numeric)
+RETURNS numeric(12, 2)
+LANGUAGE sql IMMUTABLE STRICT PARALLEL SAFE AS $$
+    SELECT round(
+        commission_pay.ora_number(round(
+            commission_pay.ora_number(commission_pay.ora_number(round(
+                commission_pay.ora_number(commission_pay.ora_number(round(annual_premium, 80) / 12) * rate_pct), 80) / 100)
+                * split_pct), 80) / 100),
+        2)
+$$;
 
 GRANT SELECT ON ALL TABLES IN SCHEMA commission_pay TO commission_dw;
 RESET ROLE;
