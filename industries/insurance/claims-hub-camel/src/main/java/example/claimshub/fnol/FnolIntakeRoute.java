@@ -35,6 +35,9 @@ public class FnolIntakeRoute extends RouteBuilder {
     static final String DECLINE = "DECLINE_NOT_IN_FORCE";
     static final String FRAUD = "FRAUD_REVIEW";
     static final String FAST_TRACK = "FAST_TRACK";
+    /** ClaimNumberType and AgencyIdType: the promoted ids name the fraud, decline and glass files, so each is one plain id. */
+    static final String CLAIM_NUMBER_PATTERN = "CLM-[0-9]{4}-[0-9]{6}";
+    static final String AGENCY_ID_PATTERN = "AG-[0-9]{4}";
 
     private static final String FNOL = "/*[local-name()='ClaimsSvcRq']/*[local-name()='ClaimsNotificationAddRq']";
     private static final String AGGREGATE_NS = "http://schemas.microsoft.com/BizTalk/2003/aggschema";
@@ -75,6 +78,8 @@ public class FnolIntakeRoute extends RouteBuilder {
                     .setHeader("FnolSuspendedReason", simple("${exception.message}"))
                     .to(properties.suspendedUri())
                 .end()
+                .validate(header("ClaimNumber").regex(CLAIM_NUMBER_PATTERN))
+                .validate(header("AgencyId").regex(AGENCY_ID_PATTERN))
                 // Construct_Canonical / Construct_Canonical_From_Correction
                 .to(map("Fnol_to_CanonicalClaim.xslt"))
                 .setProperty("msgClaim", body())
