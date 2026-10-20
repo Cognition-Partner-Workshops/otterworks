@@ -20,4 +20,13 @@ Tests read the fixture from `-Dclaims.fixture.dir` (default `../biztalk-claims-i
 
 A message that cannot be made byte-identical stays red: its dynamic test fails, and `knownCauses()` names the cause in the failure and in the report row. It is never skipped or relaxed.
 
+## Conventions for a converted orchestration
+
+| Piece | Where | Rule |
+| --- | --- | --- |
+| Route | `src/main/java/example/claimshub/orchestrations/<Name>Route.java` | Consumes `OrchestrationEndpoints.of("<Name>")` (`direct:orchestration.<Name>`), route id `orchestration.<Name>`. Body in is the message the activating receive took. A parallel shape is a `multicast` with an aggregation strategy; maps it calls go through their `direct:map.*` routes. |
+| Characterization test | `src/test/java/example/claimshub/orchestrations/<Name>OrchestrationTest.java` | Written from the XLANG/s before the route; runs against real ports in Testcontainers and checks every corpus output byte for byte. |
+
+`AdjusterAssignment` ports: the WCF-SQL roster port is `jdbc:dataSource` calling `usp_get_adjuster_roster(region, skill, as_of)` (the test schema in `src/test/resources/roster/schema.sql`, seeded from `corpus/stubs/roster`), the FILE archive port is `file:{{claimshub.archive.dir}}`, and the SMTP port is `smtp://{{claimshub.smtp.host}}:{{claimshub.smtp.port}}` with the notice text as the body and the notice attached. The test needs Docker (PostgreSQL 16 and MailHog).
+
 `GoldenMapTestSelfTest` proves the harness through Camel with an identity route over the `CanonicalClaim_to_PolicyInqRq` goldens; `CorpusManifestTest` checks the manifest still lists the eight maps and 112 goldens.

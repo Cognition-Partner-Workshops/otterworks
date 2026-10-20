@@ -1,7 +1,20 @@
 spring:
   application:
     name: claims-hub-camel
+  datasource:
+    # ClaimsCore, where sp_ClaimsDb_RosterQuery_WcfSql ran dbo.usp_GetAdjusterRoster.
+    url: jdbc:postgresql://localhost:5432/claimscore
+    username: claimshub
 camel:
   springboot:
     name: claims-hub
     main-run-controller: true
+claimshub:
+  archive:
+    # sp_Compliance_AssignmentArchive_FILE
+    dir: target/assignment-archive
+  smtp:
+    # sp_Adjuster_AssignmentNotice_SMTP
+    host: localhost
+    port: 1025
+    from: claims-hub@thistlecombe.example
