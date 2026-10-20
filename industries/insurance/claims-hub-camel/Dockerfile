@@ -15,6 +15,8 @@ FROM eclipse-temurin:21-jre
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/* \
     && useradd -r -u 1001 appuser
 WORKDIR /app
+# ClaimPayment.Inbox polls the relative disbursements/out (CLAIMS_PAYMENT_INBOX)
+RUN mkdir -p disbursements/out && chown -R 1001 disbursements
 COPY --from=builder /app/target/claims-hub-camel.jar app.jar
 USER 1001
 EXPOSE 8092
