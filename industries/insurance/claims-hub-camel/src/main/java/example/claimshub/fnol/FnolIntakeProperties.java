@@ -17,14 +17,22 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @param assignmentUri Assignment.RequestAssignment, until AdjusterAssignment is converted
  */
 @ConfigurationProperties("claimshub.fnol")
-public record FnolIntakeProperties(Duration correctionWindow, Path fixtureDir, Path outDir, String completedUri,
+public record FnolIntakeProperties(Duration correctionWindow, String fixtureDir, String outDir, String completedUri,
         String suspendedUri, String assignmentUri) {
 
+    public Path fixturePath() {
+        return Path.of(fixtureDir).toAbsolutePath().normalize();
+    }
+
+    public Path outPath() {
+        return Path.of(outDir).toAbsolutePath().normalize();
+    }
+
     public Path mapsDir() {
-        return fixtureDir.toAbsolutePath().normalize().resolve("Maps");
+        return fixturePath().resolve("Maps");
     }
 
     public Path triageGoldenDir() {
-        return fixtureDir.toAbsolutePath().normalize().resolve("corpus/golden/triage");
+        return fixturePath().resolve("corpus/golden/triage");
     }
 }

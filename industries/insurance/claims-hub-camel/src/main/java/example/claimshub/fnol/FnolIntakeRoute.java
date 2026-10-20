@@ -1,5 +1,6 @@
 package example.claimshub.fnol;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,6 +50,11 @@ public class FnolIntakeRoute extends RouteBuilder {
 
     @Override
     public void configure() {
+        if (!Files.isDirectory(properties.mapsDir())) {
+            // The image carries no fixture; FnolIntake waits for the converted maps instead of failing the context.
+            log.warn("FnolIntake routes not started: no BizTalk maps at {} (set claimshub.fnol.fixture-dir)", properties.mapsDir());
+            return;
+        }
         // Receive_Fnol (activating, initializes ClaimNumberCorrelation), with the FNOL schema's promotions.
         from(FNOL_IN).routeId("fnol.receive")
                 .convertBodyTo(String.class)
@@ -130,7 +136,7 @@ public class FnolIntakeRoute extends RouteBuilder {
                 .to("sql:select usp_insert_claim(xmlparse(document :#msgInsertClaim))?outputType=SelectOne")
                 .removeHeader("msgInsertClaim");
 
-        Path out = properties.outDir().toAbsolutePath().normalize();
+        Path out = properties.outPath();
 
         // Subscriptions on TriageFacts: sp_Fraud_Referral_FILE, sp_Declines_FILE
         from("direct:messagebox.triage-facts").routeId("messagebox.triage-facts")
