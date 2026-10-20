@@ -138,7 +138,7 @@ class RemittanceFileParityTest extends ReachableVendorTestSupport {
         if (ledger.compareTo(net) != 0) {
             String cause = "ledger net " + ledger.toPlainString() + " but file net " + net.toPlainString()
                     + ": Payment_to_LedgerPost rounds the summed line amounts once, Payment_to_VendorRemittance rounds every line to"
-                    + " cents before summing (ESTATE.md: a decision, not a fix)";
+                    + " cents before summing; the ledger keeps the legacy post, and which amount is paid is a claims finance decision (ESTATE.md)";
             Row row = rows.get(id);
             if (row != null) {
                 rows.put(id, new Row(row.instruction(), row.goldenBytes(), row.camelBytes(), row.identical(), row.ledgerNet(), row.fileNet(),
@@ -202,9 +202,10 @@ class RemittanceFileParityTest extends ReachableVendorTestSupport {
         Path dir = Path.of("target", "golden-report");
         Files.createDirectories(dir);
         StringBuilder md = new StringBuilder();
-        md.append("| Instruction | Golden bytes | Camel bytes | Byte-identical | Ledger net | File net (D-C) | Ledger - file | Cause |\n");
-        md.append("| --- | ---: | ---: | --- | ---: | ---: | ---: | --- |\n");
+        md.append("| Instruction | Golden bytes | Camel bytes | Byte-identical | Ledger net | File net (D-C) | Ledger - file | Verdict | Cause |\n");
+        md.append("| --- | ---: | ---: | --- | ---: | ---: | ---: | --- | --- |\n");
         int identical = 0;
+        int red = 0;
         BigDecimal ledgerTotal = BigDecimal.ZERO;
         BigDecimal fileTotal = BigDecimal.ZERO;
         for (Row row : rows.values()) {
@@ -216,16 +217,20 @@ class RemittanceFileParityTest extends ReachableVendorTestSupport {
                 fileTotal = fileTotal.add(f);
                 diff = l.subtract(f).toPlainString();
             }
+            boolean green = row.identical() && !diff.isEmpty() && new BigDecimal(diff).signum() == 0;
+            if (!green) {
+                red++;
+            }
             md.append("| ").append(row.instruction()).append(" | ").append(row.goldenBytes()).append(" | ").append(row.camelBytes())
                     .append(" | ").append(row.identical() ? "yes" : "**no**").append(" | ").append(row.ledgerNet()).append(" | ")
-                    .append(row.fileNet()).append(" | ").append(diff).append(" | ").append(row.cause().replace("|", "\\|")).append(" |\n");
+                    .append(row.fileNet()).append(" | ").append(diff).append(" | ").append(green ? "green" : "**red**").append(" | ").append(row.cause().replace("|", "\\|")).append(" |\n");
             if (row.identical()) {
                 identical++;
             }
         }
         md.append("| **Total** | | | **").append(identical).append(" of ").append(rows.size()).append(" identical** | ")
                 .append(ledgerTotal.toPlainString()).append(" | ").append(fileTotal.toPlainString()).append(" | ")
-                .append(ledgerTotal.subtract(fileTotal).toPlainString()).append(" | ").append(rows.size() - identical).append(" red |\n");
+                .append(ledgerTotal.subtract(fileTotal).toPlainString()).append(" | ").append(red).append(" red | |\n");
         Files.writeString(dir.resolve("VendorRemittanceFile.md"), md.toString(), StandardCharsets.UTF_8);
     }
 }
