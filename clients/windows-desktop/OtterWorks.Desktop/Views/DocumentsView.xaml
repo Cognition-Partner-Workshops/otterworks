@@ -12,7 +12,7 @@
         <!-- Toolbar -->
         <Grid Grid.Row="0" Margin="0,0,0,16">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="Documents" FontSize="22" FontWeight="Bold" Foreground="#111827" />
+                <TextBlock Text="{Binding Heading}" FontSize="22" FontWeight="Bold" Foreground="#111827" />
                 <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource MutedBrush}"
                            VerticalAlignment="Bottom" Margin="12,0,0,3" />
             </StackPanel>
@@ -20,7 +20,11 @@
                 <Button Content="Refresh" Command="{Binding RefreshCommand}" Margin="0,0,8,0"
                         Padding="12,6" Background="White" BorderBrush="#D1D5DB" BorderThickness="1" Cursor="Hand" />
                 <Button Content="Files" Command="{Binding LoadFilesCommand}" Margin="0,0,8,0"
-                        Padding="12,6" Background="White" BorderBrush="#D1D5DB" BorderThickness="1" Cursor="Hand" />
+                        Padding="12,6" Background="White" BorderBrush="#D1D5DB" BorderThickness="1" Cursor="Hand"
+                        Visibility="{Binding IsShowingDocuments, Converter={StaticResource BoolToVisibility}}" />
+                <Button Content="Documents" Command="{Binding ShowDocumentsCommand}" Margin="0,0,8,0"
+                        Padding="12,6" Background="White" BorderBrush="#D1D5DB" BorderThickness="1" Cursor="Hand"
+                        Visibility="{Binding IsShowingFiles, Converter={StaticResource BoolToVisibility}}" />
                 <Button Content="Log out" Command="{Binding LogoutCommand}"
                         Padding="12,6" Background="White" BorderBrush="#D1D5DB" BorderThickness="1" Cursor="Hand" />
             </StackPanel>
@@ -28,7 +32,8 @@
 
         <!-- Create row -->
         <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="12" BorderBrush="#E5E7EB"
-                BorderThickness="1" Margin="0,0,0,16">
+                BorderThickness="1" Margin="0,0,0,16"
+                Visibility="{Binding IsShowingDocuments, Converter={StaticResource BoolToVisibility}}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -45,8 +50,9 @@
         <!-- List + states -->
         <Grid Grid.Row="2">
             <Border Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1">
-                <ListBox ItemsSource="{Binding Documents}" BorderThickness="0" Background="Transparent"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox x:Name="DocumentsList" ItemsSource="{Binding Documents}" BorderThickness="0" Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         Visibility="{Binding IsShowingDocuments, Converter={StaticResource BoolToVisibility}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -77,12 +83,55 @@
                 </ListBox>
             </Border>
 
+            <Border Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1"
+                    Visibility="{Binding IsShowingFiles, Converter={StaticResource BoolToVisibility}}">
+                <ListBox x:Name="FilesList" ItemsSource="{Binding Files}" BorderThickness="0" Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Padding" Value="12,10" />
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold"
+                                               Foreground="#111827" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,2,0,0"
+                                               TextTrimming="CharacterEllipsis">
+                                        <Run Text="{Binding SizeDisplay, Mode=OneWay}" />
+                                        <Run Text="·" />
+                                        <Run Text="{Binding ContentType, Mode=OneWay}" />
+                                    </TextBlock>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="{Binding CreatedAt, StringFormat=g}"
+                                           Foreground="{StaticResource MutedBrush}" FontSize="12" VerticalAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
             <!-- Empty state -->
             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
                         Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock Text="No documents yet" FontSize="16" FontWeight="SemiBold"
                            Foreground="#374151" HorizontalAlignment="Center" />
                 <TextBlock Text="Create your first document using the box above."
+                           Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Visibility="{Binding IsFilesEmpty, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="No files yet" FontSize="16" FontWeight="SemiBold"
+                           Foreground="#374151" HorizontalAlignment="Center" />
+                <TextBlock Text="Uploaded files will appear here."
                            Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" HorizontalAlignment="Center" />
             </StackPanel>
         </Grid>
