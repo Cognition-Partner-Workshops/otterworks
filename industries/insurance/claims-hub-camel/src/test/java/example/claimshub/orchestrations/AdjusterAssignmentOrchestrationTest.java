@@ -283,6 +283,45 @@ class AdjusterAssignmentOrchestrationTest {
         }));
     }
 
+    // RequestId names the compliance archive copy and the notice attachment. One that is not ASG-nnnnnn, or that
+    // is already archived, is refused: no archive record is written or replaced and no notice is mailed.
+    @TestFactory
+    Stream<DynamicTest> aRequestIdThatCannotNameItsOwnArchiveRecordIsRefused() {
+        Map<String, String> cases = new LinkedHashMap<>();
+        cases.put("empty", "");
+        cases.put("sub-folder", "2026/ASG-520100");
+        cases.put("parent-folder", "../ASG-520100");
+        cases.put("lower-case", "asg-520100");
+        cases.put("padded", " ASG-520100");
+        cases.put("already archived", "ASG-520101");
+        return cases.entrySet().stream().map(c -> DynamicTest.dynamicTest(c.getKey(), () -> {
+            Run r = corpus();
+            String original = new String(r.requests().get("ASG-520100"), StandardCharsets.UTF_8);
+            byte[] tampered = original.replace("<RequestId>ASG-520100</RequestId>", "<RequestId>" + c.getValue() + "</RequestId>")
+                    .replace("Imogen Castellanos", "Tampered Record").getBytes(StandardCharsets.UTF_8);
+            Map<Path, String> archiveBefore = archive();
+            int mailsBefore = mailCount();
+            Exchange result = producer.request(OrchestrationEndpoints.of(ORCHESTRATION), e -> e.getIn().setBody(tampered));
+            assertThat(result.getException()).as(c.getKey() + " refused").isNotNull();
+            assertThat(archive()).as(c.getKey() + " archive untouched").isEqualTo(archiveBefore);
+            assertThat(mailCount()).as(c.getKey() + " no notice mailed").isEqualTo(mailsBefore);
+        }));
+    }
+
+    private static Map<Path, String> archive() throws IOException {
+        try (Stream<Path> files = Files.walk(ARCHIVE)) {
+            Map<Path, String> snapshot = new java.util.TreeMap<>();
+            files.filter(Files::isRegularFile).forEach(p -> snapshot.put(ARCHIVE.relativize(p), digest(read(p))));
+            return snapshot;
+        }
+    }
+
+    private static int mailCount() throws Exception {
+        URI api = URI.create("http://" + MAILHOG.getHost() + ":" + MAILHOG.getMappedPort(8025) + "/api/v2/messages?limit=1");
+        String json = HttpClient.newHttpClient().send(HttpRequest.newBuilder(api).build(), HttpResponse.BodyHandlers.ofString()).body();
+        return new ObjectMapper().readTree(json).get("total").asInt();
+    }
+
     @AfterAll
     void writeReport() throws IOException {
         Path dir = Path.of("target", "golden-report");

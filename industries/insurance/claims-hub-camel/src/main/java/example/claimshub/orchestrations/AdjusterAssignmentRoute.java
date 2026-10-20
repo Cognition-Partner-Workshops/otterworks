@@ -31,6 +31,8 @@ public class AdjusterAssignmentRoute extends RouteBuilder {
     static final String ROSTER_BRANCH = "roster";
     static final String NOTICE_BODY = "ClaimsHub.NoticeBody";
     static final String ROSTER_RECEIVED = "ClaimsHub.RosterReceived";
+    /** RequestId names the compliance archive record and the notice attachment, so it must be one plain id. */
+    static final String REQUEST_ID_PATTERN = "ASG-[0-9]{6}";
 
     static final String ROSTER_SQL = "SELECT * FROM usp_get_adjuster_roster(:?Region, :?Skill, CAST(:?AsOfDt AS date))";
 
@@ -40,6 +42,7 @@ public class AdjusterAssignmentRoute extends RouteBuilder {
             .convertBodyTo(byte[].class)
             .setProperty(REQUEST, body())
             .setProperty(REQUEST_ID, xpath("string(/*/RequestId)", String.class))
+            .validate(exchangeProperty(REQUEST_ID).regex(REQUEST_ID_PATTERN))
             .multicast(new AssignmentAggregationStrategy()).parallelProcessing().stopOnException()
                 .pipeline()
                     .to(MapEndpoints.of("AssignmentRequest_to_RosterQuery"))
@@ -52,7 +55,7 @@ public class AdjusterAssignmentRoute extends RouteBuilder {
                     .setProperty(BRANCH, constant(ROSTER_BRANCH))
                 .end()
                 .pipeline()
-                    .to("file:{{claimshub.archive.dir}}?fileName=${exchangeProperty." + REQUEST_ID + "}.xml")
+                    .to("file:{{claimshub.archive.dir}}?fileExist=Fail&fileName=${exchangeProperty." + REQUEST_ID + "}.xml")
                 .end()
             .end()
             .process(e -> {
