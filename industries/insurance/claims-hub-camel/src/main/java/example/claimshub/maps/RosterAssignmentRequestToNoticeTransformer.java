@@ -32,7 +32,7 @@ public final class RosterAssignmentRequestToNoticeTransformer {
 
     private static final Comparator<Candidate> LEAST_LOADED = Comparator
             .comparing(Candidate::openClaims, Comparator.nullsFirst(Comparator.naturalOrder()))
-            .thenComparing(Candidate::id);
+            .thenComparing(Candidate::id, RosterAssignmentRequestToNoticeTransformer::compareCodePoints);
 
     public byte[] transform(byte[] source) {
         AggregateEnvelope envelope = AggregateEnvelope.parse(source);
@@ -90,6 +90,11 @@ public final class RosterAssignmentRequestToNoticeTransformer {
                     .element("Escalated", "true");
         }
         return w.raw(ROOT_CLOSE).toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    /** XPath default (Unicode code-point) collation; {@link String#compareTo} compares UTF-16 units instead. */
+    static int compareCodePoints(String a, String b) {
+        return java.util.Arrays.compare(a.codePoints().toArray(), b.codePoints().toArray());
     }
 
     private static boolean lessThan(BigDecimal a, BigDecimal b) {
