@@ -346,56 +346,20 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         p_period_month IN VARCHAR2,
         p_actor        IN VARCHAR2
     ) IS
-        l_policy  policies%ROWTYPE;
-        l_as_of   DATE;
-        l_rate_id commission_rates.rate_id%TYPE;
-        l_pct     commission_rates.rate_pct%TYPE;
-        l_amount  NUMBER;
-        l_rows    PLS_INTEGER := 0;
+        l_body  VARCHAR2(32767);
+        l_reply CLOB;
     BEGIN
-        BEGIN
-            SELECT * INTO l_policy FROM policies WHERE policy_id = p_policy_id;
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                RAISE_APPLICATION_ERROR(-20005, 'Unknown policy: ' || p_policy_id);
-        END;
-        IF l_policy.status <> 'IN_FORCE' THEN
-            RAISE_APPLICATION_ERROR(-20008,
-                'Policy ' || p_policy_id || ' is ' || l_policy.status);
-        END IF;
-
-        l_as_of := LAST_DAY(TO_DATE(p_period_month, 'YYYY-MM'));
-
-        DELETE FROM commission_ledger
-         WHERE policy_id = p_policy_id AND period_month = p_period_month;
-
-        FOR split IN (SELECT agent_id, split_pct
-                        FROM commission_splits
-                       WHERE policy_id = p_policy_id
-                       ORDER BY split_pct DESC, agent_id) LOOP
-            l_rate_id := resolve_rate(l_policy.product_code, split.agent_id, l_as_of);
-            SELECT rate_pct INTO l_pct FROM commission_rates WHERE rate_id = l_rate_id;
-
-            l_amount := ROUND(l_policy.annual_premium / 12
-                              * l_pct / 100
-                              * split.split_pct / 100, 2);
-
-            INSERT INTO commission_ledger
-                (policy_id, agent_id, period_month, rate_id, split_pct,
-                 base_premium, commission_amt)
-            VALUES
-                (p_policy_id, split.agent_id, p_period_month, l_rate_id,
-                 split.split_pct, l_policy.annual_premium, l_amount);
-            l_rows := l_rows + 1;
-        END LOOP;
-
-        IF l_rows = 0 THEN
-            RAISE_APPLICATION_ERROR(-20006,
-                'Policy ' || p_policy_id || ' has no split allocation');
-        END IF;
-
-        log_action('COMMISSION_CALC', l_policy.product_code, NULL, p_policy_id,
-                   p_period_month || ' rows=' || l_rows, p_actor);
+        -- Delegated to commission-service (rules R25-R35). The service owns the
+        -- ledger writes and their transaction; this session keeps the
+        -- package's own COMMIT / ROLLBACK contract for whatever it had pending.
+        l_body := JSON_OBJECT(
+                      'period_month' VALUE p_period_month,
+                      'actor'        VALUE p_actor
+                      NULL ON NULL
+                      RETURNING VARCHAR2(32767));
+        l_reply := call_service(
+            '/policies/' || NVL(TO_CHAR(p_policy_id), 'null') || '/commission', 'POST', l_body);
+        DBMS_LOB.freetemporary(l_reply);
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
