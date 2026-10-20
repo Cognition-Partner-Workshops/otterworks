@@ -247,26 +247,34 @@ class MeiliSearchService:
             query=search_term or "*",
         )
 
-    def suggest(self, prefix: str, size: int = 10, owner_id: str | None = None) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching, scoped to owner_id."""
-        suggestions: list[str] = []
-        seen: set[str] = set()
+    def suggest(
+        self, prefix: str, size: int = 10, owner_id: str | None = None, ranked: bool = False
+    ) -> list[str]:
+        """Autocomplete suggestions using MeiliSearch prefix matching, scoped to owner_id.
+
+        When ``ranked`` is set, hits from both indexes are merged by ``_rankingScore``.
+        """
         params: dict = {"limit": size, "attributesToRetrieve": ["title", "name"]}
+        if ranked:
+            params["showRankingScore"] = True
         if owner_id:
             params["filter"] = f'owner_id = "{self._escape(owner_id)}"'
 
+        hits: list[dict] = []
         for index_name in [self.documents_index_name, self.files_index_name]:
-            index = self.client.index(index_name)
-            result = index.search(prefix, params)
-            for hit in result["hits"]:
-                text = hit.get("title") or hit.get("name", "")
-                if text and text not in seen:
-                    suggestions.append(text)
-                    seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
+            hits.extend(self.client.index(index_name).search(prefix, params)["hits"])
+        if ranked:
+            hits.sort(key=lambda hit: hit.get("_rankingScore", 0.0), reverse=True)
+
+        suggestions: list[str] = []
+        seen: set[str] = set()
+        for hit in hits:
+            text = hit.get("title") or hit.get("name", "")
+            if text and text not in seen:
+                suggestions.append(text)
+                seen.add(text)
+                if len(suggestions) >= size:
+                    break
 
         return suggestions
 

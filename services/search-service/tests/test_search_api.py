@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -110,6 +112,33 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert data["suggestions"] == []
+
+
+class TestSuggestRankedEndpoint:
+    """GET /api/v1/search/suggest with chaos:search-service:suggest_500 set."""
+
+    def test_ranked_suggest_orders_by_ranking_score(self, client, mock_meilisearch_client):
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "hits": [
+                {"title": "Release notes", "_rankingScore": 0.4},
+                {"title": "Quarterly report", "_rankingScore": 0.9},
+            ],
+        }
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=re", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Quarterly report", "Release notes"]
+        assert mock_index.search.call_args.args[1]["showRankingScore"] is True
+
+    def test_ranked_suggest_empty_index_is_not_an_error(self, client):
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=re", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
 
 
 class TestAdvancedSearchEndpoint:
