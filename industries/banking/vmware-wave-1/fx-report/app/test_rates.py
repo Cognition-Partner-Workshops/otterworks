@@ -119,8 +119,9 @@ class ReadDayAndMoves(unittest.TestCase):
         self.assertEqual(rates.format_range(rows[1]["range"]), "2.00000")
 
     def test_perl_numification(self):
-        self.assertEqual([rates.perl_num(v) for v in (None, "", "abc", " 0.5", "0.66x", "+.5e1", "-2")],
-                         [0.0, 0.0, 0.0, 0.5, 0.66, 5.0, -2.0])
+        self.assertEqual([rates.perl_num(v) for v in (None, "", "abc", " 0.5", "0.66x", "+.5e1", "-2",
+                                                         "\u0661.5", "\u00a01.5", "1\u0665")],
+                         [0.0, 0.0, 0.0, 0.5, 0.66, 5.0, -2.0, 0.0, 0.0, 1.0])
 
     def test_formats(self):
         self.assertEqual(rates.format_range(0.0084300000000001), "0.00843")
@@ -184,7 +185,7 @@ class SameAsPerl(unittest.TestCase):
         today = self.dir / "today.csv"
         today.write_bytes((HEADER + "USDJPY,150.1,150.9,149.8,150.5,150.2,24\n\n"
                            "EURUSD,1.09,1.095,1.085,1.0915,1.09,24\r\nEURUSD,1.1,1.11,1.09,1.1000,1.1,24\n\r\n"
-                           "GBPUSD,1.25,1.27\nAUDUSD, 0.65,0.66x,,0.655,0.654,24,extra\n,,,\n\n"
+                           "GBPUSD,1.25,1.27\nUSDCHF,0.9,\u0661.5,\u00a00.8,1\u0665,0.9,24\nAUDUSD, 0.65,0.66x,,0.655,0.654,24,extra\n,,,\n\n"
                            "EURCHF,0.95,0.96,0.94,0.951000,0.95,24").encode())
         prev = self.dir / "prev.csv"
         prev.write_bytes((HEADER + "EURUSD,1,1,1,1.0000,1,24\nEURCHF,0.9,0.9,0.9,0.949120,0.9,24\n"

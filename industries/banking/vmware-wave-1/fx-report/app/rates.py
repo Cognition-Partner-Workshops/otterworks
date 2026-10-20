@@ -6,7 +6,7 @@ like Perl NVs, and are formatted with format_range / format_change exactly as fx
 import re
 
 COLUMNS = ("pair", "open", "high", "low", "close", "avg", "ticks")
-_NUMERIC_PREFIX = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)")
+_NUMERIC_PREFIX = re.compile(r"\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)", re.ASCII)  # Perl reads bytes
 
 
 def perl_num(value):
