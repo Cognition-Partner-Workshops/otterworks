@@ -1,0 +1,33 @@
+<ns0:PaymentInstruction xmlns:ns0="http://schemas.thistlecombe.example/canonical/payment">
+  <InstructionId>PI-2026-880111</InstructionId>
+  <ClaimNumber>CLM-2026-100401</ClaimNumber>
+  <PolicyNumber>POL-AUTO-48221</PolicyNumber>
+  <VendorCode>PAYV02</VendorCode>
+  <Payee>
+    <Name>Penrose Salvage Yard</Name>
+    <PayeeType>SV</PayeeType>
+  </Payee>
+  <ValueDate>2026-10-12</ValueDate>
+  <CurrencyCd>USD</CurrencyCd>
+  <Line>
+    <LineNo>1</LineNo>
+    <LineType>IND</LineType>
+    <Amount>999999.99</Amount>
+    <GLAccount>61010100</GLAccount>
+    <Memo>Large loss settlement</Memo>
+  </Line>
+  <Line>
+    <LineNo>2</LineNo>
+    <LineType>EXP</LineType>
+    <Amount>12000.00</Amount>
+    <GLAccount>61020300</GLAccount>
+    <Memo>Litigation expense</Memo>
+  </Line>
+  <Line>
+    <LineNo>3</LineNo>
+    <LineType>SLV</LineType>
+    <Amount>-25000.00</Amount>
+    <GLAccount>41050200</GLAccount>
+    <Memo>Salvage recovery credit</Memo>
+  </Line>
+</ns0:PaymentInstruction>
