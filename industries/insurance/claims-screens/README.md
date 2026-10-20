@@ -14,9 +14,20 @@ running `claims-hub-camel` wrote: the FnolIntake tracking drop, the `claim` and 
 the vendor's SFTP inbox and the SMTP sink. Nothing is filled in from the other side; a value the source does not have
 is shown as missing, with the reason.
 
+## Access
+
+Every API request needs `Authorization: Bearer <token>`; the API will not start unless `CLAIMS_SCREENS_READER_TOKEN`
+and/or `CLAIMS_SCREENS_ADJUSTER_TOKEN` is set (16 characters at least, the two different). A reader token gets the
+claimant name and a claimant payee's name and account masked the way the `claims_api` PostgreSQL views mask them
+(`compliance.mask_name`, `compliance.mask_account`; vendor and salvage payees stay readable). An adjuster token gets
+them in clear. The dev server's proxy sends `CLAIMS_API_TOKEN` as the bearer token.
+
 ## Run
 
 ```bash
+export CLAIMS_SCREENS_READER_TOKEN=$(openssl rand -hex 16) CLAIMS_SCREENS_ADJUSTER_TOKEN=$(openssl rand -hex 16)
+export CLAIMS_API_TOKEN=$CLAIMS_SCREENS_READER_TOKEN   # or the adjuster token to see claimant PII in clear
+
 # before: the BizTalk goldens
 python3 api/claims_api.py --source golden --port 8095 &
 (cd web && npm install && CLAIMS_API=http://127.0.0.1:8095 PORT=5181 npm run dev)
@@ -37,4 +48,4 @@ suspended reports go to `direct:tracking.fnol`, which writes the instance record
 location is the hub's own FILE inbox. The vendor's 22:00–05:30 window is switched off for the replay
 (`VENDOR_WINDOW=true hub/hub.sh up` keeps it).
 
-`cd web && npm test` runs the screen tests.
+`cd web && npm test` runs the screen tests; `python3 -m unittest discover -s api` runs the API auth and masking tests.

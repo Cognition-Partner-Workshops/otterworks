@@ -7,6 +7,10 @@
 
 Values are read from those outputs and passed through as written; the API never fills a gap from the other
 source. Where the source has no value the field is null and `missing` says why.
+
+Every request needs `Authorization: Bearer <token>`. CLAIMS_SCREENS_READER_TOKEN and CLAIMS_SCREENS_ADJUSTER_TOKEN
+name the tokens (at least one must be set). A reader gets claimant and claimant-payee names and accounts masked
+the way the claims_api PostgreSQL views mask them (compliance.mask_name / mask_account); an adjuster sees them in clear.
 """
 from __future__ import annotations
 
@@ -14,6 +18,7 @@ import argparse
 import base64
 import email
 import glob
+import hmac
 import json
 import os
 import re
@@ -30,6 +35,8 @@ INSURANCE = os.path.dirname(os.path.dirname(HERE))
 FIXTURE = os.environ.get("CLAIMS_FIXTURE_DIR", os.path.join(INSURANCE, "biztalk-claims-intake"))
 CORPUS = os.path.join(FIXTURE, "corpus")
 ID = re.compile(r"^[A-Z0-9][A-Z0-9-]{2,31}$")
+TOKEN_ENV = {"reader": "CLAIMS_SCREENS_READER_TOKEN", "adjuster": "CLAIMS_SCREENS_ADJUSTER_TOKEN"}
+MIN_TOKEN_LENGTH = 16
 
 
 def local(tag: str) -> str:
@@ -49,6 +56,80 @@ def fields(xml_text: str) -> dict[str, str | None]:
 def read(path: str) -> str:
     with open(path, encoding="utf-8") as f:
         return f.read()
+
+
+def mask_keep_last(value: str | None, visible: int = 4) -> str | None:
+    """compliance.mask_keep_last: separators survive, every letter or digit but the last `visible` becomes X."""
+    if not value:
+        return value
+    out, seen = [], 0
+    for ch in reversed(value):
+        if ch.isalnum():
+            seen += 1
+            ch = "X" if seen > visible else ch
+        out.append(ch)
+    return "".join(reversed(out))
+
+
+def mask_name(value: str | None) -> str | None:
+    """compliance.mask_name: 'Imogen Castellanos' -> 'I***** C**********'."""
+    if value is None:
+        return None
+    return " ".join(w[0] + "*" * (len(w) - 1) for w in re.split(r"\s+", value) if w) or None
+
+
+def mask_account(value: str | None) -> str | None:
+    return mask_keep_last(value, 4)
+
+
+def is_business_payee(payee_type: str | None) -> bool:
+    # claims_api.payment: vendors (VN) and salvage yards (SV) stay readable; CL payees are claimants.
+    return payee_type is not None and payee_type != "CL"
+
+
+def for_role(kind: str, body: dict, role: str) -> dict:
+    if role == "adjuster":
+        return body
+    if kind == "claims":
+        return {**body, "claimant": mask_name(body.get("claimant"))}
+    if kind == "payments":
+        payee = body.get("payee") or {}
+        if not is_business_payee(payee.get("type")):
+            payee = {**payee, "name": mask_name(payee.get("name")), "account": mask_account(payee.get("account"))}
+        remittance = body.get("remittance")
+        if remittance:
+            remittance = {**remittance, "lines": [l if is_business_payee(l.get("payeeType")) else {**l, "payee": mask_name(l.get("payee"))}
+                                                  for l in remittance.get("lines", [])]}
+        return {**body, "payee": payee, "remittance": remittance}
+    return body
+
+
+def tokens_from_env(env=os.environ) -> dict[str, str]:
+    """token -> role."""
+    tokens: dict[str, str] = {}
+    for role, var in TOKEN_ENV.items():
+        token = env.get(var, "")
+        if not token:
+            continue
+        if len(token) < MIN_TOKEN_LENGTH:
+            raise ValueError(f"{var} must be at least {MIN_TOKEN_LENGTH} characters")
+        if token in tokens:
+            raise ValueError(f"{TOKEN_ENV[tokens[token]]} and {var} must differ")
+        tokens[token] = role
+    if not tokens:
+        raise ValueError(f"set {' and/or '.join(TOKEN_ENV.values())}")
+    return tokens
+
+
+def role_for(authorization: str | None, tokens: dict[str, str]) -> str | None:
+    scheme, _, presented = (authorization or "").partition(" ")
+    if scheme.lower() != "bearer" or not presented:
+        return None
+    role = None
+    for token, r in tokens.items():
+        if hmac.compare_digest(presented.strip().encode(), token.encode()):
+            role = r
+    return role
 
 
 def corpus_input(kind: str, name: str) -> str:
@@ -316,11 +397,13 @@ class Camel:
                 "evidence": ["PostgreSQL ledger.claim_payment_entry"] + ([f"SFTP inbound/thistlecombe/{remittance['fileName']}"] if remittance else [])}
 
 
-def make_handler(source):
+def make_handler(source, tokens: dict[str, str]):
     class Handler(BaseHTTPRequestHandler):
         def send(self, code: int, body: dict):
             data = json.dumps(body, indent=2).encode()
             self.send_response(code)
+            if code == 401:
+                self.send_header("WWW-Authenticate", 'Bearer realm="claims-screens"')
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
@@ -331,6 +414,9 @@ def make_handler(source):
             if parts[:2] != ["api", "claims-screens"]:
                 return self.send(404, {"error": "not found"})
             rest = parts[2:]
+            role = role_for(self.headers.get("Authorization"), tokens)
+            if role is None:
+                return self.send(401, {"error": "a valid bearer token is required"})
             try:
                 if method == "GET" and rest == ["source"]:
                     return self.send(200, {"source": source.name, "label": source.label, "detail": source.detail()})
@@ -342,9 +428,9 @@ def make_handler(source):
                     if method == "POST" and kind == "fnol":
                         return self.send(200, source.submit_fnol(key))
                     if method == "GET" and kind == "claims":
-                        return self.send(200, source.claim(key))
+                        return self.send(200, for_role(kind, source.claim(key), role))
                     if method == "GET" and kind == "payments":
-                        return self.send(200, source.payment(key))
+                        return self.send(200, for_role(kind, source.payment(key), role))
                 return self.send(404, {"error": "not found"})
             except FileNotFoundError as e:
                 return self.send(404, {"error": f"not in {source.label}: {os.path.basename(e.filename or '')}"})
@@ -372,8 +458,12 @@ def main(argv=None):
     p.add_argument("--mailhog", default="http://127.0.0.1:8025")
     p.add_argument("--dsn", default=os.environ.get("CLAIMS_DSN", "postgresql://claimshub:claimshub@127.0.0.1:55432/claimshub"))
     args = p.parse_args(argv)
+    try:
+        tokens = tokens_from_env()
+    except ValueError as e:
+        p.error(str(e))
     source = Golden() if args.source == "golden" else Camel(args)
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), make_handler(source))
+    server = ThreadingHTTPServer(("127.0.0.1", args.port), make_handler(source, tokens))
     print(f"claims-screens API: {source.label} on http://127.0.0.1:{args.port}/api/claims-screens", flush=True)
     server.serve_forever()
 
