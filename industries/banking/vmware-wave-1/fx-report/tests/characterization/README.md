@@ -7,8 +7,9 @@ cell of Pair, Close, Average mid, Range, Change) and compares the parsed values 
 `Content-Type` (spaces/case ignored) are compared with the golden `.headers`.
 
 ```sh
-pip install pytest==8.3.5            # Python 3.12, stdlib otherwise
 cd industries/banking/vmware-wave-1/fx-report/tests
+BASE_URL=http://localhost:8086 UV_PYTHON=3.12 uv run --no-project --with pytest==8.3.5 pytest -v characterization
+# or, with pytest 8.3.5 already installed on Python 3.12:
 BASE_URL=http://localhost:8086 python3 -m pytest -v characterization
 ```
 
