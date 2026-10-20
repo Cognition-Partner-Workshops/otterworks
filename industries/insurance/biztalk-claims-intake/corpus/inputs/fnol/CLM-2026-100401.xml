@@ -1,0 +1,40 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000001</RqUID>
+  <TransactionRequestDt>2026-09-04T08:16:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0922</ProducerId>
+      <ProducerName>Penrose &amp; Daughters</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-AUTO-48107</PolicyNumber>
+      <LOBCd>AUTO</LOBCd>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Rafael</GivenName>
+      <Surname>Oyelaran</Surname>
+      <TaxId>101-41-7013</TaxId>
+        <PhoneNumber>401-555-1037</PhoneNumber>
+        <EmailAddr>rafael.oyelaran@example.net</EmailAddr>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100401</ClaimNumber>
+      <LossDt>2026-09-03</LossDt>
+      <ReportedDt>2026-09-04</ReportedDt>
+      <LossCauseCd>GLAS</LossCauseCd>
+      <IncidentDesc>Windscreen cracked by road debris on the interstate</IncidentDesc>
+      <EstimatedLossAmt>2499.99</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+        <PoliceReportInd>false</PoliceReportInd>
+      <Addr>
+        <City>Portsmouth</City>
+        <StateProvCd>NH</StateProvCd>
+        <PostalCode>03801</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+      <AutoLossInfo>
+        <VIN>1HGCM82633A100911</VIN>
+        <DriveableInd>true</DriveableInd>
+      </AutoLossInfo>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>
