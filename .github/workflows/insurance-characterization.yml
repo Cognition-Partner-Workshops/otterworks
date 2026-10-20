@@ -33,6 +33,21 @@ jobs:
         run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
       - name: Start Oracle Free fixture
         run: make insurance-up NS=ci
+      # The compose health check greps for FIXTURE_READY, which sqlplus also echoes
+      # back inside the ORA-00942 error while fixture_meta does not exist yet, so
+      # `up --wait` can return before 00_init.sh has finished. Wait for the marker row.
+      - name: Wait for the fixture completion marker
+        run: |
+          for _ in $(seq 1 180); do
+            ready=$(printf 'SET HEADING OFF FEEDBACK OFF PAGESIZE 0\nSELECT COUNT(*) FROM fixture_meta;\n' \
+              | docker exec -i otterworks-insurance-ci-insurance-oracle-1 \
+                  sqlplus -s commission_pay/commission_pay@localhost:1521/FREEPDB1 | tr -d '[:space:]')
+            if [ "$ready" = "1" ]; then echo "fixture initialized"; exit 0; fi
+            sleep 5
+          done
+          echo "fixture_meta marker never appeared" >&2
+          docker logs otterworks-insurance-ci-insurance-oracle-1 | tail -50
+          exit 1
       - name: Legacy SQL suites
         run: make insurance-test NS=ci
       - name: Characterization harness (compare against golden baseline)
