@@ -1,0 +1,64 @@
+# fx-report/tests/characterization (unchanged) against the Python service app/server.py
+# 2026-10-20T23:44:28Z, Python 3.12.13, TZ unset (UTC)
+$ cd fx-report && RATES_DIR=tests/golden/rates PORT=8099 python3 app/server.py &
+$ cd tests && BASE_URL=http://localhost:8099 UV_PYTHON=3.12 uv run --no-project --with pytest==8.3.5 pytest -v -p no:cacheprovider characterization
+WARN `--no-project` was provided, but no project was found
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-8.3.5, pluggy-1.7.0 -- /home/ubuntu/.cache/uv/builds-v0/.tmp9eSXwM/bin/python
+rootdir: /home/ubuntu/repos/otterworks/industries/banking/vmware-wave-1/fx-report/tests/characterization
+configfile: pytest.ini
+collecting ... collected 12 items
+
+characterization/test_report_pages.py::test_page_matches_golden[day-2026-10-14] PASSED [  8%]
+characterization/test_report_pages.py::test_page_matches_golden[day-2026-10-15] PASSED [ 16%]
+characterization/test_report_pages.py::test_page_matches_golden[day-2026-10-16] PASSED [ 25%]
+characterization/test_report_pages.py::test_page_matches_golden[day-2026-10-17] PASSED [ 33%]
+characterization/test_report_pages.py::test_page_matches_golden[day-foo] PASSED [ 41%]
+characterization/test_report_pages.py::test_page_matches_golden[no-day] PASSED [ 50%]
+characterization/test_report_pages.py::test_golden_parses[day-2026-10-14] PASSED [ 58%]
+characterization/test_report_pages.py::test_golden_parses[day-2026-10-15] PASSED [ 66%]
+characterization/test_report_pages.py::test_golden_parses[day-2026-10-16] PASSED [ 75%]
+characterization/test_report_pages.py::test_golden_parses[day-2026-10-17] PASSED [ 83%]
+characterization/test_report_pages.py::test_golden_parses[day-foo] PASSED [ 91%]
+characterization/test_report_pages.py::test_golden_parses[no-day] PASSED [100%]
+
+============================== 12 passed in 0.04s ==============================
+
+# same, on the new root path
+$ BASE_URL=http://localhost:8099 REPORT_PATH=/ UV_PYTHON=3.12 uv run --no-project --with pytest==8.3.5 pytest -v -p no:cacheprovider characterization
+WARN `--no-project` was provided, but no project was found
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-8.3.5, pluggy-1.7.0 -- /home/ubuntu/.cache/uv/builds-v0/.tmpNHUUqg/bin/python
+rootdir: /home/ubuntu/repos/otterworks/industries/banking/vmware-wave-1/fx-report/tests/characterization
+configfile: pytest.ini
+collecting ... collected 12 items
+
+characterization/test_report_pages.py::test_page_matches_golden[day-2026-10-14] PASSED [  8%]
+characterization/test_report_pages.py::test_page_matches_golden[day-2026-10-15] PASSED [ 16%]
+characterization/test_report_pages.py::test_page_matches_golden[day-2026-10-16] PASSED [ 25%]
+characterization/test_report_pages.py::test_page_matches_golden[day-2026-10-17] PASSED [ 33%]
+characterization/test_report_pages.py::test_page_matches_golden[day-foo] PASSED [ 41%]
+characterization/test_report_pages.py::test_page_matches_golden[no-day] PASSED [ 50%]
+characterization/test_report_pages.py::test_golden_parses[day-2026-10-14] PASSED [ 58%]
+characterization/test_report_pages.py::test_golden_parses[day-2026-10-15] PASSED [ 66%]
+characterization/test_report_pages.py::test_golden_parses[day-2026-10-16] PASSED [ 75%]
+characterization/test_report_pages.py::test_golden_parses[day-2026-10-17] PASSED [ 83%]
+characterization/test_report_pages.py::test_golden_parses[day-foo] PASSED [ 91%]
+characterization/test_report_pages.py::test_golden_parses[no-day] PASSED [100%]
+
+============================== 12 passed in 0.05s ==============================
+
+# server stdout for the two runs
+fx-report listening on :8099, RATES_DIR=tests/golden/rates, TZ=
+127.0.0.1 - - [20/Oct/2026 23:44:28] "GET /fx/fx-report.cgi?day=2026-10-14 HTTP/1.1" 200 1079 0.4ms
+127.0.0.1 - - [20/Oct/2026 23:44:28] "GET /fx/fx-report.cgi?day=2026-10-15 HTTP/1.1" 200 1099 1.0ms
+127.0.0.1 - - [20/Oct/2026 23:44:28] "GET /fx/fx-report.cgi?day=2026-10-16 HTTP/1.1" 200 1099 0.3ms
+127.0.0.1 - - [20/Oct/2026 23:44:28] "GET /fx/fx-report.cgi?day=2026-10-17 HTTP/1.1" 200 576 0.2ms
+127.0.0.1 - - [20/Oct/2026 23:44:28] "GET /fx/fx-report.cgi?day=foo HTTP/1.1" 200 556 0.1ms
+127.0.0.1 - - [20/Oct/2026 23:44:28] "GET /fx/fx-report.cgi HTTP/1.1" 200 576 0.2ms
+127.0.0.1 - - [20/Oct/2026 23:44:29] "GET /?day=2026-10-14 HTTP/1.1" 200 1079 1.6ms
+127.0.0.1 - - [20/Oct/2026 23:44:29] "GET /?day=2026-10-15 HTTP/1.1" 200 1099 0.4ms
+127.0.0.1 - - [20/Oct/2026 23:44:29] "GET /?day=2026-10-16 HTTP/1.1" 200 1099 0.3ms
+127.0.0.1 - - [20/Oct/2026 23:44:29] "GET /?day=2026-10-17 HTTP/1.1" 200 576 0.3ms
+127.0.0.1 - - [20/Oct/2026 23:44:29] "GET /?day=foo HTTP/1.1" 200 556 0.2ms
+127.0.0.1 - - [20/Oct/2026 23:44:29] "GET / HTTP/1.1" 200 576 0.2ms

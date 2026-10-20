@@ -1,0 +1,44 @@
+# Perl stand-in (wave1/fx-report-vm, Apache 2.4.69, Perl 5.40.1) with a previous close of 0
+# /tmp/fxz/rates-2030-01-01.csv: EURUSD,1,1.1,1.0,0,1,3   /tmp/fxz/rates-2030-01-02.csv: EURUSD,1,1.1,1.0,1.05,1,3
+$ docker run -d --name fxz -p 8087:80 -v /tmp/fxz:/mnt/rates-out:ro wave1/fx-report-vm
+$ curl -sS -D - "http://localhost:8087/fx/fx-report.cgi?day=2030-01-02"
+HTTP/1.1 200 OK
+Date: Tue, 20 Oct 2026 23:41:06 GMT
+Server: Apache/2.4.69 (Unix)
+Transfer-Encoding: chunked
+Content-Type: text/html; charset=utf-8
+
+<!DOCTYPE html
+	PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
+<head>
+<title>FX desk report 2030-01-02</title>
+<style type="text/css">
+<!--/* <![CDATA[ */
+body{font-family:Arial;margin:2em}td{padding:3px 10px}
+
+/* ]]> */-->
+</style>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<h1>FX desk report</h1><p>Business date 2030-01-02, user unknown</p><table><tr><th>Pair</th><th>Close</th><th>Average mid</th><th>Range</th><th>Change</th></tr>
+$ docker logs fxz 2>&1 | tail -2
+Illegal division by zero at /var/www/fx-report/lib/FxReport/Rates.pm line 28.
+172.17.0.1 - - [20/Oct/2026:23:41:06 +0000] "GET /fx/fx-report.cgi?day=2030-01-02 HTTP/1.1" 200 614
+
+# app/server.py on the same files
+$ RATES_DIR=/tmp/fxz PORT=8097 python3 app/server.py &
+$ curl -sS -D - "http://localhost:8097/fx/fx-report.cgi?day=2030-01-02"
+HTTP/1.1 500 Internal Server Error
+Server: fx-report
+Date: Tue, 20 Oct 2026 23:44:41 GMT
+Content-Type: text/plain; charset=utf-8
+Content-Length: 22
+Cache-Control: no-store
+
+Internal Server Error
+# server stdout
+fx-report listening on :8097, RATES_DIR=/tmp/fxz, TZ=
+127.0.0.1 - - [20/Oct/2026 23:44:41] "GET /fx/fx-report.cgi?day=2030-01-02 HTTP/1.1" 500 22 0.4ms error="ZeroDivisionError: float division by zero"

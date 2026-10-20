@@ -1,0 +1,38 @@
+# Byte comparison: Perl stand-in (wave1/fx-report-vm, Apache 2.4.69, Perl 5.40.1, CGI.pm 4.68) on :8088 and
+# app/server.py on :8098, both reading /tmp/sbs (golden rates + rates-2030-01-0{4,5}.csv with HTML specials in a pair,
+# rates-2026-12-31.csv, rates-2027-01-01.csv, rates-.csv). Compared: status, Content-Type, body bytes.
+$ docker run -d --name fxsbs -p 8088:80 -v /tmp/sbs:/mnt/rates-out:ro wave1/fx-report-vm
+$ RATES_DIR=/tmp/sbs PORT=8098 python3 app/server.py &
+$ python3 sbs.py
+identical  (no query)                               perl 200 576B  python 200 576B
+identical  ?day=2026-10-14                          perl 200 1079B  python 200 1079B
+identical  ?day=2026-10-15                          perl 200 1099B  python 200 1099B
+identical  ?day=2026-10-16                          perl 200 1099B  python 200 1099B
+identical  ?day=2026-10-17                          perl 200 576B  python 200 576B
+identical  ?day=foo                                 perl 200 694B  python 200 694B
+identical  ?day=                                    perl 200 576B  python 200 576B
+identical  ?day=0                                   perl 200 576B  python 200 576B
+identical  ?day                                     perl 200 576B  python 200 576B
+identical  ?other=1                                 perl 200 576B  python 200 576B
+identical  ?day=&day=2026-10-15                     perl 200 576B  python 200 576B
+identical  ?day=2026-10-15&day=2026-10-16           perl 200 1099B  python 200 1099B
+identical  ?x=1;day=2026-10-15                      perl 200 1099B  python 200 1099B
+identical  ?d%61y=2026%2D10%2D15                    perl 200 1099B  python 200 1099B
+identical  ?day=2026-10-15%0A                       perl 200 578B  python 200 578B
+identical  ?day=2026-10-15%0A%0A                    perl 200 694B  python 200 694B
+identical  ?day=2026-10-1                           perl 200 694B  python 200 694B
+identical  ?day=%D9%A2%D9%A0%D9%A2%D9%A6-10-15      perl 200 694B  python 200 694B
+identical  ?day=2026-10-15+                         perl 200 694B  python 200 694B
+identical  ?day=%u0032026-10-15                     perl 200 1099B  python 200 1099B
+identical  ?day=2030-01-05                          perl 200 824B  python 200 824B
+identical  ?day=2027-01-01                          perl 200 718B  python 200 718B
+identical  ?day=2026-13-01                          perl 200 576B  python 200 576B
+identical  ?day=2026-12-32                          perl 200 576B  python 200 576B
+identical  ?day=2027-00-01                          perl 200 576B  python 200 576B
+identical  ?day=2026-10-15%3Cscript%3E              perl 200 694B  python 200 694B
+identical  ?day=1999-01-01                          perl 200 576B  python 200 576B
+identical  ?2026-10-15                              perl 200 576B  python 200 576B
+28/28 identical (status, Content-Type, body bytes)
+
+# previous day: server.previous_day vs the CGI strftime line in the stand-in perl, 756 dates (years 999..2100, months 00..13, days 00..99)
+756 of 756 identical to Perl 5.40.1 POSIX::strftime
