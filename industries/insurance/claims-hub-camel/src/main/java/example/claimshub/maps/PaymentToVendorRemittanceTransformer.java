@@ -22,9 +22,11 @@ import org.xml.sax.SAXException;
  * Payment_to_VendorRemittance: one PAY record per payment line, amounts in absolute cents with a D or C
  * indicator (negative lines are credits), and a trailer with the line count, the debit and credit totals and
  * a hash that is their sum modulo ten billion. Amounts are BigDecimal; the Round functoid is .NET
- * Math.Round, so cents round HALF_EVEN. As in the compiled map, each trailer total rounds the sum of the
- * line amounts rather than summing the rounded lines. Output is serialised the way the map's
- * xsl:output writes it: no XML declaration, no indentation, no trailing newline.
+ * Math.Round, so cents round HALF_EVEN. Each trailer total is the sum of the rounded line cents, which is
+ * what the send pipeline's TrailerTotalsComponent recomputes; the compiled map rounds the summed amounts
+ * instead, which only differs for sub-cent amounts. Output is serialised the way the map's xsl:output
+ * writes it: no XML declaration, no indentation, no trailing newline. Characters XML 1.0 does not allow
+ * are rejected, as Saxon's serialiser rejects them.
  */
 public final class PaymentToVendorRemittanceTransformer {
 
@@ -58,16 +60,17 @@ public final class PaymentToVendorRemittanceTransformer {
         field(out, "Currency", text(instruction, "CurrencyCd"));
         out.append("</Header>");
 
-        BigDecimal debitSum = BigDecimal.ZERO;
-        BigDecimal creditSum = BigDecimal.ZERO;
+        BigDecimal debitCents = BigDecimal.ZERO;
+        BigDecimal creditCents = BigDecimal.ZERO;
         List<Element> lines = children(instruction, "Line");
         for (Element line : lines) {
             BigDecimal amount = amount(line);
             boolean credit = amount.signum() < 0;
+            BigDecimal lineCents = cents(amount.abs());
             if (credit) {
-                creditSum = creditSum.add(amount);
+                creditCents = creditCents.add(lineCents);
             } else {
-                debitSum = debitSum.add(amount);
+                debitCents = debitCents.add(lineCents);
             }
             out.append("<Payment>");
             field(out, "RecordType", "PAY");
@@ -76,15 +79,13 @@ public final class PaymentToVendorRemittanceTransformer {
             field(out, "PayeeName", payeeName);
             field(out, "PayeeType", payeeType);
             field(out, "LineType", text(line, "LineType"));
-            field(out, "AmountCents", cents(amount.abs()).toPlainString());
+            field(out, "AmountCents", lineCents.toPlainString());
             field(out, "DebitCreditInd", credit ? "C" : "D");
             field(out, "ValueDate", valueDate);
             field(out, "GLAccount", text(line, "GLAccount"));
             out.append("</Payment>");
         }
 
-        BigDecimal debitCents = cents(debitSum);
-        BigDecimal creditCents = cents(creditSum.negate());
         out.append("<Trailer>");
         field(out, "RecordType", "TRL");
         field(out, "PaymentCount", Integer.toString(lines.size()));
@@ -154,22 +155,31 @@ public final class PaymentToVendorRemittanceTransformer {
         return value.substring(0, end);
     }
 
+    private static boolean isXml10Char(int c) {
+        return c == 0x9 || c == 0xA || (c >= 0x20 && c <= 0xD7FF) || (c >= 0xE000 && c <= 0xFFFD) || (c >= 0x10000 && c <= 0x10FFFF);
+    }
+
     private static void field(StringBuilder out, String name, String value) {
         if (value.isEmpty()) {
             out.append('<').append(name).append("/>");
             return;
         }
         out.append('<').append(name).append('>');
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
+        value.codePoints().forEach(c -> {
             switch (c) {
                 case '&' -> out.append("&amp;");
                 case '<' -> out.append("&lt;");
                 case '>' -> out.append("&gt;");
                 case '\r' -> out.append("&#xD;");
-                default -> out.append(c);
+                default -> {
+                    if (!isXml10Char(c)) {
+                        throw new IllegalArgumentException(name + " contains U+" + Integer.toHexString(c).toUpperCase()
+                                + ", which XML 1.0 does not allow");
+                    }
+                    out.appendCodePoint(c);
+                }
             }
-        }
+        });
         out.append("</").append(name).append('>');
     }
 }

@@ -40,6 +40,22 @@ class PaymentToVendorRemittanceTransformerTest {
         assertThatThrownBy(() -> run(instruction("X", line(1, "IND", "n/a")))).isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    void trailerTotalsAreTheSumOfTheRoundedLines() {
+        String out = run(instruction("X", line(1, "IND", "0.006") + line(2, "IND", "0.006") + line(3, "SAL", "-0.006")));
+        assertThat(out).contains("<AmountCents>1</AmountCents><DebitCreditInd>D</DebitCreditInd>")
+                .endsWith("<PaymentCount>3</PaymentCount><DebitTotalCents>2</DebitTotalCents>"
+                        + "<CreditTotalCents>1</CreditTotalCents><HashTotal>3</HashTotal></Trailer></ns0:Remittance>");
+    }
+
+    @Test
+    void rejectsCharactersXml10DoesNotAllow() {
+        assertThatThrownBy(() -> run("<?xml version=\"1.1\"?>" + instruction("A&#x1;B", line(1, "IND", "1.00"))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("PayeeName contains U+1");
+        assertThat(run(instruction("Caf\u00e9 \uD83D\uDE97", line(1, "IND", "1.00")))).contains("<PayeeName>Caf\u00e9 \uD83D\uDE97</PayeeName>");
+    }
+
     private String run(String xml) {
         return new String(transformer.transform(xml.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }
