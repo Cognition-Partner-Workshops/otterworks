@@ -18,7 +18,7 @@
           <xs:complexType>
             <xs:sequence>
               <xs:element name="BatchId" type="xs:string" />
-              <xs:element name="AgencyId" type="xs:string" />
+              <xs:element name="AgencyId" type="AgencyIdType" />
               <xs:element name="CreatedDt" type="xs:dateTime" />
               <xs:element name="MessageCount" type="xs:int" />
             </xs:sequence>
@@ -39,4 +39,10 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <!-- AgencyId reaches the declines folder name (declines\%ClaimsHub.AgencyId%); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="AgencyIdType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="AG-[0-9]{4}" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

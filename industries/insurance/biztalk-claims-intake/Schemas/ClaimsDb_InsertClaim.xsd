@@ -13,7 +13,7 @@
   <xs:element name="usp_InsertClaim">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="ClaimNumber" type="xs:string" />
+        <xs:element name="ClaimNumber" type="ClaimNumberType" />
         <xs:element name="PolicyNumber" type="xs:string" />
         <xs:element name="PolicyStatus" type="xs:string" />
         <xs:element name="PolicyEffectiveDate" type="xs:date" />
@@ -32,9 +32,21 @@
         <xs:element name="InjuryFlag" type="xs:boolean" />
         <xs:element name="PriorFraudFlag" type="xs:boolean" />
         <xs:element name="InForceAtLoss" type="xs:boolean" />
-        <xs:element name="AgencyId" type="xs:string" />
+        <xs:element name="AgencyId" type="AgencyIdType" />
         <xs:element name="TriageOutcome" type="xs:string" nillable="true" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- AgencyId reaches the declines folder name (declines\%ClaimsHub.AgencyId%); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="AgencyIdType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="AG-[0-9]{4}" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

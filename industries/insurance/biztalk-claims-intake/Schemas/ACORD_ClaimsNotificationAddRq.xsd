@@ -22,7 +22,7 @@
               <xs:element name="Producer">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="ProducerId" type="xs:string" />
+                    <xs:element name="ProducerId" type="AgencyIdType" />
                     <xs:element name="ProducerName" type="xs:string" />
                   </xs:sequence>
                 </xs:complexType>
@@ -51,7 +51,7 @@
               <xs:element name="ClaimsOccurrence">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="ClaimNumber" type="xs:string" />
+                    <xs:element name="ClaimNumber" type="ClaimNumberType" />
                     <xs:element name="LossDt" type="xs:date" />
                     <xs:element name="ReportedDt" type="xs:date" />
                     <xs:element name="LossCauseCd" type="xs:string" />
@@ -85,4 +85,16 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- AgencyId reaches the declines folder name (declines\%ClaimsHub.AgencyId%); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="AgencyIdType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="AG-[0-9]{4}" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

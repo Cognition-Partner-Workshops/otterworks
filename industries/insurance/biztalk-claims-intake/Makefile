@@ -5,7 +5,7 @@ RUNNER := python3 $(REPO_ROOT)/tools/xslt-golden/xslt_golden.py --manifest corpu
 .PHONY: deps corpus golden check clean
 
 deps:
-	pip install -r $(REPO_ROOT)/tools/xslt-golden/requirements.txt
+	pip install -r $(REPO_ROOT)/tools/xslt-golden/requirements.txt -r tools/requirements.txt
 
 corpus:            ## regenerate the 40 input messages, stubs and aggregates
 	python3 corpus/generate.py
@@ -21,6 +21,7 @@ check:             ## the gate: every golden must match byte for byte
 	$(RUNNER) check
 	python3 tools/ff_render.py check
 	python3 tools/triage_reference.py check
+	python3 tools/schema_check.py check
 
 clean:
 	rm -rf corpus/golden corpus/inputs/fnol-enriched

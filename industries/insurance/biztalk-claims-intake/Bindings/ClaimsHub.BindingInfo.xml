@@ -196,7 +196,7 @@
       <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
     </SendPort>
     <SendPort Name="sp_Fraud_Referral_FILE" IsStatic="true" IsTwoWay="false" BindingOption="1">
-      <Description>Content-based subscription: every TriageFacts document whose outcome is FRAUD_REVIEW lands in the fraud desk folder without any orchestration sending it.</Description>
+      <Description>Content-based subscription: every TriageFacts document whose outcome is FRAUD_REVIEW lands in the fraud desk folder without any orchestration sending it. The file name comes from promoted properties; ClaimNumber (CLM-nnnn-nnnnnn) and AgencyId (AG-nnnn) are pattern-restricted in the schemas so the disassembler suspends any value carrying a path separator or dot segment.</Description>
       <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
       <PrimaryTransport>
         <Address>\\CLAIMS-FS01\fraud-desk\referrals\%ClaimsHub.ClaimNumber%.xml</Address>
@@ -215,7 +215,7 @@
       <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
     </SendPort>
     <SendPort Name="sp_Declines_FILE" IsStatic="true" IsTwoWay="false" BindingOption="1">
-      <Description>Content-based subscription: declined FNOLs (policy not in force) for the agency liaison team.</Description>
+      <Description>Content-based subscription: declined FNOLs (policy not in force) for the agency liaison team. The file name comes from promoted properties; ClaimNumber (CLM-nnnn-nnnnnn) and AgencyId (AG-nnnn) are pattern-restricted in the schemas so the disassembler suspends any value carrying a path separator or dot segment.</Description>
       <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
       <PrimaryTransport>
         <Address>\\CLAIMS-FS01\agency-liaison\declines\%ClaimsHub.AgencyId%\%ClaimsHub.ClaimNumber%.xml</Address>
@@ -234,7 +234,7 @@
       <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
     </SendPort>
     <SendPort Name="sp_GlassVendor_FastTrack_SFTP" IsStatic="true" IsTwoWay="false" BindingOption="1">
-      <Description>Content-based subscription: fast-tracked glass claims go straight to the glass network partner.</Description>
+      <Description>Content-based subscription: fast-tracked glass claims go straight to the glass network partner. The file name comes from promoted properties; ClaimNumber (CLM-nnnn-nnnnnn) and AgencyId (AG-nnnn) are pattern-restricted in the schemas so the disassembler suspends any value carrying a path separator or dot segment.</Description>
       <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
       <PrimaryTransport>
         <Address>sftp://sftp.glassnet.example:22/thistlecombe/fasttrack/%ClaimsHub.ClaimNumber%.xml</Address>

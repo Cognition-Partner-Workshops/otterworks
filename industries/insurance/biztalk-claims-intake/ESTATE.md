@@ -7,8 +7,8 @@ The hub connects three parties: agencies, which send first notices of loss over 
 ## How to run
 
 ```bash
-make deps      # saxonche and PyYAML from tools/xslt-golden/requirements.txt
-make check     # the gate: 112 map outputs, 14 positional files and 16 triage results must match byte for byte
+make deps      # saxonche and PyYAML from tools/xslt-golden/requirements.txt, lxml from tools/requirements.txt
+make check     # the gate: 112 map outputs, 14 positional files and 16 triage results must match byte for byte; the corpus must validate against the schemas
 make golden    # regenerate every golden after a deliberate change to a map, a schema or the policy
 ```
 
@@ -103,6 +103,8 @@ Three send ports have no orchestration behind them; they are content-based subsc
 | `sp_Fraud_Referral_FILE` | message type `TriageFacts` and `TriageOutcome` = `FRAUD_REVIEW` | fraud desk folder |
 | `sp_Declines_FILE` | message type `TriageFacts` and `TriageOutcome` = `DECLINE_NOT_IN_FORCE` | agency liaison folder, per agency |
 | `sp_GlassVendor_FastTrack_SFTP` | message type `usp_InsertClaim`, `TriageOutcome` = `FAST_TRACK`, `LossCauseCd` = `GLAS` | glass network partner |
+
+All three name their target file from promoted properties the agency supplied: `%ClaimsHub.ClaimNumber%.xml`, and for declines a per-agency folder `%ClaimsHub.AgencyId%`. Every schema that carries `ClaimNumber` restricts it to `CLM-[0-9]{4}-[0-9]{6}`, and every schema that carries the agency id (`ProducerId`, `BatchHeader/AgencyId`, `Agency/Id`, `usp_InsertClaim/AgencyId`) restricts it to `AG-[0-9]{4}`, so `FnolBatchReceivePipeline` (`ValidateDocument=true`) suspends an FNOL whose identifiers carry `\`, `/` or `..`. A route that reproduces these subscriptions must keep that guarantee on its own: check the identifier against the same pattern before it is used in a path, and confirm the resolved target stays under the configured folder (for Camel's file component, `jailStartingDirectory=true`, which is its default; for SFTP, a fixed `FolderPath` and a file name with no separators). `tools/schema_check.py check`, part of `make check`, validates the corpus against the schemas and asserts that hostile values are rejected.
 
 ## Behaviour corpus (`corpus/`)
 
