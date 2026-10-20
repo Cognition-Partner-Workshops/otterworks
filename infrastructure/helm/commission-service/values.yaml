@@ -1,0 +1,45 @@
+replicaCount: 1
+
+global:
+  environment: dev
+
+image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/workshop/otterworks-commission-service
+  tag: ""  # Set at deploy time (ECR uses IMMUTABLE tags)
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+healthCheck:
+  path: /actuator/health
+  initialDelaySeconds: 30
+  periodSeconds: 15
+
+networkPolicy:
+  enabled: true
+  monitoringNamespace: monitoring
+  # Address range(s) of the Oracle host running COMMISSION_PKG, set at deploy
+  # time. Nothing else may reach the rule endpoints.
+  callerCIDRs: []
+
+# Non-sensitive configuration rendered into {{ .Release.Name }}-config and
+# injected via envFrom, e.g. COMMISSION_DB_URL. Populate at deploy time.
+config: {}
+
+# Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
+# stringData), e.g. COMMISSION_DB_USER / COMMISSION_DB_PASSWORD. Populate at
+# deploy time; never commit values. COMMISSION_CALLER_TOKEN must be set to the
+# token stored in COMMISSION_AUTH.service_caller_token: without it every rule
+# endpoint answers 401.
+secrets: {}
