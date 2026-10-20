@@ -267,13 +267,16 @@ class AdjusterAssignmentOrchestrationTest {
             String id = stem(input);
             byte[] golden = Files.readAllBytes(CorpusManifest.fixtureDir().resolve("corpus/golden/assignment-notice/" + id + ".xml"));
             ByteComparison cmp;
+            byte[] actual;
             try {
-                cmp = ByteComparison.of(golden, mail(corpus(), id).notice());
+                actual = mail(corpus(), id).notice();
+                cmp = ByteComparison.of(golden, actual);
             } catch (Throwable t) {
-                reportRows.add(new String[] {id, "no", firstLine(t.getMessage())});
+                reportRows.add(new String[] {id, digest(golden), "none", "no notice", "red", firstLine(t.getMessage())});
                 throw t;
             }
-            reportRows.add(new String[] {id, cmp.identical() ? "yes" : "no", cmp.cause()});
+            reportRows.add(new String[] {id, digest(golden), digest(actual), cmp.identical() ? "0 bytes" : "differs",
+                    cmp.identical() ? "green" : "red", cmp.cause()});
             if (!cmp.identical()) {
                 fail(id + ": " + cmp.cause());
             }
@@ -284,14 +287,19 @@ class AdjusterAssignmentOrchestrationTest {
     void writeReport() throws IOException {
         Path dir = Path.of("target", "golden-report");
         Files.createDirectories(dir);
-        StringBuilder md = new StringBuilder("| Request | Notice byte-identical | Cause |\n| --- | --- | --- |\n");
-        long ok = 0;
+        StringBuilder md = new StringBuilder("| Request | Golden notice (BizTalk) | Camel notice | Difference | Verdict | Cause |\n"
+                + "| --- | --- | --- | --- | --- | --- |\n");
+        long green = 0;
         for (String[] row : reportRows) {
-            md.append("| ").append(row[0]).append(" | ").append(row[1]).append(" | ").append(row[2].replace("|", "\\|")).append(" |\n");
-            ok += "yes".equals(row[1]) ? 1 : 0;
+            md.append("|");
+            for (String cell : row) {
+                md.append(' ').append(cell == null ? "" : cell.replace("|", "\\|")).append(" |");
+            }
+            md.append('\n');
+            green += "green".equals(row[4]) ? 1 : 0;
         }
-        md.append("| **Total** | **").append(ok).append(" of ").append(reportRows.size()).append(" identical** | ")
-                .append(reportRows.size() - ok).append(" red |\n");
+        md.append("| **Total** | ").append(reportRows.size()).append(" | ").append(reportRows.size()).append(" | | **")
+                .append(green).append(" green, ").append(reportRows.size() - green).append(" red** | |\n");
         Files.writeString(dir.resolve(ORCHESTRATION + ".md"), md.toString());
     }
 
@@ -382,6 +390,15 @@ class AdjusterAssignmentOrchestrationTest {
         try {
             return Files.readAllBytes(p);
         } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static String digest(byte[] bytes) {
+        try {
+            return bytes.length + " B, sha256 " + java.util.HexFormat.of().formatHex(
+                    java.security.MessageDigest.getInstance("SHA-256").digest(bytes)).substring(0, 12);
+        } catch (java.security.NoSuchAlgorithmException e) {
             throw new IllegalStateException(e);
         }
     }
