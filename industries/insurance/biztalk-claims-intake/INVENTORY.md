@@ -1,6 +1,6 @@
 # Claims hub inventory and wave plan (BizTalk Server 2016 to Java 21, Spring Boot 3.3, Apache Camel 4)
 
-Inventory of `ThistlecombeMutual.ClaimsHub` as exported in this directory at fixture commit `47ac76d`, read from the artefacts themselves (`Bindings/ClaimsHub.BindingInfo.xml`, `Orchestrations/*.odx`, `Maps/*.btm` and `*.xslt`, `Schemas/*.xsd`, `Pipelines/*.btp` and `Components/*.cs`, `Rules/*.xml`) and checked against `ESTATE.md`. Where the artefact and `ESTATE.md` disagree, the artefact is quoted and the disagreement is listed under [Divergences](#divergences-that-need-a-decision). Target stack and rules follow the carrier modernization standard: pin first, XSLT stays XSLT only where the map is pure, money is `BigDecimal` at scale 2 with a named rounding mode, one row per unit in every report, and divergences are decided by a person.
+Inventory of `ThistlecombeMutual.ClaimsHub` as exported in this directory at fixture commit `24096535f`, read from the artefacts themselves (`Bindings/ClaimsHub.BindingInfo.xml`, `Orchestrations/*.odx`, `Maps/*.btm` and `*.xslt`, `Schemas/*.xsd`, `Pipelines/*.btp` and `Components/*.cs`, `Rules/*.xml`) and checked against `ESTATE.md`. Where the artefact and `ESTATE.md` disagree, the artefact is quoted and the disagreement is listed under [Divergences](#divergences-that-need-a-decision). Target stack and rules follow the carrier modernization standard: pin first, XSLT stays XSLT only where the map is pure, money is `BigDecimal` at scale 2 with a named rounding mode, one row per unit in every report, and divergences are decided by a person.
 
 Counts: 3 receive ports (3 locations), 11 send ports (8 used by orchestrations, 3 filter-only), 3 orchestrations, 8 maps (2 pure, 6 with functoids, 2 of those with inline C#), 11 schemas (1 envelope, 1 flat file, 2 multi-root, 1 property schema), 2 custom pipelines with 2 custom components, 1 BRE policy with 7 rules.
 
@@ -8,7 +8,7 @@ Risk marks: **H** the Camel construct does not give the BizTalk guarantee for fr
 
 ## Baseline (pinned before anything moves)
 
-`make check` on `devin/1792473658-insurance-biztalk-fixture` at `47ac76d` (Python 3.12, `saxonche==12.5.0`):
+`make check` on `devin/1792473658-insurance-biztalk-fixture` at `24096535f` (Python 3.12, `saxonche==12.5.0`):
 
 ```
 Fnol_to_CanonicalClaim: 16/16 match
@@ -24,7 +24,7 @@ vendor-remittance-ff: 14 files, failures 0
 triage: 16 claims, failures 0
 ```
 
-The gate is green, but 7 of the 14 vendor files it compares are ones the hub's own trailer guard cannot parse; see [D1](#d1-seven-vendor-remittance-goldens-carry-exponent-form-amounts) before wave 1 touches `Payment_to_VendorRemittance`.
+The gate is green, and since `24096535f` the 14 vendor files also pass the hub's own trailer guard (`TrailerTotalsComponent.Check`), which `make check` does not run; see [D1](#d1-resolved-vendor-remittance-goldens-carried-exponent-form-amounts).
 
 ## 1. Ports (`Bindings/ClaimsHub.BindingInfo.xml`)
 
@@ -90,7 +90,7 @@ Every shape below carries behaviour; plain sends and receives that only bind to 
 | `Scope_Payment`: **long-running scope** `PaymentTx` | Holds the ledger post open across a vendor window that can take hours | **Saga** EIP (`saga().propagation(REQUIRES_NEW)`), with a persistent saga service (LRA coordinator or a JDBC-backed `CamelSagaService`) so a restart mid-window still compensates | H |
 | `Scope_LedgerPost`: **atomic scope** `LedgerTx` with a **compensation** block sending `ReversePayment` with the same document | One post, compensated by one reversal | Saga step `.compensation("direct:reverseLedgerPost")` around a `transacted()` call to `usp_PostClaimPayment`; the reversal sends the identical `usp_PostClaimPayment` document to the reversal action | H |
 | `Construct_LedgerPost`, map `Payment_to_LedgerPost` | Ledger amounts and vendor reference | Java transformer bean | M (money) |
-| `Construct_Remittance`, map `Payment_to_VendorRemittance` | Positional file body | Java transformer bean, then fixed-length marshal | H (see D1 and [D7](#d7-the-ledger-and-the-vendor-file-disagree-by-a-cent-on-pi-2026-880107)) |
+| `Construct_Remittance`, map `Payment_to_VendorRemittance` | Positional file body | Java transformer bean, then fixed-length marshal | H (see [D7](#d7-the-ledger-and-the-vendor-file-disagree-by-a-cent-on-pi-2026-880107)) |
 | `Loop_Deliver`: **retry loop**, `while (!delivered && attempts < 3)` with an inner scope catching `DeliveryFailureException` and a **delay** of 10 min | Three attempts, ten minutes apart | `onException(DeliveryFailure).maximumRedeliveries(2).redeliveryDelay(600_000)` on the vendor step, or `loopDoWhile` with a counter if the attempt count must be visible | H (see D6) |
 | `throw VendorUnreachableException` and the scope's **exception handler** with `compensate LedgerTx`, then `OpsMail.PaymentHeld(msgInstruction, attempts)` to `sp_Ops_PaymentHeld_SMTP` | Ledger post reversed, operations told | Saga failure triggers compensation; `doCatch`/`onCompletion(onFailureOnly)` sends the ops mail; `OpsMail` reimplemented in Java | H |
 
@@ -116,7 +116,7 @@ Every shape below carries behaviour; plain sends and receives that only bind to 
 | `Claim_PolicyInqRs_to_InsertClaim` (two-source) | functoid | Less Than, Greater Than, Logical AND, Subtraction, Minimum, Value Mapping, Equal | Java | `NetExposure = max(min(estimate, limit) - deductible, 0)`; XSLT computes in `double` then `format-number(..., '0.00')`; Java in `BigDecimal` scale 2, `HALF_EVEN` at format | 16 | M |
 | `InsertClaim_to_TriageFacts` | functoid, **2 C# scripting** | Scripting `ComputeReserve`, Scripting `DaysBetween` | Java | `HALF_EVEN` (.NET `Math.Round`) | 16 | M |
 | `Payment_to_LedgerPost` | functoid, **2 C# scripting** | Scripting `MakeVendorReference`, Scripting `FormatMoney`, Cumulative Sum, Record Count | Java | `HALF_EVEN` (.NET `Math.Round`), invariant culture | 14 | M |
-| `Payment_to_VendorRemittance` | functoid, **looping** | Looping, Record Count, Cumulative Sum, Multiplication, Round, Absolute Value, Value Mapping, String Find | Java | Per-line `round(abs(Amount) * 100)` kept as the source behaviour: `HALF_UP` on the absolute amount, in `BigDecimal` from the decimal text; trailer totals are the sum of the line cents | 14 | H (D1, D7) |
+| `Payment_to_VendorRemittance` | functoid, **looping** | Looping, Record Count, Cumulative Sum, Multiplication, Round, Absolute Value, Value Mapping, String Find | Java | Per-line `round(abs(Amount) * 100)` kept as the source behaviour: `HALF_UP` on the absolute amount, in `BigDecimal` from the decimal text; trailer totals are the sum of the line cents | 14 | H (D7) |
 | `Roster_AssignmentRequest_to_Notice` (two-source) | functoid | Equal, Less Than, Logical AND, Index, Value Mapping, String Concatenate, Iteration | Java | none (amount copied as text) | 10 | M |
 
 ### The two maps with C# scripting functoids
@@ -133,7 +133,7 @@ Every shape below carries behaviour; plain sends and receives that only bind to 
 
 ### The looping functoid
 
-`Payment_to_VendorRemittance`: the Looping functoid on `PaymentInstruction/Line` emits one `Payment` (PAY) record per line, with `LineNo`, the parent's `ClaimNumber`, `PayeeName` cut to 30 characters, `PayeeType`, `LineType`, `AmountCents = round(abs(Amount) * 100)` (each line rounded on its own, half toward positive infinity on the magnitude), `DebitCreditInd` `C` for negative lines and `D` otherwise, `ValueDate` without hyphens and `GLAccount`. Outside the loop, Record Count and a Cumulative Sum over the Round functoid's output fill the trailer: `PaymentCount`, `DebitTotalCents` and `CreditTotalCents` summed from the rounded line cents (the recursive `sumCents` template since `47ac76d`, so the trailer always agrees with the body), and `HashTotal = (debit + credit) mod 10^10` written with `format-number(..., '0')`. `AmountCents`, `DebitTotalCents` and `CreditTotalCents` are still written with `value-of` on a `double`, which is where D1 comes from. Java: `amount.abs().movePointRight(2).setScale(0, RoundingMode.HALF_UP)` per line, `long` sums for the trailer.
+`Payment_to_VendorRemittance`: the Looping functoid on `PaymentInstruction/Line` emits one `Payment` (PAY) record per line, with `LineNo`, the parent's `ClaimNumber`, `PayeeName` cut to 30 characters, `PayeeType`, `LineType`, `AmountCents = round(abs(Amount) * 100)` (each line rounded on its own, half toward positive infinity on the magnitude), `DebitCreditInd` `C` for negative lines and `D` otherwise, `ValueDate` without hyphens and `GLAccount`. Outside the loop, Record Count and a Cumulative Sum over the Round functoid's output fill the trailer: `PaymentCount`, `DebitTotalCents` and `CreditTotalCents` summed from the rounded line cents (the recursive `sumCents` template since `47ac76d`, so the trailer always agrees with the body), and `HashTotal = (debit + credit) mod 10^10` written with `format-number(..., '0')`. Since `24096535f` `AmountCents`, `DebitTotalCents` and `CreditTotalCents` also go through `format-number(..., '0')`, so no amount is written in exponent form (D1). Java: `amount.abs().movePointRight(2).setScale(0, RoundingMode.HALF_UP)` per line, `long` sums for the trailer.
 
 ## 4. Schemas (`Schemas/`)
 
@@ -160,7 +160,7 @@ All instance documents use a qualified root and unqualified children (`elementFo
 | `FnolBatchReceivePipeline` (receive) | Decode | `PiiMaskingComponent` (custom, `Mask`) | `MaskedElementXPath=//*[local-name()='TaxId']`, `VisibleSuffixLength=4` | A full tax id never reaches the MessageBox, tracking or any port: every letter or digit except the last four becomes `X`, separators kept (`123-45-6789` to `XXX-XX-6789`) | Processor running first in the route, before the split, before any tracer, message history or log of the body | M (not covered by the corpus; long tail) |
 | | Disassemble | XML disassembler | Envelope `FnolBatchEnvelope`, document `ACORD_ClaimsNotificationAddRq`, `AllowUnrecognizedMessage=false`, `ValidateDocument=true`, `RecoverableInterchangeProcessing=true` | One `ClaimsSvcRq` per message, header promoted onto each; an invalid FNOL is suspended alone, the rest of the batch goes on | `split()` with header copy, `validator:` per part, per-part error handler to a dead letter channel (`stopOnException=false`) | M |
 | `VendorRemittanceSendPipeline` (send) | Assemble | Flat file assembler | `PaymentVendor_Remittance_FF`, US-ASCII (20127), no BOM | Fixed widths, space pad for text, zero pad for amounts, CRLF after every record | Bindy/BeanIO marshal with `charset=US-ASCII` | M |
-| | Encode | `TrailerTotalsComponent` (custom, `Check`) | `FailOnMismatch=true` | Re-reads the file, recomputes `PaymentCount`, `DebitTotalCents`, `CreditTotalCents` and `HashTotal` from the PAY records, and suspends the message when the TRL disagrees | Processor after marshal that throws; the exchange goes to the dead letter channel and the saga compensates | H (it cannot parse 7 of the 14 golden files; D1) |
+| | Encode | `TrailerTotalsComponent` (custom, `Check`) | `FailOnMismatch=true` | Re-reads the file, recomputes `PaymentCount`, `DebitTotalCents`, `CreditTotalCents` and `HashTotal` from the PAY records, and suspends the message when the TRL disagrees | Processor after marshal that throws; the exchange goes to the dead letter channel and the saga compensates | H (all 14 goldens pass it since `24096535f`; D1) |
 
 ## 6. Business rules (`Rules/ClaimTriagePolicy.xml`, version 1.2, vocabulary `ClaimTriage` 1.2)
 
@@ -180,38 +180,33 @@ Totals over 16 FNOLs: 4 declines, 3 fraud reviews, 4 fast tracks, 1 large loss, 
 
 Each of these is a choice, not a bug fix; nothing in the plan picks an option until someone answers.
 
-### D1. Seven vendor remittance goldens carry exponent-form amounts
+### D1. Resolved: vendor remittance goldens carried exponent-form amounts
 
-Since `47ac76d` the trailer is totalled from the rounded line cents and `HashTotal` goes through `format-number`, so `PI-2026-880107` now passes the trailer guard (body 123509, trailer 123509). `AmountCents`, `DebitTotalCents` and `CreditTotalCents` are still written by `value-of` on a `double`. Saxon runs the `version="1.0"` stylesheet with XPath 2.0+ number-to-string rules, so any value of one million cents or more (a line or total of 10,000.00 or more) comes out in exponent form (`1.112507E6`), and `tools/ff_render.py` pads that text into the positional field. .NET `XslCompiledTransform`, which BizTalk runs, writes plain digits. Running `TrailerTotalsComponent.Check`'s logic over the 14 goldens at `47ac76d`:
+Saxon runs the `version="1.0"` stylesheet with XPath 2.0+ number-to-string rules, so `value-of` on a `double` of one million cents or more came out as `1.112507E6`, and `tools/ff_render.py` padded that text into the positional fields; .NET `XslCompiledTransform` writes plain digits. Two fixture commits closed it: `47ac76d` totals the trailer from the rounded line cents and formats `HashTotal`, and `24096535f` writes `AmountCents`, `DebitTotalCents` and `CreditTotalCents` through `format-number(..., '0')`. Per-line rounding is unchanged and stays the source behaviour. Running `TrailerTotalsComponent.Check`'s logic over the 14 goldens at `24096535f`:
 
-| Message | Sum of PAY debit cents | TRL `DebitTotalCents` | Difference | Verdict | Cause |
-| --- | --- | --- | --- | --- | --- |
-| PI-2026-880100 | 966027 | 966027 | 0 | GREEN | |
-| PI-2026-880101 | 142948 | 142948 | 0 | GREEN | |
-| PI-2026-880102 | unparseable (`001.112507E6`) | `00001.154046E6` | n/a | RED | exponent form in PAY and TRL |
-| PI-2026-880103 | unparseable (`000001.063E6`) | `00000001.063E6` | n/a | RED | exponent form in PAY and TRL |
-| PI-2026-880104 | 912630 | 912630 | 0 | GREEN | |
-| PI-2026-880105 | unparseable (`001.033155E6`) | `00001.033155E6` | n/a | RED | exponent form in PAY and TRL |
-| PI-2026-880106 | 753073 | 753073 | 0 | GREEN | |
-| PI-2026-880107 | 123509 | 123509 | 0 | GREEN | trailer from rounded lines (`47ac76d`) |
-| PI-2026-880108 | unparseable (`001.110149E6`) | `00001.141819E6` | n/a | RED | exponent form in PAY and TRL |
-| PI-2026-880109 | 397890 | 397890 | 0 | GREEN | |
-| PI-2026-880110 | unparseable (`00001.4272E6`) | `00001.469282E6` | n/a | RED | exponent form in PAY and TRL |
-| PI-2026-880111 | unparseable (`09.9999999E7`, `00000001.2E6`, credit `00000002.5E6`) | `001.01199999E8` | n/a | RED | exponent form in PAY and TRL, debit and credit |
-| PI-2026-880112 | 742719 | 742719 | 0 | GREEN | |
-| PI-2026-880113 | unparseable (`001.051525E6`) | `00001.051525E6` | n/a | RED | exponent form in PAY and TRL |
-| **Total** | | | | **7 GREEN, 7 RED** | all 7 red rows: exponent form |
+| Message | Sum of PAY debit cents | TRL `DebitTotalCents` | Sum of PAY credit cents | TRL `CreditTotalCents` | Difference | Verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| PI-2026-880100 | 966027 | 966027 | 104663 | 104663 | 0 | GREEN |
+| PI-2026-880101 | 142948 | 142948 | 0 | 0 | 0 | GREEN |
+| PI-2026-880102 | 1154046 | 1154046 | 0 | 0 | 0 | GREEN |
+| PI-2026-880103 | 1063000 | 1063000 | 78247 | 78247 | 0 | GREEN |
+| PI-2026-880104 | 912630 | 912630 | 0 | 0 | 0 | GREEN |
+| PI-2026-880105 | 1033155 | 1033155 | 0 | 0 | 0 | GREEN |
+| PI-2026-880106 | 753073 | 753073 | 34968 | 34968 | 0 | GREEN |
+| PI-2026-880107 | 123509 | 123509 | 0 | 0 | 0 | GREEN |
+| PI-2026-880108 | 1141819 | 1141819 | 0 | 0 | 0 | GREEN |
+| PI-2026-880109 | 397890 | 397890 | 6560 | 6560 | 0 | GREEN |
+| PI-2026-880110 | 1469282 | 1469282 | 0 | 0 | 0 | GREEN |
+| PI-2026-880111 | 101199999 | 101199999 | 2500000 | 2500000 | 0 | GREEN |
+| PI-2026-880112 | 742719 | 742719 | 23981 | 23981 | 0 | GREEN |
+| PI-2026-880113 | 1051525 | 1051525 | 0 | 0 | 0 | GREEN |
+| **Total** | **112151622** | **112151622** | **2748419** | **2748419** | **0** | **14 GREEN** |
 
-`make check` cannot see this because it compares Saxon output with Saxon output. The amounts are right (read as numbers they reconcile to the ledger; see D7); only their text is wrong. Options:
-
-1. Fix the fixture: write `AmountCents`, `DebitTotalCents` and `CreditTotalCents` with `format-number(..., '0')`, as `47ac76d` already does for `HashTotal`, and regenerate the 7 goldens. No amount changes.
-2. Keep the goldens and make the Java transformer reproduce Saxon's text. It passes `make check`, but the vendor would get files it rejects.
-
-Recommendation: option 1, in the fixture branch, before wave 1 converts this map.
+`PaymentCount` and `HashTotal` match on all 14 as well, and no golden under `vendor-remittance/` or `vendor-remittance-ff/` contains exponent form. Nothing to decide; the cent between ledger and vendor on `PI-2026-880107` is a separate question (D7).
 
 ### D2. `FnolIntake` as exported does not do what `ESTATE.md` says
 
-The `delay` branch still sits after the `listen` block's closing brace at `47ac76d`. Read literally, the listen has one branch (wait for a correction, no timeout), the 15-minute delay then always runs, and `Construct_Canonical` rebuilds `msgClaim` from the original `msgFnol`, discarding the correction. (The other half of this item in the first draft, a `Call_Rules` that was only a comment, is resolved: `47ac76d` executes the policy in the `TriageTx` atomic scope.)
+The `delay` branch still sits after the `listen` block's closing brace at `24096535f`. Read literally, the listen has one branch (wait for a correction, no timeout), the 15-minute delay then always runs, and `Construct_Canonical` rebuilds `msgClaim` from the original `msgFnol`, discarding the correction. (The other half of this item in the first draft, a `Call_Rules` that was only a comment, is resolved: `47ac76d` executes the policy in the `TriageTx` atomic scope.)
 
 Option A: characterize from the intent in `ESTATE.md` and the shape comments (a listen with two branches). Option B: characterize the XLANG text as written. Recommendation: A, recording the defect in the characterization test's description, and confirm with whoever owns the BizTalk solution that the deployed assembly matches the intent.
 
@@ -256,7 +251,7 @@ This decision belongs to the payment orchestration act (the `ClaimPayment` conve
 | PI-2026-880113 | 10515.25 | 10515.25 | 0.00 | GREEN |
 | **Total** | **1,094,032.02** | **1,094,032.03** | **-0.01** | **13 GREEN, 1 RED** |
 
-(For the 7 files in D1, the vendor net is read numerically from the exponent text.) The options for that act, none chosen here: keep both sides as the legacy hub does and let the cent stand; post the vendor's per-line total to the ledger; or allocate the cent with an explicit rule both sides apply. Per-line rounding in the vendor file stays the source behaviour either way.
+The options for that act, none chosen here: keep both sides as the legacy hub does and let the cent stand; post the vendor's per-line total to the ledger; or allocate the cent with an explicit rule both sides apply. Per-line rounding in the vendor file stays the source behaviour either way.
 
 ## Wave plan
 
@@ -269,7 +264,7 @@ Order and target:
 1. `CanonicalClaim_to_PolicyInqRq`, `AssignmentRequest_to_RosterQuery`: keep the XSLT, run from `xslt-saxon:`.
 2. `Fnol_to_CanonicalClaim`, `Claim_PolicyInqRs_to_InsertClaim`, `Roster_AssignmentRequest_to_Notice`: Java transformers.
 3. `InsertClaim_to_TriageFacts`, `Payment_to_LedgerPost`: Java transformers for the C# scripting functoids, `HALF_EVEN`.
-4. `Payment_to_VendorRemittance` and the fixed-length marshal: last, after the 7 exponent-form goldens (D1) are fixed in the fixture.
+4. `Payment_to_VendorRemittance` and the fixed-length marshal: last, because it is the only map whose output also goes through a pipeline (flat file assembler and trailer guard).
 
 What it proves against the corpus: all 112 map outputs match byte for byte with Java/Camel output in place of Saxon's (16 + 16 + 16 + 16 + 14 + 14 + 10 + 10), and the 14 positional files match. The numbers to watch: reserves 1253.12 and 2876.72 (`HALF_EVEN`); `PI-2026-880107` ledger 1235.08 (`HALF_EVEN` on the sum) and vendor body and trailer 123509 cents (`HALF_UP` per line), each held to its own golden, with the cent between them left to D7; vendor reference check digits on all 14 payments; `PI-2026-880111` net 986999.99 and salvage 25000.00.
 
@@ -289,7 +284,7 @@ What it proves against the corpus: the 16 triage results match `corpus/golden/tr
 
 - `PiiMaskingComponent.Mask` and the guarantee that no unmasked tax id is logged or traced. The corpus inputs are the unmasked agency messages (synthetic tax ids such as `100-40-7000`), so a converted masking step can run on them. But there is no golden of the masked message yet, and `fnol-canonical` masks through the map's own `***-**-` prefix, so pin a masked-output golden first.
 - `FnolBatchEnvelope` debatching with `RecoverableInterchangeProcessing` and validation: no batch envelope in the corpus.
-- `TrailerTotalsComponent.Check` as a guard: `make check` does not run it (D1 shows what it would reject).
+- `TrailerTotalsComponent.Check` as a guard: `make check` does not run it. The D1 table was produced by running its logic by hand; wave 1 should add it to the gate.
 - Host key for `rl_Agency_FnolBatch_SFTP`: the binding has none, while both SFTP send ports pin an ed25519 fingerprint. The Camel consumer needs a `knownHostsFile` entry, so get the agency server's key from operations.
 - Service windows: receive 22:00 to 06:00, vendor send 22:00 to 05:30; ordered delivery on three send ports.
 - SMTP notice properties `NoticeTo`, `NoticeSubject`, `NoticeBody`: referenced by `sp_Adjuster_AssignmentNotice_SMTP`, not defined in `PropertySchema.xsd`, and nothing in `AdjusterAssignment.odx` sets them.
