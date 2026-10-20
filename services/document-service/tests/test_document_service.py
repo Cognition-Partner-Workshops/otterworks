@@ -210,7 +210,8 @@ async def test_template_crud_and_create_from(
 
     doc = await service.create_from_template(
         template.id,
-        DocumentFromTemplate(title="Jan Report", owner_id=owner_id),
+        DocumentFromTemplate(title="Jan Report"),
+        owner_id,
     )
     assert doc is not None
     assert doc.title == "Jan Report"
@@ -226,7 +227,8 @@ async def test_create_from_nonexistent_template(
 
     result = await service.create_from_template(
         uuid.uuid4(),
-        DocumentFromTemplate(title="Orphan", owner_id=owner_id),
+        DocumentFromTemplate(title="Orphan"),
+        owner_id,
     )
     assert result is None
 

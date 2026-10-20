@@ -5,6 +5,8 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import auth_headers
+
 
 @pytest.mark.asyncio
 async def test_create_template(client: AsyncClient):
@@ -54,19 +56,54 @@ async def test_create_document_from_template(client: AsyncClient, owner_id: uuid
 
     resp = await client.post(
         f"/api/v1/documents/from-template/{template_id}",
-        json={"title": "My New Doc", "owner_id": str(owner_id)},
+        json={"title": "My New Doc"},
+        headers=auth_headers(owner_id),
     )
     assert resp.status_code == 201
     data = resp.json()
     assert data["title"] == "My New Doc"
     assert data["content"] == "Start typing here..."
     assert data["content_type"] == "text/plain"
+    assert data["owner_id"] == str(owner_id)
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_requires_auth(client: AsyncClient, owner_id: uuid.UUID):
+    resp = await client.post(
+        f"/api/v1/documents/from-template/{uuid.uuid4()}",
+        json={"title": "Anon", "owner_id": str(owner_id)},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_rejects_foreign_owner_id(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    """A caller cannot plant a templated document in another user's account."""
+    template_resp = await client.post(
+        "/api/v1/templates/",
+        json={"name": "Blank", "content": "x", "created_by": str(uuid.uuid4())},
+    )
+    template_id = template_resp.json()["id"]
+    victim = uuid.uuid4()
+
+    resp = await client.post(
+        f"/api/v1/documents/from-template/{template_id}",
+        json={"title": "Planted", "owner_id": str(victim)},
+        headers=auth_headers(owner_id),
+    )
+    assert resp.status_code == 403
+
+    listed = await client.get("/api/v1/documents/", headers=auth_headers(victim))
+    assert listed.json()["total"] == 0
 
 
 @pytest.mark.asyncio
 async def test_create_from_template_not_found(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.post(
         f"/api/v1/documents/from-template/{uuid.uuid4()}",
-        json={"title": "Orphan", "owner_id": str(owner_id)},
+        json={"title": "Orphan"},
+        headers=auth_headers(owner_id),
     )
     assert resp.status_code == 404

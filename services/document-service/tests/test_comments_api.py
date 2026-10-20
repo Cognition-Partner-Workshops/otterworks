@@ -5,12 +5,15 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import auth_headers
+
 
 @pytest.mark.asyncio
 async def test_add_comment(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Commented Doc", "content": "", "owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
     )
     doc_id = create_resp.json()["id"]
     author_id = str(uuid.uuid4())
@@ -40,6 +43,7 @@ async def test_list_comments(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "", "owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
     )
     doc_id = create_resp.json()["id"]
 
@@ -59,6 +63,7 @@ async def test_delete_comment(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "", "owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
     )
     doc_id = create_resp.json()["id"]
 
@@ -80,6 +85,7 @@ async def test_delete_comment_not_found(client: AsyncClient, owner_id: uuid.UUID
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "", "owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
     )
     doc_id = create_resp.json()["id"]
 
