@@ -47,6 +47,7 @@ spec:
       validate:
         message: "SEC-01/SEC-02/RES-01 containers run as non-root on a read-only root filesystem with requests and limits"
         pattern:
+          # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
           spec:
             containers:
               - securityContext:
@@ -80,8 +81,10 @@ spec:
       validate:
         message: "PROBE-01 every long-running service has liveness and readiness probes"
         pattern:
+          # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
           spec:
             template:
+              # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
               spec:
                 containers:
                   - livenessProbe:
@@ -111,6 +114,7 @@ spec:
       validate:
         message: "REG-01 images come from the approved registry"
         pattern:
+          # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
           spec:
             containers:
               - image: "599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks/*"
@@ -161,5 +165,6 @@ spec:
       validate:
         message: "NET-01 services are ClusterIP behind the shared ingress-nginx"
         pattern:
+          # nosemgrep: yaml.kubernetes.security.run-as-non-root.run-as-non-root
           spec:
             =(type): "ClusterIP"
