@@ -1,0 +1,27 @@
+<ns0:PaymentInstruction xmlns:ns0="http://schemas.thistlecombe.example/canonical/payment">
+  <InstructionId>PI-2026-880104</InstructionId>
+  <ClaimNumber>CLM-2026-100412</ClaimNumber>
+  <PolicyNumber>POL-AUTO-48144</PolicyNumber>
+  <VendorCode>PAYV01</VendorCode>
+  <Payee>
+    <Name>Seaboard Restoration</Name>
+    <PayeeType>VN</PayeeType>
+    <BankAccountMasked>****1292</BankAccountMasked>
+  </Payee>
+  <ValueDate>2026-10-05</ValueDate>
+  <CurrencyCd>USD</CurrencyCd>
+  <Line>
+    <LineNo>1</LineNo>
+    <LineType>IND</LineType>
+    <Amount>9031.62</Amount>
+    <GLAccount>61010100</GLAccount>
+    <Memo>Indemnity per adjuster estimate</Memo>
+  </Line>
+  <Line>
+    <LineNo>2</LineNo>
+    <LineType>EXP</LineType>
+    <Amount>94.68</Amount>
+    <GLAccount>61020300</GLAccount>
+    <Memo>Independent appraisal fee</Memo>
+  </Line>
+</ns0:PaymentInstruction>

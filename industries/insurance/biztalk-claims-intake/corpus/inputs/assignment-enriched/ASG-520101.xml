@@ -1,0 +1,50 @@
+<ns0:Root xmlns:ns0="http://schemas.microsoft.com/BizTalk/2003/aggschema">
+  <InputMessagePart_0>
+    <ns0:RosterResult xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+      <Adjuster>
+        <AdjusterId>ADJ-104</AdjusterId>
+        <Name>Mateo Quiroga</Name>
+        <Email>mateo.quiroga@thistlecombe.example</Email>
+        <Region>COASTAL</Region>
+        <Skills>PROPERTY</Skills>
+        <OpenClaims>14</OpenClaims>
+        <MaxClaims>25</MaxClaims>
+        <Available>true</Available>
+      </Adjuster>
+      <Adjuster>
+        <AdjusterId>ADJ-105</AdjusterId>
+        <Name>Rosalind Ferreira</Name>
+        <Email>rosalind.ferreira@thistlecombe.example</Email>
+        <Region>COASTAL</Region>
+        <Skills>AUTO-PD,PROPERTY</Skills>
+        <OpenClaims>7</OpenClaims>
+        <MaxClaims>25</MaxClaims>
+        <Available>true</Available>
+      </Adjuster>
+      <Adjuster>
+        <AdjusterId>ADJ-106</AdjusterId>
+        <Name>Thaddeus Okonjo</Name>
+        <Email>thaddeus.okonjo@thistlecombe.example</Email>
+        <Region>COASTAL</Region>
+        <Skills>LIABILITY,AUTO-BI</Skills>
+        <OpenClaims>22</OpenClaims>
+        <MaxClaims>22</MaxClaims>
+        <Available>true</Available>
+      </Adjuster>
+    </ns0:RosterResult>
+  </InputMessagePart_0>
+  <InputMessagePart_1>
+    <ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+      <RequestId>ASG-520101</RequestId>
+      <ClaimNumber>CLM-2026-100405</ClaimNumber>
+      <LineOfBusiness>AUTO</LineOfBusiness>
+      <LossCause>GLAS</LossCause>
+      <Region>COASTAL</Region>
+      <Severity>LOW</Severity>
+      <RequiredSkill>AUTO-PD</RequiredSkill>
+      <RequestedDt>2026-09-25</RequestedDt>
+      <ClaimantName>Priya Venkataraman</ClaimantName>
+      <EstimatedAmount>412.00</EstimatedAmount>
+    </ns0:AssignmentRequest>
+  </InputMessagePart_1>
+</ns0:Root>
