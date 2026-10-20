@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
@@ -27,8 +28,13 @@ public class GoldenTriageStub implements ClaimTriage {
         this.goldenDir = properties.triageGoldenDir();
     }
 
+    private static final Pattern CLAIM_NUMBER = Pattern.compile("[A-Z0-9][A-Z0-9-]*");
+
     @Override
     public TriageResult evaluate(String claimNumber, String triageFacts) {
+        if (claimNumber == null || !CLAIM_NUMBER.matcher(claimNumber).matches()) {
+            throw new IllegalArgumentException("triage stub refuses claim number " + claimNumber);
+        }
         Path golden = goldenDir.resolve(claimNumber + ".json");
         if (!Files.isRegularFile(golden)) {
             throw new IllegalStateException("triage stub has no golden for " + claimNumber + " in " + goldenDir);
