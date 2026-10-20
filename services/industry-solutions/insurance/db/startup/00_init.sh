@@ -30,7 +30,9 @@ SQL
   marker=$(echo "${marker}" | tr -d '[:space:]')
   case "${marker}" in
     0) ;;
-    1) echo "== insurance fixture already initialized, skipping"; exit 0 ;;
+    1) echo "== insurance fixture already initialized, skipping"
+       sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" @"${SQL_DIR}/setup/02_service_acl.sql"
+       exit 0 ;;
     *) echo "== could not determine fixture state: ${marker}" >&2; exit 1 ;;
   esac
 
@@ -59,6 +61,10 @@ EXIT;
 SQL
     run_sql "system/${ORACLE_PWD}" "${SQL_DIR}/setup/01_users.sql"
   fi
+
+  # Network ACE for the delegate's callouts; must exist before the package body
+  # that uses UTL_HTTP is compiled against it.
+  run_sql "system/${ORACLE_PWD}" "${SQL_DIR}/setup/02_service_acl.sql"
 
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/01_tables.sql"
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/02_seed.sql"

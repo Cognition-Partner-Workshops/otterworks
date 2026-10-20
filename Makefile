@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test insurance-ledger-run insurance-pg-up insurance-pg-reconcile insurance-pg-down deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
 
@@ -42,11 +42,15 @@ procs-rules-gate: ## Validate the approved HITL rule ledger (MODULE=<module> or 
 
 INSURANCE_COMPOSE = docker compose -f docker-compose.insurance.yml -p otterworks-insurance-$(NS)
 INSURANCE_DB_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(51521 + $(PROCS_PORT_OFFSET))")
-INSURANCE_ENV = NS=$(NS) INSURANCE_DB_PORT=$(INSURANCE_DB_PORT)
+INSURANCE_SVC_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(58000 + $(PROCS_PORT_OFFSET))")
+INSURANCE_ENV = NS=$(NS) INSURANCE_DB_PORT=$(INSURANCE_DB_PORT) INSURANCE_SVC_PORT=$(INSURANCE_SVC_PORT)
 INSURANCE_SQLPLUS = docker exec -i otterworks-insurance-$(NS)-insurance-oracle-1 sqlplus -s
 
-insurance-up: procs-validate ## Start the Oracle insurance Commission Pay fixture (NS=<namespace>)
-	$(INSURANCE_ENV) $(INSURANCE_COMPOSE) up -d --wait --wait-timeout 900
+insurance-up: procs-validate ## Start the Oracle insurance Commission Pay fixture and commission-service (NS=<namespace>)
+	$(INSURANCE_ENV) $(INSURANCE_COMPOSE) up -d --build --wait --wait-timeout 900
+
+commission-service-test: ## Run the commission-service unit tests
+	cd services/commission-service && ./mvnw -q -B verify
 
 insurance-down: procs-validate ## Stop the Oracle insurance fixture and drop its data (NS=<namespace>)
 	$(INSURANCE_ENV) $(INSURANCE_COMPOSE) down -v
@@ -56,6 +60,27 @@ insurance-test: procs-validate ## Run the Commission Pay OLTP + OLAP test suites
 	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/tests/run_olap_tests.sql
 	$(INSURANCE_SQLPLUS) commission_pay/commission_pay@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/tests/run_audit_tests.sql
 	$(INSURANCE_SQLPLUS) commission_pay/commission_pay@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/tests/run_retention_tests.sql
+
+insurance-ledger-run: procs-validate ## Calculate the Commission Pay ledger and load the warehouse on Oracle (NS=<namespace>)
+	$(INSURANCE_SQLPLUS) commission_pay/commission_pay@localhost:1521/FREEPDB1 < services/industry-solutions/insurance/pg/oracle/ledger_run.sql
+	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 < services/industry-solutions/insurance/pg/oracle/ledger_run_dw.sql
+
+# --- Industry Solutions: insurance Commission Pay on PostgreSQL 16 ---
+
+INSURANCE_PG_COMPOSE = docker compose -f docker-compose.insurance-pg.yml -p otterworks-insurance-pg-$(NS)
+INSURANCE_PG_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(52432 + $(PROCS_PORT_OFFSET))")
+INSURANCE_PG_ENV = NS=$(NS) INSURANCE_DB_PORT=$(INSURANCE_DB_PORT) INSURANCE_PG_PORT=$(INSURANCE_PG_PORT)
+INSURANCE_PG_UV = uv run -q --with oracledb==2.5.1 --with psycopg[binary]==3.2.9 python
+
+insurance-pg-up: procs-validate ## Start PostgreSQL 16 and copy COMMISSION_PAY/COMMISSION_DW from the running Oracle fixture (NS=<namespace>)
+	$(INSURANCE_PG_ENV) $(INSURANCE_PG_COMPOSE) up -d --wait --wait-timeout 300
+	$(INSURANCE_PG_ENV) $(INSURANCE_PG_UV) services/industry-solutions/insurance/pg/migrate.py
+
+insurance-pg-reconcile: procs-validate ## Reconcile PostgreSQL against Oracle and the pinned baseline, per table, to the cent (NS=<namespace>)
+	$(INSURANCE_PG_ENV) $(INSURANCE_PG_UV) services/industry-solutions/insurance/pg/reconcile.py
+
+insurance-pg-down: procs-validate ## Stop the PostgreSQL 16 Commission Pay database and drop its data (NS=<namespace>)
+	$(INSURANCE_PG_ENV) $(INSURANCE_PG_COMPOSE) down -v
 
 # --- Local Development ---
 

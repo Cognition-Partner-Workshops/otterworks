@@ -25,5 +25,23 @@ services:
       retries: 60
       start_period: 120s
 
+  # Rule owner for COMMISSION_PKG: the package body delegates to it over
+  # UTL_HTTP at http://commission-service:8000 (see db/setup/02_service_acl.sql).
+  commission-service:
+    build:
+      context: ./services/commission-service
+      args:
+        MAVEN_MIRROR: ${MAVEN_MIRROR:-}
+        MVNW_REPOURL: ${MVNW_REPOURL:-}
+    environment:
+      COMMISSION_DB_URL: jdbc:oracle:thin:@//insurance-oracle:1521/FREEPDB1
+      COMMISSION_DB_USER: commission_pay
+      COMMISSION_DB_PASSWORD: commission_pay
+    ports:
+      - "127.0.0.1:${INSURANCE_SVC_PORT:-58000}:8000"
+    depends_on:
+      insurance-oracle:
+        condition: service_healthy
+
 volumes:
   insurance-oracle-data:
