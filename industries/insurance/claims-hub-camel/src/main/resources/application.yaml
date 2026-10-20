@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: claims-hub-camel
+camel:
+  springboot:
+    name: claims-hub
+    main-run-controller: true
