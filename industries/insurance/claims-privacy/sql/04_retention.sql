@@ -47,7 +47,7 @@ BEGIN
 
     IF NOT dry_run THEN
         -- Hold eligibility still while the four statements below run.
-        LOCK TABLE claims.claim, claims.payment IN SHARE MODE;
+        LOCK TABLE claims.claim, claims.payment IN SHARE ROW EXCLUSIVE MODE;
         EXECUTE format('SELECT array_agg(claimant_id) FROM (%s) e', eligible) INTO ids USING as_of;
     END IF;
 

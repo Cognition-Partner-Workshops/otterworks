@@ -23,9 +23,11 @@ load() { psql_as claims_owner < "$1"; }
 case "${1:-}" in
   up)
     "${DC[@]}" up -d --wait
-    if [ "$(psql_as claims_owner -tAc "SELECT to_regnamespace('claims') IS NOT NULL")" = t ]; then
-      echo "== claims privacy already loaded ($PROJECT)"; exit 0
-    fi
+    # The last script creates purge_closed_claim_pii, so it marks a complete load.
+    case "$(psql_as claims_owner -tAc "SELECT (to_regnamespace('claims') IS NOT NULL)::int + (to_regproc('claims.purge_closed_claim_pii') IS NOT NULL)::int")" in
+      2) echo "== claims privacy already loaded ($PROJECT)"; exit 0 ;;
+      1) echo "== partial load in $PROJECT: run ./run.sh down, then up" >&2; exit 1 ;;
+    esac
     for f in "$KIT"/01_masking.sql "$KIT"/02_audit.sql "$KIT"/03_retention.sql sql/*.sql; do load "$f"; done
     echo "== claims privacy ready ($PROJECT)"
     ;;
