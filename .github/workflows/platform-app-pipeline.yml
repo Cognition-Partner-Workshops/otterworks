@@ -206,12 +206,13 @@ jobs:
           tag="${GITHUB_SHA::12}"
           docker build -q -t "$IMAGE:$tag" "$APP_DIR"
           echo "TAG=$tag" >> "$GITHUB_ENV"
-          workload=$(python3 -c "import yaml,os,sys;d=os.environ['APP_DIR']+'/deploy/';w='web'
+          read -r workload chart_app < <(python3 -c "import yaml,os;d=os.environ['APP_DIR']+'/deploy/';v={'workload':'web','app':os.environ['APP']}
           for f in ('values.yaml','values-eks.yaml'):
-            try: w=(yaml.safe_load(open(d+f)) or {}).get('workload',w)
+            try: v.update({k:x for k,x in (yaml.safe_load(open(d+f)) or {}).items() if k in v})
             except FileNotFoundError: pass
-          print(w)")
+          print(v['workload'],v['app'])")
           echo "WORKLOAD=$workload" >> "$GITHUB_ENV"
+          echo "CHART_APP=$chart_app" >> "$GITHUB_ENV"
       - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
@@ -245,8 +246,8 @@ jobs:
             for i in $(seq 1 30); do code=$(curl -s -o /dev/null -w '%{http_code}' "https://$HOST/health"); [ "$code" = 200 ] && break; sleep 10; done
             echo "https://$HOST/health -> $code"; [ "$code" = 200 ]
           else
-            kubectl -n "$NAMESPACE" create job "$APP-smoke-${GITHUB_RUN_ID}" --from="cronjob/$APP"
-            kubectl -n "$NAMESPACE" wait --for=condition=complete "job/$APP-smoke-${GITHUB_RUN_ID}" --timeout=10m
+            kubectl -n "$NAMESPACE" create job "$CHART_APP-smoke-${GITHUB_RUN_ID}" --from="cronjob/$CHART_APP"
+            kubectl -n "$NAMESPACE" wait --for=condition=complete "job/$CHART_APP-smoke-${GITHUB_RUN_ID}" --timeout=10m
           fi
       - name: Report hostname
         if: always()
