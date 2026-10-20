@@ -22,7 +22,7 @@
     <camel.version>4.8.9</camel.version>
     <!-- Same Saxon line as saxonche 12.5.0, which wrote corpus/golden. -->
     <saxon.version>12.5</saxon.version>
-    <!-- 1.19.8 from the Boot BOM cannot talk to Docker 29 (minimum API 1.44). -->
+    <!-- Over the Boot BOM's 1.19.8: the line the AdjusterAssignment tests were run on, against Docker 29. -->
     <testcontainers.version>1.21.4</testcontainers.version>
     <claims.fixture.dir>${project.basedir}/../biztalk-claims-intake</claims.fixture.dir>
   </properties>
