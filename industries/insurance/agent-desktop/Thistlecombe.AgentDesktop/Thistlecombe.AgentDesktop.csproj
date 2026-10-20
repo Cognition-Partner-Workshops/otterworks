@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>Thistlecombe.AgentDesktop</RootNamespace>
+    <AssemblyName>Thistlecombe.AgentDesktop</AssemblyName>
+    <Deterministic>true</Deterministic>
+    <Company>Thistlecombe Mutual Insurance Company</Company>
+    <Product>Thistlecombe Mutual Agent Desktop</Product>
+    <Description>Thistlecombe Mutual skin of the OtterWorks desktop client: policies, claims and documents.</Description>
+    <Version>1.0.0</Version>
+    <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Auth, documents, session (DPAPI) and appsettings.json come from the shared client. -->
+    <ProjectReference Include="..\..\..\..\clients\windows-desktop\OtterWorks.Desktop\OtterWorks.Desktop.csproj" />
+  </ItemGroup>
+
+</Project>

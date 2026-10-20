@@ -1,14 +1,14 @@
 # OtterWorks Desktop (Windows)
 
-A native **Windows desktop client** for the OtterWorks platform, built with **C# on .NET
-Framework 4.8** using **WPF** and the **MVVM** pattern. It talks to the OtterWorks REST API
+A native **Windows desktop client** for the OtterWorks platform, built with **C# on .NET 8**
+(`net8.0-windows`) using **WPF** and the **MVVM** pattern. It talks to the OtterWorks REST API
 through the API gateway using `HttpClient`.
 
-> **Why .NET Framework 4.8?** This client is intentionally built on the *legacy* .NET
-> Framework (classic `.csproj` + `packages.config` + `Newtonsoft.Json`) so it can serve as a
-> realistic **framework-upgrade target** (net48 → .NET 8 / WinUI) alongside OtterWorks' other
-> upgrade candidates (e.g. the Java 8 `report-service`). It mirrors the core flow of the
-> `frontend/web-app` React client.
+> **Upgrade history.** Until this upgrade the client was a classic .NET Framework 4.8 project
+> (`packages.config`, `Newtonsoft.Json`, MSBuild-only). It is now an SDK-style project with
+> `PackageReference`, `System.Text.Json`, nullable reference types and warnings treated as
+> errors. `OtterWorks.Desktop.Tests` holds the characterization tests that were written and
+> run against the 4.8 build first and pass unchanged on .NET 8.
 
 ## Features
 
@@ -28,38 +28,31 @@ encrypted with the Windows Data Protection API (**DPAPI**, per-user scope) — s
 ```
 clients/windows-desktop/
 ├── OtterWorks.Desktop.sln
+├── global.json                       # pins the .NET 8 SDK band
 ├── README.md
 ├── docs/screenshots/                 # verification screenshots (embedded below)
 └── OtterWorks.Desktop/
-    ├── OtterWorks.Desktop.csproj      # classic .NET Framework 4.8 WPF project
-    ├── packages.config                # Newtonsoft.Json 13.0.3
-    ├── app.config
+    ├── OtterWorks.Desktop.csproj      # SDK-style net8.0-windows WPF project
     ├── appsettings.json               # configurable backend base URL
     ├── App.xaml(.cs)                  # DI-free composition root + navigation templates
     ├── Models/                        # Auth (camelCase) + Document/File (snake_case) DTOs
     ├── Mvvm/                          # ObservableObject, RelayCommand, converters
-    ├── Services/                      # AppSettings, SessionState (DPAPI), API client
+    ├── Services/                      # AppSettings, SessionState (DPAPI), API client, ApiJson
     ├── ViewModels/                    # Login / Register / Documents / Main (shell)
     └── Views/                         # WPF views for each view model
+├── OtterWorks.Desktop.Tests/          # xUnit characterization tests (wire contract, DPAPI, settings)
+└── stub/                              # local gateway stand-in for the five routes the client calls
 ```
 
 ## Prerequisites
 
 - **Windows 10/11 or Windows Server 2019/2022**
-- **.NET Framework 4.8 runtime** (preinstalled on current Windows) and the
-  **.NET Framework 4.8 Developer Pack** (targeting pack / reference assemblies), required to
-  *build* the project.
-- One of the following to build:
-  - **Visual Studio 2022** with the **.NET desktop development** workload, **or**
-  - **Visual Studio Build Tools 2022** with the **.NET desktop build tools** workload
-    (`Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools`), which provides MSBuild,
-    the WPF build targets, and the 4.8 targeting pack.
-- **NuGet** (bundled with Visual Studio / `nuget.exe`) to restore `Newtonsoft.Json`.
+- **.NET 8 SDK** 8.0.400 or a later 8.0 feature band (see `global.json`); it includes the
+  Windows Desktop runtime needed to run WPF apps.
+- Visual Studio 2022 17.8+ is optional (open the solution and press F5).
 
-> **Note on `dotnet build` / `dotnet format`:** those SDK commands target modern
-> `Microsoft.NET.Sdk` projects. This is a classic (legacy) `.csproj`, so it is built with
-> **MSBuild** as shown below. That is expected for a .NET Framework 4.8 app and is part of
-> what makes this a genuine upgrade exercise.
+DPAPI comes from the `System.Security.Cryptography.ProtectedData` package, the compatibility
+package for the API that was built into .NET Framework.
 
 ## Configuration
 
@@ -96,35 +89,31 @@ Verify it is healthy:
 curl http://localhost:8080/health      # -> {"status":"healthy",...}
 ```
 
-## Build
-
-Restore packages and build in Release with MSBuild:
+## Build and test
 
 ```powershell
 # From clients/windows-desktop
-nuget restore OtterWorks.Desktop.sln
-msbuild OtterWorks.Desktop.sln /p:Configuration=Release
+dotnet build OtterWorks.Desktop.sln -c Release
+dotnet test OtterWorks.Desktop.sln -c Release
 ```
-
-Or simply open `OtterWorks.Desktop.sln` in Visual Studio 2022 and build (packages restore
-automatically).
-
-> **Note on `dotnet build` / `dotnet format`:** this is a *classic* (non-SDK-style)
-> .NET Framework 4.8 WPF project, chosen deliberately as an upgrade/modernization
-> baseline. The .NET SDK's `dotnet build` cannot compile classic WPF projects — it does
-> not run the XAML markup-compiler, so `InitializeComponent` is never generated and the
-> build fails with `CS0103`. **Full MSBuild** (from Visual Studio or Build Tools 2022) is
-> the authoritative build for this project and produces a clean Release build. This is
-> exactly the kind of friction a future migration to an SDK-style / modern .NET project
-> would remove.
 
 ## Run
 
 ```powershell
-.\OtterWorks.Desktop\bin\Release\OtterWorks.Desktop.exe
+.\OtterWorks.Desktop\bin\Release\net8.0-windows\OtterWorks.Desktop.exe
 ```
 
-Or press **F5** in Visual Studio.
+## Running without the backend
+
+`stub/gateway_stub.py` (Python 3, standard library only) answers the five routes the client
+calls with in-memory state, in the same camelCase / snake_case shapes:
+
+```powershell
+python stub\gateway_stub.py --port 8080 --log requests.jsonl
+```
+
+`--log` writes one JSON line per request (passwords redacted); `stub/compare_logs.py
+before.jsonl after.jsonl` compares two scripted UI runs request by request.
 
 ## End-to-end flow
 
@@ -168,4 +157,5 @@ Base URL: `http://localhost:8080/api/v1`. All non-auth calls send `Authorization
 | `GET /files`         | query `page`, `page_size`                           | `{ files:[…], total, page, page_size }` (snake_case)    |
 
 Auth payloads are camelCase while document/file payloads are snake_case; each model carries
-explicit `[JsonProperty]` attributes so one serializer handles both.
+explicit `[JsonPropertyName]` attributes so one set of `System.Text.Json` options
+(`Services/ApiJson.cs`) handles both.

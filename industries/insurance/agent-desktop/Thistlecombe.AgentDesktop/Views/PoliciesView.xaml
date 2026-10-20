@@ -1,0 +1,46 @@
+<UserControl x:Class="Thistlecombe.AgentDesktop.Views.PoliciesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,14">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Policies" FontSize="22" FontWeight="Bold" Foreground="#111827" />
+                <TextBlock Text="{Binding Summary}" Foreground="{StaticResource MutedBrush}"
+                           VerticalAlignment="Bottom" Margin="12,0,0,3" />
+            </StackPanel>
+            <Button Content="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Right"
+                    Style="{StaticResource SecondaryButton}" />
+        </Grid>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1" Padding="1">
+            <DataGrid ItemsSource="{Binding Rows}" Style="{StaticResource LedgerGrid}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Policy" Binding="{Binding PolicyNo}" Width="140"
+                                        ElementStyle="{StaticResource CodeCell}" />
+                    <DataGridTextColumn Header="Product" Binding="{Binding Product}" Width="*" />
+                    <DataGridTextColumn Header="Holder" Binding="{Binding Holder}" Width="*" />
+                    <DataGridTextColumn Header="Annual premium" Binding="{Binding PremiumText}" Width="140"
+                                        ElementStyle="{StaticResource MoneyCell}"
+                                        HeaderStyle="{StaticResource MoneyHeader}" />
+                    <DataGridTemplateColumn Header="Status" Width="130" CellTemplate="{StaticResource StatusCell}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <StackPanel Grid.Row="2" Margin="0,10,0,0">
+            <TextBlock Text="Premium rounded half up to the cent (Oracle NUMBER(12,2)). Source: policies and products in the OLTP seed."
+                       Foreground="{StaticResource MutedBrush}" FontSize="11" />
+            <ProgressBar IsIndeterminate="True" Height="3" BorderThickness="0" Margin="0,6,0,0"
+                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap"
+                       Margin="0,6,0,0"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibility}}" />
+        </StackPanel>
+    </Grid>
+</UserControl>
