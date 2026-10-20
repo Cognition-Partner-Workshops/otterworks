@@ -175,7 +175,7 @@ describe.skipIf(!tools)("corpus parity through the mobile builder", () => {
   // Not captured on the screen: VIN/driveable, phone, email, police report and
   // prior-fraud flag. The map omits the first four and defaults the flags to false.
   const NOT_CAPTURED = /^(Vehicle\/|Claimant\/(Email|Phone): |Loss\/PoliceReport: true -> false|Claimant\/PriorFraudFlag: true -> false)/;
-  const rows = corpusParity();
+  const rows = tools ? corpusParity() : [];
 
   it("re-keys 15 of 16 notices; TOWG is not one of the eight offered causes", () => {
     expect(rows.filter((r) => r.outcome.startsWith("not offered"))).toEqual([
