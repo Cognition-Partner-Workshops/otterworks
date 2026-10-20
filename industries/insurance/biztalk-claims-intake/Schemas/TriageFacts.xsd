@@ -9,7 +9,7 @@
   <xs:element name="TriageFacts">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="ClaimNumber" type="xs:string" />
+        <xs:element name="ClaimNumber" type="ClaimNumberType" />
         <xs:element name="LossCause" type="xs:string" />
         <xs:element name="EstimatedAmount" type="xs:decimal" />
         <xs:element name="ReserveEstimate" type="xs:decimal" />
@@ -24,4 +24,10 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

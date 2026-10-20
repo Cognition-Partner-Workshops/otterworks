@@ -14,7 +14,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="RequestId" type="xs:string" />
-        <xs:element name="ClaimNumber" type="xs:string" />
+        <xs:element name="ClaimNumber" type="ClaimNumberType" />
         <xs:element name="LineOfBusiness" type="xs:string" />
         <xs:element name="LossCause" type="xs:string" />
         <xs:element name="Region" type="xs:string" />
@@ -60,7 +60,7 @@
       <xs:sequence>
         <xs:element name="To" type="xs:string" />
         <xs:element name="Subject" type="xs:string" />
-        <xs:element name="ClaimNumber" type="xs:string" />
+        <xs:element name="ClaimNumber" type="ClaimNumberType" />
         <xs:element name="AdjusterId" type="xs:string" />
         <xs:element name="AdjusterName" type="xs:string" />
         <xs:element name="Severity" type="xs:string" />
@@ -70,4 +70,10 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

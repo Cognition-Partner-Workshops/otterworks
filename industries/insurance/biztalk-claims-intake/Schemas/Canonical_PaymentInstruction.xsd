@@ -14,7 +14,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="InstructionId" type="xs:string" />
-        <xs:element name="ClaimNumber" type="xs:string" />
+        <xs:element name="ClaimNumber" type="ClaimNumberType" />
         <xs:element name="PolicyNumber" type="xs:string" />
         <xs:element name="VendorCode" type="xs:string" />
         <xs:element name="Payee">
@@ -42,4 +42,10 @@
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>
