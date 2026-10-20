@@ -1,0 +1,10 @@
+{
+  "ClaimNumber": "CLM-2026-100406",
+  "Outcome": "FAST_TRACK",
+  "Reasons": [
+    "Low exposure, no injury, fast-track cause"
+  ],
+  "RulesFired": [
+    "FastTrack"
+  ]
+}

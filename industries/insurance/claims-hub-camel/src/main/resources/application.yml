@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: claims-hub-camel
+camel:
+  main:
+    name: claims-hub
+claimshub:
+  triage:
+    rules-table: classpath:rules/claim-triage.csv
