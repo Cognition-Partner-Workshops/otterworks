@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -11,9 +12,11 @@ import org.springframework.stereotype.Component;
 /**
  * Strangler fallback: until the rates group moves into this service, rate
  * resolution stays in Oracle and is read by calling COMMISSION_PKG.resolve_rate.
- * The rates group replaces this class with its own RateResolver.
+ * The rates group replaces this class with its own RateResolver. On PostgreSQL
+ * there is no package; {@link PostgresRateResolver} runs the same query.
  */
 @Component
+@Profile("oracle")
 public class LegacyPackageRateResolver implements RateResolver {
 
     private final JdbcTemplate jdbc;

@@ -1,0 +1,5 @@
+# Commission Pay on PostgreSQL 16 (make insurance-pg-up). The commission_pay
+# role's search_path is the commission_pay schema, as the Oracle user is.
+spring:
+  datasource:
+    url: ${COMMISSION_DB_URL:jdbc:postgresql://localhost:52432/commission}

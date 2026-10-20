@@ -4,8 +4,11 @@ server:
 spring:
   application:
     name: commission-service
+  # The one backend switch: COMMISSION_BACKEND=oracle (default) or postgres.
+  # Each profile file names its own datasource; COMMISSION_DB_* override it.
+  profiles:
+    active: ${COMMISSION_BACKEND:oracle}
   datasource:
-    url: ${COMMISSION_DB_URL:jdbc:oracle:thin:@//localhost:51521/FREEPDB1}
     username: ${COMMISSION_DB_USER:commission_pay}
     password: ${COMMISSION_DB_PASSWORD:commission_pay}
     hikari:

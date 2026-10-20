@@ -9,6 +9,8 @@ import java.util.Optional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.otterworks.commission.common.Backend;
+
 /** Reads and writes of calculate_policy_commission on policies, splits, rates and the ledger. */
 @Repository
 public class CalculationRepository {
@@ -19,10 +21,16 @@ public class CalculationRepository {
     public record Split(long agentId, BigDecimal splitPct) {
     }
 
-    private final JdbcTemplate jdbc;
+    static final String ORACLE_LAST_DAY = "SELECT LAST_DAY(TO_DATE(?, 'YYYY-MM')) FROM dual";
+    static final String POSTGRES_LAST_DAY =
+            "SELECT CAST(to_date(?, 'YYYY-MM') + interval '1 month' - interval '1 day' AS timestamp(0))";
 
-    public CalculationRepository(JdbcTemplate jdbc) {
+    private final JdbcTemplate jdbc;
+    private final String lastDaySql;
+
+    public CalculationRepository(JdbcTemplate jdbc, Backend backend) {
         this.jdbc = jdbc;
+        this.lastDaySql = backend.isPostgres() ? POSTGRES_LAST_DAY : ORACLE_LAST_DAY;
     }
 
     public Optional<Policy> findPolicy(BigDecimal policyId) {
@@ -34,12 +42,12 @@ public class CalculationRepository {
     }
 
     /**
-     * LAST_DAY(TO_DATE(p_period_month, 'YYYY-MM')), evaluated by Oracle so the
-     * accepted inputs and the error (e.g. ORA-01843) are Oracle's own.
+     * LAST_DAY(TO_DATE(p_period_month, 'YYYY-MM')), evaluated by the database so
+     * the accepted inputs and the error are the database's own (ORA-01843 on
+     * Oracle; PostgreSQL's to_date accepts and rejects a different set).
      */
     public LocalDateTime lastDayOfPeriod(String periodMonth) {
-        Timestamp ts = jdbc.queryForObject(
-                "SELECT LAST_DAY(TO_DATE(?, 'YYYY-MM')) FROM dual", Timestamp.class, periodMonth);
+        Timestamp ts = jdbc.queryForObject(lastDaySql, Timestamp.class, periodMonth);
         return ts == null ? null : ts.toLocalDateTime();
     }
 
