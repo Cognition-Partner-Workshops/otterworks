@@ -47,7 +47,7 @@ def main() -> int:
             setval = sql.Composed([sql.SQL("SELECT setval(pg_get_serial_sequence(%s, %s), COALESCE("), top,
                                    sql.SQL(", 1), "), top, sql.SQL(" IS NOT NULL)")])
             pg.execute(setval, [f"{schema}.{table}", col])
-        mv = sql.Identifier(*MV)
+        mv = sql.Identifier(MV[0], MV[1])
         refresh = sql.Composed([sql.SQL("REFRESH MATERIALIZED VIEW "), mv])
         count = sql.Composed([sql.SQL("SELECT COUNT(*) FROM "), mv])
         pg.execute(refresh)
