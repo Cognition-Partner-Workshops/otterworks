@@ -33,6 +33,34 @@ END retention_kit;
 /
 
 CREATE OR REPLACE PACKAGE BODY retention_kit AS
+    -- DBMS_SQL binds :as_of by name, so a predicate may use it any number
+    -- of times.
+    FUNCTION run_sql (p_sql IN VARCHAR2, p_as_of IN DATE, p_count IN BOOLEAN) RETURN NUMBER IS
+        l_cur  INTEGER := DBMS_SQL.OPEN_CURSOR;
+        l_n    NUMBER;
+        l_rows INTEGER;
+    BEGIN
+        DBMS_SQL.PARSE(l_cur, p_sql, DBMS_SQL.NATIVE);
+        IF INSTR(LOWER(p_sql), ':as_of') > 0 THEN
+            DBMS_SQL.BIND_VARIABLE(l_cur, ':as_of', p_as_of);
+        END IF;
+        IF p_count THEN
+            DBMS_SQL.DEFINE_COLUMN(l_cur, 1, l_n);
+            l_rows := DBMS_SQL.EXECUTE_AND_FETCH(l_cur);
+            DBMS_SQL.COLUMN_VALUE(l_cur, 1, l_n);
+        ELSE
+            l_n := DBMS_SQL.EXECUTE(l_cur);
+        END IF;
+        DBMS_SQL.CLOSE_CURSOR(l_cur);
+        RETURN l_n;
+    EXCEPTION
+        WHEN OTHERS THEN
+            IF DBMS_SQL.IS_OPEN(l_cur) THEN
+                DBMS_SQL.CLOSE_CURSOR(l_cur);
+            END IF;
+            RAISE;
+    END run_sql;
+
     FUNCTION purge (
         p_policy_name IN VARCHAR2,
         p_table_name  IN VARCHAR2,
@@ -43,25 +71,13 @@ CREATE OR REPLACE PACKAGE BODY retention_kit AS
         l_table   VARCHAR2(128) := UPPER(DBMS_ASSERT.SIMPLE_SQL_NAME(p_table_name));
         l_matched NUMBER;
         l_purged  NUMBER := 0;
-        l_uses_as_of BOOLEAN := INSTR(LOWER(p_predicate), ':as_of') > 0;
     BEGIN
-        IF l_uses_as_of THEN
-            EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM "' || l_table || '" WHERE ' || p_predicate
-                INTO l_matched USING p_as_of;
-        ELSE
-            EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM "' || l_table || '" WHERE ' || p_predicate
-                INTO l_matched;
-        END IF;
+        l_matched := run_sql('SELECT COUNT(*) FROM "' || l_table || '" WHERE ' || p_predicate, p_as_of, TRUE);
 
         IF NOT p_dry_run AND l_matched > 0 THEN
             audit_purge_gate.open_gate;
             BEGIN
-                IF l_uses_as_of THEN
-                    EXECUTE IMMEDIATE 'DELETE FROM "' || l_table || '" WHERE ' || p_predicate USING p_as_of;
-                ELSE
-                    EXECUTE IMMEDIATE 'DELETE FROM "' || l_table || '" WHERE ' || p_predicate;
-                END IF;
-                l_purged := SQL%ROWCOUNT;
+                l_purged := run_sql('DELETE FROM "' || l_table || '" WHERE ' || p_predicate, p_as_of, FALSE);
                 audit_purge_gate.close_gate;
             EXCEPTION
                 WHEN OTHERS THEN

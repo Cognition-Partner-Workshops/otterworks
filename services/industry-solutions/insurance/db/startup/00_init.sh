@@ -66,6 +66,7 @@ SQL
   run_sql "commission_pay/commission_pay" "${KIT_DIR}/retention_kit.sql"
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/03_commission_pkg.sql"
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/04_rate_audit.sql"
+  run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/05_rate_retention.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/01_star_schema.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/02_etl_pkg.sql"
 
