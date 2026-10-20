@@ -296,9 +296,9 @@ def recompute_rows(o_m: dict, p_m: dict) -> list[dict]:
     o, p = o_m["ledger_recompute"], p_m["ledger_recompute"]
     rows = []
     for key, label in [("stored_total", "stored commission_amt total"),
-                       ("rounded_total", "Σ ROUND(premium/12 × rate/100 × split/100, 2), in-engine"),
+                       ("rounded_total", "Σ commission recomputed (Oracle ROUND(premium/12 × rate/100 × split/100, 2); PG commission_amount)"),
                        ("unrounded_total", "Σ unrounded formula, in-engine"),
-                       ("rows_not_matching_round", "ledger rows where in-engine ROUND ≠ stored amount")]:
+                       ("rows_not_matching_round", "ledger rows where the recomputed commission ≠ stored amount")]:
         ov, pv = o[key], p[key]
         is_count = key == "rows_not_matching_round"
         ok = Decimal(ov) == Decimal(pv) and (not is_count or int(ov) == 0)

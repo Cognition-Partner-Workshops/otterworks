@@ -143,10 +143,13 @@ def control_metrics(conn) -> dict:
             SELECT agent_code, full_name, period_month, line_of_business, policy_rows, total_commission
               FROM {MV[0]}.{MV[1]} ORDER BY agent_code, period_month, line_of_business""")
     }
+    # Each engine's own commission arithmetic: Oracle ROUND, PostgreSQL commission_amount (D4 A).
+    amount = ("commission_pay.commission_amount(l.base_premium, r.rate_pct, l.split_pct)"
+              if isinstance(conn, psycopg.Connection) else f"ROUND({UNROUNDED}, 2)")
     n, stored, rounded, unrounded, off = query(conn, f"""
         SELECT COUNT(*), COALESCE(SUM(l.commission_amt), 0),
-               COALESCE(SUM(ROUND({UNROUNDED}, 2)), 0), COALESCE(SUM({UNROUNDED}), 0),
-               COALESCE(SUM(CASE WHEN ROUND({UNROUNDED}, 2) <> l.commission_amt THEN 1 ELSE 0 END), 0)
+               COALESCE(SUM({amount}), 0), COALESCE(SUM({UNROUNDED}), 0),
+               COALESCE(SUM(CASE WHEN {amount} <> l.commission_amt THEN 1 ELSE 0 END), 0)
           FROM {LEDGER} l JOIN {RATES} r ON r.rate_id = l.rate_id""")[0]
     m["ledger_recompute"] = {
         "rows": int(n), "stored_total": _dec(stored), "rounded_total": _dec(rounded),
