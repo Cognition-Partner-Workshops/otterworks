@@ -164,8 +164,7 @@ async def test_document_versions(client: AsyncClient, owner_id: uuid.UUID):
     assert resp.status_code == 200
     versions = resp.json()
     assert len(versions) == 2
-    assert versions[0]["version_number"] == 2
-    assert versions[1]["version_number"] == 1
+    assert [v["version_number"] for v in versions] == [1, 2]
 
 
 @pytest.mark.asyncio
@@ -186,7 +185,7 @@ async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
     versions_resp = await client.get(
         f"/api/v1/documents/{doc_id}/versions", headers=_auth(owner_id)
     )
-    v1_id = versions_resp.json()[-1]["id"]  # first version
+    v1_id = versions_resp.json()[0]["id"]  # versions are listed oldest first
 
     resp = await client.post(
         f"/api/v1/documents/{doc_id}/versions/{v1_id}/restore", headers=_auth(owner_id)
