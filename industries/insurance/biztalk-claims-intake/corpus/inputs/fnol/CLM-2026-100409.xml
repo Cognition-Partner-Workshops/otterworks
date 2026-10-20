@@ -1,0 +1,35 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000009</RqUID>
+  <TransactionRequestDt>2026-09-29T08:24:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0417</ProducerId>
+      <ProducerName>Harbourline Brokers</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-HOME-48163</PolicyNumber>
+      <LOBCd>HOME</LOBCd>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Aiko</GivenName>
+      <Surname>Tanizaki</Surname>
+      <TaxId>109-49-7117</TaxId>
+        <EmailAddr>aiko.tanizaki@example.net</EmailAddr>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100409</ClaimNumber>
+      <LossDt>2026-09-15</LossDt>
+      <ReportedDt>2026-09-29</ReportedDt>
+      <LossCauseCd>LIAB</LossCauseCd>
+      <IncidentDesc>Visitor slipped on the icy front step and was taken to hospital</IncidentDesc>
+      <EstimatedLossAmt>25000.00</EstimatedLossAmt>
+      <InjuryInd>true</InjuryInd>
+        <PoliceReportInd>false</PoliceReportInd>
+      <Addr>
+        <City>Newport</City>
+        <StateProvCd>RI</StateProvCd>
+        <PostalCode>02840</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>
