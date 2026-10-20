@@ -27,6 +27,8 @@ services/industry-solutions/insurance/
   db/olap/     01_star_schema.sql         — dim_agent / dim_product / dim_period / fact_commission
                02_etl_pkg.sql             — DW_ETL_PKG.LOAD_COMMISSION_FACTS + summary MV
   db/olap/scenario/                       — 2025 month-end baseline driver (make insurance-scenario)
+  db/olap/golden/                         — golden CSV export (make insurance-golden)
+  dbt/commission_dw/golden/               — committed golden baseline CSVs
   db/tests/    run_tests.sql              — OLTP suite (12+ cases, PASS/FAIL, non-zero exit on failure)
                run_olap_tests.sql         — ETL/star-schema suite (run after the OLTP suite)
 ```
@@ -109,6 +111,12 @@ runs a deterministic month-end year on a **fresh** fixture:
 Each step ends `... ALL PASS`. The scenario is idempotent (a second run gives
 identical MV contents) and refuses to run once `make insurance-test` has
 changed the fixture; `make insurance-test` still passes after it.
+
+After the scenario, `make insurance-golden NS=dev` exports the pinned baseline
+(source extract, naturally keyed facts, full MV) as CSV into
+`dbt/commission_dw/golden/`; `make insurance-golden-check NS=<ns>` rebuilds a
+fresh fixture, regenerates and diffs byte-for-byte against the committed files,
+then tears the fixture down. See `dbt/commission_dw/golden/README.md`.
 
 ## Fixture boundary
 

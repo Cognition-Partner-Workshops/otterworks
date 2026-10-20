@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test insurance-scenario deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test insurance-scenario insurance-golden insurance-golden-check deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
 
@@ -59,6 +59,28 @@ insurance-scenario: procs-validate ## Run the 2025 month-end scenario, ETL and M
 	$(INSURANCE_SQLPLUS) commission_pay/commission_pay@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/olap/scenario/01_month_end_ledger.sql
 	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/olap/scenario/02_load_warehouse.sql
 	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/olap/scenario/03_mv_report.sql
+
+INSURANCE_CONTAINER = otterworks-insurance-$(NS)-insurance-oracle-1
+INSURANCE_GOLDEN_DIR = services/industry-solutions/insurance/dbt/commission_dw/golden
+GOLDEN_OUT ?= $(INSURANCE_GOLDEN_DIR)
+
+insurance-golden: procs-validate ## Export the golden source extract, facts and MV as CSV after insurance-scenario (NS=<namespace>, GOLDEN_OUT=<dir>)
+	docker exec $(INSURANCE_CONTAINER) sh -c 'rm -rf /tmp/golden && mkdir -p /tmp/golden'
+	$(INSURANCE_SQLPLUS) commission_dw/commission_dw@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/olap/golden/export_golden.sql
+	mkdir -p $(GOLDEN_OUT)
+	docker cp $(INSURANCE_CONTAINER):/tmp/golden/. $(GOLDEN_OUT)/
+	wc -l $(GOLDEN_OUT)/*.csv
+
+insurance-golden-check: procs-validate ## Rebuild a fresh fixture, rerun scenario + export, diff byte-for-byte against the committed golden files, tear down (NS=<namespace>)
+	@out=$$(mktemp -d); status=0; \
+	$(MAKE) --no-print-directory insurance-down NS=$(NS) && \
+	$(MAKE) --no-print-directory insurance-up NS=$(NS) && \
+	$(MAKE) --no-print-directory insurance-scenario NS=$(NS) && \
+	$(MAKE) --no-print-directory insurance-golden NS=$(NS) GOLDEN_OUT=$$out && \
+	diff -r --exclude=README.md $(INSURANCE_GOLDEN_DIR) $$out && \
+	echo "GOLDEN CHECK: byte-identical ($$(ls $$out | wc -l) files)" || status=1; \
+	$(MAKE) --no-print-directory insurance-down NS=$(NS); rm -rf $$out; \
+	test $$status -eq 0 || { echo "GOLDEN CHECK: FAILED" >&2; exit 1; }
 
 # --- Local Development ---
 
