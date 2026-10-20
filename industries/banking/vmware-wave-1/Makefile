@@ -10,7 +10,7 @@ SHELL := /bin/bash
 REGION ?= us-east-1
 CLUSTER ?= otterworks-dev
 TTL_HOURS ?= 72
-APPS := statements-web rates-batch branch-locator notify-svc kyc-docs
+APPS := statements-web rates-batch branch-locator notify-svc kyc-docs fx-report
 COMPOSE := docker compose -f vm/compose.yaml
 DAYS := 2026-10-14 2026-10-15 2026-10-16
 
@@ -24,7 +24,7 @@ vm-up:
 	$(MAKE) vm-rates
 
 vm-rates:
-	@for d in $(DAYS); do $(COMPOSE) exec -T rates-01 /opt/rates/bin/run-rates.sh $$d; done
+	@for d in $(DAYS); do $(COMPOSE) exec -T rates-01 /opt/rates/bin/run-rates.sh $$d || exit $$?; done
 	@$(COMPOSE) exec -T rates-01 tail -n 3 /var/log/rates/rates.log
 
 vm-smoke:
