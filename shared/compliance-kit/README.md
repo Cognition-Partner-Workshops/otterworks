@@ -27,7 +27,7 @@ Applied in: `services/industry-solutions/insurance/db/oltp/04_rate_audit.sql`
 | File | Gives you |
 |---|---|
 | `01_masking.sql` | `compliance.mask_keep_last(value, visible)`, `mask_name`, `mask_tax_id`, `mask_phone`, `mask_account`, `mask_date`, `mask_street`. They keep separators and the last *n* letters or digits, matching the claims hub's `PiiMaskingComponent.Mask` |
-| `02_audit.sql` | `compliance.audit_row_change` and the trigger function `compliance.audit_row_change_trg(key_column, redacted_column...)`. The actor comes from `SET LOCAL compliance.actor = '...'`; redacted columns are stored as `[redacted]`; `compliance.append_only_trg()` |
+| `02_audit.sql` | `compliance.audit_row_change` and the trigger function `compliance.audit_row_change_trg(key_column, redacted_column...)`. The actor comes from `SET LOCAL compliance.actor = '...'` and is asserted by the application; `session_user`, client address and application name come from the connection and are the authoritative identity; redacted columns are stored as `[redacted]`; `compliance.append_only_trg()` |
 | `03_retention.sql` | `compliance.retention_run` and `compliance.purge(policy, target, predicate, as_of, dry_run DEFAULT true, action 'DELETE' or 'NULLIFY', columns, key_column)` |
 
 Applied in: `industries/insurance/claims-privacy/` on the `demo-insurance`
