@@ -1,0 +1,290 @@
+# CarrierSAST custom rules: the checks the carrier's security team carries on
+# top of the registry rulesets. Rule ids are kept stable; downstream triage
+# keys on them.
+rules:
+  # --- Hard-coded credentials -------------------------------------------------
+  - id: carrier.hardcoded-credential
+    languages: [java]
+    severity: ERROR
+    message: >-
+      Credential '$NAME' is a string literal in source. Read it from the
+      secret store or the environment instead.
+    metadata:
+      category: hardcoded-credential
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-either:
+                  - pattern: $TYPE $NAME = "$VALUE";
+                  - pattern: $NAME = "$VALUE";
+              - metavariable-regex:
+                  metavariable: $NAME
+                  regex: (?i)^(?!.*(key_?name|param|field|header|label|prompt|hint|placeholder)).*(passw(or)?d|passwd|pwd|secret|api_?key|access_?key|private_?key|auth_?token|token|credential)s?$
+          - patterns:
+              - pattern: $OBJ.$NAME(..., "$VALUE", ...)
+              - metavariable-regex:
+                  metavariable: $NAME
+                  regex: (?i)^set(passw(or)?d|secret|api_?key|access_?key|token|credentials?)$
+          - patterns:
+              - pattern: DriverManager.getConnection($URL, $USER, "$VALUE")
+              - focus-metavariable: $VALUE
+      - metavariable-regex:
+          metavariable: $VALUE
+          regex: ^(?!\$\{)(?!(?i:password|secret|token|changeme)$).+$
+
+  - id: carrier.hardcoded-credential-config
+    languages: [regex]
+    severity: ERROR
+    message: >-
+      A credential in configuration has a literal value (including a
+      '${VAR:default}' fallback). Resolve it from the secret store with no
+      literal default.
+    metadata:
+      category: hardcoded-credential
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+    paths:
+      include: ["*.yml", "*.yaml", "*.properties", "*.xml"]
+    patterns:
+      - pattern-either:
+          # key: value / key=value with a literal value
+          - pattern-regex: (?im)^[ \t]*[\w.-]*(passw(or)?d|passwd|pwd|secret|api[_-]?key|access[_-]?key|token|credentials?)[ \t]*[:=][ \t]*(?![ \t]*\$\{)["']?[^\s"'#$][^\s"'#]*["']?[ \t]*$
+          # Spring placeholder with a non-empty literal fallback
+          - pattern-regex: (?im)^[ \t]*[\w.-]*(passw(or)?d|passwd|pwd|secret|api[_-]?key|access[_-]?key|token|credentials?)[ \t]*[:=][ \t]*["']?\$\{[\w.-]+:[^}\s]+\}
+          # <password>literal</password>
+          - pattern-regex: (?i)<(\w*:)?(passw(or)?d|secret|api[_-]?key|token)>(?!\s*\$\{)[^<\s][^<]*</(\w*:)?\2>
+
+  # --- SQL built by string concatenation ------------------------------------
+  - id: carrier.sql-string-concat
+    languages: [java]
+    severity: ERROR
+    message: >-
+      SQL text is concatenated with a non-constant value. Bind it as a
+      parameter ('?' or a named parameter) instead.
+    metadata:
+      category: sql-injection
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command"
+    patterns:
+      - pattern-either:
+          - pattern: $SQL + $X
+          - pattern: String.format($SQL, ..., $X, ...)
+          - pattern: $SQL.formatted(..., $X, ...)
+          - pattern: (StringBuilder $SB).append($SQL).append($X)
+      - metavariable-regex:
+          metavariable: $SQL
+          regex: (?is)"[^"]*\b(select\s+[\w*,.()\s]+?\s+from|insert\s+into|update\s+\w+\s+set|delete\s+from|merge\s+into|where\s+[\w.]+\s*(=|<|>|!=|<>|like|in)|order\s+by|group\s+by|values\s*\()
+      - metavariable-pattern:
+          metavariable: $X
+          patterns:
+            - pattern-not: |
+                "..."
+            - pattern-not: (int $I)
+            - pattern-not: (long $L)
+            - pattern-not: (boolean $B)
+            - pattern-not-regex: ^[A-Z][A-Z0-9_]*$
+
+  # --- XML external entities ------------------------------------------------
+  - id: carrier.xxe-parser
+    languages: [java]
+    severity: ERROR
+    message: >-
+      XML parser factory is created without disabling DTDs and external
+      entities. Set 'http://apache.org/xml/features/disallow-doctype-decl'
+      (or ACCESS_EXTERNAL_DTD / ACCESS_EXTERNAL_SCHEMA to "") on this factory.
+    metadata:
+      category: xxe
+      cwe: "CWE-611: Improper Restriction of XML External Entity Reference"
+    patterns:
+      - pattern-either:
+          - pattern: DocumentBuilderFactory.newInstance(...)
+          - pattern: DocumentBuilderFactory.newDefaultInstance()
+          - pattern: SAXParserFactory.newInstance(...)
+          - pattern: SAXParserFactory.newDefaultInstance()
+          - pattern: XMLInputFactory.newInstance(...)
+          - pattern: XMLInputFactory.newFactory(...)
+          - pattern: TransformerFactory.newInstance(...)
+          - pattern: SAXTransformerFactory.newInstance(...)
+          - pattern: SchemaFactory.newInstance(...)
+          - pattern: XMLReaderFactory.createXMLReader(...)
+          - pattern: new SAXReader(...)
+          - pattern: new SAXBuilder(...)
+      - pattern-not-inside: |
+          $F = $FACTORY;
+          ...
+          $F.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      - pattern-not-inside: |
+          $F = $FACTORY;
+          ...
+          $F.setFeature("http://xml.org/sax/features/external-general-entities", false);
+      - pattern-not-inside: |
+          $F = $FACTORY;
+          ...
+          $F.$SETATTR(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      - pattern-not-inside: |
+          $F = $FACTORY;
+          ...
+          $F.$SETATTR(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      - pattern-not-inside: |
+          $F = $FACTORY;
+          ...
+          $F.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+      - pattern-not-inside: |
+          $F = $FACTORY;
+          ...
+          $F.setProperty("javax.xml.stream.supportDTD", false);
+
+  - id: carrier.xml-external-entity
+    languages: [regex]
+    severity: ERROR
+    message: >-
+      XML document declares an external entity or an external DTD. Remove
+      the DOCTYPE; parsers in the hub must not resolve external entities.
+    metadata:
+      category: xxe
+      cwe: "CWE-611: Improper Restriction of XML External Entity Reference"
+    paths:
+      include: ["*.xml", "*.xsl", "*.xslt", "*.xsd", "*.wsdl", "*.btm", "*.odx"]
+    pattern-either:
+      - pattern-regex: <!ENTITY\s+(%\s*)?[\w.-]+\s+(SYSTEM|PUBLIC)\b
+      - pattern-regex: <!DOCTYPE\s+[\w:.-]+\s+(SYSTEM|PUBLIC)\s+["'](?!https?://(www\.w3\.org|java\.sun\.com|xmlns\.jcp\.org|maven\.apache\.org)/)
+
+  - id: carrier.xslt-external-resource
+    languages: [regex]
+    severity: WARNING
+    message: >-
+      XSLT resolves a document whose URI is built at run time (document(),
+      doc(), unparsed-text(), xsl:include/import with an attribute value
+      template). Resolve only fixed, packaged URIs.
+    metadata:
+      category: xxe
+      cwe: "CWE-611: Improper Restriction of XML External Entity Reference"
+    paths:
+      include: ["*.xsl", "*.xslt"]
+    pattern-either:
+      - pattern-regex: \b(document|doc|unparsed-text|unparsed-text-lines|json-doc|collection)\(\s*(\$|concat\(|string\()
+      - pattern-regex: <xsl:(include|import|result-document)\b[^>]*\b(href)\s*=\s*"[^"]*\{
+
+  # --- Path traversal from request input -------------------------------------
+  - id: carrier.path-traversal-request-input
+    mode: taint
+    languages: [java]
+    severity: ERROR
+    message: >-
+      A file system path is built from request input. Reduce the input to a
+      bare file name (or validate it against an identifier pattern) and check
+      the normalized path stays under the base directory.
+    metadata:
+      category: path-traversal
+      cwe: "CWE-22: Improper Limitation of a Pathname to a Restricted Directory"
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern-inside: |
+                  $RET $M(..., @$ANNO $TYPE $SRC, ...) { ... }
+              - pattern-inside: |
+                  $RET $M(..., @$ANNO(...) $TYPE $SRC, ...) { ... }
+          - metavariable-regex:
+              metavariable: $ANNO
+              regex: ^(RequestParam|PathVariable|RequestHeader|CookieValue|RequestBody|RequestPart|MatrixVariable|QueryParam|PathParam|HeaderParam|FormParam)$
+          - pattern: $SRC
+      - pattern: (HttpServletRequest $R).$GET(...)
+      - pattern: (MultipartFile $F).getOriginalFilename()
+      - pattern: (Part $P).getSubmittedFileName()
+      - pattern: (org.apache.camel.Message $MSG).getHeader(...)
+      - pattern: (org.apache.camel.Message $MSG).getBody(...)
+      - pattern: (org.apache.camel.Exchange $EX).getIn().getHeader(...)
+      - pattern: (org.apache.camel.Exchange $EX).getMessage().getHeader(...)
+      - pattern: (org.apache.camel.Exchange $EX).getIn().getBody(...)
+      - pattern: (org.apache.camel.Exchange $EX).getMessage().getBody(...)
+    pattern-sanitizers:
+      - pattern: FilenameUtils.getName(...)
+      - pattern: (java.nio.file.Path $P).getFileName()
+      - pattern: (java.io.File $F).getName()
+    pattern-sinks:
+      - pattern-either:
+          - pattern: new File(...)
+          - pattern: new java.io.File(...)
+          - pattern: new FileInputStream(...)
+          - pattern: new FileOutputStream(...)
+          - pattern: new FileReader(...)
+          - pattern: new FileWriter(...)
+          - pattern: new RandomAccessFile(...)
+          - pattern: Paths.get(...)
+          - pattern: Path.of(...)
+          - pattern: (java.nio.file.Path $BASE).resolve(...)
+          - pattern: (java.nio.file.Path $BASE).resolveSibling(...)
+          - pattern: Files.$OP(...)
+          - pattern: ResourceUtils.getFile(...)
+          - pattern: new FileSystemResource(...)
+
+  - id: carrier.path-traversal-camel-file-uri
+    languages: [java]
+    severity: ERROR
+    message: >-
+      A Camel file/FTP endpoint takes its file name from message content
+      ('$EXPR'). Values carried in the inbound message are request input;
+      constrain them to an identifier pattern before they name a file.
+    metadata:
+      category: path-traversal
+      cwe: "CWE-22: Improper Limitation of a Pathname to a Restricted Directory"
+    pattern-either:
+      - patterns:
+          - pattern-inside: $R.$TO(...)
+          - pattern: |
+              "$EXPR"
+          - metavariable-regex:
+              metavariable: $TO
+              regex: ^(to|toD|toF|wireTap|enrich|pollEnrich|recipientList)$
+          - metavariable-regex:
+              metavariable: $EXPR
+              regex: (?i)^(file|ftp|ftps|sftp):[^"]*(fileName|tempFileName|move|moveFailed|preMove|doneFileName)=[^"&]*\$(simple)?\{(in\.)?(header|headers|exchangeProperty|variable|body)[.\[]
+      - patterns:
+          - pattern-inside: $FN(..., "$EXPR", ...)
+          - pattern: |
+              "$EXPR"
+          - metavariable-regex:
+              metavariable: $FN
+              regex: (?i)^(file|ftp|sftp|ftps)\w*$
+          - metavariable-regex:
+              metavariable: $EXPR
+              regex: \$(simple)?\{(in\.)?(header|headers|exchangeProperty|variable|body)[.\[]
+
+  # --- Logging of policy or claim identifiers --------------------------------
+  - id: carrier.log-policy-claim-identifier
+    languages: [java]
+    severity: WARNING
+    message: >-
+      A policy or claim identifier is written to the application log. Log a
+      correlation id or a masked value instead; the identifier is customer
+      data under the carrier's logging standard.
+    metadata:
+      category: sensitive-logging
+      cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+    pattern-either:
+      - patterns:
+          - pattern-either:
+              - pattern: $LOG.$LEVEL(..., $ARG, ...)
+              - pattern: System.$STREAM.$PRINT(..., $ARG, ...)
+              - pattern: MDC.put($ARG, ...)
+          - metavariable-regex:
+              metavariable: $ARG
+              regex: (?i)(policy|claim)[_.-]?(id|no|num|number|nbr|ref|reference|key)\b|get(policy|claim)(id|no|num|number|ref)\(|\b(policy|claim)(id|no|num|number|ref)\b|\b(policy|claim)\(\)
+          - pattern-either:
+              - patterns:
+                  - pattern: $LOG.$LEVEL(...)
+                  - metavariable-regex:
+                      metavariable: $LEVEL
+                      regex: ^(trace|debug|info|warn|warning|error|fatal|severe|fine|finer|finest|log|atInfo|atDebug|atWarn|atError)$
+                  - metavariable-regex:
+                      metavariable: $LOG
+                      regex: (?i)^(\w*\.)?(log|logger|LOG|LOGGER|\w*_?logger|\w*_?log)$
+              - pattern: System.$STREAM.$PRINT(...)
+              - pattern: MDC.put(...)
+      # Camel DSL: .log("... ${header.ClaimNumber} ...") and to("log:...")
+      - patterns:
+          - pattern-either:
+              - pattern: $R.log(..., "$MSG", ...)
+              - pattern: $R.to("$MSG")
+          - metavariable-regex:
+              metavariable: $MSG
+              regex: (?i)\$(simple)?\{[^}]*(policy|claim)[_.-]?(id|no|num|number|nbr|ref|reference|key)[^}]*\}
