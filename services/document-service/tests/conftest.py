@@ -1,8 +1,10 @@
 """Shared test fixtures."""
 
+import os
 import uuid
 from collections.abc import AsyncGenerator
 
+import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -15,6 +17,17 @@ from app.middleware import request_log
 from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: F401
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
+os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
+
+
+def make_jwt(user_id: str, algorithm: str = "HS256") -> str:
+    return jwt.encode({"user_id": user_id}, TEST_JWT_SECRET, algorithm=algorithm)
+
+
+def auth_headers(user_id: uuid.UUID) -> dict[str, str]:
+    return {"Authorization": f"Bearer {make_jwt(str(user_id))}"}
+
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(

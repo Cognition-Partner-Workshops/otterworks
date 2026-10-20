@@ -62,8 +62,8 @@ paths:
       operationId: createDocument
       summary: Create a new document
       description: |
-        Creates a new document. If owner_id is not provided in the body,
-        it is extracted from the JWT token.
+        Creates a new document owned by the authenticated caller. owner_id is
+        taken from the JWT; a body owner_id naming anyone else is refused (403).
       security:
         - bearerAuth: []
       requestBody:
@@ -85,13 +85,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/DocumentResponse"
         "401":
-          description: Authentication required (no owner_id and no valid JWT)
+          description: Authentication required
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
               example:
-                detail: "owner_id is required: provide it in the body or authenticate via JWT"
+                detail: "Authentication required"
+        "403":
+          description: Body owner_id names a user other than the caller
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "owner_id must match the authenticated user"
         "422":
           description: Validation error
           content:
@@ -551,6 +559,11 @@ paths:
     post:
       operationId: createFromTemplate
       summary: Create a document from a template
+      description: |
+        Creates a document owned by the authenticated caller. owner_id is taken
+        from the JWT; a body owner_id naming anyone else is refused (403).
+      security:
+        - bearerAuth: []
       parameters:
         - name: template_id
           in: path
@@ -566,7 +579,6 @@ paths:
               $ref: "#/components/schemas/DocumentFromTemplate"
             example:
               title: "Sprint Planning"
-              owner_id: "550e8400-e29b-41d4-a716-446655440000"
       responses:
         "201":
           description: Document created from template
@@ -574,6 +586,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DocumentResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Body owner_id names a user other than the caller
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Template not found
           content:
@@ -909,7 +933,6 @@ components:
       type: object
       required:
         - title
-        - owner_id
       properties:
         title:
           type: string
