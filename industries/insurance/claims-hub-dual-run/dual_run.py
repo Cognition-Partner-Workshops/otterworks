@@ -11,7 +11,7 @@
    message, first differing byte, cause, totals at the bottom) and summary.json next to it.
 
 Exit 0: every Camel output captured is byte-identical, the Saxon gate is green and every ref built.
-Exit 1: at least one byte difference. Exit 2: nothing differs, but the Saxon gate, a Camel build or a Camel test is red.
+Exit 1: at least one byte difference. Exit 2: nothing differs, but the Saxon gate, a Camel build, a capture overlay or a Camel test is red.
 """
 from __future__ import annotations
 
@@ -234,23 +234,45 @@ def camel_run(repo: Path, target: dict, fx: Path, work: Path, logs: Path, args) 
     if args.maven_settings:
         cmd += ["-s", args.maven_settings]
     before = containers()
-    for with_overlays in (True, False):
-        result["overlays"] = apply_overlays(cam, with_overlays)
-        code, out = run(cmd, cwd=cam, env=env, log=log, timeout=args.maven_timeout)
-        broke_overlay = code != 0 and "DualRun" in out and "COMPILATION ERROR" in out
-        if not broke_overlay:
-            break
-        git(wt, "checkout", "--", CAMEL_DIR)
-        git(wt, "clean", "-fdq", "--", CAMEL_DIR)
-        result["overlay_note"] = "capture overlay did not compile against this ref; ran without it"
-    stray = containers() - before
-    for cid in stray:
-        run(["docker", "rm", "-f", cid], log=log)
-    result.update(maven_exit=code, tests=surefire(cam), containers_stopped=len(stray),
-                  build_failed="BUILD FAILURE" in out and not (cam / "target/surefire-reports").exists())
+    code, out, timed_out = None, "", False
+    try:
+        for with_overlays in (True, False):
+            result["overlays"] = apply_overlays(cam, with_overlays)
+            try:
+                code, out = run(cmd, cwd=cam, env=env, log=log, timeout=args.maven_timeout)
+            except subprocess.TimeoutExpired:
+                code, timed_out = None, True
+                result["overlay_note"] = f"./mvnw verify timed out after {args.maven_timeout}s"
+                break
+            broke_overlay = code != 0 and "DualRun" in out and "COMPILATION ERROR" in out
+            if not broke_overlay:
+                break
+            git(wt, "checkout", "--", CAMEL_DIR)
+            git(wt, "clean", "-fdq", "--", CAMEL_DIR)
+            result["overlay_note"] = "capture overlay did not compile against this ref; ran without it"
+    finally:
+        stray = containers() - before
+        for cid in stray:
+            run(["docker", "rm", "-f", cid], log=log)
+        result["containers_stopped"] = len(stray)
+    # -Dmaven.test.failure.ignore keeps test failures at exit 0, so any non-zero exit is a broken build.
+    result.update(maven_exit=code, tests=surefire(cam), timed_out=timed_out, build_failed=code != 0)
     result["captures"] = read_captures(cam)
     result["triage"] = read_triage(cam)
     result["causes"] = read_causes(cam)
+    ov = result.get("overlays", {})
+    has_bc = (cam / "src/test/java/example/claimshub/golden/ByteComparison.java").exists()
+    has_triage = any((cam / "src/main/java").rglob("TriageEvaluator.java"))
+    missing = []
+    if has_bc and not ov.get("byte_capture"):
+        missing.append("byte capture overlay not applied")
+    if has_triage and not ov.get("triage_capture"):
+        missing.append("triage capture overlay not applied")
+    if not (has_bc or has_triage):
+        missing.append("no ByteComparison or TriageEvaluator to capture from")
+    if not result["build_failed"] and not result["captures"] and not result["triage"]:
+        missing.append("tests ran but nothing was captured")
+    result["capture_missing"] = "; ".join(missing)
     reports = logs / "golden-report" / slug
     for d in ("target/golden-report", "target/parity"):
         if (cam / d).exists():
@@ -373,11 +395,11 @@ def render(meta: dict, gate: dict, camel: list[dict], rows: list[dict]) -> str:
     for r in camel:
         t = r["tests"]
         cap = len(r["captures"]) + len(r["triage"])
-        ok = not r["build_failed"] and t["failures"] == 0 and t["errors"] == 0
-        note = r.get("overlay_note", "")
+        ok = not r["build_failed"] and t["failures"] == 0 and t["errors"] == 0 and not r.get("capture_missing")
+        note = "; ".join(n for n in (r.get("overlay_note", ""), r.get("capture_missing", "")) if n)
         out.append(f"| `{r['ref'].removeprefix('origin/')}` | {('#' + str(r['pr'])) if r['pr'] else ''} | `{r['sha'][:12]}` | {t['tests']} | "
                    f"{t['failures']} | {t['errors']} | {t['skipped']} | {cap} | {r['containers_stopped']} | "
-                   f"{'green' if ok else ('**build failed**' if r['build_failed'] else '**red**')}{' (' + note + ')' if note else ''} |")
+                   f"{'green' if ok else ('**build failed**' if r['build_failed'] else ('**capture missing**' if r.get('capture_missing') else '**red**'))}{' (' + note + ')' if note else ''} |")
     failing = [(r, f) for r in camel for f in r["tests"]["failed"]]
     if failing:
         out += ["", "### Red Camel tests (not a Saxon/Camel byte difference, but not green)", "",
@@ -443,15 +465,16 @@ def main() -> int:
             camel.append(camel_run(repo, t, fx, work, logs, args))
         except Exception as e:  # noqa: BLE001 - a broken ref is reported, not fatal
             camel.append(dict(t, slug=t["ref"], sha="?" * 12, tests=surefire(Path("/nonexistent")), captures=[], triage={},
-                              causes={}, containers_stopped=0, build_failed=True, maven_exit=None, overlay_note=f"harness error: {e}"))
+                              causes={}, containers_stopped=0, build_failed=True, maven_exit=None, capture_missing="",
+                              overlay_note=f"harness error: {e}"))
     rows = compare(units, camel)
     red = sum(r["verdict"] == "red" for r in rows)
-    broken = (not gate["green"]) or any(c["build_failed"] or c["tests"]["errors"] or c["tests"]["failures"] for c in camel) or not camel
+    broken = (not gate["green"]) or any(c["build_failed"] or c.get("capture_missing") or c["tests"]["errors"] or c["tests"]["failures"] for c in camel) or not camel
     status = 1 if red else (2 if broken else 0)
     meta = {"date": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"), "fixture_ref": fixture_ref,
             "fixture_sha": fixture_sha, "harness_sha": git(HERE, "rev-parse", "HEAD"), "status": status,
             "status_text": {0: "every captured Camel output is byte-identical to Saxon", 1: f"{red} message(s) differ",
-                            2: "no byte difference, but the Saxon gate, a Camel build or a Camel test is red"}[status]}
+                            2: "no byte difference, but the Saxon gate, a Camel build, a capture overlay or a Camel test is red"}[status]}
     (out_dir / "report.md").write_text(render(meta, gate, camel, rows))
     summary = {"meta": meta, "gate": gate,
                "camel": [{k: v for k, v in c.items() if k not in ("captures", "triage", "causes")} for c in camel],

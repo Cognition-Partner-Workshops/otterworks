@@ -25,9 +25,11 @@ What it does:
      compared through `ByteComparison`);
    - `overlay/DualRunTriageCaptureTest.java`, where the rules table (`TriageEvaluator`) exists, writes each
      `TriageResult`; the harness lays it out exactly as `tools/triage_reference.py` does (`json.dumps(indent=2)` + `\n`).
-   If an overlay stops compiling against a ref, that ref is re-run without it and the report says so.
+   If an overlay stops compiling against a ref, that ref is re-run without it so its tests still report, but the ref is
+   marked *capture missing* and the run exits 2: a ref whose outputs were not captured has not been compared.
    Docker Hub pulls are rate-limited on Devin machines, so bare image names the tests use are pulled from `mirror.gcr.io`
-   and tagged first. Ryuk is disabled; every container started during a ref's build is removed afterwards and counted.
+   and tagged first. Ryuk is disabled; every container started during a ref's build is removed afterwards and counted,
+   also when `./mvnw verify` hits `--maven-timeout` (default 1800 s), which marks the ref as a failed build.
 3. **Comparison.** One row per Saxon message: Saxon bytes and hash, Camel bytes and hash, which refs and tests produced
    it, the first differing byte (offset, line/column, both bytes, an excerpt of each side), verdict and cause. The cause
    is the one the Camel test wrote in its own `target/golden-report/*.md` row; for triage it is the differing fields.
@@ -36,4 +38,5 @@ What it does:
 Output in `--work/out/`: `report.md`, `summary.json`, `logs/` (gate and Maven logs, each ref's golden reports).
 
 Exit status: `0` every captured Camel output is byte-identical and every gate/build ran; `1` at least one byte
-difference; `2` no byte difference, but the Saxon gate was red, a ref did not build or a Camel test failed (listed under "Red Camel tests").
+difference; `2` no byte difference, but the Saxon gate was red, `./mvnw verify` exited non-zero or timed out on a ref,
+a ref's capture overlay was missing or captured nothing, or a Camel test failed (listed under "Red Camel tests").
