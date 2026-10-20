@@ -26,6 +26,9 @@ services/industry-solutions/insurance/
                03_commission_pkg.sql      — COMMISSION_PKG: all business rules (PL/SQL)
   db/olap/     01_star_schema.sql         — dim_agent / dim_product / dim_period / fact_commission
                02_etl_pkg.sql             — DW_ETL_PKG.LOAD_COMMISSION_FACTS + summary MV
+  db/olap/scenario/                       — 2025 month-end baseline driver (make insurance-scenario)
+  db/olap/golden/                         — golden CSV export (make insurance-golden)
+  dbt/commission_dw/golden/               — committed golden baseline CSVs
   db/tests/    run_tests.sql              — OLTP suite (12+ cases, PASS/FAIL, non-zero exit on failure)
                run_olap_tests.sql         — ETL/star-schema suite (run after the OLTP suite)
 ```
@@ -84,6 +87,36 @@ Connect ad hoc (port = `51521 + crc32(NS) % 1000`, printed by
 docker exec -it otterworks-insurance-dev-insurance-oracle-1 \
   sqlplus commission_pay/commission_pay@localhost:1521/FREEPDB1
 ```
+
+## Month-end scenario (warehouse baseline)
+
+The seed leaves `commission_ledger` empty. `make insurance-scenario NS=dev`
+runs a deterministic month-end year on a **fresh** fixture:
+
+1. `olap/scenario/01_month_end_ledger.sql` (COMMISSION_PAY) adds
+   scenario-only reference data (product `COMM-GL`/COMMERCIAL, policies
+   `POL-2025-0101` and `POL-2025-0102`, a HOME-PLUS rate superseded from
+   2025-07-01, an agent override on COMM-GL), then calls
+   `calculate_policy_commission` for every policy that is `IN_FORCE`, issued
+   on or before the month-end and split-allocated, for 2025-01..2025-12. It
+   re-runs 2025-12 for POL-2025-0102 after a split correction and checks the
+   edge cases (3-way split cent rounding, override, supersession, re-run,
+   every line of business).
+2. `olap/scenario/02_load_warehouse.sql` (COMMISSION_DW) runs
+   `dw_etl_pkg.load_commission_facts(NULL, ...)`, a COMPLETE refresh of
+   `MV_AGENT_COMMISSION_SUMMARY`, and reconciles MV totals with the ledger.
+3. `olap/scenario/03_mv_report.sql` prints the MV per period, in full, and
+   an order-independent fingerprint.
+
+Each step ends `... ALL PASS`. The scenario is idempotent (a second run gives
+identical MV contents) and refuses to run once `make insurance-test` has
+changed the fixture; `make insurance-test` still passes after it.
+
+After the scenario, `make insurance-golden NS=dev` exports the pinned baseline
+(source extract, naturally keyed facts, full MV) as CSV into
+`dbt/commission_dw/golden/`; `make insurance-golden-check NS=<ns>` rebuilds a
+fresh fixture, regenerates and diffs byte-for-byte against the committed files,
+then tears the fixture down. See `dbt/commission_dw/golden/README.md`.
 
 ## Fixture boundary
 
