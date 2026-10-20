@@ -1,0 +1,22 @@
+name: commission_dw
+version: "0.1.0"
+config-version: 2
+require-dbt-version: [">=1.12.0", "<2.0.0"]
+
+profile: commission_dw
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+snapshot-paths: ["snapshots"]
+
+clean-targets: ["target", "dbt_packages"]
+
+# Mirrors the Oracle owners: landed sources live in commission_pay
+# (COMMISSION_PAY), dbt models build into commission_dw (COMMISSION_DW).
+models:
+  commission_dw:
+    +schema: commission_dw
+    +materialized: table

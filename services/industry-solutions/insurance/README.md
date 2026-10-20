@@ -28,6 +28,7 @@ services/industry-solutions/insurance/
                02_etl_pkg.sql             — DW_ETL_PKG.LOAD_COMMISSION_FACTS + summary MV
   db/olap/scenario/                       — 2025 month-end baseline driver (make insurance-scenario)
   db/olap/golden/                         — golden CSV export (make insurance-golden)
+  dbt/commission_dw/                      — dbt-postgres port of COMMISSION_DW on PostgreSQL 16 (make insurance-pg-up / insurance-dbt-build)
   dbt/commission_dw/golden/               — committed golden baseline CSVs
   db/tests/    run_tests.sql              — OLTP suite (12+ cases, PASS/FAIL, non-zero exit on failure)
                run_olap_tests.sql         — ETL/star-schema suite (run after the OLTP suite)
@@ -117,6 +118,17 @@ After the scenario, `make insurance-golden NS=dev` exports the pinned baseline
 `dbt/commission_dw/golden/`; `make insurance-golden-check NS=<ns>` rebuilds a
 fresh fixture, regenerates and diffs byte-for-byte against the committed files,
 then tears the fixture down. See `dbt/commission_dw/golden/README.md`.
+
+## dbt-postgres target (PostgreSQL 16)
+
+The warehouse is being ported to dbt on PostgreSQL 16 in `dbt/commission_dw/`
+(see its README):
+
+```bash
+make insurance-pg-up NS=dev        # postgres:16, loopback only, port 57432 + crc32(NS) % 1000
+make insurance-dbt-build NS=dev    # dbt deps, debug, build
+make insurance-pg-down NS=dev      # stop and drop the volume
+```
 
 ## Fixture boundary
 

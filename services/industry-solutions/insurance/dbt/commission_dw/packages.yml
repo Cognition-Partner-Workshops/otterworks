@@ -1,0 +1,2 @@
+# No model needs a package yet; add dbt_utils here only when one does.
+packages: []
