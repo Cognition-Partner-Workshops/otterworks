@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.23"
     kotlin("plugin.serialization") version "1.9.23"
-    id("io.ktor.plugin") version "2.3.9"
+    id("io.ktor.plugin") version "2.3.13"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -16,14 +16,18 @@ repositories {
     mavenCentral()
 }
 
-val ktorVersion = "2.3.9"
+val ktorVersion = "2.3.13"
 val awsSdkVersion = "1.0.70"
 val coroutinesVersion = "1.8.0"
 val koinVersion = "3.5.3"
-val micrometerVersion = "1.12.4"
-val commonsTextVersion = "1.9"
+val micrometerVersion = "1.15.12"
+val commonsTextVersion = "1.10.0"
 
 dependencies {
+    // Transitive pins: Netty (ktor-server-netty) and Jackson (logstash-logback-encoder) to fixed releases.
+    implementation(platform("io.netty:netty-bom:4.1.137.Final"))
+    implementation(platform("com.fasterxml.jackson:jackson-bom:2.18.11"))
+
     // Ktor Server
     implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
     implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
@@ -49,6 +53,7 @@ dependencies {
 
     // Notification template interpolation
     implementation("org.apache.commons:commons-text:$commonsTextVersion")
+    implementation("org.apache.commons:commons-lang3:3.18.0")
 
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
@@ -60,15 +65,16 @@ dependencies {
     implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
 
     // Logging
-    implementation("ch.qos.logback:logback-classic:1.5.3")
+    implementation("ch.qos.logback:logback-classic:1.5.34")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // Metrics & Tracing
-    implementation("io.micrometer:micrometer-registry-prometheus:$micrometerVersion")
-    implementation("io.opentelemetry:opentelemetry-api:1.36.0")
-    implementation("io.opentelemetry:opentelemetry-sdk:1.36.0")
-    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.36.0")
+    // The -simpleclient registry keeps the io.micrometer.prometheus API used by Monitoring.kt.
+    implementation("io.micrometer:micrometer-registry-prometheus-simpleclient:$micrometerVersion")
+    implementation("io.opentelemetry:opentelemetry-api:1.62.0")
+    implementation("io.opentelemetry:opentelemetry-sdk:1.62.0")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.62.0")
 
     // Redis (chaos flag checks)
     implementation("redis.clients:jedis:5.1.3")
