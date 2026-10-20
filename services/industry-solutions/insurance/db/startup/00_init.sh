@@ -31,6 +31,25 @@ SQL
     0) ;;
     1) echo "== insurance fixture already initialized, skipping"
        sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" @"${SQL_DIR}/setup/02_service_acl.sql"
+       # Data and seed survive on the volume, but the package is code: recompile
+       # it so a reused volume runs the current (delegating) members. The
+       # split_alloc types ahead of it cannot be replaced once they have
+       # dependents (ORA-02303) and do not change, so start at the package.
+       { echo "WHENEVER SQLERROR EXIT SQL.SQLCODE"
+         sed -n '/^CREATE OR REPLACE PACKAGE commission_pkg AS/,$p' "${SQL_DIR}/oltp/03_commission_pkg.sql"
+       } | sqlplus -s "commission_pay/commission_pay@localhost:1521/FREEPDB1"
+       pkg_invalid=$(sqlplus -s "commission_pay/commission_pay@localhost:1521/FREEPDB1" <<'SQL'
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+SET HEADING OFF FEEDBACK OFF PAGESIZE 0
+SELECT COUNT(*) FROM user_objects
+ WHERE object_name = 'COMMISSION_PKG' AND status <> 'VALID';
+EXIT;
+SQL
+       )
+       if [ "$(echo "${pkg_invalid}" | tr -d '[:space:]')" != "0" ]; then
+         echo "== COMMISSION_PKG did not recompile VALID: ${pkg_invalid}" >&2
+         exit 1
+       fi
        exit 0 ;;
     *) echo "== could not determine fixture state: ${marker}" >&2; exit 1 ;;
   esac
