@@ -1,0 +1,26 @@
+app: notify-svc
+owner: OWNER-TBD          # placeholder: owning team to fill in
+costCenter: COSTCENTER-TBD  # placeholder: finance code to fill in
+# Two replicas, as notify-01/02; all state is in the shared Redis.
+replicas: 2
+env:
+  # Shared Redis that holds notify:rate:<account> and notify:outbox:<account>.
+  # Replaces the Redis the VM ran on 127.0.0.1:6379; the host is a placeholder
+  # until the managed Redis endpoint is provisioned.
+  REDIS_URL: redis://notify-svc-redis:6379
+  REDIS_TLS: "false"
+  # Keeps V8 under the 256Mi limit that replaces PM2 max_memory_restart 300M.
+  NODE_OPTIONS: --max-old-space-size=192
+secretEnv:
+  REDIS_PASSWORD:
+    secret: notify-svc-redis
+    key: password
+writablePaths:
+  - /tmp
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

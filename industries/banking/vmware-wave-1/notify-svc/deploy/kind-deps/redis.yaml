@@ -1,0 +1,43 @@
+# Throwaway Redis for the kind run, with a password so the app's secretEnv
+# reference is exercised (test-only value, same as kind-secrets.env).
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-kind
+type: Opaque
+stringData:
+  password: kind-only-notify-redis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: redis}
+  template:
+    metadata:
+      labels: {app: redis}
+    spec:
+      containers:
+        - name: redis
+          image: docker.io/library/redis:6.2-alpine
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom: {secretKeyRef: {name: redis-kind, key: password}}
+          args: ["--requirepass", "$(REDIS_PASSWORD)", "--save", "", "--appendonly", "no"]
+          ports:
+            - containerPort: 6379
+          readinessProbe:
+            tcpSocket: {port: 6379}
+            periodSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector: {app: redis}
+  ports:
+    - port: 6379

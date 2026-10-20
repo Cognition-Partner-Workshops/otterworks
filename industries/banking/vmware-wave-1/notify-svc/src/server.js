@@ -4,10 +4,18 @@ const express = require('express');
 const redis = require('redis');
 const { render, maskAccount } = require('./templates');
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const LIMIT_PER_HOUR = 20;
+const HEALTH_TIMEOUT_MS = 1000;
 
-const db = redis.createClient();
+function redisOptions() {
+  const opts = {};
+  if (process.env.REDIS_PASSWORD) opts.password = process.env.REDIS_PASSWORD;
+  if (process.env.REDIS_TLS === 'true') opts.tls = {};
+  return opts;
+}
+
+const db = redis.createClient(process.env.REDIS_URL || 'redis://127.0.0.1:6379', redisOptions());
 db.on('error', (err) => console.error('redis error', err.message));
 
 const app = express();
@@ -43,4 +51,25 @@ app.get('/outbox/:account', (req, res) => {
   });
 });
 
-app.listen(PORT, () => console.log('notify-svc listening on', PORT));
+app.get('/health', (req, res) => {
+  if (!db.connected) return res.status(503).json({ status: 'redis unavailable' });
+  let done = false;
+  const timer = setTimeout(() => {
+    done = true;
+    res.status(503).json({ status: 'redis unavailable' });
+  }, HEALTH_TIMEOUT_MS);
+  db.ping((err) => {
+    if (done) return;
+    clearTimeout(timer);
+    if (err) return res.status(503).json({ status: 'redis unavailable' });
+    res.json({ status: 'ok' });
+  });
+});
+
+const server = app.listen(PORT, () => console.log('notify-svc listening on', PORT));
+
+process.on('SIGTERM', () => {
+  console.log('notify-svc stopping');
+  server.close(() => db.quit(() => process.exit(0)));
+  setTimeout(() => process.exit(0), 10000).unref();
+});

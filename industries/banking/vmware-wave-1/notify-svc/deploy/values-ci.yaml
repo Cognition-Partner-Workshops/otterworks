@@ -1,0 +1,3 @@
+# kind run: the throwaway Redis from kind-deps/.
+env:
+  REDIS_URL: redis://redis.deps.svc.cluster.local:6379
