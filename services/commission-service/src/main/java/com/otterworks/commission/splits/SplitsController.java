@@ -25,7 +25,7 @@ public class SplitsController {
     @PostMapping("/policies/{policyId}/splits")
     public Map<String, Object> setSplits(@PathVariable String policyId, @RequestBody SetSplitsRequest req) {
         Long id = "null".equals(policyId) ? null : Long.valueOf(policyId);
-        log.info("POST /policies/{}/splits agents={} actor={}", policyId,
+        log.info("POST /policies/{policyId}/splits agents={} actor={}",
                 req.splits() == null ? "null" : req.splits().size(), req.actor());
         int n = service.setSplits(id, req.splits(), req.actor());
         Map<String, Object> body = new LinkedHashMap<>();
