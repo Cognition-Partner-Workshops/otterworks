@@ -1,6 +1,52 @@
 package com.otterworks.notification.model
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.longOrNull
+import java.time.Instant
+
+/**
+ * Event timestamps arrive as RFC 3339 strings from current producers and as Unix epoch
+ * numbers (seconds or milliseconds) from legacy producers. Both decode to an ISO-8601 UTC
+ * string so downstream code never sees the raw number.
+ *
+ * A non-lenient [kotlinx.serialization.json.Json] enforces the published `date-time`
+ * contract and only accepts the string form.
+ */
+object EventTimestampSerializer : KSerializer<String> {
+    private const val EPOCH_MILLIS_THRESHOLD = 100_000_000_000L
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("com.otterworks.notification.EventTimestamp", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: String) = encoder.encodeString(value)
+
+    override fun deserialize(decoder: Decoder): String {
+        val jsonDecoder = decoder as? JsonDecoder ?: return decoder.decodeString()
+        val element = jsonDecoder.decodeJsonElement() as? JsonPrimitive
+            ?: throw SerializationException("timestamp must be a string or an integer epoch")
+        if (element.isString) return element.content
+        if (!jsonDecoder.json.configuration.isLenient) {
+            throw SerializationException("timestamp must be an RFC 3339 string, got ${element.content}")
+        }
+        val epoch = element.longOrNull
+            ?: throw SerializationException("timestamp must be an RFC 3339 string or an integer epoch, got ${element.content}")
+        return fromEpoch(epoch)
+    }
+
+    fun fromEpoch(epoch: Long): String {
+        val instant = if (epoch >= EPOCH_MILLIS_THRESHOLD) Instant.ofEpochMilli(epoch) else Instant.ofEpochSecond(epoch)
+        return instant.toString()
+    }
+}
 
 @Serializable
 enum class EventType {
@@ -25,6 +71,7 @@ data class NotificationEvent(
     val title: String = "",
     val message: String = "",
     val metadata: Map<String, String> = emptyMap(),
+    @Serializable(with = EventTimestampSerializer::class)
     val timestamp: String,
 )
 
@@ -39,6 +86,7 @@ data class SqsNotificationMessage(
     val userId: String = "",
     val actorId: String = "",
     val mentionedUserId: String = "",
+    @Serializable(with = EventTimestampSerializer::class)
     val timestamp: String,
 )
 

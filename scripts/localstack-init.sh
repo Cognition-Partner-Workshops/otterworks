@@ -17,6 +17,22 @@ make_bucket otterworks-audit-archive
 
 # SQS Queue (create-queue is idempotent for an existing queue with the same name)
 awslocal sqs create-queue --queue-name otterworks-notifications
+# Same redrive policy as infrastructure/terraform/modules/messaging/main.tf: a message
+# the consumer cannot process is dead-lettered after 3 receives instead of cycling
+# on the main queue after every visibility timeout. set-queue-attributes is
+# idempotent, so re-runs against a persisted queue do not fail.
+awslocal sqs create-queue --queue-name otterworks-notifications-dlq
+NOTIFICATION_DLQ_ARN=$(awslocal sqs get-queue-attributes \
+  --queue-url http://localhost:4566/000000000000/otterworks-notifications-dlq \
+  --attribute-names QueueArn \
+  --query 'Attributes.QueueArn' \
+  --output text)
+awslocal sqs set-queue-attributes \
+  --queue-url http://localhost:4566/000000000000/otterworks-notifications \
+  --attributes "$(cat <<JSON
+{"VisibilityTimeout":"60","RedrivePolicy":"{\"deadLetterTargetArn\":\"$NOTIFICATION_DLQ_ARN\",\"maxReceiveCount\":\"3\"}"}
+JSON
+)"
 awslocal sqs create-queue --queue-name otterworks-audit-events-queue
 awslocal sqs create-queue --queue-name otterworks-search-events
 
