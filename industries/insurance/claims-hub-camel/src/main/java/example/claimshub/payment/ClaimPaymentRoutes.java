@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import javax.sql.DataSource;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.bindy.fixed.BindyFixedLengthDataFormat;
@@ -14,6 +15,7 @@ import org.apache.camel.model.SagaPropagation;
 import org.apache.camel.saga.InMemorySagaService;
 import org.apache.camel.util.ObjectHelper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,6 +38,7 @@ public class ClaimPaymentRoutes extends RouteBuilder {
     static final String LEDGER_POST = "direct:ledger.postPayment";
     static final String LEDGER_REVERSE = "direct:ledger.reversePayment";
     static final String OPS_NOTIFY = "direct:ops.paymentHeld";
+    static final String LEDGER_AWAIT_COMPENSATION = "direct:ledger.awaitCompensation";
 
     static final String INSTRUCTION = "claimsInstruction";
     static final String SOURCE_FILE = "claimsSourceFileName";
@@ -50,11 +53,16 @@ public class ClaimPaymentRoutes extends RouteBuilder {
 
     private final int attempts;
     private final Duration retryDelay;
+    private final JdbcTemplate ledger;
+    private final Duration compensationTimeout;
 
     public ClaimPaymentRoutes(@Value("${claims.payment.vendor.attempts}") int attempts,
-            @Value("${claims.payment.vendor.retry-delay}") Duration retryDelay) {
+            @Value("${claims.payment.vendor.retry-delay}") Duration retryDelay, DataSource dataSource,
+            @Value("${claims.payment.compensation-timeout:PT30S}") Duration compensationTimeout) {
         this.attempts = attempts;
         this.retryDelay = retryDelay;
+        this.ledger = new JdbcTemplate(dataSource);
+        this.compensationTimeout = compensationTimeout;
     }
 
     @Override
@@ -78,6 +86,7 @@ public class ClaimPaymentRoutes extends RouteBuilder {
                 .doTry()
                     .to(PAYMENT_TX)
                 .doCatch(VendorUnreachableException.class, TrailerTotalsException.class)
+                    .to(LEDGER_AWAIT_COMPENSATION)
                     .to(OPS_NOTIFY)
                 .end();
 
@@ -105,6 +114,11 @@ public class ClaimPaymentRoutes extends RouteBuilder {
         from(LEDGER_REVERSE).routeId("ledger.ReversePayment")
                 .setBody(header(LEDGER_DOCUMENT_OPTION))
                 .to("sql:select ledger.reverse_claim_payment(:#${body})?outputType=SelectOne&outputHeader=ClaimsLedgerEntryId");
+
+        // XLANG/s runs `compensate PaymentTx` to completion before the catch block mails operations; the in-memory
+        // saga coordinator returns from compensate() before the compensation has run, so wait for the reversal here
+        from(LEDGER_AWAIT_COMPENSATION).routeId("ledger.AwaitCompensation")
+                .process(e -> awaitReversal(e.getProperty(LEDGER_DOCUMENT, String.class)));
 
         from(VENDOR_DELIVER).routeId("vendor.DeliverRemittance")
                 .convertBodyTo(String.class, StandardCharsets.US_ASCII.name())
@@ -157,5 +171,18 @@ public class ClaimPaymentRoutes extends RouteBuilder {
                 })
                 .to("smtp://{{claims.ops.smtp.host}}:{{claims.ops.smtp.port}}?from={{claims.ops.from}}&to={{claims.ops.to}}"
                         + "&contentType=text/plain");
+    }
+
+    private void awaitReversal(String document) throws InterruptedException {
+        long deadline = System.nanoTime() + compensationTimeout.toNanos();
+        while (Boolean.TRUE.equals(ledger.queryForObject(
+                "select exists (select 1 from ledger.claim_payment_entry where document = ? and entry_type = 'POST')"
+                        + " and not exists (select 1 from ledger.claim_payment_entry where document = ? and entry_type = 'REVERSAL')",
+                Boolean.class, document, document))) {
+            if (System.nanoTime() > deadline) {
+                throw new IllegalStateException("the ledger post was not reversed within " + compensationTimeout);
+            }
+            Thread.sleep(50);
+        }
     }
 }
