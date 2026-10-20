@@ -36,6 +36,10 @@ public class StatementsContext implements ServletContextListener {
         return (AppConfig) ctx.getAttribute(CONFIG);
     }
 
+    static DataSource pool(ServletContext ctx) {
+        return (DataSource) ctx.getAttribute(POOL);
+    }
+
     static StatementDao dao(ServletContext ctx) {
         return (StatementDao) ctx.getAttribute(DAO);
     }

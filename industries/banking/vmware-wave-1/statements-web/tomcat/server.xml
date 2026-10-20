@@ -12,6 +12,8 @@
       <Host name="localhost" appBase="webapps" unpackWARs="false" autoDeploy="false">
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="/dev" prefix="stdout" suffix=""
                rotatable="false" buffered="false" pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+        <!-- /health at the root for the platform probes; rules in conf/Catalina/localhost/rewrite.config -->
+        <Valve className="org.apache.catalina.valves.rewrite.RewriteValve" />
         <Valve className="org.apache.catalina.valves.ErrorReportValve" showReport="false" showServerInfo="false" />
       </Host>
     </Engine>

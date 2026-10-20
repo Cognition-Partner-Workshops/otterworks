@@ -20,7 +20,7 @@ writablePaths:
   - /usr/local/tomcat/temp
   - /usr/local/tomcat/logs
 probes:
-  enabled: false
+  path: /health
 resources:
   requests:
     cpu: 250m

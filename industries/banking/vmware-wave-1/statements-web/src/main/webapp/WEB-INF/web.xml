@@ -26,4 +26,12 @@
     <welcome-file>index.html</welcome-file>
   </welcome-file-list>
   <distributable/>
+  <servlet>
+    <servlet-name>health</servlet-name>
+    <servlet-class>com.bank.statements.HealthServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>health</servlet-name>
+    <url-pattern>/health</url-pattern>
+  </servlet-mapping>
 </web-app>

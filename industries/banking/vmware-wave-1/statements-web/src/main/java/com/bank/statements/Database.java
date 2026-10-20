@@ -16,6 +16,7 @@ final class Database {
         p.setPassword(config.dbPassword());
         p.setMaxActive(20);
         p.setMaxIdle(5);
+        p.setMinIdle(0);
         p.setInitialSize(0);
         p.setMaxWait(10000);
         p.setValidationQuery("SELECT 1");
