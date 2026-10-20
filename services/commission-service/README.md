@@ -22,7 +22,7 @@ Oracle.
 - Every request except `GET /actuator/health` must carry
   `Authorization: Bearer <COMMISSION_CALLER_TOKEN>` (`common/CallerAuthFilter`), or it
   gets 401 before any rule or audit row runs. The delegate reads the token from
-  `COMMISSION_PAY.service_caller_token`, which `db/startup/00_init.sh` writes from
+  `COMMISSION_AUTH.service_caller_token`, which `db/startup/00_init.sh` writes from
   the same variable on every boot; `make insurance-up` generates one per `NS`. With
   no token configured the service refuses every rule call. The `actor` in a body is
   the `p_actor` the package's caller passed, and only the delegate can send it.

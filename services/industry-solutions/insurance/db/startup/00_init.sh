@@ -27,14 +27,19 @@
       return 1
     fi
     [ -n "${token}" ] || echo "== COMMISSION_CALLER_TOKEN is empty: commission-service will refuse the delegate" >&2
-    sqlplus -s "commission_pay/commission_pay@localhost:1521/FREEPDB1" <<SQL
+    # Own schema, not COMMISSION_PAY: COMMISSION_DW holds SELECT ANY TABLE ON
+    # SCHEMA commission_pay and must not be able to read the token.
+    sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" <<SQL
 WHENEVER SQLERROR EXIT SQL.SQLCODE
 SET FEEDBACK OFF VERIFY OFF DEFINE OFF
-CREATE TABLE IF NOT EXISTS service_caller_token (
+CREATE USER IF NOT EXISTS commission_auth NO AUTHENTICATION
+  DEFAULT TABLESPACE users QUOTA 1M ON users;
+CREATE TABLE IF NOT EXISTS commission_auth.service_caller_token (
     service VARCHAR2(64)  PRIMARY KEY,
     token   VARCHAR2(256)
 );
-MERGE INTO service_caller_token t
+GRANT SELECT ON commission_auth.service_caller_token TO commission_pay;
+MERGE INTO commission_auth.service_caller_token t
 USING (SELECT 'commission-service' AS service, '${token}' AS token FROM dual) s
    ON (t.service = s.service)
  WHEN MATCHED THEN UPDATE SET t.token = s.token

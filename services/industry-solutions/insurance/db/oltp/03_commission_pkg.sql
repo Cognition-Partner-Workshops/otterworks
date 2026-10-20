@@ -111,12 +111,12 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         l_code   NUMBER;
         l_msg    VARCHAR2(1800);
         l_bytes  RAW(32767);
-        l_token  service_caller_token.token%TYPE;
+        l_token  commission_auth.service_caller_token.token%TYPE;
     BEGIN
         -- The service refuses any caller without this bearer token (written by
         -- db/startup/00_init.sh from COMMISSION_CALLER_TOKEN on every boot).
         BEGIN
-            SELECT token INTO l_token FROM service_caller_token WHERE service = 'commission-service';
+            SELECT token INTO l_token FROM commission_auth.service_caller_token WHERE service = 'commission-service';
         EXCEPTION
             WHEN NO_DATA_FOUND THEN l_token := NULL;
         END;

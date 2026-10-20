@@ -18,7 +18,7 @@ spring:
       write-bigdecimal-as-plain: true
 
 commission:
-  # Shared with COMMISSION_PKG (service_caller_token); unset refuses every rule call.
+  # Shared with COMMISSION_PKG (COMMISSION_AUTH.service_caller_token); unset refuses every rule call.
   caller-token: ${COMMISSION_CALLER_TOKEN:}
 
 management:
