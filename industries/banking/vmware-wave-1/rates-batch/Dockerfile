@@ -7,7 +7,7 @@ RUN if [ -n "$MAVEN_MIRROR" ]; then mkdir -p /root/.m2 && printf '<settings><mir
 COPY pom.xml .
 RUN mvn -q -B dependency:go-offline
 COPY src src
-RUN mvn -B package
+RUN mvn -B package -Dmaven.compiler.release=17
 
 FROM docker.io/library/eclipse-temurin:17-jre-jammy@sha256:b3054a20e1a851574cdb1692dd0db5310c647e62214a2a7abecbec1b9e3ae8f1
 WORKDIR /app
