@@ -49,6 +49,8 @@ CREATE OR REPLACE PACKAGE BODY rate_retention_pkg AS
         END IF;
         l_cutoff := 'ADD_MONTHS(:as_of, -' || TO_CHAR(12 * p_retention_years) || ')';
 
+        BEGIN
+
         l_n := l_n + retention_kit.purge(c_policy, 'AUDIT_ROW_CHANGE',
                'table_name = ''COMMISSION_RATES'' AND changed_at <= ' || l_cutoff
             || ' AND (EXISTS (SELECT 1 FROM v_rate_retention v WHERE v.rate_id = TO_NUMBER(audit_row_change.row_key)'
@@ -71,11 +73,12 @@ CREATE OR REPLACE PACKAGE BODY rate_retention_pkg AS
             || '     AND NVL(JSON_VALUE(d.old_values, ''$.AGENT_ID'' RETURNING NUMBER), -1) = NVL(rate_audit_log.agent_id, -1))',
             p_as_of, p_dry_run, FALSE);
         COMMIT;
+        EXCEPTION
+            WHEN OTHERS THEN
+                ROLLBACK;
+                RAISE;
+        END;
         RETURN l_n;
-    EXCEPTION
-        WHEN OTHERS THEN
-            ROLLBACK;
-            RAISE;
     END purge;
 END rate_retention_pkg;
 /
