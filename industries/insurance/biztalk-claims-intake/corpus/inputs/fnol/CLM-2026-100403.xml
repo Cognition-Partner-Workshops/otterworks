@@ -1,0 +1,39 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000003</RqUID>
+  <TransactionRequestDt>2026-09-07T08:18:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0417</ProducerId>
+      <ProducerName>Harbourline Brokers</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-AUTO-48121</PolicyNumber>
+      <LOBCd>AUTO</LOBCd>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Nadia</GivenName>
+      <Surname>Petrossian</Surname>
+      <TaxId>103-43-7039</TaxId>
+        <EmailAddr>nadia.petrossian@example.net</EmailAddr>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100403</ClaimNumber>
+      <LossDt>2026-09-06</LossDt>
+      <ReportedDt>2026-09-07</ReportedDt>
+      <LossCauseCd>COLL</LossCauseCd>
+      <IncidentDesc>Rear-ended at a stop light; other driver admitted fault at the scene</IncidentDesc>
+      <EstimatedLossAmt>8450.00</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+        <PoliceReportInd>true</PoliceReportInd>
+      <Addr>
+        <City>Camden</City>
+        <StateProvCd>ME</StateProvCd>
+        <PostalCode>04843</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+      <AutoLossInfo>
+        <VIN>1HGCM82633A102733</VIN>
+        <DriveableInd>false</DriveableInd>
+      </AutoLossInfo>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>
