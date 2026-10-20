@@ -2,6 +2,7 @@ package example.claimshub.fnol;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -11,6 +12,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.PredicateBuilder;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.support.ExpressionAdapter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +23,8 @@ import org.springframework.stereotype.Component;
  * <li>{@code fnol.receive}: Receive_Fnol and Listen_Correction. The ClaimNumberCorrelation becomes an
  * aggregator on the promoted claim number; the correlated receive is completion on a correction from the agency
  * (ProducerId) that sent the original, which replaces the first; the Delay is the completion timeout. A correction
- * from any other agency is refused and sent to {@code rejectedUri} for review; the window stays open.</li>
+ * from any other agency is refused and sent to {@code rejectedUri} for review; the window stays open and still
+ * ends when the original's would have.</li>
  * <li>{@code fnol.intake}: the instance, from Construct_Canonical to Decide_Assignment.</li>
  * <li>{@code messagebox.triage-facts}, {@code messagebox.insert-claim}: the content-based send ports
  * sp_Fraud_Referral_FILE, sp_Declines_FILE and sp_GlassVendor_FastTrack_SFTP.</li>
@@ -40,6 +43,7 @@ public class FnolIntakeRoute extends RouteBuilder {
     static final String FAST_TRACK = "FAST_TRACK";
     static final String CORRECTION_REJECTED = "CORRECTION_REJECTED";
     static final String CORRECTED = "FnolCorrected";
+    static final String WINDOW_ENDS_AT = "FnolCorrectionWindowEndsAt";
 
     private static final String FNOL = "/*[local-name()='ClaimsSvcRq']/*[local-name()='ClaimsNotificationAddRq']";
     private static final String AGGREGATE_NS = "http://schemas.microsoft.com/BizTalk/2003/aggschema";
@@ -68,10 +72,11 @@ public class FnolIntakeRoute extends RouteBuilder {
                 .setHeader("LossCauseCd").xpath(FNOL + "/*[local-name()='ClaimsOccurrence']/*[local-name()='LossCauseCd']", String.class)
                 .setHeader("AgencyId").xpath(FNOL + "/*[local-name()='Producer']/*[local-name()='ProducerId']", String.class)
                 // Listen_Correction: Receive_Correction (follows the correlation) or Delay_CorrectionWindow.
-                .aggregate(header("ClaimNumber"), correctionReplacesFirst((original, refused) ->
+                .aggregate(header("ClaimNumber"), correctionReplacesFirst(properties.correctionWindow(), (original, refused) ->
                         review.send(properties.rejectedUri(), rejectedCorrection(original, refused))))
                     .completionPredicate(exchangeProperty(CORRECTED).isEqualTo(true))
-                    .completionTimeout(properties.correctionWindow().toMillis())
+                    // Camel re-arms the timeout on every message; a refused one must not push the Delay out.
+                    .completionTimeout(remainingWindow())
                     .completionTimeoutCheckerInterval(250)
                     .parallelProcessing()
                 .to("direct:fnol.instance");
@@ -174,17 +179,30 @@ public class FnolIntakeRoute extends RouteBuilder {
      * A second FNOL inside the window replaces the first one (msgFnolCorrection wins), but only when it comes from the
      * agency that sent the first. Any other sender's FNOL is handed to {@code onRejected} and the first one stays.
      */
-    static AggregationStrategy correctionReplacesFirst(BiConsumer<Exchange, Exchange> onRejected) {
+    static AggregationStrategy correctionReplacesFirst(Duration window, BiConsumer<Exchange, Exchange> onRejected) {
         return (oldExchange, newExchange) -> {
             if (oldExchange == null) {
+                newExchange.setProperty(WINDOW_ENDS_AT, System.currentTimeMillis() + window.toMillis());
                 return newExchange;
             }
             if (sameAgency(oldExchange, newExchange)) {
                 newExchange.setProperty(CORRECTED, true);
                 return newExchange;
             }
+            newExchange.setProperty(WINDOW_ENDS_AT, oldExchange.getProperty(WINDOW_ENDS_AT));
             onRejected.accept(oldExchange, newExchange);
             return oldExchange;
+        };
+    }
+
+    /** Evaluated on each incoming message: what is left of the window the first FNOL opened. */
+    private static ExpressionAdapter remainingWindow() {
+        return new ExpressionAdapter() {
+            @Override
+            public Object evaluate(Exchange exchange) {
+                long endsAt = exchange.getProperty(WINDOW_ENDS_AT, Long.class);
+                return Math.max(1L, endsAt - System.currentTimeMillis());
+            }
         };
     }
 

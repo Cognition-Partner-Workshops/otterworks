@@ -33,5 +33,6 @@ claimshub:
     completed-uri: log:fnol.completed
     suspended-uri: log:fnol.suspended?level=ERROR
     assignment-uri: log:assignment.request
-    # A correction whose ProducerId differs from the original FNOL's is refused and logged for review.
-    rejected-uri: log:fnol.rejected?level=WARN&showHeaders=true
+    # A correction whose ProducerId differs from the original FNOL's is refused and logged for review;
+    # headers only, the body carries the claimant's unmasked TaxId.
+    rejected-uri: log:fnol.rejected?level=WARN&showHeaders=true&showBody=false

@@ -137,6 +137,23 @@ class FnolIntakeCorrelationTest extends FnolIntakeTestBase {
     }
 
     @Test
+    @DisplayName("refused foreign corrections do not extend the window: the original runs when its own window ends")
+    void foreignCorrectionsDoNotExtendTheWindow() throws Exception {
+        long start = System.nanoTime();
+        send(original);
+        for (int i = 0; i < 5; i++) {
+            Thread.sleep(900);
+            send(foreignCorrection);
+        }
+
+        awaitCompleted(1, WINDOW.plusSeconds(10));
+        Duration took = Duration.ofNanos(System.nanoTime() - start);
+        assertThat(took).as("completed when the first FNOL's window ended, not after the last refused one").isLessThan(WINDOW.plusMillis(1500));
+        assertThat(rejected().getReceivedCounter()).isGreaterThanOrEqualTo(4);
+        assertThat(completed().getExchanges().get(0).getProperty("msgClaim", String.class)).doesNotContain(FOREIGN_AMOUNT);
+    }
+
+    @Test
     @DisplayName("a second FNOL after the window starts a new instance, and the claims system rejects the duplicate")
     void fnolAfterWindowStartsNewInstance() throws Exception {
         send(original);
@@ -174,6 +191,8 @@ class FnolIntakeCorrelationTest extends FnolIntakeTestBase {
             Map<String, Object> yaml = new Yaml().load(in);
             Object window = path(yaml, "claimshub", "fnol", "correction-window");
             assertThat(window).as("claimshub.fnol.correction-window in application.yaml").isEqualTo("15m");
+            assertThat(path(yaml, "claimshub", "fnol", "rejected-uri")).as("refused FNOLs carry an unmasked TaxId")
+                    .asString().contains("showBody=false");
         }
     }
 
