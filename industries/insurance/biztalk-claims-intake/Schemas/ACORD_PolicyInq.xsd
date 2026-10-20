@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.thistlecombe.example/acord/policy" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="http://schemas.thistlecombe.example/acord/policy" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo root_reference="PolicyInqRq" displayroot_reference="PolicyInqRq" />
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- Policy lookup request and response, sent to and received from the policy administration system through the WCF-SQL port. -->
+  <xs:element name="PolicyInqRq">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="RqUID" type="xs:string" />
+        <xs:element name="PolicyNumber" type="xs:string" />
+        <xs:element name="AsOfDt" type="xs:date" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="PolicyInqRs">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="RqUID" type="xs:string" />
+        <xs:element name="PolicyNumber" type="xs:string" />
+        <xs:element name="PolicyStatusCd" type="xs:string" />
+        <xs:element name="LOBCd" type="xs:string" />
+        <xs:element name="EffectiveDt" type="xs:date" />
+        <xs:element name="ExpirationDt" type="xs:date" />
+        <xs:element name="DeductibleAmt" type="xs:decimal" />
+        <xs:element name="CoverageLimitAmt" type="xs:decimal" />
+        <xs:element name="InsuredPartyId" type="xs:string" />
+        <xs:element name="Coverage" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="CoverageCd" type="xs:string" />
+              <xs:element name="LimitAmt" type="xs:decimal" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
