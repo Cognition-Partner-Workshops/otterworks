@@ -21,3 +21,18 @@ Tests read the fixture from `-Dclaims.fixture.dir` (default `../biztalk-claims-i
 A message that cannot be made byte-identical stays red: its dynamic test fails, and `knownCauses()` names the cause in the failure and in the report row. It is never skipped or relaxed.
 
 `GoldenMapTestSelfTest` proves the harness through Camel with an identity route over the `CanonicalClaim_to_PolicyInqRq` goldens; `CorpusManifestTest` checks the manifest still lists the eight maps and 112 goldens.
+
+## FnolIntake route (`src/main/java/example/claimshub/fnol/`)
+
+`FnolIntakeRoute` is the `FnolIntake` orchestration. FNOLs come in on `direct:fnol.in` (what the receive pipeline hands the MessageBox).
+
+| XLANG/s | Camel |
+| --- | --- |
+| `ClaimNumberCorrelation`, Listen with `Receive_Correction` and the 15 minute `Delay_CorrectionWindow` | `fnol.receive`: aggregator on the promoted `ClaimNumber`, the latest FNOL wins, complete on the second message or after `claimshub.fnol.correction-window` (15m) |
+| The four maps | `xslt-saxon` over the fixture's `Maps/` (the `.golden.xslt` twin for `InsertClaim_to_TriageFacts`); the two-source map reads the `aggschema` `Root` |
+| `PolicyLookup` / `ClaimsDb` WCF-SQL ports | `port.policy-lookup`, `port.insert-claim`: PostgreSQL 16 functions `usp_get_policy_as_of`, `usp_insert_claim` (`src/test/resources/db/wcf-sql-stand-in.sql`) |
+| `Call_Rules ClaimTriage` | `ClaimTriage`; `GoldenTriageStub` answers from `corpus/golden/triage/` until the rules-table conversion is merged |
+| `Decide_Outcome`, `Decide_Assignment` | declines end `TERMINATED` with no insert; fast tracks are inserted and get no assignment request |
+| `sp_Fraud_Referral_FILE`, `sp_Declines_FILE`, `sp_GlassVendor_FastTrack_SFTP` | `messagebox.triage-facts`, `messagebox.insert-claim`: content-based routes on the promoted `TriageOutcome` (and `LossCauseCd`) |
+
+`FnolIntakeCorrelationTest` and `FnolIntakeCorpusTest` start a PostgreSQL 16 container through Testcontainers (Docker required) and write `target/fnol-parity/REPORT.md`, one row per corpus FNOL.
