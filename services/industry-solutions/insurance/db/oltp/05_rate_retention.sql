@@ -57,15 +57,25 @@ CREATE OR REPLACE PACKAGE BODY rate_retention_pkg AS
             || '      AND EXISTS (SELECT 1 FROM audit_row_change d WHERE d.table_name = ''COMMISSION_RATES'''
             || '                  AND d.row_key = audit_row_change.row_key AND d.operation = ''DELETE'''
             || '                  AND d.changed_at <= ' || l_cutoff || ')))',
-            p_as_of, p_dry_run);
+            p_as_of, p_dry_run, FALSE);
 
         l_n := l_n + retention_kit.purge(c_policy, 'RATE_AUDIT_LOG',
                'action IN (''RATE_UPSERT'', ''RATE_END'') AND logged_at <= ' || l_cutoff
             || ' AND NOT EXISTS (SELECT 1 FROM v_rate_retention v WHERE v.product_code = rate_audit_log.product_code'
             || '     AND NVL(v.agent_id, -1) = NVL(rate_audit_log.agent_id, -1)'
-            || '     AND (v.clock_start IS NULL OR v.clock_start > ' || l_cutoff || '))',
-            p_as_of, p_dry_run);
+            || '     AND (v.clock_start IS NULL OR v.clock_start > ' || l_cutoff || '))'
+            -- A deleted rate leaves the view; its DELETE audit row keeps the scope's clock.
+            || ' AND NOT EXISTS (SELECT 1 FROM audit_row_change d WHERE d.table_name = ''COMMISSION_RATES'''
+            || '     AND d.operation = ''DELETE'' AND d.changed_at > ' || l_cutoff
+            || '     AND JSON_VALUE(d.old_values, ''$.PRODUCT_CODE'') = rate_audit_log.product_code'
+            || '     AND NVL(JSON_VALUE(d.old_values, ''$.AGENT_ID'' RETURNING NUMBER), -1) = NVL(rate_audit_log.agent_id, -1))',
+            p_as_of, p_dry_run, FALSE);
+        COMMIT;
         RETURN l_n;
+    EXCEPTION
+        WHEN OTHERS THEN
+            ROLLBACK;
+            RAISE;
     END purge;
 END rate_retention_pkg;
 /

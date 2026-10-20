@@ -12,6 +12,8 @@ DECLARE
     l_n        NUMBER;
     l_n2       NUMBER;
     l_before   NUMBER;
+    l_z        NUMBER;
+    l_old_log  NUMBER;
 
     PROCEDURE check_case (p_name IN VARCHAR2, p_ok IN BOOLEAN, p_detail IN VARCHAR2 DEFAULT NULL) IS
     BEGIN
@@ -111,6 +113,20 @@ BEGIN
     EXCEPTION
         WHEN OTHERS THEN check_case('R5 direct DELETE refused after a purge', SQLCODE = -20901, SQLERRM);
     END;
+
+    ---------------------------------------------------------------
+    -- R6: a directly deleted rate keeps its scope's package log for
+    -- seven years from the DELETE, though it has left commission_rates.
+    ---------------------------------------------------------------
+    INSERT INTO rate_audit_log (action, product_code, agent_id, detail, actor, logged_at)
+    VALUES ('RATE_UPSERT', 'HOME-PLUS', 3, 'r6 old log', 'ops.lead', TIMESTAMP '2015-01-01 00:00:00')
+    RETURNING audit_id INTO l_old_log;
+    commission_pkg.upsert_commission_rate('HOME-PLUS', 3, 9.50, DATE '2021-01-01', 'ops.lead', l_z);
+    DELETE FROM commission_rates WHERE rate_id = l_z;
+    COMMIT;
+    l_n := rate_retention_pkg.purge(ADD_MONTHS(TRUNC(SYSDATE), 12), 7, FALSE);
+    SELECT COUNT(*) INTO l_n2 FROM rate_audit_log WHERE audit_id = l_old_log;
+    check_case('R6 deleted rate keeps its scope log for seven years', l_n2 = 1, 'old log rows=' || l_n2);
 
     DBMS_OUTPUT.PUT_LINE('----');
     IF g_failures = 0 THEN

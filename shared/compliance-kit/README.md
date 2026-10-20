@@ -11,7 +11,7 @@ tables.
 | File | Gives you |
 |---|---|
 | `audit_kit.sql` | `audit_row_change` (one row per INSERT / UPDATE / DELETE: actor, DB user, OS user, host, program, `via_program`, transaction id, old/new JSON), `audit_kit.install_row_audit(table, key_column)` to generate `TRG_AUD_<table>`, `audit_kit.set_actor` / `clear_actor` so a package can name the business user, `audit_kit.protect_append_only(table)` (UPDATE and DELETE refused, ORA-20901), `audit_purge_gate` |
-| `retention_kit.sql` | `retention_run` and `retention_kit.purge(policy, table, predicate, as_of, dry_run DEFAULT TRUE)`: counts, deletes through the purge gate only when `dry_run` is false, and logs every call |
+| `retention_kit.sql` | `retention_run` and `retention_kit.purge(policy, table, predicate, as_of, dry_run DEFAULT TRUE, p_commit DEFAULT TRUE)`: counts, deletes through the purge gate only when `dry_run` is false, and logs every call. It commits the caller's transaction unless `p_commit => FALSE`, so a module can make several purges atomic. Grant EXECUTE on it to nobody: it can open the gate |
 
 A direct statement is attributed to the authenticated session (DB user,
 OS user, host) with `via_program = 'SQL'`. A change made inside a package

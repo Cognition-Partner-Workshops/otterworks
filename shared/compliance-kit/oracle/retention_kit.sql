@@ -22,12 +22,15 @@ CREATE TABLE retention_run (
 
 CREATE OR REPLACE PACKAGE retention_kit AS
     -- p_predicate may reference the bind :as_of (DATE). Returns rows matched.
+    -- Commits by default; pass p_commit => FALSE to let the caller make
+    -- several purges one transaction (and roll back on failure).
     FUNCTION purge (
         p_policy_name IN VARCHAR2,
         p_table_name  IN VARCHAR2,
         p_predicate   IN VARCHAR2,
         p_as_of       IN DATE,
-        p_dry_run     IN BOOLEAN DEFAULT TRUE
+        p_dry_run     IN BOOLEAN DEFAULT TRUE,
+        p_commit      IN BOOLEAN DEFAULT TRUE
     ) RETURN NUMBER;
 END retention_kit;
 /
@@ -66,7 +69,8 @@ CREATE OR REPLACE PACKAGE BODY retention_kit AS
         p_table_name  IN VARCHAR2,
         p_predicate   IN VARCHAR2,
         p_as_of       IN DATE,
-        p_dry_run     IN BOOLEAN DEFAULT TRUE
+        p_dry_run     IN BOOLEAN DEFAULT TRUE,
+        p_commit      IN BOOLEAN DEFAULT TRUE
     ) RETURN NUMBER IS
         l_table   VARCHAR2(128) := UPPER(DBMS_ASSERT.SIMPLE_SQL_NAME(p_table_name));
         l_matched NUMBER;
@@ -82,7 +86,9 @@ CREATE OR REPLACE PACKAGE BODY retention_kit AS
             EXCEPTION
                 WHEN OTHERS THEN
                     audit_purge_gate.close_gate;
-                    ROLLBACK;
+                    IF p_commit THEN
+                        ROLLBACK;
+                    END IF;
                     RAISE;
             END;
         END IF;
@@ -90,7 +96,9 @@ CREATE OR REPLACE PACKAGE BODY retention_kit AS
         INSERT INTO retention_run (policy_name, table_name, predicate, as_of, dry_run, rows_matched, rows_purged)
         VALUES (p_policy_name, l_table, p_predicate, p_as_of,
                 CASE WHEN p_dry_run THEN 'Y' ELSE 'N' END, l_matched, l_purged);
-        COMMIT;
+        IF p_commit THEN
+            COMMIT;
+        END IF;
         RETURN l_matched;
     END purge;
 END retention_kit;

@@ -6,7 +6,7 @@
 | Period | `p_retention_years`, default **7**, minimum 7 (lower is refused, ORA-20910) |
 | Clock starts | the **later** of the rate's `effective_to` and the last day of the last `commission_ledger.period_month` that used the rate; for a rate deleted outright, the `DELETE` audit row |
 | Never purged | while the rate is open (`effective_to IS NULL`), and no row until it is itself the full period old |
-| Procedure | `rate_retention_pkg.purge(p_as_of, p_retention_years, p_dry_run DEFAULT TRUE)`, policy name `rate-audit-7y`, via `retention_kit.purge` |
+| Procedure | `rate_retention_pkg.purge(p_as_of, p_retention_years, p_dry_run DEFAULT TRUE)`, policy name `rate-audit-7y`, via `retention_kit.purge`; both trails are purged in one transaction. A rate deleted outside the package keeps its scope's `rate_audit_log` rows for seven years from the DELETE |
 | Clock per rate | `v_rate_retention` (`clock_start` is NULL while the rate is open) |
 | Evidence | one `retention_run` row per table per call, dry or real |
 | Test | `db/tests/run_retention_tests.sql` (R1–R5) |
