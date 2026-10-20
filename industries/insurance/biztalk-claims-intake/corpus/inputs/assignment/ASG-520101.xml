@@ -1,0 +1,12 @@
+<ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <RequestId>ASG-520101</RequestId>
+  <ClaimNumber>CLM-2026-100405</ClaimNumber>
+  <LineOfBusiness>AUTO</LineOfBusiness>
+  <LossCause>GLAS</LossCause>
+  <Region>COASTAL</Region>
+  <Severity>LOW</Severity>
+  <RequiredSkill>AUTO-PD</RequiredSkill>
+  <RequestedDt>2026-09-25</RequestedDt>
+  <ClaimantName>Priya Venkataraman</ClaimantName>
+  <EstimatedAmount>412.00</EstimatedAmount>
+</ns0:AssignmentRequest>

@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: claims-hub-camel
+  datasource:
+    # PostgreSQL 16 in place of the two WCF-SQL ports (usp_GetPolicyAsOf, usp_InsertClaim). Connections open on first use.
+    url: ${CLAIMS_DB_URL:jdbc:postgresql://localhost:5432/claimshub}
+    username: ${CLAIMS_DB_USER:claimshub}
+    password: ${CLAIMS_DB_PASSWORD:}
+server:
+  port: 8092
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health
+      path-mapping:
+        health: health
+  health:
+    db:
+      # The database is the legacy WCF-SQL stand-in; an outage suspends instances, it does not make the pod unhealthy.
+      enabled: false
+camel:
+  springboot:
+    name: claims-hub
+    main-run-controller: true
+claimshub:
+  fnol:
+    # FnolIntake Delay_CorrectionWindow: new System.TimeSpan(0, 15, 0)
+    correction-window: 15m
+    fixture-dir: ${claims.fixture.dir:../biztalk-claims-intake}
+    out-dir: ${claimshub.out-dir:${CLAIMS_OUT_DIR:target/claims-hub-out}}
+    completed-uri: log:fnol.completed
+    suspended-uri: log:fnol.suspended?level=ERROR
+    assignment-uri: log:assignment.request
