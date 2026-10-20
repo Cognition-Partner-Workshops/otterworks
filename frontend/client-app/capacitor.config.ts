@@ -19,6 +19,9 @@ const config: CapacitorConfig = {
   },
   ios: {
     path: "mobile/ios",
+    // Inset the web view by the safe area so fixed headers sit below the
+    // status bar / Dynamic Island instead of underneath it.
+    contentInset: "always",
     appendUserAgent: "OtterWorksApp/ios",
   },
 };

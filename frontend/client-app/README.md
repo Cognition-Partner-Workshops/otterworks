@@ -63,6 +63,12 @@ xcodebuild -project mobile/ios/App/App.xcodeproj -scheme App -configuration Debu
 ```
 
 xcodebuild writes the app to `build/ios/Build/Products/Debug-iphonesimulator/App.app`.
+The `App` scheme is shared (`App.xcodeproj/xcshareddata/xcschemes/App.xcscheme`) and the
+iOS project consumes Capacitor through Swift Package Manager (`CapApp-SPM`, resolved
+versions pinned in `project.xcworkspace/xcshareddata/swiftpm/Package.resolved`), so there
+is no Podfile or CocoaPods step. Keep `@capacitor/*` in `package.json` and the
+`capacitor-swift-pm` version that `npx cap sync ios` writes into `CapApp-SPM/Package.swift`
+on the same release.
 Install it with `xcrun simctl install booted <path>` and launch it with
 `xcrun simctl launch booted com.otterworks.app`.
 
