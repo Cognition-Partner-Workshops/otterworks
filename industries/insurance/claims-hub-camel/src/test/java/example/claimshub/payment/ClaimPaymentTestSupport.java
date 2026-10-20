@@ -106,6 +106,7 @@ public abstract class ClaimPaymentTestSupport {
 
     /** Wires the hub to the containers; {@code vendorReachable=false} points the hub at a port nobody listens on. */
     static void hubProperties(DynamicPropertyRegistry registry, boolean vendorReachable) {
+        registry.add("spring.flyway.enabled", () -> "true");
         registry.add("spring.datasource.url", LEDGER::getJdbcUrl);
         registry.add("spring.datasource.username", LEDGER::getUsername);
         registry.add("spring.datasource.password", LEDGER::getPassword);

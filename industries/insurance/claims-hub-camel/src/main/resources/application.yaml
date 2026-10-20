@@ -7,6 +7,11 @@ spring:
     url: ${CLAIMS_DB_URL:jdbc:postgresql://localhost:5432/claimshub}
     username: ${CLAIMS_DB_USER:claimshub}
     password: ${CLAIMS_DB_PASSWORD:}
+  flyway:
+    # V1__claim_payment_ledger.sql owns the ledger schema only; off unless the ledger database is there to migrate,
+    # so the hub still boots (and /health answers) without a database, as the WCF-SQL ports open on first use.
+    enabled: ${CLAIMS_LEDGER_MIGRATE:false}
+    schemas: ledger
 server:
   port: 8092
 management:
@@ -39,11 +44,11 @@ claimshub:
     assignment-uri: log:assignment.request
   archive:
     # sp_Compliance_AssignmentArchive_FILE
-    dir: ${CLAIMS_ASSIGNMENT_ARCHIVE:target/assignment-archive}
+    dir: target/assignment-archive
   smtp:
     # sp_Adjuster_AssignmentNotice_SMTP
-    host: ${CLAIMS_SMTP_HOST:localhost}
-    port: ${CLAIMS_SMTP_PORT:1025}
+    host: localhost
+    port: 1025
     from: claims-hub@thistlecombe.example
 claims:
   payment:
@@ -54,7 +59,7 @@ claims:
     vendor:
       # sp_PaymentVendor_Remittance_SFTP
       host: ${PAYVENDOR_SFTP_HOST:sftp.payvendor.example}
-      port: ${PAYVENDOR_SFTP_PORT:22}
+      port: 22
       username: thistlecombe-remit
       private-key-file: ${PAYVENDOR_SFTP_KEY:keys/payvendor_ed25519}
       known-hosts-file: ${PAYVENDOR_SFTP_KNOWN_HOSTS:keys/payvendor_known_hosts}
@@ -64,14 +69,14 @@ claims:
       attempts: 3
       retry-delay: 10m
       window:
-        enabled: ${PAYVENDOR_WINDOW_ENABLED:true}
+        enabled: true
         from: "22:00"
         to: "05:30"
         zone: ${CLAIMS_HUB_TIMEZONE:Europe/London}
   ops:
     # sp_Ops_PaymentHeld_SMTP
     smtp:
-      host: ${CLAIMS_OPS_SMTP_HOST:smtp-relay.thistlecombe.example}
-      port: ${CLAIMS_OPS_SMTP_PORT:25}
+      host: ${CLAIMS_SMTP_HOST:smtp-relay.thistlecombe.example}
+      port: 25
     to: claims-payments-ops@thistlecombe.example
     from: claims-hub@thistlecombe.example
