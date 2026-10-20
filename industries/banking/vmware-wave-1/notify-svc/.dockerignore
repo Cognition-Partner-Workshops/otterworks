@@ -1,0 +1,6 @@
+node_modules/
+characterization/
+vm/
+deploy/
+ecosystem.config.js
+*.md

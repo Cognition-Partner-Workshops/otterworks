@@ -9,7 +9,7 @@
     "test": "node test/templates.test.js"
   },
   "engines": {
-    "node": "12.x"
+    "node": "20.x"
   },
   "dependencies": {
     "express": "4.17.1",
