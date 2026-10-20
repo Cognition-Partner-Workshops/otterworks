@@ -13,7 +13,7 @@ file in the same commit.
 
 ```bash
 make up NS=dev       # Oracle Free (make insurance-up) and PostgreSQL 16 (docker-compose.yml)
-make check NS=dev    # the gate: corpus, Oracle ledger, load, dbt build, parity; fails on any RED row
+make check NS=dev    # the gate: corpus, Oracle ledger, load, dbt build, parity; fails on any RED row not in accepted_differences.yaml
 make down NS=dev     # stops both containers and drops their volumes
 ```
 
@@ -103,6 +103,6 @@ lines 0.015 and 1234.565 and an expense line 0.50. The ledger post sums indemnit
 (1234.58), netting **1235.08**; the vendor file rounds each line half up (0.02, 1234.57, 0.50), netting
 **1235.09**. Decided 2026-10-20 by the claims and finance owner: **the ledger is the book of record.** Paid
 loss in the marts is `net_amount`; the cent is carried in `vendor_rounding_difference` and not allocated.
-Parity row `claim_payments.net_amount_vs_vendor_file` stays RED with this cause and is listed in
-`parity/accepted_differences.yaml`; row `claim_payments.gap_equals_vendor_rounding_difference` checks that the
+Parity row `claims.claim_payments.net_amount_vs_vendor_file` stays RED with this cause and is listed in
+`parity/accepted_differences.yaml`; row `claims.claim_payments.gap_equals_vendor_rounding_difference` checks that the
 gap is exactly the carried difference.

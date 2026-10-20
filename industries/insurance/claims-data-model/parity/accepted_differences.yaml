@@ -1,7 +1,7 @@
 # Parity rows that are RED by decision. A RED row stays RED in the report; make check passes only when every
 # RED row is listed here with its exact difference and reason. An entry whose row is no longer RED, or whose
 # difference has changed, fails the gate too.
-- row: claim_payments.net_amount_vs_vendor_file
+- row: claims.claim_payments.net_amount_vs_vendor_file
   difference: "-0.01"
   instruction_id: PI-2026-880107
   decided_on: "2026-10-20"

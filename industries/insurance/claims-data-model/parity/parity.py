@@ -89,6 +89,8 @@ def corpus_measures(corpus: Path) -> dict:
         "notice_pairs": sorted((text(n, "ClaimNumber"), text(n, "AdjusterId")) for n in notices),
         "request_estimate": sum(Decimal(text(read_xml(p), "EstimatedAmount")) for p in requests),
         "payment_months": sorted({text(read_xml(p), "ValueDate")[:7] for p in payments}),
+        "loss_months": sorted({text(read_xml(p), "ClaimsNotificationAddRq/ClaimsOccurrence/LossDt")[:7]
+                               for p in fnol}),
     }
     return m
 
@@ -192,8 +194,8 @@ def build_checks(ora, dw, pg, c: dict, accepted: dict) -> list[dict]:
     add("marts.commission_by_agent_period", "sum(total_commission)", "money",
         "Oracle COMMISSION_DW.MV_AGENT_COMMISSION_SUMMARY", mv[1],
         "SELECT sum(total_commission) FROM marts.commission_by_agent_period")
-    lo = min(ora_q("SELECT MIN(period_month) FROM commission_ledger"), c["payment_months"][0])
-    hi = max(ora_q("SELECT MAX(period_month) FROM commission_ledger"), c["payment_months"][-1])
+    lo = min(ora_q("SELECT MIN(period_month) FROM commission_ledger"), c["payment_months"][0], c["loss_months"][0])
+    hi = max(ora_q("SELECT MAX(period_month) FROM commission_ledger"), c["payment_months"][-1], c["loss_months"][-1])
     months = ora_q("SELECT MONTHS_BETWEEN(TO_DATE(:hi, 'YYYY-MM'), TO_DATE(:lo, 'YYYY-MM')) + 1 FROM dual",
                    hi=hi, lo=lo)
     lines = ora_q("SELECT COUNT(DISTINCT line_of_business) FROM products")
@@ -214,9 +216,12 @@ def build_checks(ora, dw, pg, c: dict, accepted: dict) -> list[dict]:
         "Oracle COMMISSION_PAY.COMMISSION_LEDGER", ora_q("SELECT SUM(commission_amt) FROM commission_ledger"),
         "SELECT sum(commission_paid) FROM marts.loss_ratio_by_product_period")
 
-    for chk in checks:
+    keys = [f"{chk['table']}.{chk['measure']}" for chk in checks]
+    duplicates = sorted({k for k in keys if keys.count(k) > 1})
+    if duplicates:
+        raise SystemExit(f"parity row keys must be unique, repeated: {', '.join(duplicates)}")
+    for chk, key in zip(checks, keys):
         chk["difference"] = chk["target_value"] - chk["source_value"]
-        key = f"{chk['table'].split('.', 1)[1]}.{chk['measure']}"
         chk["row"], chk["accepted"] = key, False
         if chk["difference"] == 0:
             chk["verdict"], chk["cause"] = "MATCH", ""

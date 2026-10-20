@@ -5,7 +5,8 @@ NS          ?=
 OFFSET       = $(shell python3 -c "import zlib; print(zlib.crc32('$(NS)'.encode()) % 1000)")
 ORACLE_PORT  = $(shell python3 -c "print(51521 + $(OFFSET))")
 PG_PORT      = $(shell python3 -c "print(57432 + $(OFFSET))")
-CORPUS_REF  ?= origin/devin/1792473658-insurance-biztalk-fixture
+CORPUS_BRANCH ?= devin/1792473658-insurance-biztalk-fixture
+CORPUS_REF  ?= origin/$(CORPUS_BRANCH)
 CORPUS_PATH := industries/insurance/biztalk-claims-intake/corpus
 CORPUS_DIR  := $(CURDIR)/.corpus/corpus
 
@@ -44,6 +45,8 @@ pg-down: validate
 	$(PG_COMPOSE) down -v
 
 corpus: ## Read the claims hub corpus out of git (the fixture branch is read-only here)
+	git -C $(REPO) rev-parse -q --verify '$(CORPUS_REF)^{commit}' >/dev/null || \
+	  git -C $(REPO) fetch --no-tags origin '+refs/heads/$(CORPUS_BRANCH):refs/remotes/origin/$(CORPUS_BRANCH)'
 	rm -rf .corpus && mkdir -p .corpus
 	git -C $(REPO) archive --format=tar $(CORPUS_REF) $(CORPUS_PATH) | tar -x -C .corpus --strip-components=3
 	git -C $(REPO) rev-parse $(CORPUS_REF) > .corpus/REF
