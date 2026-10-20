@@ -24,6 +24,14 @@ lazy_static! {
         vec![0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0]
     )
     .expect("metric can be created");
+    /// Domain-event publish outcomes. `failed` and `skipped_no_topic` mean the
+    /// event was not delivered and downstream consumers will not see it.
+    pub static ref FILE_EVENTS_TOTAL: IntCounterVec = register_int_counter_vec!(
+        "file_service_events_total",
+        "File domain events by SNS publish outcome",
+        &["event_type", "outcome"]
+    )
+    .expect("metric can be created");
 }
 
 pub fn render_metrics() -> String {

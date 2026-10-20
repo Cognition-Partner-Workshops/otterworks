@@ -182,7 +182,7 @@ data "aws_iam_policy_document" "dashboard" {
   # node group's instances are Terraform's to remove, and the sweep has no
   # business terminating them even in a dead cluster.
   dynamic "statement" {
-    for_each = toset(var.sweepable_clusters)
+    for_each = setsubtract(toset(var.sweepable_clusters), [var.cluster_name])
     content {
       sid       = "InfraOrphanSweepTerminateKarpenter${replace(title(replace(statement.value, "-", " ")), " ", "")}"
       effect    = "Allow"

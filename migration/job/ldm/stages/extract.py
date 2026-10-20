@@ -91,7 +91,24 @@ def _command_unload(
     env["LDM_LRECL"] = str(ts.config.record_length)
     out.parent.mkdir(parents=True, exist_ok=True)
     try:
-        proc = subprocess.run(argv, env=env, capture_output=True, text=True, cwd=str(ctx.loaded.repo_root))
+        timeout_s = int(ctx.env.get("LDM_UNLOAD_TIMEOUT_S") or os.environ.get("LDM_UNLOAD_TIMEOUT_S") or "3600")
+    except ValueError as e:
+        raise ConfigError("LDM_UNLOAD_TIMEOUT_S must be an integer number of seconds") from e
+    # A hung unloader must not pin the Job forever: bound it and fail the range so a restart can redo it.
+    try:
+        proc = subprocess.run(
+            argv,
+            env=env,
+            capture_output=True,
+            text=True,
+            cwd=str(ctx.loaded.repo_root),
+            timeout=timeout_s if timeout_s > 0 else None,
+        )
+    except subprocess.TimeoutExpired as e:
+        raise UnloadError(
+            f"unload command timed out after {timeout_s}s for {ts.name} range {rng.range_seq} "
+            f"(LDM_UNLOAD_TIMEOUT_S; killed pid): {e}"
+        ) from e
     except (FileNotFoundError, PermissionError) as e:
         raise ConfigError(
             f"unload_command {argv[0]!r} is not executable ({e.strerror}); install the UNLOAD01 wrapper "

@@ -12,7 +12,7 @@
 import configparser
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import boto3
 
@@ -31,6 +31,8 @@ def main():
     file_storage_bucket = config.get("s3", "file_storage_bucket")
     quarantine_bucket = config.get("s3", "quarantine_bucket")
     data_lake_bucket = config.get("s3", "data_lake_bucket")
+    # Uploads land in S3 before their metadata row is written; never treat fresh objects as orphans.
+    orphan_min_age_hours = config.getint("s3", "orphan_min_age_hours", fallback=24)
 
     files_prefix = "files/"
     quarantine_prefix = "quarantined"
@@ -59,6 +61,7 @@ def main():
                 "key": obj["Key"],
                 "size": obj["Size"],
                 "last_modified": obj["LastModified"].isoformat(),
+                "last_modified_at": obj["LastModified"],
             })
 
     total_objects = len(all_objects)
@@ -102,14 +105,30 @@ def main():
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"), len(referenced_keys)
     ))
 
+    if total_objects and not referenced_keys:
+        print("[%s] ERROR: metadata scan returned no s3_key references for %d objects; refusing to quarantine the entire bucket" % (
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"), total_objects
+        ))
+        sys.exit(1)
+
     # ---- Find orphaned objects ----
     orphaned = []
     orphaned_bytes = 0
+    skipped_recent = 0
+    orphan_cutoff = datetime.now(tz=timezone.utc) - timedelta(hours=orphan_min_age_hours)
 
     for obj in all_objects:
         if obj["key"] not in referenced_keys:
+            if obj["last_modified_at"] > orphan_cutoff:
+                skipped_recent += 1
+                continue
             orphaned.append(obj)
             orphaned_bytes += obj["size"]
+
+    if skipped_recent:
+        print("[%s] Skipped %d unreferenced objects newer than %d hours" % (
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"), skipped_recent, orphan_min_age_hours
+        ))
 
     orphaned_count = len(orphaned)
 
@@ -181,6 +200,7 @@ def main():
         "cleanup": {
             "objects_quarantined": moved_count,
             "objects_failed": failed_count,
+            "unreferenced_objects_within_grace_period": skipped_recent,
             "quarantine_bucket": quarantine_bucket,
         },
         "savings": {

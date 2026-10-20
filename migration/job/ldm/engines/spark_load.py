@@ -127,13 +127,17 @@ def sink_partition(job: RangeJob, spec: TargetSpec, records: Iterable[Routed]) -
     target.register_table(job.table, list(job.key_columns), [], list(job.columns))
     target.connect()
     loaded = rejected = 0
+    batch_no = 0
     batch: list[StagedRow] = []
     rejects: list[Reject] = []
     try:
 
         def flush() -> None:
-            nonlocal loaded, rejected
+            nonlocal loaded, rejected, batch_no
             if batch:
+                batch_no += 1
+                for r in batch:
+                    r.batch_no = batch_no
                 failures: list[InsertFailure] = target.insert_staging(job.run_id, job.namespace, job.table, batch)
                 failed = {f.source_key for f in failures}
                 by_key = {r.source_key: r for r in batch}

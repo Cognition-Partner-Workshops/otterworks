@@ -108,11 +108,13 @@ class PostgresTarget:
         sslmode: str = "prefer",
         ldm_host: str = "local",
         connect_timeout: int = 30,
+        statement_timeout_ms: int = 600_000,
     ):
         self.pg_host, self.port, self.database = host, port, database
         self.user, self.password, self.sslmode = user, password, sslmode
         self.host = ldm_host
         self.connect_timeout = connect_timeout
+        self.statement_timeout_ms = statement_timeout_ms
         self._psycopg: ModuleType | None = None
         self._conn: object | None = None
         self.shapes: dict[str, _Shape] = {}
@@ -130,6 +132,9 @@ class PostgresTarget:
         return self._psycopg
 
     def conninfo(self) -> str:
+        # TCP keepalives + a statement deadline: a stalled RDS socket or runaway query must not
+        # hang the Job forever (libpq only bounds connect_timeout otherwise).
+        options = f"-c statement_timeout={self.statement_timeout_ms}" if self.statement_timeout_ms > 0 else ""
         return self.psycopg.conninfo.make_conninfo(
             host=self.pg_host,
             port=self.port,
@@ -138,6 +143,11 @@ class PostgresTarget:
             password=self.password,
             sslmode=self.sslmode,
             connect_timeout=self.connect_timeout,
+            keepalives=1,
+            keepalives_idle=60,
+            keepalives_interval=10,
+            keepalives_count=5,
+            options=options,
             application_name="ldm",
         )
 
@@ -490,7 +500,7 @@ class PostgresTarget:
 
     def _staging_params(self, run_id: str, namespace: str, row: StagedRow, shape: _Shape) -> list[object]:
         seq = row.key_range_seq if row.key_range_seq is not None else 0
-        out: list[object] = [run_id, namespace, row.source_key, seq, 0, row.raw_bytes]
+        out: list[object] = [run_id, namespace, row.source_key, seq, row.batch_no, row.raw_bytes]
         for spec in shape.specs:
             v = row.values[spec.name]
             if spec.kind == "timestamp12" and isinstance(v, Timestamp12):

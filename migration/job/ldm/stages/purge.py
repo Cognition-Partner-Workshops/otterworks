@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import random
 import time
 
 from ..context import RunContext, TableSpec
 from ..errors import LdmError, PurgeGuardError, SourceError
 
 _sleep = time.sleep
+_jitter = random.uniform
 
 # Source SQLSTATEs for which the rolled-back batch is retried: 57011 transaction log full (Db2 SQL0964C),
 # 57033 lock timeout without automatic rollback, 40001 deadlock / lock-timeout rollback. A driver that knows
@@ -37,7 +39,10 @@ def _purge_batch_with_retry(ctx: RunContext, ts: TableSpec, chunk: list[str], ba
             ctx.target.set_purge_audit_status(ctx.run_id, ctx.namespace, ts.name, chunk, "ROLLED_BACK")
             if attempt >= attempts or not is_transient(e):
                 raise
-            delay = min(m.batch.purge_retry_backoff_s * 2**attempt, m.batch.purge_retry_max_backoff_s)
+            # Full jitter inside the exponential cap: concurrent runs purging the same contended
+            # source tables must not re-collide on identical deterministic delays.
+            cap = min(m.batch.purge_retry_backoff_s * 2**attempt, m.batch.purge_retry_max_backoff_s)
+            delay = _jitter(0.0, cap)
             ctx.log.warn(
                 f"batch {batch_no} rolled back by source (SQLCODE={e.sqlcode} SQLSTATE={e.sqlstate}); "
                 f"retry {attempt + 1}/{attempts} in {delay:g}s",

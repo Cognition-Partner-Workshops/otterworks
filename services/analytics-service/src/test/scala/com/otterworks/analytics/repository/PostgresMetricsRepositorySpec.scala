@@ -161,3 +161,13 @@ class PostgresMetricsRepositorySpec extends AnyFlatSpec with Matchers with Scala
     val pg2 = new PostgresMetricsRepository(database)
     pg2.getEventCount.futureValue shouldBe before
   }
+
+  it should "store a redelivered event once and count it once in the rollup" in {
+    val database = requireDb()
+    val pg = new PostgresMetricsRepository(database)
+    val event = seed.head
+    Await.result(pg.storeEvent(event), 10.seconds)
+    Await.result(pg.storeEvent(event), 10.seconds)
+    pg.getEventCount.futureValue shouldBe 1L
+    pg.getDailyMetrics.futureValue.map(_.eventCount).sum shouldBe 1L
+  }

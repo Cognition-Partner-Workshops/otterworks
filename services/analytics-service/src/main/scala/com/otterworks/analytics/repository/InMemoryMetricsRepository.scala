@@ -19,13 +19,14 @@ class InMemoryMetricsRepository(config: PostgresConfig)(using ec: ExecutionConte
   private val logger = LoggerFactory.getLogger(getClass)
 
   private val events = mutable.ListBuffer.empty[AnalyticsEvent]
+  private val eventIds = mutable.HashSet.empty[String]
   private val lock = new Object
 
   private def snapshot(): Seq[AnalyticsEvent] = lock.synchronized(events.toSeq)
 
   def storeEvent(event: AnalyticsEvent): Future[Unit] = Future {
     lock.synchronized {
-      events += event
+      if eventIds.add(event.eventId) then events += event
     }
     logger.debug("Stored event {} of type {}", event.eventId, event.eventType)
   }
