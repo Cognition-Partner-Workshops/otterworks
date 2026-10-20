@@ -1,0 +1,56 @@
+{
+  "policies": [
+    {
+      "policy_no": "POL-2025-0001",
+      "product_code": "AUTO-STD",
+      "product_name": "Standard Auto",
+      "line_of_business": "AUTO",
+      "holder_name": "Chen Household",
+      "annual_premium": "1800.00",
+      "issued_date": "2025-02-10",
+      "status": "IN_FORCE"
+    },
+    {
+      "policy_no": "POL-2025-0002",
+      "product_code": "HOME-PLUS",
+      "product_name": "HomeOwners Plus",
+      "line_of_business": "HOME",
+      "holder_name": "Robinson Family",
+      "annual_premium": "2400.00",
+      "issued_date": "2025-03-05",
+      "status": "IN_FORCE"
+    },
+    {
+      "policy_no": "POL-2025-0003",
+      "product_code": "TERM-20",
+      "product_name": "20-Year Term Life",
+      "line_of_business": "LIFE",
+      "holder_name": "S. Gutierrez",
+      "annual_premium": "1200.00",
+      "issued_date": "2025-04-20",
+      "status": "IN_FORCE"
+    },
+    {
+      "policy_no": "POL-2025-0004",
+      "product_code": "AUTO-STD",
+      "product_name": "Standard Auto",
+      "line_of_business": "AUTO",
+      "holder_name": "Kowalski LLC Fleet",
+      "annual_premium": "9600.00",
+      "issued_date": "2025-05-01",
+      "status": "IN_FORCE"
+    },
+    {
+      "policy_no": "POL-2025-0005",
+      "product_code": "HOME-PLUS",
+      "product_name": "HomeOwners Plus",
+      "line_of_business": "HOME",
+      "holder_name": "Ncube Residence",
+      "annual_premium": "2000.00",
+      "issued_date": "2025-05-15",
+      "status": "LAPSED"
+    }
+  ],
+  "total": 5,
+  "source": "services/industry-solutions/insurance/db/oltp/02_seed.sql"
+}

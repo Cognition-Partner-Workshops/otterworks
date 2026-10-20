@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtterWorks.Desktop", "..\..\..\clients\windows-desktop\OtterWorks.Desktop\OtterWorks.Desktop.csproj", "{C2134033-06DD-413E-8435-6DC4A70AA563}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thistlecombe.AgentDesktop", "Thistlecombe.AgentDesktop\Thistlecombe.AgentDesktop.csproj", "{32DDA4FA-3836-4585-8647-DF8B88E38619}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thistlecombe.AgentDesktop.Tests", "Thistlecombe.AgentDesktop.Tests\Thistlecombe.AgentDesktop.Tests.csproj", "{3E736FDF-C943-4A66-B010-367AA402F141}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C2134033-06DD-413E-8435-6DC4A70AA563}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2134033-06DD-413E-8435-6DC4A70AA563}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2134033-06DD-413E-8435-6DC4A70AA563}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2134033-06DD-413E-8435-6DC4A70AA563}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32DDA4FA-3836-4585-8647-DF8B88E38619}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32DDA4FA-3836-4585-8647-DF8B88E38619}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32DDA4FA-3836-4585-8647-DF8B88E38619}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32DDA4FA-3836-4585-8647-DF8B88E38619}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E736FDF-C943-4A66-B010-367AA402F141}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E736FDF-C943-4A66-B010-367AA402F141}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E736FDF-C943-4A66-B010-367AA402F141}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E736FDF-C943-4A66-B010-367AA402F141}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

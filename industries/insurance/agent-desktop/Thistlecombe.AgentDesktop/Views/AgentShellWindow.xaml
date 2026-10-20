@@ -1,0 +1,44 @@
+<Window x:Class="Thistlecombe.AgentDesktop.Views.AgentShellWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Thistlecombe Mutual · Agent Desktop" Height="640" Width="960"
+        Icon="{StaticResource ThistlecombeMark}"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource ShellBackgroundBrush}">
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Background="{StaticResource AccentBrush}" Padding="18,8">
+            <Grid>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="{StaticResource ThistlecombeMark}" Width="36" Height="36" />
+                    <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Thistlecombe Mutual" Foreground="White" FontSize="18" FontWeight="Bold" />
+                        <TextBlock Text="Agent Desktop" Foreground="{StaticResource GoldLightBrush}" FontSize="12" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="28,0,0,0" VerticalAlignment="Center"
+                                Visibility="{Binding IsAuthenticated, Converter={StaticResource BoolToVisibility}}">
+                        <RadioButton Content="Policies" GroupName="Nav" Style="{StaticResource NavTab}"
+                                     IsChecked="{Binding IsPoliciesSection}" />
+                        <RadioButton Content="Claims" GroupName="Nav" Style="{StaticResource NavTab}"
+                                     IsChecked="{Binding IsClaimsSection}" />
+                        <RadioButton Content="Documents" GroupName="Nav" Style="{StaticResource NavTab}"
+                                     IsChecked="{Binding IsDocumentsSection}" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Visibility="{Binding IsAuthenticated, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Foreground="White" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <Run Text="Signed in as " />
+                        <Run Text="{Binding CurrentUserName, Mode=OneWay}" FontWeight="SemiBold" />
+                    </TextBlock>
+                    <Button Content="Sign out" Style="{StaticResource HeaderButton}" Command="{Binding SignOutCommand}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+        <Border DockPanel.Dock="Top" Height="3" Background="{StaticResource GoldBrush}" />
+        <Border DockPanel.Dock="Bottom" Padding="18,6" BorderBrush="#E4DED0" BorderThickness="0,1,0,0">
+            <TextBlock Text="Thistlecombe Mutual Insurance Company · Home, auto and life insurance, with claims handled in-house"
+                       Foreground="{StaticResource MutedBrush}" FontSize="11" />
+        </Border>
+
+        <ContentControl Content="{Binding CurrentContent}" />
+    </DockPanel>
+</Window>

@@ -1,0 +1,48 @@
+<UserControl x:Class="Thistlecombe.AgentDesktop.Views.ClaimsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,14">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="Claims" FontSize="22" FontWeight="Bold" Foreground="#111827" />
+                <TextBlock Text="{Binding Summary}" Foreground="{StaticResource MutedBrush}"
+                           VerticalAlignment="Bottom" Margin="12,0,0,3" />
+            </StackPanel>
+            <Button Content="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Right"
+                    Style="{StaticResource SecondaryButton}" />
+        </Grid>
+
+        <Border Grid.Row="1" Background="White" CornerRadius="8" BorderBrush="#E5E7EB" BorderThickness="1" Padding="1">
+            <DataGrid ItemsSource="{Binding Rows}" Style="{StaticResource LedgerGrid}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Claim" Binding="{Binding ClaimNumber}" Width="150"
+                                        ElementStyle="{StaticResource CodeCell}" />
+                    <DataGridTextColumn Header="Policy" Binding="{Binding PolicyNumber}" Width="140"
+                                        ElementStyle="{StaticResource CodeCell}" />
+                    <DataGridTextColumn Header="Loss date" Binding="{Binding LossDate}" Width="100" />
+                    <DataGridTextColumn Header="Cause" Binding="{Binding CauseText}" Width="*" />
+                    <DataGridTextColumn Header="Reserve" Binding="{Binding ReserveText}" Width="120"
+                                        ElementStyle="{StaticResource MoneyCell}"
+                                        HeaderStyle="{StaticResource MoneyHeader}" />
+                    <DataGridTemplateColumn Header="Status" Width="170" CellTemplate="{StaticResource StatusCell}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <StackPanel Grid.Row="2" Margin="0,10,0,0">
+            <TextBlock Text="Reserve rounded half to even to the cent (.NET Math.Round in the triage rule). Status is the triage outcome. Source: claims hub FNOL corpus."
+                       Foreground="{StaticResource MutedBrush}" FontSize="11" />
+            <ProgressBar IsIndeterminate="True" Height="3" BorderThickness="0" Margin="0,6,0,0"
+                         Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap"
+                       Margin="0,6,0,0"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibility}}" />
+        </StackPanel>
+    </Grid>
+</UserControl>
