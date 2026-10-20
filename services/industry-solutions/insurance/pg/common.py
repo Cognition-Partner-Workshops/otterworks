@@ -44,11 +44,10 @@ RATES = "commission_pay.commission_rates"
 UNROUNDED = "l.base_premium / 12 * r.rate_pct / 100 * l.split_pct / 100"
 
 
-def oracle_connect() -> oracledb.Connection:
+def oracle_connect(user: str = "commission_dw") -> oracledb.Connection:
+    """COMMISSION_DW by default: it owns the warehouse and can read the OLTP schema."""
     port = os.environ.get("INSURANCE_DB_PORT", "51521")
-    # COMMISSION_DW owns the warehouse and holds SELECT on the OLTP schema.
-    return oracledb.connect(user="commission_dw", password="commission_dw",
-                            dsn=f"127.0.0.1:{port}/FREEPDB1")
+    return oracledb.connect(user=user, password=user, dsn=f"127.0.0.1:{port}/FREEPDB1")
 
 
 def pg_connect(user: str = "commission_dw") -> psycopg.Connection:
