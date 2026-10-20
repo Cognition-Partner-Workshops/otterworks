@@ -47,29 +47,44 @@ def test_audit_event_query_reports_export_and_archive(api_client):
     )
     assert user_report_response.status_code == 200, user_report_response.text
 
+    # Audit data is scoped to the caller: another authenticated user is refused.
+    other_user = api_client.register_user("audit-flow-other")
+    cross_user_report = api_client.client.get(
+        f"/api/v1/audit/reports/user/{user.id}",
+        headers=other_user.auth_headers,
+        params={"period": "30d"},
+    )
+    assert cross_user_report.status_code == 403, cross_user_report.text
+
+    cross_user_event = api_client.client.get(
+        f"/api/v1/audit/events/{event_id}", headers=other_user.auth_headers
+    )
+    assert cross_user_event.status_code == 404, cross_user_event.text
+
+    cross_user_query = api_client.client.get(
+        "/api/v1/audit/events",
+        headers=other_user.auth_headers,
+        params={"user_id": user.id},
+    )
+    assert cross_user_query.status_code == 403, cross_user_query.text
+
+    # Org-wide reports, export and archive are admin-only; a self-registered USER is refused.
     compliance_response = api_client.client.get(
         "/api/v1/audit/reports/compliance",
         headers=user.auth_headers,
         params={"period": "30d"},
     )
-    assert compliance_response.status_code == 200, compliance_response.text
+    assert compliance_response.status_code == 403, compliance_response.text
 
     export_response = api_client.client.get(
         "/api/v1/audit/export",
         headers=user.auth_headers,
         params={"format": "json"},
     )
-    assert export_response.status_code == 200, export_response.text
-
-    invalid_export = api_client.client.get(
-        "/api/v1/audit/export",
-        headers=user.auth_headers,
-        params={"format": "xml"},
-    )
-    assert invalid_export.status_code == 400
+    assert export_response.status_code == 403, export_response.text
 
     archive_response = api_client.client.post("/api/v1/audit/archive", headers=user.auth_headers)
-    assert archive_response.status_code == 200, archive_response.text
+    assert archive_response.status_code == 403, archive_response.text
 
 
 def test_analytics_event_ingestion_queries_and_export(api_client):
