@@ -1,0 +1,30 @@
+app: statements-web
+owner: retail-statements
+costCenter: BANK-W1-0001
+# One replica: the last viewed account lives in the HTTP session, which the
+# VMs kept with a load-balancer cookie. Scale out only with ingress affinity.
+replicas: 1
+env:
+  STATEMENTS_BANK_NAME: Halvergate Bank
+  STATEMENTS_PAGE_SIZE: "50"
+  STATEMENTS_DB_URL: jdbc:postgresql://wave1-db:5432/bankwave
+  STATEMENTS_DB_USER: statements_app
+secretEnv:
+  STATEMENTS_DB_PASSWORD:
+    secret: statements-web-db
+    key: password
+# Tomcat writes its work, temp and session files here; logs/ stays empty.
+writablePaths:
+  - /tmp
+  - /usr/local/tomcat/work
+  - /usr/local/tomcat/temp
+  - /usr/local/tomcat/logs
+probes:
+  enabled: false
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

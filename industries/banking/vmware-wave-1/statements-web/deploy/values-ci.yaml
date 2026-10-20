@@ -1,0 +1,3 @@
+# kind run: the seeded PostgreSQL from kind-deps/.
+env:
+  STATEMENTS_DB_URL: jdbc:postgresql://postgres.deps.svc.cluster.local:5432/bankwave

@@ -1,0 +1,50 @@
+# Throwaway PostgreSQL for the kind run, loaded with data/seed.sql (copy in
+# seed-configmap.yaml; the characterization tests check the two match).
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-kind
+type: Opaque
+stringData:
+  password: kind-only-statements-pw
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: postgres}
+  template:
+    metadata:
+      labels: {app: postgres}
+    spec:
+      containers:
+        - name: postgres
+          image: docker.io/library/postgres:16-alpine
+          env:
+            - {name: POSTGRES_DB, value: bankwave}
+            - {name: POSTGRES_USER, value: statements_app}
+            - name: POSTGRES_PASSWORD
+              valueFrom: {secretKeyRef: {name: postgres-kind, key: password}}
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-h", "127.0.0.1", "-U", "statements_app", "-d", "bankwave"]
+            periodSeconds: 3
+          volumeMounts:
+            - {name: seed, mountPath: /docker-entrypoint-initdb.d, readOnly: true}
+      volumes:
+        - name: seed
+          configMap: {name: postgres-seed}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector: {app: postgres}
+  ports:
+    - port: 5432

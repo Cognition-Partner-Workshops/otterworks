@@ -1,0 +1,9 @@
+# Pipeline settings read by .github/workflows/platform-app-pipeline.yml
+app: statements-web
+smoke:
+  - path: /statements/accounts
+    expect: 200
+  - path: /statements/statement?account=HG611000001
+    expect: 200
+  - path: /statements/statement?account=bad
+    expect: 400
