@@ -4,7 +4,8 @@
 -- of closed_at and the last payment value date on each claim. REOPENED and
 -- OPEN claims never qualify. The claim, payment and assignment records stay
 -- (amounts, dates, causes); only the personal fields are set to NULL.
--- loss_state lets the carrier run a different period per state.
+-- loss_state lets the carrier run a different period per state; a claimant
+-- with claims in more than one state is left to a run without loss_state.
 
 -- clock_start is NULL unless the claim is closed.
 CREATE VIEW claims.v_claim_retention AS
@@ -35,14 +36,18 @@ BEGIN
     eligible := format(
         'SELECT k.claimant_id FROM claims.claimant k'
         || ' WHERE k.pii_purged_at IS NULL'
-        || '   AND EXISTS (SELECT 1 FROM claims.claim c WHERE c.claimant_id = k.claimant_id%s)'
+        || '   AND EXISTS (SELECT 1 FROM claims.claim c WHERE c.claimant_id = k.claimant_id)%s'
         || '   AND NOT EXISTS (SELECT 1 FROM claims.v_claim_retention r WHERE r.claimant_id = k.claimant_id'
         || '        AND (r.clock_start IS NULL OR r.legal_hold'
-        || '             OR r.clock_start > ($1 - make_interval(years => %s))::date))',
-        CASE WHEN loss_state IS NULL THEN '' ELSE format(' AND c.loss_state = %L', loss_state) END,
+        || '             OR r.clock_start + make_interval(years => %s) > $1))',
+        CASE WHEN loss_state IS NULL THEN '' ELSE format(
+            ' AND NOT EXISTS (SELECT 1 FROM claims.claim o WHERE o.claimant_id = k.claimant_id'
+            || ' AND o.loss_state IS DISTINCT FROM %L)', loss_state) END,
         retention_years);
 
     IF NOT dry_run THEN
+        -- Hold eligibility still while the four statements below run.
+        LOCK TABLE claims.claim, claims.payment IN SHARE MODE;
         EXECUTE format('SELECT array_agg(claimant_id) FROM (%s) e', eligible) INTO ids USING as_of;
     END IF;
 

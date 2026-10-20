@@ -31,7 +31,7 @@ SELECT p.claimant_id,
        CASE WHEN claims_api.sees_pii() THEN p.tax_id ELSE compliance.mask_tax_id(p.tax_id) END AS tax_id,
        CASE WHEN claims_api.sees_pii() THEN p.date_of_birth::text ELSE compliance.mask_date(p.date_of_birth) END AS date_of_birth,
        CASE WHEN claims_api.sees_pii() THEN p.phone ELSE compliance.mask_phone(p.phone) END AS phone,
-       CASE WHEN claims_api.sees_pii() THEN p.email ELSE compliance.mask_keep_last(p.email, 0) END AS email,
+       CASE WHEN claims_api.sees_pii() THEN p.email ELSE CASE WHEN p.email IS NOT NULL THEN '[redacted]' END END AS email,
        CASE WHEN claims_api.sees_pii() THEN concat_ws(', ', p.street, p.city, p.state || ' ' || p.postal_code)
             ELSE concat_ws(', ', compliance.mask_street(p.street), p.city, p.state || ' ' || p.postal_code) END AS address,
        CASE WHEN claims_api.sees_pii() THEN p.bank_account ELSE compliance.mask_account(p.bank_account) END AS bank_account,

@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: claims_owner
       POSTGRES_PASSWORD: claims_owner
     ports:
-      - "${CLAIMS_PG_PORT:-55432}:5432"
+      - "127.0.0.1:${CLAIMS_PG_PORT:-55432}:5432"
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "claims_owner", "-d", "claims"]
       interval: 2s

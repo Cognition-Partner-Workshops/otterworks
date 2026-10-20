@@ -61,7 +61,7 @@ CREATE TABLE claims.payment_line (
     instruction_id text NOT NULL REFERENCES claims.payment,
     line_no        int  NOT NULL,
     line_type      text NOT NULL,
-    amount         numeric(12, 2) NOT NULL,
+    amount         numeric(15, 4) NOT NULL,  -- corpus carries sub-cent lines (0.015, 1234.565)
     gl_account     text,
     memo           text,
     PRIMARY KEY (instruction_id, line_no)
@@ -89,6 +89,6 @@ CREATE TRIGGER trg_aud_claimant AFTER INSERT OR UPDATE OR DELETE ON claims.claim
 CREATE TRIGGER trg_aud_claim AFTER INSERT OR UPDATE OR DELETE ON claims.claim
     FOR EACH ROW EXECUTE FUNCTION compliance.audit_row_change_trg('claim_number');
 CREATE TRIGGER trg_aud_payment AFTER INSERT OR UPDATE OR DELETE ON claims.payment
-    FOR EACH ROW EXECUTE FUNCTION compliance.audit_row_change_trg('instruction_id', 'payee_name');
+    FOR EACH ROW EXECUTE FUNCTION compliance.audit_row_change_trg('instruction_id', 'payee_name', 'bank_account_masked');
 CREATE TRIGGER trg_aud_assignment AFTER INSERT OR UPDATE OR DELETE ON claims.assignment
     FOR EACH ROW EXECUTE FUNCTION compliance.audit_row_change_trg('request_id', 'claimant_name');
