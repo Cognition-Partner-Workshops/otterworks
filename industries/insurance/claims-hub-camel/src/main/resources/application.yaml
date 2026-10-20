@@ -2,7 +2,8 @@ spring:
   application:
     name: claims-hub-camel
   datasource:
-    # PostgreSQL 16 in place of the two WCF-SQL ports (usp_GetPolicyAsOf, usp_InsertClaim). Connections open on first use.
+    # PostgreSQL 16 in place of the WCF-SQL ports: usp_GetPolicyAsOf and usp_InsertClaim (FnolIntake),
+    # usp_GetAdjusterRoster (AdjusterAssignment). Connections open on first use.
     url: ${CLAIMS_DB_URL:jdbc:postgresql://localhost:5432/claimshub}
     username: ${CLAIMS_DB_USER:claimshub}
     password: ${CLAIMS_DB_PASSWORD:}
@@ -33,3 +34,11 @@ claimshub:
     completed-uri: log:fnol.completed
     suspended-uri: log:fnol.suspended?level=ERROR
     assignment-uri: log:assignment.request
+  archive:
+    # sp_Compliance_AssignmentArchive_FILE
+    dir: ${CLAIMS_ASSIGNMENT_ARCHIVE:target/assignment-archive}
+  smtp:
+    # sp_Adjuster_AssignmentNotice_SMTP
+    host: ${CLAIMS_SMTP_HOST:localhost}
+    port: ${CLAIMS_SMTP_PORT:1025}
+    from: claims-hub@thistlecombe.example
