@@ -41,4 +41,13 @@ class PostgresRateResolverTest {
     void sqlKeepsAgentRateAheadOfDefaultAndLatestFirst() {
         assertThat(PostgresRateResolver.SQL).contains("ORDER BY agent_id NULLS LAST, effective_from DESC LIMIT 1");
     }
+
+    @Test
+    void nullPeriodMatchesNoWindowAndRaisesOra20007() {
+        when(jdbc.queryForList(PostgresRateResolver.SQL, Long.class, "AUTO-STD", 1L, null, null))
+                .thenReturn(List.of());
+        assertThatThrownBy(() -> resolver.resolve("AUTO-STD", 1L, null))
+                .isInstanceOfSatisfying(OraException.class, e -> assertThat(e.oraCode()).isEqualTo(-20007))
+                .hasMessage("No rate in force for AUTO-STD/agent 1 on ");
+    }
 }

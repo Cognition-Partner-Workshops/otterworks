@@ -30,11 +30,13 @@ public class PostgresRateResolver implements RateResolver {
 
     @Override
     public long resolve(String productCode, Long agentId, LocalDateTime asOf) {
-        Timestamp ts = Timestamp.valueOf(asOf);
+        // A NULL period gives a NULL as-of date: no window matches, as in the package.
+        Timestamp ts = (asOf == null ? null : Timestamp.valueOf(asOf));
         List<Long> ids = jdbc.queryForList(SQL, Long.class, productCode, agentId, ts, ts);
         if (ids.isEmpty()) {
             throw new OraException(-20007, "No rate in force for " + productCode + "/agent "
-                    + (agentId == null ? "default" : agentId.toString()) + " on " + asOf.toLocalDate());
+                    + (agentId == null ? "default" : agentId.toString()) + " on "
+                    + (asOf == null ? "" : asOf.toLocalDate().toString()));
         }
         return ids.get(0);
     }
