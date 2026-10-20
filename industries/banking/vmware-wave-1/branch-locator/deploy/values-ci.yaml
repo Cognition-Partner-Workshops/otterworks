@@ -1,0 +1,5 @@
+# kind run: seeded PostgreSQL and the geocoder stub from kind-deps/.
+replicas: 1
+env:
+  DB_HOST: postgres.deps.svc.cluster.local
+  GEO_URL: http://geo.deps.svc.cluster.local:8090/geocode

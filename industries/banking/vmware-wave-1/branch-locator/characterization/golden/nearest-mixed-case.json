@@ -1,0 +1,34 @@
+{
+ "branches": [
+  {
+   "address": "12 Quay Street",
+   "closes": "16:30",
+   "km": 0.25,
+   "lat": 10.012,
+   "lon": -30.021,
+   "name": "Harbour Point",
+   "opens": "08:30"
+  },
+  {
+   "address": "3 Market Square",
+   "closes": "16:30",
+   "km": 2.97,
+   "lat": 10.034,
+   "lon": -30.008,
+   "name": "Market Square",
+   "opens": "08:30"
+  },
+  {
+   "address": "21 Pine Avenue",
+   "closes": "16:30",
+   "km": 5.36,
+   "lat": 9.968,
+   "lon": -30.044,
+   "name": "Hillcrest",
+   "opens": "08:30"
+  }
+ ],
+ "lat": 10.01,
+ "lon": -30.02,
+ "query": "Harbour Point"
+}

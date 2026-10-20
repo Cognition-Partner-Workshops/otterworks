@@ -1,0 +1,27 @@
+app: branch-locator
+owner: OWNER-TO-FILL
+costCenter: COST-CENTER-TO-FILL
+# Stateless: every request reads branches from PostgreSQL and asks the geocoder.
+replicas: 2
+env:
+  DB_HOST: wave1-db
+  DB_NAME: bankwave
+  DB_USER: branch_app
+  GEO_URL: http://geo.bank.internal:8090/geocode
+  # Zone the open_now flag is computed in; the VM used the host clock (UTC).
+  BRANCH_TZ: UTC
+  WEB_CONCURRENCY: "2"
+secretEnv:
+  DB_PASSWORD:
+    secret: branch-locator-db
+    key: password
+# gunicorn keeps its worker heartbeat files here; nothing else is written.
+writablePaths:
+  - /tmp
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
