@@ -434,7 +434,7 @@ def main() -> int:
                     "difference": f"**{sum(r['p_rows'] - r['o_rows'] for r in tables):+d} rows**",
                     "row_compare": "", "verdict": f"**{len(tables) - t_red}/{len(tables)} MATCH**"}
     std = ["unit", "source", "target", "difference", "verdict"]
-    hdr = ["Oracle 23ai Free", "PostgreSQL 16", "Difference", "Verdict"]
+    hdr = ["Oracle Free", "PostgreSQL 16", "Difference", "Verdict"]
     md = ["## Reconciliation: Commission Pay, Oracle → PostgreSQL 16", "",
           f"Overall: **{'ALL MATCH' if red == 0 else f'{red} RED ROW(S)'}**", "",
           "### Tables (one row per table; every row compared on its key and every column)", ""]
