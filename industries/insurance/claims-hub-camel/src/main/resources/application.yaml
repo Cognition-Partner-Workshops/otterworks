@@ -12,6 +12,9 @@ camel:
     main-run-controller: true
 claims:
   payment:
+    ledger:
+      # how long ops.PaymentHeld waits for the saga's compensation (Ledger.ReversePayment) to land
+      reversal-timeout: 30s
     inbox:
       # rp_ClaimsSystem_PaymentInstruction_FILE (\\CLAIMS-FS01\disbursements\out\PI-*.xml)
       enabled: true

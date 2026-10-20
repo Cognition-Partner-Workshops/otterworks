@@ -145,6 +145,7 @@ public class ClaimPaymentRoutes extends RouteBuilder {
 
         // sp_Ops_PaymentHeld_SMTP; runs after the saga has compensated, for an unreachable vendor or a refused file
         from(OPS_NOTIFY).routeId("ops.PaymentHeld")
+                .bean(LedgerReversals.class, "awaitReversal")
                 .process(e -> {
                     String instruction = e.getProperty(INSTRUCTION, String.class);
                     TrailerTotalsException refused = ObjectHelper.getException(TrailerTotalsException.class, e.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class));

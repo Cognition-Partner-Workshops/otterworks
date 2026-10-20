@@ -33,6 +33,10 @@ public final class OpsMail {
         return new Note("Payment held: " + claim, body);
     }
 
+    static String instructionId(String instruction) throws Exception {
+        return child(parse(instruction), "InstructionId");
+    }
+
     private static Element parse(String instruction) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
