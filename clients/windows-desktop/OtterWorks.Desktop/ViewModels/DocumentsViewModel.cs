@@ -12,9 +12,9 @@ namespace OtterWorks.Desktop.ViewModels
         private readonly OtterWorksApiClient _api;
         private readonly MainViewModel _main;
 
-        private string _newTitle;
-        private string _errorMessage;
-        private string _statusMessage;
+        private string? _newTitle;
+        private string? _errorMessage;
+        private string? _statusMessage;
         private bool _isBusy;
         private bool _hasLoaded;
 
@@ -36,23 +36,23 @@ namespace OtterWorks.Desktop.ViewModels
 
         public ObservableCollection<FileItem> Files { get; } = new ObservableCollection<FileItem>();
 
-        public string UserName => _main.CurrentUserName;
+        public string? UserName => _main.CurrentUserName;
 
         public bool IsEmpty => _hasLoaded && Documents.Count == 0 && !IsBusy;
 
-        public string NewTitle
+        public string? NewTitle
         {
             get => _newTitle;
             set => SetProperty(ref _newTitle, value);
         }
 
-        public string ErrorMessage
+        public string? ErrorMessage
         {
             get => _errorMessage;
             set => SetProperty(ref _errorMessage, value);
         }
 
-        public string StatusMessage
+        public string? StatusMessage
         {
             get => _statusMessage;
             set => SetProperty(ref _statusMessage, value);
@@ -86,7 +86,7 @@ namespace OtterWorks.Desktop.ViewModels
             IsBusy = true;
             try
             {
-                DocumentListResponse result = await _api.GetDocumentsAsync().ConfigureAwait(true);
+                DocumentListResponse? result = await _api.GetDocumentsAsync().ConfigureAwait(true);
                 Documents.Clear();
                 if (result?.Items != null)
                 {
@@ -116,7 +116,7 @@ namespace OtterWorks.Desktop.ViewModels
             IsBusy = true;
             try
             {
-                Document created = await _api.CreateDocumentAsync(NewTitle.Trim()).ConfigureAwait(true);
+                Document? created = await _api.CreateDocumentAsync(NewTitle!.Trim()).ConfigureAwait(true);
                 NewTitle = string.Empty;
                 if (created != null)
                 {
@@ -141,7 +141,7 @@ namespace OtterWorks.Desktop.ViewModels
             IsBusy = true;
             try
             {
-                FileListResponse result = await _api.GetFilesAsync().ConfigureAwait(true);
+                FileListResponse? result = await _api.GetFilesAsync().ConfigureAwait(true);
                 Files.Clear();
                 if (result?.Files != null)
                 {

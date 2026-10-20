@@ -1,10 +1,10 @@
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 using OtterWorks.Desktop.Models;
 
 namespace OtterWorks.Desktop.Services
@@ -12,7 +12,7 @@ namespace OtterWorks.Desktop.Services
     /// <summary>
     /// Thin REST client for the OtterWorks API gateway. Auth payloads are camelCase and
     /// document/file payloads are snake_case; each model carries explicit
-    /// <c>[JsonProperty]</c> attributes so a single serializer handles both shapes.
+    /// <c>[JsonPropertyName]</c> attributes so a single serializer handles both shapes.
     /// </summary>
     public class OtterWorksApiClient
     {
@@ -33,40 +33,40 @@ namespace OtterWorks.Desktop.Services
             _http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
         }
 
-        public async Task<AuthResponse> RegisterAsync(string displayName, string email, string password)
+        public async Task<AuthResponse?> RegisterAsync(string displayName, string email, string password)
         {
             var body = new RegisterRequest { DisplayName = displayName, Email = email, Password = password };
             return await PostAsync<AuthResponse>("/auth/register", body, authenticated: false)
                 .ConfigureAwait(false);
         }
 
-        public async Task<AuthResponse> LoginAsync(string email, string password)
+        public async Task<AuthResponse?> LoginAsync(string email, string password)
         {
             var body = new LoginRequest { Email = email, Password = password };
             return await PostAsync<AuthResponse>("/auth/login", body, authenticated: false)
                 .ConfigureAwait(false);
         }
 
-        public async Task<DocumentListResponse> GetDocumentsAsync(int page = 1, int size = 50)
+        public async Task<DocumentListResponse?> GetDocumentsAsync(int page = 1, int size = 50)
         {
             string path = $"/documents?page={page}&size={size}";
             return await GetAsync<DocumentListResponse>(path).ConfigureAwait(false);
         }
 
-        public async Task<Document> CreateDocumentAsync(string title)
+        public async Task<Document?> CreateDocumentAsync(string title)
         {
             var body = new CreateDocumentRequest { Title = title };
             return await PostAsync<Document>("/documents", body, authenticated: true)
                 .ConfigureAwait(false);
         }
 
-        public async Task<FileListResponse> GetFilesAsync(int page = 1, int pageSize = 50)
+        public async Task<FileListResponse?> GetFilesAsync(int page = 1, int pageSize = 50)
         {
             string path = $"/files?page={page}&page_size={pageSize}";
             return await GetAsync<FileListResponse>(path).ConfigureAwait(false);
         }
 
-        private async Task<T> GetAsync<T>(string path)
+        private async Task<T?> GetAsync<T>(string path)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, BuildUri(path)))
             {
@@ -75,11 +75,11 @@ namespace OtterWorks.Desktop.Services
             }
         }
 
-        private async Task<T> PostAsync<T>(string path, object body, bool authenticated)
+        private async Task<T?> PostAsync<T>(string path, object body, bool authenticated)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, BuildUri(path)))
             {
-                string json = JsonConvert.SerializeObject(body);
+                string json = JsonSerializer.Serialize(body, body.GetType(), ApiJson.Options);
                 request.Content = new StringContent(json, Encoding.UTF8, "application/json");
                 if (authenticated)
                 {
@@ -90,7 +90,7 @@ namespace OtterWorks.Desktop.Services
             }
         }
 
-        private async Task<T> SendAsync<T>(HttpRequestMessage request)
+        private async Task<T?> SendAsync<T>(HttpRequestMessage request)
         {
             HttpResponseMessage response;
             try
@@ -130,7 +130,7 @@ namespace OtterWorks.Desktop.Services
 
                 try
                 {
-                    return JsonConvert.DeserializeObject<T>(content);
+                    return JsonSerializer.Deserialize<T>(content, ApiJson.Options);
                 }
                 catch (JsonException)
                 {
@@ -160,16 +160,18 @@ namespace OtterWorks.Desktop.Services
             {
                 try
                 {
-                    JToken token = JToken.Parse(content);
-                    if (token.Type == JTokenType.Object)
+                    var parse = new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
+                    using (JsonDocument document = JsonDocument.Parse(content, parse))
                     {
-                        var obj = (JObject)token;
-                        foreach (string key in new[] { "message", "error", "detail" })
+                        if (document.RootElement.ValueKind == JsonValueKind.Object)
                         {
-                            JToken value = obj[key];
-                            if (value != null && value.Type != JTokenType.Null)
+                            foreach (string key in new[] { "message", "error", "detail" })
                             {
-                                return value.ToString();
+                                if (document.RootElement.TryGetProperty(key, out JsonElement value)
+                                    && value.ValueKind != JsonValueKind.Null)
+                                {
+                                    return Render(value);
+                                }
                             }
                         }
                     }
@@ -183,6 +185,30 @@ namespace OtterWorks.Desktop.Services
             }
 
             return $"Request failed with status {(int)statusCode} ({statusCode}).";
+        }
+
+        /// <summary>
+        /// Renders an error value the way the .NET Framework build showed it: strings bare,
+        /// booleans as True/False, numbers in the current culture, objects and arrays as
+        /// indented JSON.
+        /// </summary>
+        private static string Render(JsonElement value)
+        {
+            switch (value.ValueKind)
+            {
+                case JsonValueKind.String:
+                    return value.GetString() ?? string.Empty;
+                case JsonValueKind.True:
+                    return bool.TrueString;
+                case JsonValueKind.False:
+                    return bool.FalseString;
+                case JsonValueKind.Number:
+                    return value.TryGetInt64(out long whole)
+                        ? whole.ToString(CultureInfo.CurrentCulture)
+                        : value.GetDouble().ToString(CultureInfo.CurrentCulture);
+                default:
+                    return JsonSerializer.Serialize(value, ApiJson.Indented);
+            }
         }
     }
 }
