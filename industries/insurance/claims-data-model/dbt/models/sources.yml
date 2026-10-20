@@ -1,0 +1,47 @@
+version: 2
+
+sources:
+  - name: commission
+    description: Verbatim copies of the Oracle COMMISSION_PAY tables.
+    schema: commission
+    tables:
+      - name: agents
+        columns:
+          - name: agent_id
+            tests: [unique, not_null]
+      - name: products
+        columns:
+          - name: product_code
+            tests: [unique, not_null]
+      - name: policies
+        columns:
+          - name: policy_id
+            tests: [unique, not_null]
+      - name: commission_ledger
+        columns:
+          - name: ledger_id
+            tests: [unique, not_null]
+  - name: claims
+    description: The claims and policy data model seeded from the claims hub corpus and Commission Pay.
+    schema: claims
+    tables:
+      - name: policyholders
+        columns:
+          - name: policyholder_id
+            tests: [unique, not_null]
+      - name: policies
+        columns:
+          - name: policy_no
+            tests: [unique, not_null]
+      - name: claims
+        columns:
+          - name: claim_number
+            tests: [unique, not_null]
+      - name: claim_payments
+        columns:
+          - name: instruction_id
+            tests: [unique, not_null]
+      - name: adjuster_assignments
+        columns:
+          - name: request_id
+            tests: [unique, not_null]

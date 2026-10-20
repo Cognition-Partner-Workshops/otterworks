@@ -1,0 +1,8 @@
+.corpus/
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+logs/
+evidence/
+parity/REPORT.md
+parity/REPORT.json

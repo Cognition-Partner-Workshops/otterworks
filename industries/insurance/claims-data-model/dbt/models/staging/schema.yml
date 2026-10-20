@@ -1,0 +1,104 @@
+version: 2
+
+models:
+  - name: stg_commission__ledger
+    columns:
+      - name: ledger_id
+        tests: [unique, not_null]
+      - name: policy_id
+        tests:
+          - not_null
+          - relationships: {to: ref('stg_commission__policies'), field: policy_id}
+      - name: agent_id
+        tests:
+          - not_null
+          - relationships: {to: ref('stg_commission__agents'), field: agent_id}
+      - name: commission_amt
+        tests: [not_null, money_scale_2]
+      - name: base_premium
+        tests: [not_null, money_scale_2]
+    tests:
+      - unique_combination: {columns: [policy_id, agent_id, period_month]}
+  - name: stg_commission__agents
+    columns:
+      - name: agent_id
+        tests: [unique, not_null]
+  - name: stg_commission__policies
+    columns:
+      - name: policy_id
+        tests: [unique, not_null]
+      - name: annual_premium
+        tests: [not_null, money_scale_2]
+  - name: stg_commission__products
+    columns:
+      - name: product_code
+        tests: [unique, not_null]
+  - name: stg_claims__policies
+    columns:
+      - name: policy_no
+        tests: [unique, not_null]
+      - name: annual_premium
+        tests: [money_scale_2]
+      - name: deductible
+        tests: [money_scale_2]
+      - name: coverage_limit
+        tests: [money_scale_2]
+  - name: stg_claims__claims
+    columns:
+      - name: claim_number
+        tests: [unique, not_null]
+      - name: policy_no
+        tests:
+          - not_null
+          - relationships: {to: ref('stg_claims__policies'), field: policy_no}
+      - name: triage_outcome
+        tests:
+          - accepted_values:
+              values: [DECLINE_NOT_IN_FORCE, FRAUD_REVIEW, FAST_TRACK, LARGE_LOSS, STANDARD]
+      - name: estimated_amount
+        tests: [not_null, money_scale_2]
+      - name: net_exposure
+        tests: [not_null, money_scale_2]
+      - name: reserve_estimate
+        tests: [not_null, money_scale_2]
+  - name: stg_claims__claim_payments
+    columns:
+      - name: instruction_id
+        tests: [unique, not_null]
+      - name: claim_number
+        tests:
+          - not_null
+          - relationships: {to: ref('stg_claims__claims'), field: claim_number}
+      - name: net_amount
+        tests:
+          - not_null
+          - money_scale_2
+          - sum_equals:
+              name: ledger_net_equals_vendor_file_net
+              to: ref('stg_claims__claim_payments')
+              to_column: vendor_net_amount
+              config: {severity: warn}
+      - name: indemnity_amount
+        tests: [not_null, money_scale_2]
+      - name: expense_amount
+        tests: [not_null, money_scale_2]
+      - name: salvage_credit
+        tests: [not_null, money_scale_2]
+      - name: vendor_rounding_difference
+        tests:
+          - not_null
+          - money_scale_2
+          - sum_equals:
+              name: vendor_rounding_difference_closes_ledger_to_vendor_file
+              to: ref('stg_claims__claim_payments')
+              to_column: vendor_net_amount - net_amount
+  - name: stg_claims__adjuster_assignments
+    columns:
+      - name: request_id
+        tests: [unique, not_null]
+      - name: claim_number
+        tests:
+          - not_null
+          - relationships: {to: ref('stg_claims__claims'), field: claim_number}
+      - name: estimated_amount
+        tests: [not_null, money_scale_2]
