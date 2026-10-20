@@ -1,0 +1,132 @@
+{
+ "account_override_ignored": {
+  "body": "{\"queued\":true,\"text\":\"Your statement for ****0003 is ready to view.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "card_payment": {
+  "body": "{\"queued\":true,\"text\":\"Card payment of 12.40 on ****0001 at Corner Cafe.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "card_payment_fields_string": {
+  "body": "{\"error\":\"missing field: amount\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "card_payment_missing_amount": {
+  "body": "{\"error\":\"missing field: amount\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "card_payment_missing_merchant": {
+  "body": "{\"error\":\"missing field: merchant\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "card_payment_numeric_amount": {
+  "body": "{\"queued\":true,\"text\":\"Card payment of 12.4 on ****0001 at A {b}.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "empty_account": {
+  "body": "{\"error\":\"account and kind are required\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "empty_object": {
+  "body": "{\"error\":\"account and kind are required\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "extra_fields_ignored": {
+  "body": "{\"queued\":true,\"text\":\"Your statement for ****0003 is ready to view.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "four_char_account_not_masked": {
+  "body": "{\"queued\":true,\"text\":\"Your statement for AB12 is ready to view.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "json_array": {
+  "body": "{\"error\":\"account and kind are required\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "json_null": {
+  "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Bad Request</pre>\n</body>\n</html>\n",
+  "content_type": "text/html; charset=utf-8",
+  "status": 400
+ },
+ "json_string": {
+  "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Bad Request</pre>\n</body>\n</html>\n",
+  "content_type": "text/html; charset=utf-8",
+  "status": 400
+ },
+ "low_balance": {
+  "body": "{\"queued\":true,\"text\":\"The balance on ****0001 is below 100.00.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "low_balance_null_threshold": {
+  "body": "{\"error\":\"missing field: threshold\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "low_balance_zero_threshold": {
+  "body": "{\"queued\":true,\"text\":\"The balance on ****0001 is below 0.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "malformed_json": {
+  "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Bad Request</pre>\n</body>\n</html>\n",
+  "content_type": "text/html; charset=utf-8",
+  "status": 400
+ },
+ "missing_account": {
+  "body": "{\"error\":\"account and kind are required\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "missing_kind": {
+  "body": "{\"error\":\"account and kind are required\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "numeric_account": {
+  "body": "{\"queued\":true,\"text\":\"Your statement for ****5678 is ready to view.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "prototype_kind_constructor": {
+  "body": "{\"error\":\"t.replace is not a function\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "prototype_kind_toString": {
+  "body": "{\"error\":\"t.replace is not a function\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ },
+ "short_account_not_masked": {
+  "body": "{\"queued\":true,\"text\":\"Your statement for AB1 is ready to view.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "statement_ready_empty_fields": {
+  "body": "{\"queued\":true,\"text\":\"Your statement for ****0001 is ready to view.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "statement_ready_no_fields": {
+  "body": "{\"queued\":true,\"text\":\"Your statement for ****0001 is ready to view.\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 202
+ },
+ "unknown_kind": {
+  "body": "{\"error\":\"unknown notification kind: nope\"}",
+  "content_type": "application/json; charset=utf-8",
+  "status": 400
+ }
+}

@@ -1,0 +1,23 @@
+{
+ "card_payment": {
+  "body": {
+   "queued": true,
+   "text": "Card payment of 12.40 on ****0019 at Corner Cafe."
+  },
+  "status": 202
+ },
+ "low_balance": {
+  "body": {
+   "queued": true,
+   "text": "The balance on ****0019 is below 100.00."
+  },
+  "status": 202
+ },
+ "statement_ready": {
+  "body": {
+   "queued": true,
+   "text": "Your statement for ****0019 is ready to view."
+  },
+  "status": 202
+ }
+}
