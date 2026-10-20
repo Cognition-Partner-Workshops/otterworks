@@ -19,7 +19,7 @@ Who computed it: on the old side, Oracle's own calculation. On the new side, the
 
 **Screens: agent AG-101, before (Oracle) on the left, after (Java service on PostgreSQL 16) on the right**
 
-The screens in [#2130](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2130) were captured for **2026-03**, not 2025-06. 2026-03 is the only month the Java service has recalculated so far, and no 2025-06 screens exist. The 2025-06 figures are in the table above.
+**Period shown: 2026-03.** These are the screens from [#2130](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2130), as captured, with the same agent and period on both sides. 2026-03 is the only month the Java service has recalculated. Recapturing them for 2025-06 needs the Java recalculation of 2025-06 first. The 2025-06 figures are in the table above.
 
 | Before: Oracle | After: Java service on PostgreSQL 16 |
 |---|---|
@@ -35,10 +35,10 @@ Commission is premium ÷ 12 × rate × split, rounded to the cent. When the exac
 - **Option A: keep Oracle's rounding.** In a test of 1,600,080 premium/rate/split combinations, every amount came out the same as Oracle. This is what the PostgreSQL side uses today.
 - **Option B: exact half-up rounding.** 107 of the 1,600,080 amounts are one cent higher than Oracle. If a month that has already been paid is re-run, a booked amount can change by 0.01.
 
-**Recommendation: A for the cutover.** If finance wants B, treat it as a separate, dated policy change with its own cutover entry. **We need your decision.** Earlier decisions D-1 to D-3 are also still open: split percentages with more than two decimals, the penny difference when a policy's split rows are added up, and same-day rate corrections ([#2087](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2087)).
+**Decided: A.** The Java service keeps Oracle's rounding. B is recorded as a separate, dated policy change that finance can take later, with its own cutover entry. It is not part of this move. Earlier decisions D-1 to D-3 are also still open: split percentages with more than two decimals, the penny difference when a policy's split rows are added up, and same-day rate corrections ([#2087](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2087)).
 
 **Not done yet**
 - The new warehouse (dbt) has no models yet. Its month-end comparison with Oracle's pinned 2025 figures (2,328.31 for the year; AG-101 June 70.95) has not been run ([#2115](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2115), [#2132](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2132)).
-- The Java service has recalculated only 2026-03. It has not yet been run through the 1.6M rounding test.
+- The Java service has recalculated only 2026-03. It has not yet been run through the 1.6M rounding test, which it must pass now that A is decided. A 2025-06 screen recapture waits on the 2025-06 recalculation.
 - The error-code decision is still open, and two of the rule groups are not yet in the nightly check.
 - Nothing has merged. Oracle has not been switched off.
