@@ -1,7 +1,42 @@
 spring:
   application:
     name: claims-hub-camel
+  datasource:
+    # sp_ClaimsDb_LedgerPost_WcfSql (mssql://CLAIMS-SQL01//ClaimsLedger) becomes PostgreSQL 16.
+    url: ${CLAIMS_LEDGER_URL:jdbc:postgresql://localhost:5432/claimsledger}
+    username: ${CLAIMS_LEDGER_USER:claims_hub}
+    password: ${CLAIMS_LEDGER_PASSWORD:}
 camel:
   springboot:
     name: claims-hub
     main-run-controller: true
+claims:
+  payment:
+    inbox:
+      # rp_ClaimsSystem_PaymentInstruction_FILE (\\CLAIMS-FS01\disbursements\out\PI-*.xml)
+      enabled: true
+      directory: ${CLAIMS_PAYMENT_INBOX:disbursements/out}
+    vendor:
+      # sp_PaymentVendor_Remittance_SFTP
+      host: ${PAYVENDOR_SFTP_HOST:sftp.payvendor.example}
+      port: 22
+      username: thistlecombe-remit
+      private-key-file: ${PAYVENDOR_SFTP_KEY:keys/payvendor_ed25519}
+      known-hosts-file: ${PAYVENDOR_SFTP_KNOWN_HOSTS:keys/payvendor_known_hosts}
+      directory: inbound/thistlecombe
+      temporary-folder: tmp
+      # Loop_Deliver in ClaimPayment.odx: attempts < 3, delay new System.TimeSpan(0, 10, 0) after a failure
+      attempts: 3
+      retry-delay: 10m
+      window:
+        enabled: true
+        from: "22:00"
+        to: "05:30"
+        zone: ${CLAIMS_HUB_TIMEZONE:Europe/London}
+  ops:
+    # sp_Ops_PaymentHeld_SMTP
+    smtp:
+      host: ${CLAIMS_SMTP_HOST:smtp-relay.thistlecombe.example}
+      port: 25
+    to: claims-payments-ops@thistlecombe.example
+    from: claims-hub@thistlecombe.example

@@ -31,27 +31,27 @@ class ClaimPaymentVendorUnreachableTest extends ClaimPaymentTestSupport {
 
     @Test
     void threeAttemptsThenTheLedgerPostIsReversedWithTheSameDocumentThenOperationsIsMailed() throws Exception {
-        Exchange result = pay("PI-2026-880103");
+        Exchange result = pay("PI-2026-880109");
 
         List<Send> sftp = recorder.sftpSends();
         assertThat(sftp).hasSize(3);
-        assertThat(sftp).allSatisfy(s -> assertThat(s.ledgerAtSend()).containsExactly("PI-2026-880103:POST"));
+        assertThat(sftp).allSatisfy(s -> assertThat(s.ledgerAtSend()).containsExactly("PI-2026-880109:POST"));
         for (int i = 1; i < sftp.size(); i++) {
             assertThat((sftp.get(i).nanos() - sftp.get(i - 1).nanos()) / 1_000_000).as("delay before attempt %d", i + 1)
                     .isGreaterThanOrEqualTo(TEST_RETRY_DELAY_MS);
         }
 
-        List<Map<String, Object>> entries = ledgerEntries("PI-2026-880103");
+        List<Map<String, Object>> entries = ledgerEntries("PI-2026-880109");
         assertThat(entries).extracting(e -> e.get("entry_type")).containsExactly("POST", "REVERSAL");
         Map<String, Object> post = entries.get(0);
         Map<String, Object> reversal = entries.get(1);
         assertThat(reversal.get("document")).isEqualTo(post.get("document"));
         assertThat(((BigDecimal) reversal.get("net_amount")).negate()).isEqualByComparingTo((BigDecimal) post.get("net_amount"));
-        assertThat(((BigDecimal) post.get("net_amount"))).isEqualByComparingTo("9847.53");
+        assertThat(((BigDecimal) post.get("net_amount"))).isEqualByComparingTo("3913.30");
 
         List<Send> smtp = recorder.smtpSends();
         assertThat(smtp).hasSize(1);
-        assertThat(smtp.get(0).ledgerAtSend()).containsExactly("PI-2026-880103:POST", "PI-2026-880103:REVERSAL");
+        assertThat(smtp.get(0).ledgerAtSend()).containsExactly("PI-2026-880109:POST", "PI-2026-880109:REVERSAL");
         assertThat(smtp.get(0).nanos()).isGreaterThan(sftp.get(2).nanos());
 
         assertThat(OPS_SMTP.waitForIncomingEmail(5000, 1)).isTrue();
@@ -60,8 +60,8 @@ class ClaimPaymentVendorUnreachableTest extends ClaimPaymentTestSupport {
         assertThat(mails[0].getRecipients(Message.RecipientType.TO)).extracting(a -> ((InternetAddress) a).getAddress())
                 .containsExactly(OPS_MAILBOX);
         assertThat(mails[0].getFrom()).extracting(a -> ((InternetAddress) a).getAddress()).containsExactly(HUB_SENDER);
-        assertThat(mails[0].getSubject()).isEqualTo("Payment held: CLM-2026-100409");
-        assertThat(GreenMailUtil.getBody(mails[0])).contains("PI-2026-880103").contains("3 attempts");
+        assertThat(mails[0].getSubject()).isEqualTo("Payment held: CLM-2026-100411");
+        assertThat(GreenMailUtil.getBody(mails[0])).contains("PI-2026-880109").contains("3 attempts");
 
         assertThat(vendorFiles()).isEmpty();
         assertThat(result.getException()).as("the exception handler of PaymentTx handles VendorUnreachableException").isNull();
