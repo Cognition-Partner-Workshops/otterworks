@@ -45,15 +45,20 @@ INSURANCE_DB_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(
 INSURANCE_SVC_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(58000 + $(PROCS_PORT_OFFSET))")
 INSURANCE_ENV = NS=$(NS) INSURANCE_DB_PORT=$(INSURANCE_DB_PORT) INSURANCE_SVC_PORT=$(INSURANCE_SVC_PORT)
 INSURANCE_SQLPLUS = docker exec -i otterworks-insurance-$(NS)-insurance-oracle-1 sqlplus -s
+# Per-NS caller token shared by COMMISSION_PKG and commission-service; kept out
+# of git and removed by insurance-down.
+INSURANCE_TOKEN_FILE = .insurance-$(NS).caller-token
 
 insurance-up: procs-validate ## Start the Oracle insurance Commission Pay fixture and commission-service (NS=<namespace>)
-	$(INSURANCE_ENV) $(INSURANCE_COMPOSE) up -d --build --wait --wait-timeout 900
+	@test -s $(INSURANCE_TOKEN_FILE) || (umask 077 && openssl rand -hex 32 > $(INSURANCE_TOKEN_FILE))
+	COMMISSION_CALLER_TOKEN=$$(cat $(INSURANCE_TOKEN_FILE)) $(INSURANCE_ENV) $(INSURANCE_COMPOSE) up -d --build --wait --wait-timeout 900
 
 commission-service-test: ## Run the commission-service unit tests
 	cd services/commission-service && ./mvnw -q -B verify
 
 insurance-down: procs-validate ## Stop the Oracle insurance fixture and drop its data (NS=<namespace>)
 	$(INSURANCE_ENV) $(INSURANCE_COMPOSE) down -v
+	rm -f $(INSURANCE_TOKEN_FILE)
 
 insurance-test: procs-validate ## Run the Commission Pay OLTP + OLAP test suites (NS=<namespace>)
 	$(INSURANCE_SQLPLUS) commission_pay/commission_pay@localhost:1521/FREEPDB1 @/opt/oracle/scripts/insurance/tests/run_tests.sql

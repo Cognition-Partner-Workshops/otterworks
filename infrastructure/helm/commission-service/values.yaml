@@ -39,5 +39,7 @@ config: {}
 
 # Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
 # stringData), e.g. COMMISSION_DB_USER / COMMISSION_DB_PASSWORD. Populate at
-# deploy time; never commit values.
+# deploy time; never commit values. COMMISSION_CALLER_TOKEN must be set to the
+# token stored in COMMISSION_PAY.service_caller_token: without it every rule
+# endpoint answers 401.
 secrets: {}

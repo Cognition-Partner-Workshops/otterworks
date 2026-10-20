@@ -19,6 +19,13 @@ Oracle.
 
 ## Wire contract
 
+- Every request except `GET /actuator/health` must carry
+  `Authorization: Bearer <COMMISSION_CALLER_TOKEN>` (`common/CallerAuthFilter`), or it
+  gets 401 before any rule or audit row runs. The delegate reads the token from
+  `COMMISSION_PAY.service_caller_token`, which `db/startup/00_init.sh` writes from
+  the same variable on every boot; `make insurance-up` generates one per `NS`. With
+  no token configured the service refuses every rule call. The `actor` in a body is
+  the `p_actor` the package's caller passed, and only the delegate can send it.
 - DATE values travel as `TO_CHAR(d, 'YYYY-MM-DD HH24:MI:SS')`; NUMBER values travel
   as JSON strings produced by `TO_CHAR(n)` so no precision is lost.
 - Success is HTTP 200 with a JSON body. Any rejection is HTTP 422 with

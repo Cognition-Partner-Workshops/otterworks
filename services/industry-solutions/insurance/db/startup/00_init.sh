@@ -18,6 +18,32 @@
 
   SQL_DIR=/opt/oracle/scripts/insurance
 
+  # Bearer token COMMISSION_PKG presents to commission-service. Written on every
+  # boot so it always matches the token compose handed the service this run.
+  store_caller_token() {
+    local token="${COMMISSION_CALLER_TOKEN:-}"
+    if [[ ! "${token}" =~ ^[A-Za-z0-9._~+/=-]*$ ]]; then
+      echo "== COMMISSION_CALLER_TOKEN has characters outside [A-Za-z0-9._~+/=-]" >&2
+      return 1
+    fi
+    [ -n "${token}" ] || echo "== COMMISSION_CALLER_TOKEN is empty: commission-service will refuse the delegate" >&2
+    sqlplus -s "commission_pay/commission_pay@localhost:1521/FREEPDB1" <<SQL
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+SET FEEDBACK OFF VERIFY OFF DEFINE OFF
+CREATE TABLE IF NOT EXISTS service_caller_token (
+    service VARCHAR2(64)  PRIMARY KEY,
+    token   VARCHAR2(256)
+);
+MERGE INTO service_caller_token t
+USING (SELECT 'commission-service' AS service, '${token}' AS token FROM dual) s
+   ON (t.service = s.service)
+ WHEN MATCHED THEN UPDATE SET t.token = s.token
+ WHEN NOT MATCHED THEN INSERT (service, token) VALUES (s.service, s.token);
+COMMIT;
+EXIT;
+SQL
+  }
+
   marker=$(sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" <<'SQL'
 WHENEVER SQLERROR EXIT SQL.SQLCODE
 SET HEADING OFF FEEDBACK OFF PAGESIZE 0
@@ -31,6 +57,7 @@ SQL
     0) ;;
     1) echo "== insurance fixture already initialized, skipping"
        sqlplus -s "system/${ORACLE_PWD}@localhost:1521/FREEPDB1" @"${SQL_DIR}/setup/02_service_acl.sql"
+       store_caller_token
        exit 0 ;;
     *) echo "== could not determine fixture state: ${marker}" >&2; exit 1 ;;
   esac
@@ -67,6 +94,8 @@ SQL
 
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/01_tables.sql"
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/02_seed.sql"
+  # The package body reads service_caller_token, so it must exist first.
+  store_caller_token
   run_sql "commission_pay/commission_pay" "${SQL_DIR}/oltp/03_commission_pkg.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/01_star_schema.sql"
   run_sql "commission_dw/commission_dw"   "${SQL_DIR}/olap/02_etl_pkg.sql"

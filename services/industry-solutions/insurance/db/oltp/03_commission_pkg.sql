@@ -111,10 +111,21 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         l_code   NUMBER;
         l_msg    VARCHAR2(1800);
         l_bytes  RAW(32767);
+        l_token  service_caller_token.token%TYPE;
     BEGIN
+        -- The service refuses any caller without this bearer token (written by
+        -- db/startup/00_init.sh from COMMISSION_CALLER_TOKEN on every boot).
+        BEGIN
+            SELECT token INTO l_token FROM service_caller_token WHERE service = 'commission-service';
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN l_token := NULL;
+        END;
         UTL_HTTP.set_transfer_timeout(c_timeout_s);
         l_req := UTL_HTTP.begin_request(c_service_url || p_path, p_method, UTL_HTTP.HTTP_VERSION_1_1);
         UTL_HTTP.set_header(l_req, 'Accept', 'application/json');
+        IF l_token IS NOT NULL THEN
+            UTL_HTTP.set_header(l_req, 'Authorization', 'Bearer ' || l_token);
+        END IF;
         IF p_body IS NOT NULL THEN
             -- Send UTF-8 bytes and declare their exact count; write_text would
             -- convert with the body charset after LENGTHB counted DB bytes.
