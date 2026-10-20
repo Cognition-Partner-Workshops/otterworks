@@ -6,6 +6,20 @@ spring:
     url: ${CLAIMS_DB_URL:jdbc:postgresql://localhost:5432/claimshub}
     username: ${CLAIMS_DB_USER:claimshub}
     password: ${CLAIMS_DB_PASSWORD:}
+server:
+  port: 8092
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health
+      path-mapping:
+        health: health
+  health:
+    db:
+      # The database is the legacy WCF-SQL stand-in; an outage suspends instances, it does not make the pod unhealthy.
+      enabled: false
 camel:
   springboot:
     name: claims-hub

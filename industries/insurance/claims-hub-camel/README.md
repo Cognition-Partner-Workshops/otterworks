@@ -22,6 +22,16 @@ A message that cannot be made byte-identical stays red: its dynamic test fails, 
 
 `GoldenMapTestSelfTest` proves the harness through Camel with an identity route over the `CanonicalClaim_to_PolicyInqRq` goldens; `CorpusManifestTest` checks the manifest still lists the eight maps and 112 goldens.
 
+## Container and chart
+
+`Dockerfile` is a multi-stage build (Temurin 21 JDK builder, Temurin 21 JRE runtime) running as uid 1001, with a `HEALTHCHECK` on `GET /health` (port 8092, Spring Boot actuator). The image build skips tests because the corpus lives outside the build context; CI runs them in the `golden` job. Pass `--build-arg MVNW_REPOURL=<mirror>` and `--secret id=m2settings,src=<settings.xml>` to build behind a Maven mirror; neither is baked into the image.
+
+The Helm chart is `infrastructure/helm/claims-hub-camel/` (ClusterIP service only, resources set, liveness and readiness probes on `/health`):
+
+```bash
+helm template claims-hub-camel infrastructure/helm/claims-hub-camel --set image.tag=dev | kubeconform -strict -summary
+```
+
 ## FnolIntake route (`src/main/java/example/claimshub/fnol/`)
 
 `FnolIntakeRoute` is the `FnolIntake` orchestration. FNOLs come in on `direct:fnol.in` (what the receive pipeline hands the MessageBox).
