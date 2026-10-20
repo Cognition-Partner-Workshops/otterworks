@@ -90,6 +90,10 @@ def golden_path(base: str, spec: MapSpec, input_path: str) -> str:
 
 def run(manifest: str, mode: str, only: str | None) -> int:
     base, maps = load_manifest(manifest)
+    if only and only not in {spec.name for spec in maps}:
+        names = ", ".join(spec.name for spec in maps)
+        print(f"no map named {only!r} in {manifest}; maps: {names}")
+        return 1
     failures = 0
     total = 0
     with PySaxonProcessor(license=False) as proc:
