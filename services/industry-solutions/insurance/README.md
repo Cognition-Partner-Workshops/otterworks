@@ -102,8 +102,12 @@ make insurance-characterize NS=dev                        # compare against gold
 make insurance-characterize NS=dev ARGS=--update-golden   # re-pin (review the diff!)
 ```
 
-Every test resets the fixture to `02_seed.sql` first. A run writes
-`characterization/out/rule_report.{md,json}` with one row per rule. The
+Every test resets the fixture to `02_seed.sql` first. The start and end of a run
+also empty `COMMISSION_DW`, so the warehouse never holds facts for ledger rows
+the reset removed (re-run `insurance-test` to reload it). A run writes
+`characterization/out/rule_report.{md,json}` with one row per rule. A rule
+whose tests were only partly selected (`-k`, `-m`, `--deselect`) is reported
+INCOMPLETE, not PASS. The
 `Insurance commission characterization` workflow runs the same harness against
 Oracle Free in CI.
 

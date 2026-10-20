@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from harness import HERE, Harness, connect, dump_json, reset_to_seed
+from harness import HERE, Harness, connect, connect_warehouse, dump_json, reset_to_seed, reset_warehouse
 from rules import RULES
 
 GOLDEN_DIR = HERE / "golden"
@@ -34,12 +34,16 @@ def connections():
         nls = dict(cur.fetchall())
     # R38 messages depend on the session's decimal separator.
     assert nls["NLS_NUMERIC_CHARACTERS"] == ".,", nls
+    warehouse = connect_warehouse()
     reset_to_seed(caller)
+    reset_warehouse(warehouse)
     yield caller, observer
     caller.rollback()
     reset_to_seed(caller)
+    reset_warehouse(warehouse)
     caller.close()
     observer.close()
+    warehouse.close()
 
 
 @pytest.fixture
@@ -89,6 +93,9 @@ _results: dict[str, str] = {}
 _rules_by_test: dict[str, list[str]] = {}
 
 
+# tryfirst: record every collected test before -k/-m/--deselect drop any, so a
+# partial run reports the rules it did not fully exercise as INCOMPLETE.
+@pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(config, items):
     for item in items:
         _rules_by_test[item.nodeid] = [r for m in item.iter_markers("rule") for r in m.args]
@@ -107,15 +114,15 @@ def pytest_sessionfinish(session, exitstatus):
         return
     by_rule: dict[str, list[str]] = defaultdict(list)
     for nodeid, rules in _rules_by_test.items():
-        if nodeid in _results:
-            for r in rules:
-                by_rule[r].append(nodeid)
+        for r in rules:
+            by_rule[r].append(nodeid)
 
     rows = []
     for rid, (area, text, legacy) in RULES.items():
         tests = by_rule.get(rid, [])
-        passed = sum(_results[t] == "passed" for t in tests)
-        failed = sum(_results[t] == "failed" for t in tests)
+        passed = sum(_results.get(t) == "passed" for t in tests)
+        failed = sum(_results.get(t) == "failed" for t in tests)
+        not_run = sum(t not in _results for t in tests)
         if not tests:
             verdict = "NOT COVERED"
         elif failed:
@@ -126,14 +133,15 @@ def pytest_sessionfinish(session, exitstatus):
             verdict = "INCOMPLETE"
         rows.append({
             "rule": rid, "area": area, "text": text, "legacy": legacy,
-            "tests": len(tests), "passed": passed, "failed": failed, "verdict": verdict,
+            "tests": len(tests), "passed": passed, "failed": failed, "not_run": not_run, "verdict": verdict,
             "test_ids": tests,
         })
 
     totals = {
         "rules": len(rows),
         "rules_pass": sum(r["verdict"] == "PASS" for r in rows),
-        "tests": len(_results),
+        "tests": len(_rules_by_test),
+        "tests_not_run": sum(t not in _results for t in _rules_by_test),
         "tests_passed": sum(v == "passed" for v in _results.values()),
         "tests_failed": sum(v == "failed" for v in _results.values()),
         "tests_skipped": sum(v == "skipped" for v in _results.values()),
