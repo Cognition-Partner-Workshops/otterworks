@@ -102,6 +102,13 @@ def run(manifest: str, mode: str, only: str | None) -> int:
                 failures += 1
                 continue
             xslt_path = os.path.join(base, spec.xslt)
+            targets = [golden_path(base, spec, i) for i in inputs]
+            duplicates = sorted({t for t in targets if targets.count(t) > 1})
+            if duplicates:
+                for t in duplicates:
+                    print(f"  CLASH   {spec.name} {os.path.relpath(t, base)} (two inputs share this basename)")
+                failures += len(duplicates)
+                continue
             ok = 0
             for input_path in inputs:
                 total += 1

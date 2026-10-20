@@ -57,3 +57,14 @@ def test_typed_params_and_output_encoding(tmp_path):
         {"name": "typed", "xslt": "typed.xslt", "inputs": "in", "golden": "golden", "params": {"Count": 2, "Strict": True}}]}))
     assert xslt_golden.run(str(manifest), "write", None) == 0
     assert (tmp_path / "golden" / "one.xml").read_bytes() == b'<r c="3" s="true">\xe9</r>'
+
+
+def test_same_basename_inputs_are_rejected(tmp_path):
+    shutil.copytree(FIXTURE, tmp_path / "fixture")
+    (tmp_path / "fixture" / "in2").mkdir()
+    (tmp_path / "fixture" / "in2" / "one.xml").write_text("<greeting>bye</greeting>")
+    manifest = tmp_path / "manifest.yaml"
+    manifest.write_text(yaml.safe_dump({"base": "fixture", "maps": [
+        {"name": "upper", "xslt": "upper.xslt", "inputs": "in*/*.xml", "golden": "golden"}]}))
+    assert xslt_golden.run(str(manifest), "write", None) == 1
+    assert not (tmp_path / "fixture" / "golden").exists()
