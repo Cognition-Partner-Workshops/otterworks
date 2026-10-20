@@ -372,7 +372,7 @@ class DocumentService:
         return result.scalar_one_or_none()
 
     async def create_from_template(
-        self, template_id: UUID, data: DocumentFromTemplate
+        self, template_id: UUID, data: DocumentFromTemplate, owner_id: UUID
     ) -> Document | None:
         template = await self.get_template(template_id)
         if not template:
@@ -382,7 +382,7 @@ class DocumentService:
             title=data.title,
             content=template.content,
             content_type=template.content_type,
-            owner_id=data.owner_id,
+            owner_id=owner_id,
             folder_id=data.folder_id,
         )
         return await self.create(create_data)

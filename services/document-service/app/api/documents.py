@@ -503,9 +503,9 @@ async def create_from_template(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a document from a template."""
-    body.owner_id = _resolve_owner_id(body.owner_id, request)
+    owner_id = _resolve_owner_id(body.owner_id, request)
     service = DocumentService(db)
-    document = await service.create_from_template(template_id, body)
+    document = await service.create_from_template(template_id, body, owner_id)
     if not document:
         raise HTTPException(status_code=404, detail="Template not found")
     logger.info(
