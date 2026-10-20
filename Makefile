@@ -107,11 +107,12 @@ insurance-pg-down: procs-validate ## Stop the PostgreSQL 16 warehouse target and
 	NS=$(NS) INSURANCE_PG_PORT=$(INSURANCE_PG_PORT) INSURANCE_PG_PASSWORD=unused $(INSURANCE_PG_COMPOSE) down -v
 	rm -f $(INSURANCE_PG_SECRET)
 
-insurance-dbt-build: procs-validate ## dbt deps, debug and build of commission_dw against insurance-pg-up (NS=<namespace>)
+insurance-dbt-build: procs-validate ## dbt deps, debug, seed, then build of commission_dw against insurance-pg-up (NS=<namespace>)
 	@test -s $(INSURANCE_PG_SECRET) || (echo "no password for NS=$(NS); run make insurance-pg-up NS=$(NS) first" >&2; exit 2)
 	cd $(INSURANCE_DBT_DIR) && $(INSURANCE_DBT_ENV) $(INSURANCE_DBT) deps
 	cd $(INSURANCE_DBT_DIR) && $(INSURANCE_DBT_ENV) $(INSURANCE_DBT) debug
-	cd $(INSURANCE_DBT_DIR) && $(INSURANCE_DBT_ENV) $(INSURANCE_DBT) build
+	cd $(INSURANCE_DBT_DIR) && $(INSURANCE_DBT_ENV) $(INSURANCE_DBT) seed
+	cd $(INSURANCE_DBT_DIR) && $(INSURANCE_DBT_ENV) $(INSURANCE_DBT) build --exclude resource_type:seed
 
 # --- Local Development ---
 

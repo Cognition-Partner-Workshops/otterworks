@@ -43,7 +43,7 @@ From the repo root:
 
 ```bash
 make insurance-pg-up NS=dev        # postgres:16 on 127.0.0.1:(57432 + crc32(NS) % 1000)
-make insurance-dbt-build NS=dev    # dbt deps, dbt debug, dbt build
+make insurance-dbt-build NS=dev    # dbt deps, dbt debug, dbt seed, dbt build (seeds excluded)
 make insurance-pg-down NS=dev      # stop, drop the volume, delete the generated password
 ```
 
