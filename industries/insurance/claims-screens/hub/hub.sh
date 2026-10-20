@@ -51,7 +51,12 @@ replay() {
 }
 
 down() {
-  [ -f "$RUN/hub.pid" ] && kill "$(cat "$RUN/hub.pid")" 2>/dev/null || true
+  if [ -f "$RUN/hub.pid" ]; then
+    pid="$(cat "$RUN/hub.pid")"
+    kill "$pid" 2>/dev/null || true
+    for i in $(seq 1 30); do kill -0 "$pid" 2>/dev/null || break; sleep 1; done
+    kill -9 "$pid" 2>/dev/null || true
+  fi
   compose down -v --remove-orphans
 }
 
