@@ -39,3 +39,21 @@ def test_check_reports_diff(tmp_path):
 def test_check_reports_missing(tmp_path):
     manifest = _manifest(tmp_path, "nowhere")
     assert xslt_golden.run(manifest, "check", None) == 1
+
+
+def test_typed_params_and_output_encoding(tmp_path):
+    xslt = tmp_path / "typed.xslt"
+    xslt.write_text(
+        '<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" '
+        'xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs">'
+        '<xsl:output method="xml" encoding="ISO-8859-1" omit-xml-declaration="yes"/>'
+        '<xsl:param name="Count" as="xs:integer"/><xsl:param name="Strict" as="xs:boolean"/>'
+        '<xsl:template match="/"><r c="{$Count + 1}" s="{$Strict}">\u00e9</r></xsl:template>'
+        '</xsl:stylesheet>', encoding="utf-8")
+    (tmp_path / "in").mkdir()
+    (tmp_path / "in" / "one.xml").write_text("<a/>")
+    manifest = tmp_path / "manifest.yaml"
+    manifest.write_text(yaml.safe_dump({"base": ".", "maps": [
+        {"name": "typed", "xslt": "typed.xslt", "inputs": "in", "golden": "golden", "params": {"Count": 2, "Strict": True}}]}))
+    assert xslt_golden.run(str(manifest), "write", None) == 0
+    assert (tmp_path / "golden" / "one.xml").read_bytes() == b'<r c="3" s="true">\xe9</r>'
