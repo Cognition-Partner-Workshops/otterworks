@@ -22,29 +22,28 @@ SELECT n.nspname, c.relname, a.attname
 
 
 def main() -> int:
-    with oracle_connect() as ora, pg_connect("postgres") as pg:
-        with pg.transaction():
-            names = ", ".join(f"{s}.{t}" for s, t, _pk, _sums in TABLES)
-            pg.execute(f"TRUNCATE {names} RESTART IDENTITY CASCADE")
-            for schema, table, pk, _sums in TABLES:
-                cols = oracle_columns(ora, schema, table)
-                rows = query(ora, f"SELECT {', '.join(cols)} FROM {schema}.{table} ORDER BY {', '.join(pk)}")
-                for row in rows:
-                    for v in row:
-                        canon(v)  # rejects floats before anything is written
-                placeholders = ", ".join(["%s"] * len(cols))
-                with pg.cursor() as cur:
-                    cur.executemany(
-                        f"INSERT INTO {schema}.{table} ({', '.join(cols)}) VALUES ({placeholders})", rows)
-                print(f"{schema}.{table}: {len(rows)} rows")
-            for schema, table, col in query(pg, IDENTITY_SQL):
-                pg.execute(
-                    f"SELECT setval(pg_get_serial_sequence('{schema}.{table}', '{col}'),"
-                    f" COALESCE((SELECT MAX({col}) FROM {schema}.{table}), 1),"
-                    f" (SELECT MAX({col}) FROM {schema}.{table}) IS NOT NULL)")
-            pg.execute(f"REFRESH MATERIALIZED VIEW {MV[0]}.{MV[1]}")
-            n = query(pg, f"SELECT COUNT(*) FROM {MV[0]}.{MV[1]}")[0][0]
-            print(f"{MV[0]}.{MV[1]}: refreshed, {n} rows")
+    with oracle_connect() as ora, pg_connect("postgres") as pg, pg.transaction():
+        names = ", ".join(f"{s}.{t}" for s, t, _pk, _sums in TABLES)
+        pg.execute(f"TRUNCATE {names} RESTART IDENTITY CASCADE")
+        for schema, table, pk, _sums in TABLES:
+            cols = oracle_columns(ora, schema, table)
+            rows = query(ora, f"SELECT {', '.join(cols)} FROM {schema}.{table} ORDER BY {', '.join(pk)}")
+            for row in rows:
+                for v in row:
+                    canon(v)  # rejects floats before anything is written
+            placeholders = ", ".join(["%s"] * len(cols))
+            with pg.cursor() as cur:
+                cur.executemany(
+                    f"INSERT INTO {schema}.{table} ({', '.join(cols)}) VALUES ({placeholders})", rows)
+            print(f"{schema}.{table}: {len(rows)} rows")
+        for schema, table, col in query(pg, IDENTITY_SQL):
+            pg.execute(
+                f"SELECT setval(pg_get_serial_sequence('{schema}.{table}', '{col}'),"
+                f" COALESCE((SELECT MAX({col}) FROM {schema}.{table}), 1),"
+                f" (SELECT MAX({col}) FROM {schema}.{table}) IS NOT NULL)")
+        pg.execute(f"REFRESH MATERIALIZED VIEW {MV[0]}.{MV[1]}")
+        n = query(pg, f"SELECT COUNT(*) FROM {MV[0]}.{MV[1]}")[0][0]
+        print(f"{MV[0]}.{MV[1]}: refreshed, {n} rows")
     return 0
 
 

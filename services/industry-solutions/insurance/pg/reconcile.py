@@ -15,7 +15,20 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
-from common import LEDGER, RATES, RELATIONS, control_metrics, fetch_rows, oracle_columns, oracle_connect, pg_connect, query
+import oracledb
+import psycopg
+
+from common import (
+    LEDGER,
+    RATES,
+    RELATIONS,
+    control_metrics,
+    fetch_rows,
+    oracle_columns,
+    oracle_connect,
+    pg_connect,
+    query,
+)
 
 HERE = Path(__file__).parent
 GOLDEN = HERE / "golden" / "oracle_baseline.json"
@@ -39,24 +52,24 @@ STRING_MAX = "ñ" * 120  # 120 characters, 240 bytes in AL32UTF8 / UTF8
 # transaction that is always rolled back; a SELECT's result is the outcome.
 PROBES = [
     ("P1", "D1", "identity column given an explicit NULL (agents.agent_id)",
-     ["INSERT INTO commission_pay.agents (agent_id, agent_code, full_name, license_no)"
-      " VALUES (NULL, 'PRB-1', 'Probe', 'LIC-PRB-1')"]),
+     [("INSERT INTO commission_pay.agents (agent_id, agent_code, full_name, license_no)"
+      " VALUES (NULL, 'PRB-1', 'Probe', 'LIC-PRB-1')")]),
     ("P2", "D2", "120 characters / 240 bytes into products.product_name VARCHAR2(120)",
-     [("INSERT INTO commission_pay.products (product_code, product_name, line_of_business)"
-       " VALUES ('PRB-2', {s}, 'AUTO')", STRING_MAX)]),
+     [(("INSERT INTO commission_pay.products (product_code, product_name, line_of_business)"
+       " VALUES ('PRB-2', {s}, 'AUTO')"), STRING_MAX)]),
     ("P3", "D3", "empty string into NOT NULL products.product_name",
-     ["INSERT INTO commission_pay.products (product_code, product_name, line_of_business)"
-      " VALUES ('PRB-3', '', 'AUTO')"]),
+     [("INSERT INTO commission_pay.products (product_code, product_name, line_of_business)"
+      " VALUES ('PRB-3', '', 'AUTO')")]),
     ("P4", None, "second closed rate in one product/agent scope (ux_rates_open)",
-     ["INSERT INTO commission_pay.commission_rates (product_code, agent_id, rate_pct, effective_from,"
-      " effective_to, created_by) VALUES ('TERM-20', NULL, 12, DATE '2020-01-01', DATE '2020-12-31', 'probe')",
-      "INSERT INTO commission_pay.commission_rates (product_code, agent_id, rate_pct, effective_from,"
-      " effective_to, created_by) VALUES ('TERM-20', NULL, 13, DATE '2021-01-01', DATE '2021-12-31', 'probe')"]),
+     [("INSERT INTO commission_pay.commission_rates (product_code, agent_id, rate_pct, effective_from,"
+      " effective_to, created_by) VALUES ('TERM-20', NULL, 12, DATE '2020-01-01', DATE '2020-12-31', 'probe')"),
+      ("INSERT INTO commission_pay.commission_rates (product_code, agent_id, rate_pct, effective_from,"
+      " effective_to, created_by) VALUES ('TERM-20', NULL, 13, DATE '2021-01-01', DATE '2021-12-31', 'probe')")]),
     ("P5", None, "NUMBER(12,2) / numeric(12,2) rounding on insert of 1000.005 and 1000.0049",
-     ["INSERT INTO commission_pay.policies (policy_id, policy_no, product_code, holder_name, annual_premium,"
-      " issued_date) VALUES (901, 'PRB-5A', 'AUTO-STD', 'Probe', 1000.005, DATE '2025-01-01')",
-      "INSERT INTO commission_pay.policies (policy_id, policy_no, product_code, holder_name, annual_premium,"
-      " issued_date) VALUES (902, 'PRB-5B', 'AUTO-STD', 'Probe', 1000.0049, DATE '2025-01-01')",
+     [("INSERT INTO commission_pay.policies (policy_id, policy_no, product_code, holder_name, annual_premium,"
+      " issued_date) VALUES (901, 'PRB-5A', 'AUTO-STD', 'Probe', 1000.005, DATE '2025-01-01')"),
+      ("INSERT INTO commission_pay.policies (policy_id, policy_no, product_code, holder_name, annual_premium,"
+      " issued_date) VALUES (902, 'PRB-5B', 'AUTO-STD', 'Probe', 1000.0049, DATE '2025-01-01')"),
       "SELECT annual_premium FROM commission_pay.policies WHERE policy_id IN (901, 902) ORDER BY policy_id"]),
     ("P6", None, "ROUND(x, 2) at the half cent: 2.345, 0.125, -2.345, 2.3449999",
      [("SELECT ROUND(2.345, 2), ROUND(0.125, 2), ROUND(-2.345, 2), ROUND(2.3449999, 2){dual}", None)]),
@@ -90,7 +103,7 @@ def run_probe(conn, engine: str, statements) -> str:
                 out.append(", ".join(", ".join(_fmt_plain(v) for v in r) for r in cur.fetchall()))
             cur.close()
         result = "accepted" + (f" -> {'; '.join(out)}" if out else "")
-    except Exception as exc:  # the rejection itself is the outcome
+    except (oracledb.Error, psycopg.Error) as exc:  # the rejection itself is the outcome
         code = getattr(getattr(exc, "args", [None])[0], "full_code", None) or getattr(exc, "sqlstate", None)
         result = f"rejected ({code})" if code else f"rejected ({type(exc).__name__})"
     finally:
