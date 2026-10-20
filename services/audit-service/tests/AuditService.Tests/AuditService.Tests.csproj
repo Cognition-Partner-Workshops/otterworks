@@ -15,6 +15,13 @@
     <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+    <!-- Transitive pins: CVE-2018-8292 (System.Net.Http) and CVE-2019-0820 (System.Text.RegularExpressions) via xunit -> xunit.assert -> NETStandard.Library 1.6.1 -->
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <!-- Transitive pins via ProjectReference AuditService: CVE-2024-32028, CVE-2026-40894, CVE-2024-30105/CVE-2024-43485 -->
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
+    <PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup>
