@@ -82,6 +82,7 @@ module ThistlecombeMutual.ClaimsHub.Orchestrations
         System.String claimNumber;
         System.String triageOutcome;
         System.Boolean corrected;
+        Microsoft.RuleEngine.Policy triagePolicy;
 
         body ()
         {
@@ -134,9 +135,21 @@ module ThistlecombeMutual.ClaimsHub.Orchestrations
                 transform (msgTriageFacts) = ThistlecombeMutual.ClaimsHub.Maps.InsertClaim_to_TriageFacts (msgInsertClaim);
             }
 
-            // Shape: Call_Rules ClaimTriage. The policy writes Outcome and Reason into the facts document.
+            // Shape: Call_Rules ClaimTriage (atomic scope, as the designer requires). The deployed policy
+            // version is resolved by the Rule Engine; the policy writes Outcome and Reason into the facts.
+            scope atomic transaction TriageTx
+            {
+                body
+                {
+                    construct msgTriageFacts
+                    {
+                        msgTriageFacts = msgTriageFacts;
+                        triagePolicy = new Microsoft.RuleEngine.Policy("ClaimTriage");
+                        triagePolicy.Execute(msgTriageFacts);
+                    }
+                }
+            }
             // Shape: Expression_ReadOutcome
-            // Note: on BizTalk the Call Rules shape mutates the typed fact in place; here we read it back.
             triageOutcome = xpath(msgTriageFacts, "string(/*[local-name()='TriageFacts']/*[local-name()='Outcome'])");
 
             // Shape: Decide_Outcome

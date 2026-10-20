@@ -53,7 +53,7 @@
         <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" /></SendHandler>
       </PrimaryTransport>
       <ReceivePipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLReceive" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLReceive, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="1" TrackingOption="None" />
-      <Transforms><Transform FullName="ThistlecombeMutual.ClaimsHub.Maps.CanonicalClaim_to_PolicyInqRq, ThistlecombeMutual.ClaimsHub.Maps, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" AssemblyQualifiedName="ThistlecombeMutual.ClaimsHub.Maps.CanonicalClaim_to_PolicyInqRq, ThistlecombeMutual.ClaimsHub.Maps, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" /></Transforms>
+      <Transforms />
       <Filter />
       <Tracking>0</Tracking>
       <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
@@ -239,7 +239,7 @@
       <PrimaryTransport>
         <Address>sftp://sftp.glassnet.example:22/thistlecombe/fasttrack/%ClaimsHub.ClaimNumber%.xml</Address>
         <TransportType Name="SFTP" Capabilities="11" ConfigurationClsid="9c5d1e8a-54e2-4f5e-9c3f-7d5b0b0f4e21" />
-        <TransportTypeData>&lt;CustomProps&gt;&lt;ServerAddress vt="8"&gt;sftp.glassnet.example&lt;/ServerAddress&gt;&lt;Port vt="3"&gt;22&lt;/Port&gt;&lt;FolderPath vt="8"&gt;/thistlecombe/fasttrack&lt;/FolderPath&gt;&lt;TargetFileName vt="8"&gt;%ClaimsHub.ClaimNumber%.xml&lt;/TargetFileName&gt;&lt;ClientAuthenticationMode vt="8"&gt;PublicKeyAuthentication&lt;/ClientAuthenticationMode&gt;&lt;UserName vt="8"&gt;thistlecombe-glass&lt;/UserName&gt;&lt;PrivateKeyFile vt="8"&gt;E:\Keys\glassnet_ed25519.ppk&lt;/PrivateKeyFile&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <TransportTypeData>&lt;CustomProps&gt;&lt;ServerAddress vt="8"&gt;sftp.glassnet.example&lt;/ServerAddress&gt;&lt;Port vt="3"&gt;22&lt;/Port&gt;&lt;FolderPath vt="8"&gt;/thistlecombe/fasttrack&lt;/FolderPath&gt;&lt;TargetFileName vt="8"&gt;%ClaimsHub.ClaimNumber%.xml&lt;/TargetFileName&gt;&lt;ClientAuthenticationMode vt="8"&gt;PublicKeyAuthentication&lt;/ClientAuthenticationMode&gt;&lt;UserName vt="8"&gt;thistlecombe-glass&lt;/UserName&gt;&lt;PrivateKeyFile vt="8"&gt;E:\Keys\glassnet_ed25519.ppk&lt;/PrivateKeyFile&gt;&lt;AccessAnySSHServerHostKey vt="11"&gt;0&lt;/AccessAnySSHServerHostKey&gt;&lt;SSHServerHostKeyFingerPrint vt="8"&gt;ssh-ed25519 256 SHA256:Zr4Qp9Lm2Nv7Xt1Wc8Kd3Hs6Jf0Bg5Ye2Ua7Ri4Oq1&lt;/SSHServerHostKeyFingerPrint&gt;&lt;/CustomProps&gt;</TransportTypeData>
         <RetryCount>3</RetryCount>
         <RetryInterval>10</RetryInterval>
         <ServiceWindowEnabled>false</ServiceWindowEnabled>
@@ -327,7 +327,7 @@
       <SendPipelineData />
       <Authentication>0</Authentication>
       <Tracking>0</Tracking>
-      <Transforms><Transform FullName="ThistlecombeMutual.ClaimsHub.Maps.AssignmentRequest_to_RosterQuery, ThistlecombeMutual.ClaimsHub.Maps, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" AssemblyQualifiedName="ThistlecombeMutual.ClaimsHub.Maps.AssignmentRequest_to_RosterQuery, ThistlecombeMutual.ClaimsHub.Maps, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" /></Transforms>
+      <Transforms />
       <RouteFailedMessage>true</RouteFailedMessage>
       <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
     </ReceivePort>
