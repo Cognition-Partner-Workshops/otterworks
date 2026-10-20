@@ -10,7 +10,8 @@ spring:
     active: ${COMMISSION_BACKEND:oracle}
   datasource:
     username: ${COMMISSION_DB_USER:commission_pay}
-    password: ${COMMISSION_DB_PASSWORD:commission_pay}
+    # From the secret store only: no literal fallback, so an unset value fails startup.
+    password: ${COMMISSION_DB_PASSWORD}
     hikari:
       maximum-pool-size: 5
       auto-commit: false

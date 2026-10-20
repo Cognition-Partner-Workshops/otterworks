@@ -44,8 +44,10 @@ Oracle.
 `COMMISSION_BACKEND` picks the database and is the only switch: `oracle` (default,
 `application-oracle.yml`) or `postgres` (`application-postgres.yml`, PostgreSQL 16 from
 `make insurance-pg-up`). It is a Spring profile; exactly one must be active or the
-service refuses to start (`common/Backend`). `COMMISSION_DB_URL`, `COMMISSION_DB_USER`
-and `COMMISSION_DB_PASSWORD` override the profile's datasource.
+service refuses to start (`common/Backend`). `COMMISSION_DB_URL` and `COMMISSION_DB_USER`
+override the profile's datasource. `COMMISSION_DB_PASSWORD` is required and has no
+default: it comes from the secret store (Helm `secrets:`, the compose file for the local
+fixture), and the service refuses to start without it (`common/DatasourceCredential`).
 
 On `postgres` there is no `COMMISSION_PKG`, so `PostgresRateResolver` runs the
 `resolve_rate` query itself (same order, same ORA-20007 text) and the period end is
