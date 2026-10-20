@@ -5,9 +5,10 @@ Scope: the Oracle fixture under `services/industry-solutions/insurance/` on `dem
 `MV_AGENT_COMMISSION_SUMMARY`, the suites under `db/tests/`). Measured against the
 organization skill `carrier-modernization-standard`.
 
-> **Status: one decision open.** The warehouse target (§7, question Q1) decides what Wave 1
-> contains and what Oracle footprint the renewal has to cover. Wave 1 and the renewal line are
-> written both ways and marked OPEN until we hear back. Nothing else in the plan depends on it.
+> **Status: complete.** The open question (Q1, warehouse target) was answered: `COMMISSION_DW`
+> goes to **dbt-postgres on PostgreSQL 16**, as `carrier-modernization-standard` names it.
+> Databricks (PRs #1413/#1414) is out of scope for this plan and is recorded in §7 as the option
+> not taken. Decisions D-1..D-3 (§7) are still for finance to make before Wave 2 code.
 
 Line references are `file:line` relative to `services/industry-solutions/insurance/db/` unless
 another path is given, at the `demo-insurance` commit this branch was cut from.
@@ -93,7 +94,7 @@ any of these units today.
 | U16 | `commission_ledger` (`:70-81`) | table | U6 (delete+insert); `DW_ETL_PKG:45,66`; `run_olap_tests.sql` E2 | **Translate** | The payout record. Parity is to the cent, per row. |
 | U17 | `rate_audit_log` (`:84-93`) | table | U7; `run_tests.sql` T12 | **Translate** | Append-only. Add `before`, `after` and `request_id`. |
 | U18 | `fixture_meta` (`startup/00_init.sh:93-99`) | table | compose healthcheck; `00_init.sh:21` skip guard | **Keep** (fixture only) | Init marker. Not business data. |
-| U19 | `DW_ETL_PKG.load_commission_facts` (`olap/02_etl_pkg.sql:5-95`) | PL/SQL package | `run_olap_tests.sql` E1, E3; deploy `00_init.sh:66` | **Translate** (Q1 decides the target) | Four MERGEs map directly to dbt-postgres incremental models (carrier standard). Fix the missing delete path (R-6) at the same time. |
+| U19 | `DW_ETL_PKG.load_commission_facts` (`olap/02_etl_pkg.sql:5-95`) | PL/SQL package | `run_olap_tests.sql` E1, E3; deploy `00_init.sh:66` | **Translate** to dbt-postgres (Q1) | Four MERGEs map directly to dbt-postgres incremental models (carrier standard). Moves in Wave 1. Fix the missing delete path (R-6) at the same time. |
 | U20 | `dim_agent`, `dim_product`, `dim_period`, `fact_commission` (`olap/01_star_schema.sql:5-39`) | tables | U19; MV; `run_olap_tests.sql` | **Translate** | dbt models. `dim_agent` is SCD-1 today (status overwritten), so history is lost. |
 | U21 | `MV_AGENT_COMMISSION_SUMMARY` (`olap/02_etl_pkg.sql:98-112`) | materialized view | `run_olap_tests.sql` E4 only | **Rewrite** as a dbt model | No refresh is scheduled anywhere, and the ETL does not refresh it (R-7). As a dbt model it is rebuilt in the same run as the fact table. |
 | U22 | `tests/run_tests.sql` | test suite (17 checks) | `Makefile:55` (`insurance-test`) | **Keep** during Waves 1-2, then **retire** | It is the legacy oracle for the strangler. It must stay green against the delegating package. Retire it with Oracle. |
@@ -151,7 +152,7 @@ Every row was observed on the running fixture (`probes/*.sql`; output in the PR 
 | R-4 | Effective dating | The month-end rate applies to the whole month, with no proration | P9: a 14% rate from 2026-03-15 paid the full March | Pin it as-is. Confirm with finance that this is policy, not accident. |
 | R-5 | Effective dating (history) | `ux_rates_open` keys closed rows as `(product, NVL(agent,-1), NULL)`. That key is still unique, so each scope can hold **one** closed rate. The second supersede of any scope fails with ORA-00001. Back-dating fails the same way, rather than with a business error | P15: AUTO-STD default with 1 closed row, next supersede → `ORA-00001 UX_RATES_OPEN`; P5 back-date → `ORA-00001` | A real production estate cannot have run like this for long. Either production has a different index, or rate changes are worked around (deleted, or edited in place via BR-4). **Compare production DDL before Wave 2.** The target uses a partial unique index. Its parity harness has to treat ORA-00001 as a recorded legacy verdict, not crash on it. |
 | R-6 | Idempotent re-runs | The OLTP re-run is idempotent (T9). The ETL is not when a re-run removes rows: MERGE never deletes, so a split change that drops an agent leaves an orphan fact row | P16: fact **100.02** vs ledger **92.02** (orphan 8.00 for policy 2 / agent 2). The existing E2 check then FAILS | The warehouse can over-report commission after any re-split. The target ETL loads (policy, period) slices as replace-partition, or uses dbt `delete+insert`. Add a reconciliation check per period on every load. |
-| R-7 | Idempotent re-runs (MV) | The MV is stale until someone refreshes it, and nothing schedules a refresh | P17: fact 100.02, MV 92.02 after ETL | Reports can disagree with the fact table. Find out who refreshes it in production (§7 Q1 covers consumers). |
+| R-7 | Idempotent re-runs (MV) | The MV is stale until someone refreshes it, and nothing schedules a refresh | P17: fact 100.02, MV 92.02 after ETL | Reports can disagree with the fact table. Find out who refreshes it in production before Wave 1 replaces the MV with a dbt model. |
 | R-8 | Same-day amend rewrites history | BR-4 updates `rate_pct` on a `rate_id` that ledger rows already reference. The ledger is not recalculated, so the stored amount no longer matches the stored rate | P8: ledger 15.00 at rate_id 3, which now says 12% | The target makes rates immutable once referenced: insert a new version instead of updating. That is a divergence, so it needs a decision (D-3). Parity compares ledger rows, not rate rows. |
 | R-9 | Audit rows | Rejected calls leave no audit row. The amend path records only the new pct, not the old. `actor` is a caller-supplied string | P12: audit 19/19 around a rejected upsert; *reading* `:168-170` | The target writes audit rows in the same transaction (keeping BR-24 parity) and, separately, logs rejected attempts. That is additive, so no parity break. Count audit rows by action at every parity run. |
 | R-10 | Transaction boundaries | Every procedure COMMITs or ROLLBACKs the **caller's** transaction too. A caller cannot group two calls atomically. A failed call silently discards the caller's earlier uncommitted work | P11a: caller row gone after a failed call; P11b: caller row survives the caller's own ROLLBACK | The service owns one transaction per command. During the strangler period, delegating PL/SQL must keep this behaviour or the legacy suite changes meaning. PR #1282's `UTL_HTTP` delegate also commits in the service, outside Oracle's transaction, so the two can disagree under failure. |
@@ -165,7 +166,7 @@ Every row was observed on the running fixture (`probes/*.sql`; output in the PR 
 | PR | What it does | Conflict with `carrier-modernization-standard` | Recommendation |
 |---|---|---|---|
 | #1282 (open, base `main`) | Rules moved into Python 3.12/FastAPI `commission-service`; `COMMISSION_PKG` becomes a `UTL_HTTP` delegate; `RULE_LEDGER.md` R1-R38 | Rule 2: the target is Java 21 / Spring Boot 3.3, not Python. Rule 6: insurance-only source goes to `demo-insurance`, not `main`. Rule 1: no pinned golden baseline before target code. R-10: the transaction split across HTTP | Reuse its rule ledger (R1-R38, written against the same package source) as input to Wave 1. Do not merge the service. Close or retarget it after you decide. |
-| #1413 / #1414 (base `tp-run/databricks-...`) | `COMMISSION_DW` → Databricks lakehouse, setup docs approved at STOP A | Rule 2 names dbt-postgres as the warehouse target | This is Q1 below. |
+| #1413 / #1414 (base `tp-run/databricks-...`) | `COMMISSION_DW` → Databricks lakehouse, setup docs approved at STOP A | Rule 2 names dbt-postgres as the warehouse target | Not taken (Q1 answer). Out of scope for this plan; see §7. |
 
 The org skill `modernization-target-standard` says PostgreSQL **15**. The carrier standard, which is
 specific to this estate, says **16**. This plan follows the carrier standard.
@@ -177,16 +178,11 @@ in the body, and parity uses the one report shape (one row per unit, with source
 difference, verdict, and totals). Parity is to the cent with no tolerance band. A red row names its
 cause.
 
-> **Q1 (open, waiting on you):** Is the target for `COMMISSION_DW` still **dbt-postgres on
-> PostgreSQL 16**, as `carrier-modernization-standard` names it, or **Databricks**, which PRs
-> #1413/#1414 already scoped and approved for setup? With dbt-postgres, the warehouse moves first
-> and Oracle leaves entirely in this plan. With Databricks, this plan covers `COMMISSION_PAY`
-> only, Wave 1 changes, and the renewal must keep `COMMISSION_DW` licensed on the Databricks
-> track's timeline.
+> **Q1 (answered):** the `COMMISSION_DW` target is **dbt-postgres on PostgreSQL 16**, the
+> carrier standard. The warehouse therefore moves first, in Wave 1, and Oracle leaves Commission
+> Pay entirely by the end of Wave 3.
 
-### Wave 1: Pin the legacy and prove the harness (no money moves)  — **OPEN on Q1**
-
-Always in Wave 1, whatever the answer:
+### Wave 1: Pin the legacy and move the warehouse to dbt-postgres (no money moves)
 
 - Pin the image digest. Add `insurance-up` / `insurance-test` / `insurance-down` to CI on `demo-insurance`.
 - Extend the legacy suites into a characterization baseline recorded from the running fixture, in the
@@ -197,19 +193,27 @@ Always in Wave 1, whatever the answer:
   decisions D-1..D-3 go in as `question` entries with no `answer` until finance answers.
 - Scan production (read-only) for R-3, R-5 and R-11 evidence: split totals ≠ 100.00, more than one
   closed rate per scope, and non-canonical period keys.
-
-Then one of:
-
-- **If Q1 = dbt-postgres (carrier standard):** move the warehouse first. `DW_ETL_PKG` + star schema + MV
-  become dbt-postgres models on PostgreSQL 16, fed nightly from a read-only extract of
-  `commission_ledger`, `agents`, `products` and `policies`. R-6 is fixed with `delete+insert`
-  per period, the MV becomes a model, and reconciliation runs as a dbt test.
-  **Proves:** the parity harness, reporting to the cent, and that the team can run the target stack in
-  production with nothing at stake for payouts.
-- **If Q1 = Databricks (PRs #1413/#1414):** the warehouse leaves this plan. Wave 1 then ends with
-  `resolve_rate` (U5) live in `commission-service` in **shadow**: Java 21 reads Oracle and compares its
-  answer with `COMMISSION_PKG.resolve_rate` for every calculation.
-  **Proves:** the harness and the Java stack against real rate history, still with nothing at stake for payouts.
+- Move the warehouse. `DW_ETL_PKG`, the star schema and `MV_AGENT_COMMISSION_SUMMARY` become
+  dbt-postgres models on PostgreSQL 16:
+  - Source: a nightly read-only extract of `commission_ledger`, `agents`, `products` and `policies`
+    (staging models). This replaces the schema-wide `SELECT ANY TABLE` grant (R-13) with a
+    four-table read role.
+  - `dim_agent`, `dim_product`, `dim_period`: dbt models. `dim_agent` becomes a dbt snapshot so
+    agent status history is kept (today it is SCD-1).
+  - `fact_commission`: incremental model with `incremental_strategy='delete+insert'` keyed on
+    `period_key`. A re-split then replaces the period's rows instead of leaving orphans (R-6).
+  - `agent_commission_summary`: a table model built in the same `dbt build` as the fact model, so it
+    is never stale (R-7).
+  - dbt tests carry the OLAP suite: E1/E3 become `unique` on (policy_id, agent_key, period_key) and
+    row-count tests; E2 becomes a per-period test that fact equals ledger to the cent; E4 becomes
+    summary equals fact per (agent, period, line of business).
+  - Run old and new side by side for at least one month close, with one parity row per (agent,
+    period, line of business) between `MV_AGENT_COMMISSION_SUMMARY` and the dbt model. Expected
+    reds are only the R-6 orphans, each named. Then repoint report consumers and drop
+    `COMMISSION_DW` from Oracle.
+- **Proves:** the parity harness and the report shape work. Reporting reconciles to the cent on the
+  target stack, with nothing at stake for payouts. The team can operate PostgreSQL 16 + dbt in
+  production. One of the two Oracle schemas is gone, which the renewal can count on.
 
 ### Wave 2: Extract the rules (strangler, Oracle still the store)
 
@@ -231,17 +235,32 @@ Then one of:
 - `COMMISSION_PAY` tables move to PostgreSQL 16, with the rewritten `commission_rates` index
   (partial unique + exclusion constraint) and a split-total constraint. Backfill, dual-read verify,
   then cut over.
-- The service switches its datasource. The warehouse extract (if Q1 = dbt-postgres) repoints to
-  PostgreSQL. `COMMISSION_PKG`, `DW_ETL_PKG`, the types and `run_tests.sql` are retired.
+- The service switches its datasource. The dbt staging models repoint from the Oracle extract to
+  the PostgreSQL tables directly. `COMMISSION_PKG`, the types and `run_tests.sql` are retired
+  (`DW_ETL_PKG` already went in Wave 1).
 - **Proves:** zero Oracle dependency for Commission Pay, and full-history reconciliation (every ledger
   row and every audit row count) between the Oracle export and PostgreSQL.
 
-### What to take to the renewal meeting — **OPEN on Q1**
+### What to take to the renewal meeting
 
-- If Q1 = dbt-postgres: ask for a bridge term long enough for Waves 1-3 on both schemas, with no
-  growth in cores. After Wave 2, Oracle is a data store only.
-- If Q1 = Databricks: the bridge term for `COMMISSION_PAY` is the same, but `COMMISSION_DW` must stay
-  licensed until the Databricks track cuts over. Its timeline is set by that track, not this plan.
+- Ask for a bridge term covering Waves 1-3, with no growth in cores and no new options.
+- `COMMISSION_DW` leaves Oracle at the end of Wave 1. From then on, the estate to license is
+  `COMMISSION_PAY` only.
+- After Wave 2, `COMMISSION_PAY` holds data only, with no business logic in PL/SQL. After Wave 3,
+  Commission Pay has no Oracle dependency, so the bridge term need not include a renewal option for
+  this system.
+- Exact term lengths come from the Wave 1 measures (§8). Committing to dates before those measures
+  exist would be a guess.
+
+### Option not taken: Databricks for `COMMISSION_DW`
+
+PRs #1413/#1414 scoped `COMMISSION_DW` to a Databricks lakehouse on a `tp-run/databricks-...`
+branch, and that setup was approved. It is **out of scope for this wave plan**, because the carrier
+standard names dbt-postgres and the business chose it (Q1). Had Databricks been chosen:
+`COMMISSION_DW` would have stayed licensed until a separate track cut over, on that track's
+timeline. Wave 1 would have ended with `resolve_rate` running in shadow in `commission-service`
+instead of a warehouse move. And R-6/R-7 would have been fixed in that track, not here. Nothing in
+Waves 1-3 rules Databricks out later: it could consume the PostgreSQL 16 warehouse as a source.
 
 ### Decisions finance must make before Wave 2 code (carrier standard rule 5)
 
