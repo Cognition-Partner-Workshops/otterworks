@@ -10,7 +10,9 @@ Manifest (YAML):
         inputs: corpus/inputs/fnol      # directory of *.xml, or a glob
         golden: corpus/golden/fnol-canonical
         suffix: .xml                    # output file extension (default .xml)
-        params: {CarrierCode: TMU}      # optional stylesheet parameters
+        params: {CarrierCode: TMU, Count: 2, Strict: true}   # optional stylesheet parameters;
+                                        # YAML booleans, integers and floats bind as xs:boolean,
+                                        # xs:integer and xs:double, everything else as xs:string
 
 `write` (re)generates the golden files; `check` transforms every input and compares the
 result byte for byte with the stored golden, printing one row per message and a total.
@@ -22,6 +24,7 @@ import argparse
 import glob
 import os
 import sys
+import tempfile
 from dataclasses import dataclass
 
 import yaml
@@ -53,17 +56,31 @@ def list_inputs(base: str, spec: MapSpec) -> list[str]:
     return sorted(glob.glob(pattern))
 
 
+def xdm_value(proc: PySaxonProcessor, value):
+    if isinstance(value, bool):
+        return proc.make_boolean_value(value)
+    if isinstance(value, int):
+        return proc.make_integer_value(value)
+    if isinstance(value, float):
+        return proc.make_double_value(value)
+    return proc.make_string_value(str(value))
+
+
 def transform(proc: PySaxonProcessor, xslt_path: str, input_path: str, params: dict | None) -> bytes:
+    """Return the serializer's own bytes, so the stylesheet's encoding and declaration are preserved."""
     xslt = proc.new_xslt30_processor()
     executable = xslt.compile_stylesheet(stylesheet_file=xslt_path)
     if executable is None:
         raise RuntimeError(f"stylesheet failed to compile: {xslt_path}: {xslt.error_message}")
     for key, value in (params or {}).items():
-        executable.set_parameter(key, proc.make_string_value(str(value)))
-    result = executable.transform_to_string(source_file=input_path)
-    if result is None:
-        raise RuntimeError(f"transform failed for {input_path}: {executable.error_message}")
-    return result.encode("utf-8")
+        executable.set_parameter(key, xdm_value(proc, value))
+    with tempfile.TemporaryDirectory() as tmp:
+        out_path = os.path.join(tmp, "out.xml")
+        executable.transform_to_file(source_file=input_path, output_file=out_path)
+        if executable.exception_occurred or not os.path.exists(out_path):
+            raise RuntimeError(f"transform failed for {input_path}: {executable.error_message}")
+        with open(out_path, "rb") as fh:
+            return fh.read()
 
 
 def golden_path(base: str, spec: MapSpec, input_path: str) -> str:
