@@ -24,6 +24,9 @@
     <testcontainers.version>1.21.4</testcontainers.version>
     <!-- Same Saxon line as saxonche 12.5.0, which wrote corpus/golden. -->
     <saxon.version>12.5</saxon.version>
+    <greenmail.version>2.0.1</greenmail.version>
+    <!-- Before 1.21.4 Testcontainers asks for Docker API 1.32; Docker 29 refuses anything below 1.40. -->
+    <testcontainers.version>1.21.4</testcontainers.version>
     <claims.fixture.dir>${project.basedir}/../biztalk-claims-intake</claims.fixture.dir>
     <!-- PostgreSQL 16 standing in for the WCF-SQL claims system and policy admin databases in the route tests. -->
     <claims.postgres.image>postgres:16-alpine</claims.postgres.image>
@@ -106,6 +109,26 @@
       <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-mail-starter</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-ftp-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-bindy-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel.springboot</groupId>
+      <artifactId>camel-saga-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -130,6 +153,17 @@
     <dependency>
       <groupId>org.eclipse.angus</groupId>
       <artifactId>jakarta.mail</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.icegreen</groupId>
+      <artifactId>greenmail-junit5</artifactId>
+      <version>${greenmail.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

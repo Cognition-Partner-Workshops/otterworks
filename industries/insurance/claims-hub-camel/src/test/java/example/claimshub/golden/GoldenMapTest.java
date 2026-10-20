@@ -32,7 +32,8 @@ import example.claimshub.MapEndpoints;
  * factory method returns, before its dynamic tests run. The per-message table (message, byte-identical, cause) is written to
  * {@code target/golden-report/<MapName>.md} for the pull request body.
  */
-@SpringBootTest(classes = ClaimsHubApplication.class, properties = {"camel.springboot.main-run-controller=false", "camel.component.direct.timeout=2000"})
+@SpringBootTest(classes = ClaimsHubApplication.class, properties = {"camel.springboot.main-run-controller=false", "camel.component.direct.timeout=2000",
+        "spring.flyway.enabled=false", "spring.datasource.url=jdbc:postgresql://localhost:5432/claimsledger"})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class GoldenMapTest {
 
