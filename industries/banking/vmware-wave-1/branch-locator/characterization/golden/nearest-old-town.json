@@ -1,0 +1,34 @@
+{
+ "branches": [
+  {
+   "address": "88 High Street",
+   "closes": "16:30",
+   "km": 0.4,
+   "lat": 9.987,
+   "lon": -29.975,
+   "name": "Old Town",
+   "opens": "08:30"
+  },
+  {
+   "address": "9 Lake Road",
+   "closes": "16:30",
+   "km": 4.32,
+   "lat": 10.02,
+   "lon": -29.952,
+   "name": "Lakeview",
+   "opens": "08:30"
+  },
+  {
+   "address": "12 Quay Street",
+   "closes": "16:30",
+   "km": 5.4,
+   "lat": 10.012,
+   "lon": -30.021,
+   "name": "Harbour Point",
+   "opens": "08:30"
+  }
+ ],
+ "lat": 9.99,
+ "lon": -29.977,
+ "query": "old town"
+}
