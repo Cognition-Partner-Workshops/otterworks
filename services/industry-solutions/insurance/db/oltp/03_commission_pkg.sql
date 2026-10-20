@@ -284,50 +284,36 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         p_splits    IN split_alloc_tab,
         p_actor     IN VARCHAR2
     ) IS
-        l_total  NUMBER := 0;
-        l_count  PLS_INTEGER;
-        l_status policies.status%TYPE;
+        l_item   VARCHAR2(4000);
+        l_splits VARCHAR2(32767);
+        l_body   VARCHAR2(32767);
+        l_reply  CLOB;
     BEGIN
-        BEGIN
-            SELECT status INTO l_status FROM policies WHERE policy_id = p_policy_id;
-        EXCEPTION
-            WHEN NO_DATA_FOUND THEN
-                RAISE_APPLICATION_ERROR(-20005, 'Unknown policy: ' || p_policy_id);
-        END;
-
-        IF p_splits IS NULL OR p_splits.COUNT = 0 THEN
-            RAISE_APPLICATION_ERROR(-20006, 'At least one split allocation is required');
+        -- Rules R13-R21 run in commission-service. The allocation travels in
+        -- collection order; a NULL collection is sent as null, an empty one as [].
+        IF p_splits IS NOT NULL THEN
+            l_splits := '[';
+            FOR i IN 1 .. p_splits.COUNT LOOP
+                SELECT JSON_OBJECT(
+                           'agent_id'  VALUE p_splits(i).agent_id,
+                           'split_pct' VALUE TO_CHAR(p_splits(i).split_pct)
+                           NULL ON NULL RETURNING VARCHAR2(4000))
+                  INTO l_item
+                  FROM dual;
+                l_splits := l_splits || CASE WHEN i > 1 THEN ',' END || l_item;
+            END LOOP;
+            l_splits := l_splits || ']';
         END IF;
 
-        SELECT COUNT(DISTINCT s.agent_id) INTO l_count FROM TABLE(p_splits) s;
-        IF l_count <> p_splits.COUNT THEN
-            RAISE_APPLICATION_ERROR(-20006, 'Duplicate agent in split allocation');
-        END IF;
-
-        FOR i IN 1 .. p_splits.COUNT LOOP
-            IF p_splits(i).split_pct IS NULL
-               OR p_splits(i).split_pct <= 0
-               OR p_splits(i).split_pct > 100 THEN
-                RAISE_APPLICATION_ERROR(-20006,
-                    'Split pct must be in (0, 100]: agent ' || p_splits(i).agent_id);
-            END IF;
-            assert_active_agent(p_splits(i).agent_id);
-            l_total := l_total + p_splits(i).split_pct;
-        END LOOP;
-
-        IF l_total <> 100 THEN
-            RAISE_APPLICATION_ERROR(-20006,
-                'Split percentages must total 100.00, got ' || TO_CHAR(l_total));
-        END IF;
-
-        DELETE FROM commission_splits WHERE policy_id = p_policy_id;
-        FOR i IN 1 .. p_splits.COUNT LOOP
-            INSERT INTO commission_splits (policy_id, agent_id, split_pct)
-            VALUES (p_policy_id, p_splits(i).agent_id, p_splits(i).split_pct);
-        END LOOP;
-
-        log_action('SPLIT_SET', NULL, NULL, p_policy_id,
-                   p_splits.COUNT || ' agents', p_actor);
+        SELECT JSON_OBJECT(
+                   'splits' VALUE l_splits FORMAT JSON,
+                   'actor'  VALUE p_actor
+                   NULL ON NULL RETURNING VARCHAR2(32767))
+          INTO l_body
+          FROM dual;
+        l_reply := call_service('/policies/' || NVL(TO_CHAR(p_policy_id), 'null') || '/splits',
+                                'POST', l_body);
+        DBMS_LOB.freetemporary(l_reply);
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
