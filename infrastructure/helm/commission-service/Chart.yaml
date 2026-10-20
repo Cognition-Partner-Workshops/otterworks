@@ -1,0 +1,6 @@
+apiVersion: v2
+name: commission-service
+description: OtterWorks Commission Service - Java 21/Spring Boot 3.3 owner of the Commission Pay rules extracted from COMMISSION_PKG
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
