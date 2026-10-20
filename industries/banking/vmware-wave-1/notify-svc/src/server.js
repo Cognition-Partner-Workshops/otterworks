@@ -11,6 +11,7 @@ const db = redis.createClient();
 db.on('error', (err) => console.error('redis error', err.message));
 
 const app = express();
+app.disable('x-powered-by');
 app.use(express.json());
 
 app.post('/notify', (req, res) => {
