@@ -1,6 +1,16 @@
 spring:
   application:
     name: claims-hub-camel
+server:
+  port: 8092
+management:
+  endpoints:
+    web:
+      base-path: /
+      exposure:
+        include: health
+      path-mapping:
+        health: health
 camel:
   springboot:
     name: claims-hub
