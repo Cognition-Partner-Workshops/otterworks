@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{screens/fragments :: head('Commission Pay')}"></head>
+<body>
+<header th:class="${backend}"><h1>Commission Pay &middot; backend <span th:text="${backend}">ORACLE</span></h1></header>
+<main><p><strong th:text="${status}">400</strong> <span th:text="${message}">message</span></p></main>
+</body>
+</html>

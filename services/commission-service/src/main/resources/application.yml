@@ -1,0 +1,27 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: commission-service
+  # The one backend switch: COMMISSION_BACKEND=oracle (default) or postgres.
+  # Each profile file names its own datasource; COMMISSION_DB_* override it.
+  profiles:
+    active: ${COMMISSION_BACKEND:oracle}
+  datasource:
+    username: ${COMMISSION_DB_USER:commission_pay}
+    password: ${COMMISSION_DB_PASSWORD:commission_pay}
+    hikari:
+      maximum-pool-size: 5
+      auto-commit: false
+  jackson:
+    deserialization:
+      use-big-decimal-for-floats: true
+    serialization:
+      write-bigdecimal-as-plain: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
