@@ -1,0 +1,5 @@
+# vm/compose.yaml builds the Perl stand-in (vm/Dockerfile) from this folder too: keep lib/ and cgi-bin/.
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.venv
