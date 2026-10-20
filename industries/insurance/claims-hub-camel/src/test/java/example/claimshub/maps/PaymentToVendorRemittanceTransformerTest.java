@@ -13,10 +13,12 @@ class PaymentToVendorRemittanceTransformerTest {
     private final PaymentToVendorRemittanceTransformer transformer = new PaymentToVendorRemittanceTransformer();
 
     @Test
-    void centsRoundHalfToEven() {
+    void centsRoundHalfUpLikeXPathRound() {
         assertThat(PaymentToVendorRemittanceTransformer.cents(new BigDecimal("0.015"))).isEqualByComparingTo("2");
-        assertThat(PaymentToVendorRemittanceTransformer.cents(new BigDecimal("0.025"))).isEqualByComparingTo("2");
-        assertThat(PaymentToVendorRemittanceTransformer.cents(new BigDecimal("1234.565"))).isEqualByComparingTo("123456");
+        assertThat(PaymentToVendorRemittanceTransformer.cents(new BigDecimal("0.025"))).isEqualByComparingTo("3");
+        assertThat(PaymentToVendorRemittanceTransformer.cents(new BigDecimal("0.0249"))).isEqualByComparingTo("2");
+        assertThat(PaymentToVendorRemittanceTransformer.cents(new BigDecimal("1234.565"))).isEqualByComparingTo("123457");
+        assertThatThrownBy(() -> PaymentToVendorRemittanceTransformer.cents(new BigDecimal("-0.01"))).isInstanceOf(IllegalArgumentException.class);
         assertThat(PaymentToVendorRemittanceTransformer.cents(new BigDecimal("999999.99")).toPlainString()).isEqualTo("99999999");
     }
 
@@ -42,10 +44,11 @@ class PaymentToVendorRemittanceTransformerTest {
 
     @Test
     void trailerTotalsAreTheSumOfTheRoundedLines() {
-        String out = run(instruction("X", line(1, "IND", "0.006") + line(2, "IND", "0.006") + line(3, "SAL", "-0.006")));
+        String out = run(instruction("X", line(1, "IND", "0.006") + line(2, "IND", "0.006") + line(3, "SAL", "-0.006")
+                + line(4, "SAL", "-0.005")));
         assertThat(out).contains("<AmountCents>1</AmountCents><DebitCreditInd>D</DebitCreditInd>")
-                .endsWith("<PaymentCount>3</PaymentCount><DebitTotalCents>2</DebitTotalCents>"
-                        + "<CreditTotalCents>1</CreditTotalCents><HashTotal>3</HashTotal></Trailer></ns0:Remittance>");
+                .endsWith("<PaymentCount>4</PaymentCount><DebitTotalCents>2</DebitTotalCents>"
+                        + "<CreditTotalCents>2</CreditTotalCents><HashTotal>4</HashTotal></Trailer></ns0:Remittance>");
     }
 
     @Test

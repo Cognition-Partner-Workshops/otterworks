@@ -21,10 +21,10 @@ import org.xml.sax.SAXException;
 /**
  * Payment_to_VendorRemittance: one PAY record per payment line, amounts in absolute cents with a D or C
  * indicator (negative lines are credits), and a trailer with the line count, the debit and credit totals and
- * a hash that is their sum modulo ten billion. Amounts are BigDecimal; the Round functoid is .NET
- * Math.Round, so cents round HALF_EVEN. Each trailer total is the sum of the rounded line cents, which is
- * what the send pipeline's TrailerTotalsComponent recomputes; the compiled map rounds the summed amounts
- * instead, which only differs for sub-cent amounts. Output is serialised the way the map's xsl:output
+ * a hash that is their sum modulo ten billion. Amounts are BigDecimal. Cents round as the compiled map's
+ * XPath round() does: half toward positive infinity, applied (as the map does) to the absolute cent value,
+ * so HALF_UP. Each trailer total is the sum of the rounded line cents, as in the map and as the send
+ * pipeline's TrailerTotalsComponent recomputes. Output is serialised the way the map's xsl:output
  * writes it: no XML declaration, no indentation, no trailing newline. Characters XML 1.0 does not allow
  * are rejected, as Saxon's serialiser rejects them.
  */
@@ -34,7 +34,7 @@ public final class PaymentToVendorRemittanceTransformer {
     static final String TARGET_NS = "http://schemas.thistlecombe.example/vendor/remittance";
     static final String SENDER_ID = "THISTLECMB";
     static final int PAYEE_NAME_LENGTH = 30;
-    static final RoundingMode CENTS_ROUNDING = RoundingMode.HALF_EVEN;
+    static final RoundingMode CENTS_ROUNDING = RoundingMode.HALF_UP;
     private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
     private static final BigDecimal HASH_MODULUS = BigDecimal.valueOf(10_000_000_000L);
 
@@ -97,7 +97,11 @@ public final class PaymentToVendorRemittanceTransformer {
         return out.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+    /** XPath round(amount * 100) for a non-negative amount. */
     static BigDecimal cents(BigDecimal amount) {
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("cents of a negative amount: " + amount);
+        }
         return amount.multiply(HUNDRED).setScale(0, CENTS_ROUNDING);
     }
 
