@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.thistlecombe.example/canonical/claim" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="http://schemas.thistlecombe.example/canonical/claim" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo root_reference="Claim" displayroot_reference="Claim" />
+      <b:properties>
+        <b:property name="ClaimsHub.ClaimNumber" xpath="/*[local-name()='Claim']/*[local-name()='ClaimNumber']" />
+      </b:properties>
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- The hub's own claim shape. Every FNOL source maps into this before anything else happens. -->
+  <xs:element name="Claim">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ClaimNumber" type="ClaimNumberType" />
+        <xs:element name="SourceRqUID" type="xs:string" />
+        <xs:element name="Agency">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Id" type="AgencyIdType" />
+              <xs:element name="Name" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="PolicyNumber" type="xs:string" />
+        <xs:element name="LineOfBusiness" type="xs:string" />
+        <xs:element name="Claimant">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="FullName" type="xs:string" />
+              <xs:element name="TaxIdMasked" type="xs:string" minOccurs="0" />
+              <xs:element name="Phone" type="xs:string" minOccurs="0" />
+              <xs:element name="Email" type="xs:string" minOccurs="0" />
+              <xs:element name="PriorFraudFlag" type="xs:boolean" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Loss">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="LossDate" type="xs:date" />
+              <xs:element name="ReportedDate" type="xs:date" />
+              <xs:element name="CauseCode" type="xs:string" />
+              <xs:element name="Description" type="xs:string" />
+              <xs:element name="EstimatedAmount" type="xs:decimal" />
+              <xs:element name="Injury" type="xs:boolean" />
+              <xs:element name="PoliceReport" type="xs:boolean" />
+              <xs:element name="City" type="xs:string" />
+              <xs:element name="State" type="xs:string" />
+              <xs:element name="PostalCode" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Vehicle" minOccurs="0">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="VIN" type="xs:string" />
+              <xs:element name="Driveable" type="xs:boolean" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- AgencyId reaches the declines folder name (declines\%ClaimsHub.AgencyId%); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="AgencyIdType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="AG-[0-9]{4}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
