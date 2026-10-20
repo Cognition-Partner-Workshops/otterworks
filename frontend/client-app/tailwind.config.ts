@@ -5,6 +5,7 @@ const config: Config = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    "../../industries/insurance/mobile-claims/src/**/*.{ts,tsx}",
   ],
   theme: {
     borderRadius: {

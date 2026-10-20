@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "start": "vite preview",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint src --ext .ts,.tsx && eslint -c .eslintrc.json --resolve-plugins-relative-to . ../../industries/insurance/mobile-claims/src --ext .ts,.tsx",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "npx playwright test",
