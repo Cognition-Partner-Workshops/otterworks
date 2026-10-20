@@ -85,6 +85,39 @@ docker exec -it otterworks-insurance-dev-insurance-oracle-1 \
   sqlplus commission_pay/commission_pay@localhost:1521/FREEPDB1
 ```
 
+## PostgreSQL 16 target and reconciliation
+
+`pg/` holds the PostgreSQL 16 translation of both schemas and the tooling that
+moves and reconciles the data. It runs in Docker beside the Oracle fixture
+(`docker-compose.insurance-pg.yml`, loopback port `52432 + crc32(NS) % 1000`).
+
+```
+pg/schema/   00_roles.sql, 10_commission_pay.sql, 20_commission_dw.sql — the translated schema
+pg/oracle/   ledger_run.sql, ledger_run_dw.sql — legacy ledger + warehouse load on Oracle
+pg/golden/   oracle_baseline.json — Oracle control figures pinned before the target existed
+pg/          baseline.py, migrate.py, reconcile.py, common.py
+```
+
+```bash
+make insurance-up NS=dev            # Oracle fixture
+make insurance-test NS=dev          # legacy suites (their writes are part of the baseline)
+make insurance-ledger-run NS=dev    # COMMISSION_PKG ledger through 2026-03, DW load, MV refresh
+make insurance-pg-up NS=dev         # PostgreSQL 16 + copy every table from Oracle, refresh the MV
+make insurance-pg-reconcile NS=dev  # writes pg/reports/reconciliation.{md,json}; non-zero on any red row
+make insurance-pg-down NS=dev && make insurance-down NS=dev
+```
+
+`reconcile.py` compares, with exact decimals and no tolerance: every table row
+by row on its key and every column, row counts and the sums of
+`annual_premium`, `rate_pct`, `split_pct`, `base_premium` and `commission_amt`,
+the ledger per agent, per period and per agent and period, every
+`MV_AGENT_COMMISSION_SUMMARY` row and total, the live Oracle figures against
+the pinned baseline, each translated object's columns, types, identities and
+constraints, and rolled-back behaviour probes where Oracle and PostgreSQL can
+disagree. A probe that differs stays red until the Commission Pay owners record
+a decision for it in `DECISIONS`. `.github/workflows/insurance-pg-reconcile.yml`
+runs the whole sequence in CI.
+
 ## Fixture boundary
 
 This is a local, disposable fixture: loopback-only port bindings, per-namespace
