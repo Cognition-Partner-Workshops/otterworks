@@ -1,0 +1,31 @@
+{
+  "rules": [
+    "R15"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "error": {
+        "code": "ORA-20006",
+        "message": "Duplicate agent in split allocation"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 1,
+        "p_splits": [
+          {
+            "agent_id": 1,
+            "split_pct": "50"
+          },
+          {
+            "agent_id": 1,
+            "split_pct": "50"
+          }
+        ]
+      },
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_duplicate_agent_rejected[same-agent]"
+}

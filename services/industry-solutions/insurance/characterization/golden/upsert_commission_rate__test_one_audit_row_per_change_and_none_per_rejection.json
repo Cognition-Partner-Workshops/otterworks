@@ -1,0 +1,161 @@
+{
+  "rules": [
+    "R8"
+  ],
+  "steps": [
+    {
+      "call": "upsert_commission_rate",
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_from": "2026-01-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "8.50"
+      },
+      "outputs": {
+        "o_rate_id": 5.0
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {
+        "commission_rates": {
+          "inserted": [
+            {
+              "agent_id": null,
+              "created_by": "char",
+              "effective_from": "2026-01-01",
+              "effective_to": null,
+              "product_code": "AUTO-STD",
+              "rate_id": 5,
+              "rate_pct": "8.5"
+            }
+          ],
+          "updated": [
+            {
+              "changes": {
+                "effective_to": [
+                  null,
+                  "2025-12-31"
+                ]
+              },
+              "rate_id": 1
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "RATE_UPSERT",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "rate_id=5 pct=8.5 from=2026-01-01",
+              "policy_id": null,
+              "product_code": "AUTO-STD"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": "upsert_commission_rate",
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_from": "2026-01-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "8.60"
+      },
+      "outputs": {
+        "o_rate_id": 5.0
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {
+        "commission_rates": {
+          "updated": [
+            {
+              "changes": {
+                "rate_pct": [
+                  "8.5",
+                  "8.6"
+                ]
+              },
+              "rate_id": 5
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "RATE_UPSERT",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 2,
+              "detail": "rate_id=5 pct=8.6 from=2026-01-01",
+              "policy_id": null,
+              "product_code": "AUTO-STD"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": "upsert_commission_rate",
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": 2,
+        "p_effective_from": "2026-01-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "9"
+      },
+      "outputs": {
+        "o_rate_id": 6.0
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {
+        "commission_rates": {
+          "inserted": [
+            {
+              "agent_id": 2,
+              "created_by": "char",
+              "effective_from": "2026-01-01",
+              "effective_to": null,
+              "product_code": "AUTO-STD",
+              "rate_id": 6,
+              "rate_pct": "9"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "RATE_UPSERT",
+              "actor": "char",
+              "agent_id": 2,
+              "audit_id": 3,
+              "detail": "rate_id=6 pct=9 from=2026-01-01",
+              "policy_id": null,
+              "product_code": "AUTO-STD"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": "upsert_commission_rate",
+      "error": {
+        "code": "ORA-20003",
+        "message": "Agent 4 is SUSPENDED"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": 4,
+        "p_effective_from": "2026-01-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "9"
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_upsert_commission_rate.py::test_one_audit_row_per_change_and_none_per_rejection"
+}

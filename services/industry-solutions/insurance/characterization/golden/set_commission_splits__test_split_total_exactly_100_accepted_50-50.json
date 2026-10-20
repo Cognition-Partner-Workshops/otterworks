@@ -1,0 +1,60 @@
+{
+  "rules": [
+    "R18",
+    "R19",
+    "R20"
+  ],
+  "steps": [
+    {
+      "call": "set_commission_splits",
+      "inputs": {
+        "p_actor": "char",
+        "p_policy_id": 3,
+        "p_splits": [
+          {
+            "agent_id": 1,
+            "split_pct": "50.00"
+          },
+          {
+            "agent_id": 2,
+            "split_pct": "50.00"
+          }
+        ]
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.set_commission_splits(:p_policy_id, :p_splits, :p_actor); END;",
+      "writes": {
+        "commission_splits": {
+          "inserted": [
+            {
+              "agent_id": 1,
+              "policy_id": 3,
+              "split_id": 7,
+              "split_pct": "50"
+            },
+            {
+              "agent_id": 2,
+              "policy_id": 3,
+              "split_id": 8,
+              "split_pct": "50"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "SPLIT_SET",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "2 agents",
+              "policy_id": 3,
+              "product_code": null
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "test": "tests/test_set_commission_splits.py::test_split_total_exactly_100_accepted[50-50]"
+}

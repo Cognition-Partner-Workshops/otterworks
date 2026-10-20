@@ -1,0 +1,53 @@
+name: Insurance commission characterization
+
+on:
+  push:
+    paths:
+      - "services/industry-solutions/insurance/**"
+      - "docker-compose.insurance.yml"
+      - ".github/workflows/insurance-characterization.yml"
+      - "Makefile"
+  pull_request:
+    paths:
+      - "services/industry-solutions/insurance/**"
+      - "docker-compose.insurance.yml"
+      - ".github/workflows/insurance-characterization.yml"
+      - "Makefile"
+
+permissions:
+  contents: read
+
+jobs:
+  characterize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - name: Lint harness
+        working-directory: services/industry-solutions/insurance/characterization
+        run: uv sync --locked && uv run ruff check .
+      - name: Free disk for the Oracle Free image
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+      - name: Start Oracle Free fixture
+        run: make insurance-up NS=ci
+      - name: Legacy SQL suites
+        run: make insurance-test NS=ci
+      - name: Characterization harness (compare against golden baseline)
+        run: make insurance-characterize NS=ci ARGS="-p no:cacheprovider -rA"
+      - name: Rule report
+        if: always()
+        run: |
+          report=services/industry-solutions/insurance/characterization/out/rule_report.md
+          if [ -f "$report" ]; then cat "$report" >> "$GITHUB_STEP_SUMMARY"; fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: insurance-commission-characterization
+          path: services/industry-solutions/insurance/characterization/out/
+          if-no-files-found: warn
+      - name: Stop Oracle Free fixture
+        if: always()
+        run: make insurance-down NS=ci

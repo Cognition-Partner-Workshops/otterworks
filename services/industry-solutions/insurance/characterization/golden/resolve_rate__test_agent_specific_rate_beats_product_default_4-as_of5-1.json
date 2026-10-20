@@ -1,0 +1,22 @@
+{
+  "rules": [
+    "R22",
+    "R23"
+  ],
+  "steps": [
+    {
+      "call": "resolve_rate",
+      "inputs": {
+        "p_agent_id": 4,
+        "p_as_of": "2025-06-15",
+        "p_product_code": "AUTO-STD"
+      },
+      "outputs": {
+        "rate_id": 1.0
+      },
+      "sql": "BEGIN :rate_id := commission_pkg.resolve_rate(:p_product_code, :p_agent_id, :p_as_of); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_resolve_rate.py::test_agent_specific_rate_beats_product_default[4-as_of5-1]"
+}

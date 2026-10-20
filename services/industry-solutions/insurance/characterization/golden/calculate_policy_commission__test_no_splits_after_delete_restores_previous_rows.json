@@ -1,0 +1,83 @@
+{
+  "rules": [
+    "R33",
+    "R35"
+  ],
+  "steps": [
+    {
+      "call": "calculate_policy_commission",
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-06",
+        "p_policy_id": 1
+      },
+      "outputs": {},
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {
+        "commission_ledger": {
+          "inserted": [
+            {
+              "agent_id": 1,
+              "base_premium": "1800",
+              "commission_amt": "14.25",
+              "ledger_id": 1,
+              "period_month": "2025-06",
+              "policy_id": 1,
+              "rate_id": 4,
+              "split_pct": "100"
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "COMMISSION_CALC",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "2025-06 rows=1",
+              "policy_id": 1,
+              "product_code": "AUTO-STD"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": "setup",
+      "inputs": {
+        "note": "",
+        "params": {},
+        "sql": "DELETE FROM commission_splits WHERE policy_id = 1"
+      },
+      "outputs": {},
+      "writes": {
+        "commission_splits": {
+          "deleted": [
+            {
+              "agent_id": 1,
+              "policy_id": 1,
+              "split_id": 1,
+              "split_pct": "100"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": "calculate_policy_commission",
+      "error": {
+        "code": "ORA-20006",
+        "message": "Policy 1 has no split allocation"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-06",
+        "p_policy_id": 1
+      },
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_calculate_policy_commission.py::test_no_splits_after_delete_restores_previous_rows"
+}
