@@ -200,47 +200,19 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         p_actor          IN VARCHAR2,
         o_rate_id        OUT commission_rates.rate_id%TYPE
     ) IS
+        l_reply CLOB;
     BEGIN
-        IF p_rate_pct IS NULL OR p_rate_pct <= 0 OR p_rate_pct > 50 THEN
-            RAISE_APPLICATION_ERROR(-20001,
-                'Rate must be in (0, 50]: ' || NVL(TO_CHAR(p_rate_pct), 'NULL'));
-        END IF;
-        assert_product(p_product_code);
-        IF p_agent_id IS NOT NULL THEN
-            assert_active_agent(p_agent_id);
-        END IF;
-
-        -- Same-day correction: an open rate that already starts on
-        -- p_effective_from is amended in place rather than superseded.
-        UPDATE commission_rates
-           SET rate_pct = p_rate_pct,
-               created_by = p_actor
-         WHERE product_code = p_product_code
-           AND NVL(agent_id, -1) = NVL(p_agent_id, -1)
-           AND effective_to IS NULL
-           AND effective_from = p_effective_from
-        RETURNING rate_id INTO o_rate_id;
-
-        IF o_rate_id IS NULL THEN
-            -- Supersede: close the open rate for this scope the day before
-            -- the new one begins.
-            UPDATE commission_rates
-               SET effective_to = p_effective_from - 1
-             WHERE product_code = p_product_code
-               AND NVL(agent_id, -1) = NVL(p_agent_id, -1)
-               AND effective_to IS NULL
-               AND effective_from < p_effective_from;
-
-            INSERT INTO commission_rates
-                (product_code, agent_id, rate_pct, effective_from, effective_to, created_by)
-            VALUES
-                (p_product_code, p_agent_id, p_rate_pct, p_effective_from, NULL, p_actor)
-            RETURNING rate_id INTO o_rate_id;
-        END IF;
-
-        log_action('RATE_UPSERT', p_product_code, p_agent_id, NULL,
-                   'rate_id=' || o_rate_id || ' pct=' || p_rate_pct
-                   || ' from=' || TO_CHAR(p_effective_from, 'YYYY-MM-DD'), p_actor);
+        -- Delegated: rules R1-R8 run in commission-service (POST /rates/upsert).
+        l_reply := call_service('/rates/upsert', 'POST',
+            JSON_OBJECT(
+                'product_code'   VALUE p_product_code,
+                'agent_id'       VALUE p_agent_id,
+                'rate_pct'       VALUE TO_CHAR(p_rate_pct),
+                'effective_from' VALUE TO_CHAR(p_effective_from, c_date_fmt),
+                'actor'          VALUE p_actor
+                NULL ON NULL RETURNING VARCHAR2(32767)));
+        o_rate_id := JSON_VALUE(l_reply, '$.rate_id' RETURNING NUMBER);
+        DBMS_LOB.freetemporary(l_reply);
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
@@ -254,18 +226,17 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         p_effective_to IN DATE,
         p_actor        IN VARCHAR2
     ) IS
+        l_reply CLOB;
     BEGIN
-        UPDATE commission_rates
-           SET effective_to = p_effective_to
-         WHERE product_code = p_product_code
-           AND NVL(agent_id, -1) = NVL(p_agent_id, -1)
-           AND effective_to IS NULL;
-        IF SQL%ROWCOUNT = 0 THEN
-            RAISE_APPLICATION_ERROR(-20007,
-                'No open rate for ' || p_product_code || '/' || NVL(TO_CHAR(p_agent_id), 'default'));
-        END IF;
-        log_action('RATE_END', p_product_code, p_agent_id, NULL,
-                   'to=' || TO_CHAR(p_effective_to, 'YYYY-MM-DD'), p_actor);
+        -- Delegated: rules R10-R12 run in commission-service (POST /rates/end).
+        l_reply := call_service('/rates/end', 'POST',
+            JSON_OBJECT(
+                'product_code' VALUE p_product_code,
+                'agent_id'     VALUE p_agent_id,
+                'effective_to' VALUE TO_CHAR(p_effective_to, c_date_fmt),
+                'actor'        VALUE p_actor
+                NULL ON NULL RETURNING VARCHAR2(32767)));
+        DBMS_LOB.freetemporary(l_reply);
         COMMIT;
     EXCEPTION
         WHEN OTHERS THEN
@@ -334,25 +305,20 @@ CREATE OR REPLACE PACKAGE BODY commission_pkg AS
         p_agent_id     IN commission_rates.agent_id%TYPE,
         p_as_of        IN DATE
     ) RETURN commission_rates.rate_id%TYPE IS
+        l_amp     CONSTANT VARCHAR2(1) := CHR(38);
+        l_reply   CLOB;
         l_rate_id commission_rates.rate_id%TYPE;
     BEGIN
-        -- Agent-specific rate wins over the product default.
-        SELECT rate_id INTO l_rate_id
-          FROM (SELECT rate_id
-                  FROM commission_rates
-                 WHERE product_code = p_product_code
-                   AND (agent_id = p_agent_id OR agent_id IS NULL)
-                   AND effective_from <= p_as_of
-                   AND (effective_to IS NULL OR effective_to >= p_as_of)
-                 ORDER BY agent_id NULLS LAST, effective_from DESC)
-         WHERE ROWNUM = 1;
+        -- Delegated: rules R22-R24 run in commission-service (GET /rates/resolve).
+        -- Neither commits nor rolls back: the caller's transaction stays open.
+        l_reply := call_service(
+            '/rates/resolve?product_code=' || UTL_URL.escape(p_product_code, TRUE, 'AL32UTF8')
+            || l_amp || 'agent_id=' || TO_CHAR(p_agent_id)
+            || l_amp || 'as_of=' || UTL_URL.escape(TO_CHAR(p_as_of, c_date_fmt), TRUE, 'AL32UTF8'),
+            'GET');
+        l_rate_id := JSON_VALUE(l_reply, '$.rate_id' RETURNING NUMBER);
+        DBMS_LOB.freetemporary(l_reply);
         RETURN l_rate_id;
-    EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-            RAISE_APPLICATION_ERROR(-20007,
-                'No rate in force for ' || p_product_code || '/agent '
-                || NVL(TO_CHAR(p_agent_id), 'default') || ' on '
-                || TO_CHAR(p_as_of, 'YYYY-MM-DD'));
     END resolve_rate;
 
     PROCEDURE calculate_policy_commission (

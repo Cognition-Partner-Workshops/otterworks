@@ -36,8 +36,8 @@ Oracle.
   and audit detail.
 - `Guards` — `assert_product` (-20004) and `assert_active_agent` (-20002 / -20003).
 - `AuditLog` — `log_action` into `rate_audit_log`.
-- `RateResolver` — `resolve_rate` for the calculation group. `LegacyPackageRateResolver`
-  calls the package until the rates group replaces it.
+- `RateResolver` — `resolve_rate` for the calculation group, implemented over JDBC by
+  `rates.JdbcRateResolver`.
 
 ## Run
 
