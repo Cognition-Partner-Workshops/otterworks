@@ -12,9 +12,11 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@claims/*": ["../../industries/insurance/mobile-claims/src/*"],
+      "*": ["./node_modules/@types/*", "./node_modules/*"]
     }
   },
-  "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts"],
+  "include": ["src", "e2e", "vite.config.ts", "playwright.config.ts", "../../industries/insurance/mobile-claims/src"],
   "exclude": ["node_modules", "bdd", "dist"]
 }

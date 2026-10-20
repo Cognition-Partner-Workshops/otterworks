@@ -20,6 +20,7 @@ import StarredPage from "@/pages/starred";
 import TrashPage from "@/pages/trash";
 import TermsPage from "@/pages/terms";
 import PrivacyPage from "@/pages/privacy";
+import FnolPage from "@claims/fnol-page";
 import BillingPlansPage from "@/features/billing/plans-page";
 import BillingEntitlementPage from "@/features/billing/entitlement-page";
 import BillingChangePlanPage from "@/features/billing/change-plan-page";
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/recent" element={<RecentPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/claims/fnol" element={<FnolPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/shared" element={<SharedPage />} />
           <Route path="/starred" element={<StarredPage />} />

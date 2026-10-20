@@ -4,6 +4,9 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 import pkg from "./package.json" with { type: "json" };
 
+// Insurance-only mobile claims screen, kept outside the shell's src tree.
+const mobileClaims = path.resolve(__dirname, "../../industries/insurance/mobile-claims");
+
 // Dev/preview proxy forwards /api/v1/* to the API gateway (same-origin, no CORS),
 // mirroring the old Next.js middleware rewrite. Production uses nginx for the same job.
 const apiProxy = {
@@ -26,18 +29,35 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, "src") },
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "@claims": path.join(mobileClaims, "src"),
+    },
+    // Resolve the claims module's bare imports from this app's node_modules.
+    dedupe: [
+      "react",
+      "react-dom",
+      "react-hook-form",
+      "@hookform/resolvers",
+      "zod",
+      "lucide-react",
+      "axios",
+      "@capacitor/core",
+      "@testing-library/react",
+      "@testing-library/jest-dom",
+    ],
   },
   server: {
     port: 3000,
     proxy: { ...apiProxy, ...billingProxy },
+    fs: { allow: [".", mobileClaims] },
   },
   preview: {
     port: 3000,
     proxy: { ...apiProxy, ...billingProxy },
   },
   test: {
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}", `${mobileClaims}/src/**/*.{test,spec}.{ts,tsx}`],
     setupFiles: ["src/test-setup.ts"],
     globals: true,
     environment: "jsdom",

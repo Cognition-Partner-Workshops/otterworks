@@ -11,6 +11,7 @@ import {
   Trash2,
   Star,
   TrendingUp,
+  ClipboardPlus,
   Menu,
   X,
   Plus,
@@ -39,6 +40,7 @@ const navGroups: NavGroup[] = [
     label: "Desk",
     items: [
       { href: "/dashboard", label: "Overview", icon: Home },
+      { href: "/claims/fnol", label: "Report a loss", icon: ClipboardPlus },
       { href: "/recent", label: "Recent", icon: Clock },
       { href: "/files", label: "Claim files", icon: FolderOpen },
       { href: "/documents", label: "Policy documents", icon: FileText },
