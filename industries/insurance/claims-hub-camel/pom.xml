@@ -25,8 +25,8 @@
     <!-- Same Saxon line as saxonche 12.5.0, which wrote corpus/golden. -->
     <saxon.version>12.5</saxon.version>
     <greenmail.version>2.0.1</greenmail.version>
+    <commons-csv.version>1.11.0</commons-csv.version>
     <!-- Before 1.21.4 Testcontainers asks for Docker API 1.32; Docker 29 refuses anything below 1.40. -->
-    <testcontainers.version>1.21.4</testcontainers.version>
     <claims.fixture.dir>${project.basedir}/../biztalk-claims-intake</claims.fixture.dir>
     <!-- PostgreSQL 16 standing in for the WCF-SQL claims system and policy admin databases in the route tests. -->
     <claims.postgres.image>postgres:16-alpine</claims.postgres.image>
@@ -129,6 +129,11 @@
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-database-postgresql</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>${commons-csv.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -138,6 +143,11 @@
     <dependency>
       <groupId>org.apache.camel.springboot</groupId>
       <artifactId>camel-mock-starter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.camel</groupId>
+      <artifactId>camel-test-spring-junit5</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -182,6 +192,8 @@
           <systemPropertyVariables>
             <claims.fixture.dir>${claims.fixture.dir}</claims.fixture.dir>
             <claims.postgres.image>${claims.postgres.image}</claims.postgres.image>
+            <fixture.dir>${claims.fixture.dir}</fixture.dir>
+            <parity.report>${project.build.directory}/parity/triage-parity.md</parity.report>
           </systemPropertyVariables>
         </configuration>
       </plugin>

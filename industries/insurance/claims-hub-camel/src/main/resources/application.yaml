@@ -26,6 +26,9 @@ camel:
     name: claims-hub
     main-run-controller: true
 claimshub:
+  triage:
+    # ClaimTriage 1.2 as data (Rules/ClaimTriagePolicy.xml): the FnolIntake Call_Rules shape evaluates this table.
+    rules-table: classpath:rules/claim-triage.csv
   fnol:
     # FnolIntake Delay_CorrectionWindow: new System.TimeSpan(0, 15, 0)
     correction-window: 15m
