@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BindingInfo xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Assembly="Microsoft.BizTalk.Deployment, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Version="3.5.1.0" BindingStatus="FullyBound" BoundEndpoints="11" TotalEndpoints="11">
+  <Timestamp>2024-06-14T17:05:22.0000000+00:00</Timestamp>
+  <ModuleRefCollection>
+    <ModuleRef Name="ThistlecombeMutual.ClaimsHub.Orchestrations" Version="1.0.0.0" Culture="neutral" PublicKeyToken="9c7f1e0a3b2d4e5f" FullName="ThistlecombeMutual.ClaimsHub.Orchestrations, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f">
+      <Services>
+        <Service Name="ThistlecombeMutual.ClaimsHub.Orchestrations.FnolIntake" State="Started" TrackingOption="ServiceStartEnd MessageSendReceive OrchestrationEvents" Description="FNOL intake with a 15 minute correction window on claim number">
+          <Ports>
+            <Port Name="FnolIn" Modifier="1" BindingOption="1"><ReceivePortRef Name="rp_Agency_FnolBatch_SFTP" /></Port>
+            <Port Name="PolicyLookup" Modifier="2" BindingOption="1"><SendPortRef Name="sp_PolicyAdmin_PolicyInq_WcfSql" /></Port>
+            <Port Name="ClaimsDb" Modifier="2" BindingOption="1"><SendPortRef Name="sp_ClaimsDb_InsertClaim_WcfSql" /></Port>
+            <Port Name="Assignment" Modifier="2" BindingOption="4" />
+          </Ports>
+          <Roles />
+          <Host Name="BizTalkServerApplication" NTGroupName="BizTalk Application Users" Type="1" Trusted="false" />
+        </Service>
+        <Service Name="ThistlecombeMutual.ClaimsHub.Orchestrations.ClaimPayment" State="Started" TrackingOption="ServiceStartEnd MessageSendReceive OrchestrationEvents" Description="Claim payment with a long-running scope and compensation of the ledger post">
+          <Ports>
+            <Port Name="PaymentIn" Modifier="1" BindingOption="1"><ReceivePortRef Name="rp_ClaimsSystem_PaymentInstruction_FILE" /></Port>
+            <Port Name="Ledger" Modifier="2" BindingOption="1"><SendPortRef Name="sp_ClaimsDb_LedgerPost_WcfSql" /></Port>
+            <Port Name="Vendor" Modifier="2" BindingOption="1"><SendPortRef Name="sp_PaymentVendor_Remittance_SFTP" /></Port>
+            <Port Name="OpsMail" Modifier="2" BindingOption="1"><SendPortRef Name="sp_Ops_PaymentHeld_SMTP" /></Port>
+          </Ports>
+          <Roles />
+          <Host Name="BizTalkServerApplication" NTGroupName="BizTalk Application Users" Type="1" Trusted="false" />
+        </Service>
+        <Service Name="ThistlecombeMutual.ClaimsHub.Orchestrations.AdjusterAssignment" State="Started" TrackingOption="ServiceStartEnd MessageSendReceive OrchestrationEvents" Description="Adjuster assignment with a parallel roster lookup and archive">
+          <Ports>
+            <Port Name="AssignmentIn" Modifier="1" BindingOption="4" />
+            <Port Name="Roster" Modifier="2" BindingOption="1"><SendPortRef Name="sp_ClaimsDb_RosterQuery_WcfSql" /></Port>
+            <Port Name="Notice" Modifier="2" BindingOption="1"><SendPortRef Name="sp_Adjuster_AssignmentNotice_SMTP" /></Port>
+            <Port Name="Archive" Modifier="2" BindingOption="1"><SendPortRef Name="sp_Compliance_AssignmentArchive_FILE" /></Port>
+          </Ports>
+          <Roles />
+          <Host Name="BizTalkServerApplication" NTGroupName="BizTalk Application Users" Type="1" Trusted="false" />
+        </Service>
+      </Services>
+    </ModuleRef>
+  </ModuleRefCollection>
+  <SendPortCollection>
+    <SendPort Name="sp_PolicyAdmin_PolicyInq_WcfSql" IsStatic="true" IsTwoWay="true" BindingOption="1">
+      <Description>Policy lookup against the policy administration database (typed procedure dbo.usp_GetPolicyAsOf).</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>mssql://POLADM-SQL01//PolicyAdmin?</Address>
+        <TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;BindingType vt="8"&gt;sqlBinding&lt;/BindingType&gt;&lt;BindingConfiguration vt="8"&gt;&amp;lt;binding name="sqlBinding" /&amp;gt;&lt;/BindingConfiguration&gt;&lt;StaticAction vt="8"&gt;TypedProcedure/dbo/usp_GetPolicyAsOf&lt;/StaticAction&gt;&lt;SendTimeout vt="8"&gt;00:01:00&lt;/SendTimeout&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>5</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>false</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" /></SendHandler>
+      </PrimaryTransport>
+      <ReceivePipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLReceive" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLReceive, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="1" TrackingOption="None" />
+      <Transforms><Transform FullName="ThistlecombeMutual.ClaimsHub.Maps.CanonicalClaim_to_PolicyInqRq, ThistlecombeMutual.ClaimsHub.Maps, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" AssemblyQualifiedName="ThistlecombeMutual.ClaimsHub.Maps.CanonicalClaim_to_PolicyInqRq, ThistlecombeMutual.ClaimsHub.Maps, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" /></Transforms>
+      <Filter />
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_ClaimsDb_InsertClaim_WcfSql" IsStatic="true" IsTwoWay="false" BindingOption="1">
+      <Description>Inserts the triaged claim into the claims system (dbo.usp_InsertClaim).</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>mssql://CLAIMS-SQL01//ClaimsCore?</Address>
+        <TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;BindingType vt="8"&gt;sqlBinding&lt;/BindingType&gt;&lt;StaticAction vt="8"&gt;TypedProcedure/dbo/usp_InsertClaim&lt;/StaticAction&gt;&lt;UseAmbientTransaction vt="11"&gt;-1&lt;/UseAmbientTransaction&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>5</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>true</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" /></SendHandler>
+      </PrimaryTransport>
+      <Transforms />
+      <Filter />
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_ClaimsDb_LedgerPost_WcfSql" IsStatic="true" IsTwoWay="false" BindingOption="1">
+      <Description>Posts and reverses claim payments on the ledger (dbo.usp_PostClaimPayment; the reversal action is set by the orchestration).</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>mssql://CLAIMS-SQL01//ClaimsLedger?</Address>
+        <TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;BindingType vt="8"&gt;sqlBinding&lt;/BindingType&gt;&lt;StaticAction vt="8"&gt;TypedProcedure/dbo/usp_PostClaimPayment&lt;/StaticAction&gt;&lt;UseAmbientTransaction vt="11"&gt;-1&lt;/UseAmbientTransaction&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>0</RetryCount>
+        <RetryInterval>5</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>true</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" /></SendHandler>
+      </PrimaryTransport>
+      <Transforms />
+      <Filter />
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_ClaimsDb_RosterQuery_WcfSql" IsStatic="true" IsTwoWay="true" BindingOption="1">
+      <Description>Adjuster roster by region and skill (dbo.usp_GetAdjusterRoster).</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>mssql://CLAIMS-SQL01//ClaimsCore?</Address>
+        <TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;BindingType vt="8"&gt;sqlBinding&lt;/BindingType&gt;&lt;StaticAction vt="8"&gt;TypedProcedure/dbo/usp_GetAdjusterRoster&lt;/StaticAction&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>5</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>false</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" /></SendHandler>
+      </PrimaryTransport>
+      <ReceivePipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLReceive" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLReceive, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="1" TrackingOption="None" />
+      <Transforms />
+      <Filter />
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_PaymentVendor_Remittance_SFTP" IsStatic="true" IsTwoWay="true" BindingOption="1">
+      <Description>Positional remittance file to the payment vendor's SFTP inbox; the vendor answers with an acknowledgement file.</Description>
+      <TransmitPipeline Name="ThistlecombeMutual.ClaimsHub.Pipelines.VendorRemittanceSendPipeline" FullyQualifiedName="ThistlecombeMutual.ClaimsHub.Pipelines.VendorRemittanceSendPipeline, ThistlecombeMutual.ClaimsHub.Pipelines, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>sftp://sftp.payvendor.example:22/inbound/thistlecombe/REM_%datetime_bts2000%_%SourceFileName%.txt</Address>
+        <TransportType Name="SFTP" Capabilities="11" ConfigurationClsid="9c5d1e8a-54e2-4f5e-9c3f-7d5b0b0f4e21" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;ServerAddress vt="8"&gt;sftp.payvendor.example&lt;/ServerAddress&gt;&lt;Port vt="3"&gt;22&lt;/Port&gt;&lt;FolderPath vt="8"&gt;/inbound/thistlecombe&lt;/FolderPath&gt;&lt;TargetFileName vt="8"&gt;REM_%datetime_bts2000%_%SourceFileName%.txt&lt;/TargetFileName&gt;&lt;ClientAuthenticationMode vt="8"&gt;PublicKeyAuthentication&lt;/ClientAuthenticationMode&gt;&lt;UserName vt="8"&gt;thistlecombe-remit&lt;/UserName&gt;&lt;PrivateKeyFile vt="8"&gt;E:\Keys\payvendor_ed25519.ppk&lt;/PrivateKeyFile&gt;&lt;SSOAffiliateApplication vt="8"&gt;&lt;/SSOAffiliateApplication&gt;&lt;AccessAnySSHServerHostKey vt="11"&gt;0&lt;/AccessAnySSHServerHostKey&gt;&lt;SSHServerHostKeyFingerPrint vt="8"&gt;ssh-ed25519 256 SHA256:k2m7Q0b3Z8rPq1Vw5hXy9tNf4Lc6Jd8Ea0Gb2Hc1Ii4&lt;/SSHServerHostKeyFingerPrint&gt;&lt;AppendIfExists vt="11"&gt;0&lt;/AppendIfExists&gt;&lt;TemporaryFolder vt="8"&gt;/inbound/thistlecombe/tmp&lt;/TemporaryFolder&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>10</RetryInterval>
+        <ServiceWindowEnabled>true</ServiceWindowEnabled>
+        <FromTime>2024-01-01T22:00:00</FromTime>
+        <ToTime>2024-01-01T05:30:00</ToTime>
+        <OrderedDelivery>true</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="SFTP" Capabilities="11" ConfigurationClsid="9c5d1e8a-54e2-4f5e-9c3f-7d5b0b0f4e21" /></SendHandler>
+      </PrimaryTransport>
+      <ReceivePipeline Name="Microsoft.BizTalk.DefaultPipelines.PassThruReceive" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.PassThruReceive, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="1" TrackingOption="None" />
+      <Transforms />
+      <Filter />
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_Adjuster_AssignmentNotice_SMTP" IsStatic="true" IsTwoWay="false" BindingOption="1">
+      <Description>Assignment notice to the adjuster (or the supervisor on escalation). The To address comes from the message.</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>mailto:%ClaimsHub.NoticeTo%</Address>
+        <TransportType Name="SMTP" Capabilities="11" ConfigurationClsid="3fc0b4a1-6d2a-4a4a-9a0d-5b8b1c9e2f31" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;SMTPHost vt="8"&gt;smtp-relay.thistlecombe.example&lt;/SMTPHost&gt;&lt;From vt="8"&gt;claims-hub@thistlecombe.example&lt;/From&gt;&lt;Subject vt="8"&gt;%ClaimsHub.NoticeSubject%&lt;/Subject&gt;&lt;MessagePartsAttachments vt="3"&gt;1&lt;/MessagePartsAttachments&gt;&lt;SMTPAuthenticate vt="3"&gt;2&lt;/SMTPAuthenticate&gt;&lt;EmailBodyText vt="8"&gt;%ClaimsHub.NoticeBody%&lt;/EmailBodyText&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>5</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>false</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="SMTP" Capabilities="11" ConfigurationClsid="3fc0b4a1-6d2a-4a4a-9a0d-5b8b1c9e2f31" /></SendHandler>
+      </PrimaryTransport>
+      <Transforms />
+      <Filter />
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_Ops_PaymentHeld_SMTP" IsStatic="true" IsTwoWay="false" BindingOption="1">
+      <Description>Operations mailbox for payments held after the vendor window failed three times.</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.PassThruTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.PassThruTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>mailto:claims-payments-ops@thistlecombe.example</Address>
+        <TransportType Name="SMTP" Capabilities="11" ConfigurationClsid="3fc0b4a1-6d2a-4a4a-9a0d-5b8b1c9e2f31" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;SMTPHost vt="8"&gt;smtp-relay.thistlecombe.example&lt;/SMTPHost&gt;&lt;From vt="8"&gt;claims-hub@thistlecombe.example&lt;/From&gt;&lt;Subject vt="8"&gt;Payment held: %ClaimsHub.ClaimNumber%&lt;/Subject&gt;&lt;SMTPAuthenticate vt="3"&gt;2&lt;/SMTPAuthenticate&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>5</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>false</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="SMTP" Capabilities="11" ConfigurationClsid="3fc0b4a1-6d2a-4a4a-9a0d-5b8b1c9e2f31" /></SendHandler>
+      </PrimaryTransport>
+      <Transforms />
+      <Filter />
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_Compliance_AssignmentArchive_FILE" IsStatic="true" IsTwoWay="false" BindingOption="1">
+      <Description>Seven-year archive of assignment requests for the regulator.</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>\\CLAIMS-FS01\compliance\assignments\%Year%\%MessageID%.xml</Address>
+        <TransportType Name="FILE" Capabilities="11" ConfigurationClsid="5e49e3a6-b4fc-4077-b44c-22f34a242fdb" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;UseTempFileOnWrite vt="11"&gt;-1&lt;/UseTempFileOnWrite&gt;&lt;AllowCacheOnWrite vt="11"&gt;0&lt;/AllowCacheOnWrite&gt;&lt;CopyMode vt="19"&gt;1&lt;/CopyMode&gt;&lt;FileName vt="8"&gt;%MessageID%.xml&lt;/FileName&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>5</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>false</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="FILE" Capabilities="11" ConfigurationClsid="5e49e3a6-b4fc-4077-b44c-22f34a242fdb" /></SendHandler>
+      </PrimaryTransport>
+      <Transforms />
+      <Filter />
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_Fraud_Referral_FILE" IsStatic="true" IsTwoWay="false" BindingOption="1">
+      <Description>Content-based subscription: every TriageFacts document whose outcome is FRAUD_REVIEW lands in the fraud desk folder without any orchestration sending it.</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>\\CLAIMS-FS01\fraud-desk\referrals\%ClaimsHub.ClaimNumber%.xml</Address>
+        <TransportType Name="FILE" Capabilities="11" ConfigurationClsid="5e49e3a6-b4fc-4077-b44c-22f34a242fdb" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;UseTempFileOnWrite vt="11"&gt;-1&lt;/UseTempFileOnWrite&gt;&lt;CopyMode vt="19"&gt;1&lt;/CopyMode&gt;&lt;FileName vt="8"&gt;%ClaimsHub.ClaimNumber%.xml&lt;/FileName&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>5</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>false</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="FILE" Capabilities="11" ConfigurationClsid="5e49e3a6-b4fc-4077-b44c-22f34a242fdb" /></SendHandler>
+      </PrimaryTransport>
+      <Transforms />
+      <Filter>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;Filter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;&lt;Group&gt;&lt;Statement Property="BTS.MessageType" Operator="0" Value="http://schemas.thistlecombe.example/claims/triage#TriageFacts" /&gt;&lt;Statement Property="ClaimsHub.PropertySchema.TriageOutcome" Operator="0" Value="FRAUD_REVIEW" /&gt;&lt;/Group&gt;&lt;/Filter&gt;</Filter>
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_Declines_FILE" IsStatic="true" IsTwoWay="false" BindingOption="1">
+      <Description>Content-based subscription: declined FNOLs (policy not in force) for the agency liaison team.</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>\\CLAIMS-FS01\agency-liaison\declines\%ClaimsHub.AgencyId%\%ClaimsHub.ClaimNumber%.xml</Address>
+        <TransportType Name="FILE" Capabilities="11" ConfigurationClsid="5e49e3a6-b4fc-4077-b44c-22f34a242fdb" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;UseTempFileOnWrite vt="11"&gt;-1&lt;/UseTempFileOnWrite&gt;&lt;CopyMode vt="19"&gt;1&lt;/CopyMode&gt;&lt;FileName vt="8"&gt;%ClaimsHub.ClaimNumber%.xml&lt;/FileName&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>5</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>false</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="FILE" Capabilities="11" ConfigurationClsid="5e49e3a6-b4fc-4077-b44c-22f34a242fdb" /></SendHandler>
+      </PrimaryTransport>
+      <Transforms />
+      <Filter>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;Filter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;&lt;Group&gt;&lt;Statement Property="BTS.MessageType" Operator="0" Value="http://schemas.thistlecombe.example/claims/triage#TriageFacts" /&gt;&lt;Statement Property="ClaimsHub.PropertySchema.TriageOutcome" Operator="0" Value="DECLINE_NOT_IN_FORCE" /&gt;&lt;/Group&gt;&lt;/Filter&gt;</Filter>
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+    <SendPort Name="sp_GlassVendor_FastTrack_SFTP" IsStatic="true" IsTwoWay="false" BindingOption="1">
+      <Description>Content-based subscription: fast-tracked glass claims go straight to the glass network partner.</Description>
+      <TransmitPipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLTransmit" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLTransmit, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="2" TrackingOption="None" />
+      <PrimaryTransport>
+        <Address>sftp://sftp.glassnet.example:22/thistlecombe/fasttrack/%ClaimsHub.ClaimNumber%.xml</Address>
+        <TransportType Name="SFTP" Capabilities="11" ConfigurationClsid="9c5d1e8a-54e2-4f5e-9c3f-7d5b0b0f4e21" />
+        <TransportTypeData>&lt;CustomProps&gt;&lt;ServerAddress vt="8"&gt;sftp.glassnet.example&lt;/ServerAddress&gt;&lt;Port vt="3"&gt;22&lt;/Port&gt;&lt;FolderPath vt="8"&gt;/thistlecombe/fasttrack&lt;/FolderPath&gt;&lt;TargetFileName vt="8"&gt;%ClaimsHub.ClaimNumber%.xml&lt;/TargetFileName&gt;&lt;ClientAuthenticationMode vt="8"&gt;PublicKeyAuthentication&lt;/ClientAuthenticationMode&gt;&lt;UserName vt="8"&gt;thistlecombe-glass&lt;/UserName&gt;&lt;PrivateKeyFile vt="8"&gt;E:\Keys\glassnet_ed25519.ppk&lt;/PrivateKeyFile&gt;&lt;/CustomProps&gt;</TransportTypeData>
+        <RetryCount>3</RetryCount>
+        <RetryInterval>10</RetryInterval>
+        <ServiceWindowEnabled>false</ServiceWindowEnabled>
+        <OrderedDelivery>false</OrderedDelivery>
+        <DeliveryNotification>1</DeliveryNotification>
+        <SendHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="SFTP" Capabilities="11" ConfigurationClsid="9c5d1e8a-54e2-4f5e-9c3f-7d5b0b0f4e21" /></SendHandler>
+      </PrimaryTransport>
+      <Transforms />
+      <Filter>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;Filter xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;&lt;Group&gt;&lt;Statement Property="BTS.MessageType" Operator="0" Value="http://schemas.microsoft.com/Sql/2008/05/TypedProcedures/dbo#usp_InsertClaim" /&gt;&lt;Statement Property="ClaimsHub.PropertySchema.TriageOutcome" Operator="0" Value="FAST_TRACK" /&gt;&lt;Statement Property="ClaimsHub.PropertySchema.LossCauseCd" Operator="0" Value="GLAS" /&gt;&lt;/Group&gt;&lt;/Filter&gt;</Filter>
+      <Tracking>0</Tracking>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </SendPort>
+  </SendPortCollection>
+  <ReceivePortCollection>
+    <ReceivePort Name="rp_Agency_FnolBatch_SFTP" IsTwoWay="false" BindingOption="1">
+      <Description>Nightly FNOL batches from the agencies' SFTP drop; one envelope per agency per night.</Description>
+      <ReceiveLocations>
+        <ReceiveLocation Name="rl_Agency_FnolBatch_SFTP">
+          <Description>Polls every five minutes between 22:00 and 06:00.</Description>
+          <Address>sftp://sftp.thistlecombe.example:22/agencies/*/fnol/*.xml</Address>
+          <PublicAddress />
+          <Primary>true</Primary>
+          <ReceiveLocationServiceWindowEnabled>true</ReceiveLocationServiceWindowEnabled>
+          <ReceiveLocationFromTime>2024-01-01T22:00:00</ReceiveLocationFromTime>
+          <ReceiveLocationToTime>2024-01-01T06:00:00</ReceiveLocationToTime>
+          <ReceiveLocationStartDateEnabled>false</ReceiveLocationStartDateEnabled>
+          <ReceiveLocationEndDateEnabled>false</ReceiveLocationEndDateEnabled>
+          <ReceiveLocationTransportType Name="SFTP" Capabilities="11" ConfigurationClsid="9c5d1e8a-54e2-4f5e-9c3f-7d5b0b0f4e21" />
+          <ReceiveLocationTransportTypeData>&lt;CustomProps&gt;&lt;ServerAddress vt="8"&gt;sftp.thistlecombe.example&lt;/ServerAddress&gt;&lt;Port vt="3"&gt;22&lt;/Port&gt;&lt;FolderPath vt="8"&gt;/agencies/*/fnol&lt;/FolderPath&gt;&lt;FileMask vt="8"&gt;*.xml&lt;/FileMask&gt;&lt;PollingInterval vt="3"&gt;5&lt;/PollingInterval&gt;&lt;PollingIntervalUnit vt="8"&gt;Minutes&lt;/PollingIntervalUnit&gt;&lt;ClientAuthenticationMode vt="8"&gt;PublicKeyAuthentication&lt;/ClientAuthenticationMode&gt;&lt;UserName vt="8"&gt;claims-hub&lt;/UserName&gt;&lt;PrivateKeyFile vt="8"&gt;E:\Keys\agencies_ed25519.ppk&lt;/PrivateKeyFile&gt;&lt;MaximumNumberOfFiles vt="3"&gt;50&lt;/MaximumNumberOfFiles&gt;&lt;/CustomProps&gt;</ReceiveLocationTransportTypeData>
+          <ReceivePipeline Name="ThistlecombeMutual.ClaimsHub.Pipelines.FnolBatchReceivePipeline" FullyQualifiedName="ThistlecombeMutual.ClaimsHub.Pipelines.FnolBatchReceivePipeline, ThistlecombeMutual.ClaimsHub.Pipelines, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" Type="1" TrackingOption="ServiceStartEnd MessageSendReceive PipelineEvents" />
+          <ReceivePipelineData />
+          <ReceiveHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="SFTP" Capabilities="11" ConfigurationClsid="9c5d1e8a-54e2-4f5e-9c3f-7d5b0b0f4e21" /></ReceiveHandler>
+        </ReceiveLocation>
+      </ReceiveLocations>
+      <SendPipelineData />
+      <Authentication>0</Authentication>
+      <Tracking>0</Tracking>
+      <Transforms />
+      <RouteFailedMessage>true</RouteFailedMessage>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </ReceivePort>
+    <ReceivePort Name="rp_ClaimsSystem_PaymentInstruction_FILE" IsTwoWay="false" BindingOption="1">
+      <Description>Payment instructions dropped by the claims system's nightly disbursement job.</Description>
+      <ReceiveLocations>
+        <ReceiveLocation Name="rl_ClaimsSystem_PaymentInstruction_FILE">
+          <Description />
+          <Address>\\CLAIMS-FS01\disbursements\out\PI-*.xml</Address>
+          <PublicAddress />
+          <Primary>true</Primary>
+          <ReceiveLocationServiceWindowEnabled>false</ReceiveLocationServiceWindowEnabled>
+          <ReceiveLocationStartDateEnabled>false</ReceiveLocationStartDateEnabled>
+          <ReceiveLocationEndDateEnabled>false</ReceiveLocationEndDateEnabled>
+          <ReceiveLocationTransportType Name="FILE" Capabilities="11" ConfigurationClsid="5e49e3a6-b4fc-4077-b44c-22f34a242fdb" />
+          <ReceiveLocationTransportTypeData>&lt;CustomProps&gt;&lt;RenameReceivedFiles vt="11"&gt;-1&lt;/RenameReceivedFiles&gt;&lt;RemoveReceivedFileRetryCount vt="19"&gt;5&lt;/RemoveReceivedFileRetryCount&gt;&lt;PollingInterval vt="19"&gt;60000&lt;/PollingInterval&gt;&lt;FileMask vt="8"&gt;PI-*.xml&lt;/FileMask&gt;&lt;BatchSize vt="19"&gt;20&lt;/BatchSize&gt;&lt;/CustomProps&gt;</ReceiveLocationTransportTypeData>
+          <ReceivePipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLReceive" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLReceive, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="1" TrackingOption="None" />
+          <ReceivePipelineData />
+          <ReceiveHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="FILE" Capabilities="11" ConfigurationClsid="5e49e3a6-b4fc-4077-b44c-22f34a242fdb" /></ReceiveHandler>
+        </ReceiveLocation>
+      </ReceiveLocations>
+      <SendPipelineData />
+      <Authentication>0</Authentication>
+      <Tracking>0</Tracking>
+      <Transforms />
+      <RouteFailedMessage>true</RouteFailedMessage>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </ReceivePort>
+    <ReceivePort Name="rp_ClaimsSystem_AssignmentRequest_WcfSql" IsTwoWay="false" BindingOption="1">
+      <Description>Polls the claims system for assignment requests raised by desk adjusters (dbo.usp_PollAssignmentRequests).</Description>
+      <ReceiveLocations>
+        <ReceiveLocation Name="rl_ClaimsSystem_AssignmentRequest_WcfSql">
+          <Description />
+          <Address>mssql://CLAIMS-SQL01//ClaimsCore?InboundId=AssignmentRequests</Address>
+          <PublicAddress />
+          <Primary>true</Primary>
+          <ReceiveLocationServiceWindowEnabled>false</ReceiveLocationServiceWindowEnabled>
+          <ReceiveLocationStartDateEnabled>false</ReceiveLocationStartDateEnabled>
+          <ReceiveLocationEndDateEnabled>false</ReceiveLocationEndDateEnabled>
+          <ReceiveLocationTransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" />
+          <ReceiveLocationTransportTypeData>&lt;CustomProps&gt;&lt;BindingType vt="8"&gt;sqlBinding&lt;/BindingType&gt;&lt;InboundOperationType vt="8"&gt;TypedPolling&lt;/InboundOperationType&gt;&lt;PolledDataAvailableStatement vt="8"&gt;SELECT COUNT(*) FROM dbo.AssignmentQueue WHERE Status = 'NEW'&lt;/PolledDataAvailableStatement&gt;&lt;PollingStatement vt="8"&gt;EXEC dbo.usp_PollAssignmentRequests&lt;/PollingStatement&gt;&lt;PollingIntervalInSeconds vt="3"&gt;30&lt;/PollingIntervalInSeconds&gt;&lt;UseAmbientTransaction vt="11"&gt;-1&lt;/UseAmbientTransaction&gt;&lt;/CustomProps&gt;</ReceiveLocationTransportTypeData>
+          <ReceivePipeline Name="Microsoft.BizTalk.DefaultPipelines.XMLReceive" FullyQualifiedName="Microsoft.BizTalk.DefaultPipelines.XMLReceive, Microsoft.BizTalk.DefaultPipelines, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" Type="1" TrackingOption="None" />
+          <ReceivePipelineData />
+          <ReceiveHandler Name="BizTalkServerApplication" HostTrusted="false"><TransportType Name="WCF-SQL" Capabilities="899" ConfigurationClsid="59b35d03-6a06-4734-a249-ef561254ecf7" /></ReceiveHandler>
+        </ReceiveLocation>
+      </ReceiveLocations>
+      <SendPipelineData />
+      <Authentication>0</Authentication>
+      <Tracking>0</Tracking>
+      <Transforms><Transform FullName="ThistlecombeMutual.ClaimsHub.Maps.AssignmentRequest_to_RosterQuery, ThistlecombeMutual.ClaimsHub.Maps, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" AssemblyQualifiedName="ThistlecombeMutual.ClaimsHub.Maps.AssignmentRequest_to_RosterQuery, ThistlecombeMutual.ClaimsHub.Maps, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f" /></Transforms>
+      <RouteFailedMessage>true</RouteFailedMessage>
+      <ApplicationName>ThistlecombeMutual.ClaimsHub</ApplicationName>
+    </ReceivePort>
+  </ReceivePortCollection>
+  <PartyCollection xsi:nil="true" />
+</BindingInfo>

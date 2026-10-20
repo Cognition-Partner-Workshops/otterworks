@@ -1,0 +1,41 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000010</RqUID>
+  <TransactionRequestDt>2026-09-16T08:25:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0922</ProducerId>
+      <ProducerName>Penrose &amp; Daughters</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-AUTO-48170</PolicyNumber>
+      <LOBCd>AUTO</LOBCd>
+        <EffectiveDt>2026-08-30</EffectiveDt>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Cormac</GivenName>
+      <Surname>Delahunty</Surname>
+      <TaxId>110-50-7130</TaxId>
+        <PhoneNumber>401-555-1370</PhoneNumber>
+        <EmailAddr>cormac.delahunty@example.net</EmailAddr>
+        <PriorFraudFlagInd>true</PriorFraudFlagInd>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100410</ClaimNumber>
+      <LossDt>2026-09-16</LossDt>
+      <ReportedDt>2026-09-16</ReportedDt>
+      <LossCauseCd>COMP</LossCauseCd>
+      <IncidentDesc>Hail damage to roof and bonnet while parked at work</IncidentDesc>
+      <EstimatedLossAmt>3300.00</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+      <Addr>
+        <City>Bristol</City>
+        <StateProvCd>RI</StateProvCd>
+        <PostalCode>02809</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+      <AutoLossInfo>
+        <VIN>1HGCM82633A109110</VIN>
+        <DriveableInd>true</DriveableInd>
+      </AutoLossInfo>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>
