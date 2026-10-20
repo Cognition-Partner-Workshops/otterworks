@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Claims privacy module driver.
 #   ./run.sh up       start PostgreSQL 16 and load kit, schema, seed, access
-#   ./run.sh test     access tests (+ retention tests once installed)
+#   ./run.sh test     access and retention tests
 #   ./run.sh compare  run queries/claimant_lookup.sql as reader_demo and adjuster_demo, side by side
 #   ./run.sh down     stop and remove the container and its data
 # NS (default: local) namespaces the compose project.
