@@ -33,8 +33,8 @@ BEGIN
         region := rec.region_code;
         sql_text := '
             INSERT INTO DW.SCORECARD_WORK
-            SELECT f.region_code,
-                   f.producer_code,
+            SELECT MIN_BY(f.region_code, f.feed_id),
+                   MIN_BY(f.producer_code, f.feed_id),
                    p.producer_name,
                    p.agency_name,
                    t.tier_name,
@@ -50,7 +50,7 @@ BEGIN
                                                     ORDER BY tier_effective_date DESC NULLS LAST) = 1) t
                 ON UPPER(t.producer_code) = UPPER(f.producer_code)
              WHERE UPPER(f.region_code) = UPPER(?) AND f.feed_date = ?
-             GROUP BY f.region_code, f.producer_code, p.producer_name, p.agency_name, t.tier_name';
+             GROUP BY UPPER(f.region_code), UPPER(f.producer_code), p.producer_name, p.agency_name, t.tier_name';
         EXECUTE IMMEDIATE :sql_text USING (region, SCORECARD_DATE);
         rc := SQLROWCOUNT;
 

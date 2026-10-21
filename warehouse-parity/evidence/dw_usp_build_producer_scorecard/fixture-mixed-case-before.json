@@ -1,0 +1,280 @@
+{
+  "columns": [
+    "scorecard_date",
+    "region_code",
+    "producer_code",
+    "producer_name",
+    "agency_name",
+    "tier_name",
+    "policy_count",
+    "claim_count",
+    "written_premium",
+    "row_status"
+  ],
+  "keys": [
+    "region_code",
+    "producer_code"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 46,
+    "snowflake": 47,
+    "pass": false
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "scorecard_date": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 1,
+          "min": "2026-09-30",
+          "max": "2026-09-30",
+          "min_len": 10,
+          "max_len": 10
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 0,
+          "distinct": 1,
+          "min": "2026-09-30",
+          "max": "2026-09-30",
+          "min_len": 10,
+          "max_len": 10
+        }
+      },
+      "region_code": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 6,
+          "min": "MW",
+          "max": "SW",
+          "min_len": 2,
+          "max_len": 2
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 0,
+          "distinct": 6,
+          "min": "MW",
+          "max": "SW",
+          "min_len": 2,
+          "max_len": 2
+        }
+      },
+      "producer_code": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 41,
+          "min": "P1004",
+          "max": "~REGION",
+          "min_len": 5,
+          "max_len": 7
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 0,
+          "distinct": 42,
+          "min": "P1003",
+          "max": "~REGION",
+          "min_len": 5,
+          "max_len": 7
+        }
+      },
+      "producer_name": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 36,
+          "min": "Ana Moreau",
+          "max": "Sam Quintero",
+          "min_len": 9,
+          "max_len": 15
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 6,
+          "distinct": 36,
+          "min": "Ana Moreau",
+          "max": "Sam Quintero",
+          "min_len": 9,
+          "max_len": 15
+        }
+      },
+      "agency_name": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 6,
+          "min": "Bluewater Insurance Group",
+          "max": "Summit Risk Partners",
+          "min_len": 14,
+          "max_len": 25
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 6,
+          "distinct": 6,
+          "min": "Bluewater Insurance Group",
+          "max": "Summit Risk Partners",
+          "min_len": 14,
+          "max_len": 25
+        }
+      },
+      "tier_name": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 1,
+          "min": "Silver",
+          "max": "Silver",
+          "min_len": 6,
+          "max_len": 6
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 6,
+          "distinct": 1,
+          "min": "Silver",
+          "max": "Silver",
+          "min_len": 6,
+          "max_len": 6
+        }
+      },
+      "policy_count": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 36,
+          "min": "0",
+          "max": "191",
+          "sum": "3814"
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 0,
+          "distinct": 38,
+          "min": "0",
+          "max": "191",
+          "sum": "3815"
+        }
+      },
+      "claim_count": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 26,
+          "min": "1",
+          "max": "43",
+          "sum": "657"
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 6,
+          "distinct": 26,
+          "min": "1",
+          "max": "43",
+          "sum": "657"
+        }
+      },
+      "written_premium": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 40,
+          "min": "5642.44",
+          "max": "216799.14",
+          "sum": "3965841.61"
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 6,
+          "distinct": 41,
+          "min": "100",
+          "max": "216799.14",
+          "sum": "3965841.61"
+        }
+      },
+      "row_status": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 3,
+          "min": "LOADED",
+          "max": "PRODUCER",
+          "min_len": 6,
+          "max_len": 8
+        },
+        "snowflake": {
+          "count": 47,
+          "nulls": 0,
+          "distinct": 3,
+          "min": "LOADED",
+          "max": "PRODUCER",
+          "min_len": 6,
+          "max_len": 8
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 47,
+    "matched": 44,
+    "match_pct": 93.62,
+    "pass": false,
+    "only_legacy": 0,
+    "only_snowflake": 1
+  },
+  "L4": {
+    "sampled": 3,
+    "diffs": [
+      {
+        "key": [
+          "MW",
+          "P1003"
+        ],
+        "only_in": "snowflake"
+      },
+      {
+        "key": [
+          "MW",
+          "p1003"
+        ],
+        "columns": {
+          "policy_count": {
+            "legacy": "65",
+            "snowflake": "60"
+          },
+          "claim_count": {
+            "legacy": "10",
+            "snowflake": "9"
+          },
+          "written_premium": {
+            "legacy": "56166.9",
+            "snowflake": "56066.9"
+          }
+        }
+      },
+      {
+        "key": [
+          "MW",
+          "~REGION"
+        ],
+        "columns": {
+          "policy_count": {
+            "legacy": "10",
+            "snowflake": "11"
+          }
+        }
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "dw.usp_build_producer_scorecard",
+  "label": "fixture-mixed-case-before",
+  "at": "2026-10-21 21:53 UTC"
+}
