@@ -1,0 +1,122 @@
+name: DW conversion equivalence gate
+
+on:
+  push:
+    paths:
+      - "dw/**"
+      - ".github/workflows/dw-conversion-gate.yml"
+  pull_request:
+    paths:
+      - "dw/**"
+      - ".github/workflows/dw-conversion-gate.yml"
+
+jobs:
+  conversion:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: dw_admin
+          POSTGRES_PASSWORD: dw_local_dev
+          POSTGRES_DB: analytics_dw
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U dw_admin -d analytics_dw"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DW_POSTGRES_DSN: >-
+        host=127.0.0.1 port=5432 dbname=analytics_dw user=dw_admin
+        password=dw_local_dev sslmode=disable
+      SPARK_LOCAL_IP: 127.0.0.1
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "11"
+      - name: Install DW runtime
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+            duckdb psycopg2-binary pyspark==3.5.6 delta-spark==3.2.0 pytest
+      - name: Configure local lakehouse path
+        run: echo "DW_LAKEHOUSE_ROOT=$RUNNER_TEMP/legacy-lakehouse" >> "$GITHUB_ENV"
+      - name: Restore legacy Postgres estate
+        run: |
+          psql "$DW_POSTGRES_DSN" -v ON_ERROR_STOP=1 -c \
+            "CREATE SCHEMA staging; CREATE SCHEMA core; CREATE SCHEMA mart;"
+          python dw/legacy-estate/ddl/compat/redshift_to_postgres.py \
+            --check dw/legacy-estate/ddl/staging \
+            dw/legacy-estate/ddl/core \
+            dw/legacy-estate/ddl/mart
+          mkdir -p "$RUNNER_TEMP/translated-ddl" "$RUNNER_TEMP/translated-procs"
+          python dw/legacy-estate/ddl/compat/redshift_to_postgres.py \
+            --out-dir "$RUNNER_TEMP/translated-ddl" \
+            dw/legacy-estate/ddl/staging \
+            dw/legacy-estate/ddl/core \
+            dw/legacy-estate/ddl/mart
+          psql "$DW_POSTGRES_DSN" -v ON_ERROR_STOP=1 \
+            -f dw/legacy-estate/ddl/compat/shims.sql
+          for ddl in "$RUNNER_TEMP"/translated-ddl/*.sql; do
+            psql "$DW_POSTGRES_DSN" -v ON_ERROR_STOP=1 -f "$ddl"
+          done
+          python dw/legacy-estate/ddl/compat/redshift_to_postgres.py \
+            --out-dir "$RUNNER_TEMP/translated-procs" \
+            dw/legacy-estate/procs
+          for proc in "$RUNNER_TEMP"/translated-procs/*.sql; do
+            psql "$DW_POSTGRES_DSN" -v ON_ERROR_STOP=1 -f "$proc"
+          done
+          psql "$DW_POSTGRES_DSN" -v ON_ERROR_STOP=1 \
+            -f dw/legacy-estate/seed/seed.sql
+          python dw/legacy-estate/python/run_dag.py \
+            --dag legacy_dw_nightly \
+            --dsn "$DW_POSTGRES_DSN" \
+            --audit "$RUNNER_TEMP/load-audit.jsonl"
+      - name: Snapshot legacy reference
+        run: |
+          mkdir -p "$RUNNER_TEMP/reports/legacy"
+          python dw/harness/snapshot.py \
+            --engine postgres \
+            --tables \
+            core.dim_customer_scd2 core.dim_product core.dim_date core.dim_store \
+            core.fct_orders core.fct_order_items core.fct_web_events core.fct_returns \
+            core.fx_rates_daily mart.daily_revenue_by_channel mart.daily_revenue_usd \
+            mart.customer_ltv mart.product_performance_monthly mart.session_funnel_daily \
+            mart.cohort_retention_monthly mart.returns_rate_by_category \
+            mart.top_products_by_category \
+            --out "$RUNNER_TEMP/reports/legacy"
+      - name: Extract converted inputs
+        run: |
+          python dw/databricks-migration/src/extract_legacy.py \
+            --table core.fct_order_items
+          python dw/databricks-migration/src/extract_legacy.py \
+            --table core.fct_returns
+      - name: Run converted reference asset
+        run: python dw/databricks-migration/src/notebooks/returns_rate_by_category.py
+      - name: Build converted manifest and compare
+        run: |
+          mkdir -p "$RUNNER_TEMP/reports/converted"
+          python dw/harness/spark_snapshot.py \
+            --path "$DW_LAKEHOUSE_ROOT/mart__returns_rate_by_category" \
+            --table mart.returns_rate_by_category \
+            --out "$RUNNER_TEMP/reports/converted/returns_rate_by_category.json"
+          python dw/harness/compare.py \
+            --legacy "$RUNNER_TEMP/reports/legacy/mart__returns_rate_by_category.json" \
+            --converted "$RUNNER_TEMP/reports/converted/returns_rate_by_category.json" \
+            --report "$RUNNER_TEMP/reports/returns_rate_by_category.json"
+      - name: Lint DW Python
+        run: python -m pip install ruff==0.9.10 && ruff check dw
+      - name: Run DW harness tests
+        run: PYTHONPATH="$GITHUB_WORKSPACE:$GITHUB_WORKSPACE/dw/harness" pytest -q dw/harness/tests
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: dw-equivalence-reports
+          path: ${{ runner.temp }}/reports/**/*.json

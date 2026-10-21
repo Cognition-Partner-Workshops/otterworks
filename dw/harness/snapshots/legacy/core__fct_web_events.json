@@ -1,0 +1,165 @@
+{
+  "columns": [
+    {
+      "digest": 334120933719342313141009258521081140086,
+      "distinct": 2000000,
+      "max": "2000000",
+      "min": "1",
+      "name": "event_id",
+      "non_null": 2000000,
+      "scale": 0,
+      "sum": "2000001000000",
+      "type": "bigint"
+    },
+    {
+      "digest": 305317631138720109311006683804964896011,
+      "distinct": 285715,
+      "max": "285715",
+      "min": "1",
+      "name": "session_id",
+      "non_null": 2000000,
+      "scale": 0,
+      "sum": "285715285715",
+      "type": "bigint"
+    },
+    {
+      "digest": 285708157320737544630181166974437369691,
+      "distinct": 48001,
+      "max": "60000",
+      "min": "2",
+      "name": "customer_id",
+      "non_null": 1599999,
+      "scale": 0,
+      "sum": "48001801513",
+      "type": "bigint"
+    },
+    {
+      "digest": 27687538854266410916116908110925748785,
+      "distinct": 2000000,
+      "max": "2025-12-31 23:59:06",
+      "min": "2023-01-01 00:00:07",
+      "name": "event_ts",
+      "non_null": 2000000,
+      "scale": null,
+      "sum": null,
+      "type": "timestamp without time zone"
+    },
+    {
+      "digest": 182484766026608691656735848235727816130,
+      "distinct": 2000000,
+      "max": "2025-12-31 15:59:06",
+      "min": "2022-12-31 16:00:07",
+      "name": "local_event_ts",
+      "non_null": 2000000,
+      "scale": null,
+      "sum": null,
+      "type": "timestamp without time zone"
+    },
+    {
+      "digest": 295462059387726961351328552858122301211,
+      "distinct": 1097,
+      "max": "2025-12-31",
+      "min": "2022-12-31",
+      "name": "local_event_date",
+      "non_null": 2000000,
+      "scale": null,
+      "sum": null,
+      "type": "date"
+    },
+    {
+      "digest": 97666428924079614860019953556333402245,
+      "distinct": 5,
+      "max": "search",
+      "min": "add_to_cart",
+      "name": "event_type",
+      "non_null": 2000000,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 62019357959105138638575527865156943310,
+      "distinct": 8000,
+      "max": "/p/999",
+      "min": "/p/1",
+      "name": "page_url",
+      "non_null": 2000000,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 26974611429844462032534821173157652096,
+      "distinct": 3,
+      "max": "tablet",
+      "min": "desktop",
+      "name": "device_type",
+      "non_null": 2000000,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 145437150284540014046129252511734737997,
+      "distinct": 5,
+      "max": "paid_search",
+      "min": "affiliate",
+      "name": "utm_source",
+      "non_null": 2000000,
+      "scale": null,
+      "sum": null,
+      "type": "character varying"
+    },
+    {
+      "digest": 13963508686438937838282577684042176740,
+      "distinct": 7,
+      "max": "7",
+      "min": "1",
+      "name": "event_index",
+      "non_null": 2000000,
+      "scale": 0,
+      "sum": "7999995",
+      "type": "integer"
+    },
+    {
+      "digest": 283055658611349276959347149327086435934,
+      "distinct": 2,
+      "max": "7",
+      "min": "2",
+      "name": "session_event_count",
+      "non_null": 2000000,
+      "scale": 0,
+      "sum": "13999990",
+      "type": "integer"
+    },
+    {
+      "digest": 308205041072631648835906346451882916608,
+      "distinct": 2,
+      "max": "true",
+      "min": "false",
+      "name": "is_conversion",
+      "non_null": 2000000,
+      "scale": null,
+      "sum": null,
+      "type": "boolean"
+    },
+    {
+      "digest": 127336189591910778200421037582098550912,
+      "distinct": 1,
+      "max": "2026-01-01 03:40:00",
+      "min": "2026-01-01 03:40:00",
+      "name": "load_ts",
+      "non_null": 2000000,
+      "scale": null,
+      "sum": null,
+      "type": "timestamp without time zone"
+    }
+  ],
+  "engine": "postgres",
+  "fingerprint": "4f5a1f6f9a47067e1bca9ec4bc15d8eeb0691d3018fa30817e5818af4f425f56",
+  "manifest_format": 4,
+  "ordered": null,
+  "row_count": 2000000,
+  "row_digest": 5111305180859204956756050465497457666,
+  "table": "core.fct_web_events"
+}
