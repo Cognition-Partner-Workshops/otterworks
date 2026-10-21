@@ -25,6 +25,7 @@ python -m wp objects --wave 1   # what the manifest says is in scope
 | `python -m wp sql --engine sqlserver "select ..."` | One query on one engine |
 | `python -m wp board show` / `set` / `rollup` | Read and update the wave board kept in Snowflake (`PARITY.BOARD`) |
 | `python -m wp board serve --port 8765` | Board page, plus `/report?engine=sqlserver` and `/report?engine=snowflake` for the load-script dashboard |
+| `python -m wp teardown <RUN_TOKEN> [--yes]` | List every warehouse, database, user, role and resource monitor named `<RUN_TOKEN>*`; with `--yes`, drop them and print what remains (should be nothing) and how many run warehouses are still running. Objects an admin role owns need `WP_SF_ADMIN_USER` and `WP_SF_ADMIN_TOKEN` |
 
 ## Parity levels
 

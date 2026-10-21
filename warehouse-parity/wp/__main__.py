@@ -81,7 +81,14 @@ def main():
     p.add_argument("--port", type=int, default=8765)
     for f in board.FIELDS:
         p.add_argument(f"--{f.replace('_', '-')}")
+    p = sub.add_parser("teardown", help="drop every Snowflake object named after a run token and prove none remain")
+    p.add_argument("token")
+    p.add_argument("--yes", action="store_true", help="drop; without it, list only")
     args = ap.parse_args()
+    if args.cmd == "teardown":
+        from . import teardown
+        print(json.dumps(teardown.run(teardown.admin(), args.token, args.yes)))
+        return
     m = Manifest(args.manifest)
 
     if args.cmd == "legacy-up":
