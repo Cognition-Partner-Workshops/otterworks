@@ -19,6 +19,13 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
 
+# Caller identity: the auth-service access token (HS256 JWT) presented as a bearer token.
+# Must be the same JWT_SECRET auth-service signs with; the fallback is the auth-service
+# local-dev value and must be overridden on any real host.
+portal:
+  auth:
+    jwt-secret: ${JWT_SECRET:dev-jwt-secret-otterworks-2024-change-in-production}
+
 management:
   endpoints:
     web:

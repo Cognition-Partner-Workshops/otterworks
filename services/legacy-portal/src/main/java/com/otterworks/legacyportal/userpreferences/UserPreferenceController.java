@@ -1,5 +1,6 @@
 package com.otterworks.legacyportal.userpreferences;
 
+import com.otterworks.legacyportal.common.PortalPrincipal;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -21,13 +22,17 @@ public class UserPreferenceController {
     }
 
     @GetMapping("/{userId}")
-    public PreferenceResponse get(@PathVariable String userId) {
+    public PreferenceResponse get(PortalPrincipal principal, @PathVariable String userId) {
+        principal.requireCanActFor(userId);
         return PreferenceResponse.from(service.getOrDefault(userId));
     }
 
     @PutMapping("/{userId}")
     public PreferenceResponse update(
-            @PathVariable String userId, @Valid @RequestBody UpdatePreferenceRequest request) {
+            PortalPrincipal principal,
+            @PathVariable String userId,
+            @Valid @RequestBody UpdatePreferenceRequest request) {
+        principal.requireCanActFor(userId);
         return PreferenceResponse.from(
                 service.save(
                         userId,
