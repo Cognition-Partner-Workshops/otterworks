@@ -1,0 +1,3 @@
+{
+  "conn_synapse_dw": {"type": "SqlServer", "host": "legacy-dw.internal", "database": "claims_dw", "authentication": "sql"}
+}
