@@ -186,6 +186,18 @@ class UserAndEscaping(ServerTestCase):
             with self.subTest(headers=headers):
                 self.assertIn(b"user unknown</p>", self.body("/?day=2026-10-15", headers=headers))
 
+    def test_user_header_name_case_insensitive(self):
+        body = self.body("/?day=2026-10-15", headers={"x-auth-request-user": "jdoe"})
+        self.assertIn(b"user jdoe</p>", body)
+
+    def test_only_the_ingress_header_names_the_user(self):
+        for name in ("X-Forwarded-User", "Remote-User", "X-Remote-User", "X-Auth-Request-Email",
+                     "X-Auth-Request-Preferred-Username"):
+            with self.subTest(header=name):
+                self.assertIn(b"user unknown</p>", self.body("/?day=2026-10-15", headers={name: "jdoe"}))
+        body = self.body("/?day=2026-10-15", headers={"Authorization": "Basic amRvZTpzZWNyZXQ="})  # jdoe:secret
+        self.assertIn(b"user unknown</p>", body)
+
     def test_user_escaped_and_bytes_kept(self):
         req = urllib.request.Request(self.srv.base + "/?day=2026-10-15")
         req.add_header("X-Auth-Request-User", "<a&\"b'>é".encode().decode("latin-1"))

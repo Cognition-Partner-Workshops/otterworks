@@ -1,0 +1,13 @@
+# Sign-in at the shared ingress-nginx (replaces mod_authnz_ldap on report-01, see deploy/README.md).
+# The rest of this file (app, owner, costCenter, image, env, ingress host) comes with the chart values.
+ingress:
+  # helm/app at c56cbe8f6f4c has no ingress.annotations value: its Ingress template writes only the
+  # cert-manager annotation, so this block renders nothing until the chart reads it (see README).
+  annotations:
+    # oauth2-proxy answers 202 for a signed-in member of the group, 401 without a session, 403 otherwise.
+    # allowed_groups is the bank directory group cn=fx-desk,ou=groups,dc=bank,dc=internal as oauth2-proxy
+    # sees it (groups claim "fx-desk"); oauth2-proxy splits this parameter on commas, so a DN cannot go here.
+    nginx.ingress.kubernetes.io/auth-url: "http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth?allowed_groups=fx-desk"
+    nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
+    # ingress-nginx sets this request header from the auth response, replacing any value the client sent.
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-Auth-Request-User"
