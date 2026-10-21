@@ -6,49 +6,49 @@ import { LoginComponent } from './login.component';
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('LoginComponent', () => {
-  let component: LoginComponent;
-  let fixture: ComponentFixture<LoginComponent>;
+    let component: LoginComponent;
+    let fixture: ComponentFixture<LoginComponent>;
 
-  beforeEach(async () => {
-    localStorage.clear();
-    await TestBed.configureTestingModule({
-    imports: [LoginComponent,
-        RouterTestingModule,
-        NoopAnimationsModule],
-    providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
-}).compileComponents();
+    beforeEach(async () => {
+        localStorage.clear();
+        await TestBed.configureTestingModule({
+            imports: [LoginComponent,
+                RouterTestingModule,
+                NoopAnimationsModule],
+            providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(LoginComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(LoginComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
 
-  it('should initialize with empty form', () => {
-    expect(component.email).toBe('');
-    expect(component.password).toBe('');
-    expect(component.loading).toBeFalse();
-    expect(component.errorMessage).toBe('');
-  });
+    it('should initialize with empty form', () => {
+        expect(component.email).toBe('');
+        expect(component.password).toBe('');
+        expect(component.loading).toBe(false);
+        expect(component.errorMessage).toBe('');
+    });
 
-  it('should not submit with empty fields', () => {
-    component.onLogin();
-    expect(component.loading).toBeFalse();
-  });
+    it('should not submit with empty fields', () => {
+        component.onLogin();
+        expect(component.loading).toBe(false);
+    });
 
-  it('should render login form elements', () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('form')).toBeTruthy();
-    expect(compiled.querySelector('input[type="email"]')).toBeTruthy();
-    expect(compiled.querySelector('input[type="password"]')).toBeTruthy();
-    expect(compiled.querySelector('button[type="submit"]')).toBeTruthy();
-  });
+    it('should render login form elements', () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        expect(compiled.querySelector('form')).toBeTruthy();
+        expect(compiled.querySelector('input[type="email"]')).toBeTruthy();
+        expect(compiled.querySelector('input[type="password"]')).toBeTruthy();
+        expect(compiled.querySelector('button[type="submit"]')).toBeTruthy();
+    });
 
-  it('should display app title', () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('OtterWorks');
-  });
+    it('should display app title', () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        expect(compiled.textContent).toContain('OtterWorks');
+    });
 });

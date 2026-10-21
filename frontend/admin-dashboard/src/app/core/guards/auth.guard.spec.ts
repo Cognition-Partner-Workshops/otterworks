@@ -8,35 +8,35 @@ import { AuthService } from '../services/auth.service';
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('authGuard', () => {
-  let authService: AuthService;
-  let router: Router;
-  const mockRoute = {} as ActivatedRouteSnapshot;
-  const mockState = { url: '/dashboard' } as RouterStateSnapshot;
+    let authService: AuthService;
+    let router: Router;
+    const mockRoute = {} as ActivatedRouteSnapshot;
+    const mockState = { url: '/dashboard' } as RouterStateSnapshot;
 
-  beforeEach(() => {
-    localStorage.clear();
-    TestBed.configureTestingModule({
-    imports: [RouterTestingModule],
-    providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
-});
-    authService = TestBed.inject(AuthService);
-    router = TestBed.inject(Router);
-  });
+    beforeEach(() => {
+        localStorage.clear();
+        TestBed.configureTestingModule({
+            imports: [RouterTestingModule],
+            providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
+        });
+        authService = TestBed.inject(AuthService);
+        router = TestBed.inject(Router);
+    });
 
-  afterEach(() => {
-    localStorage.clear();
-  });
+    afterEach(() => {
+        localStorage.clear();
+    });
 
-  it('should deny access when not authenticated', () => {
-    spyOn(router, 'navigate');
-    const result = TestBed.runInInjectionContext(() => authGuard(mockRoute, mockState));
-    expect(result).toBeFalse();
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
-  });
+    it('should deny access when not authenticated', () => {
+        vi.spyOn(router, 'navigate').mockResolvedValue(true);
+        const result = TestBed.runInInjectionContext(() => authGuard(mockRoute, mockState));
+        expect(result).toBe(false);
+        expect(router.navigate).toHaveBeenCalledWith(['/login']);
+    });
 
-  it('should allow access when authenticated', () => {
-    localStorage.setItem('ow_admin_token', 'test-token');
-    const result = TestBed.runInInjectionContext(() => authGuard(mockRoute, mockState));
-    expect(result).toBeTrue();
-  });
+    it('should allow access when authenticated', () => {
+        localStorage.setItem('ow_admin_token', 'test-token');
+        const result = TestBed.runInInjectionContext(() => authGuard(mockRoute, mockState));
+        expect(result).toBe(true);
+    });
 });
