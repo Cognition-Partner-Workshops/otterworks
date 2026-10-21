@@ -1,0 +1,386 @@
+{
+  "columns": [
+    "claim_id",
+    "event_type",
+    "event_weekday",
+    "event_date",
+    "event_count"
+  ],
+  "keys": [
+    "claim_id",
+    "event_type",
+    "event_date"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 4977,
+    "snowflake": 4977,
+    "pass": true
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "event_weekday": {
+        "legacy": {
+          "count": 4977,
+          "nulls": 0,
+          "distinct": 7,
+          "min": "1",
+          "max": "7",
+          "sum": "19502"
+        },
+        "snowflake": {
+          "count": 4977,
+          "nulls": 0,
+          "distinct": 7,
+          "min": "0",
+          "max": "6",
+          "sum": "14525"
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 4977,
+    "matched": 0,
+    "match_pct": 0.0,
+    "pass": false,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 25,
+    "diffs": [
+      {
+        "key": [
+          "1",
+          "note_added",
+          "2026-09-10"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "5",
+            "snowflake": "4"
+          }
+        }
+      },
+      {
+        "key": [
+          "1",
+          "note_added",
+          "2026-09-11"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "6",
+            "snowflake": "5"
+          }
+        }
+      },
+      {
+        "key": [
+          "10",
+          "created",
+          "2026-09-13"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "1",
+            "snowflake": "0"
+          }
+        }
+      },
+      {
+        "key": [
+          "10",
+          "created",
+          "2026-09-19"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "7",
+            "snowflake": "6"
+          }
+        }
+      },
+      {
+        "key": [
+          "10",
+          "reserve_change",
+          "2026-09-16"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "4",
+            "snowflake": "3"
+          }
+        }
+      },
+      {
+        "key": [
+          "1000",
+          "reserve_change",
+          "2026-09-25"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "6",
+            "snowflake": "5"
+          }
+        }
+      },
+      {
+        "key": [
+          "1000",
+          "reserve_change",
+          "2026-09-26"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "7",
+            "snowflake": "6"
+          }
+        }
+      },
+      {
+        "key": [
+          "1001",
+          "note_added",
+          "2026-09-26"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "7",
+            "snowflake": "6"
+          }
+        }
+      },
+      {
+        "key": [
+          "1004",
+          "note_added",
+          "2026-09-06"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "1",
+            "snowflake": "0"
+          }
+        }
+      },
+      {
+        "key": [
+          "1005",
+          "closed",
+          "2026-09-07"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "2",
+            "snowflake": "1"
+          }
+        }
+      },
+      {
+        "key": [
+          "1005",
+          "note_added",
+          "2026-09-27"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "1",
+            "snowflake": "0"
+          }
+        }
+      },
+      {
+        "key": [
+          "1006",
+          "assigned",
+          "2026-09-03"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "5",
+            "snowflake": "4"
+          }
+        }
+      },
+      {
+        "key": [
+          "1006",
+          "reserve_change",
+          "2026-09-02"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "4",
+            "snowflake": "3"
+          }
+        }
+      },
+      {
+        "key": [
+          "1006",
+          "reserve_change",
+          "2026-09-11"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "6",
+            "snowflake": "5"
+          }
+        }
+      },
+      {
+        "key": [
+          "1008",
+          "reserve_change",
+          "2026-09-03"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "5",
+            "snowflake": "4"
+          }
+        }
+      },
+      {
+        "key": [
+          "1009",
+          "closed",
+          "2026-09-11"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "6",
+            "snowflake": "5"
+          }
+        }
+      },
+      {
+        "key": [
+          "1009",
+          "created",
+          "2026-09-28"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "2",
+            "snowflake": "1"
+          }
+        }
+      },
+      {
+        "key": [
+          "1009",
+          "note_added",
+          "2026-09-07"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "2",
+            "snowflake": "1"
+          }
+        }
+      },
+      {
+        "key": [
+          "101",
+          "closed",
+          "2026-09-24"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "5",
+            "snowflake": "4"
+          }
+        }
+      },
+      {
+        "key": [
+          "101",
+          "note_added",
+          "2026-09-09"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "4",
+            "snowflake": "3"
+          }
+        }
+      },
+      {
+        "key": [
+          "1010",
+          "note_added",
+          "2026-09-06"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "1",
+            "snowflake": "0"
+          }
+        }
+      },
+      {
+        "key": [
+          "1011",
+          "reserve_change",
+          "2026-09-18"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "6",
+            "snowflake": "5"
+          }
+        }
+      },
+      {
+        "key": [
+          "1012",
+          "assigned",
+          "2026-09-23"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "4",
+            "snowflake": "3"
+          }
+        }
+      },
+      {
+        "key": [
+          "1012",
+          "assigned",
+          "2026-09-24"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "5",
+            "snowflake": "4"
+          }
+        }
+      },
+      {
+        "key": [
+          "1012",
+          "assigned",
+          "2026-09-25"
+        ],
+        "columns": {
+          "event_weekday": {
+            "legacy": "6",
+            "snowflake": "5"
+          }
+        }
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "dw.v_claim_audit",
+  "label": "first-pass",
+  "at": "2026-10-21 21:31 UTC"
+}
