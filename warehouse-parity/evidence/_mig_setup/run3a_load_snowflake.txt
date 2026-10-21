@@ -1,0 +1,3 @@
+warning: string literal names unprefixed schema DW., STG. (dynamic SQL is not remapped)
+first-pass object did not compile: first_pass/snowflake/usp_build_producer_scorecard.sql: 001003 (42000): SQL compilation error:
+{"MIG_DW.\"DIM_REGION\"": 6, "MIG_DW.\"DIM_PRODUCER\"": 60, "MIG_DW.\"PRODUCER_TIER\"": 132, "MIG_DW.\"DIM_POLICY\"": 2000, "MIG_DW.\"ClaimStatusRef\"": 5, "MIG_STG.\"PRODUCER_FEED\"": 204, "MIG_STG.\"PREMIUM_FEED\"": 1500, "MIG_STG.\"CLAIM_FEED\"": 3000, "MIG_AUDIT.\"CLAIM_EVENT\"": 5000, "MIG_AUDIT.\"POLICY_EVENT\"": 3000}

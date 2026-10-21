@@ -1,0 +1,229 @@
+{
+ "functions": [
+  {
+   "argument_signature": "(P_FIRST VARCHAR, P_MIDDLE VARCHAR, P_LAST VARCHAR)",
+   "created": "2026-10-21 15:01:20.276000-07:00",
+   "function_name": "FN_HOLDER_DISPLAY_NAME",
+   "function_schema": "DW",
+   "last_altered": "2026-10-21 15:01:20.276000-07:00"
+  }
+ ],
+ "procedures": [
+  {
+   "argument_signature": "(SCORECARD_DATE DATE, REGION_LIST VARCHAR)",
+   "created": "2026-10-21 15:04:47.785000-07:00",
+   "last_altered": "2026-10-21 15:04:47.785000-07:00",
+   "procedure_name": "USP_BUILD_PRODUCER_SCORECARD",
+   "procedure_schema": "DW"
+  },
+  {
+   "argument_signature": "(WINDOW_START DATE, WINDOW_END DATE)",
+   "created": "2026-10-21 15:01:41.402000-07:00",
+   "last_altered": "2026-10-21 15:01:41.402000-07:00",
+   "procedure_name": "USP_REFRESH_CLAIM_SUMMARY",
+   "procedure_schema": "DW"
+  },
+  {
+   "argument_signature": "()",
+   "created": "2026-10-21 15:00:58.414000-07:00",
+   "last_altered": "2026-10-21 15:00:58.414000-07:00",
+   "procedure_name": "USP_REFRESH_POLICY_CONTACT",
+   "procedure_schema": "DW"
+  }
+ ],
+ "schemas": [
+  {
+   "created": "2026-10-21 13:53:22.545000-07:00",
+   "last_altered": "2026-10-21 13:53:22.545000-07:00",
+   "schema_name": "AUDIT"
+  },
+  {
+   "created": "2026-10-21 13:53:22.395000-07:00",
+   "last_altered": "2026-10-21 13:53:22.395000-07:00",
+   "schema_name": "DW"
+  },
+  {
+   "created": "2026-10-21 13:53:33.624000-07:00",
+   "last_altered": "2026-10-21 13:53:33.624000-07:00",
+   "schema_name": "PARITY"
+  },
+  {
+   "created": "2026-10-21 13:53:22.091000-07:00",
+   "last_altered": "2026-10-21 13:53:22.091000-07:00",
+   "schema_name": "STG"
+  }
+ ],
+ "tables": [
+  {
+   "bytes": 48640,
+   "created": "2026-10-21 15:00:19.519000-07:00",
+   "last_altered": "2026-10-21 15:00:51.024000-07:00",
+   "row_count": 5000,
+   "table_name": "CLAIM_EVENT",
+   "table_schema": "AUDIT",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 35840,
+   "created": "2026-10-21 15:00:20.266000-07:00",
+   "last_altered": "2026-10-21 15:00:57.523000-07:00",
+   "row_count": 3000,
+   "table_name": "POLICY_EVENT",
+   "table_schema": "AUDIT",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 0,
+   "created": "2026-10-21 15:00:21.406000-07:00",
+   "last_altered": "2026-10-21 15:00:22.084000-07:00",
+   "row_count": 0,
+   "table_name": "CLAIM_FACT",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 16384,
+   "created": "2026-10-21 15:00:22.741000-07:00",
+   "last_altered": "2026-10-21 15:01:44.452000-07:00",
+   "row_count": 1552,
+   "table_name": "CLAIM_SUMMARY",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 1024,
+   "created": "2026-10-21 15:00:17.269000-07:00",
+   "last_altered": "2026-10-21 15:00:38.837000-07:00",
+   "row_count": 5,
+   "table_name": "ClaimStatusRef",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 58880,
+   "created": "2026-10-21 15:00:16.105000-07:00",
+   "last_altered": "2026-10-21 15:00:35.961000-07:00",
+   "row_count": 2000,
+   "table_name": "DIM_POLICY",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 2048,
+   "created": "2026-10-21 15:00:15.242000-07:00",
+   "last_altered": "2026-10-21 15:00:30.224000-07:00",
+   "row_count": 60,
+   "table_name": "DIM_PRODUCER",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 1024,
+   "created": "2026-10-21 15:00:14.750000-07:00",
+   "last_altered": "2026-10-21 15:00:27.845000-07:00",
+   "row_count": 6,
+   "table_name": "DIM_REGION",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 1536,
+   "created": "2026-10-21 15:00:24.171000-07:00",
+   "last_altered": "2026-10-21 15:11:51.461000-07:00",
+   "row_count": 23,
+   "table_name": "ETL_LOG",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 0,
+   "created": "2026-10-21 15:00:23.767000-07:00",
+   "last_altered": "2026-10-21 15:00:24.036000-07:00",
+   "row_count": 0,
+   "table_name": "POLICY_CONTACT",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 16384,
+   "created": "2026-10-21 15:00:22.292000-07:00",
+   "last_altered": "2026-10-21 15:03:01.917000-07:00",
+   "row_count": 1500,
+   "table_name": "PREMIUM_FACT",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 3072,
+   "created": "2026-10-21 15:00:21.014000-07:00",
+   "last_altered": "2026-10-21 15:11:50.956000-07:00",
+   "row_count": 46,
+   "table_name": "PRODUCER_SCORECARD",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 1536,
+   "created": "2026-10-21 15:00:15.682000-07:00",
+   "last_altered": "2026-10-21 15:00:32.904000-07:00",
+   "row_count": 132,
+   "table_name": "PRODUCER_TIER",
+   "table_schema": "DW",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": null,
+   "created": "2026-10-21 15:03:52.249000-07:00",
+   "last_altered": "2026-10-21 15:03:52.552000-07:00",
+   "row_count": null,
+   "table_name": "V_CLAIM_AUDIT",
+   "table_schema": "DW",
+   "table_type": "VIEW"
+  },
+  {
+   "bytes": null,
+   "created": "2026-10-21 15:02:53.701000-07:00",
+   "last_altered": "2026-10-21 15:02:54.039000-07:00",
+   "row_count": null,
+   "table_name": "V_POLICY_AUDIT",
+   "table_schema": "DW",
+   "table_type": "VIEW"
+  },
+  {
+   "bytes": 5120,
+   "created": "2026-10-21 13:53:33.759000-07:00",
+   "last_altered": "2026-10-21 15:15:23.149000-07:00",
+   "row_count": 9,
+   "table_name": "BOARD",
+   "table_schema": "PARITY",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 35840,
+   "created": "2026-10-21 15:00:18.954000-07:00",
+   "last_altered": "2026-10-21 15:00:47.833000-07:00",
+   "row_count": 3000,
+   "table_name": "CLAIM_FEED",
+   "table_schema": "STG",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 12288,
+   "created": "2026-10-21 15:00:18.552000-07:00",
+   "last_altered": "2026-10-21 15:00:43.807000-07:00",
+   "row_count": 1500,
+   "table_name": "PREMIUM_FEED",
+   "table_schema": "STG",
+   "table_type": "BASE TABLE"
+  },
+  {
+   "bytes": 3072,
+   "created": "2026-10-21 15:00:17.733000-07:00",
+   "last_altered": "2026-10-21 15:00:41.347000-07:00",
+   "row_count": 204,
+   "table_name": "PRODUCER_FEED",
+   "table_schema": "STG",
+   "table_type": "BASE TABLE"
+  }
+ ]
+}
