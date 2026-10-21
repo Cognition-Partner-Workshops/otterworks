@@ -117,9 +117,7 @@ def test_change_plan_reports_new_subscription_with_later_dated_history() -> None
     )
     repository = FakeRepository(
         [
-            SubscriptionRow(
-                SUBSCRIPTION, TENANT, STARTER, date(2026, 1, 1), None, "active", None
-            ),
+            SubscriptionRow(SUBSCRIPTION, TENANT, STARTER, date(2026, 1, 1), None, "active", None),
             later,
         ]
     )

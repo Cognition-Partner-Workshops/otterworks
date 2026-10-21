@@ -1,0 +1,214 @@
+module: rating
+rules:
+- id: RATING-R01
+  statement: >-
+    Rating uses the tenant's subscription that overlaps the period (starts_on <= period_end and
+    ends_on is null or >= period_start), taking the latest starts_on; its plan supplies included_units
+    (quota_units) and overage_rate.
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [31, 41]
+  inputs: [tenant_id, period_start, period_end]
+  outputs: [quota_units]
+  confidence: high
+  scenarios: [RATING-001, RATING-002, RATING-003, RATING-004, RATING-005, RATING-006]
+  question: >-
+    With no overlapping subscription the legacy function still returns a row with quota_units
+    NULL, billable_units 0 and overage_amount NULL. No scenario covers it. Proposal: the service
+    returns HTTP 404 ("no subscription for period") instead of a null amount. Approve, or keep
+    the legacy null row?
+  answer: Yes. The service returns HTTP 404 when no subscription overlaps the period.
+  decision:
+    status: approved
+    reviewer: Pre-Sales Solution Architect
+    date: '2026-10-07'
+    note: >-
+      Approved. The 404 replaces the legacy null-amount row; no scenario records that case.
+- id: RATING-R02
+  statement: >-
+    Used units are the sum of usage_events.units for the tenant whose occurred_at, cast to a date
+    in UTC, falls in [period_start, period_end], inclusive at both ends; no events means 0.
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [43, 46]
+  inputs: [tenant_id, period_start, period_end]
+  outputs: [used_units]
+  confidence: high
+  scenarios: [RATING-001, RATING-004, RATING-005]
+  question: >-
+    The date cast uses the database session time zone (UTC on the legacy stack). An event at 2026-02-28T23:30-05:00
+    counts toward March. Do we keep UTC calendar days as the billing boundary?
+  answer: Keep UTC calendar days, inclusive at both ends.
+  decision: {status: approved, reviewer: Pre-Sales Solution Architect, date: '2026-10-07', note: Approved
+      as written.}
+- id: RATING-R03
+  statement: >-
+    Rollover is the sum of stored rating_results.rollover_units for the tenant's finalized periods
+    with period_start in [period_start - 3 months, period_start), capped at 2 x included_units.
+    The lower bound is inclusive and month subtraction clamps to the end of the month (2026-05-31
+    - 3 months = 2026-02-28).
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [48, 56]
+  inputs: [tenant_id, period_start]
+  outputs: [rollover_units]
+  confidence: medium
+  scenarios: [RATING-001, RATING-002]
+  question: >-
+    Tenant 1 has three prior periods with 100 stored rollover each (300), capped to 200. The sum
+    is gross: rollover consumed in a later period is not subtracted, so the same unused units
+    can be counted again in the next two periods. Keep the gross 3-month sum with the 2x cap as
+    the rule?
+  answer: Keep the gross 3-month sum with the 2x cap.
+  decision:
+    status: approved
+    reviewer: Pre-Sales Solution Architect
+    date: '2026-10-07'
+    note: >-
+      Approved. Follow-up: rollover can double count because the sum is gross and does not net
+      out rollover consumed in later periods.
+  tags: [follow-up]
+- id: RATING-R04
+  statement: >-
+    Billable units = max(used_units - rollover_units - included_units, 0). Rollover is consumed
+    before the included quota is compared.
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [57, 57]
+  inputs: [used_units, rollover_units, included_units]
+  outputs: [billable_units]
+  confidence: high
+  scenarios: [RATING-001, RATING-002, RATING-003]
+  decision: {status: approved, reviewer: Pre-Sales Solution Architect, date: '2026-10-07', note: Approved
+      as written.}
+- id: RATING-R05
+  statement: >-
+    Billable units split into a first tier of min(billable, 101) units and a second tier of max(billable
+    - 101, 0) units. The boundary is 101 units, not 100.
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [58, 59]
+  inputs: [billable_units]
+  outputs: [first_tier_units, second_tier_units]
+  confidence: medium
+  scenarios: [RATING-004, RATING-005, RATING-006]
+  question: >-
+    101 looks like an off-by-one for a 100-unit tier, but RATING-004 (101 billable, all first
+    tier) and RATING-005 (102 billable, 1 unit second tier) record it. Keep 101?
+  answer: Keep 101 for parity; finance decides later.
+  decision:
+    status: approved
+    reviewer: Pre-Sales Solution Architect
+    date: '2026-10-07'
+    note: >-
+      Approved as a legacy quirk. Follow-up: finance to decide whether the first tier should be
+      100 units.
+  tags: [legacy-quirk]
+- id: RATING-R06
+  statement: >-
+    Overage amount = first_tier_units x overage_rate + second_tier_units x overage_rate x 1.5,
+    computed exactly and rounded once to 2 decimals, half away from zero (half-up for these non-negative
+    amounts). Example 101 x 0.055 = 5.555 -> 5.56.
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [60, 60]
+  inputs: [first_tier_units, second_tier_units, overage_rate]
+  outputs: [overage_amount]
+  confidence: high
+  scenarios: [RATING-002, RATING-004, RATING-006]
+  question: Rounding is half-up, not banker's rounding. Confirm half-up to the cent.
+  answer: Half-up to the cent, rounded once.
+  decision: {status: approved, reviewer: Pre-Sales Solution Architect, date: '2026-10-07', note: Approved
+      as written.}
+- id: RATING-R07
+  statement: >-
+    If the selected subscription has status 'suspended' and suspended_on falls in [period_start,
+    period_end], billable_units and overage_amount are scaled by (period_end - suspended_on +
+    1) / (period_end - period_start + 1). Billable units round half-up to an integer. The already
+    rounded amount is multiplied and rounded half-up to 2 decimals again (double rounding). first_tier_units
+    and second_tier_units are not prorated. The factor is the PostgreSQL numeric quotient (20
+    decimal places for day counts) and is not an exact fraction. Example tenant 2: 200 billable
+    -> 100; 8.73 x 14/28 = 4.365 -> 4.37; tiers stay 101/99.
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [62, 72]
+  inputs: [subscription_status, suspended_on, period_start, period_end]
+  outputs: [billable_units, overage_amount]
+  confidence: medium
+  scenarios: [RATING-003]
+  question: >-
+    (a) The factor counts days from suspended_on through period_end, so it bills the suspended
+    part of the period, not the active part (period_start to suspended_on - 1). In RATING-003
+    both parts are 14 days in February, so the transcript cannot tell them apart. Port the legacy
+    direction as written? (b) Keep double rounding (round the amount, prorate, round again)? (c)
+    The tier units stay unprorated, so after proration first + second (200) no longer equals billable
+    (100). Keep this? (d) Proposal: copy the 20-place quotient exactly. An exact fraction differs
+    by one cent at half-cent edges: 0.03 x 5/6 gives 0.02 in legacy and 0.03 exact. Approve copying
+    legacy precision?
+  answer: >-
+    Keep all four legacy behaviours: (a) suspended share, (b) double rounding, (c) unprorated
+    tier units, (d) PostgreSQL 20-place quotient.
+  decision:
+    status: approved
+    reviewer: Pre-Sales Solution Architect
+    date: '2026-10-07'
+    note: >-
+      Approved for parity. Follow-up (a): suspected legacy defect, billing the suspended share
+      rather than the active share; RATING-003 cannot separate the two. (d): copy legacy precision.
+  tags: [legacy-quirk, suspected-legacy-defect, copy-legacy-precision]
+- id: RATING-R08
+  statement: >-
+    The usage summary returns one row for each usage kind that has at least one event in the same
+    inclusive UTC-date window, with event_count and summed units, ordered by kind ascending. Kinds
+    with no events are omitted.
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [79, 93]
+  inputs: [tenant_id, period_start, period_end]
+  outputs: [kind, event_count, units]
+  confidence: high
+  scenarios: [RATING-007]
+  decision: {status: approved, reviewer: Pre-Sales Solution Architect, date: '2026-10-07', note: Approved
+      as written.}
+- id: RATING-R09
+  statement: >-
+    Finalizing upserts the rating period with id = md5(tenant_id::text || period_start::text)
+    as a UUID. On a (tenant_id, period_start) conflict only period_end is updated.
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [103, 118]
+  inputs: [tenant_id, period_start, period_end]
+  outputs: [rating_periods]
+  confidence: high
+  scenarios: [RATING-008]
+  decision: {status: approved, reviewer: Pre-Sales Solution Architect, date: '2026-10-07', note: Approved
+      as written.}
+- id: RATING-R10
+  statement: >-
+    Finalizing writes one rating result with id = md5(period_id::text) as a UUID, the selected
+    subscription, and used_units, quota_units, billable_units and overage_amount from the rating.
+    Stored rollover_units = max(quota_units - used_units, 0), the unused quota carried forward,
+    not the rollover applied in this period. created_at = period_end at 00:00 UTC. Re-finalizing
+    updates only used_units, rollover_units, billable_units and overage_amount; quota_units, subscription_id
+    and created_at keep their first values.
+  source:
+    file: services/legacy-billing/db/procs/rating.sql
+    lines: [120, 137]
+  inputs: [tenant_id, period_start, period_end]
+  outputs: [rating_results]
+  confidence: medium
+  scenarios: [RATING-008]
+  question: >-
+    For tenant 1 the rating reports rollover_units 200 (applied), while the finalized row stores
+    0 (unused quota = max(100 - 260, 0)). The same column name has two meanings, and only the
+    stored meaning feeds the next period's rollover (R03). Also, re-finalizing after a plan change
+    keeps the old quota_units. Keep both behaviors?
+  answer: Keep both meanings of rollover_units and the first quota_units on re-finalize.
+  decision:
+    status: approved
+    reviewer: Pre-Sales Solution Architect
+    date: '2026-10-07'
+    note: >-
+      Approved. Follow-up: rollover_units means 'applied' in the rating output and 'unused quota
+      carried forward' in rating_results; consider renaming the stored column.
+  tags: [follow-up]
