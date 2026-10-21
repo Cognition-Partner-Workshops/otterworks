@@ -5,6 +5,8 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import auth_headers_for
+
 
 @pytest.mark.asyncio
 async def test_create_template(client: AsyncClient):
@@ -40,7 +42,10 @@ async def test_list_templates(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_document_from_template(client: AsyncClient, owner_id: uuid.UUID):
+async def test_create_document_from_template(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
+    client.headers.update(auth_headers)
     template_resp = await client.post(
         "/api/v1/templates/",
         json={
@@ -61,10 +66,58 @@ async def test_create_document_from_template(client: AsyncClient, owner_id: uuid
     assert data["title"] == "My New Doc"
     assert data["content"] == "Start typing here..."
     assert data["content_type"] == "text/plain"
+    assert data["owner_id"] == str(owner_id)
+
+
+async def _create_template(client: AsyncClient) -> str:
+    resp = await client.post(
+        "/api/v1/templates/",
+        json={"name": "Blank", "content": "body", "created_by": str(uuid.uuid4())},
+    )
+    return resp.json()["id"]
 
 
 @pytest.mark.asyncio
-async def test_create_from_template_not_found(client: AsyncClient, owner_id: uuid.UUID):
+async def test_create_from_template_requires_auth(client: AsyncClient):
+    template_id = await _create_template(client)
+    resp = await client.post(
+        f"/api/v1/documents/from-template/{template_id}",
+        json={"title": "No auth", "owner_id": str(uuid.uuid4())},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_owner_comes_from_jwt(client: AsyncClient):
+    user_id = uuid.uuid4()
+    template_id = await _create_template(client)
+    resp = await client.post(
+        f"/api/v1/documents/from-template/{template_id}",
+        json={"title": "JWT owner"},
+        headers=auth_headers_for(user_id),
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(user_id)
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_body_owner_id_cannot_spoof_other_user(client: AsyncClient):
+    caller = uuid.uuid4()
+    victim = uuid.uuid4()
+    template_id = await _create_template(client)
+    resp = await client.post(
+        f"/api/v1/documents/from-template/{template_id}",
+        json={"title": "Spoofed", "owner_id": str(victim)},
+        headers=auth_headers_for(caller),
+    )
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_not_found(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
+    client.headers.update(auth_headers)
     resp = await client.post(
         f"/api/v1/documents/from-template/{uuid.uuid4()}",
         json={"title": "Orphan", "owner_id": str(owner_id)},

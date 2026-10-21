@@ -7,7 +7,10 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_add_comment(client: AsyncClient, owner_id: uuid.UUID):
+async def test_add_comment(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
+    client.headers.update(auth_headers)
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Commented Doc", "content": "", "owner_id": str(owner_id)},
@@ -36,7 +39,10 @@ async def test_add_comment_document_not_found(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_list_comments(client: AsyncClient, owner_id: uuid.UUID):
+async def test_list_comments(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
+    client.headers.update(auth_headers)
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "", "owner_id": str(owner_id)},
@@ -55,7 +61,10 @@ async def test_list_comments(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_delete_comment(client: AsyncClient, owner_id: uuid.UUID):
+async def test_delete_comment(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
+    client.headers.update(auth_headers)
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "", "owner_id": str(owner_id)},
@@ -76,7 +85,10 @@ async def test_delete_comment(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_delete_comment_not_found(client: AsyncClient, owner_id: uuid.UUID):
+async def test_delete_comment_not_found(
+    client: AsyncClient, owner_id: uuid.UUID, auth_headers: dict[str, str]
+):
+    client.headers.update(auth_headers)
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "", "owner_id": str(owner_id)},

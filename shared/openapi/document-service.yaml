@@ -909,7 +909,6 @@ components:
       type: object
       required:
         - title
-        - owner_id
       properties:
         title:
           type: string
@@ -918,6 +917,9 @@ components:
         owner_id:
           type: string
           format: uuid
+          description: >-
+            Optional; the owner is always the authenticated caller. If supplied it
+            must match the caller or the request is rejected with 403.
         folder_id:
           type: string
           format: uuid
