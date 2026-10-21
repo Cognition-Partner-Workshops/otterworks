@@ -1,0 +1,6 @@
+status_code,status_desc
+OPEN,Open
+CLSD,Closed
+REOP,Reopened
+DENY,Denied
+SUBR,In subrogation

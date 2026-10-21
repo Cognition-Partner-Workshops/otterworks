@@ -1,0 +1,338 @@
+{
+  "columns": [
+    "claim_id",
+    "policy_number",
+    "status_code",
+    "status_desc",
+    "reopen_date",
+    "claim_amount",
+    "loss_date"
+  ],
+  "keys": [
+    "claim_id"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 3000,
+    "snowflake": 3000,
+    "pass": true
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "reopen_date": {
+        "legacy": {
+          "count": 3000,
+          "nulls": 0,
+          "distinct": 22,
+          "min": "1900-01-01",
+          "max": "2026-09-30",
+          "min_len": 10,
+          "max_len": 10
+        },
+        "snowflake": {
+          "count": 3000,
+          "nulls": 2434,
+          "distinct": 21,
+          "min": "2026-09-10",
+          "max": "2026-09-30",
+          "min_len": 10,
+          "max_len": 10
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 3000,
+    "matched": 566,
+    "match_pct": 18.87,
+    "pass": false,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 25,
+    "diffs": [
+      {
+        "key": [
+          "1"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "100"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1000"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1001"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1002"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1003"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1004"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1007"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1008"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1009"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "101"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1010"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1011"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1012"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1013"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1014"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1016"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1017"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1018"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1019"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "102"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1021"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1024"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1025"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "1026"
+        ],
+        "columns": {
+          "reopen_date": {
+            "legacy": "1900-01-01",
+            "snowflake": "\\N"
+          }
+        }
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "m_load_claim_feed",
+  "label": "run-1",
+  "at": "2026-10-21 21:10 UTC"
+}

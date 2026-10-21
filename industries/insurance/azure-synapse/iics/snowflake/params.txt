@@ -1,0 +1,4 @@
+[Global]
+$$DWConnection=conn_snowflake_dw
+$$WindowStart=2026-09-01
+$$WindowEnd=2026-09-30
