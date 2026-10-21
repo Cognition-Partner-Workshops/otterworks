@@ -10,6 +10,8 @@ import com.otterworks.report.repository.ReportRepository;
 import com.otterworks.report.util.ReportDateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.NestedCheckedException;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -113,9 +115,34 @@ public class ReportGenerationWorker {
             logger.error("Report generation failed for {}: {}", reportId, e.getMessage(), e);
             report.setStatus(ReportStatus.FAILED);
             report.setCompletedAt(new Date());
-            report.setErrorMessage(e.getMessage());
+            report.setErrorMessage(legacyMessage(e));
             reportRepository.save(report);
         }
+    }
+
+    /**
+     * Spring 5 appended "; nested exception is <cause>" to nested Spring exception messages and Spring 6 no longer
+     * does; keep the stored errorMessage text the API has always returned. Wrappers built from their cause
+     * (e.g. Guava's UncheckedExecutionException) carry cause.toString() as their message, so rebuild that too.
+     */
+    static String legacyMessage(Throwable e) {
+        String message = e.getMessage();
+        Throwable cause = e.getCause();
+        if (cause == null) {
+            return message;
+        }
+        if (e instanceof NestedRuntimeException || e instanceof NestedCheckedException) {
+            return (message != null ? message + "; " : "") + "nested exception is " + legacyToString(cause);
+        }
+        if (message != null && message.equals(cause.toString())) {
+            return legacyToString(cause);
+        }
+        return message;
+    }
+
+    private static String legacyToString(Throwable t) {
+        String message = legacyMessage(t);
+        return message != null ? t.getClass().getName() + ": " + message : t.getClass().getName();
     }
 
     private List<Map<String, Object>> fetchDataForCategory(
