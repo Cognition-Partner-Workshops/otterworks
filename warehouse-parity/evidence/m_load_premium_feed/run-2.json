@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "policy_number",
+    "product_code",
+    "region_code",
+    "premium_amount",
+    "effective_date"
+  ],
+  "keys": [
+    "policy_number"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 1500,
+    "snowflake": 1500,
+    "pass": true
+  },
+  "L2": {
+    "pass": true,
+    "drift": {}
+  },
+  "L3": {
+    "keys": 1500,
+    "matched": 1500,
+    "match_pct": 100.0,
+    "pass": true,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 0,
+    "diffs": [],
+    "pass": true
+  },
+  "green": true,
+  "object": "m_load_premium_feed",
+  "label": "run-2",
+  "at": "2026-10-21 21:10 UTC"
+}
