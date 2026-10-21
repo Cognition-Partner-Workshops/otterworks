@@ -94,6 +94,7 @@ objects:
       ProductPremium: [product_code]
       ClaimStatusMix: [status_code]
     measures: {RegionClaimRate: [claim_count, claim_rate_pct], ProductPremium: [written_premium, avg_premium], ClaimStatusMix: [claim_amount, share_pct]}
+    report_bars: {RegionClaimRate: claim_rate_pct, ProductPremium: written_premium, ClaimStatusMix: share_pct}
 
   - name: dw.usp_refresh_claim_summary
     type: procedure

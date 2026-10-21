@@ -1,0 +1,103 @@
+{
+  "columns": [
+    "region_code",
+    "region_name",
+    "policy_count",
+    "claim_count",
+    "claim_rate_pct"
+  ],
+  "keys": [
+    "region_code"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 4,
+    "snowflake": 4,
+    "pass": true
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "claim_rate_pct": {
+        "legacy": {
+          "count": 4,
+          "nulls": 0,
+          "distinct": 2,
+          "min": "16",
+          "max": "17",
+          "sum": "67"
+        },
+        "snowflake": {
+          "count": 4,
+          "nulls": 0,
+          "distinct": 4,
+          "min": "16.474",
+          "max": "17.6589",
+          "sum": "69.319"
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 4,
+    "matched": 0,
+    "match_pct": 0.0,
+    "pass": false,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 4,
+    "diffs": [
+      {
+        "key": [
+          "MW"
+        ],
+        "columns": {
+          "claim_rate_pct": {
+            "legacy": "17",
+            "snowflake": "17.6303"
+          }
+        }
+      },
+      {
+        "key": [
+          "NE"
+        ],
+        "columns": {
+          "claim_rate_pct": {
+            "legacy": "17",
+            "snowflake": "17.6589"
+          }
+        }
+      },
+      {
+        "key": [
+          "SE"
+        ],
+        "columns": {
+          "claim_rate_pct": {
+            "legacy": "16",
+            "snowflake": "16.474"
+          }
+        }
+      },
+      {
+        "key": [
+          "SW"
+        ],
+        "columns": {
+          "claim_rate_pct": {
+            "legacy": "17",
+            "snowflake": "17.5558"
+          }
+        }
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "producer_dashboard.qvs.RegionClaimRate",
+  "label": "run-2",
+  "at": "2026-10-21 21:09 UTC"
+}

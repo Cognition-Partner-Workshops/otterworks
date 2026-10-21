@@ -1,0 +1,113 @@
+{
+  "columns": [
+    "status_code",
+    "claim_count",
+    "claim_amount",
+    "share_pct"
+  ],
+  "keys": [
+    "status_code"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 5,
+    "snowflake": 5,
+    "pass": true
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "share_pct": {
+        "legacy": {
+          "count": 5,
+          "nulls": 0,
+          "distinct": 4,
+          "min": "18",
+          "max": "21",
+          "sum": "97"
+        },
+        "snowflake": {
+          "count": 5,
+          "nulls": 0,
+          "distinct": 5,
+          "min": "18.8667",
+          "max": "21.5333",
+          "sum": "100"
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 5,
+    "matched": 0,
+    "match_pct": 0.0,
+    "pass": false,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 5,
+    "diffs": [
+      {
+        "key": [
+          "CLSD"
+        ],
+        "columns": {
+          "share_pct": {
+            "legacy": "19",
+            "snowflake": "19.4"
+          }
+        }
+      },
+      {
+        "key": [
+          "DENY"
+        ],
+        "columns": {
+          "share_pct": {
+            "legacy": "19",
+            "snowflake": "19.2333"
+          }
+        }
+      },
+      {
+        "key": [
+          "OPEN"
+        ],
+        "columns": {
+          "share_pct": {
+            "legacy": "21",
+            "snowflake": "21.5333"
+          }
+        }
+      },
+      {
+        "key": [
+          "REOP"
+        ],
+        "columns": {
+          "share_pct": {
+            "legacy": "18",
+            "snowflake": "18.8667"
+          }
+        }
+      },
+      {
+        "key": [
+          "SUBR"
+        ],
+        "columns": {
+          "share_pct": {
+            "legacy": "20",
+            "snowflake": "20.9667"
+          }
+        }
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "producer_dashboard.qvs.ClaimStatusMix",
+  "label": "run-1",
+  "at": "2026-10-21 21:09 UTC"
+}

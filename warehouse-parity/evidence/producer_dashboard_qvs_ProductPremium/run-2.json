@@ -1,0 +1,38 @@
+{
+  "columns": [
+    "product_code",
+    "policy_count",
+    "written_premium",
+    "avg_premium"
+  ],
+  "keys": [
+    "product_code"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 5,
+    "snowflake": 5,
+    "pass": true
+  },
+  "L2": {
+    "pass": true,
+    "drift": {}
+  },
+  "L3": {
+    "keys": 5,
+    "matched": 5,
+    "match_pct": 100.0,
+    "pass": true,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 0,
+    "diffs": [],
+    "pass": true
+  },
+  "green": true,
+  "object": "producer_dashboard.qvs.ProductPremium",
+  "label": "run-2",
+  "at": "2026-10-21 21:09 UTC"
+}

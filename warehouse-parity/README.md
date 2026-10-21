@@ -24,7 +24,7 @@ python -m wp objects --wave 1   # what the manifest says is in scope
 | `python -m wp iics --engine snowflake mapping.json` | Run the SQL inside a mapping export (pre-SQL, source override, lookup, target, post-SQL) and export each result set |
 | `python -m wp sql --engine sqlserver "select ..."` | One query on one engine |
 | `python -m wp board show` / `set` / `rollup` | Read and update the wave board kept in Snowflake (`PARITY.BOARD`) |
-| `python -m wp board serve --port 8765` | Board page, plus `/report?engine=sqlserver` and `/report?engine=snowflake` for the load-script dashboard |
+| `python -m wp board serve --port 8765` | Board page, plus `/report?engine=sqlserver` and `/report?engine=snowflake` for the load-script dashboard: each block as a table sorted by its key, with a bar for the measure in the manifest's `report_bars` (first of `measures` otherwise), and a switch between the two engines |
 
 ## Parity levels
 

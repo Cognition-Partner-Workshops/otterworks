@@ -1,0 +1,131 @@
+{
+  "columns": [
+    "product_code",
+    "policy_count",
+    "written_premium",
+    "avg_premium"
+  ],
+  "keys": [
+    "product_code"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 5,
+    "snowflake": 0,
+    "pass": false
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "product_code": {
+        "legacy": {
+          "count": 5,
+          "nulls": 0,
+          "distinct": 5,
+          "min": "AUTO",
+          "max": "UMBR",
+          "min_len": 4,
+          "max_len": 4
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "policy_count": {
+        "legacy": {
+          "count": 5,
+          "nulls": 0,
+          "distinct": 5,
+          "min": "281",
+          "max": "324",
+          "sum": "1500"
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "written_premium": {
+        "legacy": {
+          "count": 5,
+          "nulls": 0,
+          "distinct": 5,
+          "min": "855609.89",
+          "max": "1030161.96",
+          "sum": "4682700.2"
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "avg_premium": {
+        "legacy": {
+          "count": 5,
+          "nulls": 0,
+          "distinct": 5,
+          "min": "3044.88",
+          "max": "3248.88",
+          "sum": "15595.06"
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 5,
+    "matched": 0,
+    "match_pct": 0.0,
+    "pass": false,
+    "only_legacy": 5,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 5,
+    "diffs": [
+      {
+        "key": [
+          "AUTO"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "BOAT"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "HOME"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "RENT"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "UMBR"
+        ],
+        "only_in": "legacy"
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "producer_dashboard.qvs.ProductPremium",
+  "label": "run-1",
+  "at": "2026-10-21 21:09 UTC"
+}
