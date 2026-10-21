@@ -1,0 +1,4 @@
+pymssql==2.3.2
+snowflake-connector-python==3.18.1
+cryptography>=42
+PyYAML>=6.0
