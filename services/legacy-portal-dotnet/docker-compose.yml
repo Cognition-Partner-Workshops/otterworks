@@ -1,0 +1,49 @@
+# Local stack for legacy-portal-dotnet: the ASP.NET 9 service plus PostgreSQL 15, mirroring
+# services/legacy-portal/docker-compose.onprem.yml (same database, schemas and credentials).
+#
+#   Usage (from services/legacy-portal-dotnet/):
+#     docker compose up -d --build
+#     curl http://localhost:8098/health
+#     docker compose down -v
+services:
+  legacy-portal-dotnet-db:
+    image: postgres:15-alpine
+    container_name: legacy-portal-dotnet-db
+    environment:
+      POSTGRES_DB: legacyportal
+      POSTGRES_USER: legacyportal
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-legacyportal}
+    volumes:
+      - ../legacy-portal/scripts/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql:ro
+      - legacy-portal-dotnet-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U legacyportal -d legacyportal"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  legacy-portal-dotnet:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: legacy-portal-dotnet
+    depends_on:
+      legacy-portal-dotnet-db:
+        condition: service_healthy
+    environment:
+      DB_HOST: legacy-portal-dotnet-db
+      DB_PORT: "5432"
+      DB_NAME: legacyportal
+      DB_USER: legacyportal
+      DB_PASSWORD: ${DB_PASSWORD:-legacyportal}
+    ports:
+      - "8098:8098"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8098/health"]
+      interval: 10s
+      timeout: 5s
+      start_period: 20s
+      retries: 5
+
+volumes:
+  legacy-portal-dotnet-db-data:
