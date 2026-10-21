@@ -1,0 +1,45 @@
+{
+  "columns": [
+    "scorecard_date",
+    "region_code",
+    "producer_code",
+    "producer_name",
+    "agency_name",
+    "tier_name",
+    "policy_count",
+    "claim_count",
+    "written_premium",
+    "row_status"
+  ],
+  "keys": [
+    "region_code",
+    "producer_code"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 46,
+    "snowflake": 46,
+    "pass": true
+  },
+  "L2": {
+    "pass": true,
+    "drift": {}
+  },
+  "L3": {
+    "keys": 46,
+    "matched": 46,
+    "match_pct": 100.0,
+    "pass": true,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 0,
+    "diffs": [],
+    "pass": true
+  },
+  "green": true,
+  "object": "dw.usp_build_producer_scorecard",
+  "label": "run-3",
+  "at": "2026-10-21 22:05 UTC"
+}
