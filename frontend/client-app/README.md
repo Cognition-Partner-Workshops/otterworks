@@ -23,7 +23,29 @@ URL is substituted from the `API_GATEWAY_URL` env var at container start.
 | `npm run lint` | ESLint |
 | `npm test` | Vitest unit tests |
 | `npm run test:e2e` | Playwright e2e (expects the backend stack running) |
+| `npm run test:a11y` | Public-page axe audit against `dist/` (no backend required) |
 | `npm run test:bdd` | Cucumber BDD suite |
+
+### Public-page accessibility regression
+
+```bash
+npm ci
+npx playwright install chromium
+npm run build
+npm run test:a11y
+```
+
+This starts a Vite preview of the production build on port 3000 and audits `/`,
+`/login`, `/register`, `/terms`, and `/privacy` at 1440 px and 390 px, with light
+and dark system appearance. The app currently uses the same light palette in
+both appearances. All axe rules are enabled; every violation fails the test.
+Raw results (including passes and checks needing manual review) are attached as
+JSON under `a11y-results/`. The web-app CI job runs this after building and keeps
+the reports as an artifact.
+
+The spec is tagged `@public-pages-a11y @built` and is skipped in the ordinary
+e2e suite unless `PUBLIC_PAGES_BUILT=1` and `dist/index.html` exists. Use the
+command above to opt in; no backend stack or authenticated session is needed.
 
 Build-time env vars (Vite): `VITE_COLLAB_WS_URL` (collab websocket URL, default
 `ws://localhost:8085`, upgraded to `wss` when the page is served over https; native

@@ -22,3 +22,9 @@ body {
   background-color: var(--background);
   color: var(--text-primary);
 }
+
+.public-page :is(a, button):focus-visible {
+  outline: 2px solid #1f3a5f;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px #ffffff;
+}
