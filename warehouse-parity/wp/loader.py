@@ -3,13 +3,14 @@ import csv
 import subprocess
 import time
 
-from .engines import SqlServer, Snowflake
+from .engines import SqlServer, Snowflake, legacy_password, stmt
 
 CONTAINER = "wp-legacy"
 IMAGE = "mcr.microsoft.com/mssql/server:2022-latest"
 
 
-def legacy_up(password="Parity#Local1"):
+def legacy_up(password=None):
+    password = password or legacy_password()
     running = subprocess.run(["docker", "ps", "-q", "-f", f"name={CONTAINER}"],
                              capture_output=True, text=True).stdout.strip()
     if not running:
@@ -43,9 +44,9 @@ def load(engine, manifest, reset=True):
         db = engine.database
         master = SqlServer.master()
         if reset:
-            master.execute(f"IF DB_ID('{db}') IS NOT NULL BEGIN ALTER DATABASE {db} SET SINGLE_USER "
-                           f"WITH ROLLBACK IMMEDIATE; DROP DATABASE {db}; END")
-        master.execute(f"IF DB_ID('{db}') IS NULL CREATE DATABASE {db}")
+            master.execute(stmt("IF DB_ID('{d}') IS NOT NULL BEGIN ALTER DATABASE {d} SET SINGLE_USER "
+                                "WITH ROLLBACK IMMEDIATE; DROP DATABASE {d}; END", d=db))
+        master.execute(stmt("IF DB_ID('{d}') IS NULL CREATE DATABASE {d}", d=db))
         engine = SqlServer(db)
         for f in m["legacy"]["ddl"]:
             engine.run_script(manifest.file(f).read_text())
@@ -57,7 +58,7 @@ def load(engine, manifest, reset=True):
         table = engine.resolve(table)
         nullable = engine.nullability(table.replace('"', ''))
         cols, rows = _rows(manifest.file(rel), nullable, None)
-        engine.execute(f"DELETE FROM {table}")
+        engine.execute(stmt("DELETE FROM {t}", t=table))
         engine.insert_rows(table, cols, rows)
         counts[table] = len(rows)
     if isinstance(engine, SqlServer):

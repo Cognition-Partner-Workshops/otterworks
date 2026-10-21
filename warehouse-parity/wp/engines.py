@@ -2,6 +2,35 @@
 import os
 import re
 
+IDENT = re.compile(r'^"?[A-Za-z_][A-Za-z0-9_$]*"?(\."?[A-Za-z_][A-Za-z0-9_$]*"?)*$')
+
+
+def ident(name):
+    """Reject anything that is not a plain or quoted, optionally dotted, identifier."""
+    if not IDENT.match(name):
+        raise ValueError(f"not a SQL identifier: {name!r}")
+    return name
+
+
+def stmt(template, **names):
+    """Fill identifier slots in a statement; values still go through bind parameters."""
+    return template.format(**{k: ident(v) for k, v in names.items()})
+
+
+def insert_sql(table, cols, nrows, ph="%s"):
+    row = "(" + ",".join([ph] * len(cols)) + ")"
+    return (stmt("INSERT INTO {t} ", t=table) + "(" + ",".join(ident(c) for c in cols) + ") VALUES "
+            + ",".join([row] * nrows))
+
+
+def update_sql(table, cols, where):
+    sets = ", ".join(ident(c) + " = %s" for c in cols)
+    return stmt("UPDATE {t} SET ", t=table) + sets + " " + where
+
+
+def legacy_password():
+    return os.environ.get("WP_MSSQL_PASSWORD", "Parity#Local1")
+
 GO = re.compile(r"^\s*GO\s*;?\s*$", re.I | re.M)
 SYNAPSE_WITH = re.compile(
     r"\)\s*WITH\s*\(\s*(DISTRIBUTION|CLUSTERED|HEAP)[^;]*?\)\s*(;|\n\s*GO|$)", re.I | re.S)
@@ -25,7 +54,7 @@ class SqlServer:
             server=os.environ.get("WP_MSSQL_HOST", "localhost"),
             port=int(os.environ.get("WP_MSSQL_PORT", "1433")),
             user=os.environ.get("WP_MSSQL_USER", "sa"),
-            password=os.environ.get("WP_MSSQL_PASSWORD", "Parity#Local1"),
+            password=legacy_password(),
             autocommit=True,
         )
         self.conn = pymssql.connect(database=self.database, **self._args)
@@ -38,7 +67,7 @@ class SqlServer:
         obj._args = dict(server=os.environ.get("WP_MSSQL_HOST", "localhost"),
                          port=int(os.environ.get("WP_MSSQL_PORT", "1433")),
                          user=os.environ.get("WP_MSSQL_USER", "sa"),
-                         password=os.environ.get("WP_MSSQL_PASSWORD", "Parity#Local1"),
+                         password=legacy_password(),
                          autocommit=True)
         obj.conn = pymssql.connect(database="master", **obj._args)
         return obj
@@ -62,12 +91,10 @@ class SqlServer:
         return cols, [tuple(r) for r in cur.fetchall()]
 
     def insert_rows(self, table, cols, rows, batch=150):
-        ph = "(" + ",".join(["%s"] * len(cols)) + ")"
-        head = f"INSERT INTO {table} ({','.join(cols)}) VALUES "
         cur = self.conn.cursor()
         for i in range(0, len(rows), batch):
             chunk = rows[i:i + batch]
-            cur.execute(head + ",".join([ph] * len(chunk)), tuple(v for r in chunk for v in r))
+            cur.execute(insert_sql(table, cols, len(chunk)), tuple(v for r in chunk for v in r))
 
     def nullability(self, table):
         schema, name = table.split(".")
@@ -111,7 +138,7 @@ class Snowflake:
 
     def insert_rows(self, table, cols, rows, batch=5000):
         cur = self.conn.cursor()
-        sql = f"INSERT INTO {table} ({','.join(cols)}) VALUES ({','.join(['%s'] * len(cols))})"
+        sql = insert_sql(table, cols, 1)
         for i in range(0, len(rows), batch):
             cur.executemany(sql, rows[i:i + batch])
 
