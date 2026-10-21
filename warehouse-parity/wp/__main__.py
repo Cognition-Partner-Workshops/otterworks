@@ -1,9 +1,10 @@
 """python -m wp <command>. Run from the repository root."""
 import argparse
 import json
+import os
 import time
 
-from . import board, iics, loader, parity, qlik
+from . import board, iics, loader, parity, qlik, schemas
 from .engines import SqlServer, connect
 from .manifest import Manifest
 
@@ -25,6 +26,9 @@ def cmd_parity(args, m):
     if obj["type"] == "load_script":
         lres = qlik.run(leg, args.sqlserver_script or m.file(obj["legacy_script"]))
         tres = qlik.run(sf, args.snowflake_script or m.file(obj["target_script"]))
+        if args.dry_run:
+            print(f"dry run: statements logged to {args.dry_run}, no comparison made")
+            return
         out = {}
         for block, keys in obj["compare_blocks"].items():
             out[block] = parity.compare(lres[block], tres.get(block, ([], [])), keys, obj.get("rtrim", False))
@@ -35,7 +39,13 @@ def cmd_parity(args, m):
         if not args.skip_run:
             _run_side(leg, obj, "sqlserver", m, args)
             _run_side(sf, obj, "snowflake", m, args)
-        res = parity.compare(leg.query(obj["compare"]), sf.query(obj["compare"]), obj["keys"], obj.get("rtrim", False))
+        lres, tres = leg.query(obj["compare"]), sf.query(obj["compare"])
+        if args.dry_run:
+            if not args.no_board:
+                board.set_fields(sf, obj["name"], note="dry run")
+            print(f"dry run: statements logged to {args.dry_run}, no comparison made")
+            return
+        res = parity.compare(lres, tres, obj["keys"], obj.get("rtrim", False))
         print(parity.summary_line(res))
         print(parity.write_evidence(obj["name"], args.label, res, args.out))
         green = res["green"]
@@ -49,6 +59,8 @@ def cmd_parity(args, m):
 def main():
     ap = argparse.ArgumentParser(prog="wp")
     ap.add_argument("--manifest")
+    ap.add_argument("--dry-run", metavar="LOG", default=os.environ.get("WP_DRY_RUN"),
+                    help="connect to nothing; append every statement to LOG as JSON lines")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("legacy-up", help="start SQL Server 2022 in Docker and load the frozen window")
     p = sub.add_parser("load", help="load the frozen window into one engine")
@@ -75,6 +87,8 @@ def main():
     p.add_argument("mapping")
     p.add_argument("--param-file")
     p.add_argument("--export-dir", default="evidence/exports")
+    p = sub.add_parser("dry-run-report", help="list the harness schemas named in a --dry-run log, per engine")
+    p.add_argument("log")
     p = sub.add_parser("board", help="wave board")
     p.add_argument("action", choices=["init", "show", "set", "rollup", "serve"])
     p.add_argument("object", nargs="?")
@@ -82,6 +96,10 @@ def main():
     for f in board.FIELDS:
         p.add_argument(f"--{f.replace('_', '-')}")
     args = ap.parse_args()
+    if args.cmd == "dry-run-report":
+        return dry_run_report(args.log)
+    if args.dry_run:
+        os.environ["WP_DRY_RUN"] = args.dry_run
     m = Manifest(args.manifest)
 
     if args.cmd == "legacy-up":
@@ -122,6 +140,23 @@ def main():
         if args.action in ("show", "init", "set"):
             for r in rows:
                 print(" | ".join("" if v is None else str(v) for v in r[:12]))
+
+
+def dry_run_report(log):
+    pfx = schemas.prefix()
+    seen = {}
+    for line in open(log):
+        rec = json.loads(line)
+        used = seen.setdefault(rec["engine"], {"statements": 0, "schemas": set(), "literal_refs": set()})
+        used["statements"] += 1
+        used["schemas"].update(schemas.harness_schemas_used(rec["sql"], pfx))
+        used["literal_refs"].update(schemas.literal_refs(rec["sql"]))
+    for eng, u in seen.items():
+        print(f"{eng}: {u['statements']} statements; schemas in identifier position: "
+              f"{', '.join(sorted(u['schemas'])) or '-'}; inside string literals: {', '.join(sorted(u['literal_refs'])) or '-'}")
+    bad = sorted(seen.get("snowflake", {}).get("schemas", set()) & set(schemas.SCHEMAS)) if pfx else []
+    if bad:
+        raise SystemExit(f"unprefixed schemas sent to Snowflake: {', '.join(bad)}")
 
 
 def _legacy():
