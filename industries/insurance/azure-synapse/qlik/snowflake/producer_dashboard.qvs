@@ -1,0 +1,33 @@
+// Producer dashboard reload. Three SQL blocks feed the three dashboard panels.
+LIB CONNECT TO 'claims_dw';
+
+RegionClaimRate:
+LOAD region_code, region_name, policy_count, claim_count, claim_rate_pct;
+SQL SELECT r.region_code,
+       r.region_name,
+       SUM(f.policy_count) AS policy_count,
+       SUM(f.claim_count) AS claim_count,
+       SUM(f.claim_count) * 100 / SUM(f.policy_count) AS claim_rate_pct
+  FROM stg.producer_feed f
+  JOIN dw.dim_region r ON r.region_code = f.region_code
+ WHERE f.feed_date = '2026-09-30'
+ GROUP BY r.region_code, r.region_name;
+
+ProductPremium:
+LOAD product_code, policy_count, written_premium, avg_premium;
+SQL SELECT d.product_code,
+       COUNT(*) AS policy_count,
+       SUM(p.premium_amount) AS written_premium,
+       CAST(SUM(p.premium_amount) / COUNT(*) AS DECIMAL(12,2)) AS avg_premium
+  FROM stg.premium_feed p
+  JOIN dw.dim_policy d ON RTRIM(d.policy_number) = RTRIM(p.policy_number)
+ GROUP BY d.product_code;
+
+ClaimStatusMix:
+LOAD status_code, claim_count, claim_amount, share_pct;
+SQL SELECT c.status_code,
+       COUNT(*) AS claim_count,
+       SUM(c.claim_amount) AS claim_amount,
+       COUNT(*) * 100 / (SELECT COUNT(*) FROM stg.claim_feed) AS share_pct
+  FROM stg.claim_feed c
+ GROUP BY c.status_code;
