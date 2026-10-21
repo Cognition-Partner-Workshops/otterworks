@@ -31,6 +31,8 @@ BEGIN
 
     FOR rec IN region_cur DO
         region := rec.region_code;
+        -- SQL Server does not define which spelling a case-insensitive group returns (p1003 or P1003).
+        -- This emits the spelling with the lowest feed_id by choice; no group in the frozen window has two spellings.
         sql_text := '
             INSERT INTO DW.SCORECARD_WORK
             SELECT MIN_BY(f.region_code, f.feed_id),
