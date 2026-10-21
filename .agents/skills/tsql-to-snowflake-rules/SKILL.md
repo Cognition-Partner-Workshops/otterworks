@@ -35,3 +35,4 @@ Append below, newest last, in the same table shape. Give the object and evidence
 
 | ID | T-SQL | Snowflake | Caught at | Learned from |
 |---|---|---|---|---|
+| R40 | Join or filter between a `CHAR(n)` column (blank-padded, e.g. `stg.premium_feed.policy_number`) and a `VARCHAR` key; SQL Server ignores trailing blanks in `=` comparisons | Snowflake compares trailing blanks and a `CHAR` loaded as `VARCHAR` keeps its pad, so the join silently returns no rows: `RTRIM` the padded side in the predicate (`d.policy_number = RTRIM(p.policy_number)`) and keep the selected column as-is when the legacy target stores the padded value | L1 | m_load_premium_feed, `evidence/m_load_premium_feed/run-1.md` |
