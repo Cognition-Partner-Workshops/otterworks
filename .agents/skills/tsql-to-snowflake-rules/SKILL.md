@@ -35,3 +35,4 @@ Append below, newest last, in the same table shape. Give the object and evidence
 
 | ID | T-SQL | Snowflake | Caught at | Learned from |
 |---|---|---|---|---|
+| R20 | `CONCAT(a, ', ', b, ' ', c)` with nullable args (T-SQL treats a NULL arg as an empty string) | `COALESCE(a, '') \|\| ', ' \|\| COALESCE(b, '') ...`: Snowflake `CONCAT` and `\|\|` return NULL when any arg is NULL, so wrap every nullable arg in `COALESCE(x, '')` | L2 (nulls) / L3 | dw.fn_holder_display_name, `warehouse-parity/evidence/dw_fn_holder_display_name/first-pass.md` |
