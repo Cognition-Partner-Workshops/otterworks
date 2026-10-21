@@ -11,10 +11,13 @@
 
 import configparser
 import json
+import os
 import sys
 from datetime import datetime, timezone
 
 import boto3
+
+AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID", "")
 
 
 def main():
@@ -53,7 +56,11 @@ def main():
     all_objects = []
     paginator = s3_client.get_paginator("list_objects_v2")
 
-    for page in paginator.paginate(Bucket=file_storage_bucket, Prefix=files_prefix):
+    paginate_kwargs = {"Bucket": file_storage_bucket, "Prefix": files_prefix}
+    if AWS_ACCOUNT_ID:
+        paginate_kwargs["ExpectedBucketOwner"] = AWS_ACCOUNT_ID
+
+    for page in paginator.paginate(**paginate_kwargs):
         for obj in page.get("Contents", []):
             all_objects.append({
                 "key": obj["Key"],
@@ -141,8 +148,13 @@ def main():
                 Key=dest_key,
                 CopySource={"Bucket": file_storage_bucket, "Key": source_key},
                 MetadataDirective="COPY",
+                **({"ExpectedBucketOwner": AWS_ACCOUNT_ID, "ExpectedSourceBucketOwner": AWS_ACCOUNT_ID} if AWS_ACCOUNT_ID else {}),
             )
-            s3_client.delete_object(Bucket=file_storage_bucket, Key=source_key)
+            s3_client.delete_object(
+                Bucket=file_storage_bucket,
+                Key=source_key,
+                **({"ExpectedBucketOwner": AWS_ACCOUNT_ID} if AWS_ACCOUNT_ID else {}),
+            )
             moved_count += 1
         except Exception as e:
             print("[%s] WARNING: Failed to quarantine %s: %s" % (
@@ -200,6 +212,7 @@ def main():
         Bucket=data_lake_bucket,
         Key=report_key,
         Body=json.dumps(report, indent=2).encode("utf-8"),
+        **({"ExpectedBucketOwner": AWS_ACCOUNT_ID} if AWS_ACCOUNT_ID else {}),
     )
 
     print("[%s] Storage cleanup report: %d orphans quarantined, %.4f GB freed, ~$%.4f/month saved" % (
