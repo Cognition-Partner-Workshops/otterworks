@@ -5,6 +5,9 @@ use std::time::Duration;
 use crate::config::AwsConfig;
 use crate::errors::ServiceError;
 
+const BUCKET_CHECK_ATTEMPTS: u32 = 10;
+const BUCKET_CHECK_BACKOFF: Duration = Duration::from_secs(3);
+
 /// S3 client for file blob operations.
 #[derive(Clone)]
 pub struct S3Client {
@@ -33,6 +36,38 @@ impl S3Client {
         }
     }
 
+    /// Verify the configured bucket exists and is reachable before serving
+    /// traffic, so a bad `S3_BUCKET` fails the rollout instead of surfacing
+    /// as `NoSuchBucket` 500s on every upload. Retries briefly because the
+    /// bucket may still be provisioning when the service boots.
+    pub async fn ensure_bucket_exists(&self) -> Result<(), ServiceError> {
+        let mut last_err = String::new();
+        for attempt in 1..=BUCKET_CHECK_ATTEMPTS {
+            match self.client.head_bucket().bucket(&self.bucket).send().await {
+                Ok(_) => {
+                    tracing::info!(bucket = %self.bucket, "S3 bucket verified");
+                    return Ok(());
+                }
+                Err(e) => {
+                    last_err = aws_sdk_s3::error::DisplayErrorContext(&e).to_string();
+                    tracing::warn!(
+                        bucket = %self.bucket,
+                        attempt,
+                        error = %last_err,
+                        "S3 bucket check failed"
+                    );
+                }
+            }
+            if attempt < BUCKET_CHECK_ATTEMPTS {
+                tokio::time::sleep(BUCKET_CHECK_BACKOFF).await;
+            }
+        }
+        Err(ServiceError::S3Error(format!(
+            "bucket '{}' is not accessible (check S3_BUCKET): {last_err}",
+            self.bucket
+        )))
+    }
+
     /// Upload file content to S3.
     pub async fn upload_object(
         &self,
@@ -48,7 +83,11 @@ impl S3Client {
             .content_type(content_type)
             .send()
             .await
-            .map_err(|e| ServiceError::S3Error(format!("upload failed: {e}")))?;
+            .map_err(|e| {
+                let detail = aws_sdk_s3::error::DisplayErrorContext(&e).to_string();
+                tracing::error!(key = %key, bucket = %self.bucket, error = %detail, "S3 upload failed");
+                ServiceError::S3Error(format!("upload to bucket '{}' failed: {e}", self.bucket))
+            })?;
 
         tracing::info!(key = %key, bucket = %self.bucket, "Uploaded object to S3");
         Ok(())
