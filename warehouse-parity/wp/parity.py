@@ -32,14 +32,15 @@ def profile(cols, rows, rtrim):
     for i, c in enumerate(cols):
         vals = [r[i] for r in rows]
         nn = [v for v in vals if v is not None]
-        p = {"nulls": len(vals) - len(nn), "distinct": len({canon(v, rtrim) for v in nn})}
+        p = {"count": len(vals), "nulls": len(vals) - len(nn), "distinct": len({canon(v, rtrim) for v in nn})}
         if nn:
             nums = [v for v in nn if isinstance(v, (int, float, decimal.Decimal)) and not isinstance(v, bool)]
             if len(nums) == len(nn):
                 p.update(min=canon(min(nums)), max=canon(max(nums)), sum=canon(sum(decimal.Decimal(str(x)) for x in nums)))
             else:
                 ss = sorted(canon(v, rtrim) for v in nn)
-                p.update(min=ss[0], max=ss[-1])
+                lens = [len(x) for x in ss]
+                p.update(min=ss[0], max=ss[-1], min_len=min(lens), max_len=max(lens))
         out[c] = p
     return out
 
