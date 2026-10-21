@@ -1,0 +1,335 @@
+{
+  "columns": [
+    "policy_number",
+    "holder_display_name",
+    "contact_label",
+    "primary_phone"
+  ],
+  "keys": [
+    "policy_number"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 2000,
+    "snowflake": 2000,
+    "pass": true
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "contact_label": {
+        "legacy": {
+          "count": 2000,
+          "nulls": 126,
+          "distinct": 13,
+          "min": "+1 (555) 1",
+          "max": "Work",
+          "min_len": 4,
+          "max_len": 10
+        },
+        "snowflake": {
+          "count": 2000,
+          "nulls": 126,
+          "distinct": 270,
+          "min": "+1 (555) 107-2303",
+          "max": "Work",
+          "min_len": 4,
+          "max_len": 25
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 2000,
+    "matched": 1734,
+    "match_pct": 86.7,
+    "pass": false,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 25,
+    "diffs": [
+      {
+        "key": [
+          "PL00100018"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 3",
+            "snowflake": "+1 (555) 309-2384"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100022"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 6",
+            "snowflake": "+1 (555) 664-8614"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100059"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 7",
+            "snowflake": "+1 (555) 773-4117 ext 194"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100062"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 1",
+            "snowflake": "+1 (555) 126-2993 ext 591"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100078"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 7",
+            "snowflake": "+1 (555) 773-6522 ext 657"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100080"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 9",
+            "snowflake": "+1 (555) 933-7668"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100095"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 7",
+            "snowflake": "+1 (555) 769-7540"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100104"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 2",
+            "snowflake": "+1 (555) 258-9187 ext 199"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100114"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 8",
+            "snowflake": "+1 (555) 894-3834"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100116"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 1",
+            "snowflake": "+1 (555) 137-6382 ext 72"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100126"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 1",
+            "snowflake": "+1 (555) 118-6972"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100142"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 9",
+            "snowflake": "+1 (555) 988-8374"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100156"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 1",
+            "snowflake": "+1 (555) 144-1947"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100158"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 2",
+            "snowflake": "+1 (555) 212-5232"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100178"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 2",
+            "snowflake": "+1 (555) 276-1137"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100195"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 2",
+            "snowflake": "+1 (555) 286-8218"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100201"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 4",
+            "snowflake": "+1 (555) 475-5068"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100205"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 9",
+            "snowflake": "+1 (555) 996-8238 ext 327"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100208"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 1",
+            "snowflake": "+1 (555) 179-2319"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100222"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 9",
+            "snowflake": "+1 (555) 927-1457"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100224"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 3",
+            "snowflake": "+1 (555) 365-4223"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100226"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 7",
+            "snowflake": "+1 (555) 718-1542"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100227"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 1",
+            "snowflake": "+1 (555) 164-5803"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100239"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 5",
+            "snowflake": "+1 (555) 538-5888"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100241"
+        ],
+        "columns": {
+          "contact_label": {
+            "legacy": "+1 (555) 6",
+            "snowflake": "+1 (555) 696-1393"
+          }
+        }
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "dw.usp_refresh_policy_contact",
+  "label": "run-1",
+  "at": "2026-10-21 21:32 UTC"
+}
