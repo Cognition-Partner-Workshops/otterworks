@@ -2,13 +2,11 @@
 
 import html as html_mod
 import math
-from collections import defaultdict
 from uuid import UUID
 
 import structlog
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import aliased
 
 from app.models.document import Comment, Document, DocumentVersion, Template
 from app.schemas.document import (
@@ -107,31 +105,11 @@ class DocumentService:
         result = await self.db.execute(query)
         documents = list(result.scalars().all())
 
-        recent_by_doc: dict[UUID, list[DocumentVersion]] = defaultdict(list)
-        if documents:
-            ranked = (
-                select(
-                    DocumentVersion,
-                    func.row_number()
-                    .over(
-                        partition_by=DocumentVersion.document_id,
-                        order_by=DocumentVersion.version_number.desc(),
-                    )
-                    .label("rank"),
-                )
-                .where(DocumentVersion.document_id.in_([doc.id for doc in documents]))
-                .subquery()
-            )
-            recent = aliased(DocumentVersion, ranked)
-            ver_result = await self.db.execute(
-                select(recent)
-                .where(ranked.c.rank <= 5)
-                .order_by(ranked.c.document_id, ranked.c.version_number.desc())
-            )
-            for version in ver_result.scalars().all():
-                recent_by_doc[version.document_id].append(version)
+        # Document.versions is already batch-loaded for the page (lazy="selectin").
         for doc in documents:
-            doc.recent_versions = recent_by_doc.get(doc.id, [])
+            doc.recent_versions = sorted(
+                doc.versions, key=lambda v: v.version_number, reverse=True
+            )[:5]
 
         return documents, total
 
