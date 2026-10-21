@@ -4,11 +4,21 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.otterworks.auth.entity.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.io.ClassPathResource;
 
 class JwtTokenProviderTest {
 
@@ -108,6 +118,52 @@ class JwtTokenProviderTest {
   @Test
   void getRefreshTokenExpiry_shouldReturnConfiguredValue() {
     assertThat(jwtTokenProvider.getRefreshTokenExpiry()).isEqualTo(2592000);
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = {"   "})
+  void constructor_shouldRejectMissingSecret(String secret) {
+    assertThatThrownBy(() -> new JwtTokenProvider(secret, 3600, 2592000))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("JWT_SECRET");
+  }
+
+  @Test
+  void constructor_shouldRejectEveryKnownDefaultSecret() {
+    for (String knownDefault : JwtTokenProvider.KNOWN_DEFAULT_SECRETS) {
+      assertThatThrownBy(() -> new JwtTokenProvider(knownDefault, 3600, 2592000))
+          .as("known default %s", knownDefault)
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("publicly known default");
+    }
+  }
+
+  @Test
+  void tokenForgedWithFormerDefaultSecret_shouldBeRejected() {
+    String forged =
+        Jwts.builder()
+            .subject(UUID.randomUUID().toString())
+            .claim("roles", List.of("ADMIN"))
+            .claim("type", "access")
+            .expiration(new Date(System.currentTimeMillis() + 3_600_000))
+            .signWith(
+                Keys.hmacShaKeyFor(
+                    "otterworks-local-dev-jwt-secret-change-me-in-production"
+                        .getBytes(StandardCharsets.UTF_8)))
+            .compact();
+
+    assertThat(jwtTokenProvider.isTokenValid(forged)).isFalse();
+  }
+
+  @Test
+  void applicationYaml_shouldNotShipAJwtSecretDefault() throws Exception {
+    for (String file : List.of("application.yml", "application-prod.yml")) {
+      List<PropertySource<?>> sources =
+          new YamlPropertySourceLoader().load(file, new ClassPathResource(file));
+      Object secret = sources.get(0).getProperty("jwt.secret");
+      assertThat(secret).as(file).hasToString("${JWT_SECRET}");
+    }
   }
 
   private User createTestUser() {

@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
@@ -18,6 +19,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider {
 
+  /** Signing secrets that have been committed to this repository and must never be used. */
+  static final Set<String> KNOWN_DEFAULT_SECRETS =
+      Set.of(
+          "otterworks-local-dev-jwt-secret-change-me-in-production",
+          "dev-jwt-secret-otterworks-2024-change-in-production",
+          "otterworks-dev-secret",
+          "dev_jwt_secret_key",
+          "changeme",
+          "change-me",
+          "secret");
+
   private final SecretKey key;
   private final long accessTokenExpiry;
   private final long refreshTokenExpiry;
@@ -26,9 +38,22 @@ public class JwtTokenProvider {
       @Value("${jwt.secret}") String secret,
       @Value("${jwt.access-token-expiry:3600}") long accessTokenExpiry,
       @Value("${jwt.refresh-token-expiry:2592000}") long refreshTokenExpiry) {
-    this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    this.key = Keys.hmacShaKeyFor(requireUsableSecret(secret).getBytes(StandardCharsets.UTF_8));
     this.accessTokenExpiry = accessTokenExpiry;
     this.refreshTokenExpiry = refreshTokenExpiry;
+  }
+
+  static String requireUsableSecret(String secret) {
+    if (secret == null || secret.isBlank()) {
+      throw new IllegalStateException(
+          "jwt.secret must be configured: set the JWT_SECRET environment variable");
+    }
+    if (KNOWN_DEFAULT_SECRETS.contains(secret.trim())) {
+      throw new IllegalStateException(
+          "jwt.secret is a publicly known default value: set JWT_SECRET to a random secret"
+              + " (e.g. openssl rand -hex 32)");
+    }
+    return secret;
   }
 
   public String generateAccessToken(User user) {
