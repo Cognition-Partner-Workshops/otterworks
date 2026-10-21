@@ -55,7 +55,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.credentialsSecret }}
                   key: ORACLE_SYS_PASSWORD
-            # The migration login in FREEPDB1 (created by the image, granted by ddl/060_grants.sh).
+            # The migration login in FREEPDB1 (created by the image, granted by ddl/110_grants.sh).
             - name: APP_USER
               valueFrom:
                 secretKeyRef:
