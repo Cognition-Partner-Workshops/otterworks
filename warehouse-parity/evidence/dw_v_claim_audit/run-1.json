@@ -1,0 +1,41 @@
+{
+  "columns": [
+    "claim_id",
+    "event_type",
+    "event_weekday",
+    "event_date",
+    "event_count"
+  ],
+  "keys": [
+    "claim_id",
+    "event_type",
+    "event_date"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 4977,
+    "snowflake": 4977,
+    "pass": true
+  },
+  "L2": {
+    "pass": true,
+    "drift": {}
+  },
+  "L3": {
+    "keys": 4977,
+    "matched": 4977,
+    "match_pct": 100.0,
+    "pass": true,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 0,
+    "diffs": [],
+    "pass": true
+  },
+  "green": true,
+  "object": "dw.v_claim_audit",
+  "label": "run-1",
+  "at": "2026-10-21 21:32 UTC"
+}
