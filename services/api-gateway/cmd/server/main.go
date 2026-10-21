@@ -104,10 +104,11 @@ func main() {
 
 	// Mount reverse proxy routes
 	proxyRouter := proxy.NewRouter(proxy.RouterConfig{
-		Routes:        routes,
-		CBManager:     cbManager,
-		Logger:        logger,
-		EnableTracing: true,
+		Routes:                routes,
+		CBManager:             cbManager,
+		Logger:                logger,
+		EnableTracing:         true,
+		IdentitySigningSecret: cfg.JWTSecret,
 	})
 	// Chaos: mobile-latency (scripts/bug-catalog.yaml). Runs after auth so a
 	// rejected request is never delayed.
