@@ -35,3 +35,5 @@ Append below, newest last, in the same table shape. Give the object and evidence
 
 | ID | T-SQL | Snowflake | Caught at | Learned from |
 |---|---|---|---|---|
+| R30 | `CAST(varchar_col AS DATE)` where the column holds `''` (SQL Server silently returns `1900-01-01`) | `NULLIF(col, '')::DATE` (not `TRY_CAST`, which also hides malformed dates); plain `CAST('' AS DATE)` fails with `Date '' is not recognized`. Do not reproduce the `1900-01-01` sentinel; raise it as a business decision | runtime, then L2/L3 | m_load_claim_feed, `evidence/m_load_claim_feed/run-1.md` |
+| R31 | Mixed-case table name such as `dw.ClaimStatusRef` (case-insensitive on SQL Server) | Quote it exactly as the Snowflake DDL created it, `DW."ClaimStatusRef"`, in every override; unquoted resolves to `DW.CLAIMSTATUSREF` and fails | compile | m_load_claim_feed, `evidence/m_load_claim_feed/run-1.md` |
