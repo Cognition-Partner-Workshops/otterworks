@@ -1,0 +1,20 @@
+-- First-pass conversion output: tables.
+CREATE SCHEMA IF NOT EXISTS STG;
+CREATE SCHEMA IF NOT EXISTS DW;
+CREATE SCHEMA IF NOT EXISTS AUDIT;
+CREATE OR REPLACE TABLE DW.DIM_REGION (region_code VARCHAR(4) NOT NULL, region_name VARCHAR(40) NOT NULL);
+CREATE OR REPLACE TABLE DW.DIM_PRODUCER (producer_code VARCHAR(10) NOT NULL, producer_name VARCHAR(80) NOT NULL, agency_name VARCHAR(80) NOT NULL, region_code VARCHAR(4) NOT NULL);
+CREATE OR REPLACE TABLE DW.PRODUCER_TIER (producer_code VARCHAR(10) NOT NULL, tier_name VARCHAR(20) NOT NULL, tier_effective_date DATE);
+CREATE OR REPLACE TABLE DW.DIM_POLICY (policy_number VARCHAR(12) NOT NULL, holder_first VARCHAR(40) NOT NULL, holder_middle VARCHAR(40), holder_last VARCHAR(40) NOT NULL, product_code VARCHAR(8) NOT NULL, region_code VARCHAR(4) NOT NULL, primary_phone VARCHAR(20), alt_phone_label VARCHAR(10), alt_phone VARCHAR(40));
+CREATE OR REPLACE TABLE DW."ClaimStatusRef" (status_code VARCHAR(4) NOT NULL, status_desc VARCHAR(40) NOT NULL);
+CREATE OR REPLACE TABLE STG.PRODUCER_FEED (feed_id INT NOT NULL, producer_code VARCHAR(10) NOT NULL, region_code VARCHAR(4) NOT NULL, policy_count INT NOT NULL, claim_count INT NOT NULL, written_premium NUMBER(12,2) NOT NULL, feed_date DATE NOT NULL);
+CREATE OR REPLACE TABLE STG.PREMIUM_FEED (policy_number VARCHAR(12) NOT NULL, premium_amount NUMBER(12,2) NOT NULL, effective_date DATE NOT NULL);
+CREATE OR REPLACE TABLE STG.CLAIM_FEED (claim_id INT NOT NULL, policy_number VARCHAR(12) NOT NULL, status_code VARCHAR(4) NOT NULL, reopen_date VARCHAR(10) NOT NULL, claim_amount NUMBER(12,2) NOT NULL, loss_date DATE NOT NULL);
+CREATE OR REPLACE TABLE AUDIT.CLAIM_EVENT (event_id INT NOT NULL, claim_id INT NOT NULL, event_type VARCHAR(20) NOT NULL, event_at TIMESTAMP_NTZ(3) NOT NULL);
+CREATE OR REPLACE TABLE AUDIT.POLICY_EVENT (event_id INT NOT NULL, policy_number VARCHAR(12) NOT NULL, event_type VARCHAR(20) NOT NULL, event_at TIMESTAMP_NTZ(3) NOT NULL);
+CREATE OR REPLACE TABLE DW.PRODUCER_SCORECARD (scorecard_date DATE NOT NULL, region_code VARCHAR(4) NOT NULL, producer_code VARCHAR(10) NOT NULL, producer_name VARCHAR(80), agency_name VARCHAR(80), tier_name VARCHAR(20), policy_count INT, claim_count INT, written_premium NUMBER(14,2), row_status VARCHAR(10) NOT NULL);
+CREATE OR REPLACE TABLE DW.CLAIM_FACT (claim_id INT NOT NULL, policy_number VARCHAR(12) NOT NULL, status_code VARCHAR(4) NOT NULL, status_desc VARCHAR(40), reopen_date DATE, claim_amount NUMBER(12,2) NOT NULL, loss_date DATE NOT NULL);
+CREATE OR REPLACE TABLE DW.PREMIUM_FACT (policy_number VARCHAR(12) NOT NULL, product_code VARCHAR(8) NOT NULL, region_code VARCHAR(4) NOT NULL, premium_amount NUMBER(12,2) NOT NULL, effective_date DATE NOT NULL);
+CREATE OR REPLACE TABLE DW.CLAIM_SUMMARY (policy_number VARCHAR(12) NOT NULL, product_code VARCHAR(8) NOT NULL, claim_count INT NOT NULL, total_claim_amount NUMBER(14,2) NOT NULL, last_loss_date DATE NOT NULL);
+CREATE OR REPLACE TABLE DW.POLICY_CONTACT (policy_number VARCHAR(12) NOT NULL, holder_display_name VARCHAR(120), contact_label VARCHAR(40), primary_phone VARCHAR(20));
+CREATE OR REPLACE TABLE DW.ETL_LOG (proc_name VARCHAR(60) NOT NULL, step VARCHAR(40) NOT NULL, rows_affected INT, logged_at TIMESTAMP_NTZ NOT NULL DEFAULT SYSDATE());
