@@ -129,8 +129,8 @@
   {
    "bytes": 1536,
    "created": "2026-10-21 15:00:24.171000-07:00",
-   "last_altered": "2026-10-21 15:04:52.110000-07:00",
-   "row_count": 10,
+   "last_altered": "2026-10-21 15:11:51.461000-07:00",
+   "row_count": 23,
    "table_name": "ETL_LOG",
    "table_schema": "DW",
    "table_type": "BASE TABLE"
@@ -154,10 +154,10 @@
    "table_type": "BASE TABLE"
   },
   {
-   "bytes": 0,
+   "bytes": 3072,
    "created": "2026-10-21 15:00:21.014000-07:00",
-   "last_altered": "2026-10-21 15:04:49.889000-07:00",
-   "row_count": 0,
+   "last_altered": "2026-10-21 15:11:50.956000-07:00",
+   "row_count": 46,
    "table_name": "PRODUCER_SCORECARD",
    "table_schema": "DW",
    "table_type": "BASE TABLE"
@@ -190,9 +190,9 @@
    "table_type": "VIEW"
   },
   {
-   "bytes": 4608,
+   "bytes": 5120,
    "created": "2026-10-21 13:53:33.759000-07:00",
-   "last_altered": "2026-10-21 15:03:30.788000-07:00",
+   "last_altered": "2026-10-21 15:15:23.149000-07:00",
    "row_count": 9,
    "table_name": "BOARD",
    "table_schema": "PARITY",

@@ -11,8 +11,8 @@
  "procedures": [
   {
    "argument_signature": "(SCORECARD_DATE DATE, REGION_LIST VARCHAR)",
-   "created": "2026-10-21 15:01:25.117000-07:00",
-   "last_altered": "2026-10-21 15:01:25.117000-07:00",
+   "created": "2026-10-21 15:04:47.785000-07:00",
+   "last_altered": "2026-10-21 15:04:47.785000-07:00",
    "procedure_name": "USP_BUILD_PRODUCER_SCORECARD",
    "procedure_schema": "DW"
   },
@@ -129,8 +129,8 @@
   {
    "bytes": 1536,
    "created": "2026-10-21 15:00:24.171000-07:00",
-   "last_altered": "2026-10-21 15:03:02.657000-07:00",
-   "row_count": 9,
+   "last_altered": "2026-10-21 15:11:51.461000-07:00",
+   "row_count": 23,
    "table_name": "ETL_LOG",
    "table_schema": "DW",
    "table_type": "BASE TABLE"
@@ -156,7 +156,7 @@
   {
    "bytes": 3072,
    "created": "2026-10-21 15:00:21.014000-07:00",
-   "last_altered": "2026-10-21 15:01:37.601000-07:00",
+   "last_altered": "2026-10-21 15:11:50.956000-07:00",
    "row_count": 46,
    "table_name": "PRODUCER_SCORECARD",
    "table_schema": "DW",
@@ -190,9 +190,9 @@
    "table_type": "VIEW"
   },
   {
-   "bytes": 4608,
+   "bytes": 5120,
    "created": "2026-10-21 13:53:33.759000-07:00",
-   "last_altered": "2026-10-21 15:03:30.788000-07:00",
+   "last_altered": "2026-10-21 15:15:23.149000-07:00",
    "row_count": 9,
    "table_name": "BOARD",
    "table_schema": "PARITY",
