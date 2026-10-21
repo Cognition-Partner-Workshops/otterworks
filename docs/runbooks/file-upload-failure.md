@@ -14,21 +14,55 @@
 
 ## Investigation Steps
 
-1. Confirm the error in file-service logs:
+1. Confirm the error in file-service logs. A failed upload logs `S3 upload failed`
+   with the `bucket` it tried to write to:
    ```
-   kubectl logs -l app=file-service --tail=100 -n otterworks | grep -i "NoSuchBucket\|S3\|500"
+   kubectl logs -l app=file-service --tail=100 -n otterworks | grep -i "NoSuchBucket\|S3 upload failed"
    ```
-2. Check whether the chaos flag `chaos:file-service:upload_s3_error` is set in Redis:
+2. Compare the bucket in the log line with the bucket the service is configured for:
    ```
-   redis-cli EXISTS chaos:file-service:upload_s3_error
+   kubectl get cm file-service-config -n otterworks -o jsonpath='{.data.S3_BUCKET}'
+   terraform -chdir=infrastructure/terraform output -raw s3_file_bucket
    ```
-
-<!-- TODO: Complete investigation steps -->
+   `S3_BUCKET` is wired from the `s3_file_bucket` Terraform output by
+   `scripts/deploy-dev.sh` / `scripts/lib/tenant-common.sh`. The two should match.
+3. Check for a recent config override or Helm release that changed `config.S3_BUCKET`
+   (e.g. the `file-bad-bucket` scenario in `scripts/bug-catalog.yaml`):
+   ```
+   helm history file-service -n otterworks
+   helm get values file-service -n otterworks | grep S3_BUCKET
+   ```
+4. Confirm the bucket exists and the service role can reach it:
+   ```
+   aws s3api head-bucket --bucket "$(kubectl get cm file-service-config -n otterworks -o jsonpath='{.data.S3_BUCKET}')"
+   ```
 
 ## Resolution Steps
 
-<!-- TODO -->
+- **Misconfigured `S3_BUCKET`**: redeploy file-service with the correct value (re-run
+  `scripts/deploy-dev.sh` / `scripts/deploy-tenant.sh <ID>`, or `helm upgrade` with the
+  Terraform `s3_file_bucket` output). Since the fix for `FileUploadHighErrorRate`, file-service
+  runs `HeadBucket` on startup and refuses to start when the bucket is unreachable, so a bad
+  value fails the rollout (`CrashLoopBackOff`, `File Service refusing to start` in logs)
+  instead of returning 500s on uploads. Check the rollout after redeploying:
+  ```
+  kubectl rollout status deploy/file-service -n otterworks
+  ```
+- **Code redirecting uploads away from the configured bucket**: the upload handler must
+  write to `S3Client.bucket` only. The handler no longer consults any runtime flag to pick
+  a bucket; if a 500 names a bucket other than the configured one, treat it as a regression.
+- The alert resolves on its own once the upload 5xx rate drops below 10% for the
+  evaluation window. Verify with an upload through the gateway:
+  ```
+  curl -s -o /dev/null -w '%{http_code}\n' -H "Authorization: Bearer $TOKEN" \
+    -F file=@README.md http://localhost:8080/api/v1/files/upload
+  ```
 
 ## Post-Incident
 
-<!-- TODO -->
+- Record which bucket the service was writing to, which bucket it was configured for, and
+  the change (deploy, Helm override, code) that introduced the difference.
+- If the cause was a config change, add a check to the deploy path that compares
+  `config.S3_BUCKET` with the Terraform output before `helm upgrade`.
+- Uploads that failed were never persisted (the S3 write happens before the metadata
+  write), so there is no orphaned metadata to clean up; users need to retry.

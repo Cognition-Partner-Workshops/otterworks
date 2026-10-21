@@ -26,6 +26,10 @@ async fn main() -> std::io::Result<()> {
 
     let app_config = config::AppConfig::from_env();
     let s3_client = storage::S3Client::new(&app_config.aws).await;
+    if let Err(e) = s3_client.ensure_bucket_exists().await {
+        tracing::error!(error = %e, "File Service refusing to start");
+        return Err(std::io::Error::other(e.to_string()));
+    }
     let meta_client = metadata::MetadataClient::new(&app_config.aws).await;
     let event_publisher = events::EventPublisher::new(&app_config.sns, &app_config.aws).await;
 
