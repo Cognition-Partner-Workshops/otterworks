@@ -4,21 +4,30 @@ from __future__ import annotations
 
 import logging
 import sys
-import time
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from typing import Any
 
 import structlog
-from flask import Flask, g, request as flask_request
-from flask_cors import CORS
+from fastapi import FastAPI
+from starlette.types import ASGIApp
 
-from app.api.health import REQUEST_COUNT, REQUEST_LATENCY, health_bp
-from app.api.index import index_bp
-from app.api.search import search_bp
+from app.api.health import router as health_router
+from app.api.index import router as index_router
+from app.api.search import router as search_router
 from app.config import AppConfig
-from app.middleware.auth import require_auth
+from app.errors import register_exception_handlers
+from app.middleware.auth import AuthMiddleware
+from app.middleware.cors import CORSMiddleware
+from app.middleware.metrics import MetricsMiddleware
+from app.routing import install_flask_router
+from app.services.indexer import Indexer
 from app.services.meilisearch_client import MeiliSearchService
 from app.services.sqs_consumer import SQSConsumer
 
 logger = structlog.get_logger()
+
+CORS_ORIGINS = ["http://localhost:3000", "http://localhost:4200"]
 
 
 def configure_logging(log_level: str) -> None:
@@ -48,81 +57,72 @@ def configure_logging(log_level: str) -> None:
     )
 
 
-def create_app(config: AppConfig | None = None) -> Flask:
-    """Create and configure the Flask application."""
+class SearchServiceApp(FastAPI):
+    """FastAPI with Werkzeug routing and CORS wrapped around the whole stack.
+
+    ``add_middleware`` would place CORS inside Starlette's
+    ``ServerErrorMiddleware``, so unhandled-error 500s would lose the CORS
+    headers flask-cors adds to them (``intercept_exceptions``). Request
+    metrics sit just inside CORS so they also count those 500s and auth 401s.
+    """
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(redirect_slashes=False, **kwargs)
+        install_flask_router(self.router)
+
+    def build_middleware_stack(self) -> ASGIApp:
+        return CORSMiddleware(MetricsMiddleware(super().build_middleware_stack()), allow_origins=CORS_ORIGINS)
+
+
+def create_app(config: AppConfig | None = None) -> FastAPI:
+    """Create and configure the FastAPI application."""
     if config is None:
         config = AppConfig()
 
     configure_logging(config.log_level)
 
-    app = Flask(__name__)
-    CORS(app, origins=["http://localhost:3000", "http://localhost:4200"])
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        search_service = MeiliSearchService(config.meilisearch)
+        app.state.search_service = search_service
 
-    # Store config on the app
-    app.config["APP_CONFIG"] = config
+        # Non-fatal if MeiliSearch is not available yet
+        try:
+            search_service.ensure_indices()
+            logger.info("meilisearch_indices_ensured")
+        except Exception:
+            logger.warning("meilisearch_indices_creation_deferred", reason="MeiliSearch not available")
 
-    # Initialize MeiliSearch service
-    search_service = MeiliSearchService(config.meilisearch)
-    app.config["SEARCH_SERVICE"] = search_service
+        sqs_consumer = None
+        if config.sqs.enabled:
+            sqs_consumer = SQSConsumer.from_config(config.sqs, Indexer(search_service))
+            sqs_consumer.start()
 
-    # Try to create indices on startup (non-fatal if MeiliSearch is not available)
-    try:
-        search_service.ensure_indices()
-        logger.info("meilisearch_indices_ensured")
-    except Exception:
-        logger.warning("meilisearch_indices_creation_deferred", reason="MeiliSearch not available")
-
-    # Register blueprints
-    app.register_blueprint(health_bp)
-    app.register_blueprint(search_bp, url_prefix="/api/v1/search")
-    app.register_blueprint(index_bp, url_prefix="/api/v1/search")
-
-    # Register authentication middleware
-    require_auth(app)
-
-    # Prometheus request instrumentation
-    @app.before_request
-    def _start_timer() -> None:
-        g.start_time = time.monotonic()
-
-    @app.after_request
-    def _record_metrics(response):  # type: ignore[no-untyped-def]
-        if flask_request.path in ("/metrics", "/health"):
-            return response
-        elapsed = time.monotonic() - g.get("start_time", time.monotonic())
-        endpoint = flask_request.url_rule.rule if flask_request.url_rule else "unknown"
-        method = flask_request.method
-        REQUEST_COUNT.labels(method=method, endpoint=endpoint, status=response.status_code).inc()
-        REQUEST_LATENCY.labels(method=method, endpoint=endpoint).observe(elapsed)
-        return response
-
-    # Start SQS consumer if enabled
-    if config.sqs.enabled:
-        from app.services.indexer import Indexer
-
-        indexer = Indexer(search_service)
-        sqs_consumer = SQSConsumer(
-            indexer=indexer,
-            queue_url=config.sqs.queue_url,
-            region=config.sqs.region,
-            endpoint_url=config.sqs.endpoint_url,
-            max_messages=config.sqs.max_messages,
-            wait_time_seconds=config.sqs.wait_time_seconds,
-            visibility_timeout=config.sqs.visibility_timeout,
+        logger.info(
+            "search_service_created",
+            port=config.port,
+            meilisearch_url=config.meilisearch.url,
+            sqs_enabled=config.sqs.enabled,
         )
-        sqs_consumer.start()
-        app.config["SQS_CONSUMER"] = sqs_consumer
+        yield
+        if sqs_consumer is not None:
+            await sqs_consumer.stop()
 
-    logger.info(
-        "search_service_created",
-        port=config.port,
-        meilisearch_url=config.meilisearch.url,
-        sqs_enabled=config.sqs.enabled,
-    )
+    app = SearchServiceApp(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+    app.state.config = config
+    register_exception_handlers(app)
+    # Inside ServerErrorMiddleware, before routing: Flask's before_request.
+    app.add_middleware(AuthMiddleware, auth_config=config.auth)
+
+    app.include_router(health_router)
+    app.include_router(search_router)
+    app.include_router(index_router)
+
     return app
 
 
 if __name__ == "__main__":
+    import uvicorn
+
     app_config = AppConfig()
-    app = create_app(app_config)
-    app.run(host=app_config.host, port=app_config.port, debug=app_config.debug)
+    uvicorn.run(create_app(app_config), host=app_config.host, port=app_config.port)
