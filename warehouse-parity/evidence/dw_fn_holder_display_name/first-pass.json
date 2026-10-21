@@ -1,0 +1,333 @@
+{
+  "columns": [
+    "policy_number",
+    "display_name"
+  ],
+  "keys": [
+    "policy_number"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 2000,
+    "snowflake": 2000,
+    "pass": true
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "display_name": {
+        "legacy": {
+          "count": 2000,
+          "nulls": 0,
+          "distinct": 1360,
+          "min": "Abbott, Ana",
+          "max": "Thompson, Tara Omar",
+          "min_len": 9,
+          "max_len": 22
+        },
+        "snowflake": {
+          "count": 2000,
+          "nulls": 939,
+          "distinct": 994,
+          "min": "Abbott, Ana Elena",
+          "max": "Thompson, Tara Omar",
+          "min_len": 13,
+          "max_len": 22
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 2000,
+    "matched": 1061,
+    "match_pct": 53.05,
+    "pass": false,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 25,
+    "diffs": [
+      {
+        "key": [
+          "PL00100000"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Duarte, Sam",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100001"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Baker, Elena",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100003"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Duarte, Kai",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100005"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Sato, Elena",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100007"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Abbott, Elena",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100009"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Okafor, Grace",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100011"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Okafor, Priya",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100013"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Gupta, Ana",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100015"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Nakamura, Priya",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100016"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Fischer, Hiro",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100017"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Jensen, Ana",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100018"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Hale, Nora",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100020"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Patel, Hiro",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100021"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Thompson, Chloe",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100023"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Sato, Ana",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100024"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Jensen, Mateo",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100026"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Rossi, Ben",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100029"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Jensen, Ana",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100032"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Moreau, Isla",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100033"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Quintero, Mateo",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100034"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Rossi, Tara",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100036"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Lindqvist, Dev",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100038"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Jensen, Tara",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100039"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Ibarra, Kai",
+            "snowflake": "\\N"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100041"
+        ],
+        "columns": {
+          "display_name": {
+            "legacy": "Hale, Isla",
+            "snowflake": "\\N"
+          }
+        }
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "dw.fn_holder_display_name",
+  "label": "first-pass",
+  "at": "2026-10-21 21:09 UTC"
+}
