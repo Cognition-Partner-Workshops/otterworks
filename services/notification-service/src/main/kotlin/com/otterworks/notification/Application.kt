@@ -7,6 +7,7 @@ import aws.smithy.kotlin.runtime.net.url.Url
 import com.otterworks.notification.config.AppConfig
 import com.otterworks.notification.consumer.SqsConsumer
 import com.otterworks.notification.plugins.configureMonitoring
+import com.otterworks.notification.plugins.configureSecurity
 import io.micrometer.core.instrument.MeterRegistry
 import com.otterworks.notification.repository.NotificationRepository
 import com.otterworks.notification.routes.configureRouting
@@ -49,6 +50,7 @@ fun main() {
 fun Application.module(config: AppConfig = AppConfig.load()) {
     val prometheusRegistry = configureMonitoring()
     configurePlugins(config)
+    configureSecurity(config)
     configureDependencyInjection(config, prometheusRegistry)
     configureRouting(prometheusRegistry)
 

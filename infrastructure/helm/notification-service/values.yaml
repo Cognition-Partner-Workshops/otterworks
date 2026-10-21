@@ -10,8 +10,10 @@ service:
   port: 80
   targetPort: 8086
 
+# Cluster-internal by default: clients reach the service through api-gateway. The WebSocket
+# requires a JWT (signed with JWT_SECRET) either way; only enable this ingress deliberately.
 ingress:
-  enabled: true
+  enabled: false
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
@@ -56,4 +58,6 @@ config: {}
 
 # Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
 # stringData) and injected via envFrom. Populate at deploy time; never commit values.
+# JWT_SECRET (shared with auth-service/api-gateway) is required to authenticate
+# /ws/notifications; without it every WebSocket upgrade is rejected.
 secrets: {}
