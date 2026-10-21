@@ -92,7 +92,9 @@ def serve(manifest, port=8765, engines=None):
             q = parse_qs(u.query)
             if u.path == "/report":
                 name = q.get("engine", ["sqlserver"])[0]
-                obj = manifest.obj(q.get("object", [manifest.data["report_object"]])[0])
+                ref = q.get("object", [manifest.data["report_object"]])[0]
+                obj = next((o for o in manifest.data["objects"] if ref in (o["name"], o.get("legacy_script"))), None)
+                obj = obj or manifest.obj(ref)
                 script = manifest.file(obj["legacy_script"] if name == "sqlserver" else obj["target_script"])
                 parts = [f"<html><head><title>Producer dashboard</title>{STYLE}</head><body>",
                          f"<div class=eng>Producer dashboard on {'SQL Server (legacy)' if name == 'sqlserver' else 'Snowflake'}</div>",
