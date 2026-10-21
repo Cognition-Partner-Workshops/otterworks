@@ -105,6 +105,45 @@ class TestSuggestEndpoint:
         data = response.get_json()
         assert data["suggestions"] == []
 
+    def test_suggest_without_ranking_score_returns_200(self, client, mock_meilisearch_client):
+        """Hits that lack _rankingScore must not crash the handler (regression for KeyError 500)."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [{"title": "Unscored Doc"}, {}],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=un")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Unscored Doc"]
+
+    def test_suggest_orders_by_ranking_score(self, client, mock_meilisearch_client):
+        """Suggestions are ordered by MeiliSearch _rankingScore, highest first."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 3,
+            "hits": [
+                {"title": "Low", "_rankingScore": 0.2},
+                {"title": "High", "_rankingScore": 0.9},
+                {"name": "Mid", "_rankingScore": 0.5},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["High", "Mid", "Low"]
+        _, search_options = mock_index.search.call_args[0]
+        assert search_options["showRankingScore"] is True
+
+    def test_suggest_backend_error_returns_200(self, client, mock_meilisearch_client):
+        """A MeiliSearch failure degrades to an empty list, never a 5xx."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = RuntimeError("meilisearch down")
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+
 
 class TestAdvancedSearchEndpoint:
     """Tests for POST /api/v1/search/advanced."""
