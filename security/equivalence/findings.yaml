@@ -24,7 +24,7 @@ modules:
     emitter: security/equivalence/harness/emit_document_service.py
     # Run from the module directory. {emitter}/{cases}/{seed}/{out}/{junit} are
     # absolute paths substituted by the harness.
-    emit_command: poetry run python {emitter} --cases {cases} --seed {seed} --out {out}
+    emit_command: env DOC_SVC_DATABASE_URL=postgresql+asyncpg://equivalence@localhost:5432/equivalence poetry run python {emitter} --cases {cases} --seed {seed} --out {out}
     test_command: poetry run pytest -q --junitxml={junit}
 
 findings:
