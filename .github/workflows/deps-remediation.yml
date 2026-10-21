@@ -32,6 +32,7 @@ jobs:
         with:
           distribution: temurin
           java-version: |
+            21
             17
             11
       # notification-service ships no Gradle wrapper, so the harness invokes the
