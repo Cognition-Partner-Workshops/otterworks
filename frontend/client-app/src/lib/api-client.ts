@@ -22,16 +22,31 @@ function transformKeys(obj: unknown): unknown {
 // Web builds call the same-origin /api/v1 proxy (Vite dev server locally, nginx in
 // production) to avoid CORS issues; the proxy forwards /api/v1/* to the API gateway
 // (configured via API_GATEWAY_URL env var). Native (Capacitor) builds have no
-// same-origin server, so they call the API gateway directly — the default targets
-// the Android emulator's host-loopback alias, which is plain HTTP by design in
-// local dev. Any real deployment must point VITE_API_BASE_URL at an https
-// gateway; the scheme below is only the local-dev default.
+// same-origin server, so they call the API gateway directly. The local-dev default
+// host depends on the platform: the Android emulator reaches the host machine via
+// its loopback alias 10.0.2.2, while the iOS Simulator shares the Mac's network
+// stack, so the host is plain localhost. Both are plain HTTP by design in local
+// dev. Any real deployment must point VITE_API_BASE_URL at an https gateway; the
+// scheme below is only the local-dev default.
+const WEB_API_BASE_URL = "/api/v1";
 const NATIVE_API_SCHEME = "http";
-const NATIVE_API_BASE_URL = `${NATIVE_API_SCHEME}://10.0.2.2:8080/api/v1`;
+const NATIVE_API_PORT = 8080;
+const NATIVE_DEV_HOSTS: Record<string, string> = {
+  android: "10.0.2.2",
+  ios: "localhost",
+};
 
-export const API_BASE_URL = Capacitor.isNativePlatform()
-  ? import.meta.env.VITE_API_BASE_URL || NATIVE_API_BASE_URL
-  : "/api/v1";
+export function resolveApiBaseUrl(platform: string, override?: string): string {
+  if (platform === "web") return WEB_API_BASE_URL;
+  if (override) return override;
+  const host = NATIVE_DEV_HOSTS[platform] ?? "localhost";
+  return `${NATIVE_API_SCHEME}://${host}:${NATIVE_API_PORT}/api/v1`;
+}
+
+export const API_BASE_URL = resolveApiBaseUrl(
+  Capacitor.getPlatform(),
+  import.meta.env.VITE_API_BASE_URL
+);
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
