@@ -21,6 +21,8 @@ from app.services.event_publisher import event_publisher
 
 logger = structlog.get_logger()
 
+RECENT_VERSIONS_PER_DOCUMENT = 5
+
 
 def _word_count(text: str) -> int:
     return len(text.split()) if text else 0
@@ -105,15 +107,31 @@ class DocumentService:
         result = await self.db.execute(query)
         documents = list(result.scalars().all())
 
-        # TODO: This is slow for large result sets (ETL-445, deferred Q2 2024)
-        for doc in documents:
+        recent: dict[UUID, list[DocumentVersion]] = {doc.id: [] for doc in documents}
+        if documents:
+            rank = (
+                func.row_number()
+                .over(
+                    partition_by=DocumentVersion.document_id,
+                    order_by=DocumentVersion.version_number.desc(),
+                )
+                .label("rank")
+            )
+            ranked = (
+                select(DocumentVersion.id, rank)
+                .where(DocumentVersion.document_id.in_(list(recent)))
+                .subquery()
+            )
             ver_result = await self.db.execute(
                 select(DocumentVersion)
-                .where(DocumentVersion.document_id == doc.id)
-                .order_by(DocumentVersion.version_number.desc())
-                .limit(5)
+                .join(ranked, ranked.c.id == DocumentVersion.id)
+                .where(ranked.c.rank <= RECENT_VERSIONS_PER_DOCUMENT)
+                .order_by(DocumentVersion.document_id, DocumentVersion.version_number.desc())
             )
-            doc.recent_versions = list(ver_result.scalars().all())
+            for version in ver_result.scalars().all():
+                recent[version.document_id].append(version)
+        for doc in documents:
+            doc.recent_versions = recent[doc.id]
 
         return documents, total
 
