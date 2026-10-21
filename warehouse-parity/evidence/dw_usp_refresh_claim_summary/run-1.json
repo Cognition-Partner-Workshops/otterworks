@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "policy_number",
+    "product_code",
+    "claim_count",
+    "total_claim_amount",
+    "last_loss_date"
+  ],
+  "keys": [
+    "policy_number"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 1552,
+    "snowflake": 1552,
+    "pass": true
+  },
+  "L2": {
+    "pass": true,
+    "drift": {}
+  },
+  "L3": {
+    "keys": 1552,
+    "matched": 1552,
+    "match_pct": 100.0,
+    "pass": true,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 0,
+    "diffs": [],
+    "pass": true
+  },
+  "green": true,
+  "object": "dw.usp_refresh_claim_summary",
+  "label": "run-1",
+  "at": "2026-10-21 21:32 UTC"
+}
