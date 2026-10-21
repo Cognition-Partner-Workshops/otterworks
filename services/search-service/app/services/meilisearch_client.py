@@ -82,6 +82,12 @@ class MeiliSearchService:
         """Escape a value for use in MeiliSearch filter expressions."""
         return value.replace("\\", "\\\\").replace('"', '\\"')
 
+    @classmethod
+    def _access_filter(cls, user_id: str) -> str:
+        """Filter matching records the user owns or that are shared with them."""
+        escaped = cls._escape(user_id)
+        return f'(owner_id = "{escaped}" OR shared_with = "{escaped}")'
+
     def ensure_indices(self) -> None:
         """Create indices and configure settings if they don't exist."""
         for index_name in [self.documents_index_name, self.files_index_name]:
@@ -95,7 +101,7 @@ class MeiliSearchService:
         # Configure documents index
         docs_index = self.client.index(self.documents_index_name)
         docs_index.update_searchable_attributes(["title", "content", "tags"])
-        docs_index.update_filterable_attributes(["type", "owner_id", "tags", "created_at", "updated_at"])
+        docs_index.update_filterable_attributes(["type", "owner_id", "shared_with", "tags", "created_at", "updated_at"])
         docs_index.update_sortable_attributes(["updated_at", "created_at"])
         docs_index.update_ranking_rules([
             "words", "typo", "proximity", "attribute", "sort", "exactness",
@@ -104,7 +110,7 @@ class MeiliSearchService:
         # Configure files index
         files_index = self.client.index(self.files_index_name)
         files_index.update_searchable_attributes(["name", "tags", "mime_type"])
-        files_index.update_filterable_attributes(["type", "owner_id", "mime_type", "folder_id", "tags", "created_at", "updated_at"])
+        files_index.update_filterable_attributes(["type", "owner_id", "shared_with", "mime_type", "folder_id", "tags", "created_at", "updated_at"])
         files_index.update_sortable_attributes(["updated_at", "created_at", "size"])
         files_index.update_ranking_rules([
             "words", "typo", "proximity", "attribute", "sort", "exactness",
@@ -161,7 +167,7 @@ class MeiliSearchService:
         if doc_type:
             filter_parts.append(f'type = "{self._escape(doc_type)}"')
         if owner_id:
-            filter_parts.append(f'owner_id = "{self._escape(owner_id)}"')
+            filter_parts.append(self._access_filter(owner_id))
 
         indices_to_search = self._resolve_indices(doc_type)
         multi_index = len(indices_to_search) > 1
@@ -210,7 +216,7 @@ class MeiliSearchService:
         if doc_type:
             filter_parts.append(f'type = "{self._escape(doc_type)}"')
         if owner_id:
-            filter_parts.append(f'owner_id = "{self._escape(owner_id)}"')
+            filter_parts.append(self._access_filter(owner_id))
         if tags:
             tag_filters = [f'tags = "{self._escape(tag)}"' for tag in tags]
             filter_parts.append(f'({" OR ".join(tag_filters)})')
@@ -247,17 +253,20 @@ class MeiliSearchService:
             query=search_term or "*",
         )
 
-    def suggest(self, prefix: str, size: int = 10) -> list[str]:
+    def suggest(self, prefix: str, size: int = 10, owner_id: str | None = None) -> list[str]:
         """Autocomplete suggestions using MeiliSearch prefix matching."""
         suggestions: list[str] = []
         seen: set[str] = set()
+        params: dict[str, Any] = {
+            "limit": size,
+            "attributesToRetrieve": ["title", "name"],
+        }
+        if owner_id:
+            params["filter"] = self._access_filter(owner_id)
 
         for index_name in [self.documents_index_name, self.files_index_name]:
             index = self.client.index(index_name)
-            result = index.search(prefix, {
-                "limit": size,
-                "attributesToRetrieve": ["title", "name"],
-            })
+            result = index.search(prefix, params)
             for hit in result["hits"]:
                 text = hit.get("title") or hit.get("name", "")
                 if text and text not in seen:
