@@ -9,6 +9,7 @@ BEGIN
     INSERT INTO DW.POLICY_CONTACT (policy_number, holder_display_name, contact_label, primary_phone)
     SELECT policy_number,
            DW.FN_HOLDER_DISPLAY_NAME(holder_first, holder_middle, holder_last),
+           -- FP-INFO 0415: ISNULL mapped to COALESCE
            COALESCE(NULLIF(alt_phone_label, ''), NULLIF(alt_phone, '')),
            primary_phone
       FROM DW.DIM_POLICY;
