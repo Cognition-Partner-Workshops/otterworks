@@ -1,0 +1,12 @@
+warning: string literal names unprefixed schema AUDIT., DW., STG. (dynamic SQL is not remapped)
+'dw.dim_region'|count(*)
+dw.dim_region|6
+dw.dim_producer|60
+dw.producer_tier|132
+dw.dim_policy|2000
+dw.ClaimStatusRef|5
+stg.producer_feed|204
+stg.premium_feed|1500
+stg.claim_feed|3000
+audit.claim_event|5000
+audit.policy_event|3000
