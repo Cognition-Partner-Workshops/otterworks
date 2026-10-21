@@ -1,0 +1,6 @@
+/app/src/main/java/com/otterworks/preferences/HealthController.java
+/app/src/main/java/com/otterworks/preferences/PreferencesServiceApplication.java
+/app/src/main/java/com/otterworks/preferences/UserPreference.java
+/app/src/main/java/com/otterworks/preferences/UserPreferenceController.java
+/app/src/main/java/com/otterworks/preferences/UserPreferenceRepository.java
+/app/src/main/java/com/otterworks/preferences/UserPreferenceService.java

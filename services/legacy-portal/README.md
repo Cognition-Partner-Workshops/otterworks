@@ -1,13 +1,14 @@
 # Legacy Portal — modular monolith (rehost / decomposition "before" state)
 
 `legacy-portal` is a **legacy modular monolith**: a single deployable Spring Boot application
-(Java 11, Spring Boot 2.7.x, built with Maven) that bundles **three bounded contexts** into one
-process. It exists as a realistic **"before" state** for two migration demos:
+(Java 11, Spring Boot 2.7.x, built with Maven) that bundles **two bounded contexts** into one
+process. The third, user preferences, has been extracted to
+[`services/preferences-service`](../preferences-service/README.md) behind a strangler route. It exists as a realistic **"before" state** for two migration demos:
 
 - **Rehost (lift-and-shift → EC2)** — it **runs on a VM / on-prem host today** (plain Docker
   Compose, a fat JAR under systemd), deliberately *not* on the repo's Helm/EKS path. That makes it
   the natural starting point for a lift-and-shift-to-EC2 demo.
-- **Monolith decomposition (→ microservices / Lambda)** — its three contexts are cleanly separated
+- **Monolith decomposition (→ microservices / Lambda)** — its contexts are cleanly separated
   by package **and by database schema**, so the seams for splitting it into services are obvious.
 
 > This component is part of the OtterWorks **golden app** as a durable before-state. The
@@ -22,7 +23,7 @@ and the datasource. That is exactly what makes this a good decomposition candida
 | Context | Package | Schema | Routes |
 |---|---|---|---|
 | Announcements | `com.otterworks.legacyportal.announcements` | `announcements` | `GET/POST /api/announcements`, `GET /api/announcements/{id}`, `POST /api/announcements/{id}/publish` |
-| User Preferences | `com.otterworks.legacyportal.userpreferences` | `user_preferences` | `GET /api/preferences/{userId}`, `PUT /api/preferences/{userId}` |
+| ~~User Preferences~~ | extracted to `services/preferences-service` | own database | `/api/preferences/**` is routed to preferences-service by the strangler edge |
 | Feedback | `com.otterworks.legacyportal.feedback` | `feedback` | `POST /api/feedback`, `GET /api/feedback?userId=`, `GET /api/feedback/average-rating` |
 
 Shared, non-domain plumbing lives in `com.otterworks.legacyportal.common` (health endpoint,
@@ -65,7 +66,7 @@ curl http://localhost:8095/health
 docker compose -f docker-compose.onprem.yml down -v
 ```
 
-This brings up PostgreSQL alongside the app; the three schemas are created by
+This brings up PostgreSQL alongside the app; the two schemas are created by
 [`scripts/initdb.sql`](scripts/initdb.sql). This stack is intentionally separate from the
 Helm/EKS deploy path — it models the on-prem host the rehost demo lifts *from*.
 
