@@ -100,7 +100,7 @@ def create_app(config: AppConfig | None = None) -> Flask:
     if config.sqs.enabled:
         from app.services.indexer import Indexer
 
-        indexer = Indexer(search_service)
+        indexer = Indexer(search_service, config.services)
         sqs_consumer = SQSConsumer(
             indexer=indexer,
             queue_url=config.sqs.queue_url,

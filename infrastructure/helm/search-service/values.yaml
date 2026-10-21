@@ -52,7 +52,12 @@ serviceAccount:
 
 # Non-sensitive service configuration rendered into {{ .Release.Name }}-config
 # and injected via envFrom. Populate at deploy time (e.g. from Terraform outputs).
-config: {}
+config:
+  # Reindex crawl targets (app/config.py ServicesConfig). Plain http:// to the
+  # in-cluster Service DNS names; the transport is encrypted and
+  # peer-authenticated by the ambient mesh (scripts/lib/service-mesh.sh).
+  DOCUMENT_SERVICE_URL: "http://document-service:8083"
+  FILE_SERVICE_URL: "http://file-service:8082"
 
 # Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
 # stringData) and injected via envFrom. Populate at deploy time; never commit values.

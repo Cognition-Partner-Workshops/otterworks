@@ -179,6 +179,9 @@ metadata:
     demo/tier: "${TIER}"
     demo/profile: "${PROFILE}"
     kubernetes.io/metadata.name: ${NS}
+    # Ambient mesh: every pod in the tenant gets STRICT mTLS for its
+    # service-to-service http:// calls (scripts/lib/service-mesh.sh).
+    istio.io/dataplane-mode: ambient
   annotations:
     demo/expires-at: "${EXPIRES_AT}"
     demo/expires-at-epoch: "${EXPIRES_EPOCH}"

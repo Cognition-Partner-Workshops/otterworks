@@ -1,0 +1,6 @@
+# ztunnel (per-node L4 proxy) overrides for the shared ambient mesh.
+# One pod per node; the chart default request is 200m / 512Mi.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi

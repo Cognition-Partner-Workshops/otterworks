@@ -1,0 +1,9 @@
+# istiod overrides for the shared ambient mesh (scripts/lib/service-mesh.sh).
+# The chart defaults (500m / 2Gi) are sized for large meshes; this cluster runs a
+# handful of tenants on a SPOT node group, so size the control plane like the
+# other shared platform pieces (ingress-nginx is 100m / 128Mi).
+pilot:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi

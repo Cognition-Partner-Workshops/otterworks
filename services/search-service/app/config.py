@@ -46,6 +46,26 @@ class AuthConfig:
 
 
 @dataclass(frozen=True)
+class ServicesConfig:
+    """Upstream services the indexer crawls on reindex.
+
+    In-cluster these resolve to the Kubernetes Service names; the transport is
+    encrypted by the ambient mesh (scripts/lib/service-mesh.sh), which is why
+    the scheme stays http://. Override for Compose or local runs.
+    """
+
+    document_service_url: str = field(
+        default_factory=lambda: os.getenv("DOCUMENT_SERVICE_URL", "http://document-service:8083")
+    )
+    file_service_url: str = field(
+        default_factory=lambda: os.getenv("FILE_SERVICE_URL", "http://file-service:8082")
+    )
+    fetch_timeout: int = field(
+        default_factory=lambda: int(os.getenv("UPSTREAM_FETCH_TIMEOUT", "30"))
+    )
+
+
+@dataclass(frozen=True)
 class AppConfig:
     """Top-level application configuration."""
 
@@ -59,3 +79,4 @@ class AppConfig:
     meilisearch: MeiliSearchConfig = field(default_factory=MeiliSearchConfig)
     sqs: SQSConfig = field(default_factory=SQSConfig)
     auth: AuthConfig = field(default_factory=AuthConfig)
+    services: ServicesConfig = field(default_factory=ServicesConfig)
