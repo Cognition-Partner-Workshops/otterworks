@@ -10,10 +10,66 @@ locals {
   }
 }
 
+data "aws_caller_identity" "current" {}
+
+# --- KMS: SNS encryption at rest ---
+# Publishers (IRSA roles granted sns:Publish in the root module) also need
+# kms:GenerateDataKey and kms:Decrypt on this key; the SNS service principal
+# needs the same to decrypt messages when delivering them to the SQS subscribers.
+
+data "aws_iam_policy_document" "events_kms" {
+  statement {
+    sid       = "EnableIAMUserPermissions"
+    effect    = "Allow"
+    actions   = ["kms:*"]
+    resources = ["*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+  }
+
+  statement {
+    sid       = "AllowSNSToUseTheKey"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt", "kms:GenerateDataKey*"]
+    resources = ["*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["sns.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+}
+
+resource "aws_kms_key" "events" {
+  description             = "Encrypts ${var.project} SNS events at rest (${var.environment})"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+  policy                  = data.aws_iam_policy_document.events_kms.json
+
+  tags = merge(local.common_tags, {
+    Service = "shared-events"
+  })
+}
+
+resource "aws_kms_alias" "events" {
+  name          = "alias/${var.project}-events-${var.environment}"
+  target_key_id = aws_kms_key.events.key_id
+}
+
 # --- SNS Topic: System Events ---
 
 resource "aws_sns_topic" "events" {
-  name = "${var.project}-events-${var.environment}"
+  name              = "${var.project}-events-${var.environment}"
+  kms_master_key_id = aws_kms_key.events.arn
 
   tags = merge(local.common_tags, {
     Service = "shared-events"
