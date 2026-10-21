@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { BillingReportService } from './billing-report.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('BillingReportService collections endpoints', () => {
   let service: BillingReportService;
@@ -10,7 +10,7 @@ describe('BillingReportService collections endpoints', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
     imports: [],
-    providers: [BillingReportService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
+    providers: [BillingReportService, provideHttpClient(withXhr(), withInterceptorsFromDi()), provideHttpClientTesting()]
 });
     service = TestBed.inject(BillingReportService);
     httpMock = TestBed.inject(HttpTestingController);
