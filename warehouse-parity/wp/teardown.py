@@ -1,10 +1,11 @@
 """Drop every Snowflake object named after a run token, then prove nothing remains."""
 import os
 
-from .engines import ident
+from .engines import ident, stmt
 
 KINDS = [("WAREHOUSES", "WAREHOUSE"), ("DATABASES", "DATABASE"), ("USERS", "USER"),
          ("ROLES", "ROLE"), ("RESOURCE MONITORS", "RESOURCE MONITOR")]
+DROP = {kind: "DROP " + kind + " IF EXISTS {n}" for _, kind in KINDS}
 
 
 def admin():
@@ -40,8 +41,8 @@ def run(sf, token, yes=False):
         return {"token": token, "found": len(before), "dropped": 0, "remaining": len(before)}
     for kind, name, _ in before:
         if kind == "WAREHOUSE":
-            sf.execute(f"ALTER WAREHOUSE IF EXISTS {ident(name)} SUSPEND")
-        sf.execute(f"DROP {kind} IF EXISTS {ident(name)}")
+            sf.execute(stmt("ALTER WAREHOUSE IF EXISTS {n} SUSPEND", n=name))
+        sf.execute(stmt(DROP[kind], n=name))
     after = find(sf, token)
     _, whs = sf.query("SHOW WAREHOUSES")
     running = [r for r in whs if str(r[1]).upper() == "STARTED" and str(r[0]).upper().startswith(token.upper())]
