@@ -1,11 +1,14 @@
 """Wave board. State lives in Snowflake (PARITY.BOARD) so sessions on different machines share it."""
 import html
 import json
+import os
+import re
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from . import qlik
-from .engines import update_sql
+from .engines import ident, update_sql
 
 DDL = """CREATE TABLE IF NOT EXISTS PARITY.BOARD (
   object_name VARCHAR, object_type VARCHAR, wave INT, workstream VARCHAR,
@@ -52,7 +55,32 @@ def rollup(sf):
             "needs_decision": [r["object_name"] for r in recs if r["status"] == "amber"],
             "red_or_open": [r["object_name"] for r in recs if r["status"] not in ("green", "amber")],
             "rules_cited": sorted({x.strip() for r in recs for x in (r["rules_cited"] or "").split(",") if x.strip()}),
-            "minutes_per_object": round(sum(mins) / len(mins), 1) if mins else None}
+            "minutes_per_object": round(sum(mins) / len(mins), 1) if mins else None,
+            "rules_learned": rules_learned(),
+            "credits_used": credits_used(sf)}
+
+
+RULES = Path(__file__).resolve().parents[2] / ".agents/skills/tsql-to-snowflake-rules/SKILL.md"
+
+
+def rules_learned(path=RULES):
+    """IDs in the skill's 'Rules learned in parity runs' table."""
+    if not path.exists():
+        return []
+    learned = path.read_text().split("## Rules learned in parity runs", 1)[-1]
+    return re.findall(r"^\| (R\d+) \|", learned, flags=re.M)
+
+
+def credits_used(sf):
+    """Warehouse credits since the run began; WP_CREDITS_USED wins when the run role cannot read metering."""
+    if os.environ.get("WP_CREDITS_USED"):
+        return float(os.environ["WP_CREDITS_USED"])
+    wh = os.environ.get("WP_SF_WAREHOUSE")
+    if not wh:
+        return None
+    _, rs = sf.query("SELECT SUM(credits_used) FROM TABLE(INFORMATION_SCHEMA.WAREHOUSE_METERING_HISTORY("
+                     "DATEADD('day', -7, CURRENT_TIMESTAMP()), CURRENT_TIMESTAMP(), '" + ident(wh) + "'))")
+    return float(rs[0][0]) if rs and rs[0][0] is not None else None
 
 
 def _table(cols, rs):
@@ -110,7 +138,9 @@ def serve(manifest, port=8765, engines=None):
                                             for i, v in enumerate(r)) + "</tr>" for r in pills)
             self._send(f"<html><head><title>Parity board</title>{STYLE}</head><body><h2>Parity wave board</h2>"
                        f"<p>{len(ru['green'])} green, {len(ru['needs_decision'])} need a decision, "
-                       f"{len(ru['red_or_open'])} open, {ru['minutes_per_object']} minutes per object. "
+                       f"{len(ru['red_or_open'])} open, {ru['minutes_per_object']} minutes per object, "
+                       f"{len(ru['rules_learned'])} rules learned, "
+                       f"{ru['credits_used'] if ru['credits_used'] is not None else 'unknown'} warehouse credits. "
                        f"<a href='/report?engine=sqlserver'>Report on SQL Server</a> | "
                        f"<a href='/report?engine=snowflake'>Report on Snowflake</a></p>"
                        f"<table><tr>{head}</tr>{body}</table></body></html>")
