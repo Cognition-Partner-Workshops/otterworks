@@ -35,3 +35,4 @@ Append below, newest last, in the same table shape. Give the object and evidence
 
 | ID | T-SQL | Snowflake | Caught at | Learned from |
 |---|---|---|---|---|
+| R70 | `ISNULL(a, b)` where `b` is wider than `a` (T-SQL types the result as `a`, so `b` is silently cut to `a`'s length; e.g. `ISNULL(NULLIF(alt_phone_label,''), NULLIF(alt_phone,''))` cuts the VARCHAR(40) phone to VARCHAR(10)) | `COALESCE(a, b)` returns the wider type and the full value. Do not wrap it in `LEFT`/`SUBSTR`/a narrower cast to match; that reproduces a legacy truncation. Leave the object amber and ask the data owner whether the full value is wanted | L2 (max_len) / L3 | dw.usp_refresh_policy_contact, `warehouse-parity/evidence/dw_usp_refresh_policy_contact/run-1.md` |
