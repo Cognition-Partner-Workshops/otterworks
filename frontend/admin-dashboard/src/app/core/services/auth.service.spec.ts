@@ -95,7 +95,7 @@ describe('AuthService', () => {
     gatewayOffline();
     tick(900);
     expect(emitted.length).toBeGreaterThanOrEqual(2);
-    expect(emitted[emitted.length - 1]).toBeTruthy();
+    expect(emitted.at(-1)).toBeTruthy();
   }));
 
   it('should return token from getToken()', fakeAsync(() => {
