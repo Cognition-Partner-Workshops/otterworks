@@ -3,6 +3,7 @@
 import uuid
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.document import (
@@ -53,6 +54,43 @@ async def test_list_documents_with_filters(
 
     items, total = await service.list_documents(folder_id=folder_id)
     assert total == 1
+
+
+@pytest.mark.asyncio
+async def test_list_documents_statement_count_does_not_grow_with_page_size(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    service = DocumentService(db_session)
+    for i in range(12):
+        doc = await service.create(
+            DocumentCreate(title=f"Doc {i}", content="first", owner_id=owner_id)
+        )
+        await service.update(doc.id, DocumentUpdate(title=f"Doc {i}", content="second"))
+
+    statements: list[str] = []
+
+    def record(conn, cursor, statement, parameters, context, executemany):
+        statements.append(statement)
+
+    sync_engine = db_session.bind.sync_engine
+    event.listen(sync_engine, "before_cursor_execute", record)
+    try:
+        db_session.expunge_all()
+        await service.list_documents(owner_id=owner_id, size=2)
+        small_page = len(statements)
+        statements.clear()
+        db_session.expunge_all()
+        items, _ = await service.list_documents(owner_id=owner_id, size=12)
+        large_page = len(statements)
+    finally:
+        event.remove(sync_engine, "before_cursor_execute", record)
+
+    assert small_page == large_page
+    assert large_page <= 5
+    assert len(items) == 12
+    assert all(
+        [v.version_number for v in d.recent_versions] == [2, 1] for d in items
+    )
 
 
 @pytest.mark.asyncio

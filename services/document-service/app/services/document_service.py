@@ -2,11 +2,13 @@
 
 import html as html_mod
 import math
+from collections import defaultdict
 from uuid import UUID
 
 import structlog
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from app.models.document import Comment, Document, DocumentVersion, Template
 from app.schemas.document import (
@@ -105,15 +107,31 @@ class DocumentService:
         result = await self.db.execute(query)
         documents = list(result.scalars().all())
 
-        # TODO: This is slow for large result sets (ETL-445, deferred Q2 2024)
-        for doc in documents:
-            ver_result = await self.db.execute(
-                select(DocumentVersion)
-                .where(DocumentVersion.document_id == doc.id)
-                .order_by(DocumentVersion.version_number.desc())
-                .limit(5)
+        recent_by_doc: dict[UUID, list[DocumentVersion]] = defaultdict(list)
+        if documents:
+            ranked = (
+                select(
+                    DocumentVersion,
+                    func.row_number()
+                    .over(
+                        partition_by=DocumentVersion.document_id,
+                        order_by=DocumentVersion.version_number.desc(),
+                    )
+                    .label("rank"),
+                )
+                .where(DocumentVersion.document_id.in_([doc.id for doc in documents]))
+                .subquery()
             )
-            doc.recent_versions = list(ver_result.scalars().all())
+            recent = aliased(DocumentVersion, ranked)
+            ver_result = await self.db.execute(
+                select(recent)
+                .where(ranked.c.rank <= 5)
+                .order_by(ranked.c.document_id, ranked.c.version_number.desc())
+            )
+            for version in ver_result.scalars().all():
+                recent_by_doc[version.document_id].append(version)
+        for doc in documents:
+            doc.recent_versions = recent_by_doc.get(doc.id, [])
 
         return documents, total
 
