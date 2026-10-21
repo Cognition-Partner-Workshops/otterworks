@@ -35,3 +35,5 @@ Append below, newest last, in the same table shape. Give the object and evidence
 
 | ID | T-SQL | Snowflake | Caught at | Learned from |
 |---|---|---|---|---|
+| R50 | `a.col = b.col` on CHAR/VARCHAR where one side carries trailing blanks (SQL Server ANSI padding ignores them in `=` and joins) | Compare `RTRIM(a.col) = RTRIM(b.col)`; Snowflake treats `'X  '` and `'X'` as different, so the join silently drops rows | L1 | producer_dashboard.qvs ProductPremium, `warehouse-parity/evidence/producer_dashboard_qvs_ProductPremium/run-2.md` |
+| R51 | `int_expr * 100 / int_expr` (integer division truncates toward zero in T-SQL) | Snowflake `/` returns a decimal, so the converted value is the true ratio. Do not wrap it in `TRUNC`/`FLOOR` to match; that reproduces a legacy truncation. Leave the object amber and ask the report owner whether whole-number truncation is intended | L2 | producer_dashboard.qvs RegionClaimRate and ClaimStatusMix, `warehouse-parity/evidence/producer_dashboard_qvs_ClaimStatusMix/run-2.md` |
