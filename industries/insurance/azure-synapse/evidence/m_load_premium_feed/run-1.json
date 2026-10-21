@@ -1,0 +1,270 @@
+{
+  "columns": [
+    "policy_number",
+    "product_code",
+    "region_code",
+    "premium_amount",
+    "effective_date"
+  ],
+  "keys": [
+    "policy_number"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 1500,
+    "snowflake": 0,
+    "pass": false
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "policy_number": {
+        "legacy": {
+          "count": 1500,
+          "nulls": 0,
+          "distinct": 1500,
+          "min": "PL00100001  ",
+          "max": "PL00101998  ",
+          "min_len": 12,
+          "max_len": 12
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "product_code": {
+        "legacy": {
+          "count": 1500,
+          "nulls": 0,
+          "distinct": 5,
+          "min": "AUTO",
+          "max": "UMBR",
+          "min_len": 4,
+          "max_len": 4
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "region_code": {
+        "legacy": {
+          "count": 1500,
+          "nulls": 0,
+          "distinct": 6,
+          "min": "MW",
+          "max": "SW",
+          "min_len": 2,
+          "max_len": 2
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "premium_amount": {
+        "legacy": {
+          "count": 1500,
+          "nulls": 0,
+          "distinct": 1497,
+          "min": "305.91",
+          "max": "5998.62",
+          "sum": "4682700.2"
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "effective_date": {
+        "legacy": {
+          "count": 1500,
+          "nulls": 0,
+          "distinct": 30,
+          "min": "2026-09-01",
+          "max": "2026-09-30",
+          "min_len": 10,
+          "max_len": 10
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 1500,
+    "matched": 0,
+    "match_pct": 0.0,
+    "pass": false,
+    "only_legacy": 1500,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 25,
+    "diffs": [
+      {
+        "key": [
+          "PL00100001  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100002  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100005  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100006  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100007  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100008  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100011  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100012  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100013  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100015  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100016  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100017  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100020  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100021  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100023  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100024  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100026  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100027  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100028  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100029  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100030  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100031  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100032  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100033  "
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100034  "
+        ],
+        "only_in": "legacy"
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "m_load_premium_feed",
+  "label": "run-1",
+  "at": "2026-10-21 21:10 UTC"
+}

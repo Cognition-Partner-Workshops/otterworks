@@ -15,7 +15,7 @@
       "connection": "$$DWConnection",
       "sourceType": "QUERY",
       "preSQL": "TRUNCATE TABLE dw.premium_fact",
-      "sqlOverride": "SELECT p.policy_number, d.product_code, d.region_code, p.premium_amount, p.effective_date FROM stg.premium_feed p JOIN dw.dim_policy d ON d.policy_number = p.policy_number WHERE p.effective_date BETWEEN '$$WindowStart' AND '$$WindowEnd'"
+      "sqlOverride": "SELECT p.policy_number, d.product_code, d.region_code, p.premium_amount, p.effective_date FROM stg.premium_feed p JOIN dw.dim_policy d ON d.policy_number = RTRIM(p.policy_number) WHERE p.effective_date BETWEEN '$$WindowStart' AND '$$WindowEnd'"
     },
     {
       "name": "TGT_premium_fact",
