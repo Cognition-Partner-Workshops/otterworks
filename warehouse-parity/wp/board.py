@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
 from . import qlik
+from .engines import update_sql
 
 DDL = """CREATE TABLE IF NOT EXISTS PARITY.BOARD (
   object_name VARCHAR, object_type VARCHAR, wave INT, workstream VARCHAR,
@@ -30,8 +31,8 @@ def set_fields(sf, obj, **kw):
     kw = {k: v for k, v in kw.items() if k in FIELDS and v is not None}
     if not kw:
         return
-    sets = ", ".join(f"{k} = %s" for k in kw) + ", updated_at = CURRENT_TIMESTAMP()"
-    n = sf.execute(f"UPDATE PARITY.BOARD SET {sets} WHERE LOWER(object_name) = LOWER(%s)", (*kw.values(), obj))
+    where = ", updated_at = CURRENT_TIMESTAMP() WHERE LOWER(object_name) = LOWER(%s)"
+    n = sf.execute(update_sql("PARITY.BOARD", list(kw), where), (*kw.values(), obj))
     if not n:
         raise SystemExit(f"{obj} is not on the board")
 
