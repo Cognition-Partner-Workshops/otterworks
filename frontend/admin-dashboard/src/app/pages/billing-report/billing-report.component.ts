@@ -14,13 +14,12 @@ import {
 } from '../../core/models/billing-report.model';
 
 @Component({
-  selector: 'app-billing-report',
-  standalone: true,
-  imports: [
-    CommonModule, FormsModule, MatCardModule, MatIconModule, MatButtonModule,
-    MatProgressSpinnerModule, MatFormFieldModule, MatInputModule,
-  ],
-  template: `
+    selector: 'app-billing-report',
+    imports: [
+        CommonModule, FormsModule, MatCardModule, MatIconModule, MatButtonModule,
+        MatProgressSpinnerModule, MatFormFieldModule, MatInputModule,
+    ],
+    template: `
     <div class="page-container">
       <div class="page-header">
         <div class="title-row">
@@ -210,7 +209,7 @@ import {
       </ng-container>
     </div>
   `,
-  styles: [`
+    styles: [`
     .page-container { padding: 0; }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
     .title-row { display: flex; align-items: center; gap: 16px; }
@@ -261,7 +260,7 @@ import {
     .report-table th, .report-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
     .report-table th.num, .report-table td.num { text-align: right; }
     .report-footer { color: #888; font-size: 0.8rem; }
-  `],
+  `]
 })
 export class BillingReportComponent implements OnInit {
   ns = 'demo';
