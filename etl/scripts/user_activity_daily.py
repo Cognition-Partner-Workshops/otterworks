@@ -9,7 +9,6 @@
 # TODO ETL-160: Cache PostgreSQL connection across runs (deferred Q2 2020)
 # TODO ETL-210: Add email notification for report generation (never done)
 
-import configparser
 import gzip
 import json
 import sys
@@ -18,16 +17,17 @@ from datetime import datetime, timedelta, timezone
 import boto3
 import psycopg2
 
+from etl_config import load_config
+
 
 def main():
     print("[%s] user_activity_daily.py starting..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # ---- Load config ----
-    config = configparser.ConfigParser()
-    config.read("/opt/etl/config.ini")
+    config = load_config()
 
-    aws_access_key = config.get("aws", "access_key")
-    aws_secret_key = config.get("aws", "secret_key")
+    aws_access_key = config.get("aws", "access_key", required=False)
+    aws_secret_key = config.get("aws", "secret_key", required=False)
     aws_region = config.get("aws", "region")
 
     db_host = config.get("database", "host")
