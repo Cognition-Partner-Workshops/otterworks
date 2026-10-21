@@ -41,10 +41,11 @@ management:
         include: prometheus,info
       path-mapping:
         prometheus: metrics
-  metrics:
-    export:
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true
+  metrics:
     tags:
       application: auth-service
 
