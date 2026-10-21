@@ -1,0 +1,39 @@
+{
+  "columns": [
+    "policy_number",
+    "event_weekday",
+    "event_count",
+    "last_event_at"
+  ],
+  "keys": [
+    "policy_number",
+    "event_weekday"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 2705,
+    "snowflake": 2705,
+    "pass": true
+  },
+  "L2": {
+    "pass": true,
+    "drift": {}
+  },
+  "L3": {
+    "keys": 2705,
+    "matched": 2705,
+    "match_pct": 100.0,
+    "pass": true,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 0,
+    "diffs": [],
+    "pass": true
+  },
+  "green": true,
+  "object": "dw.v_policy_audit",
+  "label": "run-1",
+  "at": "2026-10-21 21:32 UTC"
+}
