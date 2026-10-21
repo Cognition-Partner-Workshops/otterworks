@@ -22,6 +22,7 @@ import type { FileItem } from "@/types";
 import { formatFileSize, formatRelativeTime } from "@/lib/utils";
 import { starredApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
+import { ClassificationChip } from "./classification-chip";
 
 const iconMap: Record<string, typeof File> = {
   file: File,
@@ -156,7 +157,10 @@ export function FileCard({
                 />
               </div>
             ) : (
-              <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+              <div className="flex items-center gap-2 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                {!file.isFolder && <ClassificationChip fileName={file.name} className="flex-shrink-0" />}
+              </div>
             )}
           </div>
           <span className="text-xs text-gray-500 w-32 hidden sm:block truncate">
@@ -274,7 +278,10 @@ export function FileCard({
             />
           </div>
         ) : (
-          <p className="text-sm font-medium text-gray-900 truncate mb-1">{file.name}</p>
+          <div className="flex items-center gap-2 min-w-0 mb-1">
+            <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+            {!file.isFolder && <ClassificationChip fileName={file.name} className="flex-shrink-0" />}
+          </div>
         )}
         <p className="text-xs text-gray-500">
           {file.isFolder ? "Folder" : formatFileSize(file.size)}
