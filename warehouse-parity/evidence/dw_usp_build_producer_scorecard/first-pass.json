@@ -1,0 +1,379 @@
+{
+  "columns": [
+    "scorecard_date",
+    "region_code",
+    "producer_code",
+    "producer_name",
+    "agency_name",
+    "tier_name",
+    "policy_count",
+    "claim_count",
+    "written_premium",
+    "row_status"
+  ],
+  "keys": [
+    "region_code",
+    "producer_code"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 46,
+    "snowflake": 0,
+    "pass": false
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "scorecard_date": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 1,
+          "min": "2026-09-30",
+          "max": "2026-09-30",
+          "min_len": 10,
+          "max_len": 10
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "region_code": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 6,
+          "min": "MW",
+          "max": "SW",
+          "min_len": 2,
+          "max_len": 2
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "producer_code": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 41,
+          "min": "P1004",
+          "max": "~REGION",
+          "min_len": 5,
+          "max_len": 7
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "producer_name": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 36,
+          "min": "Ana Moreau",
+          "max": "Sam Quintero",
+          "min_len": 9,
+          "max_len": 15
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "agency_name": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 6,
+          "min": "Bluewater Insurance Group",
+          "max": "Summit Risk Partners",
+          "min_len": 14,
+          "max_len": 25
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "tier_name": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 1,
+          "min": "Silver",
+          "max": "Silver",
+          "min_len": 6,
+          "max_len": 6
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "policy_count": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 37,
+          "min": "0",
+          "max": "191",
+          "sum": "3809"
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "claim_count": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 26,
+          "min": "1",
+          "max": "43",
+          "sum": "656"
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "written_premium": {
+        "legacy": {
+          "count": 46,
+          "nulls": 6,
+          "distinct": 40,
+          "min": "5642.44",
+          "max": "216799.14",
+          "sum": "3965741.61"
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      },
+      "row_status": {
+        "legacy": {
+          "count": 46,
+          "nulls": 0,
+          "distinct": 3,
+          "min": "LOADED",
+          "max": "PRODUCER",
+          "min_len": 6,
+          "max_len": 8
+        },
+        "snowflake": {
+          "count": 0,
+          "nulls": 0,
+          "distinct": 0
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 46,
+    "matched": 0,
+    "match_pct": 0.0,
+    "pass": false,
+    "only_legacy": 46,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 25,
+    "diffs": [
+      {
+        "key": [
+          "MW",
+          "P1009"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "P1015"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "P1039"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "P1045"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "p1003"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "p1021"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "p1027"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "p1033"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "p1051"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "p1057"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "MW",
+          "~REGION"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "P1019"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "P1025"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "P1049"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "P1055"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "p1001"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "p1007"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "p1013"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "p1031"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "p1037"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "p1043"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NE",
+          "~REGION"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "NW",
+          "~REGION"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PR",
+          "~REGION"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "SE",
+          "P1014"
+        ],
+        "only_in": "legacy"
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "dw.usp_build_producer_scorecard",
+  "label": "first-pass",
+  "at": "2026-10-21 21:10 UTC"
+}
