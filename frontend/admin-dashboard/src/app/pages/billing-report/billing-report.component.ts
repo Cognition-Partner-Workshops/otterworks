@@ -24,10 +24,12 @@ import {
       <div class="page-header">
         <div class="title-row">
           <h1 class="page-title">Billing Report</h1>
-          <span class="source-badge" *ngIf="report" [class]="'engine-' + report.source.engine">
-            <mat-icon>{{ report.source.engine === 'mongodb' ? 'eco' : 'dns' }}</mat-icon>
-            {{ sourceLabel }}
-          </span>
+          @if (report) {
+            <span class="source-badge" [class]="'engine-' + report.source.engine">
+              <mat-icon>{{ report.source.engine === 'mongodb' ? 'eco' : 'dns' }}</mat-icon>
+              {{ sourceLabel }}
+            </span>
+          }
         </div>
         <div class="header-actions">
           <mat-form-field appearance="outline" class="ns-field" subscriptSizing="dynamic">
@@ -43,26 +45,32 @@ import {
           </button>
         </div>
       </div>
-
-      <div class="recon-banner" *ngIf="recon" [class]="'recon-' + recon.status">
-        <mat-icon>{{ reconIcon }}</mat-icon>
-        <div class="recon-text">
-          <span class="recon-title">{{ reconTitle }}</span>
-          <span class="recon-detail">{{ reconDetail }}</span>
+    
+      @if (recon) {
+        <div class="recon-banner" [class]="'recon-' + recon.status">
+          <mat-icon>{{ reconIcon }}</mat-icon>
+          <div class="recon-text">
+            <span class="recon-title">{{ reconTitle }}</span>
+            <span class="recon-detail">{{ reconDetail }}</span>
+          </div>
         </div>
-      </div>
-
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner diameter="40"></mat-spinner>
-      </div>
-
-      <div *ngIf="error && !loading" class="error-container">
-        <mat-icon>error_outline</mat-icon>
-        <p>{{ error }}</p>
-        <button mat-raised-button color="primary" (click)="refresh()">Retry</button>
-      </div>
-
-      <ng-container *ngIf="!loading && report">
+      }
+    
+      @if (loading) {
+        <div class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      }
+    
+      @if (error && !loading) {
+        <div class="error-container">
+          <mat-icon>error_outline</mat-icon>
+          <p>{{ error }}</p>
+          <button mat-raised-button color="primary" (click)="refresh()">Retry</button>
+        </div>
+      }
+    
+      @if (!loading && report) {
         <div class="summary-tiles">
           <div class="tile">
             <span class="tile-value">{{ totalInvoices | number }}</span>
@@ -72,32 +80,36 @@ import {
             <span class="tile-value">{{ totalBilled | currency }}</span>
             <span class="tile-label">Billed (header totals)</span>
           </div>
-          <div class="tile" *ngIf="recon">
-            <span class="tile-value">{{ recon.balances.customer_count | number }}</span>
-            <span class="tile-label">Customers</span>
-          </div>
-          <div class="tile balances-tile" *ngIf="recon" [class.drifted]="recon.status === 'fail'">
-            <span class="tile-value">{{ recon.balances.current_balance_total | currency }}</span>
-            <span class="tile-label">Current balances</span>
-          </div>
+          @if (recon) {
+            <div class="tile">
+              <span class="tile-value">{{ recon.balances.customer_count | number }}</span>
+              <span class="tile-label">Customers</span>
+            </div>
+          }
+          @if (recon) {
+            <div class="tile balances-tile" [class.drifted]="recon.status === 'fail'">
+              <span class="tile-value">{{ recon.balances.current_balance_total | currency }}</span>
+              <span class="tile-label">Current balances</span>
+            </div>
+          }
         </div>
-
         <mat-card class="report-card">
           <mat-card-header><mat-card-title>Invoices by status</mat-card-title></mat-card-header>
           <mat-card-content>
             <table class="report-table">
               <thead><tr><th>Status</th><th class="num">Invoices</th><th class="num">Header total</th></tr></thead>
               <tbody>
-                <tr *ngFor="let row of report.by_status">
-                  <td>{{ row.status }}</td>
-                  <td class="num">{{ row.invoice_count | number }}</td>
-                  <td class="num">{{ toNumber(row.header_total_amt) | currency }}</td>
-                </tr>
+                @for (row of report.by_status; track row) {
+                  <tr>
+                    <td>{{ row.status }}</td>
+                    <td class="num">{{ row.invoice_count | number }}</td>
+                    <td class="num">{{ toNumber(row.header_total_amt) | currency }}</td>
+                  </tr>
+                }
               </tbody>
             </table>
           </mat-card-content>
         </mat-card>
-
         <mat-card class="report-card">
           <mat-card-header><mat-card-title>Lines by status and type</mat-card-title></mat-card-header>
           <mat-card-content>
@@ -109,106 +121,138 @@ import {
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let row of report.by_status_line_type">
-                  <td>{{ row.status }}</td>
-                  <td>{{ row.line_type }}</td>
-                  <td class="num">{{ row.line_count | number }}</td>
-                  <td class="num">{{ toNumber(row.line_amount) | currency }}</td>
-                  <td class="num">{{ toNumber(row.line_tax) | currency }}</td>
-                  <td class="num">{{ row.invoices_touched | number }}</td>
-                </tr>
+                @for (row of report.by_status_line_type; track row) {
+                  <tr>
+                    <td>{{ row.status }}</td>
+                    <td>{{ row.line_type }}</td>
+                    <td class="num">{{ row.line_count | number }}</td>
+                    <td class="num">{{ toNumber(row.line_amount) | currency }}</td>
+                    <td class="num">{{ toNumber(row.line_tax) | currency }}</td>
+                    <td class="num">{{ row.invoices_touched | number }}</td>
+                  </tr>
+                }
               </tbody>
             </table>
           </mat-card-content>
         </mat-card>
-
         <mat-card class="report-card collections-card">
           <mat-card-header><mat-card-title>Overdue accounts</mat-card-title></mat-card-header>
           <mat-card-content>
-            <p *ngIf="collectionsErrorStatus === 401 || collectionsErrorStatus === 403" class="panel-message">
-              Sign in as an admin to view collections data
-            </p>
-            <p *ngIf="collectionsUnavailable" class="panel-message">
-              Billing is temporarily unavailable — the legacy billing system isn't reachable
-            </p>
-            <table *ngIf="overdueAccounts && !collectionsUnavailable && !collectionsErrorStatus" class="report-table">
-              <thead><tr><th>Account</th><th>Invoice</th><th class="num">Amount</th><th class="num">Days overdue</th></tr></thead>
-              <tbody>
-                <tr *ngFor="let row of overdueAccounts">
-                  <td>{{ row.tenant_id || '—' }}</td>
-                  <td>{{ row.invoice_id || '—' }}</td>
-                  <td class="num">{{ row.amount || '—' }}</td>
-                  <td class="num">{{ row.days_overdue || '—' }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <p *ngIf="overdueAccounts && overdueAccounts.length === 0 && !collectionsErrorStatus" class="panel-message">No overdue accounts.</p>
+            @if (collectionsErrorStatus === 401 || collectionsErrorStatus === 403) {
+              <p class="panel-message">
+                Sign in as an admin to view collections data
+              </p>
+            }
+            @if (collectionsUnavailable) {
+              <p class="panel-message">
+                Billing is temporarily unavailable — the legacy billing system isn't reachable
+              </p>
+            }
+            @if (overdueAccounts && !collectionsUnavailable && !collectionsErrorStatus) {
+              <table class="report-table">
+                <thead><tr><th>Account</th><th>Invoice</th><th class="num">Amount</th><th class="num">Days overdue</th></tr></thead>
+                <tbody>
+                  @for (row of overdueAccounts; track row) {
+                    <tr>
+                      <td>{{ row.tenant_id || '—' }}</td>
+                      <td>{{ row.invoice_id || '—' }}</td>
+                      <td class="num">{{ row.amount || '—' }}</td>
+                      <td class="num">{{ row.days_overdue || '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+            @if (overdueAccounts && overdueAccounts.length === 0 && !collectionsErrorStatus) {
+              <p class="panel-message">No overdue accounts.</p>
+            }
           </mat-card-content>
         </mat-card>
-
         <mat-card class="report-card finance-batch-card">
           <mat-card-header>
             <mat-card-title>Month-end finance batch</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <p class="batch-source" *ngIf="financeReport">
-              Source: {{ financeReport.source.system }}
-            </p>
-            <p *ngIf="financeErrorStatus === 404" class="panel-message">
-              run make tp-month-end NS={{ ns }}
-            </p>
-            <p *ngIf="financeUnavailable" class="panel-message">
-              Billing is temporarily unavailable — the legacy billing system isn't reachable
-            </p>
-            <table *ngIf="financeReport && !financeUnavailable" class="report-table">
-              <thead><tr><th>Currency</th><th>Record type</th><th class="num">Records</th><th class="num">Total</th></tr></thead>
-              <tbody>
-                <tr *ngFor="let row of financeReport.rows">
-                  <td>{{ row.currency }}</td>
-                  <td>{{ row.record_type }}</td>
-                  <td class="num">{{ row.record_count | number }}</td>
-                  <td class="num">{{ toNumber(row.total_amount) | currency }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <p *ngIf="financeReport" class="batch-total">
-              Total records: {{ financeReport.totals.record_count | number }} ·
-              Total amount: {{ toNumber(financeReport.totals.total_amount) | currency }}
-            </p>
+            @if (financeReport) {
+              <p class="batch-source">
+                Source: {{ financeReport.source.system }}
+              </p>
+            }
+            @if (financeErrorStatus === 404) {
+              <p class="panel-message">
+                run make tp-month-end NS={{ ns }}
+              </p>
+            }
+            @if (financeUnavailable) {
+              <p class="panel-message">
+                Billing is temporarily unavailable — the legacy billing system isn't reachable
+              </p>
+            }
+            @if (financeReport && !financeUnavailable) {
+              <table class="report-table">
+                <thead><tr><th>Currency</th><th>Record type</th><th class="num">Records</th><th class="num">Total</th></tr></thead>
+                <tbody>
+                  @for (row of financeReport.rows; track row) {
+                    <tr>
+                      <td>{{ row.currency }}</td>
+                      <td>{{ row.record_type }}</td>
+                      <td class="num">{{ row.record_count | number }}</td>
+                      <td class="num">{{ toNumber(row.total_amount) | currency }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+            @if (financeReport) {
+              <p class="batch-total">
+                Total records: {{ financeReport.totals.record_count | number }} ·
+                Total amount: {{ toNumber(financeReport.totals.total_amount) | currency }}
+              </p>
+            }
           </mat-card-content>
         </mat-card>
-
         <mat-card class="report-card collections-card">
           <mat-card-header><mat-card-title>Dunning attempts</mat-card-title></mat-card-header>
           <mat-card-content>
-            <p *ngIf="collectionsErrorStatus === 401 || collectionsErrorStatus === 403" class="panel-message">
-              Sign in as an admin to view collections data
-            </p>
-            <p *ngIf="collectionsUnavailable" class="panel-message">
-              Billing is temporarily unavailable — the legacy billing system isn't reachable
-            </p>
-            <table *ngIf="dunningAttempts && !collectionsUnavailable && !collectionsErrorStatus" class="report-table">
-              <thead><tr><th>Account</th><th>Invoice</th><th>Scheduled</th><th>Status</th></tr></thead>
-              <tbody>
-                <tr *ngFor="let row of dunningAttempts">
-                  <td>{{ row.tenant_id || '—' }}</td>
-                  <td>{{ row.invoice_id || '—' }}</td>
-                  <td>{{ row.scheduled_for || '—' }}</td>
-                  <td>{{ row.status || '—' }}</td>
-                </tr>
-              </tbody>
-            </table>
-            <p *ngIf="dunningAttempts && dunningAttempts.length === 0 && !collectionsErrorStatus" class="panel-message">No dunning attempts.</p>
+            @if (collectionsErrorStatus === 401 || collectionsErrorStatus === 403) {
+              <p class="panel-message">
+                Sign in as an admin to view collections data
+              </p>
+            }
+            @if (collectionsUnavailable) {
+              <p class="panel-message">
+                Billing is temporarily unavailable — the legacy billing system isn't reachable
+              </p>
+            }
+            @if (dunningAttempts && !collectionsUnavailable && !collectionsErrorStatus) {
+              <table class="report-table">
+                <thead><tr><th>Account</th><th>Invoice</th><th>Scheduled</th><th>Status</th></tr></thead>
+                <tbody>
+                  @for (row of dunningAttempts; track row) {
+                    <tr>
+                      <td>{{ row.tenant_id || '—' }}</td>
+                      <td>{{ row.invoice_id || '—' }}</td>
+                      <td>{{ row.scheduled_for || '—' }}</td>
+                      <td>{{ row.status || '—' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+            @if (dunningAttempts && dunningAttempts.length === 0 && !collectionsErrorStatus) {
+              <p class="panel-message">No dunning attempts.</p>
+            }
           </mat-card-content>
         </mat-card>
-
-        <p class="report-footer" *ngIf="report">
-          {{ report.source.system }} — {{ report.source.detail }} ·
-          batch {{ report.batch_no }} · generated {{ report.generated_at }}
-        </p>
-      </ng-container>
+        @if (report) {
+          <p class="report-footer">
+            {{ report.source.system }} — {{ report.source.detail }} ·
+            batch {{ report.batch_no }} · generated {{ report.generated_at }}
+          </p>
+        }
+      }
     </div>
-  `,
+    `,
     styles: [`
     .page-container { padding: 0; }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
