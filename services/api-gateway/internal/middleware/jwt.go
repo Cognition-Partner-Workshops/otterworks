@@ -2,13 +2,14 @@ package middleware
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	"github.com/Cognition-Partner-Workshops/otterworks/services/api-gateway/internal/httpx"
 )
 
 type jwtClaimsKey struct{}
@@ -68,7 +69,7 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 
 			tokenStr := extractBearerToken(r)
 			if tokenStr == "" {
-				writeJSONError(w, http.StatusUnauthorized, "missing or invalid authorization header")
+				httpx.WriteError(w, http.StatusUnauthorized, "missing or invalid authorization header")
 				return
 			}
 
@@ -77,7 +78,7 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 				claims, err = validateToken(tokenStr, cfg.PeerSecret)
 			}
 			if err != nil {
-				writeJSONError(w, http.StatusUnauthorized, fmt.Sprintf("invalid token: %v", err))
+				httpx.WriteError(w, http.StatusUnauthorized, fmt.Sprintf("invalid token: %v", err))
 				return
 			}
 
@@ -136,30 +137,12 @@ func isPublicPath(path string, exactPaths map[string]bool, prefixPaths []string)
 		return true
 	}
 	// Prefix match only for operational paths (e.g. /health, /metrics)
-	for _, p := range prefixPaths {
-		if path == p || strings.HasPrefix(path, p+"/") {
-			return true
-		}
-	}
-	return false
+	return httpx.MatchesAnyPrefix(path, prefixPaths)
 }
 
 func isProtectedPath(path string, protectedPrefixes []string) bool {
 	if len(protectedPrefixes) == 0 {
 		return true
 	}
-	for _, p := range protectedPrefixes {
-		if path == p || strings.HasPrefix(path, p+"/") {
-			return true
-		}
-	}
-	return false
-}
-
-func writeJSONError(w http.ResponseWriter, status int, message string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(map[string]string{
-		"error": message,
-	})
+	return httpx.MatchesAnyPrefix(path, protectedPrefixes)
 }
