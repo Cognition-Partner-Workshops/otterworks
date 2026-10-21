@@ -35,3 +35,4 @@ Append below, newest last, in the same table shape. Give the object and evidence
 
 | ID | T-SQL | Snowflake | Caught at | Learned from |
 |---|---|---|---|---|
+| R80 | `DATEPART(weekday, x)` (result depends on `@@DATEFIRST`; legacy runs `us_english`, `DATEFIRST = 7`, so Sun=1 .. Sat=7) | `DAYOFWEEKISO(x) % 7 + 1`, not `DAYOFWEEK(x)`: `DAYOFWEEK` follows the `WEEK_START` session parameter and under the default `0` returns Sun=0 .. Sat=6, one less than legacy on every row; the ISO form is independent of `WEEK_START` | L2 / L3 | dw.v_claim_audit, `warehouse-parity/evidence/dw_v_claim_audit/first-pass.md` |
