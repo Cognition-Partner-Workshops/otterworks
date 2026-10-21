@@ -145,8 +145,9 @@ def main():
 def dry_run_report(log):
     pfx = schemas.prefix()
     seen = {}
-    for line in open(log):
-        rec = json.loads(line)
+    with open(log) as fh:
+        recs = [json.loads(line) for line in fh]
+    for rec in recs:
         used = seen.setdefault(rec["engine"], {"statements": 0, "schemas": set(), "literal_refs": set()})
         used["statements"] += 1
         used["schemas"].update(schemas.harness_schemas_used(rec["sql"], pfx))

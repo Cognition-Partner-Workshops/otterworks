@@ -69,10 +69,10 @@ def _schema_positions(toks):
             continue
         if dot(j + 1) and _is_name(at(j + 2)):
             # schema.object or db.schema.object; never object.column or deeper parts
-            if not dot(j - 1) or (_is_name(at(j - 2)) and not dot(j - 3)):
-                if not (dot(j + 3) and _is_name(at(j + 4)) and not dot(j - 1)):
-                    yield i
-                continue
+            first_of_three = not dot(j - 1) and dot(j + 3) and _is_name(at(j + 4))
+            if (not dot(j - 1) or (_is_name(at(j - 2)) and not dot(j - 3))) and not first_of_three:
+                yield i
+            continue
         k = j - 1
         if dot(k) and _is_name(at(k - 1)):
             k -= 2

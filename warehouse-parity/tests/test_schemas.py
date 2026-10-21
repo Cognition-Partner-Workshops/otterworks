@@ -129,8 +129,8 @@ def test_snowflake_engine_sends_only_prefixed_statements(monkeypatch, tmp_path):
         "DELETE FROM MIG_DW.claim_fact",
         "SELECT * FROM MIG_AUDIT.claim_event",
         "INSERT INTO MIG_STG.claim_feed (a) VALUES (%s)",
-        "SELECT table_name FROM information_schema.tables WHERE table_schema = UPPER('MIG_DW') "
-        "AND UPPER(table_name) = UPPER('ClaimStatusRef')",
+        ("SELECT table_name FROM information_schema.tables WHERE table_schema = UPPER('MIG_DW') "
+         "AND UPPER(table_name) = UPPER('ClaimStatusRef')"),
     ]
 
 
