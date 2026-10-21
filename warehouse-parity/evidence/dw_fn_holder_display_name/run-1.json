@@ -1,0 +1,36 @@
+{
+  "columns": [
+    "policy_number",
+    "display_name"
+  ],
+  "keys": [
+    "policy_number"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 2000,
+    "snowflake": 2000,
+    "pass": true
+  },
+  "L2": {
+    "pass": true,
+    "drift": {}
+  },
+  "L3": {
+    "keys": 2000,
+    "matched": 2000,
+    "match_pct": 100.0,
+    "pass": true,
+    "only_legacy": 0,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 0,
+    "diffs": [],
+    "pass": true
+  },
+  "green": true,
+  "object": "dw.fn_holder_display_name",
+  "label": "run-1",
+  "at": "2026-10-21 21:09 UTC"
+}
