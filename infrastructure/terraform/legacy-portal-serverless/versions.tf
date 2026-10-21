@@ -10,17 +10,14 @@ terraform {
       source  = "hashicorp/archive"
       version = "~> 2.4"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.6"
-    }
   }
 
   # One state object per run token. scripts/lp-serverless.sh passes
   # -backend-config="key=otterworks/legacy-portal-serverless/<token>/terraform.tfstate".
   backend "s3" {
-    bucket = "otterworks-terraform-state"
-    region = "us-east-1"
+    bucket  = "otterworks-terraform-state"
+    region  = "us-east-1"
+    encrypt = true
   }
 }
 
