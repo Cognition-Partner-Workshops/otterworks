@@ -28,6 +28,6 @@ python -m wp objects --wave 1   # what the manifest says is in scope
 
 ## Parity levels
 
-L1 compares row counts. L2 compares a profile of every column (nulls, distinct values, min, max, sum). L3 hashes each row by business key and reports the match percentage. L4 samples up to 25 differing rows and shows the column values from each engine. Values are canonicalized before hashing (numbers without trailing zeros, timestamps to milliseconds, NULL as `\N`), and strings keep trailing blanks unless the manifest sets `rtrim: true` for that object.
+L1 compares row counts. L2 compares a profile of every column (count, nulls, distinct values, min, max, sum, and min and max length for strings). L3 hashes each row by business key and reports the match percentage. L4 samples up to 25 differing rows and shows the column values from each engine. Values are canonicalized before hashing (numbers without trailing zeros, timestamps to milliseconds, NULL as `\N`), and strings keep trailing blanks unless the manifest sets `rtrim: true` for that object.
 
 Conversion rules and the completion standard live in `.agents/skills/tsql-to-snowflake-rules/SKILL.md`.
