@@ -95,7 +95,10 @@ class SqsConsumer(
                                 logger.debug { "Deleted SQS message: ${msg.messageId}" }
                             } else {
                                 processingErrorsCounter?.increment()
-                                logger.warn { "Failed to parse SQS message: ${msg.messageId}" }
+                                // Leave the message in the queue; the SQS redrive policy
+                                // moves it to the notifications DLQ after maxReceiveCount,
+                                // keeping the payload inspectable and redrivable.
+                                logger.warn { "Failed to parse SQS message, leaving for DLQ redrive: ${msg.messageId}" }
                             }
                         } catch (e: Exception) {
                             logger.error(e) { "Error processing SQS message: ${msg.messageId}" }
