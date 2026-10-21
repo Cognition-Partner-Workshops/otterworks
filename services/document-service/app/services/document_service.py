@@ -7,6 +7,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import load_only
 
 from app.models.document import Comment, Document, DocumentVersion, Template
 from app.schemas.document import (
@@ -124,6 +125,13 @@ class DocumentService:
             )
             ver_result = await self.db.execute(
                 select(DocumentVersion)
+                .options(
+                    load_only(
+                        DocumentVersion.id,
+                        DocumentVersion.document_id,
+                        DocumentVersion.version_number,
+                    )
+                )
                 .join(ranked, ranked.c.id == DocumentVersion.id)
                 .where(ranked.c.rank <= RECENT_VERSIONS_PER_DOCUMENT)
                 .order_by(DocumentVersion.document_id, DocumentVersion.version_number.desc())
