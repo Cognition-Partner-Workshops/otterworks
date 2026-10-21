@@ -1,0 +1,30 @@
+{
+  "exportVersion": "2",
+  "objectType": "MAPPING",
+  "name": "m_load_premium_feed",
+  "description": "Premium staging to premium fact, enriched with policy product and region",
+  "parameters": [
+    {"name": "$$DWConnection", "type": "connection", "default": "conn_snowflake_dw"},
+    {"name": "$$WindowStart", "type": "string", "default": "2026-09-01"},
+    {"name": "$$WindowEnd", "type": "string", "default": "2026-09-30"}
+  ],
+  "transformations": [
+    {
+      "name": "SQ_premium_feed",
+      "type": "Source",
+      "connection": "$$DWConnection",
+      "sourceType": "QUERY",
+      "preSQL": "TRUNCATE TABLE dw.premium_fact",
+      "sqlOverride": "SELECT p.policy_number, d.product_code, d.region_code, p.premium_amount, p.effective_date FROM stg.premium_feed p JOIN dw.dim_policy d ON d.policy_number = p.policy_number WHERE p.effective_date BETWEEN '$$WindowStart' AND '$$WindowEnd'"
+    },
+    {
+      "name": "TGT_premium_fact",
+      "type": "Target",
+      "connection": "$$DWConnection",
+      "object": "dw.premium_fact",
+      "operation": "INSERT",
+      "fieldMap": {"policy_number": "policy_number", "product_code": "product_code", "region_code": "region_code", "premium_amount": "premium_amount", "effective_date": "effective_date"},
+      "postSQL": "INSERT INTO dw.etl_log (proc_name, step, rows_affected) SELECT 'm_load_premium_feed', 'post', COUNT(*) FROM dw.premium_fact"
+    }
+  ]
+}

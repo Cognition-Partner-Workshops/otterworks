@@ -1,0 +1,3 @@
+{
+  "conn_snowflake_dw": {"type": "Snowflake", "schema": "DW", "authentication": "keypair", "credentials": "env:WP_SF_*"}
+}
