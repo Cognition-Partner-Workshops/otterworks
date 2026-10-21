@@ -1,0 +1,45 @@
+$ helm template fx-report platform/standards/helm/app@c56cbe8f6f4c -f deploy/values.yaml --set app=fx-report,owner=fx-desk,costCenter=treasury-ops,image.repository=...,image.tag=abc123,ingress.enabled=true,ingress.host=fx-report.example.internal --show-only templates/ingress.yaml
+---
+# Source: platform-app/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fx-report
+  labels:
+    app: fx-report
+    owner: "fx-desk"
+    cost-center: "treasury-ops"
+    app.kubernetes.io/name: fx-report
+    app.kubernetes.io/instance: fx-report
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: ["fx-report.example.internal"]
+      secretName: fx-report-tls
+  rules:
+    - host: "fx-report.example.internal"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: fx-report
+                port:
+                  name: http
+
+$ tests/ingress-auth/run.sh   # kind v0.24.0 (node v1.31.0), ingress-nginx controller-v1.11.2, helm v3.15.4
+== Ingress annotations rendered by helm/app@c56cbe8f6f4c
+{"meta.helm.sh/release-name":"fx-report","meta.helm.sh/release-namespace":"app-fx-report"}
+== after applying deploy/values.yaml ingress.annotations by hand
+{"meta.helm.sh/release-name":"fx-report","meta.helm.sh/release-namespace":"app-fx-report","nginx.ingress.kubernetes.io/auth-response-headers":"X-Auth-Request-User","nginx.ingress.kubernetes.io/auth-signin":"https://$host/oauth2/start?rd=$escaped_request_uri","nginx.ingress.kubernetes.io/auth-url":"http://oauth2-proxy.oauth2-proxy.svc.cluster.local/oauth2/auth?allowed_groups=fx-desk"}
+PASS no session: redirected to sign-in                    -> 302 https://fx-report.test/oauth2/start?rd=%2Ffx%2Ffx-report.cgi%3Fday%3D2026-10-15 
+PASS no session, spoofed X-Auth-Request-User              -> 302 https://fx-report.test/oauth2/start?rd=%2Ffx%2Ffx-report.cgi%3Fday%3D2026-10-15 
+PASS session outside fx-desk: rejected                    -> 403  
+PASS fx-desk member: report with their user               -> 200  | Business date 2026-10-15, user jdoe
+PASS fx-desk member, spoofed header replaced              -> 200  | Business date 2026-10-15, user jdoe
+== /health on the Service, as the kubelet probes and the kind smoke call it (no ingress, no sign-in)
+200 ok
