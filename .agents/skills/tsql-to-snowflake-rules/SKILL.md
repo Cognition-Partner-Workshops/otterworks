@@ -35,3 +35,4 @@ Append below, newest last, in the same table shape. Give the object and evidence
 
 | ID | T-SQL | Snowflake | Caught at | Learned from |
 |---|---|---|---|---|
+| R90 | `DATEPART(weekday, x)` (result depends on `@@DATEFIRST`; legacy runs `us_english`, `DATEFIRST 7`, so Sunday = 1 .. Saturday = 7) | `MOD(DAYOFWEEKISO(x), 7) + 1`, also in `GROUP BY`; plain `DAYOFWEEK` follows the `WEEK_START` session parameter (default 0: Sunday = 0 .. Saturday = 6), so every weekday key shifts by one and rows regroup. `DAYOFWEEKISO` ignores `WEEK_START` | L2 / L3 | dw.v_policy_audit, `warehouse-parity/evidence/dw_v_policy_audit/first-pass.md` |
