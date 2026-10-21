@@ -1,0 +1,445 @@
+{
+  "columns": [
+    "policy_number",
+    "product_code",
+    "claim_count",
+    "total_claim_amount",
+    "last_loss_date"
+  ],
+  "keys": [
+    "policy_number"
+  ],
+  "missing_columns": [],
+  "L1": {
+    "legacy": 1552,
+    "snowflake": 1037,
+    "pass": false
+  },
+  "L2": {
+    "pass": false,
+    "drift": {
+      "policy_number": {
+        "legacy": {
+          "count": 1552,
+          "nulls": 0,
+          "distinct": 1552,
+          "min": "PL00100000",
+          "max": "PL00101999",
+          "min_len": 10,
+          "max_len": 10
+        },
+        "snowflake": {
+          "count": 1037,
+          "nulls": 0,
+          "distinct": 1037,
+          "min": "PL00100000",
+          "max": "PL00101995",
+          "min_len": 10,
+          "max_len": 10
+        }
+      },
+      "product_code": {
+        "legacy": {
+          "count": 1552,
+          "nulls": 0,
+          "distinct": 5,
+          "min": "AUTO",
+          "max": "UMBR",
+          "min_len": 4,
+          "max_len": 4
+        },
+        "snowflake": {
+          "count": 1037,
+          "nulls": 0,
+          "distinct": 5,
+          "min": "AUTO",
+          "max": "UMBR",
+          "min_len": 4,
+          "max_len": 4
+        }
+      },
+      "claim_count": {
+        "legacy": {
+          "count": 1552,
+          "nulls": 0,
+          "distinct": 7,
+          "min": "1",
+          "max": "8",
+          "sum": "3000"
+        },
+        "snowflake": {
+          "count": 1037,
+          "nulls": 0,
+          "distinct": 5,
+          "min": "1",
+          "max": "5",
+          "sum": "1499"
+        }
+      },
+      "total_claim_amount": {
+        "legacy": {
+          "count": 1552,
+          "nulls": 0,
+          "distinct": 1552,
+          "min": "125.08",
+          "max": "106905.36",
+          "sum": "37191072.48"
+        },
+        "snowflake": {
+          "count": 1037,
+          "nulls": 0,
+          "distinct": 1036,
+          "min": "125.08",
+          "max": "100877.79",
+          "sum": "18429999.66"
+        }
+      },
+      "last_loss_date": {
+        "legacy": {
+          "count": 1552,
+          "nulls": 0,
+          "distinct": 30,
+          "min": "2026-09-01",
+          "max": "2026-09-30",
+          "min_len": 10,
+          "max_len": 10
+        },
+        "snowflake": {
+          "count": 1037,
+          "nulls": 0,
+          "distinct": 30,
+          "min": "2026-09-01",
+          "max": "2026-09-30",
+          "min_len": 10,
+          "max_len": 10
+        }
+      }
+    }
+  },
+  "L3": {
+    "keys": 1552,
+    "matched": 495,
+    "match_pct": 31.89,
+    "pass": false,
+    "only_legacy": 515,
+    "only_snowflake": 0
+  },
+  "L4": {
+    "sampled": 25,
+    "diffs": [
+      {
+        "key": [
+          "PL00100001"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "3",
+            "snowflake": "1"
+          },
+          "total_claim_amount": {
+            "legacy": "38329.62",
+            "snowflake": "17060.74"
+          },
+          "last_loss_date": {
+            "legacy": "2026-09-28",
+            "snowflake": "2026-09-24"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100002"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100003"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "3",
+            "snowflake": "2"
+          },
+          "total_claim_amount": {
+            "legacy": "30159.86",
+            "snowflake": "25971.65"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100004"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "3",
+            "snowflake": "2"
+          },
+          "total_claim_amount": {
+            "legacy": "30213.34",
+            "snowflake": "16561.3"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100005"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100006"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100008"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100010"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100013"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "2",
+            "snowflake": "1"
+          },
+          "total_claim_amount": {
+            "legacy": "38128.02",
+            "snowflake": "16628.84"
+          },
+          "last_loss_date": {
+            "legacy": "2026-09-24",
+            "snowflake": "2026-09-17"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100016"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100019"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "6",
+            "snowflake": "2"
+          },
+          "total_claim_amount": {
+            "legacy": "70147.22",
+            "snowflake": "14783.07"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100022"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100023"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "2",
+            "snowflake": "1"
+          },
+          "total_claim_amount": {
+            "legacy": "32615.46",
+            "snowflake": "19954.43"
+          },
+          "last_loss_date": {
+            "legacy": "2026-09-14",
+            "snowflake": "2026-09-13"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100027"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100028"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "2",
+            "snowflake": "1"
+          },
+          "total_claim_amount": {
+            "legacy": "27585.28",
+            "snowflake": "22689.8"
+          },
+          "last_loss_date": {
+            "legacy": "2026-09-28",
+            "snowflake": "2026-09-22"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100030"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "4",
+            "snowflake": "2"
+          },
+          "total_claim_amount": {
+            "legacy": "32892.6",
+            "snowflake": "5552.22"
+          },
+          "last_loss_date": {
+            "legacy": "2026-09-30",
+            "snowflake": "2026-09-25"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100031"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "3",
+            "snowflake": "2"
+          },
+          "total_claim_amount": {
+            "legacy": "23209.58",
+            "snowflake": "15755"
+          },
+          "last_loss_date": {
+            "legacy": "2026-09-11",
+            "snowflake": "2026-09-06"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100032"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100034"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "3",
+            "snowflake": "2"
+          },
+          "total_claim_amount": {
+            "legacy": "26061.43",
+            "snowflake": "12927.87"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100035"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "2",
+            "snowflake": "1"
+          },
+          "total_claim_amount": {
+            "legacy": "28164.93",
+            "snowflake": "9358.19"
+          },
+          "last_loss_date": {
+            "legacy": "2026-09-30",
+            "snowflake": "2026-09-20"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100037"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "2",
+            "snowflake": "1"
+          },
+          "total_claim_amount": {
+            "legacy": "10370.86",
+            "snowflake": "3459.3"
+          },
+          "last_loss_date": {
+            "legacy": "2026-09-15",
+            "snowflake": "2026-09-14"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100038"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "2",
+            "snowflake": "1"
+          },
+          "total_claim_amount": {
+            "legacy": "21042.16",
+            "snowflake": "4555.95"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100039"
+        ],
+        "only_in": "legacy"
+      },
+      {
+        "key": [
+          "PL00100040"
+        ],
+        "columns": {
+          "claim_count": {
+            "legacy": "2",
+            "snowflake": "1"
+          },
+          "total_claim_amount": {
+            "legacy": "25209.95",
+            "snowflake": "20540.14"
+          }
+        }
+      },
+      {
+        "key": [
+          "PL00100041"
+        ],
+        "only_in": "legacy"
+      }
+    ],
+    "pass": false
+  },
+  "green": false,
+  "object": "dw.usp_refresh_claim_summary",
+  "label": "first-pass",
+  "at": "2026-10-21 21:32 UTC"
+}
