@@ -159,3 +159,58 @@ class TestAnalyticsEndpoint:
         assert "zero_result_queries" in data
         assert "total_searches" in data
         assert "avg_results_per_query" in data
+
+
+class TestSuggestRanking:
+    """Regression tests for the /suggest ranking-score enrichment (SearchSuggestHighErrorRate)."""
+
+    def test_suggest_ranks_by_ranking_score(self, client, mock_meilisearch_client):
+        """Suggestions are ordered by MeiliSearch _rankingScore, highest first."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 3,
+            "hits": [
+                {"title": "Quarterly Plan", "_rankingScore": 0.42},
+                {"title": "Quarterly Report", "_rankingScore": 0.91},
+                {"name": "quarterly.xlsx", "_rankingScore": 0.67},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=qu")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Quarterly Report", "quarterly.xlsx", "Quarterly Plan"]
+        _, kwargs_or_opts = mock_index.search.call_args[0]
+        assert kwargs_or_opts["showRankingScore"] is True
+
+    def test_suggest_tolerates_missing_ranking_score(self, client, mock_meilisearch_client):
+        """Hits without _rankingScore must not crash the handler (the incident's KeyError)."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [
+                {"title": "Unscored Doc"},
+                {"title": "Scored Doc", "_rankingScore": 0.5},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=do")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Scored Doc", "Unscored Doc"]
+
+    def test_suggest_empty_index_returns_empty_200(self, client, mock_meilisearch_client):
+        """An empty index yields an empty list, not a 5xx."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {"estimatedTotalHits": 0, "hits": []}
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json() == {"suggestions": [], "query": "te"}
+
+    def test_suggest_backend_failure_returns_empty_200(self, client, mock_meilisearch_client):
+        """A MeiliSearch failure degrades to an empty suggestion list, never a 5xx."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = RuntimeError("meilisearch down")
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
