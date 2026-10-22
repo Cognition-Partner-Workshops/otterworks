@@ -1,3 +1,4 @@
+use aws_sdk_s3::error::{DisplayErrorContext, ProvideErrorMetadata};
 use aws_sdk_s3::presigning::PresigningConfig;
 use bytes::Bytes;
 use std::time::Duration;
@@ -33,6 +34,50 @@ impl S3Client {
         }
     }
 
+    /// Check that the configured bucket exists and is reachable before the
+    /// service accepts traffic, so a wrong `S3_BUCKET` fails the rollout
+    /// instead of failing every upload. A missing bucket is final; other
+    /// errors (endpoint not ready yet, transient network) are retried.
+    pub async fn ensure_bucket_exists(&self) -> Result<(), ServiceError> {
+        const ATTEMPTS: u32 = 5;
+        const RETRY_DELAY: Duration = Duration::from_secs(3);
+
+        let mut last_error = String::new();
+        for attempt in 1..=ATTEMPTS {
+            match self.client.head_bucket().bucket(&self.bucket).send().await {
+                Ok(_) => {
+                    tracing::info!(bucket = %self.bucket, "S3 bucket reachable");
+                    return Ok(());
+                }
+                Err(e) => {
+                    let not_found = e
+                        .as_service_error()
+                        .map(|se| se.is_not_found())
+                        .unwrap_or(false);
+                    last_error = DisplayErrorContext(&e).to_string();
+                    tracing::warn!(
+                        bucket = %self.bucket,
+                        attempt,
+                        max_attempts = ATTEMPTS,
+                        error = %last_error,
+                        "S3 HeadBucket failed"
+                    );
+                    if not_found {
+                        break;
+                    }
+                    if attempt < ATTEMPTS {
+                        tokio::time::sleep(RETRY_DELAY).await;
+                    }
+                }
+            }
+        }
+
+        Err(ServiceError::S3Error(format!(
+            "bucket '{}' is not accessible (check S3_BUCKET): {last_error}",
+            self.bucket
+        )))
+    }
+
     /// Upload file content to S3.
     pub async fn upload_object(
         &self,
@@ -48,7 +93,17 @@ impl S3Client {
             .content_type(content_type)
             .send()
             .await
-            .map_err(|e| ServiceError::S3Error(format!("upload failed: {e}")))?;
+            .map_err(|e| {
+                let code = e.code().unwrap_or("unknown").to_string();
+                tracing::error!(
+                    bucket = %self.bucket,
+                    key = %key,
+                    s3_error_code = %code,
+                    error = %DisplayErrorContext(&e),
+                    "S3 PutObject failed"
+                );
+                ServiceError::S3Error(format!("upload failed: {code}"))
+            })?;
 
         tracing::info!(key = %key, bucket = %self.bucket, "Uploaded object to S3");
         Ok(())
