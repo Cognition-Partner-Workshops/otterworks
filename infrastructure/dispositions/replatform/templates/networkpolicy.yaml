@@ -1,0 +1,40 @@
+{{- if .Values.networkPolicy.enabled }}
+{{- include "replatform.validate" . -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "replatform.fullname" . }}
+  labels:
+    {{- include "replatform.labels" . | nindent 4 }}
+  annotations:
+    {{- include "replatform.annotations" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "replatform.name" . | quote }}
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            {{- toYaml .Values.networkPolicy.ingressNamespaceSelector | nindent 12 }}
+          podSelector:
+            {{- toYaml .Values.networkPolicy.ingressPodSelector | nindent 12 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.containerPort }}
+  egress:
+    {{- if .Values.networkPolicy.egress }}
+    {{- toYaml .Values.networkPolicy.egress | nindent 4 }}
+    {{- else }}
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    {{- end }}
+{{- end }}

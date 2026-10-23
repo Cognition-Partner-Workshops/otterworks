@@ -1,0 +1,59 @@
+name: disposition-replatform
+
+on:
+  pull_request:
+    paths:
+      - infrastructure/dispositions/replatform/**
+      - .github/workflows/disposition-replatform.yml
+
+permissions:
+  contents: read
+
+jobs:
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
+        with:
+          version: v3.16.4
+      - name: Lint and render chart
+        working-directory: infrastructure/dispositions/replatform
+        run: |
+          helm lint . --strict -f ci/values-ci.yaml \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci
+          helm template sample . -f ci/values-ci.yaml \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci > rendered.yaml
+      - name: Check rendered manifests
+        working-directory: infrastructure/dispositions/replatform
+        run: |
+          python3 -m pip install --disable-pip-version-check pyyaml==6.0.2
+          python3 ci/check-rendered.py rendered.yaml | tee check-output.txt
+      - name: Check invalid values fail rendering
+        working-directory: infrastructure/dispositions/replatform
+        run: |
+          if helm template sample . -f ci/values-ci.yaml \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci \
+            --set service.type=LoadBalancer >/dev/null 2>&1; then
+            echo "LoadBalancer Service unexpectedly rendered" >&2
+            exit 1
+          fi
+          if helm template sample . -f ci/values-ci.yaml \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci \
+            --set runToken= >/dev/null 2>&1; then
+            echo "missing runToken unexpectedly rendered" >&2
+            exit 1
+          fi
+      - name: Write job summary
+        working-directory: infrastructure/dispositions/replatform
+        run: |
+          {
+            echo '## Replatform chart validation'
+            cat check-output.txt
+            echo
+            echo 'Negative checks: LoadBalancer and missing runToken both failed rendering as expected.'
+          } >> "$GITHUB_STEP_SUMMARY"

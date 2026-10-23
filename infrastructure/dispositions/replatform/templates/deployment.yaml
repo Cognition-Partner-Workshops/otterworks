@@ -1,0 +1,71 @@
+{{- include "replatform.validate" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "replatform.fullname" . }}
+  labels:
+    {{- include "replatform.labels" . | nindent 4 }}
+  annotations:
+    {{- include "replatform.annotations" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  {{- with .Values.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "replatform.name" . | quote }}
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+  template:
+    metadata:
+      labels:
+        {{- include "replatform.labels" . | nindent 8 }}
+      annotations:
+        {{- include "replatform.annotations" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "replatform.serviceAccountName" . }}
+      containers:
+        - name: {{ include "replatform.name" . }}
+          image: "{{ required "image.repository is required" .Values.image.repository }}:{{ required "image.tag is required" .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.containerPort }}
+              protocol: TCP
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- $envFrom := list }}
+          {{- if gt (len .Values.config) 0 }}
+          {{- $envFrom = append $envFrom (dict "configMapRef" (dict "name" (include "replatform.fullname" .))) }}
+          {{- end }}
+          {{- if gt (len .Values.secrets) 0 }}
+          {{- $envFrom = append $envFrom (dict "secretRef" (dict "name" (include "replatform.fullname" .))) }}
+          {{- end }}
+          {{- range .Values.envFrom }}
+          {{- $envFrom = append $envFrom . }}
+          {{- end }}
+          {{- with $envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.healthCheck.enabled }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.path }}
+              port: {{ .Values.healthCheck.port }}
+            {{- with .Values.healthCheck.liveness }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.path }}
+              port: {{ .Values.healthCheck.port }}
+            {{- with .Values.healthCheck.readiness }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
