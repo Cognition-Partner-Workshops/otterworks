@@ -10,6 +10,8 @@
     "build:web": "npm --prefix .. run build",
     "start": "npm run build && node scripts/launch.js",
     "test": "npm run build && node test/server.smoke.js",
+    "test:unit": "npm run build && node --test --test-timeout=15000 test/unit/*.test.js",
+    "test:e2e": "npm run build && ../node_modules/.bin/playwright test -c playwright.config.ts",
     "smoke": "npm run build && node scripts/launch.js --smoke-test",
     "icons": "node scripts/launch.js scripts/make-icon.js",
     "dist": "npm run build && electron-builder"
