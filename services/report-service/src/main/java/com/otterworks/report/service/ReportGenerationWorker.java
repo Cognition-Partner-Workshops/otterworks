@@ -7,6 +7,7 @@ import com.otterworks.report.model.ReportCategory;
 import com.otterworks.report.model.ReportStatus;
 import com.otterworks.report.model.ReportType;
 import com.otterworks.report.repository.ReportRepository;
+import com.otterworks.report.util.LegacyExceptionMessages;
 import com.otterworks.report.util.ReportDateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,7 +114,7 @@ public class ReportGenerationWorker {
             logger.error("Report generation failed for {}: {}", reportId, e.getMessage(), e);
             report.setStatus(ReportStatus.FAILED);
             report.setCompletedAt(new Date());
-            report.setErrorMessage(e.getMessage());
+            report.setErrorMessage(LegacyExceptionMessages.message(e));
             reportRepository.save(report);
         }
     }
