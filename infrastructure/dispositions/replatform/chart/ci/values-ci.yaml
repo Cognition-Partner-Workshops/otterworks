@@ -1,0 +1,49 @@
+runToken: ci-20270101-gh
+expires: "2027-01-08T00:00:00Z"
+dispositionEvidence: portfolio/assessment-report.csv:2
+
+image:
+  repository: example.invalid/sample-service
+  tag: ci
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: sample.example.invalid
+      paths:
+        - path: /
+          pathType: Prefix
+
+serviceAccount:
+  roleArn: arn:aws:iam::123456789012:role/sample-service
+
+networkPolicy:
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432
+
+config:
+  FEATURE_MODE: validation
+secrets:
+  API_TOKEN: ci-only-placeholder
+
+monitoring:
+  enabled: true
+  labels:
+    release: prometheus
+  prometheusRule:
+    rules:
+      - name: sample-service
+        rules:
+          - alert: SampleServiceUnavailable
+            expr: up == 0
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: Sample service is unavailable
