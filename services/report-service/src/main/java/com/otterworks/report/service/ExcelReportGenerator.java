@@ -2,7 +2,7 @@ package com.otterworks.report.service;
 
 import com.otterworks.report.model.Report;
 import com.otterworks.report.util.ReportDateUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -28,10 +28,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Generates Excel (.xlsx) reports using Apache POI 4.1.2.
+ * Generates Excel (.xlsx) reports using Apache POI 5.
  *
  * LEGACY PATTERNS:
- * - Apache POI 4.1.2 (2020). Upgrade target: POI 5.2+
  * - POI 5.x changed several APIs: deprecated IndexedColors replaced by XSSFColor
  * - Manual cell styling (verbose, repetitive)
  * - FileOutputStream for writing (should use OutputStream abstraction)
@@ -186,7 +185,7 @@ public class ExcelReportGenerator {
         sheet.setAutoFilter(new CellRangeAddress(0, rowIdx - 1, 0, columns.size() - 1));
     }
 
-    // ----- Style helpers (verbose POI 4.x pattern) -----
+    // ----- Style helpers (verbose POI pattern) -----
 
     private CellStyle createTitleStyle(Workbook workbook) {
         CellStyle style = workbook.createCellStyle();
