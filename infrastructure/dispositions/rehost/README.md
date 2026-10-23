@@ -40,7 +40,7 @@ The portfolio disposition standard says: **“Rehost needs a reason the code can
 
 ## Apply and cleanup
 
-Copy `example/` into a caller-owned root and set `source` in `main.tf` to the module path relative to that new root (for example, `../../dispositions/rehost` for `infrastructure/terraform/<service>-rehost/`). Provide the artifact path and required values, then initialize with the per-run state key:
+Copy `example/` into a caller-owned root and set `source` in `main.tf` to the module path relative to that new root (for example, `../../dispositions/rehost` for `infrastructure/terraform/<service>-rehost/`). The example hard-codes `service_name`, `run_token`, `expires`, `disposition_evidence` and `start_command` in `main.tf`; change them there, because only `artifact_path`, `region`, `vpc_name` and `public_subnet_name_prefix` are variables. Provide the artifact path, then initialize with the per-run state key:
 
 ```sh
 terraform init -backend-config="key=otterworks/dispositions/rehost/<run_token>/terraform.tfstate"
@@ -53,6 +53,26 @@ terraform destroy -var='artifact_path=/absolute/path/to/service.jar'
 
 Replace the checker arguments with the `run_token` and `expires` values used in the caller root. Use the same key for `terraform destroy`. The module tags resources with `run_token`, `RunToken`, `Expires`, `ManagedBy=terraform`, `disposition=rehost`, `service`, and `disposition_evidence`; caller `extra_tags` are retained unless they conflict with a required tag. Evidence and extra tag values must contain 1–256 characters from letters, digits, spaces and `_ . : / = + - @`. CI plans only and never applies. On Linux and macOS, use `python3` instead of `python`.
 
+### Credentials the plan needs
+
+`init` and `plan` read AWS before anything is created: the state object under `s3://otterworks-terraform-state/otterworks/dispositions/rehost/<run_token>/`, `ec2:DescribeVpcs` and `ec2:DescribeSubnets` for the VPC and subnet lookups in `example/main.tf`, and `ssm:GetParameter` on `/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64` when `ami_id` is null. Run-scoped `appassess-*` role sessions have none of these, so `init` fails with an S3 `403 Forbidden` and `plan` with `UnauthorizedOperation` / `AccessDeniedException`. Ask for those permissions before a real plan.
+
+For a plan-only rehearsal without them, in your copy only: delete the `backend "s3"` block from `versions.tf` (with Terraform 1.9.8 a `backend_override.tf` containing `backend "local" {}` did not replace it; `init` still prompted for `key`), delete `.terraform` if an earlier `init` ran, replace the two data sources with literal `vpc_id` and `subnet_ids`, and set `ami_id`. That plan checks the resource graph and tags only; never apply it.
+
 ### Windows (PowerShell 5.1)
 
-The Terraform commands above also work in PowerShell. Set environment variables with `$env:AWS_DEFAULT_REGION = "us-east-1"` and `$env:AWS_ACCESS_KEY_ID`, `$env:AWS_SECRET_ACCESS_KEY`, and `$env:AWS_SESSION_TOKEN` as needed instead of `export`. `cloudworker/assume.sh` is bash-only; run it in Git Bash/WSL or use `aws sts assume-role` and set the `$env:` variables. Use `python`; a standard Windows Python install has no `python3` command. PowerShell 5.1 `>` writes UTF-16, which the checker accepts, but other tools may not; the portable form is `terraform show -json tfplan | Set-Content -Encoding ascii plan.json`. Windows artifact paths work as `-var='artifact_path=C:\path\to\app.jar'`. The module strips CR from `user_data`, so a CRLF checkout is safe.
+Terraform is not preinstalled on Windows. Install the version CI uses and check it against HashiCorp's checksums:
+
+```powershell
+$v = "1.9.8"; $d = "$env:USERPROFILE\tools\terraform"
+New-Item -ItemType Directory -Force $d | Out-Null
+$ProgressPreference = "SilentlyContinue"
+Invoke-WebRequest "https://releases.hashicorp.com/terraform/$v/terraform_${v}_windows_amd64.zip" -OutFile "$d\tf.zip" -UseBasicParsing
+$sums = (Invoke-WebRequest "https://releases.hashicorp.com/terraform/$v/terraform_${v}_SHA256SUMS" -UseBasicParsing).Content
+if ($sums -notmatch "$((Get-FileHash "$d\tf.zip").Hash.ToLower())  terraform_${v}_windows_amd64.zip") { throw "checksum mismatch" }
+Expand-Archive "$d\tf.zip" $d -Force
+$env:Path = "$d;$env:Path"   # add $d to the user PATH to keep it
+terraform version
+```
+
+The Terraform commands above also work in PowerShell. Set environment variables with `$env:AWS_DEFAULT_REGION = "us-east-1"` and `$env:AWS_ACCESS_KEY_ID`, `$env:AWS_SECRET_ACCESS_KEY`, and `$env:AWS_SESSION_TOKEN` as needed instead of `export`. `cloudworker/assume.sh` is bash-only; run it in Git Bash/WSL or use `aws sts assume-role` and set the `$env:` variables. Use `python`; a standard Windows Python install has no `python3` command. PowerShell 5.1 `>` writes UTF-16, which the checker accepts, but other tools may not. Piping through `Set-Content` re-encodes Terraform's UTF-8 through the console code page, so write the file byte-for-byte instead: `cmd /c "terraform show -json tfplan > plan.json"`. Windows artifact paths work as `-var='artifact_path=C:\path\to\app.jar'`. The module strips CR from `user_data`, so a CRLF checkout is safe. Windows PowerShell 5.1 reads UTF-8 files without a BOM as ANSI, so read this README with `Get-Content -Encoding UTF8`.
