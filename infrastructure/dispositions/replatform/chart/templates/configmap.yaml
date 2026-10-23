@@ -1,0 +1,15 @@
+{{- if .Values.config }}
+{{- include "replatform.validate" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "replatform.fullname" . }}
+  labels:
+    {{- include "replatform.labels" . | nindent 4 }}
+  annotations:
+    {{- include "replatform.annotations" . | nindent 4 }}
+data:
+  {{- range $key, $value := .Values.config }}
+  {{ $key }}: {{ $value | toString | quote }}
+  {{- end }}
+{{- end }}

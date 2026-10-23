@@ -1,0 +1,17 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.prometheusRule.rules }}
+{{- include "replatform.validate" . -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "replatform.fullname" . }}
+  labels:
+    {{- include "replatform.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    {{- include "replatform.annotations" . | nindent 4 }}
+spec:
+  groups:
+    {{- toYaml .Values.monitoring.prometheusRule.rules | nindent 4 }}
+{{- end }}

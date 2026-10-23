@@ -1,0 +1,77 @@
+runToken: ""
+expires: ""
+dispositionEvidence: ""
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+podAnnotations: {}
+containerPort: 8080
+strategy: {}
+env: []
+envFrom: []
+
+healthCheck:
+  enabled: true
+  path: /health
+  port: http
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: http
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: app.example.invalid
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+serviceAccount:
+  create: true
+  name: ""
+  roleArn: ""
+
+networkPolicy:
+  enabled: true
+  # Namespaces (kubernetes.io/metadata.name) whose pods may reach containerPort.
+  ingressNamespaces:
+    - ingress-nginx
+    - monitoring
+  # Also admit pods in the release namespace.
+  allowSameNamespace: true
+  # Egress rules. Empty leaves egress unrestricted so managed dependencies stay reachable.
+  egress: []
+
+config: {}
+secrets: {}
+
+monitoring:
+  enabled: false
+  interval: 30s
+  path: /metrics
+  labels: {}
+  prometheusRule:
+    rules: []

@@ -1,0 +1,10 @@
+.build/
+.terraform/
+.terraform.lock.hcl
+*.tfplan
+tfplan
+plan.json
+plan.txt
+tag-check.txt
+# Synthetics Node canaries load the script from nodejs/node_modules/.
+!probe/nodejs/node_modules/

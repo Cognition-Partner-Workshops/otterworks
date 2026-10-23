@@ -1,0 +1,58 @@
+name: disposition-rearchitect
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  disposition-rearchitect:
+    name: disposition-rearchitect
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/dispositions/rearchitect
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.9.8
+          terraform_wrapper: false
+      - name: Format
+        run: terraform fmt -check -recursive
+      - name: Validate module and roots
+        run: |
+          terraform init -backend=false
+          terraform validate
+          cd example
+          terraform init -backend=false
+          terraform validate
+          cd ../ci
+          terraform init -backend=false
+          terraform validate
+      - name: Plan offline and check tags
+        run: |
+          mkdir -p .build
+          RUN_TOKEN="ci-$(date -u +%Y%m%d)-gh"
+          EXPIRES="$(date -u -d '+7 days' '+%Y-%m-%dT%H:%M:%SZ')"
+          cd ci
+          terraform plan -input=false -out=tfplan \
+            -var="run_token=$RUN_TOKEN" \
+            -var="expires=$EXPIRES"
+          terraform show -no-color tfplan > plan.txt
+          terraform show -json tfplan > plan.json
+          python3 ../../scripts/check-plan-tags.py plan.json "$RUN_TOKEN" "$EXPIRES" | tee tag-check.txt
+          {
+            echo '## Rearchitect Terraform plan'
+            echo '```text'
+            cat plan.txt
+            echo '```'
+            echo '## Resource tag check'
+            cat tag-check.txt
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: disposition-rearchitect-plan
+          path: infrastructure/dispositions/rearchitect/ci/plan.txt
+          if-no-files-found: error

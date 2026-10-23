@@ -1,0 +1,117 @@
+name: disposition-replatform
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  disposition-replatform:
+    name: disposition-replatform
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/dispositions/replatform
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.9.8
+          terraform_wrapper: false
+      - name: Format
+        run: terraform fmt -check -recursive
+      - name: Validate module and roots
+        run: |
+          terraform init -backend=false
+          terraform validate
+          cd example
+          terraform init -backend=false
+          terraform validate
+          cd ../ci
+          terraform init -backend=false
+          terraform validate
+      - name: Plan offline and check tags
+        run: |
+          RUN_TOKEN="ci-$(date -u +%Y%m%d)-gh"
+          EXPIRES="$(date -u -d '+7 days' '+%Y-%m-%dT%H:%M:%SZ')"
+          cd ci
+          terraform plan -input=false -out=tfplan \
+            -var="run_token=$RUN_TOKEN" \
+            -var="expires=$EXPIRES"
+          terraform show -no-color tfplan > plan.txt
+          terraform show -json tfplan > plan.json
+          python3 ../../scripts/check-plan-tags.py plan.json "$RUN_TOKEN" "$EXPIRES" | tee tag-check.txt
+          {
+            echo '## Replatform Terraform plan'
+            echo '```text'
+            cat plan.txt
+            echo '```'
+            echo '## Resource tag check'
+            cat tag-check.txt
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: disposition-replatform-plan
+          path: infrastructure/dispositions/replatform/ci/plan.txt
+          if-no-files-found: error
+      - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
+        with:
+          version: v3.16.4
+      - name: Lint and render chart
+        working-directory: infrastructure/dispositions/replatform/chart
+        run: |
+          helm lint . --strict -f ci/values-ci.yaml \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci
+          helm template sample . -f ci/values-ci.yaml \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci > rendered.yaml
+          helm template sample . \
+            --set runToken=ci-20270101-gh,expires=2027-01-08T00:00:00Z,dispositionEvidence=portfolio/assessment-report.csv:2,image.repository=example.invalid/sample-service,image.tag=ci \
+            > rendered-defaults.yaml
+      - name: Check rendered manifests
+        working-directory: infrastructure/dispositions/replatform/chart
+        run: |
+          python3 -m pip install --disable-pip-version-check pyyaml==6.0.2
+          echo 'Values-ci render:'
+          python3 ci/check-rendered.py rendered.yaml | tee check-output.txt
+          echo 'Default-values render:'
+          python3 ci/check-rendered.py rendered-defaults.yaml --minimum-kinds 4 | tee -a check-output.txt
+      - name: Check invalid values fail rendering
+        working-directory: infrastructure/dispositions/replatform/chart
+        run: |
+          if helm template sample . -f ci/values-ci.yaml \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci \
+            --set service.type=LoadBalancer >/dev/null 2>&1; then
+            echo "LoadBalancer Service unexpectedly rendered" >&2
+            exit 1
+          fi
+          if helm template sample . -f ci/values-ci.yaml \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci \
+            --set runToken= >/dev/null 2>&1; then
+            echo "missing runToken unexpectedly rendered" >&2
+            exit 1
+          fi
+          if helm template sample . \
+            --set runToken=ci-20270101-gh \
+            --set expires=2027-01-08T00:00:00Z \
+            --set dispositionEvidence=portfolio/assessment-report.csv:2 \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci \
+            --set networkPolicy.allowSameNamespace=false \
+            --set networkPolicy.ingressNamespaces=null >/dev/null 2>&1; then
+            echo "NetworkPolicy without ingress peers unexpectedly rendered" >&2
+            exit 1
+          fi
+      - name: Write job summary
+        working-directory: infrastructure/dispositions/replatform/chart
+        run: |
+          {
+            echo '## Replatform chart validation'
+            cat check-output.txt
+            echo
+            echo 'Negative checks: LoadBalancer, missing runToken, and empty NetworkPolicy ingress all failed rendering as expected.'
+          } >> "$GITHUB_STEP_SUMMARY"
