@@ -223,6 +223,13 @@ reap_expired() {
       log "tenant '${id}' is persistent; skipping (not reaping)"
       continue
     fi
+    # Pinned tenant (the long-lived demo-<industry> skins): never expires, but
+    # unlike a perpetual one it still idles to zero, so keeping it costs a
+    # namespace and a database, not compute.
+    if [ "$(echo "${item}" | jq -r '.pinned.BOOL // false')" = "true" ]; then
+      log "tenant '${id}' is pinned; skipping (not reaping)"
+      continue
+    fi
     # Missing/blank expires_at => tenant is reserved or still deploying (its
     # expiry is written only by ctl_set_active on a successful deploy). Never
     # treat that as "expired at epoch 0"; skip it so an in-flight tenant is not

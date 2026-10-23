@@ -45,11 +45,12 @@ FUTURE=$(( NOW + 86400 ))
 # DynamoDB item as the scan returns it. `persistent` is absent on tenants
 # created before the flag existed, which must read as false rather than error.
 item() {
-  local id="$1" exp="$2" persistent="${3:-}"
-  jq -nc --arg id "${id}" --arg e "${exp}" --arg p "${persistent}" \
+  local id="$1" exp="$2" persistent="${3:-}" pinned="${4:-}"
+  jq -nc --arg id "${id}" --arg e "${exp}" --arg p "${persistent}" --arg pin "${pinned}" \
     '{PK:{S:("TENANT#" + $id)}, SK:{S:"META"}, id:{S:$id}}
      + (if $e == "" then {} else {expires_at:{N:$e}} end)
-     + (if $p == "" then {} else {persistent:{BOOL:($p == "true")}} end)'
+     + (if $p == "" then {} else {persistent:{BOOL:($p == "true")}} end)
+     + (if $pin == "" then {} else {pinned:{BOOL:($pin == "true")}} end)'
 }
 
 run() { REAPED=""; reap_expired "${1:-0}" >/dev/null 2>&1; }
@@ -76,6 +77,14 @@ check "never reaps a persistent tenant, even with a stale expiry" "${REAPED# }" 
 ITEMS="$(item main "${LONG_EXPIRED}" true),$(item ephemeral "${LONG_EXPIRED}"),"
 run
 check "  and still reaps expired tenants beside it" "${REAPED# }" "ephemeral"
+
+ITEMS="$(item bank "${LONG_EXPIRED}" "" true),$(item ephemeral "${LONG_EXPIRED}"),"
+run
+check "never reaps a pinned tenant, and still reaps the one beside it" "${REAPED# }" "ephemeral"
+
+ITEMS="$(item unpinned "${LONG_EXPIRED}" "" false),"
+run
+check "reaps an expired tenant whose pin was cleared" "${REAPED# }" "unpinned"
 
 ITEMS="$(item explicit "${LONG_EXPIRED}" false),"
 run
