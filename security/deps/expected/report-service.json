@@ -3,8 +3,8 @@
   "advisory": "CVE-2022-42889",
   "artifact": "org.apache.commons:commons-text",
   "cases_sha256": "ea3ac7b9e1fc1dc7049222d7b4157e34b435927389036138b00feaabb28f225c",
-  "recorded_at": "2026-08-17T22:51:46.629685+00:00",
-  "reason": "baseline: commons-text 1.9 behavior before CVE-2022-42889 remediation",
+  "recorded_at": "2026-10-23T19:25:06.514526+00:00",
+  "reason": "report-service builds only on JDK 17 since the Boot 3 upgrade (no Nashorn): the commons-text 1.9 before-state for attack-script-lookup is now an IllegalArgumentException from the missing javascript engine, not '7' as recorded on JDK 11. Case kept; it is no longer reachable on Java 17.",
   "cases": [
     {
       "id": "banner-title",
@@ -49,8 +49,9 @@
     },
     {
       "id": "attack-script-lookup",
-      "outcome": "ok",
-      "value": "7"
+      "outcome": "error",
+      "error_type": "java.lang.IllegalArgumentException",
+      "error_message": "Error in script engine [javascript] evaluating script [3+4]."
     },
     {
       "id": "attack-dns-lookup",
