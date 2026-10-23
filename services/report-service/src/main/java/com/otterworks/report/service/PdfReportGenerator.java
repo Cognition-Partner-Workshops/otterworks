@@ -100,7 +100,7 @@ public class PdfReportGenerator {
 
                 // Header row
                 for (String col : columns) {
-                    PdfPCell headerCell = new PdfPCell(new Phrase(formatColumnName(col), HEADER_FONT));
+                    PdfPCell headerCell = new PdfPCell(cellPhrase(formatColumnName(col), HEADER_FONT));
                     headerCell.setBackgroundColor(HEADER_BG);
                     headerCell.setHorizontalAlignment(Element.ALIGN_CENTER);
                     headerCell.setPadding(6);
@@ -113,7 +113,7 @@ public class PdfReportGenerator {
                     for (String col : columns) {
                         Object value = row.get(col);
                         String cellValue = value != null ? value.toString() : "";
-                        PdfPCell cell = new PdfPCell(new Phrase(cellValue, CELL_FONT));
+                        PdfPCell cell = new PdfPCell(cellPhrase(cellValue, CELL_FONT));
                         cell.setPadding(4);
                         if (rowIndex % 2 == 1) {
                             cell.setBackgroundColor(ALT_ROW_BG);
@@ -153,6 +153,12 @@ public class PdfReportGenerator {
             return "";
         }
         return StringUtils.capitalize(columnName.replace("_", " "));
+    }
+
+    private Phrase cellPhrase(String text, Font font) {
+        Chunk chunk = new Chunk(text, font);
+        chunk.setSplitCharacter(LegacySplitCharacter.INSTANCE);
+        return new Phrase(chunk);
     }
 
     private String buildFileName(Report report, String extension) {
