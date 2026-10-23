@@ -56,6 +56,7 @@ env:
   ANALYTICS_SERVICE_URL: "http://analytics-service:8088"
   ADMIN_SERVICE_URL: "http://admin-service:8089"
   AUDIT_SERVICE_URL: "http://audit-service:8090"
+  REPORT_SERVICE_URL: "http://report-service:8091"
 
 networkPolicy:
   enabled: true
