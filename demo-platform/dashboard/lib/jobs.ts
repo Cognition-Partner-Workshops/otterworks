@@ -2,7 +2,7 @@ import * as k8s from "@kubernetes/client-node";
 import { batch } from "@/lib/k8s";
 import { env } from "@/lib/env";
 
-export type RunnerAction = "deploy" | "teardown" | "inject";
+export type RunnerAction = "deploy" | "teardown" | "inject" | "wake";
 
 export interface RunnerJobInput {
   action: RunnerAction;
@@ -35,7 +35,7 @@ function jobName(action: RunnerAction, id: string, epoch: number): string {
 }
 
 export function jobNamePrefixes(id: string): string[] {
-  return [`deploy-${id}-`, `teardown-${id}-`, `inject-bug-${id}-`];
+  return [`deploy-${id}-`, `teardown-${id}-`, `inject-bug-${id}-`, `wake-${id}-`];
 }
 
 function buildEnv(input: RunnerJobInput): k8s.V1EnvVar[] {

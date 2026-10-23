@@ -116,6 +116,9 @@ the above changes `main`. Verify per the "Live verification" section of the runb
   teardown of an expired tenant: namespace, the `otterworks_<ID>` database, its S3 prefix
   and DynamoDB partitions, IRSA trust and DNS records. `scripts/teardown-tenant.sh <ID>`
   does the same thing on demand for a single tenant.
+- Long-lived demo branches (the `demo-<industry>` skins) are **pinned**: `demo-platform/scripts/tenant.sh pin <ID> true`.
+  A pinned tenant is never reaped but still idles to zero like any other, so it costs nothing
+  but its namespace and database between demos.
 - Idle cost control: tenants that take no ingress traffic for an hour are scaled to zero
   automatically (`demo-platform/reaper/idle-suspend.sh`); the dashboard wakes them on
   check-out. Manually: `scripts/tenant-scale.sh <ID> down|up`.
