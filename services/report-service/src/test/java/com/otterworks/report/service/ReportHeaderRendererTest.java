@@ -1,14 +1,14 @@
 package com.otterworks.report.service;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link ReportHeaderRenderer}.
@@ -17,7 +17,6 @@ import static org.junit.Assert.fail;
  * string is exercised by the dependency transcript in security/deps, which pins
  * the interpolation behavior of the Commons Text release we build against.
  *
- * JUnit 4 style to match the current stack.
  */
 public class ReportHeaderRendererTest {
 
@@ -43,13 +42,9 @@ public class ReportHeaderRendererTest {
 
     @Test
     public void undefinedVariableFailsInsteadOfLeakingPlaceholder() {
-        try {
-            renderer.renderBanner("# ${notProvided}", new LinkedHashMap<String, String>());
-            fail("expected an undefined banner variable to be rejected");
-        } catch (IllegalArgumentException expected) {
-            assertTrue("message should name the variable",
-                    expected.getMessage().contains("notProvided"));
-        }
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> renderer.renderBanner("# ${notProvided}", new LinkedHashMap<String, String>()));
+        assertTrue(exception.getMessage().contains("notProvided"), "message should name the variable");
     }
 
     @Test
