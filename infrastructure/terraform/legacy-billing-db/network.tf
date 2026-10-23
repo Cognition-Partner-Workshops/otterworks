@@ -8,14 +8,12 @@ resource "aws_security_group" "db" {
   name        = "${local.name}-db"
   description = "PostgreSQL database for ${local.name}"
   vpc_id      = data.aws_vpc.this.id
-  egress      = []
 }
 
 resource "aws_security_group" "client" {
   name        = "${local.name}-client"
   description = "Client access for legacy-billing pods and migration job"
   vpc_id      = data.aws_vpc.this.id
-  egress      = []
 }
 
 resource "aws_vpc_security_group_ingress_rule" "db_from_client" {
