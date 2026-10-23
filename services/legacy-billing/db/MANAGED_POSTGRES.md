@@ -211,7 +211,7 @@ editing an applied migration.
 | 2. Missing role and grant DDL | The bootstrap creates roles; migration `0006_app_grants.sql` applies runtime grants. |
 | 3. PostgreSQL version | The target is a dedicated RDS for PostgreSQL 16 instance (`infrastructure/terraform/legacy-billing-db/`), matching local `postgres:16`; the shared 15.7 instance is not used. |
 | 4. Session time zone | Role settings pin UTC; `migrate.sh` also pins `search_path` and `TimeZone` with `PGOPTIONS`. |
-| 5. TLS | Set `PGSSLMODE=verify-full` and `PGSSLROOTCERT` in the libpq/psycopg environment. |
+| 5. TLS | Configure `DB_SSLMODE=verify-full` and `DB_SSLROOTCERT=/etc/ssl/certs/rds-global-bundle.pem` (or the equivalent `PGSSLMODE` / `PGSSLROOTCERT` variables); the application connection settings and baked CA bundle are documented in `../README.md`. Exercise TLS locally with `docker-compose.procs.tls.yml` and `make billing-tls-verify`. |
 | 6. Reset path | The runner has no reset or drop path; harness reset remains for disposable local databases only. |
 | 7. Database `CREATE` | The bootstrap grants `CREATE` on the target database to the owner role. |
 | 8. `md5()` identifiers | No change; record the FIPS-build caveat if the target changes. |

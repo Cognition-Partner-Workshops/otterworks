@@ -1,0 +1,44 @@
+services:
+  legacy-billing-tls-certs:
+    image: postgres:16
+    entrypoint: ["bash", "/usr/local/bin/gen-local-certs.sh"]
+    volumes:
+      - ./services/legacy-billing/db/tls/gen-local-certs.sh:/usr/local/bin/gen-local-certs.sh:ro
+      - legacy-billing-tls:/tls
+
+  legacy-billing-db:
+    depends_on:
+      legacy-billing-tls-certs:
+        condition: service_completed_successfully
+    command:
+      - postgres
+      - -c
+      - ssl=on
+      - -c
+      - ssl_cert_file=/tls/server.crt
+      - -c
+      - ssl_key_file=/tls/server.key
+    volumes:
+      - legacy-billing-db-tls-data:/var/lib/postgresql/data
+      - legacy-billing-tls:/tls:ro
+      - ./services/legacy-billing/db/bootstrap/roles.sql:/docker-entrypoint-initdb.d/07-roles.sql.source:ro
+      - ./services/legacy-billing/db/migrations/0006_app_grants.sql:/docker-entrypoint-initdb.d/07-app-grants.sql.source:ro
+      - ./services/legacy-billing/db/tls/07-app-role.sh:/docker-entrypoint-initdb.d/07-app-role.sh:ro
+    environment:
+      BILLING_APP_PASSWORD: ${BILLING_APP_PASSWORD:-billing_app}
+
+  legacy-billing:
+    depends_on:
+      legacy-billing-tls-certs:
+        condition: service_completed_successfully
+    environment:
+      DB_USER: billing_app
+      DB_PASSWORD: ${BILLING_APP_PASSWORD:-billing_app}
+      DB_SSLMODE: verify-full
+      DB_SSLROOTCERT: /tls/ca.crt
+    volumes:
+      - legacy-billing-tls:/tls:ro
+
+volumes:
+  legacy-billing-tls:
+  legacy-billing-db-tls-data:

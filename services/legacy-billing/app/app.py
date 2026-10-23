@@ -1,4 +1,6 @@
+import json
 import os
+import time
 import uuid
 from datetime import date
 from decimal import Decimal
@@ -8,15 +10,69 @@ from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 app = Flask(__name__)
 
+_db_password_cached_arn = None
+_db_password_cached_value = None
+_db_password_cache_expires_at = 0
+
+
+def db_password():
+    global _db_password_cached_arn
+    global _db_password_cached_value
+    global _db_password_cache_expires_at
+
+    secret_arn = os.getenv("DB_PASSWORD_SECRET_ARN")
+    if not secret_arn:
+        return os.getenv("DB_PASSWORD", "billing")
+
+    now = time.monotonic()
+    if (
+        _db_password_cached_arn == secret_arn
+        and _db_password_cached_value is not None
+        and now < _db_password_cache_expires_at
+    ):
+        return _db_password_cached_value
+
+    import boto3
+
+    secret_string = boto3.client("secretsmanager").get_secret_value(
+        SecretId=secret_arn
+    )["SecretString"]
+    try:
+        secret_value = json.loads(secret_string)
+    except (TypeError, ValueError):
+        secret_value = None
+    password = (
+        secret_value["password"]
+        if isinstance(secret_value, dict) and "password" in secret_value
+        else secret_string
+    )
+    _db_password_cached_arn = secret_arn
+    _db_password_cached_value = password
+    _db_password_cache_expires_at = now + int(
+        os.getenv("DB_PASSWORD_CACHE_SECONDS", "300")
+    )
+    return password
+
 
 def db_connect():
-    return psycopg.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        port=int(os.getenv("DB_PORT", "5432")),
-        dbname=os.getenv("DB_NAME", "billing_dev"),
-        user=os.getenv("DB_USER", "billing"),
-        password=os.getenv("DB_PASSWORD", "billing"),
-    )
+    sslmode = os.getenv("DB_SSLMODE") or os.getenv("PGSSLMODE") or "prefer"
+    sslrootcert = os.getenv("DB_SSLROOTCERT") or os.getenv("PGSSLROOTCERT")
+    if not sslrootcert and sslmode in {"verify-ca", "verify-full"}:
+        sslrootcert = "/etc/ssl/certs/rds-global-bundle.pem"
+
+    connection_options = {
+        "host": os.getenv("DB_HOST", "localhost"),
+        "port": int(os.getenv("DB_PORT", "5432")),
+        "dbname": os.getenv("DB_NAME", "billing_dev"),
+        "user": os.getenv("DB_USER", "billing"),
+        "password": db_password(),
+        "sslmode": sslmode,
+        "connect_timeout": int(os.getenv("DB_CONNECT_TIMEOUT", "10")),
+    }
+    if sslrootcert:
+        connection_options["sslrootcert"] = sslrootcert
+
+    return psycopg.connect(**connection_options)
 
 
 def json_value(value):
