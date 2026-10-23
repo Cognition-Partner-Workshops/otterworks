@@ -34,3 +34,11 @@ output "dashboard_passcode_secret_arn" {
 output "github_actions_role_arn" {
   value = var.enable_github_actions_role ? aws_iam_role.github_actions[0].arn : null
 }
+
+output "workbench_role_arn" {
+  value = aws_iam_role.workbench.arn
+}
+
+output "workbench_table_name" {
+  value = aws_dynamodb_table.workbench_attendee_state.name
+}

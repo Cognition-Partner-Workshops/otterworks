@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
-import { fixtures } from "@/fixtures/fixtures";
 import type { ChangeRequest, Incident, Problem, ServiceCi } from "@/fixtures/types";
 import { MarkdownText } from "@/components/MarkdownText";
 import { ExternalLinks, Panel, RelatedRecords, SupportBadge, formatUtc, personFor } from "@/components/shared";
+import { useWorkbench } from "@/WorkbenchContext";
 
 type RecordSection = "incidents" | "problems" | "changes" | "services";
 type WorkRecord = Incident | Problem | ChangeRequest;
@@ -69,6 +69,7 @@ function RecordTable({ rows, section }: { rows: WorkRecord[]; section: Exclude<R
 }
 
 function ServicesTable() {
+  const { fixtures } = useWorkbench();
   return (
     <div className="overflow-hidden rounded border border-otter-200 bg-white shadow-sm">
       <table className="w-full border-collapse text-left">
@@ -97,6 +98,7 @@ function ServicesTable() {
 }
 
 export function ItsmListPage({ section }: { section: RecordSection }) {
+  const { fixtures } = useWorkbench();
   return (
     <ItsmFrame section={section}>
       <h2 className="mb-4 text-lg font-semibold text-otter-900">{tabs.find((tab) => tab.id === section)?.label}</h2>
@@ -146,6 +148,7 @@ function RecordFields({ record }: { record: WorkRecord }) {
 }
 
 export function ItsmRecordPage({ section, number }: { section: Exclude<RecordSection, "services">; number: string }) {
+  const { fixtures } = useWorkbench();
   const record: WorkRecord | undefined = section === "incidents"
     ? fixtures.incidents.find((item) => item.number === number)
     : section === "problems"
@@ -202,6 +205,7 @@ export function ItsmRecordPage({ section, number }: { section: Exclude<RecordSec
 }
 
 export function ItsmServicePage({ name }: { name: string }) {
+  const { fixtures } = useWorkbench();
   const service: ServiceCi | undefined = fixtures.services.find((item) => item.name === name);
   if (!service) return <NotFound><p>No service matches {name}.</p></NotFound>;
   const relatedIncidents = fixtures.incidents.filter((item) => item.serviceName === service.name);

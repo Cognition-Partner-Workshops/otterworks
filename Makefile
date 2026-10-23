@@ -112,7 +112,7 @@ dev-admin: dev-backend ## Start the admin dashboard dev server (HMR) on :4200
 	cd frontend/admin-dashboard && { [ -d node_modules ] || npm ci; } && npm start
 
 workbench-up: ## Build and start the Workbench container on :3002
-	$(COMPOSE) up -d --build --no-deps workbench
+	WORKBENCH_AUTH=none WORKBENCH_STORE=memory $(COMPOSE) up -d --build --no-deps workbench
 	@echo "Workbench running at http://localhost:3002/"
 
 workbench-down: ## Stop and remove the Workbench container

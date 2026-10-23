@@ -98,5 +98,6 @@ module "ecr" {
     "report-service",
     "web-app",
     "admin-dashboard",
+    "workbench",
   ]
 }

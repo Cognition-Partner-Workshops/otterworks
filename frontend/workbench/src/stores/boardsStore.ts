@@ -1,4 +1,5 @@
 import type { ActivityEntry, Fixtures, IssueComment, IssueStatus } from "@/fixtures/types";
+import { getWorkbenchStorage } from "@/stores/workbenchStorage";
 
 export const BOARDS_STORAGE_KEY = "workbench.boards.v1";
 
@@ -21,7 +22,7 @@ const statusNames: Record<IssueStatus, string> = {
 };
 
 function getStorage(storage?: Storage): Storage {
-  return storage ?? window.localStorage;
+  return storage ?? getWorkbenchStorage();
 }
 
 export function loadBoardState(fixtures: Fixtures, storage?: Storage): BoardState {
@@ -69,7 +70,7 @@ export function moveIssue(
     activity: [...current.activity, {
       at,
       actorId: fixtures.currentUserId,
-      text: `Moved from ${statusNames[current.status]} to ${statusNames[status]}`,
+      text: `moved ${statusNames[current.status]} to ${statusNames[status]}`,
     }],
   };
   getStorage(storage).setItem(BOARDS_STORAGE_KEY, JSON.stringify(state));
@@ -99,7 +100,7 @@ export function addIssueComment(
     activity: [...current.activity, {
       at,
       actorId: fixtures.currentUserId,
-      text: "Added a comment",
+      text: "added a comment",
     }],
   };
   getStorage(storage).setItem(BOARDS_STORAGE_KEY, JSON.stringify(state));

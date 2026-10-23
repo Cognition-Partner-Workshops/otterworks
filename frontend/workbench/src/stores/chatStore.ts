@@ -1,9 +1,10 @@
 import type { ChatMessage, ChatReply, Fixtures } from "@/fixtures/types";
+import { getWorkbenchStorage } from "@/stores/workbenchStorage";
 
 export const CHAT_STORAGE_KEY = "workbench.chat.v1";
 
 function getStorage(storage?: Storage): Storage {
-  return storage ?? window.localStorage;
+  return storage ?? getWorkbenchStorage();
 }
 
 export function loadChatMessages(fixtures: Fixtures, storage?: Storage): ChatMessage[] {

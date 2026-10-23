@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/otterworks/workbench
+  tag: local
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3002
+
+ingress:
+  className: nginx
+  host: workbench.otterworks.app
+
+serviceAccount:
+  roleArn: ""
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 96Mi
+  limits:
+    cpu: 250m
+    memory: 192Mi
+
+awsRegion: us-east-1
+tableName: workbench-attendee-state

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { DragEvent, FormEvent } from "react";
-import { fixtures } from "@/fixtures/fixtures";
 import type { Issue, IssueStatus } from "@/fixtures/types";
 import { Avatar, ExternalLinks, Panel, RelatedRecords, ResetDemoButton, formatUtc, personFor } from "@/components/shared";
 import { MarkdownText } from "@/components/MarkdownText";
 import { addIssueComment, loadBoardState, moveIssue } from "@/stores/boardsStore";
+import { useWorkbench } from "@/WorkbenchContext";
 
 const statuses: IssueStatus[] = ["backlog", "selected", "in_progress", "in_review", "done"];
 const statusLabels: Record<IssueStatus, string> = {
@@ -26,6 +26,7 @@ function NotFound({ message }: { message: string }) {
 }
 
 export function ProjectsPage() {
+  const { fixtures } = useWorkbench();
   const projects = fixtures.projects;
   const state = loadBoardState(fixtures);
   return (
@@ -71,6 +72,7 @@ export function ProjectsPage() {
 }
 
 function IssueCard({ issue, onDragStart }: { issue: Issue; onDragStart: (event: DragEvent<HTMLElement>, key: string) => void }) {
+  const { fixtures } = useWorkbench();
   const assignee = personFor(fixtures.people, issue.assigneeId);
   return (
     <article
@@ -98,6 +100,7 @@ function IssueCard({ issue, onDragStart }: { issue: Issue; onDragStart: (event: 
 }
 
 export function ProjectBoard({ projectKey }: { projectKey: string }) {
+  const { fixtures } = useWorkbench();
   const project = fixtures.projects.find((item) => item.key === projectKey);
   const [revision, setRevision] = useState(0);
   if (!project) return <NotFound message={`Project ${projectKey} was not found.`} />;
@@ -164,6 +167,7 @@ export function ProjectBoard({ projectKey }: { projectKey: string }) {
 }
 
 export function IssueDetail({ projectKey, issueKey }: { projectKey: string; issueKey: string }) {
+  const { fixtures } = useWorkbench();
   const [revision, setRevision] = useState(0);
   const [comment, setComment] = useState("");
   const project = fixtures.projects.find((item) => item.key === projectKey);
@@ -269,12 +273,15 @@ export function IssueDetail({ projectKey, issueKey }: { projectKey: string; issu
             <div className="border-t border-otter-200 pt-4">
               <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Activity log</h2>
               <ol className="space-y-3">
-                {issue.activity.map((entry, index) => (
-                  <li key={`${entry.at}-${index}`} className="text-sm">
-                    <p className="text-slate-700">{entry.text}</p>
-                    <time className="text-xs text-slate-500">{formatUtc(entry.at)}</time>
-                  </li>
-                ))}
+                {issue.activity.map((entry, index) => {
+                  const actor = fixtures.people.find((person) => person.id === entry.actorId);
+                  return (
+                    <li key={`${entry.at}-${index}`} className="text-sm">
+                      <p className="text-slate-700"><span className="font-medium text-slate-900">{actor?.name ?? entry.actorId}</span> {entry.text}</p>
+                      <time className="text-xs text-slate-500">{formatUtc(entry.at)}</time>
+                    </li>
+                  );
+                })}
               </ol>
             </div>
           </aside>
