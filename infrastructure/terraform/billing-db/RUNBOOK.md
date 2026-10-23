@@ -126,8 +126,11 @@ match it. Dump both with the same pg_dump 16 client and drop the lines that alwa
 which carry a random key in current pg_dump releases):
 
 ```bash
+set -o pipefail   # a failed pg_dump fails schema(), so the chain below stops
 schema() { pg_dump "$1" --schema-only --schema=billing --no-owner --no-privileges | grep -Ev '^(--|\\(un)?restrict )'; }
-diff -u <(schema "$SRC") <(schema "$TGT_OWNER") && echo "NO DRIFT"
+schema "$SRC" > schema-src.sql && schema "$TGT_OWNER" > schema-tgt.sql \
+  && grep -q '^CREATE TABLE billing\.' schema-src.sql \
+  && diff -u schema-src.sql schema-tgt.sql && echo "NO DRIFT"
 ```
 
 Any remaining difference stops the change. Ownership and privileges are excluded on
