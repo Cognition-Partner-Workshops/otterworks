@@ -47,6 +47,26 @@ function isApiPath(url: string): boolean {
   return url === "/api/v1" || url.startsWith("/api/v1/") || url.startsWith("/api/v1?");
 }
 
+type Route = "api" | "static" | "bad_request";
+
+// Decode and normalise the path *before* matching the /api/v1 prefix (as nginx
+// does), so dot-segments - literal or percent-encoded, including encoded
+// slashes - can't pass a raw-prefix check and then resolve outside /api/v1.
+function classifyRequest(rawUrl: string | undefined): Route {
+  let rawPath: string;
+  let decoded: string;
+  try {
+    rawPath = new URL(rawUrl ?? "/", "http://localhost").pathname;
+    decoded = decodeURIComponent(rawPath);
+  } catch {
+    return "bad_request";
+  }
+  const normalised = path.posix.normalize(decoded.replace(/\\/g, "/"));
+  if (isApiPath(normalised) && isApiPath(rawPath)) return "api";
+  if (isApiPath(rawUrl ?? "") || isApiPath(rawPath) || isApiPath(normalised)) return "bad_request";
+  return "static";
+}
+
 // Header keys that could pollute Object.prototype if copied onto a plain object.
 const UNSAFE_HEADER_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
@@ -67,6 +87,9 @@ function forwardTarget(gateway: URL, rawUrl: string | undefined): URL {
   // client request can never be turned into a request to an arbitrary host.
   if (target.origin !== gateway.origin) {
     throw new Error(`refusing to proxy to non-gateway origin: ${target.origin}`);
+  }
+  if (!isApiPath(target.pathname)) {
+    throw new Error(`refusing to proxy non-API path: ${target.pathname}`);
   }
   return target;
 }
@@ -219,7 +242,11 @@ export async function startAppServer(options: AppServerOptions): Promise<AppServ
   const gateway = new URL(gatewayUrl);
 
   const server = http.createServer((req, res) => {
-    if (req.url && isApiPath(req.url)) {
+    const route = classifyRequest(req.url);
+    if (route === "bad_request") {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "bad_request" }));
+    } else if (route === "api") {
       proxyRequest(gateway, req, res);
     } else {
       serveStatic(webRoot, req.url ?? "/", res).catch((err) => {
@@ -230,7 +257,7 @@ export async function startAppServer(options: AppServerOptions): Promise<AppServ
   // Upgraded sockets escape closeAllConnections(), so track them for shutdown
   const upgradedSockets = new Set<net.Socket>();
   server.on("upgrade", (req, socket, head) => {
-    if (req.url && isApiPath(req.url)) {
+    if (classifyRequest(req.url) === "api") {
       upgradedSockets.add(socket as net.Socket);
       socket.on("close", () => upgradedSockets.delete(socket as net.Socket));
       proxyUpgrade(gateway, req, socket as net.Socket, head);
