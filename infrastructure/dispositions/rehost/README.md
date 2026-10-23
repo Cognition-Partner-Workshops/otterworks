@@ -2,7 +2,7 @@
 
 This module provisions an artifact bucket and object, an application log group, an internet-facing ALB, security groups, a target group and attachment, HTTP (or HTTPS plus redirect) listeners, and one IMDSv2-required EC2 instance with an SSM/CloudWatch/artifact-read role. The instance bootstraps a generic systemd service from the uploaded artifact.
 
-The portfolio disposition standard says: **“Rehost needs a reason the code cannot change cheaply.”** Supply the assessment row in `disposition_evidence`.
+The portfolio disposition standard says: **“Rehost needs a reason the code cannot change cheaply.”** Set `disposition_evidence` to the assessment-report row pointer (for example, `portfolio/assessment-report.csv:3`), not the evidence list; it is stamped as an AWS tag value and must use the allowed tag characters and fit within 256 characters.
 
 ## Inputs
 
@@ -11,9 +11,9 @@ The portfolio disposition standard says: **“Rehost needs a reason the code can
 | `service_name` | Required | Lowercase application identifier. |
 | `run_token` | Required, at most 28 characters | Run-scoped names and tags. |
 | `expires` | Required | RFC 3339 resource expiry. |
-| `disposition_evidence` | Required | Assessment row, such as `portfolio/assessment-report.csv:2`. |
+| `disposition_evidence` | Required | Assessment-report row pointer stamped as an AWS tag value, such as `portfolio/assessment-report.csv:3`; not the evidence list. |
 | `vpc_id`, `subnet_ids` | Required | Existing VPC and public subnet IDs; no discovery occurs in the module. |
-| `extra_tags` | `{}` | Additional tags; required disposition tags override collisions. |
+| `extra_tags` | `{}` | Additional tags; values must fit the AWS tag value character set and 256-character limit. Required disposition tags override collisions. |
 | `artifact_path` | Required | Local file path to upload; `filemd5` detects changes. |
 | `artifact_name` | `null` | S3 object key; defaults to `basename(artifact_path)`. |
 | `start_command` | Required | systemd `ExecStart`; artifact is in `/opt/<service_name>/<artifact_name>` and `ARTIFACT_PATH` is exported. |
@@ -51,7 +51,7 @@ terraform apply -var='artifact_path=/absolute/path/to/service.jar'
 terraform destroy -var='artifact_path=/absolute/path/to/service.jar'
 ```
 
-Replace the checker arguments with the `run_token` and `expires` values used in the caller root. Use the same key for `terraform destroy`. The module tags resources with `run_token`, `RunToken`, `Expires`, `ManagedBy=terraform`, `disposition=rehost`, `service`, and `disposition_evidence`; caller `extra_tags` are retained unless they conflict with a required tag. CI plans only and never applies. On Linux and macOS, use `python3` instead of `python`.
+Replace the checker arguments with the `run_token` and `expires` values used in the caller root. Use the same key for `terraform destroy`. The module tags resources with `run_token`, `RunToken`, `Expires`, `ManagedBy=terraform`, `disposition=rehost`, `service`, and `disposition_evidence`; caller `extra_tags` are retained unless they conflict with a required tag. Evidence and extra tag values must contain 1–256 characters from letters, digits, spaces and `_ . : / = + - @`. CI plans only and never applies. On Linux and macOS, use `python3` instead of `python`.
 
 ### Windows (PowerShell 5.1)
 

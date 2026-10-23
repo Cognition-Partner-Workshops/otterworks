@@ -2,16 +2,13 @@ name: disposition-rehost
 
 on:
   pull_request:
-    paths:
-      - infrastructure/dispositions/rehost/**
-      - infrastructure/dispositions/scripts/**
-      - .github/workflows/disposition-rehost.yml
 
 permissions:
   contents: read
 
 jobs:
-  terraform:
+  disposition-rehost:
+    name: disposition-rehost
     runs-on: ubuntu-latest
     defaults:
       run:

@@ -8,10 +8,14 @@ evidence and migration rationale.
 |---|---|---|
 | `rehost` | `infrastructure/terraform/legacy-portal-ec2` | `.github/workflows/disposition-rehost.yml` |
 | `rearchitect` | `infrastructure/terraform/legacy-portal-serverless` | `.github/workflows/disposition-rearchitect.yml` |
-| `replatform` | Existing service charts in `infrastructure/helm/*` | `.github/workflows/disposition-replatform.yml` |
+| `replatform` | Existing service charts in `infrastructure/helm/*` (bundled as `replatform/chart`) plus managed RDS, ElastiCache, S3, SQS and IRSA | `.github/workflows/disposition-replatform.yml` |
 
-Each Terraform module is provider/backend agnostic and has a `ci/` root that plans
-offline; each workflow validates without applying resources. The Helm workflow lints,
-renders, and checks manifests without installing or upgrading a release. Use
-`disposition_evidence` / `dispositionEvidence` to identify the assessment row that
-supports the selected disposition.
+All three are Terraform modules. Each is backend agnostic and has an `example/` root to
+copy and a `ci/` root that plans offline with mock credentials; every workflow runs on
+`pull_request` only, checks that each planned AWS resource carries `run_token` and
+`Expires` (`scripts/check-plan-tags.py`), and never applies. The replatform workflow also
+lints and renders the bundled chart without installing a release. Set
+`disposition_evidence` to the assessment-report row pointer that supports the
+selected disposition (for example, `portfolio/assessment-report.csv:3`), not the
+evidence list; it is stamped as an AWS tag value and must fit the 256-character tag
+value limit and allowed character set.

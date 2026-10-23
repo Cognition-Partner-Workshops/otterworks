@@ -8,6 +8,7 @@ image:
   pullPolicy: IfNotPresent
 
 replicaCount: 1
+podAnnotations: {}
 containerPort: 8080
 strategy: {}
 env: []

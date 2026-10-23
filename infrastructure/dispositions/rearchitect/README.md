@@ -2,7 +2,7 @@
 
 This module provisions Aurora Serverless v2 with the RDS Data API and a Secrets Manager credential, one placeholder Lambda per application context, aliases and CodeDeploy canaries, an HTTP API with two routes per context plus `$default`, 5xx/Lambda/composite alarms, and an EventBridge page to the automation webhook with a DLQ. Optional event subscriptions each get an encrypted DynamoDB table, rule, target, and consumer Lambda. Optional probe steps add a stopped Synthetics canary and expiring artifact bucket. An optional SQL file is applied with the RDS Data API during apply.
 
-The portfolio disposition standard says: **“Rearchitect needs clean seams and a parity corpus that can prove each port.”** Supply the assessment row in `disposition_evidence`.
+The portfolio disposition standard says: **“Rearchitect needs clean seams and a parity corpus that can prove each port.”** Set `disposition_evidence` to the assessment-report row pointer (for example, `portfolio/assessment-report.csv:3`), not the evidence list; it is stamped as an AWS tag value and must use the allowed tag characters and fit within 256 characters.
 
 ## Inputs
 
@@ -11,9 +11,9 @@ The portfolio disposition standard says: **“Rearchitect needs clean seams and 
 | `service_name` | Required | Application identifier and page tenant. |
 | `run_token` | Required, at most 15 characters | Run-scoped names and tags; limited by the 21-character Synthetics canary name. |
 | `expires` | Required | RFC 3339 expiry. |
-| `disposition_evidence` | Required | Assessment row, e.g. `portfolio/assessment-report.csv:2`. |
+| `disposition_evidence` | Required | Assessment-report row pointer stamped as an AWS tag value, e.g. `portfolio/assessment-report.csv:3`; not the evidence list. |
 | `vpc_id`, `subnet_ids` | Required | Existing VPC and private subnet IDs; no module discovery. |
-| `extra_tags` | `{}` | Additional tags; required disposition tags override collisions. |
+| `extra_tags` | `{}` | Additional tags; values must fit the AWS tag value character set and 256-character limit. Required disposition tags override collisions. |
 | `contexts` | Required | Context map with `schema`, `route_prefix`, optional `publishes_events` and `environment`; context environments must not set module-owned keys (`CONTEXT`, `DB_SCHEMA`, `DB_NAME`, `CLUSTER_ARN`, `SECRET_ARN`, `RUN_TOKEN`, `EVENT_BUS_NAME`). |
 | `default_route_context` | `null` | Defaults to the first sorted context key. |
 | `database_name`, `master_username` | `app`, `app_admin` | Aurora database and master username. |
@@ -41,4 +41,4 @@ terraform apply
 terraform destroy
 ```
 
-Use the same backend key for destroy. Resources carry `run_token`, `RunToken`, `Expires`, `ManagedBy=terraform`, `disposition=rearchitect`, `service`, and `disposition_evidence`; additional caller tags are accepted. CI only plans and never applies.
+Use the same backend key for destroy. Resources carry `run_token`, `RunToken`, `Expires`, `ManagedBy=terraform`, `disposition=rearchitect`, `service`, and `disposition_evidence`; additional caller tags are accepted. Evidence and extra tag values must contain 1–256 characters from letters, digits, spaces and `_ . : / = + - @`. CI only plans and never applies.
