@@ -10,6 +10,7 @@ import com.otterworks.report.repository.ReportRepository;
 import com.otterworks.report.util.ReportDateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.NestedRuntimeException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -113,9 +114,35 @@ public class ReportGenerationWorker {
             logger.error("Report generation failed for {}: {}", reportId, e.getMessage(), e);
             report.setStatus(ReportStatus.FAILED);
             report.setCompletedAt(new Date());
-            report.setErrorMessage(e.getMessage());
+            report.setErrorMessage(errorMessage(e));
             reportRepository.save(report);
         }
+    }
+
+    /**
+     * Spring 6 no longer appends the cause to {@link NestedRuntimeException#getMessage()};
+     * keep the Spring 5 wording that clients see in {@code errorMessage}.
+     */
+    static String errorMessage(Throwable e) {
+        Throwable cause = e.getCause();
+        if (cause != null && !(e instanceof NestedRuntimeException) && cause.toString().equals(e.getMessage())) {
+            return legacyToString(cause);
+        }
+        return legacyMessage(e);
+    }
+
+    private static String legacyMessage(Throwable e) {
+        String message = e.getMessage();
+        Throwable cause = e.getCause();
+        if (e instanceof NestedRuntimeException && cause != null) {
+            message = (message != null ? message + "; " : "") + "nested exception is " + legacyToString(cause);
+        }
+        return message;
+    }
+
+    private static String legacyToString(Throwable e) {
+        String message = legacyMessage(e);
+        return message != null ? e.getClass().getName() + ": " + message : e.getClass().getName();
     }
 
     private List<Map<String, Object>> fetchDataForCategory(
