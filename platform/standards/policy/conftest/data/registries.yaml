@@ -1,0 +1,3 @@
+registries:
+  approved:
+    - 599083837640.dkr.ecr.us-east-1.amazonaws.com/otterworks/

@@ -16,8 +16,8 @@
 #      and appends AUDIT events.
 #
 # Environment (control-plane metadata; NON-secret):
-#   OP            deploy | teardown | inject | reset | reap        (required)
-#   TENANT_ID     attendee id (required for deploy/teardown/inject/reset)
+#   OP            deploy | teardown | inject | reset | wake | reap (required)
+#   TENANT_ID     attendee id (required for deploy/teardown/inject/reset/wake)
 #   TIER          A | B                                            (default A)
 #   TTL           e.g. 8h, 30m, 2d, or `never` for a perpetual tenant (default 72h)
 #   REDEPLOY      true when deploying over a live tenant (CD)   (default unset)
@@ -190,13 +190,20 @@ run_reset() {
   log "reset complete for ${TENANT_ID}"
 }
 
+run_wake() {
+  [ -n "${TENANT_ID:-}" ] || die "OP=wake requires TENANT_ID"
+  "${REPO_DIR}/scripts/tenant-scale.sh" "${TENANT_ID}" up
+  ctl_audit "${TENANT_ID}" wake "scaled deployments to 1"
+  log "woke ${TENANT_ID}"
+}
+
 run_reap() {
   log "delegating to reaper v2"
   exec "${REPO_DIR}/demo-platform/reaper/reaper.sh"
 }
 
 main() {
-  [ -n "${OP}" ] || die "OP is required (deploy|teardown|inject|reset|reap)"
+  [ -n "${OP}" ] || die "OP is required (deploy|teardown|inject|reset|wake|reap)"
   command -v aws >/dev/null || die "aws CLI not found in image"
   command -v jq  >/dev/null || die "jq not found in image"
 
@@ -220,8 +227,9 @@ main() {
     teardown) run_teardown ;;
     inject)   run_inject ;;
     reset)    run_reset ;;
+    wake)     run_wake ;;
     reap)     run_reap ;;
-    *)        die "unknown OP '${OP}' (deploy|teardown|inject|reset|reap)" ;;
+    *)        die "unknown OP '${OP}' (deploy|teardown|inject|reset|wake|reap)" ;;
   esac
 }
 

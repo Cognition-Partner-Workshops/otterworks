@@ -1,0 +1,15 @@
+{{- if and (eq .Values.workload "web") .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "platform-app.name" . }}
+  labels:
+    {{- include "platform-app.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "platform-app.name" . }}
+  endpoints:
+    - port: http
+      path: {{ .Values.serviceMonitor.path }}
+{{- end }}
