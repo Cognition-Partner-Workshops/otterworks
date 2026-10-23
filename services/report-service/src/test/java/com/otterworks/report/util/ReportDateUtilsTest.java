@@ -1,8 +1,8 @@
 package com.otterworks.report.util;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -13,17 +13,17 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ReportDateUtilsTest {
 
     private TimeZone originalTimeZone;
     private Locale originalLocale;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         originalTimeZone = TimeZone.getDefault();
         originalLocale = Locale.getDefault();
@@ -31,7 +31,7 @@ public class ReportDateUtilsTest {
         Locale.setDefault(Locale.US);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         TimeZone.setDefault(originalTimeZone);
         Locale.setDefault(originalLocale);
