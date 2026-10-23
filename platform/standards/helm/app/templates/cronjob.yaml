@@ -1,0 +1,31 @@
+{{- if eq .Values.workload "cronjob" }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "platform-app.name" . }}
+  labels:
+    {{- include "platform-app.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.cronjob.schedule | quote }}
+  timeZone: {{ .Values.cronjob.timeZone | quote }}
+  concurrencyPolicy: {{ .Values.cronjob.concurrencyPolicy }}
+  successfulJobsHistoryLimit: {{ .Values.cronjob.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cronjob.failedJobsHistoryLimit }}
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "platform-app.labels" . | nindent 8 }}
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            {{- include "platform-app.labels" . | nindent 12 }}
+        spec:
+          restartPolicy: Never
+          {{- include "platform-app.podSecurity" . | nindent 10 }}
+          containers:
+            {{- include "platform-app.container" . | nindent 12 }}
+          volumes:
+            {{- include "platform-app.volumes" . | nindent 12 }}
+{{- end }}
