@@ -4,9 +4,12 @@ import com.otterworks.report.model.Report;
 import com.otterworks.report.model.ReportCategory;
 import com.otterworks.report.model.ReportStatus;
 import com.otterworks.report.model.ReportType;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.SheetUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -198,6 +201,55 @@ public class ExcelReportGeneratorTest {
             // Physical rows = 1 header + N data rows
             assertEquals(expectedRows + 1,
                     dataSheet.getPhysicalNumberOfRows(), "Data sheet should have header + data rows");
+        }
+    }
+
+    @Test
+    public void dataSheetWidthsMatchPoi4AutoSizeCompatibility() throws IOException {
+        Report report = buildReport("Legacy Width Report");
+        List<Map<String, Object>> data = buildSampleData(5);
+
+        File xlsx = generator.generateExcel(report, data, outputDir.getAbsolutePath());
+
+        try (FileInputStream fis = new FileInputStream(xlsx);
+             Workbook workbook = new XSSFWorkbook(fis);
+             FileInputStream plainFis = new FileInputStream(xlsx);
+             Workbook plainWorkbook = new XSSFWorkbook(plainFis)) {
+            Sheet dataSheet = workbook.getSheet("Data");
+            Sheet plainDataSheet = plainWorkbook.getSheet("Data");
+            float defaultCharWidth = SheetUtil.getDefaultCharWidthAsFloat(workbook);
+            int legacyDefaultCharWidth = (int) defaultCharWidth;
+            boolean hasFractionalDefaultCharWidth = defaultCharWidth != legacyDefaultCharWidth;
+            DataFormatter formatter = new DataFormatter();
+            int columnCount = dataSheet.getRow(0).getLastCellNum();
+
+            for (int column = 0; column < columnCount; column++) {
+                double width = -1;
+                for (int rowIndex = dataSheet.getFirstRowNum(); rowIndex <= dataSheet.getLastRowNum(); rowIndex++) {
+                    Row row = dataSheet.getRow(rowIndex);
+                    if (row == null) {
+                        continue;
+                    }
+                    Cell cell = row.getCell(column);
+                    if (cell != null) {
+                        width = Math.max(
+                                width, SheetUtil.getCellWidth(cell, legacyDefaultCharWidth, formatter, false));
+                    }
+                }
+
+                int expectedWidth = -1;
+                if (width != -1) {
+                    expectedWidth = (int) Math.min(Math.round(width * 256), 255 * 256);
+                }
+                assertEquals(expectedWidth, dataSheet.getColumnWidth(column),
+                        "Column " + column + " should use the POI 4-compatible width");
+
+                plainDataSheet.autoSizeColumn(column);
+                if (hasFractionalDefaultCharWidth) {
+                    assertTrue(dataSheet.getColumnWidth(column) > plainDataSheet.getColumnWidth(column),
+                            "Column " + column + " should be wider than plain POI auto-size");
+                }
+            }
         }
     }
 

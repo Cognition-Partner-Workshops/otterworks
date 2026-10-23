@@ -4,7 +4,9 @@ import com.otterworks.report.model.Report;
 import com.otterworks.report.util.ReportDateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -13,6 +15,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.SheetUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +75,7 @@ public class ExcelReportGenerator {
 
             // Auto-size columns on summary sheet
             for (int i = 0; i < 2; i++) {
-                summarySheet.autoSizeColumn(i);
+                autoSizeColumnLegacy(summarySheet, i);
             }
 
             // Write to file
@@ -178,11 +181,43 @@ public class ExcelReportGenerator {
 
         // Auto-size columns
         for (int i = 0; i < columns.size(); i++) {
-            sheet.autoSizeColumn(i);
+            autoSizeColumnLegacy(sheet, i);
         }
 
         // Add auto-filter
         sheet.setAutoFilter(new CellRangeAddress(0, rowIdx - 1, 0, columns.size() - 1));
+    }
+
+    /**
+     * POI 5.2.5 switched auto-sizing to a float default character width, narrowing
+     * columns compared with Java 8 reports; retain the POI 4 widths.
+     */
+    private void autoSizeColumnLegacy(Sheet sheet, int column) {
+        sheet.autoSizeColumn(column);
+
+        int legacyDefaultCharWidth = (int) SheetUtil.getDefaultCharWidthAsFloat(sheet.getWorkbook());
+        DataFormatter formatter = new DataFormatter();
+        double width = -1;
+        for (int rowIndex = sheet.getFirstRowNum(); rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+            Row row = sheet.getRow(rowIndex);
+            if (row == null) {
+                continue;
+            }
+            Cell cell = row.getCell(column);
+            if (cell != null) {
+                width = Math.max(
+                        width, SheetUtil.getCellWidth(cell, legacyDefaultCharWidth, formatter, false));
+            }
+        }
+
+        if (width != -1) {
+            width *= 256;
+            int maxColumnWidth = 255 * 256;
+            if (width > maxColumnWidth) {
+                width = maxColumnWidth;
+            }
+            sheet.setColumnWidth(column, Math.toIntExact(Math.round(width)));
+        }
     }
 
     // ----- Style helpers (verbose POI pattern) -----
