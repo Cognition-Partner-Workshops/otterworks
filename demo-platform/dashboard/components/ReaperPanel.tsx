@@ -117,7 +117,7 @@ export default function ReaperPanel() {
             />
             <span className="mt-1 block text-xs text-slate-500">
               Zero ingress requests for this long scales the tenant to zero. Its namespace,
-              config and database are kept, so check-out wakes it in seconds.
+              config and database are kept, so Wake brings it back in a minute or two.
             </span>
           </label>
           <label className="flex items-center gap-2 text-sm">
