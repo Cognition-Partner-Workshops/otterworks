@@ -26,11 +26,11 @@ public final class ReportDateUtils {
 
     // DateTimeFormatter is immutable and thread-safe, unlike the SimpleDateFormat instances it replaces.
     private static final DateTimeFormatter ISO_FORMAT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).withZone(ZoneOffset.UTC);
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
     private static final DateTimeFormatter DISPLAY_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm", Locale.US).withZone(ZoneOffset.UTC);
+            DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm").withZone(ZoneOffset.UTC);
     private static final DateTimeFormatter FILE_NAME_FORMAT =
-            DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss", Locale.US).withZone(ZoneOffset.UTC);
+            DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").withZone(ZoneOffset.UTC);
 
     private ReportDateUtils() {
         // Utility class
