@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { withSession, json, error } from "@/lib/api";
 import { appendAudit, extend, getTenant } from "@/lib/control";
+import { setNamespaceExpiry } from "@/lib/k8s";
 import { NEVER_TTL_SECONDS, ttlToSeconds } from "@/lib/util";
 import type { ExtendRequest } from "@/lib/types";
 
@@ -33,7 +34,20 @@ export const POST = withSession(async (req: NextRequest, { actor, params }) => {
     );
   }
 
+  if (tenant.pinned) {
+    return error(
+      409,
+      `tenant '${id}' is pinned and does not expire; POST /api/tenants/${id}/pin {"pinned":false} to give it a ttl`,
+    );
+  }
+
   const expiresAt = await extend(id, ttlSeconds);
+  try {
+    await setNamespaceExpiry(tenant.namespace || `otterworks-${id}`, expiresAt);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return error(502, `extended but namespace expiry not updated (the namespace reaper still uses the old one): ${msg}`);
+  }
   await appendAudit({ tenantId: id, action: "extend", actor, detail: `ttl=${ttlStr}` });
 
   return json({ ok: true, expiresAt });
