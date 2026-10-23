@@ -1,0 +1,70 @@
+name: billing-db-terraform
+
+on:
+  pull_request:
+    paths:
+      - infrastructure/terraform/billing-db/**
+      - .github/workflows/billing-db-terraform.yml
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/terraform/billing-db
+    env:
+      # PR jobs get no AWS credentials; the provider runs with skip_* flags (offline_plan).
+      AWS_ACCESS_KEY_ID: mock-access-key
+      AWS_SECRET_ACCESS_KEY: mock-secret-key
+      AWS_EC2_METADATA_DISABLED: "true"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.9.8
+          terraform_wrapper: false
+      - name: Format
+        run: terraform fmt -check -recursive -diff
+      - name: Validate
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate
+      - name: Plan offline and check tags and settings
+        run: |
+          RUN_TOKEN="ci-$(date -u +%Y%m%d)-gh"
+          EXPIRES="$(date -u -d '+7 days' '+%Y-%m-%dT%H:%M:%SZ')"
+          # The S3 state backend needs credentials; a CI-only override keeps state local.
+          printf 'terraform {\n  backend "local" {}\n}\n' > ci_override.tf
+          terraform init -input=false -reconfigure
+          terraform plan -input=false -lock=false -out=tfplan \
+            -var-file=ci/offline.tfvars \
+            -var="run_token=$RUN_TOKEN" \
+            -var="expires=$EXPIRES"
+          terraform show -no-color tfplan > plan.txt
+          terraform show -json tfplan > plan.json
+          python3 ci/check-plan.py plan.json \
+            --run-token "$RUN_TOKEN" \
+            --expires "$EXPIRES" \
+            --engine-version "$(sed -nE '/variable "engine_version"/,/^}/s/^ *default *= *"([^"]+)"/\1/p' variables.tf)" \
+            --allowed-cidr 10.0.0.0/16 | tee plan-check.txt
+          {
+            echo '## Billing database Terraform plan (offline)'
+            echo '```text'
+            cat plan.txt
+            echo '```'
+            echo '## Plan check (tags, engine, TLS, locale-sensitive settings)'
+            echo '```text'
+            cat plan-check.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: billing-db-plan
+          path: |
+            infrastructure/terraform/billing-db/plan.txt
+            infrastructure/terraform/billing-db/plan.json
+            infrastructure/terraform/billing-db/plan-check.txt
+          if-no-files-found: error

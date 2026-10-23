@@ -1,0 +1,6 @@
+ci_override.tf
+tfplan
+plan.txt
+plan.json
+plan-check.txt
+terraform.tfstate*
