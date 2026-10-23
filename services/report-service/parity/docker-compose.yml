@@ -1,0 +1,65 @@
+# Local replay stack for the report-service Java 8 baseline.
+name: report-parity
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: otterworks
+      POSTGRES_PASSWORD: otterworks_dev
+      POSTGRES_DB: otterworks
+    volumes:
+      - ./fixtures/postgres:/docker-entrypoint-initdb.d:ro
+      - ../../../migration/target/postgresql:/ldm-ddl:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U otterworks && psql -U otterworks -d otterworks_archive -tAc 'SELECT 1 FROM mig.runs LIMIT 1' | grep -q 1"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+
+  upstream-stub:
+    image: python:3.12-alpine
+    command: ["python", "/stub/upstream_stub.py"]
+    volumes:
+      - ./stub:/stub:ro
+
+  report-service:
+    image: ${REPORT_IMAGE:-report-service:parity}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      upstream-stub:
+        condition: service_started
+    environment:
+      TZ: America/Chicago
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: otterworks_reports
+      DB_USER: otterworks
+      DB_PASSWORD: otterworks_dev
+      REPORT_OUTPUT_DIR: /tmp/reports
+      ARCHIVE_STORE: postgresql
+      LDM_NAMESPACE: char-after
+      PG_HOST: postgres
+      PG_PORT: "5432"
+      PG_DATABASE: otterworks_archive
+      PG_USER: otterworks
+      PG_PASSWORD: otterworks_dev
+      PG_SSLMODE: disable
+      ANALYTICS_SERVICE_URL: http://upstream-stub:8080
+      AUDIT_SERVICE_URL: http://upstream-stub:8080
+      AUTH_SERVICE_URL: http://upstream-stub:8080
+    ports: ["${PARITY_PORT:-18091}:8091"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8091/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp

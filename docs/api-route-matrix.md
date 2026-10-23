@@ -15,6 +15,7 @@ This matrix captures the primary API endpoints used to design and expand the bla
 | `/api/v1/analytics` | Analytics service | Event ingestion and aggregate metrics. |
 | `/api/v1/admin` | Admin service | User, quota, feature, announcement, audit-log, metrics, health admin APIs. |
 | `/api/v1/audit` | Audit service | Audit events, history, reports, export, archive. |
+| `/api/v1/reports` | Report service | Report generation, listing, download, deletion. |
 
 ## Critical user-flow routes
 
@@ -31,13 +32,12 @@ This matrix captures the primary API endpoints used to design and expand the bla
 | Collaboration | `GET /api/v1/collab/documents`, `GET /api/v1/collab/documents/{id}/presence`, Socket.IO connection to collab service | Planned WebSocket/API suite. |
 | Notifications/preferences | `GET /api/v1/notifications`, notification lifecycle routes, `/api/v1/preferences` | Gateway prefix gap: preferences are not currently in `ServiceRoutes`. |
 | Audit | `POST /api/v1/audit/events`, `GET /api/v1/audit/events`, `GET /api/v1/audit/events/{id}`, `GET /api/v1/audit/resources/{resourceId}/history`, `GET /api/v1/audit/export`, `POST /api/v1/audit/archive` | Planned side-effect and direct API suite. |
-| Reports | `POST /api/v1/reports`, `GET /api/v1/reports`, `GET /api/v1/reports/{id}`, `GET /api/v1/reports/{id}/download`, `DELETE /api/v1/reports/{id}` | Gateway prefix gap: report service is configured in Compose but not in `ServiceRoutes`. |
+| Reports | `POST /api/v1/reports`, `GET /api/v1/reports`, `GET /api/v1/reports/{id}`, `GET /api/v1/reports/{id}/download`, `DELETE /api/v1/reports/{id}` | `tests/api/test_side_effect_flow.py` (`test_report_generation_reaches_terminal_state`). |
 
 ## Known route and behavior gaps to verify
 
 - **Templates**: Document service exposes `/api/v1/templates`, but the gateway currently only routes `/api/v1/documents` to the document service.
 - **Folders**: File service exposes `/api/v1/folders`, but the gateway currently only routes `/api/v1/files` to the file service.
-- **Reports**: Compose config includes `REPORT_SERVICE_URL`, but gateway config does not currently route `/api/v1/reports`.
 - **Preferences**: Notification service exposes `/api/v1/preferences`, but gateway config does not currently route that prefix.
 - **Document ownership**: Document service endpoints should be tested for cross-user access; the current black-box suite expects denial for cross-user reads.
 - **JWT identity propagation**: Gateway forwards `X-User-ID` from JWT claims, while some services also decode JWTs directly; tests should catch claim/header mismatches.

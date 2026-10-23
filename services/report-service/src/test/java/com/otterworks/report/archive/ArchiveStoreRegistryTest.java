@@ -1,12 +1,12 @@
 package com.otterworks.report.archive;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ArchiveStoreRegistryTest {
 
@@ -15,12 +15,9 @@ public class ArchiveStoreRegistryTest {
         ArchiveStoreRegistry registry = new ArchiveStoreRegistry(new ArchiveProperties());
         assertEquals(ArchiveStoreType.OFF, registry.type());
         assertFalse(registry.isEnabled());
-        try {
-            registry.store();
-            fail("expected feature-off exception");
-        } catch (ArchiveFeatureDisabledException e) {
-            assertTrue(e.getMessage().contains("ARCHIVE_STORE=db2"));
-        }
+        ArchiveFeatureDisabledException exception = assertThrows(
+                ArchiveFeatureDisabledException.class, () -> registry.store());
+        assertTrue(exception.getMessage().contains("ARCHIVE_STORE=db2"));
     }
 
     @Test
@@ -31,12 +28,9 @@ public class ArchiveStoreRegistryTest {
         assertEquals(ArchiveStoreType.INVALID, registry.type());
         assertTrue(registry.isEnabled());
         assertFalse(registry.isConfigured());
-        try {
-            registry.store();
-            fail("expected unavailable exception");
-        } catch (ArchiveStoreUnavailableException e) {
-            assertTrue(e.getMessage().contains("oracle"));
-        }
+        ArchiveStoreUnavailableException exception = assertThrows(
+                ArchiveStoreUnavailableException.class, () -> registry.store());
+        assertTrue(exception.getMessage().contains("oracle"));
     }
 
     @Test
