@@ -195,3 +195,23 @@ DROP SCHEMA billing CASCADE (as owner)                           -> ok
 Version minimums come from PostgreSQL release history: `CREATE PROCEDURE` and
 `CALL` arrived in 11, `ON CONFLICT` in 9.5 and `RETURNS TABLE` in 8.4. 14
 matches the 15.7 target on every construct used here.
+
+## Migrations
+
+Legacy billing uses plain numbered SQL files and a `psql` runner. Flyway is
+used by JVM services elsewhere in the repository, but this service is Python
+and has no JVM toolchain. Migrations 0001–0005 are verbatim copies of the source
+files at this commit; the parity harness and Compose stack continue to load the
+original files. Land later routine changes as new migrations rather than
+editing an applied migration.
+
+| Finding | Resolution |
+|---|---|
+| 1. Superuser runtime | `bootstrap/roles.sql` creates separate non-superuser owner and app roles. |
+| 2. Missing role and grant DDL | The bootstrap creates roles; migration `0006_app_grants.sql` applies runtime grants. |
+| 3. PostgreSQL version | No PostgreSQL 12+ features are used; rerun parity on PostgreSQL 15.x before cut-over. |
+| 4. Session time zone | Role settings pin UTC; `migrate.sh` also pins `search_path` and `TimeZone` with `PGOPTIONS`. |
+| 5. TLS | Set `PGSSLMODE=verify-full` and `PGSSLROOTCERT` in the libpq/psycopg environment. |
+| 6. Reset path | The runner has no reset or drop path; harness reset remains for disposable local databases only. |
+| 7. Database `CREATE` | The bootstrap grants `CREATE` on the target database to the owner role. |
+| 8. `md5()` identifiers | No change; record the FIPS-build caveat if the target changes. |

@@ -66,3 +66,29 @@ models the legacy application running with its own PostgreSQL database.
 - `db/schema.sql` — tables and constraints
 - `db/procs/` — database entrypoints
 - `db/seed.sql` — deterministic starting state
+- `db/migrations/` — ordered SQL migrations; 0001–0005 preserve the source files verbatim
+- `db/bootstrap/roles.sql` — one-time owner and runtime-role setup
+- `db/migrate.sh` — checksum-tracked migration runner for the non-superuser owner role
+- `db/verify-migrations.sh` — disposable PostgreSQL 16 migration, permission, and parity check
+
+### Applying to managed PostgreSQL
+
+Run the role bootstrap as the database admin, then set both role passwords
+interactively with `\password`. Run the migration runner as `billing_owner`:
+
+```bash
+psql -X -v ON_ERROR_STOP=1 -v owner_role=billing_owner -v app_role=billing_app \
+  -d billing_t -f services/legacy-billing/db/bootstrap/roles.sql
+psql -X -d billing_t
+# At the psql prompt:
+# \password billing_owner
+# \password billing_app
+# \q
+
+export PGSSLMODE=verify-full PGSSLROOTCERT="<rds-ca-bundle>"
+PGHOST="<rds-endpoint>" PGDATABASE=billing_t PGUSER=billing_owner \
+  BILLING_APP_ROLE=billing_app services/legacy-billing/db/migrate.sh
+```
+
+`PGSSLMODE` and `PGSSLROOTCERT` are read by libpq (and psycopg) from the
+environment, so the application connection code needs no TLS change.
