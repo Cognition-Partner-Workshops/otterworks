@@ -104,6 +104,10 @@ modules:
     cases: null
 
 exempt:
+  - path: services/legacy-share-links
+    reason: >
+      Java 7 servlet WAR kept as source for the application assessment variant. It
+      is not built or deployed, and a current JDK cannot target Java 7.
   - path: frontend/client-app/mobile/android
     reason: >
       Capacitor Android shell. Ships no server-side JVM dependencies and needs the
