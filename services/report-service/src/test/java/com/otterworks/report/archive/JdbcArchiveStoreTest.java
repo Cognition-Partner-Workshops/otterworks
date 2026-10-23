@@ -3,7 +3,7 @@ package com.otterworks.report.archive;
 import com.otterworks.report.archive.ArchiveDocument.ArchiveEvent;
 import com.otterworks.report.archive.ArchiveDocument.ArchiveVersion;
 import com.otterworks.report.archive.ArchiveDocument.RetentionPolicy;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,11 +15,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -168,7 +168,8 @@ public class JdbcArchiveStoreTest {
     public void pgTimestampHelperMatchesAzureHelperForTheSameInstant() {
         assertEquals(Db2Text.timestamp12FromDateTime2("2016-03-01 10:15:30.1234567", 89012),
                 Db2Text.timestamp12FromPgTimestamp("2016-03-01 10:15:30.123456", 789012));
-        assertEquals("2016-03-01-10.15.30.100000000000", Db2Text.timestamp12FromPgTimestamp("2016-03-01 10:15:30.1", 0));
+        assertEquals("2016-03-01-10.15.30.100000000000",
+                Db2Text.timestamp12FromPgTimestamp("2016-03-01 10:15:30.1", 0));
         assertNull(Db2Text.timestamp12FromPgTimestamp(null, 0));
     }
 
