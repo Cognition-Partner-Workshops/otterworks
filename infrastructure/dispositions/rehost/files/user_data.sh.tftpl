@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+exec > >(tee /var/log/${service_name}-bootstrap.log | logger -t ${service_name}-bootstrap) 2>&1
+
+dnf install -y amazon-cloudwatch-agent ${packages}
+useradd -r -s /usr/sbin/nologin ${service_name} || true
+install -d -o ${service_name} -g ${service_name} /opt/${service_name} "$(dirname ${app_log_path})"
+aws s3 cp "s3://${artifact_bucket}/${artifact_name}" "${artifact_path}" --region "${region}"
+echo "${artifact_md5}  ${artifact_path}" | md5sum -c -
+chown ${service_name}:${service_name} "${artifact_path}"
+
+cat >/etc/${service_name}.env <<'OTTERWORKS_ENV'
+ARTIFACT_PATH=${artifact_path}
+${environment_lines}
+OTTERWORKS_ENV
+chmod 640 /etc/${service_name}.env
+chown root:${service_name} /etc/${service_name}.env
+
+set -a
+source /etc/${service_name}.env
+set +a
+${bootstrap_script}
+
+cat >/etc/systemd/system/${service_name}.service <<'OTTERWORKS_UNIT'
+[Unit]
+Description=${service_name}
+After=network.target
+
+[Service]
+Type=simple
+User=${service_name}
+WorkingDirectory=/opt/${service_name}
+EnvironmentFile=/etc/${service_name}.env
+ExecStart=${start_command}
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+OTTERWORKS_UNIT
+
+systemctl daemon-reload
+systemctl enable --now ${service_name}
+
+cat >/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<'OTTERWORKS_CW'
+{
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": ${jsonencode(app_log_path)},
+            "log_group_name": ${jsonencode(log_group_name)},
+            "log_stream_name": "{instance_id}"
+          }
+        ]
+      }
+    }
+  }
+}
+OTTERWORKS_CW
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+  -a fetch-config -m ec2 -s \
+  -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
