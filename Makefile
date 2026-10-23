@@ -2,6 +2,8 @@
 
 SHELL := /bin/bash
 
+-include migration/snowflake/target.mk
+
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
@@ -629,3 +631,6 @@ lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
 
 lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
 	@$(LP_EC2) verify-clean
+
+sfm-%: ## Snowflake migration fixture targets (see migration/snowflake/README.md)
+	$(MAKE) -C migration/snowflake $@

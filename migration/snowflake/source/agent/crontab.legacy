@@ -1,0 +1,4 @@
+15 6 * * 1 /opt/etl/run.sh capacity_forecast_weekly.py >> /var/log/etl/capacity.log 2>&1
+10 1 1 * * /opt/etl/export_overage.sh >> /var/log/etl/overage-export.log 2>&1
+*/10 * * * * /opt/etl/check_stuck_runs.sh >> /var/log/etl/run-check.log 2>&1
+0 5 * * * /opt/etl/run.sh analytics_daily.py >> /var/log/etl/analytics.log 2>&1
