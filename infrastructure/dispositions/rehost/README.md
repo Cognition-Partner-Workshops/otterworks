@@ -40,13 +40,19 @@ The portfolio disposition standard says: **“Rehost needs a reason the code can
 
 ## Apply and cleanup
 
-Copy `example/` into a caller-owned root, provide the artifact path and required values, then initialize with the per-run state key:
+Copy `example/` into a caller-owned root and set `source` in `main.tf` to the module path relative to that new root (for example, `../../dispositions/rehost` for `infrastructure/terraform/<service>-rehost/`). Provide the artifact path and required values, then initialize with the per-run state key:
 
 ```sh
 terraform init -backend-config="key=otterworks/dispositions/rehost/<run_token>/terraform.tfstate"
-terraform plan -var='artifact_path=/absolute/path/to/service.jar'
+terraform plan -out tfplan -var='artifact_path=/absolute/path/to/service.jar'
+terraform show -json tfplan > plan.json
+python ../../dispositions/scripts/check-plan-tags.py plan.json "<run_token>" "<expires>"
 terraform apply -var='artifact_path=/absolute/path/to/service.jar'
 terraform destroy -var='artifact_path=/absolute/path/to/service.jar'
 ```
 
-Use the same key for `terraform destroy`. The module tags resources with `run_token`, `RunToken`, `Expires`, `ManagedBy=terraform`, `disposition=rehost`, `service`, and `disposition_evidence`; caller `extra_tags` are retained unless they conflict with a required tag. CI plans only and never applies.
+Replace the checker arguments with the `run_token` and `expires` values used in the caller root. Use the same key for `terraform destroy`. The module tags resources with `run_token`, `RunToken`, `Expires`, `ManagedBy=terraform`, `disposition=rehost`, `service`, and `disposition_evidence`; caller `extra_tags` are retained unless they conflict with a required tag. CI plans only and never applies. On Linux and macOS, use `python3` instead of `python`.
+
+### Windows (PowerShell 5.1)
+
+The Terraform commands above also work in PowerShell. Set environment variables with `$env:AWS_DEFAULT_REGION = "us-east-1"` and `$env:AWS_ACCESS_KEY_ID`, `$env:AWS_SECRET_ACCESS_KEY`, and `$env:AWS_SESSION_TOKEN` as needed instead of `export`. `cloudworker/assume.sh` is bash-only; run it in Git Bash/WSL or use `aws sts assume-role` and set the `$env:` variables. Use `python`, not `python3` (which opens the Microsoft Store stub). PowerShell 5.1 `>` writes UTF-16, which the checker accepts, but other tools may not; the portable form is `terraform show -json tfplan | Set-Content -Encoding ascii plan.json`. Windows artifact paths work as `-var='artifact_path=C:\path\to\app.jar'`. The module strips CR from `user_data`, so a CRLF checkout is safe.

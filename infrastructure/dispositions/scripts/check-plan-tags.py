@@ -16,8 +16,14 @@ def main():
         raise SystemExit("usage: check-plan-tags.py PLAN.json RUN_TOKEN EXPIRES")
 
     plan_path, expected_token, expected_expires = sys.argv[1:]
-    with open(plan_path, encoding="utf-8") as plan_file:
-        plan = json.load(plan_file)
+    with open(plan_path, "rb") as plan_file:
+        plan_bytes = plan_file.read()
+    encoding = (
+        "utf-16"
+        if plan_bytes.startswith((b"\xff\xfe", b"\xfe\xff"))
+        else "utf-8-sig"
+    )
+    plan = json.loads(plan_bytes.decode(encoding))
 
     root_module = plan.get("planned_values", {}).get("root_module")
     if not isinstance(root_module, dict):

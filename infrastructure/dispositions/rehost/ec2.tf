@@ -7,21 +7,25 @@ resource "aws_instance" "this" {
   iam_instance_profile        = aws_iam_instance_profile.this.name
   vpc_security_group_ids      = [aws_security_group.instance.id]
   user_data_replace_on_change = true
-  user_data = templatefile("${path.module}/files/user_data.sh.tftpl", {
-    region            = data.aws_region.current.name
-    service_name      = var.service_name
-    artifact_bucket   = aws_s3_bucket.artifacts.id
-    artifact_name     = local.artifact_name
-    artifact_md5      = filemd5(var.artifact_path)
-    artifact_path     = "/opt/${var.service_name}/${local.artifact_name}"
-    app_port          = var.app_port
-    app_log_path      = local.app_log_path
-    log_group_name    = aws_cloudwatch_log_group.app.name
-    packages          = join(" ", var.packages)
-    environment_lines = local.environment_lines
-    bootstrap_script  = var.bootstrap_script
-    start_command     = var.start_command
-  })
+  user_data = replace(
+    templatefile("${path.module}/files/user_data.sh.tftpl", {
+      region            = data.aws_region.current.name
+      service_name      = var.service_name
+      artifact_bucket   = aws_s3_bucket.artifacts.id
+      artifact_name     = local.artifact_name
+      artifact_md5      = filemd5(var.artifact_path)
+      artifact_path     = "/opt/${var.service_name}/${local.artifact_name}"
+      app_port          = var.app_port
+      app_log_path      = local.app_log_path
+      log_group_name    = aws_cloudwatch_log_group.app.name
+      packages          = join(" ", var.packages)
+      environment_lines = local.environment_lines
+      bootstrap_script  = var.bootstrap_script
+      start_command     = var.start_command
+    }),
+    "\r\n",
+    "\n",
+  )
 
   metadata_options {
     http_tokens = "required"
