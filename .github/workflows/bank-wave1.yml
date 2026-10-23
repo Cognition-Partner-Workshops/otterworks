@@ -74,10 +74,10 @@ jobs:
       fail-fast: false
       matrix:
         app_dir: ${{ fromJson(needs.detect.outputs.apps) }}
-    uses: Cognition-Partner-Workshops/otterworks/.github/workflows/platform-app-pipeline.yml@devin/1792540800-platform-standards
+    uses: Cognition-Partner-Workshops/otterworks/.github/workflows/platform-app-pipeline.yml@main
     with:
       app_dir: ${{ matrix.app_dir }}
-      standards_ref: devin/1792540800-platform-standards
+      standards_ref: main
       run_token: rpl1020
       eks_deploy: true
     secrets: inherit
