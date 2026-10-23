@@ -30,7 +30,8 @@ psql "host=<address> dbname=postgres user=billing_admin sslmode=verify-full sslr
   -v ON_ERROR_STOP=1 -f bootstrap/create-database.sql
 ```
 
-Schema, procedures, roles and grants are the next step (s4.3).
+Schema, procedures, roles and grants are the next step (s4.3). Cutover, rollback and
+decommissioning of the source: [`RUNBOOK.md`](RUNBOOK.md) (plan only, not executed).
 
 ## CI
 
