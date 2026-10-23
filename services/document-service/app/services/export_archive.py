@@ -26,10 +26,19 @@ class ExportArchive:
     def read_export(self, name: str) -> str:
         """Return the contents of the named export.
 
-        ``name`` may include a subdirectory (``"reports/q3.md"``). Raises
-        ``FileNotFoundError`` when the export does not exist.
+        ``name`` may include a subdirectory (``"reports/q3.md"``). The resolved
+        path (symlinks and ``..`` included) must stay inside the resolved archive
+        root. Raises ``FileNotFoundError`` when the export does not exist or the
+        name resolves outside the archive.
         """
-        path = os.path.join(self.base_dir, name)
+        root = os.path.realpath(self.base_dir)
+        try:
+            path = os.path.realpath(os.path.join(root, name))
+        except ValueError as exc:
+            raise FileNotFoundError(f"Export not found: {name!r}") from exc
+        if os.path.commonpath([root, path]) != root:
+            logger.warning("export_read_outside_archive", name=name)
+            raise FileNotFoundError(f"Export not found: {name!r}")
         logger.debug("export_read", name=name)
         with open(path, encoding="utf-8") as handle:
             return handle.read()
