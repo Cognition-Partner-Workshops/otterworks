@@ -1,0 +1,22 @@
+{
+  "report": {
+    "id": "<id>",
+    "reportName": "Api Upstream Error",
+    "category": "USAGE_ANALYTICS",
+    "reportType": "CSV",
+    "status": "FAILED",
+    "requestedBy": "<run>-api-upstream-error",
+    "dateFrom": "2026-01-15T03:30:00.000+00:00",
+    "dateTo": "2026-01-16T03:30:00.000+00:00",
+    "createdAt": "<timestamp>",
+    "completedAt": "<timestamp>",
+    "fileSizeBytes": null,
+    "rowCount": null,
+    "downloadUrl": null,
+    "errorMessage": "org.springframework.web.client.HttpServerErrorException$InternalServerError: 500 Internal Server Error: \"{\"error\": \"stubbed upstream failure\"}\""
+  },
+  "download": {
+    "status": 404,
+    "body": ""
+  }
+}

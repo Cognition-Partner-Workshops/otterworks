@@ -1,0 +1,18 @@
+[project]
+name = "report-service-characterization"
+version = "0.1.0"
+description = "Black-box characterization suite for services/report-service (HTTP surface and generated files)"
+requires-python = ">=3.11"
+dependencies = [
+    "pytest==8.3.5",
+    "requests==2.32.3",
+    "openpyxl==3.1.5",
+    "pypdf==5.4.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

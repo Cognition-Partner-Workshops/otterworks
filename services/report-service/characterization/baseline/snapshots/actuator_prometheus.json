@@ -1,0 +1,10 @@
+{
+  "status": 200,
+  "content_type": "text/plain;version=0.0.4;charset=utf-8",
+  "selected_families": [
+    "http_server_requests_seconds",
+    "http_server_requests_seconds_max",
+    "jvm_memory_used_bytes",
+    "process_uptime_seconds"
+  ]
+}

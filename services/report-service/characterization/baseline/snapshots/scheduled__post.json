@@ -1,0 +1,10 @@
+{
+  "status": 405,
+  "content_type": "application/json",
+  "body": {
+    "error": "Method Not Allowed",
+    "path": "/api/v1/reports/scheduled",
+    "status": 405,
+    "timestamp": "<timestamp>"
+  }
+}

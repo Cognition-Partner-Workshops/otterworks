@@ -1,0 +1,18 @@
+{
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "doc_id": "CHAR-DOC-SHORT",
+    "store": "postgresql",
+    "algorithm": "SHA-256 over '|'-joined manifest hash_columns (CONTRACTS §7)",
+    "document_hash": "71E9783A58AE455905547807E9CB9512D3E4BFF5B5665ADAD97BB794B48A94B0",
+    "versions": [
+      {
+        "arch_key": "CHAR0000000003",
+        "version_no": 1,
+        "row_hash": "EDCBEA0A3A8F2A10A9665C176DFDC57450F52FA2CE7B6E1CCD39192A88D038C0",
+        "events": []
+      }
+    ]
+  }
+}

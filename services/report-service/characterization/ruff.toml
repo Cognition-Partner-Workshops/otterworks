@@ -1,0 +1,10 @@
+line-length = 120
+
+[lint]
+select = ["E", "F", "W", "I"]
+
+[lint.isort]
+known-first-party = ["conftest"]
+
+[lint.per-file-ignores]
+"fixtures/gen_fixtures.py" = ["E501"]

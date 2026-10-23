@@ -1,0 +1,7 @@
+{
+  "headers": {
+    "Content-Type": "text/csv;charset=UTF-8",
+    "Content-Disposition": "attachment; filename=\"reconciliation-char-run-001.csv\""
+  },
+  "body": "section,table,extracted,loaded,validated,purged,failed\r\nsummary,ARCHIVE.RETNPLCY,2,2,2,0,0\r\nsummary,ARCHIVE.DOCARCH,3,3,3,3,0\r\nsummary,ARCHIVE.FILEAUD,3,3,3,3,0\r\n\r\nsection,table,source_key,rule,stage,field,sqlstate,error\r\n"
+}

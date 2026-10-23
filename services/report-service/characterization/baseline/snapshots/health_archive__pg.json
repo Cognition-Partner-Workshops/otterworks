@@ -1,0 +1,8 @@
+{
+  "status": 200,
+  "body": {
+    "store": "postgresql",
+    "namespace": "char-after",
+    "status": "healthy"
+  }
+}

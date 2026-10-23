@@ -1,0 +1,18 @@
+{
+  "delete": {
+    "status": 204,
+    "body": ""
+  },
+  "get_after": {
+    "status": 404,
+    "body": ""
+  },
+  "download_after": {
+    "status": 404,
+    "body": ""
+  },
+  "delete_again": {
+    "status": 404,
+    "body": ""
+  }
+}

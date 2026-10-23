@@ -1,0 +1,10 @@
+{
+  "status": 400,
+  "content_type": "application/json",
+  "body": {
+    "error": "Bad Request",
+    "path": "/api/archive/documents/3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f",
+    "status": 400,
+    "timestamp": "<timestamp>"
+  }
+}

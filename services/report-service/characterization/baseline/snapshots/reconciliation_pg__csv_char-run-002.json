@@ -1,0 +1,7 @@
+{
+  "headers": {
+    "Content-Type": "text/csv;charset=UTF-8",
+    "Content-Disposition": "attachment; filename=\"reconciliation-char-run-002.csv\""
+  },
+  "body": "section,table,extracted,loaded,validated,purged,failed\r\nsummary,ARCHIVE.RETNPLCY,2,2,2,0,0\r\nsummary,ARCHIVE.DOCARCH,10,8,7,0,3\r\nsummary,ARCHIVE.FILEAUD,5,5,5,0,0\r\n\r\nsection,table,source_key,rule,stage,field,sqlstate,error\r\nfailure,ARCHIVE.DOCARCH,CHAR0000000099,HASH_MISMATCH,VALIDATE,OWNER_NAME,,\"source/target differ: 'Zoë' vs 'Zo?', check CCSID\"\r\nfailure,ARCHIVE.DOCARCH,MIG03-0000000007,INVALID_PACKED_DECIMAL,LOAD,STORAGE_CHARGE,22P02,\"bad nibble 0xF in COMP-3, value <x>\"\r\nfailure,ARCHIVE.DOCARCH,MIG06-0000000001,DUPLICATE_SOURCE_KEY,LOAD,,23505,\"duplicate key value violates unique constraint \"\"pk_stg_docarch\"\"\"\r\n"
+}

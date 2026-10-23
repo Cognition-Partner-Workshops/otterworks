@@ -1,0 +1,130 @@
+{
+  "report": {
+    "id": "<id>",
+    "reportName": "Excel Health",
+    "category": "SYSTEM_HEALTH",
+    "reportType": "EXCEL",
+    "status": "COMPLETED",
+    "requestedBy": "<run>-excel-health",
+    "dateFrom": "2026-01-15T03:30:00.000+00:00",
+    "dateTo": "2026-01-16T03:30:00.000+00:00",
+    "createdAt": "<timestamp>",
+    "completedAt": "<timestamp>",
+    "fileSizeBytes": "<bytes>",
+    "rowCount": 3,
+    "downloadUrl": "/api/v1/reports/<id>/download",
+    "errorMessage": null
+  },
+  "headers": {
+    "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "Content-Disposition": "attachment; filename=\"excel_health_<yyyyMMdd_HHmmss>.xlsx\""
+  },
+  "sheets": [
+    "Summary",
+    "Data"
+  ],
+  "summary": [
+    [
+      "OtterWorks Report",
+      null
+    ],
+    [
+      null,
+      null
+    ],
+    [
+      "Report Name:",
+      "Excel Health"
+    ],
+    [
+      "Category:",
+      "SYSTEM_HEALTH"
+    ],
+    [
+      "Period:",
+      "Jan 15, 2026 03:30 to Jan 16, 2026 03:30"
+    ],
+    [
+      "Generated:",
+      "<now display UTC>"
+    ],
+    [
+      "Total Rows:",
+      3.0
+    ],
+    [
+      "Requested By:",
+      "<run>-excel-health"
+    ]
+  ],
+  "summary_merged": [
+    "A1:B1"
+  ],
+  "summary_title_font": {
+    "bold": true,
+    "size": 16.0
+  },
+  "data": [
+    [
+      "Event id",
+      "Event type",
+      "User id",
+      "Timestamp",
+      "Duration ms",
+      "Status",
+      "Note",
+      "Window from",
+      "Window to",
+      "Metric"
+    ],
+    [
+      "evt-0001",
+      "doc_edit",
+      "user-001",
+      "2026-01-15T03:45:00Z",
+      "250",
+      "success",
+      "plain",
+      "2026-01-15T03:30:00Z",
+      "2026-01-16T03:30:00Z",
+      ""
+    ],
+    [
+      "evt-0002",
+      "file_upload",
+      "user-002",
+      "2026-01-15T04:00:00Z",
+      "1234.5",
+      "",
+      "comma, \"quote\" and café",
+      "2026-01-15T03:30:00Z",
+      "2026-01-16T03:30:00Z",
+      ""
+    ],
+    [
+      "evt-0003",
+      "search_query",
+      "user-003",
+      "2026-01-16T23:59:59Z",
+      "0",
+      "error",
+      "line\nbreak",
+      "2026-01-15T03:30:00Z",
+      "2026-01-16T03:30:00Z",
+      ""
+    ]
+  ],
+  "data_autofilter": "A1:J4",
+  "data_header_bold": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ]
+}

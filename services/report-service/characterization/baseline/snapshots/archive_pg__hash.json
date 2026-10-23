@@ -1,0 +1,38 @@
+{
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "doc_id": "3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f",
+    "store": "postgresql",
+    "algorithm": "SHA-256 over '|'-joined manifest hash_columns (CONTRACTS §7)",
+    "document_hash": "4A5234FC5B8A23190A2DAC9F7FA664C651855C34BBF7104BA8F1B0468D4088BA",
+    "versions": [
+      {
+        "arch_key": "CHAR0000000001",
+        "version_no": 1,
+        "row_hash": "6DE9852334749728B9641C251ED0A8B57CA94EB8C6F0EA7D58D292DC932D73D1",
+        "events": [
+          {
+            "audit_key": "AUD00000000000000001",
+            "row_hash": "FDF8CC630BBB69FA8398EFBDF9CB79F16E648CC5A83411D176CAC17718A2F222"
+          },
+          {
+            "audit_key": "AUD00000000000000002",
+            "row_hash": "4B8DE803A96832F928356406540915A15E50154425B285DA342E02E2FC258FE7"
+          }
+        ]
+      },
+      {
+        "arch_key": "CHAR0000000002",
+        "version_no": 2,
+        "row_hash": "E6D9AE581828B274FF27FF3292E1492CB35C2BA2ADD6B58AC9336EF1CA410CB5",
+        "events": [
+          {
+            "audit_key": "AUD00000000000000003",
+            "row_hash": "93632C6BFA57DF9B061AC6891610279913CFDEBE9C008BE561427A204A887066"
+          }
+        ]
+      }
+    ]
+  }
+}

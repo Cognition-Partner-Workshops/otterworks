@@ -1,0 +1,24 @@
+{
+  "status": 200,
+  "content_type": "application/json",
+  "swagger": "2.0",
+  "paths": {
+    "/api/v1/reports": [
+      "get",
+      "post"
+    ],
+    "/api/v1/reports/{id}": [
+      "delete",
+      "get"
+    ],
+    "/api/v1/reports/{id}/download": [
+      "get"
+    ],
+    "/health": [
+      "get"
+    ],
+    "/health/archive": [
+      "get"
+    ]
+  }
+}

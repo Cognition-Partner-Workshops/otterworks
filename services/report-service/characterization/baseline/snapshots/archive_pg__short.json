@@ -1,0 +1,35 @@
+{
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "doc_id": "CHAR-DOC-SHORT",
+    "store": "postgresql",
+    "versions": [
+      {
+        "arch_key": "CHAR0000000003",
+        "version_no": 1,
+        "retention_class": "R07",
+        "last_access_ts": "2020-02-29-23.00.00.000001000000",
+        "storage_charge": "0.00000000",
+        "unit_rate": "0.00000001",
+        "owner_name": "short id owner",
+        "disposition_dt": "2030-01-01",
+        "legal_hold": false,
+        "checksum_alg": "MD5",
+        "content_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "byte_size": 0,
+        "source_sys": "DMS",
+        "policy": {
+          "policy_code": "R07",
+          "policy_desc": "Seven-year retention",
+          "retention_years": 7,
+          "successor_code": "R10",
+          "active_flag": "Y",
+          "disposition_action": "DEST",
+          "effective_ts": "2015-01-01-00.00.00.000000000000"
+        },
+        "events": []
+      }
+    ]
+  }
+}

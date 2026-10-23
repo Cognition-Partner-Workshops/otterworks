@@ -1,0 +1,9 @@
+{
+  "Content-Type": "application/json",
+  "X-Frame-Options": "DENY",
+  "X-Content-Type-Options": "nosniff",
+  "X-XSS-Protection": "1; mode=block",
+  "Cache-Control": "no-cache, no-store, max-age=0, must-revalidate",
+  "Pragma": "no-cache",
+  "Expires": "0"
+}

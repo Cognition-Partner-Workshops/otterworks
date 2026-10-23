@@ -1,0 +1,18 @@
+{
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "doc_id": "CHAR-DOC-SHORT",
+    "store": "db2",
+    "algorithm": "SHA-256 over '|'-joined manifest hash_columns (CONTRACTS §7)",
+    "document_hash": "EA6D32F51E68682A5AD84ACA24881C5DAFA4ED6867D234D818E7582B78697BE8",
+    "versions": [
+      {
+        "arch_key": "CHAR0000000003",
+        "version_no": 1,
+        "row_hash": "3C7D65C9C77F9A3C32CFFF12847C27D66DEA7197EAFC943752FAEB86D63CF31A",
+        "events": []
+      }
+    ]
+  }
+}

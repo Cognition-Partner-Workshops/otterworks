@@ -1,0 +1,31 @@
+{
+  "COMPLETED": {
+    "status": 200
+  },
+  "FAILED": {
+    "status": 500,
+    "content_type": "application/json",
+    "body": {
+      "error": "Internal Server Error",
+      "path": "/api/v1/reports",
+      "status": 500,
+      "timestamp": "<timestamp>"
+    }
+  },
+  "PENDING": {
+    "status": 200
+  },
+  "GENERATING": {
+    "status": 200
+  },
+  "userId_of_failed_report": {
+    "status": 500,
+    "content_type": "application/json",
+    "body": {
+      "error": "Internal Server Error",
+      "path": "/api/v1/reports",
+      "status": 500,
+      "timestamp": "<timestamp>"
+    }
+  }
+}

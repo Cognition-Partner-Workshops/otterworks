@@ -1,0 +1,56 @@
+{
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "run_id": "char-run-001",
+    "namespace": "char-after",
+    "generated_at": "<now ISO UTC>",
+    "status": "CLOSED",
+    "started_at": "2026-01-15T03:30:00Z",
+    "finished_at": "2026-01-15T03:42:10Z",
+    "tables": [
+      {
+        "table": "ARCHIVE.RETNPLCY",
+        "extracted": 2,
+        "loaded": 2,
+        "validated": 2,
+        "purged": 0,
+        "failed": 0,
+        "rejected": 0,
+        "validate_failed": 0,
+        "purge_intended": 0,
+        "closes": true
+      },
+      {
+        "table": "ARCHIVE.DOCARCH",
+        "extracted": 3,
+        "loaded": 3,
+        "validated": 3,
+        "purged": 3,
+        "failed": 0,
+        "rejected": 0,
+        "validate_failed": 0,
+        "purge_intended": 3,
+        "purge_dry_run": false,
+        "closes": true
+      },
+      {
+        "table": "ARCHIVE.FILEAUD",
+        "extracted": 3,
+        "loaded": 3,
+        "validated": 3,
+        "purged": 3,
+        "failed": 0,
+        "rejected": 0,
+        "validate_failed": 0,
+        "purge_intended": 3,
+        "purge_dry_run": false,
+        "closes": true
+      }
+    ],
+    "failures": [],
+    "class_totals": [],
+    "sessions": [],
+    "closes": true
+  }
+}

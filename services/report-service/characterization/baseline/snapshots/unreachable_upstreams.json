@@ -1,0 +1,25 @@
+{
+  "USAGE_ANALYTICS": {
+    "status": "FAILED",
+    "rowCount": null,
+    "errorMessage": {
+      "exception": "org.springframework.web.client.ResourceAccessException",
+      "url": "http://unreachable.invalid:9/api/v1/analytics/events",
+      "nested": true
+    }
+  },
+  "AUDIT_LOG": {
+    "status": "FAILED",
+    "rowCount": null,
+    "errorMessage": {
+      "exception": "org.springframework.web.client.ResourceAccessException",
+      "url": "http://unreachable.invalid:9/api/v1/audit/events",
+      "nested": true
+    }
+  },
+  "USER_ACTIVITY": {
+    "status": "COMPLETED",
+    "rowCount": 25,
+    "errorMessage": null
+  }
+}

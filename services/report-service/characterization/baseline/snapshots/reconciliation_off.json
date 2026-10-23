@@ -1,0 +1,8 @@
+{
+  "status": 404,
+  "content_type": "application/json",
+  "body": {
+    "error": "no migration in this namespace",
+    "hint": "archive feature is off; set ARCHIVE_STORE=db2, postgresql or azuresql to enable it"
+  }
+}

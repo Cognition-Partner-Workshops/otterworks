@@ -1,0 +1,38 @@
+{
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "doc_id": "3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f",
+    "store": "db2",
+    "algorithm": "SHA-256 over '|'-joined manifest hash_columns (CONTRACTS §7)",
+    "document_hash": "4DA42B3A6B2AB32E79F2649BFA982841972CB32441A488D793FECAA864A0E73E",
+    "versions": [
+      {
+        "arch_key": "CHAR0000000001",
+        "version_no": 1,
+        "row_hash": "3B771705D676384CC119431E42B0679F017693B7A7848260E50722BC9BF480D0",
+        "events": [
+          {
+            "audit_key": "AUD00000000000000001",
+            "row_hash": "FDF8CC630BBB69FA8398EFBDF9CB79F16E648CC5A83411D176CAC17718A2F222"
+          },
+          {
+            "audit_key": "AUD00000000000000002",
+            "row_hash": "4B8DE803A96832F928356406540915A15E50154425B285DA342E02E2FC258FE7"
+          }
+        ]
+      },
+      {
+        "arch_key": "CHAR0000000002",
+        "version_no": 2,
+        "row_hash": "42029C326D0BD4FB78772DF667B20382C3CE269B4B2F3DC3E5AF496373DA391D",
+        "events": [
+          {
+            "audit_key": "AUD00000000000000003",
+            "row_hash": "93632C6BFA57DF9B061AC6891610279913CFDEBE9C008BE561427A204A887066"
+          }
+        ]
+      }
+    ]
+  }
+}

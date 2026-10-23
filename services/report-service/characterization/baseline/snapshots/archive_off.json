@@ -1,0 +1,8 @@
+{
+  "status": 404,
+  "content_type": "application/json",
+  "body": {
+    "error": "archive feature is not enabled",
+    "hint": "archive feature is off; set ARCHIVE_STORE=db2, postgresql or azuresql to enable it"
+  }
+}

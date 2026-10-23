@@ -1,0 +1,127 @@
+{
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "run_id": "char-run-002",
+    "namespace": "char-after",
+    "generated_at": "<now ISO UTC>",
+    "status": "FAILED",
+    "started_at": "2026-02-01T23:59:59Z",
+    "finished_at": null,
+    "tables": [
+      {
+        "table": "ARCHIVE.RETNPLCY",
+        "extracted": 2,
+        "loaded": 2,
+        "validated": 2,
+        "purged": 0,
+        "failed": 0,
+        "rejected": 0,
+        "validate_failed": 0,
+        "purge_intended": 0,
+        "closes": true
+      },
+      {
+        "table": "ARCHIVE.DOCARCH",
+        "extracted": 10,
+        "loaded": 8,
+        "validated": 7,
+        "purged": 0,
+        "failed": 3,
+        "rejected": 2,
+        "validate_failed": 1,
+        "purge_intended": 7,
+        "purge_dry_run": true,
+        "closes": true
+      },
+      {
+        "table": "ARCHIVE.FILEAUD",
+        "extracted": 5,
+        "loaded": 5,
+        "validated": 5,
+        "purged": 0,
+        "failed": 0,
+        "rejected": 0,
+        "validate_failed": 0,
+        "purge_intended": 4,
+        "purge_dry_run": true,
+        "closes": false
+      }
+    ],
+    "failures": [
+      {
+        "table": "ARCHIVE.DOCARCH",
+        "source_key": "CHAR0000000099",
+        "rule": "HASH_MISMATCH",
+        "stage": "VALIDATE",
+        "field": "OWNER_NAME",
+        "sqlstate": null,
+        "native_error": null,
+        "error": "source/target differ: 'Zoë' vs 'Zo?', check CCSID",
+        "issue": null
+      },
+      {
+        "table": "ARCHIVE.DOCARCH",
+        "source_key": "MIG03-0000000007",
+        "rule": "INVALID_PACKED_DECIMAL",
+        "stage": "LOAD",
+        "field": "STORAGE_CHARGE",
+        "sqlstate": "22P02",
+        "native_error": 7,
+        "error": "bad nibble 0xF in COMP-3, value <x>",
+        "issue": "MIG-03"
+      },
+      {
+        "table": "ARCHIVE.DOCARCH",
+        "source_key": "MIG06-0000000001",
+        "rule": "DUPLICATE_SOURCE_KEY",
+        "stage": "LOAD",
+        "field": null,
+        "sqlstate": "23505",
+        "native_error": null,
+        "error": "duplicate key value violates unique constraint \"pk_stg_docarch\"",
+        "issue": "MIG-06"
+      }
+    ],
+    "class_totals": [
+      {
+        "table": "ARCHIVE.DOCARCH",
+        "class": "R07",
+        "source_count": 2,
+        "target_count": 2,
+        "source_sum": "12.34567890",
+        "target_sum": "12.34567890",
+        "matches": true
+      },
+      {
+        "table": "ARCHIVE.DOCARCH",
+        "class": "R10",
+        "source_count": 1,
+        "target_count": 1,
+        "source_sum": "1234567.00000001",
+        "target_sum": "1234567.00000000",
+        "matches": false
+      },
+      {
+        "table": "ARCHIVE.DOCARCH",
+        "class": "R99",
+        "source_count": 1,
+        "target_count": 0,
+        "source_sum": null,
+        "target_sum": null,
+        "matches": false
+      }
+    ],
+    "sessions": [
+      {
+        "label": "Extract session",
+        "url": "https://example.invalid/sessions/1"
+      },
+      {
+        "label": "Reconcile <second> & \"final\"",
+        "url": "https://example.invalid/sessions/2?a=1&b=2"
+      }
+    ],
+    "closes": false
+  }
+}

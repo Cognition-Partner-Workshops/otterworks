@@ -1,0 +1,10 @@
+{
+  "status": 415,
+  "content_type": "application/json",
+  "body": {
+    "error": "Unsupported Media Type",
+    "path": "/api/v1/reports",
+    "status": 415,
+    "timestamp": "<timestamp>"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "status": 200,
+  "body": {
+    "store": "db2",
+    "namespace": "char-before",
+    "status": "healthy"
+  }
+}

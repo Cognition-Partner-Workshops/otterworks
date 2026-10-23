@@ -1,0 +1,92 @@
+{
+  "status": 200,
+  "content_type": "application/json",
+  "body": {
+    "doc_id": "3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f",
+    "store": "postgresql",
+    "versions": [
+      {
+        "arch_key": "CHAR0000000001",
+        "version_no": 1,
+        "retention_class": "R07",
+        "last_access_ts": "2019-03-14-09.26.53.123456789012",
+        "storage_charge": "12.34567890",
+        "unit_rate": "0.00012345",
+        "owner_name": "Zoë Quinn",
+        "disposition_dt": "2031-06-30",
+        "legal_hold": false,
+        "checksum_alg": "SHA256",
+        "content_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "byte_size": 1048576,
+        "source_sys": "DMS",
+        "policy": {
+          "policy_code": "R07",
+          "policy_desc": "Seven-year retention",
+          "retention_years": 7,
+          "successor_code": "R10",
+          "active_flag": "Y",
+          "disposition_action": "DEST",
+          "effective_ts": "2015-01-01-00.00.00.000000000000"
+        },
+        "events": [
+          {
+            "audit_key": "AUD00000000000000001",
+            "event_type": "VIEW",
+            "event_ts": "2019-03-14-09.26.53.123456789012",
+            "actor_id": "actor-001",
+            "retention_class": "R07",
+            "disposition_code": "NA",
+            "client_ip": "10.0.0.1",
+            "detail_text": "first view"
+          },
+          {
+            "audit_key": "AUD00000000000000002",
+            "event_type": "DNLD",
+            "event_ts": "2019-03-15-18.00.00.000000000001",
+            "actor_id": "actor-002",
+            "retention_class": "R07",
+            "disposition_code": "NA",
+            "client_ip": "192.168.100.200",
+            "detail_text": "download, \"quoted\" <b>"
+          }
+        ]
+      },
+      {
+        "arch_key": "CHAR0000000002",
+        "version_no": 2,
+        "retention_class": "R10",
+        "last_access_ts": "2021-11-07-01.59.59.999999000001",
+        "storage_charge": "1234567.00000001",
+        "unit_rate": "0.50000000",
+        "owner_name": "O'Brien, Pat",
+        "disposition_dt": "2034-12-31",
+        "legal_hold": true,
+        "checksum_alg": "SHA256",
+        "content_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "byte_size": 9876543210,
+        "source_sys": "ECM",
+        "policy": {
+          "policy_code": "R10",
+          "policy_desc": "Ten-year retention, legal & tax",
+          "retention_years": 10,
+          "successor_code": "R10",
+          "active_flag": "N",
+          "disposition_action": "REVW",
+          "effective_ts": "2016-07-01-12.30.00.500000000001"
+        },
+        "events": [
+          {
+            "audit_key": "AUD00000000000000003",
+            "event_type": "HOLD",
+            "event_ts": "2021-11-07-02.00.00.000000000000",
+            "actor_id": "legal-team",
+            "retention_class": "R10",
+            "disposition_code": "LH",
+            "client_ip": "172.16.0.9",
+            "detail_text": "legal hold placed"
+          }
+        ]
+      }
+    ]
+  }
+}
