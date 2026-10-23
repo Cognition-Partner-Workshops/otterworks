@@ -209,7 +209,7 @@ editing an applied migration.
 |---|---|
 | 1. Superuser runtime | `bootstrap/roles.sql` creates separate non-superuser owner and app roles. |
 | 2. Missing role and grant DDL | The bootstrap creates roles; migration `0006_app_grants.sql` applies runtime grants. |
-| 3. PostgreSQL version | No PostgreSQL 12+ features are used; rerun parity on PostgreSQL 15.x before cut-over. |
+| 3. PostgreSQL version | The target is a dedicated RDS for PostgreSQL 16 instance (`infrastructure/terraform/legacy-billing-db/`), matching local `postgres:16`; the shared 15.7 instance is not used. |
 | 4. Session time zone | Role settings pin UTC; `migrate.sh` also pins `search_path` and `TimeZone` with `PGOPTIONS`. |
 | 5. TLS | Set `PGSSLMODE=verify-full` and `PGSSLROOTCERT` in the libpq/psycopg environment. |
 | 6. Reset path | The runner has no reset or drop path; harness reset remains for disposable local databases only. |
