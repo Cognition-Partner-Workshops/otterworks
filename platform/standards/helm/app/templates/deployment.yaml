@@ -1,0 +1,23 @@
+{{- if eq .Values.workload "web" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "platform-app.name" . }}
+  labels:
+    {{- include "platform-app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "platform-app.selector" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "platform-app.labels" . | nindent 8 }}
+    spec:
+      {{- include "platform-app.podSecurity" . | nindent 6 }}
+      containers:
+        {{- include "platform-app.container" . | nindent 8 }}
+      volumes:
+        {{- include "platform-app.volumes" . | nindent 8 }}
+{{- end }}

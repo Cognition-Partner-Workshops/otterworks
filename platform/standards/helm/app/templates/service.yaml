@@ -1,0 +1,16 @@
+{{- if eq .Values.workload "web" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "platform-app.name" . }}
+  labels:
+    {{- include "platform-app.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "platform-app.selector" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: http
+{{- end }}
