@@ -212,13 +212,14 @@ jobs:
             try: v.update({k:x for k,x in (yaml.safe_load(open(d+f)) or {}).items() if k in v})
             except FileNotFoundError: pass
           print(v['workload'],v['app'])")
-          [[ "$workload" =~ ^(web|cron)$ ]] || { echo "unknown workload '$workload'"; exit 1; }
+          [[ "$workload" =~ ^(web|cronjob)$ ]] || { echo "unknown workload '$workload'"; exit 1; }
           [[ "$chart_app" =~ ^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$ ]] || { echo "chart app '$chart_app' is not a DNS label"; exit 1; }
           { echo "tag=$tag"; echo "workload=$workload"; echo "chart_app=$chart_app"; } >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: eks-${{ needs.verify.outputs.app }}
           path: .eks/
+          include-hidden-files: true
           retention-days: 1
 
   eks-deploy:
@@ -279,8 +280,29 @@ jobs:
             extra=(--set ingress.enabled=true --set ingress.host="$host")
             echo "HOST=$host" >> "$GITHUB_ENV"
           fi
-          helm upgrade --install "$APP" .standards/platform/standards/helm/app -n "$NAMESPACE" --create-namespace "${values[@]}" \
-            --set image.repository="$IMAGE" --set image.tag="$TAG" "${extra[@]}" --wait --timeout 5m
+          chart=(.standards/platform/standards/helm/app -n "$NAMESPACE" "${values[@]}" \
+            --set image.repository="$IMAGE" --set image.tag="$TAG" "${extra[@]}")
+          # The values come from the pull request. Render them first and refuse
+          # anything the chart would not emit on its own before helm touches the cluster.
+          helm template "$APP" "${chart[@]}" > .eks/rendered.yaml
+          python3 - .eks/rendered.yaml <<'PY'
+          import os, sys, yaml
+          allowed = {"Deployment", "CronJob", "Service", "Ingress", "ConfigMap", "NetworkPolicy", "ServiceMonitor"}
+          ns, bad = os.environ["NAMESPACE"], []
+          for d in yaml.safe_load_all(open(sys.argv[1])):
+              if not d:
+                  continue
+              kind, meta = d.get("kind"), d.get("metadata") or {}
+              if kind not in allowed:
+                  bad.append(f"kind {kind}")
+              if meta.get("namespace") not in (None, ns):
+                  bad.append(f"{kind} {meta.get('name')} targets namespace {meta.get('namespace')}")
+              if kind == "Service" and (d.get("spec") or {}).get("type", "ClusterIP") != "ClusterIP":
+                  bad.append(f"Service {meta.get('name')} is not ClusterIP")
+          if bad:
+              sys.exit("rendered chart rejected: " + "; ".join(bad))
+          PY
+          helm upgrade --install "$APP" "${chart[@]}" --create-namespace --wait --timeout 5m
       - name: Smoke test
         run: |
           if [ "$WORKLOAD" = web ]; then
