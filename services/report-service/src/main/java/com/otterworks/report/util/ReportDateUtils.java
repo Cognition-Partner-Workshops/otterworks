@@ -1,40 +1,27 @@
 package com.otterworks.report.util;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.TimeZone;
 
 /**
- * Date utility class using legacy java.util.Date and Commons Lang 2.
- *
- * LEGACY PATTERNS (multiple upgrade targets):
- * 1. java.util.Date everywhere → java.time.Instant / LocalDateTime / ZonedDateTime
- * 2. SimpleDateFormat (not thread-safe) → DateTimeFormatter (thread-safe)
- * 3. Commons Lang 2 DateUtils/DateFormatUtils → java.time API (no external dep needed)
- * 4. Calendar manipulation → java.time.temporal.ChronoUnit / Period
- * 5. Manual timezone handling → ZoneId / ZoneOffset
- *
- * This class is a prime candidate for complete rewrite during Java 8→17 migration.
+ * Date formatting and range helpers with UTC output and legacy-compatible parsing.
  */
 public final class ReportDateUtils {
 
-    // LEGACY: SimpleDateFormat is NOT thread-safe — shared instance is a bug
-    // in multithreaded environments. java.time.DateTimeFormatter is immutable and thread-safe.
-    private static final SimpleDateFormat ISO_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    private static final SimpleDateFormat DISPLAY_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm");
-    private static final SimpleDateFormat FILE_NAME_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
-
-    static {
-        ISO_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-        DISPLAY_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-        FILE_NAME_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-    }
+    private static final DateTimeFormatter ISO_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter DISPLAY_FORMAT =
+            DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm").withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter FILE_NAME_FORMAT =
+            DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").withZone(ZoneOffset.UTC);
 
     private ReportDateUtils() {
         // Utility class
@@ -42,14 +29,9 @@ public final class ReportDateUtils {
 
     /**
      * Format a Date to ISO 8601 string.
-     * LEGACY: Uses SimpleDateFormat (not thread-safe).
      */
     public static String toIsoString(Date date) {
-        if (date == null) {
-            return null;
-        }
-        // LEGACY: Commons Lang 2 DateFormatUtils
-        return DateFormatUtils.formatUTC(date, "yyyy-MM-dd'T'HH:mm:ss'Z'");
+        return date == null ? null : ISO_FORMAT.format(date.toInstant());
     }
 
     /**
@@ -59,9 +41,7 @@ public final class ReportDateUtils {
         if (date == null) {
             return "N/A";
         }
-        synchronized (DISPLAY_FORMAT) {
-            return DISPLAY_FORMAT.format(date);
-        }
+        return DISPLAY_FORMAT.format(date.toInstant());
     }
 
     /**
@@ -71,65 +51,55 @@ public final class ReportDateUtils {
         if (date == null) {
             date = new Date();
         }
-        synchronized (FILE_NAME_FORMAT) {
-            return FILE_NAME_FORMAT.format(date);
-        }
+        return FILE_NAME_FORMAT.format(date.toInstant());
     }
 
     /**
      * Parse an ISO 8601 date string.
-     * LEGACY: Uses SimpleDateFormat parsing (brittle, not thread-safe).
      */
     public static Date parseIsoDate(String dateString) {
         if (StringUtils.isBlank(dateString)) {
             return null;
         }
-        try {
-            // LEGACY: Commons Lang 2 DateUtils.parseDate
-            return DateUtils.parseDate(dateString, new String[]{
-                    "yyyy-MM-dd'T'HH:mm:ss'Z'",
-                    "yyyy-MM-dd'T'HH:mm:ssZ",
-                    "yyyy-MM-dd HH:mm:ss",
-                    "yyyy-MM-dd"
-            });
-        } catch (ParseException e) {
-            throw new IllegalArgumentException("Cannot parse date: " + dateString, e);
+
+        // Keep the legacy default-zone, lenient parsing semantics.
+        String[] patterns = {
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                "yyyy-MM-dd'T'HH:mm:ssZ",
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd"
+        };
+        for (String pattern : patterns) {
+            SimpleDateFormat format = new SimpleDateFormat(pattern);
+            format.setLenient(true);
+            ParsePosition position = new ParsePosition(0);
+            Date parsed = format.parse(dateString, position);
+            if (parsed != null && position.getIndex() == dateString.length()) {
+                return parsed;
+            }
         }
+        throw new IllegalArgumentException("Cannot parse date: " + dateString);
     }
 
     /**
      * Get the start of today (midnight UTC).
-     * LEGACY: Calendar manipulation instead of LocalDate.atStartOfDay().
      */
     public static Date startOfToday() {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+        return Date.from(LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC).toInstant());
     }
 
     /**
-     * Get the start of this month.
-     * LEGACY: Calendar manipulation instead of YearMonth.
+     * Get the start of this month (midnight UTC).
      */
     public static Date startOfMonth() {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
+        return Date.from(YearMonth.now(ZoneOffset.UTC).atDay(1).atStartOfDay(ZoneOffset.UTC).toInstant());
     }
 
     /**
-     * Subtract days from a date.
-     * LEGACY: Commons Lang 2 DateUtils.addDays with negative value.
+     * Subtract calendar days in the JVM default time zone.
      */
     public static Date daysAgo(int days) {
-        return DateUtils.addDays(new Date(), -days);
+        return Date.from(ZonedDateTime.now().minusDays(days).toInstant());
     }
 
     /**
