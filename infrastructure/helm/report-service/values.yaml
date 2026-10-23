@@ -66,11 +66,11 @@ env:
   AUDIT_SERVICE_URL: http://audit-service:8090
   AUTH_SERVICE_URL: http://auth-service:8081
   REPORT_OUTPUT_DIR: /tmp/reports
+  TZ: America/Chicago
 
 # Non-sensitive service configuration rendered into {{ .Release.Name }}-config
 # and injected via envFrom. Populate at deploy time (e.g. from Terraform outputs).
-config:
-  TZ: America/Chicago
+config: {}
 
 # Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
 # stringData) and injected via envFrom. Populate at deploy time; never commit values.
