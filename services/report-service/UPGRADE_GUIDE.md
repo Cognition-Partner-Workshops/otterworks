@@ -439,6 +439,26 @@ The API is compatible -- `StringUtils.isBlank`, `StringUtils.capitalize`,
 `DateFormatUtils.formatUTC`, and `DateUtils.parseDate` / `DateUtils.addDays` all
 exist in commons-lang3 with the same signatures.
 
+### Moving `ReportDateUtils` to `java.time`
+
+Once Commons Lang 3 is in, replace the shared `SimpleDateFormat` instances with
+immutable `DateTimeFormatter` constants:
+
+```java
+private static final DateTimeFormatter ISO_FORMAT =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
+private static final DateTimeFormatter DISPLAY_FORMAT =
+        DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm", Locale.US).withZone(ZoneId.systemDefault());
+private static final DateTimeFormatter FILE_NAME_FORMAT =
+        DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").withZone(ZoneOffset.UTC);
+
+public static String toDisplayString(Date date) {
+    return date == null ? "N/A" : DISPLAY_FORMAT.format(date.toInstant());
+}
+```
+
+The formatters are thread-safe, so the `synchronized` blocks go away.
+
 ### How to verify
 
 ```bash
