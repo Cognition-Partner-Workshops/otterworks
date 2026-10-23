@@ -247,17 +247,20 @@ class MeiliSearchService:
             query=search_term or "*",
         )
 
-    def suggest(self, prefix: str, size: int = 10) -> list[str]:
+    def suggest(self, prefix: str, size: int = 10, owner_id: str | None = None) -> list[str]:
         """Autocomplete suggestions using MeiliSearch prefix matching."""
         suggestions: list[str] = []
         seen: set[str] = set()
+        params: dict[str, Any] = {
+            "limit": size,
+            "attributesToRetrieve": ["title", "name"],
+        }
+        if owner_id:
+            params["filter"] = f'owner_id = "{self._escape(owner_id)}"'
 
         for index_name in [self.documents_index_name, self.files_index_name]:
             index = self.client.index(index_name)
-            result = index.search(prefix, {
-                "limit": size,
-                "attributesToRetrieve": ["title", "name"],
-            })
+            result = index.search(prefix, params)
             for hit in result["hits"]:
                 text = hit.get("title") or hit.get("name", "")
                 if text and text not in seen:
@@ -311,6 +314,16 @@ class MeiliSearchService:
             else:
                 raise
         logger.info("file_indexed", file_id=doc.get("id"))
+
+    def get_owner(self, doc_type: str, doc_id: str) -> str | None:
+        """Return the owner_id of an indexed entry, or None if it is not indexed."""
+        index_name = self.documents_index_name if doc_type == "document" else self.files_index_name
+        try:
+            doc = self.client.index(index_name).get_document(doc_id)
+        except meilisearch.errors.MeilisearchApiError:
+            return None
+        owner = doc.get("owner_id") if isinstance(doc, dict) else getattr(doc, "owner_id", None)
+        return str(owner) if owner is not None else ""
 
     def delete_document(self, doc_type: str, doc_id: str) -> bool:
         """Remove a document or file from the index. Returns False if not found."""
