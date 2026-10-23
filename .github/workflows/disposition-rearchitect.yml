@@ -2,16 +2,13 @@ name: disposition-rearchitect
 
 on:
   pull_request:
-    paths:
-      - infrastructure/dispositions/rearchitect/**
-      - infrastructure/dispositions/scripts/**
-      - .github/workflows/disposition-rearchitect.yml
 
 permissions:
   contents: read
 
 jobs:
-  terraform:
+  disposition-rearchitect:
+    name: disposition-rearchitect
     runs-on: ubuntu-latest
     defaults:
       run:

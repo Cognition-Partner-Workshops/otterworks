@@ -29,19 +29,24 @@ variable "expires" {
 }
 
 variable "disposition_evidence" {
-  description = "Assessment row that supports this replatform disposition, e.g. portfolio/assessment-report.csv:7."
+  description = "Assessment-report row pointer stamped as an AWS tag value; do not pass the evidence list."
   type        = string
 
   validation {
-    condition     = trimspace(var.disposition_evidence) != ""
-    error_message = "disposition_evidence must identify the assessment row."
+    condition     = can(regex("^[A-Za-z0-9 _.:/=+@-]{1,256}$", var.disposition_evidence))
+    error_message = "disposition_evidence becomes a tag value: at most 256 characters from letters, digits, spaces and _ . : / = + - @. Point at the assessment row, e.g. portfolio/assessment-report.csv:3, not the evidence list itself."
   }
 }
 
 variable "extra_tags" {
-  description = "Additional tags; mandatory disposition tags take precedence."
+  description = "Additional AWS tags with values up to 256 characters using letters, digits, spaces and _ . : / = + - @; mandatory disposition tags take precedence."
   type        = map(string)
   default     = {}
+
+  validation {
+    condition     = alltrue([for v in values(var.extra_tags) : can(regex("^[A-Za-z0-9 _.:/=+@-]{1,256}$", v))])
+    error_message = "extra_tags values must contain at most 256 characters from letters, digits, spaces and _ . : / = + - @."
+  }
 }
 
 variable "vpc_id" {

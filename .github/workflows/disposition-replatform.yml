@@ -2,16 +2,13 @@ name: disposition-replatform
 
 on:
   pull_request:
-    paths:
-      - infrastructure/dispositions/replatform/**
-      - infrastructure/dispositions/scripts/**
-      - .github/workflows/disposition-replatform.yml
 
 permissions:
   contents: read
 
 jobs:
-  terraform:
+  disposition-replatform:
+    name: disposition-replatform
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -58,11 +55,6 @@ jobs:
           name: disposition-replatform-plan
           path: infrastructure/dispositions/replatform/ci/plan.txt
           if-no-files-found: error
-
-  helm:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: azure/setup-helm@1a275c3b69536ee54be43f2070a358922e12c8d4 # v4
         with:
           version: v3.16.4
