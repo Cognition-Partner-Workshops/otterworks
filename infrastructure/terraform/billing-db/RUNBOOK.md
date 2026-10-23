@@ -121,9 +121,17 @@ writer of `billing.*` (jobs, scripts, other services). Only legacy-billing is kn
 repository (`services/legacy-billing/app/app.py`); confirm there is no other.
 
 **Schema drift check.** The target is built from the repository SQL (P1), so the source must
-match it. Compare `pg_dump --schema-only --schema=billing --no-owner --no-privileges` of the
-source with the same dump of the target after step 4 (both with pg_dump 16). Any
-difference other than ownership/privileges stops the change.
+match it. Dump both with the same pg_dump 16 client and drop the lines that always differ
+(`--` comments, which carry the server version, and the `\restrict`/`\unrestrict` lines,
+which carry a random key in current pg_dump releases):
+
+```bash
+schema() { pg_dump "$1" --schema-only --schema=billing --no-owner --no-privileges | grep -Ev '^(--|\\(un)?restrict )'; }
+diff -u <(schema "$SRC") <(schema "$TGT_OWNER") && echo "NO DRIFT"
+```
+
+Any remaining difference stops the change. Ownership and privileges are excluded on
+purpose: they differ by design (inventory section 2).
 
 ### 2.3 Change window
 
@@ -209,6 +217,7 @@ at every checkpoint (`S0`, `T0`, `S1`, `T_rb`), and diff the outputs:
 
 ```bash
 cat > billing-snapshot.sql <<'SQL'
+\set QUIET on
 SET TimeZone = 'UTC';
 SET DateStyle = 'ISO, MDY';
 SELECT format(
@@ -275,7 +284,7 @@ psql "$TGT_APP" -X -At -c "SHOW TimeZone" -c "SHOW DateStyle" -c "SELECT ssl, ve
 psql "$TGT_OWNER" -X -At -F ',' -v ON_ERROR_STOP=1 -f billing-snapshot.sql > T_empty.csv   # every row_count 0
 ```
 
-3. Schema drift check from 2.2 against the source.
+3. Schema drift check from 2.2 against the source (`NO DRIFT`).
 
 ## 5. Move the data
 
@@ -300,7 +309,7 @@ psql "$TGT_OWNER" -X -At -F ',' -v ON_ERROR_STOP=1 -f billing-snapshot.sql > T0.
 diff -u S0.csv T0.csv && echo "IDENTICAL"
 ```
 
-Gate: 11 lines on both sides, identical `row_count` for every table. The `content_md5`
+Gate: 11 lines on both sides, identical `row_count` for every table. (`\set QUIET on` keeps the `SET` tags out of the file.) The `content_md5`
 column is a stricter extra check (same rows, same values); a difference there with equal
 counts is a failure too.
 

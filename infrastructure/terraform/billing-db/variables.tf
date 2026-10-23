@@ -127,6 +127,11 @@ variable "database_name" {
   description = "Billing database created by bootstrap/create-database.sql (not by RDS, so its locale is explicit)."
   type        = string
   default     = "billing"
+
+  validation {
+    condition     = var.database_name == "billing"
+    error_message = "database_name must be billing: bootstrap/create-database.sql creates that name, and the output feeds DB_NAME."
+  }
 }
 
 variable "log_retention_days" {

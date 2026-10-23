@@ -89,7 +89,7 @@ def main():
     expect("aws_db_instance.publicly_accessible", db.get("publicly_accessible"), False)
     expect("aws_db_instance.skip_final_snapshot", db.get("skip_final_snapshot"), False)
     retention = db.get("backup_retention_period")
-    expect("aws_db_instance.backup_retention_period >= 1", isinstance(retention, int) and retention >= 1, True)
+    expect("aws_db_instance.backup_retention_period >= 7", isinstance(retention, int) and retention >= 7, True)
 
     pg = (by_type.get("aws_db_parameter_group") or [{}])[0].get("values", {})
     expect("aws_db_parameter_group.family", pg.get("family"), "postgres" + args.engine_version.split(".")[0])
