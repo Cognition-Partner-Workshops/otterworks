@@ -23,6 +23,10 @@ export const POST = withSession(async (_req, { actor, params }) => {
     );
   }
 
+  if (tenant.pinned) {
+    return error(409, `tenant '${id}' is pinned; POST /api/tenants/${id}/pin {"pinned":false} first`);
+  }
+
   await checkin(id);
   await appendAudit({ tenantId: id, action: "checkin", actor });
 

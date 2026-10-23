@@ -26,6 +26,7 @@ expires_at    number    # epoch seconds (TTL) — reaper compares against now
 last_seen_at  number    # last reconcile timestamp
 note          string?
 persistent    bool?     # perpetual tenant: never reaped, never idle-suspended
+pinned        bool?     # long-lived demo tenant: never reaped, still idle-suspended
 
 # written by the idle scan only (demo-platform/reaper/idle-suspend.sh)
 req_count     number?  # ingress request counter at the last scan
@@ -41,6 +42,12 @@ read and refuse to act on. A perpetual tenant still carries an expiry (now + 10y
 reaper reading only the expiry — an older build, or a hand-run script — still does no harm.
 Absent means false everywhere. The dashboard only sets it for ids in `PERPETUAL_TENANT_IDS`
 (`main`), because a perpetual tenant bills forever.
+
+`pinned` is for the long-lived `demo-<id>` branches (the industry skins): tenants that should
+always be there to open, but that nobody is using most of the time. The reaper skips them, the
+idle scan does not, and check-in and extend refuse them until the pin is cleared. Like a
+perpetual tenant it carries a ten-year `expires_at` as the backstop. Any id may be pinned,
+because a pinned tenant costs a namespace and a database while idle, not compute.
 
 `was_running` is how a wake is detected. Nothing on the wake path writes to this table —
 `tenant-scale.sh up`, dashboard check-out and a manual `kubectl scale` all only touch
@@ -68,7 +75,7 @@ updated_by          string
 ```
 
 ### Audit event — `PK=AUDIT#<id>`, `SK=<epoch_ms>#<action>`
-Append-only. `action` ∈ {checkout, checkin, extend, redeploy, persist, deploy_ok, deploy_fail,
+Append-only. `action` ∈ {checkout, checkin, extend, redeploy, persist, pin, deploy_ok, deploy_fail,
 reap, inject, reset, suspend, login_ok, login_fail}. Attributes: `actor`, `detail`, `ts`.
 `redeploy` is a deploy into a tenant that was already up (continuous delivery), as distinct
 from the `checkout` that created it.
