@@ -14,7 +14,7 @@ The portfolio disposition standard says: **“Rearchitect needs clean seams and 
 | `disposition_evidence` | Required | Assessment row, e.g. `portfolio/assessment-report.csv:2`. |
 | `vpc_id`, `subnet_ids` | Required | Existing VPC and private subnet IDs; no module discovery. |
 | `extra_tags` | `{}` | Additional tags; required disposition tags override collisions. |
-| `contexts` | Required | Context map with `schema`, `route_prefix`, optional `publishes_events` and `environment`. |
+| `contexts` | Required | Context map with `schema`, `route_prefix`, optional `publishes_events` and `environment`; context environments must not set module-owned keys (`CONTEXT`, `DB_SCHEMA`, `DB_NAME`, `CLUSTER_ARN`, `SECRET_ARN`, `RUN_TOKEN`, `EVENT_BUS_NAME`). |
 | `default_route_context` | `null` | Defaults to the first sorted context key. |
 | `database_name`, `master_username` | `app`, `app_admin` | Aurora database and master username. |
 | `schema_sql_path` | `null` | Optional SQL file sent through the Data API during apply. |

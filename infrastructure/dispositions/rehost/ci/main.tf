@@ -14,4 +14,5 @@ module "rehost" {
   start_command        = "/opt/sample-service/service-package.bin"
   environment          = { APP_MODE = "test", TRACE_LEVEL = "info" }
   certificate_arn      = "arn:aws:acm:us-east-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
+  public_hostname      = "sample-service.example.invalid"
 }

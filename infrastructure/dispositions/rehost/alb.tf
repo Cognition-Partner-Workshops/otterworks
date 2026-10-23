@@ -113,6 +113,13 @@ resource "aws_lb_listener" "https" {
   certificate_arn   = var.certificate_arn
   tags              = local.tags
 
+  lifecycle {
+    precondition {
+      condition     = var.public_hostname != null
+      error_message = "public_hostname is required when certificate_arn is set."
+    }
+  }
+
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn

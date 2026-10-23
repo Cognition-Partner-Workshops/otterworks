@@ -26,11 +26,17 @@ jobs:
           helm template sample . -f ci/values-ci.yaml \
             --set image.repository=example.invalid/sample-service \
             --set image.tag=ci > rendered.yaml
+          helm template sample . \
+            --set runToken=ci-20270101-gh,expires=2027-01-08T00:00:00Z,dispositionEvidence=portfolio/assessment-report.csv:2,image.repository=example.invalid/sample-service,image.tag=ci \
+            > rendered-defaults.yaml
       - name: Check rendered manifests
         working-directory: infrastructure/dispositions/replatform
         run: |
           python3 -m pip install --disable-pip-version-check pyyaml==6.0.2
+          echo 'Values-ci render:'
           python3 ci/check-rendered.py rendered.yaml | tee check-output.txt
+          echo 'Default-values render:'
+          python3 ci/check-rendered.py rendered-defaults.yaml --minimum-kinds 4 | tee -a check-output.txt
       - name: Check invalid values fail rendering
         working-directory: infrastructure/dispositions/replatform
         run: |
@@ -48,6 +54,17 @@ jobs:
             echo "missing runToken unexpectedly rendered" >&2
             exit 1
           fi
+          if helm template sample . \
+            --set runToken=ci-20270101-gh \
+            --set expires=2027-01-08T00:00:00Z \
+            --set dispositionEvidence=portfolio/assessment-report.csv:2 \
+            --set image.repository=example.invalid/sample-service \
+            --set image.tag=ci \
+            --set networkPolicy.allowSameNamespace=false \
+            --set networkPolicy.ingressNamespaces=null >/dev/null 2>&1; then
+            echo "NetworkPolicy without ingress peers unexpectedly rendered" >&2
+            exit 1
+          fi
       - name: Write job summary
         working-directory: infrastructure/dispositions/replatform
         run: |
@@ -55,5 +72,5 @@ jobs:
             echo '## Replatform chart validation'
             cat check-output.txt
             echo
-            echo 'Negative checks: LoadBalancer and missing runToken both failed rendering as expected.'
+            echo 'Negative checks: LoadBalancer, missing runToken, and empty NetworkPolicy ingress all failed rendering as expected.'
           } >> "$GITHUB_STEP_SUMMARY"

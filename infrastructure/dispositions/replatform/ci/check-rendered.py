@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import collections
 import sys
 
@@ -19,10 +20,12 @@ def check_metadata(metadata, location, errors):
 
 
 def main():
-    if len(sys.argv) != 2:
-        raise SystemExit("usage: check-rendered.py rendered.yaml")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("rendered_yaml")
+    parser.add_argument("--minimum-kinds", type=int, default=8)
+    args = parser.parse_args()
 
-    with open(sys.argv[1], encoding="utf-8") as stream:
+    with open(args.rendered_yaml, encoding="utf-8") as stream:
         documents = [doc for doc in yaml.safe_load_all(stream) if doc]
 
     errors = []
@@ -38,13 +41,33 @@ def main():
         if kind == "Service" and (document.get("spec") or {}).get("type") == "LoadBalancer":
             errors.append(f"{location}: LoadBalancer Services are not permitted")
 
+        if kind == "NetworkPolicy":
+            spec = document.get("spec") or {}
+            for rule_index, rule in enumerate(spec.get("ingress") or []):
+                peers = rule.get("from")
+                if not peers:
+                    errors.append(f"{location}.spec.ingress[{rule_index}]: empty from is not permitted")
+                    continue
+                for peer_index, peer in enumerate(peers):
+                    if "namespaceSelector" in peer:
+                        selector = peer.get("namespaceSelector") or {}
+                        if not selector.get("matchLabels"):
+                            errors.append(
+                                f"{location}.spec.ingress[{rule_index}].from[{peer_index}]: "
+                                "namespaceSelector must have matchLabels"
+                            )
+            if "Egress" in (spec.get("policyTypes") or []) and not (spec.get("egress") or []):
+                errors.append(f"{location}.spec.egress: Egress policy must include rules")
+
         pod_template = ((document.get("spec") or {}).get("template") or {})
         if pod_template:
             pod_templates += 1
             check_metadata(pod_template.get("metadata") or {}, f"{location}.spec.template", errors)
 
-    if len(kinds) < 8:
-        errors.append(f"expected at least 8 rendered kinds, got {len(kinds)}: {', '.join(sorted(kinds))}")
+    if len(kinds) < args.minimum_kinds:
+        errors.append(
+            f"expected at least {args.minimum_kinds} rendered kinds, got {len(kinds)}: {', '.join(sorted(kinds))}"
+        )
 
     if errors:
         print("\n".join(errors), file=sys.stderr)

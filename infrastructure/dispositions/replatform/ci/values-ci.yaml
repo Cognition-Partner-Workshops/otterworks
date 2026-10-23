@@ -18,6 +18,15 @@ ingress:
 serviceAccount:
   roleArn: arn:aws:iam::123456789012:role/sample-service
 
+networkPolicy:
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 5432
+
 config:
   FEATURE_MODE: validation
 secrets:

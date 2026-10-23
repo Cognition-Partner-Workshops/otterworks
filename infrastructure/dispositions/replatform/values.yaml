@@ -55,8 +55,13 @@ serviceAccount:
 
 networkPolicy:
   enabled: true
-  ingressNamespaceSelector: {}
-  ingressPodSelector: {}
+  # Namespaces (kubernetes.io/metadata.name) whose pods may reach containerPort.
+  ingressNamespaces:
+    - ingress-nginx
+    - monitoring
+  # Also admit pods in the release namespace.
+  allowSameNamespace: true
+  # Egress rules. Empty leaves egress unrestricted so managed dependencies stay reachable.
   egress: []
 
 config: {}

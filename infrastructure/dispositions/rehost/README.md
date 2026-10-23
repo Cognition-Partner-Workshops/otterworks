@@ -24,12 +24,13 @@ The portfolio disposition standard says: **“Rehost needs a reason the code can
 | `root_volume_size` | `16` | Root gp3 volume size in GiB. |
 | `alb_ingress_cidrs` | `["0.0.0.0/0"]` | CIDRs permitted to reach ALB listener ports. |
 | `certificate_arn` | `null` | Optional ACM certificate; enables TLS 1.3/1.2 listener and HTTP redirect. |
+| `public_hostname` | `null` | DNS name pointed at `alb_dns_name`; required with `certificate_arn` and must match the certificate. |
 
 ## Outputs
 
 | Output | Description |
 |---|---|
-| `base_url` | HTTP or HTTPS ALB URL. |
+| `base_url` | HTTP ALB hostname, or the HTTPS `public_hostname` when a certificate is configured. |
 | `instance_id` | EC2 instance ID. |
 | `artifact_bucket` | Artifact bucket name. |
 | `app_log_group` | CloudWatch log group name. |

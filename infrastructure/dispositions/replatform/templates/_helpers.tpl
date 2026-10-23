@@ -37,6 +37,9 @@ otterworks.io/disposition-evidence: {{ required "dispositionEvidence is required
 {{- if ne .Values.service.type "ClusterIP" -}}
 {{- fail "service.type must be ClusterIP; use the shared ingress-nginx LoadBalancer" -}}
 {{- end -}}
+{{- if and .Values.networkPolicy.enabled (not .Values.networkPolicy.allowSameNamespace) (not .Values.networkPolicy.ingressNamespaces) -}}
+{{- fail "networkPolicy needs allowSameNamespace or ingressNamespaces" -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "replatform.serviceAccountName" -}}

@@ -5,7 +5,17 @@ exec > >(tee /var/log/${service_name}-bootstrap.log | logger -t ${service_name}-
 dnf install -y amazon-cloudwatch-agent ${packages}
 useradd -r -s /usr/sbin/nologin ${service_name} || true
 install -d -o ${service_name} -g ${service_name} /opt/${service_name} "$(dirname ${app_log_path})"
-aws s3 cp "s3://${artifact_bucket}/${artifact_name}" "${artifact_path}" --region "${region}"
+attempt=1
+while [ "$attempt" -le 10 ]; do
+  if aws s3 cp "s3://${artifact_bucket}/${artifact_name}" "${artifact_path}" --region "${region}"; then
+    break
+  fi
+  if [ "$attempt" -eq 10 ]; then
+    exit 1
+  fi
+  sleep 15
+  attempt=$((attempt + 1))
+done
 echo "${artifact_md5}  ${artifact_path}" | md5sum -c -
 chown ${service_name}:${service_name} "${artifact_path}"
 

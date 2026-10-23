@@ -77,6 +77,11 @@ variable "contexts" {
     condition     = alltrue([for context in keys(var.contexts) : can(regex("^[a-z][a-z0-9-]{0,47}$", context))])
     error_message = "context keys must start with a lowercase letter and contain only lowercase letters, digits, or hyphens, with a maximum length of 48."
   }
+
+  validation {
+    condition     = alltrue([for c in values(var.contexts) : length(setintersection(keys(c.environment), ["CONTEXT", "DB_SCHEMA", "DB_NAME", "CLUSTER_ARN", "SECRET_ARN", "RUN_TOKEN", "EVENT_BUS_NAME"])) == 0])
+    error_message = "contexts[*].environment must not set module-owned keys: CONTEXT, DB_SCHEMA, DB_NAME, CLUSTER_ARN, SECRET_ARN, RUN_TOKEN, EVENT_BUS_NAME."
+  }
 }
 
 variable "default_route_context" {

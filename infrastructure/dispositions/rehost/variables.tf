@@ -146,3 +146,9 @@ variable "certificate_arn" {
   type        = string
   default     = null
 }
+
+variable "public_hostname" {
+  description = "DNS name the caller points at alb_dns_name. Required with certificate_arn and must match the certificate."
+  type        = string
+  default     = null
+}

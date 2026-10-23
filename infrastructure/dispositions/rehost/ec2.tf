@@ -1,4 +1,6 @@
 resource "aws_instance" "this" {
+  depends_on = [aws_s3_object.artifact, aws_iam_role_policy.read_artifacts]
+
   ami                         = local.selected_ami
   instance_type               = var.instance_type
   subnet_id                   = var.subnet_ids[0]

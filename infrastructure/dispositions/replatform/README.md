@@ -13,11 +13,12 @@ The portfolio disposition standard says: **“Replatform needs a managed target 
 | `dispositionEvidence` | Required assessment row or evidence reference. |
 | `image.repository`, `image.tag` | Required container image. |
 
-`service.type` must be `ClusterIP`; the shared ingress-nginx controller owns the only permitted LoadBalancer Service. Defaults are one replica, port 8080, small requests/limits, enabled NetworkPolicy, and disabled Ingress/monitoring.
+`service.type` must be `ClusterIP`; the shared ingress-nginx controller owns the only permitted LoadBalancer Service. Defaults are one replica, port 8080, small requests/limits, enabled NetworkPolicy, and disabled Ingress/monitoring. The default NetworkPolicy admits pods in the release namespace and from the `ingress-nginx` and `monitoring` namespaces. Egress is unrestricted unless non-empty `networkPolicy.egress` rules are supplied; `Egress` is added to `policyTypes` only when those rules exist.
 
 ## Configuration
 
 Set `env` and `envFrom` for workload environment settings. Non-empty `config` and `secrets` maps create resources and are automatically referenced from the Deployment. `healthCheck` configures HTTP liveness/readiness probes. Set `serviceAccount.roleArn` to add the IRSA annotation. `ingress` configures ingress-nginx routes and `monitoring` controls the ServiceMonitor and optional PrometheusRule.
+Configure `networkPolicy.ingressNamespaces` with Kubernetes namespace names to admit additional ingress, and set `networkPolicy.allowSameNamespace` to `false` to disallow same-namespace peers. At least one of these ingress sources is required while the policy is enabled. Supply explicit `networkPolicy.egress` rules only when outbound traffic should be restricted.
 
 Render or validate without applying:
 

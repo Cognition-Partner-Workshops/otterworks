@@ -15,26 +15,24 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name | quote }}
   policyTypes:
     - Ingress
+    {{ if .Values.networkPolicy.egress }}
     - Egress
+    {{ end }}
   ingress:
     - from:
+        {{ if .Values.networkPolicy.allowSameNamespace }}
+        - podSelector: {}
+        {{ end }}
+        {{ range .Values.networkPolicy.ingressNamespaces }}
         - namespaceSelector:
-            {{- toYaml .Values.networkPolicy.ingressNamespaceSelector | nindent 12 }}
-          podSelector:
-            {{- toYaml .Values.networkPolicy.ingressPodSelector | nindent 12 }}
+            matchLabels:
+              kubernetes.io/metadata.name: {{ . | quote }}
+        {{ end }}
       ports:
         - protocol: TCP
           port: {{ .Values.containerPort }}
+    {{ if .Values.networkPolicy.egress }}
   egress:
-    {{- if .Values.networkPolicy.egress }}
     {{- toYaml .Values.networkPolicy.egress | nindent 4 }}
-    {{- else }}
-    - to:
-        - namespaceSelector: {}
-      ports:
-        - protocol: UDP
-          port: 53
-        - protocol: TCP
-          port: 53
     {{- end }}
 {{- end }}

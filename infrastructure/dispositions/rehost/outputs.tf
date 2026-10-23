@@ -1,6 +1,6 @@
 output "base_url" {
   description = "ALB URL for the rehosted application."
-  value       = "${var.certificate_arn == null ? "http" : "https"}://${aws_lb.this.dns_name}"
+  value       = var.certificate_arn == null ? "http://${aws_lb.this.dns_name}" : "https://${var.public_hostname}"
 }
 
 output "instance_id" {
