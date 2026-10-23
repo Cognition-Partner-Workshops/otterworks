@@ -63,7 +63,7 @@ ns: check-run
 	@ns=bank-w1-$(RUN)-pr$(PR); epoch=$$(( $$(date -u +%s) + $(TTL_HOURS) * 3600 )); \
 	kubectl create namespace $$ns --dry-run=client -o yaml | kubectl apply -f - >/dev/null; \
 	kubectl label namespace $$ns --overwrite demo/run-token=$(RUN) platform.otterworks.dev/policy=enforced \
-	  app.kubernetes.io/part-of=bank-wave1 >/dev/null; \
+	  app.kubernetes.io/part-of=bank-wave1 app.kubernetes.io/managed-by=otterworks-tenant >/dev/null; \
 	kubectl annotate namespace $$ns --overwrite demo/expires-at=$$(date -u -d @$$epoch +%Y-%m-%dT%H:%M:%SZ) \
 	  demo/expires-at-epoch=$$epoch >/dev/null; \
 	echo "namespace $$ns expires $$(date -u -d @$$epoch +%Y-%m-%dT%H:%M:%SZ)"
