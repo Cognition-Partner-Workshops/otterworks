@@ -22,7 +22,7 @@ Four of the five answers differ from the questionnaire. The fifth, legacy-share-
 
 - **Round 1:** one worker per app, read-only. Each read the app's own code, then everything that touches it: the gateway route matrix ([config.go:113-129](https://github.com/Cognition-Partner-Workshops/otterworks/blob/f57a3f76be3d44aee6d352d2d293d8ddf75c8505/services/api-gateway/internal/config/config.go#L113-L129)), deploy units (Compose, Helm, Terraform, CI), everything under `scripts/` and `migration/`, other services and frontends, and the 90 days of logs.
 - **Round 2:** one worker per app, given all five round-1 reports. Each checked its app for shared databases, outside callers, data whose deletion someone must approve, and contradictions between workers.
-- **Lead review:** I re-ran the log counts myself and confirmed the S3 copy matches the generator byte for byte. I re-read every cited line at the pinned commit before using it, and made the final call on each app. Two of those calls differ from what the workers recommended; both are explained [below](#where-i-overrode-the-workers).
+- **Lead review:** I ran every log count myself ([commands and outputs](log-queries.md)), and confirmed the S3 copy matches the generator byte for byte ([command](log-queries.md#s3-copy-matches-the-generator)). I re-read every cited line at the pinned commit before using it, and made the final call on each app. Two of those calls differ from what the workers recommended; both are explained [below](#where-i-overrode-the-workers).
 
 ## What the cross-app round found
 
