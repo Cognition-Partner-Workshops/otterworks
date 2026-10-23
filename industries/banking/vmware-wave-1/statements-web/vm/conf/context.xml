@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- /opt/tomcat/conf/context.xml on stmt-web-01 and stmt-web-02 -->
+<Context>
+  <WatchedResource>WEB-INF/web.xml</WatchedResource>
+  <Resource name="jdbc/StatementsDB" auth="Container" type="javax.sql.DataSource"
+            driverClassName="org.postgresql.Driver"
+            url="jdbc:postgresql://wave1-db:5432/bankwave"
+            username="statements_app" password="St4tements-Ro!2019"
+            maxTotal="20" maxIdle="5" maxWaitMillis="10000"/>
+</Context>

@@ -1,0 +1,13 @@
+# /etc/systemd/system/kyc-docs.service on kyc-01
+[Unit]
+Description=KYC document intake
+After=network.target
+
+[Service]
+User=kyc
+EnvironmentFile=/etc/kyc/kyc.env
+ExecStart=/usr/bin/java -Xmx512m -jar /opt/kyc/kyc-docs.jar
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

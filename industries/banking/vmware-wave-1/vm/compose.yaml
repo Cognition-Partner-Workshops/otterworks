@@ -1,0 +1,93 @@
+# The wave as it runs today: one container per VM, laid out like the hosts.
+# Shared seed data in ../data, so the replatformed apps can run on the same rows.
+name: wave1-vm
+services:
+  wave1-db:
+    image: docker.io/library/postgres:16-alpine
+    environment:
+      POSTGRES_DB: bankwave
+      POSTGRES_USER: statements_app
+      POSTGRES_PASSWORD: St4tements-Ro!2019
+    volumes:
+      - ../data/seed.sql:/docker-entrypoint-initdb.d/01-seed.sql:ro
+      - ./db-roles.sql:/docker-entrypoint-initdb.d/02-roles.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U statements_app -d bankwave"]
+      interval: 3s
+      retries: 20
+
+  stmt-web-01:
+    build:
+      context: ../statements-web
+      dockerfile: vm/Dockerfile
+      args:
+        MAVEN_MIRROR: ${MAVEN_MIRROR:-}
+    image: wave1/statements-web-vm
+    depends_on:
+      wave1-db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8081:8080"
+
+  rates-01:
+    build:
+      context: ../rates-batch
+      dockerfile: vm/Dockerfile
+      args:
+        MAVEN_MIRROR: ${MAVEN_MIRROR:-}
+    image: wave1/rates-batch-vm
+    volumes:
+      - ../data/rates/in:/var/spool/rates/in:ro
+      - rates-out:/var/spool/rates/out
+
+  report-01:
+    build:
+      context: ../fx-report
+      dockerfile: vm/Dockerfile
+    image: wave1/fx-report-vm
+    volumes:
+      - rates-out:/mnt/rates-out:ro
+    ports:
+      - "127.0.0.1:8086:80"
+
+  geo:
+    image: docker.io/library/python:3.12-slim
+    command: ["python", "/geo/geo_stub.py"]
+    volumes:
+      - ../branch-locator/vm/geo-stub:/geo:ro
+    networks:
+      default:
+        aliases:
+          - geo.bank.internal
+
+  web-02:
+    build:
+      context: ../branch-locator
+      dockerfile: vm/Dockerfile
+    image: wave1/branch-locator-vm
+    depends_on:
+      wave1-db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8083:5000"
+
+  notify-01:
+    build:
+      context: ../notify-svc
+      dockerfile: vm/Dockerfile
+    image: wave1/notify-svc-vm
+    ports:
+      - "127.0.0.1:8084:3000"
+
+  kyc-01:
+    build:
+      context: ../kyc-docs
+      dockerfile: vm/Dockerfile
+      args:
+        MAVEN_MIRROR: ${MAVEN_MIRROR:-}
+    image: wave1/kyc-docs-vm
+    ports:
+      - "127.0.0.1:8085:8443"
+
+volumes:
+  rates-out:

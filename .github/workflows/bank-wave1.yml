@@ -1,0 +1,83 @@
+name: bank-wave1
+
+# Runs the shared platform pipeline for every wave-1 app a pull request
+# touches once that app has a container build (Dockerfile + deploy/platform.yaml),
+# and smoke-tests the VM stand-ins so the before state stays runnable.
+on:
+  pull_request:
+    paths:
+      - industries/banking/vmware-wave-1/**
+      - .github/workflows/bank-wave1.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: bank-wave1-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.apps.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: apps
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          wave=industries/banking/vmware-wave-1
+          if [ -n "$BASE_SHA" ]; then
+            changed="$(git diff --name-only "$BASE_SHA"...HEAD -- "$wave" | cut -d/ -f4 | sort -u)"
+          else
+            changed="$(ls "$wave")"
+          fi
+          apps=()
+          for a in $changed; do
+            if [ -f "$wave/$a/Dockerfile" ] && [ -f "$wave/$a/deploy/platform.yaml" ]; then apps+=("$wave/$a"); fi
+          done
+          json="$(printf '%s\n' "${apps[@]}" | jq -R . | jq -sc 'map(select(length > 0))')"
+          echo "apps=$json" >> "$GITHUB_OUTPUT"
+          echo "replatformed apps in this change: $json"
+
+  vm-standins:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: industries/banking/vmware-wave-1
+    steps:
+      - uses: actions/checkout@v4
+      - run: make vm-build
+      - run: make vm-up
+      - run: make vm-smoke
+      - if: always()
+        run: docker compose -f vm/compose.yaml logs --no-color > vm-logs.txt 2>&1 || true
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vm-standins-logs
+          path: industries/banking/vmware-wave-1/vm-logs.txt
+      - if: always()
+        run: make reset
+
+  platform:
+    needs: detect
+    if: needs.detect.outputs.apps != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        app_dir: ${{ fromJson(needs.detect.outputs.apps) }}
+    uses: Cognition-Partner-Workshops/otterworks/.github/workflows/platform-app-pipeline.yml@devin/1792540800-platform-standards
+    with:
+      app_dir: ${{ matrix.app_dir }}
+      standards_ref: devin/1792540800-platform-standards
+      run_token: rpl1020
+      eks_deploy: true
+    secrets: inherit
