@@ -47,6 +47,7 @@ interface TenantItem {
   last_seen_at: number;
   note?: string;
   persistent?: boolean;
+  pinned?: boolean;
 }
 
 let _doc: DynamoDBDocumentClient | null = null;
@@ -84,6 +85,7 @@ function itemToTenant(item: TenantItem): Tenant {
     lastSeenAt: item.last_seen_at,
     note: item.note,
     persistent: item.persistent === true,
+    pinned: item.pinned === true,
   };
 }
 
@@ -257,6 +259,30 @@ export async function setPersistent(
       ConditionExpression: "attribute_exists(PK)",
       ExpressionAttributeNames: { "#p": "persistent" },
       ExpressionAttributeValues: { ":p": persistent, ":e": expiresAt, ":now": now },
+    }),
+  );
+  return expiresAt;
+}
+
+/**
+ * Pin a tenant so it never expires, or return it to the TTL regime. A pinned
+ * tenant still idles to zero, which is what separates it from a perpetual one.
+ * Flag and expiry move together for the same reason as setPersistent.
+ */
+export async function setPinned(
+  id: string,
+  pinned: boolean,
+  ttlSeconds: number,
+): Promise<number> {
+  const now = Math.floor(Date.now() / 1000);
+  const expiresAt = now + ttlSeconds;
+  await doc().send(
+    new UpdateCommand({
+      TableName: table(),
+      Key: { PK: pkTenant(id), SK: SK_META },
+      UpdateExpression: "SET pinned = :p, expires_at = :e, last_seen_at = :now",
+      ConditionExpression: "attribute_exists(PK)",
+      ExpressionAttributeValues: { ":p": pinned, ":e": expiresAt, ":now": now },
     }),
   );
   return expiresAt;

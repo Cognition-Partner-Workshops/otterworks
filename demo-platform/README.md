@@ -62,8 +62,10 @@ bills continuously (~$15-25/mo), so the dashboard only accepts the flag for the 
 tenant.sh checkout main main never
 ```
 
-**Everything else is ephemeral** — TTL'd, idle-suspended, and reaped. That is the default and
-there is no way to opt an arbitrary id out of it.
+**Everything else is ephemeral** — TTL'd, idle-suspended, and reaped. That is the default. The
+one opt-out is **pinning** (`tenant.sh pin <id> true`), meant for long-lived `demo-<id>`
+branches such as the industry skins: a pinned tenant is never reaped, but it still idles to
+zero and wakes on check-out, so it costs a namespace and a database while nobody is using it.
 
 ## Continuous delivery
 A push to `workshop-<id>` or `demo-<id>` builds the services that changed and ships them to
@@ -112,6 +114,7 @@ tenant.sh checkin derek
 tenant.sh list
 tenant.sh sync workshop-derek         # what CD runs: redeploy, creating if absent
 tenant.sh persist main false          # return the perpetual tenant to the TTL regime
+tenant.sh pin bank true               # keep a demo tenant forever, still idling to zero
 ```
 
 It needs only `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` for the `de-demo-provisioner`

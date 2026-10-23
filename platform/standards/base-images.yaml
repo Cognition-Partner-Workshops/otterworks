@@ -1,0 +1,42 @@
+# Approved base images. A Dockerfile may only use an image listed here, with
+# the exact digest. The platform team bumps a digest through a pull request
+# to main; application pipelines pick it up on their next run.
+base_images:
+  # Runtime images (the final stage)
+  - name: tomcat-9-jre17
+    runtime: java-war
+    stage: runtime
+    image: docker.io/library/tomcat:9.0-jre17-temurin-jammy@sha256:729c7e1c48be985cdfc1fac9f50f1bcb0391ae911479a5b21574f2820e805845
+  - name: tomcat-9-jre8
+    runtime: java-war
+    stage: runtime
+    image: docker.io/library/tomcat:9.0-jre8-temurin-jammy@sha256:9b9b6ad5364db67f511d0e1501b4e4a50d4cc5a90dd03765feb0c4d04b38cd00
+  - name: temurin-17-jre
+    runtime: java-jar
+    stage: runtime
+    image: docker.io/library/eclipse-temurin:17-jre-jammy@sha256:b3054a20e1a851574cdb1692dd0db5310c647e62214a2a7abecbec1b9e3ae8f1
+  - name: temurin-11-jre
+    runtime: java-jar
+    stage: runtime
+    image: docker.io/library/eclipse-temurin:11-jre-jammy@sha256:ee9a1cf7847cb4b1f8176f4e96167f89a1148497500b75032575cb43dc69b42d
+  - name: python-3.12-slim
+    runtime: python
+    stage: runtime
+    image: docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+  - name: node-20-slim
+    runtime: node
+    stage: runtime
+    image: docker.io/library/node:20-bookworm-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0
+  # Build images (earlier stages only)
+  - name: maven-3.9-jdk8
+    runtime: java
+    stage: build
+    image: docker.io/library/maven:3.9-eclipse-temurin-8@sha256:0f402712b7a469189cfea5ec69cdcadcb32b22aaf1ea62777ab925c3d8470175
+  - name: maven-3.9-jdk11
+    runtime: java
+    stage: build
+    image: docker.io/library/maven:3.9-eclipse-temurin-11@sha256:7bb84a451705605a47d24eb844d4d9ab03e33e131a507db76aafe25db3907f64
+  - name: maven-3.9-jdk17
+    runtime: java
+    stage: build
+    image: docker.io/library/maven:3.9-eclipse-temurin-17@sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584
