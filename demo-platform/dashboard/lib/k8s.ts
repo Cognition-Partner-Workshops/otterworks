@@ -26,6 +26,36 @@ function core(): k8s.CoreV1Api {
   return _core;
 }
 
+function httpStatus(err: unknown): number | undefined {
+  const e = err as { statusCode?: number; response?: { statusCode?: number } };
+  return e?.statusCode ?? e?.response?.statusCode;
+}
+
+/**
+ * Keep a tenant namespace's expiry annotations in step with the control table.
+ * The namespace reaper (scripts/tenant-platform-baseline.sh) deletes on
+ * demo/expires-at-epoch alone, so a lifetime change that skips this still
+ * dies at the old deadline. A tenant with no namespace yet is a no-op.
+ */
+export async function setNamespaceExpiry(ns: string, expiresAt: number): Promise<void> {
+  const patch = {
+    metadata: {
+      annotations: {
+        "demo/expires-at": new Date(expiresAt * 1000).toISOString().replace(/\.\d{3}Z$/, "Z"),
+        "demo/expires-at-epoch": String(expiresAt),
+      },
+    },
+  };
+  try {
+    await core().patchNamespace(ns, patch, undefined, undefined, undefined, undefined, undefined, {
+      headers: { "Content-Type": k8s.PatchUtils.PATCH_FORMAT_STRATEGIC_MERGE_PATCH },
+    });
+  } catch (err) {
+    if (httpStatus(err) === 404) return;
+    throw err;
+  }
+}
+
 export function batch(): k8s.BatchV1Api {
   if (!_batch) _batch = kubeConfig().makeApiClient(k8s.BatchV1Api);
   return _batch;

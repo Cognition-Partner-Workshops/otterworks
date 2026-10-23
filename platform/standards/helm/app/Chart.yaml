@@ -1,0 +1,6 @@
+apiVersion: v2
+name: platform-app
+description: Platform chart skeleton for a replatformed application (web service or scheduled batch job)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

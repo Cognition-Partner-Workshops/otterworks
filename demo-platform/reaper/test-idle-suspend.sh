@@ -19,7 +19,7 @@ nope() { FAIL=$((FAIL+1)); echo "  FAIL - $1"; }
 check() { if [ "$2" = "$3" ]; then ok "$1"; else nope "$1 (expected '$3', got '$2')"; fi; }
 
 # ---- stubs -------------------------------------------------------------------
-declare -A ITEM_COUNT ITEM_SINCE ITEM_RUNNING ITEM_PERSIST
+declare -A ITEM_COUNT ITEM_SINCE ITEM_RUNNING ITEM_PERSIST ITEM_PIN
 declare -A NS_RUNNING NS_CHAOS METRIC
 SUSPENDED=""
 
@@ -28,10 +28,12 @@ ctl_get() {
   local id="${1#TENANT#}"
   jq -n --arg c "${ITEM_COUNT[$id]:-}" --arg s "${ITEM_SINCE[$id]:-}" \
         --arg r "${ITEM_RUNNING[$id]:-}" --arg p "${ITEM_PERSIST[$id]:-}" \
+        --arg pin "${ITEM_PIN[$id]:-}" \
     '{Item: ({} + (if $c=="" then {} else {req_count:{N:$c}} end)
                 + (if $s=="" then {} else {idle_since:{N:$s}} end)
                 + (if $r=="" then {} else {was_running:{N:$r}} end)
-                + (if $p=="" then {} else {persistent:{BOOL:($p=="true")}} end))}'
+                + (if $p=="" then {} else {persistent:{BOOL:($p=="true")}} end)
+                + (if $pin=="" then {} else {pinned:{BOOL:($pin=="true")}} end))}'
 }
 ctl_audit() { :; }
 record_activity() { ITEM_COUNT["$1"]="$2"; ITEM_SINCE["$1"]="$3"; }
@@ -67,8 +69,8 @@ eval "$(sed -n '/^tenant_namespaces()/,/^}/p;/^suspend_idle_tenants()/,/^}/p' "$
 real_src="$(sed -n '/^ingress_request_counts()/,/^}/p' "${SCRIPT_DIR}/idle-suspend.sh")"
 
 reset_state() {
-  unset ITEM_COUNT ITEM_SINCE ITEM_RUNNING ITEM_PERSIST NS_RUNNING NS_CHAOS METRIC
-  declare -gA ITEM_COUNT=() ITEM_SINCE=() ITEM_RUNNING=() ITEM_PERSIST=() NS_RUNNING=() NS_CHAOS=() METRIC=()
+  unset ITEM_COUNT ITEM_SINCE ITEM_RUNNING ITEM_PERSIST ITEM_PIN NS_RUNNING NS_CHAOS METRIC
+  declare -gA ITEM_COUNT=() ITEM_SINCE=() ITEM_RUNNING=() ITEM_PERSIST=() ITEM_PIN=() NS_RUNNING=() NS_CHAOS=() METRIC=()
   SUSPENDED=""
   SUSPEND_RC=0
 }
@@ -190,6 +192,16 @@ ITEM_COUNT[main]=100; ITEM_SINCE[main]=${STALE}; ITEM_PERSIST[main]=true
 seen_running main
 IDLE_AFTER_SECONDS=3600 suspend_idle_tenants >/dev/null 2>&1
 check "never suspends a persistent tenant" "${SUSPENDED# }" ""
+
+# A pinned tenant never expires, but it is not the reference environment: it
+# must still idle to zero, or pinning a dozen demo skins would keep them all
+# billing around the clock.
+reset_state
+NS_RUNNING[otterworks-bank]=13; METRIC[otterworks-bank]=100
+ITEM_COUNT[bank]=100; ITEM_SINCE[bank]=${STALE}; ITEM_PIN[bank]=true
+seen_running bank
+IDLE_AFTER_SECONDS=3600 suspend_idle_tenants >/dev/null 2>&1
+check "still suspends a pinned tenant" "${SUSPENDED# }" "bank"
 
 # ...and the exemption is the flag, not the id: an ordinary tenant that happens
 # to be idle alongside it is still suspended in the same pass.
