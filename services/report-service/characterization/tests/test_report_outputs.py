@@ -5,6 +5,7 @@ import csv
 import io
 import re
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import openpyxl
 import pytest
@@ -26,6 +27,7 @@ from conftest import (
 GENERATED_LINE = re.compile(r"^# Generated: (.+)$")
 PDF_GENERATED = re.compile(r"Generated: ([A-Z][a-z]{2} \d{2}, \d{4} \d{2}:\d{2}) \| Rows: (\d+)")
 PERIOD_UTC = "Jan 15, 2026 03:30 to Jan 16, 2026 03:30"
+CHICAGO = ZoneInfo("America/Chicago")
 
 
 def download(instance, report):
@@ -100,10 +102,15 @@ def test_csv_iso_format_in_upstream_query():
 def test_csv_without_dates(snapshot):
     """No dates in the request: the service fills dateFrom = now - 30 days and dateTo = now."""
     report = generate("off", "Csv No Dates", "USAGE_ANALYTICS", "CSV", dates=False)
-    for key, offset in (("dateFrom", -30), ("dateTo", 0)):
-        moment = datetime.strptime(report[key], "%Y-%m-%dT%H:%M:%S.%f%z")
-        assert_recent_utc(moment - timedelta(days=offset))
-        report[key] = "<now %+d days>" % offset
+    date_to = datetime.strptime(report["dateTo"], "%Y-%m-%dT%H:%M:%S.%f%z")
+    date_from = datetime.strptime(report["dateFrom"], "%Y-%m-%dT%H:%M:%S.%f%z")
+    assert_recent_utc(date_to)
+    # daysAgo(30) is Commons Lang DateUtils.addDays: 30 calendar days in the JVM zone
+    # (America/Chicago), so the span is 719 or 721 hours across a DST change.
+    expected_from = (date_to.astimezone(CHICAGO) - timedelta(days=30)).astimezone(timezone.utc)
+    assert abs((expected_from - date_from).total_seconds()) < 5, (date_from, expected_from)
+    report["dateFrom"] = "<now -30 days>"
+    report["dateTo"] = "<now +0 days>"
     text = download("off", report).content.decode("utf-8")
     rows = list(csv.reader(io.StringIO(text)))
     period = re.fullmatch(r"# Period: (.+) to (.+)", rows[2][0])

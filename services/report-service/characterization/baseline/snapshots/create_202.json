@@ -6,15 +6,10 @@
     "reportName": "Api Create",
     "category": "USAGE_ANALYTICS",
     "reportType": "PDF",
-    "status": "<pending|generating|completed>",
     "requestedBy": "<run>-api-create",
     "dateFrom": "2026-01-15T03:30:00.000+00:00",
     "dateTo": "2026-01-16T03:30:00.000+00:00",
     "createdAt": "<timestamp>",
-    "completedAt": null,
-    "fileSizeBytes": null,
-    "rowCount": null,
-    "downloadUrl": null,
     "errorMessage": null
   }
 }

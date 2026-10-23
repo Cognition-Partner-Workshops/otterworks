@@ -9,8 +9,15 @@ from conftest import DATE_FROM, RUN_TOKEN, create_report, error_shape, generate,
 def test_create_returns_202_and_echoes_request(snapshot):
     resp = create_report("off", "Api Create", "USAGE_ANALYTICS", "PDF")
     body = resp.json()
+    # Generation is async: the 202 body may already show a later state. Fields that only the
+    # worker fills are checked for consistency with that state and kept out of the snapshot.
     assert body["status"] in ("PENDING", "GENERATING", "COMPLETED")
-    body["status"] = "<pending|generating|completed>"
+    progress = {k: body.pop(k) for k in ("status", "completedAt", "fileSizeBytes", "rowCount", "downloadUrl")}
+    if progress["status"] == "COMPLETED":
+        assert progress["completedAt"] and progress["fileSizeBytes"] and progress["rowCount"] == 3
+        assert progress["downloadUrl"] == "/api/v1/reports/%d/download" % body["id"]
+    else:
+        assert progress["completedAt"] is None and progress["downloadUrl"] is None
     snapshot("create_202", {"status": resp.status_code, "content_type": resp.headers.get("Content-Type"),
                             "body": normalize_report(body)})
 
