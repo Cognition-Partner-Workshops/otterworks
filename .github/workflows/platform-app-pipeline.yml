@@ -173,46 +173,85 @@ jobs:
             [ "$s" = failure ] && exit 1
           done; exit 0
 
-  eks:
-    name: ephemeral namespace (${{ inputs.app_dir }})
+  # The EKS stage is two jobs so code from the pull request never runs where an
+  # OIDC token can be minted: eks-build builds the image and reads the values
+  # with read-only permissions, and eks-deploy only loads that image, pushes it
+  # and deploys with the standards chart.
+  eks-build:
+    name: ephemeral image (${{ inputs.app_dir }})
     needs: verify
     if: inputs.eks_deploy && vars.BANK_W1_EKS == 'true' && needs.verify.result == 'success' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.build.outputs.tag }}
+      workload: ${{ steps.build.outputs.workload }}
+      chart_app: ${{ steps.build.outputs.chart_app }}
+    env:
+      APP_DIR: ${{ inputs.app_dir }}
+      RUN_TOKEN: ${{ inputs.run_token }}
+      APP: ${{ needs.verify.outputs.app }}
+      IMAGE: ${{ needs.verify.outputs.image }}
+    steps:
+      - name: Check the run token
+        run: |
+          [[ "$RUN_TOKEN" =~ ^[a-z0-9]{3,12}$ ]] || { echo "eks_deploy needs a run_token of 3-12 lowercase letters or digits"; exit 1; }
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Build the image and collect the deploy values
+        id: build
+        run: |
+          tag="${GITHUB_SHA::12}"
+          docker build -q -t "$IMAGE:$tag" "$APP_DIR"
+          mkdir -p .eks
+          docker save "$IMAGE:$tag" | gzip > .eks/image.tar.gz
+          cp "$APP_DIR/deploy/values.yaml" .eks/values.yaml
+          [ -f "$APP_DIR/deploy/values-eks.yaml" ] && cp "$APP_DIR/deploy/values-eks.yaml" .eks/values-eks.yaml
+          read -r workload chart_app < <(python3 -c "import yaml,os;d='.eks/';v={'workload':'web','app':os.environ['APP']}
+          for f in ('values.yaml','values-eks.yaml'):
+            try: v.update({k:x for k,x in (yaml.safe_load(open(d+f)) or {}).items() if k in v})
+            except FileNotFoundError: pass
+          print(v['workload'],v['app'])")
+          [[ "$workload" =~ ^(web|cronjob)$ ]] || { echo "unknown workload '$workload'"; exit 1; }
+          [[ "$chart_app" =~ ^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$ ]] || { echo "chart app '$chart_app' is not a DNS label"; exit 1; }
+          { echo "tag=$tag"; echo "workload=$workload"; echo "chart_app=$chart_app"; } >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        with:
+          name: eks-${{ needs.verify.outputs.app }}
+          path: .eks/
+          include-hidden-files: true
+          retention-days: 1
+
+  eks-deploy:
+    name: ephemeral namespace (${{ inputs.app_dir }})
+    needs: [verify, eks-build]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
       pull-requests: write
     env:
-      APP_DIR: ${{ inputs.app_dir }}
-      STANDARDS_REF: ${{ inputs.standards_ref }}
       RUN_TOKEN: ${{ inputs.run_token }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
       APP: ${{ needs.verify.outputs.app }}
       IMAGE: ${{ needs.verify.outputs.image }}
+      TAG: ${{ needs.eks-build.outputs.tag }}
+      WORKLOAD: ${{ needs.eks-build.outputs.workload }}
+      CHART_APP: ${{ needs.eks-build.outputs.chart_app }}
       NAMESPACE: bank-w1-${{ inputs.run_token }}-pr${{ github.event.pull_request.number }}
     steps:
-      - name: Check the run token
-        run: |
-          [[ "$RUN_TOKEN" =~ ^[a-z0-9]{3,12}$ ]] || { echo "eks_deploy needs a run_token of 3-12 lowercase letters or digits"; exit 1; }
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           repository: Cognition-Partner-Workshops/otterworks
           ref: ${{ inputs.standards_ref }}
           path: .standards
           sparse-checkout: platform/standards
-      - name: Build the image before any cloud credentials exist
-        run: |
-          tag="${GITHUB_SHA::12}"
-          docker build -q -t "$IMAGE:$tag" "$APP_DIR"
-          echo "TAG=$tag" >> "$GITHUB_ENV"
-          read -r workload chart_app < <(python3 -c "import yaml,os;d=os.environ['APP_DIR']+'/deploy/';v={'workload':'web','app':os.environ['APP']}
-          for f in ('values.yaml','values-eks.yaml'):
-            try: v.update({k:x for k,x in (yaml.safe_load(open(d+f)) or {}).items() if k in v})
-            except FileNotFoundError: pass
-          print(v['workload'],v['app'])")
-          echo "WORKLOAD=$workload" >> "$GITHUB_ENV"
-          echo "CHART_APP=$chart_app" >> "$GITHUB_ENV"
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+        with:
+          name: eks-${{ needs.verify.outputs.app }}
+          path: .eks
+      - name: Load the image built without cloud credentials
+        run: gunzip -c .eks/image.tar.gz | docker load -q
       - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
@@ -226,20 +265,44 @@ jobs:
           aws eks update-kubeconfig --name otterworks-dev --region "$AWS_REGION"
           epoch=$(( $(date -u +%s) + 72 * 3600 ))
           kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          # managed-by=otterworks-tenant puts the namespace in the tenant reaper's
+          # expiry sweep; the demo-platform reaper leaves non otterworks-* names alone.
           kubectl label namespace "$NAMESPACE" --overwrite demo/run-token="$RUN_TOKEN" \
-            platform.otterworks.dev/policy=enforced app.kubernetes.io/part-of=bank-wave1
+            platform.otterworks.dev/policy=enforced app.kubernetes.io/part-of=bank-wave1 \
+            app.kubernetes.io/managed-by=otterworks-tenant
           kubectl annotate namespace "$NAMESPACE" --overwrite \
             demo/expires-at="$(date -u -d "@$epoch" +%Y-%m-%dT%H:%M:%SZ)" demo/expires-at-epoch="$epoch"
-          values=(-f "$APP_DIR/deploy/values.yaml")
-          [ -f "$APP_DIR/deploy/values-eks.yaml" ] && values+=(-f "$APP_DIR/deploy/values-eks.yaml")
+          values=(-f .eks/values.yaml)
+          [ -f .eks/values-eks.yaml ] && values+=(-f .eks/values-eks.yaml)
           extra=()
           if [ "$WORKLOAD" = web ]; then
             host="${APP}-pr$PR_NUMBER.$RUN_TOKEN.bank-w1.otterworks.app"
             extra=(--set ingress.enabled=true --set ingress.host="$host")
             echo "HOST=$host" >> "$GITHUB_ENV"
           fi
-          helm upgrade --install "$APP" .standards/platform/standards/helm/app -n "$NAMESPACE" --create-namespace "${values[@]}" \
-            --set image.repository="$IMAGE" --set image.tag="$TAG" "${extra[@]}" --wait --timeout 5m
+          chart=(.standards/platform/standards/helm/app -n "$NAMESPACE" "${values[@]}" \
+            --set image.repository="$IMAGE" --set image.tag="$TAG" "${extra[@]}")
+          # The values come from the pull request. Render them first and refuse
+          # anything the chart would not emit on its own before helm touches the cluster.
+          helm template "$APP" "${chart[@]}" > .eks/rendered.yaml
+          python3 - .eks/rendered.yaml <<'PY'
+          import os, sys, yaml
+          allowed = {"Deployment", "CronJob", "Service", "Ingress", "ConfigMap", "NetworkPolicy", "ServiceMonitor"}
+          ns, bad = os.environ["NAMESPACE"], []
+          for d in yaml.safe_load_all(open(sys.argv[1])):
+              if not d:
+                  continue
+              kind, meta = d.get("kind"), d.get("metadata") or {}
+              if kind not in allowed:
+                  bad.append(f"kind {kind}")
+              if meta.get("namespace") not in (None, ns):
+                  bad.append(f"{kind} {meta.get('name')} targets namespace {meta.get('namespace')}")
+              if kind == "Service" and (d.get("spec") or {}).get("type", "ClusterIP") != "ClusterIP":
+                  bad.append(f"Service {meta.get('name')} is not ClusterIP")
+          if bad:
+              sys.exit("rendered chart rejected: " + "; ".join(bad))
+          PY
+          helm upgrade --install "$APP" "${chart[@]}" --create-namespace --wait --timeout 5m
       - name: Smoke test
         run: |
           if [ "$WORKLOAD" = web ]; then
