@@ -1,0 +1,1408 @@
+{
+  "description": "Ordered HTTP replay corpus for the report-service Java 8 baseline. Each context runs against one fresh Compose database.",
+  "cases": [
+    {
+      "id": "common-health",
+      "context": "common",
+      "method": "GET",
+      "path": "/health"
+    },
+    {
+      "id": "common-health-archive",
+      "context": "common",
+      "method": "GET",
+      "path": "/health/archive"
+    },
+    {
+      "id": "common-unmapped",
+      "context": "common",
+      "method": "GET",
+      "path": "/this-route-is-unmapped",
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "reports-create-crud",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity CRUD Report",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "CSV",
+        "requestedBy": "parity-crud-user",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "crud": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "reports-get-by-id",
+      "context": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports/{crud}",
+      "waitFor": {
+        "path": "/api/v1/reports/{crud}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      },
+      "volatile": [
+        "createdAt",
+        "completedAt"
+      ]
+    },
+    {
+      "id": "reports-get-unknown",
+      "context": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports/999999999"
+    },
+    {
+      "id": "reports-list-default",
+      "context": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports",
+      "volatile": [
+        "createdAt",
+        "completedAt"
+      ]
+    },
+    {
+      "id": "reports-list-user",
+      "context": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports?userId=parity-crud-user",
+      "volatile": [
+        "createdAt",
+        "completedAt"
+      ]
+    },
+    {
+      "id": "reports-list-status",
+      "context": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports?status=COMPLETED",
+      "volatile": [
+        "createdAt",
+        "completedAt"
+      ]
+    },
+    {
+      "id": "reports-list-bad-status",
+      "context": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports?status=NOT_A_STATUS",
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "reports-delete-create",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Delete Report",
+        "category": "AUDIT_LOG",
+        "reportType": "CSV",
+        "requestedBy": "parity-delete-user",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "delete": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "reports-delete",
+      "context": "reports",
+      "method": "DELETE",
+      "path": "/api/v1/reports/{delete}",
+      "waitFor": {
+        "path": "/api/v1/reports/{delete}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "reports-get-after-delete",
+      "context": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports/{delete}"
+    },
+    {
+      "id": "reports-delete-after-delete",
+      "context": "reports",
+      "method": "DELETE",
+      "path": "/api/v1/reports/{delete}"
+    },
+    {
+      "id": "reports-download-unknown",
+      "context": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports/999999999/download"
+    },
+    {
+      "id": "reports-date-iso-z",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Date ISO",
+        "category": "USER_ACTIVITY",
+        "reportType": "CSV",
+        "requestedBy": "parity-date-iso",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00.250+00:00"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "reports-date-only",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Date Only",
+        "category": "USER_ACTIVITY",
+        "reportType": "CSV",
+        "requestedBy": "parity-date-only",
+        "dateFrom": "2026-01-15",
+        "dateTo": "2026-01-16"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "reports-date-epoch-millis",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Date Epoch",
+        "category": "USER_ACTIVITY",
+        "reportType": "CSV",
+        "requestedBy": "parity-date-epoch",
+        "dateFrom": 1768447800000,
+        "dateTo": 1768534200000
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "reports-date-offset",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Date Offset",
+        "category": "USER_ACTIVITY",
+        "reportType": "CSV",
+        "requestedBy": "parity-date-offset",
+        "dateFrom": "2026-01-15T09:00:00+05:30",
+        "dateTo": "2026-01-16T09:00:00+05:30"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "reports-defaulted-dates",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "defaultedDates": true,
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Defaulted Dates",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "CSV",
+        "requestedBy": "parity-defaulted-dates"
+      },
+      "capture": {
+        "defaulted": "id"
+      },
+      "volatile": [
+        "createdAt",
+        "dateFrom",
+        "dateTo"
+      ]
+    },
+    {
+      "id": "reports-validation-missing-report-name",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "category": "AUDIT_LOG",
+        "reportType": "CSV",
+        "requestedBy": "parity-invalid"
+      },
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "reports-validation-missing-category",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Missing Category",
+        "reportType": "CSV",
+        "requestedBy": "parity-invalid"
+      },
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "reports-validation-missing-report-type",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Missing Type",
+        "category": "AUDIT_LOG",
+        "requestedBy": "parity-invalid"
+      },
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "reports-validation-missing-requested-by",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Missing Requester",
+        "category": "AUDIT_LOG",
+        "reportType": "CSV"
+      },
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "reports-validation-blank-name",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "   ",
+        "category": "AUDIT_LOG",
+        "reportType": "CSV",
+        "requestedBy": "parity-invalid"
+      },
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "reports-validation-bad-enum",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Bad Enum",
+        "category": "NOT_A_CATEGORY",
+        "reportType": "CSV",
+        "requestedBy": "parity-invalid"
+      },
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "reports-validation-malformed-json",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": "{\"reportName\":",
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "reports-validation-wrong-content-type",
+      "context": "reports",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "text/plain",
+      "body": "reportName=wrong-content-type",
+      "volatile": [
+        "timestamp"
+      ]
+    },
+    {
+      "id": "outputs-usage-analytics-csv-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Usage CSV Winter",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-usage-csv-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z",
+        "parameters": {
+          "metric": "empty"
+        }
+      },
+      "capture": {
+        "usage_csv_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-usage-analytics-csv-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{usage_csv_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{usage_csv_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-excel-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Usage Excel Winter",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "EXCEL",
+        "requestedBy": "parity-output-usage-excel-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "usage_excel_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-usage-analytics-excel-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{usage_excel_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{usage_excel_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-pdf-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Usage PDF Winter",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "PDF",
+        "requestedBy": "parity-output-usage-pdf-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "usage_pdf_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-usage-analytics-pdf-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{usage_pdf_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{usage_pdf_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-audit-log-csv-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Audit CSV Winter",
+        "category": "AUDIT_LOG",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-audit-csv-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "audit_csv_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-audit-log-csv-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{audit_csv_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{audit_csv_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-audit-log-excel-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Audit Excel Winter",
+        "category": "AUDIT_LOG",
+        "reportType": "EXCEL",
+        "requestedBy": "parity-output-audit-excel-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "audit_excel_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-audit-log-excel-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{audit_excel_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{audit_excel_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-audit-log-pdf-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Audit PDF Winter",
+        "category": "AUDIT_LOG",
+        "reportType": "PDF",
+        "requestedBy": "parity-output-audit-pdf-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "audit_pdf_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-audit-log-pdf-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{audit_pdf_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{audit_pdf_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-storage-summary-csv-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Storage CSV Winter",
+        "category": "STORAGE_SUMMARY",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-storage-csv-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "storage_csv_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-storage-summary-csv-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{storage_csv_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{storage_csv_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-storage-summary-excel-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Storage Excel Winter",
+        "category": "STORAGE_SUMMARY",
+        "reportType": "EXCEL",
+        "requestedBy": "parity-output-storage-excel-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "storage_excel_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-storage-summary-excel-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{storage_excel_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{storage_excel_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-storage-summary-pdf-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Storage PDF Winter",
+        "category": "STORAGE_SUMMARY",
+        "reportType": "PDF",
+        "requestedBy": "parity-output-storage-pdf-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "storage_pdf_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-storage-summary-pdf-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{storage_pdf_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{storage_pdf_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-user-activity-csv-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity User Activity CSV Winter",
+        "category": "USER_ACTIVITY",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-user-csv-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "user_csv_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-user-activity-csv-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{user_csv_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{user_csv_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-user-activity-excel-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity User Activity Excel Winter",
+        "category": "USER_ACTIVITY",
+        "reportType": "EXCEL",
+        "requestedBy": "parity-output-user-excel-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "user_excel_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-user-activity-excel-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{user_excel_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{user_excel_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-user-activity-pdf-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity User Activity PDF Winter",
+        "category": "USER_ACTIVITY",
+        "reportType": "PDF",
+        "requestedBy": "parity-output-user-pdf-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "user_pdf_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-user-activity-pdf-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{user_pdf_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{user_pdf_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-collaboration-metrics-csv-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Collaboration CSV Winter",
+        "category": "COLLABORATION_METRICS",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-collaboration-csv-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "collaboration_csv_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-collaboration-metrics-csv-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{collaboration_csv_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{collaboration_csv_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-collaboration-metrics-excel-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Collaboration Excel Winter",
+        "category": "COLLABORATION_METRICS",
+        "reportType": "EXCEL",
+        "requestedBy": "parity-output-collaboration-excel-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "collaboration_excel_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-collaboration-metrics-excel-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{collaboration_excel_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{collaboration_excel_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-collaboration-metrics-pdf-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Collaboration PDF Winter",
+        "category": "COLLABORATION_METRICS",
+        "reportType": "PDF",
+        "requestedBy": "parity-output-collaboration-pdf-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "collaboration_pdf_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-collaboration-metrics-pdf-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{collaboration_pdf_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{collaboration_pdf_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-system-health-csv-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity System Health CSV Winter",
+        "category": "SYSTEM_HEALTH",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-system-csv-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "system_csv_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-system-health-csv-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{system_csv_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{system_csv_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-system-health-excel-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity System Health Excel Winter",
+        "category": "SYSTEM_HEALTH",
+        "reportType": "EXCEL",
+        "requestedBy": "parity-output-system-excel-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "system_excel_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-system-health-excel-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{system_excel_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{system_excel_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-system-health-pdf-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity System Health PDF Winter",
+        "category": "SYSTEM_HEALTH",
+        "reportType": "PDF",
+        "requestedBy": "parity-output-system-pdf-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "system_pdf_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-system-health-pdf-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{system_pdf_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{system_pdf_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-compliance-csv-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Compliance CSV Winter",
+        "category": "COMPLIANCE",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-compliance-csv-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "compliance_csv_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-compliance-csv-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{compliance_csv_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{compliance_csv_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-compliance-excel-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Compliance Excel Winter",
+        "category": "COMPLIANCE",
+        "reportType": "EXCEL",
+        "requestedBy": "parity-output-compliance-excel-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "compliance_excel_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-compliance-excel-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{compliance_excel_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{compliance_excel_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-compliance-pdf-winter-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Compliance PDF Winter",
+        "category": "COMPLIANCE",
+        "reportType": "PDF",
+        "requestedBy": "parity-output-compliance-pdf-winter",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z"
+      },
+      "capture": {
+        "compliance_pdf_winter": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-compliance-pdf-winter-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{compliance_pdf_winter}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{compliance_pdf_winter}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-csv-summer-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Usage CSV Summer",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-usage-csv-summer",
+        "dateFrom": "2026-07-01T03:30:00Z",
+        "dateTo": "2026-07-02T03:30:00Z"
+      },
+      "capture": {
+        "usage_csv_summer": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-usage-analytics-csv-summer-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{usage_csv_summer}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{usage_csv_summer}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-excel-summer-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Usage Excel Summer",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "EXCEL",
+        "requestedBy": "parity-output-usage-excel-summer",
+        "dateFrom": "2026-07-01T03:30:00Z",
+        "dateTo": "2026-07-02T03:30:00Z"
+      },
+      "capture": {
+        "usage_excel_summer": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-usage-analytics-excel-summer-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{usage_excel_summer}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{usage_excel_summer}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-pdf-summer-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Usage PDF Summer",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "PDF",
+        "requestedBy": "parity-output-usage-pdf-summer",
+        "dateFrom": "2026-07-01T03:30:00Z",
+        "dateTo": "2026-07-02T03:30:00Z"
+      },
+      "capture": {
+        "usage_pdf_summer": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-usage-analytics-pdf-summer-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{usage_pdf_summer}/download",
+      "waitFor": {
+        "path": "/api/v1/reports/{usage_pdf_summer}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      }
+    },
+    {
+      "id": "outputs-analytics-upstream-error-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Analytics Upstream Error",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-upstream-error",
+        "dateFrom": "2026-01-15T03:30:00Z",
+        "dateTo": "2026-01-16T03:30:00Z",
+        "parameters": {
+          "metric": "upstream-error"
+        }
+      },
+      "capture": {
+        "analytics_upstream_error": "id"
+      },
+      "volatile": [
+        "createdAt"
+      ]
+    },
+    {
+      "id": "outputs-analytics-upstream-error-status",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{analytics_upstream_error}",
+      "waitFor": {
+        "path": "/api/v1/reports/{analytics_upstream_error}",
+        "field": "status",
+        "in": [
+          "FAILED"
+        ],
+        "timeoutSeconds": 90
+      },
+      "volatile": [
+        "createdAt",
+        "completedAt"
+      ]
+    },
+    {
+      "id": "outputs-defaulted-dates-create",
+      "context": "outputs",
+      "method": "POST",
+      "path": "/api/v1/reports",
+      "defaultedDates": true,
+      "contentType": "application/json",
+      "body": {
+        "reportName": "Parity Default Dates CSV",
+        "category": "USAGE_ANALYTICS",
+        "reportType": "CSV",
+        "requestedBy": "parity-output-default-dates"
+      },
+      "capture": {
+        "default_csv": "id"
+      },
+      "volatile": [
+        "createdAt",
+        "dateFrom",
+        "dateTo"
+      ]
+    },
+    {
+      "id": "outputs-defaulted-dates-download",
+      "context": "outputs",
+      "method": "GET",
+      "path": "/api/v1/reports/{default_csv}/download",
+      "defaultedDates": true,
+      "waitFor": {
+        "path": "/api/v1/reports/{default_csv}",
+        "field": "status",
+        "in": [
+          "COMPLETED"
+        ],
+        "timeoutSeconds": 90
+      },
+      "volatile": [
+        "dateFrom",
+        "dateTo"
+      ]
+    },
+    {
+      "id": "reconciliation-list",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation"
+    },
+    {
+      "id": "reconciliation-latest",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation/latest",
+      "volatile": [
+        "generated_at"
+      ]
+    },
+    {
+      "id": "reconciliation-run-001-json",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation/char-run-001",
+      "volatile": [
+        "generated_at"
+      ]
+    },
+    {
+      "id": "reconciliation-run-001-csv",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation/char-run-001.csv"
+    },
+    {
+      "id": "reconciliation-run-001-html",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation/char-run-001.html",
+      "volatile": [
+        "generated_at"
+      ]
+    },
+    {
+      "id": "reconciliation-run-002-json",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation/char-run-002",
+      "volatile": [
+        "generated_at"
+      ]
+    },
+    {
+      "id": "reconciliation-run-002-csv",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation/char-run-002.csv"
+    },
+    {
+      "id": "reconciliation-run-002-html",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation/char-run-002.html",
+      "volatile": [
+        "generated_at"
+      ]
+    },
+    {
+      "id": "reconciliation-unknown-run",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation/no-such-run"
+    },
+    {
+      "id": "reconciliation-foreign-namespace-run",
+      "context": "reconciliation",
+      "method": "GET",
+      "path": "/api/v1/reports/reconciliation/other-ns-run"
+    },
+    {
+      "id": "archive-document-default",
+      "context": "archive",
+      "method": "GET",
+      "path": "/api/v1/reports/archive/documents/3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f"
+    },
+    {
+      "id": "archive-document-raw",
+      "context": "archive",
+      "method": "GET",
+      "path": "/api/v1/reports/archive/documents/3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f?raw=true"
+    },
+    {
+      "id": "archive-document-hash",
+      "context": "archive",
+      "method": "GET",
+      "path": "/api/v1/reports/archive/documents/3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f/hash"
+    },
+    {
+      "id": "archive-document-padded-id",
+      "context": "archive",
+      "method": "GET",
+      "path": "/api/v1/reports/archive/documents/CHAR-DOC-SHORT%20%20"
+    },
+    {
+      "id": "archive-document-short-id-default",
+      "context": "archive",
+      "method": "GET",
+      "path": "/api/v1/reports/archive/documents/CHAR-DOC-SHORT"
+    },
+    {
+      "id": "archive-document-unknown",
+      "context": "archive",
+      "method": "GET",
+      "path": "/api/v1/reports/archive/documents/no-such-document"
+    }
+  ]
+}

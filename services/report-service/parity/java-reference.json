@@ -1,0 +1,1253 @@
+{
+  "recordedUtc": "2026-10-23T22:18:25Z",
+  "cases": [
+    {
+      "id": "common-health",
+      "context": "common",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"service\": \"report-service\", \"version\": \"0.1.0\", \"status\": \"healthy\"}"
+        }
+      }
+    },
+    {
+      "id": "common-health-archive",
+      "context": "common",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"store\": \"postgresql\", \"namespace\": \"char-after\", \"status\": \"healthy\"}"
+        }
+      }
+    },
+    {
+      "id": "common-unmapped",
+      "context": "common",
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 404, \"error\": \"Not Found\", \"path\": \"/this-route-is-unmapped\"}"
+        }
+      }
+    },
+    {
+      "id": "reports-create-crud",
+      "context": "reports",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:crud>\", \"reportName\": \"Parity CRUD Report\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-crud-user\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "reports-get-by-id",
+      "context": "reports",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:crud>\", \"reportName\": \"Parity CRUD Report\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"COMPLETED\", \"requestedBy\": \"parity-crud-user\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"fileSizeBytes\": 725, \"rowCount\": 3, \"downloadUrl\": \"/api/v1/reports/{crud}/download\", \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "reports-get-unknown",
+      "context": "reports",
+      "response": {
+        "status": 404,
+        "contentType": null,
+        "contentDisposition": null,
+        "body": {
+          "kind": "empty",
+          "value": ""
+        }
+      }
+    },
+    {
+      "id": "reports-list-default",
+      "context": "reports",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"reports\": [{\"id\": \"<id:crud>\", \"reportName\": \"Parity CRUD Report\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"COMPLETED\", \"requestedBy\": \"parity-crud-user\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"fileSizeBytes\": 725, \"rowCount\": 3, \"downloadUrl\": \"/api/v1/reports/{crud}/download\", \"errorMessage\": null}], \"total\": 1}"
+        }
+      }
+    },
+    {
+      "id": "reports-list-user",
+      "context": "reports",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"reports\": [{\"id\": \"<id:crud>\", \"reportName\": \"Parity CRUD Report\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"COMPLETED\", \"requestedBy\": \"parity-crud-user\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"fileSizeBytes\": 725, \"rowCount\": 3, \"downloadUrl\": \"/api/v1/reports/{crud}/download\", \"errorMessage\": null}], \"total\": 1}"
+        }
+      }
+    },
+    {
+      "id": "reports-list-status",
+      "context": "reports",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"reports\": [{\"id\": \"<id:crud>\", \"reportName\": \"Parity CRUD Report\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"COMPLETED\", \"requestedBy\": \"parity-crud-user\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"fileSizeBytes\": 725, \"rowCount\": 3, \"downloadUrl\": \"/api/v1/reports/{crud}/download\", \"errorMessage\": null}], \"total\": 1}"
+        }
+      }
+    },
+    {
+      "id": "reports-list-bad-status",
+      "context": "reports",
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 400, \"error\": \"Bad Request\", \"path\": \"/api/v1/reports\"}"
+        }
+      }
+    },
+    {
+      "id": "reports-delete-create",
+      "context": "reports",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:delete>\", \"reportName\": \"Parity Delete Report\", \"category\": \"AUDIT_LOG\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-delete-user\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "reports-delete",
+      "context": "reports",
+      "response": {
+        "status": 204,
+        "contentType": null,
+        "contentDisposition": null,
+        "body": {
+          "kind": "empty",
+          "value": ""
+        }
+      }
+    },
+    {
+      "id": "reports-get-after-delete",
+      "context": "reports",
+      "response": {
+        "status": 404,
+        "contentType": null,
+        "contentDisposition": null,
+        "body": {
+          "kind": "empty",
+          "value": ""
+        }
+      }
+    },
+    {
+      "id": "reports-delete-after-delete",
+      "context": "reports",
+      "response": {
+        "status": 404,
+        "contentType": null,
+        "contentDisposition": null,
+        "body": {
+          "kind": "empty",
+          "value": ""
+        }
+      }
+    },
+    {
+      "id": "reports-download-unknown",
+      "context": "reports",
+      "response": {
+        "status": 404,
+        "contentType": null,
+        "contentDisposition": null,
+        "body": {
+          "kind": "empty",
+          "value": ""
+        }
+      }
+    },
+    {
+      "id": "reports-date-iso-z",
+      "context": "reports",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": 3, \"reportName\": \"Parity Date ISO\", \"category\": \"USER_ACTIVITY\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-date-iso\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.250+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "reports-date-only",
+      "context": "reports",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": 4, \"reportName\": \"Parity Date Only\", \"category\": \"USER_ACTIVITY\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-date-only\", \"dateFrom\": \"2026-01-15T00:00:00.000+00:00\", \"dateTo\": \"2026-01-16T00:00:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "reports-date-epoch-millis",
+      "context": "reports",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": 5, \"reportName\": \"Parity Date Epoch\", \"category\": \"USER_ACTIVITY\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-date-epoch\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "reports-date-offset",
+      "context": "reports",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": 6, \"reportName\": \"Parity Date Offset\", \"category\": \"USER_ACTIVITY\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-date-offset\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "reports-defaulted-dates",
+      "context": "reports",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:defaulted>\", \"reportName\": \"Parity Defaulted Dates\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-defaulted-dates\", \"dateFrom\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"dateTo\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "reports-validation-missing-report-name",
+      "context": "reports",
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 400, \"error\": \"Bad Request\", \"path\": \"/api/v1/reports\"}"
+        }
+      }
+    },
+    {
+      "id": "reports-validation-missing-category",
+      "context": "reports",
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 400, \"error\": \"Bad Request\", \"path\": \"/api/v1/reports\"}"
+        }
+      }
+    },
+    {
+      "id": "reports-validation-missing-report-type",
+      "context": "reports",
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 400, \"error\": \"Bad Request\", \"path\": \"/api/v1/reports\"}"
+        }
+      }
+    },
+    {
+      "id": "reports-validation-missing-requested-by",
+      "context": "reports",
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 400, \"error\": \"Bad Request\", \"path\": \"/api/v1/reports\"}"
+        }
+      }
+    },
+    {
+      "id": "reports-validation-blank-name",
+      "context": "reports",
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 400, \"error\": \"Bad Request\", \"path\": \"/api/v1/reports\"}"
+        }
+      }
+    },
+    {
+      "id": "reports-validation-bad-enum",
+      "context": "reports",
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 400, \"error\": \"Bad Request\", \"path\": \"/api/v1/reports\"}"
+        }
+      }
+    },
+    {
+      "id": "reports-validation-malformed-json",
+      "context": "reports",
+      "response": {
+        "status": 400,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 400, \"error\": \"Bad Request\", \"path\": \"/api/v1/reports\"}"
+        }
+      }
+    },
+    {
+      "id": "reports-validation-wrong-content-type",
+      "context": "reports",
+      "response": {
+        "status": 415,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"timestamp\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"status\": 415, \"error\": \"Unsupported Media Type\", \"path\": \"/api/v1/reports\"}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-csv-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:usage_csv_winter>\", \"reportName\": \"Parity Usage CSV Winter\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-usage-csv-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-csv-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv",
+        "contentDisposition": "attachment; filename=\"parity_usage_csv_winter<now:yyyyMMdd_HHmmss:UTC>.csv\"",
+        "body": {
+          "kind": "empty",
+          "value": ""
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-excel-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:usage_excel_winter>\", \"reportName\": \"Parity Usage Excel Winter\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"EXCEL\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-usage-excel-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-excel-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "contentDisposition": "attachment; filename=\"parity_usage_excel_winter<now:yyyyMMdd_HHmmss:UTC>.xlsx\"",
+        "body": {
+          "kind": "excel",
+          "value": "{\"sheets\": [{\"auto_filter_ref\": null, \"merged_ranges\": [\"A1:B1\"], \"name\": \"Summary\", \"rows\": [[{\"type\": \"s\", \"value\": \"OtterWorks Report\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"n\", \"value\": \"\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"Report Name:\"}, {\"type\": \"s\", \"value\": \"Parity Usage Excel Winter\"}], [{\"type\": \"s\", \"value\": \"Category:\"}, {\"type\": \"s\", \"value\": \"USAGE_ANALYTICS\"}], [{\"type\": \"s\", \"value\": \"Period:\"}, {\"type\": \"s\", \"value\": \"Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"}], [{\"type\": \"s\", \"value\": \"Generated:\"}, {\"type\": \"s\", \"value\": \"<now:display:UTC>\"}], [{\"type\": \"s\", \"value\": \"Total Rows:\"}, {\"type\": \"n\", \"value\": \"3.0\"}], [{\"type\": \"s\", \"value\": \"Requested By:\"}, {\"type\": \"s\", \"value\": \"parity-output-usage-excel-winter\"}]]}, {\"auto_filter_ref\": \"A1:J4\", \"merged_ranges\": [], \"name\": \"Data\", \"rows\": [[{\"type\": \"s\", \"value\": \"Event id\"}, {\"type\": \"s\", \"value\": \"Event type\"}, {\"type\": \"s\", \"value\": \"User id\"}, {\"type\": \"s\", \"value\": \"Timestamp\"}, {\"type\": \"s\", \"value\": \"Duration ms\"}, {\"type\": \"s\", \"value\": \"Status\"}, {\"type\": \"s\", \"value\": \"Note\"}, {\"type\": \"s\", \"value\": \"Window from\"}, {\"type\": \"s\", \"value\": \"Window to\"}, {\"type\": \"s\", \"value\": \"Metric\"}], [{\"type\": \"s\", \"value\": \"evt-0001\"}, {\"type\": \"s\", \"value\": \"doc_edit\"}, {\"type\": \"s\", \"value\": \"user-001\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:45:00Z\"}, {\"type\": \"s\", \"value\": \"250\"}, {\"type\": \"s\", \"value\": \"success\"}, {\"type\": \"s\", \"value\": \"plain\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"evt-0002\"}, {\"type\": \"s\", \"value\": \"file_upload\"}, {\"type\": \"s\", \"value\": \"user-002\"}, {\"type\": \"s\", \"value\": \"2026-01-15T04:00:00Z\"}, {\"type\": \"s\", \"value\": \"1234.5\"}, {\"type\": \"s\", \"value\": \"\"}, {\"type\": \"s\", \"value\": \"comma, \\\"quote\\\" and café\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"evt-0003\"}, {\"type\": \"s\", \"value\": \"search_query\"}, {\"type\": \"s\", \"value\": \"user-003\"}, {\"type\": \"s\", \"value\": \"2026-01-16T23:59:59Z\"}, {\"type\": \"s\", \"value\": \"0\"}, {\"type\": \"s\", \"value\": \"error\"}, {\"type\": \"s\", \"value\": \"line\\nbreak\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}]]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-pdf-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:usage_pdf_winter>\", \"reportName\": \"Parity Usage PDF Winter\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"PDF\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-usage-pdf-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-pdf-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentDisposition": "attachment; filename=\"parity_usage_pdf_winter<now:yyyyMMdd_HHmmss:UTC>.pdf\"",
+        "body": {
+          "kind": "pdf",
+          "value": "{\"page_count\": 1, \"pages\": [{\"mediabox\": [\"0\", \"0\", \"595\", \"842\"], \"rotation\": 90, \"text_lines\": [\"OtterWorks Report  \", \"Parity Usage PDF Winter  \", \"Period: Jan 15, 2026 03:30 — Jan 16, 2026 03:30  \", \"Generated: <now:display:UTC> | Rows: 3\", \" \", \" \", \"This report was generated by OtterWorks Report Service v0.1.0. Data is subject to the reporting period specified above.\", \"Event id Event type User id Timestamp Duration ms Status Note Window from Window to Metric\", \"evt-0001 doc_edit user-001 2026-01-15T03:\", \"45:00Z\", \"250 success plain 2026-01-15T03:\", \"30:00Z\", \"2026-01-16T03:\", \"30:00Z\", \"evt-0002 file_upload user-002 2026-01-15T04:\", \"00:00Z\", \"1234.5 comma, \\\"quote\\\"\", \"and café\", \"2026-01-15T03:\", \"30:00Z\", \"2026-01-16T03:\", \"30:00Z\", \"evt-0003 search_query user-003 2026-01-16T23:\", \"59:59Z\", \"0 error line\", \"break\", \"2026-01-15T03:\", \"30:00Z\", \"2026-01-16T03:\", \"30:00Z\"]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-audit-log-csv-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:audit_csv_winter>\", \"reportName\": \"Parity Audit CSV Winter\", \"category\": \"AUDIT_LOG\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-audit-csv-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-audit-log-csv-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv",
+        "contentDisposition": "attachment; filename=\"parity_audit_csv_winter<now:yyyyMMdd_HHmmss:UTC>.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "\"# OtterWorks Report: Parity Audit CSV Winter\"\n\"# Generated: <now:display:UTC>\"\n\"# Period: Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"\n\"# Rows: 2\"\n\"# Generated by OtterWorks Reporting | INTERNAL USE ONLY\"\n\"\"\n\"audit_id\",\"action\",\"actor\",\"result\",\"ip_address\",\"timestamp\",\"resource\",\"window_from\",\"window_to\"\n\"aud-0001\",\"LOGIN\",\"user-001\",\"SUCCESS\",\"10.0.0.1\",\"2026-01-15T03:31:00Z\",\"/auth\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\"\n\"aud-0002\",\"PERMISSION_CHANGE\",\"admin\",\"DENIED\",\"10.0.0.2\",\"2026-01-15T05:00:00Z\",\"/files/doc-1\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\"\n"
+        }
+      }
+    },
+    {
+      "id": "outputs-audit-log-excel-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:audit_excel_winter>\", \"reportName\": \"Parity Audit Excel Winter\", \"category\": \"AUDIT_LOG\", \"reportType\": \"EXCEL\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-audit-excel-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-audit-log-excel-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "contentDisposition": "attachment; filename=\"parity_audit_excel_winter<now:yyyyMMdd_HHmmss:UTC>.xlsx\"",
+        "body": {
+          "kind": "excel",
+          "value": "{\"sheets\": [{\"auto_filter_ref\": null, \"merged_ranges\": [\"A1:B1\"], \"name\": \"Summary\", \"rows\": [[{\"type\": \"s\", \"value\": \"OtterWorks Report\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"n\", \"value\": \"\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"Report Name:\"}, {\"type\": \"s\", \"value\": \"Parity Audit Excel Winter\"}], [{\"type\": \"s\", \"value\": \"Category:\"}, {\"type\": \"s\", \"value\": \"AUDIT_LOG\"}], [{\"type\": \"s\", \"value\": \"Period:\"}, {\"type\": \"s\", \"value\": \"Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"}], [{\"type\": \"s\", \"value\": \"Generated:\"}, {\"type\": \"s\", \"value\": \"<now:display:UTC>\"}], [{\"type\": \"s\", \"value\": \"Total Rows:\"}, {\"type\": \"n\", \"value\": \"2.0\"}], [{\"type\": \"s\", \"value\": \"Requested By:\"}, {\"type\": \"s\", \"value\": \"parity-output-audit-excel-winter\"}]]}, {\"auto_filter_ref\": \"A1:I3\", \"merged_ranges\": [], \"name\": \"Data\", \"rows\": [[{\"type\": \"s\", \"value\": \"Audit id\"}, {\"type\": \"s\", \"value\": \"Action\"}, {\"type\": \"s\", \"value\": \"Actor\"}, {\"type\": \"s\", \"value\": \"Result\"}, {\"type\": \"s\", \"value\": \"Ip address\"}, {\"type\": \"s\", \"value\": \"Timestamp\"}, {\"type\": \"s\", \"value\": \"Resource\"}, {\"type\": \"s\", \"value\": \"Window from\"}, {\"type\": \"s\", \"value\": \"Window to\"}], [{\"type\": \"s\", \"value\": \"aud-0001\"}, {\"type\": \"s\", \"value\": \"LOGIN\"}, {\"type\": \"s\", \"value\": \"user-001\"}, {\"type\": \"s\", \"value\": \"SUCCESS\"}, {\"type\": \"s\", \"value\": \"10.0.0.1\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:31:00Z\"}, {\"type\": \"s\", \"value\": \"/auth\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}], [{\"type\": \"s\", \"value\": \"aud-0002\"}, {\"type\": \"s\", \"value\": \"PERMISSION_CHANGE\"}, {\"type\": \"s\", \"value\": \"admin\"}, {\"type\": \"s\", \"value\": \"DENIED\"}, {\"type\": \"s\", \"value\": \"10.0.0.2\"}, {\"type\": \"s\", \"value\": \"2026-01-15T05:00:00Z\"}, {\"type\": \"s\", \"value\": \"/files/doc-1\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}]]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-audit-log-pdf-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:audit_pdf_winter>\", \"reportName\": \"Parity Audit PDF Winter\", \"category\": \"AUDIT_LOG\", \"reportType\": \"PDF\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-audit-pdf-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-audit-log-pdf-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentDisposition": "attachment; filename=\"parity_audit_pdf_winter<now:yyyyMMdd_HHmmss:UTC>.pdf\"",
+        "body": {
+          "kind": "pdf",
+          "value": "{\"page_count\": 1, \"pages\": [{\"mediabox\": [\"0\", \"0\", \"595\", \"842\"], \"rotation\": 90, \"text_lines\": [\"OtterWorks Report  \", \"Parity Audit PDF Winter  \", \"Period: Jan 15, 2026 03:30 — Jan 16, 2026 03:30  \", \"Generated: <now:display:UTC> | Rows: 2\", \" \", \" \", \"This report was generated by OtterWorks Report Service v0.1.0. Data is subject to the reporting period specified above.\", \"Audit id Action Actor Result Ip address Timestamp Resource Window from Window to\", \"aud-0001 LOGIN user-001 SUCCESS 10.0.0.1 2026-01-15T03:31:\", \"00Z\", \"/auth 2026-01-15T03:30:\", \"00Z\", \"2026-01-16T03:30:\", \"00Z\", \"aud-0002 PERMISSION_CH\", \"ANGE\", \"admin DENIED 10.0.0.2 2026-01-15T05:00:\", \"00Z\", \"/files/doc-1 2026-01-15T03:30:\", \"00Z\", \"2026-01-16T03:30:\", \"00Z\"]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-storage-summary-csv-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:storage_csv_winter>\", \"reportName\": \"Parity Storage CSV Winter\", \"category\": \"STORAGE_SUMMARY\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-storage-csv-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-storage-summary-csv-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv",
+        "contentDisposition": "attachment; filename=\"parity_storage_csv_winter<now:yyyyMMdd_HHmmss:UTC>.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "\"# OtterWorks Report: Parity Storage CSV Winter\"\n\"# Generated: <now:display:UTC>\"\n\"# Period: Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"\n\"# Rows: 2\"\n\"# Generated by OtterWorks Reporting | INTERNAL USE ONLY\"\n\"\"\n\"user_id\",\"email\",\"files_uploaded\",\"storage_used_mb\",\"active\",\"window_from\",\"window_to\"\n\"user-001\",\"user1@otterworks.example.com\",\"13\",\"150.25\",\"true\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\"\n\"user-002\",\"user2@otterworks.example.com\",\"0\",\"0\",\"false\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\"\n"
+        }
+      }
+    },
+    {
+      "id": "outputs-storage-summary-excel-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:storage_excel_winter>\", \"reportName\": \"Parity Storage Excel Winter\", \"category\": \"STORAGE_SUMMARY\", \"reportType\": \"EXCEL\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-storage-excel-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-storage-summary-excel-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "contentDisposition": "attachment; filename=\"parity_storage_excel_winter<now:yyyyMMdd_HHmmss:UTC>.xlsx\"",
+        "body": {
+          "kind": "excel",
+          "value": "{\"sheets\": [{\"auto_filter_ref\": null, \"merged_ranges\": [\"A1:B1\"], \"name\": \"Summary\", \"rows\": [[{\"type\": \"s\", \"value\": \"OtterWorks Report\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"n\", \"value\": \"\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"Report Name:\"}, {\"type\": \"s\", \"value\": \"Parity Storage Excel Winter\"}], [{\"type\": \"s\", \"value\": \"Category:\"}, {\"type\": \"s\", \"value\": \"STORAGE_SUMMARY\"}], [{\"type\": \"s\", \"value\": \"Period:\"}, {\"type\": \"s\", \"value\": \"Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"}], [{\"type\": \"s\", \"value\": \"Generated:\"}, {\"type\": \"s\", \"value\": \"<now:display:UTC>\"}], [{\"type\": \"s\", \"value\": \"Total Rows:\"}, {\"type\": \"n\", \"value\": \"2.0\"}], [{\"type\": \"s\", \"value\": \"Requested By:\"}, {\"type\": \"s\", \"value\": \"parity-output-storage-excel-winter\"}]]}, {\"auto_filter_ref\": \"A1:G3\", \"merged_ranges\": [], \"name\": \"Data\", \"rows\": [[{\"type\": \"s\", \"value\": \"User id\"}, {\"type\": \"s\", \"value\": \"Email\"}, {\"type\": \"s\", \"value\": \"Files uploaded\"}, {\"type\": \"s\", \"value\": \"Storage used mb\"}, {\"type\": \"s\", \"value\": \"Active\"}, {\"type\": \"s\", \"value\": \"Window from\"}, {\"type\": \"s\", \"value\": \"Window to\"}], [{\"type\": \"s\", \"value\": \"user-001\"}, {\"type\": \"s\", \"value\": \"user1@otterworks.example.com\"}, {\"type\": \"s\", \"value\": \"13\"}, {\"type\": \"s\", \"value\": \"150.25\"}, {\"type\": \"s\", \"value\": \"true\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}], [{\"type\": \"s\", \"value\": \"user-002\"}, {\"type\": \"s\", \"value\": \"user2@otterworks.example.com\"}, {\"type\": \"s\", \"value\": \"0\"}, {\"type\": \"s\", \"value\": \"0\"}, {\"type\": \"s\", \"value\": \"false\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}]]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-storage-summary-pdf-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:storage_pdf_winter>\", \"reportName\": \"Parity Storage PDF Winter\", \"category\": \"STORAGE_SUMMARY\", \"reportType\": \"PDF\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-storage-pdf-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-storage-summary-pdf-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentDisposition": "attachment; filename=\"parity_storage_pdf_winter<now:yyyyMMdd_HHmmss:UTC>.pdf\"",
+        "body": {
+          "kind": "pdf",
+          "value": "{\"page_count\": 1, \"pages\": [{\"mediabox\": [\"0\", \"0\", \"595\", \"842\"], \"rotation\": 90, \"text_lines\": [\"OtterWorks Report  \", \"Parity Storage PDF Winter  \", \"Period: Jan 15, 2026 03:30 — Jan 16, 2026 03:30  \", \"Generated: <now:display:UTC> | Rows: 2\", \" \", \" \", \"This report was generated by OtterWorks Report Service v0.1.0. Data is subject to the reporting period specified above.\", \"User id Email Files uploaded Storage used mb Active Window from Window to\", \"user-001 user1@otterworks.exam\", \"ple.com\", \"13 150.25 true 2026-01-15T03:30:00Z 2026-01-16T03:30:00Z\", \"user-002 user2@otterworks.exam\", \"ple.com\", \"0 0 false 2026-01-15T03:30:00Z 2026-01-16T03:30:00Z\"]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-user-activity-csv-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:user_csv_winter>\", \"reportName\": \"Parity User Activity CSV Winter\", \"category\": \"USER_ACTIVITY\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-user-csv-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-user-activity-csv-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv",
+        "contentDisposition": "attachment; filename=\"parity_user_activity_csv_winter<now:yyyyMMdd_HHmmss:UTC>.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "\"# OtterWorks Report: Parity User Activity CSV Winter\"\n\"# Generated: <now:display:UTC>\"\n\"# Period: Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"\n\"# Rows: 2\"\n\"# Generated by OtterWorks Reporting | INTERNAL USE ONLY\"\n\"\"\n\"user_id\",\"email\",\"files_uploaded\",\"storage_used_mb\",\"active\",\"window_from\",\"window_to\"\n\"user-001\",\"user1@otterworks.example.com\",\"13\",\"150.25\",\"true\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\"\n\"user-002\",\"user2@otterworks.example.com\",\"0\",\"0\",\"false\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\"\n"
+        }
+      }
+    },
+    {
+      "id": "outputs-user-activity-excel-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:user_excel_winter>\", \"reportName\": \"Parity User Activity Excel Winter\", \"category\": \"USER_ACTIVITY\", \"reportType\": \"EXCEL\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-user-excel-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-user-activity-excel-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "contentDisposition": "attachment; filename=\"parity_user_activity_excel_winter<now:yyyyMMdd_HHmmss:UTC>.xlsx\"",
+        "body": {
+          "kind": "excel",
+          "value": "{\"sheets\": [{\"auto_filter_ref\": null, \"merged_ranges\": [\"A1:B1\"], \"name\": \"Summary\", \"rows\": [[{\"type\": \"s\", \"value\": \"OtterWorks Report\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"n\", \"value\": \"\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"Report Name:\"}, {\"type\": \"s\", \"value\": \"Parity User Activity Excel Winter\"}], [{\"type\": \"s\", \"value\": \"Category:\"}, {\"type\": \"s\", \"value\": \"USER_ACTIVITY\"}], [{\"type\": \"s\", \"value\": \"Period:\"}, {\"type\": \"s\", \"value\": \"Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"}], [{\"type\": \"s\", \"value\": \"Generated:\"}, {\"type\": \"s\", \"value\": \"<now:display:UTC>\"}], [{\"type\": \"s\", \"value\": \"Total Rows:\"}, {\"type\": \"n\", \"value\": \"2.0\"}], [{\"type\": \"s\", \"value\": \"Requested By:\"}, {\"type\": \"s\", \"value\": \"parity-output-user-excel-winter\"}]]}, {\"auto_filter_ref\": \"A1:G3\", \"merged_ranges\": [], \"name\": \"Data\", \"rows\": [[{\"type\": \"s\", \"value\": \"User id\"}, {\"type\": \"s\", \"value\": \"Email\"}, {\"type\": \"s\", \"value\": \"Files uploaded\"}, {\"type\": \"s\", \"value\": \"Storage used mb\"}, {\"type\": \"s\", \"value\": \"Active\"}, {\"type\": \"s\", \"value\": \"Window from\"}, {\"type\": \"s\", \"value\": \"Window to\"}], [{\"type\": \"s\", \"value\": \"user-001\"}, {\"type\": \"s\", \"value\": \"user1@otterworks.example.com\"}, {\"type\": \"s\", \"value\": \"13\"}, {\"type\": \"s\", \"value\": \"150.25\"}, {\"type\": \"s\", \"value\": \"true\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}], [{\"type\": \"s\", \"value\": \"user-002\"}, {\"type\": \"s\", \"value\": \"user2@otterworks.example.com\"}, {\"type\": \"s\", \"value\": \"0\"}, {\"type\": \"s\", \"value\": \"0\"}, {\"type\": \"s\", \"value\": \"false\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}]]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-user-activity-pdf-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:user_pdf_winter>\", \"reportName\": \"Parity User Activity PDF Winter\", \"category\": \"USER_ACTIVITY\", \"reportType\": \"PDF\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-user-pdf-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-user-activity-pdf-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentDisposition": "attachment; filename=\"parity_user_activity_pdf_winter<now:yyyyMMdd_HHmmss:UTC>.pdf\"",
+        "body": {
+          "kind": "pdf",
+          "value": "{\"page_count\": 1, \"pages\": [{\"mediabox\": [\"0\", \"0\", \"595\", \"842\"], \"rotation\": 90, \"text_lines\": [\"OtterWorks Report  \", \"Parity User Activity PDF Winter  \", \"Period: Jan 15, 2026 03:30 — Jan 16, 2026 03:30  \", \"Generated: <now:display:UTC> | Rows: 2\", \" \", \" \", \"This report was generated by OtterWorks Report Service v0.1.0. Data is subject to the reporting period specified above.\", \"User id Email Files uploaded Storage used mb Active Window from Window to\", \"user-001 user1@otterworks.exam\", \"ple.com\", \"13 150.25 true 2026-01-15T03:30:00Z 2026-01-16T03:30:00Z\", \"user-002 user2@otterworks.exam\", \"ple.com\", \"0 0 false 2026-01-15T03:30:00Z 2026-01-16T03:30:00Z\"]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-collaboration-metrics-csv-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:collaboration_csv_winter>\", \"reportName\": \"Parity Collaboration CSV Winter\", \"category\": \"COLLABORATION_METRICS\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-collaboration-csv-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-collaboration-metrics-csv-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv",
+        "contentDisposition": "attachment; filename=\"parity_collaboration_csv_winter<now:yyyyMMdd_HHmmss:UTC>.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "\"# OtterWorks Report: Parity Collaboration CSV Winter\"\n\"# Generated: <now:display:UTC>\"\n\"# Period: Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"\n\"# Rows: 3\"\n\"# Generated by OtterWorks Reporting | INTERNAL USE ONLY\"\n\"\"\n\"event_id\",\"event_type\",\"user_id\",\"timestamp\",\"duration_ms\",\"status\",\"note\",\"window_from\",\"window_to\",\"metric\"\n\"evt-0001\",\"doc_edit\",\"user-001\",\"2026-01-15T03:45:00Z\",\"250\",\"success\",\"plain\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\",\"\"\n\"evt-0002\",\"file_upload\",\"user-002\",\"2026-01-15T04:00:00Z\",\"1234.5\",\"\",\"comma, \"\"quote\"\" and café\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\",\"\"\n\"evt-0003\",\"search_query\",\"user-003\",\"2026-01-16T23:59:59Z\",\"0\",\"error\",\"line\nbreak\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\",\"\"\n"
+        }
+      }
+    },
+    {
+      "id": "outputs-collaboration-metrics-excel-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:collaboration_excel_winter>\", \"reportName\": \"Parity Collaboration Excel Winter\", \"category\": \"COLLABORATION_METRICS\", \"reportType\": \"EXCEL\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-collaboration-excel-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-collaboration-metrics-excel-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "contentDisposition": "attachment; filename=\"parity_collaboration_excel_winter<now:yyyyMMdd_HHmmss:UTC>.xlsx\"",
+        "body": {
+          "kind": "excel",
+          "value": "{\"sheets\": [{\"auto_filter_ref\": null, \"merged_ranges\": [\"A1:B1\"], \"name\": \"Summary\", \"rows\": [[{\"type\": \"s\", \"value\": \"OtterWorks Report\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"n\", \"value\": \"\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"Report Name:\"}, {\"type\": \"s\", \"value\": \"Parity Collaboration Excel Winter\"}], [{\"type\": \"s\", \"value\": \"Category:\"}, {\"type\": \"s\", \"value\": \"COLLABORATION_METRICS\"}], [{\"type\": \"s\", \"value\": \"Period:\"}, {\"type\": \"s\", \"value\": \"Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"}], [{\"type\": \"s\", \"value\": \"Generated:\"}, {\"type\": \"s\", \"value\": \"<now:display:UTC>\"}], [{\"type\": \"s\", \"value\": \"Total Rows:\"}, {\"type\": \"n\", \"value\": \"3.0\"}], [{\"type\": \"s\", \"value\": \"Requested By:\"}, {\"type\": \"s\", \"value\": \"parity-output-collaboration-excel-winter\"}]]}, {\"auto_filter_ref\": \"A1:J4\", \"merged_ranges\": [], \"name\": \"Data\", \"rows\": [[{\"type\": \"s\", \"value\": \"Event id\"}, {\"type\": \"s\", \"value\": \"Event type\"}, {\"type\": \"s\", \"value\": \"User id\"}, {\"type\": \"s\", \"value\": \"Timestamp\"}, {\"type\": \"s\", \"value\": \"Duration ms\"}, {\"type\": \"s\", \"value\": \"Status\"}, {\"type\": \"s\", \"value\": \"Note\"}, {\"type\": \"s\", \"value\": \"Window from\"}, {\"type\": \"s\", \"value\": \"Window to\"}, {\"type\": \"s\", \"value\": \"Metric\"}], [{\"type\": \"s\", \"value\": \"evt-0001\"}, {\"type\": \"s\", \"value\": \"doc_edit\"}, {\"type\": \"s\", \"value\": \"user-001\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:45:00Z\"}, {\"type\": \"s\", \"value\": \"250\"}, {\"type\": \"s\", \"value\": \"success\"}, {\"type\": \"s\", \"value\": \"plain\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"evt-0002\"}, {\"type\": \"s\", \"value\": \"file_upload\"}, {\"type\": \"s\", \"value\": \"user-002\"}, {\"type\": \"s\", \"value\": \"2026-01-15T04:00:00Z\"}, {\"type\": \"s\", \"value\": \"1234.5\"}, {\"type\": \"s\", \"value\": \"\"}, {\"type\": \"s\", \"value\": \"comma, \\\"quote\\\" and café\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"evt-0003\"}, {\"type\": \"s\", \"value\": \"search_query\"}, {\"type\": \"s\", \"value\": \"user-003\"}, {\"type\": \"s\", \"value\": \"2026-01-16T23:59:59Z\"}, {\"type\": \"s\", \"value\": \"0\"}, {\"type\": \"s\", \"value\": \"error\"}, {\"type\": \"s\", \"value\": \"line\\nbreak\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}]]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-collaboration-metrics-pdf-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:collaboration_pdf_winter>\", \"reportName\": \"Parity Collaboration PDF Winter\", \"category\": \"COLLABORATION_METRICS\", \"reportType\": \"PDF\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-collaboration-pdf-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-collaboration-metrics-pdf-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentDisposition": "attachment; filename=\"parity_collaboration_pdf_winter<now:yyyyMMdd_HHmmss:UTC>.pdf\"",
+        "body": {
+          "kind": "pdf",
+          "value": "{\"page_count\": 1, \"pages\": [{\"mediabox\": [\"0\", \"0\", \"595\", \"842\"], \"rotation\": 90, \"text_lines\": [\"OtterWorks Report  \", \"Parity Collaboration PDF Winter  \", \"Period: Jan 15, 2026 03:30 — Jan 16, 2026 03:30  \", \"Generated: <now:display:UTC> | Rows: 3\", \" \", \" \", \"This report was generated by OtterWorks Report Service v0.1.0. Data is subject to the reporting period specified above.\", \"Event id Event type User id Timestamp Duration ms Status Note Window from Window to Metric\", \"evt-0001 doc_edit user-001 2026-01-15T03:\", \"45:00Z\", \"250 success plain 2026-01-15T03:\", \"30:00Z\", \"2026-01-16T03:\", \"30:00Z\", \"evt-0002 file_upload user-002 2026-01-15T04:\", \"00:00Z\", \"1234.5 comma, \\\"quote\\\"\", \"and café\", \"2026-01-15T03:\", \"30:00Z\", \"2026-01-16T03:\", \"30:00Z\", \"evt-0003 search_query user-003 2026-01-16T23:\", \"59:59Z\", \"0 error line\", \"break\", \"2026-01-15T03:\", \"30:00Z\", \"2026-01-16T03:\", \"30:00Z\"]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-system-health-csv-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:system_csv_winter>\", \"reportName\": \"Parity System Health CSV Winter\", \"category\": \"SYSTEM_HEALTH\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-system-csv-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-system-health-csv-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv",
+        "contentDisposition": "attachment; filename=\"parity_system_health_csv_winter<now:yyyyMMdd_HHmmss:UTC>.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "\"# OtterWorks Report: Parity System Health CSV Winter\"\n\"# Generated: <now:display:UTC>\"\n\"# Period: Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"\n\"# Rows: 3\"\n\"# Generated by OtterWorks Reporting | INTERNAL USE ONLY\"\n\"\"\n\"event_id\",\"event_type\",\"user_id\",\"timestamp\",\"duration_ms\",\"status\",\"note\",\"window_from\",\"window_to\",\"metric\"\n\"evt-0001\",\"doc_edit\",\"user-001\",\"2026-01-15T03:45:00Z\",\"250\",\"success\",\"plain\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\",\"\"\n\"evt-0002\",\"file_upload\",\"user-002\",\"2026-01-15T04:00:00Z\",\"1234.5\",\"\",\"comma, \"\"quote\"\" and café\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\",\"\"\n\"evt-0003\",\"search_query\",\"user-003\",\"2026-01-16T23:59:59Z\",\"0\",\"error\",\"line\nbreak\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\",\"\"\n"
+        }
+      }
+    },
+    {
+      "id": "outputs-system-health-excel-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:system_excel_winter>\", \"reportName\": \"Parity System Health Excel Winter\", \"category\": \"SYSTEM_HEALTH\", \"reportType\": \"EXCEL\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-system-excel-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-system-health-excel-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "contentDisposition": "attachment; filename=\"parity_system_health_excel_winter<now:yyyyMMdd_HHmmss:UTC>.xlsx\"",
+        "body": {
+          "kind": "excel",
+          "value": "{\"sheets\": [{\"auto_filter_ref\": null, \"merged_ranges\": [\"A1:B1\"], \"name\": \"Summary\", \"rows\": [[{\"type\": \"s\", \"value\": \"OtterWorks Report\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"n\", \"value\": \"\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"Report Name:\"}, {\"type\": \"s\", \"value\": \"Parity System Health Excel Winter\"}], [{\"type\": \"s\", \"value\": \"Category:\"}, {\"type\": \"s\", \"value\": \"SYSTEM_HEALTH\"}], [{\"type\": \"s\", \"value\": \"Period:\"}, {\"type\": \"s\", \"value\": \"Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"}], [{\"type\": \"s\", \"value\": \"Generated:\"}, {\"type\": \"s\", \"value\": \"<now:display:UTC>\"}], [{\"type\": \"s\", \"value\": \"Total Rows:\"}, {\"type\": \"n\", \"value\": \"3.0\"}], [{\"type\": \"s\", \"value\": \"Requested By:\"}, {\"type\": \"s\", \"value\": \"parity-output-system-excel-winter\"}]]}, {\"auto_filter_ref\": \"A1:J4\", \"merged_ranges\": [], \"name\": \"Data\", \"rows\": [[{\"type\": \"s\", \"value\": \"Event id\"}, {\"type\": \"s\", \"value\": \"Event type\"}, {\"type\": \"s\", \"value\": \"User id\"}, {\"type\": \"s\", \"value\": \"Timestamp\"}, {\"type\": \"s\", \"value\": \"Duration ms\"}, {\"type\": \"s\", \"value\": \"Status\"}, {\"type\": \"s\", \"value\": \"Note\"}, {\"type\": \"s\", \"value\": \"Window from\"}, {\"type\": \"s\", \"value\": \"Window to\"}, {\"type\": \"s\", \"value\": \"Metric\"}], [{\"type\": \"s\", \"value\": \"evt-0001\"}, {\"type\": \"s\", \"value\": \"doc_edit\"}, {\"type\": \"s\", \"value\": \"user-001\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:45:00Z\"}, {\"type\": \"s\", \"value\": \"250\"}, {\"type\": \"s\", \"value\": \"success\"}, {\"type\": \"s\", \"value\": \"plain\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"evt-0002\"}, {\"type\": \"s\", \"value\": \"file_upload\"}, {\"type\": \"s\", \"value\": \"user-002\"}, {\"type\": \"s\", \"value\": \"2026-01-15T04:00:00Z\"}, {\"type\": \"s\", \"value\": \"1234.5\"}, {\"type\": \"s\", \"value\": \"\"}, {\"type\": \"s\", \"value\": \"comma, \\\"quote\\\" and café\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"evt-0003\"}, {\"type\": \"s\", \"value\": \"search_query\"}, {\"type\": \"s\", \"value\": \"user-003\"}, {\"type\": \"s\", \"value\": \"2026-01-16T23:59:59Z\"}, {\"type\": \"s\", \"value\": \"0\"}, {\"type\": \"s\", \"value\": \"error\"}, {\"type\": \"s\", \"value\": \"line\\nbreak\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}]]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-system-health-pdf-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:system_pdf_winter>\", \"reportName\": \"Parity System Health PDF Winter\", \"category\": \"SYSTEM_HEALTH\", \"reportType\": \"PDF\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-system-pdf-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-system-health-pdf-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentDisposition": "attachment; filename=\"parity_system_health_pdf_winter<now:yyyyMMdd_HHmmss:UTC>.pdf\"",
+        "body": {
+          "kind": "pdf",
+          "value": "{\"page_count\": 1, \"pages\": [{\"mediabox\": [\"0\", \"0\", \"595\", \"842\"], \"rotation\": 90, \"text_lines\": [\"OtterWorks Report  \", \"Parity System Health PDF Winter  \", \"Period: Jan 15, 2026 03:30 — Jan 16, 2026 03:30  \", \"Generated: <now:display:UTC> | Rows: 3\", \" \", \" \", \"This report was generated by OtterWorks Report Service v0.1.0. Data is subject to the reporting period specified above.\", \"Event id Event type User id Timestamp Duration ms Status Note Window from Window to Metric\", \"evt-0001 doc_edit user-001 2026-01-15T03:\", \"45:00Z\", \"250 success plain 2026-01-15T03:\", \"30:00Z\", \"2026-01-16T03:\", \"30:00Z\", \"evt-0002 file_upload user-002 2026-01-15T04:\", \"00:00Z\", \"1234.5 comma, \\\"quote\\\"\", \"and café\", \"2026-01-15T03:\", \"30:00Z\", \"2026-01-16T03:\", \"30:00Z\", \"evt-0003 search_query user-003 2026-01-16T23:\", \"59:59Z\", \"0 error line\", \"break\", \"2026-01-15T03:\", \"30:00Z\", \"2026-01-16T03:\", \"30:00Z\"]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-compliance-csv-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:compliance_csv_winter>\", \"reportName\": \"Parity Compliance CSV Winter\", \"category\": \"COMPLIANCE\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-compliance-csv-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-compliance-csv-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv",
+        "contentDisposition": "attachment; filename=\"parity_compliance_csv_winter<now:yyyyMMdd_HHmmss:UTC>.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "\"# OtterWorks Report: Parity Compliance CSV Winter\"\n\"# Generated: <now:display:UTC>\"\n\"# Period: Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"\n\"# Rows: 2\"\n\"# Generated by OtterWorks Reporting | INTERNAL USE ONLY\"\n\"\"\n\"audit_id\",\"action\",\"actor\",\"result\",\"ip_address\",\"timestamp\",\"resource\",\"window_from\",\"window_to\"\n\"aud-0001\",\"LOGIN\",\"user-001\",\"SUCCESS\",\"10.0.0.1\",\"2026-01-15T03:31:00Z\",\"/auth\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\"\n\"aud-0002\",\"PERMISSION_CHANGE\",\"admin\",\"DENIED\",\"10.0.0.2\",\"2026-01-15T05:00:00Z\",\"/files/doc-1\",\"2026-01-15T03:30:00Z\",\"2026-01-16T03:30:00Z\"\n"
+        }
+      }
+    },
+    {
+      "id": "outputs-compliance-excel-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:compliance_excel_winter>\", \"reportName\": \"Parity Compliance Excel Winter\", \"category\": \"COMPLIANCE\", \"reportType\": \"EXCEL\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-compliance-excel-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-compliance-excel-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "contentDisposition": "attachment; filename=\"parity_compliance_excel_winter<now:yyyyMMdd_HHmmss:UTC>.xlsx\"",
+        "body": {
+          "kind": "excel",
+          "value": "{\"sheets\": [{\"auto_filter_ref\": null, \"merged_ranges\": [\"A1:B1\"], \"name\": \"Summary\", \"rows\": [[{\"type\": \"s\", \"value\": \"OtterWorks Report\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"n\", \"value\": \"\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"Report Name:\"}, {\"type\": \"s\", \"value\": \"Parity Compliance Excel Winter\"}], [{\"type\": \"s\", \"value\": \"Category:\"}, {\"type\": \"s\", \"value\": \"COMPLIANCE\"}], [{\"type\": \"s\", \"value\": \"Period:\"}, {\"type\": \"s\", \"value\": \"Jan 15, 2026 03:30 to Jan 16, 2026 03:30\"}], [{\"type\": \"s\", \"value\": \"Generated:\"}, {\"type\": \"s\", \"value\": \"<now:display:UTC>\"}], [{\"type\": \"s\", \"value\": \"Total Rows:\"}, {\"type\": \"n\", \"value\": \"2.0\"}], [{\"type\": \"s\", \"value\": \"Requested By:\"}, {\"type\": \"s\", \"value\": \"parity-output-compliance-excel-winter\"}]]}, {\"auto_filter_ref\": \"A1:I3\", \"merged_ranges\": [], \"name\": \"Data\", \"rows\": [[{\"type\": \"s\", \"value\": \"Audit id\"}, {\"type\": \"s\", \"value\": \"Action\"}, {\"type\": \"s\", \"value\": \"Actor\"}, {\"type\": \"s\", \"value\": \"Result\"}, {\"type\": \"s\", \"value\": \"Ip address\"}, {\"type\": \"s\", \"value\": \"Timestamp\"}, {\"type\": \"s\", \"value\": \"Resource\"}, {\"type\": \"s\", \"value\": \"Window from\"}, {\"type\": \"s\", \"value\": \"Window to\"}], [{\"type\": \"s\", \"value\": \"aud-0001\"}, {\"type\": \"s\", \"value\": \"LOGIN\"}, {\"type\": \"s\", \"value\": \"user-001\"}, {\"type\": \"s\", \"value\": \"SUCCESS\"}, {\"type\": \"s\", \"value\": \"10.0.0.1\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:31:00Z\"}, {\"type\": \"s\", \"value\": \"/auth\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}], [{\"type\": \"s\", \"value\": \"aud-0002\"}, {\"type\": \"s\", \"value\": \"PERMISSION_CHANGE\"}, {\"type\": \"s\", \"value\": \"admin\"}, {\"type\": \"s\", \"value\": \"DENIED\"}, {\"type\": \"s\", \"value\": \"10.0.0.2\"}, {\"type\": \"s\", \"value\": \"2026-01-15T05:00:00Z\"}, {\"type\": \"s\", \"value\": \"/files/doc-1\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-01-16T03:30:00Z\"}]]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-compliance-pdf-winter-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:compliance_pdf_winter>\", \"reportName\": \"Parity Compliance PDF Winter\", \"category\": \"COMPLIANCE\", \"reportType\": \"PDF\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-compliance-pdf-winter\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-compliance-pdf-winter-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentDisposition": "attachment; filename=\"parity_compliance_pdf_winter<now:yyyyMMdd_HHmmss:UTC>.pdf\"",
+        "body": {
+          "kind": "pdf",
+          "value": "{\"page_count\": 1, \"pages\": [{\"mediabox\": [\"0\", \"0\", \"595\", \"842\"], \"rotation\": 90, \"text_lines\": [\"OtterWorks Report  \", \"Parity Compliance PDF Winter  \", \"Period: Jan 15, 2026 03:30 — Jan 16, 2026 03:30  \", \"Generated: <now:display:UTC> | Rows: 2\", \" \", \" \", \"This report was generated by OtterWorks Report Service v0.1.0. Data is subject to the reporting period specified above.\", \"Audit id Action Actor Result Ip address Timestamp Resource Window from Window to\", \"aud-0001 LOGIN user-001 SUCCESS 10.0.0.1 2026-01-15T03:31:\", \"00Z\", \"/auth 2026-01-15T03:30:\", \"00Z\", \"2026-01-16T03:30:\", \"00Z\", \"aud-0002 PERMISSION_CH\", \"ANGE\", \"admin DENIED 10.0.0.2 2026-01-15T05:00:\", \"00Z\", \"/files/doc-1 2026-01-15T03:30:\", \"00Z\", \"2026-01-16T03:30:\", \"00Z\"]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-csv-summer-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:usage_csv_summer>\", \"reportName\": \"Parity Usage CSV Summer\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-usage-csv-summer\", \"dateFrom\": \"2026-07-01T03:30:00.000+00:00\", \"dateTo\": \"2026-07-02T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-csv-summer-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv",
+        "contentDisposition": "attachment; filename=\"parity_usage_csv_summer<now:yyyyMMdd_HHmmss:UTC>.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "\"# OtterWorks Report: Parity Usage CSV Summer\"\n\"# Generated: <now:display:UTC>\"\n\"# Period: Jul 01, 2026 03:30 to Jul 02, 2026 03:30\"\n\"# Rows: 3\"\n\"# Generated by OtterWorks Reporting | INTERNAL USE ONLY\"\n\"\"\n\"event_id\",\"event_type\",\"user_id\",\"timestamp\",\"duration_ms\",\"status\",\"note\",\"window_from\",\"window_to\",\"metric\"\n\"evt-0001\",\"doc_edit\",\"user-001\",\"2026-01-15T03:45:00Z\",\"250\",\"success\",\"plain\",\"2026-07-01T03:30:00Z\",\"2026-07-02T03:30:00Z\",\"\"\n\"evt-0002\",\"file_upload\",\"user-002\",\"2026-01-15T04:00:00Z\",\"1234.5\",\"\",\"comma, \"\"quote\"\" and café\",\"2026-07-01T03:30:00Z\",\"2026-07-02T03:30:00Z\",\"\"\n\"evt-0003\",\"search_query\",\"user-003\",\"2026-01-16T23:59:59Z\",\"0\",\"error\",\"line\nbreak\",\"2026-07-01T03:30:00Z\",\"2026-07-02T03:30:00Z\",\"\"\n"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-excel-summer-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:usage_excel_summer>\", \"reportName\": \"Parity Usage Excel Summer\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"EXCEL\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-usage-excel-summer\", \"dateFrom\": \"2026-07-01T03:30:00.000+00:00\", \"dateTo\": \"2026-07-02T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-excel-summer-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "contentDisposition": "attachment; filename=\"parity_usage_excel_summer<now:yyyyMMdd_HHmmss:UTC>.xlsx\"",
+        "body": {
+          "kind": "excel",
+          "value": "{\"sheets\": [{\"auto_filter_ref\": null, \"merged_ranges\": [\"A1:B1\"], \"name\": \"Summary\", \"rows\": [[{\"type\": \"s\", \"value\": \"OtterWorks Report\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"n\", \"value\": \"\"}, {\"type\": \"n\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"Report Name:\"}, {\"type\": \"s\", \"value\": \"Parity Usage Excel Summer\"}], [{\"type\": \"s\", \"value\": \"Category:\"}, {\"type\": \"s\", \"value\": \"USAGE_ANALYTICS\"}], [{\"type\": \"s\", \"value\": \"Period:\"}, {\"type\": \"s\", \"value\": \"Jul 01, 2026 03:30 to Jul 02, 2026 03:30\"}], [{\"type\": \"s\", \"value\": \"Generated:\"}, {\"type\": \"s\", \"value\": \"<now:display:UTC>\"}], [{\"type\": \"s\", \"value\": \"Total Rows:\"}, {\"type\": \"n\", \"value\": \"3.0\"}], [{\"type\": \"s\", \"value\": \"Requested By:\"}, {\"type\": \"s\", \"value\": \"parity-output-usage-excel-summer\"}]]}, {\"auto_filter_ref\": \"A1:J4\", \"merged_ranges\": [], \"name\": \"Data\", \"rows\": [[{\"type\": \"s\", \"value\": \"Event id\"}, {\"type\": \"s\", \"value\": \"Event type\"}, {\"type\": \"s\", \"value\": \"User id\"}, {\"type\": \"s\", \"value\": \"Timestamp\"}, {\"type\": \"s\", \"value\": \"Duration ms\"}, {\"type\": \"s\", \"value\": \"Status\"}, {\"type\": \"s\", \"value\": \"Note\"}, {\"type\": \"s\", \"value\": \"Window from\"}, {\"type\": \"s\", \"value\": \"Window to\"}, {\"type\": \"s\", \"value\": \"Metric\"}], [{\"type\": \"s\", \"value\": \"evt-0001\"}, {\"type\": \"s\", \"value\": \"doc_edit\"}, {\"type\": \"s\", \"value\": \"user-001\"}, {\"type\": \"s\", \"value\": \"2026-01-15T03:45:00Z\"}, {\"type\": \"s\", \"value\": \"250\"}, {\"type\": \"s\", \"value\": \"success\"}, {\"type\": \"s\", \"value\": \"plain\"}, {\"type\": \"s\", \"value\": \"2026-07-01T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-07-02T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"evt-0002\"}, {\"type\": \"s\", \"value\": \"file_upload\"}, {\"type\": \"s\", \"value\": \"user-002\"}, {\"type\": \"s\", \"value\": \"2026-01-15T04:00:00Z\"}, {\"type\": \"s\", \"value\": \"1234.5\"}, {\"type\": \"s\", \"value\": \"\"}, {\"type\": \"s\", \"value\": \"comma, \\\"quote\\\" and café\"}, {\"type\": \"s\", \"value\": \"2026-07-01T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-07-02T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}], [{\"type\": \"s\", \"value\": \"evt-0003\"}, {\"type\": \"s\", \"value\": \"search_query\"}, {\"type\": \"s\", \"value\": \"user-003\"}, {\"type\": \"s\", \"value\": \"2026-01-16T23:59:59Z\"}, {\"type\": \"s\", \"value\": \"0\"}, {\"type\": \"s\", \"value\": \"error\"}, {\"type\": \"s\", \"value\": \"line\\nbreak\"}, {\"type\": \"s\", \"value\": \"2026-07-01T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"2026-07-02T03:30:00Z\"}, {\"type\": \"s\", \"value\": \"\"}]]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-pdf-summer-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:usage_pdf_summer>\", \"reportName\": \"Parity Usage PDF Summer\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"PDF\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-usage-pdf-summer\", \"dateFrom\": \"2026-07-01T03:30:00.000+00:00\", \"dateTo\": \"2026-07-02T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-usage-analytics-pdf-summer-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/pdf",
+        "contentDisposition": "attachment; filename=\"parity_usage_pdf_summer<now:yyyyMMdd_HHmmss:UTC>.pdf\"",
+        "body": {
+          "kind": "pdf",
+          "value": "{\"page_count\": 1, \"pages\": [{\"mediabox\": [\"0\", \"0\", \"595\", \"842\"], \"rotation\": 90, \"text_lines\": [\"OtterWorks Report  \", \"Parity Usage PDF Summer  \", \"Period: Jul 01, 2026 03:30 — Jul 02, 2026 03:30  \", \"Generated: <now:display:UTC> | Rows: 3\", \" \", \" \", \"This report was generated by OtterWorks Report Service v0.1.0. Data is subject to the reporting period specified above.\", \"Event id Event type User id Timestamp Duration ms Status Note Window from Window to Metric\", \"evt-0001 doc_edit user-001 2026-01-15T03:\", \"45:00Z\", \"250 success plain 2026-07-01T03:\", \"30:00Z\", \"2026-07-02T03:\", \"30:00Z\", \"evt-0002 file_upload user-002 2026-01-15T04:\", \"00:00Z\", \"1234.5 comma, \\\"quote\\\"\", \"and café\", \"2026-07-01T03:\", \"30:00Z\", \"2026-07-02T03:\", \"30:00Z\", \"evt-0003 search_query user-003 2026-01-16T23:\", \"59:59Z\", \"0 error line\", \"break\", \"2026-07-01T03:\", \"30:00Z\", \"2026-07-02T03:\", \"30:00Z\"]}]}"
+        }
+      }
+    },
+    {
+      "id": "outputs-analytics-upstream-error-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:analytics_upstream_error>\", \"reportName\": \"Parity Analytics Upstream Error\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-upstream-error\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-analytics-upstream-error-status",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:analytics_upstream_error>\", \"reportName\": \"Parity Analytics Upstream Error\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"FAILED\", \"requestedBy\": \"parity-output-upstream-error\", \"dateFrom\": \"2026-01-15T03:30:00.000+00:00\", \"dateTo\": \"2026-01-16T03:30:00.000+00:00\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": \"org.springframework.web.client.HttpServerErrorException$InternalServerError: 500 Internal Server Error: \\\"{\\\"error\\\": \\\"stubbed upstream failure\\\"}\\\"\"}"
+        }
+      }
+    },
+    {
+      "id": "outputs-defaulted-dates-create",
+      "context": "outputs",
+      "response": {
+        "status": 202,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"id\": \"<id:default_csv>\", \"reportName\": \"Parity Default Dates CSV\", \"category\": \"USAGE_ANALYTICS\", \"reportType\": \"CSV\", \"status\": \"PENDING\", \"requestedBy\": \"parity-output-default-dates\", \"dateFrom\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"dateTo\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"createdAt\": \"<now:yyyy-MM-dd'T'HH:mm:ss.SSSXXX:UTC>\", \"completedAt\": null, \"fileSizeBytes\": null, \"rowCount\": null, \"downloadUrl\": null, \"errorMessage\": null}"
+        }
+      }
+    },
+    {
+      "id": "outputs-defaulted-dates-download",
+      "context": "outputs",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv",
+        "contentDisposition": "attachment; filename=\"parity_default_dates_csv<now:yyyyMMdd_HHmmss:UTC>.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "\"# OtterWorks Report: Parity Default Dates CSV\"\n\"# Generated: <now:display:UTC>\"\n\"# Period: <now:display:UTC> to <now:display:UTC>\"\n\"# Rows: 3\"\n\"# Generated by OtterWorks Reporting | INTERNAL USE ONLY\"\n\"\"\n\"event_id\",\"event_type\",\"user_id\",\"timestamp\",\"duration_ms\",\"status\",\"note\",\"window_from\",\"window_to\",\"metric\"\n\"evt-0001\",\"doc_edit\",\"user-001\",\"2026-01-15T03:45:00Z\",\"250\",\"success\",\"plain\",\"<now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC>\",\"<now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC>\",\"\"\n\"evt-0002\",\"file_upload\",\"user-002\",\"2026-01-15T04:00:00Z\",\"1234.5\",\"\",\"comma, \"\"quote\"\" and café\",\"<now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC>\",\"<now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC>\",\"\"\n\"evt-0003\",\"search_query\",\"user-003\",\"2026-01-16T23:59:59Z\",\"0\",\"error\",\"line\nbreak\",\"<now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC>\",\"<now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC>\",\"\"\n"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-list",
+      "context": "reconciliation",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "[{\"run_id\": \"char-run-002\", \"status\": \"FAILED\", \"started_at\": \"2026-02-01T23:59:59Z\", \"finished_at\": null, \"closes\": false}, {\"run_id\": \"char-run-001\", \"status\": \"CLOSED\", \"started_at\": \"2026-01-15T03:30:00Z\", \"finished_at\": \"2026-01-15T03:42:10Z\", \"closes\": true}]"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-latest",
+      "context": "reconciliation",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"run_id\": \"char-run-002\", \"namespace\": \"char-after\", \"generated_at\": \"<now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC>\", \"status\": \"FAILED\", \"started_at\": \"2026-02-01T23:59:59Z\", \"finished_at\": null, \"tables\": [{\"table\": \"ARCHIVE.RETNPLCY\", \"extracted\": 2, \"loaded\": 2, \"validated\": 2, \"purged\": 0, \"failed\": 0, \"rejected\": 0, \"validate_failed\": 0, \"purge_intended\": 0, \"closes\": true}, {\"table\": \"ARCHIVE.DOCARCH\", \"extracted\": 10, \"loaded\": 8, \"validated\": 7, \"purged\": 0, \"failed\": 3, \"rejected\": 2, \"validate_failed\": 1, \"purge_intended\": 7, \"purge_dry_run\": true, \"closes\": true}, {\"table\": \"ARCHIVE.FILEAUD\", \"extracted\": 5, \"loaded\": 5, \"validated\": 5, \"purged\": 0, \"failed\": 0, \"rejected\": 0, \"validate_failed\": 0, \"purge_intended\": 4, \"purge_dry_run\": true, \"closes\": false}], \"failures\": [{\"table\": \"ARCHIVE.DOCARCH\", \"source_key\": \"CHAR0000000099\", \"rule\": \"HASH_MISMATCH\", \"stage\": \"VALIDATE\", \"field\": \"OWNER_NAME\", \"sqlstate\": null, \"native_error\": null, \"error\": \"source/target differ: 'Zoë' vs 'Zo?', check CCSID\", \"issue\": null}, {\"table\": \"ARCHIVE.DOCARCH\", \"source_key\": \"MIG03-0000000007\", \"rule\": \"INVALID_PACKED_DECIMAL\", \"stage\": \"LOAD\", \"field\": \"STORAGE_CHARGE\", \"sqlstate\": \"22P02\", \"native_error\": 7, \"error\": \"bad nibble 0xF in COMP-3, value <x>\", \"issue\": \"MIG-03\"}, {\"table\": \"ARCHIVE.DOCARCH\", \"source_key\": \"MIG06-0000000001\", \"rule\": \"DUPLICATE_SOURCE_KEY\", \"stage\": \"LOAD\", \"field\": null, \"sqlstate\": \"23505\", \"native_error\": null, \"error\": \"duplicate key value violates unique constraint \\\"pk_stg_docarch\\\"\", \"issue\": \"MIG-06\"}], \"class_totals\": [{\"table\": \"ARCHIVE.DOCARCH\", \"class\": \"R07\", \"source_count\": 2, \"target_count\": 2, \"source_sum\": \"12.34567890\", \"target_sum\": \"12.34567890\", \"matches\": true}, {\"table\": \"ARCHIVE.DOCARCH\", \"class\": \"R10\", \"source_count\": 1, \"target_count\": 1, \"source_sum\": \"1234567.00000001\", \"target_sum\": \"1234567.00000000\", \"matches\": false}, {\"table\": \"ARCHIVE.DOCARCH\", \"class\": \"R99\", \"source_count\": 1, \"target_count\": 0, \"source_sum\": null, \"target_sum\": null, \"matches\": false}], \"sessions\": [{\"label\": \"Extract session\", \"url\": \"https://example.invalid/sessions/1\"}, {\"label\": \"Reconcile <second> & \\\"final\\\"\", \"url\": \"https://example.invalid/sessions/2?a=1&b=2\"}], \"closes\": false}"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-run-001-json",
+      "context": "reconciliation",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"run_id\": \"char-run-001\", \"namespace\": \"char-after\", \"generated_at\": \"<now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC>\", \"status\": \"CLOSED\", \"started_at\": \"2026-01-15T03:30:00Z\", \"finished_at\": \"2026-01-15T03:42:10Z\", \"tables\": [{\"table\": \"ARCHIVE.RETNPLCY\", \"extracted\": 2, \"loaded\": 2, \"validated\": 2, \"purged\": 0, \"failed\": 0, \"rejected\": 0, \"validate_failed\": 0, \"purge_intended\": 0, \"closes\": true}, {\"table\": \"ARCHIVE.DOCARCH\", \"extracted\": 3, \"loaded\": 3, \"validated\": 3, \"purged\": 3, \"failed\": 0, \"rejected\": 0, \"validate_failed\": 0, \"purge_intended\": 3, \"purge_dry_run\": false, \"closes\": true}, {\"table\": \"ARCHIVE.FILEAUD\", \"extracted\": 3, \"loaded\": 3, \"validated\": 3, \"purged\": 3, \"failed\": 0, \"rejected\": 0, \"validate_failed\": 0, \"purge_intended\": 3, \"purge_dry_run\": false, \"closes\": true}], \"failures\": [], \"class_totals\": [], \"sessions\": [], \"closes\": true}"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-run-001-csv",
+      "context": "reconciliation",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv;charset=UTF-8",
+        "contentDisposition": "attachment; filename=\"reconciliation-char-run-001.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "section,table,extracted,loaded,validated,purged,failed\r\nsummary,ARCHIVE.RETNPLCY,2,2,2,0,0\r\nsummary,ARCHIVE.DOCARCH,3,3,3,3,0\r\nsummary,ARCHIVE.FILEAUD,3,3,3,3,0\r\n\r\nsection,table,source_key,rule,stage,field,sqlstate,error\r\n"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-run-001-html",
+      "context": "reconciliation",
+      "response": {
+        "status": 200,
+        "contentType": "text/html;charset=UTF-8",
+        "contentDisposition": "inline;filename=f.txt",
+        "body": {
+          "kind": "text",
+          "value": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Reconciliation char-run-001</title>\n<style>\nbody{font-family:system-ui,Segoe UI,Helvetica,Arial,sans-serif;margin:24px;color:#1f2933}\nh1{margin:0 0 4px}h2{margin-top:32px}code{font-family:ui-monospace,Menlo,Consolas,monospace}\n.meta{color:#52606d;margin:4px 0}.badge{display:inline-block;padding:6px 12px;border-radius:4px;font-weight:600}.badge.ok{background:#e3f9e5;color:#0f5132}.badge.fail{background:#fde2e1;color:#7a1d1d}\ntable{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid #d9e2ec;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f0f4f8}td.num{text-align:right;font-variant-numeric:tabular-nums}\ntr.open td{background:#fff4e5}tr.mig07 td{background:#fde2e1;font-weight:600}\n.pill{display:inline-block;background:#e4e7eb;border-radius:12px;padding:2px 10px;margin:2px;font-size:13px}.note,.empty{color:#52606d}\n</style>\n</head>\n<body>\n<header>\n<h1>Reconciliation report <code>char-run-001</code></h1>\n<p class=\"meta\">namespace <code>char-after</code> &middot; status CLOSED &middot; started 2026-01-15T03:30:00Z &middot; finished 2026-01-15T03:42:10Z &middot; generated <now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC></p>\n<p class=\"badge ok\">CLOSES: extracted = loaded + rejected and purged = validated</p>\n<p class=\"links\"><a href=\"char-run-001.csv\">Download CSV</a> &middot; <a href=\"char-run-001\">JSON</a></p>\n</header>\n<section>\n<h2>Summary (one row per source table)</h2>\n<table>\n<thead><tr><th>table</th><th>extracted</th><th>loaded</th><th>validated</th><th>purged</th><th>failed</th><th>rejected (LOAD)</th><th>validate failed</th><th>purge intended</th><th>dry run</th><th>closes</th></tr></thead>\n<tbody>\n<tr class=\"closes\"><td>ARCHIVE.RETNPLCY</td><td class=\"num\">2</td><td class=\"num\">2</td><td class=\"num\">2</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td>-</td><td>yes</td></tr>\n<tr class=\"closes\"><td>ARCHIVE.DOCARCH</td><td class=\"num\">3</td><td class=\"num\">3</td><td class=\"num\">3</td><td class=\"num\">3</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">3</td><td>no</td><td>yes</td></tr>\n<tr class=\"closes\"><td>ARCHIVE.FILEAUD</td><td class=\"num\">3</td><td class=\"num\">3</td><td class=\"num\">3</td><td class=\"num\">3</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">3</td><td>no</td><td>yes</td></tr>\n</tbody>\n</table>\n</section>\n<section>\n<h2>Per-class totals (MIG-07 evidence)</h2>\n<p class=\"note\">Table-level storage-charge totals alone never pass: each retention class must agree in row count and in charge sum to the eighth decimal. Highlighted rows differ.</p>\n<p class=\"empty\">No class totals recorded for this run.</p>\n</section>\n<section>\n<h2>Failed rows (0)</h2>\n<table>\n<thead><tr><th>table</th><th>source key</th><th>rule</th><th>stage</th><th>field</th><th>SQLSTATE</th><th>native</th><th>error</th><th>issue</th></tr></thead>\n<tbody>\n</tbody>\n</table>\n</section>\n<section>\n<h2>Devin sessions that produced this code</h2>\n<p class=\"empty\">No session links recorded.</p>\n</section>\n</body>\n</html>\n"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-run-002-json",
+      "context": "reconciliation",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"run_id\": \"char-run-002\", \"namespace\": \"char-after\", \"generated_at\": \"<now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC>\", \"status\": \"FAILED\", \"started_at\": \"2026-02-01T23:59:59Z\", \"finished_at\": null, \"tables\": [{\"table\": \"ARCHIVE.RETNPLCY\", \"extracted\": 2, \"loaded\": 2, \"validated\": 2, \"purged\": 0, \"failed\": 0, \"rejected\": 0, \"validate_failed\": 0, \"purge_intended\": 0, \"closes\": true}, {\"table\": \"ARCHIVE.DOCARCH\", \"extracted\": 10, \"loaded\": 8, \"validated\": 7, \"purged\": 0, \"failed\": 3, \"rejected\": 2, \"validate_failed\": 1, \"purge_intended\": 7, \"purge_dry_run\": true, \"closes\": true}, {\"table\": \"ARCHIVE.FILEAUD\", \"extracted\": 5, \"loaded\": 5, \"validated\": 5, \"purged\": 0, \"failed\": 0, \"rejected\": 0, \"validate_failed\": 0, \"purge_intended\": 4, \"purge_dry_run\": true, \"closes\": false}], \"failures\": [{\"table\": \"ARCHIVE.DOCARCH\", \"source_key\": \"CHAR0000000099\", \"rule\": \"HASH_MISMATCH\", \"stage\": \"VALIDATE\", \"field\": \"OWNER_NAME\", \"sqlstate\": null, \"native_error\": null, \"error\": \"source/target differ: 'Zoë' vs 'Zo?', check CCSID\", \"issue\": null}, {\"table\": \"ARCHIVE.DOCARCH\", \"source_key\": \"MIG03-0000000007\", \"rule\": \"INVALID_PACKED_DECIMAL\", \"stage\": \"LOAD\", \"field\": \"STORAGE_CHARGE\", \"sqlstate\": \"22P02\", \"native_error\": 7, \"error\": \"bad nibble 0xF in COMP-3, value <x>\", \"issue\": \"MIG-03\"}, {\"table\": \"ARCHIVE.DOCARCH\", \"source_key\": \"MIG06-0000000001\", \"rule\": \"DUPLICATE_SOURCE_KEY\", \"stage\": \"LOAD\", \"field\": null, \"sqlstate\": \"23505\", \"native_error\": null, \"error\": \"duplicate key value violates unique constraint \\\"pk_stg_docarch\\\"\", \"issue\": \"MIG-06\"}], \"class_totals\": [{\"table\": \"ARCHIVE.DOCARCH\", \"class\": \"R07\", \"source_count\": 2, \"target_count\": 2, \"source_sum\": \"12.34567890\", \"target_sum\": \"12.34567890\", \"matches\": true}, {\"table\": \"ARCHIVE.DOCARCH\", \"class\": \"R10\", \"source_count\": 1, \"target_count\": 1, \"source_sum\": \"1234567.00000001\", \"target_sum\": \"1234567.00000000\", \"matches\": false}, {\"table\": \"ARCHIVE.DOCARCH\", \"class\": \"R99\", \"source_count\": 1, \"target_count\": 0, \"source_sum\": null, \"target_sum\": null, \"matches\": false}], \"sessions\": [{\"label\": \"Extract session\", \"url\": \"https://example.invalid/sessions/1\"}, {\"label\": \"Reconcile <second> & \\\"final\\\"\", \"url\": \"https://example.invalid/sessions/2?a=1&b=2\"}], \"closes\": false}"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-run-002-csv",
+      "context": "reconciliation",
+      "response": {
+        "status": 200,
+        "contentType": "text/csv;charset=UTF-8",
+        "contentDisposition": "attachment; filename=\"reconciliation-char-run-002.csv\"",
+        "body": {
+          "kind": "text",
+          "value": "section,table,extracted,loaded,validated,purged,failed\r\nsummary,ARCHIVE.RETNPLCY,2,2,2,0,0\r\nsummary,ARCHIVE.DOCARCH,10,8,7,0,3\r\nsummary,ARCHIVE.FILEAUD,5,5,5,0,0\r\n\r\nsection,table,source_key,rule,stage,field,sqlstate,error\r\nfailure,ARCHIVE.DOCARCH,CHAR0000000099,HASH_MISMATCH,VALIDATE,OWNER_NAME,,\"source/target differ: 'Zoë' vs 'Zo?', check CCSID\"\r\nfailure,ARCHIVE.DOCARCH,MIG03-0000000007,INVALID_PACKED_DECIMAL,LOAD,STORAGE_CHARGE,22P02,\"bad nibble 0xF in COMP-3, value <x>\"\r\nfailure,ARCHIVE.DOCARCH,MIG06-0000000001,DUPLICATE_SOURCE_KEY,LOAD,,23505,\"duplicate key value violates unique constraint \"\"pk_stg_docarch\"\"\"\r\n"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-run-002-html",
+      "context": "reconciliation",
+      "response": {
+        "status": 200,
+        "contentType": "text/html;charset=UTF-8",
+        "contentDisposition": "inline;filename=f.txt",
+        "body": {
+          "kind": "text",
+          "value": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Reconciliation char-run-002</title>\n<style>\nbody{font-family:system-ui,Segoe UI,Helvetica,Arial,sans-serif;margin:24px;color:#1f2933}\nh1{margin:0 0 4px}h2{margin-top:32px}code{font-family:ui-monospace,Menlo,Consolas,monospace}\n.meta{color:#52606d;margin:4px 0}.badge{display:inline-block;padding:6px 12px;border-radius:4px;font-weight:600}.badge.ok{background:#e3f9e5;color:#0f5132}.badge.fail{background:#fde2e1;color:#7a1d1d}\ntable{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid #d9e2ec;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f0f4f8}td.num{text-align:right;font-variant-numeric:tabular-nums}\ntr.open td{background:#fff4e5}tr.mig07 td{background:#fde2e1;font-weight:600}\n.pill{display:inline-block;background:#e4e7eb;border-radius:12px;padding:2px 10px;margin:2px;font-size:13px}.note,.empty{color:#52606d}\n</style>\n</head>\n<body>\n<header>\n<h1>Reconciliation report <code>char-run-002</code></h1>\n<p class=\"meta\">namespace <code>char-after</code> &middot; status FAILED &middot; started 2026-02-01T23:59:59Z &middot; finished - &middot; generated <now:yyyy-MM-dd'T'HH:mm:ss'Z':UTC></p>\n<p class=\"badge fail\">DOES NOT CLOSE</p>\n<p class=\"links\"><a href=\"char-run-002.csv\">Download CSV</a> &middot; <a href=\"char-run-002\">JSON</a></p>\n</header>\n<section>\n<h2>Summary (one row per source table)</h2>\n<table>\n<thead><tr><th>table</th><th>extracted</th><th>loaded</th><th>validated</th><th>purged</th><th>failed</th><th>rejected (LOAD)</th><th>validate failed</th><th>purge intended</th><th>dry run</th><th>closes</th></tr></thead>\n<tbody>\n<tr class=\"closes\"><td>ARCHIVE.RETNPLCY</td><td class=\"num\">2</td><td class=\"num\">2</td><td class=\"num\">2</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td>-</td><td>yes</td></tr>\n<tr class=\"closes\"><td>ARCHIVE.DOCARCH</td><td class=\"num\">10</td><td class=\"num\">8</td><td class=\"num\">7</td><td class=\"num\">0</td><td class=\"num\">3</td><td class=\"num\">2</td><td class=\"num\">1</td><td class=\"num\">7</td><td>yes</td><td>yes</td></tr>\n<tr class=\"open\"><td>ARCHIVE.FILEAUD</td><td class=\"num\">5</td><td class=\"num\">5</td><td class=\"num\">5</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">4</td><td>yes</td><td>no</td></tr>\n</tbody>\n</table>\n</section>\n<section>\n<h2>Per-class totals (MIG-07 evidence)</h2>\n<p class=\"note\">Table-level storage-charge totals alone never pass: each retention class must agree in row count and in charge sum to the eighth decimal. Highlighted rows differ.</p>\n<table>\n<thead><tr><th>table</th><th>class</th><th>source count</th><th>target count</th><th>source sum</th><th>target sum</th><th>result</th></tr></thead>\n<tbody>\n<tr class=\"match\"><td>ARCHIVE.DOCARCH</td><td>R07</td><td class=\"num\">2</td><td class=\"num\">2</td><td class=\"num\">12.34567890</td><td class=\"num\">12.34567890</td><td>match</td></tr>\n<tr class=\"mig07\"><td>ARCHIVE.DOCARCH</td><td>R10</td><td class=\"num\">1</td><td class=\"num\">1</td><td class=\"num\">1234567.00000001</td><td class=\"num\">1234567.00000000</td><td><strong>MIG-07 mismatch</strong></td></tr>\n<tr class=\"mig07\"><td>ARCHIVE.DOCARCH</td><td>R99</td><td class=\"num\">1</td><td class=\"num\">0</td><td class=\"num\">-</td><td class=\"num\">-</td><td><strong>MIG-07 mismatch</strong></td></tr>\n</tbody>\n</table>\n</section>\n<section>\n<h2>Failed rows (3)</h2>\n<p class=\"rules\"><span class=\"pill\">HASH_MISMATCH &times; 1</span> <span class=\"pill\">INVALID_PACKED_DECIMAL &times; 1</span> <span class=\"pill\">DUPLICATE_SOURCE_KEY &times; 1</span> </p>\n<table>\n<thead><tr><th>table</th><th>source key</th><th>rule</th><th>stage</th><th>field</th><th>SQLSTATE</th><th>native</th><th>error</th><th>issue</th></tr></thead>\n<tbody>\n<tr><td>ARCHIVE.DOCARCH</td><td><code>CHAR0000000099</code></td><td>HASH_MISMATCH</td><td>VALIDATE</td><td>OWNER_NAME</td><td></td><td></td><td>source/target differ: &#39;Zoë&#39; vs &#39;Zo?&#39;, check CCSID</td><td></td></tr>\n<tr><td>ARCHIVE.DOCARCH</td><td><code>MIG03-0000000007</code></td><td>INVALID_PACKED_DECIMAL</td><td>LOAD</td><td>STORAGE_CHARGE</td><td>22P02</td><td>7</td><td>bad nibble 0xF in COMP-3, value &lt;x&gt;</td><td>MIG-03</td></tr>\n<tr><td>ARCHIVE.DOCARCH</td><td><code>MIG06-0000000001</code></td><td>DUPLICATE_SOURCE_KEY</td><td>LOAD</td><td></td><td>23505</td><td></td><td>duplicate key value violates unique constraint &quot;pk_stg_docarch&quot;</td><td>MIG-06</td></tr>\n</tbody>\n</table>\n</section>\n<section>\n<h2>Devin sessions that produced this code</h2>\n<ul>\n<li><a href=\"https://example.invalid/sessions/1\" rel=\"noopener\">Extract session</a></li>\n<li><a href=\"https://example.invalid/sessions/2?a=1&amp;b=2\" rel=\"noopener\">Reconcile &lt;second&gt; &amp; &quot;final&quot;</a></li>\n</ul>\n</section>\n</body>\n</html>\n"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-unknown-run",
+      "context": "reconciliation",
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"error\": \"run not found\"}"
+        }
+      }
+    },
+    {
+      "id": "reconciliation-foreign-namespace-run",
+      "context": "reconciliation",
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"error\": \"run not found\"}"
+        }
+      }
+    },
+    {
+      "id": "archive-document-default",
+      "context": "archive",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"doc_id\": \"3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f\", \"store\": \"postgresql\", \"versions\": [{\"arch_key\": \"CHAR0000000001\", \"version_no\": 1, \"retention_class\": \"R07\", \"last_access_ts\": \"2019-03-14-09.26.53.123456789012\", \"storage_charge\": \"12.34567890\", \"unit_rate\": \"0.00012345\", \"owner_name\": \"Zoë Quinn\", \"disposition_dt\": \"2031-06-30\", \"legal_hold\": false, \"checksum_alg\": \"SHA256\", \"content_sha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"byte_size\": 1048576, \"source_sys\": \"DMS\", \"policy\": {\"policy_code\": \"R07\", \"policy_desc\": \"Seven-year retention\", \"retention_years\": 7, \"successor_code\": \"R10\", \"active_flag\": \"Y\", \"disposition_action\": \"DEST\", \"effective_ts\": \"2015-01-01-00.00.00.000000000000\"}, \"events\": [{\"audit_key\": \"AUD00000000000000001\", \"event_type\": \"VIEW\", \"event_ts\": \"2019-03-14-09.26.53.123456789012\", \"actor_id\": \"actor-001\", \"retention_class\": \"R07\", \"disposition_code\": \"NA\", \"client_ip\": \"10.0.0.1\", \"detail_text\": \"first view\"}, {\"audit_key\": \"AUD00000000000000002\", \"event_type\": \"DNLD\", \"event_ts\": \"2019-03-15-18.00.00.000000000001\", \"actor_id\": \"actor-002\", \"retention_class\": \"R07\", \"disposition_code\": \"NA\", \"client_ip\": \"192.168.100.200\", \"detail_text\": \"download, \\\"quoted\\\" <b>\"}]}, {\"arch_key\": \"CHAR0000000002\", \"version_no\": 2, \"retention_class\": \"R10\", \"last_access_ts\": \"2021-11-07-01.59.59.999999000001\", \"storage_charge\": \"1234567.00000001\", \"unit_rate\": \"0.50000000\", \"owner_name\": \"O'Brien, Pat\", \"disposition_dt\": \"2034-12-31\", \"legal_hold\": true, \"checksum_alg\": \"SHA256\", \"content_sha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"byte_size\": 9876543210, \"source_sys\": \"ECM\", \"policy\": {\"policy_code\": \"R10\", \"policy_desc\": \"Ten-year retention, legal & tax\", \"retention_years\": 10, \"successor_code\": \"R10\", \"active_flag\": \"N\", \"disposition_action\": \"REVW\", \"effective_ts\": \"2016-07-01-12.30.00.500000000001\"}, \"events\": [{\"audit_key\": \"AUD00000000000000003\", \"event_type\": \"HOLD\", \"event_ts\": \"2021-11-07-02.00.00.000000000000\", \"actor_id\": \"legal-team\", \"retention_class\": \"R10\", \"disposition_code\": \"LH\", \"client_ip\": \"172.16.0.9\", \"detail_text\": \"legal hold placed\"}]}]}"
+        }
+      }
+    },
+    {
+      "id": "archive-document-raw",
+      "context": "archive",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"doc_id\": \"3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f\", \"store\": \"postgresql\", \"versions\": [{\"arch_key\": \"CHAR0000000001\", \"version_no\": 1, \"retention_class\": \"R07\", \"last_access_ts\": \"2019-03-14-09.26.53.123456789012\", \"storage_charge\": \"12.34567890\", \"unit_rate\": \"0.00012345\", \"owner_name\": \"Zoë Quinn\", \"disposition_dt\": \"2031-06-30\", \"legal_hold\": false, \"checksum_alg\": \"SHA256\", \"content_sha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"byte_size\": 1048576, \"source_sys\": \"DMS\", \"policy\": {\"policy_code\": \"R07\", \"policy_desc\": \"Seven-year retention\", \"retention_years\": 7, \"successor_code\": \"R10\", \"active_flag\": \"Y\", \"disposition_action\": \"DEST\", \"effective_ts\": \"2015-01-01-00.00.00.000000000000\"}, \"events\": [{\"audit_key\": \"AUD00000000000000001\", \"event_type\": \"VIEW\", \"event_ts\": \"2019-03-14-09.26.53.123456789012\", \"actor_id\": \"actor-001\", \"retention_class\": \"R07\", \"disposition_code\": \"NA\", \"client_ip\": \"10.0.0.1\", \"detail_text\": \"first view\", \"raw\": {\"audit_key\": \"AUD00000000000000001\", \"arch_key\": \"CHAR0000000001\", \"event_type\": \"VIEW\", \"actor_id\": \"actor-001   \", \"retention_class\": \"R07 \", \"disposition_code\": \"NA\", \"client_ip\": \"10.0.0.1\", \"detail_text\": \"first view\"}}, {\"audit_key\": \"AUD00000000000000002\", \"event_type\": \"DNLD\", \"event_ts\": \"2019-03-15-18.00.00.000000000001\", \"actor_id\": \"actor-002\", \"retention_class\": \"R07\", \"disposition_code\": \"NA\", \"client_ip\": \"192.168.100.200\", \"detail_text\": \"download, \\\"quoted\\\" <b>\", \"raw\": {\"audit_key\": \"AUD00000000000000002\", \"arch_key\": \"CHAR0000000001\", \"event_type\": \"DNLD\", \"actor_id\": \"actor-002   \", \"retention_class\": \"R07 \", \"disposition_code\": \"NA\", \"client_ip\": \"192.168.100.200\", \"detail_text\": \"download, \\\"quoted\\\" <b>\"}}], \"raw\": {\"arch_key\": \"CHAR0000000001\", \"doc_id\": \"3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f\", \"retention_class\": \"R07 \", \"owner_name\": \"Zoë Quinn\", \"disposition_dt\": \"20310630\", \"legal_hold_flag\": \"N\"}}, {\"arch_key\": \"CHAR0000000002\", \"version_no\": 2, \"retention_class\": \"R10\", \"last_access_ts\": \"2021-11-07-01.59.59.999999000001\", \"storage_charge\": \"1234567.00000001\", \"unit_rate\": \"0.50000000\", \"owner_name\": \"O'Brien, Pat\", \"disposition_dt\": \"2034-12-31\", \"legal_hold\": true, \"checksum_alg\": \"SHA256\", \"content_sha256\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"byte_size\": 9876543210, \"source_sys\": \"ECM\", \"policy\": {\"policy_code\": \"R10\", \"policy_desc\": \"Ten-year retention, legal & tax\", \"retention_years\": 10, \"successor_code\": \"R10\", \"active_flag\": \"N\", \"disposition_action\": \"REVW\", \"effective_ts\": \"2016-07-01-12.30.00.500000000001\"}, \"events\": [{\"audit_key\": \"AUD00000000000000003\", \"event_type\": \"HOLD\", \"event_ts\": \"2021-11-07-02.00.00.000000000000\", \"actor_id\": \"legal-team\", \"retention_class\": \"R10\", \"disposition_code\": \"LH\", \"client_ip\": \"172.16.0.9\", \"detail_text\": \"legal hold placed\", \"raw\": {\"audit_key\": \"AUD00000000000000003\", \"arch_key\": \"CHAR0000000002\", \"event_type\": \"HOLD\", \"actor_id\": \"legal-team  \", \"retention_class\": \"R10 \", \"disposition_code\": \"LH\", \"client_ip\": \"172.16.0.9\", \"detail_text\": \"legal hold placed\"}}], \"raw\": {\"arch_key\": \"CHAR0000000002\", \"doc_id\": \"3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f\", \"retention_class\": \"R10 \", \"owner_name\": \"O'Brien, Pat\", \"disposition_dt\": \"20341231\", \"legal_hold_flag\": \"Y\"}}]}"
+        }
+      }
+    },
+    {
+      "id": "archive-document-hash",
+      "context": "archive",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"doc_id\": \"3f2c1d9e-0a4b-4c5d-8e6f-7a8b9c0d1e2f\", \"store\": \"postgresql\", \"algorithm\": \"SHA-256 over '|'-joined manifest hash_columns (CONTRACTS §7)\", \"document_hash\": \"4A5234FC5B8A23190A2DAC9F7FA664C651855C34BBF7104BA8F1B0468D4088BA\", \"versions\": [{\"arch_key\": \"CHAR0000000001\", \"version_no\": 1, \"row_hash\": \"6DE9852334749728B9641C251ED0A8B57CA94EB8C6F0EA7D58D292DC932D73D1\", \"events\": [{\"audit_key\": \"AUD00000000000000001\", \"row_hash\": \"FDF8CC630BBB69FA8398EFBDF9CB79F16E648CC5A83411D176CAC17718A2F222\"}, {\"audit_key\": \"AUD00000000000000002\", \"row_hash\": \"4B8DE803A96832F928356406540915A15E50154425B285DA342E02E2FC258FE7\"}]}, {\"arch_key\": \"CHAR0000000002\", \"version_no\": 2, \"row_hash\": \"E6D9AE581828B274FF27FF3292E1492CB35C2BA2ADD6B58AC9336EF1CA410CB5\", \"events\": [{\"audit_key\": \"AUD00000000000000003\", \"row_hash\": \"93632C6BFA57DF9B061AC6891610279913CFDEBE9C008BE561427A204A887066\"}]}]}"
+        }
+      }
+    },
+    {
+      "id": "archive-document-padded-id",
+      "context": "archive",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"doc_id\": \"CHAR-DOC-SHORT\", \"store\": \"postgresql\", \"versions\": [{\"arch_key\": \"CHAR0000000003\", \"version_no\": 1, \"retention_class\": \"R07\", \"last_access_ts\": \"2020-02-29-23.00.00.000001000000\", \"storage_charge\": \"0.00000000\", \"unit_rate\": \"0.00000001\", \"owner_name\": \"short id owner\", \"disposition_dt\": \"2030-01-01\", \"legal_hold\": false, \"checksum_alg\": \"MD5\", \"content_sha256\": \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\", \"byte_size\": 0, \"source_sys\": \"DMS\", \"policy\": {\"policy_code\": \"R07\", \"policy_desc\": \"Seven-year retention\", \"retention_years\": 7, \"successor_code\": \"R10\", \"active_flag\": \"Y\", \"disposition_action\": \"DEST\", \"effective_ts\": \"2015-01-01-00.00.00.000000000000\"}, \"events\": []}]}"
+        }
+      }
+    },
+    {
+      "id": "archive-document-short-id-default",
+      "context": "archive",
+      "response": {
+        "status": 200,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"doc_id\": \"CHAR-DOC-SHORT\", \"store\": \"postgresql\", \"versions\": [{\"arch_key\": \"CHAR0000000003\", \"version_no\": 1, \"retention_class\": \"R07\", \"last_access_ts\": \"2020-02-29-23.00.00.000001000000\", \"storage_charge\": \"0.00000000\", \"unit_rate\": \"0.00000001\", \"owner_name\": \"short id owner\", \"disposition_dt\": \"2030-01-01\", \"legal_hold\": false, \"checksum_alg\": \"MD5\", \"content_sha256\": \"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\", \"byte_size\": 0, \"source_sys\": \"DMS\", \"policy\": {\"policy_code\": \"R07\", \"policy_desc\": \"Seven-year retention\", \"retention_years\": 7, \"successor_code\": \"R10\", \"active_flag\": \"Y\", \"disposition_action\": \"DEST\", \"effective_ts\": \"2015-01-01-00.00.00.000000000000\"}, \"events\": []}]}"
+        }
+      }
+    },
+    {
+      "id": "archive-document-unknown",
+      "context": "archive",
+      "response": {
+        "status": 404,
+        "contentType": "application/json",
+        "contentDisposition": null,
+        "body": {
+          "kind": "json",
+          "value": "{\"error\": \"document not found\", \"doc_id\": \"no-such-document\"}"
+        }
+      }
+    }
+  ]
+}
