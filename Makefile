@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-up-tls procs-down-tls procs-up-migrated procs-down-migrated procs-schema-parity procs-schema-parity-original procs-record procs-list procs-parity procs-rules-gate billing-migrate-verify billing-tls-verify insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
 
@@ -6,13 +6,17 @@ help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 PROCS_COMPOSE = docker compose -f docker-compose.procs.yml -p otterworks-procs-$(NS)
+PROCS_TLS_COMPOSE = docker compose -f docker-compose.procs.yml -f docker-compose.procs.tls.yml -p otterworks-procs-$(NS)
+PROCS_MIGRATED_COMPOSE = docker compose -f docker-compose.procs.migrated.yml -p otterworks-procs-migrated-$(NS)
 PROCS_UV = uv run --with psycopg[binary]==3.2.9 --with pyyaml==6.0.2
 PROCS_PORT_OFFSET = $(shell if command -v python3 >/dev/null 2>&1 && test -n "$(NS)"; then python3 -c "import zlib; print(zlib.crc32('$(NS)'.encode()) % 1000)"; fi)
 PROCS_DB_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(55432 + $(PROCS_PORT_OFFSET))")
 PROCS_APP_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(8096 + $(PROCS_PORT_OFFSET))")
 PROCS_TARGET_DB_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(56432 + $(PROCS_PORT_OFFSET))")
 PROCS_TARGET_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(12096 + $(PROCS_PORT_OFFSET))")
-PROCS_ENV = NS=$(NS) PROCS_DB_PORT=$(PROCS_DB_PORT) PROCS_APP_PORT=$(PROCS_APP_PORT) PROCS_TARGET_DB_PORT=$(PROCS_TARGET_DB_PORT) PROCS_TARGET_PORT=$(PROCS_TARGET_PORT)
+PROCS_MIGRATED_DB_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(57432 + $(PROCS_PORT_OFFSET))")
+PROCS_MIGRATED_APP_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(14096 + $(PROCS_PORT_OFFSET))")
+PROCS_ENV = NS=$(NS) PROCS_DB_PORT=$(PROCS_DB_PORT) PROCS_APP_PORT=$(PROCS_APP_PORT) PROCS_TARGET_DB_PORT=$(PROCS_TARGET_DB_PORT) PROCS_TARGET_PORT=$(PROCS_TARGET_PORT) PROCS_MIGRATED_DB_PORT=$(PROCS_MIGRATED_DB_PORT) PROCS_MIGRATED_APP_PORT=$(PROCS_MIGRATED_APP_PORT)
 
 procs-validate:
 	@test -n "$(NS)" || (echo "NS is required, e.g. make procs-up NS=dev" >&2; exit 2)
@@ -24,6 +28,24 @@ procs-up: procs-validate ## Start the legacy billing stored-procedure stack (NS=
 
 procs-down: procs-validate ## Stop the legacy billing stored-procedure stack (NS=<namespace>)
 	$(PROCS_ENV) $(PROCS_COMPOSE) down -v
+
+procs-up-tls: procs-validate ## Start the legacy billing stack with local verified TLS (NS=<namespace>)
+	$(PROCS_ENV) $(PROCS_TLS_COMPOSE) up -d --build --wait
+
+procs-down-tls: procs-validate ## Stop the legacy billing TLS stack and drop its data (NS=<namespace>)
+	$(PROCS_ENV) $(PROCS_TLS_COMPOSE) down -v
+
+procs-up-migrated: procs-validate ## Start legacy-billing on postgres:16 built by roles.sql + migrate.sh, over verify-full TLS as billing_app (NS=<namespace>)
+	$(PROCS_ENV) $(PROCS_MIGRATED_COMPOSE) up -d --build --wait legacy-billing
+
+procs-down-migrated: procs-validate ## Stop the migrated-schema legacy billing stack (NS=<namespace>)
+	$(PROCS_ENV) $(PROCS_MIGRATED_COMPOSE) down -v
+
+procs-schema-parity: procs-validate ## Replay every recorded scenario (all modules) on the migrated schema; needs procs-up-migrated (NS=<namespace>, MODULE, SCENARIO, BASELINE optional)
+	$(PROCS_ENV) procs/harness/migrated/parity.sh $(if $(MODULE),--module $(MODULE),) $(if $(SCENARIO),--scenario $(SCENARIO),) $(if $(BASELINE),--baseline-report $(BASELINE),)
+
+procs-schema-parity-original: procs-validate ## Same replay on the original schema.sql database from procs-up, as the baseline (NS=<namespace>)
+	$(PROCS_ENV) DB_PORT=$(PROCS_DB_PORT) $(PROCS_UV) procs/harness/schema_parity.py --label original $(if $(MODULE),--module $(MODULE),) $(if $(SCENARIO),--scenario $(SCENARIO),)
 
 procs-record: procs-validate ## Record legacy billing transcripts (NS=<namespace>, MODULE and OUTPUT_DIR optional)
 	$(PROCS_ENV) DB_NAME=billing_$(NS) DB_PORT=$(PROCS_DB_PORT) $(PROCS_UV) procs/harness/record.py $(if $(MODULE),--module $(MODULE),) $(if $(OUTPUT_DIR),--output-dir $(OUTPUT_DIR),) $(if $(ALLOW_RERECORD),--allow-rerecord,) $(if $(RERECORD_REASON),--rerecord-reason $(RERECORD_REASON),)
@@ -37,6 +59,12 @@ procs-parity: procs-validate ## Replay extracted billing scenarios (NS=<namespac
 procs-rules-gate: ## Validate the approved HITL rule ledger (MODULE=<module> or ALL=1)
 	@test -n "$(MODULE)$(ALL)" || (echo "MODULE or ALL=1 is required" >&2; exit 2)
 	uv run --with pyyaml==6.0.2 procs/harness/rules_gate.py $(if $(ALL),--all,--module $(MODULE))
+
+billing-migrate-verify: ## Apply legacy-billing migrations to a throwaway postgres:16 as a non-superuser
+	services/legacy-billing/db/verify-migrations.sh
+
+billing-tls-verify: procs-validate ## Verify legacy-billing TLS, runtime permissions, and rejection cases (NS=<namespace>)
+	$(PROCS_ENV) services/legacy-billing/db/verify-tls.sh
 
 # --- Industry Solutions: insurance Commission Pay (Oracle) ---
 

@@ -13,6 +13,7 @@ on:
       - "frontend/client-app/package-lock.json"
       - "frontend/client-app/vite.config.ts"
       - "docker-compose.procs.yml"
+      - "docker-compose.procs.migrated.yml"
       - "Makefile"
   pull_request:
     paths:
@@ -26,11 +27,15 @@ on:
       - "frontend/client-app/package-lock.json"
       - "frontend/client-app/vite.config.ts"
       - "docker-compose.procs.yml"
+      - "docker-compose.procs.migrated.yml"
       - "Makefile"
 
 jobs:
   parity:
     runs-on: ubuntu-latest
+    env:
+      # psycopg-binary 3.2.9 ships wheels up to cp313; the runner's default is 3.14.
+      UV_PYTHON: "3.12"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
@@ -48,10 +53,21 @@ jobs:
       - run: make procs-up NS=ci
       - run: make procs-rules-gate ALL=1
       - run: make procs-parity NS=ci
+      # g-procs-parity: every recorded scenario of all four modules replayed directly
+      # against the legacy procedures, first on the original schema.sql database
+      # (baseline), then on postgres:16 built by bootstrap/roles.sql + migrate.sh with
+      # the app connecting as billing_app over verify-full TLS.
+      - run: make procs-schema-parity-original NS=ci
+      - run: make procs-up-migrated NS=ci
+      - run: make procs-schema-parity NS=ci BASELINE=procs/reports/schema-parity-original.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
           name: stored-procedure-parity-report
-          path: procs/reports/parity.*
+          path: |
+            procs/reports/parity.*
+            procs/reports/schema-parity-*
+      - if: always()
+        run: make procs-down-migrated NS=ci
       - if: always()
         run: make procs-down NS=ci

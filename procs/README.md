@@ -110,3 +110,42 @@ make procs-rules-gate MODULE=plans
 
 It validates the ledger decision, scenario coverage, source ranges, and
 target-test markers before parity is allowed to grade an extracted module.
+
+## Migrated-schema parity (`g-procs-parity`)
+
+`make procs-parity` grades the extracted service and skips pending modules.
+`make procs-schema-parity` instead proves the legacy procedures themselves
+still reproduce every recording after the database is built by the migration
+runner rather than `schema.sql`:
+
+```bash
+make procs-up NS=dev                       # original schema.sql stack (baseline)
+make procs-schema-parity-original NS=dev
+make procs-up-migrated NS=dev              # postgres:16 + roles.sql + migrate.sh, TLS
+make procs-schema-parity NS=dev BASELINE=procs/reports/schema-parity-original.json
+make procs-down-migrated NS=dev
+make procs-down NS=dev
+```
+
+`docker-compose.procs.migrated.yml` starts an empty `postgres:16` with TLS,
+creates a non-superuser `platform_admin` that runs
+`services/legacy-billing/db/bootstrap/roles.sql`, and lets the billing roles
+connect only over `hostssl`. `legacy-billing-migrate` runs `db/migrate.sh` as
+`billing_owner` and loads `seed.sql`; `legacy-billing` connects as
+`billing_app` with `DB_SSLMODE=verify-full` against the local throwaway CA.
+
+`procs/harness/migrated/parity.sh` checks the app's own `db_connect()` session
+(billing_app, not superuser, TLS, PostgreSQL 16), then
+`procs/harness/schema_parity.py` replays every scenario of every module as
+`billing_app` over verify-full TLS, rebuilding the schema with `migrate.sh`
+before each scenario. Business fields, state probes, entrypoint and inputs must
+equal the transcript. A module or scenario without a recording is an error,
+not a skip, and the run refuses to grade when the migrations no longer match
+the procedure sources the transcripts were recorded from. Transcripts are only
+read. Reports go to `procs/reports/schema-parity-<label>.{md,json}`.
+
+Tenant 1's three seeded rating periods (2025-11, 2025-12, 2026-01) make
+`sp_finalize_rating` raise on every platform (see
+`services/legacy-billing/db/MANAGED_POSTGRES.md`). The run records those
+outcomes separately, does not grade them, and with `BASELINE` requires them to
+be identical to the original `schema.sql` database.
