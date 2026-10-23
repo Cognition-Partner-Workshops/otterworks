@@ -1,0 +1,7 @@
+# Pipeline settings read by .github/workflows/platform-app-pipeline.yml
+app: sample-service
+smoke:
+  - path: /health
+    expect: 200
+  - path: /
+    expect: 200
