@@ -1,0 +1,94 @@
+# Legacy billing built from the migration runner instead of schema.sql:
+# services/legacy-billing/db/bootstrap/roles.sql + db/migrate.sh on an empty
+# postgres:16 with TLS, and the app connecting as billing_app with
+# verify-full, as it would against managed PostgreSQL. Local containers only.
+# Used by `make procs-up-migrated` and `make procs-schema-parity`.
+services:
+  legacy-billing-tls-certs:
+    image: postgres:16
+    entrypoint: ["bash", "/usr/local/bin/gen-local-certs.sh"]
+    volumes:
+      - ./services/legacy-billing/db/tls/gen-local-certs.sh:/usr/local/bin/gen-local-certs.sh:ro
+      - legacy-billing-tls:/tls
+
+  legacy-billing-db:
+    image: postgres:16
+    depends_on:
+      legacy-billing-tls-certs:
+        condition: service_completed_successfully
+    command:
+      - postgres
+      - -c
+      - ssl=on
+      - -c
+      - ssl_cert_file=/tls/server.crt
+      - -c
+      - ssl_key_file=/tls/server.key
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      BILLING_DB: billing_${NS:-dev}
+      PLATFORM_ADMIN_PASSWORD: ${PLATFORM_ADMIN_PASSWORD:-platform_admin}
+      BILLING_OWNER_PASSWORD: ${BILLING_OWNER_PASSWORD:-billing_owner}
+      BILLING_APP_PASSWORD: ${BILLING_APP_PASSWORD:-billing_app}
+    ports:
+      - "127.0.0.1:${PROCS_MIGRATED_DB_PORT:-57432}:5432"
+    volumes:
+      - ./procs/harness/migrated/01-bootstrap.sh:/docker-entrypoint-initdb.d/01-bootstrap.sh:ro
+      - ./services/legacy-billing/db/bootstrap/roles.sql:/bootstrap/roles.sql:ro
+      - legacy-billing-tls:/tls:ro
+      - legacy-billing-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d billing_${NS:-dev}"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+  legacy-billing-migrate:
+    image: postgres:16
+    depends_on:
+      legacy-billing-db:
+        condition: service_healthy
+    entrypoint: ["bash", "/work/rebuild.sh"]
+    environment:
+      PGHOST: legacy-billing-db
+      PGPORT: 5432
+      PGDATABASE: billing_${NS:-dev}
+      PGUSER: billing_owner
+      PGPASSWORD: ${BILLING_OWNER_PASSWORD:-billing_owner}
+      PGSSLMODE: verify-full
+      PGSSLROOTCERT: /tls/ca.crt
+      BILLING_APP_ROLE: billing_app
+      BILLING_REBUILD_RESET: ${BILLING_REBUILD_RESET:-0}
+    volumes:
+      - ./services/legacy-billing/db:/work/db:ro
+      - ./procs/harness/migrated/rebuild.sh:/work/rebuild.sh:ro
+      - legacy-billing-tls:/tls:ro
+
+  legacy-billing:
+    build:
+      context: ./services/legacy-billing
+      dockerfile: Dockerfile
+    depends_on:
+      legacy-billing-migrate:
+        condition: service_completed_successfully
+    environment:
+      DB_HOST: legacy-billing-db
+      DB_PORT: 5432
+      DB_NAME: billing_${NS:-dev}
+      DB_USER: billing_app
+      DB_PASSWORD: ${BILLING_APP_PASSWORD:-billing_app}
+      DB_SSLMODE: verify-full
+      DB_SSLROOTCERT: /tls/ca.crt
+    ports:
+      - "127.0.0.1:${PROCS_MIGRATED_APP_PORT:-14096}:8096"
+    volumes:
+      - legacy-billing-tls:/tls:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8096/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  legacy-billing-tls:
+  legacy-billing-db-data:
