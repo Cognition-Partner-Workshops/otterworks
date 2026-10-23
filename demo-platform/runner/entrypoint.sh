@@ -149,6 +149,17 @@ run_deploy() {
   # Secrets (DB_PASSWORD/JWT_SECRET/SECRET_KEY_BASE) are read from the env by the
   # script; they are NOT placed on this argv.
   if "${REPO_DIR}/scripts/deploy-tenant.sh" "${TENANT_ID}" "${args[@]}"; then
+    # deploy-tenant.sh stamped the namespace with this job's TTL. If the tenant
+    # was pinned (or made perpetual) while the job ran, keep its lifetime, on
+    # the record and on the annotation the namespace reaper deletes by.
+    local locked
+    locked="$(ctl_locked_expiry "${TENANT_ID}")"
+    if [ -n "${locked}" ]; then
+      exp="${locked}"
+      kubectl annotate namespace "${ns}" --overwrite \
+        "demo/expires-at=$(date -u -d "@${exp}" +%Y-%m-%dT%H:%M:%SZ)" \
+        "demo/expires-at-epoch=${exp}" >/dev/null
+    fi
     ctl_set_active "${TENANT_ID}" "${url}" "${api_url}" "${db}" "${ns}" "${exp}"
     ctl_audit "${TENANT_ID}" deploy_ok "url=${url}"
     log "deploy complete for ${TENANT_ID} (${ns})"
