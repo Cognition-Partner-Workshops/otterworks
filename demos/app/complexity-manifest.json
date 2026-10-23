@@ -136,5 +136,14 @@
       "expected_count": 12,
       "headline": true
     }
+  ],
+  "assessment_demo": "application-assessment",
+  "assessment_classes": [
+    {"id": "AA-01", "title": "Unrouted service mistaken for unused", "application": "report-service", "condition": "/api/v1/reports missing from the gateway routes", "expected_disposition": "replatform", "surfacing_stage": "assessment"},
+    {"id": "AA-02", "title": "Hidden caller", "application": "legacy-share-links", "condition": "nightly script calls one endpoint", "expected_disposition": "retire", "surfacing_stage": "assessment"},
+    {"id": "AA-03", "title": "Logic in the database", "application": "legacy-billing", "condition": "billing rules in PostgreSQL procedures", "expected_disposition": "replatform", "surfacing_stage": "assessment"},
+    {"id": "AA-04", "title": "VM deployment unit", "application": "legacy-portal", "condition": "systemd unit and on-premises run script", "expected_disposition": "rearchitect", "surfacing_stage": "assessment"},
+    {"id": "AA-05", "title": "Retention data", "application": "db2-retention-archive", "condition": "archive rows deleted only once proven", "expected_disposition": "none", "surfacing_stage": "assessment"},
+    {"id": "AA-06", "title": "Parity fault", "application": "report-service", "condition": "one report column formats a date in the server time zone after the upgrade", "expected_disposition": null, "surfacing_stage": "parity replay"}
   ]
 }

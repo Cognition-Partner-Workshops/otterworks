@@ -1,0 +1,6 @@
+application,path,owner_team,questionnaire_disposition,questionnaire_reason
+legacy-portal,services/legacy-portal,Customer Portal,rehost,Lift the VM to EC2 as it is
+report-service,services/report-service,Reporting,retire,Nobody calls it
+legacy-billing,services/legacy-billing,Billing Platform,rearchitect,Split the Flask app into microservices
+db2-retention-archive,migration,Records Management,rehost,Move the Db2 server to EC2
+legacy-share-links,services/legacy-share-links,Collaboration,retire,No traffic in the last quarter

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" version="3.0">
+  <servlet>
+    <servlet-name>share</servlet-name>
+    <servlet-class>com.otterworks.sharelinks.ShareLinkServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>share</servlet-name>
+    <url-pattern>/s/*</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>purge</servlet-name>
+    <servlet-class>com.otterworks.sharelinks.PurgeExpiredServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>purge</servlet-name>
+    <url-pattern>/admin/purge-expired</url-pattern>
+  </servlet-mapping>
+</web-app>
