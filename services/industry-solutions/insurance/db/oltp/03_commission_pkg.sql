@@ -83,6 +83,79 @@ END commission_pkg;
 
 CREATE OR REPLACE PACKAGE BODY commission_pkg AS
 
+    -- The extracted rule owner. Resolvable on the fixture's Compose network;
+    -- the network ACL that permits these callouts is granted in
+    -- ../setup/02_service_acl.sql.
+    c_service_url CONSTANT VARCHAR2(200) := 'http://commission-service:8000';
+    c_timeout_s   CONSTANT PLS_INTEGER   := 60;
+    c_date_fmt    CONSTANT VARCHAR2(30)  := 'YYYY-MM-DD HH24:MI:SS';
+
+    -- Strangler route: a rule group moves to commission-service when its
+    -- procedure body here is replaced by a call_service delegate. Groups not
+    -- yet moved keep their PL/SQL rules unchanged below.
+    --
+    -- Marshals a call to the rule owner and re-raises its verdict. A 200 hands
+    -- back the response body; an application error is re-raised with the code
+    -- and message the service chose, so callers see the same ORA-20xxx they saw
+    -- when the rules ran in this package.
+    FUNCTION call_service (
+        p_path   IN VARCHAR2,
+        p_method IN VARCHAR2,
+        p_body   IN VARCHAR2 DEFAULT NULL
+    ) RETURN CLOB IS
+        l_req    UTL_HTTP.req;
+        l_res    UTL_HTTP.resp;
+        l_chunk  VARCHAR2(32767);
+        l_reply  CLOB;
+        l_status PLS_INTEGER;
+        l_code   NUMBER;
+        l_msg    VARCHAR2(1800);
+        l_bytes  RAW(32767);
+    BEGIN
+        UTL_HTTP.set_transfer_timeout(c_timeout_s);
+        l_req := UTL_HTTP.begin_request(c_service_url || p_path, p_method, UTL_HTTP.HTTP_VERSION_1_1);
+        UTL_HTTP.set_header(l_req, 'Accept', 'application/json');
+        IF p_body IS NOT NULL THEN
+            -- Send UTF-8 bytes and declare their exact count; write_text would
+            -- convert with the body charset after LENGTHB counted DB bytes.
+            l_bytes := UTL_I18N.string_to_raw(p_body, 'AL32UTF8');
+            UTL_HTTP.set_header(l_req, 'Content-Type', 'application/json; charset=utf-8');
+            UTL_HTTP.set_header(l_req, 'Content-Length', UTL_RAW.length(l_bytes));
+            UTL_HTTP.write_raw(l_req, l_bytes);
+        ELSE
+            UTL_HTTP.set_header(l_req, 'Content-Length', 0);
+        END IF;
+
+        l_res := UTL_HTTP.get_response(l_req);
+        UTL_HTTP.set_body_charset(l_res, 'UTF-8');
+        l_status := l_res.status_code;
+        DBMS_LOB.createtemporary(l_reply, TRUE);
+        BEGIN
+            LOOP
+                UTL_HTTP.read_text(l_res, l_chunk, 32767);
+                EXIT WHEN l_chunk IS NULL;
+                DBMS_LOB.writeappend(l_reply, LENGTH(l_chunk), l_chunk);
+            END LOOP;
+        EXCEPTION
+            WHEN UTL_HTTP.end_of_body THEN NULL;
+        END;
+        UTL_HTTP.end_response(l_res);
+
+        IF l_status = 200 THEN
+            RETURN l_reply;
+        END IF;
+
+        l_code := JSON_VALUE(l_reply, '$.ora_code' RETURNING NUMBER);
+        l_msg  := NVL(JSON_VALUE(l_reply, '$.message' RETURNING VARCHAR2(1800)),
+                      DBMS_LOB.SUBSTR(l_reply, 1000, 1));
+        DBMS_LOB.freetemporary(l_reply);
+        IF l_code BETWEEN -20999 AND -20001 THEN
+            RAISE_APPLICATION_ERROR(l_code, l_msg);
+        END IF;
+        RAISE_APPLICATION_ERROR(-20000,
+            'commission-service HTTP ' || l_status || ': ' || l_msg);
+    END call_service;
+
     PROCEDURE log_action (
         p_action       IN VARCHAR2,
         p_product_code IN VARCHAR2,
