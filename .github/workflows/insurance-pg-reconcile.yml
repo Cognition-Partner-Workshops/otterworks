@@ -1,0 +1,42 @@
+name: Commission Pay Oracle to PostgreSQL reconciliation
+
+on:
+  push:
+    paths:
+      - "services/industry-solutions/insurance/**"
+      - "docker-compose.insurance.yml"
+      - "docker-compose.insurance-pg.yml"
+      - ".github/workflows/insurance-pg-reconcile.yml"
+      - "Makefile"
+  pull_request:
+    paths:
+      - "services/industry-solutions/insurance/**"
+      - "docker-compose.insurance.yml"
+      - "docker-compose.insurance-pg.yml"
+      - ".github/workflows/insurance-pg-reconcile.yml"
+      - "Makefile"
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - run: uv run --with ruff==0.9.10 ruff check services/industry-solutions/insurance/pg
+      - run: make insurance-up NS=ci
+      - run: make insurance-test NS=ci
+      - run: make insurance-ledger-run NS=ci
+      - run: make insurance-pg-up NS=ci
+      - run: make insurance-pg-reconcile NS=ci
+      - if: always()
+        run: cat services/industry-solutions/insurance/pg/reports/reconciliation.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: commission-pay-reconciliation
+          path: services/industry-solutions/insurance/pg/reports/reconciliation.*
+      - if: always()
+        run: make insurance-pg-down NS=ci && make insurance-down NS=ci
