@@ -1,0 +1,25 @@
+{
+  "rules": [
+    "R9",
+    "R36"
+  ],
+  "steps": [
+    {
+      "call": "upsert_commission_rate",
+      "error": {
+        "code": "ORA-00001",
+        "message": "unique constraint (COMMISSION_PAY.UX_RATES_OPEN) violated on table COMMISSION_PAY.COMMISSION_RATES columns (PRODUCT_CODE, SYS_NC00009$, SYS_NC00010$)"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_from": "2023-06-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "7.00"
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_upsert_commission_rate.py::test_backdated_rate_collides_with_open_rate"
+}

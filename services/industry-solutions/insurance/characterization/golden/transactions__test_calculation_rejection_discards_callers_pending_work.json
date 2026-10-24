@@ -1,0 +1,22 @@
+{
+  "rules": [
+    "R35"
+  ],
+  "steps": [
+    {
+      "call": "calculate_policy_commission",
+      "error": {
+        "code": "ORA-20008",
+        "message": "Policy 5 is LAPSED"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-06",
+        "p_policy_id": 5
+      },
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_transactions.py::test_calculation_rejection_discards_callers_pending_work"
+}

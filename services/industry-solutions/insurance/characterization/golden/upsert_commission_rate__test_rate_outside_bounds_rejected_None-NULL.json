@@ -1,0 +1,25 @@
+{
+  "rules": [
+    "R1",
+    "R38"
+  ],
+  "steps": [
+    {
+      "call": "upsert_commission_rate",
+      "error": {
+        "code": "ORA-20001",
+        "message": "Rate must be in (0, 50]: NULL"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_from": "2026-02-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": null
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_upsert_commission_rate.py::test_rate_outside_bounds_rejected[None-NULL]"
+}

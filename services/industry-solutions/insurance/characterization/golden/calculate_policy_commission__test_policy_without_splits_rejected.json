@@ -1,0 +1,22 @@
+{
+  "rules": [
+    "R33"
+  ],
+  "steps": [
+    {
+      "call": "calculate_policy_commission",
+      "error": {
+        "code": "ORA-20006",
+        "message": "Policy 3 has no split allocation"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-06",
+        "p_policy_id": 3
+      },
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_calculate_policy_commission.py::test_policy_without_splits_rejected"
+}

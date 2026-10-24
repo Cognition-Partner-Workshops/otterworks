@@ -1,0 +1,23 @@
+{
+  "rules": [
+    "R27",
+    "R35"
+  ],
+  "steps": [
+    {
+      "call": "calculate_policy_commission",
+      "error": {
+        "code": "ORA-01843",
+        "message": "An invalid month was specified."
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_period_month": "2025-13",
+        "p_policy_id": 1
+      },
+      "sql": "BEGIN commission_pkg.calculate_policy_commission(:p_policy_id, :p_period_month, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_calculate_policy_commission.py::test_invalid_period_rejected"
+}

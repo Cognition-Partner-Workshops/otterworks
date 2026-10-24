@@ -1,0 +1,74 @@
+{
+  "rules": [
+    "R23"
+  ],
+  "steps": [
+    {
+      "call": "upsert_commission_rate",
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_from": "2025-01-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "12.00"
+      },
+      "outputs": {
+        "o_rate_id": 5.0
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {
+        "commission_rates": {
+          "inserted": [
+            {
+              "agent_id": null,
+              "created_by": "char",
+              "effective_from": "2025-01-01",
+              "effective_to": null,
+              "product_code": "AUTO-STD",
+              "rate_id": 5,
+              "rate_pct": "12"
+            }
+          ],
+          "updated": [
+            {
+              "changes": {
+                "effective_to": [
+                  null,
+                  "2024-12-31"
+                ]
+              },
+              "rate_id": 1
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "RATE_UPSERT",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "rate_id=5 pct=12 from=2025-01-01",
+              "policy_id": null,
+              "product_code": "AUTO-STD"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "call": "resolve_rate",
+      "inputs": {
+        "p_agent_id": 1,
+        "p_as_of": "2025-06-15",
+        "p_product_code": "AUTO-STD"
+      },
+      "outputs": {
+        "rate_id": 4.0
+      },
+      "sql": "BEGIN :rate_id := commission_pkg.resolve_rate(:p_product_code, :p_agent_id, :p_as_of); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_resolve_rate.py::test_agent_rate_wins_even_when_default_started_later"
+}
