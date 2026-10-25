@@ -1,0 +1,8 @@
+name,priority,condition,outcome,reason
+DeclineNotInForce,100,InForceAtLoss == false,DECLINE_NOT_IN_FORCE,Policy not in force at loss date
+FraudFlagLateReport,90,ReportDelayDays > 30,FRAUD_REVIEW,Reported more than 30 days after loss
+FraudFlagNewPolicyLargeLoss,90,PolicyAgeDaysAtLoss < 90 and EstimatedAmount > 5000.00,FRAUD_REVIEW,Large loss within 90 days of inception
+FraudFlagPriorHistory,90,PriorFraudFlag == true,FRAUD_REVIEW,Claimant has a prior fraud flag
+FastTrack,50,"Outcome == '' and NetExposure <= 2500.00 and InjuryFlag == false and LossCause in (GLAS,TOWG,WIND)",FAST_TRACK,"Low exposure, no injury, fast-track cause"
+LargeLoss,40,Outcome == '' and ReserveEstimate >= 50000.00,LARGE_LOSS,Reserve at or above large-loss threshold
+StandardHandling,10,Outcome == '',STANDARD,Standard handling

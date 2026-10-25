@@ -1,0 +1,12 @@
+<ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <RequestId>ASG-520109</RequestId>
+  <ClaimNumber>CLM-2026-100413</ClaimNumber>
+  <LineOfBusiness>AUTO</LineOfBusiness>
+  <LossCause>COMP</LossCause>
+  <Region>NORTHEAST</Region>
+  <Severity>LOW</Severity>
+  <RequiredSkill>AUTO-PD</RequiredSkill>
+  <RequestedDt>2026-10-03</RequestedDt>
+  <ClaimantName>Bartholomew Okafor</ClaimantName>
+  <EstimatedAmount>3300.00</EstimatedAmount>
+</ns0:AssignmentRequest>
