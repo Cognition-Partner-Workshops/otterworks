@@ -1,0 +1,742 @@
+{
+  "ledger_by_agent": {
+    "AG-100": {
+      "commission_amt": "773.5",
+      "rows": 38
+    },
+    "AG-101": {
+      "commission_amt": "437.6",
+      "rows": 36
+    },
+    "AG-102": {
+      "commission_amt": "207.4",
+      "rows": 23
+    }
+  },
+  "ledger_by_agent_period": {
+    "AG-100 2025-02": {
+      "commission_amt": "14.25",
+      "rows": 1
+    },
+    "AG-100 2025-03": {
+      "commission_amt": "26.25",
+      "rows": 2
+    },
+    "AG-100 2025-04": {
+      "commission_amt": "26.25",
+      "rows": 2
+    },
+    "AG-100 2025-05": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2025-06": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2025-07": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2025-08": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2025-09": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2025-10": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2025-11": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2025-12": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2026-01": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2026-02": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-100 2026-03": {
+      "commission_amt": "64.25",
+      "rows": 3
+    },
+    "AG-101 2025-03": {
+      "commission_amt": "8",
+      "rows": 1
+    },
+    "AG-101 2025-04": {
+      "commission_amt": "17.75",
+      "rows": 2
+    },
+    "AG-101 2025-05": {
+      "commission_amt": "36.95",
+      "rows": 3
+    },
+    "AG-101 2025-06": {
+      "commission_amt": "36.95",
+      "rows": 3
+    },
+    "AG-101 2025-07": {
+      "commission_amt": "36.95",
+      "rows": 3
+    },
+    "AG-101 2025-08": {
+      "commission_amt": "36.95",
+      "rows": 3
+    },
+    "AG-101 2025-09": {
+      "commission_amt": "36.95",
+      "rows": 3
+    },
+    "AG-101 2025-10": {
+      "commission_amt": "36.95",
+      "rows": 3
+    },
+    "AG-101 2025-11": {
+      "commission_amt": "36.95",
+      "rows": 3
+    },
+    "AG-101 2025-12": {
+      "commission_amt": "36.95",
+      "rows": 3
+    },
+    "AG-101 2026-01": {
+      "commission_amt": "38.75",
+      "rows": 3
+    },
+    "AG-101 2026-02": {
+      "commission_amt": "38.75",
+      "rows": 3
+    },
+    "AG-101 2026-03": {
+      "commission_amt": "38.75",
+      "rows": 3
+    },
+    "AG-102 2025-04": {
+      "commission_amt": "5.25",
+      "rows": 1
+    },
+    "AG-102 2025-05": {
+      "commission_amt": "18.05",
+      "rows": 2
+    },
+    "AG-102 2025-06": {
+      "commission_amt": "18.05",
+      "rows": 2
+    },
+    "AG-102 2025-07": {
+      "commission_amt": "18.05",
+      "rows": 2
+    },
+    "AG-102 2025-08": {
+      "commission_amt": "18.05",
+      "rows": 2
+    },
+    "AG-102 2025-09": {
+      "commission_amt": "18.05",
+      "rows": 2
+    },
+    "AG-102 2025-10": {
+      "commission_amt": "18.05",
+      "rows": 2
+    },
+    "AG-102 2025-11": {
+      "commission_amt": "18.05",
+      "rows": 2
+    },
+    "AG-102 2025-12": {
+      "commission_amt": "18.05",
+      "rows": 2
+    },
+    "AG-102 2026-01": {
+      "commission_amt": "19.25",
+      "rows": 2
+    },
+    "AG-102 2026-02": {
+      "commission_amt": "19.25",
+      "rows": 2
+    },
+    "AG-102 2026-03": {
+      "commission_amt": "19.25",
+      "rows": 2
+    }
+  },
+  "ledger_by_period": {
+    "2025-02": {
+      "commission_amt": "14.25",
+      "rows": 1
+    },
+    "2025-03": {
+      "commission_amt": "34.25",
+      "rows": 3
+    },
+    "2025-04": {
+      "commission_amt": "49.25",
+      "rows": 5
+    },
+    "2025-05": {
+      "commission_amt": "119.25",
+      "rows": 8
+    },
+    "2025-06": {
+      "commission_amt": "119.25",
+      "rows": 8
+    },
+    "2025-07": {
+      "commission_amt": "119.25",
+      "rows": 8
+    },
+    "2025-08": {
+      "commission_amt": "119.25",
+      "rows": 8
+    },
+    "2025-09": {
+      "commission_amt": "119.25",
+      "rows": 8
+    },
+    "2025-10": {
+      "commission_amt": "119.25",
+      "rows": 8
+    },
+    "2025-11": {
+      "commission_amt": "119.25",
+      "rows": 8
+    },
+    "2025-12": {
+      "commission_amt": "119.25",
+      "rows": 8
+    },
+    "2026-01": {
+      "commission_amt": "122.25",
+      "rows": 8
+    },
+    "2026-02": {
+      "commission_amt": "122.25",
+      "rows": 8
+    },
+    "2026-03": {
+      "commission_amt": "122.25",
+      "rows": 8
+    }
+  },
+  "ledger_recompute": {
+    "rounded_total": "1418.5",
+    "rows": 97,
+    "rows_not_matching_round": 0,
+    "stored_total": "1418.5",
+    "unrounded_total": "1418.5"
+  },
+  "mv_rows": {
+    "AG-100 2025-02 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "14.25"
+    },
+    "AG-100 2025-03 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "14.25"
+    },
+    "AG-100 2025-03 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2025-04 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "14.25"
+    },
+    "AG-100 2025-04 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2025-05 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2025-05 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2025-06 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2025-06 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2025-07 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2025-07 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2025-08 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2025-08 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2025-09 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2025-09 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2025-10 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2025-10 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2025-11 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2025-11 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2025-12 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2025-12 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2026-01 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2026-01 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2026-02 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2026-02 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-100 2026-03 AUTO": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 2,
+      "total_commission": "52.25"
+    },
+    "AG-100 2026-03 HOME": {
+      "full_name": "Maria Alvarez",
+      "policy_rows": 1,
+      "total_commission": "12"
+    },
+    "AG-101 2025-03 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-04 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-04 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2025-05 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "19.2"
+    },
+    "AG-101 2025-05 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-05 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2025-06 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "19.2"
+    },
+    "AG-101 2025-06 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-06 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2025-07 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "19.2"
+    },
+    "AG-101 2025-07 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-07 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2025-08 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "19.2"
+    },
+    "AG-101 2025-08 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-08 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2025-09 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "19.2"
+    },
+    "AG-101 2025-09 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-09 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2025-10 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "19.2"
+    },
+    "AG-101 2025-10 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-10 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2025-11 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "19.2"
+    },
+    "AG-101 2025-11 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-11 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2025-12 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "19.2"
+    },
+    "AG-101 2025-12 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2025-12 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2026-01 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "21"
+    },
+    "AG-101 2026-01 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2026-01 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2026-02 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "21"
+    },
+    "AG-101 2026-02 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2026-02 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-101 2026-03 AUTO": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "21"
+    },
+    "AG-101 2026-03 HOME": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "8"
+    },
+    "AG-101 2026-03 LIFE": {
+      "full_name": "James Okafor",
+      "policy_rows": 1,
+      "total_commission": "9.75"
+    },
+    "AG-102 2025-04 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2025-05 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "12.8"
+    },
+    "AG-102 2025-05 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2025-06 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "12.8"
+    },
+    "AG-102 2025-06 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2025-07 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "12.8"
+    },
+    "AG-102 2025-07 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2025-08 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "12.8"
+    },
+    "AG-102 2025-08 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2025-09 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "12.8"
+    },
+    "AG-102 2025-09 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2025-10 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "12.8"
+    },
+    "AG-102 2025-10 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2025-11 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "12.8"
+    },
+    "AG-102 2025-11 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2025-12 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "12.8"
+    },
+    "AG-102 2025-12 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2026-01 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "14"
+    },
+    "AG-102 2026-01 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2026-02 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "14"
+    },
+    "AG-102 2026-02 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    },
+    "AG-102 2026-03 AUTO": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "14"
+    },
+    "AG-102 2026-03 LIFE": {
+      "full_name": "Priya Natarajan",
+      "policy_rows": 1,
+      "total_commission": "5.25"
+    }
+  },
+  "tables": {
+    "commission_dw.dim_agent": {
+      "rows": 4,
+      "sums": {}
+    },
+    "commission_dw.dim_period": {
+      "rows": 14,
+      "sums": {}
+    },
+    "commission_dw.dim_product": {
+      "rows": 3,
+      "sums": {}
+    },
+    "commission_dw.fact_commission": {
+      "rows": 97,
+      "sums": {
+        "base_premium": "433200",
+        "commission_amt": "1418.5",
+        "split_pct": "5000"
+      }
+    },
+    "commission_dw.mv_agent_commission_summary": {
+      "rows": 86,
+      "sums": {
+        "policy_rows": "97",
+        "total_commission": "1418.5"
+      }
+    },
+    "commission_pay.agents": {
+      "rows": 4,
+      "sums": {}
+    },
+    "commission_pay.commission_ledger": {
+      "rows": 97,
+      "sums": {
+        "base_premium": "433200",
+        "commission_amt": "1418.5",
+        "split_pct": "5000"
+      }
+    },
+    "commission_pay.commission_rates": {
+      "rows": 5,
+      "sums": {
+        "rate_pct": "51.25"
+      }
+    },
+    "commission_pay.commission_splits": {
+      "rows": 8,
+      "sums": {
+        "split_pct": "400"
+      }
+    },
+    "commission_pay.fixture_meta": {
+      "rows": 1,
+      "sums": {}
+    },
+    "commission_pay.policies": {
+      "rows": 5,
+      "sums": {
+        "annual_premium": "17000"
+      }
+    },
+    "commission_pay.products": {
+      "rows": 3,
+      "sums": {}
+    },
+    "commission_pay.rate_audit_log": {
+      "rows": 55,
+      "sums": {}
+    }
+  }
+}
