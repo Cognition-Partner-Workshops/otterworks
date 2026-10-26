@@ -1,0 +1,37 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000014</RqUID>
+  <TransactionRequestDt>2026-09-22T08:29:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-1305</ProducerId>
+      <ProducerName>Marlow Street Agency</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-HOME-48198</PolicyNumber>
+      <LOBCd>HOME</LOBCd>
+        <EffectiveDt>2026-09-01</EffectiveDt>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Giselle</GivenName>
+      <Surname>Marchetti</Surname>
+      <TaxId>114-54-7182</TaxId>
+        <PhoneNumber>401-555-1518</PhoneNumber>
+        <EmailAddr>giselle.marchetti@example.net</EmailAddr>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100414</ClaimNumber>
+      <LossDt>2026-09-21</LossDt>
+      <ReportedDt>2026-09-22</ReportedDt>
+      <LossCauseCd>THFT</LossCauseCd>
+      <IncidentDesc>Items stolen; discovered on return from travel</IncidentDesc>
+      <EstimatedLossAmt>2200.00</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+        <PoliceReportInd>true</PoliceReportInd>
+      <Addr>
+        <City>Newport</City>
+        <StateProvCd>RI</StateProvCd>
+        <PostalCode>02840</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>

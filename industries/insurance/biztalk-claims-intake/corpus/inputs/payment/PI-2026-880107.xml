@@ -1,0 +1,34 @@
+<ns0:PaymentInstruction xmlns:ns0="http://schemas.thistlecombe.example/canonical/payment">
+  <InstructionId>PI-2026-880107</InstructionId>
+  <ClaimNumber>CLM-2026-100405</ClaimNumber>
+  <PolicyNumber>POL-AUTO-48177</PolicyNumber>
+  <VendorCode>PAYV02</VendorCode>
+  <Payee>
+    <Name>Imogen Castellanos</Name>
+    <PayeeType>CL</PayeeType>
+    <BankAccountMasked>****1511</BankAccountMasked>
+  </Payee>
+  <ValueDate>2026-10-08</ValueDate>
+  <CurrencyCd>USD</CurrencyCd>
+  <Line>
+    <LineNo>1</LineNo>
+    <LineType>IND</LineType>
+    <Amount>0.015</Amount>
+    <GLAccount>61010100</GLAccount>
+    <Memo>Rounding edge: sub-cent indemnity adjustment</Memo>
+  </Line>
+  <Line>
+    <LineNo>2</LineNo>
+    <LineType>IND</LineType>
+    <Amount>1234.565</Amount>
+    <GLAccount>61010100</GLAccount>
+    <Memo>Rounding edge: half cent</Memo>
+  </Line>
+  <Line>
+    <LineNo>3</LineNo>
+    <LineType>EXP</LineType>
+    <Amount>0.50</Amount>
+    <GLAccount>61020300</GLAccount>
+    <Memo>Fee</Memo>
+  </Line>
+</ns0:PaymentInstruction>
