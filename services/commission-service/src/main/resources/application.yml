@@ -1,0 +1,28 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: commission-service
+  datasource:
+    url: ${COMMISSION_DB_URL:jdbc:oracle:thin:@//localhost:51521/FREEPDB1}
+    username: ${COMMISSION_DB_USER:commission_pay}
+    password: ${COMMISSION_DB_PASSWORD:commission_pay}
+    hikari:
+      maximum-pool-size: 5
+      auto-commit: false
+  jackson:
+    deserialization:
+      use-big-decimal-for-floats: true
+    serialization:
+      write-bigdecimal-as-plain: true
+
+commission:
+  # Shared with COMMISSION_PKG (COMMISSION_AUTH.service_caller_token); unset refuses every rule call.
+  caller-token: ${COMMISSION_CALLER_TOKEN:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
