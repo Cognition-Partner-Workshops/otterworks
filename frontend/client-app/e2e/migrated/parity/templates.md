@@ -1,0 +1,28 @@
+# Parity: Tosca `TestCases/Templates` → Playwright
+
+Tosca source: `tests/legacy-suites/tosca/ExecutionLists/ClientRegression.xml` (entries TC-TPL-001..003) and
+`ExecutionLogs/template-library-2024-08.xml` (RUN-TEMPLATE-2024-08, 2024-08-12). This is a separate run, six months
+older than the 2025-02 client regression that the other folders use, and it left no screenshot (there is no
+`ExecutionLogs/Screenshots/templates.png`).
+Playwright run: none. Decision `d-templates`: retire all three. The client app has no templates screen, so a converted
+test could only drive the catch-all `NotFound` route. No `templates.spec.ts` is added. The data sheet rows are kept
+verbatim in `fixtures/data/templates.ts` for traceability.
+
+| TestCase ID | Playwright test | Tosca result (last log) | Playwright result | Verdict | Decision and reason |
+| --- | --- | --- | --- | --- | --- |
+| TC-TPL-001 | none (retired) | Passed (RUN-TEMPLATE-2024-08) | Not run | Retired: client app has no templates screen | "View the template collection" verifies an `h1` "Templates" and a "Project brief" card link (`Modules/Templates.xml` MA-TEMPLATES-001, MA-TEMPLATES-003). The client app has no route, page or API call for templates (E1–E3), and no commit on any branch ever added that screen (E4). |
+| TC-TPL-002 | none (retired) | Passed (RUN-TEMPLATE-2024-08) | Not run | Retired: client app has no templates screen | "Filter templates by name" types into a "Search templates..." input (MA-TEMPLATES-002) on the same missing page (E1–E4). The 2024-08 pass is also vacuous: `TestCaseDesign/Templates.csv` row `TemplateFilter` has an empty `Query`, so step 1 typed nothing and step 2 only re-read the unfiltered card. |
+| TC-TPL-003 | none (retired) | Passed (RUN-TEMPLATE-2024-08) | Not run | Retired: client app has no templates screen | "Create a document from a template" clicks the "Project brief" card and a "Use template" button (MA-TEMPLATES-004), then verifies "Document created" on the `TemplatesHeading` attribute. No client UI or client call creates a document from a template (E1–E4). document-service still serves the endpoints (E5), so API-level coverage is possible, but that is a separate decision and not a UI conversion. |
+
+## Evidence
+
+Pinned to `main` @ `0fe3e15c5`.
+
+- **E1 No route.** [`frontend/client-app/src/App.tsx`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/frontend/client-app/src/App.tsx#L47-L78) declares no `/templates` route; any such path falls through to `<Route path="*" element={<NotFound />} />`.
+- **E2 No page.** [`frontend/client-app/src/pages/`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/frontend/client-app/src/pages) has no templates page.
+- **E3 No client API.** [`frontend/client-app/src/lib/api.ts`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/frontend/client-app/src/lib/api.ts) contains no "template" at all. The admin dashboard only mentions templates in a service description string ([`admin-api.service.ts`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/frontend/admin-dashboard/src/app/core/services/admin-api.service.ts#L16)).
+- **E4 Never in this repository.** `git log --all -S` across every remote branch finds no commit under `frontend/` that adds "Use template", "Search templates", "Project brief", "from-template" or a `/templates` route (the only `/templates` hits are nginx `/etc/nginx/templates` paths). Repository history starts 2026-04-17, after the 2024-08 Tosca run, so the screen Tosca scanned belonged to an app version that predates this repo.
+- **E5 Backend endpoints exist without a client.** document-service mounts [`/api/v1/templates`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/services/document-service/app/main.py#L73) (GET list, POST create, [`api/templates.py`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/services/document-service/app/api/templates.py)) and [`POST /api/v1/documents/from-template/{template_id}`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/services/document-service/app/api/documents.py#L487-L508), and api-gateway routes [`/api/v1/templates`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/services/api-gateway/internal/config/config.go#L119) to it. All of it dates from the service's first commit (`22862ac`) and has no caller in the client app.
+- **E6 Tosca sources.** [`TestCases/Templates/`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/tests/legacy-suites/tosca/TestCases/Templates), [`Modules/Templates.xml`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/tests/legacy-suites/tosca/Modules/Templates.xml), [`TestCaseDesign/Templates.csv`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/tests/legacy-suites/tosca/TestCaseDesign/Templates.csv), [`ExecutionLogs/template-library-2024-08.xml`](https://github.com/Cognition-Partner-Workshops/otterworks/blob/0fe3e15c557c55801b2249fb32dbeb28d188d5fe/tests/legacy-suites/tosca/ExecutionLogs/template-library-2024-08.xml).
+
+Follow-up (not part of this conversion): if template coverage is still wanted, add an API-level test against document-service's template endpoints, or build a client templates screen as a product change and convert these cases against it then.
