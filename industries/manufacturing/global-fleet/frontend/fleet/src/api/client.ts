@@ -215,6 +215,47 @@ export interface ConfirmationResponse {
   confirmedAt: string
 }
 
+export interface BenefitLine {
+  registration: string
+  fromDate: string
+  toDate: string
+  days: number
+  monthlyBenefit: string
+  benefit: string
+}
+
+export interface BenefitInquiry {
+  employeeNo: string
+  period: string
+  status: 'OPEN' | 'CLOSED'
+  lines: BenefitLine[]
+  carDays: number
+  taxableBenefit: string
+  distance: number
+  mileageAmount: string
+  leaverFlag: string | null
+  currency: string
+}
+
+export interface BenefitStatement extends BenefitInquiry {
+  firstName: string
+  lastName: string
+  employeeName: string
+  commuteDistance: number
+  ruleText: string
+}
+
+export interface BenefitPeriod {
+  period: string
+  startDate: string
+  endDate: string
+  status: 'OPEN' | 'CLOSED'
+  mileageRate: string
+  recordCount: number | null
+  totalTaxable: string | null
+  totalMileage: string | null
+}
+
 const apiBase = import.meta.env.VITE_API_BASE ?? ''
 
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -313,6 +354,36 @@ async function confirmDoubleHolder(
   )
 }
 
+async function getBenefitInquiry(employeeNo: string, period: string): Promise<BenefitInquiry> {
+  return request<BenefitInquiry>(
+    `/api/v1/benefit/employees/${encodeURIComponent(employeeNo)}?period=${encodeURIComponent(period)}`,
+  )
+}
+
+async function getBenefitStatement(employeeNo: string, period: string): Promise<BenefitStatement> {
+  return request<BenefitStatement>(
+    `/api/v1/benefit/employees/${encodeURIComponent(employeeNo)}/statement?period=${encodeURIComponent(period)}`,
+  )
+}
+
+async function getBenefitPeriods(): Promise<BenefitPeriod[]> {
+  return request<BenefitPeriod[]>('/api/v1/benefit/periods')
+}
+
+async function openBenefitPeriod(period: string): Promise<BenefitPeriod> {
+  return request<BenefitPeriod>('/api/v1/benefit/periods', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ period }),
+  })
+}
+
+async function closeBenefitPeriod(period: string): Promise<BenefitPeriod> {
+  return request<BenefitPeriod>(`/api/v1/benefit/periods/${encodeURIComponent(period)}/close`, {
+    method: 'POST',
+  })
+}
+
 export const client = {
   getProfile,
   searchEmployees,
@@ -326,4 +397,9 @@ export const client = {
   getEmployeeCar,
   getDoubleHolders,
   confirmDoubleHolder,
+  getBenefitInquiry,
+  getBenefitStatement,
+  getBenefitPeriods,
+  openBenefitPeriod,
+  closeBenefitPeriod,
 }

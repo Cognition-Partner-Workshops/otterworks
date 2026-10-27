@@ -1,9 +1,9 @@
 package com.otterworks.fleet.domain;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDate;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -30,4 +30,26 @@ public interface EmploymentRepository extends JpaRepository<Employment, Long> {
             org.springframework.data.domain.Pageable pageable);
 
     List<Employment> findByPersonOrderByHireDateAscIdAsc(Person person);
+
+    @Query("""
+            select employment from Employment employment
+            where employment.hireDate <= :periodEnd
+              and (employment.leaveDate is null or employment.leaveDate >= :periodStart)
+            order by employment.id
+            """)
+    List<Employment> findInRun(
+            @Param("periodStart") LocalDate periodStart,
+            @Param("periodEnd") LocalDate periodEnd);
+
+    @Query("""
+            select employment from Employment employment
+            where employment.person.employeeNo = :employeeNo
+              and employment.hireDate <= :periodEnd
+              and (employment.leaveDate is null or employment.leaveDate >= :periodStart)
+            order by employment.hireDate desc, employment.id desc
+            """)
+    List<Employment> findInRunByEmployeeNo(
+            @Param("employeeNo") String employeeNo,
+            @Param("periodStart") LocalDate periodStart,
+            @Param("periodEnd") LocalDate periodEnd);
 }
