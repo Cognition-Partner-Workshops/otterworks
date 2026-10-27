@@ -39,7 +39,7 @@ test.describe("Create document as a signed-in user", () => {
         await page.getByLabel("Password", { exact: true }).fill(account.password);
         await page.getByRole("button", { name: "Sign in" }).click();
         await expect(page).toHaveURL(/\/dashboard/);
-        await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "Dashboard", exact: true })).toBeVisible();
       });
 
       const profileId = await test.step("Read the signed-in user's id", async () => {
@@ -55,7 +55,7 @@ test.describe("Create document as a signed-in user", () => {
 
       await test.step("Open Documents from the sidebar", async () => {
         await page.getByRole("link", { name: "Documents" }).click();
-        await expect(page.getByRole("heading", { name: "Documents" })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "Documents", exact: true })).toBeVisible();
       });
 
       const created = await test.step("Press New document", async () => {
