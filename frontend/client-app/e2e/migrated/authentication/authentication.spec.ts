@@ -77,6 +77,7 @@ test("TC-AUTH-001 Sign in with a valid account", source("TC-AUTH-001"), async ({
   });
 });
 
+// Related to CY-sign-in-02 (empty email -> Zod message); this one covers a malformed email -> native typeMismatch.
 test("TC-AUTH-002 Validate an email address", source("TC-AUTH-002"), async ({ page, InvalidEmail }) => {
   const email = page.getByLabel("Email");
   await test.step("TC-AUTH-002-STEP-01 Input LoginEmail", async () => {
@@ -137,6 +138,7 @@ test("TC-AUTH-004 Validate matching registration passwords", source("TC-AUTH-004
   });
 });
 
+// Related to TC-AUTH-002 (malformed email -> native typeMismatch); this one covers an empty email -> Zod message.
 test(
   "CY-sign-in-02 requires an email address",
   {
