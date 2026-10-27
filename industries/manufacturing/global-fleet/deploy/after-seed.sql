@@ -46,6 +46,14 @@ INSERT INTO de.mileage_claim (employment_id, claim_date, distance, status, rate,
            CASE c.status WHEN 'APPROVED' THEN 'APPROVED' WHEN 'REJECTED' THEN 'REJECTED' ELSE 'PENDING' END,
            (SELECT mileage_rate FROM legacy.fleet_rule WHERE country = 'DE'), c.amount, to_char(c.claim_date, 'YYYYMM'), c.purpose
     FROM legacy.mileage_claim c JOIN de_emp x ON x.legacy_id = c.employee_id WHERE c.km > 0 ORDER BY c.id;
+UPDATE de.mileage_claim c
+SET vehicle_id = (
+    SELECT a.vehicle_id FROM de.employment e
+    JOIN de.employment e2 ON e2.person_id = e.person_id
+    JOIN de.assignment a ON a.employment_id = e2.id
+    WHERE e.id = c.employment_id AND c.claim_date >= a.start_date AND (a.end_date IS NULL OR c.claim_date <= a.end_date)
+    ORDER BY a.start_date DESC, a.id DESC LIMIT 1)
+WHERE c.vehicle_id IS NULL;
 COMMIT;
 \endif
 
