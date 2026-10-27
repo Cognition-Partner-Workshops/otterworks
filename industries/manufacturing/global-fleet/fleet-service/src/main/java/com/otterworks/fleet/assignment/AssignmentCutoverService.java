@@ -156,7 +156,7 @@ public class AssignmentCutoverService {
             List<DoubleHolderAssignmentView> assignments = rows.stream()
                     .map(row -> new DoubleHolderAssignmentView(
                             (String) row[2],
-                            (String) row[3],
+                            String.valueOf(row[3]),
                             (LocalDate) row[4],
                             (String) row[5]))
                     .toList();

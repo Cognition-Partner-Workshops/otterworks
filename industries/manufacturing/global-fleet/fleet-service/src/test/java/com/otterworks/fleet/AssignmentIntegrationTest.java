@@ -201,7 +201,7 @@ class AssignmentIntegrationTest extends AbstractPostgresIntegrationTest {
                 "PERSON:" + employeeNo,
                 "A000000001",
                 TODAY,
-                Instant.parse("2026-10-27T12:00:00Z"));
+                java.sql.Timestamp.from(Instant.parse("2026-10-27T12:00:00Z")));
 
         List<DoubleHolderView> serviceHolders = doubleHolders().stream()
                 .filter(holder -> holder.source().equals("SERVICE")
