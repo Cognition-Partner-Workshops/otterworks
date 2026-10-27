@@ -1,0 +1,689 @@
+{
+  "description": "Read-only REST equivalents of the 40 JSF replay cases, asked of the after tenant's DE profile. Expectations are the business facts the recorded JSF portal showed (parity/jsf/recorded.json). Cases that write, or that only read state a write created, or that are UI-only page states, are not run.",
+  "country": "de",
+  "api_prefix": "/api/de/v1",
+  "tokens": {
+    "{today}": "replay day, UTC, YYYY-MM-DD",
+    "{previous_month}": "month before the replay day, YYYYMM"
+  },
+  "cases": [
+    {
+      "id": "employees-no-query",
+      "context": "employees",
+      "jsf_fact": "search without a term lists employees, e.g. E2040506 Bauer, Katharina, EG 4",
+      "requests": [
+        {
+          "path": "/employees",
+          "status": 200,
+          "expect": [
+            {
+              "path": "",
+              "contains_item": {
+                "employeeNo": "E2040506",
+                "lastName": "Bauer",
+                "firstName": "Katharina",
+                "grade": 4
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "employees-name",
+      "context": "employees",
+      "jsf_fact": "q=Priya finds exactly E1009100 Raman, Priya, EG 7, no car",
+      "requests": [
+        {
+          "path": "/employees?q=Priya",
+          "status": 200,
+          "expect": [
+            {
+              "path": "",
+              "length": 1
+            },
+            {
+              "path": "0.employeeNo",
+              "equals": "E1009100"
+            },
+            {
+              "path": "0.lastName",
+              "equals": "Raman"
+            },
+            {
+              "path": "0.firstName",
+              "equals": "Priya"
+            },
+            {
+              "path": "0.grade",
+              "equals": 7
+            },
+            {
+              "path": "0.currentCar",
+              "equals": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "employees-id",
+      "context": "employees",
+      "jsf_fact": "q=E1009100 finds exactly E1009100 Raman, Priya, EG 7, no car",
+      "requests": [
+        {
+          "path": "/employees?q=E1009100",
+          "status": 200,
+          "expect": [
+            {
+              "path": "",
+              "length": 1
+            },
+            {
+              "path": "0.employeeNo",
+              "equals": "E1009100"
+            },
+            {
+              "path": "0.grade",
+              "equals": 7
+            },
+            {
+              "path": "0.currentCar",
+              "equals": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "employees-no-match",
+      "context": "employees",
+      "jsf_fact": "an unknown name finds nobody",
+      "requests": [
+        {
+          "path": "/employees?q=No+Such+Employee",
+          "status": 200,
+          "expect": [
+            {
+              "path": "",
+              "length": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "assignment-with-car",
+      "context": "assignment",
+      "jsf_fact": "E1009106 Elena Petrova, EG 8: current IN-JD 9303 VW Passat Variant since 20.07.2026; history IN-AS 4628 Tesla Model Y 27.05.2025-19.07.2026",
+      "requests": [
+        {
+          "path": "/employees/E1009106",
+          "status": 200,
+          "expect": [
+            {
+              "path": "firstName",
+              "equals": "Elena"
+            },
+            {
+              "path": "lastName",
+              "equals": "Petrova"
+            },
+            {
+              "path": "current.grade",
+              "equals": 8
+            }
+          ]
+        },
+        {
+          "path": "/employees/E1009106/car",
+          "status": 200,
+          "expect": [
+            {
+              "path": "current.registration",
+              "equals": "IN-JD 9303"
+            },
+            {
+              "path": "current.make",
+              "equals": "VW"
+            },
+            {
+              "path": "current.model",
+              "equals": "Passat Variant"
+            },
+            {
+              "path": "current.startDate",
+              "equals": "2026-07-20"
+            },
+            {
+              "path": "history",
+              "contains_item": {
+                "registration": "IN-AS 4628",
+                "make": "Tesla",
+                "model": "Model Y",
+                "startDate": "2025-05-27",
+                "endDate": "2026-07-19"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "assignment-without-car",
+      "context": "assignment",
+      "jsf_fact": "E1009100 Priya Raman, EG 7: no car assigned",
+      "requests": [
+        {
+          "path": "/employees/E1009100",
+          "status": 200,
+          "expect": [
+            {
+              "path": "current.grade",
+              "equals": 7
+            },
+            {
+              "path": "currentCar",
+              "equals": null
+            }
+          ]
+        },
+        {
+          "path": "/employees/E1009100/car",
+          "status": 200,
+          "expect": [
+            {
+              "path": "current",
+              "equals": null
+            },
+            {
+              "path": "history",
+              "length": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "assignment-unknown",
+      "context": "assignment",
+      "jsf_fact": "E9999999 is reported as not found",
+      "requests": [
+        {
+          "path": "/employees/E9999999/car",
+          "status": 404,
+          "expect": [
+            {
+              "path": "code",
+              "equals": "EMPLOYEE_NOT_FOUND"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "assignment-no-employee",
+      "context": "assignment",
+      "jsf_fact": "the page without an employee renders an empty heading",
+      "not_run": "UI-only page state with no REST equivalent"
+    },
+    {
+      "id": "request-open",
+      "context": "request",
+      "jsf_fact": "step 1 of the request wizard opens empty",
+      "not_run": "UI-only page state with no REST equivalent"
+    },
+    {
+      "id": "request-unknown-employee",
+      "context": "request",
+      "jsf_fact": "E9999999 is refused: not found or not active",
+      "requests": [
+        {
+          "path": "/eligibility/car-request?employeeNo=E9999999&step=EMPLOYEE",
+          "status": 200,
+          "expect": [
+            {
+              "path": "allowed",
+              "equals": false
+            },
+            {
+              "path": "reason",
+              "equals": "EMPLOYEE_NOT_FOUND"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "request-below-grade",
+      "context": "request",
+      "jsf_fact": "E2040110 is refused: pay grade 5 is not eligible for a car",
+      "requests": [
+        {
+          "path": "/eligibility/car-request?employeeNo=E2040110&step=EMPLOYEE",
+          "status": 200,
+          "expect": [
+            {
+              "path": "allowed",
+              "equals": false
+            },
+            {
+              "path": "reason",
+              "equals": "GRADE_BELOW_THRESHOLD"
+            }
+          ]
+        },
+        {
+          "path": "/employees/E2040110",
+          "status": 200,
+          "expect": [
+            {
+              "path": "current.grade",
+              "equals": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "request-already-has-car",
+      "context": "request",
+      "jsf_fact": "E1009106 is refused: already has a company car",
+      "requests": [
+        {
+          "path": "/eligibility/car-request?employeeNo=E1009106&step=EMPLOYEE",
+          "status": 200,
+          "expect": [
+            {
+              "path": "allowed",
+              "equals": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "request-eligible-employee",
+      "context": "request",
+      "jsf_fact": "E1009100 is accepted and moves to vehicle choice",
+      "requests": [
+        {
+          "path": "/eligibility/car-request?employeeNo=E1009100&step=EMPLOYEE",
+          "status": 200,
+          "expect": [
+            {
+              "path": "allowed",
+              "equals": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "request-pool-no-selection",
+      "context": "request",
+      "jsf_fact": "continuing without a pool car asks for one",
+      "not_run": "UI-only page state with no REST equivalent (wizard validation before any draft is saved)"
+    },
+    {
+      "id": "request-back",
+      "context": "request",
+      "jsf_fact": "Back returns to step 1 with E1009100 kept",
+      "not_run": "UI-only page state with no REST equivalent (wizard navigation)"
+    },
+    {
+      "id": "request-reselect-employee",
+      "context": "request",
+      "jsf_fact": "re-entering E1009100 returns to vehicle choice",
+      "not_run": "UI-only page state with no REST equivalent (wizard navigation)"
+    },
+    {
+      "id": "request-pool-select",
+      "context": "request",
+      "jsf_fact": "the pool offers HH-VS 7629 Opel Astra Sports Tourer",
+      "requests": [
+        {
+          "path": "/assignments/pool",
+          "status": 200,
+          "expect": [
+            {
+              "path": "",
+              "contains_item": {
+                "registration": "HH-VS 7629",
+                "make": "Opel",
+                "model": "Astra Sports Tourer"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "request-step-three-submit",
+      "context": "request",
+      "jsf_fact": "submitting the request assigns HH-VS 7629 to E1009100 and redirects to the assignment page",
+      "not_run": "write case: not replayed, the after tenant is read-only for this harness"
+    },
+    {
+      "id": "request-redirect-assignment",
+      "context": "request",
+      "jsf_fact": "E1009100 then holds HH-VS 7629 since the replay day",
+      "not_run": "depends on the state written by request-step-three-submit, which is not replayed"
+    },
+    {
+      "id": "mileage-open",
+      "context": "mileage",
+      "jsf_fact": "the mileage page opens empty",
+      "not_run": "UI-only page state with no REST equivalent"
+    },
+    {
+      "id": "mileage-find-unknown",
+      "context": "mileage",
+      "jsf_fact": "E9999999 is reported as not found",
+      "requests": [
+        {
+          "path": "/mileage/employees/E9999999/claims",
+          "status": 404,
+          "expect": [
+            {
+              "path": "code",
+              "equals": "EMPLOYEE_NOT_FOUND"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mileage-find-employee",
+      "context": "mileage",
+      "jsf_fact": "E1009100 Priya Raman can enter a claim dated the replay day",
+      "requests": [
+        {
+          "path": "/eligibility/mileage-claim?employeeNo=E1009100&claimDate={today}",
+          "status": 200,
+          "expect": [
+            {
+              "path": "allowed",
+              "equals": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mileage-calculate",
+      "context": "mileage",
+      "jsf_fact": "17 km = 5.18 EUR at 0.305 EUR/km",
+      "requests": [
+        {
+          "path": "/mileage/quote?distance=17",
+          "status": 200,
+          "expect": [
+            {
+              "path": "rate",
+              "equals": "0.305"
+            },
+            {
+              "path": "amount",
+              "equals": "5.18"
+            },
+            {
+              "path": "currency",
+              "equals": "EUR"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mileage-submit-invalid",
+      "context": "mileage",
+      "jsf_fact": "0 km is rejected: employee and km required",
+      "not_run": "validation lives on the write endpoint (POST /mileage/claims); write case: not replayed, the after tenant is read-only for this harness"
+    },
+    {
+      "id": "mileage-submit",
+      "context": "mileage",
+      "jsf_fact": "25 km is recorded as 7.62 EUR, SUBMITTED",
+      "not_run": "write case: not replayed, the after tenant is read-only for this harness"
+    },
+    {
+      "id": "statement-2026-08",
+      "context": "statement",
+      "jsf_fact": "E1009100 Priya Raman, 2026-08: no car lines, commute 33 km, rule 1.00 % list price + 0.030 % per km",
+      "requests": [
+        {
+          "path": "/benefit/employees/E1009100/statement?period=202608",
+          "status": 200,
+          "expect": [
+            {
+              "path": "period",
+              "equals": "202608"
+            },
+            {
+              "path": "lines",
+              "length": 0
+            },
+            {
+              "path": "commuteDistance",
+              "equals": 33
+            },
+            {
+              "path": "ruleText",
+              "contains_text": "1.00%"
+            },
+            {
+              "path": "ruleText",
+              "contains_text": "0.030%"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "statement-2026-09",
+      "context": "statement",
+      "jsf_fact": "E1009100 Priya Raman, 2026-09: no car lines, commute 33 km, rule 1.00 % list price + 0.030 % per km",
+      "requests": [
+        {
+          "path": "/benefit/employees/E1009100/statement?period=202609",
+          "status": 200,
+          "expect": [
+            {
+              "path": "period",
+              "equals": "202609"
+            },
+            {
+              "path": "lines",
+              "length": 0
+            },
+            {
+              "path": "commuteDistance",
+              "equals": 33
+            },
+            {
+              "path": "ruleText",
+              "contains_text": "1.00%"
+            },
+            {
+              "path": "ruleText",
+              "contains_text": "0.030%"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "statement-2026-10-new-car",
+      "context": "statement",
+      "jsf_fact": "2026-10 shows HH-VS 7629, 5 days, 105.55 EUR",
+      "not_run": "depends on the state written by request-step-three-submit, which is not replayed"
+    },
+    {
+      "id": "statement-unknown-employee",
+      "context": "statement",
+      "jsf_fact": "E9999999 is reported as not found",
+      "requests": [
+        {
+          "path": "/benefit/employees/E9999999/statement?period=202610",
+          "status": 404,
+          "expect": [
+            {
+              "path": "code",
+              "equals": "EMPLOYEE_NOT_FOUND"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "statement-no-parameters",
+      "context": "statement",
+      "jsf_fact": "the statement page without parameters renders the empty form",
+      "not_run": "UI-only page state with no REST equivalent"
+    },
+    {
+      "id": "statement-default-period",
+      "context": "statement",
+      "jsf_fact": "without a month the statement shows the previous month for E1009100, commute 33 km",
+      "requests": [
+        {
+          "path": "/benefit/employees/E1009100/statement",
+          "status": 200,
+          "expect": [
+            {
+              "path": "period",
+              "equals": "{previous_month}"
+            },
+            {
+              "path": "commuteDistance",
+              "equals": 33
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "return-open",
+      "context": "return",
+      "jsf_fact": "the return page opens empty",
+      "not_run": "UI-only page state with no REST equivalent"
+    },
+    {
+      "id": "return-unknown-plate",
+      "context": "return",
+      "jsf_fact": "ZZ-UNKNOWN: no car with that plate",
+      "requests": [
+        {
+          "path": "/returns/lookup?plate=ZZ-UNKNOWN",
+          "status": 404,
+          "expect": [
+            {
+              "path": "code",
+              "equals": "VEHICLE_NOT_FOUND"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "return-unassigned-pool-car",
+      "context": "return",
+      "jsf_fact": "HH-VS 7629 is found assigned to E1009100 since the replay day",
+      "not_run": "depends on the state written by request-step-three-submit, which is not replayed"
+    },
+    {
+      "id": "return-found-assigned-car",
+      "context": "return",
+      "jsf_fact": "K-XE 9032 Mercedes-Benz C 220 d T-Modell is assigned to E2040533 Jana Schwarz since 01.06.2019",
+      "requests": [
+        {
+          "path": "/returns/lookup?plate=K-XE%209032",
+          "status": 200,
+          "expect": [
+            {
+              "path": "registration",
+              "equals": "K-XE 9032"
+            },
+            {
+              "path": "make",
+              "equals": "Mercedes-Benz"
+            },
+            {
+              "path": "model",
+              "equals": "C 220 d T-Modell"
+            },
+            {
+              "path": "employeeNo",
+              "equals": "E2040533"
+            },
+            {
+              "path": "firstName",
+              "equals": "Jana"
+            },
+            {
+              "path": "lastName",
+              "equals": "Schwarz"
+            },
+            {
+              "path": "startDate",
+              "equals": "2019-06-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "return-date-before-start",
+      "context": "return",
+      "jsf_fact": "a return dated before the handover is rejected",
+      "not_run": "validation lives on the write endpoint (POST /returns); write case: not replayed, the after tenant is read-only for this harness"
+    },
+    {
+      "id": "return-submit",
+      "context": "return",
+      "jsf_fact": "the return of K-XE 9032 is booked",
+      "not_run": "write case: not replayed, the after tenant is read-only for this harness"
+    },
+    {
+      "id": "health",
+      "context": "static",
+      "jsf_fact": "the service answers",
+      "requests": [
+        {
+          "path": "/profile",
+          "status": 200,
+          "expect": [
+            {
+              "path": "sourceApp",
+              "equals": "gf-jsf-portal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "unmapped-404",
+      "context": "static",
+      "jsf_fact": "an unmapped path is a 404",
+      "requests": [
+        {
+          "path": "/not-mapped",
+          "status": 404,
+          "expect": [
+            {
+              "path": "code",
+              "equals": "NOT_FOUND"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jsf-css-resource",
+      "context": "static",
+      "jsf_fact": "the portal stylesheet is served",
+      "not_run": "JSF static resource; the React app ships its own assets"
+    }
+  ]
+}

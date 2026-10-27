@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Nightly after-tenant parity: rerun the holdout pairs and the JSF replay, report changed verdicts."""
+"""Nightly after-tenant parity: rerun the holdout pairs and the JSF cases (as read-only REST calls), report changed verdicts."""
 
 import argparse
 import json
@@ -7,6 +7,7 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -25,7 +26,10 @@ def get_json(url, timeout):
         with urllib.request.urlopen(request, timeout=timeout) as response:
             return response.status, json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as error:
-        return error.code, None
+        try:
+            return error.code, json.loads(error.read().decode("utf-8"))
+        except (ValueError, UnicodeDecodeError):
+            return error.code, None
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as error:
         return None, str(error)
 
@@ -69,33 +73,88 @@ def holdout_verdicts(base, timeout, out):
     return verdicts
 
 
-def jsf_verdicts(base, timeout, out):
-    jsf_out = out / "jsf"
-    run = subprocess.run(
-        [sys.executable, str(PARITY / "jsf" / "replay.py"), "--base", base, "--stage", "full",
-         "--out", str(jsf_out), "--timeout", str(timeout)],
-        capture_output=True, text=True, cwd=PARITY / "jsf")
-    (out / "replay.log").write_text(run.stdout + run.stderr, encoding="utf-8")
-    verdicts = {}
-    aborted = next((line for line in (run.stdout + run.stderr).splitlines() if line.startswith("replay failed:")), None)
-    corpus = json.loads((PARITY / "jsf" / "requests.json").read_text(encoding="utf-8"))
-    results = {}
-    for path in sorted(jsf_out.glob("*.json")):
-        result = json.loads(path.read_text(encoding="utf-8"))
-        for row in result["cases"]:
-            results[row["id"]] = row
-    cases = corpus["cases"] if isinstance(corpus, dict) else corpus
-    for case in cases:
-        row = results.get(case["id"])
-        key = f"jsf/{case['context']}/{case['id']}"
-        if row is None:
-            verdicts[key] = {"verdict": "not-run",
-                             "detail": f"replay.py exit {run.returncode} before this case" + (f" ({aborted})" if aborted else "")}
-        elif row["problems"]:
-            verdicts[key] = {"verdict": "differ",
-                             "detail": f"HTTP {row['status']}; " + "; ".join(str(p) for p in row["problems"])[:300]}
+def resolve(value, path):
+    for part in [p for p in path.split(".") if p]:
+        if isinstance(value, list):
+            index = int(part)
+            value = value[index] if index < len(value) else _MISSING
+        elif isinstance(value, dict):
+            value = value.get(part, _MISSING)
         else:
-            verdicts[key] = {"verdict": "agree", "detail": f"HTTP {row['status']}"}
+            value = _MISSING
+        if value is _MISSING:
+            break
+    return value
+
+
+_MISSING = object()
+
+
+def same(expected, actual):
+    if isinstance(expected, bool) or isinstance(actual, bool) or expected is None or actual is None:
+        return expected == actual
+    try:
+        return Decimal(str(expected)) == Decimal(str(actual))
+    except ArithmeticError:
+        return expected == actual
+
+
+def check(body, rule):
+    actual = resolve(body, rule["path"])
+    label = rule["path"] or "body"
+    if actual is _MISSING:
+        return f"{label} missing"
+    if "equals" in rule:
+        return None if same(rule["equals"], actual) else f"{label}: expected {rule['equals']!r}, got {actual!r}"
+    if "length" in rule:
+        size = len(actual) if isinstance(actual, (list, dict, str)) else None
+        return None if size == rule["length"] else f"{label}: expected {rule['length']} entries, got {size}"
+    if "contains_text" in rule:
+        return None if isinstance(actual, str) and rule["contains_text"] in actual else f"{label}: no {rule['contains_text']!r}"
+    if "contains_item" in rule:
+        wanted = rule["contains_item"]
+        found = isinstance(actual, list) and any(
+            isinstance(entry, dict) and all(same(v, entry.get(k, _MISSING)) if k in entry else False for k, v in wanted.items())
+            for entry in actual)
+        return None if found else f"{label}: no entry matching {wanted}"
+    raise ValueError(f"unknown check {rule}")
+
+
+def substitute(text, today):
+    previous = (today.replace(day=1) - timedelta(days=1)).strftime("%Y%m")
+    return text.replace("{today}", today.isoformat()).replace("{previous_month}", previous)
+
+
+def jsf_verdicts(base, timeout, out):
+    spec = json.loads((HERE / "rest_cases.json").read_text(encoding="utf-8"))
+    corpus = json.loads((PARITY / "jsf" / "requests.json").read_text(encoding="utf-8"))["cases"]
+    if [case["id"] for case in corpus] != [case["id"] for case in spec["cases"]]:
+        raise SystemExit("rest_cases.json does not cover the JSF corpus case for case")
+    today = datetime.now(timezone.utc).date()
+    verdicts, evidence = {}, []
+    for case in spec["cases"]:
+        key = f"jsf/{case['context']}/{case['id']}"
+        if "not_run" in case:
+            verdicts[key] = {"verdict": "not-run", "detail": case["not_run"]}
+            continue
+        problems, calls = [], []
+        for request in case["requests"]:
+            url = base + spec["api_prefix"] + substitute(request["path"], today)
+            status, body = get_json(url, timeout)
+            calls.append({"url": url, "status": status, "body": body})
+            if status != request["status"]:
+                problems.append(f"GET {request['path']}: HTTP {status}, expected {request['status']}"
+                                + (f" ({body.get('code')})" if isinstance(body, dict) and body.get("code") else ""))
+                continue
+            for rule in request["expect"]:
+                rule = {**rule, **({"equals": substitute(rule["equals"], today)} if isinstance(rule.get("equals"), str) else {})}
+                problem = check(body, rule)
+                if problem:
+                    problems.append(f"GET {request['path']}: {problem}")
+        evidence.append({"id": case["id"], "jsf_fact": case["jsf_fact"], "problems": problems, "calls": calls})
+        verdicts[key] = {"verdict": "differ" if problems else "agree",
+                         "detail": "; ".join(problems)[:400] if problems else "REST answer matches the JSF fact"}
+    (out / "rest_replay.json").write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return verdicts
 
 
@@ -142,7 +201,6 @@ def main():
     (out / "CHANGES.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
     if args.write_state:
-        from datetime import datetime, timezone
         new_state = {"target": base, "recorded_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                      "verdicts": dict(sorted(current.items()))}
         state_path.write_text(json.dumps(new_state, indent=2) + "\n", encoding="utf-8")
