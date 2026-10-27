@@ -4,6 +4,7 @@ import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router
 import { client, type ProfileResponse } from './api/client'
 import { ErrorAlert, Loading, errorText } from './components/status'
 import Assignment from './routes/assignment'
+import Admin from './routes/admin'
 import Benefit from './routes/benefit'
 import Eligibility from './routes/eligibility'
 import Home from './routes/home'
@@ -11,6 +12,7 @@ import Mileage from './routes/mileage'
 import Returns from './routes/returns'
 
 const routes = [
+  { path: '/admin', label: 'Admin', component: Admin },
   { path: '/eligibility', label: 'Eligibility', component: Eligibility },
   { path: '/assignment', label: 'Assignment', component: Assignment },
   { path: '/returns', label: 'Returns', component: Returns },
@@ -50,7 +52,7 @@ function ProfileBanner() {
   if (error) return <ErrorAlert>Profile unavailable: {error}</ErrorAlert>
   if (!profile) return <Loading>Loading profile…</Loading>
   return (
-    <p>
+    <p className="fleet-profile-banner">
       Profile: {profile.sourceApp} · {profile.currency} · distances in {profile.distanceUnit === 'KM' ? 'km' : 'miles'}
     </p>
   )
@@ -62,7 +64,7 @@ export function FleetRoutes({ showProfile = false }: { showProfile?: boolean }) 
   return (
     <>
       {showProfile && <ProfileBanner />}
-      <nav aria-label="Fleet functions">
+      <nav className="fleet-functions-nav" aria-label="Fleet functions">
         <NavLink to="/">Home</NavLink>
         {routes.map(({ path, label }) => (
           <NavLink key={path} to={path}>{label}</NavLink>

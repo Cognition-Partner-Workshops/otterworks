@@ -1,0 +1,883 @@
+{
+  "commit": "8960d8319eee7ba92d6230386ac33a34528a75c8",
+  "generated_at": "2026-10-27T20:48:37Z",
+  "rules": {
+    "GF01": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF01_countryParametersComeFromProfile",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF01_noCountryNameInConditionals",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF02": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF02_gradeBelowThresholdIsRefused",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF02_gradeAtThresholdIsEligible",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF02_batchRunListsBelowThresholdHolders",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF02_invalidBatchPeriodReturnsBadRequest",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF03": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF03_unknownEmployeeIsRejected",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF03_employeeStatusGatesCarRequest",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF03_inquiryPageShowsLeaver",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF03_inquiryPageShowsNotFound",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF03_leaverMayClaimUpToLeavingDate",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF04": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF04_rehireEmploymentsAreKeptApart",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF04_migrationKeepsNamesAndBackfillsStatus",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF05": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF05_secondOpenCarIsRefused",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF05_unconfirmedDoubleHoldersBlockCutover",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF06": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF06_assignmentRequiresKnownOrRegisteredVehicle",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF07": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF07_staleSubmitIsRefusedCarNoLongerAvailable",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF07_poolLoanCountsAsHolding",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF07_oneOpenAssignmentPerCarConstraint",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF07_staleSubmitReturnsToVehicleChoice",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF08": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF08_assignmentReasonIsRecorded",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF09": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF09_assignmentStartDateIsValidated",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF09_startDateDefaultsToServerToday",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF10": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF10_assignmentIdentifierIsUnique",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF11": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF11_carRequestIsRecorded",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF12": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF12_assignmentAndClaimRequireOwner",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF13": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF13_currentCarIsOpenAssignment",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF13_currentCarPageShowsOpenAssignment",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF14": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF14_returnFindsOpenAssignment",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF14_returnRejectsStaleAssignment",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF15": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF15_returnBeforeStartIsRejected",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF16": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF16_returnReleasesCar",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF16_returnNoteOverLimitIsRejected",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF17": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF17_returnOdometerHandling",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF18": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-web",
+          "name": "GF18_returnFunctionIsReachable",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF19": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF19_claimDateWithinOpenOrLookbackPeriod",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF19_blankJourneyDateIsSentAsNull",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF20": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF20_distanceWithinProfileMaximum",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF21": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF21_mileageRoundsHalfUpInBothCountries",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF21_mileageAmountFrozenAtSubmission",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF21_mileageReimbursementMatchesHoldouts",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF21_deSeedClaimsAcceptedDifference",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF22": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF22_newClaimIsPendingAndOnlyApprovedIsPaid",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF22_approvalPageApprovesPendingClaim",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF23": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF23_claimVehicleHandling",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF24": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF24_claimHistoryWindow",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF24_historyPageListsNewestFirst",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF25": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF25_mileageClaimEligibility",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF26": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF26_benefitPeriodLifecycle",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF26_closedPeriodWithNullTotalsListsAndReturnsNoStoredInquiry",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF26_periodsCanBeOpenedAndClosed",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF27": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF27_benefitFormulaPerProfile",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF27_benefitMatchesHoldouts",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF27_benefitMatchesPortalStatements",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF27_inquiryShowsRunFigure",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF27_failedInquiryClearsPreviousResult",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF27_failedStatementClearsPreviousResult",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF27_statementShowsProfileAndCalculation",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF28": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF28_swapDayCountsForIncomingCarOnly",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF29": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF29_everyHeldCarIsTaxed",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF30": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF30_leaverBenefitCapAndFlag",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF30_belowGradeHolderIsTaxedAndListed",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF31": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF31_periodCloseWritesOutputAndControlTotals",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF31_failedRunChangesNothing",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF31_closedPeriodCannotBeRerun",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    },
+    "GF32": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-web",
+          "name": "GF32_navigationReachesEveryFunction",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF32_backSavesDraftWithoutValidation",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF32_benefitLinkResetsView",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF32_routeErrorClearsOnNavigation",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF33": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF33_employeeSearch",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF33_noLookupBeanFallsBackToEmptyCurrentCar",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF33_searchPageListsEmployeesWithCurrentCar",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ]
+    },
+    "GF34": {
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-web",
+          "name": "GF34_refreshReturnsToSavedDraft",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "fleet-web",
+          "name": "GF34_newTabResumesSameDraft",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF34_draftClearedOnSubmit",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF34_draftCanBeDiscarded",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF34_doubleSubmitCreatesOneRequest",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF34_resumeRechecksEligibilityAndCar",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ]
+    }
+  },
+  "sources": [
+    "uk",
+    "de",
+    "vitest"
+  ]
+}

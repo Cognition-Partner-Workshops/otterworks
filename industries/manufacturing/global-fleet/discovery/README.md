@@ -35,8 +35,9 @@ python3 industries/manufacturing/global-fleet/discovery/validate.py
 The validator reads every JSON file here, checks canonical references and source
 bounds, source presence and unique IDs for rules/questions, rule evidence and
 crosscheck rule IDs (including history), and coverage of every defined rule in the
-final `rule_pairs` (history and prose do not count). It lists all detected problems and exits
-1 on failure, or prints a summary and exits 0.
+final `rule_pairs` (history and prose do not count). Generated
+`test-results.json` source labels are test layers rather than citations. It lists
+all detected problems and exits 1 on failure, or prints a summary and exits 0.
 
 Run the validator regression tests from the repository root:
 

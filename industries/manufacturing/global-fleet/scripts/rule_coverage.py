@@ -129,6 +129,9 @@ def main(argv=None):
     parser.add_argument("--catalog", type=Path, default=DEFAULT_CATALOG)
     parser.add_argument("--junit", action="append", default=[], metavar="NAME=DIR")
     parser.add_argument("--vitest", type=Path)
+    parser.add_argument("--json", type=Path, help="write per-test and per-rule results as JSON")
+    parser.add_argument("--generated-at", help="include the UTC test-run timestamp in JSON output")
+    parser.add_argument("--commit", help="include the tested git commit in JSON output")
     parser.add_argument("--strict", action="store_true")
     args = parser.parse_args(argv)
 
@@ -145,9 +148,11 @@ def main(argv=None):
     }
     print("rule\ttest\tlayer\t" + "\t".join(sources))
     per_rule = {}
+    per_rule_tests = {}
     any_failed = False
     for rule in catalog["rules"]:
         statuses_for_rule = []
+        tests_for_rule = []
         for test in rule.get("tests", []):
             if test["layer"] == "fleet-service":
                 statuses = [service_status(test["name"], values) for values in profiles.values()]
@@ -159,6 +164,11 @@ def main(argv=None):
                 display_statuses = ["not-applicable"] * len(profiles) + statuses
             any_failed |= "failed" in statuses
             statuses_for_rule.append(statuses)
+            tests_for_rule.append({
+                "name": test["name"],
+                "layer": test["layer"],
+                "results": dict(zip(sources, display_statuses)),
+            })
             print(
                 f'{rule["id"]}\t{test["name"]}\t{test["layer"]}\t'
                 + "\t".join(display_statuses)
@@ -177,12 +187,18 @@ def main(argv=None):
                 (junit if in_junit else ["not-applicable"] * len(profiles))
                 + [vit if vit != "missing" else "not-applicable"]
             )
+            tests_for_rule.append({
+                "name": test_name,
+                "layer": "extra",
+                "results": dict(zip(sources, display_statuses)),
+            })
             print(
                 f'{rule["id"]}\t{test_name}\textra\t'
                 + "\t".join(display_statuses)
             )
         flattened = [status for test_statuses in statuses_for_rule for status in test_statuses]
         per_rule[rule["id"]] = rule_status(flattened)
+        per_rule_tests[rule["id"]] = tests_for_rule
 
     covered = [ident for ident, status in per_rule.items() if status == "covered"]
     partial = [ident for ident, status in per_rule.items() if status == "partial"]
@@ -192,6 +208,22 @@ def main(argv=None):
     print("partial: " + (", ".join(partial) or "-"))
     print("failed: " + (", ".join(failed) or "-"))
     print("missing: " + (", ".join(missing) or "-"))
+    if args.json:
+        payload = {
+            "sources": sources,
+            "rules": {
+                rule["id"]: {
+                    "status": per_rule[rule["id"]],
+                    "tests": per_rule_tests[rule["id"]],
+                }
+                for rule in catalog["rules"]
+            },
+        }
+        if args.generated_at is not None:
+            payload["generated_at"] = args.generated_at
+        if args.commit is not None:
+            payload["commit"] = args.commit
+        args.json.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     if any_failed or (args.strict and (partial or missing)):
         return 1
     return 0
