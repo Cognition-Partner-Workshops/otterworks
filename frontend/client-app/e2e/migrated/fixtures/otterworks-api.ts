@@ -38,6 +38,17 @@ export type Workspace = {
   };
   documents: MockDocument[];
   files?: MockFile[];
+  settings?: MockSettings;
+};
+
+// Settings — auth-service UserSettingsDTO (camelCase).
+export type MockSettings = {
+  notificationEmail: boolean;
+  notificationInApp: boolean;
+  notificationDesktop: boolean;
+  theme: string;
+  language: string;
+>>>>>>> refs/remotes/origin/pr/2251
 };
 
 type MockAccount = Workspace["user"];
@@ -104,6 +115,13 @@ export async function mockOtterWorksApi(
 ): Promise<() => Promise<void>> {
   const unmockedApiCalls: string[] = [];
   const accounts: MockAccount[] = [workspace.user];
+
+  // Settings — per-test state; auth-service UserDTO and UserSettings defaults.
+  const user = { ...workspace.user, avatarUrl: null as string | null,
+    roles: ["USER"], emailVerified: false, updatedAt: workspace.user.createdAt,
+    lastLoginAt: null };
+  const settings: MockSettings = { notificationEmail: true, notificationInApp: true,
+    notificationDesktop: false, theme: "system", language: "en", ...workspace.settings };
 
   await page.route("**/api/v1/**", async (route) => {
     const request = route.request();
@@ -197,6 +215,8 @@ export async function mockOtterWorksApi(
 
       await route.fulfill({
         json: {
+          // Settings — AuthController returns UserDTO in camelCase.
+          ...user,
           id: account.id,
           email: account.email,
           display_name: account.displayName,
@@ -211,6 +231,43 @@ export async function mockOtterWorksApi(
       return;
     }
 
+    // Settings — AuthController uses PUT, not PATCH, for profile updates.
+    if (path === "/api/v1/auth/profile") {
+      if (method !== "PUT") {
+        await route.fulfill({ status: 405, json: { error: "Method Not Allowed" } });
+        return;
+      }
+      const body = request.postDataJSON();
+      if ((body.displayName != null && (body.displayName.length < 1 || body.displayName.length > 100)) ||
+          (body.avatarUrl != null && body.avatarUrl.length > 500)) {
+        await route.fulfill({ status: 400, json: { error: "Bad Request" } });
+        return;
+      }
+      if (body.displayName != null) {
+        user.displayName = body.displayName;
+        const account = accounts.find((candidate) => candidate.id === user.id);
+        if (account) account.displayName = body.displayName;
+      }
+      if (body.avatarUrl != null) user.avatarUrl = body.avatarUrl;
+      user.updatedAt = new Date().toISOString();
+      await route.fulfill({ json: user });
+      return;
+    }
+
+    // Settings — SettingsController / UserSettingsService apply non-null fields only.
+    if (path === "/api/v1/settings") {
+      if (method === "PATCH") {
+        const body = request.postDataJSON();
+        for (const key of Object.keys(settings) as (keyof MockSettings)[]) {
+          if (body[key] != null) Object.assign(settings, { [key]: body[key] });
+        }
+      } else if (method !== "GET") {
+        await route.fulfill({ status: 405, json: { error: "Method Not Allowed" } });
+        return;
+      }
+      await route.fulfill({ json: settings });
+      return;
+    }
     if (method === "GET" && path === "/api/v1/documents") {
       const documents = workspace.documents
         .filter((document) => !document.is_deleted && !document.is_template)
