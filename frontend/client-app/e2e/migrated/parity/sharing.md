@@ -32,5 +32,4 @@ service-contract route mocks, not live services.
   Existing document detail mocking copies document-service's snake_case response.
   No fictitious starred endpoint was added. No app regression was observed.
 
-Report screenshot is kept outside the repo at `/home/ubuntu/sharing-report.png`,
-matching the Documents branch's policy (no tracked report screenshot).
+The report screenshot is attached to the PR.
