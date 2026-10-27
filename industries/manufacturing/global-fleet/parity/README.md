@@ -12,22 +12,32 @@ This package captures three different views of the legacy Global Fleet behavior:
 
 The corpus contains 40 cases across seven contexts: employees (4), assignment (4),
 request (11), mileage (6), statement (6), return (6), and static resources (3). The full
-replay after tenant reset reported `IDENTICAL` for all 40 cases. Per-context output and
-the replay summary are committed under [`jsf/evidence/`](jsf/evidence/).
+live replay after a fresh tenant reset reported `IDENTICAL` for all 40 cases, including
+media type, visible text, non-HTML bodies, and clock-normalized dates. The immediate
+post-replay reset also succeeded. Per-context output and the refreshed replay summary are
+committed under [`jsf/evidence/`](jsf/evidence/); the offline `jsf/selftest.py` covers
+date shifts and deliberate health/wizard differences.
 
-Both requested `gf-before` resets succeeded. The first prepared the fixed seed for the
-replay; the second restored it afterward. Each reset loaded 215 employees and 120
-vehicles. The reset script reported that `otterworks-gf-after` was not deployed and
-skipped it.
+Both requested `gf-before` resets loaded 215 employees and 120 vehicles. The reset script
+reported that `otterworks-gf-after` was not deployed and skipped it.
 
 ## Mainframe holdouts
 
 There is no IDMS runtime in this sandbox, so `FLEBEN01` cannot be run here. The 12
 committed pairs `HP-202510` through `HP-202609` stand in for it; 202610 remains an open
-period with no expected output. All 84 checksum-manifest entries and 84 metadata file
-entries verify. Every holdout input file is an exact subset of the current unload: there
+period with no expected output. `EMPLOYEE.dat` is keyed by `dbkey`, not the non-unique
+`empid`; duplicate keys within a file now stop pair generation. Every pair and the
+current unload contain 217 employee rows, and each pair's employee records are an exact
+subset by `dbkey`.
+
+| Employee rows | Holdout pairs | Current unload | Employee relation |
+|---:|---:|---:|---|
+| 217 in each of 12 pairs | HP-202510–HP-202609 | 217 | 12/12 exact subsets |
+
+All five holdout input files in every pair are exact subsets of the current unload: there
 are no pair-only rows or same-key changed rows. Pair-specific current-only keys are
-recorded in `mainframe/pairs.json`.
+recorded in `mainframe/pairs.json`. All 84 checksum-manifest entries and 84 metadata file
+entries verify.
 
 All 12 pairs pass BENOUT/BENRPT consistency checks. The reference port produced
 byte-identical BENOUT and BENRPT files for all 12 pairs (12/12 of each), with no

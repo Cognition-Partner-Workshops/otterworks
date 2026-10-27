@@ -16,7 +16,7 @@ REPO = FLEET.parents[2]
 HOLDOUT = FLEET / "mainframe" / "holdout"
 UNLOAD = FLEET / "mainframe" / "unload"
 KEY_FIELDS = {
-    "EMPLOYEE.dat": "empid",
+    "EMPLOYEE.dat": "dbkey",
     "VEHICLE.dat": "vehid",
     "ASSIGNMENT.dat": "asgid",
     "MILECLM.dat": "clmid",
@@ -47,8 +47,15 @@ def report_totals(path):
 def as_keyed_rows(path, filename):
     key_field = KEY_FIELDS[filename]
     records = decode_records(path)
-    return {record[key_field]: (record, path.read_bytes()[i * LAYOUTS[filename][0]:(i + 1) * LAYOUTS[filename][0]])
-            for i, record in enumerate(records)}
+    raw = path.read_bytes()
+    record_length = LAYOUTS[filename][0]
+    keyed = {}
+    for index, record in enumerate(records):
+        key = record[key_field]
+        if key in keyed:
+            raise ValueError(f"{path}: duplicate {key_field} {key!r}")
+        keyed[key] = (record, raw[index * record_length:(index + 1) * record_length])
+    return keyed
 
 
 def relationship(pair_path, unload_path, filename):

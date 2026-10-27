@@ -10,15 +10,28 @@ import sys
 import time
 import urllib.parse
 from collections import OrderedDict
+from datetime import timezone
+from email.utils import parsedate_to_datetime
 from html.parser import HTMLParser
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_BASE = "https://t-gf-before.demo.otterworks.app"
+PORTAL_TIMEZONE = "Etc/UTC"
 
 
 def text_value(parts):
     return " ".join("".join(parts).split())
+
+
+def portal_day_from_date_header(value):
+    if not value:
+        raise ValueError("response has no HTTP Date header")
+    parsed = parsedate_to_datetime(value)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(ZoneInfo(PORTAL_TIMEZONE)).date().isoformat()
 
 
 class PageParser(HTMLParser):
@@ -110,8 +123,18 @@ class ObservationParser(HTMLParser):
         self.table = None
         self.row = None
         self.cell = None
+        self.visible_parts = []
+        self.ignored_tag = None
+        self.in_body = False
 
     def handle_starttag(self, tag, attrs):
+        if self.ignored_tag:
+            return
+        if tag in ("script", "style"):
+            self.ignored_tag = tag
+            return
+        if tag == "body":
+            self.in_body = True
         attrs = dict(attrs)
         classes = set((attrs.get("class") or "").split())
         if tag == "h1":
@@ -137,6 +160,12 @@ class ObservationParser(HTMLParser):
             self.cell = []
 
     def handle_endtag(self, tag):
+        if self.ignored_tag:
+            if tag == self.ignored_tag:
+                self.ignored_tag = None
+            return
+        if tag == "body":
+            self.in_body = False
         if tag in ("td", "th") and self.cell is not None:
             self.row.append(text_value(self.cell))
             self.cell = None
@@ -158,6 +187,9 @@ class ObservationParser(HTMLParser):
                 break
 
     def handle_data(self, data):
+        if self.ignored_tag or not self.in_body:
+            return
+        self.visible_parts.append(data)
         for capture in self.captures:
             capture["parts"].append(data)
         if self.cell is not None:
@@ -171,8 +203,11 @@ class ObservationParser(HTMLParser):
 def extract_observed(body):
     parser = ObservationParser()
     parser.feed(body)
+    visible_text = text_value(parser.visible_parts)
+    visible_text = re.sub(r"\b(?:j_idt?\d+:)?javax\.faces\.ViewState\b", "", visible_text)
+    visible_text = re.sub(r"\bj_idt?\d+\b", "", visible_text)
     return {"h1": parser.h1, "messages": parser.messages, "tables": parser.tables,
-            "panels": parser.panels, "inputs": parser.inputs}
+            "panels": parser.panels, "inputs": parser.inputs, "text": text_value([visible_text])}
 
 
 def normalize_location(location):
@@ -223,6 +258,7 @@ def send(base, case, cookies, previous_location, timeout):
         status = response.status
         media_type = (response.getheader("Content-Type") or "").split(";", 1)[0].strip().lower() or None
         raw_location = response.getheader("Location")
+        date_header = response.getheader("Date")
         for cookie in response.headers.get_all("Set-Cookie") or []:
             match = re.match(r"\s*([^=;]+)=([^;]*)", cookie)
             if match:
@@ -239,7 +275,7 @@ def send(base, case, cookies, previous_location, timeout):
         "body": body_text,
         "observed": parsed,
         "elapsedMs": elapsed_ms,
-    }, body_text
+    }, body_text, date_header
 
 
 def state_for_post(body, form_spec, case_id):
@@ -310,7 +346,11 @@ def main():
             case_copy = dict(case)
             if case.get("method") == "POST":
                 case_copy["_formState"] = state_for_post(previous_html, case["form"], case["id"])
-            response, previous_html = send(args.base, case_copy, cookies, previous_location, args.timeout)
+            response, previous_html, date_header = send(
+                args.base, case_copy, cookies, previous_location, args.timeout
+            )
+            if "recordedOn" not in recorded:
+                recorded["recordedOn"] = portal_day_from_date_header(date_header)
             previous_location = response["location"]
             entries.append({"id": case["id"], "response": response})
             print(f"{context}/{case['id']}: {response['status']} {response['mediaType'] or '-'} "

@@ -22,9 +22,11 @@
           "messages": [],
           "tables": [],
           "panels": [],
-          "inputs": []
+          "inputs": [],
+          "text": ""
         },
-        "elapsedMs": 180
+        "replayDay": "2026-10-27",
+        "elapsedMs": 197
       }
     },
     {
@@ -43,9 +45,11 @@
           "messages": [],
           "tables": [],
           "panels": [],
-          "inputs": []
+          "inputs": [],
+          "text": "HTTP Status 404 – Not FoundType Status ReportMessage /not-mapped.xhtml Not Found in ExternalContext as a ResourceDescription The origin server did not find a current representation for the target resource or is not willing to disclose that one exists.Apache Tomcat/9.0.123"
         },
-        "elapsedMs": 181
+        "replayDay": "2026-10-27",
+        "elapsedMs": 208
       }
     },
     {
@@ -64,9 +68,11 @@
           "messages": [],
           "tables": [],
           "panels": [],
-          "inputs": []
+          "inputs": [],
+          "text": ""
         },
-        "elapsedMs": 204
+        "replayDay": "2026-10-27",
+        "elapsedMs": 210
       }
     }
   ]

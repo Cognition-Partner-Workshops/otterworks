@@ -11,6 +11,8 @@ same-key differences and extra rows when compared with the current unload. These
 observations against the current unload, not an assumption that today's unload is a
 historical snapshot from each run date. The consistency fields compare BENOUT record and
 amount totals with the final BENRPT line and compare BENRPT detail rows with BENOUT rows.
+`EMPLOYEE.dat` is keyed by `dbkey` for these comparisons because `empid` is not unique;
+duplicate keys within any input file now fail pair generation rather than being collapsed.
 
 ```sh
 python3 industries/manufacturing/global-fleet/parity/mainframe/build_pairs.py
@@ -44,22 +46,24 @@ The reference port matched both committed output files byte-for-byte for all 12 
 Every pair's five IN files are exact subsets of the current unload. No pair has
 pair-only rows or same-key changed rows. The full current-only key lists are stored in
 `pairs.json`; these are records now present in unload but absent from the historical
-pair input. Input row counts by period are:
+pair input. Employee counts use physical `dbkey` rows: every pair has 217 employee rows,
+matching the current unload's 217, including both records for each of the duplicate
+CALC employee IDs. Input row counts by period are:
 
 | Pair | ASSIGNMENT | BENPRD | EMPLOYEE | MILECLM | VEHICLE |
 |---|---:|---:|---:|---:|---:|
-| HP-202510 | 97 | 1 | 215 | 90 | 108 |
-| HP-202511 | 100 | 1 | 215 | 99 | 110 |
-| HP-202512 | 103 | 1 | 215 | 108 | 111 |
-| HP-202601 | 106 | 1 | 215 | 105 | 113 |
-| HP-202602 | 109 | 1 | 215 | 94 | 113 |
-| HP-202603 | 110 | 1 | 215 | 117 | 114 |
-| HP-202604 | 112 | 1 | 215 | 117 | 115 |
-| HP-202605 | 113 | 1 | 215 | 125 | 116 |
-| HP-202606 | 115 | 1 | 215 | 103 | 119 |
-| HP-202607 | 118 | 1 | 215 | 109 | 120 |
-| HP-202608 | 119 | 1 | 215 | 118 | 120 |
-| HP-202609 | 119 | 1 | 215 | 117 | 120 |
+| HP-202510 | 97 | 1 | 217 | 90 | 108 |
+| HP-202511 | 100 | 1 | 217 | 99 | 110 |
+| HP-202512 | 103 | 1 | 217 | 108 | 111 |
+| HP-202601 | 106 | 1 | 217 | 105 | 113 |
+| HP-202602 | 109 | 1 | 217 | 94 | 113 |
+| HP-202603 | 110 | 1 | 217 | 117 | 114 |
+| HP-202604 | 112 | 1 | 217 | 117 | 115 |
+| HP-202605 | 113 | 1 | 217 | 125 | 116 |
+| HP-202606 | 115 | 1 | 217 | 103 | 119 |
+| HP-202607 | 118 | 1 | 217 | 109 | 120 |
+| HP-202608 | 119 | 1 | 217 | 118 | 120 |
+| HP-202609 | 119 | 1 | 217 | 117 | 120 |
 
 202610's benefit-period row has status `O` and no run date; it is listed in `notHoldout`
 with `expectedOutput: null`.
