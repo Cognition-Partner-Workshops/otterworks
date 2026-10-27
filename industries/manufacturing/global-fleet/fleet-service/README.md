@@ -33,6 +33,16 @@ month onward are open. Set `fleet.assignment.legacy-assignment-unload` to the
 optional fixed-width `ASSIGNMENT.dat` path to include legacy double holders in
 the cutover report.
 
+Mileage APIs include `GET /api/v1/mileage/quote`, `POST /api/v1/mileage/claims`,
+`GET /api/v1/mileage/claims/pending`, approval and rejection under
+`/api/v1/mileage/claims/{id}`, employee claim history at
+`/api/v1/mileage/employees/{employeeNo}/claims`, and reimbursement summaries at
+`/api/v1/mileage/employees/{employeeNo}/reimbursement?period=YYYYMM`. Claims
+freeze their profile rate and rounded amount when submitted; only approved
+claims are included in reimbursement totals.
+
+Mileage persistence changes are in `db/migration/mileage/V40_0__mileage_claim.sql`.
+
 The frontend at `../frontend/fleet` has one route folder per context under
 `src/routes/<context>/`. Its handwritten `src/api/client.ts` mirrors the API
 contract in `/v3/api-docs`. From `frontend/fleet`, run

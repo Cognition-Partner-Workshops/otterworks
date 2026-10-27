@@ -34,5 +34,13 @@ class OpenApiContractTest extends AbstractPostgresIntegrationTest {
         org.junit.jupiter.api.Assertions.assertTrue(document.contains("/api/v1/eligibility/car-request"));
         org.junit.jupiter.api.Assertions.assertTrue(document.contains("/api/v1/eligibility/mileage-claim"));
         org.junit.jupiter.api.Assertions.assertTrue(document.contains("/api/v1/eligibility/below-grade-holders"));
+        org.junit.jupiter.api.Assertions.assertTrue(document.contains("/api/v1/mileage/quote"));
+        org.junit.jupiter.api.Assertions.assertTrue(document.contains("/api/v1/mileage/claims"));
+        org.junit.jupiter.api.Assertions.assertTrue(document.contains("/api/v1/mileage/claims/pending"));
+        org.junit.jupiter.api.Assertions.assertTrue(document.contains("/api/v1/mileage/claims/{id}/approve"));
+        org.junit.jupiter.api.Assertions.assertTrue(document.contains("/api/v1/mileage/claims/{id}/reject"));
+        org.junit.jupiter.api.Assertions.assertTrue(document.contains("/api/v1/mileage/employees/{employeeNo}/claims"));
+        org.junit.jupiter.api.Assertions.assertTrue(
+                document.contains("/api/v1/mileage/employees/{employeeNo}/reimbursement"));
     }
 }

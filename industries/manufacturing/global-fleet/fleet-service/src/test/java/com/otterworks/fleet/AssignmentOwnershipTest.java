@@ -2,6 +2,8 @@ package com.otterworks.fleet;
 
 import com.otterworks.fleet.domain.Assignment;
 import com.otterworks.fleet.domain.MileageClaim;
+import com.otterworks.fleet.config.CountryProfile;
+import com.otterworks.fleet.mileage.MileagePricing;
 import jakarta.persistence.JoinColumn;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -21,6 +23,12 @@ class AssignmentOwnershipTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private JdbcTemplate jdbc;
+
+    @Autowired
+    private CountryProfile profile;
+
+    @Autowired
+    private MileagePricing mileagePricing;
 
     @Test
     void GF12_assignmentAndClaimRequireOwner() throws Exception {
@@ -44,13 +52,27 @@ class AssignmentOwnershipTest extends AbstractPostgresIntegrationTest {
                 "INSERT INTO assignment (employment_id, vehicle_id, start_date) VALUES (?, NULL, ?)",
                 employmentId, LocalDate.of(2026, 10, 1)));
         assertThrows(DataIntegrityViolationException.class, () -> jdbc.update(
-                "INSERT INTO mileage_claim (employment_id, benefit_period_id, claim_date, distance, status) "
-                        + "VALUES (NULL, ?, ?, ?, ?)",
-                periodId, LocalDate.of(2026, 10, 15), 10, "PENDING"));
+                "INSERT INTO mileage_claim "
+                        + "(employment_id, benefit_period_id, claim_date, distance, status, rate, amount, paid_period) "
+                        + "VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)",
+                periodId,
+                LocalDate.of(2026, 10, 15),
+                10,
+                "PENDING",
+                profile.mileageRate(),
+                mileagePricing.amount(10, profile.mileageRate()),
+                "202610"));
         assertDoesNotThrow(() -> jdbc.update(
-                "INSERT INTO mileage_claim (employment_id, benefit_period_id, claim_date, distance, status) "
-                        + "VALUES (?, NULL, ?, ?, ?)",
-                employmentId, LocalDate.of(2026, 10, 15), 10, "PENDING"));
+                "INSERT INTO mileage_claim "
+                        + "(employment_id, benefit_period_id, claim_date, distance, status, rate, amount, paid_period) "
+                        + "VALUES (?, NULL, ?, ?, ?, ?, ?, ?)",
+                employmentId,
+                LocalDate.of(2026, 10, 15),
+                10,
+                "PENDING",
+                profile.mileageRate(),
+                mileagePricing.amount(10, profile.mileageRate()),
+                "202610"));
 
         assertJoinColumnNotNull(Assignment.class, "employment");
         assertJoinColumnNotNull(Assignment.class, "vehicle");

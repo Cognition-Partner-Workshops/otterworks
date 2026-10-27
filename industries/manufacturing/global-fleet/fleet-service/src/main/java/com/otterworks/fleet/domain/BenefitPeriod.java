@@ -34,4 +34,24 @@ public class BenefitPeriod {
 
     protected BenefitPeriod() {
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getPeriod() {
+        return period;
+    }
+
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public BigDecimal getMileageRate() {
+        return mileageRate;
+    }
 }
