@@ -12,6 +12,9 @@ described in [`../docs/control-table-schema.md`](../docs/control-table-schema.md
   `ow_ops_session` cookie (HMAC via `SESSION_SECRET`, ~8h), rate-limits (5 / IP / 15 min with
   backoff), and audits `login_ok`/`login_fail`. `middleware.ts` gates every non-login route,
   and every `/api/*` handler independently calls `requireSession()` (defense in depth).
+  Non-GET `/api/*` calls must also come from the dashboard's own origin and declare
+  `Content-Type: application/json` (`lib/csrf.ts`): tenant sites are same-*site* with
+  `ops.otterworks.app`, so the cookie alone would still ride along on a forged request.
 - **Tenants.** `GET /api/tenants` joins control-table records with live cluster state
   (namespace phase, ready/total pods, per-service status) cached ~5s. Checkout / check-in /
   extend / inject / reset drive Kubernetes runner **Jobs** in the platform namespace.
