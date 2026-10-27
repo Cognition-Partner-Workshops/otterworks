@@ -102,7 +102,7 @@
     <Screenshot path="Screenshots/sharing.png" />
     <StepLog>
       <Step stepRef="TC-SHARE-002-STEP-01" result="Passed" durationMs="830" actionMode="Verify" />
-      <Step stepRef="TC-SHARE-002-STEP-02" result="Passed" durationMs="960" actionMode="Wait" />
+      <Step stepRef="TC-SHARE-002-STEP-02" result="Passed" durationMs="5004" actionMode="Wait" />
       <Step stepRef="TC-SHARE-002-STEP-03" result="Passed" durationMs="1090" actionMode="Click" />
     </StepLog>
   </Execution>
