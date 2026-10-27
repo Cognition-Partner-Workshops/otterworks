@@ -10,8 +10,18 @@ variable "region" {
 }
 
 variable "run_token" {
-  description = "Run token stamped on every resource as a label, for example gf-r1027a-after."
+  description = "Run token stamped on every resource as a label and used in per-run names, for example gf-r1027a-after."
   type        = string
+  validation {
+    condition     = can(regex("^[a-z][a-z0-9-]{2,22}[a-z0-9]$", var.run_token))
+    error_message = "run_token must be 4-24 lowercase letters, digits or dashes, starting with a letter."
+  }
+}
+
+variable "create_registry" {
+  description = "Create the shared gf-fleet Artifact Registry repository. Set false for every run after the first in a project."
+  type        = bool
+  default     = true
 }
 
 variable "expires_at" {
@@ -26,7 +36,7 @@ variable "country_profile" {
 }
 
 variable "image_tag" {
-  description = "Tag of the fleet-service and fleet-web images in Artifact Registry."
+  description = "Tag of the fleet-service and fleet-web images in Artifact Registry: the first 12 characters of the commit the gf-fleet-container workflow built."
   type        = string
 }
 

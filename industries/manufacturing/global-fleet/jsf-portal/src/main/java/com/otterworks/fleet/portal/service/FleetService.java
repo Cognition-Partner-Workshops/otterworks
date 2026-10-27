@@ -195,7 +195,7 @@ public class FleetService implements Serializable {
     }
 
     public static int daysBetween(Date a, Date b) {
-        return (int) ((strip(b).getTime() - strip(a).getTime()) / 86400000L) + 1;
+        return (int) Math.round((strip(b).getTime() - strip(a).getTime()) / 86400000d) + 1;
     }
 
     public static Date strip(Date d) {

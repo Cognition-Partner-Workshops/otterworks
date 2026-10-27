@@ -47,6 +47,10 @@ while [ $# -gt 0 ]; do
 done
 [ -n "${ATTENDEE_ID}" ] || { err "Usage: $0 <ATTENDEE_ID> [--keep-db] [--keep-trust] [--token TOKEN] [--host HOST]... [--verify-only]"; exit 1; }
 [ "${VERIFY_ONLY}" = false ] || [ -n "${TOKEN}" ] || { err "--verify-only needs --token"; exit 1; }
+# Tokens, hosts and DB names end up in SQL, shell and jq; keep them to plain names.
+[ -z "${TOKEN}" ] || [[ "${TOKEN}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,62}$ ]] || { err "Invalid --token: ${TOKEN}"; exit 1; }
+for h in "${TOKEN_HOSTS[@]}"; do [[ "${h}" =~ ^[A-Za-z0-9.-]+$ ]] || { err "Invalid --host: ${h}"; exit 1; }; done
+for d in ${TOKEN_DB_NAMES:-}; do [[ "${d}" =~ ^[a-z0-9_]+$ ]] || { err "Invalid TOKEN_DB_NAMES entry: ${d}"; exit 1; }; done
 
 require_bins aws kubectl jq
 NS="$(tenant_namespace "${ATTENDEE_ID}")"
@@ -71,7 +75,8 @@ delete_token_ecr_tags() {
   local token="$1" repo ids
   for repo in $(aws ecr describe-repositories --region "${AWS_REGION}" --query 'repositories[].repositoryName' --output text 2>/dev/null); do
     ids="$(aws ecr list-images --region "${AWS_REGION}" --repository-name "${repo}" --filter tagStatus=TAGGED --output json 2>/dev/null \
-      | jq -c --arg t "${token}" '[.imageIds[] | select(.imageTag | contains($t)) | {imageTag}]')"
+      | jq -c --arg t "${token}" '[.imageIds[] | select(.imageTag == $t) | {imageTag}]')" \
+      || { warn "  ECR: cannot list ${repo}"; continue; }
     [ -n "${ids}" ] && [ "${ids}" != "[]" ] || continue
     aws ecr batch-delete-image --region "${AWS_REGION}" --repository-name "${repo}" --image-ids "${ids}" >/dev/null \
       && log "  ECR: deleted $(echo "${ids}" | jq -r 'map(.imageTag) | join(", ")') from ${repo}" \
@@ -98,6 +103,15 @@ delete_host_dns() {
   local host zone waited=0 rec left
   [ "${#TOKEN_HOSTS[@]}" -gt 0 ] || return 0
   mapfile -t TOKEN_HOSTS < <(printf '%s\n' "${TOKEN_HOSTS[@]}" | sort -u)
+  local mine=()
+  for host in "${TOKEN_HOSTS[@]}"; do
+    case "${host}" in
+      *"${ATTENDEE_ID}"*) mine+=("${host}") ;;
+      *) warn "  DNS: ${host} does not name tenant ${ATTENDEE_ID}; leaving it alone" ;;
+    esac
+  done
+  TOKEN_HOSTS=("${mine[@]}")
+  [ "${#TOKEN_HOSTS[@]}" -gt 0 ] || return 0
   log "Waiting up to ${DNS_WAIT_SECONDS}s for external-dns to drop ${TOKEN_HOSTS[*]}..."
   while :; do
     left=0
@@ -130,12 +144,12 @@ delete_token_control_item() {
     && log "  control table: deleted TENANT#${ATTENDEE_ID}"
 }
 
-# Databases on the shared RDS whose name contains any of the given fragments.
+# Databases and roles on the shared RDS whose name contains any of the given fragments.
 # Runs as an in-cluster Job (the VM has no route to RDS). Prints one per line.
 list_dbs_matching() {
   [ -n "${DB_PASSWORD:-}" ] && [ -n "${RDS_HOST:-}" ] || { echo "?db-check-skipped(no DB_PASSWORD/RDS_HOST)"; return 0; }
   local frag job secret where="" f
-  for f in "$@"; do where="${where:+${where} OR }datname LIKE '%${f}%'"; done
+  for f in "$@"; do where="${where:+${where} OR }name LIKE '%${f}%'"; done
   frag="$(k8s_name_fragment "$(sanitize_id "$1")" | cut -c1-40)"
   job="token-db-list-${frag}"; secret="token-db-admin-${frag}"
   kubectl get ns "${SYSTEM_NAMESPACE}" >/dev/null 2>&1 || kubectl create ns "${SYSTEM_NAMESPACE}" >/dev/null 2>&1 || true
@@ -159,7 +173,7 @@ spec:
               valueFrom: { secretKeyRef: { name: ${secret}, key: PGPASSWORD } }
           command: ["/bin/sh","-c"]
           args:
-            - psql "host=${RDS_HOST} port=${RDS_PORT} dbname=otterworks user=${DB_USER} sslmode=prefer connect_timeout=10" -tAc "SELECT datname FROM pg_database WHERE ${where}"
+            - psql "host=${RDS_HOST} port=${RDS_PORT} dbname=otterworks user=${DB_USER} sslmode=prefer connect_timeout=10" -tAc "SELECT name FROM (SELECT datname AS name FROM pg_database UNION ALL SELECT 'role:' || rolname FROM pg_roles) x WHERE ${where}"
           resources:
             requests: { cpu: 50m, memory: 64Mi }
             limits: { cpu: 200m, memory: 128Mi }
@@ -174,49 +188,59 @@ YAML
 }
 
 # List everything that still bears the token. Returns the number of findings.
+# A probe that cannot run counts as a finding: unknown is not clean.
 token_residue() {
-  local token="$1" found=0 line repo zone host db_frag
+  local token="$1" found=0 repo zone db_frag out repos zones hosts_json k
   db_frag="$(printf '%s' "${token}" | tr '[:upper:]-' '[:lower:]_')"
   report() { printf '  %-14s %s\n' "$1" "$2"; found=$((found + 1)); }
+  each() { local kind="$1" l; while IFS= read -r l; do [ -n "${l}" ] && report "${kind}" "${l}"; done; }
   log "Resources still bearing token ${token}:"
-  while IFS= read -r line; do [ -n "${line}" ] && report namespace "${line}"; done < <(
-    kubectl get ns -o json 2>/dev/null | jq -r --arg t "${token}" \
-      '.items[] | select((.metadata.labels["demo/token"] // "") == $t or (.metadata.name | contains($t))) | .metadata.name')
-  while IFS= read -r line; do [ -n "${line}" ] && report k8s "${line}"; done < <(
-    kubectl get deploy,statefulset,svc,ingress,job,cronjob,configmap,secret,pvc,pod -A -l "demo/token=${token}" \
-      -o jsonpath='{range .items[*]}{.metadata.namespace}/{.kind}/{.metadata.name}{"\n"}{end}' 2>/dev/null)
-  for repo in $(aws ecr describe-repositories --region "${AWS_REGION}" --query 'repositories[].repositoryName' --output text 2>/dev/null); do
-    while IFS= read -r line; do [ -n "${line}" ] && report ecr "${repo}:${line}"; done < <(
-      aws ecr list-images --region "${AWS_REGION}" --repository-name "${repo}" --filter tagStatus=TAGGED --output json 2>/dev/null \
-        | jq -r --arg t "${token}" '.imageIds[].imageTag | select(contains($t))')
-  done
+  if out="$(kubectl get ns -o json 2>/dev/null)"; then
+    each namespace < <(jq -r --arg t "${token}" \
+      '.items[] | select((.metadata.labels["demo/token"] // "") == $t or (.metadata.name | contains($t))) | .metadata.name' <<<"${out}")
+  else report unchecked "kubernetes namespaces"; fi
+  if out="$(kubectl get deploy,statefulset,svc,ingress,job,cronjob,configmap,secret,pvc,pod -A -l "demo/token=${token}" \
+      -o jsonpath='{range .items[*]}{.metadata.namespace}/{.kind}/{.metadata.name}{"\n"}{end}' 2>/dev/null)"; then
+    each k8s <<<"${out}"
+  else report unchecked "kubernetes objects"; fi
+  if repos="$(aws ecr describe-repositories --region "${AWS_REGION}" --query 'repositories[].repositoryName' --output text 2>/dev/null)"; then
+    for repo in ${repos}; do
+      if out="$(aws ecr list-images --region "${AWS_REGION}" --repository-name "${repo}" --filter tagStatus=TAGGED --output json 2>/dev/null)"; then
+        each ecr < <(jq -r --arg t "${token}" --arg r "${repo}" '.imageIds[].imageTag | select(. == $t) | $r + ":" + .' <<<"${out}")
+      else report unchecked "ecr ${repo}"; fi
+    done
+  else report unchecked "ecr repositories"; fi
+  hosts_json="$(printf '%s\n' "${TOKEN_HOSTS[@]:-}" | jq -R . | jq -sc 'map(select(length > 0) | . + ".")')"
   # shellcheck disable=SC2016  # backticks are JMESPath literals
-  for zone in $(aws route53 list-hosted-zones --query 'HostedZones[?Config.PrivateZone==`false`].Id' --output text 2>/dev/null | sed 's#/hostedzone/##g'); do
-    while IFS= read -r line; do [ -n "${line}" ] && report dns "${line}"; done < <(
-      aws route53 list-resource-record-sets --hosted-zone-id "${zone}" --output json 2>/dev/null \
-        | jq -r --arg t "${token}" --argjson hosts "$(printf '%s\n' "${TOKEN_HOSTS[@]:-}" | jq -R . | jq -sc 'map(select(length > 0) | . + ".")')" '
+  if zones="$(aws route53 list-hosted-zones --query 'HostedZones[?Config.PrivateZone==`false`].Id' --output text 2>/dev/null)"; then
+    for zone in ${zones//\/hostedzone\//}; do
+      if out="$(aws route53 list-resource-record-sets --hosted-zone-id "${zone}" --output json 2>/dev/null)"; then
+        each dns < <(jq -r --arg t "${token}" --argjson hosts "${hosts_json}" '
           .ResourceRecordSets[] | select((.Name | contains($t)) or (.Name as $n | $hosts | any(. as $h | $n == $h or $n == ("a-" + $h) or $n == ("cname-" + $h))))
-          | .Type + " " + .Name')
+          | .Type + " " + .Name' <<<"${out}")
+      else report unchecked "route53 ${zone}"; fi
+    done
+  else report unchecked "route53 zones"; fi
+  for k in run_token token demo-token; do
+    if out="$(aws resourcegroupstaggingapi get-resources --region "${AWS_REGION}" --tag-filters "Key=${k},Values=${token}" \
+        --query 'ResourceTagMappingList[].ResourceARN' --output text 2>/dev/null)"; then
+      each aws-tagged < <(tr '\t' '\n' <<<"${out}")
+    else report unchecked "tagged resources (${k})"; fi
   done
-  while IFS= read -r line; do [ -n "${line}" ] && report aws-tagged "${line}"; done < <(
-    for k in run_token token demo-token; do
-      aws resourcegroupstaggingapi get-resources --region "${AWS_REGION}" --tag-filters "Key=${k},Values=${token}" \
-        --query 'ResourceTagMappingList[].ResourceARN' --output text 2>/dev/null | tr '\t' '\n'
-    done | sort -u)
-  while IFS= read -r line; do [ -n "${line}" ] && report iam-role "${line}"; done < <(
-    aws iam list-roles --query "Roles[?contains(RoleName, '${token}')].RoleName" --output text 2>/dev/null | tr '\t' '\n')
-  while IFS= read -r line; do [ -n "${line}" ] && report control-item "${line}"; done < <(
-    aws dynamodb scan --table-name "${CONTROL_TABLE}" --region "${AWS_REGION}" \
-      --filter-expression "#t = :t OR contains(PK, :t)" --expression-attribute-names '{"#t":"token"}' \
-      --expression-attribute-values "$(jq -n --arg t "${token}" '{":t":{S:$t}}')" --output json 2>/dev/null \
-      | jq -r '.Items[] | .PK.S + "/" + .SK.S')
+  if out="$(aws iam list-roles --query "Roles[?contains(RoleName, '${token}')].RoleName" --output text 2>/dev/null)"; then
+    each iam-role < <(tr '\t' '\n' <<<"${out}")
+  else report unchecked "iam roles"; fi
+  if out="$(aws dynamodb scan --table-name "${CONTROL_TABLE}" --region "${AWS_REGION}" \
+      --filter-expression "#t = :t" --expression-attribute-names '{"#t":"token"}' \
+      --expression-attribute-values "$(jq -n --arg t "${token}" '{":t":{S:$t}}')" --output json 2>/dev/null)"; then
+    each control-item < <(jq -r '.Items[] | .PK.S + "/" + .SK.S' <<<"${out}")
+  else report unchecked "control table"; fi
   # shellcheck disable=SC2086  # TOKEN_DB_NAMES is a space-separated list
-  while IFS= read -r line; do [ -n "${line}" ] && report database "${line}"; done < <(
-    list_dbs_matching "${db_frag}" ${TOKEN_DB_NAMES:-})
+  each database < <(list_dbs_matching "${db_frag}" ${TOKEN_DB_NAMES:-})
   if [ "${found}" -eq 0 ]; then
     log "  none. Token ${token} is clean."
   else
-    err "${found} resource(s) still bear token ${token}."
+    err "${found} resource(s) still bear token ${token} or could not be checked."
   fi
   return "${found}"
 }
@@ -309,7 +333,7 @@ if [ "${KEEP_TRUST}" = false ]; then
 fi
 
 if [ -n "${TOKEN}" ]; then
-  log "Deleting ECR image tags containing ${TOKEN}..."
+  log "Deleting ECR image tags ${TOKEN}..."
   delete_token_ecr_tags "${TOKEN}"
   delete_host_dns
   delete_token_control_item "${TOKEN}"

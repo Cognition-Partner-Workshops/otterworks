@@ -45,7 +45,7 @@ while [ $# -gt 0 ]; do
     --id)  ID="$2"; shift 2 ;;
     *) err "Unknown argument: $1"; exit 1 ;;
   esac
-done
+done; [[ "${RUN}${ID:+-}${ID}" =~ ^[a-z0-9-]{1,40}$ ]] || { err "run and --id take lowercase letters, digits and dashes"; exit 1; }
 
 require_bins aws kubectl jq docker
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-$(aws sts get-caller-identity --query Account --output text)}"
@@ -218,7 +218,7 @@ put_control_item() {
 }
 
 apply_db_secret() {
-  local url="jdbc:postgresql://${RDS_HOST}:${RDS_PORT}/${T_DB_NAME}?sslmode=prefer"
+  local url="jdbc:postgresql://${RDS_HOST}:${RDS_PORT}/${T_DB_NAME}?sslmode=prefer"; ensure_app_credential; apply_db_admin_secret
   kubectl -n "${NS}" apply -f - >/dev/null <<YAML
 apiVersion: v1
 kind: Secret
@@ -227,18 +227,18 @@ metadata:
   labels: { demo/token: "${TOKEN}" }
 type: Opaque
 data:
-  PGPASSWORD: $(printf '%s' "${DB_PASSWORD}" | base64 | tr -d '\n')
-  DB_PASSWORD: $(printf '%s' "${DB_PASSWORD}" | base64 | tr -d '\n')
-  SPRING_DATASOURCE_PASSWORD: $(printf '%s' "${DB_PASSWORD}" | base64 | tr -d '\n')
+  PGPASSWORD: $(printf '%s' "${APP_DB_PASSWORD}" | base64 | tr -d '\n')
+  DB_PASSWORD: $(printf '%s' "${APP_DB_PASSWORD}" | base64 | tr -d '\n')
+  SPRING_DATASOURCE_PASSWORD: $(printf '%s' "${APP_DB_PASSWORD}" | base64 | tr -d '\n')
 stringData:
   PGHOST: "${RDS_HOST}"
   PGPORT: "${RDS_PORT}"
-  PGUSER: "${DB_USER}"
+  PGUSER: "${APP_DB_USER}"
   PGDATABASE: "${T_DB_NAME}"
   DB_URL: "${url}"
-  DB_USER: "${DB_USER}"
+  DB_USER: "${APP_DB_USER}"
   SPRING_DATASOURCE_URL: "${url}"
-  SPRING_DATASOURCE_USERNAME: "${DB_USER}"
+  SPRING_DATASOURCE_USERNAME: "${APP_DB_USER}"
 YAML
 }
 
@@ -262,7 +262,7 @@ spec:
       containers:
         - name: psql
           image: ${image}
-          envFrom: [ { secretRef: { name: fleet-db } } ]
+          envFrom: [ { secretRef: { name: fleet-db-admin } } ]
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -286,7 +286,7 @@ if psql -d otterworks -tAc \"SELECT 1 FROM pg_database WHERE datname='${T_DB_NAM
 else
   psql -d otterworks -v ON_ERROR_STOP=1 -c 'CREATE DATABASE \"${T_DB_NAME}\"'
   psql -d otterworks -c \"COMMENT ON DATABASE \\\"${T_DB_NAME}\\\" IS 'demo/token=${TOKEN} expires=${EXPIRES_AT}'\"
-fi"
+fi"; create_app_role
 }
 
 load_seed() {
@@ -294,7 +294,7 @@ load_seed() {
 psql -v ON_ERROR_STOP=1 -q -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'
 psql -v ON_ERROR_STOP=1 -q -f /seed/001_schema.sql
 psql -v ON_ERROR_STOP=1 -q -f /seed/002_seed.sql
-psql -tAc \"SELECT 'seeded ' || (SELECT count(*) FROM employee) || ' employees, ' || (SELECT count(*) FROM vehicle) || ' vehicles'\""
+psql -tAc \"SELECT 'seeded ' || (SELECT count(*) FROM employee) || ' employees, ' || (SELECT count(*) FROM vehicle) || ' vehicles'\""; grant_app_role
 }
 
 # deploy_app <name> <image> <port> <health path> <cpu req> <mem req> <cpu lim> <mem lim> [env-from-db]
@@ -429,6 +429,78 @@ deploy_before_apps() {
   deploy_app source-browser "${ECR_REGISTRY}/${ECR_PREFIX}/gf-source-browser:${TOKEN}" 8080 /health 10m 16Mi 100m 64Mi
 }
 
+# The portal and fleet-service connect as a per-tenant role that owns only its
+# own database. Jobs (create, seed, grants, drop) use the admin credential.
+ensure_app_credential() {
+  APP_DB_USER="${T_DB_NAME}_app"
+  APP_DB_PASSWORD="$(kubectl -n "${NS}" get secret fleet-db -o json 2>/dev/null | jq -r --arg u "${APP_DB_USER}" \
+    'select((.data.PGUSER // "" | @base64d) == $u) | .data.PGPASSWORD // empty | @base64d' || true)"
+  [ -n "${APP_DB_PASSWORD}" ] || APP_DB_PASSWORD="$(openssl rand -hex 24)"
+}
+apply_db_admin_secret() {
+  kubectl -n "${NS}" apply -f - >/dev/null <<YAML
+apiVersion: v1
+kind: Secret
+metadata:
+  name: fleet-db-admin
+  labels: { demo/token: "${TOKEN}" }
+type: Opaque
+data:
+  PGPASSWORD: $(printf '%s' "${DB_PASSWORD}" | base64 | tr -d '\n')
+  APP_PGPASSWORD: $(printf '%s' "${APP_DB_PASSWORD}" | base64 | tr -d '\n')
+stringData:
+  PGHOST: "${RDS_HOST}"
+  PGPORT: "${RDS_PORT}"
+  PGUSER: "${DB_USER}"
+  PGDATABASE: "${T_DB_NAME}"
+  APP_PGUSER: "${APP_DB_USER}"
+YAML
+}
+create_app_role() {
+  local script
+  script="$(cat <<'EOF'
+set -e
+psql -d otterworks -v ON_ERROR_STOP=1 -q -v r="$APP_PGUSER" -v p="$APP_PGPASSWORD" -v d="$PGDATABASE" <<'SQL'
+SELECT format('CREATE ROLE %I LOGIN', :'r') WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'r') \gexec
+SELECT format('ALTER ROLE %I LOGIN PASSWORD %L', :'r', :'p') \gexec
+SELECT format('GRANT %I TO CURRENT_USER', :'r') WHERE NOT pg_has_role(current_user, :'r', 'MEMBER') \gexec
+SELECT format('REVOKE CONNECT ON DATABASE %I FROM PUBLIC', :'d') \gexec
+SELECT format('GRANT CONNECT ON DATABASE %I TO %I', :'d', :'r') \gexec
+SQL
+echo "role $APP_PGUSER ready"
+EOF
+)"
+  run_job gf-db-role "postgres:16-alpine" "${script}"
+}
+grant_app_role() {
+  local script
+  script="$(cat <<'EOF'
+set -e
+psql -v ON_ERROR_STOP=1 -q -v r="$APP_PGUSER" <<'SQL'
+SELECT format('ALTER SCHEMA public OWNER TO %I', :'r') \gexec
+SELECT format('ALTER TABLE public.%I OWNER TO %I', tablename, :'r') FROM pg_tables WHERE schemaname = 'public' \gexec
+SQL
+echo "public schema owned by $APP_PGUSER"
+EOF
+)"
+  run_job gf-db-grant "postgres:16-alpine" "${script}"
+}
+drop_app_role() {
+  local script
+  kubectl -n "${NS}" get secret fleet-db-admin >/dev/null 2>&1 || return 0
+  kubectl -n "${NS}" scale deploy --all --replicas=0 >/dev/null
+  script="$(cat <<'EOF'
+set -e
+psql -d otterworks -v ON_ERROR_STOP=1 -q -v r="$APP_PGUSER" -v d="$PGDATABASE" <<'SQL'
+SELECT format('DROP DATABASE IF EXISTS %I WITH (FORCE)', :'d') \gexec
+SELECT format('DROP ROLE IF EXISTS %I', :'r') \gexec
+SQL
+echo "dropped $PGDATABASE and $APP_PGUSER"
+EOF
+)"
+  run_job gf-db-drop "postgres:16-alpine" "${script}"
+}
+
 up_after() {
   set_tenant after
   local svc_dir="${GF_ROOT}/fleet-service" web_dir="${REPO_ROOT}/frontend/fleet"
@@ -467,6 +539,7 @@ reset_all() {
     kubectl get ns "${NS}" >/dev/null 2>&1 || { warn "${NS} not deployed; skipping"; continue; }
     found=$((found + 1))
     step "${TENANT_ID}: db secret" apply_db_secret
+    step "${TENANT_ID}: app role" create_app_role
     step "${TENANT_ID}: load seed" load_seed
     step "${TENANT_ID}: restart" restart_all
   done
@@ -487,6 +560,7 @@ down_run() {
   for side in before after; do
     set_tenant "${side}"
     log "Tearing down ${TENANT_ID} (token ${TOKEN})"
+    kubectl get ns "${NS}" >/dev/null 2>&1 && { drop_app_role || rc=1; }
     "${REPO_ROOT}/scripts/teardown-tenant.sh" "${TENANT_ID}" --token "${TOKEN}" \
       --host "${WEB_HOST}" --host "${SRC_HOST}" || rc=1
   done
@@ -503,5 +577,9 @@ case "${CMD}" in
     esac ;;
   reset) reset_all ;;
   down)  down_run ;;
-  check) load_db_admin; exec "${REPO_ROOT}/scripts/teardown-tenant.sh" "${TOKEN}" --token "${TOKEN}" --verify-only ;;
+  check)
+    load_db_admin
+    if [[ "${TOKEN}" =~ ^([a-z0-9-]+)-(before|after)$ ]]; then RUN="${BASH_REMATCH[1]}"; set_tenant "${BASH_REMATCH[2]}"; else TENANT_ID="${TOKEN}"; WEB_HOST=""; SRC_HOST=""; fi
+    TOKEN_DB_NAMES="${T_DB_NAME:-}" exec "${REPO_ROOT}/scripts/teardown-tenant.sh" "${TENANT_ID}" --token "${TOKEN}" \
+      ${WEB_HOST:+--host "${WEB_HOST}"} ${SRC_HOST:+--host "${SRC_HOST}"} --verify-only ;;
 esac
