@@ -2,7 +2,7 @@
   "catalog": "global-fleet rule catalog",
   "schema_version": 1,
   "base_branch": "integration/global-fleet",
-  "decision_owner": "Legacy (program owner)",
+  "decision_owner": "Program owner",
   "standard": "global-fleet-target-standard",
   "inputs": [
     "industries/manufacturing/global-fleet/discovery/rules/gf-mainframe-idms.json",
@@ -139,7 +139,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Country-wide values (grade threshold, mileage rate, DE 1% and 0.03%/km, rounding modes) live in each country's profile; per-vehicle benefit percent and per-employee contribution stay as vehicle and employee data.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -225,7 +225,7 @@
         "status": "decided",
         "option": "A/(i)/(a)",
         "decision": "Grade threshold from each country profile (UK 07, DE 6), checked on every step including confirm and in the monthly batch path; existing below-threshold holders keep their car until return, taxed as normal, listed on the migration report; the monthly run taxes them as normal and lists each on its control report as below grade threshold.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -345,7 +345,7 @@
         "status": "decided",
         "option": "B",
         "decision": "Only active employees can request a car or file mileage, except a leaver may file claims dated on or before the leaving date; unknown numbers refused; statements/inquiry available for leavers and transferees.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -427,7 +427,7 @@
         "status": "decided",
         "option": "A",
         "decision": "One person per employee number with an employment history (hire/leave dates); cars and claims attach to the employment they fall in; tax and leaver rules use that employment's dates.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -499,7 +499,7 @@
         "status": "decided",
         "option": "B",
         "decision": "One open car per employee in both countries. The 20 UK employees holding an open NC and RP are listed for fleet to confirm actual return dates before cutover; their affected-period tax waits on that.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -594,7 +594,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Pick from the pool or register a new car; the profile decides the required fields (UK also benefit %); list price > 0, CO2 >= 0; no direct vehicle-id entry.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -697,7 +697,7 @@
         "status": "decided",
         "option": "A",
         "decision": "A car has at most one open assignment, pool loans included; re-checked at submit and enforced in the database; a late submitter gets car-no-longer-available and returns to vehicle choice with a fresh pool list.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -765,7 +765,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Assignment reason from fixed list NC/RP/PL, default NC, other values refused; migrated DE assignments carry reason not recorded.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -833,7 +833,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Assignment start date required, defaults to today, must fall within the employee's employment, after the car's last return, and in an open period.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -889,7 +889,7 @@
         "status": "decided",
         "option": "A",
         "decision": "One global id scheme for new assignments; migrated UK rows keep their A+9-digit id as a legacy reference.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -948,7 +948,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Both countries record a car request with status delivered in the same transaction as the assignment; migration does not invent requests for existing UK assignments.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -1086,7 +1086,7 @@
         "status": "decided",
         "option": "A",
         "decision": "The current car is the open assignment (only one allowed, GF05); none open shows no company car; history lists every car.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -1156,7 +1156,7 @@
         "status": "decided",
         "option": "A",
         "decision": "A return finds the car by plate (normalised as at registration, GF06) or vehicle id and closes its single open assignment; none open gives already returned.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -1360,7 +1360,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Odometer reading required on return, whole number in the profile unit, not below the car's last recorded reading; the first UK return of each car has no prior reading.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -1419,7 +1419,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Return is an ordinary function in both countries, reachable from navigation.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": [
           "Question for fleet operations: how are UK assignments ended today? 18 UK assignments have end dates though no menu route reaches FLERETN and no source we hold explains it."
@@ -1498,7 +1498,7 @@
         "status": "decided",
         "option": "B",
         "decision": "Journey date must not be in the future and must fall in the open period, or in an earlier closed month within the profile limit (UK 3 months back, DE 2 months back), paid in the current period.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -1566,7 +1566,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Whole units from 1 to the profile maximum: UK 1,500 miles, DE 2,500 km.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -1677,7 +1677,7 @@
         "status": "decided",
         "option": "B",
         "decision": "Mileage amount = distance x profile rate, rounded half-up to the cent per claim in both countries, frozen at submission; only approved claims are paid. Expected change: 172 DE seed claims move by one cent versus legacy half-even.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -1837,7 +1837,7 @@
         "status": "decided",
         "option": "A",
         "decision": "A claim records the company car held on the journey date, or none.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -1894,7 +1894,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Both countries list an employee's claims back over a profile-set window (6 months for both), newest first, all statuses.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -1973,7 +1973,7 @@
         "status": "decided",
         "option": "follows GF03 B",
         "decision": "Linked to GF03 B: only active employees may file mileage, except a leaver may file claims dated on or before the leaving date.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": [],
         "linked_to": "GF03"
@@ -2082,7 +2082,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Both countries have monthly periods open -> closed; closing runs the benefit calculation and stores results; closed months are never recomputed.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -2197,7 +2197,7 @@
         "status": "decided",
         "option": "A/i",
         "decision": "One benefit formula; each country profile sets benefit-% source, commute component, contribution deduction with floor at 0, and benefit rounding mode (UK truncate, DE half-up). The UK inquiry screen shows the same prorated figure the run will tax.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -2307,7 +2307,7 @@
         "status": "decided",
         "option": "B",
         "decision": "Calendar month, inclusive days; on a swap day only the incoming car counts, so nobody is taxed on two cars for the same day.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -2411,7 +2411,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Tax every car the employee held in the period, in both countries; the never-closed UK legacy assignments must be resolved in migration first (see GF05).",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -2519,7 +2519,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Both countries cap car days at the leaving date, exclude employees who left before the period, and flag leavers in the period with L.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -2637,7 +2637,7 @@
         "status": "decided",
         "option": "B",
         "decision": "On period close both countries write one output record per employee with car days or approved miles plus control totals (count, total taxable benefit, total mileage); a failed run changes nothing; a closed month cannot be re-run. UK sends the payroll file; DE has no payroll file for now.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": [
           "German payroll has not agreed a payroll file format; DE payroll file to be added once agreed."
@@ -2713,7 +2713,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Navigation reaches every function (inquiry, car request, mileage, statement, return, search) in both countries; Back saves the draft without validation and checks re-run on the next forward step.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -2774,7 +2774,7 @@
         "status": "decided",
         "option": "A",
         "decision": "Both countries get employee search: case-insensitive contains on employee number, last or first name, at most 50 rows sorted by last then first name, showing the current car.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
@@ -2861,7 +2861,7 @@
         "status": "decided",
         "option": "A (modified)/(a)",
         "decision": "A half-finished car request is saved as a server-side draft against the employee (one draft per employee, intentionally shared); refresh, reload or a new tab return to the same step with the entries; the draft does not reserve a car; resuming re-checks eligibility and car availability; final submit counts once; the draft lives until submitted (then cleared) or discarded via a discard action.",
-        "decided_by": "Legacy (program owner)",
+        "decided_by": "Program owner",
         "decided_on": "2026-10-27",
         "open_items": []
       },
