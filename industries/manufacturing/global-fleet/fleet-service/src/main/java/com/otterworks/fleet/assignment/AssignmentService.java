@@ -462,7 +462,7 @@ public class AssignmentService {
                 input.benefitPercent());
     }
 
-    private static String normalizePlate(String plate) {
+    public static String normalizePlate(String plate) {
         return plate.trim().replaceAll("\\s+", " ").toUpperCase(Locale.ROOT);
     }
 

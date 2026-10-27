@@ -13,6 +13,8 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
     boolean existsByVehicle_IdAndEndDateIsNull(Long vehicleId);
 
+    Optional<Assignment> findByVehicle_IdAndEndDateIsNull(Long vehicleId);
+
     @Query("""
             select a from Assignment a
             where a.employment.person.id = :personId and a.endDate is null
