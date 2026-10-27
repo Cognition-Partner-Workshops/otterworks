@@ -1,0 +1,13 @@
+{
+  "version": "tol-exact-v1",
+  "decision": "recon-tolerances=exact",
+  "full_diff_row_threshold": 10000000,
+  "sample_size": 1000,
+  "numeric_abs_tol": 0.0,
+  "aggregate_rel_tol": 0.0,
+  "source_concurrency": 1,
+  "nondeterminism": [],
+  "mode": "live",
+  "amendment_procedure": "An amendment needs a new important plan.yaml decision the human selected; it appends a row to amendments (version, decision id, changed fields, reason, re-verification scope naming every unit and wave to re-run) and never edits or deletes an earlier row.",
+  "amendments": []
+}
