@@ -6,7 +6,7 @@
     {
       "object": "silver.custbill_records",
       "root_table": "recon.legacy_custbill_records",
-      "root_where": "ns = '${ns}'",
+      "root_where": "ns = 'mig1'",
       "key": {
         "source": [
           "file_name",
@@ -105,7 +105,7 @@
     {
       "object": "silver.custbill_quarantine",
       "root_table": "recon.legacy_custbill_rejected_lines",
-      "root_where": "ns = '${ns}'",
+      "root_where": "ns = 'mig1'",
       "key": {
         "source": [
           "file_name",

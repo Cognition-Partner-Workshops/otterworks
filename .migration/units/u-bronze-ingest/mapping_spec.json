@@ -6,7 +6,7 @@
     {
       "object": "bronze.custbill_raw_lines",
       "root_table": "recon.legacy_custbill_raw_lines",
-      "root_where": "ns = '${ns}'",
+      "root_where": "ns = 'mig1'",
       "key": {
         "source": [
           "file_name",
