@@ -26,6 +26,63 @@ export type RoundingMode =
   | 'HALF_EVEN'
   | 'UNNECESSARY'
 
+export type EmploymentStatus = 'ACTIVE' | 'LEFT' | 'TRANSFERRED'
+export type EligibilityReason =
+  | 'EMPLOYEE_NUMBER_REQUIRED'
+  | 'EMPLOYEE_NOT_FOUND'
+  | 'NOT_ACTIVE'
+  | 'GRADE_BELOW_THRESHOLD'
+  | 'NO_EMPLOYMENT_ON_DATE'
+  | 'CLAIM_AFTER_LEAVING_DATE'
+export type CarRequestStep = 'EMPLOYEE' | 'VEHICLE' | 'CONFIRM'
+
+export interface EligibilityDecision {
+  allowed: boolean
+  reason: EligibilityReason | null
+  employeeNo: string | null
+  employmentId: number | null
+}
+
+export interface EmployeeSummary {
+  employeeNo: string
+  lastName: string
+  firstName: string
+  grade: number | null
+  status: EmploymentStatus | null
+  currentCar: string | null
+}
+
+export interface EmploymentView {
+  id: number
+  grade: number | null
+  status: EmploymentStatus
+  hireDate: string
+  leaveDate: string | null
+}
+
+export interface EmployeeInquiry {
+  employeeNo: string
+  lastName: string
+  firstName: string
+  currentCar: string | null
+  current: EmploymentView | null
+  employments: EmploymentView[]
+  carRequest: EligibilityDecision
+}
+
+export interface BelowGradeHolder {
+  employeeNo: string
+  lastName: string
+  firstName: string
+  grade: number | null
+  minGrade: number
+  employmentId: number
+  assignmentId: number
+  registration: string
+  startDate: string
+  endDate: string | null
+}
+
 const apiBase = import.meta.env.VITE_API_BASE ?? ''
 
 async function getProfile(): Promise<ProfileResponse> {
@@ -36,4 +93,23 @@ async function getProfile(): Promise<ProfileResponse> {
   return (await response.json()) as ProfileResponse
 }
 
-export const client = { getProfile }
+async function searchEmployees(q: string = ''): Promise<EmployeeSummary[]> {
+  const response = await fetch(`${apiBase}/api/v1/employees?q=${encodeURIComponent(q)}`)
+  if (!response.ok) {
+    throw new Error(`Employee search failed with status ${response.status}`)
+  }
+  return (await response.json()) as EmployeeSummary[]
+}
+
+async function getEmployee(employeeNo: string): Promise<EmployeeInquiry> {
+  const response = await fetch(`${apiBase}/api/v1/employees/${encodeURIComponent(employeeNo)}`)
+  if (response.status === 404) {
+    throw new Error('Employee not found')
+  }
+  if (!response.ok) {
+    throw new Error(`Employee request failed with status ${response.status}`)
+  }
+  return (await response.json()) as EmployeeInquiry
+}
+
+export const client = { getProfile, searchEmployees, getEmployee }

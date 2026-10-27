@@ -26,7 +26,7 @@ export function FleetRoutes() {
       <Routes>
         <Route path="/" element={<Home />} />
         {routes.map(({ path, component: Component }) => (
-          <Route key={path} path={path} element={<Component />} />
+          <Route key={path} path={`${path}/*`} element={<Component />} />
         ))}
       </Routes>
     </>
