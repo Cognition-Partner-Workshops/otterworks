@@ -1,0 +1,56 @@
+{
+  "version": "custbill-units-1",
+  "rerun_posture": "first_run_baseline",
+  "source": "source-access=fixture-run: make legacy-etl-gen-data NS=mig1 then make legacy-etl-run JOB=run_all (scripts/tp-run-deterministic.sh, isolated OTTERWORKS_LEGACY_ROOT); legacy outputs loaded into ow_billing_migration.recon.legacy_* with ns='mig1'",
+  "objects": [
+    {
+      "object": "bronze.custbill_raw_lines",
+      "root_table": "recon.legacy_custbill_raw_lines",
+      "root_where": "ns = 'mig1'",
+      "key": {
+        "source": [
+          "file_name",
+          "line_no"
+        ],
+        "target": [
+          "file_name",
+          "line_no"
+        ]
+      },
+      "fields": [
+        {
+          "source": "file_name",
+          "target": "file_name",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "FACT",
+          "cite": "etl/legacy-extra/jobs/sftp_ingest_poll.ksh:58 (basename kept on copy to incoming/)"
+        },
+        {
+          "source": "line_no",
+          "target": "line_no",
+          "source_type": "bigint",
+          "target_type": "bigint",
+          "class": "INFERRED",
+          "cite": "1-based physical line in the .dat; legacy carries none, the fixture loader numbers lines"
+        },
+        {
+          "source": "raw_line",
+          "target": "raw_line",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "FACT",
+          "cite": "etl/legacy-extra/tools/oracle_custbill_extract.py format_record (65-char body) + HDR/TRL from gen_sample_data.pl"
+        },
+        {
+          "source": "record_flag",
+          "target": "record_flag",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "FACT",
+          "cite": "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh:50 strips ^HDR/^TRL; values HDR|TRL|BODY"
+        }
+      ]
+    }
+  ]
+}

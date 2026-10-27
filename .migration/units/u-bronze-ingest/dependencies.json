@@ -1,0 +1,15 @@
+{
+  "routines": [
+    {
+      "routine": "custbill.sftp_ingest_poll",
+      "reads": [
+        "bronze.landing"
+      ],
+      "writes": [
+        "recon.legacy_custbill_raw_lines"
+      ],
+      "calls": [],
+      "source": "etl/legacy-extra/jobs/sftp_ingest_poll.ksh:47-60"
+    }
+  ]
+}
