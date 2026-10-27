@@ -52,6 +52,7 @@ export default function Benefit() {
       const result = await client.getBenefitInquiry(employeeNo, periodKey(period))
       setInquiry(result)
     } catch (cause) {
+      setInquiry(null)
       setError(errorText(cause))
     } finally {
       setLoading(false)
@@ -66,6 +67,7 @@ export default function Benefit() {
       const result = await client.getBenefitStatement(employeeNo, periodKey(period))
       setStatement(result)
     } catch (cause) {
+      setStatement(null)
       setError(errorText(cause))
     } finally {
       setLoading(false)

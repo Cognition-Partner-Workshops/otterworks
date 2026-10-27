@@ -71,6 +71,50 @@ describe('benefit routes', () => {
     expect(screen.getByText('Taxable benefit: 105.55 EUR')).toBeInTheDocument()
   })
 
+  it('GF27_failedInquiryClearsPreviousResult', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => inquiry })
+      .mockRejectedValueOnce(new Error('Inquiry unavailable'))
+    vi.stubGlobal('fetch', fetchMock)
+    render(<MemoryRouter initialEntries={['/benefit']}><FleetRoutes /></MemoryRouter>)
+
+    fireEvent.change(screen.getByLabelText('Employee number'), { target: { value: 'E123' } })
+    fireEvent.change(screen.getByLabelText('Period'), { target: { value: '2026-10' } })
+    fireEvent.click(screen.getByRole('button', { name: 'View benefit' }))
+    expect(await screen.findByText('Taxable benefit: 105.55 EUR')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'View benefit' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Inquiry unavailable')
+    expect(screen.queryByText('Taxable benefit: 105.55 EUR')).not.toBeInTheDocument()
+  })
+
+  it('GF27_failedStatementClearsPreviousResult', async () => {
+    const statement = {
+      ...inquiry,
+      firstName: 'Priya',
+      lastName: 'Raman',
+      fullName: 'Priya Raman',
+      commuteDistance: 33,
+      ruleText: '1.00% list price plus commute',
+    }
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => statement })
+      .mockRejectedValueOnce(new Error('Statement unavailable'))
+    vi.stubGlobal('fetch', fetchMock)
+    render(<MemoryRouter initialEntries={['/benefit']}><FleetRoutes /></MemoryRouter>)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Statement' }))
+    fireEvent.change(screen.getByLabelText('Employee number'), { target: { value: 'E123' } })
+    fireEvent.change(screen.getByLabelText('Period'), { target: { value: '2026-10' } })
+    fireEvent.click(screen.getByRole('button', { name: 'View statement' }))
+    expect(await screen.findByRole('heading', { name: 'Priya Raman' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'View statement' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Statement unavailable')
+    expect(screen.queryByRole('heading', { name: 'Priya Raman' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Taxable benefit: 105.55 EUR')).not.toBeInTheDocument()
+  })
+
   it('GF26_periodsCanBeOpenedAndClosed', async () => {
     const open = {
       period: '202610',
