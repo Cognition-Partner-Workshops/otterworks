@@ -1,24 +1,39 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, signedOut } from "./smoke/search-notifications/search-notifications.fixtures";
 
 test.describe("Notifications Page", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/notifications");
+    await test.step("open /notifications as a signed-in customer", async () => {
+      await page.goto("/notifications");
+    });
   });
 
-  test("shows Notifications heading or redirects to login", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: /Notification/i });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
+  test("shows Notifications heading", async ({ page }) => {
+    await expect(
+      page.getByRole("heading", { name: "Notifications", exact: true })
+    ).toBeVisible();
   });
 
-  test("shows empty state or notification list", async ({ page }) => {
-    // Wait for the Notifications heading to appear
-    const heading = page.getByRole("heading", { name: /Notification/i });
-    await expect(heading).toBeVisible({ timeout: 15_000 });
+  test("shows the empty state to a customer with no notifications", async ({ page }) => {
+    const main = page.getByRole("main");
+    await expect(main.getByText("No notifications", { exact: true })).toBeVisible();
+    await expect(
+      main.getByText("You're all caught up! New notifications will appear here.")
+    ).toBeVisible();
+    await expect(main.getByText(/unread notification/)).toHaveCount(0);
+  });
+});
 
-    // Wait for loading to finish, then check for empty state or notification items
-    const emptyState = page.getByText(/No notifications/i);
-    const notifItems = page.locator("[class*='divide-y'] > *").first();
-    await expect(emptyState.or(notifItems)).toBeVisible({ timeout: 15_000 });
+test.describe("Notifications Page (signed out)", () => {
+  test.use({ storageState: signedOut });
+
+  test("sends a signed-out visitor to the sign-in page", async ({ page }) => {
+    await test.step("open /notifications without a session", async () => {
+      await page.goto("/notifications");
+    });
+
+    await test.step("the visitor lands on /login", async () => {
+      await expect(page).toHaveURL(/\/login$/);
+      await expect(page.getByText("Sign in to your account")).toBeVisible();
+    });
   });
 });
