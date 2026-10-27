@@ -15,6 +15,9 @@ Flyway migration ranges are domain 1.x, eligibility 10.x, assignment 20.x,
 returns 30.x, mileage 40.x, and benefit 50.x. Run both profiles with
 `./mvnw verify -Puk` and `./mvnw verify -Pde`; reports are kept in
 profile-specific target directories.
+`verify` also boots the packaged jar against embedded Postgres in that profile
+(`PackagedJarBootIT`) and asserts `/v3/api-docs` and `/api/v1/profile` answer
+200; the boot log is at `target/boot-<profile>.log`.
 
 Rule coverage example:
 `python3 ../scripts/rule_coverage.py --junit uk=target/surefire-reports-uk --junit de=target/surefire-reports-de --vitest ../frontend/fleet/reports/vitest-junit.xml`.
