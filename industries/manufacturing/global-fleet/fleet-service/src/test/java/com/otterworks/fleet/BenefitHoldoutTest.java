@@ -40,6 +40,8 @@ class BenefitHoldoutTest {
         List<PairStats> stats = new ArrayList<>();
         int excludedTotal = 0;
         int mismatchTotal = 0;
+        int poolLoanTotal = 0;
+        BigDecimal poolLoanTaxableDelta = BigDecimal.ZERO;
 
         for (JsonNode pair : pairs) {
             String pairId = pair.path("id").asText();
@@ -49,6 +51,8 @@ class BenefitHoldoutTest {
             stats.add(pairStats);
             excludedTotal += pairStats.excluded();
             mismatchTotal += pairStats.mismatched();
+            poolLoanTotal += pairStats.poolLoanExcluded();
+            poolLoanTaxableDelta = poolLoanTaxableDelta.add(pairStats.poolLoanTaxableDelta());
         }
 
         String table = statsTable(stats);
@@ -59,6 +63,9 @@ class BenefitHoldoutTest {
 
         assertEquals(12, stats.size());
         assertEquals(198, excludedTotal, table);
+        assertEquals(41, poolLoanTotal, table);
+        assertEquals(239, excludedTotal + poolLoanTotal, table);
+        assertEquals(new BigDecimal("20985.76"), poolLoanTaxableDelta, table);
         assertEquals(0, mismatchTotal, table);
     }
 
@@ -95,6 +102,7 @@ class BenefitHoldoutTest {
 
         Map<Long, OutputRow> actual = new HashMap<>();
         Set<Long> excludedDbkeys = new HashSet<>();
+        Set<Long> poolLoanDbkeys = new HashSet<>();
         for (EmployeeRow employee : employees) {
             if (employee.hireDate().isAfter(end)
                     || (employee.leaveDate() != null && employee.leaveDate().isBefore(start))) {
@@ -109,6 +117,9 @@ class BenefitHoldoutTest {
             if (overlapping.size() > 1) {
                 excludedDbkeys.add(employee.dbkey());
                 continue;
+            }
+            if (poolLoanMasksOpenCar(employee, assignments, overlapping, start, end)) {
+                poolLoanDbkeys.add(employee.dbkey());
             }
             List<BenefitCalculator.AssignmentInput> assignmentInputs = overlapping.stream()
                     .map(assignment -> {
@@ -165,13 +176,60 @@ class BenefitHoldoutTest {
         Set<Long> keys = new HashSet<>(expected.keySet());
         keys.addAll(actual.keySet());
         keys.removeAll(excludedDbkeys);
+        keys.removeAll(poolLoanDbkeys);
         int matched = 0;
         for (Long dbkey : keys) {
             if (expected.containsKey(dbkey) && expected.get(dbkey).equals(actual.get(dbkey))) {
                 matched++;
             }
         }
-        return new PairStats(pairId, keys.size(), matched, keys.size() - matched, excludedDbkeys.size());
+        int poolLoanMismatched = 0;
+        BigDecimal poolLoanTaxableDelta = BigDecimal.ZERO;
+        for (Long dbkey : poolLoanDbkeys) {
+            OutputRow legacy = expected.get(dbkey);
+            OutputRow target = actual.get(dbkey);
+            boolean legacyHasNoCar = legacy == null || (legacy.days() == 0 && legacy.taxable().signum() == 0);
+            boolean restMatches = target != null && target.days() > 0
+                    && (legacy == null
+                            ? target.miles() == 0 && target.reimbursement().signum() == 0 && target.flag().isEmpty()
+                            : legacy.miles() == target.miles()
+                                    && legacy.reimbursement().equals(target.reimbursement())
+                                    && legacy.flag().equals(target.flag()));
+            if (legacyHasNoCar && restMatches) {
+                poolLoanTaxableDelta = poolLoanTaxableDelta.add(target.taxable());
+            } else {
+                poolLoanMismatched++;
+            }
+        }
+        return new PairStats(
+                pairId,
+                keys.size() + poolLoanMismatched,
+                matched,
+                keys.size() - matched + poolLoanMismatched,
+                excludedDbkeys.size(),
+                poolLoanDbkeys.size() - poolLoanMismatched,
+                poolLoanTaxableDelta);
+    }
+
+    // GF29 owner-accepted: legacy FLEBEN01 takes the latest-starting assignment, so a pool loan (PL)
+    // that started after the open NC car and was returned before the period hides the car.
+    private static boolean poolLoanMasksOpenCar(
+            EmployeeRow employee,
+            List<AssignmentRow> assignments,
+            List<AssignmentRow> overlapping,
+            LocalDate start,
+            LocalDate end) {
+        if (overlapping.size() != 1 || !"NC".equals(overlapping.get(0).reason())) {
+            return false;
+        }
+        return assignments.stream()
+                .filter(assignment -> assignment.employeeDbkey() == employee.dbkey())
+                .filter(assignment -> !assignment.startDate().isAfter(end))
+                .max(java.util.Comparator.comparing(AssignmentRow::startDate))
+                .filter(latest -> "PL".equals(latest.reason()))
+                .filter(latest -> latest.startDate().isAfter(overlapping.get(0).startDate()))
+                .filter(latest -> latest.endDate() != null && latest.endDate().isBefore(start))
+                .isPresent();
     }
 
     private List<EmployeeRow> employees(Path path) throws IOException {
@@ -205,7 +263,8 @@ class BenefitHoldoutTest {
                         Long.parseLong(text(record, 18, 10)),
                         text(record, 28, 8).trim(),
                         date(record, 36),
-                        date(record, 44)))
+                        date(record, 44),
+                        text(record, 52, 2).trim()))
                 .toList();
     }
 
@@ -266,13 +325,15 @@ class BenefitHoldoutTest {
 
     private static String statsTable(List<PairStats> stats) {
         StringBuilder output = new StringBuilder();
-        output.append("| Pair | Compared | Matched | Mismatched | Excluded |\n")
-                .append("|---|---:|---:|---:|---:|\n");
+        output.append("| Pair | Compared | Matched | Mismatched | Excluded (GF05/GF29 overlap) | Excluded (GF29 pool loan) | Pool-loan extra taxable GBP |\n")
+                .append("|---|---:|---:|---:|---:|---:|---:|\n");
         stats.forEach(row -> output.append("| ").append(row.pair())
                 .append(" | ").append(row.compared())
                 .append(" | ").append(row.matched())
                 .append(" | ").append(row.mismatched())
-                .append(" | ").append(row.excluded()).append(" |\n"));
+                .append(" | ").append(row.excluded())
+                .append(" | ").append(row.poolLoanExcluded())
+                .append(" | ").append(row.poolLoanTaxableDelta().toPlainString()).append(" |\n"));
         return output.toString();
     }
 
@@ -311,7 +372,8 @@ class BenefitHoldoutTest {
             long employeeDbkey,
             String vehicleId,
             LocalDate startDate,
-            LocalDate endDate) {
+            LocalDate endDate,
+            String reason) {
     }
 
     private record ClaimRow(long employeeDbkey, LocalDate claimDate, int miles, MileageClaimStatus status) {
@@ -328,6 +390,13 @@ class BenefitHoldoutTest {
             String flag) {
     }
 
-    private record PairStats(String pair, int compared, int matched, int mismatched, int excluded) {
+    private record PairStats(
+            String pair,
+            int compared,
+            int matched,
+            int mismatched,
+            int excluded,
+            int poolLoanExcluded,
+            BigDecimal poolLoanTaxableDelta) {
     }
 }
