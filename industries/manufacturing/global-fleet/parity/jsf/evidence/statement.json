@@ -16,7 +16,7 @@
         "status": 200,
         "mediaType": "text/html",
         "location": null,
-        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=112087780FB9C4D4422D3D4B942F8F38\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-08\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-08,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td></tr></tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>0 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=3681CD834F78BAF42FBECFAD8AFDAB41\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-08\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-08,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td></tr></tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>0 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
         "observed": {
           "h1": "Abrechnung geldwerter Vorteil",
           "messages": [],
@@ -46,9 +46,11 @@
               "type": "text",
               "value": "2026-08"
             }
-          ]
+          ],
+          "text": "Dienstwagenportal Mitarbeitersuche Dienstwagenantrag Reisekosten Fahrzeugrueckgabe Abrechnung geldwerter Vorteil Personalnummer Monat (JJJJ-MM) Anzeigen E1009100 Priya Raman, Monat 2026-08, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km Kennzeichen Tage Geldwerter Vorteil EUR Summe geldwerter Vorteil: 0 EUR. Erstattete Dienstreise-km: 0 EUR."
         },
-        "elapsedMs": 206
+        "replayDay": "2026-10-27",
+        "elapsedMs": 241
       }
     },
     {
@@ -91,9 +93,11 @@
               "type": "text",
               "value": "2026-09"
             }
-          ]
+          ],
+          "text": "Dienstwagenportal Mitarbeitersuche Dienstwagenantrag Reisekosten Fahrzeugrueckgabe Abrechnung geldwerter Vorteil Personalnummer Monat (JJJJ-MM) Anzeigen E1009100 Priya Raman, Monat 2026-09, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km Kennzeichen Tage Geldwerter Vorteil EUR Summe geldwerter Vorteil: 0 EUR. Erstattete Dienstreise-km: 0 EUR."
         },
-        "elapsedMs": 202
+        "replayDay": "2026-10-27",
+        "elapsedMs": 232
       }
     },
     {
@@ -136,9 +140,11 @@
               "type": "text",
               "value": "2026-10"
             }
-          ]
+          ],
+          "text": "Dienstwagenportal Mitarbeitersuche Dienstwagenantrag Reisekosten Fahrzeugrueckgabe Abrechnung geldwerter Vorteil Personalnummer Monat (JJJJ-MM) Anzeigen E1009100 Priya Raman, Monat 2026-10, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km Kennzeichen Tage Geldwerter Vorteil EUR HH-VS 7629 5 105.55 Summe geldwerter Vorteil: 105.55 EUR. Erstattete Dienstreise-km: 0 EUR."
         },
-        "elapsedMs": 222
+        "replayDay": "2026-10-27",
+        "elapsedMs": 243
       }
     },
     {
@@ -173,9 +179,11 @@
               "type": "text",
               "value": "2026-10"
             }
-          ]
+          ],
+          "text": "Dienstwagenportal Mitarbeitersuche Dienstwagenantrag Reisekosten Fahrzeugrueckgabe Abrechnung geldwerter Vorteil Mitarbeiter E9999999 nicht gefunden. Personalnummer Monat (JJJJ-MM) Anzeigen"
         },
-        "elapsedMs": 184
+        "replayDay": "2026-10-27",
+        "elapsedMs": 189
       }
     },
     {
@@ -203,9 +211,11 @@
               "type": "text",
               "value": ""
             }
-          ]
+          ],
+          "text": "Dienstwagenportal Mitarbeitersuche Dienstwagenantrag Reisekosten Fahrzeugrueckgabe Abrechnung geldwerter Vorteil Personalnummer Monat (JJJJ-MM) Anzeigen"
         },
-        "elapsedMs": 187
+        "replayDay": "2026-10-27",
+        "elapsedMs": 203
       }
     },
     {
@@ -237,7 +247,7 @@
             ]
           ],
           "panels": [
-            "E1009100 Priya Raman, Monat <default-period>, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
+            "E1009100 Priya Raman, Monat 2026-09, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
           ],
           "inputs": [
             {
@@ -246,11 +256,13 @@
             },
             {
               "type": "text",
-              "value": "<default-period>"
+              "value": "2026-09"
             }
-          ]
+          ],
+          "text": "Dienstwagenportal Mitarbeitersuche Dienstwagenantrag Reisekosten Fahrzeugrueckgabe Abrechnung geldwerter Vorteil Personalnummer Monat (JJJJ-MM) Anzeigen E1009100 Priya Raman, Monat 2026-09, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km Kennzeichen Tage Geldwerter Vorteil EUR Summe geldwerter Vorteil: 0 EUR. Erstattete Dienstreise-km: 0 EUR."
         },
-        "elapsedMs": 194
+        "replayDay": "2026-10-27",
+        "elapsedMs": 220
       }
     }
   ]

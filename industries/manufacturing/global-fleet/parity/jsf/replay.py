@@ -10,10 +10,11 @@ import sys
 import time
 import urllib.parse
 from collections import OrderedDict
+from datetime import date
 from html.parser import HTMLParser
 from pathlib import Path
 
-from record import extract_observed
+from record import extract_observed, portal_day_from_date_header
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_BASE = "https://t-gf-before.demo.otterworks.app"
@@ -30,10 +31,22 @@ def normalize_location(location):
     return urllib.parse.urlunsplit(("", "", path, urllib.parse.urlencode(query), ""))
 
 
-def normalize_text(text, default_period=False, strict=False):
+def date_spellings(day):
+    if not day:
+        return set()
+    parsed = date.fromisoformat(day)
+    return {parsed.strftime("%d.%m.%Y"), parsed.isoformat()}
+
+
+def normalize_date_literals(text, recorded_on=None, replay_day=None):
+    for literal in sorted(date_spellings(recorded_on) | date_spellings(replay_day), key=len, reverse=True):
+        text = text.replace(literal, "<today>")
+    return text
+
+
+def normalize_text(text, default_period=False, strict=False, recorded_on=None, replay_day=None):
     text = re.sub(r";jsessionid=[^/?;\"']+", "", text, flags=re.I)
-    text = text.replace("27.10.2026", "<recording-day>")
-    text = text.replace("2026-10-27", "<recording-day>")
+    text = normalize_date_literals(text, recorded_on, replay_day)
     if default_period:
         text = re.sub(r"\b20\d{2}-(?:0[1-9]|1[0-2])\b", "<default-period>", text)
     if strict:
@@ -47,13 +60,13 @@ def normalize_text(text, default_period=False, strict=False):
     return text
 
 
-def normalize_observed(value, default_period=False):
+def normalize_observed(value, default_period=False, recorded_on=None, replay_day=None):
     if isinstance(value, dict):
-        return {k: normalize_observed(v, default_period) for k, v in value.items()}
+        return {k: normalize_observed(v, default_period, recorded_on, replay_day) for k, v in value.items()}
     if isinstance(value, list):
-        return [normalize_observed(v, default_period) for v in value]
+        return [normalize_observed(v, default_period, recorded_on, replay_day) for v in value]
     if isinstance(value, str):
-        value = value.replace("27.10.2026", "<recording-day>").replace("2026-10-27", "<recording-day>")
+        value = normalize_date_literals(value, recorded_on, replay_day)
         if default_period:
             value = re.sub(r"\b20\d{2}-(?:0[1-9]|1[0-2])\b", "<default-period>", value)
         if value.startswith("j_id1:javax.faces.ViewState"):
@@ -157,10 +170,6 @@ class ObservedParser(HTMLParser):
             self.cell.append(data)
 
 
-def observed(body, default_period=False):
-    return normalize_observed(extract_observed(body), default_period)
-
-
 def verify_checksums():
     failures = []
     for line in (HERE / "SHA256SUMS").read_text(encoding="utf-8").splitlines():
@@ -251,6 +260,7 @@ def fetch(base, case, cookies, previous_html, previous_location, timeout):
         status = response.status
         media_type = (response.getheader("Content-Type") or "").split(";", 1)[0].strip().lower() or None
         location = normalize_location(response.getheader("Location"))
+        replay_day = portal_day_from_date_header(response.getheader("Date"))
         for cookie in response.headers.get_all("Set-Cookie") or []:
             match = re.match(r"\s*([^=;]+)=([^;]*)", cookie)
             if match:
@@ -263,21 +273,39 @@ def fetch(base, case, cookies, previous_html, previous_location, timeout):
         "mediaType": media_type,
         "location": location,
         "body": body_text,
-        "observed": observed(body_text, case.get("normalizeDefaultPeriod", False)),
+        "observed": extract_observed(body_text),
+        "replayDay": replay_day,
         "elapsedMs": round((time.monotonic() - started) * 1000),
     }, body_text
 
 
-def compare(expected, actual, case, strict):
+def compare(expected, actual, case, strict, recorded_on=None, replay_day=None):
     problems = []
-    for key in ("status", "location"):
+    replay_day = replay_day or actual.get("replayDay")
+    for key in ("status", "location", "mediaType"):
         if expected.get(key) != actual.get(key):
             problems.append(f"{key}: {expected.get(key)!r} != {actual.get(key)!r}")
-    if normalize_observed(expected.get("observed", {}), case.get("normalizeDefaultPeriod", False)) != actual["observed"]:
+    default_period = case.get("normalizeDefaultPeriod", False)
+    expected_observed = normalize_observed(
+        extract_observed(expected["body"]), default_period, recorded_on, replay_day
+    )
+    actual_observed = normalize_observed(
+        extract_observed(actual["body"]), default_period, recorded_on, replay_day
+    )
+    if expected_observed != actual_observed:
         problems.append("observed block differs")
-    if strict:
-        before = normalize_text(expected["body"], case.get("normalizeDefaultPeriod", False), strict=True)
-        after = normalize_text(actual["body"], case.get("normalizeDefaultPeriod", False), strict=True)
+    if expected.get("mediaType") != "text/html" or actual.get("mediaType") != "text/html":
+        before = normalize_text(expected["body"], default_period, recorded_on=recorded_on, replay_day=replay_day)
+        after = normalize_text(actual["body"], default_period, recorded_on=recorded_on, replay_day=replay_day)
+        if before != after:
+            problems.append("normalised non-HTML body differs")
+    elif strict:
+        before = normalize_text(
+            expected["body"], default_period, strict=True, recorded_on=recorded_on, replay_day=replay_day
+        )
+        after = normalize_text(
+            actual["body"], default_period, strict=True, recorded_on=recorded_on, replay_day=replay_day
+        )
         if before != after:
             problems.append("normalised raw body differs")
     return problems
@@ -289,8 +317,15 @@ def main():
     parser.add_argument("--stage", choices=("first", "full"), required=True)
     parser.add_argument("--out", required=True, help="directory for per-context JSON and SUMMARY.md")
     parser.add_argument("--strict", action="store_true", help="also compare normalised raw bodies")
+    parser.add_argument("--replay-day", help="override the replay day (YYYY-MM-DD)")
     parser.add_argument("--timeout", type=float, default=30)
     args = parser.parse_args()
+    if args.replay_day:
+        try:
+            if date.fromisoformat(args.replay_day).isoformat() != args.replay_day:
+                raise ValueError
+        except ValueError:
+            parser.error("--replay-day must be a valid YYYY-MM-DD date")
     failures = verify_checksums()
     if failures:
         for failure in failures:
@@ -313,7 +348,11 @@ def main():
         for case in cases:
             actual, previous_html = fetch(args.base, case, cookies, previous_html, previous_location, args.timeout)
             previous_location = actual["location"]
-            problems = compare(expected_by_id[case["id"]], actual, case, args.strict)
+            problems = compare(
+                expected_by_id[case["id"]], actual, case, args.strict,
+                recorded_on=recorded["recordedOn"],
+                replay_day=args.replay_day or actual["replayDay"],
+            )
             rows.append({"id": case["id"], "status": actual["status"], "mediaType": actual["mediaType"],
                          "location": actual["location"], "problems": problems, "actual": actual})
             print(f"{context}/{case['id']}: {'IDENTICAL' if not problems else 'DIFFERENT'}")

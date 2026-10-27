@@ -8,18 +8,38 @@ Redirects are never followed automatically: the 302 and normalized `Location` ar
 and a later explicit GET case requests that location.
 
 `record.py` captures the baseline once. `replay.py` verifies `SHA256SUMS`, compares status,
-normalized `Location`, and extracted HTML observations by default. `--strict` additionally
-compares raw response bodies after normalizing ViewState, JSF session ids, generated ids,
-and dates. The known recording date is 27 October 2026; the default statement period is
-computed by the server as the previous month (2026-09 at capture time). The default-period
-case normalizes only its period value, so it remains useful when the clock advances.
+media type, normalized `Location`, and extracted HTML observations by default. The
+observations include whitespace-collapsed visible body text (excluding scripts and styles).
+For non-HTML responses, the normalized body is also compared by default; `--strict`
+additionally compares normalized raw HTML bodies after normalizing ViewState, JSF session
+ids, generated ids, and dates.
+
+`recorded.json` stores `recordedOn` (`2026-10-27`). For each replay response, `replay.py`
+reads the HTTP `Date` header and converts it to the portal JVM's `Etc/UTC` day. It maps
+both `dd.MM.yyyy` and `yyyy-MM-dd` spellings of the recording day and replay day to
+`<today>` on both sides. The timezone source is `jsf-portal/Dockerfile`: it uses the
+Tomcat JRE 8 image without a `TZ` or JVM timezone override; the live portal container's
+`/etc/localtime` points to `Etc/UTC` and its system clock reports `UTC +0000`.
+`--replay-day YYYY-MM-DD` overrides the response-derived day for offline tests.
+
+The corpus explicitly submits `27.10.2026`; because that is also the recording day, it is
+normalized to `<today>`. This is a known limitation: replay will not detect a change to
+that explicit submitted date alone. The default statement period is computed by the
+server as the previous month (2026-09 at capture time); its case normalizes that period
+value so it remains useful as the clock advances. `MileageBean.refresh` fetches claims
+from six months before its current date through today. That moving list content is
+intentionally not normalized and can change as the clock advances.
 
 ```sh
 python3 record.py
+python3 selftest.py
 python3 replay.py --stage first --out /path/to/evidence-first
 python3 replay.py --stage full --out evidence
 python3 replay.py --stage full --strict --out /path/to/evidence-strict
 ```
+
+`selftest.py` is offline; it checks health/media-type and wizard-text changes, a
+recording-day to replay-day shift, and equivalence of all 40 unmodified responses.
 
 The wizard and statement use the same eligible, initially unassigned employee (`E1009100`,
 Priya Raman). The request selects pool vehicle 1 (`HH-VS 7629`) and hands it over on
