@@ -26,12 +26,11 @@ export default defineConfig({
       testMatch: /.*\.setup\.ts/,
     },
     {
-    name: "chromium",
-    use: {
-      ...devices["Desktop Chrome"],
-      baseURL: BASE_URL,
-      storageState: SHARED_CUSTOMER_STATE,
-    },
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: SHARED_CUSTOMER_STATE,
+      },
       dependencies: ["setup"],
     },
   ],

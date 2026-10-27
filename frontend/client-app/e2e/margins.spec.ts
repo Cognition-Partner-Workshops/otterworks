@@ -1,7 +1,8 @@
 import { test, expect } from "./fixtures/fixtures";
 
-// OTD-15 margins dashboard (AC-08…AC-13). Uses a freshly registered user so
-// every request flows through the real gateway JWT + analytics-service.
+// OTD-15 margins dashboard (AC-08…AC-13). Uses the shared signed-in customer
+// from the setup project; requests still flow through the real gateway JWT +
+// analytics-service.
 test.describe("Margins dashboard", () => {
   test("renders KPI tiles, charts, caption, badge and grid (AC-08/AC-13)", async ({ page }) => {
     await page.goto("/margins");

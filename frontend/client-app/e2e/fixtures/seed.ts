@@ -131,6 +131,7 @@ export async function waitForNotification(
         const response = await request.get("/api/v1/notifications", {
           headers: account.headers,
         });
+        await expect(response).toBeOK();
         const body = await response.json();
         return (body.data ?? []).some(
           (notification: { resourceId?: string }) =>

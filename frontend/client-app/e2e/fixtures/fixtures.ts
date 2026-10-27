@@ -67,6 +67,7 @@ function pageSlug(testInfo: TestInfo): string {
 }
 
 export const test = base.extend<TestFixtures, WorkerFixtures>({
+  // The default request failed with "Invalid URL" once storageState was overridden.
   request: async ({ baseURL }, use) => {
     const context = await playwrightRequest.newContext({ baseURL });
     await use(context);
