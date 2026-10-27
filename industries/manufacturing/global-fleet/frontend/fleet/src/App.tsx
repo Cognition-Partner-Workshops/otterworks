@@ -52,7 +52,7 @@ function ProfileBanner() {
   if (error) return <ErrorAlert>Profile unavailable: {error}</ErrorAlert>
   if (!profile) return <Loading>Loading profile…</Loading>
   return (
-    <p className="fleet-profile-banner">
+    <p>
       Profile: {profile.sourceApp} · {profile.currency} · distances in {profile.distanceUnit === 'KM' ? 'km' : 'miles'}
     </p>
   )
@@ -64,7 +64,7 @@ export function FleetRoutes({ showProfile = false }: { showProfile?: boolean }) 
   return (
     <>
       {showProfile && <ProfileBanner />}
-      <nav className="fleet-functions-nav" aria-label="Fleet functions">
+      <nav aria-label="Fleet functions">
         <NavLink to="/">Home</NavLink>
         {routes.map(({ path, label }) => (
           <NavLink key={path} to={path}>{label}</NavLink>

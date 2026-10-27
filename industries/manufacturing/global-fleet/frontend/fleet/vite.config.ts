@@ -8,11 +8,6 @@ export default defineConfig({
       '/api': 'http://localhost:8080',
     },
   },
-  preview: {
-    proxy: {
-      '/api': 'https://t-gf-after.demo.otterworks.app',
-    },
-  },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
