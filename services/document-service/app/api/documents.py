@@ -111,14 +111,19 @@ async def _do_create_document(
     request: Request,
     db: AsyncSession,
 ) -> DocumentResponse:
-    if not body.owner_id:
-        extracted_id = _extract_user_id(request)
-        if not extracted_id:
+    caller_id = _extract_user_id(request)
+    if caller_id:
+        if body.owner_id and body.owner_id != caller_id:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="owner_id is required: provide it in the body or authenticate via JWT",
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="owner_id must be the authenticated caller",
             )
-        body.owner_id = extracted_id
+        body.owner_id = caller_id
+    elif not body.owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="owner_id is required: provide it in the body or authenticate via JWT",
+        )
 
     service = DocumentService(db)
     document = await service.create(body)

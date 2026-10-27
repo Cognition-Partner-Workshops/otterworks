@@ -246,6 +246,32 @@ async def test_create_document_via_jwt(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_create_document_rejects_other_owner_id(client: AsyncClient):
+    """An authenticated caller cannot name another user as owner_id."""
+    token = _make_jwt(str(uuid.uuid4()))
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Planted", "owner_id": str(uuid.uuid4())},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_create_document_accepts_own_owner_id(client: AsyncClient):
+    """An authenticated caller naming itself as owner_id still succeeds."""
+    user_id = uuid.uuid4()
+    token = _make_jwt(str(user_id))
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Mine", "owner_id": str(user_id)},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(user_id)
+
+
+@pytest.mark.asyncio
 async def test_create_document_via_jwt_hs384(client: AsyncClient):
     """Create a document using an HS384-signed JWT (matches auth-service algorithm)."""
     user_id = uuid.uuid4()
