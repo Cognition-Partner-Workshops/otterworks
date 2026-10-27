@@ -28,6 +28,10 @@ test.describe("TC-SRCH-001 Find a document by title", () => {
     },
     async ({ page, toscaData }) => {
       const main = page.getByRole("main");
+      const resultDocument = toscaData.workspace.documents.find(
+        (document) => document.title === toscaData.row.Result,
+      );
+      expect(resultDocument).toBeDefined();
       await page.goto("/search");
       const searchInput = main.getByRole("textbox", {
         name: "Search files, documents, and folders...",
@@ -51,7 +55,7 @@ test.describe("TC-SRCH-001 Find a document by title", () => {
           await expect(resultLink).toBeVisible();
           await expect(resultLink).toHaveAttribute(
             "href",
-            "/documents/doc-101",
+            `/documents/${resultDocument!.id}`,
           );
           await expect(
             main.getByText(`1 result for “${toscaData.row.Query}”`),
@@ -83,6 +87,14 @@ test.describe("TC-SRCH-002 Filter search results by type", () => {
     },
     async ({ page, toscaData }) => {
       const main = page.getByRole("main");
+      const resultDocument = toscaData.workspace.documents.find(
+        (document) => document.title === toscaData.row.Result,
+      );
+      expect(resultDocument).toBeDefined();
+      const releaseNotes = toscaData.workspace.files?.find(
+        (file) => file.id === "file-201",
+      );
+      expect(releaseNotes).toBeDefined();
       await page.goto("/search");
       const searchInput = main.getByRole("textbox", {
         name: "Search files, documents, and folders...",
@@ -95,13 +107,13 @@ test.describe("TC-SRCH-002 Filter search results by type", () => {
           await searchInput.fill(toscaData.row.Query);
           await searchInput.press("Enter");
           await expect(
-            main.getByRole("link", { name: "Release Checklist" }),
+            main.getByRole("link", { name: toscaData.row.Result }),
           ).toBeVisible();
           await expect(
-            main.getByRole("link", { name: "Release Notes.pdf" }),
+            main.getByRole("link", { name: releaseNotes!.name }),
           ).toBeVisible();
 
-          // The icon-only filter has no accessible name; see e2e/migrated/parity/search.md (TC-SRCH-002).
+          // Standard exception: icon-only filter toggle has no accessible name or text; reached by Tab from the search box (see parity TC-SRCH-002).
           await searchInput.press("Tab");
           await page.keyboard.press("Space");
           const typeLabels = {
@@ -144,10 +156,10 @@ test.describe("TC-SRCH-002 Filter search results by type", () => {
           await expect(resultLink).toBeVisible();
           await expect(resultLink).toHaveAttribute(
             "href",
-            "/documents/doc-102",
+            `/documents/${resultDocument!.id}`,
           );
           await expect(
-            main.getByRole("link", { name: "Release Notes.pdf" }),
+            main.getByRole("link", { name: releaseNotes!.name }),
           ).toHaveCount(0);
           await expect(
             main.getByText(`1 result for “${toscaData.row.Query}”`),

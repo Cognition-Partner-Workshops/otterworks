@@ -17,6 +17,7 @@ const documents: MockDocument[] = [
     created_at: "2025-02-01T10:30:00Z",
     updated_at: "2025-02-18T10:30:00Z",
   },
+  // doc-102–doc-104 are invented fixture IDs; only doc-101 comes from the Tosca module Href.
   {
     id: "doc-102",
     title: "Release Checklist",
@@ -62,7 +63,7 @@ const documents: MockDocument[] = [
   },
 ];
 
-// These fixture-only files let TC-SRCH-002 prove type filtering and owner scoping.
+// These fixture-only files let TC-SRCH-002 prove type filtering and owner scoping; file-201/file-202 and owner user-456 are invented fixture IDs.
 const files: MockFile[] = [
   {
     id: "file-201",
@@ -91,6 +92,7 @@ const files: MockFile[] = [
 
 const workspace: Workspace = {
   user: {
+    // user-123 matches the Documents fixture.
     id: "user-123",
     email: "alex.morgan@example.test",
     displayName: "Alex Morgan",
