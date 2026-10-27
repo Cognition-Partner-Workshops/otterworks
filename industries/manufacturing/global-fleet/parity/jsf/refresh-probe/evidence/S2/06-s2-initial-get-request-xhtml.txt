@@ -1,0 +1,54 @@
+Scenario: S2
+Action: S2 initial GET /request.xhtml
+
+--- Request ---
+GET http://127.0.0.1:18080/request.xhtml
+Host: 127.0.0.1:18080
+Cookie: (none)
+Accept: text/html,*/*
+Connection: close
+Body-Length: 0 bytes
+Body:
+
+
+--- Response ---
+HTTP/1.1 200 
+Location: (none)
+Set-Cookie: JSESSIONID=2529C99E5AA49EBA9C15281AA4800F6F; Path=/; HttpOnly
+Content-Type: text/html;charset=UTF-8
+Content-Length: 1390
+Date: Tue, 27 Oct 2026 14:52:08 GMT
+Connection: close
+Body-Length: 1390 bytes
+Body:
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head id="j_idt2">
+    <meta charset="UTF-8" />
+    <title>Dienstwagenportal - Dienstwagenantrag</title><link type="text/css" rel="stylesheet" href="/javax.faces.resource/css/portal.css.xhtml;jsessionid=2529C99E5AA49EBA9C15281AA4800F6F" /></head><body>
+    <div class="top">
+        <span class="brand">Dienstwagenportal</span>
+        <a href="employees.xhtml">Mitarbeitersuche</a>
+        <a href="request.xhtml">Dienstwagenantrag</a>
+        <a href="mileage.xhtml">Reisekosten</a>
+        <a href="return.xhtml">Fahrzeugrueckgabe</a>
+    </div>
+    <div class="main">
+        <h1>Dienstwagenantrag</h1>
+        <div class="steps">
+            <span class="on">1 Mitarbeiter</span>
+            <span>2 Fahrzeug</span>
+            <span>3 Bestaetigung</span>
+        </div>
+<form id="wiz" name="wiz" method="post" action="/request.xhtml;jsessionid=2529C99E5AA49EBA9C15281AA4800F6F" class="panel" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="wiz" value="wiz" />
+
+                <label>Personalnummer</label><input id="wiz:emp" type="text" name="wiz:emp" /><input type="submit" name="wiz:j_idt15" value="Weiter" /><input type="hidden" name="javax.faces.ViewState" id="j_id1:javax.faces.ViewState:0" value="-8973416838900549706:2635091213759445009" autocomplete="off" />
+</form>
+    </div></body>
+</html>
+
+--- Parsed response metadata ---
+Rendered step: 1 Mitarbeiter
+Faces messages: (none)
+Errors/exceptions: (none)
+Response ViewState present: True

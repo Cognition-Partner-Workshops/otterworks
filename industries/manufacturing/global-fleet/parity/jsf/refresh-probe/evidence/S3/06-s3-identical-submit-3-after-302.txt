@@ -1,0 +1,58 @@
+Scenario: S3
+Action: S3 identical submit #3 after 302
+
+--- Request ---
+POST http://127.0.0.1:18080/request.xhtml
+Host: 127.0.0.1:18080
+Cookie: JSESSIONID=AB94076333DBB7F4DC3F6DADC6B05F72
+Accept: text/html,*/*
+Connection: close
+Content-Type: application/x-www-form-urlencoded
+Body-Length: 131 bytes
+Body:
+wiz=wiz&javax.faces.ViewState=1762724134078548961%3A-5514271442136010810&wiz%3Aj_idt44=27.10.2026&wiz%3Aj_idt47=Antrag+abschliessen
+
+--- Response ---
+HTTP/1.1 200 
+Location: (none)
+Content-Type: text/html;charset=UTF-8
+Content-Length: 1301
+Date: Tue, 27 Oct 2026 14:49:24 GMT
+Connection: close
+Body-Length: 1301 bytes
+Body:
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head id="j_idt2">
+    <meta charset="UTF-8" />
+    <title>Dienstwagenportal - Dienstwagenantrag</title><link type="text/css" rel="stylesheet" href="/javax.faces.resource/css/portal.css.xhtml" /></head><body>
+    <div class="top">
+        <span class="brand">Dienstwagenportal</span>
+        <a href="employees.xhtml">Mitarbeitersuche</a>
+        <a href="request.xhtml">Dienstwagenantrag</a>
+        <a href="mileage.xhtml">Reisekosten</a>
+        <a href="return.xhtml">Fahrzeugrueckgabe</a>
+    </div>
+    <div class="main">
+        <h1>Dienstwagenantrag</h1>
+        <div class="steps">
+            <span class="on">1 Mitarbeiter</span>
+            <span>2 Fahrzeug</span>
+            <span>3 Bestaetigung</span>
+        </div>
+<form id="wiz" name="wiz" method="post" action="/request.xhtml" class="panel" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="wiz" value="wiz" />
+
+                <label>Personalnummer</label><input id="wiz:emp" type="text" name="wiz:emp" /><input type="submit" name="wiz:j_idt15" value="Weiter" /><input type="hidden" name="javax.faces.ViewState" id="j_id1:javax.faces.ViewState:0" value="1762724134078548961:3827551543701726849" autocomplete="off" />
+</form>
+    </div></body>
+</html>
+
+--- Parsed response metadata ---
+Rendered step: 1 Mitarbeiter
+Faces messages: (none)
+Errors/exceptions: (none)
+Response ViewState present: True
+
+
+--- Database snapshot after this HTTP request ---
+E1009100 assignments=1; vehicle 1 assignments=2; E1009100 car_request rows=1; vehicle 1 owner_employee_id=1

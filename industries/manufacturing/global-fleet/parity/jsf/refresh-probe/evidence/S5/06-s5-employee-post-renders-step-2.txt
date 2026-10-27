@@ -1,0 +1,113 @@
+Scenario: S5
+Action: S5 employee POST renders step 2
+
+--- Request ---
+POST http://127.0.0.1:18080/request.xhtml
+Host: 127.0.0.1:18080
+Cookie: JSESSIONID=72EE4D47A59E7A5DB3F6356305A4CB77
+Accept: text/html,*/*
+Connection: close
+Content-Type: application/x-www-form-urlencoded
+Body-Length: 112 bytes
+Body:
+wiz=wiz&javax.faces.ViewState=-3215290870957048652%3A5637262333367503382&wiz%3Aemp=E1009100&wiz%3Aj_idt15=Weiter
+
+--- Response ---
+HTTP/1.1 200 
+Location: (none)
+Content-Type: text/html;charset=UTF-8
+Content-Length: 4819
+Date: Tue, 27 Oct 2026 14:54:26 GMT
+Connection: close
+Body-Length: 4819 bytes
+Body:
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head id="j_idt2">
+    <meta charset="UTF-8" />
+    <title>Dienstwagenportal - Dienstwagenantrag</title><link type="text/css" rel="stylesheet" href="/javax.faces.resource/css/portal.css.xhtml" /></head><body>
+    <div class="top">
+        <span class="brand">Dienstwagenportal</span>
+        <a href="employees.xhtml">Mitarbeitersuche</a>
+        <a href="request.xhtml">Dienstwagenantrag</a>
+        <a href="mileage.xhtml">Reisekosten</a>
+        <a href="return.xhtml">Fahrzeugrueckgabe</a>
+    </div>
+    <div class="main">
+        <h1>Dienstwagenantrag</h1>
+        <div class="steps">
+            <span>1 Mitarbeiter</span>
+            <span class="on">2 Fahrzeug</span>
+            <span>3 Bestaetigung</span>
+        </div>
+<form id="wiz" name="wiz" method="post" action="/request.xhtml" class="panel" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="wiz" value="wiz" />
+
+                <p>Priya Raman (EG 7, Hamburg)</p><table>
+	<tr>
+<td>
+<input type="radio" checked="checked" name="wiz:j_idt18" id="wiz:j_idt18:0" value="pool" /><label for="wiz:j_idt18:0"> Fahrzeug aus dem Pool</label></td>
+	</tr>
+	<tr>
+<td>
+<input type="radio" name="wiz:j_idt18" id="wiz:j_idt18:1" value="new" /><label for="wiz:j_idt18:1"> Neu ausgeliefertes Fahrzeug erfassen</label></td>
+	</tr>
+</table>
+                <p><label>Poolfahrzeug</label><select name="wiz:j_idt22" size="1">	<option value="" selected="selected">-- bitte waehlen --</option>
+	<option value="119">DA-EN 2783  Skoda Superb Combi</option>
+	<option value="113">DA-SM 3666  Cupra Born</option>
+	<option value="114">DA-X 1956  Mercedes-Benz C 220 d T-Modell</option>
+	<option value="20">HH-KW 5017  VW Passat Variant</option>
+	<option value="120">HH-M 6887  Audi Q4 e-tron</option>
+	<option value="112">HH-MU 3640  VW ID.4 Pro</option>
+	<option value="106">HH-P 1680  BMW 320d Touring</option>
+	<option value="31">HH-RO 9681  Audi A6 Avant 40 TDI</option>
+	<option value="101">HH-TW 3764  BMW i4 eDrive35</option>
+	<option value="1">HH-VS 7629  Opel Astra Sports Tourer</option>
+	<option value="55">HH-WR 9432  Audi Q4 e-tron</option>
+	<option value="84">IN-AS 4628  Tesla Model Y</option>
+	<option value="91">IN-DR 7206  Audi A6 Avant 40 TDI</option>
+	<option value="26">IN-FY 982  Opel Astra Sports Tourer</option>
+	<option value="82">IN-G 5330  BMW 320d Touring</option>
+	<option value="93">IN-XT 461  Opel Astra Sports Tourer</option>
+	<option value="33">K-F 410  Tesla Model Y</option>
+	<option value="17">K-Y 8162  BMW i4 eDrive35</option>
+	<option value="52">K-YB 42  BMW 320d Touring</option>
+	<option value="49">M-B 6067  Audi A6 Avant 40 TDI</option>
+	<option value="59">M-BM 9243  BMW i4 eDrive35</option>
+	<option value="15">M-EH 8648  BMW 320d Touring</option>
+	<option value="58">M-GK 7851  Cupra Born</option>
+	<option value="67">M-P 6113  BMW i4 eDrive35</option>
+	<option value="80">M-TS 244  Mercedes-Benz C 220 d T-Modell</option>
+	<option value="110">M-U 7289  BMW 320d Touring</option>
+	<option value="115">R-LB 7026  Audi A6 Avant 40 TDI</option>
+	<option value="116">R-N 2442  Skoda Superb Combi</option>
+	<option value="117">R-PO 2012  Ford Kuga PHEV</option>
+	<option value="6">S-C 3114  Skoda Superb Combi</option>
+	<option value="36">S-DP 5145  Opel Astra Sports Tourer</option>
+	<option value="61">S-FR 5091  BMW i4 eDrive35</option>
+	<option value="64">S-K 6378  Audi Q4 e-tron</option>
+	<option value="24">S-SK 542  Opel Astra Sports Tourer</option>
+	<option value="69">WOB-A 9731  VW Passat Variant</option>
+	<option value="99">WOB-FP 9124  BMW i4 eDrive35</option>
+	<option value="89">WOB-RL 7155  Skoda Superb Combi</option>
+	<option value="74">WOB-SL 8695  Cupra Born</option>
+	<option value="118">WOB-V 4446  Skoda Superb Combi</option>
+	<option value="96">WOB-V 6696  VW ID.4 Pro</option>
+</select></p>
+                <p><label>Kennzeichen</label><input type="text" name="wiz:j_idt26" /></p>
+                <p><label>Marke / Modell</label><input type="text" name="wiz:j_idt28" size="12" /><input type="text" name="wiz:j_idt29" /></p>
+                <p><label>Listenpreis EUR</label><input type="text" name="wiz:j_idt31" size="10" /></p>
+                <p><label>CO2 g/km</label><input type="text" name="wiz:j_idt33" size="4" /><select name="wiz:j_idt34" size="1">	<option value="D" selected="selected">Diesel</option>
+	<option value="P">Benzin</option>
+	<option value="H">Hybrid</option>
+	<option value="E">Elektro</option>
+</select></p><input type="submit" name="wiz:j_idt40" value="Zurueck" /><input type="submit" name="wiz:j_idt41" value="Weiter" /><input type="hidden" name="javax.faces.ViewState" id="j_id1:javax.faces.ViewState:0" value="-3215290870957048652:-6782379320700505163" autocomplete="off" />
+</form>
+    </div></body>
+</html>
+
+--- Parsed response metadata ---
+Rendered step: 2 Fahrzeug
+Faces messages: (none)
+Errors/exceptions: (none)
+Response ViewState present: True

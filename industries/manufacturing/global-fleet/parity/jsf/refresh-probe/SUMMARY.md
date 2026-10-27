@@ -45,5 +45,15 @@
 
 ## Evidence
 
-Every HTTP exchange has a numbered `.txt` file under `evidence/<scenario>/` containing request method/URL/headers/cookie/body and response status/headers/Location/full body.
+The 79 numbered HTTP traces are committed under
+`industries/manufacturing/global-fleet/parity/jsf/refresh-probe/evidence/`:
+
+- [S1](evidence/S1/)
+- [S2](evidence/S2/)
+- [S3](evidence/S3/)
+- [S4](evidence/S4/)
+- [S5](evidence/S5/)
+
+Each `.txt` file contains the request method/URL/headers/cookie/body and response
+status/headers/Location/full body.
 DB snapshots are appended to the corresponding submit response evidence file.

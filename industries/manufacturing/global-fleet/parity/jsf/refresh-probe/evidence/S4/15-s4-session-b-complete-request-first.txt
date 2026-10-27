@@ -1,0 +1,34 @@
+Scenario: S4
+Action: S4 session B complete request first
+
+--- Request ---
+POST http://127.0.0.1:18080/request.xhtml
+Host: 127.0.0.1:18080
+Cookie: JSESSIONID=DE4A24F00867A058DA6CF7365E16D837
+Accept: text/html,*/*
+Connection: close
+Content-Type: application/x-www-form-urlencoded
+Body-Length: 131 bytes
+Body:
+wiz=wiz&javax.faces.ViewState=2079434978783959602%3A-3076203465732889441&wiz%3Aj_idt44=27.10.2026&wiz%3Aj_idt47=Antrag+abschliessen
+
+--- Response ---
+HTTP/1.1 302 
+Location: /assignment.xhtml?employee=E1009103
+Location: /assignment.xhtml?employee=E1009103
+Content-Length: 0
+Date: Tue, 27 Oct 2026 14:52:09 GMT
+Connection: close
+Body-Length: 0 bytes
+Body:
+
+
+--- Parsed response metadata ---
+Rendered step: (none)
+Faces messages: (none)
+Errors/exceptions: (none)
+Response ViewState present: False
+
+
+--- Database snapshot after this HTTP request ---
+E1009100 assignments=0; vehicle 1 assignments=2; E1009100 car_request rows=0; vehicle 1 owner_employee_id=2

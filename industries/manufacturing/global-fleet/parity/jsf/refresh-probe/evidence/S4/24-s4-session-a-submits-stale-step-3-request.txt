@@ -1,0 +1,34 @@
+Scenario: S4
+Action: S4 session A submits stale step-3 request
+
+--- Request ---
+POST http://127.0.0.1:18080/request.xhtml
+Host: 127.0.0.1:18080
+Cookie: JSESSIONID=CAD6F38CD8C0994084BBB0649AADFB02
+Accept: text/html,*/*
+Connection: close
+Content-Type: application/x-www-form-urlencoded
+Body-Length: 131 bytes
+Body:
+wiz=wiz&javax.faces.ViewState=8830850768498689150%3A-1430849256946033201&wiz%3Aj_idt44=27.10.2026&wiz%3Aj_idt47=Antrag+abschliessen
+
+--- Response ---
+HTTP/1.1 302 
+Location: /assignment.xhtml?employee=E1009100
+Location: /assignment.xhtml?employee=E1009100
+Content-Length: 0
+Date: Tue, 27 Oct 2026 14:54:26 GMT
+Connection: close
+Body-Length: 0 bytes
+Body:
+
+
+--- Parsed response metadata ---
+Rendered step: (none)
+Faces messages: (none)
+Errors/exceptions: (none)
+Response ViewState present: False
+
+
+--- Database snapshot after this HTTP request ---
+E1009100 assignments=1; vehicle 1 assignments=3; E1009100 car_request rows=1; vehicle 1 owner_employee_id=1

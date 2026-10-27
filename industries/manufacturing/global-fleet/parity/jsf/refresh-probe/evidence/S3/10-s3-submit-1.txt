@@ -1,0 +1,34 @@
+Scenario: S3
+Action: S3 submit #1
+
+--- Request ---
+POST http://127.0.0.1:18080/request.xhtml
+Host: 127.0.0.1:18080
+Cookie: JSESSIONID=0B273B89C5DE658D15C64D28ABB07B1F
+Accept: text/html,*/*
+Connection: close
+Content-Type: application/x-www-form-urlencoded
+Body-Length: 132 bytes
+Body:
+wiz=wiz&javax.faces.ViewState=-4974135954040098908%3A-8841463605499629516&wiz%3Aj_idt44=27.10.2026&wiz%3Aj_idt47=Antrag+abschliessen
+
+--- Response ---
+HTTP/1.1 302 
+Location: /assignment.xhtml?employee=E1009100
+Location: /assignment.xhtml?employee=E1009100
+Content-Length: 0
+Date: Tue, 27 Oct 2026 14:52:08 GMT
+Connection: close
+Body-Length: 0 bytes
+Body:
+
+
+--- Parsed response metadata ---
+Rendered step: (none)
+Faces messages: (none)
+Errors/exceptions: (none)
+Response ViewState present: False
+
+
+--- Database snapshot after this HTTP request ---
+E1009100 assignments=1; vehicle 1 assignments=2; E1009100 car_request rows=1; vehicle 1 owner_employee_id=1
