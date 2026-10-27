@@ -58,13 +58,17 @@ def _extract_user_id(request: Request) -> UUID | None:
         token = auth_header[len("Bearer "):]
         secret = _get_jwt_secret()
         if secret:
+            # A presented token that does not verify is rejected outright: falling
+            # through to "anonymous" would drop the owner filter on list endpoints.
             try:
                 payload = jwt.decode(token, secret, algorithms=JWT_ALGORITHMS)
                 user_id_str = payload.get("user_id") or payload.get("sub")
-                if user_id_str:
-                    return UUID(str(user_id_str))
+                if payload.get("type", "access") != "access" or not user_id_str:
+                    raise ValueError("not an access token")
+                return UUID(str(user_id_str))
             except (jwt.PyJWTError, ValueError) as exc:
-                logger.warning("jwt_decode_failed", error=str(exc))
+                logger.warning("jwt_rejected", error=str(exc))
+                raise HTTPException(status_code=401, detail="Invalid token") from exc
         else:
             forwarded_user_id = request.headers.get("X-User-ID")
             if forwarded_user_id:
