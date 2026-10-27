@@ -174,6 +174,11 @@ export default function ReconciliationReport() {
             </tr>
           </thead>
           <tbody>
+            {visibleRules.length === 0 && (
+              <tr>
+                <td colSpan={7}>No rules have status {statusFilter}.</td>
+              </tr>
+            )}
             {visibleRules.map((rule) => (
               <tr key={rule.id}>
                 <th scope="row">

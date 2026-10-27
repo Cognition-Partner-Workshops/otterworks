@@ -32,6 +32,17 @@ describe('admin reconciliation report', () => {
     expect(rows.every((row) => within(row).getByText(chosenStatus))).toBe(true)
   })
 
+  it('shows an empty-state row when a status has no rules', () => {
+    render(<MemoryRouter initialEntries={['/admin/reconciliation']}><FleetRoutes /></MemoryRouter>)
+
+    fireEvent.change(screen.getByLabelText('Filter by status'), { target: { value: 'missing' } })
+
+    const rows = within(screen.getByRole('table')).getAllByRole('row').slice(1)
+    expect(rows).toHaveLength(1)
+    expect(within(rows[0]).getByText('No rules have status missing.')).toBeInTheDocument()
+    expect(within(rows[0]).getByRole('cell')).toHaveAttribute('colspan', '7')
+  })
+
   it('builds RFC 4180 CSV with a rule row, quoting and formula neutralization', () => {
     const fullCsv = buildReconciliationCsv(reconciliationReport.rules)
     const lines = fullCsv.split('\r\n')
