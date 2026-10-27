@@ -48,6 +48,7 @@ node_modules/
 .turbo/
 coverage/
 *.tsbuildinfo
+/frontend/client-app/playwright/.auth/
 
 # --- Kotlin ---
 services/notification-service/build/
