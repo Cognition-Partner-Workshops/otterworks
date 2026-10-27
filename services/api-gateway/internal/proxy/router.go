@@ -69,7 +69,15 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 	// from the JWT claims.
 	proxy.Rewrite = func(pr *httputil.ProxyRequest) {
 		pr.SetURL(target)
+		// SetXForwarded derives X-Forwarded-Proto/Host from the gateway's own
+		// listener, but TLS terminates at the ingress in front of us. Keep the
+		// values the ingress sent, as the default Director used to pass through.
 		pr.SetXForwarded()
+		for _, h := range []string{"X-Forwarded-Proto", "X-Forwarded-Host"} {
+			if v := pr.In.Header.Get(h); v != "" {
+				pr.Out.Header.Set(h, v)
+			}
+		}
 		pr.Out.Header.Del("X-User-ID")
 		if claims := middleware.GetJWTClaims(pr.In.Context()); claims != nil {
 			userID := claims.Subject
