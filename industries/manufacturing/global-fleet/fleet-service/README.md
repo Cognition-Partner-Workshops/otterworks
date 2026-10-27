@@ -22,6 +22,17 @@ profile-specific target directories.
 Rule coverage example:
 `python3 ../scripts/rule_coverage.py --junit uk=target/surefire-reports-uk --junit de=target/surefire-reports-de --vitest ../frontend/fleet/reports/vitest-junit.xml`.
 
+Assignment APIs include `GET /api/v1/assignments/pool` and
+`GET /api/v1/assignments/vehicle-rules`, resumable drafts under
+`/api/v1/car-requests/drafts/{employeeNo}` (including `POST .../submit`),
+`GET /api/v1/employees/{employeeNo}/car`, and the cutover double-holder report
+and confirmation endpoints under `/api/v1/assignments/cutover/double-holders`.
+Assignment start-date validation uses the `OpenPeriodLookup` seam; until the
+benefit-period implementation supplies a bean, calendar months from the current
+month onward are open. Set `fleet.assignment.legacy-assignment-unload` to the
+optional fixed-width `ASSIGNMENT.dat` path to include legacy double holders in
+the cutover report.
+
 The frontend at `../frontend/fleet` has one route folder per context under
 `src/routes/<context>/`. Its handwritten `src/api/client.ts` mirrors the API
 contract in `/v3/api-docs`. From `frontend/fleet`, run
