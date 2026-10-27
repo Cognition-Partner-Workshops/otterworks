@@ -5,7 +5,7 @@ This package captures three different views of the legacy Global Fleet behavior:
 - [`jsf/`](jsf/README.md) records and replays the live JSF portal.
 - [`mainframe/`](mainframe/README.md) validates committed batch holdouts and self-tests
   a reference port of `FLEBEN01`.
-- [`naive-load/`](naive-load/) demonstrates what a straightforward relational migration
+- [`naive-load/`](naive-load/REPORT.md) demonstrates what a straightforward relational migration
   rejects or changes.
 
 ## JSF portal
