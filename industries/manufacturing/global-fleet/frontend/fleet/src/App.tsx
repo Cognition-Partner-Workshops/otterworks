@@ -4,6 +4,7 @@ import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router
 import { client, type ProfileResponse } from './api/client'
 import { ErrorAlert, Loading, errorText } from './components/status'
 import Assignment from './routes/assignment'
+import Admin from './routes/admin'
 import Benefit from './routes/benefit'
 import Eligibility from './routes/eligibility'
 import Home from './routes/home'
@@ -11,6 +12,7 @@ import Mileage from './routes/mileage'
 import Returns from './routes/returns'
 
 const routes = [
+  { path: '/admin', label: 'Admin', component: Admin },
   { path: '/eligibility', label: 'Eligibility', component: Eligibility },
   { path: '/assignment', label: 'Assignment', component: Assignment },
   { path: '/returns', label: 'Returns', component: Returns },

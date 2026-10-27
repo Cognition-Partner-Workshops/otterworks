@@ -1,0 +1,2428 @@
+{
+  "commit": "8960d8319eee7ba92d6230386ac33a34528a75c8",
+  "generated_at": "2026-10-27T20:48:37Z",
+  "rules": [
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Country-wide values (grade threshold, mileage rate, DE 1% and 0.03%/km, rounding modes) live in each country's profile; per-vehicle benefit percent and per-employee contribution stay as vehicle and employee data.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF01",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2265,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2265",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/fddfc71c76014cc78c5522189908c74a",
+          "title": "Scaffold fleet-service and frontend/fleet (GF01, GF12)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF01_countryParametersComeFromProfile",
+          "proves": "each country profile supplies its own parameter values; no country name in code",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF01_noCountryNameInConditionals",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Where the country parameters live",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Grade threshold from each country profile (UK 07, DE 6), checked on every step including confirm and in the monthly batch path; existing below-threshold holders keep their car until return, taxed as normal, listed on the migration report; the monthly run taxes them as normal and lists each on its control report as below grade threshold.",
+        "open_items": [],
+        "option": "A/(i)/(a)",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF02",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2266,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2266",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/eb9081346bcf4707b508b0383a5ee116",
+          "title": "Eligibility context (GF02, GF03, GF04, GF33)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF02_gradeBelowThresholdIsRefused",
+          "proves": "profile threshold refuses lower grades on every step including confirm",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF02_gradeAtThresholdIsEligible",
+          "proves": "profile threshold admits the threshold grade",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF02_batchRunListsBelowThresholdHolders",
+          "proves": "monthly run taxes below-threshold holders as normal and lists them on the control report",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF02_invalidBatchPeriodReturnsBadRequest",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Company-car grade threshold",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Only active employees can request a car or file mileage, except a leaver may file claims dated on or before the leaving date; unknown numbers refused; statements/inquiry available for leavers and transferees.",
+        "open_items": [],
+        "option": "B",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF03",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2266,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2266",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/eb9081346bcf4707b508b0383a5ee116",
+          "title": "Eligibility context (GF02, GF03, GF04, GF33)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF03_unknownEmployeeIsRejected",
+          "proves": "an unknown or blank employee number is rejected on every function",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF03_employeeStatusGatesCarRequest",
+          "proves": "which employee statuses may request a car, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF03_inquiryPageShowsLeaver",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF03_inquiryPageShowsNotFound",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF03_leaverMayClaimUpToLeavingDate",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Employee existence and status",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "One person per employee number with an employment history (hire/leave dates); cars and claims attach to the employment they fall in; tax and leaver rules use that employment's dates.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF04",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2266,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2266",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/eb9081346bcf4707b508b0383a5ee116",
+          "title": "Eligibility context (GF02, GF03, GF04, GF33)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF04_rehireEmploymentsAreKeptApart",
+          "proves": "a rehire's earlier and current employments, assignments and claims stay distinguishable after migration",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF04_migrationKeepsNamesAndBackfillsStatus",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Rehire duplicates: one record per employment",
+      "verdict": "one-sided"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "One open car per employee in both countries. The 20 UK employees holding an open NC and RP are listed for fleet to confirm actual return dates before cutover; their affected-period tax waits on that.",
+        "open_items": [],
+        "option": "B",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF05",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2268,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b",
+          "title": "Assignment context (GF05-GF11, GF13, GF34)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF05_secondOpenCarIsRefused",
+          "proves": "an employee with an open assignment cannot get another",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF05_unconfirmedDoubleHoldersBlockCutover",
+          "proves": "the 20 UK NC+RP double holders stay on the fleet confirmation list until return dates are confirmed",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Cars per employee",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Pick from the pool or register a new car; the profile decides the required fields (UK also benefit %); list price > 0, CO2 >= 0; no direct vehicle-id entry.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF06",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2268,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b",
+          "title": "Assignment context (GF05-GF11, GF13, GF34)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF06_assignmentRequiresKnownOrRegisteredVehicle",
+          "proves": "an assignment names an existing vehicle or registers a new one, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Vehicle selection for an assignment",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "A car has at most one open assignment, pool loans included; re-checked at submit and enforced in the database; a late submitter gets car-no-longer-available and returns to vehicle choice with a fresh pool list.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF07",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2268,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b",
+          "title": "Assignment context (GF05-GF11, GF13, GF34)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF07_staleSubmitIsRefusedCarNoLongerAvailable",
+          "proves": "a submit for a car taken since step 2 is refused and returns to vehicle choice",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF07_poolLoanCountsAsHolding",
+          "proves": "a car on a PL pool loan cannot be assigned again",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF07_oneOpenAssignmentPerCarConstraint",
+          "proves": "database refuses a second open assignment per vehicle",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF07_staleSubmitReturnsToVehicleChoice",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "One holder per car",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Assignment reason from fixed list NC/RP/PL, default NC, other values refused; migrated DE assignments carry reason not recorded.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF08",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2268,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b",
+          "title": "Assignment context (GF05-GF11, GF13, GF34)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF08_assignmentReasonIsRecorded",
+          "proves": "assignment reason handling, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Assignment reason code",
+      "verdict": "one-sided"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Assignment start date required, defaults to today, must fall within the employee's employment, after the car's last return, and in an open period.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF09",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2268,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b",
+          "title": "Assignment context (GF05-GF11, GF13, GF34)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF09_assignmentStartDateIsValidated",
+          "proves": "start date default and plausibility checks, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF09_startDateDefaultsToServerToday",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Assignment start date",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "One global id scheme for new assignments; migrated UK rows keep their A+9-digit id as a legacy reference.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF10",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2268,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b",
+          "title": "Assignment context (GF05-GF11, GF13, GF34)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF10_assignmentIdentifierIsUnique",
+          "proves": "assignment id format and uniqueness, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Assignment identifier",
+      "verdict": "one-sided"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Both countries record a car request with status delivered in the same transaction as the assignment; migration does not invent requests for existing UK assignments.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF11",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2268,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b",
+          "title": "Assignment context (GF05-GF11, GF13, GF34)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF11_carRequestIsRecorded",
+          "proves": "car-request record and status, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Car request record delivered at once",
+      "verdict": "one-sided"
+    },
+    {
+      "decision": {
+        "decided_by": null,
+        "decided_on": null,
+        "decision": null,
+        "open_items": [],
+        "option": null,
+        "status": "not-required"
+      },
+      "expected_changes": [],
+      "id": "GF12",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2265,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2265",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/fddfc71c76014cc78c5522189908c74a",
+          "title": "Scaffold fleet-service and frontend/fleet (GF01, GF12)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF12_assignmentAndClaimRequireOwner",
+          "proves": "an assignment without employee or vehicle, or a claim without employee, is rejected by the schema",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Assignments and claims belong to an employee",
+      "verdict": "agree"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "The current car is the open assignment (only one allowed, GF05); none open shows no company car; history lists every car.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF13",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2268,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b",
+          "title": "Assignment context (GF05-GF11, GF13, GF34)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF13_currentCarIsOpenAssignment",
+          "proves": "which assignment is shown as the current car, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF13_currentCarPageShowsOpenAssignment",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Current car shown to the user",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "A return finds the car by plate (normalised as at registration, GF06) or vehicle id and closes its single open assignment; none open gives already returned.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF14",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2274,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6",
+          "title": "Returns context (GF14-GF18)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF14_returnFindsOpenAssignment",
+          "proves": "how a return finds its open assignment and the not-found messages, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF14_returnRejectsStaleAssignment",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Finding the assignment to return",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": null,
+        "decided_on": null,
+        "decision": null,
+        "open_items": [],
+        "option": null,
+        "status": "not-required"
+      },
+      "expected_changes": [],
+      "id": "GF15",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2274,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6",
+          "title": "Returns context (GF14-GF18)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF15_returnBeforeStartIsRejected",
+          "proves": "a return dated before the start is rejected; same day and future dates are accepted",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Return date not before start",
+      "verdict": "agree"
+    },
+    {
+      "decision": {
+        "decided_by": null,
+        "decided_on": null,
+        "decision": null,
+        "open_items": [],
+        "option": null,
+        "status": "not-required"
+      },
+      "expected_changes": [],
+      "id": "GF16",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2274,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6",
+          "title": "Returns context (GF14-GF18)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF16_returnReleasesCar",
+          "proves": "returning closes the assignment on the return date and makes the car assignable again",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF16_returnNoteOverLimitIsRejected",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Return releases the car",
+      "verdict": "agree"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Odometer reading required on return, whole number in the profile unit, not below the car's last recorded reading; the first UK return of each car has no prior reading.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF17",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2274,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6",
+          "title": "Returns context (GF14-GF18)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF17_returnOdometerHandling",
+          "proves": "odometer capture on return, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Odometer on return",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Return is an ordinary function in both countries, reachable from navigation.",
+        "open_items": [
+          "Question for fleet operations: how are UK assignments ended today? 18 UK assignments have end dates though no menu route reaches FLERETN and no source we hold explains it."
+        ],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF18",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2274,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6",
+          "title": "Returns context (GF14-GF18)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-web",
+          "name": "GF18_returnFunctionIsReachable",
+          "proves": "the return function is reachable from navigation, as decided",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Return function reachable",
+      "verdict": "one-sided"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Journey date must not be in the future and must fall in the open period, or in an earlier closed month within the profile limit (UK 3 months back, DE 2 months back), paid in the current period.",
+        "open_items": [],
+        "option": "B",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF19",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2277,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02",
+          "title": "Mileage context (GF19-GF25)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF19_claimDateWithinOpenOrLookbackPeriod",
+          "proves": "future dates refused; closed months accepted only within the profile lookback (UK 3, DE 2) and paid in the current period",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF19_blankJourneyDateIsSentAsNull",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Mileage claim date window",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Whole units from 1 to the profile maximum: UK 1,500 miles, DE 2,500 km.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF20",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2277,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02",
+          "title": "Mileage context (GF19-GF25)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF20_distanceWithinProfileMaximum",
+          "proves": "whole units 1..profile maximum (UK 1500 miles, DE 2500 km)",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Mileage distance required",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Mileage amount = distance x profile rate, rounded half-up to the cent per claim in both countries, frozen at submission; only approved claims are paid. Expected change: 172 DE seed claims move by one cent versus legacy half-even.",
+        "open_items": [],
+        "option": "B",
+        "status": "decided"
+      },
+      "expected_changes": [
+        {
+          "count": 172,
+          "scope": "DE seed mileage claims",
+          "total": 699
+        }
+      ],
+      "id": "GF21",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2277,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02",
+          "title": "Mileage context (GF19-GF25)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF21_mileageRoundsHalfUpInBothCountries",
+          "proves": "per-claim amount rounds half-up to the cent in both profiles",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF21_mileageAmountFrozenAtSubmission",
+          "proves": "a later rate change does not alter a submitted claim",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF21_mileageReimbursementMatchesHoldouts",
+          "proves": "UK reimbursement reproduces the 12 holdout BENOUT files",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF21_deSeedClaimsAcceptedDifference",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Mileage amount and rate",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": null,
+        "decided_on": null,
+        "decision": null,
+        "open_items": [],
+        "option": null,
+        "status": "not-required"
+      },
+      "expected_changes": [],
+      "id": "GF22",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2277,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02",
+          "title": "Mileage context (GF19-GF25)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF22_newClaimIsPendingAndOnlyApprovedIsPaid",
+          "proves": "a new claim is stored pending; only approved claims are paid",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF22_approvalPageApprovesPendingClaim",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Claim status and approval",
+      "verdict": "agree"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "A claim records the company car held on the journey date, or none.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF23",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2277,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02",
+          "title": "Mileage context (GF19-GF25)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF23_claimVehicleHandling",
+          "proves": "whether a claim records a vehicle, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Vehicle recorded on a claim",
+      "verdict": "one-sided"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Both countries list an employee's claims back over a profile-set window (6 months for both), newest first, all statuses.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF24",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2277,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02",
+          "title": "Mileage context (GF19-GF25)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF24_claimHistoryWindow",
+          "proves": "claim history listing, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF24_historyPageListsNewestFirst",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Claim history list",
+      "verdict": "one-sided"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Linked to GF03 B: only active employees may file mileage, except a leaver may file claims dated on or before the leaving date.",
+        "open_items": [],
+        "option": "follows GF03 B",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF25",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2277,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02",
+          "title": "Mileage context (GF19-GF25)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF25_mileageClaimEligibility",
+          "proves": "status and leave-date checks on mileage claims, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Mileage claim by a leaver or inactive employee",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Both countries have monthly periods open -> closed; closing runs the benefit calculation and stores results; closed months are never recomputed.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF26",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2278,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb",
+          "title": "Benefit calculation context (GF26-GF31)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF26_benefitPeriodLifecycle",
+          "proves": "period open/close and recomputation, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF26_closedPeriodWithNullTotalsListsAndReturnsNoStoredInquiry",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF26_periodsCanBeOpenedAndClosed",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Benefit period lifecycle",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "One benefit formula; each country profile sets benefit-% source, commute component, contribution deduction with floor at 0, and benefit rounding mode (UK truncate, DE half-up). The UK inquiry screen shows the same prorated figure the run will tax.",
+        "open_items": [],
+        "option": "A/i",
+        "status": "decided"
+      },
+      "expected_changes": [
+        {
+          "count": 0,
+          "scope": "UK holdout BENOUT benefit",
+          "total": 857
+        },
+        {
+          "count": null,
+          "scope": "UK inquiry screen",
+          "total": null
+        }
+      ],
+      "id": "GF27",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2278,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb",
+          "title": "Benefit calculation context (GF26-GF31)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF27_benefitFormulaPerProfile",
+          "proves": "one formula; profile sets % source, commute component, contribution and benefit rounding",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF27_benefitMatchesHoldouts",
+          "proves": "UK benefit reproduces holdout BENOUT for employee-months not affected by GF05/GF29",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF27_benefitMatchesPortalStatements",
+          "proves": "DE benefit reproduces recorded statements",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF27_inquiryShowsRunFigure",
+          "proves": "inquiry shows the prorated figure the run will tax",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF27_failedInquiryClearsPreviousResult",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF27_failedStatementClearsPreviousResult",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF27_statementShowsProfileAndCalculation",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Benefit formula",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Calendar month, inclusive days; on a swap day only the incoming car counts, so nobody is taxed on two cars for the same day.",
+        "open_items": [],
+        "option": "B",
+        "status": "decided"
+      },
+      "expected_changes": [
+        {
+          "count": 0,
+          "scope": "DE seed swap days",
+          "total": null
+        }
+      ],
+      "id": "GF28",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2278,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb",
+          "title": "Benefit calculation context (GF26-GF31)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF28_swapDayCountsForIncomingCarOnly",
+          "proves": "calendar-month inclusive days; on a swap day only the incoming car counts",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Benefit days and period length",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Tax every car the employee held in the period, in both countries; the never-closed UK legacy assignments must be resolved in migration first (see GF05).",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [
+        {
+          "count": 198,
+          "scope": "UK holdout employee-months with more than one overlapping assignment",
+          "total": null
+        },
+        {
+          "count": 0,
+          "scope": "DE seed",
+          "total": null
+        }
+      ],
+      "id": "GF29",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2278,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb",
+          "title": "Benefit calculation context (GF26-GF31)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF29_everyHeldCarIsTaxed",
+          "proves": "every car held in the period is taxed",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Which assignments are taxed in a period",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Both countries cap car days at the leaving date, exclude employees who left before the period, and flag leavers in the period with L.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [
+        {
+          "count": 0,
+          "scope": "DE seed statements",
+          "total": null
+        }
+      ],
+      "id": "GF30",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2278,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb",
+          "title": "Benefit calculation context (GF26-GF31)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF30_leaverBenefitCapAndFlag",
+          "proves": "leaving-date cap and leaver flag, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF30_belowGradeHolderIsTaxedAndListed",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Leavers: benefit cap and flag",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "On period close both countries write one output record per employee with car days or approved miles plus control totals (count, total taxable benefit, total mileage); a failed run changes nothing; a closed month cannot be re-run. UK sends the payroll file; DE has no payroll file for now.",
+        "open_items": [
+          "German payroll has not agreed a payroll file format; DE payroll file to be added once agreed."
+        ],
+        "option": "B",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF31",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2278,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb",
+          "title": "Benefit calculation context (GF26-GF31)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF31_periodCloseWritesOutputAndControlTotals",
+          "proves": "close writes one record per employee with car days or approved miles and control totals",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF31_failedRunChangesNothing",
+          "proves": "a failed run rolls back",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF31_closedPeriodCannotBeRerun",
+          "proves": "a closed month cannot be run again",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Benefit output, control totals and payroll hand-off",
+      "verdict": "one-sided"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Navigation reaches every function (inquiry, car request, mileage, statement, return, search) in both countries; Back saves the draft without validation and checks re-run on the next forward step.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF32",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2284,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2284",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/53156b8be539479cb5cf36bafd6675a5",
+          "title": "Navigation shell (GF32)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-web",
+          "name": "GF32_navigationReachesEveryFunction",
+          "proves": "navigation and back behaviour, as decided",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF32_backSavesDraftWithoutValidation",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF32_benefitLinkResetsView",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF32_routeErrorClearsOnNavigation",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Navigation shell",
+      "verdict": "differ"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "Both countries get employee search: case-insensitive contains on employee number, last or first name, at most 50 rows sorted by last then first name, showing the current car.",
+        "open_items": [],
+        "option": "A",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF33",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2266,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2266",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/eb9081346bcf4707b508b0383a5ee116",
+          "title": "Eligibility context (GF02, GF03, GF04, GF33)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-service",
+          "name": "GF33_employeeSearch",
+          "proves": "employee search, as decided",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF33_noLookupBeanFallsBackToEmptyCurrentCar",
+          "proves": "",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "extra",
+          "name": "GF33_searchPageListsEmployeesWithCurrentCar",
+          "proves": "",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        }
+      ],
+      "title": "Employee search",
+      "verdict": "one-sided"
+    },
+    {
+      "decision": {
+        "decided_by": "Program owner",
+        "decided_on": "2026-10-27",
+        "decision": "A half-finished car request is saved as a server-side draft against the employee (one draft per employee, intentionally shared); refresh, reload or a new tab return to the same step with the entries; the draft does not reserve a car; resuming re-checks eligibility and car availability; final submit counts once; the draft lives until submitted (then cleared) or discarded via a discard action.",
+        "open_items": [],
+        "option": "A (modified)/(a)",
+        "status": "decided"
+      },
+      "expected_changes": [],
+      "id": "GF34",
+      "links": [
+        {
+          "pr": 2258,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+          "role": "discovery",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832",
+          "title": "Legacy inventory and source-cited rule lists"
+        },
+        {
+          "pr": 2257,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+          "role": "evidence",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666",
+          "title": "Before-state parity corpus (JSF replay, holdout pairs)"
+        },
+        {
+          "pr": 2263,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+          "role": "decision",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e",
+          "title": "Merged rule catalog with owner decisions"
+        },
+        {
+          "pr": 2268,
+          "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+          "role": "build",
+          "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b",
+          "title": "Assignment context (GF05-GF11, GF13, GF34)"
+        }
+      ],
+      "status": "covered",
+      "tests": [
+        {
+          "layer": "fleet-web",
+          "name": "GF34_refreshReturnsToSavedDraft",
+          "proves": "refresh and reload return to the same step with the entries",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "fleet-web",
+          "name": "GF34_newTabResumesSameDraft",
+          "proves": "a new tab for the same employee opens the same draft",
+          "results": {
+            "de": "not-applicable",
+            "uk": "not-applicable",
+            "vitest": "passed"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF34_draftClearedOnSubmit",
+          "proves": "submit clears the draft",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF34_draftCanBeDiscarded",
+          "proves": "discard removes the draft",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF34_doubleSubmitCreatesOneRequest",
+          "proves": "a repeated final submit creates one request and shows it",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        },
+        {
+          "layer": "fleet-service",
+          "name": "GF34_resumeRechecksEligibilityAndCar",
+          "proves": "resuming a draft re-checks eligibility and car availability; a draft does not reserve a car",
+          "results": {
+            "de": "passed",
+            "uk": "passed",
+            "vitest": "not-applicable"
+          }
+        }
+      ],
+      "title": "Refreshing the car-request wizard halfway through",
+      "verdict": "one-sided"
+    }
+  ]
+}

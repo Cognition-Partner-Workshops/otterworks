@@ -35,6 +35,10 @@ class ValidatorTests(unittest.TestCase):
     def test_published_data(self):
         self.assertEqual(self.problems(), [])
 
+    def test_test_result_source_names_are_not_repository_citations(self):
+        self.data['test-results.json'] = {'sources': ['uk', 'de', 'vitest']}
+        self.assertFalse(any('test-results.json' in problem for problem in self.problems()))
+
     def test_empty_final_pairs_cannot_use_history_or_prose_as_coverage(self):
         self.data['crosscheck.json']['rule_pairs'] = []
         problems = self.problems()

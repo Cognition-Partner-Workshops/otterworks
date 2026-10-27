@@ -1,0 +1,1025 @@
+{
+  "description": "Sessions and merged PRs behind each catalog rule. Every rule cites the discovery, evidence and decision PRs plus the PR that built it.",
+  "rules": {
+    "GF01": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2265,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2265",
+        "title": "Scaffold fleet-service and frontend/fleet (GF01, GF12)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/fddfc71c76014cc78c5522189908c74a"
+      }
+    ],
+    "GF02": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2266,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2266",
+        "title": "Eligibility context (GF02, GF03, GF04, GF33)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/eb9081346bcf4707b508b0383a5ee116"
+      }
+    ],
+    "GF03": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2266,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2266",
+        "title": "Eligibility context (GF02, GF03, GF04, GF33)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/eb9081346bcf4707b508b0383a5ee116"
+      }
+    ],
+    "GF04": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2266,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2266",
+        "title": "Eligibility context (GF02, GF03, GF04, GF33)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/eb9081346bcf4707b508b0383a5ee116"
+      }
+    ],
+    "GF05": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2268,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+        "title": "Assignment context (GF05-GF11, GF13, GF34)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b"
+      }
+    ],
+    "GF06": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2268,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+        "title": "Assignment context (GF05-GF11, GF13, GF34)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b"
+      }
+    ],
+    "GF07": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2268,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+        "title": "Assignment context (GF05-GF11, GF13, GF34)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b"
+      }
+    ],
+    "GF08": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2268,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+        "title": "Assignment context (GF05-GF11, GF13, GF34)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b"
+      }
+    ],
+    "GF09": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2268,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+        "title": "Assignment context (GF05-GF11, GF13, GF34)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b"
+      }
+    ],
+    "GF10": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2268,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+        "title": "Assignment context (GF05-GF11, GF13, GF34)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b"
+      }
+    ],
+    "GF11": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2268,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+        "title": "Assignment context (GF05-GF11, GF13, GF34)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b"
+      }
+    ],
+    "GF12": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2265,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2265",
+        "title": "Scaffold fleet-service and frontend/fleet (GF01, GF12)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/fddfc71c76014cc78c5522189908c74a"
+      }
+    ],
+    "GF13": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2268,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+        "title": "Assignment context (GF05-GF11, GF13, GF34)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b"
+      }
+    ],
+    "GF14": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2274,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+        "title": "Returns context (GF14-GF18)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6"
+      }
+    ],
+    "GF15": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2274,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+        "title": "Returns context (GF14-GF18)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6"
+      }
+    ],
+    "GF16": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2274,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+        "title": "Returns context (GF14-GF18)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6"
+      }
+    ],
+    "GF17": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2274,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+        "title": "Returns context (GF14-GF18)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6"
+      }
+    ],
+    "GF18": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2274,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2274",
+        "title": "Returns context (GF14-GF18)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/1d6c5d696a4f45a98f445d0c248ae3b6"
+      }
+    ],
+    "GF19": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2277,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+        "title": "Mileage context (GF19-GF25)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02"
+      }
+    ],
+    "GF20": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2277,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+        "title": "Mileage context (GF19-GF25)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02"
+      }
+    ],
+    "GF21": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2277,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+        "title": "Mileage context (GF19-GF25)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02"
+      }
+    ],
+    "GF22": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2277,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+        "title": "Mileage context (GF19-GF25)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02"
+      }
+    ],
+    "GF23": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2277,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+        "title": "Mileage context (GF19-GF25)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02"
+      }
+    ],
+    "GF24": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2277,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+        "title": "Mileage context (GF19-GF25)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02"
+      }
+    ],
+    "GF25": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2277,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2277",
+        "title": "Mileage context (GF19-GF25)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/07d5bf4814f44a02bbb71e61eb3b0e02"
+      }
+    ],
+    "GF26": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2278,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+        "title": "Benefit calculation context (GF26-GF31)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb"
+      }
+    ],
+    "GF27": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2278,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+        "title": "Benefit calculation context (GF26-GF31)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb"
+      }
+    ],
+    "GF28": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2278,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+        "title": "Benefit calculation context (GF26-GF31)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb"
+      }
+    ],
+    "GF29": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2278,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+        "title": "Benefit calculation context (GF26-GF31)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb"
+      }
+    ],
+    "GF30": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2278,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+        "title": "Benefit calculation context (GF26-GF31)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb"
+      }
+    ],
+    "GF31": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2278,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2278",
+        "title": "Benefit calculation context (GF26-GF31)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/e5d0819fe70f45c4a4d473c39cba89eb"
+      }
+    ],
+    "GF32": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2284,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2284",
+        "title": "Navigation shell (GF32)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/53156b8be539479cb5cf36bafd6675a5"
+      }
+    ],
+    "GF33": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2266,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2266",
+        "title": "Eligibility context (GF02, GF03, GF04, GF33)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/eb9081346bcf4707b508b0383a5ee116"
+      }
+    ],
+    "GF34": [
+      {
+        "role": "discovery",
+        "pr": 2258,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2258",
+        "title": "Legacy inventory and source-cited rule lists",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/7e60d7e79c8a4788b8957d180efcd832"
+      },
+      {
+        "role": "evidence",
+        "pr": 2257,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2257",
+        "title": "Before-state parity corpus (JSF replay, holdout pairs)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b3559ed17b3845799022cf5448aa0666"
+      },
+      {
+        "role": "decision",
+        "pr": 2263,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2263",
+        "title": "Merged rule catalog with owner decisions",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/b464d425de1c4483826cbc18ed596b6e"
+      },
+      {
+        "role": "build",
+        "pr": 2268,
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2268",
+        "title": "Assignment context (GF05-GF11, GF13, GF34)",
+        "session_url": "https://partner-workshops.devinenterprise.com/sessions/37fa9607f8564723b72f457931d35a9b"
+      }
+    ]
+  }
+}

@@ -74,7 +74,8 @@ def validate(directory=HERE, root=ROOT):
     question_ids = set()
     all_ids = set()
     for name, doc in documents.items():
-        walk(doc, name)
+        if name != 'test-results.json':
+            walk(doc, name)
         if not name.startswith('rules/'):
             continue
         for kind, ids in [('rules', rule_ids), ('navigation_questions', question_ids)]:

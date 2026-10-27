@@ -156,6 +156,77 @@ class RuleCoverageTest(unittest.TestCase):
     def test_failed_case_is_not_covered(self):
         self.assertEqual("failed", coverage.aggregate(["passed", "failed"]))
 
+    def test_json_includes_per_test_and_rule_results_without_changing_stdout(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            catalog = root / "catalog.json"
+            catalog.write_text(json.dumps({
+                "rules": [{
+                    "id": "GF01",
+                    "tests": [
+                        {"name": "GF01_serviceCheck", "layer": "fleet-service"},
+                        {"name": "GF01_webCheck", "layer": "fleet-web"},
+                    ],
+                }],
+            }))
+            for profile in ("uk", "de"):
+                report_dir = root / profile
+                report_dir.mkdir()
+                (report_dir / "TEST-fixture.xml").write_text(
+                    '<testsuite><testcase name="GF01_serviceCheck"/></testsuite>'
+                )
+            vitest = root / "vitest.xml"
+            vitest.write_text(
+                '<testsuite><testcase name="GF01_webCheck"/></testsuite>'
+            )
+            arguments = [
+                "--catalog", str(catalog),
+                "--junit", f"uk={root / 'uk'}",
+                "--junit", f"de={root / 'de'}",
+                "--vitest", str(vitest),
+            ]
+            baseline_output = io.StringIO()
+            with contextlib.redirect_stdout(baseline_output):
+                baseline_exit = coverage.main(arguments)
+
+            json_path = root / "results.json"
+            json_output = io.StringIO()
+            with contextlib.redirect_stdout(json_output):
+                json_exit = coverage.main([
+                    *arguments,
+                    "--json", str(json_path),
+                    "--generated-at", "2026-10-27T15:00:00Z",
+                    "--commit", "abc123",
+                ])
+
+            self.assertEqual(baseline_exit, json_exit)
+            self.assertEqual(baseline_output.getvalue(), json_output.getvalue())
+            payload = json.loads(json_path.read_text())
+            self.assertEqual(["uk", "de", "vitest"], payload["sources"])
+            self.assertEqual("2026-10-27T15:00:00Z", payload["generated_at"])
+            self.assertEqual("abc123", payload["commit"])
+            self.assertEqual("covered", payload["rules"]["GF01"]["status"])
+            self.assertEqual([
+                {
+                    "name": "GF01_serviceCheck",
+                    "layer": "fleet-service",
+                    "results": {
+                        "uk": "passed",
+                        "de": "passed",
+                        "vitest": "not-applicable",
+                    },
+                },
+                {
+                    "name": "GF01_webCheck",
+                    "layer": "fleet-web",
+                    "results": {
+                        "uk": "not-applicable",
+                        "de": "not-applicable",
+                        "vitest": "passed",
+                    },
+                },
+            ], payload["rules"]["GF01"]["tests"])
+
 
 if __name__ == "__main__":
     unittest.main()
