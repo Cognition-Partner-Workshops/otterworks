@@ -1,0 +1,15 @@
+{
+  "routines": [
+    {
+      "routine": "custbill.finance_excel_report",
+      "reads": [
+        "recon.legacy_custbill_records"
+      ],
+      "writes": [
+        "recon.legacy_finance_report"
+      ],
+      "calls": [],
+      "source": "etl/legacy-extra/jobs/finance_excel_report.pl:43-77"
+    }
+  ]
+}

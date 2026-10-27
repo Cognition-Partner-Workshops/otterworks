@@ -1,0 +1,16 @@
+{
+  "routines": [
+    {
+      "routine": "custbill.parse_custbill_fixedwidth",
+      "reads": [
+        "recon.legacy_custbill_raw_lines"
+      ],
+      "writes": [
+        "recon.legacy_custbill_records",
+        "recon.legacy_custbill_rejected_lines"
+      ],
+      "calls": [],
+      "source": "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh:42-77"
+    }
+  ]
+}

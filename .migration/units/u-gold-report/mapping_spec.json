@@ -1,0 +1,68 @@
+{
+  "version": "custbill-units-1",
+  "rerun_posture": "first_run_baseline",
+  "source": "source-access=fixture-run: make legacy-etl-gen-data NS=mig1 then make legacy-etl-run JOB=run_all (scripts/tp-run-deterministic.sh, isolated OTTERWORKS_LEGACY_ROOT); legacy outputs loaded into ow_billing_migration.recon.legacy_* with ns='mig1'",
+  "objects": [
+    {
+      "object": "gold.finance_billing_report",
+      "root_table": "recon.legacy_finance_report",
+      "root_where": "ns = 'mig1'",
+      "key": {
+        "source": [
+          "currency",
+          "record_type"
+        ],
+        "target": [
+          "currency",
+          "record_type"
+        ]
+      },
+      "fields": [
+        {
+          "source": "currency",
+          "target": "currency",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "FACT",
+          "cite": "group key $ccy (report:52-53)"
+        },
+        {
+          "source": "record_type",
+          "target": "record_type",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "FACT",
+          "cite": "'01'->INVOICE, '02'->CREDIT, else UNKNOWN(<rt>) (report:69)"
+        },
+        {
+          "source": "record_count",
+          "target": "record_count",
+          "source_type": "bigint",
+          "target_type": "bigint",
+          "class": "FACT",
+          "cite": "%d count per group (report:55,70)"
+        },
+        {
+          "source": "total_amount",
+          "target": "total_amount",
+          "source_type": "NUMBER(14,2)",
+          "target_type": "decimal(18,2)",
+          "class": "INFERRED",
+          "cite": "Perl float sum printed %.2f (report:54,70); widened to decimal(18,2) so a group sum cannot overflow decimal(14,2)",
+          "rules": [
+            "decimal_exact"
+          ]
+        }
+      ]
+    }
+  ],
+  "export": {
+    "kind": "file",
+    "paths": [
+      "/Volumes/ow_billing_migration/bronze/landing/reports/finance_billing_<YYYYMMDD>.csv",
+      "/Volumes/ow_billing_migration/bronze/landing/reports/finance_billing_<YYYYMMDD>.xls"
+    ],
+    "contract": "header 'Currency,RecordType,RecordCount,TotalAmount', LF endings, rows ordered by currency then rec_type code (01 before 02), amounts %.2f; .xls is a byte copy of the .csv",
+    "gate": "sha256(csv) == sha256(xls) == sha256(legacy csv) with the report date pinned to the legacy run date"
+  }
+}
