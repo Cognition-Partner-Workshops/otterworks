@@ -56,7 +56,7 @@ export default function LoginPage() {
             <Logo size={40} />
             <span className="text-2xl font-bold text-gray-900">OtterWorks</span>
           </Link>
-          <p className="text-gray-500 mt-2">Sign in to your account</p>
+          <p className="text-gray-300 mt-2">Sign in to your account</p>
         </div>
 
         {/* Form */}
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 {...register("email")}
-                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
                 placeholder="you@example.com"
               />
               {errors.email && (
