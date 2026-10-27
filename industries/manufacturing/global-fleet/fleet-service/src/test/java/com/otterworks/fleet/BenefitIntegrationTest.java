@@ -57,6 +57,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyIterable;
@@ -204,6 +205,46 @@ class BenefitIntegrationTest extends AbstractPostgresIntegrationTest {
                         .findFirst()
                         .orElseThrow()
                         .taxableBenefit());
+    }
+
+    @Test
+    void GF26_closedPeriodWithNullTotalsListsAndReturnsNoStoredInquiry() throws Exception {
+        YearMonth month = YearMonth.of(2039, 12);
+        Employment employee = employee(
+                profile.minGrade(), LocalDate.of(2020, 1, 1), null, BigDecimal.ZERO);
+        BenefitPeriod period = benefitPeriodRepository.saveAndFlush(
+                new BenefitPeriod(month, profile.mileageRate()));
+        jdbc.update("""
+                UPDATE benefit_period
+                SET status = 'CLOSED', closed_at = NOW(), record_count = NULL,
+                    total_taxable = NULL, total_mileage = NULL
+                WHERE id = ?
+                """, period.getId());
+
+        BenefitPeriodView listed = benefitPeriodService.list().stream()
+                .filter(item -> item.period().equals(format(month)))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("CLOSED", listed.status());
+        assertNull(listed.recordCount());
+        assertNull(listed.totalTaxable());
+        assertNull(listed.totalMileage());
+        assertTrue(benefitPeriodService.results(month).isEmpty());
+
+        mockMvc.perform(get("/api/v1/benefit/periods"))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/v1/benefit/periods/{period}/results", format(month)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
+        mockMvc.perform(get("/api/v1/benefit/employees/{employeeNo}", employee.getPerson().getEmployeeNo())
+                        .param("period", format(month)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("BENEFIT_RESULT_NOT_FOUND"));
+        mockMvc.perform(get("/api/v1/benefit/employees/{employeeNo}/statement",
+                        employee.getPerson().getEmployeeNo())
+                        .param("period", format(month)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("BENEFIT_RESULT_NOT_FOUND"));
     }
 
     @Test
