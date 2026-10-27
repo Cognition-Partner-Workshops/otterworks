@@ -436,6 +436,45 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
                         .map(Employment::getId)
                         .collect(java.util.stream.Collectors.toSet()));
         assertEquals(4, jdbc.queryForObject("SELECT COUNT(*) FROM employment WHERE legacy_ref LIKE 'MF:%'", Integer.class));
+
+        EmploymentHistoryLoader.LegacyEmploymentRecord originalRehire = records.stream()
+                .filter(record -> record.legacyRef().equals("MF:0001286624"))
+                .findFirst()
+                .orElseThrow();
+        EmploymentHistoryLoader.LegacyEmploymentRecord changedRehire =
+                new EmploymentHistoryLoader.LegacyEmploymentRecord(
+                        originalRehire.legacyRef(),
+                        originalRehire.employeeNo(),
+                        originalRehire.lastName(),
+                        originalRehire.firstName(),
+                        8,
+                        EmploymentStatus.LEFT,
+                        originalRehire.hireDate(),
+                        LocalDate.of(2024, 12, 31),
+                        new BigDecimal("87.65"));
+        List<Employment> updated = historyLoader.load(List.of(changedRehire));
+        assertEquals(1, updated.size());
+        assertEquals(e1010398Rehire.getId(), updated.get(0).getId());
+        assertEquals(8, updated.get(0).getGrade());
+        assertEquals(EmploymentStatus.LEFT, updated.get(0).getStatus());
+        assertEquals(LocalDate.of(2024, 12, 31), updated.get(0).getLeaveDate());
+        assertEquals(new BigDecimal("87.65"), updated.get(0).getMonthlyContribution());
+        assertEquals(2, eligibilityService.employments(
+                personRepository.findByEmployeeNo("E1010398").orElseThrow()).size());
+
+        EmploymentHistoryLoader.LegacyEmploymentRecord conflicting = new EmploymentHistoryLoader.LegacyEmploymentRecord(
+                changedRehire.legacyRef(),
+                unique("GF04"),
+                "Other",
+                "Person",
+                8,
+                EmploymentStatus.ACTIVE,
+                LocalDate.of(2020, 1, 1),
+                null,
+                BigDecimal.ZERO);
+        IllegalStateException conflict = assertThrows(
+                IllegalStateException.class, () -> historyLoader.load(List.of(conflicting)));
+        assertEquals("legacy reference MF:0001286624 already belongs to another employee", conflict.getMessage());
     }
 
     @Test

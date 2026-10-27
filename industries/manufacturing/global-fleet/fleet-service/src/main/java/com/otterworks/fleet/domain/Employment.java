@@ -103,7 +103,15 @@ public class Employment {
         this.status = status;
     }
 
+    public void setHireDate(LocalDate hireDate) {
+        this.hireDate = hireDate;
+    }
+
     public void setLeaveDate(LocalDate leaveDate) {
         this.leaveDate = leaveDate;
+    }
+
+    public void setMonthlyContribution(BigDecimal monthlyContribution) {
+        this.monthlyContribution = monthlyContribution;
     }
 }

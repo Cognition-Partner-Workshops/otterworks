@@ -64,7 +64,18 @@ public class EmploymentHistoryLoader {
             for (LegacyEmploymentRecord record : employeeRecords) {
                 Optional<Employment> alreadyLoaded = employmentRepository.findFirstByLegacyRef(record.legacyRef());
                 if (alreadyLoaded.isPresent()) {
-                    loaded.add(alreadyLoaded.get());
+                    Employment employment = alreadyLoaded.get();
+                    if (!employeeNo.equals(EmployeeNumbers.normalize(
+                            employment.getPerson().getEmployeeNo()))) {
+                        throw new IllegalStateException(
+                                "legacy reference " + record.legacyRef() + " already belongs to another employee");
+                    }
+                    employment.setGrade(record.grade());
+                    employment.setStatus(record.status());
+                    employment.setHireDate(record.hireDate());
+                    employment.setLeaveDate(record.leaveDate());
+                    employment.setMonthlyContribution(record.monthlyContribution());
+                    loaded.add(employmentRepository.save(employment));
                     continue;
                 }
                 Employment employment = new Employment(
