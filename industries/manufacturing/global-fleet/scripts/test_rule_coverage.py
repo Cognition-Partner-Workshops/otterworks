@@ -14,7 +14,7 @@ SPEC.loader.exec_module(coverage)
 
 
 class RuleCoverageTest(unittest.TestCase):
-    def run_coverage_with_extra(self, root, extra_statuses, strict=False):
+    def run_coverage_with_extra(self, root, extra_statuses, strict=False, vitest_status=None):
         catalog = root / "catalog.json"
         catalog.write_text(json.dumps({
             "rules": [{
@@ -49,6 +49,18 @@ class RuleCoverageTest(unittest.TestCase):
             "--junit", f"uk={profile_dirs['uk']}",
             "--junit", f"de={profile_dirs['de']}",
         ]
+        if vitest_status is not None:
+            vitest_report = root / "vitest.xml"
+            vitest_result = (
+                f"<failure message=\"failed\"/>" if vitest_status == "failed" else
+                "<skipped/>" if vitest_status == "skipped" else ""
+            )
+            vitest_report.write_text(
+                "<testsuite>"
+                f'<testcase name="GF01_extraCheck">{vitest_result}</testcase>'
+                "</testsuite>"
+            )
+            arguments.extend(["--vitest", str(vitest_report)])
         if strict:
             arguments.append("--strict")
         output = io.StringIO()
@@ -128,6 +140,18 @@ class RuleCoverageTest(unittest.TestCase):
         self.assertIn("covered 1/1: GF01", output)
         self.assertIn("partial: -", output)
         self.assertIn("failed: -", output)
+
+    def test_failed_vitest_extra_test_fails_rule_with_both_profiles_passing(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            exit_code, output = self.run_coverage_with_extra(
+                Path(temporary),
+                {"uk": "passed", "de": "passed"},
+                vitest_status="failed",
+            )
+
+        self.assertEqual(1, exit_code)
+        self.assertIn("GF01\tGF01_extraCheck\textra\tpassed\tpassed\tfailed", output)
+        self.assertIn("failed: GF01", output)
 
     def test_failed_case_is_not_covered(self):
         self.assertEqual("failed", coverage.aggregate(["passed", "failed"]))

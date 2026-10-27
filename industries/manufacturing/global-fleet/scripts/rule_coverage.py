@@ -164,22 +164,19 @@ def main(argv=None):
                 + "\t".join(display_statuses)
             )
         for test_name in extra_test_names(rule["id"], source_testcases, catalog_names):
-            junit_statuses = [
+            junit = [
                 extra_test_status(test_name, testcases)
                 for testcases in profiles.values()
             ]
-            if any(status != "missing" for status in junit_statuses):
-                any_failed |= "failed" in junit_statuses
-                statuses_for_rule.append(junit_statuses)
-                display_statuses = junit_statuses + ["not-applicable"]
-            else:
-                vitest_status = extra_test_status(test_name, web)
-                any_failed |= vitest_status == "failed"
-                statuses_for_rule.append([vitest_status])
-                display_statuses = (
-                    ["not-applicable"] * len(profiles)
-                    + [vitest_status if vitest_status != "missing" else "not-applicable"]
-                )
+            vit = extra_test_status(test_name, web)
+            in_junit = any(status != "missing" for status in junit)
+            statuses = (junit if in_junit else []) + ([vit] if vit != "missing" else [])
+            any_failed |= "failed" in statuses
+            statuses_for_rule.append(statuses)
+            display_statuses = (
+                (junit if in_junit else ["not-applicable"] * len(profiles))
+                + [vit if vit != "missing" else "not-applicable"]
+            )
             print(
                 f'{rule["id"]}\t{test_name}\textra\t'
                 + "\t".join(display_statuses)
