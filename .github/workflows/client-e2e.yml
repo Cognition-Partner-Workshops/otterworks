@@ -15,7 +15,7 @@ on:
 
 jobs:
   client-e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend/client-app
