@@ -524,12 +524,18 @@
       "mainframe_rule_ids": [
         "MF-R04"
       ],
-      "portal_rule_ids": [],
-      "verdict": "only-in-mainframe",
-      "difference": "MF-R04 notes a fully terminated id can still reach FLEMILE-ENTER; the portal behaves the same way (MileageBean has no status or leave_date check) but no portal rule records it; see corrections.",
+      "portal_rule_ids": [
+        "JP-R32"
+      ],
+      "verdict": "differs",
+      "difference": "Shared: neither side applies an active-status or leave-date eligibility rejection before accepting a mileage claim. Portal find/submit accepts any found employee with positive kilometres; FleetService adds no status or leave-date guard. Mainframe-only: FLEMILE-PREMAP and FLEMILE-ENTER inspect EM-STAT and repeatedly OBTAIN DUPLICATE EMPLOYEE while it is T, rather than rejecting a leaver. ENTER checks not-found only before that loop; neither loop has an explicit not-found/end-of-duplicates exit. An all-T employee id therefore has a no-exit loop risk if the exhausted lookup leaves EM-STAT at T, not a guaranteed accepted claim. Once the loop finishes, ENTER checks journey date and miles, but not EM-LEAV or active status, before storing the claim.",
       "sources": [
-        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:34-37",
-        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:34-51"
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMILE.dlg:9-11",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:13-21",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:25-63",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:34-51",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:36-45",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:163-184"
       ]
     }
   ],

@@ -116,6 +116,14 @@ def validate(directory=HERE, root=ROOT):
     if 'crosscheck.json' in documents:
         for ident in sorted(set(ID.findall(json.dumps(documents['crosscheck.json']))) - rule_ids):
             error('crosscheck.json', f'undefined rule id {ident}')
+    paired_ids = {
+        ident
+        for pair in documents.get('crosscheck.json', {}).get('rule_pairs', [])
+        for side in ('mainframe_rule_ids', 'portal_rule_ids')
+        for ident in pair.get(side, [])
+    }
+    for ident in sorted(rule_ids - paired_ids):
+        error('crosscheck.json', f'rule id absent from final rule_pairs: {ident}')
     return problems, documents
 
 
@@ -126,7 +134,7 @@ def main():
             print(problem)
         print(f'FAIL: {len(problems)} problem(s)')
         return 1
-    print(f'PASS: {len(documents)} JSON files; source references, unique IDs, evidence and crosscheck rule IDs valid.')
+    print(f'PASS: {len(documents)} JSON files; source references, unique IDs, evidence, crosscheck rule IDs and final rule-pair coverage valid.')
     for app in documents['index.json']['apps']:
         print(app['app_id'] + ': ' + ', '.join(f'{k}={v}' for k, v in app['counts'].items()))
     return 0
