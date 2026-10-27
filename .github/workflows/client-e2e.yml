@@ -31,10 +31,6 @@ jobs:
         run: npx playwright test e2e/landing.spec.ts
       - name: Run mocked margins spec
         run: npx playwright test e2e/margins.spec.ts --grep "renders a mocked SKU row" --repeat-each=10
-      - name: Run Tosca-migrated specs
-        run: npx playwright test --project=tosca-migrated --trace on --output=test-results-tosca
-        env:
-          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-tosca
       - name: Upload Playwright artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -44,6 +40,24 @@ jobs:
             frontend/client-app/playwright-report/
             frontend/client-app/test-results/
           if-no-files-found: ignore
+
+  tosca-migrated:
+    name: tosca-migrated
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend/client-app
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run Tosca-migrated specs
+        run: npx playwright test --project=tosca-migrated --trace on --output=test-results-tosca
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-tosca
       - name: Upload Tosca Playwright artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
