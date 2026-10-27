@@ -1,8 +1,10 @@
-import { test, expect } from "./smoke/files/files.fixtures";
+import { test, expect } from "./fixtures/signed-in";
 
 test.use({ trace: "retain-on-failure" });
 
 test.describe("Files page (signed in)", () => {
+  test.use({ account: "fresh" });
+
   test("a new customer with no files sees the Files heading and the empty-folder state", async ({
     page,
     customer,
@@ -80,6 +82,8 @@ test.describe("Files page (signed in)", () => {
 });
 
 test.describe("Files page (signed out)", () => {
+  test.use({ account: "signedOut" });
+
   test("a signed-out visitor opening /files is sent to the sign-in page", async ({ page }) => {
     await test.step("Open /files without a session", async () => {
       await page.goto("/files");

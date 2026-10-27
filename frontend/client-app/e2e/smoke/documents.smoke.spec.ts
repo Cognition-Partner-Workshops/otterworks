@@ -1,4 +1,6 @@
-import { test, expect } from "./documents.fixtures";
+import { test, expect } from "../fixtures/signed-in";
+
+test.use({ account: "fresh" });
 
 test("signed-in customer sees their own document listed on /documents", async ({
   customerPage,

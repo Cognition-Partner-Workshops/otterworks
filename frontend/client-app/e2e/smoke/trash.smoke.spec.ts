@@ -1,4 +1,6 @@
-import { test, expect, escapeRegExp } from "./collections.fixtures";
+import { test, expect, escapeRegExp } from "../fixtures/signed-in";
+
+test.use({ account: "fresh" });
 
 test.use({ trace: "retain-on-failure" });
 
@@ -41,7 +43,8 @@ test.describe("/trash smoke (signed in)", () => {
       await test.step("Open /trash and restore the trashed file", async () => {
         await page.goto("/trash");
         await expect(main.getByText(trashedFile.name, { exact: true })).toBeVisible();
-        await main.getByRole("button", { name: "Restore", exact: true }).click();
+        const row = main.getByText(trashedFile.name, { exact: true }).locator("xpath=../..");
+        await row.getByRole("button", { name: "Restore", exact: true }).click();
       });
 
       await test.step("Verify Trash no longer lists the file", async () => {

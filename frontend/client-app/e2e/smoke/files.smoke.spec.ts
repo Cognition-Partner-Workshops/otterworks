@@ -1,4 +1,6 @@
-import { test, expect } from "./files.fixtures";
+import { test, expect } from "../fixtures/signed-in";
+
+test.use({ account: "fresh" });
 
 test.use({ trace: "retain-on-failure" });
 

@@ -1,4 +1,4 @@
-import { test, expect } from "./smoke/settings-legal/settings-legal.fixtures";
+import { test, expect } from "./fixtures/signed-in";
 
 test.describe("Settings page (signed in)", () => {
   test(
@@ -92,7 +92,7 @@ test.describe("Settings page (signed in)", () => {
 });
 
 test.describe("Settings page (signed out)", () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ account: "signedOut" });
 
   test(
     "redirects a signed-out visitor to sign in",

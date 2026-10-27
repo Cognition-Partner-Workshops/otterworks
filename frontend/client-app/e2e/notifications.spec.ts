@@ -1,4 +1,4 @@
-import { test, expect, signedOut } from "./smoke/search-notifications/search-notifications.fixtures";
+import { test, expect } from "./fixtures/signed-in";
 
 test.describe("Notifications Page", () => {
   test.beforeEach(async ({ page }) => {
@@ -13,18 +13,22 @@ test.describe("Notifications Page", () => {
     ).toBeVisible();
   });
 
-  test("shows the empty state to a customer with no notifications", async ({ page }) => {
-    const main = page.getByRole("main");
-    await expect(main.getByText("No notifications", { exact: true })).toBeVisible();
-    await expect(
-      main.getByText("You're all caught up! New notifications will appear here.")
-    ).toBeVisible();
-    await expect(main.getByText(/unread notification/)).toHaveCount(0);
+  test.describe("empty inbox", () => {
+    test.use({ account: "fresh" });
+
+    test("shows the empty state to a customer with no notifications", async ({ page }) => {
+      const main = page.getByRole("main");
+      await expect(main.getByText("No notifications", { exact: true })).toBeVisible();
+      await expect(
+        main.getByText("You're all caught up! New notifications will appear here.")
+      ).toBeVisible();
+      await expect(main.getByText(/unread notification/)).toHaveCount(0);
+    });
   });
 });
 
 test.describe("Notifications Page (signed out)", () => {
-  test.use({ storageState: signedOut });
+  test.use({ account: "signedOut" });
 
   test("sends a signed-out visitor to the sign-in page", async ({ page }) => {
     await test.step("open /notifications without a session", async () => {

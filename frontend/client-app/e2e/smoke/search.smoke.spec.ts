@@ -1,4 +1,4 @@
-import { test, expect } from "./search-notifications.fixtures";
+import { test, expect } from "../fixtures/signed-in";
 
 test.describe("Search page (signed in)", () => {
   test(

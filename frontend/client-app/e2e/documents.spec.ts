@@ -1,7 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { test, expect } from "./smoke/documents/documents.fixtures";
+import { test, expect } from "./fixtures/signed-in";
 
 test.describe("Documents page (signed in)", () => {
+  test.use({ account: "fresh" });
+
   test("New document creates an Untitled document and opens it", async ({
     customerPage,
   }) => {
@@ -145,6 +147,8 @@ test.describe("Documents page (signed in)", () => {
 });
 
 test.describe("Documents page (signed out)", () => {
+  test.use({ account: "signedOut" });
+
   test("signed-out visitor opening /documents is sent to sign in", async ({
     page,
   }) => {

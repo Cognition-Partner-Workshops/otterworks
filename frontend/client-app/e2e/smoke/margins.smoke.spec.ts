@@ -1,4 +1,4 @@
-import { test, expect } from "./margins-billing.fixtures";
+import { test, expect } from "../fixtures/signed-in";
 
 test.describe("Margins smoke (signed in)", () => {
   test("a signed-in customer sees SKU profitability rows on /margins", async ({ page, customer }) => {

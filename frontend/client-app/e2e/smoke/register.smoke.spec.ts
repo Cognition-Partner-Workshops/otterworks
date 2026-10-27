@@ -1,4 +1,4 @@
-import { test, expect, expectSignedInDashboard, loginStatusViaApi } from "./auth-landing.fixtures";
+import { test, expect, expectSignedInDashboard, loginStatusViaApi } from "../fixtures/signed-in";
 
 test.describe("Register page (/register) smoke — signed in", () => {
   test("registering a new customer on /register from a signed-in browser creates the account and lands signed in as the new customer", async ({

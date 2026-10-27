@@ -1,8 +1,7 @@
 import {
   expect,
-  signedOut,
   test,
-} from "./smoke/dashboard-recent/dashboard-recent.fixtures";
+} from "./fixtures/signed-in";
 
 test.use({ trace: "retain-on-failure", screenshot: "only-on-failure" });
 
@@ -83,7 +82,7 @@ test.describe("Navigation & Routing (signed in)", () => {
 });
 
 test.describe("Navigation & Routing (signed out)", () => {
-  test.use(signedOut);
+  test.use({ account: "signedOut" });
 
   test("/login loads the login page", async ({ page }) => {
     await test.step("Open /login", async () => {

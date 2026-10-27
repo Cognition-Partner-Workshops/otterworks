@@ -1,4 +1,4 @@
-import { test, expect } from "./documents.fixtures";
+import { test, expect } from "../fixtures/signed-in";
 
 test("signed-in customer opening /documents/:id sees that document's title and saved content", async ({
   customerPage,

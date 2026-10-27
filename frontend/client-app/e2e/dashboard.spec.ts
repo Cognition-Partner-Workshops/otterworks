@@ -1,9 +1,8 @@
 import { type Page } from "@playwright/test";
 import {
   expect,
-  signedOut,
   test,
-} from "./smoke/dashboard-recent/dashboard-recent.fixtures";
+} from "./fixtures/signed-in";
 
 test.use({ trace: "retain-on-failure", screenshot: "only-on-failure" });
 
@@ -19,6 +18,8 @@ async function openDashboard(page: Page) {
 }
 
 test.describe("Dashboard (signed in)", () => {
+  test.use({ account: "fresh" });
+
   test("shows the Dashboard heading for the signed-in customer", async ({
     page,
     customer,
@@ -134,7 +135,7 @@ test.describe("Dashboard (signed in)", () => {
 });
 
 test.describe("Dashboard (signed out)", () => {
-  test.use(signedOut);
+  test.use({ account: "signedOut" });
 
   test("signed-out visitor opening /dashboard is sent to sign in", async ({
     page,

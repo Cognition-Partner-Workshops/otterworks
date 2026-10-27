@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { test, expect, signedOut } from "./smoke/search-notifications/search-notifications.fixtures";
+import { test, expect } from "./fixtures/signed-in";
 
 const SEARCH_PLACEHOLDER = "Search files, documents, and folders...";
 
@@ -68,17 +68,10 @@ test.describe("Search Page", () => {
     });
   });
 
-  test("displays breadcrumb navigation", async ({ page }) => {
-    test.fail(
-      true,
-      "The Search breadcrumb was removed in db1f9dba1 (top-level pages show only the heading)."
-    );
-    await expect(page.getByLabel("Breadcrumb").getByText("Search")).toBeVisible();
-  });
 });
 
 test.describe("Search Page (signed out)", () => {
-  test.use({ storageState: signedOut });
+  test.use({ account: "signedOut" });
 
   test("sends a signed-out visitor to the sign-in page", async ({ page }) => {
     await test.step("open /search without a session", async () => {

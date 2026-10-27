@@ -1,4 +1,4 @@
-import { test, expect } from "./margins-billing.fixtures";
+import { test, expect } from "../fixtures/signed-in";
 
 test.describe("Billing entitlement smoke (signed in)", () => {
   test("a signed-in customer sees the entitlement of their own tenant", async ({

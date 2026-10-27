@@ -1,10 +1,11 @@
 import {
   test,
   expect,
-  signedOut,
-} from "./smoke/collections/collections.fixtures";
+} from "./fixtures/signed-in";
 
 test.describe("Shared Page", () => {
+  test.use({ account: "fresh" });
+
   test("a new customer sees the Shared with me heading and the empty state", async ({
     page,
   }) => {
@@ -29,7 +30,7 @@ test.describe("Shared Page", () => {
   });
 
   test.describe("signed out", () => {
-    test.use({ storageState: signedOut });
+    test.use({ account: "signedOut" });
 
     test("opening /shared without signing in redirects to the login page", async ({
       page,
@@ -47,6 +48,8 @@ test.describe("Shared Page", () => {
 });
 
 test.describe("Trash Page", () => {
+  test.use({ account: "fresh" });
+
   test("a new customer sees the Trash heading and the empty state", async ({
     page,
   }) => {
@@ -72,7 +75,7 @@ test.describe("Trash Page", () => {
   });
 
   test.describe("signed out", () => {
-    test.use({ storageState: signedOut });
+    test.use({ account: "signedOut" });
 
     test("opening /trash without signing in redirects to the login page", async ({
       page,

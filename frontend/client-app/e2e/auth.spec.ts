@@ -4,11 +4,11 @@ import {
   expectSignedInDashboard,
   loginStatusViaApi,
   uniqueCustomerDetails,
-} from "./smoke/auth-landing/auth-landing.fixtures";
+} from "./fixtures/signed-in";
 
 test.describe("Authentication", () => {
   test.describe("Registration — signed out", () => {
-    test.use({ signedIn: false });
+    test.use({ account: "signedOut" });
 
     test.beforeEach(async ({ page }) => {
       await page.goto("/register");
@@ -16,7 +16,7 @@ test.describe("Authentication", () => {
 
     test("a new customer registers and lands on their dashboard signed in", async ({
       page,
-      request,
+      api,
       newCustomerDetails,
     }) => {
       await test.step("Fill and submit the registration form", async () => {
@@ -30,19 +30,19 @@ test.describe("Authentication", () => {
         await expectSignedInDashboard(page, newCustomerDetails);
       });
       await test.step("The account's credentials sign in through the API", async () => {
-        expect(await loginStatusViaApi(request, newCustomerDetails)).toBe(200);
+        expect(await loginStatusViaApi(api, newCustomerDetails)).toBe(200);
       });
     });
 
     test("registering an email that already has an account shows an error and stays on /register", async ({
       page,
-      otherCustomer,
+      secondCustomer,
     }) => {
       await test.step("Submit the form with an existing customer's email", async () => {
-        await page.getByLabel("Full name").fill(otherCustomer.displayName);
-        await page.getByLabel("Email").fill(otherCustomer.email);
-        await page.getByLabel("Password", { exact: true }).fill(otherCustomer.password);
-        await page.getByLabel("Confirm password").fill(otherCustomer.password);
+        await page.getByLabel("Full name").fill(secondCustomer.displayName);
+        await page.getByLabel("Email").fill(secondCustomer.email);
+        await page.getByLabel("Password", { exact: true }).fill(secondCustomer.password);
+        await page.getByLabel("Confirm password").fill(secondCustomer.password);
         await page.getByRole("button", { name: "Create account" }).click();
       });
       await test.step("The duplicate-account error is shown", async () => {
@@ -135,20 +135,20 @@ test.describe("Authentication", () => {
   });
 
   test.describe("Login — signed out", () => {
-    test.use({ signedIn: false });
+    test.use({ account: "signedOut" });
 
     test.beforeEach(async ({ page }) => {
       await page.goto("/login");
     });
 
-    test("a registered customer signs in and lands on their dashboard", async ({ page, otherCustomer }) => {
+    test("a registered customer signs in and lands on their dashboard", async ({ page, secondCustomer }) => {
       await test.step("Sign in with the customer's credentials", async () => {
-        await page.getByLabel("Email").fill(otherCustomer.email);
-        await page.getByLabel("Password").fill(otherCustomer.password);
+        await page.getByLabel("Email").fill(secondCustomer.email);
+        await page.getByLabel("Password").fill(secondCustomer.password);
         await page.getByRole("button", { name: "Sign in" }).click();
       });
       await test.step("The dashboard shows the customer's profile", async () => {
-        await expectSignedInDashboard(page, otherCustomer);
+        await expectSignedInDashboard(page, secondCustomer);
       });
     });
 

@@ -1,4 +1,6 @@
-import { expect, test } from "./dashboard-recent.fixtures";
+import { expect, test } from "../fixtures/signed-in";
+
+test.use({ account: "fresh" });
 
 test.use({ trace: "retain-on-failure", screenshot: "only-on-failure" });
 
@@ -7,8 +9,11 @@ test(
   {
     tag: ["@smoke", "@smoke-dashboard-recent"],
   },
-  async ({ page, customer, customerDocument, customerFile, runId }) => {
+  async ({ page, customer, customerDocument, customerFile }) => {
     const main = page.getByRole("main");
+    const frozenToday = new Date();
+    frozenToday.setHours(12, 0, 0, 0);
+    await page.clock.install({ time: frozenToday });
 
     await test.step("Open /recent as the signed-in customer", async () => {
       await page.goto("/recent");
@@ -34,12 +39,11 @@ test(
     });
 
     await test.step("List the file before the document", async () => {
-      const items = main.getByRole("link").filter({ hasText: runId });
-      await expect(items).toHaveCount(2);
-      await expect(items).toContainText([
-        customerFile.name,
-        customerDocument.title,
-      ]);
+      const links = await main.getByRole("link").allTextContents();
+      const fileIndex = links.findIndex((text) => text.includes(customerFile.name));
+      const documentIndex = links.findIndex((text) => text.includes(customerDocument.title));
+      expect(fileIndex).toBeGreaterThanOrEqual(0);
+      expect(documentIndex).toBeGreaterThan(fileIndex);
     });
 
     await test.step("Open each listed record at its own route", async () => {

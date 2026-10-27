@@ -1,13 +1,15 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { test, expect } from "./smoke/auth-landing/auth-landing.fixtures";
+import { test, expect } from "./fixtures/signed-in";
 
 const APP_VERSION: string = JSON.parse(
   readFileSync(path.join(__dirname, "..", "package.json"), "utf8"),
 ).version;
 
+test.use({ account: "signedOut" });
+
 // OTD-13 corporate rebrand — see docs/bdd/otd13-corporate-rebrand-bdd.md
-// Runs as a signed-in customer (fixture default); the landing page renders the same content either way.
+// Landing content is independent of authentication.
 test.describe("Landing Page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");

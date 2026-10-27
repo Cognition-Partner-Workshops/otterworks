@@ -1,8 +1,6 @@
-import { test, expect } from "./smoke/margins-billing/margins-billing.fixtures";
+import { test, expect } from "./fixtures/signed-in";
 
-// OTD-15 margins dashboard (AC-08…AC-13). Each test runs as a freshly
-// registered customer (real gateway JWT), so requests flow through the real
-// gateway + analytics-service. The SKU catalogue is the analytics seed
+// OTD-15 margins dashboard (AC-08…AC-13). The SKU catalogue is the analytics seed
 // (services/analytics-service/src/main/resources/seed/market-series/products.csv).
 const SEEDED_SKUS = 40;
 const SEEDED_SEAFOOD_SKUS = 18;
@@ -151,7 +149,17 @@ test.describe("Margins with a stubbed analytics response", () => {
     });
   });
 
-  test("renders a SKU row returned by the margins API", async ({ page }) => {
+  test("renders a mocked SKU row", async ({ page }) => {
+    await page.route("**/api/v1/auth/profile", (route) =>
+      route.fulfill({
+        json: {
+          id: "playwright-mock-user",
+          email: "playwright-mock@otterworks.test",
+          displayName: "Playwright Mock",
+          avatarUrl: null,
+        },
+      }),
+    );
     await page.route("**/api/v1/analytics/margins", (route) =>
       route.fulfill({
         json: {

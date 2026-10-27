@@ -1,4 +1,4 @@
-import { test, expect } from "./margins-billing.fixtures";
+import { test, expect } from "../fixtures/signed-in";
 
 test.describe("Billing plans smoke (signed in)", () => {
   test("a signed-in customer sees every billing plan with its price and units", async ({

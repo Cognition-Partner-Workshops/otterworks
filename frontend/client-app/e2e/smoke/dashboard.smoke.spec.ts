@@ -1,4 +1,6 @@
-import { expect, test } from "./dashboard-recent.fixtures";
+import { expect, test } from "../fixtures/signed-in";
+
+test.use({ account: "fresh" });
 
 test.use({ trace: "retain-on-failure", screenshot: "only-on-failure" });
 

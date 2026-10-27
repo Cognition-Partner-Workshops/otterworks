@@ -1,4 +1,4 @@
-import { test, expect } from "./settings-legal.fixtures";
+import { test, expect } from "../fixtures/signed-in";
 
 test(
   "signed-in customer opening /terms reads the Terms of Service",

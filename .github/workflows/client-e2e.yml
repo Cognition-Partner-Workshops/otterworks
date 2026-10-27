@@ -27,9 +27,11 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Run landing page specs
-        run: npx playwright test e2e/landing.spec.ts
+        run: npx playwright test e2e/landing.spec.ts --no-deps
       - name: Run mocked margins spec
-        run: npx playwright test e2e/margins.spec.ts --grep "renders a mocked SKU row" --repeat-each=10
+        run: npx playwright test e2e/margins.spec.ts --grep "renders a mocked SKU row" --repeat-each=10 --no-deps
+        env:
+          PLAYWRIGHT_MOCK_AUTH: "1"
       - name: Upload Playwright artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

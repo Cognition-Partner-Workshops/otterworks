@@ -1,4 +1,4 @@
-import { test, expect, expectSignedInDashboard } from "./auth-landing.fixtures";
+import { test, expect, expectSignedInDashboard } from "../fixtures/signed-in";
 
 test.describe("Landing page (/) smoke — signed in", () => {
   test("a signed-in customer opening / sees the OtterWorks corporate front page with its Sign In and Create Account entry points, and stays signed in", async ({

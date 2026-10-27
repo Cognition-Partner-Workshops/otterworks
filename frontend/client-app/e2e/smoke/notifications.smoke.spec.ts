@@ -1,4 +1,6 @@
-import { test, expect } from "./search-notifications.fixtures";
+import { test, expect } from "../fixtures/signed-in";
+
+test.use({ account: "fresh" });
 
 test.describe("Notifications page (signed in)", () => {
   test(

@@ -1,4 +1,4 @@
-import { test, expect, escapeRegExp } from "./collections.fixtures";
+import { test, expect, escapeRegExp } from "../fixtures/signed-in";
 
 test.use({ trace: "retain-on-failure" });
 
