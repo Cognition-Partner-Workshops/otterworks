@@ -682,10 +682,10 @@ SQL
 psql -tAc "SELECT 'seeded ' || (SELECT count(*) FROM legacy.employee) || ' de and ' || (SELECT count(*) FROM legacy_uk.employee) || ' uk employee records'"
 EOF
 )"
-  run_job gf-seed "${ECR_REGISTRY}/${ECR_PREFIX}/gf-seed:${TOKEN}" "${script}"
+  run_job gf-seed "$(image_ref gf-seed)" "${script}"
 }
 fill_after_schemas() {
-  run_job gf-fill "${ECR_REGISTRY}/${ECR_PREFIX}/gf-seed:${TOKEN}" "psql -q -tA -f /seed/after-seed.sql"
+  run_job gf-fill "$(image_ref gf-seed)" "psql -q -tA -f /seed/after-seed.sql"
 }
 
 reset_all() {
