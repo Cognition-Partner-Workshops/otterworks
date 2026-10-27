@@ -166,7 +166,8 @@ httpServer.on('upgrade', (request, socket, head) => {
     extra: Record<string, unknown> = {},
   ) => {
     logger.warn(extra, `y-websocket_connection_rejected: ${reason}`);
-    const statusText = status === 401 ? 'Unauthorized' : 'Forbidden';
+    const statusText =
+      status === 400 ? 'Bad Request' : status === 401 ? 'Unauthorized' : 'Forbidden';
     socket.write(`HTTP/1.1 ${status} ${statusText}\r\n\r\n`);
     socket.destroy();
   };
@@ -192,7 +193,13 @@ httpServer.on('upgrade', (request, socket, head) => {
 
   // The y-websocket protocol lets every connected peer write, so the caller
   // must be allowed to edit the document behind the room before upgrading.
-  const roomName = decodeURIComponent(url.pathname.slice(1));
+  let roomName: string;
+  try {
+    roomName = decodeURIComponent(url.pathname.slice(1));
+  } catch {
+    reject(400, 'malformed room path', { userId: user.userId });
+    return;
+  }
   const documentId = roomName.startsWith(Y_WEBSOCKET_ROOM_PREFIX)
     ? roomName.slice(Y_WEBSOCKET_ROOM_PREFIX.length)
     : roomName;
