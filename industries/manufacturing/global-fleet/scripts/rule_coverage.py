@@ -47,6 +47,31 @@ def service_status(name, testcases):
     return aggregate(matched)
 
 
+def extra_test_name(name):
+    return normalize_testcase_name(name).rsplit(" > ", 1)[-1]
+
+
+def extra_test_names(rule_id, sources, catalog_names):
+    prefix = f"{rule_id}_"
+    return sorted({
+        candidate
+        for testcases in sources
+        for testcase in testcases
+        for candidate in [extra_test_name(testcase)]
+        if candidate.startswith(prefix) and candidate not in catalog_names
+    })
+
+
+def extra_test_status(name, testcases):
+    matched = [
+        status
+        for testcase, results in testcases.items()
+        if extra_test_name(testcase) == name
+        for status in results
+    ]
+    return aggregate(matched)
+
+
 def web_status(name, testcases):
     matched = []
     for testcase, results in testcases.items():
@@ -106,6 +131,12 @@ def main(argv=None):
     web = testcase_statuses([args.vitest]) if args.vitest else {}
 
     sources = list(profiles) + ["vitest"]
+    source_testcases = list(profiles.values()) + [web]
+    catalog_names = {
+        normalize_testcase_name(test["name"])
+        for rule in catalog["rules"]
+        for test in rule.get("tests", [])
+    }
     print("rule\ttest\tlayer\t" + "\t".join(sources))
     per_rule = {}
     any_failed = False
@@ -124,6 +155,21 @@ def main(argv=None):
             statuses_for_rule.append(statuses)
             print(
                 f'{rule["id"]}\t{test["name"]}\t{test["layer"]}\t'
+                + "\t".join(display_statuses)
+            )
+        for test_name in extra_test_names(rule["id"], source_testcases, catalog_names):
+            statuses = [
+                extra_test_status(test_name, testcases)
+                for testcases in source_testcases
+            ]
+            any_failed |= "failed" in statuses
+            statuses_for_rule.append([status for status in statuses if status != "missing"])
+            display_statuses = [
+                status if status != "missing" else "not-applicable"
+                for status in statuses
+            ]
+            print(
+                f'{rule["id"]}\t{test_name}\textra\t'
                 + "\t".join(display_statuses)
             )
         flattened = [status for test_statuses in statuses_for_rule for status in test_statuses]
