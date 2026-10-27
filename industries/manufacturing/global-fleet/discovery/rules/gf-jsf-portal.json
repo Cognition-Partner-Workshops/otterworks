@@ -1,0 +1,733 @@
+{
+  "app_id": "gf-jsf-portal",
+  "rules": [
+    {
+      "id": "JP-R01",
+      "title": "Single country rule set DE",
+      "statement": "All parameters (minimum grade, benefit %, commute %, mileage rate) come from the one fleet_rule row with country 'DE': min_grade 6, benefit_pct 1.00, commute_pct 0.030, mileage_rate 0.305 EUR/km.",
+      "category": "other",
+      "where": [
+        "request",
+        "mileage",
+        "statement",
+        "health"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:15-22",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:4-11"
+      ],
+      "evidence": "em.find(FleetRule.class, \"DE\")",
+      "status": "observed",
+      "note": "Country is a literal; fleet_rule.currency is never read, EUR is hard-coded in the pages."
+    },
+    {
+      "id": "JP-R02",
+      "title": "Requester must exist and be active",
+      "statement": "A car request is only accepted for an employee whose number (trimmed, upper-cased) exists and whose status is 'A'; any other status (e.g. 'T') is refused.",
+      "category": "eligibility",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:32-37",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:35"
+      ],
+      "evidence": "if (employee == null || !employee.isActive())",
+      "status": "observed",
+      "note": "leave_date and hire_date are not checked; only status decides. See JP-R31 for the statement side."
+    },
+    {
+      "id": "JP-R03",
+      "title": "Grade threshold for a company car",
+      "statement": "An employee is entitled to a company car only if grade (Entgeltgruppe) >= fleet_rule.min_grade (DE: 6); grades 1-5 are refused.",
+      "category": "eligibility",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:38-42",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3"
+      ],
+      "evidence": "if (employee.getGrade() < rule.getMinGrade())",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R04",
+      "title": "One open car per employee",
+      "statement": "An employee who already has an open assignment (end_date null) cannot request another car.",
+      "category": "eligibility",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:43-46",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:47-55",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Assignment.java:26"
+      ],
+      "evidence": "if (fleet.currentAssignment(employee) != null)",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R05",
+      "title": "Pool car availability",
+      "statement": "A pool car is offered only if it has no owner AND no open assignment; the list is sorted by plate and is computed once when step 1 passes.",
+      "category": "vehicle",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:67-76",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:47"
+      ],
+      "evidence": "v.owner is null and not exists ... (select a from Assignment a where a.vehicle = v and a.endDate is null) order by v.plate",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R06",
+      "title": "Pool choice requires a selected car",
+      "statement": "When 'pool' is chosen (the default), a vehicle must be selected before step 3.",
+      "category": "validation",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:21",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:51-55",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:19-27"
+      ],
+      "evidence": "if (\"pool\".equals(choice) && vehicleId == null)",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R07",
+      "title": "New car mandatory data",
+      "statement": "When registering a newly delivered car, plate, make, model, list price (EUR) and CO2 (g/km) are all mandatory; fuel defaults to Diesel 'D' (choices D/P/H/E). No range check on price or CO2.",
+      "category": "validation",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:56-60",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:28",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:28-35"
+      ],
+      "evidence": "plate == null || make == null || model == null || listPrice == null || co2 == null",
+      "status": "observed",
+      "note": "Negative or zero list price is accepted by the code; plate uniqueness is only the DB UNIQUE constraint (insert fails)."
+    },
+    {
+      "id": "JP-R08",
+      "title": "Plate normalisation on entry",
+      "statement": "A new car plate is trimmed, inner whitespace collapsed to one space and upper-cased; blank becomes missing.",
+      "category": "validation",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/PlateConverter.java:12-18",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:28"
+      ],
+      "evidence": "value.trim().replaceAll(\"\\\\s+\", \" \").toUpperCase()",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R09",
+      "title": "Handover date default and no checks",
+      "statement": "The handover (start) date defaults to today, entered as dd.MM.yyyy, with no check against past/future or previous assignments.",
+      "category": "assignment",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:29",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:42-43",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:81"
+      ],
+      "evidence": "private Date startDate = new Date();",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R10",
+      "title": "Request is delivered immediately",
+      "statement": "Submitting the wizard in one transaction: stores a new car (registered_on = handover date) or reuses the pool car, sets the car's owner to the employee, records a car_request with status 'DELIVERED' and requested_on = today, and opens an assignment starting on the handover date with no end date.",
+      "category": "assignment",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:100-134",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:63-83"
+      ],
+      "evidence": "r.setStatus(\"DELIVERED\"); ... a.setStartDate(start);",
+      "status": "ambiguous",
+      "note": "The page is called 'Antrag' (request) but there is no approval or ordering state: status is always DELIVERED and the car is assigned at once."
+    },
+    {
+      "id": "JP-R11",
+      "title": "No re-check at submit (pool race)",
+      "statement": "The pool car chosen in step 2 is not re-checked for availability at submit, so two concurrent wizards can assign the same pool car.",
+      "category": "data-integrity",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:66-71",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:112-114",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:39-45"
+      ],
+      "evidence": "v = em.find(Vehicle.class, existing.getId()); ... v.setOwner(emp);",
+      "status": "ambiguous",
+      "note": "No DB constraint prevents two open assignments for one vehicle; the business intent (one holder per car) is only enforced at step-1 listing time."
+    },
+    {
+      "id": "JP-R12",
+      "title": "Owner mirrors open assignment",
+      "statement": "A car's owner is set when an assignment opens and cleared when it is returned; owner is meant to equal the holder of the open assignment.",
+      "category": "data-integrity",
+      "where": [
+        "request",
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:114",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:141-143",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:36"
+      ],
+      "evidence": "a.setEndDate(returnDate); ... a.getVehicle().setOwner(null);",
+      "status": "observed",
+      "note": "Application-maintained invariant only, no constraint."
+    },
+    {
+      "id": "JP-R13",
+      "title": "Return lookup by exact plate",
+      "statement": "A return is found by exact, case-sensitive plate match (no normalisation) and must have an open assignment, otherwise an error is shown.",
+      "category": "return",
+      "where": [
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:29-40",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:78-98",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:11"
+      ],
+      "evidence": "where v.plate = :p ... where a.vehicle = :v and a.endDate is null",
+      "status": "ambiguous",
+      "note": "Wizard normalises plates on entry but return does not, so 'm-ab 1234' finds nothing."
+    },
+    {
+      "id": "JP-R14",
+      "title": "Odometer mandatory on return",
+      "statement": "A return requires an odometer reading (km); no range or plausibility check against earlier readings.",
+      "category": "validation",
+      "where": [
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:42-46",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:17"
+      ],
+      "evidence": "if (open == null || odometer == null)",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R15",
+      "title": "Return date not before handover",
+      "statement": "Return date (default today) must not be before the assignment start date; same-day return and future dates are allowed.",
+      "category": "return",
+      "where": [
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:18",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:47-50"
+      ],
+      "evidence": "if (returnDate.before(open.getStartDate()))",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R16",
+      "title": "Booking a return",
+      "statement": "Booking a return sets assignment.end_date = return date, clears the car's owner (back to pool) and stores a car_return with return date, odometer km and condition note, in one transaction.",
+      "category": "return",
+      "where": [
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:136-157",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:51"
+      ],
+      "evidence": "a.setEndDate(returnDate); a.getVehicle().setOwner(null); ... em.persist(r);",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R17",
+      "title": "Mileage amount",
+      "statement": "Business-trip reimbursement = km x fleet_rule.mileage_rate (DE 0.305 EUR/km), rounded to 2 decimals HALF_EVEN (banker's rounding); the amount is frozen on the claim at submission.",
+      "category": "benefit-calculation",
+      "where": [
+        "mileage"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:159-161",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:173",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3"
+      ],
+      "evidence": "multiply(BigDecimal.valueOf(km)).setScale(2, RoundingMode.HALF_EVEN)",
+      "status": "observed",
+      "note": "Benefit uses HALF_UP; mileage uses HALF_EVEN. E.g. 1 km=0.305->0.30 (HALF_EVEN), would be 0.31 HALF_UP. Seed: 130 km -> 39.65."
+    },
+    {
+      "id": "JP-R18",
+      "title": "Mileage claim km must be positive",
+      "statement": "A claim is accepted only with km > 0 (integer kilometres); no upper limit; preview (Berechnen) computes for any km including <= 0.",
+      "category": "mileage",
+      "where": [
+        "mileage"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:42-50"
+      ],
+      "evidence": "if (employee == null || km == null || km <= 0)",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R19",
+      "title": "New claims start SUBMITTED",
+      "statement": "A new claim is stored with status 'SUBMITTED', claim date default today (no date check), purpose defaulting to empty text.",
+      "category": "mileage",
+      "where": [
+        "mileage"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:163-184",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:21",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:51"
+      ],
+      "evidence": "c.setStatus(\"SUBMITTED\");",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R20",
+      "title": "Claim history window",
+      "statement": "The mileage page lists the employee's claims with claim_date between now minus 6 months and now, oldest first, all statuses.",
+      "category": "mileage",
+      "where": [
+        "mileage"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:59-67",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:186-195",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:23-29"
+      ],
+      "evidence": "from.add(Calendar.MONTH, -6); claims = fleet.claims(employee, from.getTime(), new Date());",
+      "status": "observed",
+      "note": "Bounds carry the current time of day, so a claim dated exactly 6 months ago is likely excluded (DATE vs timestamp)."
+    },
+    {
+      "id": "JP-R21",
+      "title": "Statement default period",
+      "statement": "The benefit statement period is given as yyyy-MM; if empty it defaults to the previous calendar month (server clock); it covers day 1 to the last day of that month.",
+      "category": "period-lifecycle",
+      "where": [
+        "statement"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:58-68",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:13"
+      ],
+      "evidence": "c.add(Calendar.MONTH, -1); ... end.getActualMaximum(Calendar.DAY_OF_MONTH)",
+      "status": "observed",
+      "note": "SimpleDateFormat is lenient: '2026-13' becomes January 2027; unparseable text throws."
+    },
+    {
+      "id": "JP-R22",
+      "title": "Benefit days per assignment",
+      "statement": "For each assignment overlapping the month, benefit days = inclusive days from max(start, 1st) to min(end or month-end, month-end); assignments not overlapping are skipped. Both the return day and a same-day new start count.",
+      "category": "benefit-calculation",
+      "where": [
+        "statement"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69-75",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:197-209"
+      ],
+      "evidence": "int days = FleetService.daysBetween(s, e);",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R23",
+      "title": "Monthly benefit formula (1% + 0.03%/km)",
+      "statement": "Monthly benefit = list price x benefit_pct/100 + list price x commute_pct/100 x commute_km (DE: 1% + 0.03% per one-way commute km), unrounded.",
+      "category": "benefit-calculation",
+      "where": [
+        "statement"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:76-79",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:20",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:208-211"
+      ],
+      "evidence": "list.multiply(rule.getBenefitPct()).divide(HUNDRED) .add(list.multiply(rule.getCommutePct()).divide(HUNDRED) .multiply(BigDecimal.valueOf(employee.getCommuteKm())))",
+      "status": "observed",
+      "note": "Uses current vehicle list price and current employee commute_km, not values at that time. CO2/fuel (EV reductions) ignored. No employee contribution and no per-vehicle %, unlike FLEBEN01 (VH-BPCT/1200 - EM-CNTRB)."
+    },
+    {
+      "id": "JP-R24",
+      "title": "Benefit proration and rounding",
+      "statement": "Line benefit = monthly benefit x days / days in month, rounded to 2 decimals HALF_UP; total benefit = sum of rounded lines (EUR).",
+      "category": "benefit-calculation",
+      "where": [
+        "statement"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:80-83"
+      ],
+      "evidence": ".divide(BigDecimal.valueOf(monthDays), 2, RoundingMode.HALF_UP)",
+      "status": "ambiguous",
+      "note": "Page states the monthly 1% rule but code prorates by calendar days; the German 1% rule normally charges a full month for any started month. E.g. 40000 EUR, 20 km, 15 of 30 days: (400+240)x15/30 = 320.00."
+    },
+    {
+      "id": "JP-R25",
+      "title": "Statement mileage counts approved only",
+      "statement": "Reimbursed business-trip total = sum of amounts of claims dated in the month with status 'APPROVED'; SUBMITTED and REJECTED are excluded.",
+      "category": "benefit-calculation",
+      "where": [
+        "statement"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:85-89",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:27"
+      ],
+      "evidence": "if (\"APPROVED\".equals(c.getStatus()))",
+      "status": "ambiguous",
+      "note": "The portal only ever writes SUBMITTED and has no approval step, so portal-entered claims never reach this total; seed has APPROVED rows set outside the app."
+    },
+    {
+      "id": "JP-R26",
+      "title": "Statement not restricted to active employees",
+      "statement": "The statement is computed for any employee number found (exact match, no trim/upper-case), including status 'T'.",
+      "category": "eligibility",
+      "where": [
+        "statement",
+        "assignment"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:48-56",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/AssignmentBean.java:21-29"
+      ],
+      "evidence": "employee = fleet.findEmployee(employeeNo);",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R27",
+      "title": "No closed periods",
+      "statement": "Statements are computed on every view and never stored; there is no period open/close, so later changes (list price, commute km, returns) recompute past months.",
+      "category": "period-lifecycle",
+      "where": [
+        "statement"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:48-90"
+      ],
+      "evidence": "for (Assignment a : fleet.assignments(employee)) {",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R28",
+      "title": "Current car is first open assignment",
+      "statement": "The employee's current car is the first assignment without end date in start-date-descending order; history shows all assignments incl. returned.",
+      "category": "assignment",
+      "where": [
+        "assignment",
+        "employees"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:47-65",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/AssignmentBean.java:30-31",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/assignment.xhtml:13-25"
+      ],
+      "evidence": "if (a.isOpen()) { return a; ... order by a.startDate desc",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R29",
+      "title": "Employee search",
+      "statement": "Search is a case-insensitive contains match on employee number, last name or first name, sorted by last then first name, at most 50 rows, showing each one's current car plate; empty term lists the first 50.",
+      "category": "other",
+      "where": [
+        "employees"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:24-34",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/EmployeeLookupBean.java:32-38"
+      ],
+      "evidence": "lower(e.employeeNo) like :t ... or lower(e.lastName) like :t or lower(e.firstName) like :t order by e.lastName, e.firstName ... setMaxResults(50)",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R30",
+      "title": "Wizard back skips validation",
+      "statement": "'Zurueck' goes back one step (not below 1) without validating input.",
+      "category": "other",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:85-89",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:36",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:44"
+      ],
+      "evidence": "action=\"#{wizard.back}\" immediate=\"true\"",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "JP-R31",
+      "title": "Statement days not capped at leaving date",
+      "statement": "Statement benefit days are the overlap of the assignment (start, end or month-end) with the calendar month only; employee.leave_date and hire_date are never read, so a leaver's open or late-closed assignment is taxed to the end of the month, and there is no leaver flag on the statement.",
+      "category": "benefit-calculation",
+      "where": [
+        "statement"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69-75",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:32-33",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:22-23"
+      ],
+      "evidence": "Date e = a.getEndDate() == null || a.getEndDate().after(to) ? to : a.getEndDate();",
+      "status": "observed",
+      "note": "getHireDate()/getLeaveDate() have no caller in src/ (grep). Counterpart of MF-R35/MF-R40 (FLEBEN01 caps car days at EM-LEAV and flags L)."
+    },
+    {
+      "id": "JP-R32",
+      "title": "Mileage claim accepted for any found employee",
+      "statement": "Mileage find/submit require only a found employee and positive kilometres. Status, leave date, grade and car ownership are not checked; leavers can submit claims too.",
+      "category": "eligibility",
+      "where": [
+        "mileage"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:34-40",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:46-51",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:35",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:34"
+      ],
+      "evidence": "if (employee == null || km == null || km <= 0)",
+      "status": "observed",
+      "note": "Only the request wizard checks isActive(); counterpart of MF-R04."
+    }
+  ],
+  "navigation_questions": [
+    {
+      "id": "JP-Q01",
+      "navigation": "em.find(FleetRule.class, \"DE\")",
+      "set_or_relationship": "fleet_rule (PK country)",
+      "where": [
+        "request",
+        "mileage",
+        "statement",
+        "health"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:15-22",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:38",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:79",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:160",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:57"
+      ],
+      "business_question": "What are the company-car rules for Germany?",
+      "answer_semantics": "Always the single DE row; no effective dating, so rule changes apply retroactively."
+    },
+    {
+      "id": "JP-Q02",
+      "navigation": "select e from Employee e where lower(employeeNo|lastName|firstName) like %t% order by lastName, firstName (max 50)",
+      "set_or_relationship": "employee",
+      "where": [
+        "employees"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:24-34",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/EmployeeLookupBean.java:34"
+      ],
+      "business_question": "Which employees match this name or number fragment?",
+      "answer_semantics": "Includes leavers (status T); alphabetical; truncated at 50 with no indication."
+    },
+    {
+      "id": "JP-Q03",
+      "navigation": "select e from Employee e where e.employeeNo = :n",
+      "set_or_relationship": "employee.employee_no (unique)",
+      "where": [
+        "request",
+        "mileage",
+        "statement",
+        "assignment"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:36-45",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:33",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:29",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:35",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:52",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/AssignmentBean.java:25"
+      ],
+      "business_question": "Who is employee number X?",
+      "answer_semantics": "Exact match; wizard and mileage Suchen trim+upper-case first, statement/assignment/mileage URL param do not."
+    },
+    {
+      "id": "JP-Q04",
+      "navigation": "select a from Assignment a join fetch a.vehicle where a.employee = :e order by a.startDate desc",
+      "set_or_relationship": "assignment.employee_id->employee (+ assignment.vehicle_id->vehicle)",
+      "where": [
+        "assignment",
+        "statement",
+        "employees",
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:57-65",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/AssignmentBean.java:30",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69"
+      ],
+      "business_question": "Which cars has this employee had, newest first?",
+      "answer_semantics": "Includes returned and open assignments; no date filter (statement filters overlap in Java)."
+    },
+    {
+      "id": "JP-Q05",
+      "navigation": "currentAssignment(e): first a in assignments(e) with endDate null",
+      "set_or_relationship": "assignment.employee_id->employee",
+      "where": [
+        "employees",
+        "request",
+        "assignment"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:47-55",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/EmployeeLookupBean.java:35",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:43",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/AssignmentBean.java:31"
+      ],
+      "business_question": "Does this employee currently have a company car, and which?",
+      "answer_semantics": "Stops at the first open one by latest start; if data had two open, the older is hidden."
+    },
+    {
+      "id": "JP-Q06",
+      "navigation": "select v from Vehicle v where v.owner is null and not exists (open Assignment for v) order by v.plate",
+      "set_or_relationship": "vehicle.owner_employee_id + assignment.vehicle_id",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:67-76",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:47"
+      ],
+      "business_question": "Which pool cars are free to hand out?",
+      "answer_semantics": "Requires both no owner and no open assignment; sorted by plate; snapshot at step 1."
+    },
+    {
+      "id": "JP-Q07",
+      "navigation": "select v from Vehicle v where v.plate = :p",
+      "set_or_relationship": "vehicle.plate (unique)",
+      "where": [
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:78-87",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:30"
+      ],
+      "business_question": "Which car has this number plate?",
+      "answer_semantics": "Exact case-sensitive match."
+    },
+    {
+      "id": "JP-Q08",
+      "navigation": "select a from Assignment a join fetch a.employee where a.vehicle = :v and a.endDate is null",
+      "set_or_relationship": "assignment.vehicle_id->vehicle (+ assignment.employee_id->employee)",
+      "where": [
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:89-98",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:36",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:14-15"
+      ],
+      "business_question": "Who currently has this car and since when?",
+      "answer_semantics": "Takes the first open assignment if several (no ordering); none means the car is in the pool."
+    },
+    {
+      "id": "JP-Q09",
+      "navigation": "select c from MileageClaim c where c.employee = :e and c.claimDate between :f and :t order by c.claimDate",
+      "set_or_relationship": "mileage_claim.employee_id->employee",
+      "where": [
+        "mileage",
+        "statement"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:186-195",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:66",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:85"
+      ],
+      "business_question": "Which mileage claims did this employee make in this date range (last 6 months / the statement month)?",
+      "answer_semantics": "Oldest first, all statuses; statement then keeps only APPROVED."
+    },
+    {
+      "id": "JP-Q10",
+      "navigation": "requestCar: em.find(Employee,id); persist/find Vehicle; v.setOwner(emp); persist CarRequest; persist Assignment",
+      "set_or_relationship": "vehicle.owner, car_request.employee/vehicle, assignment.employee/vehicle (connect)",
+      "where": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:100-134"
+      ],
+      "business_question": "Hand this car to this employee from this date.",
+      "answer_semantics": "Links car to employee as owner and opens a new assignment; request recorded as already DELIVERED."
+    },
+    {
+      "id": "JP-Q11",
+      "navigation": "returnCar: em.find(Assignment,id).getVehicle().setOwner(null); setEndDate; persist CarReturn",
+      "set_or_relationship": "assignment->vehicle traversal; vehicle.owner (disconnect); car_return.assignment_id",
+      "where": [
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:136-157"
+      ],
+      "business_question": "Take this car back from its holder on this date.",
+      "answer_semantics": "Closes the assignment (kept as history) and returns the car to the pool; nothing is deleted."
+    },
+    {
+      "id": "JP-Q12",
+      "navigation": "a.getVehicle().getListPrice() / getPlate() per assignment",
+      "set_or_relationship": "assignment.vehicle_id->vehicle",
+      "where": [
+        "statement",
+        "employees",
+        "assignment"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:76",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:82",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/EmployeeLookupBean.java:36",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/assignment.xhtml:13-25"
+      ],
+      "business_question": "What car (plate, list price) belongs to this assignment?",
+      "answer_semantics": "Current vehicle data, not a snapshot at assignment time."
+    }
+  ]
+}

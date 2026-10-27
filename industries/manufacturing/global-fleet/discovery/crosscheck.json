@@ -1,0 +1,1609 @@
+{
+  "round": 2,
+  "rule_pairs": [
+    {
+      "topic": "Company-car grade threshold",
+      "mainframe_rule_ids": [
+        "MF-R01",
+        "MF-R02"
+      ],
+      "portal_rule_ids": [
+        "JP-R03"
+      ],
+      "verdict": "differs",
+      "difference": "MF: EM-GRD >= 07, tested only in FLEASGN-PREMAP and bypassable by re-keying the id because FLEASGN-ENTER has no grade test; DE: grade >= fleet_rule.min_grade (6) tested in checkEmployee, and step 2/3 are only rendered after it passes. Same grade numbers are used for the 15 transferees on both sides although the thresholds differ (07 vs 6).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:27-32",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:36-43",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:38-42",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3"
+      ]
+    },
+    {
+      "topic": "Employee existence and status",
+      "mainframe_rule_ids": [
+        "MF-R03",
+        "MF-R04",
+        "MF-R05",
+        "MF-R06"
+      ],
+      "portal_rule_ids": [
+        "JP-R02",
+        "JP-R26"
+      ],
+      "verdict": "differs",
+      "difference": "MF: skips T duplicates in storage order, X (transferred) passes as current, ENTER paths have no not-found exit; DE: employee_no is unique, request requires status A, statement/assignment pages accept any status (no trim/upper-case).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:10-26",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:38-43",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:32-37",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:48-56",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:15"
+      ]
+    },
+    {
+      "topic": "Rehire duplicates / one record per employment",
+      "mainframe_rule_ids": [
+        "MF-R32",
+        "MF-R45"
+      ],
+      "portal_rule_ids": [],
+      "verdict": "only-in-mainframe",
+      "difference": "MF keeps one EMPLOYEE occurrence per employment (CALC DUPLICATES LAST; 2 ids in the unload have a T and an A occurrence) and pays each occurrence separately keyed by db-key; DE employee_no is UNIQUE so a rehire reuses one row.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-23",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:246-248",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:15"
+      ]
+    },
+    {
+      "topic": "Vehicle selection for an assignment",
+      "mainframe_rule_ids": [
+        "MF-R07"
+      ],
+      "portal_rule_ids": [
+        "JP-R05",
+        "JP-R06",
+        "JP-R07",
+        "JP-R08"
+      ],
+      "verdict": "differs",
+      "difference": "MF keys an existing VH-VEHID (no vehicle maintenance in source); DE picks from the computed pool list or registers a new car (plate normalised, make/model/price/CO2 required) inside the request.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:44-50",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:51-61",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:67-76"
+      ]
+    },
+    {
+      "topic": "One holder per car",
+      "mainframe_rule_ids": [
+        "MF-R08",
+        "MF-R10"
+      ],
+      "portal_rule_ids": [
+        "JP-R05",
+        "JP-R11",
+        "JP-R12"
+      ],
+      "verdict": "differs",
+      "difference": "MF: \"held\" = EMP-VEHICLE member; PL pool loans never connect, so a car out on pool loan can be assigned again; DE: available = owner null AND no open assignment, checked at step 1 only (no re-check at submit, no DB constraint).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:51-55",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:65-66",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:67-76",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:112-114"
+      ]
+    },
+    {
+      "topic": "Cars per employee",
+      "mainframe_rule_ids": [
+        "MF-R09"
+      ],
+      "portal_rule_ids": [
+        "JP-R04"
+      ],
+      "verdict": "differs",
+      "difference": "MF has no check (20 unload employees hold two open cars); DE refuses a request when an open assignment exists (0 seed employees with two open).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:36-71",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:43-46"
+      ]
+    },
+    {
+      "topic": "Assignment reason code",
+      "mainframe_rule_ids": [
+        "MF-R11"
+      ],
+      "portal_rule_ids": [],
+      "verdict": "only-in-mainframe",
+      "difference": "AS-RSN NC/RP/PL (default NC, unchecked) has no portal equivalent; portal records car_request status DELIVERED instead.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:56-57",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:68-71"
+      ]
+    },
+    {
+      "topic": "Assignment start date",
+      "mainframe_rule_ids": [
+        "MF-R12"
+      ],
+      "portal_rule_ids": [
+        "JP-R09"
+      ],
+      "verdict": "differs",
+      "difference": "Both accept any start date without plausibility checks; MF requires a keyed YYYYMMDD (digits only), DE defaults to today in dd.MM.yyyy.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:62-64",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:29"
+      ]
+    },
+    {
+      "topic": "Assignment identifier",
+      "mainframe_rule_ids": [
+        "MF-R13"
+      ],
+      "portal_rule_ids": [],
+      "verdict": "only-in-mainframe",
+      "difference": "MF AS-ASGID = A + session counter (never read); DE uses BIGSERIAL ids.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:58-61",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:40"
+      ]
+    },
+    {
+      "topic": "Car request record delivered at once",
+      "mainframe_rule_ids": [],
+      "portal_rule_ids": [
+        "JP-R10"
+      ],
+      "verdict": "only-in-portal",
+      "difference": "DE writes car_request DELIVERED plus the assignment and vehicle owner in one transaction; MF stores only the ASSIGNMENT (and EMP-VEHICLE connect).",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:100-134",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:63-67"
+      ]
+    },
+    {
+      "topic": "Current car shown to the user",
+      "mainframe_rule_ids": [
+        "MF-R14"
+      ],
+      "portal_rule_ids": [
+        "JP-R28"
+      ],
+      "verdict": "differs",
+      "difference": "MF inquiry shows the latest-starting assignment even if returned; DE shows the first open assignment (start desc) and full history.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:25-31",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:47-55"
+      ]
+    },
+    {
+      "topic": "Benefit formula",
+      "mainframe_rule_ids": [
+        "MF-R15",
+        "MF-R36"
+      ],
+      "portal_rule_ids": [
+        "JP-R23",
+        "JP-R24"
+      ],
+      "verdict": "differs",
+      "difference": "MF: list x VH-BPCT (per-vehicle annual %) / 1200 - EM-CNTRB, GBP; inquiry ROUNDED full month, batch prorated by car days and TRUNCATED, floored at 0. DE: list x 1% + list x 0.03% x commute_km per month, EUR, prorated by days/monthDays HALF_UP per line, no contribution, no floor, current list price and commute_km.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:34-37",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:208-216",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:76-83"
+      ]
+    },
+    {
+      "topic": "Benefit days and period length",
+      "mainframe_rule_ids": [
+        "MF-R30",
+        "MF-R35"
+      ],
+      "portal_rule_ids": [
+        "JP-R21",
+        "JP-R22"
+      ],
+      "verdict": "differs",
+      "difference": "MF period dates come from the BENEFIT-PERIOD record (BP-STRT..BP-END); car days capped by AS-END and EM-LEAV. DE period = calendar month of yyyy-MM (default previous month), days capped by end_date only.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:139-141",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:191-204",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:58-75"
+      ]
+    },
+    {
+      "topic": "Which assignments are taxed in a period",
+      "mainframe_rule_ids": [
+        "MF-R33",
+        "MF-R34",
+        "MF-R43"
+      ],
+      "portal_rule_ids": [
+        "JP-R22"
+      ],
+      "verdict": "differs",
+      "difference": "MF taxes only the latest-starting assignment that started on or before period end (any reason incl. PL, any grade/status); DE sums a line for every assignment overlapping the month.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:176-190",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69-84"
+      ]
+    },
+    {
+      "topic": "Leavers: cap and flag",
+      "mainframe_rule_ids": [
+        "MF-R31",
+        "MF-R35",
+        "MF-R40"
+      ],
+      "portal_rule_ids": [
+        "JP-R31"
+      ],
+      "verdict": "differs",
+      "difference": "MF skips occurrences not employed in the period, caps car days at EM-LEAV and flags L; DE never reads hire_date/leave_date and has no leaver flag.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:154-157",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:198-200",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:250-254",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69-75"
+      ]
+    },
+    {
+      "topic": "Benefit output, control totals and payroll hand-off",
+      "mainframe_rule_ids": [
+        "MF-R37",
+        "MF-R39",
+        "MF-R41",
+        "MF-R42",
+        "MF-R44"
+      ],
+      "portal_rule_ids": [],
+      "verdict": "only-in-mainframe",
+      "difference": "MF writes BENOUT per period (new dataset, abort RC16 skips count and FTP); DE renders the statement only and persists nothing.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:159-163",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:264-273",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:20-23",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:38-40",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:48-90"
+      ]
+    },
+    {
+      "topic": "Period lifecycle",
+      "mainframe_rule_ids": [
+        "MF-R16",
+        "MF-R28",
+        "MF-R29"
+      ],
+      "portal_rule_ids": [
+        "JP-R21",
+        "JP-R27"
+      ],
+      "verdict": "differs",
+      "difference": "MF has BENEFIT-PERIOD records with O/C status (claims only into the open current period; run takes a parm period, status not checked); DE has no period entity and recomputes any month on every view.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:5-12",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:136-138",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:58-68"
+      ]
+    },
+    {
+      "topic": "Mileage claim date window",
+      "mainframe_rule_ids": [
+        "MF-R16",
+        "MF-R17"
+      ],
+      "portal_rule_ids": [
+        "JP-R19"
+      ],
+      "verdict": "differs",
+      "difference": "MF: journey date must be inside the open current period; DE: claim date defaults to today with no check (any past or future date).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:38-42",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:21",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:46-51"
+      ]
+    },
+    {
+      "topic": "Mileage distance required",
+      "mainframe_rule_ids": [
+        "MF-R18"
+      ],
+      "portal_rule_ids": [
+        "JP-R18"
+      ],
+      "verdict": "same",
+      "difference": "Both require a positive whole number; MF miles 1-99999 (map PIC 9(5)), DE km > 0 with no upper bound.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:43-47",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:47-50"
+      ]
+    },
+    {
+      "topic": "Mileage amount and rate",
+      "mainframe_rule_ids": [
+        "MF-R19",
+        "MF-R38"
+      ],
+      "portal_rule_ids": [
+        "JP-R17",
+        "JP-R25"
+      ],
+      "verdict": "differs",
+      "difference": "MF: amount not stored; batch recomputes miles x BP-MRATE (0.445 GBP/mile in all 13 periods) ROUNDED per claim at run time. DE: amount frozen at submit = km x 0.305 EUR/km HALF_EVEN, statement sums stored amounts.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:48",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:234-238",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:159-161",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:85-89"
+      ]
+    },
+    {
+      "topic": "Vehicle recorded on a claim",
+      "mainframe_rule_ids": [
+        "MF-R20"
+      ],
+      "portal_rule_ids": [],
+      "verdict": "only-in-mainframe",
+      "difference": "MF stores MC-VEHID of the latest assignment (643 of 1511 unload claims have one); DE mileage_claim has no vehicle column.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:49-55",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:63-71"
+      ]
+    },
+    {
+      "topic": "Claim status and approval",
+      "mainframe_rule_ids": [
+        "MF-R21",
+        "MF-R38"
+      ],
+      "portal_rule_ids": [
+        "JP-R19",
+        "JP-R25"
+      ],
+      "verdict": "same",
+      "difference": "Both store new claims as pending (P / SUBMITTED) and pay only approved (A / APPROVED); neither source has an approval step. Codes differ: A/P/R vs APPROVED/SUBMITTED/REJECTED.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:59",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:234",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:174",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:86"
+      ]
+    },
+    {
+      "topic": "Claim history list",
+      "mainframe_rule_ids": [],
+      "portal_rule_ids": [
+        "JP-R20"
+      ],
+      "verdict": "only-in-portal",
+      "difference": "DE lists the last 6 months of claims; MF has no claim inquiry.",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:59-67"
+      ]
+    },
+    {
+      "topic": "Finding the assignment to return",
+      "mainframe_rule_ids": [
+        "MF-R22"
+      ],
+      "portal_rule_ids": [
+        "JP-R13"
+      ],
+      "verdict": "differs",
+      "difference": "MF keys vehicle id and takes the last-stored VEH-ASSIGN member (ALREADY RETURNED if ended); DE looks up exact case-sensitive plate and any open assignment.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:29-36",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:78-98"
+      ]
+    },
+    {
+      "topic": "Return date not before start",
+      "mainframe_rule_ids": [
+        "MF-R23"
+      ],
+      "portal_rule_ids": [
+        "JP-R15"
+      ],
+      "verdict": "same",
+      "difference": "Both reject a return date before the start, allow same day and future; MF YYYYMMDD keyed, DE defaults to today.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:37-41",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:47-50"
+      ]
+    },
+    {
+      "topic": "Return releases the car",
+      "mainframe_rule_ids": [
+        "MF-R24"
+      ],
+      "portal_rule_ids": [
+        "JP-R16",
+        "JP-R12"
+      ],
+      "verdict": "same",
+      "difference": "Both close the assignment and release the car (EMP-VEHICLE disconnect / owner null); DE also stores a car_return row.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:42-46",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:141-149"
+      ]
+    },
+    {
+      "topic": "Odometer on return",
+      "mainframe_rule_ids": [
+        "MF-R26"
+      ],
+      "portal_rule_ids": [
+        "JP-R14"
+      ],
+      "verdict": "differs",
+      "difference": "MF map captures WK-ODO but never processes it; DE requires and stores odometer_km.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:19",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:43-46"
+      ]
+    },
+    {
+      "topic": "Return function reachable",
+      "mainframe_rule_ids": [
+        "MF-R25"
+      ],
+      "portal_rule_ids": [],
+      "verdict": "only-in-mainframe",
+      "difference": "MF FLERETN has no menu route; DE return page is in the top navigation.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:13-21",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:15"
+      ]
+    },
+    {
+      "topic": "Navigation shell",
+      "mainframe_rule_ids": [
+        "MF-R27"
+      ],
+      "portal_rule_ids": [
+        "JP-R30"
+      ],
+      "verdict": "differs",
+      "difference": "MF menu options 1/2/3/X and PF3 back to menu; DE top-nav links on every page plus a 3-step wizard with Zurueck.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:10-23",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:12-15"
+      ]
+    },
+    {
+      "topic": "Employee search",
+      "mainframe_rule_ids": [],
+      "portal_rule_ids": [
+        "JP-R29"
+      ],
+      "verdict": "only-in-portal",
+      "difference": "DE searches number/name contains, max 50; MF only exact id lookup.",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:24-34",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:9-10"
+      ]
+    },
+    {
+      "topic": "Where parameters live",
+      "mainframe_rule_ids": [
+        "MF-R19",
+        "MF-R36"
+      ],
+      "portal_rule_ids": [
+        "JP-R01"
+      ],
+      "verdict": "differs",
+      "difference": "MF: mileage rate per BENEFIT-PERIOD (BP-MRATE) and benefit % per VEHICLE (VH-BPCT); DE: one fleet_rule row DE (min_grade, benefit_pct, commute_pct, mileage_rate) read by literal.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:51",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:98",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:15-22",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3"
+      ]
+    },
+    {
+      "topic": "Mandatory ownership of assignments and claims",
+      "mainframe_rule_ids": [
+        "MF-R46"
+      ],
+      "portal_rule_ids": [],
+      "verdict": "same",
+      "difference": "Portal has no rule id but the same constraint as NOT NULL FKs (assignment.employee_id/vehicle_id, mileage_claim.employee_id).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:104-131",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:39-45",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:63-71"
+      ]
+    },
+    {
+      "topic": "Mileage claim by a leaver / inactive employee",
+      "mainframe_rule_ids": [
+        "MF-R04"
+      ],
+      "portal_rule_ids": [
+        "JP-R32"
+      ],
+      "verdict": "differs",
+      "difference": "Shared: neither side applies an active-status or leave-date eligibility rejection before accepting a mileage claim. Portal find/submit accepts any found employee with positive kilometres; FleetService adds no status or leave-date guard. Mainframe-only: FLEMILE-PREMAP and FLEMILE-ENTER inspect EM-STAT and repeatedly OBTAIN DUPLICATE EMPLOYEE while it is T, rather than rejecting a leaver. ENTER checks not-found only before that loop; neither loop has an explicit not-found/end-of-duplicates exit. An all-T employee id therefore has a no-exit loop risk if the exhausted lookup leaves EM-STAT at T, not a guaranteed accepted claim. Once the loop finishes, ENTER checks journey date and miles, but not EM-LEAV or active status, before storing the claim.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMILE.dlg:9-11",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:13-21",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:25-63",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:34-51",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:36-45",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:163-184"
+      ]
+    }
+  ],
+  "shared_data": [
+    {
+      "entity": "employee",
+      "mainframe": "EMPLOYEE CALC EM-EMPID X(8) with duplicates (217 occurrences, 215 ids: 202 E101xxxx + 15 E1009xxx), names upper-case, EM-GRD 01-12, EM-CC X(6), EM-HIRE/EM-LEAV YYYYMMDD (0 = none), EM-STAT A/T/X, EM-CNTRB monthly contribution (114 non-zero), EM-LOC unused",
+      "portal": "employee id BIGSERIAL + employee_no VARCHAR(8) UNIQUE (215: 200 E204xxxx + 15 E1009xxx), mixed-case names, grade 1-12, cost_center, site, commute_km, hire_date/leave_date DATE (NULL = none, never read), status A/T",
+      "differences": "Surrogate PK vs CALC key; rehire duplicates only on MF; X status only on MF; contribution only on MF, commute_km only on DE; industries/manufacturing/global-fleet/ESTATE.md:31 id prefixes (E101/E100) match neither side for the transferees.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-37",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:13-25",
+        "industries/manufacturing/global-fleet/ESTATE.md:31"
+      ]
+    },
+    {
+      "entity": "the 15 people in both countries",
+      "mainframe": "E1009100..E1009142 (step 3), status X, EM-LEAV set, no ASSIGNMENT or MILEAGE-CLAIM, never in any holdout BENOUT",
+      "portal": "same 15 employee_no values, status A, hire_date = MF EM-LEAV + 1 day, 12 assignments (10 open), 23 claims",
+      "differences": "Same id, names (case differs) and grade; the employee number string is the only link (no FK, cross-reference table or shared key). The MF dialogs would still accept their X occurrence for assign/mileage.",
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:4-18",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:12-19",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:34-37"
+      ]
+    },
+    {
+      "entity": "vehicle",
+      "mainframe": "VEHICLE CALC VH-VEHID X(8) e.g. V000300, VH-PLATE X(8) UK format (MA69 VAA), make/model, VH-LIST GBP COMP-3, VH-CO2, VH-BPCT (annual %), VH-FUEL P/D/H/E, VH-REGD, holder via EMP-VEHICLE (101 owned)",
+      "portal": "vehicle id BIGSERIAL, plate VARCHAR(12) UNIQUE DE format (HH-VS 7629), make/model, list_price EUR, co2_g_km, fuel D/P/H/E, registered_on, owner_employee_id (40 pool = NULL)",
+      "differences": "Business key vehicle id vs plate; currency; per-vehicle benefit % only on MF; holder is a set membership vs nullable FK; seed/unload both consistent (owner iff open assignment).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:39-58",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:27-37"
+      ]
+    },
+    {
+      "entity": "assignment",
+      "mainframe": "ASSIGNMENT via EMP-ASSIGN (sorted AS-STRT desc) and VEH-ASSIGN (insertion order); AS-ASGID, AS-STRT, AS-END (0 = open), AS-RSN NC/RP/PL; 119 rows, 18 ended, 9 PL (all ended)",
+      "portal": "assignment id, employee_id, vehicle_id, start_date, end_date (NULL = open); 111 rows, 31 closed, each with a car_return",
+      "differences": "Open marker 0 vs NULL; reason code only on MF; MF allows several open per employee (20) and taxes one; DE allows one and taxes all overlapping.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:60-72",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:104-131",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:39-45"
+      ]
+    },
+    {
+      "entity": "mileage claim",
+      "mainframe": "MILEAGE-CLAIM via EMP-CLAIM (MC-DATE asc) and PERIOD-CLAIM; MC-CLMID, MC-VEHID, MC-DATE, MC-MILES (miles), MC-STAT A/P/R, MC-PURP X(10), no amount; 1511 rows (1313 A, 129 P, 69 R)",
+      "portal": "mileage_claim id, employee_id, claim_date, km, purpose VARCHAR(60), amount NUMERIC(10,2) EUR, status APPROVED/SUBMITTED/REJECTED; 699 rows (609/60/30)",
+      "differences": "Miles vs km; amount computed at run vs stored; status codes; vehicle and period links only on MF.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:74-87",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:63-71"
+      ]
+    },
+    {
+      "entity": "benefit period / rule parameters",
+      "mainframe": "BENEFIT-PERIOD CALC BP-PERIOD YYYYMM with BP-STRT/BP-END, BP-MRATE 0.445 GBP/mile, BP-STAT O/C, BP-RUNDT; 13 periods (12 C, 202610 O)",
+      "portal": "no period entity; fleet_rule DE: min_grade 6, benefit_pct 1.00, commute_pct 0.030, mileage_rate 0.305 EUR/km, currency EUR (unused)",
+      "differences": "Period-scoped rates and close status only on MF; single static rule only on DE.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:89-102",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:4-11",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3"
+      ]
+    },
+    {
+      "entity": "benefit result",
+      "mainframe": "BENOUT LRECL 64 per employee occurrence and period (BO-EMPID+DBKEY, VEHID, DAYS, TAXB, MILES, MREIM, FLAG) + BENRPT, FTP to payroll",
+      "portal": "statement page lines (plate, days, benefit) and totals, not persisted",
+      "differences": "Persisted per-period payroll file vs on-screen recomputation; no DE payroll interface in the repo.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:81-94",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:28-30"
+      ]
+    },
+    {
+      "entity": "car request / return",
+      "mainframe": "no request record; return only updates AS-END (odometer discarded)",
+      "portal": "car_request (82, all DELIVERED, write-only), car_return (31, odometer_km, condition_note, write-only)",
+      "differences": "Only DE keeps request and return history.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:42-43",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:47-61"
+      ]
+    }
+  ],
+  "callers": [
+    {
+      "finding": "JCL FLEBEN01: STEP010 runs PGM=FLEBEN01 with SYSIN period &PERIOD; STEP020 ICETOOL count and STEP030 FTP payroll run only if RC <= 4. Schedule (WD+3 after close) exists only as a comment; the FTP deck is outside the repo.",
+      "app_id": "gf-mainframe-idms",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:4-9",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:17-19",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:38-39"
+      ]
+    },
+    {
+      "finding": "FLEMENU routes 1->FLEEMPI, 2->FLEASGN, 3->FLEMILE, X/PF3/CLEAR leave; every function PF3s back to FLEMENU. FLERETN has no caller, so its PF3 back-edge in FLEMENU.reached_from is dead; the worker marks FLERETN unreached correctly.",
+      "app_id": "gf-mainframe-idms",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:13-20",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:52-56"
+      ]
+    },
+    {
+      "finding": "FLEUNLD is a standalone job (IDMSBCF unload + ICETOOL counts); nothing in the repo schedules it; it is the hand-over data source.",
+      "app_id": "gf-mainframe-idms",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:8",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:31-41"
+      ]
+    },
+    {
+      "finding": "No source maintains EMPLOYEE, VEHICLE or BENEFIT-PERIOD or sets MC-STAT A/R, yet the unload holds approved claims and closed periods: those callers are outside the repo.",
+      "app_id": "gf-mainframe-idms",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:59",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:132-134"
+      ]
+    },
+    {
+      "finding": "Portal entry is the welcome-file employees.xhtml; top-nav links employees/request/mileage/return on every page; statement and assignment are reached only from employee rows (and assignment from the wizard redirect).",
+      "app_id": "gf-jsf-portal",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/web.xml:28-30",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:12-15",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:24-26",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:82"
+      ]
+    },
+    {
+      "finding": "mileage.xhtml?employee= and return.xhtml?plate= viewParams have no in-app caller (only a typed URL), as the worker says.",
+      "app_id": "gf-jsf-portal",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:7-8",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:7-8"
+      ]
+    },
+    {
+      "finding": "/health servlet is called by the k8s readiness/liveness probes and gf-tenant.sh wait_https; seed load is the only batch-like job.",
+      "app_id": "gf-jsf-portal",
+      "sources": [
+        "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:324-325",
+        "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:421",
+        "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:428",
+        "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:292-297"
+      ]
+    },
+    {
+      "finding": "Caller asymmetry: MF benefit is a batch run per closed period (FLEBEN01) plus an on-screen monthly figure (FLEEMPI); DE has only on-page computation (statement f:viewAction -> StatementBean.load), nothing persisted and no payroll hand-off. Neither side calls the other.",
+      "app_id": "gf-jsf-portal",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:9",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:48-90",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:9"
+      ]
+    }
+  ],
+  "surprises": [
+    "The 15 transferees keep the same employee number in both countries; their MF occurrence is status X with EM-LEAV = portal hire_date - 1 day, and they have no MF assignments, claims or BENOUT records. The id string is the only link, and industries/manufacturing/global-fleet/ESTATE.md:31 gives the wrong prefixes for both sides (MF E101 plus E1009; DE E204 plus E1009).",
+    "The MF dialogs treat X like A, so FLEASGN could give a transferee a UK car while the portal holds an open DE assignment for them (10 of the 15 do): the two estates together allow two company cars per person.",
+    "Neither estate has a mileage approval path, yet both pay only approved claims (MF 1313 A / 129 P; DE 609 APPROVED / 60 SUBMITTED). Claims keyed in either UI are never paid by any code in the repo.",
+    "Benefit maths differs on every axis: per-vehicle annual % /12 minus contribution, truncated, one car per period, capped at leaving date (MF batch) vs 1% + 0.03%/commute-km, HALF_UP, every overlapping car, no leave cap (DE). The MF inquiry screen rounds a full month, so even within MF the screen and payroll differ.",
+    "Mileage money is recomputed at run time from the period rate on MF (ROUNDED) but frozen at submission on DE (HALF_EVEN); rate changes affect MF history but not DE.",
+    "Holder integrity is the opposite way round: MF unload has 20 employees with two open cars and PL loans bypass the held check; DE seed has none, but its pool check is not repeated at submit."
+  ],
+  "applied_corrections": [
+    {
+      "app_id": "gf-jsf-portal",
+      "target": "screens[request].actions[Zurueck].source",
+      "problem": "Citation \"industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:36; industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:44\" is a comma list, not path:start[-end]; content is right.",
+      "correction": "Cite as two refs: industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:36 and industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:44.",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:36",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:44"
+      ]
+    },
+    {
+      "app_id": "gf-jsf-portal",
+      "target": "screens[statement].fields[employee].source and fields[period].source",
+      "problem": "Citations \"industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:7; industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:12\" and \"industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:8; industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:13\" use comma lists.",
+      "correction": "employee: industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:7; industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:12. period: industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:8; industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:13 (period default stays industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:58-62).",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:7-8",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:12-13"
+      ]
+    },
+    {
+      "app_id": "gf-jsf-portal",
+      "target": "screens[mileage].actions[Suchen].source",
+      "problem": "Citation \"industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:34-40; industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:59-67\" uses a comma list.",
+      "correction": "Cite industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:34-40 and industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:59-67 separately.",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:34-40",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:59-67"
+      ]
+    },
+    {
+      "app_id": "gf-jsf-portal",
+      "target": "sources_read",
+      "problem": "Entry \"deploy/gf-tenant.sh (lines 292-325, 409-429)\" is not a plain path.",
+      "correction": "List industries/manufacturing/global-fleet/deploy/gf-tenant.sh; keep line ranges in citations only.",
+      "sources": [
+        "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:292-325"
+      ]
+    },
+    {
+      "app_id": "gf-jsf-portal",
+      "target": "rules (missing rule)",
+      "problem": "No rule records that a mileage claim is accepted for any employee number found, whatever the status (T leavers included) or leave_date, and whether or not they hold a car; only the request wizard checks isActive(). Counterpart of MF-R04 (leaver can reach FLEMILE-ENTER).",
+      "correction": "Add rule: \"Mileage claim for any found employee\": MileageBean.find/submit require only employee != null and km > 0; no status, leave_date, grade or car check. Status observed.",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:34-40",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:46-51",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:35",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:34"
+      ]
+    }
+  ],
+  "applied_corrections_note": "Verified against source and applied to the published inventories/rules; missing mileage eligibility rule is JP-R32.",
+  "history": [
+    {
+      "round": 1,
+      "rule_pairs": [
+        {
+          "topic": "Grade eligibility for a company car",
+          "mainframe_rule_ids": [
+            "MF-R01",
+            "MF-R02"
+          ],
+          "portal_rule_ids": [
+            "JP-R03"
+          ],
+          "verdict": "differs",
+          "difference": "Both compare a numeric grade to a threshold and both use the same grade scale (the 15 shared people have the same grade on both sides). The mainframe threshold is 07, hard-coded in FLEASGN-PREMAP only; FLEASGN-ENTER does not re-check it, and 9 stored assignments belong to grade 05/06 employees. The portal reads min_grade 6 from fleet_rule and checks it in wizard step 1 only.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:27-32",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:36-43",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:38-42",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3"
+          ]
+        },
+        {
+          "topic": "Requester must be on file and current",
+          "mainframe_rule_ids": [
+            "MF-R03",
+            "MF-R04",
+            "MF-R05"
+          ],
+          "portal_rule_ids": [
+            "JP-R02"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: unknown id gives 'EMPLOYEE NOT ON FILE'; occurrences with status T are skipped and X (transferred abroad) counts as current. Portal: employee_no is unique, an exact match is required after trim and upper-casing, and the status must be 'A'. The portal has no X status and no duplicate occurrences.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:10-26",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:27-37",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:32-37",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:35",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:15"
+          ]
+        },
+        {
+          "topic": "Employee id required",
+          "mainframe_rule_ids": [
+            "MF-R06"
+          ],
+          "portal_rule_ids": [
+            "JP-R02"
+          ],
+          "verdict": "same",
+          "difference": "Both refuse a blank id: the mainframe with a message in FLEEMPI-ENTER and FLEASGN-PREMAP, the portal with required=true on the wizard input. Only the message text differs.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:52-56",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:5-9",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:13-14"
+          ]
+        },
+        {
+          "topic": "Which car can be assigned",
+          "mainframe_rule_ids": [
+            "MF-R07",
+            "MF-R08"
+          ],
+          "portal_rule_ids": [
+            "JP-R05",
+            "JP-R06",
+            "JP-R11"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: any vehicle id on file that is not an EMP-VEHICLE member, so a car out on pool loan (PL) can be assigned again. Portal: a pool car is offered only if owner is null AND it has no open assignment; the list is taken once in step 1 and not re-checked at submit.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:44-55",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:67-76",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:63-71"
+          ]
+        },
+        {
+          "topic": "One car per employee",
+          "mainframe_rule_ids": [
+            "MF-R09"
+          ],
+          "portal_rule_ids": [
+            "JP-R04"
+          ],
+          "verdict": "differs",
+          "difference": "The portal refuses a second open assignment. The mainframe has no such check, and 20 employees in the unload hold 2 open assignments.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:36-71",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:43-46"
+          ]
+        },
+        {
+          "topic": "Assignment reason / pool loan",
+          "mainframe_rule_ids": [
+            "MF-R10",
+            "MF-R11"
+          ],
+          "portal_rule_ids": [],
+          "verdict": "only-in-mainframe",
+          "difference": "AS-RSN NC/RP/PL exists only on the mainframe, and PL does not link the car as held. The portal's 'pool' choice is a permanent assignment of an unowned car, not a loan; the portal has no reason code.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:56-57",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:65-66",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:68-71",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:19-22"
+          ]
+        },
+        {
+          "topic": "Assignment start date",
+          "mainframe_rule_ids": [
+            "MF-R12"
+          ],
+          "portal_rule_ids": [
+            "JP-R09"
+          ],
+          "verdict": "differs",
+          "difference": "Neither checks the date against hire date, leaving date or other assignments. The mainframe date is keyed, required and 9(8) digits only, so an invalid calendar date passes. The portal defaults to today in dd.MM.yyyy through the JSF date converter.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:62-64",
+            "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:18-19",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:29",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:42-43"
+          ]
+        },
+        {
+          "topic": "Assignment identifier",
+          "mainframe_rule_ids": [
+            "MF-R13"
+          ],
+          "portal_rule_ids": [],
+          "verdict": "only-in-mainframe",
+          "difference": "Mainframe: 'A' + a 9-digit counter from the session work record, never read. Portal: assignment.id BIGSERIAL, not shown to users.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:58-61",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:40"
+          ]
+        },
+        {
+          "topic": "Register a newly delivered car / request record",
+          "mainframe_rule_ids": [],
+          "portal_rule_ids": [
+            "JP-R07",
+            "JP-R08",
+            "JP-R10"
+          ],
+          "verdict": "only-in-portal",
+          "difference": "The portal wizard creates vehicle rows and a car_request with status DELIVERED. No mainframe source in the repo STOREs a VEHICLE; vehicles are maintained outside the repo.",
+          "sources": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:56-60",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:72-81",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:100-134"
+          ]
+        },
+        {
+          "topic": "Current car shown for an employee",
+          "mainframe_rule_ids": [
+            "MF-R14"
+          ],
+          "portal_rule_ids": [
+            "JP-R28",
+            "JP-R29"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe inquiry shows the latest-starting assignment even if it was returned. Portal shows the first assignment with a null end_date in start-date-descending order, so a returned car is never shown as current.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:25-31",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:47-55"
+          ]
+        },
+        {
+          "topic": "Monthly benefit formula",
+          "mainframe_rule_ids": [
+            "MF-R15",
+            "MF-R36"
+          ],
+          "portal_rule_ids": [
+            "JP-R23"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: list x per-vehicle VH-BPCT / 1200 (annual % over 12 months) minus the employee contribution EM-CNTRB, floored at 0, in GBP. Portal: list x fleet_rule.benefit_pct/100 (1% a month) + list x commute_pct/100 x commute_km, with no contribution and no per-vehicle %, in EUR. The portal has no commute part on the mainframe side, and the mainframe has no per-vehicle % on the portal side.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:32-37",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:208-216",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:76-79"
+          ]
+        },
+        {
+          "topic": "Benefit proration and rounding",
+          "mainframe_rule_ids": [
+            "MF-R15",
+            "MF-R36"
+          ],
+          "portal_rule_ids": [
+            "JP-R24"
+          ],
+          "verdict": "differs",
+          "difference": "FLEBEN01 prorates by car days / period days and TRUNCATES. All 857 holdout BENOUT records with days>0 match truncation; 415 would differ under half-up rounding. FLEEMPI shows an unprorated ROUNDED month. The portal prorates by days / calendar-month days with HALF_UP per line and sums the rounded lines.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:208-216",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:73",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:34-35",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:80-83"
+          ]
+        },
+        {
+          "topic": "Benefit days in period",
+          "mainframe_rule_ids": [
+            "MF-R30",
+            "MF-R35"
+          ],
+          "portal_rule_ids": [
+            "JP-R22"
+          ],
+          "verdict": "differs",
+          "difference": "Both use inclusive day counts from max(start, period start) to min(end, period end). The mainframe also caps at the employee's leaving date EM-LEAV and uses BP-STRT/BP-END from the period record. The portal never reads leave_date and uses the calendar month.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:139-141",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:191-204",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:63-75",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:197-209"
+          ]
+        },
+        {
+          "topic": "Which assignments are taxed in a period",
+          "mainframe_rule_ids": [
+            "MF-R33",
+            "MF-R34",
+            "MF-R37",
+            "MF-R43"
+          ],
+          "portal_rule_ids": [
+            "JP-R22",
+            "JP-R26"
+          ],
+          "verdict": "differs",
+          "difference": "FLEBEN01 taxes only the latest-starting assignment that starts on or before period end, regardless of reason, grade or status. The portal statement produces one line for EVERY assignment overlapping the month, so a mid-month replacement is taxed on both cars there but only on the later one on the mainframe.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:176-190",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:218-220",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69-84"
+          ]
+        },
+        {
+          "topic": "Who is included in a benefit computation",
+          "mainframe_rule_ids": [
+            "MF-R31",
+            "MF-R32",
+            "MF-R39"
+          ],
+          "portal_rule_ids": [
+            "JP-R26"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: area sweep of every EMPLOYEE occurrence hired on or before period end and not left before period start; one BENOUT per occurrence, written only if car days>0 or approved miles>0. Portal: one employee on demand by exact employee_no, any status, with no hire or leave filter and always rendered.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:147-170",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:246-248",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:48-56"
+          ]
+        },
+        {
+          "topic": "Leaver handling",
+          "mainframe_rule_ids": [
+            "MF-R35",
+            "MF-R40"
+          ],
+          "portal_rule_ids": [],
+          "verdict": "only-in-mainframe",
+          "difference": "Mainframe caps car days at EM-LEAV and flags L. The portal only blocks status<>'A' in the request wizard; the statement and the other pages ignore leave_date. The portal worker has no rule for this (see corrections).",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:198-200",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:250-254",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:32-33",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69-75"
+          ]
+        },
+        {
+          "topic": "Mileage reimbursement amount",
+          "mainframe_rule_ids": [
+            "MF-R19",
+            "MF-R38"
+          ],
+          "portal_rule_ids": [
+            "JP-R17"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: miles x BP-MRATE (0.445 GBP/mile in all 13 periods) ROUNDED (half-up) per claim at batch time; the online amount is display-only. Portal: km x fleet_rule.mileage_rate (0.305 EUR/km) HALF_EVEN, frozen on the claim at submission, so a later rate change does not reprice it.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:48",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:234-238",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:159-161",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:173",
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:76"
+          ]
+        },
+        {
+          "topic": "Mileage distance must be positive",
+          "mainframe_rule_ids": [
+            "MF-R18"
+          ],
+          "portal_rule_ids": [
+            "JP-R18"
+          ],
+          "verdict": "same",
+          "difference": "Both refuse zero. Units differ: whole miles 9(5) (max 99999) on the mainframe, Integer km with no upper bound on the portal.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:43-47",
+            "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:15-16",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:46-50"
+          ]
+        },
+        {
+          "topic": "Claim date / open period",
+          "mainframe_rule_ids": [
+            "MF-R16",
+            "MF-R17"
+          ],
+          "portal_rule_ids": [
+            "JP-R19"
+          ],
+          "verdict": "only-in-mainframe",
+          "difference": "The mainframe requires an open current-month BENEFIT-PERIOD and a journey date inside it. The portal accepts any claim date (default today) and has no period entity.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:5-12",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:38-42",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:21",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:163-175"
+          ]
+        },
+        {
+          "topic": "New claim status",
+          "mainframe_rule_ids": [
+            "MF-R21"
+          ],
+          "portal_rule_ids": [
+            "JP-R19"
+          ],
+          "verdict": "same",
+          "difference": "Both store a new claim as not yet approved: 'P' on the mainframe, 'SUBMITTED' on the portal. Neither side has source that sets approved or rejected, although both data sets contain them (MF A 1313 / R 69; portal APPROVED 609 / REJECTED 30).",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:56-64",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:174",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:83-86"
+          ]
+        },
+        {
+          "topic": "Claim records a vehicle",
+          "mainframe_rule_ids": [
+            "MF-R20"
+          ],
+          "portal_rule_ids": [],
+          "verdict": "only-in-mainframe",
+          "difference": "MC-VEHID takes the latest assignment's vehicle (868 of 1511 claims have none). mileage_claim on the portal has no vehicle column.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:49-55",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:63-71"
+          ]
+        },
+        {
+          "topic": "Only approved claims are paid / shown",
+          "mainframe_rule_ids": [
+            "MF-R38"
+          ],
+          "portal_rule_ids": [
+            "JP-R25"
+          ],
+          "verdict": "same",
+          "difference": "Both count only approved claims dated within the period/month. The difference is in the amount (see the mileage reimbursement pair): recomputed at batch time on the mainframe, the stored amount on the portal.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:231-239",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:85-89"
+          ]
+        },
+        {
+          "topic": "Claim history window",
+          "mainframe_rule_ids": [],
+          "portal_rule_ids": [
+            "JP-R20"
+          ],
+          "verdict": "only-in-portal",
+          "difference": "The portal lists the last 6 months of claims. The mainframe has no claim inquiry screen.",
+          "sources": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:59-67"
+          ]
+        },
+        {
+          "topic": "Return only an open assignment",
+          "mainframe_rule_ids": [
+            "MF-R22"
+          ],
+          "portal_rule_ids": [
+            "JP-R13"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: by vehicle id; takes the LAST stored VEH-ASSIGN member (insertion order) and refuses if it has ended. Portal: by exact case-sensitive plate; queries an assignment with a null end_date (any of them).",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:10-23",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:29-36",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:29-40",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:89-98"
+          ]
+        },
+        {
+          "topic": "Return date not before start",
+          "mainframe_rule_ids": [
+            "MF-R23"
+          ],
+          "portal_rule_ids": [
+            "JP-R15"
+          ],
+          "verdict": "same",
+          "difference": "Both require return date >= start date and allow a same-day return or a future date; the return date becomes the assignment end date.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:37-43",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:47-50"
+          ]
+        },
+        {
+          "topic": "Return releases the car",
+          "mainframe_rule_ids": [
+            "MF-R24"
+          ],
+          "portal_rule_ids": [
+            "JP-R12",
+            "JP-R16"
+          ],
+          "verdict": "same",
+          "difference": "Mainframe DISCONNECTs from EMP-VEHICLE if it is a member; the portal sets vehicle.owner to null. Both commit in one unit of work.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:44-46",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:141-150"
+          ]
+        },
+        {
+          "topic": "Odometer on return",
+          "mainframe_rule_ids": [
+            "MF-R26"
+          ],
+          "portal_rule_ids": [
+            "JP-R14",
+            "JP-R16"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe asks for WK-ODO and discards it. The portal requires it and stores it in car_return.odometer_km together with a condition note.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:19",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:42-46",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:144-149"
+          ]
+        },
+        {
+          "topic": "Return reachable",
+          "mainframe_rule_ids": [
+            "MF-R25"
+          ],
+          "portal_rule_ids": [],
+          "verdict": "only-in-mainframe",
+          "difference": "FLERETN has no menu route. The portal return page is on the top navigation of every page.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:10-23",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:10-16"
+          ]
+        },
+        {
+          "topic": "Navigation",
+          "mainframe_rule_ids": [
+            "MF-R27"
+          ],
+          "portal_rule_ids": [
+            "JP-R30"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: menu options 1/2/3/X and PF3 back to the menu. Portal: top-nav GET links plus employees -> assignment/statement links and a 3-step wizard with Back.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:10-33",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:10-16",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:85-89"
+          ]
+        },
+        {
+          "topic": "Benefit period lifecycle / run",
+          "mainframe_rule_ids": [
+            "MF-R28",
+            "MF-R29",
+            "MF-R44"
+          ],
+          "portal_rule_ids": [
+            "JP-R21",
+            "JP-R27"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: a batch run per parm-card period, one catalogued dataset per period, and no status check although the header says 'closed'. Portal: computed on every view for any yyyy-MM (default previous month) with nothing stored, so past months recompute.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:5-9",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:136-141",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:20-23",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:58-68"
+          ]
+        },
+        {
+          "topic": "Control totals / output",
+          "mainframe_rule_ids": [
+            "MF-R41",
+            "MF-R42"
+          ],
+          "portal_rule_ids": [],
+          "verdict": "only-in-mainframe",
+          "difference": "BENRPT control totals and RC 16 abort with downstream step skip (COND=(4,LT)). The portal shows per-employee totals only and has no payroll hand-off.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:264-283",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:38",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:82-89"
+          ]
+        },
+        {
+          "topic": "Unique keys",
+          "mainframe_rule_ids": [
+            "MF-R45"
+          ],
+          "portal_rule_ids": [
+            "JP-R01"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: unique VH-VEHID and BP-PERIOD; EM-EMPID may repeat (2 rehires: E1010398, E1010524). Portal: employee_no UNIQUE, plate UNIQUE, surrogate BIGSERIAL keys, and one fleet_rule row keyed by country.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-23",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:39-43",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:89-94",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:4-15",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:29"
+          ]
+        },
+        {
+          "topic": "Mandatory ownership",
+          "mainframe_rule_ids": [
+            "MF-R46"
+          ],
+          "portal_rule_ids": [
+            "JP-R12"
+          ],
+          "verdict": "differs",
+          "difference": "Mainframe: assignment must belong to an employee and a vehicle, and a claim to an employee (mandatory automatic). The portal has equivalent NOT NULL FKs, but the vehicle owner is an application-maintained mirror of the open assignment rather than a set.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:104-131",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:145-170",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:36-45",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:63-66"
+          ]
+        },
+        {
+          "topic": "Country parameters",
+          "mainframe_rule_ids": [],
+          "portal_rule_ids": [
+            "JP-R01"
+          ],
+          "verdict": "differs",
+          "difference": "Portal: one fleet_rule row 'DE' (min grade, %s, rate; currency never read). Mainframe: grade threshold hard-coded 07, benefit % per vehicle (VH-BPCT), mileage rate per period (BP-MRATE); no country table.",
+          "sources": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:15-22",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:27",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:51",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:98"
+          ]
+        },
+        {
+          "topic": "Employee search",
+          "mainframe_rule_ids": [],
+          "portal_rule_ids": [
+            "JP-R29"
+          ],
+          "verdict": "only-in-portal",
+          "difference": "The portal searches with a contains match over number and names. The mainframe has exact CALC lookup by id only.",
+          "sources": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:24-34",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:9-10"
+          ]
+        }
+      ],
+      "shared_data": [
+        {
+          "entity": "employee",
+          "mainframe": "EMPLOYEE CALC EM-EMPID X(8) with duplicates LAST (rehire occurrences distinguished by db-key); EM-SURN/EM-FORN upper-case; EM-GRD 9(2); EM-CC 6 chars (e.g. ENG220); EM-HIRE/EM-LEAV YYYYMMDD with 0 = none; EM-STAT A/T/X; EM-CNTRB monthly contribution GBP COMP-3; EM-LOC region code. 217 occurrences: 202 E101xxxx + 15 E1009xxx; statuses A 191 / X 15 / T 11; 2 ids duplicated (E1010398, E1010524 = T then A).",
+          "portal": "employee id BIGSERIAL + employee_no VARCHAR(8) UNIQUE; first/last name mixed case; grade SMALLINT; cost_center (e.g. E-210); site city; commute_km; hire_date/leave_date DATE nullable; status A/T. 215 rows: 15 E1009xxx (seed lines 4-18) + 200 E204xxxx (from line 19); A 209 / T 6.",
+          "differences": "The 15 shared people (E1009100-E1009142, step 3) have the SAME employee number, the same name (case differs) and the same grade on both sides. Every mainframe occurrence of them is status X with EM-LEAV exactly one day before the portal hire_date (e.g. E1009100 leave 20210828, portal hire 2021-08-29). Cost centres and locations differ. The employee number is the only link: there is no cross-reference field and no shared key. They have no mainframe assignments or claims in the unload and appear in no holdout BENOUT. On the portal 10 of them have 12 assignments. industries/manufacturing/global-fleet/ESTATE.md:31 says Java ids are E100xxxx; the seed actually uses E204xxxx for local staff and E100 for the transferees.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:7-22",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-37",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:13-25",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:4",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:18-19",
+            "industries/manufacturing/global-fleet/ESTATE.md:31",
+            "industries/manufacturing/global-fleet/ESTATE.md:37"
+          ]
+        },
+        {
+          "entity": "vehicle",
+          "mainframe": "VEHICLE CALC VH-VEHID X(8) unique (e.g. V000300); VH-PLATE X(8) UK format (e.g. MA69 VAA); VH-LIST S9(7)V99 COMP-3 GBP; VH-CO2; VH-BPCT 9(2)V99 annual appropriate % per vehicle; VH-FUEL P/D/H/E; VH-REGD; holder via the EMP-VEHICLE set (unload owner key + dbkey). 120 vehicles.",
+          "portal": "vehicle id BIGSERIAL; plate VARCHAR(12) UNIQUE (e.g. HH-VS 7629); list_price NUMERIC(10,2) EUR; co2_g_km; fuel D/P/H/E; registered_on; owner_employee_id FK. 120 vehicles, 80 owned / 40 pool.",
+          "differences": "There is no business vehicle id on the portal (plate is the key users see); the plate is 8 chars on the mainframe and up to 12 on the portal. The benefit % is per vehicle on the mainframe and per country on the portal. Money is GBP COMP-3 vs EUR NUMERIC. CO2 and fuel exist on both sides but neither uses them in the benefit.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:39-58",
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:24-40",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:27-37",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:219",
+            "industries/manufacturing/global-fleet/ESTATE.md:30"
+          ]
+        },
+        {
+          "entity": "assignment",
+          "mainframe": "ASSIGNMENT VIA EMP-ASSIGN (sorted AS-STRT desc) and VEH-ASSIGN (insertion order); AS-ASGID 'A'+9 digits; AS-STRT/AS-END YYYYMMDD with 0 = open; AS-RSN NC/RP/PL. 119 rows, 101 open; reasons NC 83 / RP 27 / PL 9.",
+          "portal": "assignment id; employee_id/vehicle_id FK; start_date; end_date NULL = open. 111 rows, 80 open; no employee holds 2 open.",
+          "differences": "Open is 0 on the mainframe and NULL on the portal. There is no reason code on the portal. The mainframe allows several open cars per employee (20 employees have 2). The order semantics (set order vs ORDER BY) matter for 'latest' vs 'last stored'.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:60-72",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:104-131",
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:42-53",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:39-45"
+          ]
+        },
+        {
+          "entity": "mileage claim",
+          "mainframe": "MILEAGE-CLAIM VIA EMP-CLAIM (sorted MC-DATE asc) plus optional PERIOD-CLAIM; MC-CLMID 'C'+9; MC-VEHID; MC-DATE; MC-MILES 9(5) miles; MC-STAT A/P/R; MC-PURP X(10); no amount stored. 1511 claims: A 1313 / P 129 / R 69.",
+          "portal": "mileage_claim id; employee_id; claim_date; km INTEGER; purpose VARCHAR(60); amount NUMERIC(10,2) EUR stored at submit; status APPROVED/SUBMITTED/REJECTED. 699 claims: 609 / 60 / 30.",
+          "differences": "Units are miles vs km; the money is computed at batch time on the mainframe and stored at submit on the portal; status codes are 1-char vs words; only the mainframe has a vehicle on the claim and a period link.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:74-87",
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:145-170",
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:55-67",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:63-71",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:563"
+          ]
+        },
+        {
+          "entity": "benefit period / country parameters",
+          "mainframe": "BENEFIT-PERIOD CALC BP-PERIOD YYYYMM; BP-STRT/BP-END; BP-MRATE 9V999 GBP/mile (0.445 in all 13 periods); BP-STAT O/C (202510-202609 closed with BP-RUNDT on the 3rd of the next month, 202610 open); grade threshold hard-coded.",
+          "portal": "No period entity; the statement period is a yyyy-MM request parameter. fleet_rule('DE', min_grade 6, benefit_pct 1.00, commute_pct 0.030, mileage_rate 0.305 EUR/km, currency EUR).",
+          "differences": "The mainframe parameterises the rate by period and the benefit % by vehicle; the portal parameterises everything by country. Only the mainframe has open/closed periods and a run date.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:89-102",
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:69-79",
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:4-11",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:58-68"
+          ]
+        },
+        {
+          "entity": "benefit output",
+          "mainframe": "BENOUT FB64 per employee occurrence per period (BO-DAYS, BO-TAXB, BO-MILES, BO-MREIM, BO-FLAG) plus the BENRPT control report, FTP'd to payroll.",
+          "portal": "None persisted; the statement page renders lines (plate, days, benefit), totalBenefit and totalMileage.",
+          "differences": "Batch file vs on-page computation; the portal has no payroll interface in source.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:81-96",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:20-23",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:38-40",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:82-89"
+          ]
+        },
+        {
+          "entity": "car request / car return",
+          "mainframe": "None: no request record; FLERETN modifies AS-END only and the odometer is discarded.",
+          "portal": "car_request (status always DELIVERED, 82 rows) and car_return (return_date, odometer_km, condition_note, 31 rows).",
+          "differences": "Portal-only records.",
+          "sources": [
+            "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:47-61",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:450",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:481",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:42-46"
+          ]
+        }
+      ],
+      "callers": [
+        {
+          "finding": "Mainframe chain: FLEMENU option 1/2/3 -> FLEEMPI/FLEASGN/FLEMILE (TRANSFER NOFINISH); each PF3 -> FLEMENU. FLERETN has no caller in source, so neither online return nor any reachable path ends an assignment. The workers agree (MF unreached / MF-R25).",
+          "app_id": "gf-mainframe-idms",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:10-23",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:52-56"
+          ]
+        },
+        {
+          "finding": "Mainframe batch: JCL FLEBEN01 STEP010 PGM=FLEBEN01 (period from SET PERIOD via SYSIN) -> STEP020 ICETOOL count -> STEP030 FTP to payroll (deck not in repo); steps 2-3 have COND=(4,LT), so RC 16 skips them. FLEUNLD is a separate IDMSBCF unload. The portal has no batch caller at all; the benefit is computed by statement.xhtml -> StatementBean.load (f:viewAction) on every GET.",
+          "app_id": "gf-mainframe-idms",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:7-19",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:38-40",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:48-90"
+          ]
+        },
+        {
+          "finding": "Portal chain: welcome-file employees.xhtml; the layout top-nav reaches employees/request/mileage/return; employees -> assignment and statement via h:link with ?employee; request.submit redirects to assignment. statement is NOT on the top-nav (reached only from employees or a direct URL). /health servlet is reached by k8s probes (gf-tenant.sh deploy_app with /health). Pages call beans, which call FleetService, which uses JPA. Worker inventory is correct.",
+          "app_id": "gf-jsf-portal",
+          "sources": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/web.xml:28-30",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:10-16",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:24",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:26",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:81-82",
+            "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:324-325",
+            "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:428"
+          ]
+        },
+        {
+          "finding": "Callers one side has and the other lacks. Portal only: registering a new vehicle (wizard 'new'), employee search, claim history, a reachable return. Mainframe only: batch benefit run + payroll FTP, period open/close data, flat-file unload. Neither side has a caller for approving claims or maintaining employees (and on the mainframe, vehicles and periods), although both data sets contain approved/rejected claims.",
+          "app_id": "gf-mainframe-idms",
+          "sources": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:72-81",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:24-34",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:59",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:174"
+          ]
+        },
+        {
+          "finding": "Mileage pricing caller differs. Mainframe: FLEMILE shows a display-only amount and FLEBEN01 2200-MILEAGE recomputes the payable amount per approved claim with the period rate. Portal: MileageBean.submit -> FleetService.submitClaim stores the amount once, and StatementBean only sums the stored amounts.",
+          "app_id": "gf-jsf-portal",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:48",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:222-243",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:46-57",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:85-89"
+          ]
+        }
+      ],
+      "corrections": [
+        {
+          "app_id": "gf-mainframe-idms",
+          "target": "inventory records[*].sources, relationships[*].sources, batch_steps[*].sources, unreached[*].sources",
+          "problem": "Many citations drop the ':' between path and line range, e.g. 'mainframe/schema/FLEETSCH.ddl18-37', 'batch/FLEBEN01.cbl246-248', 'copybooks/LAYOUT.md5', 'jcl/FLEUNLD.jcl1-43', 'jcl/FLEBEN01.jcl27-36', 'schema/FLEETSS1.ddl25'. They do not parse as path:start-end. The line numbers themselves check out where sampled.",
+          "correction": "Insert ':' before every line range (e.g. industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-37, industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:246-248, industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:5, industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:1-43, industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27-36).",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-37",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:246-248",
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:5",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:1-43",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27-36"
+          ]
+        },
+        {
+          "app_id": "gf-mainframe-idms",
+          "target": "inventory unreached item \"FLEMILE-ENTER 'MILES REQUIRED'\"",
+          "problem": "It cites industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:38-42, but those lines are the journey-date-outside-period test; the MILES REQUIRED branch is at 43-47.",
+          "correction": "Replace the industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:38-42 citation with industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:43-47.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:38-47"
+          ]
+        },
+        {
+          "app_id": "gf-mainframe-idms",
+          "target": "inventory unreached item 'FLEASGN-ENTER grade/not-found checks'",
+          "problem": "It says '9 assignments held by grade 05 employees'. The unload has 9 assignments held by employees below grade 07: 7 at grade 05 and 2 at grade 06.",
+          "correction": "Say '9 assignments held by grade<07 employees (7 at grade 05, 2 at grade 06)'. Data: unload ASSIGNMENT.dat joined to EMPLOYEE.dat on AU-EMP-DBKEY=EU-DBKEY, using the offsets in LAYOUT.md.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:7-22",
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:42-53"
+          ]
+        },
+        {
+          "app_id": "gf-mainframe-idms",
+          "target": "inventory country",
+          "problem": "'employee ids E101xxxx' is incomplete: 15 of 217 occurrences are E1009100-E1009142 with status X (transferred abroad). These are the people shared with the portal under the same numbers.",
+          "correction": "Say 'employee ids E101xxxx (202 occurrences) plus E1009xxx (15 occurrences, status X, transferred to the Java country under the same number)'.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:11-19",
+            "industries/manufacturing/global-fleet/ESTATE.md:31",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:4"
+          ]
+        },
+        {
+          "app_id": "gf-mainframe-idms",
+          "target": "MF-R03 / MF-R04",
+          "problem": "Both rules miss that X means 'transferred abroad' (industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:19), that all 15 X occurrences are the people now employed in the portal country, and that because the online dialogs treat X as current, FLEASGN and FLEMILE would still assign them a car or take a mileage claim in GB. Only FLEBEN01 excludes them, and only through EM-LEAV < BP-STRT.",
+          "correction": "Add to the MF-R03 note: 'X = transferred abroad; the 15 X occurrences (E1009100-E1009142) are the portal transferees; online dialogs accept them, while batch excludes them only by leaving date'. Cite industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:19 and industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:155-157.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:19",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:18-26",
+            "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:34-37",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:155-157"
+          ]
+        },
+        {
+          "app_id": "gf-mainframe-idms",
+          "target": "MF-R42",
+          "problem": "This citation is imprecise. industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:9 is only the STEP010 EXEC; the skip of the count and FTP steps comes from COND=(4,LT) on STEP020 and STEP030.",
+          "correction": "Cite industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27 and :38 in addition to industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:277-283.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27",
+            "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:38",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:277-283"
+          ]
+        },
+        {
+          "app_id": "gf-mainframe-idms",
+          "target": "MF-R31 note / unreached 'EM-SURN...BP-STAT (batch side)'",
+          "problem": "Cosmetic. The note says terminated or transferred occurrences with no leaving date are still processed, but every T and X occurrence in the unload has EM-LEAV set (26 of 26), so in the data they are all excluded or capped by leaving date. The code reading is correct.",
+          "correction": "Optionally add: 'in the unload all T/X occurrences carry EM-LEAV, so they are only paid up to the leaving date'.",
+          "sources": [
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:154-157",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:198-200",
+            "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:18-19"
+          ]
+        },
+        {
+          "app_id": "gf-jsf-portal",
+          "target": "rules (missing) - statement ignores leave_date / hire_date",
+          "problem": "The rules do not state that StatementBean computes days only from assignment and month bounds: employee.leave_date and hire_date are never read, so a leaver's open or late-closed assignment is taxed to the end of the month. This is the counterpart of MF-R35/MF-R40 (capped at EM-LEAV, flag L) and it is needed for the pairing. It is raised only as an open question and in the unreached columns.",
+          "correction": "Add rule JP-R31 'Statement days not capped at leaving date': benefit days = overlap of assignment and month only; leave_date/hire_date are not used and no leaver flag exists. Cite industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69-75 and industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:32-33.",
+          "sources": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69-75",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:32-33"
+          ]
+        },
+        {
+          "app_id": "gf-jsf-portal",
+          "target": "inventory country",
+          "problem": "'employee ids E100xxxx' is wrong: 200 of 215 employees are E204xxxx (from industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:19). Only the 15 transferees from the mainframe country are E1009xxx (industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:4-18). The worker's own open_questions say so, but the inventory header still repeats industries/manufacturing/global-fleet/ESTATE.md:31.",
+          "correction": "Say 'employee ids E204xxxx (200) plus E1009xxx (15 transferees, same numbers as their mainframe occurrences)'.",
+          "sources": [
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:4",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:18-19",
+            "industries/manufacturing/global-fleet/ESTATE.md:31"
+          ]
+        },
+        {
+          "app_id": "gf-jsf-portal",
+          "target": "JP-R23",
+          "problem": "Cosmetic. The rule should say there is no employee contribution and no per-vehicle %, which is what makes the formula differ from MF-R15/MF-R36.",
+          "correction": "Add to the note: 'no employee contribution and no per-vehicle %, unlike FLEBEN01 (VH-BPCT/1200 - EM-CNTRB)'.",
+          "sources": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:76-79",
+            "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:208-211"
+          ]
+        }
+      ],
+      "surprises": [
+        "The 15 shared people have the same employee number in both countries (E1009100-E1009142). On the mainframe they are status X with EM-LEAV exactly one day before their portal hire_date. Nothing else links the two records, and industries/manufacturing/global-fleet/ESTATE.md:31's prefixes are wrong for both sides.",
+        "The holdout data confirms FLEBEN01 truncates: all 857 BENOUT records with days>0 across the 12 periods equal the truncated (VH-LIST*VH-BPCT/1200-EM-CNTRB)*days/mdays; half-up rounding would change 415 of them.",
+        "The two benefit formulas share no parameters. GB: annual per-vehicle % /12 minus employee contribution, one car per period, truncated. DE: 1% a month plus 0.03% per commute km, every overlapping car, HALF_UP. Mileage rounding: GB half-up at batch time with the period rate; DE HALF_EVEN frozen at submit.",
+        "Neither estate contains the code that approves mileage claims, yet both data sets are mostly approved (MF 1313/1511, portal 609/699) and both pay only approved claims.",
+        "The portal statement taxes every overlapping assignment and ignores leave_date. FLEBEN01 taxes only the latest-starting one and caps at EM-LEAV. A mid-month car swap or a leaver gives different days on the two sides.",
+        "The mainframe holds 2 open assignments for 20 employees and 9 assignments for grade<07 employees. The portal seed has neither (80 open = 80 owned, no grade<6 holder), so a merged dataset will break the portal's one-car invariant."
+      ]
+    }
+  ]
+}

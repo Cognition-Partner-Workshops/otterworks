@@ -1,0 +1,1552 @@
+{
+  "app_id": "gf-jsf-portal",
+  "country": "Java country DE (EUR, kilometres, plates 'M-AB 1234', employee ids E204xxxx (200 local staff) plus E1009xxx (15 transferees, same numbers as their mainframe occurrences); industries/manufacturing/global-fleet/ESTATE.md:31's E100xxxx is wrong)",
+  "stack": "Java 8 WAR, JSF 2.2 Mojarra 2.2.20 (@ManagedBean), JPA/Hibernate 5.4.33 (RESOURCE_LOCAL, hbm2ddl validate) on PostgreSQL (driver 42.2.29), Tomcat 9 jre8 via Dockerfile",
+  "sources_read": [
+    "industries/manufacturing/global-fleet/ESTATE.md",
+    "industries/manufacturing/global-fleet/jsf-portal/pom.xml",
+    "industries/manufacturing/global-fleet/jsf-portal/Dockerfile",
+    "industries/manufacturing/global-fleet/jsf-portal/.gitignore",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/resources/META-INF/persistence.xml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/web.xml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/faces-config.xml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/assignment.xhtml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/resources/css/portal.css",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/AssignmentBean.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/EmployeeLookupBean.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/Faces.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/HealthServlet.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/PlateConverter.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Assignment.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarRequest.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarReturn.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/FleetRule.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/MileageClaim.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java",
+    "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/Jpa.java",
+    "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql",
+    "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql",
+    "industries/manufacturing/global-fleet/deploy/gf-tenant.sh",
+    "industries/manufacturing/global-fleet/deploy/seed.Dockerfile"
+  ],
+  "screens": [
+    {
+      "id": "employees",
+      "kind": "jsf-page",
+      "title": "Mitarbeitersuche",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:1-30",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/EmployeeLookupBean.java:12-43",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/web.xml:28-30"
+      ],
+      "fields": [
+        {
+          "name": "q",
+          "io": "in",
+          "bound_to": "#{lookup.term} (f:viewParam + plain HTML GET input)",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:6-13"
+        },
+        {
+          "name": "Personalnr.",
+          "io": "out",
+          "bound_to": "r.employee.employeeNo",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:16-22"
+        },
+        {
+          "name": "Name",
+          "io": "out",
+          "bound_to": "r.employee.lastName, firstName",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:16-22"
+        },
+        {
+          "name": "EG",
+          "io": "out",
+          "bound_to": "r.employee.grade",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:16-22"
+        },
+        {
+          "name": "Kostenstelle",
+          "io": "out",
+          "bound_to": "r.employee.costCenter",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:16-22"
+        },
+        {
+          "name": "Standort",
+          "io": "out",
+          "bound_to": "r.employee.site",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:16-22"
+        },
+        {
+          "name": "Status",
+          "io": "out",
+          "bound_to": "r.employee.status",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:16-22"
+        },
+        {
+          "name": "Dienstwagen",
+          "io": "out",
+          "bound_to": "r.plate (plate of open assignment or '')",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:16-22"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "page load (f:viewAction lookup.load)",
+          "effect": "searchEmployees(term): lower(employeeNo|lastName|firstName) LIKE %term%, ORDER BY lastName, firstName, max 50 rows; then per row currentAssignment(e) (N+1: one assignments() query per employee)",
+          "navigates_to": null,
+          "records_read": [
+            "employee",
+            "assignment",
+            "vehicle"
+          ],
+          "records_written": [],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/EmployeeLookupBean.java:32-38",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:24-34",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:47-65"
+          ]
+        },
+        {
+          "trigger": "Suchen (HTML form GET)",
+          "effect": "reloads employees.xhtml?q=...",
+          "navigates_to": "employees",
+          "records_read": [
+            "employee",
+            "assignment",
+            "vehicle"
+          ],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:10-14"
+        },
+        {
+          "trigger": "Zuordnung link",
+          "effect": "h:link outcome=assignment with ?employee=employeeNo",
+          "navigates_to": "assignment",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:24"
+        },
+        {
+          "trigger": "Abrechnung link",
+          "effect": "h:link outcome=statement with ?employee=employeeNo (no period -> previous month)",
+          "navigates_to": "statement",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:26"
+        },
+        {
+          "trigger": "top-nav links (layout)",
+          "effect": "plain GET links on every page",
+          "navigates_to": "employees|request|mileage|return",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:10-16"
+        }
+      ],
+      "reached_from": [
+        "welcome-file (/)",
+        "top-nav (all pages)"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "request",
+      "kind": "jsf-page",
+      "title": "Dienstwagenantrag (3-step wizard, @ViewScoped bean 'wizard')",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:1-49",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:14-125"
+      ],
+      "fields": [
+        {
+          "name": "step",
+          "io": "out",
+          "bound_to": "#{wizard.step} (step indicator 1/2/3)",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:6-10"
+        },
+        {
+          "name": "emp (Personalnummer)",
+          "io": "in",
+          "bound_to": "#{wizard.employeeNo} required=true",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:13-14"
+        },
+        {
+          "name": "employee summary",
+          "io": "out",
+          "bound_to": "wizard.employee.fullName, grade, site",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:18"
+        },
+        {
+          "name": "choice",
+          "io": "in",
+          "bound_to": "#{wizard.choice} radio pool|new (default pool)",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:19-22"
+        },
+        {
+          "name": "Poolfahrzeug",
+          "io": "in",
+          "bound_to": "#{wizard.vehicleId} selectOneMenu over wizard.available (itemLabel v.label)",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:23-27"
+        },
+        {
+          "name": "Kennzeichen",
+          "io": "in",
+          "bound_to": "#{wizard.plate} converter=plateConverter (trim, collapse whitespace, upper-case, ''->null)",
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:28",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/PlateConverter.java:8-23"
+          ]
+        },
+        {
+          "name": "Marke / Modell",
+          "io": "in",
+          "bound_to": "#{wizard.make} #{wizard.model}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:29"
+        },
+        {
+          "name": "Listenpreis EUR",
+          "io": "in",
+          "bound_to": "#{wizard.listPrice} BigDecimal",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:30"
+        },
+        {
+          "name": "CO2 g/km",
+          "io": "in",
+          "bound_to": "#{wizard.co2}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:31"
+        },
+        {
+          "name": "fuel",
+          "io": "in",
+          "bound_to": "#{wizard.fuel} D|P|H|E (default D)",
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:32-35",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:28"
+          ]
+        },
+        {
+          "name": "confirmation",
+          "io": "out",
+          "bound_to": "employeeNo fullName; selected.label or plate+make+model",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:40-41"
+        },
+        {
+          "name": "Uebergabe am",
+          "io": "in",
+          "bound_to": "#{wizard.startDate} dd.MM.yyyy (default today)",
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:42-43",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:29"
+          ]
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "Weiter (step 1) -> wizard.checkEmployee",
+          "effect": "findEmployee(upper(trim(no))); reject if null or status!='A'; reject if grade < fleet_rule.min_grade (DE=6); reject if an open assignment exists; load availableVehicles() (owner null AND no open assignment, ORDER BY plate); step=2",
+          "navigates_to": "request (same view, step 2)",
+          "records_read": [
+            "employee",
+            "fleet_rule",
+            "assignment",
+            "vehicle"
+          ],
+          "records_written": [],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:32-49",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:15-22",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:67-76",
+            "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3"
+          ]
+        },
+        {
+          "trigger": "Weiter (step 2) -> wizard.chooseVehicle",
+          "effect": "pool requires vehicleId; new requires plate, make, model, listPrice, co2; step=3",
+          "navigates_to": "request (same view, step 3)",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:51-61"
+        },
+        {
+          "trigger": "Zurueck (immediate) -> wizard.back",
+          "effect": "step-- (min 1)",
+          "navigates_to": "request (same view)",
+          "records_read": [],
+          "records_written": [],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:36",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:44",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:85-89"
+          ]
+        },
+        {
+          "trigger": "Antrag abschliessen -> wizard.submit",
+          "effect": "FleetService.requestCar in one tx: new vehicle persisted with registered_on=startDate (or existing pool vehicle loaded); vehicle.owner_employee_id=employee; car_request(status 'DELIVERED', requested_on=today); assignment(start_date=startDate, end_date null)",
+          "navigates_to": "assignment?faces-redirect=true&employee=<no>",
+          "records_read": [
+            "employee",
+            "vehicle"
+          ],
+          "records_written": [
+            "vehicle",
+            "car_request",
+            "assignment"
+          ],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:63-83",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:100-134"
+          ]
+        },
+        {
+          "trigger": "top-nav links (layout)",
+          "effect": "plain GET links on every page",
+          "navigates_to": "employees|request|mileage|return",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:10-16"
+        }
+      ],
+      "reached_from": [
+        "top-nav (all pages)"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "assignment",
+      "kind": "jsf-page",
+      "title": "Dienstwagenzuordnung (read-only)",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/assignment.xhtml:1-28",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/AssignmentBean.java:12-39"
+      ],
+      "fields": [
+        {
+          "name": "employee",
+          "io": "in",
+          "bound_to": "f:viewParam employee -> #{assignment.employeeNo}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/assignment.xhtml:6-9"
+        },
+        {
+          "name": "header",
+          "io": "out",
+          "bound_to": "employeeNo fullName, grade, costCenter, site",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/assignment.xhtml:12"
+        },
+        {
+          "name": "current car",
+          "io": "out",
+          "bound_to": "current.vehicle.plate make model, listPrice #,##0.00 EUR, startDate",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/assignment.xhtml:13-18"
+        },
+        {
+          "name": "history grid",
+          "io": "out",
+          "bound_to": "history: vehicle.plate, make model, startDate, endDate",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/assignment.xhtml:20-25"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "page load (assignment.load)",
+          "effect": "findEmployee(no) (no trim/upper); assignments(e) ORDER BY startDate DESC with vehicle fetched; current = first open",
+          "navigates_to": null,
+          "records_read": [
+            "employee",
+            "assignment",
+            "vehicle"
+          ],
+          "records_written": [],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/AssignmentBean.java:21-32",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:36-65"
+          ]
+        },
+        {
+          "trigger": "top-nav links (layout)",
+          "effect": "plain GET links on every page",
+          "navigates_to": "employees|request|mileage|return",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:10-16"
+        }
+      ],
+      "reached_from": [
+        "employees",
+        "request"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "mileage",
+      "kind": "jsf-page",
+      "title": "Reisekosten (Dienstreise-km)",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:1-31",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:15-81"
+      ],
+      "fields": [
+        {
+          "name": "employee (viewParam)",
+          "io": "in",
+          "bound_to": "#{mileage.employeeNo}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:6-9"
+        },
+        {
+          "name": "Personalnummer",
+          "io": "in",
+          "bound_to": "#{mileage.employeeNo}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:11"
+        },
+        {
+          "name": "fullName",
+          "io": "out",
+          "bound_to": "mileage.employee.fullName",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:13"
+        },
+        {
+          "name": "Datum",
+          "io": "in",
+          "bound_to": "#{mileage.claimDate} dd.MM.yyyy (default today)",
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:15",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:21"
+          ]
+        },
+        {
+          "name": "Kilometer",
+          "io": "in",
+          "bound_to": "#{mileage.km}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:16"
+        },
+        {
+          "name": "preview/rate",
+          "io": "out",
+          "bound_to": "mileage.preview EUR, mileage.rate EUR/km (fleet_rule.mileage_rate)",
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:18",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:79"
+          ]
+        },
+        {
+          "name": "Anlass",
+          "io": "in",
+          "bound_to": "#{mileage.purpose}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:19"
+        },
+        {
+          "name": "claims grid",
+          "io": "out",
+          "bound_to": "claimDate, km, purpose, amount, status (last 6 months to today)",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:23-29"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "page load (mileage.load)",
+          "effect": "if employeeNo param and no employee: findEmployee + refresh claims",
+          "navigates_to": null,
+          "records_read": [
+            "employee",
+            "mileage_claim"
+          ],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:27-32"
+        },
+        {
+          "trigger": "Suchen -> mileage.find",
+          "effect": "findEmployee(upper(trim)); refresh: claims(e, now-6 months, now) ORDER BY claimDate",
+          "navigates_to": "mileage",
+          "records_read": [
+            "employee",
+            "mileage_claim"
+          ],
+          "records_written": [],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:34-40",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:59-67",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:186-195"
+          ]
+        },
+        {
+          "trigger": "Berechnen -> mileage.calculate",
+          "effect": "preview = fleet_rule.mileage_rate * km, scale 2 HALF_EVEN",
+          "navigates_to": "mileage",
+          "records_read": [
+            "fleet_rule"
+          ],
+          "records_written": [],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:42-44",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:159-161"
+          ]
+        },
+        {
+          "trigger": "Einreichen -> mileage.submit",
+          "effect": "reject if km null or <=0; insert mileage_claim(status 'SUBMITTED', amount=mileageAmount(km), purpose ''-default); info message; refresh",
+          "navigates_to": "mileage",
+          "records_read": [
+            "employee",
+            "fleet_rule"
+          ],
+          "records_written": [
+            "mileage_claim"
+          ],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:46-57",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:163-184"
+          ]
+        },
+        {
+          "trigger": "top-nav links (layout)",
+          "effect": "plain GET links on every page",
+          "navigates_to": "employees|request|mileage|return",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:10-16"
+        }
+      ],
+      "reached_from": [
+        "top-nav (all pages)"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "statement",
+      "kind": "jsf-page",
+      "title": "Abrechnung geldwerter Vorteil (benefit computed on page)",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:1-30",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:19-101"
+      ],
+      "fields": [
+        {
+          "name": "employee",
+          "io": "in",
+          "bound_to": "viewParam + GET input -> #{statement.employeeNo}",
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:7",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:12"
+          ]
+        },
+        {
+          "name": "period",
+          "io": "in",
+          "bound_to": "viewParam + GET input 'JJJJ-MM' -> #{statement.period} (default previous calendar month)",
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:8",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:13",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:58-62"
+          ]
+        },
+        {
+          "name": "header",
+          "io": "out",
+          "bound_to": "employeeNo fullName, period, commuteKm",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:18-19"
+        },
+        {
+          "name": "rule",
+          "io": "out",
+          "bound_to": "rule.benefitPct % Listenpreis + rule.commutePct % je Entfernungs-km",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:20"
+        },
+        {
+          "name": "lines grid",
+          "io": "out",
+          "bound_to": "l.plate, l.days, l.benefit",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:22-26"
+        },
+        {
+          "name": "totals",
+          "io": "out",
+          "bound_to": "totalBenefit EUR, totalMileage EUR",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:27"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "page load (statement.load)",
+          "effect": "for each assignment overlapping [first,last of month]: days=inclusive overlap; monthly=list*benefit_pct/100 + list*commute_pct/100*commute_km; benefit=monthly*days/monthDays scale 2 HALF_UP; total; totalMileage = sum(amount) of claims in month with status 'APPROVED'",
+          "navigates_to": null,
+          "records_read": [
+            "employee",
+            "fleet_rule",
+            "assignment",
+            "vehicle",
+            "mileage_claim"
+          ],
+          "records_written": [],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:48-90",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:186-209"
+          ]
+        },
+        {
+          "trigger": "Anzeigen (HTML form GET)",
+          "effect": "reloads statement.xhtml?employee=&period=",
+          "navigates_to": "statement",
+          "records_read": [
+            "employee",
+            "fleet_rule",
+            "assignment",
+            "vehicle",
+            "mileage_claim"
+          ],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:11-15"
+        },
+        {
+          "trigger": "top-nav links (layout)",
+          "effect": "plain GET links on every page",
+          "navigates_to": "employees|request|mileage|return",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:10-16"
+        }
+      ],
+      "reached_from": [
+        "employees"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "return",
+      "kind": "jsf-page",
+      "title": "Fahrzeugrueckgabe",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:1-23",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:11-68"
+      ],
+      "fields": [
+        {
+          "name": "plate (viewParam)",
+          "io": "in",
+          "bound_to": "#{carReturn.plate}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:6-9"
+        },
+        {
+          "name": "Kennzeichen",
+          "io": "in",
+          "bound_to": "#{carReturn.plate} (no converter)",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:11"
+        },
+        {
+          "name": "open assignment",
+          "io": "out",
+          "bound_to": "vehicle.label, open.employee.employeeNo fullName, open.startDate",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:14-15"
+        },
+        {
+          "name": "Rueckgabedatum",
+          "io": "in",
+          "bound_to": "#{carReturn.returnDate} (default today)",
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:16",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:18"
+          ]
+        },
+        {
+          "name": "Kilometerstand",
+          "io": "in",
+          "bound_to": "#{carReturn.odometer}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:17"
+        },
+        {
+          "name": "Zustand",
+          "io": "in",
+          "bound_to": "#{carReturn.note}",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:18"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "page load (carReturn.load)",
+          "effect": "if plate param and no vehicle: find()",
+          "navigates_to": null,
+          "records_read": [
+            "vehicle",
+            "assignment",
+            "employee"
+          ],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:23-27"
+        },
+        {
+          "trigger": "Suchen -> carReturn.find",
+          "effect": "findVehicleByPlate(exact); openAssignmentForVehicle (end_date null, employee fetched); errors if none",
+          "navigates_to": "return",
+          "records_read": [
+            "vehicle",
+            "assignment",
+            "employee"
+          ],
+          "records_written": [],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:29-40",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:78-98"
+          ]
+        },
+        {
+          "trigger": "Rueckgabe buchen -> carReturn.submit",
+          "effect": "reject odometer null; reject returnDate < startDate; returnCar tx: assignment.end_date=returnDate, vehicle.owner_employee_id=null, insert car_return; info message; open=null",
+          "navigates_to": "return",
+          "records_read": [
+            "assignment",
+            "vehicle"
+          ],
+          "records_written": [
+            "assignment",
+            "vehicle",
+            "car_return"
+          ],
+          "source": [
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:42-55",
+            "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:136-157"
+          ]
+        },
+        {
+          "trigger": "top-nav links (layout)",
+          "effect": "plain GET links on every page",
+          "navigates_to": "employees|request|mileage|return",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:10-16"
+        }
+      ],
+      "reached_from": [
+        "top-nav (all pages)"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "health",
+      "kind": "jsf-page",
+      "title": "/health servlet (non-JSF, text/plain ok | 503 db unavailable)",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/HealthServlet.java:10-22",
+        "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:324-325",
+        "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:428"
+      ],
+      "fields": [
+        {
+          "name": "body",
+          "io": "out",
+          "bound_to": "'ok' or 'db unavailable'",
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/HealthServlet.java:14-21"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "GET /health",
+          "effect": "FleetService.rule() as DB ping",
+          "navigates_to": null,
+          "records_read": [
+            "fleet_rule"
+          ],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/HealthServlet.java:13-22"
+        }
+      ],
+      "reached_from": [
+        "k8s readiness/liveness probes",
+        "gf-tenant.sh wait_https"
+      ],
+      "reachable": true
+    }
+  ],
+  "records": [
+    {
+      "id": "fleet_rule",
+      "kind": "table",
+      "location_mode_or_pk": "PK country CHAR(2); JPA @Id country (assigned, not generated); only row 'DE'",
+      "area_or_schema": "public (portal DB)",
+      "fields": [
+        {
+          "name": "country",
+          "type": "CHAR(2) PK",
+          "note": "read by em.find(FleetRule,'DE') hard-coded"
+        },
+        {
+          "name": "min_grade",
+          "type": "SMALLINT NOT NULL",
+          "note": "6; wizard eligibility"
+        },
+        {
+          "name": "benefit_pct",
+          "type": "NUMERIC(5,2) NOT NULL",
+          "note": "1.00"
+        },
+        {
+          "name": "commute_pct",
+          "type": "NUMERIC(5,3) NOT NULL",
+          "note": "0.030"
+        },
+        {
+          "name": "mileage_rate",
+          "type": "NUMERIC(6,3) NOT NULL",
+          "note": "0.305 EUR/km"
+        },
+        {
+          "name": "currency",
+          "type": "CHAR(3) NOT NULL",
+          "note": "'EUR'; never read by code"
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:4-11",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/FleetRule.java:7-23",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:15-22"
+      ]
+    },
+    {
+      "id": "employee",
+      "kind": "table",
+      "location_mode_or_pk": "PK id BIGSERIAL (JPA IDENTITY); business key employee_no VARCHAR(8) UNIQUE",
+      "area_or_schema": "public",
+      "fields": [
+        {
+          "name": "id",
+          "type": "BIGSERIAL PK",
+          "note": ""
+        },
+        {
+          "name": "employee_no",
+          "type": "VARCHAR(8) NOT NULL UNIQUE",
+          "note": "seed: 200 E204xxxx local staff + 15 E1009xxx transferees (E1009100-E1009142, same numbers as on the mainframe)"
+        },
+        {
+          "name": "first_name",
+          "type": "VARCHAR(40) NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "last_name",
+          "type": "VARCHAR(40) NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "grade",
+          "type": "SMALLINT NOT NULL",
+          "note": "EG 1-12 in seed"
+        },
+        {
+          "name": "cost_center",
+          "type": "VARCHAR(8) NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "site",
+          "type": "VARCHAR(30) NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "commute_km",
+          "type": "INTEGER NOT NULL DEFAULT 0",
+          "note": "used in benefit"
+        },
+        {
+          "name": "hire_date",
+          "type": "DATE NOT NULL",
+          "note": "never read"
+        },
+        {
+          "name": "leave_date",
+          "type": "DATE",
+          "note": "never read; 6 rows set"
+        },
+        {
+          "name": "status",
+          "type": "CHAR(1) NOT NULL",
+          "note": "'A' active / 'T' (6 rows); isActive()=='A'"
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:13-25",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:7-36",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:4-218"
+      ]
+    },
+    {
+      "id": "vehicle",
+      "kind": "table",
+      "location_mode_or_pk": "PK id BIGSERIAL (IDENTITY); plate VARCHAR(12) UNIQUE",
+      "area_or_schema": "public",
+      "fields": [
+        {
+          "name": "id",
+          "type": "BIGSERIAL PK",
+          "note": ""
+        },
+        {
+          "name": "plate",
+          "type": "VARCHAR(12) NOT NULL UNIQUE",
+          "note": "e.g. 'HH-VS 7629'"
+        },
+        {
+          "name": "make",
+          "type": "VARCHAR(30) NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "model",
+          "type": "VARCHAR(40) NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "list_price",
+          "type": "NUMERIC(10,2) NOT NULL",
+          "note": "benefit base"
+        },
+        {
+          "name": "co2_g_km",
+          "type": "INTEGER NOT NULL",
+          "note": "write-only"
+        },
+        {
+          "name": "fuel",
+          "type": "CHAR(1) NOT NULL",
+          "note": "D/P/H/E; write-only"
+        },
+        {
+          "name": "registered_on",
+          "type": "DATE NOT NULL",
+          "note": "write-only; set to startDate for new cars"
+        },
+        {
+          "name": "owner_employee_id",
+          "type": "BIGINT FK employee nullable",
+          "note": "denormalised current holder; null = pool (40 rows)"
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:27-37",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java:7-40",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:219-338"
+      ]
+    },
+    {
+      "id": "assignment",
+      "kind": "table",
+      "location_mode_or_pk": "PK id BIGSERIAL (IDENTITY); index assignment_employee_idx(employee_id)",
+      "area_or_schema": "public",
+      "fields": [
+        {
+          "name": "id",
+          "type": "BIGSERIAL PK",
+          "note": ""
+        },
+        {
+          "name": "employee_id",
+          "type": "BIGINT NOT NULL FK employee",
+          "note": ""
+        },
+        {
+          "name": "vehicle_id",
+          "type": "BIGINT NOT NULL FK vehicle",
+          "note": ""
+        },
+        {
+          "name": "start_date",
+          "type": "DATE NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "end_date",
+          "type": "DATE",
+          "note": "null = open (80 of 111 open in seed)"
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:39-45",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:73",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Assignment.java:7-27",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:339-449"
+      ]
+    },
+    {
+      "id": "car_request",
+      "kind": "table",
+      "location_mode_or_pk": "PK id BIGSERIAL (IDENTITY)",
+      "area_or_schema": "public",
+      "fields": [
+        {
+          "name": "id",
+          "type": "BIGSERIAL PK",
+          "note": ""
+        },
+        {
+          "name": "employee_id",
+          "type": "BIGINT NOT NULL FK employee",
+          "note": ""
+        },
+        {
+          "name": "vehicle_id",
+          "type": "BIGINT FK vehicle nullable",
+          "note": "never null in seed or code"
+        },
+        {
+          "name": "requested_on",
+          "type": "DATE NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(12) NOT NULL",
+          "note": "only 'DELIVERED' (code and 82 seed rows)"
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:47-53",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarRequest.java:7-22",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:481-562"
+      ]
+    },
+    {
+      "id": "car_return",
+      "kind": "table",
+      "location_mode_or_pk": "PK id BIGSERIAL (IDENTITY)",
+      "area_or_schema": "public",
+      "fields": [
+        {
+          "name": "id",
+          "type": "BIGSERIAL PK",
+          "note": ""
+        },
+        {
+          "name": "assignment_id",
+          "type": "BIGINT NOT NULL FK assignment",
+          "note": "1 per closed assignment in seed (31)"
+        },
+        {
+          "name": "return_date",
+          "type": "DATE NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "odometer_km",
+          "type": "INTEGER NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "condition_note",
+          "type": "VARCHAR(200)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:55-61",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarReturn.java:7-21",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:450-480"
+      ]
+    },
+    {
+      "id": "mileage_claim",
+      "kind": "table",
+      "location_mode_or_pk": "PK id BIGSERIAL (IDENTITY); index mileage_claim_employee_idx(employee_id, claim_date)",
+      "area_or_schema": "public",
+      "fields": [
+        {
+          "name": "id",
+          "type": "BIGSERIAL PK",
+          "note": ""
+        },
+        {
+          "name": "employee_id",
+          "type": "BIGINT NOT NULL FK employee",
+          "note": ""
+        },
+        {
+          "name": "claim_date",
+          "type": "DATE NOT NULL",
+          "note": "seed 2026-03-01..2026-10-27"
+        },
+        {
+          "name": "km",
+          "type": "INTEGER NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "purpose",
+          "type": "VARCHAR(60) NOT NULL",
+          "note": ""
+        },
+        {
+          "name": "amount",
+          "type": "NUMERIC(10,2) NOT NULL",
+          "note": "= 0.305*km HALF_EVEN for all 699 seed rows"
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(10) NOT NULL",
+          "note": "SUBMITTED (code); seed APPROVED 609 / SUBMITTED 60 / REJECTED 30"
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:63-71",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:74",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/MileageClaim.java:8-33",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:563-1261"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "vehicle.owner_employee_id->employee",
+      "kind": "foreign-key",
+      "owner": "employee",
+      "member": "vehicle",
+      "membership": "nullable, ON DELETE NO ACTION (default); JPA @ManyToOne optional (default), eager",
+      "order": "none",
+      "pointers_or_index": "no index on owner_employee_id",
+      "used_by": [
+        "request",
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:36",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java:20",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:70-71",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:114",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:143"
+      ]
+    },
+    {
+      "id": "assignment.employee_id->employee",
+      "kind": "foreign-key",
+      "owner": "employee",
+      "member": "assignment",
+      "membership": "NOT NULL, ON DELETE NO ACTION; JPA @ManyToOne(optional=false) eager",
+      "order": "ORDER BY a.startDate DESC (assignments())",
+      "pointers_or_index": "assignment_employee_idx(employee_id)",
+      "used_by": [
+        "employees",
+        "request",
+        "assignment",
+        "statement",
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:41",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:73",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Assignment.java:12",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:57-65",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:89-98"
+      ]
+    },
+    {
+      "id": "assignment.vehicle_id->vehicle",
+      "kind": "foreign-key",
+      "owner": "vehicle",
+      "member": "assignment",
+      "membership": "NOT NULL, ON DELETE NO ACTION; JPA @ManyToOne(optional=false), join fetch in queries",
+      "order": "none (query by vehicle, end_date null)",
+      "pointers_or_index": "no index on vehicle_id",
+      "used_by": [
+        "employees",
+        "request",
+        "assignment",
+        "statement",
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:42",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Assignment.java:13",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:60-61",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:70-71",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:92-93"
+      ]
+    },
+    {
+      "id": "car_request.employee_id->employee",
+      "kind": "foreign-key",
+      "owner": "employee",
+      "member": "car_request",
+      "membership": "NOT NULL, ON DELETE NO ACTION; @ManyToOne(optional=false)",
+      "order": "none (never queried)",
+      "pointers_or_index": "none",
+      "used_by": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:49",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarRequest.java:12",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:115-120"
+      ]
+    },
+    {
+      "id": "car_request.vehicle_id->vehicle",
+      "kind": "foreign-key",
+      "owner": "vehicle",
+      "member": "car_request",
+      "membership": "nullable, ON DELETE NO ACTION; @ManyToOne optional",
+      "order": "none (never queried)",
+      "pointers_or_index": "none",
+      "used_by": [
+        "request"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:50",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarRequest.java:13",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:117"
+      ]
+    },
+    {
+      "id": "car_return.assignment_id->assignment",
+      "kind": "foreign-key",
+      "owner": "assignment",
+      "member": "car_return",
+      "membership": "NOT NULL, ON DELETE NO ACTION; @ManyToOne(optional=false); no UNIQUE so >1 return per assignment allowed by DDL",
+      "order": "none (never queried)",
+      "pointers_or_index": "none",
+      "used_by": [
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:57",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarReturn.java:12",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:144-149"
+      ]
+    },
+    {
+      "id": "mileage_claim.employee_id->employee",
+      "kind": "foreign-key",
+      "owner": "employee",
+      "member": "mileage_claim",
+      "membership": "NOT NULL, ON DELETE NO ACTION; @ManyToOne(optional=false)",
+      "order": "ORDER BY c.claimDate (claims())",
+      "pointers_or_index": "mileage_claim_employee_idx(employee_id, claim_date)",
+      "used_by": [
+        "mileage",
+        "statement"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:65",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:74",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/MileageClaim.java:13",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:186-195"
+      ]
+    },
+    {
+      "id": "fleet_rule->(all)",
+      "kind": "implicit-join",
+      "owner": "fleet_rule",
+      "member": "employee/vehicle/mileage_claim",
+      "membership": "no FK; single row looked up by literal 'DE'",
+      "order": "none",
+      "pointers_or_index": "PK",
+      "used_by": [
+        "request",
+        "mileage",
+        "statement",
+        "health"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:15-22",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3"
+      ]
+    },
+    {
+      "id": "open assignment <-> vehicle.owner",
+      "kind": "implicit-join",
+      "owner": "assignment(end_date null)",
+      "member": "vehicle.owner_employee_id",
+      "membership": "application invariant only (no constraint): owner set iff an open assignment exists; maintained by requestCar/returnCar; seed consistent (80 open, 80 owned, 0 mismatches)",
+      "order": "none",
+      "pointers_or_index": "none",
+      "used_by": [
+        "request",
+        "return"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:114",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:121-125",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:142-143",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:36-45"
+      ]
+    }
+  ],
+  "batch_steps": [
+    {
+      "id": "seed-load",
+      "job": "gf-tenant.sh load_seed (k8s Job gf-seed)",
+      "step": "psql 001_schema.sql then 002_seed.sql",
+      "program": "psql",
+      "inputs": [
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql"
+      ],
+      "outputs": [
+        "all 7 tables (DROP+CREATE, then inserts, setval sequences)"
+      ],
+      "what_it_does": "Deploy-time reload of the portal DB; the only batch-like step. No scheduled jobs, timers or batch code exist in the WAR.",
+      "sources": [
+        "industries/manufacturing/global-fleet/deploy/gf-tenant.sh:292-297",
+        "industries/manufacturing/global-fleet/deploy/seed.Dockerfile:3",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:2",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:1-2",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:1262-1268"
+      ]
+    },
+    {
+      "id": "statement-on-demand",
+      "job": "none (request-time)",
+      "step": "StatementBean.load",
+      "program": "StatementBean",
+      "inputs": [
+        "employee",
+        "fleet_rule",
+        "assignment",
+        "vehicle",
+        "mileage_claim"
+      ],
+      "outputs": [
+        "rendered page only; nothing persisted"
+      ],
+      "what_it_does": "Monthly benefit computed per page view instead of a batch run; no closed period record is stored.",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:48-90"
+      ]
+    }
+  ],
+  "unreached": [
+    {
+      "item": "employee.hire_date",
+      "kind": "column",
+      "why_unreached": "mapped with getter only; getHireDate() never called in any bean or xhtml (grep)",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:19",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:32",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:22"
+      ]
+    },
+    {
+      "item": "employee.leave_date",
+      "kind": "column",
+      "why_unreached": "getLeaveDate() never called; leavers are filtered only via status 'A'",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:20",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:33",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:34"
+      ]
+    },
+    {
+      "item": "vehicle.co2_g_km",
+      "kind": "column",
+      "why_unreached": "written by wizard, never read (getCo2 of Vehicle never called; benefit uses list price only)",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java:17",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java:31",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:78",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:76-79"
+      ]
+    },
+    {
+      "item": "vehicle.fuel",
+      "kind": "column",
+      "why_unreached": "written by wizard, Vehicle.getFuel never called",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java:18",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java:33",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:79"
+      ]
+    },
+    {
+      "item": "vehicle.registered_on",
+      "kind": "column",
+      "why_unreached": "written in requestCar, getRegisteredOn never called",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java:19",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java:35",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:108"
+      ]
+    },
+    {
+      "item": "Vehicle.getOwner()",
+      "kind": "method",
+      "why_unreached": "owner only read inside JPQL 'v.owner is null'; getter never called",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Vehicle.java:37",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:70"
+      ]
+    },
+    {
+      "item": "car_request (all columns)",
+      "kind": "table",
+      "why_unreached": "write-only: entity has setters and getId only, no query selects CarRequest anywhere",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarRequest.java:17-21",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:115-120"
+      ]
+    },
+    {
+      "item": "car_return (all columns)",
+      "kind": "table",
+      "why_unreached": "write-only: entity has setters only, never queried; odometer/condition not shown anywhere",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarReturn.java:17-20",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:144-149"
+      ]
+    },
+    {
+      "item": "fleet_rule.currency / FleetRule.getCurrency()",
+      "kind": "column",
+      "why_unreached": "never called; 'EUR' is hard-coded in xhtml",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/FleetRule.java:15",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/FleetRule.java:22",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:18",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:27"
+      ]
+    },
+    {
+      "item": "FleetRule.getCountry()",
+      "kind": "method",
+      "why_unreached": "never called; country is the literal 'DE' in rule()",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/FleetRule.java:17",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:18"
+      ]
+    },
+    {
+      "item": "MileageClaim.getId()/getEmployee(), CarRequest.getId()",
+      "kind": "method",
+      "why_unreached": "never called by any bean or view (grep)",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/MileageClaim.java:20-21",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/CarRequest.java:17"
+      ]
+    },
+    {
+      "item": "CarReturnBean.done / isDone()",
+      "kind": "method",
+      "why_unreached": "set true after submit but never read by return.xhtml or any code",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:21",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:53",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:67",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:1-23"
+      ]
+    },
+    {
+      "item": "CarRequestWizard.checkEmployee: employeeNo == null ternary",
+      "kind": "branch",
+      "why_unreached": "h:inputText emp is required=true, so validation fails before the action and null never reaches the bean",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:14",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:33"
+      ]
+    },
+    {
+      "item": "CarRequestWizard.submit: pool vehicleId not found in available (existing stays null -> NPE in requestCar)",
+      "kind": "branch",
+      "why_unreached": "selectOneMenu validates submitted value against wizard.available items, so a non-listed id is rejected by JSF; only reachable if another session takes the car between steps (still in list) -> then double assignment, not this branch",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:24-27",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:66-71",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:112"
+      ]
+    },
+    {
+      "item": "MileageBean.submit: employee == null",
+      "kind": "branch",
+      "why_unreached": "Einreichen button sits in panelGroup rendered only when employee != null; JSF does not decode unrendered commands",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:14",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:20",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:47"
+      ]
+    },
+    {
+      "item": "CarReturnBean.submit: open == null",
+      "kind": "branch",
+      "why_unreached": "Rueckgabe buchen is inside panelGroup rendered only when open != null",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:13",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:19",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:43"
+      ]
+    },
+    {
+      "item": "mileage viewParam 'employee' / MileageBean.load",
+      "kind": "branch",
+      "why_unreached": "no link or redirect passes ?employee= to mileage.xhtml (top nav is a bare href); reachable only by typed URL",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml:7-8",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:14",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/MileageBean.java:27-32"
+      ]
+    },
+    {
+      "item": "return viewParam 'plate' / CarReturnBean.load",
+      "kind": "branch",
+      "why_unreached": "no link passes ?plate= to return.xhtml; reachable only by typed URL",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:7-8",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:15",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarReturnBean.java:23-27"
+      ]
+    },
+    {
+      "item": "statement page from top nav",
+      "kind": "screen",
+      "why_unreached": "statement (and assignment) are not in the top nav; reached only via employees row links (and wizard redirect for assignment). Reachable, but no generic entry",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/templates/layout.xhtml:12-15",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml:24-26"
+      ]
+    },
+    {
+      "item": "mileage_claim status transitions to APPROVED/REJECTED",
+      "kind": "branch",
+      "why_unreached": "portal only writes 'SUBMITTED'; no page approves/rejects, yet statement totals only 'APPROVED' -> claims submitted in the portal never count in totalMileage unless changed outside the app (seed already holds APPROVED/REJECTED)",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:174",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:85-89",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:563"
+      ]
+    },
+    {
+      "item": "car_request.status values other than 'DELIVERED' / vehicle_id null",
+      "kind": "branch",
+      "why_unreached": "code only writes 'DELIVERED' with a vehicle; seed has 82 rows all DELIVERED with vehicle; nullable column never null",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:117-119",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:50-52"
+      ]
+    },
+    {
+      "item": "PlateConverter.getAsString",
+      "kind": "method",
+      "why_unreached": "only used for redisplay of wizard.plate; return page plate input has no converter (exact, case-sensitive match on lookup)",
+      "sources": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/PlateConverter.java:20-23",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:11",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:81"
+      ]
+    }
+  ],
+  "open_questions": [
+    "industries/manufacturing/global-fleet/ESTATE.md:31 says Java-country employee ids are E100xxxx, but only 15 seed employees use E100 (shared people, industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:4-18) and 200 use E204xxxx (e.g. industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:19). Which prefix is canonical for the global app?",
+    "Mileage approval workflow: who sets APPROVED/REJECTED (seed has both, portal never writes them)? Is there an external process to be replaced?",
+    "Benefit formula: commute part is list*commute_pct/100*commute_km per month (DE 0.03% rule) prorated by days/monthDays with HALF_UP to 2dp per line; intermediate values unrounded. Confirm proration-by-days is intended (DE rule is usually per full month).",
+    "Statement default period uses server clock (previous month) and Calendar default TZ; daysBetween uses strip() to noon; confirm timezone expectations.",
+    "Statement includes assignments of employees with status 'T' and does not check leave_date; intended?",
+    "No concurrency guard: two wizard sessions can assign the same pool car (no unique partial index on assignment(vehicle_id) where end_date is null).",
+    "car_return.assignment_id has no UNIQUE; double return of same assignment is prevented only by the open==null UI flow.",
+    "Plate lookup on return page is exact and case-sensitive while the wizard normalises plates (PlateConverter); should lookup normalise too?",
+    "No authentication/authorisation in web.xml; any user can act for any employee."
+  ]
+}

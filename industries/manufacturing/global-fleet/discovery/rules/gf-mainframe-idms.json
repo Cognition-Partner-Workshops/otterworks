@@ -1,0 +1,1094 @@
+{
+  "app_id": "gf-mainframe-idms",
+  "rules": [
+    {
+      "id": "MF-R01",
+      "title": "Company car grade threshold",
+      "statement": "An employee whose grade EM-GRD is below 07 is refused a company car on the assign screen ('GRADE NOT ELIGIBLE FOR A COMPANY CAR'); grades 07 and above are eligible.",
+      "category": "eligibility",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:27-32"
+      ],
+      "evidence": "IF EM-GRD LT 07 ... 'GRADE NOT ELIGIBLE FOR A COMPANY CAR' ... MOVE SPACES TO WK-EMPID",
+      "status": "ambiguous",
+      "note": "Enforced only in FLEASGN-PREMAP by clearing WK-EMPID; FLEASGN-ENTER (36-43) re-reads the employee without any grade test and the dialog runs ENTER on edit errors (industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEASGN.dlg:10-11), so a grade<07 employee can still be stored if the id is re-keyed on the same screen. FLEBEN01 never tests grade (2100-BENEFIT 172-220)."
+    },
+    {
+      "id": "MF-R02",
+      "title": "Assign screen re-entry skips grade and not-found checks",
+      "statement": "As OBSERVED, pressing ENTER on the assign screen re-reads the employee by id and proceeds to store the assignment without re-checking that the employee exists or that grade >= 07.",
+      "category": "eligibility",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:36-43",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEASGN.dlg:10-11",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:42-53"
+      ],
+      "evidence": "MOVE WK-EMPID TO EM-EMPID. OBTAIN CALC EMPLOYEE. WHILE EM-STAT EQ 'T'",
+      "status": "ambiguous",
+      "note": "Business reading is that grade 07+ is mandatory for any assignment; code only enforces it at premap. Unload: 9 assignments are held by grade<07 employees (7 at grade 05, 2 at grade 06)."
+    },
+    {
+      "id": "MF-R03",
+      "title": "Current employment record chosen over terminated ones",
+      "statement": "When an employee id has several occurrences (rehire), the online dialogs skip occurrences with status T (terminated) and use the next duplicate in storage order; transferred (X) occurrences are treated like active ones.",
+      "category": "eligibility",
+      "where": [
+        "FLEEMPI",
+        "FLEASGN",
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-23",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:31-34",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:9-24",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:10-26",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:38-43",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:13-21",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:27-37",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:19",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:155-157"
+      ],
+      "evidence": "WHILE EM-STAT EQ 'T' REPEAT. OBTAIN DUPLICATE EMPLOYEE.",
+      "status": "observed",
+      "note": "CALC duplicates are LAST, so the first non-T occurrence in insertion order is used, not necessarily the newest; only 'T' is skipped, 'X' (EM-TRANSFERRED) passes. X = transferred abroad; the 15 X occurrences (E1009100-E1009142) are the portal transferees; online dialogs accept them (FLEASGN would assign them a car, FLEMILE take a mileage claim), while batch excludes them only by leaving date (EM-LEAV < BP-STRT)."
+    },
+    {
+      "id": "MF-R04",
+      "title": "Employee who has left",
+      "statement": "If every occurrence of the id is terminated (T), the inquiry and assign screens report 'EMPLOYEE HAS LEFT'; the mileage screen and the assign ENTER have no such exit.",
+      "category": "validation",
+      "where": [
+        "FLEEMPI",
+        "FLEASGN",
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:16-24",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:18-26",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:40-43",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:17-20",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:34-37"
+      ],
+      "evidence": "IF DB-REC-NOT-FOUND ... MOVE 'EMPLOYEE HAS LEFT' TO WK-MSG.",
+      "status": "ambiguous",
+      "note": "In FLEASGN-ENTER and both FLEMILE loops the WHILE has no not-found test, so a fully-terminated employee loops on status 0326 (outcome depends on ADS autostatus); a leaver could submit a mileage claim. Status X occurrences never reach 'EMPLOYEE HAS LEFT' (only T is skipped), see MF-R03."
+    },
+    {
+      "id": "MF-R05",
+      "title": "Employee must be on file",
+      "statement": "Inquiry, assign (premap) and mileage claim (enter) reject an unknown employee id with 'EMPLOYEE NOT ON FILE'.",
+      "category": "validation",
+      "where": [
+        "FLEEMPI",
+        "FLEASGN",
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:9-15",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:10-17",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:27-33"
+      ],
+      "evidence": "OBTAIN CALC EMPLOYEE. IF DB-REC-NOT-FOUND ... 'EMPLOYEE NOT ON FILE'",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R06",
+      "title": "Employee id required",
+      "statement": "Inquiry ENTER with a blank employee id shows 'ENTER AN EMPLOYEE ID'; assign premap with blank id shows 'ENTER EMPLOYEE AND VEHICLE'.",
+      "category": "validation",
+      "where": [
+        "FLEEMPI",
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:52-56",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:5-9"
+      ],
+      "evidence": "IF WK-EMPID EQ SPACES ... 'ENTER AN EMPLOYEE ID'",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R07",
+      "title": "Vehicle must exist to be assigned",
+      "statement": "Assigning a vehicle id that is not on file is rejected with 'VEHICLE NOT ON FILE'; vehicle ids are unique.",
+      "category": "vehicle",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:44-50",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:39-43"
+      ],
+      "evidence": "OBTAIN CALC VEHICLE. IF DB-REC-NOT-FOUND ... 'VEHICLE NOT ON FILE'",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R08",
+      "title": "A held vehicle cannot be assigned again",
+      "statement": "A vehicle currently linked to an employee as their held car (EMP-VEHICLE member) is refused with 'VEHICLE ALREADY HELD'.",
+      "category": "assignment",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:51-55",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:132-144"
+      ],
+      "evidence": "IF EMP-VEHICLE MEMBER ... 'VEHICLE ALREADY HELD'",
+      "status": "ambiguous",
+      "note": "'Held' means linked in EMP-VEHICLE, not 'has an open assignment': pool-loan (PL) assignments never link (MF-R10), so a car out on pool loan passes this check and can be double-assigned."
+    },
+    {
+      "id": "MF-R09",
+      "title": "No limit on cars per employee",
+      "statement": "As OBSERVED, assigning a car does not check whether the employee already holds a car or has an open assignment, so one employee can hold several cars at once.",
+      "category": "assignment",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:36-71"
+      ],
+      "evidence": "MOVE 0 TO AS-END. FIND CURRENT EMPLOYEE. STORE ASSIGNMENT.",
+      "status": "ambiguous",
+      "note": "Business reading of 'company car' is one per employee; FLEBEN01 only taxes one assignment per period (MF-R33)."
+    },
+    {
+      "id": "MF-R10",
+      "title": "Pool loans are not 'held' cars",
+      "statement": "An assignment with reason PL (pool loan) is stored but the vehicle is not linked to the employee as their held car; reasons NC and RP (and anything else) link it.",
+      "category": "assignment",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:65-66",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:68-71"
+      ],
+      "evidence": "IF AS-RSN NE 'PL' CONNECT VEHICLE TO EMP-VEHICLE.",
+      "status": "observed",
+      "note": "FLEBEN01 does not test AS-RSN, so PL assignments are still taxed (MF-R43)."
+    },
+    {
+      "id": "MF-R11",
+      "title": "Assignment reason defaults to new car",
+      "statement": "If no reason is keyed the assignment reason defaults to NC (new car); values other than NC/RP/PL are accepted unchecked.",
+      "category": "assignment",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:56-57",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:20-21",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:68-71"
+      ],
+      "evidence": "IF AS-RSN EQ SPACES MOVE 'NC' TO AS-RSN.",
+      "status": "ambiguous",
+      "note": "Screen label says 'REASON NC/RP/PL' but the map field has no edit and the process has no value check."
+    },
+    {
+      "id": "MF-R12",
+      "title": "Assignment starts open on a keyed start date",
+      "statement": "A new assignment takes the keyed start date (8 numeric digits, required) and an end date of 0 meaning still open; the start date is not checked against hire date, leaving date, today or the vehicle's other assignments.",
+      "category": "assignment",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:62-64",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:18-19"
+      ],
+      "evidence": "MOVE 0 TO AS-END. FIND CURRENT EMPLOYEE. STORE ASSIGNMENT.",
+      "status": "observed",
+      "note": "EDIT PICTURE 9(8) only checks digits, not a valid calendar date."
+    },
+    {
+      "id": "MF-R13",
+      "title": "Assignment identifier",
+      "statement": "Each new assignment id is 'A' followed by a 9-digit counter incremented by 1 per assignment.",
+      "category": "data-integrity",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:58-61",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEWORK.rec:4-22"
+      ],
+      "evidence": "ADD 1 TO WK-NEXT-ASG. MOVE 'A' TO WK-ASGID(1:1). MOVE WK-NEXT-ASG TO WK-ASGID(2:9).",
+      "status": "ambiguous",
+      "note": "Counter lives in the per-session work record FLEWORK and is never seeded or persisted in source, so ids can collide across sessions; the id is never read."
+    },
+    {
+      "id": "MF-R14",
+      "title": "Inquiry shows latest car, even if returned",
+      "statement": "The inquiry screen shows the employee's assignment with the latest start date and its vehicle, without checking whether it has ended; if there is none it says 'NO COMPANY CAR HELD'.",
+      "category": "assignment",
+      "where": [
+        "FLEEMPI"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:25-31",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:104-118"
+      ],
+      "evidence": "OBTAIN FIRST ASSIGNMENT WITHIN EMP-ASSIGN. IF DB-END-OF-SET ... 'NO COMPANY CAR HELD'",
+      "status": "ambiguous",
+      "note": "Message implies 'currently held' but AS-END is not tested, so a returned car is displayed as held."
+    },
+    {
+      "id": "MF-R15",
+      "title": "Inquiry monthly benefit (full month)",
+      "statement": "The inquiry screen shows a monthly benefit = list price x benefit % / 1200 (annual % spread over 12 months) minus the employee's monthly contribution, ROUNDED to the penny (GBP) and floored at 0; it is never prorated for days.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEEMPI"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:32-48",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:30-31"
+      ],
+      "evidence": "COMPUTE WK-BENEFIT ROUNDED = VH-LIST * VH-BPCT / 1200 - EM-CNTRB. IF WK-BENEFIT LT 0 MOVE 0 TO WK-BENEFIT.",
+      "status": "ambiguous",
+      "note": "Subroutine MONDAYS computes days in the current period (WK-MDAYS) but the result is unused; the batch figure (MF-R36) is prorated and truncated, so the screen and payroll can differ."
+    },
+    {
+      "id": "MF-R16",
+      "title": "Mileage claims need an open current period",
+      "statement": "A mileage claim can only be made against the benefit period of the current calendar month (YYYYMM of today) and only if that period exists with status O (open); otherwise 'NO OPEN CLAIM PERIOD'.",
+      "category": "period-lifecycle",
+      "where": [
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:5-12",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:89-101"
+      ],
+      "evidence": "MOVE WK-TODAY(1:6) TO BP-PERIOD. OBTAIN CALC BENEFIT-PERIOD. IF DB-REC-NOT-FOUND OR BP-STAT NE 'O' ... 'NO OPEN CLAIM PERIOD'",
+      "status": "ambiguous",
+      "note": "Check is in PREMAP only; FLEMILE-ENTER relies on BENEFIT-PERIOD still in the buffer and does not re-test BP-STAT. No source opens or closes a period (sets BP-STAT)."
+    },
+    {
+      "id": "MF-R17",
+      "title": "Journey date within the open period",
+      "statement": "The journey date must lie inclusively between the period start BP-STRT and end BP-END, else 'JOURNEY DATE OUTSIDE OPEN PERIOD'.",
+      "category": "mileage",
+      "where": [
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:38-42",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:12-13"
+      ],
+      "evidence": "IF MC-DATE LT BP-STRT OR MC-DATE GT BP-END ... 'JOURNEY DATE OUTSIDE OPEN PERIOD'",
+      "status": "observed",
+      "note": "Journey dates in the future (later in the month) are accepted."
+    },
+    {
+      "id": "MF-R18",
+      "title": "Miles must be positive whole miles",
+      "statement": "Miles claimed are whole miles 1-99999 (5 digits, required); zero gives 'MILES REQUIRED'.",
+      "category": "mileage",
+      "where": [
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:43-47",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:15-16"
+      ],
+      "evidence": "IF MC-MILES EQ 0 ... 'MILES REQUIRED'",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R19",
+      "title": "Claim amount shown at the period mileage rate",
+      "statement": "The screen shows amount = miles x period rate BP-MRATE (GBP per mile, 3 decimals) ROUNDED to the penny; the amount is display-only and not stored on the claim.",
+      "category": "mileage",
+      "where": [
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:48",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:20-24",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:98"
+      ],
+      "evidence": "COMPUTE WK-AMOUNT ROUNDED = MC-MILES * BP-MRATE.",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R20",
+      "title": "Claim records the employee's latest car",
+      "statement": "The claim records the vehicle of the employee's latest-starting assignment (even if returned) or spaces if they never had one; holding a company car is not required to claim mileage.",
+      "category": "mileage",
+      "where": [
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:49-55"
+      ],
+      "evidence": "MOVE SPACES TO MC-VEHID. OBTAIN FIRST ASSIGNMENT WITHIN EMP-ASSIGN. IF DB-STATUS-OK ... MOVE VH-VEHID TO MC-VEHID.",
+      "status": "ambiguous",
+      "note": "Business reading may be 'vehicle used on the journey'; code takes latest assignment by start date with no AS-END or journey-date check. MC-VEHID is never read."
+    },
+    {
+      "id": "MF-R21",
+      "title": "New claims are pending approval",
+      "statement": "Every submitted claim is stored with status P (pending), id 'C' + 9-digit counter, linked to the employee and to the current benefit period, and the user sees 'CLAIM SUBMITTED FOR APPROVAL'.",
+      "category": "mileage",
+      "where": [
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:56-64",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:83-86",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:145-170"
+      ],
+      "evidence": "MOVE 'P' TO MC-STAT. FIND CURRENT EMPLOYEE. FIND CALC BENEFIT-PERIOD. STORE MILEAGE-CLAIM.",
+      "status": "ambiguous",
+      "note": "No source sets status A (approved) or R (rejected); only approved claims are paid (MF-R38), so approval happens outside the repo. Counter WK-NEXT-CLM has the same session-scope issue as MF-R13."
+    },
+    {
+      "id": "MF-R22",
+      "title": "Return only an open assignment",
+      "statement": "A car can only be returned if the vehicle's most recently stored assignment is still open (end date 0), else 'ALREADY RETURNED'; unknown vehicle gives 'VEHICLE NOT ON FILE' and a never-assigned one 'VEHICLE NEVER ASSIGNED'.",
+      "category": "return",
+      "where": [
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:10-22",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:29-36"
+      ],
+      "evidence": "OBTAIN LAST ASSIGNMENT WITHIN VEH-ASSIGN. IF AS-END NE 0 ... 'ALREADY RETURNED'",
+      "status": "observed",
+      "note": "'Last' is insertion order of VEH-ASSIGN (ORDER IS LAST), not latest start date."
+    },
+    {
+      "id": "MF-R23",
+      "title": "Return date not before start",
+      "statement": "The return date (8 digits, required) must not be earlier than the assignment start date ('RETURN DATE BEFORE START'); it becomes the assignment end date, with no upper bound or period check.",
+      "category": "return",
+      "where": [
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:37-43",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:16-17"
+      ],
+      "evidence": "IF WK-RETDT LT AS-STRT ... MOVE WK-RETDT TO AS-END. MODIFY ASSIGNMENT.",
+      "status": "observed",
+      "note": "Return on the start date is allowed (one-day assignment)."
+    },
+    {
+      "id": "MF-R24",
+      "title": "Return releases the held car",
+      "statement": "On return the vehicle is unlinked from the employee as held car (if linked), making it assignable again.",
+      "category": "return",
+      "where": [
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:44-47"
+      ],
+      "evidence": "IF EMP-VEHICLE MEMBER DISCONNECT VEHICLE FROM EMP-VEHICLE. COMMIT.",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R25",
+      "title": "Return screen not reachable from the menu",
+      "statement": "As OBSERVED, the menu offers only 1 inquiry, 2 assign, 3 mileage and X exit; the return dialog FLERETN has no route, so no reachable online path ends an assignment.",
+      "category": "return",
+      "where": [
+        "FLEMENU",
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:10-23",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMENUM.map:7-10"
+      ],
+      "evidence": "IF WK-OPTION EQ '1' ... '2' ... '3' ... 'X' LEAVE ADS. MOVE 'INVALID OPTION' TO WK-MSG.",
+      "status": "ambiguous",
+      "note": "industries/manufacturing/global-fleet/ESTATE.md:32 lists FLERETN as a screen and the unload has ended assignments, so returns happen via a task code or process outside the repo."
+    },
+    {
+      "id": "MF-R26",
+      "title": "Odometer on return is not recorded",
+      "statement": "As OBSERVED, the return screen asks for an odometer reading but it is never processed or stored.",
+      "category": "return",
+      "where": [
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:19",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:27-50"
+      ],
+      "evidence": "FIELD WK-ODO ... UNPROTECTED.",
+      "status": "ambiguous",
+      "note": "Label implies capture; code discards it."
+    },
+    {
+      "id": "MF-R27",
+      "title": "Menu options",
+      "statement": "Menu option 1 opens inquiry, 2 assign, 3 mileage claim, X/PF3/CLEAR leave; any other value shows 'INVALID OPTION'; PF3 on any function returns to the menu.",
+      "category": "other",
+      "where": [
+        "FLEMENU",
+        "FLEEMPI",
+        "FLEASGN",
+        "FLEMILE",
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:1-33",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:60-64",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:73-77",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:68-72",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:52-56"
+      ],
+      "evidence": "IF WK-OPTION EQ '1' TRANSFER CONTROL TO 'FLEEMPI' NOFINISH.",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R28",
+      "title": "Benefit run is for one period named on the parm card",
+      "statement": "The monthly run processes the single period YYYYMM from SYSIN cols 1-6; if that period is not on file the run aborts with RC 16.",
+      "category": "period-lifecycle",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:36-40",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:121-138",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:277-283",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:4-7",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:17-19"
+      ],
+      "evidence": "MOVE PARM-PERIOD TO BP-PERIOD OBTAIN CALC BENEFIT-PERIOD PERFORM IDMS-STATUS",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R29",
+      "title": "Run does not require a closed period",
+      "statement": "As OBSERVED, the benefit run does not check that the period is closed (BP-STAT C) and does not mark it run (BP-RUNDT).",
+      "category": "period-lifecycle",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:5-9",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:136-141"
+      ],
+      "evidence": "MOVE PARM-PERIOD TO BP-PERIOD OBTAIN CALC BENEFIT-PERIOD PERFORM IDMS-STATUS",
+      "status": "ambiguous",
+      "note": "Header and JCL ('WD+3 AFTER PERIOD CLOSE') say closed period; code would run an open period too, while FLEMILE still accepts claims for it."
+    },
+    {
+      "id": "MF-R30",
+      "title": "Days in period",
+      "statement": "Period length in days = BP-END - BP-STRT + 1 (inclusive calendar days).",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:139-141"
+      ],
+      "evidence": "COMPUTE WS-MDAYS = WS-PEND-INT - WS-PSTRT-INT + 1",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R31",
+      "title": "Who is in the benefit run",
+      "statement": "An employee occurrence is considered if hired on or before the period end and either has no leaving date (0) or left on or after the period start; status, grade and cost centre are not tested.",
+      "category": "eligibility",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:154-164",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:198-200",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:18-19"
+      ],
+      "evidence": "IF EM-HIRE > BP-END OR (EM-LEAV NOT = 0 AND EM-LEAV < BP-STRT) CONTINUE",
+      "status": "ambiguous",
+      "note": "Terminated (T) or transferred (X) occurrences with no leaving date and grade<07 car holders are still processed. In the unload all T/X occurrences (26 of 26) carry EM-LEAV, so they are only paid up to the leaving date."
+    },
+    {
+      "id": "MF-R32",
+      "title": "Each employment occurrence paid separately",
+      "statement": "Every EMPLOYEE occurrence is processed and written separately in database-key order, identified by employee id plus db-key, so a rehired person can get two output records in one period.",
+      "category": "data-integrity",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:147-152",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:165-170",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:246-248",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:20-21",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:165-248"
+      ],
+      "evidence": "OBTAIN NEXT EMPLOYEE WITHIN EMP-REGION ... ACCEPT BO-EMP-DBKEY FROM IDMS-DBKEY FOR EMPLOYEE",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R33",
+      "title": "Only one car taxed per period",
+      "statement": "The taxed car is the employee's assignment with the latest start date that started on or before the period end; any other assignment overlapping the period is ignored.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:176-188",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:116"
+      ],
+      "evidence": "IF AS-STRT NOT > BP-END SET CAR-IN-PERIOD TO TRUE ELSE OBTAIN NEXT ASSIGNMENT WITHIN EMP-ASSIGN",
+      "status": "ambiguous",
+      "note": "Two concurrent cars, or a car returned mid-month followed by a replacement, give benefit only on the later-starting one."
+    },
+    {
+      "id": "MF-R34",
+      "title": "Selected car must overlap the period",
+      "statement": "The selected assignment yields benefit only if it is open (end 0) or ended on or after the period start; otherwise days = 0 and no car is reported.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:189-190",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:218-220"
+      ],
+      "evidence": "IF CAR-IN-PERIOD AND (AS-END = 0 OR AS-END NOT < BP-STRT)",
+      "status": "observed",
+      "note": "If the latest assignment starting on or before period end ended before the period start, older assignments are not examined (they would also have ended earlier only if not overlapping, so no loss), but a still-open older car is skipped."
+    },
+    {
+      "id": "MF-R35",
+      "title": "Car days in period",
+      "statement": "Car days = (earliest of period end, assignment end if set, leaving date if set) - (later of assignment start and period start) + 1 inclusive, or 0 if negative.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:191-204"
+      ],
+      "evidence": "COMPUTE WS-FROM-INT = FUNCTION MAX(... AS-STRT ... WS-PSTRT-INT) ... IF EM-LEAV NOT = 0 AND EM-LEAV < WS-TO-DATE MOVE EM-LEAV TO WS-TO-DATE ... COMPUTE WS-DAYS = WS-TO-INT - WS-FROM-INT + 1",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R36",
+      "title": "Prorated taxable benefit, truncated",
+      "statement": "Taxable benefit = (list price x benefit % / 1200 - monthly contribution) x car days / period days, truncated (not rounded) to the penny in GBP and floored at 0; the contribution is prorated with the benefit.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:208-216",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:73"
+      ],
+      "evidence": "COMPUTE WS-TAXB = (VH-LIST * VH-BPCT / 1200 - EM-CNTRB) * WS-DAYS / WS-MDAYS ... IF WS-TAXB < 0 MOVE 0 TO WS-TAXB",
+      "status": "observed",
+      "note": "Intermediate precision follows IBM COBOL COMPUTE rules; WS-TAXB is S9(7)V99 COMP-3 so excess decimals are dropped. Online inquiry rounds instead (MF-R15)."
+    },
+    {
+      "id": "MF-R37",
+      "title": "No car reported when no car days",
+      "statement": "If car days are 0 the output carries a blank vehicle id and zero taxable benefit.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:173",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:205-207",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:218-220"
+      ],
+      "evidence": "IF WS-DAYS = 0 MOVE SPACES TO BO-VEHID",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R38",
+      "title": "Mileage reimbursement from approved claims",
+      "statement": "Mileage reimbursed = sum over the employee's APPROVED claims dated within the period (inclusive) of miles x period rate, each claim ROUNDED to the penny before summing; total miles is the sum of those claims' miles. Pending and rejected claims are not paid.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:222-243",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:84-86"
+      ],
+      "evidence": "IF MC-DATE NOT < BP-STRT AND MC-APPROVED COMPUTE WS-CLM-AMT ROUNDED = MC-MILES * BP-MRATE ADD MC-MILES TO BO-MILES ADD WS-CLM-AMT TO BO-MREIM",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R39",
+      "title": "Who gets an output record",
+      "statement": "An output record is written only when the employee has car days > 0 or approved miles > 0 in the period.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:159-163"
+      ],
+      "evidence": "IF WS-DAYS > 0 OR BO-MILES > 0 PERFORM 2300-WRITE",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R40",
+      "title": "Leaver flag",
+      "statement": "The output is flagged L when the leaving date falls within the period (start <= EM-LEAV <= end), otherwise blank.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:250-254"
+      ],
+      "evidence": "IF EM-LEAV NOT < BP-STRT AND EM-LEAV NOT > BP-END MOVE 'L' TO BO-FLAG",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R41",
+      "title": "Control totals",
+      "statement": "The control report ends with the number of records written, total taxable benefit and total mileage reimbursed, accumulated from the written records.",
+      "category": "other",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:264-273"
+      ],
+      "evidence": "ADD 1 TO WS-REC-COUNT ADD BO-TAXB TO WS-TOT-TAXB ADD BO-MREIM TO WS-TOT-MREIM",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R42",
+      "title": "Any database error aborts the whole run",
+      "statement": "Any unexpected IDMS status aborts the run with return code 16 and rollback, so the later count (STEP020) and payroll FTP (STEP030) steps are skipped by their COND=(4,LT).",
+      "category": "data-integrity",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:277-283",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:38"
+      ],
+      "evidence": "MOVE 16 TO RETURN-CODE ROLLBACK STOP RUN.",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R43",
+      "title": "Pool loans and ineligible grades are taxed",
+      "statement": "As OBSERVED, the benefit run taxes the selected assignment regardless of its reason (including PL pool loans) and regardless of employee grade or status.",
+      "category": "benefit-calculation",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:172-220"
+      ],
+      "evidence": "IF CAR-IN-PERIOD AND (AS-END = 0 OR AS-END NOT < BP-STRT) ... COMPUTE WS-TAXB = (VH-LIST * VH-BPCT / 1200 - EM-CNTRB) * WS-DAYS / WS-MDAYS",
+      "status": "ambiguous",
+      "note": "Online treats PL as not 'held' (MF-R10) and grade<07 as ineligible (MF-R01)."
+    },
+    {
+      "id": "MF-R44",
+      "title": "One output dataset per period",
+      "statement": "Each run creates a new catalogued dataset FLT.PROD.BENOUT.P<period>, so a second run of the same period fails allocation unless the dataset is deleted first.",
+      "category": "period-lifecycle",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:20-23"
+      ],
+      "evidence": "//BENOUT DD DSN=FLT.PROD.BENOUT.P&PERIOD, ... DISP=(NEW,CATLG,DELETE)",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R45",
+      "title": "Unique keys",
+      "statement": "Vehicle id and benefit period (YYYYMM) are unique; employee id may repeat (rehires) and duplicates are stored last.",
+      "category": "data-integrity",
+      "where": [
+        "FLEETSCH"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-23",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:39-43",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:89-94",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-43"
+      ],
+      "evidence": "LOCATION MODE IS CALC USING ( EM-EMPID ) DUPLICATES ARE LAST ... ( VH-VEHID ) DUPLICATES ARE NOT ALLOWED",
+      "status": "observed",
+      "note": ""
+    },
+    {
+      "id": "MF-R46",
+      "title": "Claims and assignments belong to an employee",
+      "statement": "Every assignment must belong to one employee and one vehicle, and every claim to one employee (mandatory automatic); a claim's period link is optional.",
+      "category": "data-integrity",
+      "where": [
+        "FLEETSCH",
+        "FLEASGN",
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:104-131",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:145-170",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:104-170"
+      ],
+      "evidence": "MEMBER IS ASSIGNMENT ... MANDATORY AUTOMATIC ... MEMBER IS MILEAGE-CLAIM ... OPTIONAL AUTOMATIC",
+      "status": "observed",
+      "note": ""
+    }
+  ],
+  "navigation_questions": [
+    {
+      "id": "MF-Q01",
+      "navigation": "OBTAIN CALC EMPLOYEE (by WK-EMPID)",
+      "set_or_relationship": "EMPLOYEE CALC key EM-EMPID",
+      "where": [
+        "FLEEMPI",
+        "FLEASGN",
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:10",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:11",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:39",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:16",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:28"
+      ],
+      "business_question": "Is there an employee with this id?",
+      "answer_semantics": "Returns the first-stored occurrence; duplicates exist for rehires."
+    },
+    {
+      "id": "MF-Q02",
+      "navigation": "OBTAIN DUPLICATE EMPLOYEE (while EM-STAT='T')",
+      "set_or_relationship": "EMPLOYEE CALC duplicates",
+      "where": [
+        "FLEEMPI",
+        "FLEASGN",
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:16-24",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:18-26",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:40-43",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:17-20",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:34-37"
+      ],
+      "business_question": "Which of this person's employment records is not terminated?",
+      "answer_semantics": "Storage order (DUPLICATES LAST); first non-T wins, X counts as current; none left = 'has left' (only where tested)."
+    },
+    {
+      "id": "MF-Q03",
+      "navigation": "OBTAIN FIRST ASSIGNMENT WITHIN EMP-ASSIGN",
+      "set_or_relationship": "EMP-ASSIGN (sorted AS-STRT desc)",
+      "where": [
+        "FLEEMPI"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:25-30"
+      ],
+      "business_question": "What is this employee's most recently started car assignment?",
+      "answer_semantics": "Latest start date only; includes returned assignments; end-of-set = never had a car."
+    },
+    {
+      "id": "MF-Q04",
+      "navigation": "OBTAIN OWNER WITHIN VEH-ASSIGN",
+      "set_or_relationship": "VEH-ASSIGN",
+      "where": [
+        "FLEEMPI"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:31"
+      ],
+      "business_question": "Which vehicle is that assignment for (price and benefit %)?",
+      "answer_semantics": "Exactly one vehicle per assignment (mandatory)."
+    },
+    {
+      "id": "MF-Q05",
+      "navigation": "OBTAIN CALC BENEFIT-PERIOD (current YYYYMM) in MONDAYS",
+      "set_or_relationship": "BENEFIT-PERIOD CALC key BP-PERIOD",
+      "where": [
+        "FLEEMPI"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:41-48"
+      ],
+      "business_question": "How many days are in this month's benefit period?",
+      "answer_semantics": "Result WK-MDAYS is unused by the displayed benefit."
+    },
+    {
+      "id": "MF-Q06",
+      "navigation": "OBTAIN CALC VEHICLE (by WK-VEHID)",
+      "set_or_relationship": "VEHICLE CALC key VH-VEHID",
+      "where": [
+        "FLEASGN",
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:44-50",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:10-16",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:29-30"
+      ],
+      "business_question": "Does this vehicle exist?",
+      "answer_semantics": "Unique key; FLERETN-ENTER does not test not-found."
+    },
+    {
+      "id": "MF-Q07",
+      "navigation": "IF EMP-VEHICLE MEMBER (vehicle)",
+      "set_or_relationship": "EMP-VEHICLE (optional manual)",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:51-55"
+      ],
+      "business_question": "Is this car currently someone's held company car?",
+      "answer_semantics": "Membership only reflects NC/RP assignments not yet returned via FLERETN; pool loans (PL) never count."
+    },
+    {
+      "id": "MF-Q08",
+      "navigation": "FIND CURRENT EMPLOYEE; STORE ASSIGNMENT",
+      "set_or_relationship": "EMP-ASSIGN and VEH-ASSIGN (mandatory automatic connect on STORE)",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:63-64",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:104-131"
+      ],
+      "business_question": "Record that this employee has this car from the start date.",
+      "answer_semantics": "Inserted into the employee's history in start-date-desc position (duplicates last) and at the end of the vehicle's history (insertion order)."
+    },
+    {
+      "id": "MF-Q09",
+      "navigation": "CONNECT VEHICLE TO EMP-VEHICLE (if AS-RSN NE 'PL')",
+      "set_or_relationship": "EMP-VEHICLE",
+      "where": [
+        "FLEASGN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:65-66"
+      ],
+      "business_question": "Make this car the employee's held car.",
+      "answer_semantics": "An employee may own several vehicles in EMP-VEHICLE (ORDER NEXT); no prior-holder check beyond MF-Q07."
+    },
+    {
+      "id": "MF-Q10",
+      "navigation": "OBTAIN CALC BENEFIT-PERIOD (current YYYYMM)",
+      "set_or_relationship": "BENEFIT-PERIOD CALC key",
+      "where": [
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:5-12"
+      ],
+      "business_question": "Is this month's claim period on file and open?",
+      "answer_semantics": "Status must be 'O'; period chosen by today's date, never keyed."
+    },
+    {
+      "id": "MF-Q11",
+      "navigation": "OBTAIN FIRST ASSIGNMENT WITHIN EMP-ASSIGN; OBTAIN OWNER WITHIN VEH-ASSIGN",
+      "set_or_relationship": "EMP-ASSIGN, VEH-ASSIGN",
+      "where": [
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:49-55"
+      ],
+      "business_question": "Which car did the claimant most recently start using?",
+      "answer_semantics": "Latest start date, returned or not, regardless of journey date; none = blank vehicle."
+    },
+    {
+      "id": "MF-Q12",
+      "navigation": "FIND CURRENT EMPLOYEE; FIND CALC BENEFIT-PERIOD; STORE MILEAGE-CLAIM",
+      "set_or_relationship": "EMP-CLAIM (mandatory automatic, sorted MC-DATE asc), PERIOD-CLAIM (optional automatic, ORDER LAST)",
+      "where": [
+        "FLEMILE"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:60-62",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:145-170"
+      ],
+      "business_question": "File this pending claim under the employee and the current period.",
+      "answer_semantics": "Placed in the employee's claims by journey date (duplicates last) and at the end of the period's claims; PERIOD-CLAIM is never read back."
+    },
+    {
+      "id": "MF-Q13",
+      "navigation": "OBTAIN LAST ASSIGNMENT WITHIN VEH-ASSIGN",
+      "set_or_relationship": "VEH-ASSIGN (ORDER LAST)",
+      "where": [
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:17-22",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:31"
+      ],
+      "business_question": "Who was this car most recently assigned to?",
+      "answer_semantics": "Most recently stored assignment, not latest start date; end-of-set = never assigned."
+    },
+    {
+      "id": "MF-Q14",
+      "navigation": "OBTAIN OWNER WITHIN EMP-ASSIGN",
+      "set_or_relationship": "EMP-ASSIGN",
+      "where": [
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:23"
+      ],
+      "business_question": "Which employee holds that assignment?",
+      "answer_semantics": "The specific employee occurrence (db-key), possibly a terminated one."
+    },
+    {
+      "id": "MF-Q15",
+      "navigation": "MODIFY ASSIGNMENT (AS-END)",
+      "set_or_relationship": "ASSIGNMENT (no set change)",
+      "where": [
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:42-43"
+      ],
+      "business_question": "Close this assignment on the return date.",
+      "answer_semantics": "Stays in both histories; AS-END is not a sort key so order is unchanged."
+    },
+    {
+      "id": "MF-Q16",
+      "navigation": "IF EMP-VEHICLE MEMBER DISCONNECT VEHICLE FROM EMP-VEHICLE",
+      "set_or_relationship": "EMP-VEHICLE",
+      "where": [
+        "FLERETN"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:44-45"
+      ],
+      "business_question": "Release the car from its holder so it can be assigned again.",
+      "answer_semantics": "Skipped for pool loans (never connected). No ERASE exists anywhere in source; nothing is ever deleted."
+    },
+    {
+      "id": "MF-Q17",
+      "navigation": "OBTAIN CALC BENEFIT-PERIOD (PARM-PERIOD)",
+      "set_or_relationship": "BENEFIT-PERIOD CALC key",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:136-138"
+      ],
+      "business_question": "What are the dates and mileage rate of the period being paid?",
+      "answer_semantics": "Missing period aborts; status ignored."
+    },
+    {
+      "id": "MF-Q18",
+      "navigation": "OBTAIN FIRST/NEXT EMPLOYEE WITHIN EMP-REGION",
+      "set_or_relationship": "EMP-REGION area sweep",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:147-152",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:165-170"
+      ],
+      "business_question": "Who are all the employees (every employment record)?",
+      "answer_semantics": "Physical db-key order; includes every duplicate occurrence and all statuses."
+    },
+    {
+      "id": "MF-Q19",
+      "navigation": "OBTAIN FIRST/NEXT ASSIGNMENT WITHIN EMP-ASSIGN until AS-STRT <= BP-END",
+      "set_or_relationship": "EMP-ASSIGN (sorted AS-STRT desc)",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:176-188"
+      ],
+      "business_question": "What is the latest car this employee started on or before the period end?",
+      "answer_semantics": "Stops at the first match; earlier overlapping assignments are never considered."
+    },
+    {
+      "id": "MF-Q20",
+      "navigation": "OBTAIN OWNER WITHIN VEH-ASSIGN",
+      "set_or_relationship": "VEH-ASSIGN",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:205-207"
+      ],
+      "business_question": "Which vehicle (list price, benefit %) is that car?",
+      "answer_semantics": "One vehicle per assignment."
+    },
+    {
+      "id": "MF-Q21",
+      "navigation": "OBTAIN FIRST/NEXT MILEAGE-CLAIM WITHIN EMP-CLAIM until MC-DATE > BP-END",
+      "set_or_relationship": "EMP-CLAIM (sorted MC-DATE asc)",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:225-243"
+      ],
+      "business_question": "Which of this employee's approved claims have journey dates in the period?",
+      "answer_semantics": "Ascending date walk with early stop after period end; filters status A; claims are tied to the employment occurrence, not the person."
+    },
+    {
+      "id": "MF-Q22",
+      "navigation": "ACCEPT BO-EMP-DBKEY FROM IDMS-DBKEY FOR EMPLOYEE",
+      "set_or_relationship": "EMPLOYEE db-key",
+      "where": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:248"
+      ],
+      "business_question": "Which employment record is this payment for?",
+      "answer_semantics": "Distinguishes rehire duplicates in BENOUT."
+    },
+    {
+      "id": "MF-Q23",
+      "navigation": "UNLOAD RECORD VEHICLE OWNER EMP-VEHICLE KEY AND DBKEY; ASSIGNMENT OWNER EMP-ASSIGN KEY AND DBKEY, OWNER VEH-ASSIGN KEY; MILEAGE-CLAIM OWNER EMP-CLAIM KEY AND DBKEY",
+      "set_or_relationship": "EMP-VEHICLE, EMP-ASSIGN, VEH-ASSIGN, EMP-CLAIM",
+      "where": [
+        "FLEUNLD"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:31-41"
+      ],
+      "business_question": "Who holds each car now, and whose (employee/vehicle) is each assignment and claim?",
+      "answer_semantics": "Flattened to owner keys (+db-key for employee); PERIOD-CLAIM membership and set order are not carried; EMP-VEHICLE is named although FLEETSS2 omits it (industries/manufacturing/global-fleet/mainframe/schema/FLEETSS1.ddl:31-55)."
+    }
+  ]
+}

@@ -1,0 +1,273 @@
+{
+  "apps": [
+    {
+      "app_id": "gf-mainframe-idms",
+      "country": "Mainframe country (GBP, miles, plates 'AB12 CDE', employee ids E101xxxx (202 occurrences) plus E1009xxx (15 occurrences, status X, transferred to the Java country under the same number); GB inferred)",
+      "entry_points": [
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMENU.dlg",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEEMPI.dlg",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEASGN.dlg",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMILE.dlg",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLERETN.dlg",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEWORK.rec",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSS1.ddl",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md",
+        "industries/manufacturing/global-fleet/mainframe/unload/",
+        "industries/manufacturing/global-fleet/mainframe/holdout/"
+      ],
+      "path": "industries/manufacturing/global-fleet/mainframe/",
+      "reason": "Production company-car system of the mainframe country: IDMS database maintained by five ADS dialogs and paid by the monthly FLEBEN01 benefit run; its behaviour is the before-state the global app must reproduce. Evidence: industries/manufacturing/global-fleet/ESTATE.md:3, industries/manufacturing/global-fleet/ESTATE.md:26-33, industries/manufacturing/global-fleet/mainframe/README.md:1-3, industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMENU.dlg:4-13, industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:1-12, industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:1-9, industries/manufacturing/global-fleet/mainframe/unload/UNLOAD.cnt:1-5. Note: FLEMENU-ENTER only transfers to FLEEMPI/FLEASGN/FLEMILE (options 1-3, X exits) — FLERETN has no menu route (industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:10-23).",
+      "stack": "CA IDMS (FLEETSCH schema, FLEETSS1/FLEETSS2 subschemas), ADS/ADSC online dialogs + MAPC maps, COBOL batch with IDMS DML on z/OS, JCL; no runtime in sandbox",
+      "files": {
+        "inventory": "inventory/gf-mainframe-idms.json",
+        "rules": "rules/gf-mainframe-idms.json"
+      },
+      "counts": {
+        "screens": 10,
+        "records": 14,
+        "relationships": 8,
+        "batch_steps": 5,
+        "unreached": 19,
+        "rules": 46,
+        "navigation_questions": 23
+      }
+    },
+    {
+      "app_id": "gf-jsf-portal",
+      "country": "Java country DE (EUR, kilometres, plates 'M-AB 1234', employee ids E204xxxx (200 local staff) plus E1009xxx (15 transferees, same numbers as their mainframe occurrences); industries/manufacturing/global-fleet/ESTATE.md:31's E100xxxx is wrong)",
+      "entry_points": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/employees.xhtml",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/assignment.xhtml",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/mileage.xhtml",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/web.xml",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql"
+      ],
+      "path": "industries/manufacturing/global-fleet/jsf-portal/",
+      "reason": "Production company-car portal of the Java country (benefit computed on the statement page); second before-state the global app replaces. Evidence: industries/manufacturing/global-fleet/ESTATE.md:3, industries/manufacturing/global-fleet/ESTATE.md:26-33, industries/manufacturing/global-fleet/jsf-portal/pom.xml:12-18, industries/manufacturing/global-fleet/jsf-portal/Dockerfile:1-2, industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/WEB-INF/web.xml:16-30 (welcome page employees.xhtml), industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/statement.xhtml:1-8, industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3 (fleet_rule 'DE', EUR).",
+      "stack": "Java 8 WAR, JSF 2.2 Mojarra 2.2.20, JPA/Hibernate 5.4.33 on PostgreSQL, Tomcat 9 (jre8) via Dockerfile",
+      "files": {
+        "inventory": "inventory/gf-jsf-portal.json",
+        "rules": "rules/gf-jsf-portal.json"
+      },
+      "counts": {
+        "screens": 7,
+        "records": 7,
+        "relationships": 9,
+        "batch_steps": 2,
+        "unreached": 22,
+        "rules": 32,
+        "navigation_questions": 12
+      }
+    }
+  ],
+  "excluded": [
+    {
+      "path": "industries/manufacturing/global-fleet/ESTATE.md",
+      "reason": "Estate overview document, not an application (industries/manufacturing/global-fleet/ESTATE.md:1-20)."
+    },
+    {
+      "path": "industries/manufacturing/global-fleet/seed/",
+      "reason": "Not an app: seed/jsf/ holds the JSF portal's PostgreSQL schema and seed (generator output), listed under gf-jsf-portal entry_points (industries/manufacturing/global-fleet/ESTATE.md:17, industries/manufacturing/global-fleet/ESTATE.md:37, industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:1)."
+    },
+    {
+      "path": "industries/manufacturing/global-fleet/source-browser/",
+      "reason": "Supporting tool: nginx image that serves mainframe/ read-only (GET/HEAD only) so the source can be browsed; no business behaviour (industries/manufacturing/global-fleet/source-browser/Dockerfile:1-6, industries/manufacturing/global-fleet/source-browser/nginx.conf:1-16)."
+    },
+    {
+      "path": "industries/manufacturing/global-fleet/deploy/",
+      "reason": "Deploy scripts: gf-tenant.sh brings up/resets/tears down the before/after tenants on otterworks-dev, seed.Dockerfile packages seed/jsf SQL into a postgres image (industries/manufacturing/global-fleet/deploy/gf-tenant.sh:1-15, industries/manufacturing/global-fleet/deploy/seed.Dockerfile:1-3)."
+    },
+    {
+      "path": "industries/manufacturing/global-fleet/terraform/",
+      "reason": "IaC for the FUTURE global app (terraform/gcp-fleet: Cloud Run fleet-service/fleet-web + Cloud SQL on GCP), not a legacy system (industries/manufacturing/global-fleet/ESTATE.md:20, industries/manufacturing/global-fleet/terraform/gcp-fleet/main.tf:1-9, industries/manufacturing/global-fleet/terraform/gcp-fleet/variables.tf:1-4)."
+    }
+  ],
+  "files": [
+    "index.json",
+    "inventory/gf-mainframe-idms.json",
+    "inventory/gf-jsf-portal.json",
+    "rules/gf-mainframe-idms.json",
+    "rules/gf-jsf-portal.json",
+    "crosscheck.json"
+  ],
+  "provenance": {
+    "workflow_run": "wfr-39e69ae754d6428e866a462ae07cfa56",
+    "check_rounds": 2,
+    "inputs": [
+      "discovery.json",
+      "inventory.gf-mainframe-idms.final.json",
+      "rules.gf-mainframe-idms.final.json",
+      "inventory.gf-jsf-portal.final.json",
+      "rules.gf-jsf-portal.final.json",
+      "crosscheck.r1.json",
+      "crosscheck.final.json",
+      "changes.gf-mainframe-idms.r2.json",
+      "changes.gf-jsf-portal.r2.json"
+    ],
+    "round_2_changes": {
+      "gf-mainframe-idms": [
+        "Inventory records/relationships/batch_steps/unreached: inserted the missing ':' before the line range in 67 citations (e.g. industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-37, industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:246-248, industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:5, industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:1-43, industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27-36, industries/manufacturing/global-fleet/mainframe/schema/FLEETSS1.ddl:25). Every source string in both JSONs now parses as path:start[-end], and a script confirmed each cited file exists and each range is within the file.",
+        "Inventory unreached \"FLEMILE-ENTER 'MILES REQUIRED'\": replaced the industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:38-42 citation with industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:43-47. Checked: lines 38-42 are the journey-date test and 43-47 are the IF MC-MILES EQ 0 branch.",
+        "Inventory unreached 'FLEASGN-ENTER grade/not-found checks': changed '9 assignments held by grade 05 employees' to '9 assignments held by grade<07 employees (7 at grade 05, 2 at grade 06)' and added the citation industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:42-53. Checked by joining ASSIGNMENT.dat AU-EMP-DBKEY to EMPLOYEE.dat EU-DBKEY: grade 05 = 7, grade 06 = 2.",
+        "Inventory country: now reads 'employee ids E101xxxx (202 occurrences) plus E1009xxx (15 occurrences, status X, transferred to the Java country under the same number)'. Checked in the unload: 217 occurrences = 112 E1010 + 90 E1011 + 15 E1009 (E1009100-E1009142, all status X, no assignments). The portal seed industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:4 and :18 have E1009100 and E1009142.",
+        "MF-R03: the note now says X = transferred abroad. The 15 X occurrences (E1009100-E1009142) are the portal transferees. The online dialogs accept them, so FLEASGN would assign them a car and FLEMILE would take a mileage claim, while the batch excludes them only by leaving date. Added citations industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:19 and industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:155-157 (both checked).",
+        "MF-R04: the note now says X occurrences never reach 'EMPLOYEE HAS LEFT' because only T is skipped (industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:18-26, industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:34-37). This is a cross-reference to MF-R03.",
+        "MF-R42: citations are now industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:277-283 plus industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27 and :38 instead of jcl:9. Checked that STEP020 ICETOOL and STEP030 FTP both carry COND=(4,LT). The statement and evidence now name the COND=(4,LT) skip of STEP020/STEP030.",
+        "MF-R31 note and inventory unreached 'EM-SURN...BP-STAT (batch side)': applied the optional correction. In the unload all 26 T/X occurrences carry EM-LEAV, so they are paid only up to the leaving date. Added citations industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:198-200 and industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:18-19. The code reading is unchanged.",
+        "MF-R02 (own addition): the note now records the unload data, 9 assignments held by grade<07 employees (7 at grade 05, 2 at grade 06), and cites industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:42-53.",
+        "MF-R43 (own fix): the note's cross-reference 'MF-R1' is now 'MF-R01'.",
+        "No new mainframe rules: the checker names no missing rule on the gf-mainframe-idms side. The missing JP-R31 and the other portal corrections belong to gf-jsf-portal. All ids are unchanged; the highest is still MF-R46 and the navigation questions still run MF-Q01 to MF-Q23."
+      ],
+      "gf-jsf-portal": [
+        "Inventory country: replaced 'employee ids E100xxxx' with 'E204xxxx (200 local staff) plus E1009xxx (15 transferees, same numbers as their mainframe occurrences)'; verified industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:4-19 (200 E204 / 15 E100 ids) and industries/manufacturing/global-fleet/ESTATE.md:31.",
+        "Inventory employee.employee_no field note made exact: 200 E204xxxx + 15 E1009xxx (E1009100-E1009142).",
+        "Added rule JP-R31 'Statement days not capped at leaving date' (industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/StatementBean.java:69-75, industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:32-33, industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:22-23); verified getHireDate/getLeaveDate have no caller anywhere in jsf-portal/src. Counterpart of MF-R35/MF-R40. JP-R02 note cross-references it.",
+        "JP-R23 note: added 'No employee contribution and no per-vehicle %, unlike FLEBEN01 (VH-BPCT/1200 - EM-CNTRB)' and cited industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:208-211 (verified lines 209-211 hold the formula).",
+        "Citation format: split 13 comma-joined line lists (e.g. industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:19; industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/model/Employee.java:32, industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:70-71; industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:114; industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:143) into separate path:line citations so every source matches path:N or path:N-M; same lines, no new content.",
+        "All other checker pairs for gf-jsf-portal checked against the cited portal source and accepted as is; no rule ids changed."
+      ]
+    },
+    "publication_corrections": [
+      {
+        "id": "JP-R02",
+        "old_evidence": "if (employee == null || !employee.isActive())  /  \"A\".equals(status)",
+        "evidence": "if (employee == null || !employee.isActive())",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "JP-R05",
+        "old_evidence": "v.owner is null and not exists (select a from Assignment a where a.vehicle = v and a.endDate is null) order by v.plate",
+        "evidence": "v.owner is null and not exists ... (select a from Assignment a where a.vehicle = v and a.endDate is null) order by v.plate",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "JP-R11",
+        "old_evidence": "v = em.find(Vehicle.class, existing.getId()); v.setOwner(emp);",
+        "evidence": "v = em.find(Vehicle.class, existing.getId()); ... v.setOwner(emp);",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "JP-R12",
+        "old_evidence": "v.setOwner(emp) / a.getVehicle().setOwner(null)",
+        "evidence": "a.setEndDate(returnDate); ... a.getVehicle().setOwner(null);",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "JP-R19",
+        "old_evidence": "c.setStatus(\"SUBMITTED\"); ... purpose == null ? \"\" : purpose",
+        "evidence": "c.setStatus(\"SUBMITTED\");",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "JP-R22",
+        "old_evidence": "int days = FleetService.daysBetween(s, e);  ... / 86400000L) + 1",
+        "evidence": "int days = FleetService.daysBetween(s, e);",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "JP-R23",
+        "old_evidence": "list.multiply(rule.getBenefitPct()).divide(HUNDRED).add(list.multiply(rule.getCommutePct()).divide(HUNDRED).multiply(BigDecimal.valueOf(employee.getCommuteKm())))",
+        "evidence": "list.multiply(rule.getBenefitPct()).divide(HUNDRED) .add(list.multiply(rule.getCommutePct()).divide(HUNDRED) .multiply(BigDecimal.valueOf(employee.getCommuteKm())))",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "JP-R28",
+        "old_evidence": "order by a.startDate desc ... if (a.isOpen()) return a;",
+        "evidence": "if (a.isOpen()) { return a; ... order by a.startDate desc",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "JP-R29",
+        "old_evidence": "lower(e.employeeNo) like :t or lower(e.lastName) like :t or lower(e.firstName) like :t order by e.lastName, e.firstName ... setMaxResults(50)",
+        "evidence": "lower(e.employeeNo) like :t ... or lower(e.lastName) like :t or lower(e.firstName) like :t order by e.lastName, e.firstName ... setMaxResults(50)",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "MF-R02",
+        "old_evidence": "MOVE WK-EMPID TO EM-EMPID. OBTAIN CALC EMPLOYEE. WHILE EM-STAT EQ 'T' ... (no DB-REC-NOT-FOUND, no EM-GRD test)",
+        "evidence": "MOVE WK-EMPID TO EM-EMPID. OBTAIN CALC EMPLOYEE. WHILE EM-STAT EQ 'T'",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "MF-R09",
+        "old_evidence": "(no test on EMP-ASSIGN or EMP-VEHICLE owner before STORE ASSIGNMENT)",
+        "evidence": "MOVE 0 TO AS-END. FIND CURRENT EMPLOYEE. STORE ASSIGNMENT.",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "MF-R26",
+        "old_evidence": "FIELD WK-ODO ... UNPROTECTED. (no reference in FLERETN-ENTER)",
+        "evidence": "FIELD WK-ODO ... UNPROTECTED.",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "MF-R29",
+        "old_evidence": "READS THE FLEET DATABASE FOR ONE CLOSED BENEFIT PERIOD (comment) vs no BP-STAT test",
+        "evidence": "MOVE PARM-PERIOD TO BP-PERIOD OBTAIN CALC BENEFIT-PERIOD PERFORM IDMS-STATUS",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "MF-R32",
+        "old_evidence": "OBTAIN NEXT EMPLOYEE WITHIN EMP-REGION ... ACCEPT BO-EMP-DBKEY FROM IDMS-DBKEY FOR EMPLOYEE",
+        "evidence": "OBTAIN NEXT EMPLOYEE WITHIN EMP-REGION ... ACCEPT BO-EMP-DBKEY FROM IDMS-DBKEY FOR EMPLOYEE",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges. Added a covering range for the combined quotation."
+      },
+      {
+        "id": "MF-R36",
+        "old_evidence": "COMPUTE WS-TAXB = (VH-LIST * VH-BPCT / 1200 - EM-CNTRB) * WS-DAYS / WS-MDAYS (no ROUNDED) ... IF WS-TAXB < 0 MOVE 0",
+        "evidence": "COMPUTE WS-TAXB = (VH-LIST * VH-BPCT / 1200 - EM-CNTRB) * WS-DAYS / WS-MDAYS ... IF WS-TAXB < 0 MOVE 0 TO WS-TAXB",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "MF-R42",
+        "old_evidence": "MOVE 16 TO RETURN-CODE ROLLBACK STOP RUN. // //STEP020 EXEC PGM=ICETOOL,COND=(4,LT) ... //STEP030 EXEC PGM=FTP,PARM='(EXIT',COND=(4,LT)",
+        "evidence": "MOVE 16 TO RETURN-CODE ROLLBACK STOP RUN.",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "MF-R43",
+        "old_evidence": "(no AS-RSN, EM-GRD or EM-STAT reference in 2100-BENEFIT)",
+        "evidence": "IF CAR-IN-PERIOD AND (AS-END = 0 OR AS-END NOT < BP-STRT) ... COMPUTE WS-TAXB = (VH-LIST * VH-BPCT / 1200 - EM-CNTRB) * WS-DAYS / WS-MDAYS",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "MF-R44",
+        "old_evidence": "//BENOUT DD DSN=FLT.PROD.BENOUT.P&PERIOD, DISP=(NEW,CATLG,DELETE)",
+        "evidence": "//BENOUT DD DSN=FLT.PROD.BENOUT.P&PERIOD, ... DISP=(NEW,CATLG,DELETE)",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges."
+      },
+      {
+        "id": "MF-R45",
+        "old_evidence": "LOCATION MODE IS CALC USING ( EM-EMPID ) DUPLICATES ARE LAST ... ( VH-VEHID ) DUPLICATES ARE NOT ALLOWED",
+        "evidence": "LOCATION MODE IS CALC USING ( EM-EMPID ) DUPLICATES ARE LAST ... ( VH-VEHID ) DUPLICATES ARE NOT ALLOWED",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges. Added a covering range for the combined quotation."
+      },
+      {
+        "id": "MF-R46",
+        "old_evidence": "MEMBER IS ASSIGNMENT ... MANDATORY AUTOMATIC ... MEMBER IS MILEAGE-CLAIM ... OPTIONAL AUTOMATIC",
+        "evidence": "MEMBER IS ASSIGNMENT ... MANDATORY AUTOMATIC ... MEMBER IS MILEAGE-CLAIM ... OPTIONAL AUTOMATIC",
+        "note": "Re-read cited source; quote literal code in source order, not commentary or joined snippets from different ranges. Added a covering range for the combined quotation."
+      }
+    ],
+    "publication_normalization": [
+      "Split semicolon-joined inventory source strings into arrays of individual references.",
+      "Removed annotations from whole-file lists and expanded mainframe holdout wildcards into existing file paths.",
+      "Updated discovery app country summaries to match the source-verified round-2 inventory employee-number corrections."
+    ]
+  }
+}
