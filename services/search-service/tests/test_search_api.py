@@ -105,6 +105,54 @@ class TestSuggestEndpoint:
         data = response.get_json()
         assert data["suggestions"] == []
 
+    def test_suggest_requests_ranking_score(self, client, mock_meilisearch_client):
+        """Suggest asks MeiliSearch for _rankingScore so ranking has data to work with."""
+        mock_index = mock_meilisearch_client.index.return_value
+        client.get("/api/v1/search/suggest?q=te")
+        _, params = mock_index.search.call_args.args
+        assert params["showRankingScore"] is True
+
+    def test_suggest_ranks_across_indices_by_score(self, client, mock_meilisearch_client):
+        """Suggestions from both indices are merged and ordered by _rankingScore."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = [
+            {"estimatedTotalHits": 2, "hits": [
+                {"title": "Team charter", "_rankingScore": 0.4},
+                {"title": "Tech notes", "_rankingScore": 0.9},
+            ]},
+            {"estimatedTotalHits": 1, "hits": [
+                {"name": "testplan.pdf", "_rankingScore": 0.7},
+            ]},
+        ]
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Tech notes", "testplan.pdf", "Team charter"]
+
+    def test_suggest_tolerates_missing_ranking_score(self, client, mock_meilisearch_client):
+        """Regression for SearchSuggestHighErrorRate: hits without _rankingScore must not 500."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = [
+            {"estimatedTotalHits": 2, "hits": [
+                {"title": "Unscored doc"},
+                {"title": "Scored doc", "_rankingScore": 0.5},
+            ]},
+            {"estimatedTotalHits": 1, "hits": [{}]},
+        ]
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Scored doc", "Unscored doc"]
+
+    def test_suggest_malformed_score_falls_back_to_zero(self, meilisearch_service, mock_meilisearch_client):
+        """A non-numeric _rankingScore is treated as 0.0 rather than raising."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 1,
+            "hits": [{"title": "Odd score", "_rankingScore": "n/a"}],
+        }
+        assert meilisearch_service.suggest("od") == ["Odd score"]
+
 
 class TestAdvancedSearchEndpoint:
     """Tests for POST /api/v1/search/advanced."""
