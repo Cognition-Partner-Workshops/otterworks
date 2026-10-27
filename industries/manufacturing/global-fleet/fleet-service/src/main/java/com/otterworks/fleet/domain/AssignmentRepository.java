@@ -63,4 +63,28 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
             where a.legacyRef = :legacyRef
             """)
     Optional<Assignment> findByLegacyRef(@Param("legacyRef") String legacyRef);
+
+    @Query("""
+            select a from Assignment a
+            where a.employment.id = :employmentId
+              and a.startDate <= :periodEnd
+              and (a.endDate is null or a.endDate >= :periodStart)
+            order by a.startDate asc, a.id asc
+            """)
+    List<Assignment> findOverlappingByEmployment(
+            @Param("employmentId") Long employmentId,
+            @Param("periodStart") LocalDate periodStart,
+            @Param("periodEnd") LocalDate periodEnd);
+
+    @Query("""
+            select a from Assignment a
+            where a.employment.id in :employmentIds
+              and a.startDate <= :periodEnd
+              and (a.endDate is null or a.endDate >= :periodStart)
+            order by a.employment.id, a.startDate asc, a.id asc
+            """)
+    List<Assignment> findOverlappingForEmployments(
+            @Param("employmentIds") Collection<Long> employmentIds,
+            @Param("periodStart") LocalDate periodStart,
+            @Param("periodEnd") LocalDate periodEnd);
 }
