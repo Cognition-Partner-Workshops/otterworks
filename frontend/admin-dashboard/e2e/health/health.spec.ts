@@ -19,8 +19,11 @@ async function expectHealth(page: Page, health: Health): Promise<void> {
   }
   for (const [status, icon, label] of [["healthy", "check_circle", "Healthy"], ["degraded", "warning", "Degraded"], ["down", "error", "Down"]]) {
     const count = statuses.filter(s => s.status === status).length;
-    // Summary divs have no role and concatenate decorative icon ligatures with count/label.
-    await expect(page.getByText(new RegExp(`^${icon}\\s*${count}\\s*${label}$`))).toBeVisible();
+    // Summary divs have no role; identify each by its direct-child label, excluding ancestor divs.
+    const summary = page.locator("div").filter({ has: page.locator(":scope > span").and(page.getByText(label, { exact: true })) });
+    await expect(summary).toBeVisible();
+    await expect(summary.locator("mat-icon")).toHaveText(icon);
+    await expect(summary.locator("span")).toHaveText([String(count), label]);
   }
 }
 
