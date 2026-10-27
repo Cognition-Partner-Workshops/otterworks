@@ -13,7 +13,13 @@ import {
 
 type DraftState = Omit<CarRequestDraft, 'draftId'> & { draftId: string | null }
 
-const today = new Date().toISOString().slice(0, 10)
+export function localToday(date = new Date()): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
+const today = localToday()
 
 function blankVehicle(): NewVehicleInput {
   return {

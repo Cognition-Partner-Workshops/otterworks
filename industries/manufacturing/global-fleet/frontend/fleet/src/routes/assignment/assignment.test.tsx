@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { FleetRoutes } from '../../App'
 import type { CarRequestDraft, EmployeeCarView, PoolVehicle, VehicleRulesResponse } from '../../api/client'
+import { localToday } from './request'
 
 const pool: PoolVehicle[] = [{
   id: 10,
@@ -67,7 +68,15 @@ function routeFetch(
 }
 
 describe('assignment routes', () => {
-  afterEach(() => vi.unstubAllGlobals())
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  it('GF09_startDateDefaultsToLocalToday', () => {
+    vi.useFakeTimers().setSystemTime(new Date(2026, 9, 27, 23, 30))
+    expect(localToday()).toBe('2026-10-27')
+  })
 
   it('GF34_refreshReturnsToSavedDraft', async () => {
     const fetchMock = routeFetch()
