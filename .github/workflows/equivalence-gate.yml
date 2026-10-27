@@ -15,6 +15,11 @@ on:
 jobs:
   equivalence:
     runs-on: ubuntu-latest
+    env:
+      # pipx installs poetry under the runner image's default interpreter (3.14 on
+      # ubuntu-26.04), which cannot build the module's pinned asyncpg. Make poetry
+      # create and run the module's venv with the setup-python 3.12 on PATH instead.
+      POETRY_VIRTUALENVS_PREFER_ACTIVE_PYTHON: "true"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
