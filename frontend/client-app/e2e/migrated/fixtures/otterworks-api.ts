@@ -21,9 +21,68 @@ export type Workspace = {
     email: string;
     displayName: string;
     createdAt: string;
+    // Only needed by TestCases that sign in through the login form.
+    password?: string;
   };
   documents: MockDocument[];
 };
+
+type MockAccount = Workspace["user"];
+
+// Unsigned JWT-shaped token: the client only reads the `sub` claim.
+export function mockAccessToken(userId: string): string {
+  const claims = Buffer.from(JSON.stringify({ sub: userId })).toString(
+    "base64url",
+  );
+  return `header.${claims}.sig`;
+}
+
+function subjectOf(authorization: string | undefined): string | null {
+  const match = authorization?.match(/^Bearer\s+[^.]+\.([^.]+)\.[^.]+$/i);
+  if (!match) return null;
+  try {
+    const claims = JSON.parse(Buffer.from(match[1], "base64url").toString());
+    return typeof claims.sub === "string" ? claims.sub : null;
+  } catch {
+    return null;
+  }
+}
+
+// auth-service GlobalExceptionHandler body.
+function authServiceError(status: number, error: string, message: string) {
+  return {
+    status,
+    json: {
+      timestamp: new Date().toISOString(),
+      status,
+      error,
+      message,
+    },
+  };
+}
+
+// auth-service AuthResponse (Spring's default camelCase Jackson naming).
+function authResponse(account: MockAccount) {
+  return {
+    accessToken: mockAccessToken(account.id),
+    refreshToken: `refresh-${account.id}`,
+    tokenType: "Bearer",
+    expiresIn: 3600,
+    user: {
+      id: account.id,
+      email: account.email,
+      displayName: account.displayName,
+      avatarUrl: null,
+    },
+  };
+}
+
+// Bean Validation's @Email accepts a local part, "@" and a domain.
+const BEAN_VALIDATION_EMAIL = /^[^@\s]+@[^@\s]+$/;
+
+function isBlank(value: unknown): boolean {
+  return typeof value !== "string" || value.trim() === "";
+}
 
 export async function mockOtterWorksApi(
   page: Page,
@@ -31,6 +90,7 @@ export async function mockOtterWorksApi(
   testInfo: TestInfo,
 ): Promise<() => Promise<void>> {
   const unmockedApiCalls: string[] = [];
+  const accounts: MockAccount[] = [workspace.user];
 
   await page.route("**/api/v1/**", async (route) => {
     const request = route.request();
@@ -38,15 +98,103 @@ export async function mockOtterWorksApi(
     const method = request.method();
     const path = pathname.replace(/\/$/, "");
 
+    if (method === "POST" && path === "/api/v1/auth/login") {
+      const body = request.postDataJSON() ?? {};
+      const fieldErrors = [
+        isBlank(body.email) && "email: must not be blank",
+        !isBlank(body.email) &&
+          !BEAN_VALIDATION_EMAIL.test(body.email) &&
+          "email: must be a well-formed email address",
+        isBlank(body.password) && "password: must not be blank",
+      ].filter(Boolean);
+      if (fieldErrors.length > 0) {
+        await route.fulfill(
+          authServiceError(400, "Bad Request", fieldErrors.join(", ")),
+        );
+        return;
+      }
+
+      const account = accounts.find(
+        (candidate) => candidate.email === body.email,
+      );
+      if (!account || account.password !== body.password) {
+        await route.fulfill(
+          authServiceError(400, "Bad Request", "Invalid credentials"),
+        );
+        return;
+      }
+
+      await route.fulfill({ json: authResponse(account) });
+      return;
+    }
+
+    if (method === "POST" && path === "/api/v1/auth/register") {
+      const body = request.postDataJSON() ?? {};
+      const fieldErrors = [
+        isBlank(body.email) && "email: must not be blank",
+        !isBlank(body.email) &&
+          !BEAN_VALIDATION_EMAIL.test(body.email) &&
+          "email: must be a well-formed email address",
+        isBlank(body.password) && "password: must not be blank",
+        typeof body.password === "string" &&
+          (body.password.length < 8 || body.password.length > 128) &&
+          "password: size must be between 8 and 128",
+        isBlank(body.displayName) && "displayName: must not be blank",
+        typeof body.displayName === "string" &&
+          body.displayName.length > 100 &&
+          "displayName: size must be between 1 and 100",
+      ].filter(Boolean);
+      if (fieldErrors.length > 0) {
+        await route.fulfill(
+          authServiceError(400, "Bad Request", fieldErrors.join(", ")),
+        );
+        return;
+      }
+
+      if (accounts.some((candidate) => candidate.email === body.email)) {
+        await route.fulfill(
+          authServiceError(400, "Bad Request", "Email already registered"),
+        );
+        return;
+      }
+
+      const account: MockAccount = {
+        id: `user-${accounts.length + 123}`,
+        email: body.email,
+        displayName: body.displayName,
+        createdAt: new Date().toISOString(),
+        password: body.password,
+      };
+      accounts.push(account);
+      await route.fulfill({ status: 201, json: authResponse(account) });
+      return;
+    }
+
     if (method === "GET" && path === "/api/v1/auth/profile") {
+      const userId = subjectOf(request.headers()["authorization"]);
+      const account = accounts.find((candidate) => candidate.id === userId);
+      if (!account) {
+        // api-gateway JWT middleware rejects a missing or invalid bearer.
+        await route.fulfill({
+          status: 401,
+          json: { error: "missing or invalid authorization header" },
+        });
+        return;
+      }
+
       await route.fulfill({
         json: {
-          id: workspace.user.id,
-          email: workspace.user.email,
-          display_name: workspace.user.displayName,
-          created_at: workspace.user.createdAt,
+          id: account.id,
+          email: account.email,
+          display_name: account.displayName,
+          created_at: account.createdAt,
         },
       });
+      return;
+    }
+
+    if (method === "POST" && path === "/api/v1/auth/logout") {
+      await route.fulfill({ status: 204 });
       return;
     }
 
