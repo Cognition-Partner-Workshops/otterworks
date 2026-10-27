@@ -10,6 +10,7 @@ import {
   type PoolVehicle,
   type VehicleRulesResponse,
 } from '../../api/client'
+import { ErrorAlert, Loading, errorText } from '../../components/status'
 
 type DraftState = Omit<CarRequestDraft, 'draftId'> & { draftId: string | null }
 
@@ -96,7 +97,7 @@ export default function AssignmentWizard() {
       setLoading(false)
     }).catch((cause: unknown) => {
       if (!active) return
-      setError(cause instanceof Error ? cause.message : 'Could not load car request')
+      setError(errorText(cause, 'Could not load car request'))
       setLoading(false)
     })
     return () => { active = false }
@@ -128,7 +129,7 @@ export default function AssignmentWizard() {
       const saved = await persist('VEHICLE')
       setDraft((current) => current ? { ...current, ...saved, step: 'VEHICLE' } : current)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not save employee step')
+      setError(errorText(cause, 'Could not save employee step'))
     }
   }
 
@@ -138,7 +139,18 @@ export default function AssignmentWizard() {
       const saved = await persist('CONFIRM')
       setDraft((current) => current ? { ...current, ...saved, step: 'CONFIRM' } : current)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not save vehicle')
+      setError(errorText(cause, 'Could not save vehicle'))
+    }
+  }
+
+  async function goBack(target: CarRequestStep) {
+    setError(null)
+    try {
+      const saved = await persist(target)
+      setDraft((current) => current ? { ...current, ...saved, step: target } : current)
+    } catch (cause) {
+      setDraft((current) => current ? { ...current, step: target } : current)
+      setError(`Draft not saved: ${errorText(cause, 'Could not save draft')}`)
     }
   }
 
@@ -177,7 +189,7 @@ export default function AssignmentWizard() {
         setError('Car no longer available')
         return
       }
-      setError(cause instanceof Error ? cause.message : 'Could not submit car request')
+      setError(errorText(cause, 'Could not submit car request'))
     }
   }
 
@@ -187,7 +199,7 @@ export default function AssignmentWizard() {
       if (draft?.draftId) await client.deleteDraft(employeeNo)
       navigate('/assignment')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Could not discard draft')
+      setError(errorText(cause, 'Could not discard draft'))
     }
   }
 
@@ -204,14 +216,14 @@ export default function AssignmentWizard() {
     return rules?.requiredNewVehicleFields.includes(field) ?? true
   }
 
-  if (loading) return <p>Loading car request…</p>
-  if (!draft) return <p role="alert">{error ?? 'Could not load car request'}</p>
+  if (loading) return <Loading>Loading car request…</Loading>
+  if (!draft) return <ErrorAlert>{error ?? 'Could not load car request'}</ErrorAlert>
 
   return (
     <section>
       <h1>Request a company car</h1>
       <p>Employee: {employeeNo}</p>
-      {error && <p role="alert">{error}</p>}
+      <ErrorAlert>{error}</ErrorAlert>
       {draft.step === 'EMPLOYEE' && (
         <div>
           <h2>Employee</h2>
@@ -263,6 +275,7 @@ export default function AssignmentWizard() {
               )}
             </fieldset>
           )}
+          <button type="button" onClick={() => void goBack('EMPLOYEE')}>Back</button>
           <button type="button" onClick={() => void continueToConfirm()}>Continue</button>
         </div>
       )}
@@ -290,6 +303,7 @@ export default function AssignmentWizard() {
               }} />
             <small id="assignment-start-date-hint">Leave blank to start today</small>
           </div>
+          <button type="button" onClick={() => void goBack('VEHICLE')}>Back</button>
           <button type="button" onClick={() => void submit()}>Submit request</button>
         </div>
       )}

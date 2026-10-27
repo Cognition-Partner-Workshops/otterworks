@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { client, type EmployeeSummary } from '../../api/client'
+import { ErrorAlert, errorText } from '../../components/status'
 
 export default function EmployeeSearch() {
   const [term, setTerm] = useState('')
@@ -12,7 +13,7 @@ export default function EmployeeSearch() {
       setError(null)
       setEmployees(await client.searchEmployees(value))
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Employee search failed')
+      setError(errorText(cause, 'Employee search failed'))
     }
   }
 
@@ -37,7 +38,7 @@ export default function EmployeeSearch() {
         />
         <button type="submit">Search</button>
       </form>
-      {error && <p role="alert">{error}</p>}
+      <ErrorAlert>{error}</ErrorAlert>
       <table>
         <thead>
           <tr>

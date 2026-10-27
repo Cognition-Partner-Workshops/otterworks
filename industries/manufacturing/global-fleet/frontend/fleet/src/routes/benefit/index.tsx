@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useSearchParams } from 'react-router'
 import {
   client,
   type BenefitInquiry,
@@ -21,7 +22,13 @@ function errorText(error: unknown): string {
 }
 
 export default function Benefit() {
-  const [view, setView] = useState<View>('inquiry')
+  const [searchParams] = useSearchParams()
+  const [view, setView] = useState<View>(() => {
+    const requestedView = searchParams.get('view')
+    return requestedView === 'inquiry' || requestedView === 'statement' || requestedView === 'periods'
+      ? requestedView
+      : 'inquiry'
+  })
   const [employeeNo, setEmployeeNo] = useState('')
   const [period, setPeriod] = useState(currentPeriod())
   const [inquiry, setInquiry] = useState<BenefitInquiry | null>(null)

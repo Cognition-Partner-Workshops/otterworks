@@ -166,6 +166,76 @@ describe('assignment routes', () => {
     expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/car-requests/drafts/E123'))).toHaveLength(2)
   })
 
+  it('GF32_backSavesDraftWithoutValidation', async () => {
+    const fetchMock = routeFetch()
+    vi.stubGlobal('fetch', fetchMock)
+    const first = render(
+      <MemoryRouter initialEntries={['/assignment/request?employee=E123']}>
+        <FleetRoutes />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByRole('heading', { name: 'Confirm request' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(await screen.findByRole('heading', { name: 'Choose a vehicle' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(await screen.findByRole('heading', { name: 'Employee' })).toBeInTheDocument()
+
+    const savedSteps = fetchMock.mock.calls
+      .filter(([, init]) => init?.method === 'PUT')
+      .map(([, init]) => JSON.parse(String(init?.body)) as DraftUpdateRequest)
+    expect(savedSteps).toHaveLength(2)
+    expect(savedSteps[0]).toMatchObject({
+      step: 'VEHICLE',
+      reason: 'RP',
+      startDate: '2026-10-20',
+      vehicleChoice: 'NEW',
+      newVehicle: { plate: 'AB12 CDE', make: 'Example Motors', model: 'Tourer' },
+    })
+    expect(savedSteps[1]).toMatchObject({
+      step: 'EMPLOYEE',
+      reason: 'RP',
+      startDate: '2026-10-20',
+      newVehicle: { plate: 'AB12 CDE' },
+    })
+    first.unmount()
+
+    let putCount = 0
+    const failedFetch = routeFetch(savedDraft(), {
+      'PUT /api/v1/car-requests/drafts/E123': (init) => {
+        const update = JSON.parse(String(init?.body)) as DraftUpdateRequest
+        putCount += 1
+        if (putCount === 1) {
+          return Response.json({ code: 'VEHICLE_REQUIRED', message: 'Vehicle required' }, { status: 400 })
+        }
+        return Response.json({
+          ...savedDraft(),
+          ...update,
+          employeeNo: 'E123',
+          startDate: update.startDate ?? null,
+        })
+      },
+    })
+    vi.stubGlobal('fetch', failedFetch)
+    render(
+      <MemoryRouter initialEntries={['/assignment/request?employee=E123']}>
+        <FleetRoutes />
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByRole('heading', { name: 'Confirm request' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(await screen.findByRole('heading', { name: 'Choose a vehicle' })).toBeInTheDocument()
+    expect(await screen.findByRole('alert')).toHaveTextContent('Draft not saved: Vehicle required')
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    expect(await screen.findByRole('heading', { name: 'Confirm request' })).toBeInTheDocument()
+
+    const laterSteps = failedFetch.mock.calls
+      .filter(([, init]) => init?.method === 'PUT')
+      .map(([, init]) => JSON.parse(String(init?.body)) as DraftUpdateRequest)
+    expect(laterSteps.map(({ step }) => step)).toEqual(['VEHICLE', 'CONFIRM'])
+  })
+
   it('GF07_staleSubmitReturnsToVehicleChoice', async () => {
     const draft = {
       ...savedDraft(),
