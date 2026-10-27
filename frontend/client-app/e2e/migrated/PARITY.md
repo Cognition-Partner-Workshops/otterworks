@@ -14,7 +14,7 @@ against the real local stack ([runbook](README.md)), not from the folder commits
 | match | 4 | TC-SET-001, TC-SHARE-001, TC-SHARE-002, TC-SHARE-003 |
 | legacy wrong | 1 | TC-SET-002 |
 | Playwright wrong | 0 | |
-| app defect | 1 | TC-SET-003 (pending SDET confirmation whether planted) |
+| app defect | 1 | TC-SET-003 |
 | retired with reason | 3 | TC-TPL-001, TC-TPL-002, TC-TPL-003 |
 | pending (in flight) | 11 | TC-AUTH-001..004, TC-DOC-001..004, TC-SRCH-001..003 |
 | **Total** | **20** | |
@@ -30,12 +30,11 @@ Playwright runs: two consecutive full runs on 2026-10-27, identical per-test out
   settings API before and after. See [settings/PARITY.md](settings/PARITY.md).
 
 **App defect**
-- **TC-SET-003 Save profile details.** The client sends `PATCH /api/v1/auth/profile`
-  (`src/lib/api.ts:106`) but auth-service `AuthController` maps only `PUT /profile`, so save
-  returns HTTP 500 (`HttpRequestMethodNotSupportedException`) and nothing persists. Decision: keep
-  the correct success and persistence assertions and mark the test `test.fail()`; no app code
-  change. Labelled an app defect **pending SDET confirmation** of whether it is a planted lab
-  bug (AGENTS.md: planted bugs are not fixed in a conversion).
+- **TC-SET-003 Save profile details.** Saving the profile returns HTTP 500
+  (`HttpRequestMethodNotSupportedException`) and nothing persists. Confirmed by SDET as a real
+  app defect, not a planted lab bug. Decision: keep the correct success and persistence
+  assertions and mark the test `test.fail()`; no app code change in the migration.
+  For the app team: Client sends `PATCH /api/v1/auth/profile` (frontend/client-app/src/lib/api.ts:106, authApi.updateProfile); auth-service expects `PUT /api/v1/auth/profile` (AuthController.java:54 `@PutMapping("/profile")`) → HTTP 500.
 
 **Retired**
 - **TC-TPL-001..003** (Templates, older run `RUN-TEMPLATE-2024-08`, no screenshots). The client
@@ -71,7 +70,7 @@ Playwright runs: two consecutive full runs on 2026-10-27, identical per-test out
 | TC-SHARE-003 | View starred documents | `sharing/sharing.spec.ts` › `TC-SHARE-003 View starred documents` | Passed (RUN-CLIENT-2025-02, 2025-02-18) | Passed in both runs (run 1, run 2; 2026-10-27) | match | A `/starred` test filed under Sharing. Stars are browser-local (`starredApi` in `src/lib/api.ts`, no HTTP endpoint), so the test stars `Quarterly Planning` through the real Star button. |
 | TC-SET-001 | View profile settings | `settings/settings.spec.ts` › `TC-SET-001 View profile settings` | Passed (RUN-CLIENT-2025-02, 2025-02-18) | Passed in both runs (run 1, run 2; 2026-10-27) | match | Faithful run with the CSV email failed only because each test registers a fresh user; `ToscaEmail` keeps the CSV value and the corrected `Email` is the seeded user's address. See [settings/PARITY.md](settings/PARITY.md). |
 | TC-SET-002 | Update email notification preference | `settings/settings.spec.ts` › `TC-SET-002 Update email notification preference` | Passed (RUN-CLIENT-2025-02, 2025-02-18) | Passed with corrected `Disabled` expectation in both runs (2026-10-27) | legacy wrong | Toggle defaults ON, so the click disables it; Tosca's post-click "Enabled" was a false pass. Corrected expectation `Disabled`, confirmed by the real settings API (true before, false after). |
-| TC-SET-003 | Save profile details | `settings/settings.spec.ts` › `TC-SET-003 Save profile details` | Passed (RUN-CLIENT-2025-02, 2025-02-18) | Expected failure (`test.fail()`) in both runs (2026-10-27): STEP-02 `expect(profileResponse.ok()).toBe(true)` received `false` for the profile PATCH (`settings.spec.ts:80`) | app defect | Client `PATCH /auth/profile` vs `AuthController` PUT-only → HTTP 500, nothing persists. Kept as `test.fail()` with correct assertions; app code unchanged. Pending SDET confirmation whether this is a planted lab bug. |
+| TC-SET-003 | Save profile details | `settings/settings.spec.ts` › `TC-SET-003 Save profile details` | Passed (RUN-CLIENT-2025-02, 2025-02-18) | Expected failure (`test.fail()`) in both runs (2026-10-27): STEP-02 `expect(profileResponse.ok()).toBe(true)` received `false` for the profile PATCH (`settings.spec.ts:80`) | app defect | Client `PATCH /auth/profile` vs `AuthController` PUT-only → HTTP 500, nothing persists. Kept as `test.fail()` with correct assertions; app code unchanged. Confirmed real app defect (not planted). |
 | TC-TPL-001 | View the template collection | none | Passed (RUN-TEMPLATE-2024-08, 2024-08-12) | not converted | retired with reason | No Templates screen in the client app (no route, page or client API; never in git history). See [templates/PARITY.md](templates/PARITY.md) E1-E4. |
 | TC-TPL-002 | Filter templates by name | none | Passed (RUN-TEMPLATE-2024-08, 2024-08-12) | not converted | retired with reason | Same as TC-TPL-001; the CSV `TemplateFilter` row also has an empty `Query`, so the recorded pass typed nothing. |
 | TC-TPL-003 | Create a document from a template | none | Passed (RUN-TEMPLATE-2024-08, 2024-08-12) | not converted | retired with reason | No client UI creates a document from a template. The backend endpoint still exists (E5); API-level coverage is out of scope (`d-templates-api`). |
