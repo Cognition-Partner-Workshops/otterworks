@@ -1,0 +1,307 @@
+{
+  "context": "return",
+  "casesInCorpus": 6,
+  "casesRun": 6,
+  "identical": 6,
+  "different": 0,
+  "status": "identical",
+  "cases": [
+    {
+      "id": "return-open",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=98AE0F4471F1B628EE685E124B411F72\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml;jsessionid=98AE0F4471F1B628EE685E124B411F72\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-9109698752948009825:557132723922076449\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Fahrzeugrueckgabe",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 205
+      }
+    },
+    {
+      "id": "return-unknown-plate",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1><ul class=\"msgs\"><li class=\"err\">\tKein Fahrzeug mit Kennzeichen ZZ-UNKNOWN. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"ZZ-UNKNOWN\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-9109698752948009825:6118738250285128180\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Fahrzeugrueckgabe",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Kein Fahrzeug mit Kennzeichen ZZ-UNKNOWN."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "ZZ-UNKNOWN"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 200
+      }
+    },
+    {
+      "id": "return-unassigned-pool-car",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"HH-VS 7629\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p>\n                <p>HH-VS 7629  Opel Astra Sports Tourer, zugeordnet an E1009100 Priya Raman\n                   seit 27.10.2026</p>\n                <p><label>Rueckgabedatum</label><input type=\"text\" name=\"j_idt14:j_idt23\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometerstand</label><input type=\"text\" name=\"j_idt14:j_idt25\" size=\"7\" /></p>\n                <p><label>Zustand</label><input type=\"text\" name=\"j_idt14:j_idt27\" size=\"50\" /></p><input type=\"submit\" name=\"j_idt14:j_idt29\" value=\"Rueckgabe buchen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-9109698752948009825:2866329165571870888\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Fahrzeugrueckgabe",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "HH-VS 7629"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "text",
+              "value": "<recording-day>"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Rueckgabe buchen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 215
+      }
+    },
+    {
+      "id": "return-found-assigned-car",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"K-XE 9032\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p>\n                <p>K-XE 9032  Mercedes-Benz C 220 d T-Modell, zugeordnet an E2040533 Jana Schwarz\n                   seit 01.06.2019</p>\n                <p><label>Rueckgabedatum</label><input type=\"text\" name=\"j_idt14:j_idt23\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometerstand</label><input type=\"text\" name=\"j_idt14:j_idt25\" size=\"7\" /></p>\n                <p><label>Zustand</label><input type=\"text\" name=\"j_idt14:j_idt27\" size=\"50\" /></p><input type=\"submit\" name=\"j_idt14:j_idt29\" value=\"Rueckgabe buchen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-9109698752948009825:2053280140517003476\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Fahrzeugrueckgabe",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "K-XE 9032"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "text",
+              "value": "<recording-day>"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Rueckgabe buchen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 219
+      }
+    },
+    {
+      "id": "return-date-before-start",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1><ul class=\"msgs\"><li class=\"err\">\tRueckgabe vor Uebergabedatum. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"K-XE 9032\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p>\n                <p>K-XE 9032  Mercedes-Benz C 220 d T-Modell, zugeordnet an E2040533 Jana Schwarz\n                   seit 01.06.2019</p>\n                <p><label>Rueckgabedatum</label><input type=\"text\" name=\"j_idt14:j_idt23\" value=\"01.01.2019\" /></p>\n                <p><label>Kilometerstand</label><input type=\"text\" name=\"j_idt14:j_idt25\" value=\"40000\" size=\"7\" /></p>\n                <p><label>Zustand</label><input type=\"text\" name=\"j_idt14:j_idt27\" value=\"Pruefung\" size=\"50\" /></p><input type=\"submit\" name=\"j_idt14:j_idt29\" value=\"Rueckgabe buchen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-9109698752948009825:606302362204652250\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Fahrzeugrueckgabe",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Rueckgabe vor Uebergabedatum."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "K-XE 9032"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "text",
+              "value": "01.01.2019"
+            },
+            {
+              "type": "text",
+              "value": "40000"
+            },
+            {
+              "type": "text",
+              "value": "Pruefung"
+            },
+            {
+              "type": "submit",
+              "value": "Rueckgabe buchen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 212
+      }
+    },
+    {
+      "id": "return-submit",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1><ul class=\"msgs\"><li class=\"info\">\tRueckgabe von K-XE 9032 gebucht. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"K-XE 9032\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-9109698752948009825:5599774634697807526\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Fahrzeugrueckgabe",
+          "messages": [
+            {
+              "class": [
+                "info"
+              ],
+              "text": "Rueckgabe von K-XE 9032 gebucht."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "K-XE 9032"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 224
+      }
+    }
+  ]
+}

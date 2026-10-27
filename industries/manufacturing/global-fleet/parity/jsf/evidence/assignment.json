@@ -1,0 +1,141 @@
+{
+  "context": "assignment",
+  "casesInCorpus": 4,
+  "casesRun": 4,
+  "identical": 4,
+  "different": 0,
+  "status": "identical",
+  "cases": [
+    {
+      "id": "assignment-with-car",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=A3D62BA61C4B7A1CBDFFA9498B26FC19\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1>\n            <div class=\"panel\">\n                <p><b>E1009106 Elena Petrova</b>, EG 8, IT-500, Ingolstadt</p>\n                    <p>Aktueller Dienstwagen: <b>IN-JD 9303</b> VW Passat Variant,\n                       Listenpreis 45.340,99 EUR,\n                       seit 20.07.2026</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Fahrzeug</th>\n<th scope=\"col\">Von</th>\n<th scope=\"col\">Bis</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>IN-JD 9303</td>\n<td>VW Passat Variant</td>\n<td>20.07.2026</td>\n<td></td>\n</tr>\n<tr>\n<td>IN-AS 4628</td>\n<td>Tesla Model Y</td>\n<td>27.05.2025</td>\n<td>19.07.2026</td>\n</tr>\n</tbody>\n</table>\n\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenzuordnung",
+          "messages": [],
+          "tables": [
+            [
+              [
+                "Kennzeichen",
+                "Fahrzeug",
+                "Von",
+                "Bis"
+              ],
+              [
+                "IN-JD 9303",
+                "VW Passat Variant",
+                "20.07.2026",
+                ""
+              ],
+              [
+                "IN-AS 4628",
+                "Tesla Model Y",
+                "27.05.2025",
+                "19.07.2026"
+              ]
+            ]
+          ],
+          "panels": [
+            "E1009106 Elena Petrova, EG 8, IT-500, Ingolstadt Aktueller Dienstwagen: IN-JD 9303 VW Passat Variant, Listenpreis 45.340,99 EUR, seit 20.07.2026"
+          ],
+          "inputs": []
+        },
+        "elapsedMs": 260
+      }
+    },
+    {
+      "id": "assignment-without-car",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, EG 7, E-210, Hamburg</p><p>Kein Dienstwagen zugeordnet.</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Fahrzeug</th>\n<th scope=\"col\">Von</th>\n<th scope=\"col\">Bis</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td><td></td></tr></tbody>\n</table>\n\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenzuordnung",
+          "messages": [],
+          "tables": [
+            [
+              [
+                "Kennzeichen",
+                "Fahrzeug",
+                "Von",
+                "Bis"
+              ],
+              [
+                "",
+                "",
+                "",
+                ""
+              ]
+            ]
+          ],
+          "panels": [
+            "E1009100 Priya Raman, EG 7, E-210, HamburgKein Dienstwagen zugeordnet."
+          ],
+          "inputs": []
+        },
+        "elapsedMs": 212
+      }
+    },
+    {
+      "id": "assignment-unknown",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter E9999999 nicht gefunden. </li></ul>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenzuordnung",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Mitarbeiter E9999999 nicht gefunden."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": []
+        },
+        "elapsedMs": 218
+      }
+    },
+    {
+      "id": "assignment-no-employee",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenzuordnung",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": []
+        },
+        "elapsedMs": 188
+      }
+    }
+  ]
+}

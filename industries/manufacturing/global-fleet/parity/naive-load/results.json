@@ -1,0 +1,495 @@
+{
+  "database": {
+    "engine": "PostgreSQL 16",
+    "hostBinding": "127.0.0.1",
+    "image": "mirror.gcr.io/library/postgres:16",
+    "noDbkeyColumns": true
+  },
+  "idmsUnloadLoad": {
+    "loadedByTable": {
+      "employee": 215,
+      "vehicle": 120,
+      "assignment": 99,
+      "mileage_claim": 643,
+      "benefit_period": 13
+    },
+    "rejectedRows": 890,
+    "rejectedByTableConstraint": {
+      "employee.employee_pkey": {
+        "count": 2,
+        "sampleRows": [
+          {
+            "source": "unload/EMPLOYEE.dat",
+            "table": "employee",
+            "constraint": "employee_pkey",
+            "row": {
+              "dbkey": 1286624,
+              "empid": "E1010398",
+              "surname": "KHAN",
+              "forename": "MIA",
+              "grade": 7,
+              "costCentre": "SAL320",
+              "hireDate": "2020-03-05",
+              "leaveDate": null,
+              "status": "A",
+              "contribution": "0.00",
+              "location": "WALE"
+            },
+            "error": "duplicate key value violates unique constraint \"employee_pkey\"\nDETAIL:  Key (empid)=(E1010398) already exists."
+          },
+          {
+            "source": "unload/EMPLOYEE.dat",
+            "table": "employee",
+            "constraint": "employee_pkey",
+            "row": {
+              "dbkey": 1286994,
+              "empid": "E1010524",
+              "surname": "WRIGHT",
+              "forename": "AMELIA",
+              "grade": 11,
+              "costCentre": "SAL320",
+              "hireDate": "2021-12-27",
+              "leaveDate": null,
+              "status": "A",
+              "contribution": "0.00",
+              "location": "MIDL"
+            },
+            "error": "duplicate key value violates unique constraint \"employee_pkey\"\nDETAIL:  Key (empid)=(E1010524) already exists."
+          }
+        ]
+      },
+      "assignment.one_open_assignment_per_employee": {
+        "count": 20,
+        "sampleRows": [
+          {
+            "source": "unload/ASSIGNMENT.dat",
+            "table": "assignment",
+            "constraint": "one_open_assignment_per_employee",
+            "row": {
+              "asgid": "A000700024",
+              "empid": "E1010559",
+              "employeeDbkey": 1286661,
+              "vehid": "V000377",
+              "startDate": "2026-07-09",
+              "endDate": null,
+              "reason": "RP"
+            },
+            "error": "duplicate key value violates unique constraint \"one_open_assignment_per_employee\"\nDETAIL:  Key (empid)=(E1010559) already exists."
+          },
+          {
+            "source": "unload/ASSIGNMENT.dat",
+            "table": "assignment",
+            "constraint": "one_open_assignment_per_employee",
+            "row": {
+              "asgid": "A000700030",
+              "empid": "E1010524",
+              "employeeDbkey": 1286994,
+              "vehid": "V000399",
+              "startDate": "2024-07-28",
+              "endDate": null,
+              "reason": "RP"
+            },
+            "error": "duplicate key value violates unique constraint \"one_open_assignment_per_employee\"\nDETAIL:  Key (empid)=(E1010524) already exists."
+          },
+          {
+            "source": "unload/ASSIGNMENT.dat",
+            "table": "assignment",
+            "constraint": "one_open_assignment_per_employee",
+            "row": {
+              "asgid": "A000700039",
+              "empid": "E1011483",
+              "employeeDbkey": 1282036,
+              "vehid": "V000432",
+              "startDate": "2025-12-19",
+              "endDate": null,
+              "reason": "RP"
+            },
+            "error": "duplicate key value violates unique constraint \"one_open_assignment_per_employee\"\nDETAIL:  Key (empid)=(E1011483) already exists."
+          },
+          {
+            "source": "unload/ASSIGNMENT.dat",
+            "table": "assignment",
+            "constraint": "one_open_assignment_per_employee",
+            "row": {
+              "asgid": "A000700045",
+              "empid": "E1010300",
+              "employeeDbkey": 1286957,
+              "vehid": "V000454",
+              "startDate": "2023-10-26",
+              "endDate": null,
+              "reason": "RP"
+            },
+            "error": "duplicate key value violates unique constraint \"one_open_assignment_per_employee\"\nDETAIL:  Key (empid)=(E1010300) already exists."
+          },
+          {
+            "source": "unload/ASSIGNMENT.dat",
+            "table": "assignment",
+            "constraint": "one_open_assignment_per_employee",
+            "row": {
+              "asgid": "A000700060",
+              "empid": "E1011154",
+              "employeeDbkey": 1285810,
+              "vehid": "V000509",
+              "startDate": "2025-10-18",
+              "endDate": null,
+              "reason": "RP"
+            },
+            "error": "duplicate key value violates unique constraint \"one_open_assignment_per_employee\"\nDETAIL:  Key (empid)=(E1011154) already exists."
+          }
+        ]
+      },
+      "mileage_claim.NotNullViolation": {
+        "count": 868,
+        "sampleRows": [
+          {
+            "source": "unload/MILECLM.dat",
+            "table": "mileage_claim",
+            "constraint": "NotNullViolation",
+            "row": {
+              "clmid": "C000100007",
+              "empid": "E1011210",
+              "employeeDbkey": 1280075,
+              "vehid": "",
+              "claimDate": "2025-10-14",
+              "miles": 524,
+              "status": "A",
+              "purpose": "AUDIT"
+            },
+            "error": "null value in column \"vehicle_id\" of relation \"mileage_claim\" violates not-null constraint\nDETAIL:  Failing row contains (C000100007, E1011210, null, 2025-10-14, 524, A, AUDIT)."
+          },
+          {
+            "source": "unload/MILECLM.dat",
+            "table": "mileage_claim",
+            "constraint": "NotNullViolation",
+            "row": {
+              "clmid": "C000100014",
+              "empid": "E1011210",
+              "employeeDbkey": 1280075,
+              "vehid": "",
+              "claimDate": "2025-10-27",
+              "miles": 74,
+              "status": "A",
+              "purpose": "PLANT VST"
+            },
+            "error": "null value in column \"vehicle_id\" of relation \"mileage_claim\" violates not-null constraint\nDETAIL:  Failing row contains (C000100014, E1011210, null, 2025-10-27, 74, A, PLANT VST)."
+          },
+          {
+            "source": "unload/MILECLM.dat",
+            "table": "mileage_claim",
+            "constraint": "NotNullViolation",
+            "row": {
+              "clmid": "C000100021",
+              "empid": "E1011210",
+              "employeeDbkey": 1280075,
+              "vehid": "",
+              "claimDate": "2025-11-01",
+              "miles": 517,
+              "status": "A",
+              "purpose": "PROJECT"
+            },
+            "error": "null value in column \"vehicle_id\" of relation \"mileage_claim\" violates not-null constraint\nDETAIL:  Failing row contains (C000100021, E1011210, null, 2025-11-01, 517, A, PROJECT)."
+          },
+          {
+            "source": "unload/MILECLM.dat",
+            "table": "mileage_claim",
+            "constraint": "NotNullViolation",
+            "row": {
+              "clmid": "C000100028",
+              "empid": "E1011210",
+              "employeeDbkey": 1280075,
+              "vehid": "",
+              "claimDate": "2025-11-26",
+              "miles": 387,
+              "status": "A",
+              "purpose": "TRADE SHW"
+            },
+            "error": "null value in column \"vehicle_id\" of relation \"mileage_claim\" violates not-null constraint\nDETAIL:  Failing row contains (C000100028, E1011210, null, 2025-11-26, 387, A, TRADE SHW)."
+          },
+          {
+            "source": "unload/MILECLM.dat",
+            "table": "mileage_claim",
+            "constraint": "NotNullViolation",
+            "row": {
+              "clmid": "C000100035",
+              "empid": "E1011210",
+              "employeeDbkey": 1280075,
+              "vehid": "",
+              "claimDate": "2025-11-21",
+              "miles": 371,
+              "status": "A",
+              "purpose": "CUSTOMER"
+            },
+            "error": "null value in column \"vehicle_id\" of relation \"mileage_claim\" violates not-null constraint\nDETAIL:  Failing row contains (C000100035, E1011210, null, 2025-11-21, 371, A, CUSTOMER)."
+          }
+        ]
+      }
+    }
+  },
+  "jsfSeedSecondSchema": {
+    "schema": "jsf_seed",
+    "rowCounts": {
+      "employee": 215,
+      "vehicle": 120,
+      "assignment": 111,
+      "car_request": 82,
+      "car_return": 31,
+      "mileage_claim": 699
+    }
+  },
+  "globalEmployeeMerge": {
+    "table": "global_merge.global_employee",
+    "amountMapping": {
+      "idms_naive.employee": "monthly contribution",
+      "jsf_seed.employee": "sum of seeded APPROVED mileage_claim.amount"
+    },
+    "insertedBySource": {
+      "idms": 215,
+      "jsf": 200
+    },
+    "rejectedRows": 15,
+    "rejectedByTableConstraint": {
+      "global_employee.global_employee_pkey": {
+        "count": 15,
+        "sampleRows": [
+          {
+            "source": "jsf_seed.employee",
+            "table": "global_employee",
+            "constraint": "global_employee_pkey",
+            "row": {
+              "employee_no": "E1009100",
+              "name": "Priya Raman",
+              "grade": 7,
+              "cost_center": "E-210",
+              "site": "Hamburg",
+              "amount": "0"
+            },
+            "error": "duplicate key value violates unique constraint \"global_employee_pkey\"\nDETAIL:  Key (employee_no)=(E1009100) already exists."
+          },
+          {
+            "source": "jsf_seed.employee",
+            "table": "global_employee",
+            "constraint": "global_employee_pkey",
+            "row": {
+              "employee_no": "E1009103",
+              "name": "Marco Bellini",
+              "grade": 9,
+              "cost_center": "V-300",
+              "site": "Wolfsburg",
+              "amount": "0"
+            },
+            "error": "duplicate key value violates unique constraint \"global_employee_pkey\"\nDETAIL:  Key (employee_no)=(E1009103) already exists."
+          },
+          {
+            "source": "jsf_seed.employee",
+            "table": "global_employee",
+            "constraint": "global_employee_pkey",
+            "row": {
+              "employee_no": "E1009106",
+              "name": "Elena Petrova",
+              "grade": 8,
+              "cost_center": "IT-500",
+              "site": "Ingolstadt",
+              "amount": "0"
+            },
+            "error": "duplicate key value violates unique constraint \"global_employee_pkey\"\nDETAIL:  Key (employee_no)=(E1009106) already exists."
+          },
+          {
+            "source": "jsf_seed.employee",
+            "table": "global_employee",
+            "constraint": "global_employee_pkey",
+            "row": {
+              "employee_no": "E1009109",
+              "name": "Tomasz Nowak",
+              "grade": 10,
+              "cost_center": "IT-500",
+              "site": "Stuttgart",
+              "amount": "0"
+            },
+            "error": "duplicate key value violates unique constraint \"global_employee_pkey\"\nDETAIL:  Key (employee_no)=(E1009109) already exists."
+          },
+          {
+            "source": "jsf_seed.employee",
+            "table": "global_employee",
+            "constraint": "global_employee_pkey",
+            "row": {
+              "employee_no": "E1009112",
+              "name": "Ines Duarte",
+              "grade": 10,
+              "cost_center": "LG-800",
+              "site": "Koeln",
+              "amount": "0"
+            },
+            "error": "duplicate key value violates unique constraint \"global_employee_pkey\"\nDETAIL:  Key (employee_no)=(E1009112) already exists."
+          }
+        ]
+      }
+    },
+    "finalRows": 415
+  },
+  "businessQueries": {
+    "currentCarPerEmployee": {
+      "sql": "Current open assignment per employee, joined to its vehicle plate.",
+      "rowCount": 81,
+      "sampleRows": [
+        {
+          "empid": "E1010230",
+          "forename": "GRACE",
+          "surname": "BROWN",
+          "plate": "CV69 JDE",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010244",
+          "forename": "HARRY",
+          "surname": "WILSON",
+          "plate": "YA69 NSE",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010265",
+          "forename": "CALLUM",
+          "surname": "LEWIS",
+          "plate": "LN69 YBW",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010279",
+          "forename": "CALLUM",
+          "surname": "MORRIS",
+          "plate": "CV23 CWB",
+          "start_date": "2023-02-12"
+        },
+        {
+          "empid": "E1010286",
+          "forename": "ALFIE",
+          "surname": "HARRIS",
+          "plate": "BV69 VBD",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010293",
+          "forename": "SOPHIE",
+          "surname": "TURNER",
+          "plate": "BD69 KHE",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010300",
+          "forename": "THOMAS",
+          "surname": "KHAN",
+          "plate": "SA72 BDB",
+          "start_date": "2022-03-03"
+        },
+        {
+          "empid": "E1010321",
+          "forename": "LUCY",
+          "surname": "WILSON",
+          "plate": "LA69 AUH",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010328",
+          "forename": "DANIEL",
+          "surname": "MARTIN",
+          "plate": "LN23 ONU",
+          "start_date": "2023-11-26"
+        },
+        {
+          "empid": "E1010370",
+          "forename": "JOSHUA",
+          "surname": "EVANS",
+          "plate": "MA69 EOE",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010377",
+          "forename": "LILY",
+          "surname": "HARRISON",
+          "plate": "OU69 PKH",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010384",
+          "forename": "OLIVER",
+          "surname": "WALKER",
+          "plate": "BD26 FVG",
+          "start_date": "2026-07-02"
+        },
+        {
+          "empid": "E1010398",
+          "forename": "MIA",
+          "surname": "KHAN",
+          "plate": "LB70 BYG",
+          "start_date": "2020-08-27"
+        },
+        {
+          "empid": "E1010405",
+          "forename": "ALFIE",
+          "surname": "PATEL",
+          "plate": "YA69 LWX",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010433",
+          "forename": "ELLA",
+          "surname": "JOHNSON",
+          "plate": "MC69 FWR",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010461",
+          "forename": "AVA",
+          "surname": "KING",
+          "plate": "BD70 YYN",
+          "start_date": "2020-02-12"
+        },
+        {
+          "empid": "E1010496",
+          "forename": "MEGAN",
+          "surname": "CLARKE",
+          "plate": "LB74 UJB",
+          "start_date": "2024-07-28"
+        },
+        {
+          "empid": "E1010524",
+          "forename": "AMELIA",
+          "surname": "WRIGHT",
+          "plate": "LN72 SJH",
+          "start_date": "2022-04-25"
+        },
+        {
+          "empid": "E1010531",
+          "forename": "LUCY",
+          "surname": "JONES",
+          "plate": "BD69 WLJ",
+          "start_date": "2019-09-01"
+        },
+        {
+          "empid": "E1010538",
+          "forename": "AMELIA",
+          "surname": "WILSON",
+          "plate": "YB69 AKJ",
+          "start_date": "2019-09-01"
+        }
+      ]
+    },
+    "approvedMileage202609": {
+      "sql": "Approved claims dated inside benefit_period 202609; reimbursement rounded per claim.",
+      "naiveLoad": {
+        "approvedClaims": 37,
+        "approvedMiles": 11280,
+        "reimbursement": "5019.67"
+      },
+      "holdoutHP202609BENOUT": {
+        "records": 111,
+        "approvedMiles": 34306,
+        "reimbursement": "15266.40",
+        "taxableBenefit": "23982.38"
+      },
+      "differenceNaiveMinusHoldout": {
+        "approvedMiles": -23026,
+        "reimbursement": "-10246.73"
+      }
+    }
+  }
+}

@@ -1,0 +1,356 @@
+{
+  "context": "mileage",
+  "casesInCorpus": 6,
+  "casesRun": 6,
+  "identical": 6,
+  "different": 0,
+  "status": "identical",
+  "cases": [
+    {
+      "id": "mileage-open",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=3E8CAA1178E7E4CE8071F3F18C7372C6\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml;jsessionid=3E8CAA1178E7E4CE8071F3F18C7372C6\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7585149296757351545:-4794593730379485890\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Reisekosten (Dienstreise-km)",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 220
+      }
+    },
+    {
+      "id": "mileage-find-unknown",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter nicht gefunden. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E9999999\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7585149296757351545:-5784687914577384991\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Reisekosten (Dienstreise-km)",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Mitarbeiter nicht gefunden."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "E9999999"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 220
+      }
+    },
+    {
+      "id": "mileage-find-employee",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E1009100\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /> Priya Raman</p>\n                <p><label>Datum</label><input type=\"text\" name=\"j_idt14:j_idt22\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometer</label><input type=\"text\" name=\"j_idt14:j_idt24\" size=\"6\" /><input type=\"submit\" name=\"j_idt14:j_idt25\" value=\"Berechnen\" /></p>\n                <p><label>Anlass</label><input type=\"text\" name=\"j_idt14:j_idt28\" size=\"40\" /></p><input type=\"submit\" name=\"j_idt14:j_idt30\" value=\"Einreichen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7585149296757351545:-1366453694057928019\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Reisekosten (Dienstreise-km)",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "E1009100"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "text",
+              "value": "<recording-day>"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Berechnen"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Einreichen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 218
+      }
+    },
+    {
+      "id": "mileage-calculate",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E1009100\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /> Priya Raman</p>\n                <p><label>Datum</label><input type=\"text\" name=\"j_idt14:j_idt22\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometer</label><input type=\"text\" name=\"j_idt14:j_idt24\" value=\"17\" size=\"6\" /><input type=\"submit\" name=\"j_idt14:j_idt25\" value=\"Berechnen\" /> = 5.18 EUR (0.305 EUR/km)</p>\n                <p><label>Anlass</label><input type=\"text\" name=\"j_idt14:j_idt28\" value=\"Kundenbesuch\" size=\"40\" /></p><input type=\"submit\" name=\"j_idt14:j_idt30\" value=\"Einreichen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7585149296757351545:947834219887271352\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Reisekosten (Dienstreise-km)",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "E1009100"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "text",
+              "value": "<recording-day>"
+            },
+            {
+              "type": "text",
+              "value": "17"
+            },
+            {
+              "type": "submit",
+              "value": "Berechnen"
+            },
+            {
+              "type": "text",
+              "value": "Kundenbesuch"
+            },
+            {
+              "type": "submit",
+              "value": "Einreichen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 199
+      }
+    },
+    {
+      "id": "mileage-submit-invalid",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter und Kilometer angeben. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E1009100\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /> Priya Raman</p>\n                <p><label>Datum</label><input type=\"text\" name=\"j_idt14:j_idt22\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometer</label><input type=\"text\" name=\"j_idt14:j_idt24\" value=\"0\" size=\"6\" /><input type=\"submit\" name=\"j_idt14:j_idt25\" value=\"Berechnen\" /> = 5.18 EUR (0.305 EUR/km)</p>\n                <p><label>Anlass</label><input type=\"text\" name=\"j_idt14:j_idt28\" value=\"ungueltig\" size=\"40\" /></p><input type=\"submit\" name=\"j_idt14:j_idt30\" value=\"Einreichen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7585149296757351545:-7159790888801996165\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Reisekosten (Dienstreise-km)",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Mitarbeiter und Kilometer angeben."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "E1009100"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "text",
+              "value": "<recording-day>"
+            },
+            {
+              "type": "text",
+              "value": "0"
+            },
+            {
+              "type": "submit",
+              "value": "Berechnen"
+            },
+            {
+              "type": "text",
+              "value": "ungueltig"
+            },
+            {
+              "type": "submit",
+              "value": "Einreichen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 209
+      }
+    },
+    {
+      "id": "mileage-submit",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1><ul class=\"msgs\"><li class=\"info\">\tReisekostenabrechnung erfasst: 7.62 EUR </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E1009100\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /> Priya Raman</p>\n                <p><label>Datum</label><input type=\"text\" name=\"j_idt14:j_idt22\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometer</label><input type=\"text\" name=\"j_idt14:j_idt24\" size=\"6\" /><input type=\"submit\" name=\"j_idt14:j_idt25\" value=\"Berechnen\" /></p>\n                <p><label>Anlass</label><input type=\"text\" name=\"j_idt14:j_idt28\" size=\"40\" /></p><input type=\"submit\" name=\"j_idt14:j_idt30\" value=\"Einreichen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7585149296757351545:-7332386969368471907\" autocomplete=\"off\" />\n</form><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Datum</th>\n<th scope=\"col\">km</th>\n<th scope=\"col\">Anlass</th>\n<th scope=\"col\">Betrag EUR</th>\n<th scope=\"col\">Status</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>27.10.2026</td>\n<td>25</td>\n<td>Kundenbesuch</td>\n<td>7.62</td>\n<td>SUBMITTED</td>\n</tr>\n</tbody>\n</table>\n\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Reisekosten (Dienstreise-km)",
+          "messages": [
+            {
+              "class": [
+                "info"
+              ],
+              "text": "Reisekostenabrechnung erfasst: 7.62 EUR"
+            }
+          ],
+          "tables": [
+            [
+              [
+                "Datum",
+                "km",
+                "Anlass",
+                "Betrag EUR",
+                "Status"
+              ],
+              [
+                "<recording-day>",
+                "25",
+                "Kundenbesuch",
+                "7.62",
+                "SUBMITTED"
+              ]
+            ]
+          ],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "j_idt14"
+            },
+            {
+              "type": "text",
+              "value": "E1009100"
+            },
+            {
+              "type": "submit",
+              "value": "Suchen"
+            },
+            {
+              "type": "text",
+              "value": "<recording-day>"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Berechnen"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Einreichen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 251
+      }
+    }
+  ]
+}

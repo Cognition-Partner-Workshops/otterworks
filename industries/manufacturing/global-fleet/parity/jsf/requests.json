@@ -1,0 +1,51 @@
+{
+  "base": "https://t-gf-before.demo.otterworks.app",
+  "cases": [
+    {"id": "employees-no-query", "context": "employees", "method": "GET", "path": "/employees.xhtml"},
+    {"id": "employees-name", "context": "employees", "method": "GET", "path": "/employees.xhtml?q=Priya"},
+    {"id": "employees-id", "context": "employees", "method": "GET", "path": "/employees.xhtml?q=E1009100"},
+    {"id": "employees-no-match", "context": "employees", "method": "GET", "path": "/employees.xhtml?q=No+Such+Employee"},
+
+    {"id": "assignment-with-car", "context": "assignment", "method": "GET", "path": "/assignment.xhtml?employee=E1009106"},
+    {"id": "assignment-without-car", "context": "assignment", "method": "GET", "path": "/assignment.xhtml?employee=E1009100"},
+    {"id": "assignment-unknown", "context": "assignment", "method": "GET", "path": "/assignment.xhtml?employee=E9999999"},
+    {"id": "assignment-no-employee", "context": "assignment", "method": "GET", "path": "/assignment.xhtml"},
+
+    {"id": "request-open", "context": "request", "method": "GET", "path": "/request.xhtml"},
+    {"id": "request-unknown-employee", "context": "request", "method": "POST", "path": "/request.xhtml", "form": {"submit": "Weiter", "fields": {"text:0": "E9999999"}}},
+    {"id": "request-below-grade", "context": "request", "method": "POST", "path": "/request.xhtml", "form": {"submit": "Weiter", "fields": {"text:0": "E2040110"}}},
+    {"id": "request-already-has-car", "context": "request", "method": "POST", "path": "/request.xhtml", "form": {"submit": "Weiter", "fields": {"text:0": "E1009106"}}},
+    {"id": "request-eligible-employee", "context": "request", "method": "POST", "path": "/request.xhtml", "form": {"submit": "Weiter", "fields": {"text:0": "E1009100"}}},
+    {"id": "request-pool-no-selection", "context": "request", "method": "POST", "path": "/request.xhtml", "form": {"submit": "Weiter", "fields": {"radio:0": "pool"}}},
+    {"id": "request-back", "context": "request", "method": "POST", "path": "/request.xhtml", "form": {"submit": "Zurueck"}},
+    {"id": "request-reselect-employee", "context": "request", "method": "POST", "path": "/request.xhtml", "form": {"submit": "Weiter", "fields": {"text:0": "E1009100"}}},
+    {"id": "request-pool-select", "context": "request", "method": "POST", "path": "/request.xhtml", "form": {"submit": "Weiter", "fields": {"radio:0": "pool", "select:0": "1"}}},
+    {"id": "request-step-three-submit", "context": "request", "method": "POST", "path": "/request.xhtml", "form": {"submit": "Antrag abschliessen", "fields": {"text:0": "27.10.2026"}}},
+    {"id": "request-redirect-assignment", "context": "request", "method": "GET", "followPreviousLocation": true},
+
+    {"id": "mileage-open", "context": "mileage", "method": "GET", "path": "/mileage.xhtml"},
+    {"id": "mileage-find-unknown", "context": "mileage", "method": "POST", "path": "/mileage.xhtml", "form": {"submit": "Suchen", "fields": {"text:0": "E9999999"}}},
+    {"id": "mileage-find-employee", "context": "mileage", "method": "POST", "path": "/mileage.xhtml", "form": {"submit": "Suchen", "fields": {"text:0": "E1009100"}}},
+    {"id": "mileage-calculate", "context": "mileage", "method": "POST", "path": "/mileage.xhtml", "form": {"submit": "Berechnen", "fields": {"text:1": "27.10.2026", "text:2": "17", "text:3": "Kundenbesuch"}}},
+    {"id": "mileage-submit-invalid", "context": "mileage", "method": "POST", "path": "/mileage.xhtml", "form": {"submit": "Einreichen", "fields": {"text:1": "27.10.2026", "text:2": "0", "text:3": "ungueltig"}}},
+    {"id": "mileage-submit", "context": "mileage", "method": "POST", "path": "/mileage.xhtml", "form": {"submit": "Einreichen", "fields": {"text:1": "27.10.2026", "text:2": "25", "text:3": "Kundenbesuch"}}},
+
+    {"id": "statement-2026-08", "context": "statement", "method": "GET", "path": "/statement.xhtml?employee=E1009100&period=2026-08"},
+    {"id": "statement-2026-09", "context": "statement", "method": "GET", "path": "/statement.xhtml?employee=E1009100&period=2026-09"},
+    {"id": "statement-2026-10-new-car", "context": "statement", "method": "GET", "path": "/statement.xhtml?employee=E1009100&period=2026-10"},
+    {"id": "statement-unknown-employee", "context": "statement", "method": "GET", "path": "/statement.xhtml?employee=E9999999&period=2026-10"},
+    {"id": "statement-no-parameters", "context": "statement", "method": "GET", "path": "/statement.xhtml"},
+    {"id": "statement-default-period", "context": "statement", "method": "GET", "path": "/statement.xhtml?employee=E1009100", "normalizeDefaultPeriod": true},
+
+    {"id": "return-open", "context": "return", "method": "GET", "path": "/return.xhtml"},
+    {"id": "return-unknown-plate", "context": "return", "method": "POST", "path": "/return.xhtml", "form": {"submit": "Suchen", "fields": {"text:0": "ZZ-UNKNOWN"}}},
+    {"id": "return-unassigned-pool-car", "context": "return", "method": "POST", "path": "/return.xhtml", "form": {"submit": "Suchen", "fields": {"text:0": "HH-VS 7629"}}},
+    {"id": "return-found-assigned-car", "context": "return", "method": "POST", "path": "/return.xhtml", "form": {"submit": "Suchen", "fields": {"text:0": "K-XE 9032"}}},
+    {"id": "return-date-before-start", "context": "return", "method": "POST", "path": "/return.xhtml", "form": {"submit": "Rueckgabe buchen", "fields": {"text:1": "01.01.2019", "text:2": "40000", "text:3": "Pruefung"}}},
+    {"id": "return-submit", "context": "return", "method": "POST", "path": "/return.xhtml", "form": {"submit": "Rueckgabe buchen", "fields": {"text:1": "27.10.2026", "text:2": "43210", "text:3": "Pruefung"}}},
+
+    {"id": "health", "context": "static", "method": "GET", "path": "/health"},
+    {"id": "unmapped-404", "context": "static", "method": "GET", "path": "/not-mapped.xhtml"},
+    {"id": "jsf-css-resource", "context": "static", "method": "GET", "path": "/javax.faces.resource/css/portal.css.xhtml"}
+  ]
+}

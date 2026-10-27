@@ -1,0 +1,73 @@
+{
+  "context": "static",
+  "casesInCorpus": 3,
+  "casesRun": 3,
+  "identical": 3,
+  "different": 0,
+  "status": "identical",
+  "cases": [
+    {
+      "id": "health",
+      "status": 200,
+      "mediaType": "text/plain",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/plain",
+        "location": null,
+        "body": "ok",
+        "observed": {
+          "h1": "",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": []
+        },
+        "elapsedMs": 180
+      }
+    },
+    {
+      "id": "unmapped-404",
+      "status": 404,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 404,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!doctype html><html lang=\"en\"><head><title>HTTP Status 404 – Not Found</title><style type=\"text/css\">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 404 – Not Found</h1><hr class=\"line\" /><p><b>Type</b> Status Report</p><p><b>Message</b> &#47;not-mapped.xhtml Not Found in ExternalContext as a Resource</p><p><b>Description</b> The origin server did not find a current representation for the target resource or is not willing to disclose that one exists.</p><hr class=\"line\" /><h3>Apache Tomcat/9.0.123</h3></body></html>",
+        "observed": {
+          "h1": "HTTP Status 404 – Not Found",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": []
+        },
+        "elapsedMs": 181
+      }
+    },
+    {
+      "id": "jsf-css-resource",
+      "status": 200,
+      "mediaType": "text/css",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/css",
+        "location": null,
+        "body": "body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #f3f4f6; color: #1f2933; font-size: 14px; }\n.top { background: #22374f; color: #fff; padding: 10px 18px; }\n.top a { color: #cfe1f5; margin-left: 18px; text-decoration: none; }\n.top .brand { font-weight: bold; font-size: 16px; }\n.main { padding: 16px 22px; }\nh1 { font-size: 20px; margin: 4px 0 14px; }\ntable.grid { border-collapse: collapse; background: #fff; min-width: 640px; }\ntable.grid th { background: #dde5ee; text-align: left; padding: 5px 9px; }\ntable.grid td { border-top: 1px solid #e3e7eb; padding: 5px 9px; }\n.panel { background: #fff; padding: 12px 16px; border: 1px solid #d6dbe1; margin-bottom: 14px; max-width: 760px; }\n.msgs { list-style: none; padding: 0; }\n.err { color: #a61b1b; }\n.info { color: #1b6a2b; }\n.steps span { margin-right: 14px; color: #7b8794; }\n.steps span.on { color: #22374f; font-weight: bold; }\nlabel { display: inline-block; min-width: 150px; }\n",
+        "observed": {
+          "h1": "",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": []
+        },
+        "elapsedMs": 204
+      }
+    }
+  ]
+}
