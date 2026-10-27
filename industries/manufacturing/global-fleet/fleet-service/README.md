@@ -18,3 +18,9 @@ profile-specific target directories.
 
 Rule coverage example:
 `python3 ../scripts/rule_coverage.py --junit uk=target/surefire-reports-uk --junit de=target/surefire-reports-de --vitest ../frontend/fleet/reports/vitest-junit.xml`.
+
+The frontend at `../frontend/fleet` has one route folder per context under
+`src/routes/<context>/`. Its handwritten `src/api/client.ts` mirrors the API
+contract in `/v3/api-docs`. From `frontend/fleet`, run
+`npm ci && npm run build && npm test`; Vitest writes
+`reports/vitest-junit.xml`, which feeds the rule coverage script.

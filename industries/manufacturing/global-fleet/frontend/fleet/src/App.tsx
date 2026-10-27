@@ -1,4 +1,4 @@
-import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, NavLink, Route, Routes } from 'react-router'
 import Assignment from './routes/assignment'
 import Benefit from './routes/benefit'
 import Eligibility from './routes/eligibility'
