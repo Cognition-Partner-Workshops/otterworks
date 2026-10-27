@@ -1,0 +1,147 @@
+{
+  "version": "custbill-units-1",
+  "rerun_posture": "first_run_baseline",
+  "source": "source-access=fixture-run: make legacy-etl-gen-data NS=mig1 then make legacy-etl-run JOB=run_all (scripts/tp-run-deterministic.sh, isolated OTTERWORKS_LEGACY_ROOT); legacy outputs loaded into ow_billing_migration.recon.legacy_* with ns='mig1'",
+  "objects": [
+    {
+      "object": "silver.custbill_records",
+      "root_table": "recon.legacy_custbill_records",
+      "root_where": "ns = '${ns}'",
+      "key": {
+        "source": [
+          "file_name",
+          "line_no"
+        ],
+        "target": [
+          "file_name",
+          "line_no"
+        ]
+      },
+      "fields": [
+        {
+          "source": "file_name",
+          "target": "file_name",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "INFERRED",
+          "cite": "legacy .psv name = .dat basename with .psv suffix; loader maps it back to the .dat name"
+        },
+        {
+          "source": "line_no",
+          "target": "line_no",
+          "source_type": "bigint",
+          "target_type": "bigint",
+          "class": "INFERRED",
+          "cite": "body line k of the .psv = raw line k+1 of the .dat (one HDR first)"
+        },
+        {
+          "source": "cust_no",
+          "target": "cust_no",
+          "source_type": "VARCHAR2(20)",
+          "target_type": "string",
+          "class": "FACT",
+          "cite": "cut -c1-10, trailing blanks trimmed (parse:53,61)",
+          "rules": [
+            "trim_trailing"
+          ]
+        },
+        {
+          "source": "cust_name",
+          "target": "cust_name",
+          "source_type": "VARCHAR2(200)",
+          "target_type": "string",
+          "class": "FACT",
+          "cite": "cut -c11-40 (extract truncates to 30, ASCII-folds), trailing blanks trimmed (parse:54,61)",
+          "rules": [
+            "trim_trailing"
+          ]
+        },
+        {
+          "source": "period_end",
+          "target": "period_end",
+          "source_type": "DATE",
+          "target_type": "date",
+          "class": "FACT",
+          "cite": "cols 41-48 YYYYMMDD; legacy reformats to YYYY-MM-DD with no validity check (parse:65); extract TO_DATE(invoice_dt,'DD-MON-RR') has no time part",
+          "rules": [
+            "date_yyyymmdd"
+          ],
+          "evidence": [
+            "census_midnight_only"
+          ]
+        },
+        {
+          "source": "amount",
+          "target": "amount",
+          "source_type": "NUMBER(14,2)",
+          "target_type": "decimal(14,2)",
+          "class": "FACT",
+          "cite": "12-digit implied cents cols 49-60 / 100 (parse:63); absolute value, sign carried by rec_type; invoice_header.total_amt NUMBER(14,2)",
+          "rules": [
+            "decimal_exact"
+          ]
+        },
+        {
+          "source": "currency",
+          "target": "currency",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "FACT",
+          "cite": "cols 61-63, trailing blanks trimmed (parse:57,61); extract hardcodes USD, fixture emits USD|EUR|GBP",
+          "rules": [
+            "trim_trailing"
+          ]
+        },
+        {
+          "source": "rec_type",
+          "target": "rec_type",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "FACT",
+          "cite": "cols 64-65; '01' invoice, '02' credit (extract CASE total_amt < 0)"
+        }
+      ]
+    },
+    {
+      "object": "silver.custbill_quarantine",
+      "root_table": "recon.legacy_custbill_rejected_lines",
+      "root_where": "ns = '${ns}'",
+      "key": {
+        "source": [
+          "file_name",
+          "line_no"
+        ],
+        "target": [
+          "file_name",
+          "line_no"
+        ]
+      },
+      "fields": [
+        {
+          "source": "file_name",
+          "target": "file_name",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "INFERRED",
+          "cite": "legacy has no reject path (malformed lines pass through, parse:59-66); legacy side is empty, quarantine-zero"
+        },
+        {
+          "source": "line_no",
+          "target": "line_no",
+          "source_type": "bigint",
+          "target_type": "bigint",
+          "class": "INFERRED",
+          "cite": "legacy has no reject path (malformed lines pass through, parse:59-66); legacy side is empty, quarantine-zero"
+        },
+        {
+          "source": "raw_line",
+          "target": "raw_line",
+          "source_type": "string",
+          "target_type": "string",
+          "class": "INFERRED",
+          "cite": "legacy has no reject path (malformed lines pass through, parse:59-66); legacy side is empty, quarantine-zero"
+        }
+      ]
+    }
+  ]
+}

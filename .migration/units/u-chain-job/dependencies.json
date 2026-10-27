@@ -1,0 +1,18 @@
+{
+  "routines": [
+    {
+      "routine": "custbill.run_all",
+      "reads": [
+        "recon.legacy_finance_report"
+      ],
+      "writes": [],
+      "calls": [],
+      "orchestrates": [
+        "custbill.sftp_ingest_poll",
+        "custbill.parse_custbill_fixedwidth",
+        "custbill.finance_excel_report"
+      ],
+      "source": "etl/legacy-extra/run_all.sh:17-25; etl/legacy-extra/crontab:20-32"
+    }
+  ]
+}
