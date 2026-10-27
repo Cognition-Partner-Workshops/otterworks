@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { csrfRejection } from "@/lib/csrf";
 
 // NOTE: Next.js middleware runs on the Edge runtime, so it cannot use
 // node:crypto. We re-verify the HMAC session token with Web Crypto here. This
@@ -70,6 +71,16 @@ function isPublicPath(pathname: string): boolean {
 
 export async function middleware(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl;
+
+  // Every state-changing API call, login included, must originate from the
+  // dashboard itself: a valid cookie alone is not proof the user meant it.
+  if (pathname.startsWith("/api/")) {
+    const rejected = csrfRejection(req);
+    if (rejected) {
+      return NextResponse.json({ error: rejected.message }, { status: rejected.status });
+    }
+  }
+
   if (isPublicPath(pathname)) return NextResponse.next();
 
   const secret = process.env.SESSION_SECRET;

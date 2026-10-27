@@ -12,6 +12,13 @@ The dashboard is a **Next.js** app (server + UI in one deployable) in namespace
 - `POST /api/auth/logout` → clears cookie.
 - **Every** other `/api/*` handler calls `requireSession()` first (401 if missing/invalid).
   A Next.js `middleware.ts` also gates all non-login routes.
+- **Same-origin only for writes.** Tenant hosts share the registrable domain with
+  `ops.otterworks.app`, so `SameSite=Strict` alone does not stop a tenant page from forging a
+  request. Every non-GET `/api/*` call (login included) is refused with 403 unless
+  `Sec-Fetch-Site`/`Origin`/`Referer` name the dashboard's own host (a client sending none of
+  them, e.g. `tenant.sh`, is not a browser and passes), and with 415 unless
+  `Content-Type: application/json` (`lib/csrf.ts`, enforced in both the middleware and
+  `withSession`).
 
 ## Tenants
 - `GET /api/tenants` → `Tenant[]` — control-table items **joined with live cluster state**
