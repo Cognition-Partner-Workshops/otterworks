@@ -1,0 +1,30 @@
+<ui:composition template="/WEB-INF/templates/layout.xhtml" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <ui:define name="title">Mitarbeitersuche</ui:define>
+    <ui:define name="content">
+        <f:metadata>
+            <f:viewParam name="q" value="#{lookup.term}"/>
+            <f:viewAction action="#{lookup.load}"/>
+        </f:metadata>
+        <form method="get" action="employees.xhtml" class="panel">
+            <label for="q">Name oder Personalnummer</label>
+            <input type="text" id="q" name="q" value="#{lookup.term}"/>
+            <button type="submit">Suchen</button>
+        </form>
+        <h:dataTable value="#{lookup.rows}" var="r" styleClass="grid">
+            <h:column><f:facet name="header">Personalnr.</f:facet>#{r.employee.employeeNo}</h:column>
+            <h:column><f:facet name="header">Name</f:facet>#{r.employee.lastName}, #{r.employee.firstName}</h:column>
+            <h:column><f:facet name="header">EG</f:facet>#{r.employee.grade}</h:column>
+            <h:column><f:facet name="header">Kostenstelle</f:facet>#{r.employee.costCenter}</h:column>
+            <h:column><f:facet name="header">Standort</f:facet>#{r.employee.site}</h:column>
+            <h:column><f:facet name="header">Status</f:facet>#{r.employee.status}</h:column>
+            <h:column><f:facet name="header">Dienstwagen</f:facet>#{r.plate}</h:column>
+            <h:column>
+                <h:link outcome="assignment" value="Zuordnung"><f:param name="employee" value="#{r.employee.employeeNo}"/></h:link>
+                &#160;
+                <h:link outcome="statement" value="Abrechnung"><f:param name="employee" value="#{r.employee.employeeNo}"/></h:link>
+            </h:column>
+        </h:dataTable>
+    </ui:define>
+</ui:composition>

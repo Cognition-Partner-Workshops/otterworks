@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.1">
+  <persistence-unit name="fleet" transaction-type="RESOURCE_LOCAL">
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+    <class>com.otterworks.fleet.portal.model.Employee</class>
+    <class>com.otterworks.fleet.portal.model.Vehicle</class>
+    <class>com.otterworks.fleet.portal.model.Assignment</class>
+    <class>com.otterworks.fleet.portal.model.CarRequest</class>
+    <class>com.otterworks.fleet.portal.model.CarReturn</class>
+    <class>com.otterworks.fleet.portal.model.MileageClaim</class>
+    <class>com.otterworks.fleet.portal.model.FleetRule</class>
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <properties>
+      <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+      <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
+      <property name="hibernate.hbm2ddl.auto" value="validate"/>
+      <property name="hibernate.connection.pool_size" value="5"/>
+    </properties>
+  </persistence-unit>
+</persistence>

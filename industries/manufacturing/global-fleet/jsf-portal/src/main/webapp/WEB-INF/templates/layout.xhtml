@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <meta charset="UTF-8"/>
+    <title>Dienstwagenportal - <ui:insert name="title"/></title>
+    <h:outputStylesheet name="css/portal.css"/>
+</h:head>
+<h:body>
+    <div class="top">
+        <span class="brand">Dienstwagenportal</span>
+        <a href="employees.xhtml">Mitarbeitersuche</a>
+        <a href="request.xhtml">Dienstwagenantrag</a>
+        <a href="mileage.xhtml">Reisekosten</a>
+        <a href="return.xhtml">Fahrzeugrueckgabe</a>
+    </div>
+    <div class="main">
+        <h1><ui:insert name="title"/></h1>
+        <h:messages styleClass="msgs" errorClass="err" infoClass="info"/>
+        <ui:insert name="content"/>
+    </div>
+</h:body>
+</html>

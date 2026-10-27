@@ -1,0 +1,7 @@
+project_id      = "your-existing-project"
+region          = "europe-west3"
+run_token       = "gf-r1027a-after"
+expires_at      = "2026-10-30"
+create_registry = true
+# First 12 characters of the commit the gf-fleet-container workflow pushed.
+image_tag = "0123456789ab"

@@ -1,0 +1,77 @@
+*-----------------------------------------------------------------------
+ADD PROCESS FLEASGN-PREMAP VERSION 1
+    MODULE SOURCE FOLLOWS
+    MOVE SPACES TO WK-MSG.
+    IF WK-EMPID EQ SPACES
+        DO.
+        MOVE 'ENTER EMPLOYEE AND VEHICLE' TO WK-MSG.
+        DISPLAY.
+        END.
+    MOVE WK-EMPID TO EM-EMPID.
+    OBTAIN CALC EMPLOYEE.
+    IF DB-REC-NOT-FOUND
+        DO.
+        MOVE 'EMPLOYEE NOT ON FILE' TO WK-MSG.
+        MOVE SPACES TO WK-EMPID.
+        DISPLAY.
+        END.
+    WHILE EM-STAT EQ 'T'
+        REPEAT.
+        OBTAIN DUPLICATE EMPLOYEE.
+        IF DB-REC-NOT-FOUND
+            DO.
+            MOVE 'EMPLOYEE HAS LEFT' TO WK-MSG.
+            DISPLAY.
+            END.
+        END.
+    IF EM-GRD LT 07
+        DO.
+        MOVE 'GRADE NOT ELIGIBLE FOR A COMPANY CAR' TO WK-MSG.
+        MOVE SPACES TO WK-EMPID.
+        DISPLAY.
+        END.
+    DISPLAY.
+    MSEND.
+*-----------------------------------------------------------------------
+ADD PROCESS FLEASGN-ENTER VERSION 1
+    MODULE SOURCE FOLLOWS
+    MOVE WK-EMPID TO EM-EMPID.
+    OBTAIN CALC EMPLOYEE.
+    WHILE EM-STAT EQ 'T'
+        REPEAT.
+        OBTAIN DUPLICATE EMPLOYEE.
+        END.
+    MOVE WK-VEHID TO VH-VEHID.
+    OBTAIN CALC VEHICLE.
+    IF DB-REC-NOT-FOUND
+        DO.
+        MOVE 'VEHICLE NOT ON FILE' TO WK-MSG.
+        DISPLAY.
+        END.
+    IF EMP-VEHICLE MEMBER
+        DO.
+        MOVE 'VEHICLE ALREADY HELD' TO WK-MSG.
+        DISPLAY.
+        END.
+    IF AS-RSN EQ SPACES
+        MOVE 'NC' TO AS-RSN.
+    ADD 1 TO WK-NEXT-ASG.
+    MOVE 'A' TO WK-ASGID(1:1).
+    MOVE WK-NEXT-ASG TO WK-ASGID(2:9).
+    MOVE WK-ASGID TO AS-ASGID.
+    MOVE 0 TO AS-END.
+    FIND CURRENT EMPLOYEE.
+    STORE ASSIGNMENT.
+    IF AS-RSN NE 'PL'
+        CONNECT VEHICLE TO EMP-VEHICLE.
+    COMMIT.
+    MOVE 'CAR ASSIGNED' TO WK-MSG.
+    MOVE SPACES TO WK-VEHID.
+    DISPLAY.
+    MSEND.
+*-----------------------------------------------------------------------
+ADD PROCESS FLEASGN-PF3 VERSION 1
+    MODULE SOURCE FOLLOWS
+    MOVE SPACES TO WK-EMPID WK-VEHID.
+    TRANSFER CONTROL TO 'FLEMENU' NOFINISH.
+    MSEND.

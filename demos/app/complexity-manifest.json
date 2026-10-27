@@ -135,6 +135,106 @@
       "expected_sqlstate": null,
       "expected_count": 12,
       "headline": true
+    },
+    {
+      "id": "GF-01",
+      "title": "Current car depends on the sorted EMP-ASSIGN set walk",
+      "surfaces_in_act": "2. Extract the rules",
+      "files": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:116",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:25",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:176"
+      ]
+    },
+    {
+      "id": "GF-02",
+      "title": "Pool vehicles are optional EMP-VEHICLE members with no owner",
+      "surfaces_in_act": "1. Read both estates",
+      "files": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:143",
+        "industries/manufacturing/global-fleet/mainframe/unload/VEHICLE.dat",
+        "industries/manufacturing/global-fleet/seed/jsf/001_schema.sql:36"
+      ]
+    },
+    {
+      "id": "GF-03",
+      "title": "Rehire repeats an EMPLOYEE CALC key in the unload",
+      "surfaces_in_act": "3. Characterize behaviour",
+      "files": [
+        "industries/manufacturing/global-fleet/mainframe/unload/EMPLOYEE.dat#66",
+        "industries/manufacturing/global-fleet/mainframe/unload/EMPLOYEE.dat#180",
+        "industries/manufacturing/global-fleet/mainframe/unload/EMPLOYEE.dat#89",
+        "industries/manufacturing/global-fleet/mainframe/unload/EMPLOYEE.dat#190"
+      ]
+    },
+    {
+      "id": "GF-04",
+      "title": "Batch truncates taxable benefit where the screen rounds",
+      "surfaces_in_act": "6. Verify per country",
+      "files": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:209",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:34",
+        "industries/manufacturing/global-fleet/mainframe/holdout/PAIRS.sha256"
+      ]
+    },
+    {
+      "id": "GF-05",
+      "title": "Grade eligibility checked in the ADS premap only",
+      "surfaces_in_act": "4. Reconcile into one catalog",
+      "files": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:27",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:159"
+      ]
+    },
+    {
+      "id": "GF-06",
+      "title": "FLERETN dialog unreachable from the menu",
+      "surfaces_in_act": "1. Read both estates",
+      "files": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:13",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLERETN.dlg"
+      ]
+    },
+    {
+      "id": "GF-07",
+      "title": "Plate converter normalises input, server lookup is exact",
+      "surfaces_in_act": "5. Build the global app",
+      "files": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/PlateConverter.java:16",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:81",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml:28",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/return.xhtml:11"
+      ]
+    },
+    {
+      "id": "GF-08",
+      "title": "Mileage rounding differs between countries",
+      "surfaces_in_act": "4. Reconcile into one catalog",
+      "files": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:48",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:235",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/service/FleetService.java:160"
+      ]
+    },
+    {
+      "id": "GF-08",
+      "title": "Company-car grade threshold differs between countries",
+      "surfaces_in_act": "4. Reconcile into one catalog",
+      "files": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:27",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:39",
+        "industries/manufacturing/global-fleet/seed/jsf/002_seed.sql:3"
+      ]
+    },
+    {
+      "id": "GF-09",
+      "title": "View-scoped car request wizard loses state on refresh",
+      "surfaces_in_act": "6. Verify per country",
+      "files": [
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/java/com/otterworks/fleet/portal/web/CarRequestWizard.java:15",
+        "industries/manufacturing/global-fleet/jsf-portal/src/main/webapp/request.xhtml"
+      ]
     }
   ]
 }
