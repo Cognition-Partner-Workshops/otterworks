@@ -22,13 +22,11 @@ function errorText(error: unknown): string {
 }
 
 export default function Benefit() {
-  const [searchParams] = useSearchParams()
-  const [view, setView] = useState<View>(() => {
-    const requestedView = searchParams.get('view')
-    return requestedView === 'inquiry' || requestedView === 'statement' || requestedView === 'periods'
-      ? requestedView
-      : 'inquiry'
-  })
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedView = searchParams.get('view')
+  const view: View = requestedView === 'inquiry' || requestedView === 'statement' || requestedView === 'periods'
+    ? requestedView
+    : 'inquiry'
   const [employeeNo, setEmployeeNo] = useState('')
   const [period, setPeriod] = useState(currentPeriod())
   const [inquiry, setInquiry] = useState<BenefitInquiry | null>(null)
@@ -106,9 +104,9 @@ export default function Benefit() {
     <section>
       <h1>Benefit</h1>
       <nav aria-label="Benefit functions">
-        <button type="button" onClick={() => setView('inquiry')}>Inquiry</button>
-        <button type="button" onClick={() => setView('statement')}>Statement</button>
-        <button type="button" onClick={() => setView('periods')}>Periods</button>
+        <button type="button" onClick={() => setSearchParams({ view: 'inquiry' })}>Inquiry</button>
+        <button type="button" onClick={() => setSearchParams({ view: 'statement' })}>Statement</button>
+        <button type="button" onClick={() => setSearchParams({ view: 'periods' })}>Periods</button>
       </nav>
       {error && <p role="alert">{error}</p>}
 
