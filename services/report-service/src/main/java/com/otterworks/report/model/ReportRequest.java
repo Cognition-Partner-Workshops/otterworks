@@ -9,7 +9,8 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Request DTO for creating a new report.
+ * Request DTO for creating a new report. The requester is never taken from the
+ * body: it is the authenticated caller identity forwarded by the API gateway.
  *
  * LEGACY PATTERNS:
  * - javax.validation.* annotations (target: jakarta.validation.*)
@@ -31,10 +32,6 @@ public class ReportRequest {
     @NotNull(message = "Report type is required")
     @ApiModelProperty(value = "Output format", required = true, example = "PDF")
     private ReportType reportType;
-
-    @NotBlank(message = "Requester ID is required")
-    @ApiModelProperty(value = "User ID requesting the report", required = true)
-    private String requestedBy;
 
     // LEGACY: java.util.Date
     @ApiModelProperty(value = "Start of reporting period")
@@ -72,14 +69,6 @@ public class ReportRequest {
 
     public void setReportType(ReportType reportType) {
         this.reportType = reportType;
-    }
-
-    public String getRequestedBy() {
-        return requestedBy;
-    }
-
-    public void setRequestedBy(String requestedBy) {
-        this.requestedBy = requestedBy;
     }
 
     public Date getDateFrom() {
