@@ -1,0 +1,16 @@
+fleet:
+  country:
+    source-app: gf-mainframe-idms
+    currency: GBP
+    distance-unit: mile
+    min-grade: 7
+    benefit-percent-source: vehicle
+    commute-percent-per-unit: "0"
+    employee-contribution: employee
+    benefit-rounding: DOWN
+    mileage-rate: "0.445"
+    mileage-rounding: HALF_UP
+    claim-lookback-months: 3
+    max-claim-distance: 1500
+    claim-history-months: 6
+    payroll-file: true

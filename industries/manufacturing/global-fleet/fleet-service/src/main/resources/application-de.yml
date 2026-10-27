@@ -1,0 +1,17 @@
+fleet:
+  country:
+    source-app: gf-jsf-portal
+    currency: EUR
+    distance-unit: km
+    min-grade: 6
+    benefit-percent-source: profile
+    benefit-percent: "1.00"
+    commute-percent-per-unit: "0.030"
+    employee-contribution: none
+    benefit-rounding: HALF_UP
+    mileage-rate: "0.305"
+    mileage-rounding: HALF_UP
+    claim-lookback-months: 2
+    max-claim-distance: 2500
+    claim-history-months: 6
+    payroll-file: false

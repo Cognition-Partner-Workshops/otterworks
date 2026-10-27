@@ -27,6 +27,8 @@ services/report-service/target/
 services/legacy-portal/target/
 *.class
 *.jar
+!industries/manufacturing/global-fleet/fleet-service/.mvn/wrapper/maven-wrapper.jar
+target*/
 
 # --- Rust ---
 services/file-service/target/
