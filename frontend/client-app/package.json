@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "npx playwright test",
+    "test:e2e:migrated": "playwright test --config playwright.migrated.config.ts",
     "test:e2e:headed": "npx playwright test --headed",
     "test:bdd": "TS_NODE_PROJECT=bdd/tsconfig.bdd.json npx cucumber-js"
   },
