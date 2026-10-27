@@ -66,7 +66,7 @@ export default function Home() {
             </a>
             <a
               href="/register"
-              className="px-8 py-2.5 bg-accent-500 text-white rounded hover:bg-accent-600 transition font-semibold text-sm"
+              className="px-8 py-2.5 bg-accent-700 text-white rounded hover:bg-accent-800 transition font-semibold text-sm"
             >
               Create Account
             </a>
@@ -103,7 +103,7 @@ export default function Home() {
                 {leader.name.split(" ").map((part) => part[0]).join("")}
               </div>
               <h3 className="text-sm font-semibold text-gray-900">{leader.name}</h3>
-              <p className="text-xs uppercase tracking-wider text-accent-600 mb-2">
+              <p className="text-xs uppercase tracking-wider text-accent-700 mb-2">
                 {leader.title}
               </p>
               <p className="text-xs text-gray-500 leading-relaxed">{leader.bio}</p>
@@ -145,7 +145,7 @@ export default function Home() {
         <ul className="max-w-3xl mx-auto divide-y divide-gray-200 bg-white border border-gray-300 rounded">
           {PRESS_RELEASES.map((release) => (
             <li key={release.title} className="px-5 py-3">
-              <p className="text-xs uppercase tracking-wider text-gray-400">
+              <p className="text-xs uppercase tracking-wider text-gray-500">
                 {release.date}
               </p>
               <p className="text-sm font-medium text-gray-900">{release.title}</p>
@@ -181,7 +181,7 @@ export default function Home() {
       </Section>
 
       <div className="bg-white border-t border-gray-300 py-6 text-center">
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-500">
           {COMPANY.name} · Headquartered at {COMPANY.headquarters} · Founded{" "}
           {COMPANY.founded}
         </p>
