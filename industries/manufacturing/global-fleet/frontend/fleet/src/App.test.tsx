@@ -4,8 +4,24 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { EmployeeCarView, EmployeeInquiry, EmployeeSummary, PoolVehicle, ProfileResponse } from './api/client'
 import App, { FleetRoutes } from './App'
 
+const routeRenderState = vi.hoisted(() => ({ returnsThrows: false }))
+
+vi.mock('./routes/returns', async () => {
+  const actual = await vi.importActual<typeof import('./routes/returns')>('./routes/returns')
+  return {
+    default: function MockReturns() {
+      if (routeRenderState.returnsThrows) throw new Error('Test render failure')
+      const ActualReturns = actual.default
+      return <ActualReturns />
+    },
+  }
+})
+
 describe('fleet application', () => {
-  afterEach(() => vi.unstubAllGlobals())
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    routeRenderState.returnsThrows = false
+  })
 
   it('renders the home page and navigation', () => {
     render(<App />)
@@ -180,4 +196,26 @@ describe('fleet application', () => {
       expect(screen.getByRole('heading', { name: 'Global Fleet' })).toBeInTheDocument()
     },
   )
+
+  it('GF32_routeErrorClearsOnNavigation', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <FleetRoutes />
+        </MemoryRouter>,
+      )
+
+      routeRenderState.returnsThrows = true
+      fireEvent.click(screen.getByRole('link', { name: 'Returns' }))
+      expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong')
+
+      routeRenderState.returnsThrows = false
+      fireEvent.click(screen.getByRole('link', { name: 'Home' }))
+      expect(await screen.findByRole('heading', { name: 'Global Fleet' })).toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    } finally {
+      consoleError.mockRestore()
+    }
+  })
 })

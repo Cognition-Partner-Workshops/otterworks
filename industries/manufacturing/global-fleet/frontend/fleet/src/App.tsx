@@ -1,6 +1,6 @@
 import { Component, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { BrowserRouter, NavLink, Route, Routes } from 'react-router'
+import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router'
 import { client, type ProfileResponse } from './api/client'
 import { ErrorAlert, Loading, errorText } from './components/status'
 import Assignment from './routes/assignment'
@@ -57,6 +57,8 @@ function ProfileBanner() {
 }
 
 export function FleetRoutes({ showProfile = false }: { showProfile?: boolean }) {
+  const location = useLocation()
+
   return (
     <>
       {showProfile && <ProfileBanner />}
@@ -66,7 +68,7 @@ export function FleetRoutes({ showProfile = false }: { showProfile?: boolean }) 
           <NavLink key={path} to={path}>{label}</NavLink>
         ))}
       </nav>
-      <RouteErrorBoundary>
+      <RouteErrorBoundary key={location.pathname}>
         <Routes>
           <Route path="/" element={<Home />} />
           {routes.map(({ path, component: RouteComponent }) => (
