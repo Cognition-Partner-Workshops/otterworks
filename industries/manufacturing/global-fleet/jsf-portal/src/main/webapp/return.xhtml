@@ -1,0 +1,23 @@
+<ui:composition template="/WEB-INF/templates/layout.xhtml" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <ui:define name="title">Fahrzeugrueckgabe</ui:define>
+    <ui:define name="content">
+        <f:metadata>
+            <f:viewParam name="plate" value="#{carReturn.plate}"/>
+            <f:viewAction action="#{carReturn.load}"/>
+        </f:metadata>
+        <h:form styleClass="panel">
+            <p><label>Kennzeichen</label><h:inputText value="#{carReturn.plate}"/>
+               <h:commandButton value="Suchen" action="#{carReturn.find}"/></p>
+            <h:panelGroup rendered="#{carReturn.open != null}">
+                <p>#{carReturn.vehicle.label}, zugeordnet an #{carReturn.open.employee.employeeNo} #{carReturn.open.employee.fullName}
+                   seit <h:outputText value="#{carReturn.open.startDate}"><f:convertDateTime pattern="dd.MM.yyyy"/></h:outputText></p>
+                <p><label>Rueckgabedatum</label><h:inputText value="#{carReturn.returnDate}"><f:convertDateTime pattern="dd.MM.yyyy"/></h:inputText></p>
+                <p><label>Kilometerstand</label><h:inputText value="#{carReturn.odometer}" size="7"/></p>
+                <p><label>Zustand</label><h:inputText value="#{carReturn.note}" size="50"/></p>
+                <h:commandButton value="Rueckgabe buchen" action="#{carReturn.submit}"/>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+</ui:composition>

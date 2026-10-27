@@ -1,0 +1,5 @@
+project_id = "your-existing-project"
+region     = "europe-west3"
+run_token  = "gf-r1027a-after"
+expires_at = "2026-10-30"
+image_tag  = "gf-r1027a-after"

@@ -1,0 +1,33 @@
+ADD MAP FLEEMPIM VERSION 1
+    DEVICE IS 3270 SIZE IS 24 BY 80
+    RECORDS ARE FLEWORK EMPLOYEE VEHICLE ASSIGNMENT
+    .
+    LITERAL 'FLEEMPI'                      ROW 1  COLUMN 2  INTENSITY BRIGHT.
+    LITERAL 'EMPLOYEE CAR INQUIRY'         ROW 1  COLUMN 30 INTENSITY BRIGHT.
+    LITERAL 'EMPLOYEE ID'                  ROW 4  COLUMN 2.
+    FIELD WK-EMPID                         ROW 4  COLUMN 16 LENGTH 8 UNPROTECTED.
+    LITERAL 'NAME'                         ROW 6  COLUMN 2.
+    FIELD EM-FORN                          ROW 6  COLUMN 16 LENGTH 15 PROTECTED.
+    FIELD EM-SURN                          ROW 6  COLUMN 32 LENGTH 20 PROTECTED.
+    LITERAL 'GRADE'                        ROW 7  COLUMN 2.
+    FIELD EM-GRD                           ROW 7  COLUMN 16 LENGTH 2  PROTECTED.
+    LITERAL 'COST CENTRE'                  ROW 7  COLUMN 24.
+    FIELD EM-CC                            ROW 7  COLUMN 37 LENGTH 6  PROTECTED.
+    LITERAL 'STATUS'                       ROW 7  COLUMN 48.
+    FIELD EM-STAT                          ROW 7  COLUMN 56 LENGTH 1  PROTECTED.
+    LITERAL 'CURRENT CAR'                  ROW 10 COLUMN 2  INTENSITY BRIGHT.
+    LITERAL 'REG'                          ROW 11 COLUMN 2.
+    FIELD VH-PLATE                         ROW 11 COLUMN 16 LENGTH 8  PROTECTED.
+    LITERAL 'MAKE/MODEL'                   ROW 12 COLUMN 2.
+    FIELD VH-MAKE                          ROW 12 COLUMN 16 LENGTH 12 PROTECTED.
+    FIELD VH-MODL                          ROW 12 COLUMN 29 LENGTH 16 PROTECTED.
+    LITERAL 'LIST PRICE'                   ROW 13 COLUMN 2.
+    FIELD VH-LIST                          ROW 13 COLUMN 16 LENGTH 12 PROTECTED
+        EDIT PICTURE IS ZZZ,ZZ9.99.
+    LITERAL 'FROM'                         ROW 14 COLUMN 2.
+    FIELD AS-STRT                          ROW 14 COLUMN 16 LENGTH 8  PROTECTED.
+    LITERAL 'BENEFIT THIS MONTH'           ROW 16 COLUMN 2.
+    FIELD WK-BENEFIT                       ROW 16 COLUMN 22 LENGTH 12 PROTECTED
+        EDIT PICTURE IS ZZZ,ZZ9.99.
+    FIELD WK-MSG                           ROW 22 COLUMN 2  LENGTH 60 PROTECTED.
+    LITERAL 'ENTER=INQUIRE  PF3=MENU'      ROW 24 COLUMN 2.

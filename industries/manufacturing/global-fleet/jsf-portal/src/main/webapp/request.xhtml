@@ -1,0 +1,49 @@
+<ui:composition template="/WEB-INF/templates/layout.xhtml" xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <ui:define name="title">Dienstwagenantrag</ui:define>
+    <ui:define name="content">
+        <div class="steps">
+            <span class="#{wizard.step == 1 ? 'on' : ''}">1 Mitarbeiter</span>
+            <span class="#{wizard.step == 2 ? 'on' : ''}">2 Fahrzeug</span>
+            <span class="#{wizard.step == 3 ? 'on' : ''}">3 Bestaetigung</span>
+        </div>
+        <h:form id="wiz" styleClass="panel">
+            <h:panelGroup rendered="#{wizard.step == 1}">
+                <label>Personalnummer</label>
+                <h:inputText id="emp" value="#{wizard.employeeNo}" required="true"/>
+                <h:commandButton value="Weiter" action="#{wizard.checkEmployee}"/>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{wizard.step == 2}">
+                <p>#{wizard.employee.fullName} (EG #{wizard.employee.grade}, #{wizard.employee.site})</p>
+                <h:selectOneRadio value="#{wizard.choice}" layout="pageDirection">
+                    <f:selectItem itemValue="pool" itemLabel="Fahrzeug aus dem Pool"/>
+                    <f:selectItem itemValue="new" itemLabel="Neu ausgeliefertes Fahrzeug erfassen"/>
+                </h:selectOneRadio>
+                <p><label>Poolfahrzeug</label>
+                <h:selectOneMenu value="#{wizard.vehicleId}">
+                    <f:selectItem itemLabel="-- bitte waehlen --" noSelectionOption="true"/>
+                    <f:selectItems value="#{wizard.available}" var="v" itemValue="#{v.id}" itemLabel="#{v.label}"/>
+                </h:selectOneMenu></p>
+                <p><label>Kennzeichen</label><h:inputText value="#{wizard.plate}" converter="plateConverter"/></p>
+                <p><label>Marke / Modell</label><h:inputText value="#{wizard.make}" size="12"/> <h:inputText value="#{wizard.model}"/></p>
+                <p><label>Listenpreis EUR</label><h:inputText value="#{wizard.listPrice}" size="10"/></p>
+                <p><label>CO2 g/km</label><h:inputText value="#{wizard.co2}" size="4"/>
+                   <h:selectOneMenu value="#{wizard.fuel}">
+                       <f:selectItem itemValue="D" itemLabel="Diesel"/><f:selectItem itemValue="P" itemLabel="Benzin"/>
+                       <f:selectItem itemValue="H" itemLabel="Hybrid"/><f:selectItem itemValue="E" itemLabel="Elektro"/>
+                   </h:selectOneMenu></p>
+                <h:commandButton value="Zurueck" action="#{wizard.back}" immediate="true"/>
+                <h:commandButton value="Weiter" action="#{wizard.chooseVehicle}"/>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{wizard.step == 3}">
+                <p>Mitarbeiter: #{wizard.employee.employeeNo} #{wizard.employee.fullName}</p>
+                <p>Fahrzeug: #{wizard.choice == 'pool' ? wizard.selected.label : wizard.plate.concat('  ').concat(wizard.make).concat(' ').concat(wizard.model)}</p>
+                <p><label>Uebergabe am</label>
+                   <h:inputText value="#{wizard.startDate}"><f:convertDateTime pattern="dd.MM.yyyy"/></h:inputText></p>
+                <h:commandButton value="Zurueck" action="#{wizard.back}" immediate="true"/>
+                <h:commandButton value="Antrag abschliessen" action="#{wizard.submit}"/>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+</ui:composition>

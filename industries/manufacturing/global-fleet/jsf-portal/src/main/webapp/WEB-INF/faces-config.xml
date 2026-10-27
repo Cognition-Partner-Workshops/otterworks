@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="2.2">
+  <application>
+    <locale-config>
+      <default-locale>de</default-locale>
+    </locale-config>
+  </application>
+</faces-config>

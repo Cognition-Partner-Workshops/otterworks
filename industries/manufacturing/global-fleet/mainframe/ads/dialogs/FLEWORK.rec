@@ -1,0 +1,22 @@
+*-----------------------------------------------------------------------
+*  IDD WORK RECORD SHARED BY THE FLEET DIALOGS
+*-----------------------------------------------------------------------
+ADD RECORD NAME IS FLEWORK VERSION 1
+    RECORD ELEMENT IS
+    03 WK-OPTION             PIC X(1).
+    03 WK-EMPID              PIC X(8).
+    03 WK-VEHID              PIC X(8).
+    03 WK-PLATE              PIC X(8).
+    03 WK-TODAY              PIC 9(8).
+    03 WK-PERIOD             PIC 9(6).
+    03 WK-MDAYS              PIC 9(2).
+    03 WK-BENEFIT            PIC S9(7)V99 COMP-3.
+    03 WK-MILES              PIC 9(5).
+    03 WK-AMOUNT             PIC S9(7)V99 COMP-3.
+    03 WK-RETDT              PIC 9(8).
+    03 WK-ODO                PIC 9(6).
+    03 WK-ASGID              PIC X(10).
+    03 WK-NEXT-ASG           PIC 9(9).
+    03 WK-NEXT-CLM           PIC 9(9).
+    03 WK-MSG                PIC X(60).
+    .

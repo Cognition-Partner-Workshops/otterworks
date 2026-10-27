@@ -1,0 +1,16 @@
+body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #f3f4f6; color: #1f2933; font-size: 14px; }
+.top { background: #22374f; color: #fff; padding: 10px 18px; }
+.top a { color: #cfe1f5; margin-left: 18px; text-decoration: none; }
+.top .brand { font-weight: bold; font-size: 16px; }
+.main { padding: 16px 22px; }
+h1 { font-size: 20px; margin: 4px 0 14px; }
+table.grid { border-collapse: collapse; background: #fff; min-width: 640px; }
+table.grid th { background: #dde5ee; text-align: left; padding: 5px 9px; }
+table.grid td { border-top: 1px solid #e3e7eb; padding: 5px 9px; }
+.panel { background: #fff; padding: 12px 16px; border: 1px solid #d6dbe1; margin-bottom: 14px; max-width: 760px; }
+.msgs { list-style: none; padding: 0; }
+.err { color: #a61b1b; }
+.info { color: #1b6a2b; }
+.steps span { margin-right: 14px; color: #7b8794; }
+.steps span.on { color: #22374f; font-weight: bold; }
+label { display: inline-block; min-width: 150px; }
