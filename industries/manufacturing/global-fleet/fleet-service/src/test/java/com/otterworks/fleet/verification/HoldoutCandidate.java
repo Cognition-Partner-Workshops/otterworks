@@ -61,9 +61,6 @@ public final class HoldoutCandidate {
                     .filter(assignment -> assignment.endDate() == null
                             || !assignment.endDate().isBefore(start))
                     .toList();
-            if (overlapping.size() > 1) {
-                continue;
-            }
             List<BenefitCalculator.AssignmentInput> assignmentInputs = overlapping.stream()
                     .map(assignment -> {
                         VehicleRow vehicle = vehicles.get(assignment.vehicleId());
