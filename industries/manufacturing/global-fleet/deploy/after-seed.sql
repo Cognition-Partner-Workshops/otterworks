@@ -70,6 +70,13 @@ INSERT INTO uk.vehicle (registration, list_price, benefit_percent, make, model, 
     SELECT plate, list_price, benefit_percent, initcap(make), model, co2, fuel FROM legacy_uk.vehicle ORDER BY vehid;
 INSERT INTO uk.benefit_period (period, start_date, end_date, mileage_rate)
     SELECT period, start_date, end_date, mileage_rate FROM legacy_uk.benefit_period ORDER BY period;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns
+               WHERE table_schema = 'uk' AND table_name = 'benefit_period' AND column_name = 'status') THEN
+        UPDATE uk.benefit_period SET status = 'CLOSED', closed_at = NOW() WHERE end_date < CURRENT_DATE;
+    END IF;
+END $$;
 CREATE TEMP TABLE uk_emp AS
     SELECT e.dbkey, m.id AS employment_id FROM legacy_uk.employee e JOIN uk.employment m ON m.legacy_ref = 'MF:' || lpad(e.dbkey::text, 10, '0');
 CREATE TEMP TABLE uk_veh AS
