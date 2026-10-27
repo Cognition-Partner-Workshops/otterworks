@@ -72,15 +72,21 @@ def extra_test_status(name, testcases):
     return aggregate(matched)
 
 
+def matches_name_boundary(testcase, name):
+    return testcase == name or (
+        testcase.startswith(name)
+        and len(testcase) > len(name)
+        and re.match(r"[A-Za-z0-9_]", testcase[len(name)]) is None
+    )
+
+
 def web_status(name, testcases):
     matched = []
     for testcase, results in testcases.items():
         last_segment = testcase.rsplit(" > ", 1)[-1]
         if (
-            testcase == name
-            or testcase.startswith(name)
-            or last_segment == name
-            or last_segment.startswith(name)
+            matches_name_boundary(testcase, name)
+            or matches_name_boundary(last_segment, name)
         ):
             matched.extend(results)
     return aggregate(matched)

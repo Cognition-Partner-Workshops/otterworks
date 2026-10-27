@@ -79,6 +79,26 @@ class RuleCoverageTest(unittest.TestCase):
             found = coverage.testcase_statuses([report])
             self.assertEqual("passed", coverage.web_status("GF18_returnFunctionIsReachable", found))
 
+    def test_vitest_identifier_continuation_does_not_match_catalog_name(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            report = Path(temporary) / "vitest.xml"
+            report.write_text(
+                '<testsuite><testcase name="GF18_returnFunctionIsReachableButFails"/>'
+                "</testsuite>"
+            )
+            found = coverage.testcase_statuses([report])
+            self.assertEqual("missing", coverage.web_status("GF18_returnFunctionIsReachable", found))
+
+    def test_vitest_non_identifier_suffix_matches_catalog_name(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            report = Path(temporary) / "vitest.xml"
+            report.write_text(
+                '<testsuite><testcase name="GF18_returnFunctionIsReachable (route)"/>'
+                "</testsuite>"
+            )
+            found = coverage.testcase_statuses([report])
+            self.assertEqual("passed", coverage.web_status("GF18_returnFunctionIsReachable", found))
+
     def test_failed_extra_rule_test_fails_the_rule(self):
         with tempfile.TemporaryDirectory() as temporary:
             exit_code, output = self.run_coverage_with_extra(
