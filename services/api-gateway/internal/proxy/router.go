@@ -59,7 +59,7 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		cfg.Logger.Fatal().Err(err).Str("target", route.TargetURL).Msg("invalid proxy target URL")
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy := &httputil.ReverseProxy{}
 
 	// Rewrite the outbound request to forward the authenticated user identity.
 	// The auth-service issues JWTs with the user ID in the standard "sub" claim
@@ -67,7 +67,6 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 	// Downstream services trust X-User-ID as the verified caller, so a
 	// client-supplied value is always dropped and the header is only ever set
 	// from the JWT claims.
-	proxy.Director = nil
 	proxy.Rewrite = func(pr *httputil.ProxyRequest) {
 		pr.SetURL(target)
 		pr.SetXForwarded()
