@@ -104,11 +104,20 @@ class BenefitCalculatorTest {
                 employment(2L, "GF30-LEFT", period.minusMonths(1).atEndOfMonth(), BigDecimal.ZERO, 0),
                 List.of(assignment(2L, "OLD-CAR", period.minusMonths(1).atDay(1), null)),
                 List.of());
+        BenefitCalculator.Calculation hiredDuringMonth = calculator.calculate(
+                ukProfile(),
+                period,
+                new BenefitCalculator.EmploymentInput(
+                        3L, "GF30-HIRE", null, period.atDay(10), null, BigDecimal.ZERO, 0),
+                List.of(assignment(3L, "MID-MONTH", period.atDay(1), null)),
+                List.of());
 
         assertEquals(10, leaver.carDays());
         assertEquals("L", leaver.leaverFlag());
         assertEquals(0, alreadyLeft.carDays());
         assertTrue(alreadyLeft.lines().isEmpty());
+        assertEquals(period.atDay(10), hiredDuringMonth.lines().get(0).fromDate());
+        assertEquals(21, hiredDuringMonth.carDays());
     }
 
     private BenefitCalculator.EmploymentInput employment(

@@ -88,8 +88,11 @@ public final class BenefitCalculator {
             LocalDate periodEnd,
             EmploymentInput employment,
             AssignmentInput assignment,
-            List<AssignmentInput> assignments) {
+        List<AssignmentInput> assignments) {
         LocalDate from = assignment.startDate().isAfter(periodStart) ? assignment.startDate() : periodStart;
+        if (employment.hireDate().isAfter(from)) {
+            from = employment.hireDate();
+        }
         LocalDate to = assignment.endDate() == null || assignment.endDate().isAfter(periodEnd)
                 ? periodEnd
                 : assignment.endDate();
