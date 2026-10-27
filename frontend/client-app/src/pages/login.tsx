@@ -56,7 +56,7 @@ export default function LoginPage() {
             <Logo size={40} />
             <span className="text-2xl font-bold text-gray-900">OtterWorks</span>
           </Link>
-          <p className="text-gray-500 mt-2">Sign in to your account</p>
+          <p className="text-gray-300 mt-2">Sign in to your account</p>
         </div>
 
         {/* Form */}

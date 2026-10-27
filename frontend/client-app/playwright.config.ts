@@ -8,7 +8,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? "github" : "html",
+  reporter: process.env.CI
+    ? [["github"], ["html", { open: "never" }]]
+    : "html",
+  failOnFlakyTests: !!process.env.CI,
   timeout: 30_000,
   expect: { timeout: 10_000 },
 
@@ -26,14 +29,13 @@ export default defineConfig({
     },
   ],
 
-  /* Start the Vite dev server before tests if not in CI */
-  ...(process.env.CI
+  ...(process.env.BASE_URL
     ? {}
     : {
         webServer: {
           command: "npm run dev",
           url: BASE_URL,
-          reuseExistingServer: true,
+          reuseExistingServer: !process.env.CI,
           timeout: 120_000,
         },
       }),
