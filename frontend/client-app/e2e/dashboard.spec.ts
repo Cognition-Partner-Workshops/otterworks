@@ -1,82 +1,152 @@
-import { test, expect } from "@playwright/test";
+import { type Page } from "@playwright/test";
+import {
+  expect,
+  signedOut,
+  test,
+} from "./smoke/dashboard-recent/dashboard-recent.fixtures";
 
-test.describe("Dashboard", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/dashboard");
+test.use({ trace: "retain-on-failure", screenshot: "only-on-failure" });
+
+async function openDashboard(page: Page) {
+  await page.goto("/dashboard");
+  await expect(
+    page.getByRole("main").getByRole("heading", {
+      level: 1,
+      name: "Dashboard",
+      exact: true,
+    }),
+  ).toBeVisible();
+}
+
+test.describe("Dashboard (signed in)", () => {
+  test("shows the Dashboard heading for the signed-in customer", async ({
+    page,
+    customer,
+  }) => {
+    await test.step("Open the signed-in customer's dashboard", async () => {
+      await openDashboard(page);
+    });
+    await test.step("Show the signed-in customer's email", async () => {
+      await expect(page.getByText(customer.email, { exact: true })).toBeVisible();
+    });
   });
 
-  test("shows the Dashboard heading", async ({ page }) => {
-    // Dashboard may redirect to login if unauthenticated, or show the page
-    const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
+  test("Upload file and New document link to Files and Documents", async ({
+    page,
+  }) => {
+    const main = page.getByRole("main");
 
-    // Either we see the dashboard or we get redirected to login
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
+    await test.step("Open the signed-in customer's dashboard", async () => {
+      await openDashboard(page);
+    });
+    await test.step("Link the dashboard actions to their destinations", async () => {
+      await expect(
+        main.getByRole("link", { name: "Upload file", exact: true }),
+      ).toHaveAttribute("href", "/files");
+      await expect(
+        main.getByRole("link", { name: "New document", exact: true }),
+      ).toHaveAttribute("href", "/documents");
+    });
   });
 
-  test("displays Upload file and New document buttons", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
-    const target = heading.or(loginHeading);
-    await expect(target).toBeVisible({ timeout: 10_000 });
+  test("stat cards start at zero for a brand-new customer", async ({ page }) => {
+    const main = page.getByRole("main");
 
-    // Only check buttons if we're on the dashboard (not redirected to login)
-    if (await heading.isVisible().catch(() => false)) {
-      await expect(page.getByRole("link", { name: /Upload file/i })).toBeVisible();
-      await expect(page.getByRole("link", { name: /New document/i })).toBeVisible();
-    }
+    await test.step("Open the signed-in customer's dashboard", async () => {
+      await openDashboard(page);
+    });
+    await test.step("Show zero counts and the default storage allowance", async () => {
+      // Standard exception: stat cards have no role or accessible name; anchor on visible text and step up to the card.
+      await expect(
+        main.getByText("Total files", { exact: true }).locator(".."),
+      ).toHaveText(/^0\s*Total files$/);
+      await expect(
+        main.getByText("Documents", { exact: true }).locator(".."),
+      ).toHaveText(/^0\s*Documents$/);
+      await expect(
+        main.getByText(/Storage used · of 10 GB/).locator(".."),
+      ).toHaveText(/^0 B\s*Storage used · of 10 GB$/);
+      await expect(
+        main.getByText(/Recent activity · actions today/).locator(".."),
+      ).toHaveText(/^0\s*Recent activity · actions today$/);
+    });
   });
 
-  test("renders stat cards or loading state", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
-    const loader = page.locator("[class*='animate-spin']");
-    // Dashboard may show heading, loader, or redirect to login
-    await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
+  test("shows the empty Recent files section for a brand-new customer", async ({
+    page,
+  }) => {
+    const main = page.getByRole("main");
 
-    if (await heading.isVisible().catch(() => false)) {
-      // Stat card labels appear inside stat cards as combined text
-      await expect(page.getByText(/Total files/i)).toBeVisible({ timeout: 10_000 });
-      await expect(page.getByText(/Storage used/i)).toBeVisible();
-    }
+    await test.step("Open the signed-in customer's dashboard", async () => {
+      await openDashboard(page);
+    });
+    await test.step("Show the empty Recent files section", async () => {
+      await expect(
+        main.getByRole("heading", {
+          level: 2,
+          name: "Recent files",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(main.getByText("No recent files", { exact: true })).toBeVisible();
+    });
   });
 
-  test("shows Recent files section or empty state", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
-    const loader = page.locator("[class*='animate-spin']");
-    await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
+  test("shows the empty Recent documents section for a brand-new customer", async ({
+    page,
+  }) => {
+    const main = page.getByRole("main");
 
-    if (await heading.isVisible().catch(() => false)) {
-      const recentFiles = page.getByRole("heading", { name: "Recent files" });
-      const noFiles = page.getByText("No recent files");
-      await expect(recentFiles.or(noFiles)).toBeVisible({ timeout: 10_000 });
-    }
+    await test.step("Open the signed-in customer's dashboard", async () => {
+      await openDashboard(page);
+    });
+    await test.step("Show the empty Recent documents section", async () => {
+      await expect(
+        main.getByRole("heading", {
+          level: 2,
+          name: "Recent documents",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        main.getByText("No recent documents", { exact: true }),
+      ).toBeVisible();
+    });
   });
 
-  test("shows Recent documents section or empty state", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
-    const loader = page.locator("[class*='animate-spin']");
-    await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
+  test("shows the empty Activity section for a brand-new customer", async ({
+    page,
+  }) => {
+    const main = page.getByRole("main");
 
-    if (await heading.isVisible().catch(() => false)) {
-      const recentDocs = page.getByRole("heading", { name: "Recent documents" });
-      const noDocs = page.getByText("No recent documents");
-      await expect(recentDocs.or(noDocs)).toBeVisible({ timeout: 10_000 });
-    }
+    await test.step("Open the signed-in customer's dashboard", async () => {
+      await openDashboard(page);
+    });
+    await test.step("Show the empty Activity section", async () => {
+      await expect(
+        main.getByRole("heading", { level: 2, name: "Activity", exact: true }),
+      ).toBeVisible();
+      await expect(
+        main.getByText("No recent activity", { exact: true }),
+      ).toBeVisible();
+    });
   });
+});
 
-  test("shows Activity section or empty state", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: "Dashboard" });
-    const loginHeading = page.getByText("Sign in to your account");
-    const loader = page.locator("[class*='animate-spin']");
-    await expect(heading.or(loginHeading).or(loader)).toBeVisible({ timeout: 15_000 });
+test.describe("Dashboard (signed out)", () => {
+  test.use(signedOut);
 
-    if (await heading.isVisible().catch(() => false)) {
-      const activity = page.getByRole("heading", { name: "Activity" });
-      const noActivity = page.getByText("No recent activity");
-      await expect(activity.or(noActivity)).toBeVisible({ timeout: 10_000 });
-    }
+  test("signed-out visitor opening /dashboard is sent to sign in", async ({
+    page,
+  }) => {
+    await test.step("Open /dashboard without a session", async () => {
+      await page.goto("/dashboard");
+    });
+    await test.step("Redirect to the sign-in page", async () => {
+      await expect(page).toHaveURL(/\/login$/);
+      await expect(
+        page.getByText("Sign in to your account", { exact: true }),
+      ).toBeVisible();
+    });
   });
 });
