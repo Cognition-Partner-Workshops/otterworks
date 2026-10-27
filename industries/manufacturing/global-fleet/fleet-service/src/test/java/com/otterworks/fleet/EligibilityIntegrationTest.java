@@ -317,6 +317,18 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
         assertEquals(EligibilityReason.NO_EMPLOYMENT_ON_DATE,
                 eligibilityService.mileageClaim(withNoHistory.getEmployeeNo(), LocalDate.of(2025, 1, 1)).reason());
 
+        Person withEmploymentGap = createPerson(unique("GF03"));
+        employmentRepository.save(new Employment(
+                withEmploymentGap, profile.minGrade(), EmploymentStatus.LEFT,
+                LocalDate.of(2020, 1, 1), LocalDate.of(2022, 12, 31), BigDecimal.ZERO, null));
+        employmentRepository.save(new Employment(
+                withEmploymentGap, profile.minGrade(), EmploymentStatus.ACTIVE,
+                LocalDate.of(2024, 1, 1), null, BigDecimal.ZERO, null));
+        assertEquals(EligibilityReason.NO_EMPLOYMENT_ON_DATE, eligibilityService.mileageClaim(
+                withEmploymentGap.getEmployeeNo(), LocalDate.of(2023, 6, 1)).reason());
+        assertEquals(EligibilityReason.NO_EMPLOYMENT_ON_DATE, eligibilityService.mileageClaim(
+                withEmploymentGap.getEmployeeNo(), LocalDate.of(2019, 12, 31)).reason());
+
         Employment active = createEmployment(
                 unique("GF03"), profile.minGrade(), EmploymentStatus.ACTIVE, LocalDate.of(2020, 1, 1), null);
         assertTrue(eligibilityService.mileageClaim(

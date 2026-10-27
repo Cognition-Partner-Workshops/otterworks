@@ -119,12 +119,12 @@ public class EligibilityService {
                 .stream()
                 .findFirst();
         if (covering.isEmpty()) {
-            boolean claimedAfterLeaving = employmentRepository
-                    .findByPersonOrderByHireDateAscIdAsc(person.get())
-                    .stream()
-                    .anyMatch(employment -> employment.getLeaveDate() != null
-                            && claimDate != null
-                            && employment.getLeaveDate().isBefore(claimDate));
+            boolean claimedAfterLeaving = currentEmployment(person.get())
+                    .filter(employment -> claimDate != null
+                            && !employment.getHireDate().isAfter(claimDate)
+                            && employment.getLeaveDate() != null
+                            && employment.getLeaveDate().isBefore(claimDate))
+                    .isPresent();
             return EligibilityDecision.refuse(
                     claimedAfterLeaving
                             ? EligibilityReason.CLAIM_AFTER_LEAVING_DATE
