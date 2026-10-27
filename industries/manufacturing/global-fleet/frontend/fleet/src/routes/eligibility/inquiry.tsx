@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import { client, type EmployeeInquiry as EmployeeInquiryData } from '../../api/client'
+import { ErrorAlert, Loading, errorText } from '../../components/status'
 
 export default function EmployeeInquiry() {
   const { employeeNo = '' } = useParams()
@@ -14,7 +15,7 @@ export default function EmployeeInquiry() {
         if (active) setEmployee(data)
       })
       .catch((cause: unknown) => {
-        if (active) setError(cause instanceof Error ? cause.message : 'Employee request failed')
+        if (active) setError(errorText(cause, 'Employee request failed'))
       })
     return () => {
       active = false
@@ -22,10 +23,10 @@ export default function EmployeeInquiry() {
   }, [employeeNo])
 
   if (error) {
-    return <p role="alert">{error}</p>
+    return <ErrorAlert>{error}</ErrorAlert>
   }
   if (!employee) {
-    return <p>Loading employee…</p>
+    return <Loading>Loading employee…</Loading>
   }
 
   return (

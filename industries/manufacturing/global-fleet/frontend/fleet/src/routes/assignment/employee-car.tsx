@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import { client, type EmployeeCarView } from '../../api/client'
+import { ErrorAlert, Loading, errorText } from '../../components/status'
 
 export default function EmployeeCar() {
   const { employeeNo = '' } = useParams()
@@ -14,13 +15,13 @@ export default function EmployeeCar() {
         if (active) setResult(car)
       })
       .catch((cause: unknown) => {
-        if (active) setError(cause instanceof Error ? cause.message : 'Could not load current car')
+        if (active) setError(errorText(cause, 'Could not load current car'))
       })
     return () => { active = false }
   }, [employeeNo])
 
-  if (error) return <p role="alert">{error}</p>
-  if (!result) return <p>Loading car history…</p>
+  if (error) return <ErrorAlert>{error}</ErrorAlert>
+  if (!result) return <Loading>Loading car history…</Loading>
 
   return (
     <section>

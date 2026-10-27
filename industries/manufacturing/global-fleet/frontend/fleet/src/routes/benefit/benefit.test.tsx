@@ -71,6 +71,23 @@ describe('benefit routes', () => {
     expect(screen.getByText('Taxable benefit: 105.55 EUR')).toBeInTheDocument()
   })
 
+  it('GF32_benefitLinkResetsView', async () => {
+    render(
+      <MemoryRouter initialEntries={['/benefit?view=statement']}>
+        <FleetRoutes />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByRole('heading', { name: 'Benefit statement' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'View statement' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('link', { name: 'Benefit' }))
+
+    expect(await screen.findByRole('heading', { name: 'Benefit inquiry' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'View benefit' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'View statement' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Benefit statement' })).not.toBeInTheDocument()
+  })
+
   it('GF27_failedInquiryClearsPreviousResult', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => inquiry })
