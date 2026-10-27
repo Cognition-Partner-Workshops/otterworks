@@ -217,22 +217,22 @@ export interface ConfirmationResponse {
 
 export interface BenefitLine {
   registration: string
-  fromDate: string
-  toDate: string
+  from: string
+  to: string
   days: number
-  monthlyBenefit: string
-  benefit: string
+  monthlyBenefit: number
+  benefit: number
 }
 
 export interface BenefitInquiry {
   employeeNo: string
   period: string
-  status: 'OPEN' | 'CLOSED'
+  status: string
   lines: BenefitLine[]
   carDays: number
-  taxableBenefit: string
+  taxableBenefit: number
   distance: number
-  mileageAmount: string
+  mileageAmount: number
   leaverFlag: string | null
   currency: string
 }
@@ -240,7 +240,7 @@ export interface BenefitInquiry {
 export interface BenefitStatement extends BenefitInquiry {
   firstName: string
   lastName: string
-  employeeName: string
+  fullName: string
   commuteDistance: number
   ruleText: string
 }
@@ -249,11 +249,11 @@ export interface BenefitPeriod {
   period: string
   startDate: string
   endDate: string
-  status: 'OPEN' | 'CLOSED'
-  mileageRate: string
+  status: string
+  mileageRate: number
   recordCount: number | null
-  totalTaxable: string | null
-  totalMileage: string | null
+  totalTaxable: number | null
+  totalMileage: number | null
 }
 
 const apiBase = import.meta.env.VITE_API_BASE ?? ''

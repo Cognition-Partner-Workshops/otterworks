@@ -137,7 +137,7 @@ export default function Benefit() {
           </form>
           {statement && (
             <section aria-label="Benefit statement details">
-              <h3>{statement.employeeName}</h3>
+              <h3>{statement.fullName}</h3>
               <p>{statement.period} · {statement.status} · Commute distance: {statement.commuteDistance}</p>
               <p>{statement.ruleText}</p>
               <InquiryResult result={statement} />
@@ -197,10 +197,10 @@ function InquiryResult({ result }: { result: BenefitInquiry }) {
         </thead>
         <tbody>
           {result.lines.map((line, index) => (
-            <tr key={`${line.registration}-${line.fromDate}-${index}`}>
+            <tr key={`${line.registration}-${line.from}-${index}`}>
               <td>{line.registration || '—'}</td>
-              <td>{line.fromDate}</td>
-              <td>{line.toDate}</td>
+              <td>{line.from}</td>
+              <td>{line.to}</td>
               <td>{line.days}</td>
               <td>{line.monthlyBenefit} {result.currency}</td>
               <td>{line.benefit} {result.currency}</td>

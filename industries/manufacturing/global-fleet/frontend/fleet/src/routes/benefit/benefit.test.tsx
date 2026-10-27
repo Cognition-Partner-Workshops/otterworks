@@ -9,16 +9,16 @@ const inquiry = {
   status: 'CLOSED' as const,
   lines: [{
     registration: 'HH-VS 7629',
-    fromDate: '2026-10-27',
-    toDate: '2026-10-31',
+    from: '2026-10-27',
+    to: '2026-10-31',
     days: 5,
-    monthlyBenefit: '654.43',
-    benefit: '105.55',
+    monthlyBenefit: 654.43,
+    benefit: 105.55,
   }],
   carDays: 5,
-  taxableBenefit: '105.55',
+  taxableBenefit: 105.55,
   distance: 0,
-  mileageAmount: '0.00',
+  mileageAmount: 0,
   leaverFlag: null,
   currency: 'EUR',
 }
@@ -43,6 +43,8 @@ describe('benefit routes', () => {
     expect(await screen.findByText('Taxable benefit: 105.55 EUR')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith('/api/v1/benefit/employees/E123?period=202610')
     expect(screen.getByText('HH-VS 7629')).toBeInTheDocument()
+    expect(screen.getByText('2026-10-27')).toBeInTheDocument()
+    expect(screen.getByText('2026-10-31')).toBeInTheDocument()
   })
 
   it('GF27_statementShowsProfileAndCalculation', async () => {
@@ -52,7 +54,7 @@ describe('benefit routes', () => {
         ...inquiry,
         firstName: 'Priya',
         lastName: 'Raman',
-        employeeName: 'Priya Raman',
+        fullName: 'Priya Raman',
         commuteDistance: 33,
         ruleText: '1.00% list price plus commute',
       }),
@@ -74,13 +76,13 @@ describe('benefit routes', () => {
       period: '202610',
       startDate: '2026-10-01',
       endDate: '2026-10-31',
-      status: 'OPEN' as const,
-      mileageRate: '0.305',
+      status: 'OPEN',
+      mileageRate: 0.305,
       recordCount: null,
       totalTaxable: null,
       totalMileage: null,
     }
-    const closed = { ...open, status: 'CLOSED' as const, recordCount: 1, totalTaxable: '105.55', totalMileage: '0.00' }
+    const closed = { ...open, status: 'CLOSED', recordCount: 1, totalTaxable: 105.55, totalMileage: 0 }
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => [open] })
       .mockResolvedValueOnce({ ok: true, json: async () => closed })
