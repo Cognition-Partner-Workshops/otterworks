@@ -1,0 +1,9 @@
+Seed query selected a different active employee with grade >= 6 and no open assignment:
+id=2; employee_no=E1009103; name=Marco Bellini; grade=9.
+Session A uses E1009100; session B uses this employee; both select vehicle id 1.
+Seed query selected a different active employee with grade >= 6 and no open assignment:
+id=2; employee_no=E1009103; name=Marco Bellini; grade=9.
+Session A uses E1009100; session B uses this employee; both select vehicle id 1.
+Seed query selected a different active employee with grade >= 6 and no open assignment:
+id=2; employee_no=E1009103; name=Marco Bellini; grade=9.
+Session A uses E1009100; session B uses this employee; both select vehicle id 1.

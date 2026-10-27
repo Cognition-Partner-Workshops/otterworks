@@ -1,0 +1,56 @@
+Scenario: S4
+Action: S4 session A choose vehicle 1 / reach step 3
+
+--- Request ---
+POST http://127.0.0.1:18080/request.xhtml
+Host: 127.0.0.1:18080
+Cookie: JSESSIONID=A484A025928983BCEEC8D853C42898E0
+Accept: text/html,*/*
+Connection: close
+Content-Type: application/x-www-form-urlencoded
+Body-Length: 127 bytes
+Body:
+wiz=wiz&javax.faces.ViewState=-964057423249375388%3A4699078712968289959&wiz%3Aj_idt18=pool&wiz%3Aj_idt22=1&wiz%3Aj_idt41=Weiter
+
+--- Response ---
+HTTP/1.1 200 
+Location: (none)
+Content-Type: text/html;charset=UTF-8
+Content-Length: 1515
+Date: Tue, 27 Oct 2026 14:49:25 GMT
+Connection: close
+Body-Length: 1515 bytes
+Body:
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head id="j_idt2">
+    <meta charset="UTF-8" />
+    <title>Dienstwagenportal - Dienstwagenantrag</title><link type="text/css" rel="stylesheet" href="/javax.faces.resource/css/portal.css.xhtml" /></head><body>
+    <div class="top">
+        <span class="brand">Dienstwagenportal</span>
+        <a href="employees.xhtml">Mitarbeitersuche</a>
+        <a href="request.xhtml">Dienstwagenantrag</a>
+        <a href="mileage.xhtml">Reisekosten</a>
+        <a href="return.xhtml">Fahrzeugrueckgabe</a>
+    </div>
+    <div class="main">
+        <h1>Dienstwagenantrag</h1>
+        <div class="steps">
+            <span>1 Mitarbeiter</span>
+            <span>2 Fahrzeug</span>
+            <span class="on">3 Bestaetigung</span>
+        </div>
+<form id="wiz" name="wiz" method="post" action="/request.xhtml" class="panel" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="wiz" value="wiz" />
+
+                <p>Mitarbeiter: E1009100 Priya Raman</p>
+                <p>Fahrzeug: HH-VS 7629  Opel Astra Sports Tourer</p>
+                <p><label>Uebergabe am</label><input type="text" name="wiz:j_idt44" value="27.10.2026" /></p><input type="submit" name="wiz:j_idt46" value="Zurueck" /><input type="submit" name="wiz:j_idt47" value="Antrag abschliessen" /><input type="hidden" name="javax.faces.ViewState" id="j_id1:javax.faces.ViewState:0" value="-964057423249375388:-6104889806967402220" autocomplete="off" />
+</form>
+    </div></body>
+</html>
+
+--- Parsed response metadata ---
+Rendered step: 3 Bestaetigung
+Faces messages: (none)
+Errors/exceptions: (none)
+Response ViewState present: True

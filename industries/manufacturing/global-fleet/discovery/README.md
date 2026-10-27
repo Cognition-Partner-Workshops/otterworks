@@ -43,3 +43,20 @@ Run the validator regression tests from the repository root:
 ```sh
 python3 -m unittest discover -s industries/manufacturing/global-fleet/discovery -p 'test_*.py'
 ```
+
+## Rule catalog
+
+`catalog.json` is the merged rule catalog for the global-fleet app; the admin page
+will read it later to show the rules, owner decisions and expected changes. `verdict`
+describes whether the legacy apps agree, differ or have a one-sided rule.
+`decision.status` is `not-required` for agreements and `decided` otherwise;
+`option` records the selected option, `decision` explains it, `open_items` lists
+remaining questions, and `linked_to` connects related catalog rules.
+`expected_changes` lists anticipated implementation changes. `profiles` holds
+the country-specific values and rounding modes used by the app.
+
+Check the catalog from the repository root with the standard-library checker:
+
+```sh
+python3 industries/manufacturing/global-fleet/discovery/check_catalog.py
+```

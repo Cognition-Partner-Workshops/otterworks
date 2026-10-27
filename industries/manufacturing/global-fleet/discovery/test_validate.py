@@ -38,7 +38,9 @@ class ValidatorTests(unittest.TestCase):
     def test_empty_final_pairs_cannot_use_history_or_prose_as_coverage(self):
         self.data['crosscheck.json']['rule_pairs'] = []
         problems = self.problems()
-        for document in self.data.values():
+        for name, document in self.data.items():
+            if not name.startswith('rules/'):
+                continue
             for rule in document.get('rules', []):
                 self.assertIn(
                     f"crosscheck.json: rule id absent from final rule_pairs: {rule['id']}",
