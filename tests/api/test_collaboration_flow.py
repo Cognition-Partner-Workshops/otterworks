@@ -14,14 +14,15 @@ def test_collaboration_presence_endpoints(api_client):
     assert document_response.status_code == 201, document_response.text
     document_id = document_response.json()["id"]
 
+    # The active-documents listing names every open document, so it is admin-only.
     active_documents_response = api_client.client.get(
         "/api/v1/collab/documents",
         headers=user.auth_headers,
     )
-    assert active_documents_response.status_code == 200, active_documents_response.text
-    active_documents = active_documents_response.json()
-    assert "documents" in active_documents
-    assert "count" in active_documents
+    assert active_documents_response.status_code == 403, active_documents_response.text
+
+    anonymous_response = api_client.client.get("/api/v1/collab/documents")
+    assert anonymous_response.status_code == 401, anonymous_response.text
 
     presence_response = api_client.client.get(
         f"/api/v1/collab/documents/{document_id}/presence",
