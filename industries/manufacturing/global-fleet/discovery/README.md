@@ -47,7 +47,7 @@ python3 -m unittest discover -s industries/manufacturing/global-fleet/discovery 
 ## Rule catalog
 
 `catalog.json` is the merged rule catalog for the global-fleet app; the admin page
-reads it to show the rules, owner decisions and expected changes. `verdict`
+will read it later to show the rules, owner decisions and expected changes. `verdict`
 describes whether the legacy apps agree, differ or have a one-sided rule.
 `decision.status` is `not-required` for agreements and `decided` otherwise;
 `option` records the selected option, `decision` explains it, `open_items` lists
