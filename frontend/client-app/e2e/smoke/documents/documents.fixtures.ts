@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks -- Playwright fixture `use` callbacks are not React hooks. */
 import { randomUUID } from "node:crypto";
 import { test as base, expect, type Page } from "@playwright/test";
 
