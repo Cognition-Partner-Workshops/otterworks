@@ -108,3 +108,70 @@ test.describe("Margins dashboard", () => {
     await expect(page.getByRole("heading", { name: "Margins" })).toBeVisible();
   });
 });
+
+const MOCK_LATENCY_MS = 450;
+const MOCK_LATENCY_JITTER_MS = 180;
+
+test.describe("Margins rendering", () => {
+  test("renders a mocked SKU row", async ({ page }) => {
+    await page.route("**/api/v1/**", async (route) => {
+      const { pathname } = new URL(route.request().url());
+
+      if (pathname.endsWith("/analytics/margins")) {
+        const latency =
+          MOCK_LATENCY_MS + Math.floor(Math.random() * MOCK_LATENCY_JITTER_MS);
+        await new Promise((resolve) => setTimeout(resolve, latency));
+        await route.fulfill({
+          json: {
+            as_of_date: "2026-07-16",
+            source: "synthetic",
+            last_sync_at: null,
+            kpis: {
+              gross_margin_pct: 48,
+              avg_cogs_usd: 6.5,
+              salmon_index: 4.2,
+              freight_index: 1200,
+            },
+            rows: [
+              {
+                sku: "SLM-001",
+                name: "Atlantic Salmon",
+                category: "Seafood",
+                supplier: "North Star",
+                list_price_usd: 12.5,
+                commodity_cost_usd: 5,
+                freight_cost_usd: 0.5,
+                overhead_cost_usd: 1,
+                cogs_usd: 6.5,
+                margin_pct: 48,
+              },
+            ],
+          },
+        });
+        return;
+      }
+
+      if (pathname.endsWith("/analytics/margins/series")) {
+        await route.fulfill({ json: { points: [] } });
+        return;
+      }
+
+      if (pathname.endsWith("/analytics/market/prices")) {
+        await route.fulfill({ json: { prices: [] } });
+        return;
+      }
+
+      if (pathname.endsWith("/notifications/unread-count")) {
+        await route.fulfill({ json: { count: 0 } });
+        return;
+      }
+
+      await route.fulfill({ json: {} });
+    });
+
+    await page.goto("/margins");
+    const firstRow = page.getByTestId("margins-grid").locator("tbody tr").first();
+    await page.waitForTimeout(600);
+    expect(await firstRow.isVisible()).toBe(true);
+  });
+});

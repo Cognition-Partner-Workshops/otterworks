@@ -79,7 +79,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 {...register("email")}
-                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
+                className="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
                 placeholder="you@example.com"
               />
               {errors.email && (
