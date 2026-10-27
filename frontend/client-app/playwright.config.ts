@@ -25,8 +25,21 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testIgnore: "webkit/**",
       use: { ...devices["Desktop Chrome"] },
     },
+    // Baselines are WebKit-on-macOS; Linux runs never see this project or its specs.
+    ...(process.platform === "darwin"
+      ? [
+          {
+            name: "webkit-macos",
+            testMatch: "webkit/**/*.spec.ts",
+            snapshotPathTemplate:
+              "{testDir}/webkit/__screenshots__/{projectName}-{platform}/{testFileName}/{arg}{ext}",
+            use: { ...devices["Desktop Safari"] },
+          },
+        ]
+      : []),
   ],
 
   ...(process.env.BASE_URL

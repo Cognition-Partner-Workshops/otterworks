@@ -56,7 +56,7 @@ export default function LoginPage() {
             <Logo size={40} />
             <span className="text-2xl font-bold text-gray-900">OtterWorks</span>
           </Link>
-          <p className="text-gray-300 mt-2">Sign in to your account</p>
+          <p className="text-gray-500 mt-2">Sign in to your account</p>
         </div>
 
         {/* Form */}
@@ -104,6 +104,7 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >

@@ -1,0 +1,5 @@
+axe-core 4.14.0 · Version/26.6.2 Safari
+/register · WCAG 2.1 A/AA
+button-name (critical) — 2 element(s)
+• div:nth-child(3) > .relative > .absolute.right-3.top-1\/2
+• div:nth-child(4) > .relative > .absolute.right-3.top-1\/2
