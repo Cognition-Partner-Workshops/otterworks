@@ -40,6 +40,9 @@ public class Employment {
     @Column(name = "monthly_contribution", precision = 10, scale = 2)
     private BigDecimal monthlyContribution;
 
+    @Column(name = "commute_distance", nullable = false)
+    private int commuteDistance;
+
     @Column(name = "legacy_ref", length = 64, unique = true)
     private String legacyRef;
 
@@ -54,6 +57,18 @@ public class Employment {
             LocalDate leaveDate,
             BigDecimal monthlyContribution,
             String legacyRef) {
+        this(person, grade, status, hireDate, leaveDate, monthlyContribution, legacyRef, 0);
+    }
+
+    public Employment(
+            Person person,
+            Integer grade,
+            EmploymentStatus status,
+            LocalDate hireDate,
+            LocalDate leaveDate,
+            BigDecimal monthlyContribution,
+            String legacyRef,
+            int commuteDistance) {
         this.person = person;
         this.grade = grade;
         this.status = status;
@@ -61,6 +76,7 @@ public class Employment {
         this.leaveDate = leaveDate;
         this.monthlyContribution = monthlyContribution;
         this.legacyRef = legacyRef;
+        this.commuteDistance = commuteDistance;
     }
 
     public Long getId() {
@@ -95,6 +111,10 @@ public class Employment {
         return legacyRef;
     }
 
+    public int getCommuteDistance() {
+        return commuteDistance;
+    }
+
     public void setGrade(Integer grade) {
         this.grade = grade;
     }
@@ -113,5 +133,9 @@ public class Employment {
 
     public void setMonthlyContribution(BigDecimal monthlyContribution) {
         this.monthlyContribution = monthlyContribution;
+    }
+
+    public void setCommuteDistance(int commuteDistance) {
+        this.commuteDistance = commuteDistance;
     }
 }
