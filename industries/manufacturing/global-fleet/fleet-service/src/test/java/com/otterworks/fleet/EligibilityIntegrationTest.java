@@ -235,6 +235,10 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
         Employment expiredActive = createEmployment(
                 unique("GF03"), profile.minGrade(), EmploymentStatus.ACTIVE,
                 LocalDate.of(2020, 1, 1), LocalDate.of(2026, 9, 30));
+        Employment hiredTomorrow = createEmployment(
+                unique("GF03"), profile.minGrade(), EmploymentStatus.ACTIVE, today.plusDays(1), null);
+        Employment hiredToday = createEmployment(
+                unique("GF03"), profile.minGrade(), EmploymentStatus.ACTIVE, today, null);
 
         assertTrue(eligibilityService.carRequest(
                 active.getPerson().getEmployeeNo(), CarRequestStep.EMPLOYEE, today).allowed());
@@ -244,6 +248,10 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
                 transferred.getPerson().getEmployeeNo(), CarRequestStep.EMPLOYEE, today).reason());
         assertEquals(EligibilityReason.NOT_ACTIVE, eligibilityService.carRequest(
                 expiredActive.getPerson().getEmployeeNo(), CarRequestStep.EMPLOYEE, today).reason());
+        assertEquals(EligibilityReason.NOT_ACTIVE, eligibilityService.carRequest(
+                hiredTomorrow.getPerson().getEmployeeNo(), CarRequestStep.EMPLOYEE, today).reason());
+        assertTrue(eligibilityService.carRequest(
+                hiredToday.getPerson().getEmployeeNo(), CarRequestStep.EMPLOYEE, today).allowed());
         assertTrue(eligibilityService.inquiry(left.getPerson().getEmployeeNo()).allowed());
         assertTrue(eligibilityService.inquiry(transferred.getPerson().getEmployeeNo()).allowed());
 

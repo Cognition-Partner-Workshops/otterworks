@@ -91,6 +91,7 @@ public class EligibilityService {
         }
         Employment employment = current.get();
         if (employment.getStatus() != EmploymentStatus.ACTIVE
+                || (onDate != null && employment.getHireDate().isAfter(onDate))
                 || (onDate != null && employment.getLeaveDate() != null
                 && employment.getLeaveDate().isBefore(onDate))) {
             return EligibilityDecision.refuse(
