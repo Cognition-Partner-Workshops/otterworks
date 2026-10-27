@@ -178,7 +178,7 @@ GF21 check on the seed: of the 699 legacy DE claims, 172 differ from `round(km x
 | E4 | UK holdouts (GF29) | 41 pool-loan employee-months, six employees, +20985.76 GBP | expected (owner-accepted); payroll cutover item |
 | D1 | UK holdouts (GF31) | `BENRPT.txt` is not produced (12/12 missing in `check_pairs`). fleet-service keeps the control totals on the closed period instead, and they reconcile (section 2) | **defect, not on the expected list**. Route to the benefit context (or Legacy may rule that GF31 option B's stored totals replace the report) |
 | D2 | DE statement 2026-08, 2026-09 (GF26/GF27) | API 404 `PERIOD_NOT_FOUND`; legacy showed the (empty) statement. `after-seed.sql` seeds `uk.benefit_period` only, so `de.benefit_period` is empty and only the current month resolves (`BenefitOpenPeriodLookup` fallback) | **defect**: after-tenant seed (platform) |
-| D3 | DE statement 2026-10-new-car (GF27) | taxable 53.04 EUR vs legacy 105.55 EUR for E1009100 (HH-VS 7629, 5 days match). `commuteDistance` is 0 vs 33 km, so the 0.03 %/km commute part is missing. `after-seed.sql` does not carry `legacy.employee.commute_km` into `de.employment.commute_distance` (V50, default 0): 0 of 215 employments vs 215 of 215 legacy employees | **defect**: after-tenant seed (platform). Every DE benefit on the after tenant is understated |
+| D3 | DE statement 2026-10-new-car (GF27) | taxable 53.04 EUR vs legacy 105.55 EUR for E1009100 (HH-VS 7629, 5 days match). `commuteDistance` is 0 vs 33 km, so the 0.03 %/km commute part is missing. `after-seed.sql` does not carry `legacy.employee.commute_km` into `de.employment.commute_distance` (V50, default 0): 0 of 215 employments vs 215 of 215 legacy employees | **defect**: after-tenant seed (platform). Every DE benefit on the after tenant is understated. Red cutover data item, open item 7 |
 | D4 | DE statement-default-period (GF26) | with no period, the API uses the current month (`BenefitController`, `YearMonth.now`: 202610, 53.04 EUR); legacy uses the previous month (2026-09, 0 EUR) | **defect**: benefit context |
 
 ## 5. Open items
@@ -214,3 +214,10 @@ GF21 check on the seed: of the 699 legacy DE claims, 172 differ from `round(km x
    - PR #2278 (benefit): no authz finding posted.
    - PR #2284 (shell): no authz finding posted. Its one unposted Devin Review flag is not visible on GitHub.
 6. **After-tenant seed (`deploy/after-seed.sql`, `person.name`).** **Fixed by PR #2280** (`8960d8319`). It now inserts `person (employee_no, first_name, last_name)` for both de and uk. It applied cleanly to the migrated de schema in the local run above. No tenant was deployed for this report. The seed still has the separate defects D2 and D3.
+7. **🔴 RED, cutover data item: German commute distance missing from the after-tenant data load.** Open; the seed is not fixed in this ticket.
+   - The after-tenant load (`deploy/after-seed.sql`) does not carry `legacy.employee.commute_km` into `de.employment.commute_distance`. That column comes from V50 with default 0, so every German employee has 0 km and loses the 0.03 % per km commute part of the benefit.
+   - On t-gf-after, Legacy found it on the Windows walkthrough: E1009103's October statement is 71.75 EUR on the new app and 116.95 EUR on the old portal. The car part matches exactly.
+   - The difference, 45.20 EUR, is the commute part for E1009103's legacy 21 km (0.63 % against the car part's 1.00 %).
+   - Locally (D3): 0 of 215 DE employments carry a commute distance, against 215 of 215 legacy employees. E1009100's October statement is 53.04 EUR against 105.55 EUR on the portal, at 33 km.
+   - E1009103 holds no car in October in the local database, so that specific figure was not reproduced here.
+   - Owner: the platform side (after-tenant seed). It must be fixed and DE benefit re-checked before cutover.
