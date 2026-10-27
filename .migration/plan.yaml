@@ -1,0 +1,71 @@
+version: 1
+title: OtterWorks billing slice to Databricks + Lakebase (run 20261027)
+summary: One tenant, one vertical slice (signup, subscription, issue_invoice, nightly CUSTBILL, finance close). Oracle OW_BILLING and the ksh/perl CUSTBILL chain stay read-only; Lakebase branch mig-20261027-w0 for the PL/SQL packages, Lakeflow CUSTBILL pipeline with expectations and quarantine, gold finance close, one AI/BI dashboard. dbx-recon is the only parity authority.
+phases:
+  - id: foundation
+    title: Foundation
+    decisions:
+      - id: feed-mode
+        description: How OW_BILLING reaches Databricks (no 1521 to serverless, no Debezium, Oracle read-only; DEP-005).
+        options:
+          - id: session-extract
+            label: Query-based extract from the session bridge into ow_tp.mig_20261027_bronze
+        selected: session-extract
+        important: false
+      - id: target-oltp
+        description: Target for pkg_ow_util, pkg_plans, pkg_rating, pkg_invoicing (DEP-016/DEP-023).
+        options:
+          - id: lakebase
+            label: Lakebase ow-tp-billing branch mig-20261027-w0, oracle->lakebase type map, recon --target-kind lakebase
+        selected: lakebase
+        important: false
+      - id: dunning-scope
+        description: pkg_dunning scope (DEP-010, no call edge from the slice).
+        options:
+          - id: exclude
+            label: Not migrated; finding only
+        selected: exclude
+        important: false
+    steps:
+      - id: workspace-setup
+        title: Committed .migration workspace, doctor ready (STOP A, approved)
+        gates:
+          - id: doctor-green
+            description: capabilities.json ready=True with the hook probe blocked and the live OW_BILLING_RO read-only query.
+      - id: scaffold-wave-0
+        title: Wave 0 Lakebase scaffold (width 1)
+        depends_on: [workspace-setup]
+        gates:
+          - id: w0-recon
+            description: dbx-recon PASS for lakebase_scaffold (structural, reference parity, fixture shape).
+  - id: waves
+    title: Migration waves
+    steps:
+      - id: pilot
+        title: Wave 1 packages on Lakebase + CUSTBILL Lakeflow (width 2)
+        depends_on: [scaffold-wave-0]
+        gates:
+          - id: w1-recon
+            description: dbx-recon PASS per unit incl. the live issue_invoice row for Tenant One and the CUSTBILL sha256.
+      - id: run-wave-2
+        title: Wave 2 gold finance close + AI/BI dashboard (width 1)
+        depends_on: [pilot]
+        gates:
+          - id: w2-recon
+            description: dbx-recon PASS on finance close detail and close total; dashboard renders the close total.
+  - id: cutover
+    title: Cutover
+    steps:
+      - id: cutover
+        title: STOP E evidence packet and repoint decision
+        depends_on: [run-wave-2]
+        decisions:
+          - id: cutover-auth
+            description: Repoint production consumers to the migrated slice under the customer-held cutover principal.
+            options:
+              - id: authorize
+                label: Proceed with the rehearsed repoint
+              - id: hold
+                label: Hold; production and the production Lakebase branch do not move
+            selected: null
+            important: true

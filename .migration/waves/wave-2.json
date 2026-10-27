@@ -1,0 +1,115 @@
+{
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "run_id": "20261027",
+  "wave": 2,
+  "base_branch": "tp-run/databricks-20261027T213833Z",
+  "width": 1,
+  "breaker_threshold": 3,
+  "max_minutes": 60,
+  "close_minutes": 30,
+  "doctor_max_age": 15,
+  "auto_merge": false,
+  "target_namespace": "ow_tp.mig_20261027_gold",
+  "verify_depth": "full",
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN",
+    "params": {
+      "ns": "demo",
+      "batch_no": "85559852",
+      "admin_tenant_id": "a0000000-0000-0000-0000-000000000001",
+      "fixture_tenant_id": "00000000-0000-0000-0000-000000000001"
+    }
+  },
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp",
+      "billing_demo"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "hard",
+    "ready": true
+  },
+  "cost_estimate": {
+    "mode": "live",
+    "depth": "full",
+    "tier3_mode": {
+      "OW_BILLING.INVOICE_HEADER": "full_diff"
+    },
+    "source_statements": {
+      "tier1": 1,
+      "tier2": 1,
+      "tier3": 3,
+      "tier4": 0,
+      "total": 5
+    },
+    "target_statements": {
+      "tier1": 1,
+      "tier2": 1,
+      "tier3": 2,
+      "tier4": 0,
+      "total": 4
+    },
+    "source_rows_fetched": 18750,
+    "target_rows_fetched": 18750,
+    "row_counts_known": true
+  },
+  "stop_c": "D-015",
+  "lakebase": {
+    "project": "ow-tp-billing",
+    "database": "ow_tp",
+    "parent_branch": "production",
+    "branch": "mig-20261027-w0",
+    "exec_branch": "mig-20261027-exec",
+    "ttl": "604800s"
+  },
+  "batches": [
+    {
+      "id": "w2-finance-close-gold",
+      "units": [
+        "finance_close_gold"
+      ],
+      "brief": "Units: finance_close_gold\nTrack: analytical\nSource: OW_BILLING (see mapping_spec) (read-only)\nTargets: exactly this batch's write_targets in .migration/waves/wave-2.json\nSpec: .migration/units/finance_close_gold/mapping_spec.json (tolerances: .migration/recon_tolerances.json)\nDepends on: custbill_lakeflow merged in wave 1\nDialect skill: skills/oracle-plsql/SKILL.md (traps table, dependency analysis output, Lakebase track)\nRerun posture: required\nGates: w2-detail-parity: \nGates: w2-close-total: \nGates: w2-dashboard: \nKnown: batch detail carried from the last run in .migration/units/finance_close_gold/batch_w2-finance-close-gold_notes.md (read it first)\nKnown: fixture tenant 00000000-0000-0000-0000-000000000001 (Tenant One), period 2026-02, no invoice on Oracle yet\nKnown: Lakebase types follow the oracle->lakebase map (varchar(36) ids); run doctor/recon with --target-kind lakebase for OLTP units\nDone when: recon result.json committed at the PR head; PR against tp-run/databricks-20261027T213833Z; nothing else",
+      "write_targets": [
+        "ow_tp.mig_20261027_gold.finance_close_detail",
+        "ow_tp.mig_20261027_gold.finance_close",
+        "ow_tp_20261027_finance_close_dashboard",
+        "ow_tp_20261027_finance_close"
+      ],
+      "deploy_objects": [
+        "ow_tp_20261027_finance_close_dashboard",
+        "ow_tp_20261027_finance_close"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "max_minutes": 60,
+      "target_kind": "databricks",
+      "gates": [
+        {
+          "id": "w2-detail-parity",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        },
+        {
+          "id": "w2-close-total",
+          "kind": "publish_leg",
+          "status": "pending",
+          "evidence": ""
+        },
+        {
+          "id": "w2-dashboard",
+          "kind": "structural",
+          "status": "pending",
+          "evidence": ""
+        }
+      ]
+    }
+  ],
+  "gates_sha": "f6e68ff76723d970f66381e973c408e6938c485d45ca826c5755712f1bd68f57",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "run-wave-2"
+}
