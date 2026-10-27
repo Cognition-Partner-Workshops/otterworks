@@ -13,3 +13,9 @@ and `ExecutionLogs/client-regression-2025-02.xml`, not a fresh Tosca run.
 
 See [the migrated suite README](../README.md) for reproducible local-stack setup,
 mirror workarounds, test commands, and report locations.
+
+## Cypress parity carried forward
+
+| Legacy ID | Legacy result on current app | Legacy behavior | Combined Playwright behavior | Combined result |
+| --- | --- | --- | --- | --- |
+| CY-document-search-01 | Passed (1/1) against stubbed profile/search responses; did not reach a backend. | Merged into TC-SRCH-001; visits `/search?q=quarterly`, asserts the real Quarterly Planning result link and its seeded-document href, and checks the main textbox value. | Pass in both combined migrated-suite runs against the real indexed API. |

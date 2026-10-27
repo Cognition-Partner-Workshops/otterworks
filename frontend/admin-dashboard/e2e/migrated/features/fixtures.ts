@@ -1,5 +1,4 @@
-import { randomUUID } from "node:crypto";
-import { adminTest } from "../support/admin-session";
+import { adminTest, uniqueFlagName } from "../support/admin-session";
 import { FeaturesPage } from "./features-page";
 
 // Legacy data: literals from tests/legacy-suites/selenium/src/test/java/com/otterworks/legacy/admin/
@@ -9,7 +8,7 @@ export const FeaturesLegacyData = {
   heading: "Feature Flags",
   searchTerm: "search",
   // FeaturesPage.searchInput identity; the input's accessible name is its mat-label "Search features" instead.
-  searchPlaceholder: "Search by name or description",
+  LegacySearchPlaceholder: "Search by name or description",
 } as const;
 
 export interface SeededFlag {
@@ -18,30 +17,23 @@ export interface SeededFlag {
   enabled: boolean;
 }
 
-function uniqueSuffix(): string {
-  return randomUUID().replaceAll("-", "").slice(0, 8);
-}
-
-// Seeded names start with "a_" so they sort onto the first page: the Features page shows only the first 20 flags
-// of GET /api/v1/admin/features (ordered by name, default per_page 20, no paging UI).
 export const test = adminTest.extend<{
   featuresPage: FeaturesPage;
   searchFlags: { matching: SeededFlag; nonMatching: SeededFlag };
   disabledFlag: SeededFlag;
 }>({
   featuresPage: async ({ page, adminSession }, use) => {
-    void adminSession;
-    await use(new FeaturesPage(page));
+    await use(new FeaturesPage(page, adminSession));
   },
   searchFlags: async ({ adminData }, use) => {
-    const suffix = uniqueSuffix();
+    // Seeded names start with "a_" so they sort onto the first page (GET /api/v1/admin/features shows 20).
     const matching = await adminData.createFeatureFlag({
-      name: `a_features_${FeaturesLegacyData.searchTerm}_${suffix}`,
+      name: uniqueFlagName(`a_features_${FeaturesLegacyData.searchTerm}`),
       description: "Seeded by the migrated Features suite (matches the term)",
       enabled: true,
     });
     const nonMatching = await adminData.createFeatureFlag({
-      name: `a_features_other_${suffix}`,
+      name: uniqueFlagName("a_features_other"),
       description: "Seeded by the migrated Features suite (does not match the term)",
       enabled: true,
     });
@@ -52,7 +44,7 @@ export const test = adminTest.extend<{
   },
   disabledFlag: async ({ adminData }, use) => {
     const flag = await adminData.createFeatureFlag({
-      name: `a_features_toggle_${uniqueSuffix()}`,
+      name: uniqueFlagName("a_features_toggle"),
       description: "Seeded disabled by the migrated Features suite",
       enabled: false,
     });

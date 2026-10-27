@@ -1,5 +1,6 @@
 import { expect, type Page, type Response } from "@playwright/test";
-import { adminTest, expectGatewaySession, type AdminSession } from "../support/admin-session";
+import { adminTest, openAdminPage, type AdminSession } from "../support/admin-session";
+import { matSelect } from "../support/material";
 
 export const LEGACY_SOURCE =
   "tests/legacy-suites/selenium/src/test/java/com/otterworks/legacy/admin/tests/UsersTest.java";
@@ -19,26 +20,23 @@ export const UsersLegacyData = {
 } as const;
 
 export class UsersPage {
-  constructor(private readonly page: Page, private readonly session: AdminSession) {}
+  private readonly roles: ReturnType<typeof matSelect>;
+
+  constructor(private readonly page: Page, private readonly session: AdminSession) {
+    this.roles = matSelect(page, UsersLegacyData.roleFilterLabel);
+  }
 
   readonly heading = () => this.page.getByRole("heading", { level: 1 });
   readonly searchBox = () => this.page.getByRole("textbox", { name: UsersLegacyData.searchLabel });
-  readonly roleFilter = () => this.page.getByRole("combobox", { name: UsersLegacyData.roleFilterLabel });
-  readonly roleOptions = () => this.page.getByRole("listbox", { name: UsersLegacyData.roleFilterLabel }).getByRole("option");
+  readonly roleFilter = () => this.roles.trigger;
+  readonly roleOptions = () => this.roles.options;
 
-  /** Opens /users and proves the list came from the real gateway with this session's token. */
+  /** Opens /users after proving the list request used this session's gateway token. */
   async open(): Promise<Response> {
-    const usersResponse = this.page.waitForResponse(response =>
-      response.request().method() === "GET" &&
-      new URL(response.url()).pathname === "/api/v1/admin/users" &&
-      response.request().headers()["authorization"] === `Bearer ${this.session.accessToken}`,
-    );
-    await this.page.goto(UsersLegacyData.path);
-    const response = await usersResponse;
-    expect(response.status()).toBe(200);
-    await expect(this.page).toHaveURL(/\/users$/);
-    await expectGatewaySession(this.page, this.session);
-    return response;
+    return openAdminPage(this.page, this.session, {
+      path: UsersLegacyData.path,
+      apiPath: "/api/v1/admin/users",
+    });
   }
 }
 

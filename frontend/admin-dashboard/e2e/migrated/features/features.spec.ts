@@ -1,16 +1,15 @@
-import { expectGatewaySession } from "../support/admin-session";
+import { waitForAdminApi } from "../support/admin-session";
 import { expect, FeaturesLegacyData, test } from "./fixtures";
+import { legacyDetails } from "../support/traceability";
 
 const SOURCE = "tests/legacy-suites/selenium/src/test/java/com/otterworks/legacy/admin/tests/FeaturesTest.java";
 
 test.describe("Selenium FeaturesTest", () => {
   test("SEL-FeaturesTest-featurePageShowsHeading featurePageShowsHeading", {
-    tag: ["@SEL-FeaturesTest-featurePageShowsHeading", "@selenium-FeaturesTest"],
-    annotation: { type: "selenium", description: `${SOURCE}#featurePageShowsHeading` },
-  }, async ({ page, adminSession, featuresPage }) => {
+    ...legacyDetails({ suite: "selenium", id: "SEL-FeaturesTest-featurePageShowsHeading", group: "selenium-FeaturesTest", source: SOURCE, method: "featurePageShowsHeading" }),
+  }, async ({ featuresPage }) => {
     await test.step("SEL-FeaturesTest-featurePageShowsHeading-STEP-01 Open /features", async () => {
-      await featuresPage.goto();
-      await expectGatewaySession(page, adminSession);
+      await featuresPage.open();
     });
 
     await test.step("SEL-FeaturesTest-featurePageShowsHeading-STEP-02 Verify heading text", async () => {
@@ -19,12 +18,10 @@ test.describe("Selenium FeaturesTest", () => {
   });
 
   test("SEL-FeaturesTest-featureSearchCanBeApplied featureSearchCanBeApplied", {
-    tag: ["@SEL-FeaturesTest-featureSearchCanBeApplied", "@selenium-FeaturesTest"],
-    annotation: { type: "selenium", description: `${SOURCE}#featureSearchCanBeApplied` },
-  }, async ({ page, adminSession, featuresPage, searchFlags }) => {
+    ...legacyDetails({ suite: "selenium", id: "SEL-FeaturesTest-featureSearchCanBeApplied", group: "selenium-FeaturesTest", source: SOURCE, method: "featureSearchCanBeApplied" }),
+  }, async ({ featuresPage, searchFlags }) => {
     await test.step("SEL-FeaturesTest-featureSearchCanBeApplied-STEP-01 Open /features", async () => {
-      await featuresPage.goto();
-      await expectGatewaySession(page, adminSession);
+      await featuresPage.open();
       await expect(featuresPage.flagHeading(searchFlags.matching.name)).toBeVisible();
       await expect(featuresPage.flagHeading(searchFlags.nonMatching.name)).toBeVisible();
     });
@@ -45,12 +42,10 @@ test.describe("Selenium FeaturesTest", () => {
   });
 
   test("SEL-FeaturesTest-featureToggleCanBeSelected featureToggleCanBeSelected", {
-    tag: ["@SEL-FeaturesTest-featureToggleCanBeSelected", "@selenium-FeaturesTest"],
-    annotation: { type: "selenium", description: `${SOURCE}#featureToggleCanBeSelected` },
+    ...legacyDetails({ suite: "selenium", id: "SEL-FeaturesTest-featureToggleCanBeSelected", group: "selenium-FeaturesTest", source: SOURCE, method: "featureToggleCanBeSelected" }),
   }, async ({ page, request, adminSession, featuresPage, disabledFlag }) => {
     await test.step("SEL-FeaturesTest-featureToggleCanBeSelected-STEP-01 Open /features", async () => {
-      await featuresPage.goto();
-      await expectGatewaySession(page, adminSession);
+      await featuresPage.open();
     });
 
     // Legacy guarded the body with `if (featureCount() > 0)`; the seeded flag makes the card unconditional.
@@ -62,12 +57,12 @@ test.describe("Selenium FeaturesTest", () => {
     });
 
     await test.step("SEL-FeaturesTest-featureToggleCanBeSelected-STEP-03 Click feature toggle", async () => {
-      const updateResponse = page.waitForResponse(response =>
-        response.request().method() === "PUT" &&
-        new URL(response.url()).pathname === `/api/v1/admin/features/${disabledFlag.id}`,
+      await waitForAdminApi(
+        page,
+        adminSession,
+        { method: "PUT", pathname: `/api/v1/admin/features/${disabledFlag.id}` },
+        () => featuresPage.switches.click(),
       );
-      await featuresPage.switches.click();
-      expect((await updateResponse).status()).toBe(200);
     });
 
     // Legacy only re-counted cards (> 0); the name promises the toggle took effect, so assert the flag is now on.
@@ -78,7 +73,7 @@ test.describe("Selenium FeaturesTest", () => {
         expect(response.status()).toBe(200);
         return ((await response.json()) as { enabled: boolean }).enabled;
       }).toBe(true);
-      await featuresPage.goto();
+      await featuresPage.open();
       await featuresPage.search(disabledFlag.name);
       await expect(featuresPage.flagHeading(disabledFlag.name)).toBeVisible();
       await expect(featuresPage.switches).toBeChecked();

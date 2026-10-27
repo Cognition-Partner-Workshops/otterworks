@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { expect, test as base, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, test as base, type APIRequestContext, type Page, type Response } from "@playwright/test";
+import { LoginPage } from "./login-page";
 
 // These helpers use live gateway/admin APIs; admin-service verifies JWT signatures but does not enforce roles.
 export const OFFLINE_MOCK_USER_ID = "a0000000-0000-0000-0000-000000000001";
@@ -15,6 +16,41 @@ export interface GatewayUser {
 
 export interface AdminSession extends GatewayUser {
   headers: { Authorization: string };
+}
+
+export async function waitForAdminApi(
+  page: Page,
+  session: Pick<GatewayUser, "accessToken">,
+  { pathname, method = "GET" }: { pathname: string; method?: string },
+  trigger: () => Promise<unknown>,
+): Promise<Response> {
+  const responsePromise = page.waitForResponse(
+    (response) =>
+      response.request().method() === method &&
+      new URL(response.url()).pathname === pathname,
+  );
+  await trigger();
+  const response = await responsePromise;
+  expect(response.status()).toBe(200);
+  const headers = await response.request().allHeaders();
+  expect(headers.authorization).toBe(`Bearer ${session.accessToken}`);
+  return response;
+}
+
+export async function openAdminPage(
+  page: Page,
+  session: AdminSession,
+  { path, apiPath }: { path: string; apiPath: string },
+): Promise<Response> {
+  const response = await waitForAdminApi(page, session, { pathname: apiPath }, () => page.goto(path));
+  const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  await expect(page).toHaveURL(new RegExp(`${escapedPath}$`));
+  await expectGatewaySession(page, session);
+  return response;
+}
+
+export function uniqueFlagName(prefix: string): string {
+  return `${prefix}_${randomUUID().replaceAll("-", "").slice(0, 8)}`;
 }
 
 interface FeatureFlagOverrides {
@@ -86,14 +122,15 @@ export async function signInThroughLoginForm(
   page: Page,
   user: Pick<GatewayUser, "email" | "password">,
 ): Promise<void> {
-  await page.goto("/login");
-  await page.getByLabel("Email").fill(user.email);
-  await page.getByLabel("Password").fill(user.password);
+  const loginPage = new LoginPage(page);
+  await loginPage.open("/login");
+  await loginPage.emailInput.fill(user.email);
+  await loginPage.passwordInput.fill(user.password);
   const loginResponsePromise = page.waitForResponse(response =>
     response.request().method() === "POST" &&
     new URL(response.url()).pathname === "/api/v1/auth/login",
   );
-  await page.getByRole("button", { name: "Sign In" }).click();
+  await loginPage.signInButton.click();
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
 
@@ -133,7 +170,7 @@ export async function createFeatureFlag(
     headers: session.headers,
     data: {
       feature: {
-        name: overrides.name ?? `e2e_flag_${randomUUID().replaceAll("-", "").slice(0, 8)}`,
+        name: overrides.name ?? uniqueFlagName("e2e_flag"),
         description: overrides.description ?? "Created by migrated admin tests",
         enabled: overrides.enabled ?? true,
         rollout_percentage: overrides.rollout_percentage ?? 0,

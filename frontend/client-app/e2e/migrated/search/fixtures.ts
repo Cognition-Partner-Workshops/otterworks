@@ -4,9 +4,15 @@ import { seedSearchWorkspace } from "../support/search";
 type DesignRow = { TestCaseId: string; Instance: string; Query: string; Result: string; Type: string };
 type SearchWorkspace = Awaited<ReturnType<typeof seedSearchWorkspace>>;
 type SearchInstance = DesignRow & SearchWorkspace;
+type TitleSearchInstance = SearchInstance & {
+  LegacyUserId: string;
+  LegacyEmail: string;
+  LegacyDocumentId: string;
+  ContentSnippet: string;
+};
 type NoResultsInstance = SearchInstance & { ToscaResultText: string; EmptyResultTitle: string };
 type Fixtures = {
-  TitleSearch: SearchInstance;
+  TitleSearch: TitleSearchInstance;
   DocumentType: SearchInstance;
   NoResults: NoResultsInstance;
 };
@@ -21,6 +27,10 @@ export const test = base.extend<Fixtures>({
       Query: "quarterly",
       Result: "Quarterly Planning",
       Type: "all",
+      LegacyUserId: "user-123",
+      LegacyEmail: "alex.morgan@example.test",
+      LegacyDocumentId: "doc-101",
+      ContentSnippet: "Review quarterly objectives and dates.",
       ...workspace,
     });
   },

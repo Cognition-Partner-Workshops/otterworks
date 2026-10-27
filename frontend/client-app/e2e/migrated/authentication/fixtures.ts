@@ -1,5 +1,6 @@
 import { test as base } from "@playwright/test";
-import { disposableEmail, registerAccount } from "../support/accounts";
+import { registerUser, type ClientAccount } from "../support/account";
+import { legacySignIn } from "../support/legacy-sign-in";
 
 type DesignRow = {
   TestCaseId: string;
@@ -12,30 +13,38 @@ type DesignRow = {
 };
 
 type Fixtures = {
-  ValidSignIn: DesignRow & { ToscaEmail: string };
+  ValidSignIn: DesignRow & ClientAccount & {
+    ToscaEmail: string;
+    LegacyEmail: string;
+    LegacyId: string;
+  };
   InvalidEmail: DesignRow;
   RequiredName: DesignRow;
   PasswordMismatch: DesignRow;
+  MissingEmail: { password: string; emailError: string; LegacyEmail: string; LegacyId: string };
 };
 
 export const test = base.extend<Fixtures>({
   ValidSignIn: async ({ request, page }, use) => {
     // The CSV account is a shared persistent user; register a disposable one with the CSV password instead.
+    const account = await registerUser(request, undefined, {
+      displayName: legacySignIn.displayName,
+      emailPrefix: "alex.morgan",
+      password: "DemoPass123!",
+    });
     const ValidSignIn: Fixtures["ValidSignIn"] = {
       TestCaseId: "TC-AUTH-001",
       Instance: "ValidSignIn",
-      Email: disposableEmail("alex.morgan", "example.test"),
-      Password: "DemoPass123!",
+      ...account,
+      Email: account.email,
+      Password: account.password,
       Name: "",
       InvalidEmail: "",
       Confirmation: "",
       ToscaEmail: "alex.morgan@example.test",
+      LegacyEmail: legacySignIn.email,
+      LegacyId: legacySignIn.user.id,
     };
-    await registerAccount(request, {
-      displayName: "Alex Morgan",
-      email: ValidSignIn.Email,
-      password: ValidSignIn.Password,
-    });
     await page.goto("/login");
     await use(ValidSignIn);
   },
@@ -73,6 +82,14 @@ export const test = base.extend<Fixtures>({
       Name: "Jordan Lee",
       InvalidEmail: "",
       Confirmation: "DifferentPass123!",
+    });
+  },
+  MissingEmail: async ({}, use) => {
+    await use({
+      password: legacySignIn.password,
+      emailError: legacySignIn.emailError,
+      LegacyEmail: legacySignIn.email,
+      LegacyId: legacySignIn.user.id,
     });
   },
 });

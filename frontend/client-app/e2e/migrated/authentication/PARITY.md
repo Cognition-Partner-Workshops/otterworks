@@ -16,3 +16,10 @@ validation message, so they do not support either Tosca message assertion.
 
 Uses the same stack as Documents (auth-service through the gateway; no extra backend). See
 [the migrated suite README](../README.md). Run with `npm run test:e2e:migrated -- --grep @tosca-Authentication`.
+
+## Cypress parity carried forward
+
+| Legacy ID | Legacy result on current app | Legacy behavior | Combined Playwright behavior | Combined result |
+| --- | --- | --- | --- | --- |
+| CY-sign-in-01 | Passed (2/2) with stubbed login/profile and fake token; no account or backend request was validated. | TC-AUTH-001 now registers a unique real account, submits the login form, checks login/profile responses and local token, and verifies the Dashboard and display name. | Pass in both combined migrated-suite runs. |
+| CY-sign-in-02 | Passed with stubbed APIs; empty email produced the Zod validation message without a login request. | Kept as a distinct test in `authentication.spec.ts`; verifies the message, `/login`, and no login request. | Pass in both combined migrated-suite runs. |

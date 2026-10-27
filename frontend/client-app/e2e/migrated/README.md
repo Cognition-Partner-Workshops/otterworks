@@ -3,9 +3,13 @@
 These tests use real local services, not intercepted network responses. Each test
 registers a unique API user, seeds the four source screenshot documents, verifies
 the API total, and initializes browser auth tokens. See [Documents parity](documents/PARITY.md),
-[Authentication parity](authentication/PARITY.md), and [Search parity](search/PARITY.md).
+[Authentication parity](authentication/PARITY.md), [Search parity](search/PARITY.md),
+[Settings parity](settings/PARITY.md), and [Sharing parity](sharing/PARITY.md).
 Authentication tests register a disposable user (or none) and need no backend beyond
 the stack below.
+
+The combined legacy migration decisions and 20-test inventory are documented in
+[CROSSCHECK.md](CROSSCHECK.md) and [LEGACY-MIGRATION.md](LEGACY-MIGRATION.md).
 
 ## Prerequisites
 

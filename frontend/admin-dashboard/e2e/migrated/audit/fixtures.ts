@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
-import { adminTest } from "../support/admin-session";
+import { adminTest, openAdminPage, type AdminSession } from "../support/admin-session";
+import { matSelect } from "../support/material";
 
 export const LEGACY_SOURCE =
   "tests/legacy-suites/selenium/src/test/java/com/otterworks/legacy/admin/tests/AuditTest.java";
@@ -27,20 +28,19 @@ export class AuditPage {
   readonly actionFilter: Locator;
   readonly actionOptions: Locator;
 
-  constructor(readonly page: Page) {
+  constructor(readonly page: Page, private readonly session: AdminSession) {
+    const actionSelect = matSelect(page, legacyAudit.ActionFilterLabel);
     this.heading = page.getByRole("heading", { level: 1, name: legacyAudit.Heading, exact: true });
     this.searchBox = page.getByRole("textbox", { name: legacyAudit.SearchLabel });
-    this.actionFilter = page.getByRole("combobox", { name: legacyAudit.ActionFilterLabel });
-    this.actionOptions = page.getByRole("listbox", { name: legacyAudit.ActionFilterLabel }).getByRole("option");
+    this.actionFilter = actionSelect.trigger;
+    this.actionOptions = actionSelect.options;
   }
 
-  async open(): Promise<void> {
-    const auditLogs = this.page.waitForResponse(response =>
-      response.request().method() === "GET" &&
-      new URL(response.url()).pathname === "/api/v1/admin/audit-logs",
-    );
-    await this.page.goto(legacyAudit.Path);
-    expect((await auditLogs).status()).toBe(200);
+  async open() {
+    return openAdminPage(this.page, this.session, {
+      path: legacyAudit.Path,
+      apiPath: "/api/v1/admin/audit-logs",
+    });
   }
 
   eventRow(resourceId: string): Locator {
@@ -57,8 +57,7 @@ export const test = adminTest.extend<{
   auditSearchEvents: { matching: FeatureFlag; other: FeatureFlag };
 }>({
   auditPage: async ({ page, adminSession }, use) => {
-    void adminSession;
-    await use(new AuditPage(page));
+    await use(new AuditPage(page, adminSession));
   },
   auditSearchEvents: async ({ adminData }, use) => {
     const matching = await adminData.createFeatureFlag({

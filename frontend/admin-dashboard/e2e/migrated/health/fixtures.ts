@@ -1,5 +1,5 @@
-import { expect, type Page, type Response } from "@playwright/test";
-import { adminTest } from "../support/admin-session";
+import { expect, type Page } from "@playwright/test";
+import { adminTest, openAdminPage, waitForAdminApi, type AdminSession } from "../support/admin-session";
 
 // Legacy data, verbatim from tests/legacy-suites/selenium/.../HealthTest.java and pages/HealthPage.java.
 export const LegacyHealth = {
@@ -42,15 +42,11 @@ export function countsFromHealthBody(body: HealthServicesBody): HealthCounts {
   };
 }
 
-function isHealthServicesResponse(response: Response): boolean {
-  return response.request().method() === "GET" && new URL(response.url()).pathname === HEALTH_API_PATH;
-}
-
 const SUMMARY_LABELS = ["Healthy", "Degraded", "Down"] as const;
 type SummaryLabel = typeof SUMMARY_LABELS[number];
 
 export class HealthPage {
-  constructor(private readonly page: Page) {}
+  constructor(private readonly page: Page, private readonly session: AdminSession) {}
 
   get heading() {
     return this.page.getByRole("heading", { level: 1, name: LegacyHealth.heading, exact: true });
@@ -79,26 +75,36 @@ export class HealthPage {
   }
 
   /** Waits for the real GET /api/v1/admin/health/services issued by `trigger`; returns the counts it implies. */
-  async healthResponseFrom(trigger: () => Promise<unknown>): Promise<{ status: number; authorization: string | null; counts: HealthCounts }> {
-    const responsePromise = this.page.waitForResponse(isHealthServicesResponse);
-    await trigger();
-    const response = await responsePromise;
+  async healthResponseFrom(trigger: () => Promise<unknown>): Promise<{ status: number; authorization: string; counts: HealthCounts }> {
+    const response = await waitForAdminApi(
+      this.page,
+      this.session,
+      { pathname: HEALTH_API_PATH },
+      trigger,
+    );
     return {
       status: response.status(),
-      authorization: (await response.request().allHeaders())["authorization"] ?? null,
+      authorization: (await response.request().allHeaders())["authorization"]!,
       counts: countsFromHealthBody(await response.json() as HealthServicesBody),
     };
   }
 
   async open() {
-    return this.healthResponseFrom(() => this.page.goto(LegacyHealth.path));
+    const response = await openAdminPage(this.page, this.session, {
+      path: LegacyHealth.path,
+      apiPath: HEALTH_API_PATH,
+    });
+    return {
+      status: response.status(),
+      authorization: (await response.request().allHeaders())["authorization"]!,
+      counts: countsFromHealthBody(await response.json() as HealthServicesBody),
+    };
   }
 }
 
 export const test = adminTest.extend<{ healthPage: HealthPage }>({
   healthPage: async ({ page, adminSession }, use) => {
-    void adminSession;
-    await use(new HealthPage(page));
+    await use(new HealthPage(page, adminSession));
   },
 });
 

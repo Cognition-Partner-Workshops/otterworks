@@ -1,11 +1,12 @@
-import { expect, type Locator, type Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
+import { openAdminPage, type AdminSession } from "../support/admin-session";
 
 export class FeaturesPage {
   readonly heading: Locator;
   readonly searchBox: Locator;
   readonly switches: Locator;
 
-  constructor(readonly page: Page) {
+  constructor(readonly page: Page, private readonly session: AdminSession) {
     this.heading = page.getByRole("heading", { level: 1, name: "Feature Flags" });
     this.searchBox = page.getByRole("textbox", { name: "Search features" });
     // Accessibility gap: each card's mat-slide-toggle renders role=switch with no accessible name and the card has
@@ -13,14 +14,11 @@ export class FeaturesPage {
     this.switches = page.getByRole("switch");
   }
 
-  async goto(): Promise<void> {
-    const featuresResponse = this.page.waitForResponse(response =>
-      response.request().method() === "GET" &&
-      new URL(response.url()).pathname === "/api/v1/admin/features",
-    );
-    await this.page.goto("/features");
-    expect((await featuresResponse).status()).toBe(200);
-    await expect(this.page).toHaveURL(/\/features$/);
+  async open(): Promise<void> {
+    await openAdminPage(this.page, this.session, {
+      path: "/features",
+      apiPath: "/api/v1/admin/features",
+    });
   }
 
   flagHeading(name: string): Locator {

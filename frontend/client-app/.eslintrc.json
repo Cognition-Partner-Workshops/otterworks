@@ -11,5 +11,13 @@
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn"
   },
-  "ignorePatterns": ["dist", "node_modules", "test-results"]
+  "ignorePatterns": ["dist", "node_modules", "test-results"],
+  "overrides": [
+    {
+      "files": ["e2e/**/*.ts"],
+      "rules": {
+        "react-hooks/rules-of-hooks": "off"
+      }
+    }
+  ]
 }

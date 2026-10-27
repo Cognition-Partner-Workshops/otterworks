@@ -1,5 +1,5 @@
 import { adminTest } from "../support/admin-session";
-import { LoginPage } from "./login-page";
+import { LoginPage } from "../support/login-page";
 
 /**
  * Legacy data from tests/legacy-suites/selenium/.../tests/LoginTest.java and pages/LoginPage.java,

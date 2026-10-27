@@ -1,11 +1,11 @@
 import { expect, test } from "./fixtures";
+import { legacyDetails } from "../support/traceability";
 
 const SOURCE = "tests/legacy-suites/selenium/src/test/java/com/otterworks/legacy/admin/tests/LoginTest.java";
 
 test.describe("Selenium LoginTest", () => {
   test("SEL-LoginTest-loginFormShowsEmailField loginFormShowsEmailField", {
-    tag: ["@SEL-LoginTest-loginFormShowsEmailField", "@selenium-LoginTest"],
-    annotation: { type: "selenium", description: `${SOURCE}#loginFormShowsEmailField` },
+    ...legacyDetails({ suite: "selenium", id: "SEL-LoginTest-loginFormShowsEmailField", group: "selenium-LoginTest", source: SOURCE, method: "loginFormShowsEmailField" }),
   }, async ({ loginPage, legacyLogin }) => {
     await test.step("SEL-LoginTest-loginFormShowsEmailField-STEP-01 Open /login", async () => {
       await loginPage.open(legacyLogin.path);
@@ -18,8 +18,7 @@ test.describe("Selenium LoginTest", () => {
   });
 
   test("SEL-LoginTest-emptyCredentialsShowValidationMessage emptyCredentialsShowValidationMessage", {
-    tag: ["@SEL-LoginTest-emptyCredentialsShowValidationMessage", "@selenium-LoginTest"],
-    annotation: { type: "selenium", description: `${SOURCE}#emptyCredentialsShowValidationMessage` },
+    ...legacyDetails({ suite: "selenium", id: "SEL-LoginTest-emptyCredentialsShowValidationMessage", group: "selenium-LoginTest", source: SOURCE, method: "emptyCredentialsShowValidationMessage" }),
   }, async ({ page, loginPage, legacyLogin }) => {
     const loginRequests: string[] = [];
     page.on("request", request => {
@@ -42,8 +41,7 @@ test.describe("Selenium LoginTest", () => {
   });
 
   test("SEL-LoginTest-passwordVisibilityCanBeChanged passwordVisibilityCanBeChanged", {
-    tag: ["@SEL-LoginTest-passwordVisibilityCanBeChanged", "@selenium-LoginTest"],
-    annotation: { type: "selenium", description: `${SOURCE}#passwordVisibilityCanBeChanged` },
+    ...legacyDetails({ suite: "selenium", id: "SEL-LoginTest-passwordVisibilityCanBeChanged", group: "selenium-LoginTest", source: SOURCE, method: "passwordVisibilityCanBeChanged" }),
   }, async ({ loginPage, legacyLogin }) => {
     await test.step("SEL-LoginTest-passwordVisibilityCanBeChanged-STEP-01 Open /login", async () => {
       await loginPage.open(legacyLogin.path);

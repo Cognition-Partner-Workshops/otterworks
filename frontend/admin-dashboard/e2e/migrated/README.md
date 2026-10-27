@@ -1,17 +1,19 @@
-# Migrated admin Playwright scaffold
+# Migrated admin Playwright suite
 
-This is a real-service Playwright harness for the admin dashboard. There are
-currently no converted specs; the helpers are intended for later migration work.
-For the client app's parallel harness and detailed client behavior, see the
+This is a real-service Playwright suite for the admin dashboard's five migrated
+Selenium modules. For the shared migration decisions and full 20-test inventory,
+see [CROSSCHECK.md](../../../client-app/e2e/migrated/CROSSCHECK.md) and
+[LEGACY-MIGRATION.md](../../../client-app/e2e/migrated/LEGACY-MIGRATION.md).
+For the client app's parallel harness and behavior, see the
 [client migrated Playwright runbook](../../../client-app/e2e/migrated/README.md).
-The client README remains the source of truth for the client suite.
 
 ## Prerequisites
 
 Start from the repository root with Docker Engine and Compose v2, `curl`, `nvm`,
 and npm available. Use Node 20 for this Angular 17 app and Node 22.12+ for the
-client app (Vite 8). The local stack needs ports 3000, 4200, 5432, 6379, 4566,
-8080–8083, and 8089 available. No cloud credentials are required.
+client app (Vite 8). The combined local stack needs ports 3000, 4200, 5432,
+6379, 4566, 7700, 8080–8083, 8087, and 8089 available. No cloud credentials
+are required.
 
 ## Build and start the real backend
 
@@ -30,21 +32,23 @@ do
 done
 docker pull mirror.gcr.io/localstack/localstack:3.8
 docker tag mirror.gcr.io/localstack/localstack:3.8 localstack/localstack:3.8
+docker pull mirror.gcr.io/getmeili/meilisearch:v1.6
+docker tag mirror.gcr.io/getmeili/meilisearch:v1.6 getmeili/meilisearch:v1.6
 
 docker build \
   -f frontend/client-app/e2e/migrated/stack/auth-service-mirror.Dockerfile \
   -t otterworks-auth-service .
 
 docker compose -f docker-compose.infra.yml -f docker-compose.yml \
-  build document-service file-service api-gateway admin-service
+  build document-service file-service api-gateway search-service admin-service
 
 docker compose -f docker-compose.infra.yml -f docker-compose.yml \
-  up -d --no-build postgres redis localstack auth-service \
-  document-service file-service api-gateway admin-service
+  up -d --no-build postgres redis localstack meilisearch auth-service \
+  document-service file-service api-gateway search-service admin-service
 
 docker compose -f docker-compose.infra.yml -f docker-compose.yml ps
 
-for port in 8080 8081 8082 8083 8089; do
+for port in 8080 8081 8082 8083 8087 8089 7700; do
   curl --fail --silent --show-error --retry 30 --retry-all-errors \
     --retry-delay 2 "http://localhost:$port/health"
   printf '\n'
@@ -130,14 +134,8 @@ The admin config uses Chromium, no retries, and retain-on-failure traces and
 screenshots. HTML and JSON reports are written under
 `playwright-report-migrated/`; failure artifacts are written under
 `playwright-report-migrated-artifacts/`. Both directories and `test-results/`
-are ignored by Git. No committed `*.spec.ts` tests are included yet, so the
-admin `--list` command should report zero tests. The admin config starts
-`npm run start` if the server is not already available at port 4200.
-
-Playwright 1.59.1 prints `Error: No tests found` and exits 1 for the exact
-admin `--list` command while the test directory has no specs. To get the same
-zero-test listing with a successful exit status, add
-`--pass-with-no-tests`; the required npm script remains unchanged.
+are ignored by Git. The admin config starts `npm run start` if the server is not
+already available at port 4200.
 
 ### Admin helper API
 
@@ -148,8 +146,13 @@ zero-test listing with a successful exit status, add
 - `signInAdminSession`: registers a user, proves its token can read
   `/api/v1/admin/users`, and initializes the same localStorage values as
   `AuthService.gatewayLogin`.
-- `signInThroughLoginForm` and `expectGatewaySession`: exercise the real
-  labeled login inputs and verify the resulting gateway session.
+- `waitForAdminApi` and `openAdminPage`: prove protected page/action requests
+  carry the real registered gateway token; `expectGatewaySession` rejects the
+  offline mock session.
+- `signInThroughLoginForm`: exercises the real labeled login inputs and verifies
+  the resulting gateway session.
+- `matSelect` and `typeIntoFilter`: shared Angular Material and keyup-filter
+  helpers; `uniqueFlagName` gives each feature flag a non-colliding name.
 - `createFeatureFlag` and `deleteFeatureFlag`: use the real admin API; the
   `adminData` fixture tracks created flags and deletes them during teardown.
 - `OFFLINE_MOCK_USER_ID`, `GatewayUser`, `AdminSession`, and `adminTest`.

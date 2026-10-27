@@ -14,3 +14,9 @@
 - npm run lint: exit 0, one pre-existing react-hooks/exhaustive-deps warning in src/pages/file-detail.tsx:84 (resolvedUsers). npx tsc --noEmit: exit 0, no output.
 - Full available migrated suite, npm run test:e2e:migrated: 3 passed, 0 failed in each of two consecutive runs. The harness branch contains no other executable migrated folders. Single-case traceability check --grep @TC-SHARE-001: 1 passed.
 - No wrong CSV values, app defects, retirements or Playwright disagreements found. No Tosca/corrected-field substitution was needed.
+
+## Cypress parity carried forward
+
+| Legacy ID | Legacy result on current app | Legacy behavior | Combined Playwright behavior | Combined result |
+| --- | --- | --- | --- | --- |
+| CY-starred-01 | Passed (1/1) with every API stubbed and a fake `otter_starred_items` entry; it only saw the stubbed title. | Merged into TC-SHARE-003; stars a real seeded document through the UI, verifies the user's `otter_starred_items` entry, and checks the real result link and Unstar button. | Pass in both combined migrated-suite runs. |
