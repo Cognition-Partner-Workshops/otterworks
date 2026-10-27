@@ -261,10 +261,7 @@ async def test_create_document_via_jwt_hs384(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_create_document_via_jwt_hs512(client: AsyncClient, monkeypatch: pytest.MonkeyPatch):
-    (
-        "Create a document using an HS512-signed JWT (auth-service signs with HS512 when "
-        "JWT_SECRET is 64+ bytes)."
-    )
+    """Create a document with an HS512 JWT (auth-service uses HS512 for 64+ byte secrets)."""
     user_id = uuid.uuid4()
     hs512_secret = "x" * 64
     monkeypatch.setenv("JWT_SECRET", hs512_secret)
