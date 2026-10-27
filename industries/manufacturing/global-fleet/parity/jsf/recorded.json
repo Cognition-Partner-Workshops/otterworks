@@ -1,0 +1,2173 @@
+{
+  "base": "https://t-gf-before.demo.otterworks.app",
+  "contexts": {
+    "employees": [
+      {
+        "id": "employees-no-query",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Mitarbeitersuche</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Mitarbeitersuche</h1>\n        <form method=\"get\" action=\"employees.xhtml\" class=\"panel\">\n            <label for=\"q\">Name oder Personalnummer</label>\n            <input type=\"text\" id=\"q\" name=\"q\" />\n            <button type=\"submit\">Suchen</button>\n        </form><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Personalnr.</th>\n<th scope=\"col\">Name</th>\n<th scope=\"col\">EG</th>\n<th scope=\"col\">Kostenstelle</th>\n<th scope=\"col\">Standort</th>\n<th scope=\"col\">Status</th>\n<th scope=\"col\">Dienstwagen</th>\n<th scope=\"col\"></th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>E2040506</td>\n<td>Bauer, Katharina</td>\n<td>4</td>\n<td>LG-800</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040506\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040506\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041838</td>\n<td>Bauer, Lea</td>\n<td>4</td>\n<td>E-210</td>\n<td>Koeln</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041838\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041838\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041523</td>\n<td>Bauer, Lena</td>\n<td>9</td>\n<td>PR-620</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td>S-SB 5110</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041523\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041523\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040758</td>\n<td>Bauer, Mia</td>\n<td>7</td>\n<td>F-100</td>\n<td>Koeln</td>\n<td>A</td>\n<td>K-H 9782</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040758\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040758\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040803</td>\n<td>Bauer, Tobias</td>\n<td>4</td>\n<td>P-400</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040803\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040803\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040515</td>\n<td>Becker, Ben</td>\n<td>4</td>\n<td>V-310</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040515\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040515\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041496</td>\n<td>Becker, Emma</td>\n<td>4</td>\n<td>P-400</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041496\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041496\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040407</td>\n<td>Becker, Felix</td>\n<td>9</td>\n<td>PR-610</td>\n<td>Hamburg</td>\n<td>A</td>\n<td>HH-D 9688</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040407\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040407\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040227</td>\n<td>Becker, Julia</td>\n<td>9</td>\n<td>E-220</td>\n<td>Koeln</td>\n<td>A</td>\n<td>K-B 2283</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040227\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040227\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040560</td>\n<td>Becker, Katharina</td>\n<td>4</td>\n<td>E-220</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040560\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040560\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040119</td>\n<td>Becker, Lukas</td>\n<td>8</td>\n<td>LG-800</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040119\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040119\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041208</td>\n<td>Becker, Mia</td>\n<td>11</td>\n<td>F-100</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041208\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041208\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040479</td>\n<td>Becker, Miriam</td>\n<td>10</td>\n<td>P-400</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040479\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040479\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041685</td>\n<td>Becker, Moritz</td>\n<td>1</td>\n<td>E-210</td>\n<td>Muenchen</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041685\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041685\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040632</td>\n<td>Becker, Nina</td>\n<td>8</td>\n<td>F-100</td>\n<td>Hamburg</td>\n<td>A</td>\n<td>HH-S 5691</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040632\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040632\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041541</td>\n<td>Becker, Sophie</td>\n<td>4</td>\n<td>V-300</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041541\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041541\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E1009103</td>\n<td>Bellini, Marco</td>\n<td>9</td>\n<td>V-300</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E1009103\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E1009103\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040866</td>\n<td>Braun, Hannah</td>\n<td>3</td>\n<td>E-210</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040866\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040866\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041712</td>\n<td>Braun, Miriam</td>\n<td>5</td>\n<td>F-100</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041712\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041712\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041145</td>\n<td>Braun, Niklas</td>\n<td>2</td>\n<td>PR-610</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041145\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041145\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040578</td>\n<td>Braun, Stefan</td>\n<td>9</td>\n<td>E-220</td>\n<td>Koeln</td>\n<td>A</td>\n<td>K-NN 2590</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040578\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040578\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E1009124</td>\n<td>Demir, Aylin</td>\n<td>10</td>\n<td>PR-610</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td>S-OM 6424</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E1009124\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E1009124\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E1009112</td>\n<td>Duarte, Ines</td>\n<td>10</td>\n<td>LG-800</td>\n<td>Koeln</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E1009112\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E1009112\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041622</td>\n<td>Fischer, Finn</td>\n<td>8</td>\n<td>E-220</td>\n<td>Koeln</td>\n<td>A</td>\n<td>K-B 5182</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041622\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041622\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041532</td>\n<td>Fischer, Florian</td>\n<td>2</td>\n<td>LG-800</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041532\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041532\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040218</td>\n<td>Fischer, Jan</td>\n<td>5</td>\n<td>IT-500</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040218\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040218\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040380</td>\n<td>Fischer, Katharina</td>\n<td>6</td>\n<td>EK-700</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td>S-P 1044</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040380\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040380\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041172</td>\n<td>Fischer, Leon</td>\n<td>3</td>\n<td>IT-500</td>\n<td>Muenchen</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041172\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041172\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040722</td>\n<td>Fischer, Moritz</td>\n<td>3</td>\n<td>E-220</td>\n<td>Muenchen</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040722\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040722\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040668</td>\n<td>Fischer, Stefan</td>\n<td>7</td>\n<td>E-210</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td>S-CD 2248</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040668\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040668\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040875</td>\n<td>Fuchs, Carina</td>\n<td>10</td>\n<td>V-300</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td>IN-CO 5726</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040875\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040875\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040443</td>\n<td>Fuchs, Finn</td>\n<td>10</td>\n<td>V-310</td>\n<td>Koeln</td>\n<td>A</td>\n<td>K-FD 6084</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040443\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040443\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041289</td>\n<td>Fuchs, Hannah</td>\n<td>10</td>\n<td>PR-610</td>\n<td>Koeln</td>\n<td>A</td>\n<td>K-M 7405</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041289\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041289\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040155</td>\n<td>Fuchs, Johanna</td>\n<td>4</td>\n<td>E-210</td>\n<td>Koeln</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040155\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040155\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041019</td>\n<td>Fuchs, Lena</td>\n<td>8</td>\n<td>F-100</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td>WOB-PW 4034</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041019\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041019\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040110</td>\n<td>Fuchs, Marie</td>\n<td>5</td>\n<td>IT-500</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040110\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040110\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041775</td>\n<td>Fuchs, Simon</td>\n<td>5</td>\n<td>V-300</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041775\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041775\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E1009121</td>\n<td>Garcia, Mateo</td>\n<td>8</td>\n<td>E-220</td>\n<td>Muenchen</td>\n<td>A</td>\n<td>M-CD 1318</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E1009121\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E1009121\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041235</td>\n<td>Hartmann, David</td>\n<td>9</td>\n<td>LG-800</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td>IN-PN 8976</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041235\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041235\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041379</td>\n<td>Hartmann, Florian</td>\n<td>9</td>\n<td>E-220</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td>IN-NG 7327</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041379\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041379\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040254</td>\n<td>Hartmann, Jana</td>\n<td>8</td>\n<td>LG-800</td>\n<td>Muenchen</td>\n<td>T</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040254\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040254\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040146</td>\n<td>Hartmann, Katharina</td>\n<td>3</td>\n<td>PR-620</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040146\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040146\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040677</td>\n<td>Hartmann, Lena</td>\n<td>9</td>\n<td>IT-500</td>\n<td>Stuttgart</td>\n<td>A</td>\n<td>S-PB 3525</td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040677\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040677\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041451</td>\n<td>Hartmann, Lisa</td>\n<td>9</td>\n<td>F-100</td>\n<td>Hamburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041451\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041451\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041100</td>\n<td>Hartmann, Moritz</td>\n<td>7</td>\n<td>E-220</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041100\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041100\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041388</td>\n<td>Hartmann, Paul</td>\n<td>4</td>\n<td>EK-700</td>\n<td>Hamburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041388\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041388\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040695</td>\n<td>Herrmann, Clara</td>\n<td>2</td>\n<td>V-300</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040695\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040695\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040983</td>\n<td>Herrmann, Johanna</td>\n<td>1</td>\n<td>F-100</td>\n<td>Ingolstadt</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040983\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040983\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2041721</td>\n<td>Herrmann, Lisa</td>\n<td>5</td>\n<td>E-210</td>\n<td>Koeln</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041721\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2041721\">Abrechnung</a></td>\n</tr>\n<tr>\n<td>E2040749</td>\n<td>Herrmann, Tim</td>\n<td>10</td>\n<td>LG-800</td>\n<td>Wolfsburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040749\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml;jsessionid=F3A0999679343594A83C06231EBD0A17?employee=E2040749\">Abrechnung</a></td>\n</tr>\n</tbody>\n</table>\n\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Mitarbeitersuche",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Personalnr.",
+                  "Name",
+                  "EG",
+                  "Kostenstelle",
+                  "Standort",
+                  "Status",
+                  "Dienstwagen",
+                  ""
+                ],
+                [
+                  "E2040506",
+                  "Bauer, Katharina",
+                  "4",
+                  "LG-800",
+                  "Ingolstadt",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041838",
+                  "Bauer, Lea",
+                  "4",
+                  "E-210",
+                  "Koeln",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041523",
+                  "Bauer, Lena",
+                  "9",
+                  "PR-620",
+                  "Stuttgart",
+                  "A",
+                  "S-SB 5110",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040758",
+                  "Bauer, Mia",
+                  "7",
+                  "F-100",
+                  "Koeln",
+                  "A",
+                  "K-H 9782",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040803",
+                  "Bauer, Tobias",
+                  "4",
+                  "P-400",
+                  "Stuttgart",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040515",
+                  "Becker, Ben",
+                  "4",
+                  "V-310",
+                  "Wolfsburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041496",
+                  "Becker, Emma",
+                  "4",
+                  "P-400",
+                  "Wolfsburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040407",
+                  "Becker, Felix",
+                  "9",
+                  "PR-610",
+                  "Hamburg",
+                  "A",
+                  "HH-D 9688",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040227",
+                  "Becker, Julia",
+                  "9",
+                  "E-220",
+                  "Koeln",
+                  "A",
+                  "K-B 2283",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040560",
+                  "Becker, Katharina",
+                  "4",
+                  "E-220",
+                  "Wolfsburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040119",
+                  "Becker, Lukas",
+                  "8",
+                  "LG-800",
+                  "Stuttgart",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041208",
+                  "Becker, Mia",
+                  "11",
+                  "F-100",
+                  "Wolfsburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040479",
+                  "Becker, Miriam",
+                  "10",
+                  "P-400",
+                  "Stuttgart",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041685",
+                  "Becker, Moritz",
+                  "1",
+                  "E-210",
+                  "Muenchen",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040632",
+                  "Becker, Nina",
+                  "8",
+                  "F-100",
+                  "Hamburg",
+                  "A",
+                  "HH-S 5691",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041541",
+                  "Becker, Sophie",
+                  "4",
+                  "V-300",
+                  "Ingolstadt",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E1009103",
+                  "Bellini, Marco",
+                  "9",
+                  "V-300",
+                  "Wolfsburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040866",
+                  "Braun, Hannah",
+                  "3",
+                  "E-210",
+                  "Ingolstadt",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041712",
+                  "Braun, Miriam",
+                  "5",
+                  "F-100",
+                  "Ingolstadt",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041145",
+                  "Braun, Niklas",
+                  "2",
+                  "PR-610",
+                  "Stuttgart",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040578",
+                  "Braun, Stefan",
+                  "9",
+                  "E-220",
+                  "Koeln",
+                  "A",
+                  "K-NN 2590",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E1009124",
+                  "Demir, Aylin",
+                  "10",
+                  "PR-610",
+                  "Stuttgart",
+                  "A",
+                  "S-OM 6424",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E1009112",
+                  "Duarte, Ines",
+                  "10",
+                  "LG-800",
+                  "Koeln",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041622",
+                  "Fischer, Finn",
+                  "8",
+                  "E-220",
+                  "Koeln",
+                  "A",
+                  "K-B 5182",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041532",
+                  "Fischer, Florian",
+                  "2",
+                  "LG-800",
+                  "Ingolstadt",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040218",
+                  "Fischer, Jan",
+                  "5",
+                  "IT-500",
+                  "Stuttgart",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040380",
+                  "Fischer, Katharina",
+                  "6",
+                  "EK-700",
+                  "Stuttgart",
+                  "A",
+                  "S-P 1044",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041172",
+                  "Fischer, Leon",
+                  "3",
+                  "IT-500",
+                  "Muenchen",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040722",
+                  "Fischer, Moritz",
+                  "3",
+                  "E-220",
+                  "Muenchen",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040668",
+                  "Fischer, Stefan",
+                  "7",
+                  "E-210",
+                  "Stuttgart",
+                  "A",
+                  "S-CD 2248",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040875",
+                  "Fuchs, Carina",
+                  "10",
+                  "V-300",
+                  "Ingolstadt",
+                  "A",
+                  "IN-CO 5726",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040443",
+                  "Fuchs, Finn",
+                  "10",
+                  "V-310",
+                  "Koeln",
+                  "A",
+                  "K-FD 6084",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041289",
+                  "Fuchs, Hannah",
+                  "10",
+                  "PR-610",
+                  "Koeln",
+                  "A",
+                  "K-M 7405",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040155",
+                  "Fuchs, Johanna",
+                  "4",
+                  "E-210",
+                  "Koeln",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041019",
+                  "Fuchs, Lena",
+                  "8",
+                  "F-100",
+                  "Wolfsburg",
+                  "A",
+                  "WOB-PW 4034",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040110",
+                  "Fuchs, Marie",
+                  "5",
+                  "IT-500",
+                  "Wolfsburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041775",
+                  "Fuchs, Simon",
+                  "5",
+                  "V-300",
+                  "Wolfsburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E1009121",
+                  "Garcia, Mateo",
+                  "8",
+                  "E-220",
+                  "Muenchen",
+                  "A",
+                  "M-CD 1318",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041235",
+                  "Hartmann, David",
+                  "9",
+                  "LG-800",
+                  "Ingolstadt",
+                  "A",
+                  "IN-PN 8976",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041379",
+                  "Hartmann, Florian",
+                  "9",
+                  "E-220",
+                  "Ingolstadt",
+                  "A",
+                  "IN-NG 7327",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040254",
+                  "Hartmann, Jana",
+                  "8",
+                  "LG-800",
+                  "Muenchen",
+                  "T",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040146",
+                  "Hartmann, Katharina",
+                  "3",
+                  "PR-620",
+                  "Ingolstadt",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040677",
+                  "Hartmann, Lena",
+                  "9",
+                  "IT-500",
+                  "Stuttgart",
+                  "A",
+                  "S-PB 3525",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041451",
+                  "Hartmann, Lisa",
+                  "9",
+                  "F-100",
+                  "Hamburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041100",
+                  "Hartmann, Moritz",
+                  "7",
+                  "E-220",
+                  "Wolfsburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041388",
+                  "Hartmann, Paul",
+                  "4",
+                  "EK-700",
+                  "Hamburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040695",
+                  "Herrmann, Clara",
+                  "2",
+                  "V-300",
+                  "Ingolstadt",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040983",
+                  "Herrmann, Johanna",
+                  "1",
+                  "F-100",
+                  "Ingolstadt",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2041721",
+                  "Herrmann, Lisa",
+                  "5",
+                  "E-210",
+                  "Koeln",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ],
+                [
+                  "E2040749",
+                  "Herrmann, Tim",
+                  "10",
+                  "LG-800",
+                  "Wolfsburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ]
+              ]
+            ],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "text",
+                "value": ""
+              }
+            ]
+          },
+          "elapsedMs": 396
+        }
+      },
+      {
+        "id": "employees-name",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Mitarbeitersuche</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Mitarbeitersuche</h1>\n        <form method=\"get\" action=\"employees.xhtml\" class=\"panel\">\n            <label for=\"q\">Name oder Personalnummer</label>\n            <input type=\"text\" id=\"q\" name=\"q\" value=\"Priya\" />\n            <button type=\"submit\">Suchen</button>\n        </form><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Personalnr.</th>\n<th scope=\"col\">Name</th>\n<th scope=\"col\">EG</th>\n<th scope=\"col\">Kostenstelle</th>\n<th scope=\"col\">Standort</th>\n<th scope=\"col\">Status</th>\n<th scope=\"col\">Dienstwagen</th>\n<th scope=\"col\"></th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>E1009100</td>\n<td>Raman, Priya</td>\n<td>7</td>\n<td>E-210</td>\n<td>Hamburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml?employee=E1009100\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml?employee=E1009100\">Abrechnung</a></td>\n</tr>\n</tbody>\n</table>\n\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Mitarbeitersuche",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Personalnr.",
+                  "Name",
+                  "EG",
+                  "Kostenstelle",
+                  "Standort",
+                  "Status",
+                  "Dienstwagen",
+                  ""
+                ],
+                [
+                  "E1009100",
+                  "Raman, Priya",
+                  "7",
+                  "E-210",
+                  "Hamburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ]
+              ]
+            ],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "text",
+                "value": "Priya"
+              }
+            ]
+          },
+          "elapsedMs": 193
+        }
+      },
+      {
+        "id": "employees-id",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Mitarbeitersuche</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Mitarbeitersuche</h1>\n        <form method=\"get\" action=\"employees.xhtml\" class=\"panel\">\n            <label for=\"q\">Name oder Personalnummer</label>\n            <input type=\"text\" id=\"q\" name=\"q\" value=\"E1009100\" />\n            <button type=\"submit\">Suchen</button>\n        </form><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Personalnr.</th>\n<th scope=\"col\">Name</th>\n<th scope=\"col\">EG</th>\n<th scope=\"col\">Kostenstelle</th>\n<th scope=\"col\">Standort</th>\n<th scope=\"col\">Status</th>\n<th scope=\"col\">Dienstwagen</th>\n<th scope=\"col\"></th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>E1009100</td>\n<td>Raman, Priya</td>\n<td>7</td>\n<td>E-210</td>\n<td>Hamburg</td>\n<td>A</td>\n<td></td>\n<td><a href=\"/assignment.xhtml?employee=E1009100\">Zuordnung</a>\n                 \n                <a href=\"/statement.xhtml?employee=E1009100\">Abrechnung</a></td>\n</tr>\n</tbody>\n</table>\n\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Mitarbeitersuche",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Personalnr.",
+                  "Name",
+                  "EG",
+                  "Kostenstelle",
+                  "Standort",
+                  "Status",
+                  "Dienstwagen",
+                  ""
+                ],
+                [
+                  "E1009100",
+                  "Raman, Priya",
+                  "7",
+                  "E-210",
+                  "Hamburg",
+                  "A",
+                  "",
+                  "Zuordnung Abrechnung"
+                ]
+              ]
+            ],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "text",
+                "value": "E1009100"
+              }
+            ]
+          },
+          "elapsedMs": 186
+        }
+      },
+      {
+        "id": "employees-no-match",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Mitarbeitersuche</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Mitarbeitersuche</h1>\n        <form method=\"get\" action=\"employees.xhtml\" class=\"panel\">\n            <label for=\"q\">Name oder Personalnummer</label>\n            <input type=\"text\" id=\"q\" name=\"q\" value=\"No Such Employee\" />\n            <button type=\"submit\">Suchen</button>\n        </form><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Personalnr.</th>\n<th scope=\"col\">Name</th>\n<th scope=\"col\">EG</th>\n<th scope=\"col\">Kostenstelle</th>\n<th scope=\"col\">Standort</th>\n<th scope=\"col\">Status</th>\n<th scope=\"col\">Dienstwagen</th>\n<th scope=\"col\"></th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>\n</table>\n\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Mitarbeitersuche",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Personalnr.",
+                  "Name",
+                  "EG",
+                  "Kostenstelle",
+                  "Standort",
+                  "Status",
+                  "Dienstwagen",
+                  ""
+                ],
+                [
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  "",
+                  ""
+                ]
+              ]
+            ],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "text",
+                "value": "No Such Employee"
+              }
+            ]
+          },
+          "elapsedMs": 191
+        }
+      }
+    ],
+    "assignment": [
+      {
+        "id": "assignment-with-car",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=4B0F8A16A06907A0DAC4E3066D99B3EB\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1>\n            <div class=\"panel\">\n                <p><b>E1009106 Elena Petrova</b>, EG 8, IT-500, Ingolstadt</p>\n                    <p>Aktueller Dienstwagen: <b>IN-JD 9303</b> VW Passat Variant,\n                       Listenpreis 45.340,99 EUR,\n                       seit 20.07.2026</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Fahrzeug</th>\n<th scope=\"col\">Von</th>\n<th scope=\"col\">Bis</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>IN-JD 9303</td>\n<td>VW Passat Variant</td>\n<td>20.07.2026</td>\n<td></td>\n</tr>\n<tr>\n<td>IN-AS 4628</td>\n<td>Tesla Model Y</td>\n<td>27.05.2025</td>\n<td>19.07.2026</td>\n</tr>\n</tbody>\n</table>\n\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenzuordnung",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Kennzeichen",
+                  "Fahrzeug",
+                  "Von",
+                  "Bis"
+                ],
+                [
+                  "IN-JD 9303",
+                  "VW Passat Variant",
+                  "20.07.2026",
+                  ""
+                ],
+                [
+                  "IN-AS 4628",
+                  "Tesla Model Y",
+                  "27.05.2025",
+                  "19.07.2026"
+                ]
+              ]
+            ],
+            "panels": [
+              "E1009106 Elena Petrova, EG 8, IT-500, Ingolstadt Aktueller Dienstwagen: IN-JD 9303 VW Passat Variant, Listenpreis 45.340,99 EUR, seit 20.07.2026"
+            ],
+            "inputs": []
+          },
+          "elapsedMs": 219
+        }
+      },
+      {
+        "id": "assignment-without-car",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, EG 7, E-210, Hamburg</p><p>Kein Dienstwagen zugeordnet.</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Fahrzeug</th>\n<th scope=\"col\">Von</th>\n<th scope=\"col\">Bis</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td><td></td></tr></tbody>\n</table>\n\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenzuordnung",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Kennzeichen",
+                  "Fahrzeug",
+                  "Von",
+                  "Bis"
+                ],
+                [
+                  "",
+                  "",
+                  "",
+                  ""
+                ]
+              ]
+            ],
+            "panels": [
+              "E1009100 Priya Raman, EG 7, E-210, HamburgKein Dienstwagen zugeordnet."
+            ],
+            "inputs": []
+          },
+          "elapsedMs": 213
+        }
+      },
+      {
+        "id": "assignment-unknown",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter E9999999 nicht gefunden. </li></ul>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenzuordnung",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Mitarbeiter E9999999 nicht gefunden."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": []
+          },
+          "elapsedMs": 229
+        }
+      },
+      {
+        "id": "assignment-no-employee",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenzuordnung",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": []
+          },
+          "elapsedMs": 196
+        }
+      }
+    ],
+    "request": [
+      {
+        "id": "request-open",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=DBDC22D773315D164BE2960AD8514D63\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml;jsessionid=DBDC22D773315D164BE2960AD8514D63\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-1678480489611083653:-4634758475763308625\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenantrag",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "wiz"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Weiter"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 232
+        }
+      },
+      {
+        "id": "request-unknown-employee",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter nicht gefunden oder nicht aktiv. </li></ul>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" value=\"E9999999\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-1678480489611083653:7756404697752577796\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenantrag",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Mitarbeiter nicht gefunden oder nicht aktiv."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "wiz"
+              },
+              {
+                "type": "text",
+                "value": "E9999999"
+              },
+              {
+                "type": "submit",
+                "value": "Weiter"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 217
+        }
+      },
+      {
+        "id": "request-below-grade",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1><ul class=\"msgs\"><li class=\"err\">\tEntgeltgruppe 5 ist nicht dienstwagenberechtigt. </li></ul>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" value=\"E2040110\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-1678480489611083653:-4936958146611281624\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenantrag",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Entgeltgruppe 5 ist nicht dienstwagenberechtigt."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "wiz"
+              },
+              {
+                "type": "text",
+                "value": "E2040110"
+              },
+              {
+                "type": "submit",
+                "value": "Weiter"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 218
+        }
+      },
+      {
+        "id": "request-already-has-car",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter hat bereits einen Dienstwagen. </li></ul>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" value=\"E1009106\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-1678480489611083653:5352597540616180026\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenantrag",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Mitarbeiter hat bereits einen Dienstwagen."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "wiz"
+              },
+              {
+                "type": "text",
+                "value": "E1009106"
+              },
+              {
+                "type": "submit",
+                "value": "Weiter"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 208
+        }
+      },
+      {
+        "id": "request-eligible-employee",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span>1 Mitarbeiter</span>\n            <span class=\"on\">2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <p>Priya Raman (EG 7, Hamburg)</p><table>\n\t<tr>\n<td>\n<input type=\"radio\" checked=\"checked\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:0\" value=\"pool\" /><label for=\"wiz:j_idt18:0\"> Fahrzeug aus dem Pool</label></td>\n\t</tr>\n\t<tr>\n<td>\n<input type=\"radio\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:1\" value=\"new\" /><label for=\"wiz:j_idt18:1\"> Neu ausgeliefertes Fahrzeug erfassen</label></td>\n\t</tr>\n</table>\n                <p><label>Poolfahrzeug</label><select name=\"wiz:j_idt22\" size=\"1\">\t<option value=\"\" selected=\"selected\">-- bitte waehlen --</option>\n\t<option value=\"119\">DA-EN 2783  Skoda Superb Combi</option>\n\t<option value=\"113\">DA-SM 3666  Cupra Born</option>\n\t<option value=\"114\">DA-X 1956  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"20\">HH-KW 5017  VW Passat Variant</option>\n\t<option value=\"120\">HH-M 6887  Audi Q4 e-tron</option>\n\t<option value=\"112\">HH-MU 3640  VW ID.4 Pro</option>\n\t<option value=\"106\">HH-P 1680  BMW 320d Touring</option>\n\t<option value=\"31\">HH-RO 9681  Audi A6 Avant 40 TDI</option>\n\t<option value=\"101\">HH-TW 3764  BMW i4 eDrive35</option>\n\t<option value=\"1\">HH-VS 7629  Opel Astra Sports Tourer</option>\n\t<option value=\"55\">HH-WR 9432  Audi Q4 e-tron</option>\n\t<option value=\"84\">IN-AS 4628  Tesla Model Y</option>\n\t<option value=\"91\">IN-DR 7206  Audi A6 Avant 40 TDI</option>\n\t<option value=\"26\">IN-FY 982  Opel Astra Sports Tourer</option>\n\t<option value=\"82\">IN-G 5330  BMW 320d Touring</option>\n\t<option value=\"93\">IN-XT 461  Opel Astra Sports Tourer</option>\n\t<option value=\"33\">K-F 410  Tesla Model Y</option>\n\t<option value=\"17\">K-Y 8162  BMW i4 eDrive35</option>\n\t<option value=\"52\">K-YB 42  BMW 320d Touring</option>\n\t<option value=\"49\">M-B 6067  Audi A6 Avant 40 TDI</option>\n\t<option value=\"59\">M-BM 9243  BMW i4 eDrive35</option>\n\t<option value=\"15\">M-EH 8648  BMW 320d Touring</option>\n\t<option value=\"58\">M-GK 7851  Cupra Born</option>\n\t<option value=\"67\">M-P 6113  BMW i4 eDrive35</option>\n\t<option value=\"80\">M-TS 244  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"110\">M-U 7289  BMW 320d Touring</option>\n\t<option value=\"115\">R-LB 7026  Audi A6 Avant 40 TDI</option>\n\t<option value=\"116\">R-N 2442  Skoda Superb Combi</option>\n\t<option value=\"117\">R-PO 2012  Ford Kuga PHEV</option>\n\t<option value=\"6\">S-C 3114  Skoda Superb Combi</option>\n\t<option value=\"36\">S-DP 5145  Opel Astra Sports Tourer</option>\n\t<option value=\"61\">S-FR 5091  BMW i4 eDrive35</option>\n\t<option value=\"64\">S-K 6378  Audi Q4 e-tron</option>\n\t<option value=\"24\">S-SK 542  Opel Astra Sports Tourer</option>\n\t<option value=\"69\">WOB-A 9731  VW Passat Variant</option>\n\t<option value=\"99\">WOB-FP 9124  BMW i4 eDrive35</option>\n\t<option value=\"89\">WOB-RL 7155  Skoda Superb Combi</option>\n\t<option value=\"74\">WOB-SL 8695  Cupra Born</option>\n\t<option value=\"118\">WOB-V 4446  Skoda Superb Combi</option>\n\t<option value=\"96\">WOB-V 6696  VW ID.4 Pro</option>\n</select></p>\n                <p><label>Kennzeichen</label><input type=\"text\" name=\"wiz:j_idt26\" /></p>\n                <p><label>Marke / Modell</label><input type=\"text\" name=\"wiz:j_idt28\" size=\"12\" /><input type=\"text\" name=\"wiz:j_idt29\" /></p>\n                <p><label>Listenpreis EUR</label><input type=\"text\" name=\"wiz:j_idt31\" size=\"10\" /></p>\n                <p><label>CO2 g/km</label><input type=\"text\" name=\"wiz:j_idt33\" size=\"4\" /><select name=\"wiz:j_idt34\" size=\"1\">\t<option value=\"D\" selected=\"selected\">Diesel</option>\n\t<option value=\"P\">Benzin</option>\n\t<option value=\"H\">Hybrid</option>\n\t<option value=\"E\">Elektro</option>\n</select></p><input type=\"submit\" name=\"wiz:j_idt40\" value=\"Zurueck\" /><input type=\"submit\" name=\"wiz:j_idt41\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-1678480489611083653:6008324073562241170\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenantrag",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Fahrzeug aus dem Pool"
+                ],
+                [
+                  "Neu ausgeliefertes Fahrzeug erfassen"
+                ]
+              ]
+            ],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "wiz"
+              },
+              {
+                "type": "radio",
+                "value": "pool"
+              },
+              {
+                "type": "radio",
+                "value": "new"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Zurueck"
+              },
+              {
+                "type": "submit",
+                "value": "Weiter"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 219
+        }
+      },
+      {
+        "id": "request-pool-no-selection",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1><ul class=\"msgs\"><li class=\"err\">\tBitte ein Fahrzeug aus dem Pool waehlen. </li></ul>\n        <div class=\"steps\">\n            <span>1 Mitarbeiter</span>\n            <span class=\"on\">2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <p>Priya Raman (EG 7, Hamburg)</p><table>\n\t<tr>\n<td>\n<input type=\"radio\" checked=\"checked\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:0\" value=\"pool\" /><label for=\"wiz:j_idt18:0\"> Fahrzeug aus dem Pool</label></td>\n\t</tr>\n\t<tr>\n<td>\n<input type=\"radio\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:1\" value=\"new\" /><label for=\"wiz:j_idt18:1\"> Neu ausgeliefertes Fahrzeug erfassen</label></td>\n\t</tr>\n</table>\n                <p><label>Poolfahrzeug</label><select name=\"wiz:j_idt22\" size=\"1\">\t<option value=\"\" selected=\"selected\">-- bitte waehlen --</option>\n\t<option value=\"119\">DA-EN 2783  Skoda Superb Combi</option>\n\t<option value=\"113\">DA-SM 3666  Cupra Born</option>\n\t<option value=\"114\">DA-X 1956  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"20\">HH-KW 5017  VW Passat Variant</option>\n\t<option value=\"120\">HH-M 6887  Audi Q4 e-tron</option>\n\t<option value=\"112\">HH-MU 3640  VW ID.4 Pro</option>\n\t<option value=\"106\">HH-P 1680  BMW 320d Touring</option>\n\t<option value=\"31\">HH-RO 9681  Audi A6 Avant 40 TDI</option>\n\t<option value=\"101\">HH-TW 3764  BMW i4 eDrive35</option>\n\t<option value=\"1\">HH-VS 7629  Opel Astra Sports Tourer</option>\n\t<option value=\"55\">HH-WR 9432  Audi Q4 e-tron</option>\n\t<option value=\"84\">IN-AS 4628  Tesla Model Y</option>\n\t<option value=\"91\">IN-DR 7206  Audi A6 Avant 40 TDI</option>\n\t<option value=\"26\">IN-FY 982  Opel Astra Sports Tourer</option>\n\t<option value=\"82\">IN-G 5330  BMW 320d Touring</option>\n\t<option value=\"93\">IN-XT 461  Opel Astra Sports Tourer</option>\n\t<option value=\"33\">K-F 410  Tesla Model Y</option>\n\t<option value=\"17\">K-Y 8162  BMW i4 eDrive35</option>\n\t<option value=\"52\">K-YB 42  BMW 320d Touring</option>\n\t<option value=\"49\">M-B 6067  Audi A6 Avant 40 TDI</option>\n\t<option value=\"59\">M-BM 9243  BMW i4 eDrive35</option>\n\t<option value=\"15\">M-EH 8648  BMW 320d Touring</option>\n\t<option value=\"58\">M-GK 7851  Cupra Born</option>\n\t<option value=\"67\">M-P 6113  BMW i4 eDrive35</option>\n\t<option value=\"80\">M-TS 244  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"110\">M-U 7289  BMW 320d Touring</option>\n\t<option value=\"115\">R-LB 7026  Audi A6 Avant 40 TDI</option>\n\t<option value=\"116\">R-N 2442  Skoda Superb Combi</option>\n\t<option value=\"117\">R-PO 2012  Ford Kuga PHEV</option>\n\t<option value=\"6\">S-C 3114  Skoda Superb Combi</option>\n\t<option value=\"36\">S-DP 5145  Opel Astra Sports Tourer</option>\n\t<option value=\"61\">S-FR 5091  BMW i4 eDrive35</option>\n\t<option value=\"64\">S-K 6378  Audi Q4 e-tron</option>\n\t<option value=\"24\">S-SK 542  Opel Astra Sports Tourer</option>\n\t<option value=\"69\">WOB-A 9731  VW Passat Variant</option>\n\t<option value=\"99\">WOB-FP 9124  BMW i4 eDrive35</option>\n\t<option value=\"89\">WOB-RL 7155  Skoda Superb Combi</option>\n\t<option value=\"74\">WOB-SL 8695  Cupra Born</option>\n\t<option value=\"118\">WOB-V 4446  Skoda Superb Combi</option>\n\t<option value=\"96\">WOB-V 6696  VW ID.4 Pro</option>\n</select></p>\n                <p><label>Kennzeichen</label><input type=\"text\" name=\"wiz:j_idt26\" /></p>\n                <p><label>Marke / Modell</label><input type=\"text\" name=\"wiz:j_idt28\" size=\"12\" /><input type=\"text\" name=\"wiz:j_idt29\" /></p>\n                <p><label>Listenpreis EUR</label><input type=\"text\" name=\"wiz:j_idt31\" size=\"10\" /></p>\n                <p><label>CO2 g/km</label><input type=\"text\" name=\"wiz:j_idt33\" size=\"4\" /><select name=\"wiz:j_idt34\" size=\"1\">\t<option value=\"D\">Diesel</option>\n\t<option value=\"P\">Benzin</option>\n\t<option value=\"H\">Hybrid</option>\n\t<option value=\"E\">Elektro</option>\n</select></p><input type=\"submit\" name=\"wiz:j_idt40\" value=\"Zurueck\" /><input type=\"submit\" name=\"wiz:j_idt41\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-1678480489611083653:-1413661677181241225\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenantrag",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Bitte ein Fahrzeug aus dem Pool waehlen."
+              }
+            ],
+            "tables": [
+              [
+                [
+                  "Fahrzeug aus dem Pool"
+                ],
+                [
+                  "Neu ausgeliefertes Fahrzeug erfassen"
+                ]
+              ]
+            ],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "wiz"
+              },
+              {
+                "type": "radio",
+                "value": "pool"
+              },
+              {
+                "type": "radio",
+                "value": "new"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Zurueck"
+              },
+              {
+                "type": "submit",
+                "value": "Weiter"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 194
+        }
+      },
+      {
+        "id": "request-back",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" value=\"E1009100\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-1678480489611083653:-985278301134611320\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenantrag",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "wiz"
+              },
+              {
+                "type": "text",
+                "value": "E1009100"
+              },
+              {
+                "type": "submit",
+                "value": "Weiter"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 199
+        }
+      },
+      {
+        "id": "request-reselect-employee",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span>1 Mitarbeiter</span>\n            <span class=\"on\">2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <p>Priya Raman (EG 7, Hamburg)</p><table>\n\t<tr>\n<td>\n<input type=\"radio\" checked=\"checked\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:0\" value=\"pool\" /><label for=\"wiz:j_idt18:0\"> Fahrzeug aus dem Pool</label></td>\n\t</tr>\n\t<tr>\n<td>\n<input type=\"radio\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:1\" value=\"new\" /><label for=\"wiz:j_idt18:1\"> Neu ausgeliefertes Fahrzeug erfassen</label></td>\n\t</tr>\n</table>\n                <p><label>Poolfahrzeug</label><select name=\"wiz:j_idt22\" size=\"1\">\t<option value=\"\" selected=\"selected\">-- bitte waehlen --</option>\n\t<option value=\"119\">DA-EN 2783  Skoda Superb Combi</option>\n\t<option value=\"113\">DA-SM 3666  Cupra Born</option>\n\t<option value=\"114\">DA-X 1956  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"20\">HH-KW 5017  VW Passat Variant</option>\n\t<option value=\"120\">HH-M 6887  Audi Q4 e-tron</option>\n\t<option value=\"112\">HH-MU 3640  VW ID.4 Pro</option>\n\t<option value=\"106\">HH-P 1680  BMW 320d Touring</option>\n\t<option value=\"31\">HH-RO 9681  Audi A6 Avant 40 TDI</option>\n\t<option value=\"101\">HH-TW 3764  BMW i4 eDrive35</option>\n\t<option value=\"1\">HH-VS 7629  Opel Astra Sports Tourer</option>\n\t<option value=\"55\">HH-WR 9432  Audi Q4 e-tron</option>\n\t<option value=\"84\">IN-AS 4628  Tesla Model Y</option>\n\t<option value=\"91\">IN-DR 7206  Audi A6 Avant 40 TDI</option>\n\t<option value=\"26\">IN-FY 982  Opel Astra Sports Tourer</option>\n\t<option value=\"82\">IN-G 5330  BMW 320d Touring</option>\n\t<option value=\"93\">IN-XT 461  Opel Astra Sports Tourer</option>\n\t<option value=\"33\">K-F 410  Tesla Model Y</option>\n\t<option value=\"17\">K-Y 8162  BMW i4 eDrive35</option>\n\t<option value=\"52\">K-YB 42  BMW 320d Touring</option>\n\t<option value=\"49\">M-B 6067  Audi A6 Avant 40 TDI</option>\n\t<option value=\"59\">M-BM 9243  BMW i4 eDrive35</option>\n\t<option value=\"15\">M-EH 8648  BMW 320d Touring</option>\n\t<option value=\"58\">M-GK 7851  Cupra Born</option>\n\t<option value=\"67\">M-P 6113  BMW i4 eDrive35</option>\n\t<option value=\"80\">M-TS 244  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"110\">M-U 7289  BMW 320d Touring</option>\n\t<option value=\"115\">R-LB 7026  Audi A6 Avant 40 TDI</option>\n\t<option value=\"116\">R-N 2442  Skoda Superb Combi</option>\n\t<option value=\"117\">R-PO 2012  Ford Kuga PHEV</option>\n\t<option value=\"6\">S-C 3114  Skoda Superb Combi</option>\n\t<option value=\"36\">S-DP 5145  Opel Astra Sports Tourer</option>\n\t<option value=\"61\">S-FR 5091  BMW i4 eDrive35</option>\n\t<option value=\"64\">S-K 6378  Audi Q4 e-tron</option>\n\t<option value=\"24\">S-SK 542  Opel Astra Sports Tourer</option>\n\t<option value=\"69\">WOB-A 9731  VW Passat Variant</option>\n\t<option value=\"99\">WOB-FP 9124  BMW i4 eDrive35</option>\n\t<option value=\"89\">WOB-RL 7155  Skoda Superb Combi</option>\n\t<option value=\"74\">WOB-SL 8695  Cupra Born</option>\n\t<option value=\"118\">WOB-V 4446  Skoda Superb Combi</option>\n\t<option value=\"96\">WOB-V 6696  VW ID.4 Pro</option>\n</select></p>\n                <p><label>Kennzeichen</label><input type=\"text\" name=\"wiz:j_idt26\" /></p>\n                <p><label>Marke / Modell</label><input type=\"text\" name=\"wiz:j_idt28\" size=\"12\" /><input type=\"text\" name=\"wiz:j_idt29\" /></p>\n                <p><label>Listenpreis EUR</label><input type=\"text\" name=\"wiz:j_idt31\" size=\"10\" /></p>\n                <p><label>CO2 g/km</label><input type=\"text\" name=\"wiz:j_idt33\" size=\"4\" /><select name=\"wiz:j_idt34\" size=\"1\">\t<option value=\"D\">Diesel</option>\n\t<option value=\"P\">Benzin</option>\n\t<option value=\"H\">Hybrid</option>\n\t<option value=\"E\">Elektro</option>\n</select></p><input type=\"submit\" name=\"wiz:j_idt40\" value=\"Zurueck\" /><input type=\"submit\" name=\"wiz:j_idt41\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-1678480489611083653:-2707016834535385123\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenantrag",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Fahrzeug aus dem Pool"
+                ],
+                [
+                  "Neu ausgeliefertes Fahrzeug erfassen"
+                ]
+              ]
+            ],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "wiz"
+              },
+              {
+                "type": "radio",
+                "value": "pool"
+              },
+              {
+                "type": "radio",
+                "value": "new"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Zurueck"
+              },
+              {
+                "type": "submit",
+                "value": "Weiter"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 239
+        }
+      },
+      {
+        "id": "request-pool-select",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span>1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span class=\"on\">3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <p>Mitarbeiter: E1009100 Priya Raman</p>\n                <p>Fahrzeug: HH-VS 7629  Opel Astra Sports Tourer</p>\n                <p><label>Uebergabe am</label><input type=\"text\" name=\"wiz:j_idt44\" value=\"27.10.2026\" /></p><input type=\"submit\" name=\"wiz:j_idt46\" value=\"Zurueck\" /><input type=\"submit\" name=\"wiz:j_idt47\" value=\"Antrag abschliessen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-1678480489611083653:-8007302352987817110\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenantrag",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "wiz"
+              },
+              {
+                "type": "text",
+                "value": "27.10.2026"
+              },
+              {
+                "type": "submit",
+                "value": "Zurueck"
+              },
+              {
+                "type": "submit",
+                "value": "Antrag abschliessen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 196
+        }
+      },
+      {
+        "id": "request-step-three-submit",
+        "response": {
+          "status": 302,
+          "mediaType": null,
+          "location": "/assignment.xhtml?employee=E1009100",
+          "body": "",
+          "observed": {
+            "h1": "",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": []
+          },
+          "elapsedMs": 260
+        }
+      },
+      {
+        "id": "request-redirect-assignment",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, EG 7, E-210, Hamburg</p>\n                    <p>Aktueller Dienstwagen: <b>HH-VS 7629</b> Opel Astra Sports Tourer,\n                       Listenpreis 32.885,99 EUR,\n                       seit 27.10.2026</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Fahrzeug</th>\n<th scope=\"col\">Von</th>\n<th scope=\"col\">Bis</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>HH-VS 7629</td>\n<td>Opel Astra Sports Tourer</td>\n<td>27.10.2026</td>\n<td></td>\n</tr>\n</tbody>\n</table>\n\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Dienstwagenzuordnung",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Kennzeichen",
+                  "Fahrzeug",
+                  "Von",
+                  "Bis"
+                ],
+                [
+                  "HH-VS 7629",
+                  "Opel Astra Sports Tourer",
+                  "27.10.2026",
+                  ""
+                ]
+              ]
+            ],
+            "panels": [
+              "E1009100 Priya Raman, EG 7, E-210, Hamburg Aktueller Dienstwagen: HH-VS 7629 Opel Astra Sports Tourer, Listenpreis 32.885,99 EUR, seit 27.10.2026"
+            ],
+            "inputs": []
+          },
+          "elapsedMs": 199
+        }
+      }
+    ],
+    "mileage": [
+      {
+        "id": "mileage-open",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=40A048CF751FCB6F1A334783D1CA279F\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml;jsessionid=40A048CF751FCB6F1A334783D1CA279F\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7209782184630595073:8576353239347967376\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Reisekosten (Dienstreise-km)",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 189
+        }
+      },
+      {
+        "id": "mileage-find-unknown",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter nicht gefunden. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E9999999\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7209782184630595073:3434610048410870026\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Reisekosten (Dienstreise-km)",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Mitarbeiter nicht gefunden."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "E9999999"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 214
+        }
+      },
+      {
+        "id": "mileage-find-employee",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E1009100\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /> Priya Raman</p>\n                <p><label>Datum</label><input type=\"text\" name=\"j_idt14:j_idt22\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometer</label><input type=\"text\" name=\"j_idt14:j_idt24\" size=\"6\" /><input type=\"submit\" name=\"j_idt14:j_idt25\" value=\"Berechnen\" /></p>\n                <p><label>Anlass</label><input type=\"text\" name=\"j_idt14:j_idt28\" size=\"40\" /></p><input type=\"submit\" name=\"j_idt14:j_idt30\" value=\"Einreichen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7209782184630595073:-3454770266912322717\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Reisekosten (Dienstreise-km)",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "E1009100"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "text",
+                "value": "27.10.2026"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Berechnen"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Einreichen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 206
+        }
+      },
+      {
+        "id": "mileage-calculate",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E1009100\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /> Priya Raman</p>\n                <p><label>Datum</label><input type=\"text\" name=\"j_idt14:j_idt22\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometer</label><input type=\"text\" name=\"j_idt14:j_idt24\" value=\"17\" size=\"6\" /><input type=\"submit\" name=\"j_idt14:j_idt25\" value=\"Berechnen\" /> = 5.18 EUR (0.305 EUR/km)</p>\n                <p><label>Anlass</label><input type=\"text\" name=\"j_idt14:j_idt28\" value=\"Kundenbesuch\" size=\"40\" /></p><input type=\"submit\" name=\"j_idt14:j_idt30\" value=\"Einreichen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7209782184630595073:-1781546133564813213\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Reisekosten (Dienstreise-km)",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "E1009100"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "text",
+                "value": "27.10.2026"
+              },
+              {
+                "type": "text",
+                "value": "17"
+              },
+              {
+                "type": "submit",
+                "value": "Berechnen"
+              },
+              {
+                "type": "text",
+                "value": "Kundenbesuch"
+              },
+              {
+                "type": "submit",
+                "value": "Einreichen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 217
+        }
+      },
+      {
+        "id": "mileage-submit-invalid",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter und Kilometer angeben. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E1009100\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /> Priya Raman</p>\n                <p><label>Datum</label><input type=\"text\" name=\"j_idt14:j_idt22\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometer</label><input type=\"text\" name=\"j_idt14:j_idt24\" value=\"0\" size=\"6\" /><input type=\"submit\" name=\"j_idt14:j_idt25\" value=\"Berechnen\" /> = 5.18 EUR (0.305 EUR/km)</p>\n                <p><label>Anlass</label><input type=\"text\" name=\"j_idt14:j_idt28\" value=\"ungueltig\" size=\"40\" /></p><input type=\"submit\" name=\"j_idt14:j_idt30\" value=\"Einreichen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7209782184630595073:-776569307484584270\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Reisekosten (Dienstreise-km)",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Mitarbeiter und Kilometer angeben."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "E1009100"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "text",
+                "value": "27.10.2026"
+              },
+              {
+                "type": "text",
+                "value": "0"
+              },
+              {
+                "type": "submit",
+                "value": "Berechnen"
+              },
+              {
+                "type": "text",
+                "value": "ungueltig"
+              },
+              {
+                "type": "submit",
+                "value": "Einreichen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 226
+        }
+      },
+      {
+        "id": "mileage-submit",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Reisekosten (Dienstreise-km)</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Reisekosten (Dienstreise-km)</h1><ul class=\"msgs\"><li class=\"info\">\tReisekostenabrechnung erfasst: 7.62 EUR </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/mileage.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Personalnummer</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"E1009100\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /> Priya Raman</p>\n                <p><label>Datum</label><input type=\"text\" name=\"j_idt14:j_idt22\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometer</label><input type=\"text\" name=\"j_idt14:j_idt24\" size=\"6\" /><input type=\"submit\" name=\"j_idt14:j_idt25\" value=\"Berechnen\" /></p>\n                <p><label>Anlass</label><input type=\"text\" name=\"j_idt14:j_idt28\" size=\"40\" /></p><input type=\"submit\" name=\"j_idt14:j_idt30\" value=\"Einreichen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-7209782184630595073:-3469816002843270060\" autocomplete=\"off\" />\n</form><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Datum</th>\n<th scope=\"col\">km</th>\n<th scope=\"col\">Anlass</th>\n<th scope=\"col\">Betrag EUR</th>\n<th scope=\"col\">Status</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>27.10.2026</td>\n<td>25</td>\n<td>Kundenbesuch</td>\n<td>7.62</td>\n<td>SUBMITTED</td>\n</tr>\n</tbody>\n</table>\n\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Reisekosten (Dienstreise-km)",
+            "messages": [
+              {
+                "class": [
+                  "info"
+                ],
+                "text": "Reisekostenabrechnung erfasst: 7.62 EUR"
+              }
+            ],
+            "tables": [
+              [
+                [
+                  "Datum",
+                  "km",
+                  "Anlass",
+                  "Betrag EUR",
+                  "Status"
+                ],
+                [
+                  "27.10.2026",
+                  "25",
+                  "Kundenbesuch",
+                  "7.62",
+                  "SUBMITTED"
+                ]
+              ]
+            ],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "E1009100"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "text",
+                "value": "27.10.2026"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Berechnen"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Einreichen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 197
+        }
+      }
+    ],
+    "statement": [
+      {
+        "id": "statement-2026-08",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=A7F3B11C29C04406C60E7D50D6A67A31\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-08\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-08,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td></tr></tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>0 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Abrechnung geldwerter Vorteil",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Kennzeichen",
+                  "Tage",
+                  "Geldwerter Vorteil EUR"
+                ],
+                [
+                  "",
+                  "",
+                  ""
+                ]
+              ]
+            ],
+            "panels": [
+              "E1009100 Priya Raman, Monat 2026-08, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
+            ],
+            "inputs": [
+              {
+                "type": "text",
+                "value": "E1009100"
+              },
+              {
+                "type": "text",
+                "value": "2026-08"
+              }
+            ]
+          },
+          "elapsedMs": 203
+        }
+      },
+      {
+        "id": "statement-2026-09",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-09\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-09,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td></tr></tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>0 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Abrechnung geldwerter Vorteil",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Kennzeichen",
+                  "Tage",
+                  "Geldwerter Vorteil EUR"
+                ],
+                [
+                  "",
+                  "",
+                  ""
+                ]
+              ]
+            ],
+            "panels": [
+              "E1009100 Priya Raman, Monat 2026-09, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
+            ],
+            "inputs": [
+              {
+                "type": "text",
+                "value": "E1009100"
+              },
+              {
+                "type": "text",
+                "value": "2026-09"
+              }
+            ]
+          },
+          "elapsedMs": 195
+        }
+      },
+      {
+        "id": "statement-2026-10-new-car",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-10\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-10,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>HH-VS 7629</td>\n<td>5</td>\n<td>105.55</td>\n</tr>\n</tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>105.55 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Abrechnung geldwerter Vorteil",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Kennzeichen",
+                  "Tage",
+                  "Geldwerter Vorteil EUR"
+                ],
+                [
+                  "HH-VS 7629",
+                  "5",
+                  "105.55"
+                ]
+              ]
+            ],
+            "panels": [
+              "E1009100 Priya Raman, Monat 2026-10, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
+            ],
+            "inputs": [
+              {
+                "type": "text",
+                "value": "E1009100"
+              },
+              {
+                "type": "text",
+                "value": "2026-10"
+              }
+            ]
+          },
+          "elapsedMs": 204
+        }
+      },
+      {
+        "id": "statement-unknown-employee",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter E9999999 nicht gefunden. </li></ul>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E9999999\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-10\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Abrechnung geldwerter Vorteil",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Mitarbeiter E9999999 nicht gefunden."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "text",
+                "value": "E9999999"
+              },
+              {
+                "type": "text",
+                "value": "2026-10"
+              }
+            ]
+          },
+          "elapsedMs": 209
+        }
+      },
+      {
+        "id": "statement-no-parameters",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Abrechnung geldwerter Vorteil",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              }
+            ]
+          },
+          "elapsedMs": 198
+        }
+      },
+      {
+        "id": "statement-default-period",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-09\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-09,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td></tr></tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>0 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Abrechnung geldwerter Vorteil",
+            "messages": [],
+            "tables": [
+              [
+                [
+                  "Kennzeichen",
+                  "Tage",
+                  "Geldwerter Vorteil EUR"
+                ],
+                [
+                  "",
+                  "",
+                  ""
+                ]
+              ]
+            ],
+            "panels": [
+              "E1009100 Priya Raman, Monat 2026-09, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
+            ],
+            "inputs": [
+              {
+                "type": "text",
+                "value": "E1009100"
+              },
+              {
+                "type": "text",
+                "value": "2026-09"
+              }
+            ]
+          },
+          "elapsedMs": 229
+        }
+      }
+    ],
+    "return": [
+      {
+        "id": "return-open",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=E6E0B92A3FF473DBE8CE03C468A2A126\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml;jsessionid=E6E0B92A3FF473DBE8CE03C468A2A126\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-8593048745476190999:6231807954285971109\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Fahrzeugrueckgabe",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 207
+        }
+      },
+      {
+        "id": "return-unknown-plate",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1><ul class=\"msgs\"><li class=\"err\">\tKein Fahrzeug mit Kennzeichen ZZ-UNKNOWN. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"ZZ-UNKNOWN\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-8593048745476190999:-8581121482547508387\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Fahrzeugrueckgabe",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Kein Fahrzeug mit Kennzeichen ZZ-UNKNOWN."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "ZZ-UNKNOWN"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 187
+        }
+      },
+      {
+        "id": "return-unassigned-pool-car",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"HH-VS 7629\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p>\n                <p>HH-VS 7629  Opel Astra Sports Tourer, zugeordnet an E1009100 Priya Raman\n                   seit 27.10.2026</p>\n                <p><label>Rueckgabedatum</label><input type=\"text\" name=\"j_idt14:j_idt23\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometerstand</label><input type=\"text\" name=\"j_idt14:j_idt25\" size=\"7\" /></p>\n                <p><label>Zustand</label><input type=\"text\" name=\"j_idt14:j_idt27\" size=\"50\" /></p><input type=\"submit\" name=\"j_idt14:j_idt29\" value=\"Rueckgabe buchen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-8593048745476190999:-6098122966841413842\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Fahrzeugrueckgabe",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "HH-VS 7629"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "text",
+                "value": "27.10.2026"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Rueckgabe buchen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 197
+        }
+      },
+      {
+        "id": "return-found-assigned-car",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"K-XE 9032\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p>\n                <p>K-XE 9032  Mercedes-Benz C 220 d T-Modell, zugeordnet an E2040533 Jana Schwarz\n                   seit 01.06.2019</p>\n                <p><label>Rueckgabedatum</label><input type=\"text\" name=\"j_idt14:j_idt23\" value=\"27.10.2026\" /></p>\n                <p><label>Kilometerstand</label><input type=\"text\" name=\"j_idt14:j_idt25\" size=\"7\" /></p>\n                <p><label>Zustand</label><input type=\"text\" name=\"j_idt14:j_idt27\" size=\"50\" /></p><input type=\"submit\" name=\"j_idt14:j_idt29\" value=\"Rueckgabe buchen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-8593048745476190999:-3982399994697306803\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Fahrzeugrueckgabe",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "K-XE 9032"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "text",
+                "value": "27.10.2026"
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "text",
+                "value": ""
+              },
+              {
+                "type": "submit",
+                "value": "Rueckgabe buchen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 197
+        }
+      },
+      {
+        "id": "return-date-before-start",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1><ul class=\"msgs\"><li class=\"err\">\tRueckgabe vor Uebergabedatum. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"K-XE 9032\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p>\n                <p>K-XE 9032  Mercedes-Benz C 220 d T-Modell, zugeordnet an E2040533 Jana Schwarz\n                   seit 01.06.2019</p>\n                <p><label>Rueckgabedatum</label><input type=\"text\" name=\"j_idt14:j_idt23\" value=\"01.01.2019\" /></p>\n                <p><label>Kilometerstand</label><input type=\"text\" name=\"j_idt14:j_idt25\" value=\"40000\" size=\"7\" /></p>\n                <p><label>Zustand</label><input type=\"text\" name=\"j_idt14:j_idt27\" value=\"Pruefung\" size=\"50\" /></p><input type=\"submit\" name=\"j_idt14:j_idt29\" value=\"Rueckgabe buchen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-8593048745476190999:7747539914596728520\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Fahrzeugrueckgabe",
+            "messages": [
+              {
+                "class": [
+                  "err"
+                ],
+                "text": "Rueckgabe vor Uebergabedatum."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "K-XE 9032"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "text",
+                "value": "01.01.2019"
+              },
+              {
+                "type": "text",
+                "value": "40000"
+              },
+              {
+                "type": "text",
+                "value": "Pruefung"
+              },
+              {
+                "type": "submit",
+                "value": "Rueckgabe buchen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 191
+        }
+      },
+      {
+        "id": "return-submit",
+        "response": {
+          "status": 200,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Fahrzeugrueckgabe</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Fahrzeugrueckgabe</h1><ul class=\"msgs\"><li class=\"info\">\tRueckgabe von K-XE 9032 gebucht. </li></ul>\n<form id=\"j_idt14\" name=\"j_idt14\" method=\"post\" action=\"/return.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"j_idt14\" value=\"j_idt14\" />\n\n            <p><label>Kennzeichen</label><input type=\"text\" name=\"j_idt14:j_idt16\" value=\"K-XE 9032\" /><input type=\"submit\" name=\"j_idt14:j_idt17\" value=\"Suchen\" /></p><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-8593048745476190999:-941132380485903032\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+          "observed": {
+            "h1": "Fahrzeugrueckgabe",
+            "messages": [
+              {
+                "class": [
+                  "info"
+                ],
+                "text": "Rueckgabe von K-XE 9032 gebucht."
+              }
+            ],
+            "tables": [],
+            "panels": [],
+            "inputs": [
+              {
+                "type": "hidden",
+                "value": "j_idt14"
+              },
+              {
+                "type": "text",
+                "value": "K-XE 9032"
+              },
+              {
+                "type": "submit",
+                "value": "Suchen"
+              },
+              {
+                "type": "hidden",
+                "value": "<viewstate>"
+              }
+            ]
+          },
+          "elapsedMs": 203
+        }
+      }
+    ],
+    "static": [
+      {
+        "id": "health",
+        "response": {
+          "status": 200,
+          "mediaType": "text/plain",
+          "location": null,
+          "body": "ok",
+          "observed": {
+            "h1": "",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": []
+          },
+          "elapsedMs": 184
+        }
+      },
+      {
+        "id": "unmapped-404",
+        "response": {
+          "status": 404,
+          "mediaType": "text/html",
+          "location": null,
+          "body": "<!doctype html><html lang=\"en\"><head><title>HTTP Status 404 – Not Found</title><style type=\"text/css\">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP Status 404 – Not Found</h1><hr class=\"line\" /><p><b>Type</b> Status Report</p><p><b>Message</b> &#47;not-mapped.xhtml Not Found in ExternalContext as a Resource</p><p><b>Description</b> The origin server did not find a current representation for the target resource or is not willing to disclose that one exists.</p><hr class=\"line\" /><h3>Apache Tomcat/9.0.123</h3></body></html>",
+          "observed": {
+            "h1": "HTTP Status 404 – Not Found",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": []
+          },
+          "elapsedMs": 195
+        }
+      },
+      {
+        "id": "jsf-css-resource",
+        "response": {
+          "status": 200,
+          "mediaType": "text/css",
+          "location": null,
+          "body": "body { font-family: Arial, Helvetica, sans-serif; margin: 0; background: #f3f4f6; color: #1f2933; font-size: 14px; }\n.top { background: #22374f; color: #fff; padding: 10px 18px; }\n.top a { color: #cfe1f5; margin-left: 18px; text-decoration: none; }\n.top .brand { font-weight: bold; font-size: 16px; }\n.main { padding: 16px 22px; }\nh1 { font-size: 20px; margin: 4px 0 14px; }\ntable.grid { border-collapse: collapse; background: #fff; min-width: 640px; }\ntable.grid th { background: #dde5ee; text-align: left; padding: 5px 9px; }\ntable.grid td { border-top: 1px solid #e3e7eb; padding: 5px 9px; }\n.panel { background: #fff; padding: 12px 16px; border: 1px solid #d6dbe1; margin-bottom: 14px; max-width: 760px; }\n.msgs { list-style: none; padding: 0; }\n.err { color: #a61b1b; }\n.info { color: #1b6a2b; }\n.steps span { margin-right: 14px; color: #7b8794; }\n.steps span.on { color: #22374f; font-weight: bold; }\nlabel { display: inline-block; min-width: 150px; }\n",
+          "observed": {
+            "h1": "",
+            "messages": [],
+            "tables": [],
+            "panels": [],
+            "inputs": []
+          },
+          "elapsedMs": 199
+        }
+      }
+    ]
+  }
+}

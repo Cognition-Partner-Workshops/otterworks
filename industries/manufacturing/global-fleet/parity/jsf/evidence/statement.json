@@ -1,0 +1,257 @@
+{
+  "context": "statement",
+  "casesInCorpus": 6,
+  "casesRun": 6,
+  "identical": 6,
+  "different": 0,
+  "status": "identical",
+  "cases": [
+    {
+      "id": "statement-2026-08",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=112087780FB9C4D4422D3D4B942F8F38\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-08\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-08,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td></tr></tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>0 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Abrechnung geldwerter Vorteil",
+          "messages": [],
+          "tables": [
+            [
+              [
+                "Kennzeichen",
+                "Tage",
+                "Geldwerter Vorteil EUR"
+              ],
+              [
+                "",
+                "",
+                ""
+              ]
+            ]
+          ],
+          "panels": [
+            "E1009100 Priya Raman, Monat 2026-08, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
+          ],
+          "inputs": [
+            {
+              "type": "text",
+              "value": "E1009100"
+            },
+            {
+              "type": "text",
+              "value": "2026-08"
+            }
+          ]
+        },
+        "elapsedMs": 206
+      }
+    },
+    {
+      "id": "statement-2026-09",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-09\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-09,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td></tr></tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>0 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Abrechnung geldwerter Vorteil",
+          "messages": [],
+          "tables": [
+            [
+              [
+                "Kennzeichen",
+                "Tage",
+                "Geldwerter Vorteil EUR"
+              ],
+              [
+                "",
+                "",
+                ""
+              ]
+            ]
+          ],
+          "panels": [
+            "E1009100 Priya Raman, Monat 2026-09, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
+          ],
+          "inputs": [
+            {
+              "type": "text",
+              "value": "E1009100"
+            },
+            {
+              "type": "text",
+              "value": "2026-09"
+            }
+          ]
+        },
+        "elapsedMs": 202
+      }
+    },
+    {
+      "id": "statement-2026-10-new-car",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-10\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-10,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>HH-VS 7629</td>\n<td>5</td>\n<td>105.55</td>\n</tr>\n</tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>105.55 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Abrechnung geldwerter Vorteil",
+          "messages": [],
+          "tables": [
+            [
+              [
+                "Kennzeichen",
+                "Tage",
+                "Geldwerter Vorteil EUR"
+              ],
+              [
+                "HH-VS 7629",
+                "5",
+                "105.55"
+              ]
+            ]
+          ],
+          "panels": [
+            "E1009100 Priya Raman, Monat 2026-10, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
+          ],
+          "inputs": [
+            {
+              "type": "text",
+              "value": "E1009100"
+            },
+            {
+              "type": "text",
+              "value": "2026-10"
+            }
+          ]
+        },
+        "elapsedMs": 222
+      }
+    },
+    {
+      "id": "statement-unknown-employee",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter E9999999 nicht gefunden. </li></ul>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E9999999\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-10\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Abrechnung geldwerter Vorteil",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Mitarbeiter E9999999 nicht gefunden."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "text",
+              "value": "E9999999"
+            },
+            {
+              "type": "text",
+              "value": "2026-10"
+            }
+          ]
+        },
+        "elapsedMs": 184
+      }
+    },
+    {
+      "id": "statement-no-parameters",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Abrechnung geldwerter Vorteil",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            }
+          ]
+        },
+        "elapsedMs": 187
+      }
+    },
+    {
+      "id": "statement-default-period",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt5\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Abrechnung geldwerter Vorteil</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Abrechnung geldwerter Vorteil</h1>\n        <form method=\"get\" action=\"statement.xhtml\" class=\"panel\">\n            <label>Personalnummer</label><input type=\"text\" name=\"employee\" value=\"E1009100\" />\n            <label>Monat (JJJJ-MM)</label><input type=\"text\" name=\"period\" value=\"2026-09\" size=\"8\" />\n            <button type=\"submit\">Anzeigen</button>\n        </form>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, Monat 2026-09,\n                   Entfernung Wohnung-Arbeit 33 km</p>\n                <p>Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Tage</th>\n<th scope=\"col\">Geldwerter Vorteil EUR</th>\n</tr>\n</thead>\n<tbody>\n<tr><td></td><td></td><td></td></tr></tbody>\n</table>\n\n            <p>Summe geldwerter Vorteil: <b>0 EUR</b>. Erstattete Dienstreise-km: <b>0 EUR</b>.</p>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Abrechnung geldwerter Vorteil",
+          "messages": [],
+          "tables": [
+            [
+              [
+                "Kennzeichen",
+                "Tage",
+                "Geldwerter Vorteil EUR"
+              ],
+              [
+                "",
+                "",
+                ""
+              ]
+            ]
+          ],
+          "panels": [
+            "E1009100 Priya Raman, Monat <default-period>, Entfernung Wohnung-Arbeit 33 km Regel: 1.00 % Listenpreis + 0.030 % je Entfernungs-km"
+          ],
+          "inputs": [
+            {
+              "type": "text",
+              "value": "E1009100"
+            },
+            {
+              "type": "text",
+              "value": "<default-period>"
+            }
+          ]
+        },
+        "elapsedMs": 194
+      }
+    }
+  ]
+}

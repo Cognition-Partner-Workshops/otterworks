@@ -1,0 +1,554 @@
+{
+  "context": "request",
+  "casesInCorpus": 11,
+  "casesRun": 11,
+  "identical": 11,
+  "different": 0,
+  "status": "identical",
+  "cases": [
+    {
+      "id": "request-open",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml;jsessionid=925F4F4F467B19B95640024D8967DDA6\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml;jsessionid=925F4F4F467B19B95640024D8967DDA6\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-4139208058564857060:5364130352386428103\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenantrag",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "wiz"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Weiter"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 303
+      }
+    },
+    {
+      "id": "request-unknown-employee",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter nicht gefunden oder nicht aktiv. </li></ul>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" value=\"E9999999\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-4139208058564857060:-370039738378913891\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenantrag",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Mitarbeiter nicht gefunden oder nicht aktiv."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "wiz"
+            },
+            {
+              "type": "text",
+              "value": "E9999999"
+            },
+            {
+              "type": "submit",
+              "value": "Weiter"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 207
+      }
+    },
+    {
+      "id": "request-below-grade",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1><ul class=\"msgs\"><li class=\"err\">\tEntgeltgruppe 5 ist nicht dienstwagenberechtigt. </li></ul>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" value=\"E2040110\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-4139208058564857060:-260891158309500620\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenantrag",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Entgeltgruppe 5 ist nicht dienstwagenberechtigt."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "wiz"
+            },
+            {
+              "type": "text",
+              "value": "E2040110"
+            },
+            {
+              "type": "submit",
+              "value": "Weiter"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 222
+      }
+    },
+    {
+      "id": "request-already-has-car",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1><ul class=\"msgs\"><li class=\"err\">\tMitarbeiter hat bereits einen Dienstwagen. </li></ul>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" value=\"E1009106\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-4139208058564857060:-2334467024546364094\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenantrag",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Mitarbeiter hat bereits einen Dienstwagen."
+            }
+          ],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "wiz"
+            },
+            {
+              "type": "text",
+              "value": "E1009106"
+            },
+            {
+              "type": "submit",
+              "value": "Weiter"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 202
+      }
+    },
+    {
+      "id": "request-eligible-employee",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span>1 Mitarbeiter</span>\n            <span class=\"on\">2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <p>Priya Raman (EG 7, Hamburg)</p><table>\n\t<tr>\n<td>\n<input type=\"radio\" checked=\"checked\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:0\" value=\"pool\" /><label for=\"wiz:j_idt18:0\"> Fahrzeug aus dem Pool</label></td>\n\t</tr>\n\t<tr>\n<td>\n<input type=\"radio\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:1\" value=\"new\" /><label for=\"wiz:j_idt18:1\"> Neu ausgeliefertes Fahrzeug erfassen</label></td>\n\t</tr>\n</table>\n                <p><label>Poolfahrzeug</label><select name=\"wiz:j_idt22\" size=\"1\">\t<option value=\"\" selected=\"selected\">-- bitte waehlen --</option>\n\t<option value=\"119\">DA-EN 2783  Skoda Superb Combi</option>\n\t<option value=\"113\">DA-SM 3666  Cupra Born</option>\n\t<option value=\"114\">DA-X 1956  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"20\">HH-KW 5017  VW Passat Variant</option>\n\t<option value=\"120\">HH-M 6887  Audi Q4 e-tron</option>\n\t<option value=\"112\">HH-MU 3640  VW ID.4 Pro</option>\n\t<option value=\"106\">HH-P 1680  BMW 320d Touring</option>\n\t<option value=\"31\">HH-RO 9681  Audi A6 Avant 40 TDI</option>\n\t<option value=\"101\">HH-TW 3764  BMW i4 eDrive35</option>\n\t<option value=\"1\">HH-VS 7629  Opel Astra Sports Tourer</option>\n\t<option value=\"55\">HH-WR 9432  Audi Q4 e-tron</option>\n\t<option value=\"84\">IN-AS 4628  Tesla Model Y</option>\n\t<option value=\"91\">IN-DR 7206  Audi A6 Avant 40 TDI</option>\n\t<option value=\"26\">IN-FY 982  Opel Astra Sports Tourer</option>\n\t<option value=\"82\">IN-G 5330  BMW 320d Touring</option>\n\t<option value=\"93\">IN-XT 461  Opel Astra Sports Tourer</option>\n\t<option value=\"33\">K-F 410  Tesla Model Y</option>\n\t<option value=\"17\">K-Y 8162  BMW i4 eDrive35</option>\n\t<option value=\"52\">K-YB 42  BMW 320d Touring</option>\n\t<option value=\"49\">M-B 6067  Audi A6 Avant 40 TDI</option>\n\t<option value=\"59\">M-BM 9243  BMW i4 eDrive35</option>\n\t<option value=\"15\">M-EH 8648  BMW 320d Touring</option>\n\t<option value=\"58\">M-GK 7851  Cupra Born</option>\n\t<option value=\"67\">M-P 6113  BMW i4 eDrive35</option>\n\t<option value=\"80\">M-TS 244  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"110\">M-U 7289  BMW 320d Touring</option>\n\t<option value=\"115\">R-LB 7026  Audi A6 Avant 40 TDI</option>\n\t<option value=\"116\">R-N 2442  Skoda Superb Combi</option>\n\t<option value=\"117\">R-PO 2012  Ford Kuga PHEV</option>\n\t<option value=\"6\">S-C 3114  Skoda Superb Combi</option>\n\t<option value=\"36\">S-DP 5145  Opel Astra Sports Tourer</option>\n\t<option value=\"61\">S-FR 5091  BMW i4 eDrive35</option>\n\t<option value=\"64\">S-K 6378  Audi Q4 e-tron</option>\n\t<option value=\"24\">S-SK 542  Opel Astra Sports Tourer</option>\n\t<option value=\"69\">WOB-A 9731  VW Passat Variant</option>\n\t<option value=\"99\">WOB-FP 9124  BMW i4 eDrive35</option>\n\t<option value=\"89\">WOB-RL 7155  Skoda Superb Combi</option>\n\t<option value=\"74\">WOB-SL 8695  Cupra Born</option>\n\t<option value=\"118\">WOB-V 4446  Skoda Superb Combi</option>\n\t<option value=\"96\">WOB-V 6696  VW ID.4 Pro</option>\n</select></p>\n                <p><label>Kennzeichen</label><input type=\"text\" name=\"wiz:j_idt26\" /></p>\n                <p><label>Marke / Modell</label><input type=\"text\" name=\"wiz:j_idt28\" size=\"12\" /><input type=\"text\" name=\"wiz:j_idt29\" /></p>\n                <p><label>Listenpreis EUR</label><input type=\"text\" name=\"wiz:j_idt31\" size=\"10\" /></p>\n                <p><label>CO2 g/km</label><input type=\"text\" name=\"wiz:j_idt33\" size=\"4\" /><select name=\"wiz:j_idt34\" size=\"1\">\t<option value=\"D\" selected=\"selected\">Diesel</option>\n\t<option value=\"P\">Benzin</option>\n\t<option value=\"H\">Hybrid</option>\n\t<option value=\"E\">Elektro</option>\n</select></p><input type=\"submit\" name=\"wiz:j_idt40\" value=\"Zurueck\" /><input type=\"submit\" name=\"wiz:j_idt41\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-4139208058564857060:3097230204235927107\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenantrag",
+          "messages": [],
+          "tables": [
+            [
+              [
+                "Fahrzeug aus dem Pool"
+              ],
+              [
+                "Neu ausgeliefertes Fahrzeug erfassen"
+              ]
+            ]
+          ],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "wiz"
+            },
+            {
+              "type": "radio",
+              "value": "pool"
+            },
+            {
+              "type": "radio",
+              "value": "new"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Zurueck"
+            },
+            {
+              "type": "submit",
+              "value": "Weiter"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 260
+      }
+    },
+    {
+      "id": "request-pool-no-selection",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1><ul class=\"msgs\"><li class=\"err\">\tBitte ein Fahrzeug aus dem Pool waehlen. </li></ul>\n        <div class=\"steps\">\n            <span>1 Mitarbeiter</span>\n            <span class=\"on\">2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <p>Priya Raman (EG 7, Hamburg)</p><table>\n\t<tr>\n<td>\n<input type=\"radio\" checked=\"checked\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:0\" value=\"pool\" /><label for=\"wiz:j_idt18:0\"> Fahrzeug aus dem Pool</label></td>\n\t</tr>\n\t<tr>\n<td>\n<input type=\"radio\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:1\" value=\"new\" /><label for=\"wiz:j_idt18:1\"> Neu ausgeliefertes Fahrzeug erfassen</label></td>\n\t</tr>\n</table>\n                <p><label>Poolfahrzeug</label><select name=\"wiz:j_idt22\" size=\"1\">\t<option value=\"\" selected=\"selected\">-- bitte waehlen --</option>\n\t<option value=\"119\">DA-EN 2783  Skoda Superb Combi</option>\n\t<option value=\"113\">DA-SM 3666  Cupra Born</option>\n\t<option value=\"114\">DA-X 1956  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"20\">HH-KW 5017  VW Passat Variant</option>\n\t<option value=\"120\">HH-M 6887  Audi Q4 e-tron</option>\n\t<option value=\"112\">HH-MU 3640  VW ID.4 Pro</option>\n\t<option value=\"106\">HH-P 1680  BMW 320d Touring</option>\n\t<option value=\"31\">HH-RO 9681  Audi A6 Avant 40 TDI</option>\n\t<option value=\"101\">HH-TW 3764  BMW i4 eDrive35</option>\n\t<option value=\"1\">HH-VS 7629  Opel Astra Sports Tourer</option>\n\t<option value=\"55\">HH-WR 9432  Audi Q4 e-tron</option>\n\t<option value=\"84\">IN-AS 4628  Tesla Model Y</option>\n\t<option value=\"91\">IN-DR 7206  Audi A6 Avant 40 TDI</option>\n\t<option value=\"26\">IN-FY 982  Opel Astra Sports Tourer</option>\n\t<option value=\"82\">IN-G 5330  BMW 320d Touring</option>\n\t<option value=\"93\">IN-XT 461  Opel Astra Sports Tourer</option>\n\t<option value=\"33\">K-F 410  Tesla Model Y</option>\n\t<option value=\"17\">K-Y 8162  BMW i4 eDrive35</option>\n\t<option value=\"52\">K-YB 42  BMW 320d Touring</option>\n\t<option value=\"49\">M-B 6067  Audi A6 Avant 40 TDI</option>\n\t<option value=\"59\">M-BM 9243  BMW i4 eDrive35</option>\n\t<option value=\"15\">M-EH 8648  BMW 320d Touring</option>\n\t<option value=\"58\">M-GK 7851  Cupra Born</option>\n\t<option value=\"67\">M-P 6113  BMW i4 eDrive35</option>\n\t<option value=\"80\">M-TS 244  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"110\">M-U 7289  BMW 320d Touring</option>\n\t<option value=\"115\">R-LB 7026  Audi A6 Avant 40 TDI</option>\n\t<option value=\"116\">R-N 2442  Skoda Superb Combi</option>\n\t<option value=\"117\">R-PO 2012  Ford Kuga PHEV</option>\n\t<option value=\"6\">S-C 3114  Skoda Superb Combi</option>\n\t<option value=\"36\">S-DP 5145  Opel Astra Sports Tourer</option>\n\t<option value=\"61\">S-FR 5091  BMW i4 eDrive35</option>\n\t<option value=\"64\">S-K 6378  Audi Q4 e-tron</option>\n\t<option value=\"24\">S-SK 542  Opel Astra Sports Tourer</option>\n\t<option value=\"69\">WOB-A 9731  VW Passat Variant</option>\n\t<option value=\"99\">WOB-FP 9124  BMW i4 eDrive35</option>\n\t<option value=\"89\">WOB-RL 7155  Skoda Superb Combi</option>\n\t<option value=\"74\">WOB-SL 8695  Cupra Born</option>\n\t<option value=\"118\">WOB-V 4446  Skoda Superb Combi</option>\n\t<option value=\"96\">WOB-V 6696  VW ID.4 Pro</option>\n</select></p>\n                <p><label>Kennzeichen</label><input type=\"text\" name=\"wiz:j_idt26\" /></p>\n                <p><label>Marke / Modell</label><input type=\"text\" name=\"wiz:j_idt28\" size=\"12\" /><input type=\"text\" name=\"wiz:j_idt29\" /></p>\n                <p><label>Listenpreis EUR</label><input type=\"text\" name=\"wiz:j_idt31\" size=\"10\" /></p>\n                <p><label>CO2 g/km</label><input type=\"text\" name=\"wiz:j_idt33\" size=\"4\" /><select name=\"wiz:j_idt34\" size=\"1\">\t<option value=\"D\">Diesel</option>\n\t<option value=\"P\">Benzin</option>\n\t<option value=\"H\">Hybrid</option>\n\t<option value=\"E\">Elektro</option>\n</select></p><input type=\"submit\" name=\"wiz:j_idt40\" value=\"Zurueck\" /><input type=\"submit\" name=\"wiz:j_idt41\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-4139208058564857060:4665665939749229619\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenantrag",
+          "messages": [
+            {
+              "class": [
+                "err"
+              ],
+              "text": "Bitte ein Fahrzeug aus dem Pool waehlen."
+            }
+          ],
+          "tables": [
+            [
+              [
+                "Fahrzeug aus dem Pool"
+              ],
+              [
+                "Neu ausgeliefertes Fahrzeug erfassen"
+              ]
+            ]
+          ],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "wiz"
+            },
+            {
+              "type": "radio",
+              "value": "pool"
+            },
+            {
+              "type": "radio",
+              "value": "new"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Zurueck"
+            },
+            {
+              "type": "submit",
+              "value": "Weiter"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 215
+      }
+    },
+    {
+      "id": "request-back",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span class=\"on\">1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <label>Personalnummer</label><input id=\"wiz:emp\" type=\"text\" name=\"wiz:emp\" value=\"E1009100\" /><input type=\"submit\" name=\"wiz:j_idt15\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-4139208058564857060:-7288115463390887996\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenantrag",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "wiz"
+            },
+            {
+              "type": "text",
+              "value": "E1009100"
+            },
+            {
+              "type": "submit",
+              "value": "Weiter"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 187
+      }
+    },
+    {
+      "id": "request-reselect-employee",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span>1 Mitarbeiter</span>\n            <span class=\"on\">2 Fahrzeug</span>\n            <span>3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <p>Priya Raman (EG 7, Hamburg)</p><table>\n\t<tr>\n<td>\n<input type=\"radio\" checked=\"checked\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:0\" value=\"pool\" /><label for=\"wiz:j_idt18:0\"> Fahrzeug aus dem Pool</label></td>\n\t</tr>\n\t<tr>\n<td>\n<input type=\"radio\" name=\"wiz:j_idt18\" id=\"wiz:j_idt18:1\" value=\"new\" /><label for=\"wiz:j_idt18:1\"> Neu ausgeliefertes Fahrzeug erfassen</label></td>\n\t</tr>\n</table>\n                <p><label>Poolfahrzeug</label><select name=\"wiz:j_idt22\" size=\"1\">\t<option value=\"\" selected=\"selected\">-- bitte waehlen --</option>\n\t<option value=\"119\">DA-EN 2783  Skoda Superb Combi</option>\n\t<option value=\"113\">DA-SM 3666  Cupra Born</option>\n\t<option value=\"114\">DA-X 1956  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"20\">HH-KW 5017  VW Passat Variant</option>\n\t<option value=\"120\">HH-M 6887  Audi Q4 e-tron</option>\n\t<option value=\"112\">HH-MU 3640  VW ID.4 Pro</option>\n\t<option value=\"106\">HH-P 1680  BMW 320d Touring</option>\n\t<option value=\"31\">HH-RO 9681  Audi A6 Avant 40 TDI</option>\n\t<option value=\"101\">HH-TW 3764  BMW i4 eDrive35</option>\n\t<option value=\"1\">HH-VS 7629  Opel Astra Sports Tourer</option>\n\t<option value=\"55\">HH-WR 9432  Audi Q4 e-tron</option>\n\t<option value=\"84\">IN-AS 4628  Tesla Model Y</option>\n\t<option value=\"91\">IN-DR 7206  Audi A6 Avant 40 TDI</option>\n\t<option value=\"26\">IN-FY 982  Opel Astra Sports Tourer</option>\n\t<option value=\"82\">IN-G 5330  BMW 320d Touring</option>\n\t<option value=\"93\">IN-XT 461  Opel Astra Sports Tourer</option>\n\t<option value=\"33\">K-F 410  Tesla Model Y</option>\n\t<option value=\"17\">K-Y 8162  BMW i4 eDrive35</option>\n\t<option value=\"52\">K-YB 42  BMW 320d Touring</option>\n\t<option value=\"49\">M-B 6067  Audi A6 Avant 40 TDI</option>\n\t<option value=\"59\">M-BM 9243  BMW i4 eDrive35</option>\n\t<option value=\"15\">M-EH 8648  BMW 320d Touring</option>\n\t<option value=\"58\">M-GK 7851  Cupra Born</option>\n\t<option value=\"67\">M-P 6113  BMW i4 eDrive35</option>\n\t<option value=\"80\">M-TS 244  Mercedes-Benz C 220 d T-Modell</option>\n\t<option value=\"110\">M-U 7289  BMW 320d Touring</option>\n\t<option value=\"115\">R-LB 7026  Audi A6 Avant 40 TDI</option>\n\t<option value=\"116\">R-N 2442  Skoda Superb Combi</option>\n\t<option value=\"117\">R-PO 2012  Ford Kuga PHEV</option>\n\t<option value=\"6\">S-C 3114  Skoda Superb Combi</option>\n\t<option value=\"36\">S-DP 5145  Opel Astra Sports Tourer</option>\n\t<option value=\"61\">S-FR 5091  BMW i4 eDrive35</option>\n\t<option value=\"64\">S-K 6378  Audi Q4 e-tron</option>\n\t<option value=\"24\">S-SK 542  Opel Astra Sports Tourer</option>\n\t<option value=\"69\">WOB-A 9731  VW Passat Variant</option>\n\t<option value=\"99\">WOB-FP 9124  BMW i4 eDrive35</option>\n\t<option value=\"89\">WOB-RL 7155  Skoda Superb Combi</option>\n\t<option value=\"74\">WOB-SL 8695  Cupra Born</option>\n\t<option value=\"118\">WOB-V 4446  Skoda Superb Combi</option>\n\t<option value=\"96\">WOB-V 6696  VW ID.4 Pro</option>\n</select></p>\n                <p><label>Kennzeichen</label><input type=\"text\" name=\"wiz:j_idt26\" /></p>\n                <p><label>Marke / Modell</label><input type=\"text\" name=\"wiz:j_idt28\" size=\"12\" /><input type=\"text\" name=\"wiz:j_idt29\" /></p>\n                <p><label>Listenpreis EUR</label><input type=\"text\" name=\"wiz:j_idt31\" size=\"10\" /></p>\n                <p><label>CO2 g/km</label><input type=\"text\" name=\"wiz:j_idt33\" size=\"4\" /><select name=\"wiz:j_idt34\" size=\"1\">\t<option value=\"D\">Diesel</option>\n\t<option value=\"P\">Benzin</option>\n\t<option value=\"H\">Hybrid</option>\n\t<option value=\"E\">Elektro</option>\n</select></p><input type=\"submit\" name=\"wiz:j_idt40\" value=\"Zurueck\" /><input type=\"submit\" name=\"wiz:j_idt41\" value=\"Weiter\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-4139208058564857060:437734274151910225\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenantrag",
+          "messages": [],
+          "tables": [
+            [
+              [
+                "Fahrzeug aus dem Pool"
+              ],
+              [
+                "Neu ausgeliefertes Fahrzeug erfassen"
+              ]
+            ]
+          ],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "wiz"
+            },
+            {
+              "type": "radio",
+              "value": "pool"
+            },
+            {
+              "type": "radio",
+              "value": "new"
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "text",
+              "value": ""
+            },
+            {
+              "type": "submit",
+              "value": "Zurueck"
+            },
+            {
+              "type": "submit",
+              "value": "Weiter"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 224
+      }
+    },
+    {
+      "id": "request-pool-select",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt2\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenantrag</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenantrag</h1>\n        <div class=\"steps\">\n            <span>1 Mitarbeiter</span>\n            <span>2 Fahrzeug</span>\n            <span class=\"on\">3 Bestaetigung</span>\n        </div>\n<form id=\"wiz\" name=\"wiz\" method=\"post\" action=\"/request.xhtml\" class=\"panel\" enctype=\"application/x-www-form-urlencoded\">\n<input type=\"hidden\" name=\"wiz\" value=\"wiz\" />\n\n                <p>Mitarbeiter: E1009100 Priya Raman</p>\n                <p>Fahrzeug: HH-VS 7629  Opel Astra Sports Tourer</p>\n                <p><label>Uebergabe am</label><input type=\"text\" name=\"wiz:j_idt44\" value=\"27.10.2026\" /></p><input type=\"submit\" name=\"wiz:j_idt46\" value=\"Zurueck\" /><input type=\"submit\" name=\"wiz:j_idt47\" value=\"Antrag abschliessen\" /><input type=\"hidden\" name=\"javax.faces.ViewState\" id=\"j_id1:javax.faces.ViewState:0\" value=\"-4139208058564857060:4216104782094176563\" autocomplete=\"off\" />\n</form>\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenantrag",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": [
+            {
+              "type": "hidden",
+              "value": "wiz"
+            },
+            {
+              "type": "text",
+              "value": "<recording-day>"
+            },
+            {
+              "type": "submit",
+              "value": "Zurueck"
+            },
+            {
+              "type": "submit",
+              "value": "Antrag abschliessen"
+            },
+            {
+              "type": "hidden",
+              "value": "<viewstate>"
+            }
+          ]
+        },
+        "elapsedMs": 242
+      }
+    },
+    {
+      "id": "request-step-three-submit",
+      "status": 302,
+      "mediaType": null,
+      "location": "/assignment.xhtml?employee=E1009100",
+      "problems": [],
+      "actual": {
+        "status": 302,
+        "mediaType": null,
+        "location": "/assignment.xhtml?employee=E1009100",
+        "body": "",
+        "observed": {
+          "h1": "",
+          "messages": [],
+          "tables": [],
+          "panels": [],
+          "inputs": []
+        },
+        "elapsedMs": 252
+      }
+    },
+    {
+      "id": "request-redirect-assignment",
+      "status": 200,
+      "mediaType": "text/html",
+      "location": null,
+      "problems": [],
+      "actual": {
+        "status": 200,
+        "mediaType": "text/html",
+        "location": null,
+        "body": "<!DOCTYPE html>\n<html xmlns=\"http://www.w3.org/1999/xhtml\"><head id=\"j_idt4\">\n    <meta charset=\"UTF-8\" />\n    <title>Dienstwagenportal - Dienstwagenzuordnung</title><link type=\"text/css\" rel=\"stylesheet\" href=\"/javax.faces.resource/css/portal.css.xhtml\" /></head><body>\n    <div class=\"top\">\n        <span class=\"brand\">Dienstwagenportal</span>\n        <a href=\"employees.xhtml\">Mitarbeitersuche</a>\n        <a href=\"request.xhtml\">Dienstwagenantrag</a>\n        <a href=\"mileage.xhtml\">Reisekosten</a>\n        <a href=\"return.xhtml\">Fahrzeugrueckgabe</a>\n    </div>\n    <div class=\"main\">\n        <h1>Dienstwagenzuordnung</h1>\n            <div class=\"panel\">\n                <p><b>E1009100 Priya Raman</b>, EG 7, E-210, Hamburg</p>\n                    <p>Aktueller Dienstwagen: <b>HH-VS 7629</b> Opel Astra Sports Tourer,\n                       Listenpreis 32.885,99 EUR,\n                       seit 27.10.2026</p>\n            </div><table class=\"grid\">\n<thead>\n<tr>\n<th scope=\"col\">Kennzeichen</th>\n<th scope=\"col\">Fahrzeug</th>\n<th scope=\"col\">Von</th>\n<th scope=\"col\">Bis</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>HH-VS 7629</td>\n<td>Opel Astra Sports Tourer</td>\n<td>27.10.2026</td>\n<td></td>\n</tr>\n</tbody>\n</table>\n\n    </div></body>\n</html>",
+        "observed": {
+          "h1": "Dienstwagenzuordnung",
+          "messages": [],
+          "tables": [
+            [
+              [
+                "Kennzeichen",
+                "Fahrzeug",
+                "Von",
+                "Bis"
+              ],
+              [
+                "HH-VS 7629",
+                "Opel Astra Sports Tourer",
+                "<recording-day>",
+                ""
+              ]
+            ]
+          ],
+          "panels": [
+            "E1009100 Priya Raman, EG 7, E-210, Hamburg Aktueller Dienstwagen: HH-VS 7629 Opel Astra Sports Tourer, Listenpreis 32.885,99 EUR, seit <recording-day>"
+          ],
+          "inputs": []
+        },
+        "elapsedMs": 212
+      }
+    }
+  ]
+}
