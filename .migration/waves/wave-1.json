@@ -1,0 +1,155 @@
+{
+  "wave": 1,
+  "plan_step": "run-wave-1",
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "base_branch": "tp-run/dbx-1793123712",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "width": 3,
+  "breaker_threshold": 2,
+  "auto_merge": false,
+  "max_minutes": 60,
+  "verify_depth": "full",
+  "cost_estimate": {
+    "tool": "dbx-recon estimate --depth full --mode snapshot --param ns=mig1",
+    "per_unit": "summed over 4 unit mapping specs",
+    "source_statements": 25,
+    "target_statements": 20,
+    "source_rows_fetched": 216,
+    "target_rows_fetched": 216,
+    "row_counts_known": true
+  },
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_billing_migration"
+    ],
+    "ready": true,
+    "guard_mode": "block"
+  },
+  "target_state": {
+    "core": {
+      "decision": "target-core",
+      "target": "Delta bronze.custbill_raw_lines -> silver.custbill_records -> gold.finance_billing_report",
+      "ref": "plan.yaml#scaffold-wave-0"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "target": "Lakeflow Declarative Pipeline (MVs + expectations) run from the job",
+      "ref": "plan.yaml#scaffold-wave-0"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "one Lakeflow job replacing run_all.sh and cron",
+      "ref": "plan.yaml#scaffold-wave-0"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "target": "gold table plus CSV export task (byte-identical .xls copy)",
+      "ref": "plan.yaml#scaffold-wave-0"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "preserve the CUSTBILL fixed-width drop contract; Auto Loader over the landing volume",
+      "ref": "plan.yaml#scaffold-wave-0"
+    }
+  },
+  "serialized_pipelines": {
+    "custbill_pipeline": "pipeline-serialization"
+  },
+  "batches": [
+    {
+      "id": "b1",
+      "units": [
+        "u-bronze-ingest"
+      ],
+      "write_targets": [
+        "bronze.custbill_raw_lines",
+        "custbill.sftp_ingest_poll"
+      ],
+      "deploy_objects": [
+        "custbill.sftp_ingest_poll"
+      ],
+      "lakeflow_pipelines": [],
+      "max_minutes": 60,
+      "brief": "Units: u-bronze-ingest\nTrack: analytical\nSource: etl/legacy-extra/jobs/sftp_ingest_poll.ksh (read-only); feed layout from etl/legacy-extra/tools/oracle_custbill_extract.py\nTargets: bronze.custbill_raw_lines\nSpec: .migration/units/u-bronze-ingest/mapping_spec.json (tolerances: .migration/recon_tolerances.json)\nDepends on: none (wave-0 scaffold: schemas + volume bronze.landing exist)\nDialect skill: none (ksh file mover); field rules in CUSTBILL_analysis.md attached to the pipeline-analysis ticket\nRerun posture: first_run_baseline\nGates: recon-pass: .migration/recon/u-bronze-ingest/result.json parity PASS (snapshot mode), 104 rows, 0 mismatches\nKnown: source-access=fixture-run. Legacy side = ow_billing_migration.recon.legacy_* rows with ns='mig1', loaded from `make legacy-etl-gen-data NS=mig1` + `make legacy-etl-run JOB=run_all` under scripts/tp-run-deterministic.sh; the mapping spec's root_where ns = '${ns}' scopes every comparison.\nKnown: Auto Loader over /Volumes/ow_billing_migration/bronze/landing/ (CUSTBILL*.dat); one row per physical line incl. HDR/TRL with file_name, line_no (1-based), raw_line (untrimmed), record_flag HDR|TRL|BODY. The text reader has no line index: use wholetext + posexplode (or equivalent).\nConstraint (landing-volume feeder): this wave builds no SFTP or partner transport. Files reach bronze.landing only by the fixture staging copy of the mig1 .dat files; who feeds the volume at cutover is out of scope, do not design or wire it.\nDone when: recon result.json committed at the PR head; PR against tp-run/dbx-1793123712; nothing else",
+      "gates": [
+        {
+          "id": "recon-pass",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "b2",
+      "units": [
+        "u-silver-parse"
+      ],
+      "write_targets": [
+        "silver.custbill_records",
+        "silver.custbill_quarantine",
+        "custbill.parse_custbill_fixedwidth"
+      ],
+      "deploy_objects": [
+        "custbill.parse_custbill_fixedwidth"
+      ],
+      "lakeflow_pipelines": [
+        "custbill_pipeline"
+      ],
+      "max_minutes": 60,
+      "brief": "Units: u-silver-parse\nTrack: analytical\nSource: etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh (read-only)\nTargets: silver.custbill_records, silver.custbill_quarantine\nSpec: .migration/units/u-silver-parse/mapping_spec.json (tolerances: .migration/recon_tolerances.json)\nDepends on: u-bronze-ingest (b1, same wave): read bronze.custbill_raw_lines, never write it\nDialect skill: skills/oracle-plsql/SKILL.md (type map: DATE census_midnight_only, NUMBER(14,2) -> decimal(14,2))\nRerun posture: first_run_baseline\nGates: recon-pass: .migration/recon/u-silver-parse/result.json parity PASS (snapshot mode), 100 records, 0 mismatches\nGates: quarantine-zero: silver.custbill_quarantine has 0 rows for ns mig1 and matches the empty recon.legacy_custbill_rejected_lines exactly\nKnown: source-access=fixture-run. Legacy side = ow_billing_migration.recon.legacy_* rows with ns='mig1', loaded from `make legacy-etl-gen-data NS=mig1` + `make legacy-etl-run JOB=run_all` under scripts/tp-run-deterministic.sh; the mapping spec's root_where ns = '${ns}' scopes every comparison.\nKnown: body rows only (HDR/TRL excluded); cols 1-10 cust_no, 11-40 cust_name, 41-48 period_end YYYYMMDD -> DATE, 49-60 cents /100 -> decimal(14,2) (unsigned; sign is rec_type '02'), 61-63 currency, 64-65 rec_type; trailing-blank trim on cust_no, cust_name, currency only.\nKnown: Lakeflow declarative pipeline custbill_pipeline (MVs + expectations); malformed lines go to quarantine via expectations, never dropped silently. b3 updates the same pipeline after this batch (serialized_pipelines).\nDone when: recon result.json committed at the PR head; PR against tp-run/dbx-1793123712; nothing else",
+      "gates": [
+        {
+          "id": "recon-pass",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        },
+        {
+          "id": "quarantine-zero",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "b3",
+      "units": [
+        "u-gold-report",
+        "u-chain-job"
+      ],
+      "write_targets": [
+        "gold.finance_billing_report",
+        "custbill.finance_excel_report",
+        "custbill.run_all"
+      ],
+      "deploy_objects": [
+        "custbill.finance_excel_report",
+        "custbill.run_all"
+      ],
+      "lakeflow_pipelines": [
+        "custbill_pipeline"
+      ],
+      "max_minutes": 60,
+      "brief": "Units: u-gold-report, u-chain-job\nTrack: analytical\nSource: etl/legacy-extra/jobs/finance_excel_report.pl, etl/legacy-extra/run_all.sh, etl/legacy-extra/crontab (read-only)\nTargets: gold.finance_billing_report\nSpec: .migration/units/u-gold-report/mapping_spec.json, .migration/units/u-chain-job/mapping_spec.json (tolerances: .migration/recon_tolerances.json)\nDepends on: u-silver-parse (b2, same wave; custbill_pipeline is serialized b2 -> b3)\nDialect skill: none (Perl/sh); report rules in CUSTBILL_analysis.md attached to the pipeline-analysis ticket\nRerun posture: first_run_baseline\nGates: recon-pass: .migration/recon/u-gold-report/result.json and .migration/recon/u-chain-job/result.json parity PASS (snapshot mode), 6 rows, 0 mismatches\nGates: report-bytes: exported CSV for ns mig1 is byte-equal (sha256) to the legacy finance_billing_*.csv, and the .xls is a byte copy of the CSV\nKnown: source-access=fixture-run. Legacy side = ow_billing_migration.recon.legacy_* rows with ns='mig1', loaded from `make legacy-etl-gen-data NS=mig1` + `make legacy-etl-run JOB=run_all` under scripts/tp-run-deterministic.sh; the mapping spec's root_where ns = '${ns}' scopes every comparison.\nKnown: header Currency,RecordType,RecordCount,TotalAmount; rows ordered by currency then rec_type code (01 INVOICE before 02 CREDIT); amounts %.2f; report date is a job parameter pinned to the legacy run date (legacy uses localtime). Export to /Volumes/ow_billing_migration/bronze/landing/reports/.\nConstraint (gold total width): total_amount is decimal(18,2) exactly as the mapping spec declares; do not narrow it to decimal(14,2).\nConstraint (cutover mail hand-off): do not migrate sendmail or any mail delivery; the deliverable is the gold table plus the CSV/.xls files. Mail hand-off is a cutover step, not this wave.\nKnown: u-chain-job wires the existing bundle jobs custbill_chain (991610056161821) and custbill_recon (1062500815254111) in etl/dbx-custbill/; both stay PAUSED; task dependencies replace run_all.sh sleeps and cron.\nDone when: recon result.json committed at the PR head for both units; PR against tp-run/dbx-1793123712; nothing else",
+      "gates": [
+        {
+          "id": "recon-pass",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        },
+        {
+          "id": "report-bytes",
+          "kind": "byte_compare",
+          "status": "pending",
+          "evidence": ""
+        }
+      ]
+    }
+  ]
+}
