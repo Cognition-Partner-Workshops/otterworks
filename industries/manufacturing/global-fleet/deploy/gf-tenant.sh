@@ -535,12 +535,16 @@ up_after() {
   print_timings "${TOKEN}-up"
   log "App: https://${WEB_HOST}/  (API: /api/uk, /api/de)"
 }
-# Pin pods to the pushed digest so a rebuilt image under the same token tag rolls out.
+# Pin pods and jobs to the digest the registry holds for the token tag, so a
+# rebuilt image under the same tag rolls out and no stale local copy is used.
 image_ref() {
-  local ref="${ECR_REGISTRY}/${ECR_PREFIX}/$1:${TOKEN}" digest
-  digest="$(docker image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "${ref}" 2>/dev/null \
-    | grep -m1 "^${ECR_REGISTRY}/${ECR_PREFIX}/$1@" || true)"
-  echo "${digest:-${ref}}"
+  local digest
+  digest="$(aws ecr describe-images --region "${AWS_REGION}" --repository-name "${ECR_PREFIX}/$1" \
+    --image-ids "imageTag=${TOKEN}" --query 'imageDetails[0].imageDigest' --output text 2>/dev/null || true)"
+  case "${digest}" in
+    sha256:*) echo "${ECR_REGISTRY}/${ECR_PREFIX}/$1@${digest}" ;;
+    *) echo "${ECR_REGISTRY}/${ECR_PREFIX}/$1:${TOKEN}" ;;
+  esac
 }
 deploy_after_apps() {
   local c
@@ -682,10 +686,10 @@ SQL
 psql -tAc "SELECT 'seeded ' || (SELECT count(*) FROM legacy.employee) || ' de and ' || (SELECT count(*) FROM legacy_uk.employee) || ' uk employee records'"
 EOF
 )"
-  run_job gf-seed "${ECR_REGISTRY}/${ECR_PREFIX}/gf-seed:${TOKEN}" "${script}"
+  run_job gf-seed "$(image_ref gf-seed)" "${script}"
 }
 fill_after_schemas() {
-  run_job gf-fill "${ECR_REGISTRY}/${ECR_PREFIX}/gf-seed:${TOKEN}" "psql -q -tA -f /seed/after-seed.sql"
+  run_job gf-fill "$(image_ref gf-seed)" "psql -q -tA -f /seed/after-seed.sql"
 }
 
 reset_all() {
