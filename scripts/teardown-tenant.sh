@@ -83,7 +83,7 @@ delete_token_ecr_tags() {
 zone_for_host() {
   local host="$1"
   aws route53 list-hosted-zones --output json 2>/dev/null | jq -r --arg h "${host}." '
-    [.HostedZones[] | select(.Config.PrivateZone | not) | select(($h | endswith("." + .Name)) or $h == .Name)]
+    [.HostedZones[] | select(.Config.PrivateZone | not) | .Name as $z | select(($h | endswith("." + $z)) or $h == $z)]
     | sort_by(.Name | length) | reverse | .[0].Id // empty' | sed 's#^/hostedzone/##'
 }
 
@@ -97,6 +97,7 @@ host_records() {
 delete_host_dns() {
   local host zone waited=0 rec left
   [ "${#TOKEN_HOSTS[@]}" -gt 0 ] || return 0
+  mapfile -t TOKEN_HOSTS < <(printf '%s\n' "${TOKEN_HOSTS[@]}" | sort -u)
   log "Waiting up to ${DNS_WAIT_SECONDS}s for external-dns to drop ${TOKEN_HOSTS[*]}..."
   while :; do
     left=0
