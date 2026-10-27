@@ -18,7 +18,7 @@ Breaks fall into two kinds. **Loud** ones are rows the database rejects. **Silen
 | 10 | Different benefit models. UK: list price × BPCT/12 − contribution, pro-rated by days. DE: 1% of list price + 0.03% × commute km (from `fleet_rule`). They don't fit into one formula column without a country profile. | design | The JSF `FleetService`/`StatementBean` versus FLEBEN01 `2100-BENEFIT`. |
 | 11 | Code values. Employee status A/X/T (UK) and the JSF status codes, assignment reason NC/RP/PL, and claim status A/P/R all load as bare `CHAR`, with no shared vocabulary. | silent | Counts in `../../ESTATE.md` and the unload. |
 
-Row totals: the IDMS unload loaded 1,090 rows and had 890 rejected (2 + 20 + 868). The JSF seed loaded cleanly (215/120/111/82/31/699). The global merge gives 415 employees, where the real figure is 202 IDMS + 200 JSF + 15 transferred people counted once.
+Row totals: the IDMS unload loaded 1,090 rows and had 890 rejected (2 + 20 + 868). The JSF seed loaded cleanly (215/120/111/82/31/699). The global merge's count of 415 people happens to be right (215 IDMS + 200 JSF-only), but it is right for the wrong reasons: the 15 transferred people keep their stale UK row (status X), and the two rehires are represented by their leaver rows.
 
 What the target needs instead:
 - A surrogate person id, keeping the legacy dbkey as a provenance column.
