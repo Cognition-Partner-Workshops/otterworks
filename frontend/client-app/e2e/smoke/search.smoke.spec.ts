@@ -23,7 +23,7 @@ test.describe("Search page (signed in)", () => {
         await expect(
           main.getByText(`1 result for \u201c${searchableDocument.searchTerm}\u201d`)
         ).toBeVisible();
-        const result = main.getByRole("link", { name: new RegExp(searchableDocument.title) });
+        const result = main.getByRole("link", { name: searchableDocument.title });
         await expect(result).toHaveCount(1);
         await expect(result).toHaveAttribute("href", `/documents/${searchableDocument.id}`);
       });

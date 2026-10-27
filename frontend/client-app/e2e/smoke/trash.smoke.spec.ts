@@ -1,4 +1,4 @@
-import { test, expect, escapeRegExp } from "../fixtures/signed-in";
+import { test, expect } from "../fixtures/signed-in";
 
 test.use({ account: "fresh" });
 
@@ -58,7 +58,7 @@ test.describe("/trash smoke (signed in)", () => {
       await test.step("Verify the file is back on /files", async () => {
         await page.goto("/files");
         await expect(
-          main.getByRole("link", { name: new RegExp(escapeRegExp(trashedFile.name)) }),
+          main.getByRole("link", { name: trashedFile.name }),
         ).toBeVisible();
       });
     },

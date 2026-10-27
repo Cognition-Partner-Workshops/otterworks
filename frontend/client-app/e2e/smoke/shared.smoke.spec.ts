@@ -1,4 +1,4 @@
-import { test, expect, escapeRegExp } from "../fixtures/signed-in";
+import { test, expect } from "../fixtures/signed-in";
 
 test.use({ trace: "retain-on-failure" });
 
@@ -19,7 +19,7 @@ test.describe("/shared smoke (signed in)", () => {
 
       await test.step("Verify the shared file is listed and opens its details page", async () => {
         const card = main.getByRole("link", {
-          name: new RegExp(escapeRegExp(sharedFile.name)),
+          name: sharedFile.name,
         });
         await expect(card).toBeVisible();
         await expect(card).toHaveAttribute("href", `/files/${sharedFile.id}`);

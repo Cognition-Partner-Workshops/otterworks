@@ -217,10 +217,6 @@ function mockCustomer(): Customer {
   };
 }
 
-export function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 export const test = base.extend<Fixtures, WorkerFixtures>({
   account: ["shared", { option: true }],
 
@@ -378,7 +374,7 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     const file = await uploadFile({ name: `starred-${randomUUID()}.txt` });
     await page.goto("/files");
     const main = page.getByRole("main");
-    const link = main.getByRole("link", { name: new RegExp(escapeRegExp(file.name)) });
+    const link = main.getByRole("link", { name: file.name });
     await expect(link).toBeVisible();
     const row = link.locator("xpath=..");
     await row.getByRole("button", { name: "Star", exact: true }).click();
@@ -390,7 +386,7 @@ export const test = base.extend<Fixtures, WorkerFixtures>({
     const document = await createDocument({ title: "Starred document" });
     await page.goto("/documents");
     const main = page.getByRole("main");
-    const link = main.getByRole("link", { name: new RegExp(escapeRegExp(document.title)) });
+    const link = main.getByRole("link", { name: document.title });
     await expect(link).toBeVisible();
     await link.getByRole("button", { name: "Star", exact: true }).click();
     await expect(link.getByRole("button", { name: "Unstar", exact: true })).toBeVisible();

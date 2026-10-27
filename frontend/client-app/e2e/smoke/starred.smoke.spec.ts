@@ -1,4 +1,4 @@
-import { test, expect, escapeRegExp } from "../fixtures/signed-in";
+import { test, expect } from "../fixtures/signed-in";
 
 test.use({ account: "fresh" });
 
@@ -24,7 +24,7 @@ test.describe("/starred smoke (signed in)", () => {
           main.getByRole("heading", { level: 2, name: "Files" }),
         ).toBeVisible();
         const fileCard = main.getByRole("link", {
-          name: new RegExp(escapeRegExp(starredFile.name)),
+          name: starredFile.name,
         });
         await expect(fileCard).toBeVisible();
         await expect(fileCard).toHaveAttribute("href", `/files/${starredFile.id}`);
@@ -35,7 +35,7 @@ test.describe("/starred smoke (signed in)", () => {
           main.getByRole("heading", { level: 2, name: "Documents" }),
         ).toBeVisible();
         const documentCard = main.getByRole("link", {
-          name: new RegExp(escapeRegExp(starredDocument.title)),
+          name: starredDocument.title,
         });
         await expect(documentCard).toBeVisible();
         await expect(documentCard).toHaveAttribute(
