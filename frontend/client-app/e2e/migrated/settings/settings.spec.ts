@@ -35,15 +35,12 @@ test("TC-SET-002 Update email notification preference", source("TC-SET-002"), as
     .getByRole("button");
   await expect(emailNotifications).toHaveCount(1);
 
-  let settingsBefore: { notificationEmail: boolean } | undefined;
   await expect.poll(async () => {
     const response = await request.get("/api/v1/settings", { headers: Notifications.headers });
     await expect(response).toBeOK();
-    settingsBefore = (await response.json()) as { notificationEmail: boolean };
-    return settingsBefore.notificationEmail;
+    const settings = (await response.json()) as { notificationEmail: boolean };
+    return settings.notificationEmail;
   }).toBe(true);
-  console.info("SETTINGS_BEFORE_CLICK", JSON.stringify(settingsBefore));
-  await page.screenshot({ path: `${process.env.HOME}/evidence/settings/settings-before.png`, fullPage: true });
 
   await test.step("TC-SET-002-STEP-02 Click EmailNotifications", async () => {
     const updateResponsePromise = page.waitForResponse(
@@ -51,20 +48,7 @@ test("TC-SET-002 Update email notification preference", source("TC-SET-002"), as
     );
     await emailNotifications.click();
     const updateResponse = await updateResponsePromise;
-    const responseBody = await updateResponse.text();
-    console.info("SETTINGS_PATCH_RESPONSE", updateResponse.status(), responseBody);
     expect(updateResponse.ok()).toBe(true);
-
-    let settingsAfter: { notificationEmail: boolean } | undefined;
-    await expect.poll(async () => {
-      const response = await request.get("/api/v1/settings", { headers: Notifications.headers });
-      await expect(response).toBeOK();
-      settingsAfter = (await response.json()) as { notificationEmail: boolean };
-      return settingsAfter.notificationEmail;
-    }).toBe(false);
-    console.info("SETTINGS_AFTER_CLICK", JSON.stringify(settingsAfter));
-    await expect(emailNotifications).toHaveCSS("background-color", "rgb(209, 213, 219)");
-    await page.screenshot({ path: `${process.env.HOME}/evidence/settings/settings-after.png`, fullPage: true });
   });
 
   await test.step("TC-SET-002-STEP-03 Verify EmailNotifications", async () => {
@@ -87,36 +71,25 @@ test("TC-SET-003 Save profile details", source("TC-SET-003"), async ({ page, req
     await fullName.fill(SaveProfile.UpdatedName);
   });
 
-  let profileResponseStatus = 0;
-  let profileResponseBody = "";
   await test.step("TC-SET-003-STEP-02 Click SaveChanges", async () => {
     const profileResponsePromise = page.waitForResponse(
       (response) => response.url().includes("/api/v1/auth/profile") && response.request().method() === "PATCH",
     );
     await saveChanges.click();
     const profileResponse = await profileResponsePromise;
-    profileResponseStatus = profileResponse.status();
-    profileResponseBody = await profileResponse.text();
-    console.info("PROFILE_UPDATE_RESPONSE", profileResponseStatus, profileResponseBody);
-    expect.soft(profileResponse.ok()).toBe(true);
-    await expect.soft(page.getByText("Profile updated successfully.", { exact: true })).toBeVisible({ timeout: 1000 });
+    expect(profileResponse.ok()).toBe(true);
+    await expect(page.getByText("Profile updated successfully.", { exact: true })).toBeVisible();
   });
 
   await test.step("TC-SET-003-STEP-03 Verify FullName", async () => {
-    await expect.soft(fullName).toHaveValue(SaveProfile.UpdatedName);
     await page.reload();
-    await expect.soft(fullName).toHaveValue(SaveProfile.UpdatedName);
+    await expect(fullName).toHaveValue(SaveProfile.UpdatedName);
 
-    let profile: { displayName: string } | undefined;
     await expect.poll(async () => {
       const response = await request.get("/api/v1/auth/profile", { headers: SaveProfile.headers });
       await expect(response).toBeOK();
-      profile = (await response.json()) as { displayName: string };
+      const profile = (await response.json()) as { displayName: string };
       return profile.displayName;
-    }, { timeout: 5000 }).toBe(SaveProfile.UpdatedName);
-    console.info("AUTH_PROFILE_AFTER_RELOAD", JSON.stringify(profile), {
-      responseStatus: profileResponseStatus,
-      responseBody: profileResponseBody,
-    });
+    }).toBe(SaveProfile.UpdatedName);
   });
 });

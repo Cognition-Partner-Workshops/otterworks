@@ -35,8 +35,9 @@ export const test = base.extend<Fixtures>({
     });
   },
   Notifications: async ({ request, page }, use) => {
+    // The CSV Name is the row label and stays verbatim in the fixture.
     const account = await registerUser(request, page, {
-      displayName: "Email notifications",
+      displayName: "Settings Notifications",
       emailPrefix: "settings-notifications",
     });
     await page.goto("/settings");

@@ -7,20 +7,10 @@ export async function registerUser(
   { displayName, emailPrefix }: { displayName: string; emailPrefix: string },
 ) {
   const password = "Documents-Test-2026!";
-  let email = `${emailPrefix}-${randomUUID()}@example.test`;
-  let registration = await request.post("/api/v1/auth/register", {
+  const email = `${emailPrefix}-${randomUUID()}@example.test`;
+  const registration = await request.post("/api/v1/auth/register", {
     data: { displayName, email, password },
   });
-
-  if (registration.status() === 400 || registration.status() === 422) {
-    const rejection = await registration.text();
-    if (/email/i.test(rejection)) {
-      email = `${emailPrefix}-${randomUUID()}@example.com`;
-      registration = await request.post("/api/v1/auth/register", {
-        data: { displayName, email, password },
-      });
-    }
-  }
 
   await expect(registration).toBeOK();
   const tokens = (await registration.json()) as {
