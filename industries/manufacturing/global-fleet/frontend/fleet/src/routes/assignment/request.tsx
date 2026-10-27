@@ -13,14 +13,6 @@ import {
 
 type DraftState = Omit<CarRequestDraft, 'draftId'> & { draftId: string | null }
 
-export function localToday(date = new Date()): string {
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${date.getFullYear()}-${month}-${day}`
-}
-
-const today = localToday()
-
 function blankVehicle(): NewVehicleInput {
   return {
     plate: '',
@@ -53,7 +45,7 @@ function freshDraft(employeeNo: string, pool: PoolVehicle[]): DraftState {
     poolVehicleId: null,
     newVehicle: null,
     reason: 'NC',
-    startDate: today,
+    startDate: null,
     eligibility: { allowed: true, reason: null, employeeNo, employmentId: null },
     vehicleAvailable: null,
     pool,
@@ -70,7 +62,7 @@ export default function AssignmentWizard() {
   const [poolVehicleId, setPoolVehicleId] = useState('')
   const [newVehicle, setNewVehicle] = useState<NewVehicleInput>(blankVehicle())
   const [reason, setReason] = useState<'NC' | 'RP' | 'PL'>('NC')
-  const [startDate, setStartDate] = useState(today)
+  const [startDate, setStartDate] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [confirmationDirty, setConfirmationDirty] = useState(false)
@@ -100,7 +92,7 @@ export default function AssignmentWizard() {
       setPoolVehicleId(saved?.poolVehicleId?.toString() ?? '')
       setNewVehicle(vehicleForm(saved?.newVehicle ?? null))
       setReason(saved?.reason ?? 'NC')
-      setStartDate(saved?.startDate ?? today)
+      setStartDate(saved?.startDate ?? '')
       setLoading(false)
     }).catch((cause: unknown) => {
       if (!active) return
@@ -125,7 +117,7 @@ export default function AssignmentWizard() {
     setPoolVehicleId(saved.poolVehicleId?.toString() ?? '')
     setNewVehicle(vehicleForm(saved.newVehicle))
     setReason(saved.reason ?? 'NC')
-    setStartDate(saved.startDate ?? today)
+    setStartDate(saved.startDate ?? '')
     setConfirmationDirty(false)
     return saved
   }
@@ -288,10 +280,16 @@ export default function AssignmentWizard() {
               <option value="NC">New car</option><option value="RP">Replacement</option><option value="PL">Pool loan</option>
             </select>
           </label>
-          <label>Start date<input type="date" value={startDate} onChange={(event) => {
-            setStartDate(event.target.value)
-            setConfirmationDirty(true)
-          }} /></label>
+          <div>
+            <label htmlFor="assignment-start-date">Start date</label>
+            <input id="assignment-start-date" type="date" value={startDate}
+              aria-describedby="assignment-start-date-hint"
+              onChange={(event) => {
+                setStartDate(event.target.value)
+                setConfirmationDirty(true)
+              }} />
+            <small id="assignment-start-date-hint">Leave blank to start today</small>
+          </div>
           <button type="button" onClick={() => void submit()}>Submit request</button>
         </div>
       )}

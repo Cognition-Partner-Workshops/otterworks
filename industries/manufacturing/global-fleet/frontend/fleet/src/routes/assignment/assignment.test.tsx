@@ -2,8 +2,13 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { FleetRoutes } from '../../App'
-import type { CarRequestDraft, EmployeeCarView, PoolVehicle, VehicleRulesResponse } from '../../api/client'
-import { localToday } from './request'
+import type {
+  CarRequestDraft,
+  DraftUpdateRequest,
+  EmployeeCarView,
+  PoolVehicle,
+  VehicleRulesResponse,
+} from '../../api/client'
 
 const pool: PoolVehicle[] = [{
   id: 10,
@@ -58,8 +63,14 @@ function routeFetch(
         : new Response(JSON.stringify({ code: 'NO_DRAFT', message: 'No draft' }), { status: 404 })
     }
     if (url.endsWith('/car-requests/drafts/E123') && method === 'PUT') {
-      const update = JSON.parse(String(init?.body)) as { step: CarRequestDraft['step'] }
-      return Response.json({ ...(draft ?? savedDraft()), step: update.step })
+      const update = JSON.parse(String(init?.body)) as DraftUpdateRequest
+      return Response.json({
+        ...(draft ?? savedDraft()),
+        ...update,
+        draftId: draft?.draftId ?? 'draft-123',
+        employeeNo: 'E123',
+        startDate: update.startDate ?? null,
+      })
     }
     if (url.endsWith('/assignments/vehicle-rules')) return Response.json(rules)
     if (url.endsWith('/assignments/pool')) return Response.json(pool)
@@ -68,14 +79,28 @@ function routeFetch(
 }
 
 describe('assignment routes', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals()
-    vi.useRealTimers()
-  })
+  afterEach(() => vi.unstubAllGlobals())
 
-  it('GF09_startDateDefaultsToLocalToday', () => {
-    vi.useFakeTimers().setSystemTime(new Date(2026, 9, 27, 23, 30))
-    expect(localToday()).toBe('2026-10-27')
+  it('GF09_startDateDefaultsToServerToday', async () => {
+    const fetchMock = routeFetch(null)
+    vi.stubGlobal('fetch', fetchMock)
+    render(
+      <MemoryRouter initialEntries={['/assignment/request?employee=E123']}>
+        <FleetRoutes />
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue' }))
+    expect(await screen.findByRole('heading', { name: 'Choose a vehicle' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    expect(await screen.findByRole('heading', { name: 'Confirm request' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Start date')).toHaveValue('')
+
+    const putBodies = fetchMock.mock.calls
+      .filter(([, init]) => init?.method === 'PUT')
+      .map(([, init]) => JSON.parse(String(init?.body)) as DraftUpdateRequest)
+    expect(putBodies).toHaveLength(2)
+    expect(putBodies[1]).toMatchObject({ step: 'CONFIRM', startDate: null })
   })
 
   it('GF34_refreshReturnsToSavedDraft', async () => {
