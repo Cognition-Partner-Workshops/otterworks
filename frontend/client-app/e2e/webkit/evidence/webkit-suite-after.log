@@ -1,0 +1,18 @@
+$ cd ~/repos/otterworks/frontend/client-app
+$ npm run test:e2e:webkit -- --reporter=list
+
+
+> @otterworks/client-app@0.1.0 test:e2e:webkit
+> playwright test --project=webkit-macos --reporter=list
+
+
+Running 6 tests using 6 workers
+
+  ✓  3 [webkit-macos] › e2e/webkit/first-visit.spec.ts:28:9 › First-visit pages in WebKit › Landing has no WCAG A/AA axe violations @a11y @webkit (1.5s)
+  ✓  1 [webkit-macos] › e2e/webkit/first-visit.spec.ts:70:9 › First-visit pages in WebKit › Create account matches the WebKit macOS baseline @visual @webkit (1.5s)
+  ✓  2 [webkit-macos] › e2e/webkit/first-visit.spec.ts:70:9 › First-visit pages in WebKit › Sign in matches the WebKit macOS baseline @visual @webkit (1.6s)
+  ✓  4 [webkit-macos] › e2e/webkit/first-visit.spec.ts:70:9 › First-visit pages in WebKit › Landing matches the WebKit macOS baseline @visual @webkit (1.6s)
+  ✓  6 [webkit-macos] › e2e/webkit/first-visit.spec.ts:28:9 › First-visit pages in WebKit › Sign in has no WCAG A/AA axe violations @a11y @webkit (1.7s)
+  ✓  5 [webkit-macos] › e2e/webkit/first-visit.spec.ts:28:9 › First-visit pages in WebKit › Create account has no WCAG A/AA axe violations @a11y @webkit (1.7s)
+
+  6 passed (2.3s)
