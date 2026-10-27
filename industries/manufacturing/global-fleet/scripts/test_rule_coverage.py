@@ -14,7 +14,7 @@ SPEC.loader.exec_module(coverage)
 
 
 class RuleCoverageTest(unittest.TestCase):
-    def run_coverage_with_extra(self, root, extra_status):
+    def run_coverage_with_extra(self, root, extra_statuses, strict=False):
         catalog = root / "catalog.json"
         catalog.write_text(json.dumps({
             "rules": [{
@@ -26,9 +26,7 @@ class RuleCoverageTest(unittest.TestCase):
         for profile in ("uk", "de"):
             report_dir = root / profile
             report_dir.mkdir()
-            status = ""
-            if profile == "uk":
-                status = extra_status
+            status = extra_statuses.get(profile)
             extra_result = (
                 f"<failure message=\"failed\"/>" if status == "failed" else
                 "<skipped/>" if status == "skipped" else ""
@@ -46,13 +44,16 @@ class RuleCoverageTest(unittest.TestCase):
             )
             profile_dirs[profile] = report_dir
 
+        arguments = [
+            "--catalog", str(catalog),
+            "--junit", f"uk={profile_dirs['uk']}",
+            "--junit", f"de={profile_dirs['de']}",
+        ]
+        if strict:
+            arguments.append("--strict")
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
-            exit_code = coverage.main([
-                "--catalog", str(catalog),
-                "--junit", f"uk={profile_dirs['uk']}",
-                "--junit", f"de={profile_dirs['de']}",
-            ])
+            exit_code = coverage.main(arguments)
         return exit_code, output.getvalue()
 
     def test_parameterized_service_case_matches_catalog_name(self):
@@ -80,18 +81,30 @@ class RuleCoverageTest(unittest.TestCase):
 
     def test_failed_extra_rule_test_fails_the_rule(self):
         with tempfile.TemporaryDirectory() as temporary:
-            exit_code, output = self.run_coverage_with_extra(Path(temporary), "failed")
+            exit_code, output = self.run_coverage_with_extra(
+                Path(temporary), {"uk": "failed"})
 
         self.assertEqual(1, exit_code)
-        self.assertIn("GF01\tGF01_extraCheck\textra\tfailed\tnot-applicable\tnot-applicable", output)
+        self.assertIn("GF01\tGF01_extraCheck\textra\tfailed\tmissing\tnot-applicable", output)
         self.assertIn("failed: GF01", output)
 
-    def test_passing_extra_rule_test_keeps_coverage_unchanged(self):
+    def test_passing_extra_rule_test_missing_in_de_makes_partial(self):
         with tempfile.TemporaryDirectory() as temporary:
-            exit_code, output = self.run_coverage_with_extra(Path(temporary), "passed")
+            exit_code, output = self.run_coverage_with_extra(
+                Path(temporary), {"uk": "passed"}, strict=True)
+
+        self.assertEqual(1, exit_code)
+        self.assertIn("GF01\tGF01_extraCheck\textra\tpassed\tmissing\tnot-applicable", output)
+        self.assertIn("partial: GF01", output)
+        self.assertIn("failed: -", output)
+
+    def test_passing_extra_rule_test_in_both_profiles_is_covered(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            exit_code, output = self.run_coverage_with_extra(
+                Path(temporary), {"uk": "passed", "de": "passed"}, strict=True)
 
         self.assertEqual(0, exit_code)
-        self.assertIn("GF01\tGF01_extraCheck\textra\tpassed\tnot-applicable\tnot-applicable", output)
+        self.assertIn("GF01\tGF01_extraCheck\textra\tpassed\tpassed\tnot-applicable", output)
         self.assertIn("covered 1/1: GF01", output)
         self.assertIn("partial: -", output)
         self.assertIn("failed: -", output)
