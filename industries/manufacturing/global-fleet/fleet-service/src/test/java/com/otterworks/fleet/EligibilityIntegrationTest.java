@@ -247,6 +247,18 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
         assertTrue(eligibilityService.inquiry(left.getPerson().getEmployeeNo()).allowed());
         assertTrue(eligibilityService.inquiry(transferred.getPerson().getEmployeeNo()).allowed());
 
+        Person rehired = createPerson(unique("GF03"));
+        Employment olderActive = employmentRepository.save(new Employment(
+                rehired, profile.minGrade(), EmploymentStatus.ACTIVE,
+                LocalDate.of(2010, 1, 1), null, BigDecimal.ZERO, null));
+        Employment newerLeft = employmentRepository.save(new Employment(
+                rehired, profile.minGrade(), EmploymentStatus.LEFT,
+                LocalDate.of(2020, 1, 1), LocalDate.of(2025, 1, 31), BigDecimal.ZERO, null));
+        assertTrue(olderActive.getHireDate().isBefore(newerLeft.getHireDate()));
+        assertEquals(newerLeft.getId(), eligibilityService.currentEmployment(rehired).orElseThrow().getId());
+        assertEquals(EligibilityReason.NOT_ACTIVE, eligibilityService.carRequest(
+                rehired.getEmployeeNo(), CarRequestStep.EMPLOYEE, today).reason());
+
         mockMvc.perform(get("/api/v1/eligibility/car-request")
                         .param("employeeNo", active.getPerson().getEmployeeNo())
                         .param("step", "CONFIRM")

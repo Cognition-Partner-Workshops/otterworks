@@ -9,9 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface EmploymentRepository extends JpaRepository<Employment, Long> {
 
-    Optional<Employment> findFirstByPersonAndStatusOrderByHireDateDescIdDesc(
-            Person person, EmploymentStatus status);
-
     Optional<Employment> findFirstByPersonOrderByHireDateDescIdDesc(Person person);
 
     Optional<Employment> findFirstByPersonAndLegacyRef(Person person, String legacyRef);

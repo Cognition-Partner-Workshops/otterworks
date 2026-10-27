@@ -51,9 +51,7 @@ public class EligibilityService {
 
     @Transactional(readOnly = true)
     public Optional<Employment> currentEmployment(Person person) {
-        return employmentRepository
-                .findFirstByPersonAndStatusOrderByHireDateDescIdDesc(person, EmploymentStatus.ACTIVE)
-                .or(() -> employmentRepository.findFirstByPersonOrderByHireDateDescIdDesc(person));
+        return employmentRepository.findFirstByPersonOrderByHireDateDescIdDesc(person);
     }
 
     @Transactional(readOnly = true)
