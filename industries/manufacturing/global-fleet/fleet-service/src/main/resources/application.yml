@@ -16,6 +16,8 @@ spring:
       - classpath:db/migration/returns
       - classpath:db/migration/mileage
       - classpath:db/migration/benefit
+    placeholders:
+      mileage_rate: ${fleet.country.mileage-rate}
 
 management:
   endpoints:

@@ -15,6 +15,7 @@ import com.otterworks.fleet.eligibility.EligibilityService;
 import com.otterworks.fleet.eligibility.EmployeeNumbers;
 import com.otterworks.fleet.eligibility.EmployeeSearchService;
 import com.otterworks.fleet.eligibility.EmploymentHistoryLoader;
+import com.otterworks.fleet.mileage.MileagePricing;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -67,6 +68,9 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private CountryProfile profile;
+
+    @Autowired
+    private MileagePricing mileagePricing;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -435,11 +439,14 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
             };
             jdbc.update(
                     "INSERT INTO mileage_claim "
-                            + "(employment_id, claim_date, distance, status, paid_period) VALUES (?, ?, ?, ?, ?)",
+                            + "(employment_id, claim_date, distance, status, rate, amount, paid_period) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?)",
                     byReference.getId(),
                     row.claimDate(),
                     row.miles(),
                     status,
+                    profile.mileageRate(),
+                    mileagePricing.amount(row.miles(), profile.mileageRate()),
                     java.time.YearMonth.from(row.claimDate())
                             .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM")));
         }

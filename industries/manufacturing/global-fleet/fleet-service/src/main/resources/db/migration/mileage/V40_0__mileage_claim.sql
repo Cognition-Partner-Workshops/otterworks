@@ -18,12 +18,24 @@ SET status = CASE UPPER(TRIM(status))
     ELSE status
 END;
 
+UPDATE mileage_claim c
+SET rate = COALESCE(
+    (SELECT bp.mileage_rate FROM benefit_period bp WHERE bp.id = c.benefit_period_id),
+    ${mileage_rate})
+WHERE rate IS NULL;
+
+UPDATE mileage_claim
+SET amount = round(distance * rate, 2)
+WHERE amount IS NULL;
+
 UPDATE mileage_claim
 SET paid_period = to_char(claim_date, 'YYYYMM')
 WHERE paid_period IS NULL;
 
 ALTER TABLE mileage_claim
     ALTER COLUMN paid_period SET NOT NULL,
+    ALTER COLUMN rate SET NOT NULL,
+    ALTER COLUMN amount SET NOT NULL,
     ADD CONSTRAINT mileage_claim_status_check
         CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
     ADD CONSTRAINT mileage_claim_distance_check

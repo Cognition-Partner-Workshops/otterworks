@@ -46,10 +46,10 @@ public class MileageClaim {
     @Column(nullable = false, length = 64)
     private MileageClaimStatus status;
 
-    @Column(precision = 6, scale = 3)
+    @Column(nullable = false, precision = 6, scale = 3)
     private BigDecimal rate;
 
-    @Column(precision = 10, scale = 2)
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
     @JdbcTypeCode(SqlTypes.CHAR)

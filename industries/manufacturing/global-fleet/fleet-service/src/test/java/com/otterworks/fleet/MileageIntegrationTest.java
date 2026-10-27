@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +96,9 @@ class MileageIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Autowired
     private CountryProfile profile;
+
+    @Autowired
+    private Flyway flyway;
 
     @Autowired
     private PersonRepository personRepository;
@@ -206,6 +210,23 @@ class MileageIntegrationTest extends AbstractPostgresIntegrationTest {
                         .param("distance", Integer.toString(profile.maxClaimDistance())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.distance").value(profile.maxClaimDistance()));
+    }
+
+    @Test
+    void v40BackfillRateAndAmountAreRequired() {
+        assertEquals(
+                profile.mileageRate(),
+                new BigDecimal(flyway.getConfiguration().getPlaceholders().get("mileage_rate")));
+        Integer requiredPricingColumns = jdbc.queryForObject(
+                """
+                SELECT COUNT(*) FROM information_schema.columns
+                WHERE table_schema = current_schema()
+                  AND table_name = 'mileage_claim'
+                  AND column_name IN ('rate', 'amount')
+                  AND is_nullable = 'NO'
+                """,
+                Integer.class);
+        assertEquals(2, requiredPricingColumns);
     }
 
     @Test

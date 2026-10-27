@@ -177,7 +177,6 @@ public class MileageClaimService {
         long distance = claims.stream().mapToLong(MileageClaim::getDistance).sum();
         BigDecimal amount = claims.stream()
                 .map(MileageClaim::getAmount)
-                .filter(value -> value != null)
                 .reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
         return new MileageReimbursementView(
                 person.getEmployeeNo(),
