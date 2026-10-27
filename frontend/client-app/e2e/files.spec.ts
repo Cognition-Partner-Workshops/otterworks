@@ -1,47 +1,93 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./smoke/files/files.fixtures";
 
-test.describe("Files Page", () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto("/files");
+test.use({ trace: "retain-on-failure" });
+
+test.describe("Files page (signed in)", () => {
+  test("a new customer with no files sees the Files heading and the empty-folder state", async ({
+    page,
+    customer,
+  }) => {
+    const main = page.getByRole("main");
+
+    await test.step("Open /files", async () => {
+      await page.goto("/files");
+      await expect(main.getByRole("heading", { level: 1, name: "Files" })).toBeVisible();
+      await expect(page.getByRole("banner").getByText(customer.displayName)).toBeVisible();
+    });
+
+    await test.step("Verify the empty-folder state", async () => {
+      await expect(
+        main.getByRole("heading", { name: "This folder is empty" }),
+      ).toBeVisible();
+      await expect(main.getByRole("button", { name: "Upload files" })).toBeVisible();
+    });
   });
 
-  test("shows Files heading or redirects to login", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
+  test("the Upload button opens the upload dropzone", async ({ page, customer }) => {
+    const main = page.getByRole("main");
+
+    await test.step("Open /files", async () => {
+      await page.goto("/files");
+      await expect(main.getByRole("heading", { level: 1, name: "Files" })).toBeVisible();
+      await expect(page.getByRole("banner").getByText(customer.displayName)).toBeVisible();
+    });
+
+    await test.step("Click Upload", async () => {
+      await main.getByRole("button", { name: "Upload", exact: true }).click();
+    });
+
+    await test.step("Verify the dropzone is shown", async () => {
+      await expect(
+        main.getByText("Drag & drop files here, or click to browse"),
+      ).toBeVisible();
+    });
   });
 
-  test("has upload button", async ({ page }) => {
-    // Wait for the Files heading to appear
-    const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    await expect(heading).toBeVisible({ timeout: 15_000 });
+  test("the grid/list toggle switches the file listing between grid and list layouts", async ({
+    page,
+    uploadedFile,
+  }) => {
+    const main = page.getByRole("main");
+    const gridFilesHeading = main.getByRole("heading", { level: 2, name: "Files" });
+    const listNameColumn = main.getByRole("button", { name: "Name", exact: true });
 
-    // Files page has "Upload" and "New folder" buttons
-    const uploadButton = page.getByRole("button", { name: /Upload/i });
-    await expect(uploadButton).toBeVisible({ timeout: 5_000 });
+    await test.step("Open /files in the default grid layout", async () => {
+      await page.goto("/files");
+      await expect(main.getByRole("link", { name: uploadedFile.name })).toBeVisible();
+      await expect(gridFilesHeading).toBeVisible();
+      await expect(listNameColumn).toBeHidden();
+    });
+
+    // Standard exception: the grid/list toggle buttons are icon-only with no accessible
+    // name; reach them by keyboard from the sort select (grid = 1st Tab, list = 2nd Tab).
+    await test.step("Switch to the list layout", async () => {
+      await main.getByRole("combobox").focus();
+      await page.keyboard.press("Tab");
+      await page.keyboard.press("Tab");
+      await page.keyboard.press("Enter");
+      await expect(listNameColumn).toBeVisible();
+      await expect(gridFilesHeading).toBeHidden();
+      await expect(main.getByRole("link", { name: uploadedFile.name })).toBeVisible();
+    });
+
+    await test.step("Switch back to the grid layout", async () => {
+      await page.keyboard.press("Shift+Tab");
+      await page.keyboard.press("Enter");
+      await expect(gridFilesHeading).toBeVisible();
+      await expect(listNameColumn).toBeHidden();
+    });
   });
+});
 
-  test("shows empty state or file listing", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
+test.describe("Files page (signed out)", () => {
+  test("a signed-out visitor opening /files is sent to the sign-in page", async ({ page }) => {
+    await test.step("Open /files without a session", async () => {
+      await page.goto("/files");
+    });
 
-    if (await heading.isVisible().catch(() => false)) {
-      // Either file cards or empty state
-      const emptyState = page.getByText(/No files|Upload files|Drop files/i);
-      const fileItems = page.locator("[class*='grid'] > *, [class*='space-y'] > *").first();
-      await expect(emptyState.or(fileItems)).toBeVisible({ timeout: 10_000 });
-    }
-  });
-
-  test("has grid/list view toggle", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: /Files|My Files/i });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
-
-    if (await heading.isVisible().catch(() => false)) {
-      const buttons = page.locator("button svg");
-      await expect(buttons.first()).toBeVisible();
-    }
+    await test.step("Verify the redirect to /login", async () => {
+      await expect(page).toHaveURL(/\/login$/);
+      await expect(page.getByText("Sign in to your account")).toBeVisible();
+    });
   });
 });
