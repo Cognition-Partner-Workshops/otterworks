@@ -56,14 +56,14 @@ INSERT INTO uk.person (employee_no, first_name, last_name)
     FROM legacy_uk.employee ORDER BY empid, hire_date DESC;
 INSERT INTO uk.employment (person_id, grade, status, hire_date, leave_date, monthly_contribution, legacy_ref)
     SELECT p.id, e.grade, CASE e.status WHEN 'A' THEN 'ACTIVE' WHEN 'X' THEN 'TRANSFERRED' ELSE 'LEFT' END,
-           e.hire_date, e.leave_date, e.contribution, e.dbkey::text
+           e.hire_date, e.leave_date, e.contribution, 'MF:' || lpad(e.dbkey::text, 10, '0')
     FROM legacy_uk.employee e JOIN uk.person p ON p.employee_no = e.empid ORDER BY e.dbkey;
 INSERT INTO uk.vehicle (registration, list_price, benefit_percent, make, model, co2_g_km, fuel)
     SELECT plate, list_price, benefit_percent, initcap(make), model, co2, fuel FROM legacy_uk.vehicle ORDER BY vehid;
 INSERT INTO uk.benefit_period (period, start_date, end_date, mileage_rate)
     SELECT period, start_date, end_date, mileage_rate FROM legacy_uk.benefit_period ORDER BY period;
 CREATE TEMP TABLE uk_emp AS
-    SELECT e.dbkey, m.id AS employment_id FROM legacy_uk.employee e JOIN uk.employment m ON m.legacy_ref = e.dbkey::text;
+    SELECT e.dbkey, m.id AS employment_id FROM legacy_uk.employee e JOIN uk.employment m ON m.legacy_ref = 'MF:' || lpad(e.dbkey::text, 10, '0');
 CREATE TEMP TABLE uk_veh AS
     SELECT lv.vehid, v.id AS vehicle_id FROM legacy_uk.vehicle lv JOIN uk.vehicle v ON v.registration = lv.plate;
 INSERT INTO uk.assignment (employment_id, vehicle_id, start_date, end_date, reason, legacy_ref)
