@@ -123,7 +123,7 @@ Record-level comparison of BENOUT (expected vs candidate, keyed by employee db-k
 | GF29 pool loan (returned pool loan masked the open NC car) | 41 | +20985.76 | 0.00 | expected (owner-accepted, `d-poolloan-holdouts`) |
 | anything else | 0 | 0.00 | 0.00 | - |
 
-All 198 overlap records differ in vehicle, days or taxable benefit only. Mileage miles and reimbursement are identical in all 857+ records, so GF21 changes nothing in the UK holdouts. The GF27 formula changes nothing: no record outside the two GF29 groups differs.
+All 198 overlap records differ in vehicle, days or taxable benefit only. No record differs in miles or reimbursement, so GF21 changes nothing in the UK holdouts. The GF27 formula changes nothing: no record outside the two GF29 groups differs.
 
 | Pair | Overlap | Pool loan | Other | Count BENRPT / candidate | Taxable BENRPT / candidate GBP | Mileage BENRPT / candidate GBP |
 |---|---:|---:|---:|---|---|---|
