@@ -3,7 +3,7 @@
 # Global fleet tenants on the shared otterworks-dev cluster.
 #
 #   gf-tenant.sh up before [--run RUN] [--id ID]   JSF portal + its DB + source browser
-#   gf-tenant.sh up after  [--run RUN] [--id ID]   fleet-service + frontend/fleet from this checkout
+#   gf-tenant.sh up after  [--run RUN] [--id ID]   fleet-service (uk, de) + frontend/fleet from this checkout
 #   gf-tenant.sh reset [--run RUN]                 reload the fixed seed into both tenants
 #   gf-tenant.sh down RUN                          tear down RUN's tenants, fail on any residue
 #   gf-tenant.sh check TOKEN                       list what still bears TOKEN
@@ -501,33 +501,191 @@ EOF
   run_job gf-db-drop "postgres:16-alpine" "${script}"
 }
 
+# After tenant: one fleet-service per country profile (uk, de), each on its own
+# schema of the after database, behind the one host:
+#   /                  fleet-web
+#   /api/uk/...        fleet-service-uk (rewritten to /api/...)
+#   /api/de/...        fleet-service-de
+#   /api/...           fleet-service-de, or fleet-service-uk with X-Fleet-Country: uk
+AFTER_COUNTRIES=(uk de)
 up_after() {
   set_tenant after
-  local svc_dir="${GF_ROOT}/fleet-service" web_dir="${REPO_ROOT}/frontend/fleet"
+  local svc_dir="${GF_ROOT}/fleet-service" web_dir="${GF_ROOT}/frontend/fleet" c
   [ -f "${svc_dir}/Dockerfile" ] || { err "${svc_dir#"${REPO_ROOT}"/}/Dockerfile not found on $(git -C "${REPO_ROOT}" rev-parse --abbrev-ref HEAD)"; exit 1; }
   [ -f "${web_dir}/Dockerfile" ] || { err "${web_dir#"${REPO_ROOT}"/}/Dockerfile not found on $(git -C "${REPO_ROOT}" rev-parse --abbrev-ref HEAD)"; exit 1; }
   log "Tenant ${TENANT_ID} (${NS}), token ${TOKEN}, expires ${EXPIRES_AT}"
   load_db_admin; ecr_login
-  step "build+push gf-fleet-service" build_push gf-fleet-service "${svc_dir}" "${svc_dir}/Dockerfile"
+  step "build+push gf-fleet-service" build_push gf-fleet-service "${svc_dir}" "${svc_dir}/Dockerfile" \
+    --build-arg "MAVEN_MIRROR=${MAVEN_MIRROR}"
   step "build+push gf-fleet-web" build_push gf-fleet-web "${web_dir}" "${web_dir}/Dockerfile"
   step "build+push gf-seed" build_push gf-seed "${GF_ROOT}" "${HERE}/seed.Dockerfile"
   step "namespace+quota+netpol" apply_namespace
   step "control-table item" put_control_item
   step "db secret" apply_db_secret
   step "create database" create_database
-  step "load seed" load_seed
-  step "deploy service+web" deploy_after_apps
-  step "ingress" apply_ingress "${WEB_HOST}" fleet-web "${WEB_HOST}/api" fleet-service
-  step "rollout" wait_rollouts fleet-service fleet-web
-  step "https ${WEB_HOST}" wait_https "https://${WEB_HOST}/"
+  step "load legacy seed" load_after_seed
+  step "deploy services+web" deploy_after_apps
+  step "ingress" apply_after_ingress
+  step "rollout" wait_rollouts fleet-service-uk fleet-service-de fleet-web
+  step "fill country schemas" fill_after_schemas
+  step "https ${WEB_HOST}/" wait_https "https://${WEB_HOST}/"
+  for c in "${AFTER_COUNTRIES[@]}"; do
+    step "https /api/${c}/v1/profile" wait_https "https://${WEB_HOST}/api/${c}/v1/profile"
+  done
   print_timings "${TOKEN}-up"
-  log "App: https://${WEB_HOST}/"
+  log "App: https://${WEB_HOST}/  (API: /api/uk, /api/de)"
+}
+# Pin pods to the pushed digest so a rebuilt image under the same token tag rolls out.
+image_ref() {
+  local ref="${ECR_REGISTRY}/${ECR_PREFIX}/$1:${TOKEN}" digest
+  digest="$(docker image inspect --format '{{range .RepoDigests}}{{println .}}{{end}}' "${ref}" 2>/dev/null \
+    | grep -m1 "^${ECR_REGISTRY}/${ECR_PREFIX}/$1@" || true)"
+  echo "${digest:-${ref}}"
 }
 deploy_after_apps() {
-  deploy_app fleet-service "${ECR_REGISTRY}/${ECR_PREFIX}/gf-fleet-service:${TOKEN}" "${FLEET_SERVICE_PORT:-8080}" \
-    "${FLEET_SERVICE_HEALTH:-/actuator/health}" 100m 512Mi 1 1Gi db
-  deploy_app fleet-web "${ECR_REGISTRY}/${ECR_PREFIX}/gf-fleet-web:${TOKEN}" "${FLEET_WEB_PORT:-8080}" \
-    "${FLEET_WEB_HEALTH:-/}" 10m 32Mi 200m 128Mi
+  local c
+  for c in "${AFTER_COUNTRIES[@]}"; do deploy_fleet_service "${c}"; done
+  deploy_app fleet-web "$(image_ref gf-fleet-web)" 8080 / 10m 32Mi 200m 128Mi
+}
+
+# deploy_fleet_service <country>: the profile and schema are per pod; the
+# credential comes from fleet-db like every other app in the tenant.
+deploy_fleet_service() {
+  local c="$1" name="fleet-service-$1"
+  local url="jdbc:postgresql://${RDS_HOST}:${RDS_PORT}/${T_DB_NAME}?sslmode=prefer&currentSchema=${c}"
+  kubectl -n "${NS}" apply -f - >/dev/null <<YAML
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${name}
+  labels: { app: ${name}, demo/token: "${TOKEN}", fleet/country: ${c} }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: ${name} } }
+  template:
+    metadata:
+      labels: { app: ${name}, demo/token: "${TOKEN}", fleet/country: ${c} }
+    spec:
+      securityContext: { runAsNonRoot: true }
+      containers:
+        - name: fleet-service
+          image: $(image_ref gf-fleet-service)
+          imagePullPolicy: Always
+          ports: [ { containerPort: 8080 } ]
+          envFrom: [ { secretRef: { name: fleet-db } } ]
+          env:
+            - { name: SPRING_PROFILES_ACTIVE, value: "${c}" }
+            - { name: DB_URL, value: "${url}" }
+            - { name: SPRING_DATASOURCE_URL, value: "${url}" }
+            - { name: SPRING_FLYWAY_SCHEMAS, value: "${c}" }
+            - { name: SPRING_FLYWAY_DEFAULT_SCHEMA, value: "${c}" }
+          readinessProbe: { httpGet: { path: /actuator/health, port: 8080 }, initialDelaySeconds: 15, periodSeconds: 5, failureThreshold: 60 }
+          livenessProbe: { httpGet: { path: /actuator/health, port: 8080 }, initialDelaySeconds: 180, periodSeconds: 20 }
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { cpu: "1", memory: 1Gi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${name}
+  labels: { app: ${name}, demo/token: "${TOKEN}" }
+spec:
+  type: ClusterIP
+  selector: { app: ${name} }
+  ports: [ { port: 80, targetPort: 8080 } ]
+YAML
+}
+
+apply_after_ingress() {
+  kubectl -n "${NS}" apply -f - >/dev/null <<YAML
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tenant-ingress
+  labels: { demo/token: "${TOKEN}" }
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ${WEB_HOST}
+      http:
+        paths:
+          - { path: /, pathType: Prefix, backend: { service: { name: fleet-web, port: { number: 80 } } } }
+          - { path: /api, pathType: Prefix, backend: { service: { name: fleet-service-de, port: { number: 80 } } } }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tenant-api-country
+  labels: { demo/token: "${TOKEN}" }
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /api/\$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ${WEB_HOST}
+      http:
+        paths:
+          - { path: "/api/uk(/|$)(.*)", pathType: ImplementationSpecific, backend: { service: { name: fleet-service-uk, port: { number: 80 } } } }
+          - { path: "/api/de(/|$)(.*)", pathType: ImplementationSpecific, backend: { service: { name: fleet-service-de, port: { number: 80 } } } }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tenant-api-header
+  labels: { demo/token: "${TOKEN}" }
+  annotations:
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-by-header: X-Fleet-Country
+    nginx.ingress.kubernetes.io/canary-by-header-value: uk
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: ${WEB_HOST}
+      http:
+        paths:
+          - { path: /api, pathType: Prefix, backend: { service: { name: fleet-service-uk-header, port: { number: 80 } } } }
+---
+# ingress-nginx turns a canary's service into an alternative backend everywhere,
+# so the header route gets its own Service over the same pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleet-service-uk-header
+  labels: { app: fleet-service-uk, demo/token: "${TOKEN}" }
+spec:
+  type: ClusterIP
+  selector: { app: fleet-service-uk }
+  ports: [ { port: 80, targetPort: 8080 } ]
+YAML
+}
+
+# The before tenant's seed goes into schema legacy (JSF portal, de) and
+# legacy_uk (mainframe unloads); fleet-service owns schemas uk and de through
+# Flyway, and fill_after_schemas copies the seed people into them once the
+# migrations have run.
+load_after_seed() {
+  local script
+  script="$(cat <<'EOF'
+set -e
+psql -v ON_ERROR_STOP=1 -q -v r="$APP_PGUSER" <<'SQL'
+DROP SCHEMA IF EXISTS legacy, legacy_uk, uk, de CASCADE;
+SELECT format('CREATE SCHEMA %I AUTHORIZATION %I', s, :'r') FROM unnest(ARRAY['legacy', 'legacy_uk', 'uk', 'de']) AS s \gexec
+SQL
+PGOPTIONS='-c search_path=legacy' psql -v ON_ERROR_STOP=1 -q -f /seed/001_schema.sql
+PGOPTIONS='-c search_path=legacy' psql -v ON_ERROR_STOP=1 -q -f /seed/002_seed.sql >/dev/null
+psql -v ON_ERROR_STOP=1 -q -f /seed/uk_unload.sql >/dev/null
+psql -v ON_ERROR_STOP=1 -q -v r="$APP_PGUSER" <<'SQL'
+SELECT format('ALTER TABLE %I.%I OWNER TO %I', schemaname, tablename, :'r') FROM pg_tables WHERE schemaname IN ('legacy', 'legacy_uk') \gexec
+SQL
+psql -tAc "SELECT 'seeded ' || (SELECT count(*) FROM legacy.employee) || ' de and ' || (SELECT count(*) FROM legacy_uk.employee) || ' uk employee records'"
+EOF
+)"
+  run_job gf-seed "${ECR_REGISTRY}/${ECR_PREFIX}/gf-seed:${TOKEN}" "${script}"
+}
+fill_after_schemas() {
+  run_job gf-fill "${ECR_REGISTRY}/${ECR_PREFIX}/gf-seed:${TOKEN}" "psql -q -tA -f /seed/after-seed.sql"
 }
 
 reset_all() {
@@ -540,8 +698,14 @@ reset_all() {
     found=$((found + 1))
     step "${TENANT_ID}: db secret" apply_db_secret
     step "${TENANT_ID}: app role" create_app_role
-    step "${TENANT_ID}: load seed" load_seed
-    step "${TENANT_ID}: restart" restart_all
+    if [ "${side}" = after ]; then
+      step "${TENANT_ID}: load legacy seed" load_after_seed
+      step "${TENANT_ID}: restart" restart_all
+      step "${TENANT_ID}: fill country schemas" fill_after_schemas
+    else
+      step "${TENANT_ID}: load seed" load_seed
+      step "${TENANT_ID}: restart" restart_all
+    fi
   done
   [ "${found}" -gt 0 ] || { err "no ${RUN} tenants found"; exit 1; }
   print_timings "${RUN}-reset"
