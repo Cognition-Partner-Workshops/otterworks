@@ -144,12 +144,12 @@ delete_token_control_item() {
     && log "  control table: deleted TENANT#${ATTENDEE_ID}"
 }
 
-# Databases on the shared RDS whose name contains any of the given fragments.
+# Databases and roles on the shared RDS whose name contains any of the given fragments.
 # Runs as an in-cluster Job (the VM has no route to RDS). Prints one per line.
 list_dbs_matching() {
   [ -n "${DB_PASSWORD:-}" ] && [ -n "${RDS_HOST:-}" ] || { echo "?db-check-skipped(no DB_PASSWORD/RDS_HOST)"; return 0; }
   local frag job secret where="" f
-  for f in "$@"; do where="${where:+${where} OR }datname LIKE '%${f}%'"; done
+  for f in "$@"; do where="${where:+${where} OR }name LIKE '%${f}%'"; done
   frag="$(k8s_name_fragment "$(sanitize_id "$1")" | cut -c1-40)"
   job="token-db-list-${frag}"; secret="token-db-admin-${frag}"
   kubectl get ns "${SYSTEM_NAMESPACE}" >/dev/null 2>&1 || kubectl create ns "${SYSTEM_NAMESPACE}" >/dev/null 2>&1 || true
@@ -173,7 +173,7 @@ spec:
               valueFrom: { secretKeyRef: { name: ${secret}, key: PGPASSWORD } }
           command: ["/bin/sh","-c"]
           args:
-            - psql "host=${RDS_HOST} port=${RDS_PORT} dbname=otterworks user=${DB_USER} sslmode=prefer connect_timeout=10" -tAc "SELECT datname FROM pg_database WHERE ${where}"
+            - psql "host=${RDS_HOST} port=${RDS_PORT} dbname=otterworks user=${DB_USER} sslmode=prefer connect_timeout=10" -tAc "SELECT name FROM (SELECT datname AS name FROM pg_database UNION ALL SELECT 'role:' || rolname FROM pg_roles) x WHERE ${where}"
           resources:
             requests: { cpu: 50m, memory: 64Mi }
             limits: { cpu: 200m, memory: 128Mi }
