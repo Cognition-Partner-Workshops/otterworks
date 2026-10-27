@@ -86,4 +86,8 @@ public class Assignment {
     public String getLegacyRef() {
         return legacyRef;
     }
+
+    public void close(LocalDate endDate) {
+        this.endDate = endDate;
+    }
 }

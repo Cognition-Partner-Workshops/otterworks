@@ -12,6 +12,8 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     boolean existsByRegistration(String registration);
 
+    Optional<Vehicle> findByRegistration(String registration);
+
     @Query("""
             select v from Vehicle v
             where not exists (
