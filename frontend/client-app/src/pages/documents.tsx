@@ -18,6 +18,8 @@ import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
 import type { Document, PaginatedResponse, ViewMode } from "@/types";
 
+type DocumentSort = "updatedAt-desc" | "title-asc" | "title-desc";
+
 export default function DocumentsPage() {
   return (
     <AppShell>
@@ -33,6 +35,7 @@ function DocumentsContent() {
   const queryClient = useQueryClient();
   const { viewMode, setViewMode } = useUIStore();
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<DocumentSort>("updatedAt-desc");
 
   const { data, isLoading } = useQuery({
     queryKey: ["documents", "list"],
@@ -64,6 +67,16 @@ function DocumentsContent() {
       )
     : documents;
 
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortOrder === "updatedAt-desc") {
+      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    }
+    if (sortOrder === "title-asc") {
+      return a.title.localeCompare(b.title, undefined, { sensitivity: "base" });
+    }
+    return b.title.localeCompare(a.title, undefined, { sensitivity: "base" });
+  });
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -78,6 +91,16 @@ function DocumentsContent() {
             <Plus size={16} />
             New document
           </button>
+          <select
+            aria-label="Sort documents"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as DocumentSort)}
+            className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-otter-500"
+          >
+            <option value="updatedAt-desc">Last edited</option>
+            <option value="title-asc">Title A–Z</option>
+            <option value="title-desc">Title Z–A</option>
+          </select>
           <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden ml-2">
             <ViewBtn
               mode="grid"
@@ -113,7 +136,7 @@ function DocumentsContent() {
       {/* Document listing */}
       <DocumentListing
         isLoading={isLoading}
-        documents={filtered}
+        documents={sorted}
         searchQuery={searchQuery}
         viewMode={viewMode}
         onCreate={() => createMutation.mutate("Untitled document")}
