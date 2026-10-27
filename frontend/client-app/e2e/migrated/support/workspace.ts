@@ -1,5 +1,5 @@
-import { randomUUID } from "node:crypto";
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
+import { registerUser } from "./account";
 
 const documents = [
   ["Quarterly Planning", "Review objectives, delivery dates, and ownership for the next quarter."],
@@ -8,26 +8,39 @@ const documents = [
   ["Workspace Guide", "A short guide to folders, search, and shared documents."],
 ] as const;
 
-export async function seedWorkspace(request: APIRequestContext, page: Page) {
-  const registration = await request.post("/api/v1/auth/register", {
-    data: { displayName: "Documents Migration", email: `documents-${randomUUID()}@example.com`, password: "Documents-Test-2026!" },
+export async function createDocument(
+  request: APIRequestContext,
+  headers: { Authorization: string },
+  doc: { title: string; content: string },
+): Promise<{ id: string; title: string }> {
+  const response = await request.post("/api/v1/documents", { headers, data: doc });
+  await expect(response).toBeOK();
+  const document = (await response.json()) as { id: string; title: string };
+  expect(document.title).toBe(doc.title);
+  return document;
+}
+
+export async function deleteDocument(
+  request: APIRequestContext,
+  headers: { Authorization: string },
+  id: string,
+): Promise<void> {
+  const response = await request.delete(`/api/v1/documents/${id}`, { headers });
+  await expect(response).toBeOK();
+}
+
+export async function seedWorkspace(request: APIRequestContext, page: Page, label = "Documents") {
+  const account = await registerUser(request, page, {
+    displayName: `${label} Migration`,
+    emailPrefix: label.toLowerCase(),
   });
-  await expect(registration).toBeOK();
-  const tokens = await registration.json();
-  const headers = { Authorization: `Bearer ${tokens.accessToken}` };
   const seeded: { id: string; title: string }[] = [];
   for (const [title, content] of documents) {
-    const response = await request.post("/api/v1/documents", { headers, data: { title, content } });
-    await expect(response).toBeOK();
-    seeded.push(await response.json());
+    seeded.push(await createDocument(request, account.headers, { title, content }));
   }
-  const listing = await request.get("/api/v1/documents", { headers });
+  const listing = await request.get("/api/v1/documents", { headers: account.headers });
   await expect(listing).toBeOK();
   const body = await listing.json();
   if (body.total !== documents.length) throw new Error(`Workspace seed: expected total 4, received ${body.total}`);
-  await page.addInitScript(({ accessToken, refreshToken }) => {
-    localStorage.setItem("otter_access_token", accessToken);
-    localStorage.setItem("otter_refresh_token", refreshToken);
-  }, tokens);
-  return { documents: seeded, total: body.total as number };
+  return { documents: seeded, total: body.total as number, headers: account.headers, userId: account.id };
 }

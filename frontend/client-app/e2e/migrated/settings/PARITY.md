@@ -9,3 +9,9 @@
 ## Run
 
 Follow the [migrated E2E runbook](../README.md) to start the real local stack and run the migrated suite.
+
+## Cypress parity carried forward
+
+| Legacy ID | Legacy result on current app | Legacy behavior | Combined Playwright behavior | Combined result |
+| --- | --- | --- | --- | --- |
+| CY-settings-01 | Passed (1/1) because Cypress stubbed PATCH as HTTP 200; it asserted only the request body. | Merged into TC-SET-003; preserves the PATCH payload assertion and checks status, success message, persisted profile, and reload. `test.fail()` records the real PATCH-vs-PUT app defect. | Expected failure in both combined migrated-suite runs (HTTP 500 at the labelled status assertion). |
