@@ -6,7 +6,7 @@
     {
       "object": "gold.finance_billing_report",
       "root_table": "recon.legacy_finance_report",
-      "root_where": "ns = '${ns}'",
+      "root_where": "ns = 'mig1'",
       "key": {
         "source": [
           "currency",
