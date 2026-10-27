@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks -- Playwright fixture `use` callbacks are not React hooks. */
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { test as base, expect, type APIRequestContext } from "@playwright/test";
