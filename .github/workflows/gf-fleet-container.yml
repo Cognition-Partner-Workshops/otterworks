@@ -35,12 +35,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
+        # Anonymous pulls from public.ecr.aws hit its data limit on shared runners,
+        # so CI builds from the same images on Docker Hub.
         include:
           - image: fleet-service
             context: industries/manufacturing/global-fleet/fleet-service
+            base_images: --build-arg BUILD_IMAGE=maven:3.9-eclipse-temurin-17 --build-arg RUN_IMAGE=eclipse-temurin:17-jre-alpine
           - image: fleet-web
             context: industries/manufacturing/global-fleet/frontend/fleet
+            base_images: --build-arg BUILD_IMAGE=node:22-alpine --build-arg RUN_IMAGE=nginxinc/nginx-unprivileged:1.27-alpine
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Check for a Dockerfile
@@ -61,7 +66,8 @@ jobs:
           PUSH: ${{ github.event_name != 'pull_request' && vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' }}
         run: |
           tag="${GITHUB_SHA::12}"
-          docker build -t "local/${{ matrix.image }}:${tag}" "${{ matrix.context }}"
+          # shellcheck disable=SC2086  # base_images is a list of flags
+          docker build ${{ matrix.base_images }} -t "local/${{ matrix.image }}:${tag}" "${{ matrix.context }}"
           if [ "$PUSH" = "true" ]; then
             gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
             docker tag "local/${{ matrix.image }}:${tag}" "${REGISTRY}/${{ matrix.image }}:${tag}"
