@@ -26,6 +26,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.MigrationVersion;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -426,6 +428,48 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
     void GF33_noLookupBeanFallsBackToEmptyCurrentCar() {
         Person person = createPerson(unique("GF03"));
         assertNull(employeeSearchService.search(person.getEmployeeNo()).get(0).currentCar());
+    }
+
+    @Test
+    void GF04_migrationKeepsNamesAndBackfillsStatus() {
+        String schema = "v11_migration_test";
+        jdbc.execute("DROP SCHEMA IF EXISTS " + schema + " CASCADE");
+        Flyway flyway = Flyway.configure()
+                .dataSource(jdbc.getDataSource())
+                .locations("classpath:db/migration/domain")
+                .schemas(schema)
+                .defaultSchema(schema)
+                .target(MigrationVersion.fromVersion("1.0"))
+                .load();
+        flyway.migrate();
+
+        Long personId = jdbc.queryForObject(
+                "INSERT INTO " + schema + ".person (employee_no, name) VALUES (?, ?) RETURNING id",
+                Long.class, unique("GF04"), "Legacy Name");
+        String employmentSql = "INSERT INTO " + schema
+                + ".employment (person_id, grade, status, hire_date, leave_date, monthly_contribution) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+        jdbc.update(employmentSql, personId, 5, null, LocalDate.of(2020, 1, 1), null, BigDecimal.ZERO);
+        jdbc.update(employmentSql, personId, 6, null,
+                LocalDate.of(2021, 1, 1), LocalDate.of(2022, 1, 1), BigDecimal.ZERO);
+        jdbc.update(employmentSql, personId, 7, "FORMER",
+                LocalDate.of(2023, 1, 1), null, BigDecimal.ZERO);
+
+        flyway = Flyway.configure()
+                .dataSource(jdbc.getDataSource())
+                .locations("classpath:db/migration/domain")
+                .schemas(schema)
+                .defaultSchema(schema)
+                .load();
+        flyway.migrate();
+
+        assertEquals("Legacy Name", jdbc.queryForObject(
+                "SELECT last_name FROM " + schema + ".person WHERE id = ?", String.class, personId));
+        assertNull(jdbc.queryForObject(
+                "SELECT first_name FROM " + schema + ".person WHERE id = ?", String.class, personId));
+        assertEquals(List.of("ACTIVE", "LEFT", "LEFT"), jdbc.queryForList(
+                "SELECT status FROM " + schema + ".employment WHERE person_id = ? ORDER BY id",
+                String.class, personId));
     }
 
     private Employment createEmployment(
