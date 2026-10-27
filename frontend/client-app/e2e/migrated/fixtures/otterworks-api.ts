@@ -15,6 +15,18 @@ export type MockDocument = {
   updated_at: string;
 };
 
+export type MockFile = {
+  id: string;
+  name: string;
+  mime_type: string;
+  owner_id: string;
+  folder_id: string;
+  tags: string[];
+  size: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Workspace = {
   user: {
     id: string;
@@ -25,6 +37,7 @@ export type Workspace = {
     password?: string;
   };
   documents: MockDocument[];
+  files?: MockFile[];
 };
 
 type MockAccount = Workspace["user"];
@@ -251,6 +264,203 @@ export async function mockOtterWorksApi(
 
     if (method === "GET" && path === "/api/v1/files/activity") {
       await route.fulfill({ json: { items: [] } });
+      return;
+    }
+
+    if (method === "GET" && path === "/api/v1/search") {
+      const parseInteger = (value: string | null, defaultValue: string) => {
+        const rawValue = value ?? defaultValue;
+        return /^\s*[+-]?\d+\s*$/.test(rawValue)
+          ? Number(rawValue)
+          : null;
+      };
+      const requestedPage = parseInteger(searchParams.get("page"), "1");
+      const requestedSize = parseInteger(searchParams.get("size"), "20");
+
+      if (requestedPage === null || requestedSize === null) {
+        await route.fulfill({
+          status: 400,
+          json: { error: "Invalid page or size parameter" },
+        });
+        return;
+      }
+
+      const query = searchParams.get("q") ?? "";
+
+      if (!query) {
+        await route.fulfill({
+          status: 400,
+          json: { error: "Query parameter 'q' is required" },
+        });
+        return;
+      }
+
+      const pageNumber = Math.max(1, requestedPage);
+      const size = Math.max(1, Math.min(100, requestedSize));
+      const docType = searchParams.get("type") || null;
+      const indices: ("documents" | "files")[] =
+        docType === "document"
+          ? ["documents"]
+          : docType === "file"
+            ? ["files"]
+            : ["documents", "files"];
+      const multiIndex = indices.length > 1;
+      const queryTokens = query
+        .toLowerCase()
+        .split(/[^\p{L}\p{N}]+/u)
+        .filter(Boolean);
+      const tokenize = (text: string) =>
+        text
+          .toLowerCase()
+          .split(/[^\p{L}\p{N}]+/u)
+          .filter(Boolean);
+      // Approximate MeiliSearch's default token-prefix matching for the fixture search.
+      const matchesQuery = (text: string) => {
+        const textTokens = tokenize(text);
+        const lastQueryToken = queryTokens[queryTokens.length - 1];
+        return (
+          queryTokens.length > 0 &&
+          queryTokens
+            .slice(0, -1)
+            .every((token) => textTokens.includes(token)) &&
+          textTokens.some((token) => token.startsWith(lastQueryToken))
+        );
+      };
+      const highlight = (text: string) =>
+        text.replace(/[\p{L}\p{N}]+/gu, (word) => {
+          const matchedToken = queryTokens
+            .filter((token) => word.toLowerCase().startsWith(token))
+            .sort((first, second) => second.length - first.length)[0];
+          return matchedToken
+            ? `<em>${word.slice(0, matchedToken.length)}</em>${word.slice(matchedToken.length)}`
+            : word;
+        });
+      type SearchRecord = {
+        id: string;
+        title: string;
+        content: string;
+        owner_id: string;
+        tags: string[];
+        created_at: string;
+        updated_at: string;
+      } & (
+        | { type: "document" }
+        | {
+            type: "file";
+            mime_type: string;
+            folder_id: string;
+            size: number;
+          }
+      );
+      const documents: SearchRecord[] = workspace.documents
+        .filter(
+          (document) =>
+            !document.is_deleted && document.owner_id === workspace.user.id,
+        )
+        .map((document) => ({
+          id: document.id,
+          title: document.title,
+          content: document.content,
+          owner_id: document.owner_id,
+          tags: [] as string[],
+          created_at: document.created_at,
+          updated_at: document.updated_at,
+          type: "document" as const,
+        }));
+      const files: SearchRecord[] = (workspace.files ?? [])
+        .filter((file) => file.owner_id === workspace.user.id)
+        .map((file) => ({
+          id: file.id,
+          title: file.name,
+          content: "",
+          owner_id: file.owner_id,
+          tags: file.tags,
+          created_at: file.created_at,
+          updated_at: file.updated_at,
+          type: "file" as const,
+          mime_type: file.mime_type,
+          folder_id: file.folder_id,
+          size: file.size,
+        }));
+      const indexRecords: Record<"documents" | "files", SearchRecord[]> = {
+        documents,
+        files,
+      };
+      const results: Record<string, unknown>[] = [];
+      let total = 0;
+
+      for (const index of indices) {
+        const records = indexRecords[index].filter(
+          (record) =>
+            (!docType || record.type === docType) &&
+            matchesQuery(`${record.title} ${record.content}`),
+        );
+        const rankedRecords = records
+          .map((record, fixtureOrder) => ({
+            record,
+            fixtureOrder,
+            titleMatches: matchesQuery(record.title),
+          }))
+          .sort(
+            (first, second) =>
+              Number(second.titleMatches) -
+                Number(first.titleMatches) ||
+              first.fixtureOrder - second.fixtureOrder,
+          );
+        total += records.length;
+        const pageRecords = multiIndex
+          ? rankedRecords.slice(0, pageNumber * size)
+          : rankedRecords.slice(
+              (pageNumber - 1) * size,
+              pageNumber * size,
+            );
+
+        for (const { record } of pageRecords) {
+          const highlightedTitle = highlight(record.title);
+          const highlightedContent = highlight(record.content);
+          const isFile = record.type === "file";
+          const highlights: Record<string, string[]> = {};
+
+          if (highlightedTitle.includes("<em>")) {
+            highlights[isFile ? "name" : "title"] = [highlightedTitle];
+          }
+          if (!isFile && highlightedContent.includes("<em>")) {
+            highlights.content = [highlightedContent];
+          }
+
+          results.push({
+            id: record.id,
+            title: record.title,
+            content_snippet: isFile ? "" : highlightedContent.slice(0, 200),
+            type: record.type,
+            owner_id: record.owner_id,
+            tags: record.tags,
+            score: 0,
+            highlights,
+            created_at: record.created_at,
+            updated_at: record.updated_at,
+            ...(record.type === "file"
+              ? {
+                  mime_type: record.mime_type,
+                  folder_id: record.folder_id,
+                  size: record.size,
+                }
+              : {}),
+          });
+        }
+      }
+
+      await route.fulfill({
+        json: {
+          results: multiIndex
+            ? results.slice((pageNumber - 1) * size, pageNumber * size)
+            : results,
+          total,
+          page: pageNumber,
+          page_size: size,
+          query,
+        },
+      });
       return;
     }
 
