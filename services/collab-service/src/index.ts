@@ -2,15 +2,20 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
-import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import helmet from 'helmet';
 import pino from 'pino';
 import { loadConfig } from './config';
 import { MetricsCollector } from './metrics';
-import { createAuthMiddleware } from './middleware/auth';
+import {
+  createAuthMiddleware,
+  createHttpAuthMiddleware,
+  requireAdmin,
+  verifyToken,
+} from './middleware/auth';
 import { RedisAdapter } from './services/redis-adapter';
 import { DocumentStore } from './services/document-store';
+import { DocumentServiceAccessChecker } from './services/document-access';
 import { AwarenessService } from './services/awareness';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
@@ -75,11 +80,16 @@ app.get('/api/v1/collab/documents/:id/presence', (req, res) => {
   res.json(presence);
 });
 
-// Active documents listing
-app.get('/api/v1/collab/documents', (_req, res) => {
-  const activeDocuments = presenceHandler.getActiveDocuments();
-  res.json({ documents: activeDocuments, count: activeDocuments.length });
-});
+// Active documents listing: exposes every open document ID, so admins only
+app.get(
+  '/api/v1/collab/documents',
+  createHttpAuthMiddleware(config.jwt.secret, logger),
+  requireAdmin,
+  (_req, res) => {
+    const activeDocuments = presenceHandler.getActiveDocuments();
+    res.json({ documents: activeDocuments, count: activeDocuments.length });
+  },
+);
 
 // Socket.IO server
 const io = new SocketIOServer(httpServer, {
@@ -112,6 +122,11 @@ const documentStore = new DocumentStore(redisAdapter, logger, {
   maxSnapshots: config.persistence.maxSnapshotsPerDocument,
 });
 
+const documentAccess = new DocumentServiceAccessChecker(
+  { baseUrl: config.documentService.url, timeoutMs: config.documentService.timeoutMs },
+  logger,
+);
+
 const awareness = new AwarenessService(logger);
 const presenceHandler = new PresenceHandler(awareness, logger);
 
@@ -119,6 +134,7 @@ const presenceHandler = new PresenceHandler(awareness, logger);
 const collabManager = setupCollaborationHandlers(
   io,
   documentStore,
+  documentAccess,
   awareness,
   presenceHandler,
   metrics,
@@ -134,12 +150,27 @@ wss.on('connection', (conn, req) => {
   logger.info({ url: req.url }, 'y-websocket_client_connected');
 });
 
+// y-websocket room names are `document-<documentId>` (see the client-app editor)
+const Y_WEBSOCKET_ROOM_PREFIX = 'document-';
+
 // Route WebSocket upgrades: Socket.IO paths go to Socket.IO, all others to y-websocket
 httpServer.on('upgrade', (request, socket, head) => {
   if (request.url?.startsWith('/socket.io')) {
     // Socket.IO handles its own upgrades via its internal listener
     return;
   }
+
+  const reject = (
+    status: number,
+    reason: string,
+    extra: Record<string, unknown> = {},
+  ) => {
+    logger.warn(extra, `y-websocket_connection_rejected: ${reason}`);
+    const statusText =
+      status === 400 ? 'Bad Request' : status === 401 ? 'Unauthorized' : 'Forbidden';
+    socket.write(`HTTP/1.1 ${status} ${statusText}\r\n\r\n`);
+    socket.destroy();
+  };
 
   // JWT authentication for y-websocket connections
   const url = new URL(request.url || '', `http://${request.headers.host}`);
@@ -148,24 +179,53 @@ httpServer.on('upgrade', (request, socket, head) => {
     request.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
-    logger.warn('y-websocket_connection_rejected: no token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
+    reject(401, 'no token');
     return;
   }
 
+  let user;
   try {
-    jwt.verify(token, config.jwt.secret);
+    user = verifyToken(token, config.jwt.secret);
   } catch {
-    logger.warn('y-websocket_connection_rejected: invalid token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
+    reject(401, 'invalid token');
     return;
   }
 
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
+  // The y-websocket protocol lets every connected peer write, so the caller
+  // must be allowed to edit the document behind the room before upgrading.
+  let roomName: string;
+  try {
+    roomName = decodeURIComponent(url.pathname.slice(1));
+  } catch {
+    reject(400, 'malformed room path', { userId: user.userId });
+    return;
+  }
+  const documentId = roomName.startsWith(Y_WEBSOCKET_ROOM_PREFIX)
+    ? roomName.slice(Y_WEBSOCKET_ROOM_PREFIX.length)
+    : roomName;
+  if (!documentId) {
+    reject(403, 'no document', { userId: user.userId });
+    return;
+  }
+
+  documentAccess
+    .check(documentId, user, token)
+    .then((access) => {
+      if (!access?.canEdit) {
+        reject(403, 'access denied', { documentId, userId: user.userId });
+        return;
+      }
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    })
+    .catch((err) => {
+      logger.error(
+        { err, documentId, userId: user.userId },
+        'y-websocket_access_check_failed',
+      );
+      reject(403, 'access check failed', { documentId, userId: user.userId });
+    });
 });
 
 // Start presence cleanup with document eviction callback

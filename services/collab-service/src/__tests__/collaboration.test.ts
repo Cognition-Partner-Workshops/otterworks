@@ -10,6 +10,7 @@ import { PresenceHandler } from '../handlers/presence';
 import { MetricsCollector } from '../metrics';
 import { createAuthMiddleware } from '../middleware/auth';
 import { RedisAdapter } from '../services/redis-adapter';
+import type { DocumentAccessChecker } from '../services/document-access';
 
 const JWT_SECRET = 'test-secret-key-for-unit-tests';
 let PORT: number;
@@ -38,6 +39,19 @@ const mockRedis = {
   disconnect: jest.fn(),
   ping: jest.fn().mockResolvedValue(true),
 } as unknown as jest.Mocked<RedisAdapter>;
+
+// `private-<ownerId>-*` documents are visible only to their owner,
+// `shared-<ownerId>-*` documents are editable by anyone but owned by <ownerId>,
+// and every other document id is owned by whoever asks.
+const documentAccess: DocumentAccessChecker = {
+  check: jest.fn(async (documentId: string, user: { userId: string }) => {
+    const match = /^(private|shared)-([^-]+)-/.exec(documentId);
+    if (!match) return { isOwner: true, canEdit: true };
+    const isOwner = match[2] === user.userId;
+    if (match[1] === 'private' && !isOwner) return null;
+    return { isOwner, canEdit: true };
+  }),
+};
 
 const mockLogger = {
   info: jest.fn(),
@@ -75,6 +89,7 @@ describe('CollaborationManager', () => {
     manager = new CollaborationManager({
       io,
       documentStore,
+      documentAccess,
       awareness,
       presenceHandler,
       metrics,
@@ -215,6 +230,144 @@ describe('CollaborationManager', () => {
 
       client1.disconnect();
       client2.disconnect();
+    });
+  });
+
+  describe('Document Authorization', () => {
+    function join(client: ClientSocket, documentId: string) {
+      return new Promise<{ success: boolean; error?: string }>((resolve) => {
+        client.emit('join-document', { documentId }, resolve);
+      });
+    }
+
+    function expectNoEvent(client: ClientSocket, event: string, ms = 300) {
+      return new Promise<void>((resolve, reject) => {
+        const onEvent = () => reject(new Error(`unexpected ${event}`));
+        client.once(event, onEvent);
+        setTimeout(() => {
+          client.off(event, onEvent);
+          resolve();
+        }, ms);
+      });
+    }
+
+    it('should ask document-service with the caller token and deny the join when it says no', async () => {
+      const owner = await connectClient('alice', 'Alice');
+      const outsider = await connectClient('mallory', 'Mallory');
+      const documentId = 'private-alice-authz';
+
+      expect(await join(owner, documentId)).toEqual({ success: true });
+      expect(documentAccess.check).toHaveBeenCalledWith(
+        documentId,
+        expect.objectContaining({ userId: 'alice' }),
+        expect.any(String),
+      );
+
+      const denied = new Promise((resolve) => outsider.once('access-denied', resolve));
+      const synced = expectNoEvent(outsider, 'sync-document');
+      expect(await join(outsider, documentId)).toEqual({
+        success: false,
+        error: 'Access denied',
+      });
+      await expect(denied).resolves.toEqual({ event: 'join-document', documentId });
+      await synced;
+      expect(presenceHandler.getDocumentPresence(documentId).count).toBe(1);
+
+      owner.disconnect();
+      outsider.disconnect();
+    });
+
+    it('should drop updates, history and comments from sockets that have not joined the room', async () => {
+      const owner = await connectClient('alice', 'Alice');
+      const outsider = await connectClient('mallory', 'Mallory');
+      const documentId = 'private-alice-events';
+      await join(owner, documentId);
+      await join(outsider, 'doc-somewhere-else');
+
+      const tempDoc = new Y.Doc();
+      tempDoc.getText('content').insert(0, 'tampered');
+      const update = Buffer.from(Y.encodeStateAsUpdate(tempDoc)).toString('base64');
+
+      const ownerSawUpdate = expectNoEvent(owner, 'document-update');
+      const ownerSawComment = expectNoEvent(owner, 'comment-added');
+      const updateError = new Promise((resolve) =>
+        outsider.once('document-update-error', resolve),
+      );
+      const historyError = new Promise((resolve) =>
+        outsider.once('history-error', resolve),
+      );
+
+      outsider.emit('document-update', { documentId, update });
+      outsider.emit('request-history', { documentId });
+      outsider.emit('comment-add', {
+        documentId,
+        comment: { id: 'c1', threadId: 't1', content: 'hi', rangeStart: 0, rangeEnd: 1 },
+      });
+      outsider.emit('cursor-update', {
+        documentId,
+        cursor: { line: 0, column: 0 },
+        selection: null,
+      });
+
+      await expect(updateError).resolves.toEqual({ documentId, error: 'Access denied' });
+      await expect(historyError).resolves.toEqual({ documentId, error: 'Access denied' });
+      await ownerSawUpdate;
+      await ownerSawComment;
+      expect(mockRedis.lrange).not.toHaveBeenCalled();
+      expect(Y.encodeStateAsUpdate(manager.getDocument(documentId)!)).not.toEqual(
+        Y.encodeStateAsUpdate(tempDoc),
+      );
+
+      owner.disconnect();
+      outsider.disconnect();
+    });
+
+    it('should only let the author or the owner change a comment', async () => {
+      const alice = await connectClient('alice', 'Alice');
+      const bob = await connectClient('bob', 'Bob');
+      const documentId = 'shared-alice-comments';
+      await join(alice, documentId);
+      await join(bob, documentId);
+      await new Promise((r) => setTimeout(r, 50));
+
+      const added = new Promise((resolve) => alice.once('comment-added', resolve));
+      bob.emit('comment-add', {
+        documentId,
+        comment: {
+          id: 'c-bob',
+          threadId: 't1',
+          content: 'mine',
+          rangeStart: 0,
+          rangeEnd: 1,
+        },
+      });
+      await added;
+
+      // Bob is neither the author of c-unknown nor the owner, so the delete is refused.
+      const denied = new Promise((resolve) => bob.once('access-denied', resolve));
+      const aliceSawDelete = expectNoEvent(alice, 'comment-deleted');
+      bob.emit('comment-delete', { documentId, commentId: 'c-unknown' });
+      await expect(denied).resolves.toEqual({
+        event: 'comment-delete',
+        documentId,
+        commentId: 'c-unknown',
+      });
+      await aliceSawDelete;
+
+      const updated = new Promise((resolve) => alice.once('comment-updated', resolve));
+      bob.emit('comment-update', { documentId, commentId: 'c-bob', content: 'edited' });
+      await expect(updated).resolves.toEqual(
+        expect.objectContaining({ commentId: 'c-bob', content: 'edited' }),
+      );
+
+      const deleted = new Promise((resolve) => bob.once('comment-deleted', resolve));
+      alice.emit('comment-delete', { documentId, commentId: 'c-bob' });
+      await expect(deleted).resolves.toEqual(
+        expect.objectContaining({ commentId: 'c-bob' }),
+      );
+
+      alice.disconnect();
+      bob.disconnect();
     });
   });
 

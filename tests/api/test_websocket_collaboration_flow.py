@@ -26,7 +26,7 @@ def test_socketio_rejects_missing_or_invalid_token(base_url):
         )
 
 
-def test_socketio_two_users_join_same_document_and_presence_updates(api_client, base_url):
+def test_socketio_fans_out_updates_to_the_owner_and_denies_other_users(api_client, base_url):
     user_a = api_client.register_user("ws-user-a")
     user_b = api_client.register_user("ws-user-b")
     document = api_client.create_document(
@@ -35,21 +35,35 @@ def test_socketio_two_users_join_same_document_and_presence_updates(api_client, 
         content="collaboration body",
     )
     document_id = document["id"]
+    received_by_a2: list[dict] = []
     received_by_b: list[dict] = []
+    denied_for_b: list[dict] = []
 
     client_a = socketio.Client(reconnection=False, request_timeout=5)
+    client_a2 = socketio.Client(reconnection=False, request_timeout=5)
     client_b = socketio.Client(reconnection=False, request_timeout=5)
 
+    @client_a2.on("document-update")
+    def on_document_update_a2(data):
+        received_by_a2.append(data)
+
     @client_b.on("document-update")
-    def on_document_update(data):
+    def on_document_update_b(data):
         received_by_b.append(data)
 
-    try:
-        client_a.connect(_collab_url(base_url), auth={"token": user_a.access_token}, transports=["websocket"])
-        client_b.connect(_collab_url(base_url), auth={"token": user_b.access_token}, transports=["websocket"])
+    @client_b.on("access-denied")
+    def on_access_denied(data):
+        denied_for_b.append(data)
 
-        client_a.emit("join-document", {"documentId": document_id})
-        client_b.emit("join-document", {"documentId": document_id})
+    try:
+        for client, user in ((client_a, user_a), (client_a2, user_a), (client_b, user_b)):
+            client.connect(_collab_url(base_url), auth={"token": user.access_token}, transports=["websocket"])
+
+        # Only the document owner may join its collaboration room.
+        assert client_a.call("join-document", {"documentId": document_id}, timeout=5) == {"success": True}
+        assert client_a2.call("join-document", {"documentId": document_id}, timeout=5) == {"success": True}
+        join_b = client_b.call("join-document", {"documentId": document_id}, timeout=5)
+        assert join_b == {"success": False, "error": "Access denied"}, join_b
         time.sleep(0.5)
 
         presence_response = api_client.client.get(
@@ -57,6 +71,10 @@ def test_socketio_two_users_join_same_document_and_presence_updates(api_client, 
             headers=user_a.auth_headers,
         )
         assert presence_response.status_code == 200, presence_response.text
+        assert {u["userId"] for u in presence_response.json()["users"]} == {user_a.id}
+
+        # The non-owner cannot push edits into the room either.
+        client_b.emit("document-update", {"documentId": document_id, "update": {"text": "tampered"}})
 
         client_a.emit(
             "document-update",
@@ -64,14 +82,16 @@ def test_socketio_two_users_join_same_document_and_presence_updates(api_client, 
         )
 
         api_client.poll_until(
-            lambda: received_by_b,
+            lambda: received_by_a2,
             lambda updates: len(updates) >= 1,
             timeout_seconds=10,
             interval_seconds=0.25,
-            description="collaboration update fanout to second socket client",
+            description="collaboration update fanout to the owner's second socket client",
         )
+        assert received_by_b == []
+        assert any(d.get("event") == "join-document" for d in denied_for_b), denied_for_b
+        assert any(d.get("event") == "document-update" for d in denied_for_b), denied_for_b
     finally:
-        if client_a.connected:
-            client_a.disconnect()
-        if client_b.connected:
-            client_b.disconnect()
+        for client in (client_a, client_a2, client_b):
+            if client.connected:
+                client.disconnect()
