@@ -16,7 +16,7 @@ test(
     await searchInput.fill(searchableDocument.keyword);
     await searchInput.press("Enter");
 
-    const result = main.getByRole("link", { name: new RegExp(searchableDocument.title) });
+    const result = main.getByRole("link").filter({ hasText: searchableDocument.title });
     await expect(result).toBeVisible();
     await expect(result).toHaveAttribute("href", `/documents/${searchableDocument.id}`);
     // a11y gap: the result count is a plain <p> with no role or label.

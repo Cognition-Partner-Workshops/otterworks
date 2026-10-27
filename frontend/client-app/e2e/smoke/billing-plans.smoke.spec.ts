@@ -13,7 +13,7 @@ test("billing plans page lists every catalog plan with a Choose plan link", {
     const card = plans.getByRole("listitem").filter({ has: page.getByRole("heading", { name: plan.code, exact: true }) });
     await expect(card.getByRole("link", { name: "Choose plan" })).toHaveAttribute(
       "href",
-      new RegExp(`\\?plan=${plan.plan_id}$`),
+      `/billing/change/00000000-0000-0000-0000-000000000001?plan=${encodeURIComponent(plan.plan_id)}`,
     );
   }
 });
