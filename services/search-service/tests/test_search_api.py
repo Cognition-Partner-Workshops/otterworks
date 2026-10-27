@@ -105,6 +105,41 @@ class TestSuggestEndpoint:
         data = response.get_json()
         assert data["suggestions"] == []
 
+    def test_suggest_without_ranking_score_returns_200(self, client, mock_meilisearch_client):
+        """Hits missing _rankingScore never turn into a 5xx (regression for SearchSuggestHighErrorRate)."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {"estimatedTotalHits": 1, "hits": [{"title": "Unscored"}]}
+
+        response = client.get("/api/v1/search/suggest?q=un")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Unscored"]
+
+    def test_suggest_orders_by_ranking_score(self, client, mock_meilisearch_client):
+        """Suggestions are strings ordered by MeiliSearch ranking score, highest first."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 3,
+            "hits": [
+                {"title": "Low", "_rankingScore": 0.2},
+                {"title": "High", "_rankingScore": 0.9},
+                {"title": "Unscored"},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["High", "Low", "Unscored"]
+        _, options = mock_index.search.call_args[0]
+        assert options["showRankingScore"] is True
+
+    def test_suggest_backend_error_returns_200_empty(self, client, mock_meilisearch_client):
+        """A MeiliSearch failure degrades to an empty suggestion list, not a 500."""
+        mock_meilisearch_client.index.return_value.search.side_effect = RuntimeError("meili down")
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+
 
 class TestAdvancedSearchEndpoint:
     """Tests for POST /api/v1/search/advanced."""
