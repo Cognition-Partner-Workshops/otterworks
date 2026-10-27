@@ -84,7 +84,7 @@ function ClaimEntry() {
         </label>
         <label>
           Purpose
-          <input value={purpose} onChange={(event) => setPurpose(event.target.value)} />
+          <input maxLength={255} value={purpose} onChange={(event) => setPurpose(event.target.value)} />
         </label>
         <button type="button" onClick={() => void calculate()}>Calculate</button>
         <button type="submit">Submit claim</button>

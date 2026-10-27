@@ -213,6 +213,26 @@ class MileageIntegrationTest extends AbstractPostgresIntegrationTest {
     }
 
     @Test
+    void purposeLongerThanColumnIsRejected() throws Exception {
+        Employment employee = employee(EmploymentStatus.ACTIVE, LocalDate.of(2020, 1, 1), null);
+        String employeeNo = employee.getPerson().getEmployeeNo();
+
+        mockMvc.perform(post("/api/v1/mileage/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(new MileageClaimRequest(
+                                employeeNo, TODAY, BigDecimal.ONE, "p".repeat(256)))))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("PURPOSE_TOO_LONG"));
+
+        mockMvc.perform(post("/api/v1/mileage/claims")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(new MileageClaimRequest(
+                                employeeNo, TODAY, BigDecimal.ONE, "p".repeat(255)))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.purpose").value("p".repeat(255)));
+    }
+
+    @Test
     void v40BackfillRateAndAmountAreRequired() {
         assertEquals(
                 profile.mileageRate(),
