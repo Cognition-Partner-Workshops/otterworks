@@ -5,7 +5,7 @@ locals {
     expires_at = replace(var.expires_at, "-", "")
     app        = "global-fleet"
   }
-  registry = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.fleet.repository_id}"
+  registry = "${var.region}-docker.pkg.dev/${var.project_id}/${local.name}"
 }
 
 resource "google_project_service" "apis" {
@@ -19,7 +19,9 @@ resource "google_project_service" "apis" {
   disable_on_destroy = false
 }
 
+# One registry per project, shared by every run; the first run creates it.
 resource "google_artifact_registry_repository" "fleet" {
+  count         = var.create_registry ? 1 : 0
   repository_id = local.name
   location      = var.region
   format        = "DOCKER"
@@ -69,7 +71,7 @@ resource "google_sql_user" "fleet" {
 }
 
 resource "google_secret_manager_secret" "db_password" {
-  secret_id = "${local.name}-db-password"
+  secret_id = "${local.name}-${var.run_token}-db-password"
   labels    = local.labels
   replication {
     auto {}
@@ -83,7 +85,7 @@ resource "google_secret_manager_secret_version" "db_password" {
 }
 
 resource "google_service_account" "fleet" {
-  account_id   = "${local.name}-run"
+  account_id   = "fleet-${var.run_token}"
   display_name = "Global fleet Cloud Run"
 }
 
@@ -100,7 +102,7 @@ resource "google_secret_manager_secret_iam_member" "db_password" {
 }
 
 resource "google_cloud_run_v2_service" "service" {
-  name                = "${local.name}-service"
+  name                = "${local.name}-service-${var.run_token}"
   location            = var.region
   ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
@@ -176,7 +178,7 @@ resource "google_cloud_run_v2_service" "service" {
 }
 
 resource "google_cloud_run_v2_service" "web" {
-  name                = "${local.name}-web"
+  name                = "${local.name}-web-${var.run_token}"
   location            = var.region
   ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
