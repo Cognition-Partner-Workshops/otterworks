@@ -54,6 +54,7 @@ INSERT INTO uk.assignment (employment_id, vehicle_id, start_date, end_date, reas
     SELECT x.employment_id, v.id, a.start_date, a.end_date, a.reason
     FROM legacy_uk.assignment a JOIN uk_emp x ON x.dbkey = a.emp_dbkey
     JOIN legacy_uk.vehicle lv ON lv.vehid = a.vehid JOIN uk.vehicle v ON v.registration = lv.plate ORDER BY a.asgid;
+-- 0.445 = UK profile mileage-rate, for claims dated before the first unloaded benefit period.
 INSERT INTO uk.mileage_claim (
     employment_id, benefit_period_id, claim_date, distance, status,
     rate, amount, paid_period, purpose)
@@ -61,8 +62,8 @@ INSERT INTO uk.mileage_claim (
            CASE c.status WHEN 'A' THEN 'APPROVED'
                          WHEN 'P' THEN 'PENDING'
                          WHEN 'R' THEN 'REJECTED' END,
-           COALESCE(b.mileage_rate, legacy_period.mileage_rate),
-           round(c.miles * COALESCE(b.mileage_rate, legacy_period.mileage_rate), 2),
+           COALESCE(b.mileage_rate, legacy_period.mileage_rate, 0.445),
+           round(c.miles * COALESCE(b.mileage_rate, legacy_period.mileage_rate, 0.445), 2),
            to_char(c.claim_date, 'YYYYMM'), c.purpose
     FROM legacy_uk.mileage_claim c JOIN uk_emp x ON x.dbkey = c.emp_dbkey
     LEFT JOIN uk.benefit_period b ON b.period = to_char(c.claim_date, 'YYYYMM')
