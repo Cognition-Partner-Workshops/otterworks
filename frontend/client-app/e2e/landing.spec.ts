@@ -1,6 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { expect, signedOut, test } from "./fixtures/fixtures";
 
 // OTD-13 corporate rebrand — see docs/bdd/otd13-corporate-rebrand-bdd.md
+// anonymous visitor experience
+test.use({ storageState: signedOut });
+
 test.describe("Landing Page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");

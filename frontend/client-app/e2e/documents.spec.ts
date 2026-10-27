@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { test as customerTest } from "./fixtures/fixtures";
 
 test.describe("Documents Page", () => {
   test.beforeEach(async ({ page }) => {
@@ -47,17 +48,14 @@ test.describe("Documents Page", () => {
     }
   });
 
-  test("shows empty state when no documents exist", async ({ page }) => {
-    const heading = page.getByRole("heading", { name: "Documents" });
-    const loginHeading = page.getByText("Sign in to your account");
-    await expect(heading.or(loginHeading)).toBeVisible({ timeout: 10_000 });
+  customerTest.describe("Empty documents", () => {
+    customerTest.use({ freshCustomer: true });
 
-    if (await heading.isVisible().catch(() => false)) {
-      // Either documents are listed or empty state is shown
-      const emptyState = page.getByText("No documents yet");
-      const docCard = page.locator("[class*='grid'] > *").first();
-      await expect(emptyState.or(docCard)).toBeVisible({ timeout: 10_000 });
-    }
+    customerTest("shows empty state when no documents exist", async ({ page }) => {
+      await expect(
+        page.getByRole("heading", { name: "No documents yet", exact: true }),
+      ).toBeVisible({ timeout: 10_000 });
+    });
   });
 
   test("displays breadcrumb navigation", async ({ page }) => {

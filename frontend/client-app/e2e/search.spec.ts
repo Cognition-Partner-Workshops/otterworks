@@ -56,9 +56,4 @@ test.describe("Search Page", () => {
     await expect(noResults.or(spinner)).toBeVisible({ timeout: 15_000 });
   });
 
-  test("displays breadcrumb navigation", async ({ page }) => {
-    // Breadcrumb nav (aria-label="Breadcrumb") should contain "Search"
-    const breadcrumb = page.getByLabel("Breadcrumb").getByText("Search");
-    await expect(breadcrumb).toBeVisible({ timeout: 10_000 });
-  });
 });

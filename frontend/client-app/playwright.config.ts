@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { SHARED_CUSTOMER_STATE } from "./e2e/fixtures/accounts";
 
 const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
 
@@ -21,8 +22,16 @@ export default defineConfig({
 
   projects: [
     {
+      name: "setup",
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: SHARED_CUSTOMER_STATE,
+      },
+      dependencies: ["setup"],
     },
   ],
 
