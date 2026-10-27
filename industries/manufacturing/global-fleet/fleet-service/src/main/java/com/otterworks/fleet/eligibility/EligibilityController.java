@@ -9,6 +9,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,7 +60,8 @@ public class EligibilityController {
     public EligibilityDecision carRequest(
             @RequestParam("employeeNo") String employeeNo,
             @RequestParam("step") CarRequestStep step,
-            @RequestParam(name = "date", required = false) LocalDate date) {
+            @RequestParam(name = "date", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return eligibilityService.carRequest(
                 employeeNo, step, date == null ? eligibilityService.today() : date);
     }
@@ -67,7 +69,8 @@ public class EligibilityController {
     @GetMapping("/eligibility/mileage-claim")
     public EligibilityDecision mileageClaim(
             @RequestParam("employeeNo") String employeeNo,
-            @RequestParam("claimDate") LocalDate claimDate) {
+            @RequestParam("claimDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate claimDate) {
         return eligibilityService.mileageClaim(employeeNo, claimDate);
     }
 

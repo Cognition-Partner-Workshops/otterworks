@@ -1,7 +1,6 @@
 package com.otterworks.fleet.eligibility;
 
 import com.otterworks.fleet.api.ApiError;
-import java.time.format.DateTimeParseException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -24,9 +23,9 @@ public class EligibilityExceptionHandler {
                 .body(new ApiError(exception.getReason().name(), exception.getMessage()));
     }
 
-    @ExceptionHandler({InvalidPeriodException.class, DateTimeParseException.class})
-    public ResponseEntity<ApiError> handleInvalidPeriod(RuntimeException exception) {
+    @ExceptionHandler(InvalidPeriodException.class)
+    public ResponseEntity<ApiError> handleInvalidPeriod(InvalidPeriodException exception) {
         return ResponseEntity.badRequest()
-                .body(new ApiError("BAD_REQUEST", "Period must use YYYYMM format"));
+                .body(new ApiError("BAD_REQUEST", exception.getMessage()));
     }
 }

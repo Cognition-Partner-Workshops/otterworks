@@ -220,7 +220,7 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
     }
 
     @Test
-    void GF03_employeeStatusGatesCarRequest() {
+    void GF03_employeeStatusGatesCarRequest() throws Exception {
         LocalDate today = LocalDate.of(2026, 10, 1);
         Employment active = createEmployment(
                 unique("GF03"), profile.minGrade(), EmploymentStatus.ACTIVE, LocalDate.of(2020, 1, 1), null);
@@ -244,10 +244,24 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
                 expiredActive.getPerson().getEmployeeNo(), CarRequestStep.EMPLOYEE, today).reason());
         assertTrue(eligibilityService.inquiry(left.getPerson().getEmployeeNo()).allowed());
         assertTrue(eligibilityService.inquiry(transferred.getPerson().getEmployeeNo()).allowed());
+
+        mockMvc.perform(get("/api/v1/eligibility/car-request")
+                        .param("employeeNo", active.getPerson().getEmployeeNo())
+                        .param("step", "CONFIRM")
+                        .param("date", "2026-10-27"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allowed").value(true));
+        mockMvc.perform(get("/api/v1/eligibility/car-request")
+                        .param("employeeNo", left.getPerson().getEmployeeNo())
+                        .param("step", "CONFIRM")
+                        .param("date", "2026-10-27"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allowed").value(false))
+                .andExpect(jsonPath("$.reason").value("NOT_ACTIVE"));
     }
 
     @Test
-    void GF03_leaverMayClaimUpToLeavingDate() {
+    void GF03_leaverMayClaimUpToLeavingDate() throws Exception {
         Employment left = createEmployment(
                 unique("GF03"), profile.minGrade(), EmploymentStatus.LEFT,
                 LocalDate.of(2020, 1, 1), LocalDate.of(2025, 1, 31));
@@ -259,6 +273,24 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
                 left.getPerson().getEmployeeNo(), LocalDate.of(2025, 2, 1));
         assertFalse(after.allowed());
         assertEquals(EligibilityReason.CLAIM_AFTER_LEAVING_DATE, after.reason());
+        mockMvc.perform(get("/api/v1/eligibility/mileage-claim")
+                        .param("employeeNo", left.getPerson().getEmployeeNo())
+                        .param("claimDate", "2025-01-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allowed").value(true))
+                .andExpect(jsonPath("$.employmentId").value(left.getId()));
+        mockMvc.perform(get("/api/v1/eligibility/mileage-claim")
+                        .param("employeeNo", left.getPerson().getEmployeeNo())
+                        .param("claimDate", "2025-02-01"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allowed").value(false))
+                .andExpect(jsonPath("$.reason").value("CLAIM_AFTER_LEAVING_DATE"));
+        mockMvc.perform(get("/api/v1/eligibility/mileage-claim")
+                        .param("employeeNo", left.getPerson().getEmployeeNo())
+                        .param("claimDate", "27.10.2026"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("Bad Request"));
         Person withNoHistory = createPerson(unique("GF03"));
         assertEquals(EligibilityReason.NO_EMPLOYMENT_ON_DATE,
                 eligibilityService.mileageClaim(withNoHistory.getEmployeeNo(), LocalDate.of(2025, 1, 1)).reason());
@@ -385,13 +417,13 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
     }
 
     @Test
-    void GF03_invalidBelowGradePeriodReturnsBadRequest() throws Exception {
+    void GF02_invalidBatchPeriodReturnsBadRequest() throws Exception {
         mockMvc.perform(get("/api/v1/eligibility/below-grade-holders").param("period", "2025-04"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void GF03_noLookupBeanFallsBackToEmptyCurrentCar() {
+    void GF33_noLookupBeanFallsBackToEmptyCurrentCar() {
         Person person = createPerson(unique("GF03"));
         assertNull(employeeSearchService.search(person.getEmployeeNo()).get(0).currentCar());
     }
