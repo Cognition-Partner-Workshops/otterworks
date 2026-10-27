@@ -21,10 +21,10 @@ type Route struct {
 
 // RouterConfig holds configuration for the reverse proxy router.
 type RouterConfig struct {
-	Routes         []Route
-	CBManager      *CircuitBreakerManager
-	Logger         zerolog.Logger
-	EnableTracing  bool
+	Routes        []Route
+	CBManager     *CircuitBreakerManager
+	Logger        zerolog.Logger
+	EnableTracing bool
 }
 
 // NewRouter creates a chi router with all service routes mounted.
@@ -59,21 +59,33 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		cfg.Logger.Fatal().Err(err).Str("target", route.TargetURL).Msg("invalid proxy target URL")
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy := &httputil.ReverseProxy{}
 
-	// Wrap the default director to forward authenticated user identity.
+	// Rewrite the outbound request to forward the authenticated user identity.
 	// The auth-service issues JWTs with the user ID in the standard "sub" claim
 	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
-	defaultDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
-		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
+	// Downstream services trust X-User-ID as the verified caller, so a
+	// client-supplied value is always dropped and the header is only ever set
+	// from the JWT claims.
+	proxy.Rewrite = func(pr *httputil.ProxyRequest) {
+		pr.SetURL(target)
+		// SetXForwarded derives X-Forwarded-Proto/Host from the gateway's own
+		// listener, but TLS terminates at the ingress in front of us. Keep the
+		// values the ingress sent, as the default Director used to pass through.
+		pr.SetXForwarded()
+		for _, h := range []string{"X-Forwarded-Proto", "X-Forwarded-Host"} {
+			if v := pr.In.Header.Get(h); v != "" {
+				pr.Out.Header.Set(h, v)
+			}
+		}
+		pr.Out.Header.Del("X-User-ID")
+		if claims := middleware.GetJWTClaims(pr.In.Context()); claims != nil {
 			userID := claims.Subject
 			if userID == "" {
 				userID = claims.UserID
 			}
 			if userID != "" {
-				req.Header.Set("X-User-ID", userID)
+				pr.Out.Header.Set("X-User-ID", userID)
 			}
 		}
 	}

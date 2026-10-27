@@ -53,15 +53,15 @@ public class ReportService {
     }
 
     /**
-     * Create a new report request and start async generation.
+     * Create a new report request for the given caller and start async generation.
      */
     @Transactional
-    public Report createReport(ReportRequest request) {
+    public Report createReport(ReportRequest request, String requestedBy) {
         Report report = new Report();
         report.setReportName(request.getReportName());
         report.setCategory(request.getCategory());
         report.setReportType(request.getReportType());
-        report.setRequestedBy(request.getRequestedBy());
+        report.setRequestedBy(requestedBy);
         report.setStatus(ReportStatus.PENDING);
         report.setCreatedAt(new Date()); // LEGACY: new Date() instead of Instant.now()
 
@@ -97,33 +97,30 @@ public class ReportService {
     }
 
     /**
-     * Get a report by ID.
+     * Get a report by ID. Empty when the report does not exist or belongs to another user.
      */
-    public Optional<Report> getReport(Long id) {
-        return reportRepository.findById(id);
+    public Optional<Report> getReport(Long id, String requestedBy) {
+        return reportRepository.findByIdAndRequestedBy(id, requestedBy);
     }
 
     /**
-     * List all reports for a user.
+     * List a user's reports, optionally narrowed to one status.
      */
-    public List<Report> getReportsByUser(String userId) {
+    public List<Report> getReportsByUser(String userId, ReportStatus status) {
+        if (status != null) {
+            return reportRepository.findByRequestedByAndStatusOrderByCreatedAtDesc(userId, status);
+        }
         return reportRepository.findByRequestedByOrderByCreatedAtDesc(userId);
     }
 
     /**
-     * List reports by status.
-     */
-    public List<Report> getReportsByStatus(ReportStatus status) {
-        return reportRepository.findByStatusOrderByCreatedAtAsc(status);
-    }
-
-    /**
-     * Delete a report and its generated file.
+     * Delete a user's report and its generated file. Returns false when the report
+     * does not exist or belongs to another user.
      * File deletion is deferred to afterCommit to avoid inconsistency on rollback.
      */
     @Transactional
-    public boolean deleteReport(Long id) {
-        Optional<Report> optReport = reportRepository.findById(id);
+    public boolean deleteReport(Long id, String requestedBy) {
+        Optional<Report> optReport = reportRepository.findByIdAndRequestedBy(id, requestedBy);
         if (!optReport.isPresent()) {
             return false;
         }
