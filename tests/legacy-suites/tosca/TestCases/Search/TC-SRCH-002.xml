@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-SRCH-002" name="Filter search results by type" folder="Search" application="Client App">
+  <TestCaseDesign sheetRef="Search" instance="DocumentType" />
+  <TestSteps>
+    <TestStep id="TC-SRCH-002-STEP-01" actionMode="Input" value="{XL[Search.Query]}" moduleRef="MODULE-SEARCH" attribute="SearchInput" />
+    <TestStep id="TC-SRCH-002-STEP-02" actionMode="Verify" value="Search" moduleRef="MODULE-SEARCH" attribute="SearchHeading" />
+    <TestStep id="TC-SRCH-002-STEP-03" actionMode="Verify" value="{XL[Search.Result]}" moduleRef="MODULE-SEARCH" attribute="SearchResult" />
+  </TestSteps>
+</TestCase>

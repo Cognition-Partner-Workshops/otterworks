@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-AUTH-004" name="Validate matching registration passwords" folder="Authentication" application="Client App">
+  <TestCaseDesign sheetRef="Authentication" instance="PasswordMismatch" />
+  <TestSteps>
+    <TestStep id="TC-AUTH-004-STEP-01" actionMode="Input" value="{XL[Authentication.Name]}" moduleRef="MODULE-AUTH" attribute="RegisterName" />
+    <TestStep id="TC-AUTH-004-STEP-02" actionMode="Input" value="{XL[Authentication.Email]}" moduleRef="MODULE-AUTH" attribute="RegisterEmail" />
+    <TestStep id="TC-AUTH-004-STEP-03" actionMode="Input" value="{XL[Authentication.Password]}" moduleRef="MODULE-AUTH" attribute="RegisterPassword" />
+    <TestStep id="TC-AUTH-004-STEP-04" actionMode="Input" value="{XL[Authentication.Confirmation]}" moduleRef="MODULE-AUTH" attribute="ConfirmPassword" />
+    <TestStep id="TC-AUTH-004-STEP-05" actionMode="Click" value="" moduleRef="MODULE-AUTH" attribute="CreateAccountButton" />
+    <TestStep id="TC-AUTH-004-STEP-06" actionMode="Verify" value="Passwords do not match" moduleRef="MODULE-AUTH" attribute="ConfirmPassword" />
+  </TestSteps>
+</TestCase>

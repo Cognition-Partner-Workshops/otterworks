@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-SRCH-003" name="Show an empty search result" folder="Search" application="Client App">
+  <TestCaseDesign sheetRef="Search" instance="NoResults" />
+  <TestSteps>
+    <TestStep id="TC-SRCH-003-STEP-01" actionMode="Input" value="{XL[Search.Query]}" moduleRef="MODULE-SEARCH" attribute="SearchInput" />
+    <TestStep id="TC-SRCH-003-STEP-02" actionMode="Verify" value="Search" moduleRef="MODULE-SEARCH" attribute="SearchHeading" />
+    <TestStep id="TC-SRCH-003-STEP-03" actionMode="Verify" value="0 results" moduleRef="MODULE-SEARCH" attribute="SearchResult" />
+  </TestSteps>
+</TestCase>

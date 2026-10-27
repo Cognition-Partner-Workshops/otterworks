@@ -1,0 +1,5 @@
+TestCaseId,Instance,Email,Password,Name,InvalidEmail,Confirmation
+TC-AUTH-001,ValidSignIn,alex.morgan@example.test,DemoPass123!,,,
+TC-AUTH-002,InvalidEmail,alex.morgan@example.test,DemoPass123!,,not-an-address,
+TC-AUTH-003,RequiredName,alex.new@example.test,DemoPass123!,,,
+TC-AUTH-004,PasswordMismatch,jordan.lee@example.test,DemoPass123!,Jordan Lee,,DifferentPass123!

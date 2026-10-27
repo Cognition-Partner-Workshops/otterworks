@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-TPL-001" name="View the template collection" folder="Templates" application="Client App">
+  <TestCaseDesign sheetRef="Templates" instance="TemplateCollection" />
+  <TestSteps>
+    <TestStep id="TC-TPL-001-STEP-01" actionMode="Verify" value="Templates" moduleRef="MODULE-TEMPLATES" attribute="TemplatesHeading" />
+    <TestStep id="TC-TPL-001-STEP-02" actionMode="Verify" value="Project brief" moduleRef="MODULE-TEMPLATES" attribute="ProjectBriefCard" />
+  </TestSteps>
+</TestCase>

@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-TPL-002" name="Filter templates by name" folder="Templates" application="Client App">
+  <TestCaseDesign sheetRef="Templates" instance="TemplateFilter" />
+  <TestSteps>
+    <TestStep id="TC-TPL-002-STEP-01" actionMode="Input" value="{XL[Templates.Query]}" moduleRef="MODULE-TEMPLATES" attribute="TemplateFilter" />
+    <TestStep id="TC-TPL-002-STEP-02" actionMode="Verify" value="{XL[Templates.Result]}" moduleRef="MODULE-TEMPLATES" attribute="ProjectBriefCard" />
+  </TestSteps>
+</TestCase>

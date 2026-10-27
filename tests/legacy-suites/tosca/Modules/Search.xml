@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Module id="MODULE-SEARCH" name="Search" application="Client App" technology="HTML">
+  <ModuleAttributes>
+    <ModuleAttribute id="MA-SEARCH-001" name="SearchHeading">
+      <Identification>
+        <Property name="Tag" value="h1" />
+        <Property name="ClassName" value="text-2xl font-bold text-gray-900" />
+        <Property name="InnerText" value="Search" />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-SEARCH-002" name="SearchInput">
+      <Identification>
+        <Property name="Tag" value="input" />
+        <Property name="ClassName" value="w-full pl-12 pr-20 py-3 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent" />
+        <Property name="Type" value="text" />
+        <Property name="Placeholder" value="Search files, documents, and folders..." />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-SEARCH-003" name="SearchResult">
+      <Identification>
+        <Property name="Tag" value="a" />
+        <Property name="ClassName" value="flex items-start gap-4 px-4 py-3 rounded-lg hover:bg-gray-50 transition" />
+        <Property name="InnerText" value="Quarterly Planning" />
+        <Property name="Href" value="/documents/doc-101" />
+      </Identification>
+    </ModuleAttribute>
+  </ModuleAttributes>
+</Module>

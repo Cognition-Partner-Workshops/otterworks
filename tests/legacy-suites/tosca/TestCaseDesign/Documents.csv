@@ -1,0 +1,5 @@
+TestCaseId,Instance,Title,ExpectedDocumentCount,Filter
+TC-DOC-001,DocumentList,Quarterly Planning,,
+TC-DOC-002,OpenDocument,Quarterly Planning,,
+TC-DOC-003,DashboardCount,,3,
+TC-DOC-004,FilterDocument,Quarterly Planning,,Planning

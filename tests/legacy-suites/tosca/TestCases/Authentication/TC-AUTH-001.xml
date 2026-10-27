@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-AUTH-001" name="Sign in with a valid account" folder="Authentication" application="Client App">
+  <TestCaseDesign sheetRef="Authentication" instance="ValidSignIn" />
+  <TestSteps>
+    <TestStep id="TC-AUTH-001-STEP-01" actionMode="Input" value="{XL[Authentication.Email]}" moduleRef="MODULE-AUTH" attribute="LoginEmail" />
+    <TestStep id="TC-AUTH-001-STEP-02" actionMode="Input" value="{XL[Authentication.Password]}" moduleRef="MODULE-AUTH" attribute="LoginPassword" />
+    <TestStep id="TC-AUTH-001-STEP-03" actionMode="Click" value="" moduleRef="MODULE-AUTH" attribute="SignInButton" />
+    <TestStep id="TC-AUTH-001-STEP-04" actionMode="Verify" value="Dashboard" moduleRef="MODULE-DASH" attribute="DashboardHeading" />
+  </TestSteps>
+</TestCase>

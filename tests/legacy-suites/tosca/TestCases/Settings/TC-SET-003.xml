@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-SET-003" name="Save profile details" folder="Settings" application="Client App">
+  <TestCaseDesign sheetRef="Settings" instance="SaveProfile" />
+  <TestSteps>
+    <TestStep id="TC-SET-003-STEP-01" actionMode="Input" value="{XL[Settings.UpdatedName]}" moduleRef="MODULE-SETTINGS" attribute="FullName" />
+    <TestStep id="TC-SET-003-STEP-02" actionMode="Click" value="" moduleRef="MODULE-SETTINGS" attribute="SaveChanges" />
+    <TestStep id="TC-SET-003-STEP-03" actionMode="Verify" value="{XL[Settings.UpdatedName]}" moduleRef="MODULE-SETTINGS" attribute="FullName" />
+  </TestSteps>
+</TestCase>

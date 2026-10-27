@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-SHARE-001" name="View a shared file" folder="Sharing" application="Client App">
+  <TestCaseDesign sheetRef="Sharing" instance="SharedFile" />
+  <TestSteps>
+    <TestStep id="TC-SHARE-001-STEP-01" actionMode="Verify" value="Shared with me" moduleRef="MODULE-SHARE" attribute="SharedHeading" />
+    <TestStep id="TC-SHARE-001-STEP-02" actionMode="Verify" value="{XL[Sharing.FileName]}" moduleRef="MODULE-SHARE" attribute="SharedFileLink" />
+  </TestSteps>
+</TestCase>

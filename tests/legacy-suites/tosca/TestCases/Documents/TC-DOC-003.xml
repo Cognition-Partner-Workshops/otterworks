@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-DOC-003" name="Verify the dashboard document count" folder="Documents" application="Client App">
+  <TestCaseDesign sheetRef="Documents" instance="DashboardCount" />
+  <TestSteps>
+    <TestStep id="TC-DOC-003-STEP-01" actionMode="Verify" value="Dashboard" moduleRef="MODULE-DASH" attribute="DashboardHeading" />
+    <TestStep id="TC-DOC-003-STEP-02" actionMode="Verify" value="{XL[Documents.ExpectedDocumentCount]}" moduleRef="MODULE-DASH" attribute="DocumentCount" />
+    <TestStep id="TC-DOC-003-STEP-03" actionMode="Verify" value="Documents" moduleRef="MODULE-DASH" attribute="DocumentsLabel" />
+  </TestSteps>
+</TestCase>
