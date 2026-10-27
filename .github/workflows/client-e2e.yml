@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - main
+      - 'qe/golden-migration-*'
     paths:
       - "frontend/client-app/**"
       - ".github/workflows/client-e2e.yml"
