@@ -260,6 +260,80 @@ async def test_create_document_via_jwt_hs384(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_create_document_via_jwt_hs512(client: AsyncClient):
+    """auth-service signs HS512 when JWT_SECRET is >= 64 bytes (deployed secrets are)."""
+    user_id = uuid.uuid4()
+    token = jwt.encode({"sub": str(user_id)}, TEST_JWT_SECRET, algorithm="HS512")
+    resp = await client.post(
+        "/api/v1/documents",
+        json={"title": "HS512 Doc", "parentId": None},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(user_id)
+
+
+@pytest.mark.asyncio
+async def test_list_documents_scoped_to_hs512_caller(client: AsyncClient, owner_id: uuid.UUID):
+    """An HS512 caller sees only their own documents, not every owner's."""
+    await client.post(
+        "/api/v1/documents/", json={"title": "Someone else", "owner_id": str(owner_id)}
+    )
+    caller = uuid.uuid4()
+    token = jwt.encode({"sub": str(caller)}, TEST_JWT_SECRET, algorithm="HS512")
+    resp = await client.get(
+        "/api/v1/documents", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_refresh_token_is_not_a_document_credential(client: AsyncClient):
+    """auth-service signs refresh tokens with the same key; only access tokens grant access."""
+    user_id = uuid.uuid4()
+    refresh = jwt.encode(
+        {"sub": str(user_id), "type": "refresh"}, TEST_JWT_SECRET, algorithm="HS512"
+    )
+    headers = {"Authorization": f"Bearer {refresh}"}
+
+    create = await client.post("/api/v1/documents/", json={"title": "Via refresh"}, headers=headers)
+    listing = await client.get("/api/v1/documents/", headers=headers)
+
+    assert create.status_code == 401
+    assert listing.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_access_typed_token_still_accepted(client: AsyncClient):
+    user_id = uuid.uuid4()
+    access = jwt.encode(
+        {"sub": str(user_id), "type": "access"}, TEST_JWT_SECRET, algorithm="HS512"
+    )
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Via access"},
+        headers={"Authorization": f"Bearer {access}"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(user_id)
+
+
+@pytest.mark.asyncio
+async def test_unverifiable_token_does_not_list_every_owner(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    """A token this service cannot verify (e.g. one the gateway accepted under
+    JWT_PEER_SECRET) is rejected rather than treated as anonymous."""
+    await client.post("/api/v1/documents/", json={"title": "Private", "owner_id": str(owner_id)})
+    peer_secret = "peer-deployment-secret-" + "x" * 41  # noqa: S105
+    peer = jwt.encode({"sub": str(uuid.uuid4())}, peer_secret, algorithm="HS512")
+    resp = await client.get("/api/v1/documents/", headers={"Authorization": f"Bearer {peer}"})
+
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
     """X-User-Id header alone is not trusted (prevents identity spoofing)."""
     user_id = uuid.uuid4()
