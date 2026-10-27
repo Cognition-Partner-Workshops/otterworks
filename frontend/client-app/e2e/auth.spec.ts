@@ -1,5 +1,8 @@
-import { test, expect } from "@playwright/test";
+import { expect, signedOut, test } from "./fixtures/fixtures";
 import { uniqueEmail, registerUser, loginUser, expectDashboard, clearAuth } from "./fixtures/test-helpers";
+
+// the login/register forms are tested as an anonymous visitor
+test.use({ storageState: signedOut });
 
 test.describe("Authentication", () => {
   test.describe("Registration", () => {

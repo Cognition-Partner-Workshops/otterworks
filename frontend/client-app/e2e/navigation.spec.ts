@@ -1,21 +1,25 @@
-import { test, expect } from "@playwright/test";
+import { expect, signedOut, test } from "./fixtures/fixtures";
 
 test.describe("Navigation & Routing", () => {
-  test("landing page loads at /", async ({ page }) => {
-    await page.goto("/");
-    await expect(
-      page.getByRole("heading", { name: "OtterWorks", exact: true })
-    ).toBeVisible();
-  });
+  test.describe("as an anonymous visitor", () => {
+    test.use({ storageState: signedOut });
 
-  test("/login loads the login page", async ({ page }) => {
-    await page.goto("/login");
-    await expect(page.getByText("Sign in to your account")).toBeVisible();
-  });
+    test("landing page loads at /", async ({ page }) => {
+      await page.goto("/");
+      await expect(
+        page.getByRole("heading", { name: "OtterWorks", exact: true })
+      ).toBeVisible();
+    });
 
-  test("/register loads the registration page", async ({ page }) => {
-    await page.goto("/register");
-    await expect(page.getByText("Create your account")).toBeVisible();
+    test("/login loads the login page", async ({ page }) => {
+      await page.goto("/login");
+      await expect(page.getByText("Sign in to your account")).toBeVisible();
+    });
+
+    test("/register loads the registration page", async ({ page }) => {
+      await page.goto("/register");
+      await expect(page.getByText("Create your account")).toBeVisible();
+    });
   });
 
   test("/dashboard loads or redirects to login", async ({ page }) => {
