@@ -155,9 +155,78 @@ class AssignmentIntegrationTest extends AbstractPostgresIntegrationTest {
         mockMvc.perform(post("/api/v1/assignments/cutover/double-holders/{ref}/confirmations",
                                 another.employmentLegacyRef())
                         .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(new ConfirmationRequest("  ", openAssignment.startDate()))))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("CONFIRMATION_FIELDS_REQUIRED"));
+        mockMvc.perform(post("/api/v1/assignments/cutover/double-holders/{ref}/confirmations",
+                                another.employmentLegacyRef())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(json(new ConfirmationRequest(
                                 openAssignment.legacyRef(), openAssignment.startDate().minusDays(1)))))
                 .andExpect(status().isUnprocessableEntity());
+
+        String employeeNo = "GF05-REHIRE-" + UUID.randomUUID().toString()
+                .replace("-", "").substring(0, 12).toUpperCase(Locale.ROOT);
+        Long personId = jdbc.queryForObject(
+                "INSERT INTO person (employee_no, first_name, last_name) VALUES (?, ?, ?) RETURNING id",
+                Long.class, employeeNo, "Rehire", "Holder");
+        Long previousEmploymentId = jdbc.queryForObject(
+                "INSERT INTO employment (person_id, grade, status, hire_date, leave_date) "
+                        + "VALUES (?, ?, 'LEFT', ?, ?) RETURNING id",
+                Long.class, personId, profile.minGrade(), TODAY.minusYears(3), TODAY.minusDays(3));
+        Long currentEmploymentId = jdbc.queryForObject(
+                "INSERT INTO employment (person_id, grade, status, hire_date) "
+                        + "VALUES (?, ?, 'ACTIVE', ?) RETURNING id",
+                Long.class, personId, profile.minGrade(), TODAY.minusDays(2));
+        Long previousVehicleId = jdbc.queryForObject(
+                "INSERT INTO vehicle (registration, list_price, co2_g_km, fuel, status) "
+                        + "VALUES (?, ?, ?, ?, 'AVAILABLE') RETURNING id",
+                Long.class, "GF05-REHIRE-OLD-" + UUID.randomUUID(), BigDecimal.ONE, 0, "D");
+        Long currentVehicleId = jdbc.queryForObject(
+                "INSERT INTO vehicle (registration, list_price, co2_g_km, fuel, status) "
+                        + "VALUES (?, ?, ?, ?, 'AVAILABLE') RETURNING id",
+                Long.class, "GF05-REHIRE-CURRENT-" + UUID.randomUUID(), BigDecimal.ONE, 0, "D");
+        Long previousAssignmentId = jdbc.queryForObject(
+                "INSERT INTO assignment (employment_id, vehicle_id, start_date, reason) "
+                        + "VALUES (?, ?, ?, 'NC') RETURNING id",
+                Long.class, previousEmploymentId, previousVehicleId, TODAY.minusYears(3));
+        jdbc.update(
+                "INSERT INTO assignment (employment_id, vehicle_id, start_date, reason) "
+                        + "VALUES (?, ?, ?, 'RP')",
+                currentEmploymentId, currentVehicleId, TODAY.minusDays(2));
+        jdbc.update(
+                "INSERT INTO double_holder_confirmation "
+                        + "(employment_legacy_ref, assignment_legacy_ref, confirmed_return_date, confirmed_at) "
+                        + "VALUES (?, ?, ?, ?)",
+                "PERSON:" + employeeNo,
+                "A000000001",
+                TODAY,
+                Instant.parse("2026-10-27T12:00:00Z"));
+
+        List<DoubleHolderView> serviceHolders = doubleHolders().stream()
+                .filter(holder -> holder.source().equals("SERVICE")
+                        && holder.employeeNo().equals(employeeNo))
+                .toList();
+        assertEquals(1, serviceHolders.size());
+        DoubleHolderView rehireHolder = serviceHolders.get(0);
+        assertEquals("PERSON:" + employeeNo, rehireHolder.employmentLegacyRef());
+        assertEquals(2, rehireHolder.assignments().size());
+
+        mockMvc.perform(post("/api/v1/assignments/cutover/double-holders/{ref}/confirmations",
+                                rehireHolder.employmentLegacyRef())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json(new ConfirmationRequest("A000000001", TODAY))))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.code").value("RETURN_REQUIRED"))
+                .andExpect(jsonPath("$.message").value("record the return in the returns context"));
+        assertEquals(1, doubleHolders().stream()
+                .filter(holder -> holder.source().equals("SERVICE")
+                        && holder.employeeNo().equals(employeeNo))
+                .count());
+
+        jdbc.update("UPDATE assignment SET end_date = ? WHERE id = ?", TODAY, previousAssignmentId);
+        assertTrue(doubleHolders().stream().noneMatch(holder ->
+                holder.source().equals("SERVICE") && holder.employeeNo().equals(employeeNo)));
     }
 
     @Test

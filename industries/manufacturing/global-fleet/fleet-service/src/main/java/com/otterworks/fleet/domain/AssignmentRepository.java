@@ -41,8 +41,7 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
     @Query("""
             select a.employment.person.id, a.employment.person.employeeNo,
-                   a.employment.legacyRef, a.id, a.legacyRef, a.vehicle.id,
-                   a.vehicle.registration, a.startDate, a.reason
+                   a.legacyRef, a.vehicle.id, a.startDate, a.reason
             from Assignment a
             where a.endDate is null
             order by a.employment.person.employeeNo, a.startDate desc, a.id desc

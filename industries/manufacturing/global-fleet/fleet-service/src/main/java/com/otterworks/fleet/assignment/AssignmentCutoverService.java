@@ -59,7 +59,10 @@ public class AssignmentCutoverService {
     public ConfirmationView confirm(
             String employmentLegacyRef,
             ConfirmationRequest request) {
-        if (request == null || request.assignmentLegacyRef() == null || request.returnDate() == null) {
+        if (request == null
+                || request.assignmentLegacyRef() == null
+                || request.assignmentLegacyRef().isBlank()
+                || request.returnDate() == null) {
             throw new AssignmentException("CONFIRMATION_FIELDS_REQUIRED");
         }
         DoubleHolderView holder = doubleHolders().stream()
@@ -67,6 +70,10 @@ public class AssignmentCutoverService {
                 .findFirst()
                 .orElseThrow(() -> new AssignmentException(
                         "DOUBLE_HOLDER_NOT_FOUND", "Unknown double holder", HttpStatus.NOT_FOUND));
+        if ("SERVICE".equals(holder.source())) {
+            throw new AssignmentException(
+                    "RETURN_REQUIRED", "record the return in the returns context");
+        }
         DoubleHolderAssignmentView assignment = holder.assignments().stream()
                 .filter(candidate -> Objects.equals(candidate.legacyRef(), request.assignmentLegacyRef()))
                 .findFirst()
@@ -146,23 +153,16 @@ public class AssignmentCutoverService {
                 continue;
             }
             Object[] first = rows.get(0);
-            String employmentRef = (String) first[2];
-            if (employmentRef == null || employmentRef.isBlank()) {
-                employmentRef = "DB:" + first[0];
-            }
-            if (confirmationRepository.existsById(employmentRef)) {
-                continue;
-            }
             List<DoubleHolderAssignmentView> assignments = rows.stream()
                     .map(row -> new DoubleHolderAssignmentView(
-                            (String) row[4],
-                            String.valueOf(row[5]),
-                            (LocalDate) row[7],
-                            (String) row[8]))
+                            (String) row[2],
+                            (String) row[3],
+                            (LocalDate) row[4],
+                            (String) row[5]))
                     .toList();
             holders.add(new DoubleHolderView(
                     (String) first[1],
-                    employmentRef,
+                    "PERSON:" + first[1],
                     "SERVICE",
                     assignments));
         }
