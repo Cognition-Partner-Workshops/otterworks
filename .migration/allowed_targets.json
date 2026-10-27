@@ -1,0 +1,12 @@
+{
+  "catalogs": ["ow_billing_migration"],
+  "legacy_sources": [
+    "/tmp/otterworks-legacy-mig1",
+    "/tmp/otterworks-legacy",
+    "etl/legacy-extra"
+  ],
+  "guard_mode": "block",
+  "bundle_targets": ["migration"],
+  "run_mode": "live",
+  "forbidden_bundle_targets": ["prod", "production"]
+}

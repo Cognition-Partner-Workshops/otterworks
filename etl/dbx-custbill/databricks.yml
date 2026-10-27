@@ -1,0 +1,16 @@
+bundle:
+  name: custbill
+
+include: ["resources/*.yml"]
+
+targets:
+  migration:
+    default: true
+    workspace:
+      host: https://dbc-8bc9474f-40ae.cloud.databricks.com
+
+variables:
+  warehouse_id:
+    default: "565cd2fd713738c4"
+  catalog:
+    default: ow_billing_migration
