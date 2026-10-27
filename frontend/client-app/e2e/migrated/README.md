@@ -2,16 +2,17 @@
 
 These tests use real local services, not intercepted network responses. Each test
 registers a unique API user, seeds the four source screenshot documents, verifies
-the API total, and initializes browser auth tokens. See [Documents parity](documents/PARITY.md)
-and [Authentication parity](authentication/PARITY.md); Authentication tests register a
-disposable user (or none) and need no backend beyond the stack below.
+the API total, and initializes browser auth tokens. See [Documents parity](documents/PARITY.md),
+[Authentication parity](authentication/PARITY.md), and [Search parity](search/PARITY.md).
+Authentication tests register a disposable user (or none) and need no backend beyond
+the stack below.
 
 ## Prerequisites
 
 Start from a fresh clone on this branch with Docker Engine/Compose v2, Node.js
 22.12+ (required by Vite 8), npm, and curl installed. Commands below assume Bash
-and start at the repository root. Ports 3000, 5432, 6379, 4566, and 8080–8083 must
-be available. No AWS credentials or cloud services are required.
+and start at the repository root. Ports 3000, 5432, 6379, 4566, 7700, 8080–8083,
+and 8087 must be available. No AWS credentials or cloud services are required.
 
 ## Build and start the real backend
 
@@ -28,6 +29,8 @@ do
 done
 docker pull mirror.gcr.io/localstack/localstack:3.8
 docker tag mirror.gcr.io/localstack/localstack:3.8 localstack/localstack:3.8
+docker pull mirror.gcr.io/getmeili/meilisearch:v1.6
+docker tag mirror.gcr.io/getmeili/meilisearch:v1.6 getmeili/meilisearch:v1.6
 ```
 
 The normal auth-service build hit Maven Central HTTP 429. This alternative image
@@ -41,21 +44,21 @@ docker build \
   -t otterworks-auth-service .
 
 docker compose -f docker-compose.infra.yml -f docker-compose.yml \
-  build document-service file-service api-gateway
+  build document-service file-service api-gateway search-service
 
 docker compose -f docker-compose.infra.yml -f docker-compose.yml \
-  up -d --no-build postgres redis localstack \
-  auth-service document-service file-service api-gateway
+  up -d --no-build postgres redis localstack meilisearch \
+  auth-service document-service file-service api-gateway search-service
 
 docker compose -f docker-compose.infra.yml -f docker-compose.yml ps
 ```
 
-Wait for all seven containers to be healthy before running tests. The gateway's
+Wait for all nine containers to be healthy before running tests. The gateway's
 health endpoint alone does not prove auth has finished its database migrations.
 Check the HTTP services explicitly (curl retries only on errors):
 
 ```bash
-for port in 8080 8081 8082 8083; do
+for port in 8080 8081 8082 8083 8087 7700; do
   curl --fail --silent --show-error --retry 30 --retry-all-errors \
     --retry-delay 2 "http://localhost:$port/health"
   printf '\n'
@@ -66,6 +69,14 @@ The documents list/editor uses `/api/v1/documents` and auth through the gateway.
 Dashboard statistics additionally require `/api/v1/files` and `/api/v1/files/activity`;
 file-service uses LocalStack for its AWS-backed storage. PostgreSQL and Redis are
 local Compose infrastructure. Do not replace these endpoints with mocks.
+
+Search requests go through `/api/v1/search` to `search-service`, which queries
+MeiliSearch. Indexing is asynchronous: document-service and file-service publish
+events to SNS `otterworks-events`, which delivers them to SQS
+`otterworks-search-events`. `scripts/localstack-init.sh` creates the topic, queue,
+and subscription and is mounted into LocalStack. The migrated `support/search.ts`
+polls the real search API until every seeded document and file is indexed before
+the browser test starts.
 
 ## Serve the client
 
@@ -92,6 +103,7 @@ curl --fail http://localhost:3000
 npm run test:e2e:migrated
 # One converted Tosca case:
 npm run test:e2e:migrated -- --grep '@TC-DOC-003'
+npm run test:e2e:migrated -- --grep '@TC-SRCH-001'
 # Verification used for this migration:
 npm run lint
 npx tsc --noEmit
