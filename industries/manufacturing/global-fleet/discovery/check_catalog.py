@@ -91,16 +91,20 @@ def check(catalog: dict, repo_root: Path) -> list[str]:
             )
 
     coverage_ids = {}
+    source_rules_by_app = {}
     for app, relative_path in RULE_FILES.items():
         document = load_json(relative_path, str(relative_path))
         ids = set()
+        source_rules = {}
         if isinstance(document, dict) and isinstance(document.get('rules'), list):
             for source_rule in document['rules']:
                 if isinstance(source_rule, dict) and isinstance(source_rule.get('id'), str):
                     ids.add(source_rule['id'])
+                    source_rules[source_rule['id']] = source_rule
         elif document is not None:
             error(str(relative_path), 'expected a rules list')
         coverage_ids[app] = ids
+        source_rules_by_app[app] = source_rules
 
     for app in ('mainframe', 'portal'):
         referenced_ids = set()
@@ -110,6 +114,37 @@ def check(catalog: dict, repo_root: Path) -> list[str]:
             app_data = rule.get(app)
             if not isinstance(app_data, dict):
                 continue
+
+            copied_rules = app_data.get('rules', [])
+            copied_rules_where = f'rules[{index}].{app}.rules'
+            if not isinstance(copied_rules, list):
+                error(copied_rules_where, 'expected a list')
+            else:
+                for copied_index, copied_rule in enumerate(copied_rules):
+                    copied_where = f'{copied_rules_where}[{copied_index}]'
+                    if not isinstance(copied_rule, dict):
+                        error(copied_where, 'expected an object')
+                        continue
+                    if 'id' not in copied_rule:
+                        error(copied_where, 'copied source rule must include an id')
+                        continue
+                    copied_id = copied_rule['id']
+                    if copied_id is None:
+                        continue
+                    if not isinstance(copied_id, str):
+                        error(copied_where, 'copied source rule id must be a string or null')
+                        continue
+                    source_rule = source_rules_by_app.get(app, {}).get(copied_id)
+                    if source_rule is None:
+                        error(copied_where, f'unknown copied source rule id {copied_id}')
+                        continue
+                    for field, value in copied_rule.items():
+                        if field not in source_rule or source_rule[field] != value:
+                            error(
+                                copied_where,
+                                f'copied source rule {copied_id} field {field} does not match source',
+                            )
+
             rule_ids = app_data.get('rule_ids', [])
             if not isinstance(rule_ids, list):
                 error(f'rules[{index}].{app}.rule_ids', 'expected a list')

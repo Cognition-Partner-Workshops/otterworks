@@ -56,6 +56,22 @@ class CatalogCheckerTests(unittest.TestCase):
         catalog['rules'][0]['mainframe']['rule_ids'].append('MF-R999')
         self.assert_error(catalog, 'unknown source rule id MF-R999')
 
+    def test_b_copied_source_rule_fields_match_source(self):
+        catalog = copy.deepcopy(self.catalog)
+        copied_rule = next(
+            copied
+            for rule in catalog['rules']
+            for app in ('mainframe', 'portal')
+            for copied in rule.get(app, {}).get('rules', [])
+            if copied.get('id') is not None and 'statement' in copied
+        )
+        copied_id = copied_rule['id']
+        copied_rule['statement'] += ' (mutated)'
+        self.assert_error(
+            catalog,
+            f'copied source rule {copied_id} field statement does not match source',
+        )
+
     def test_b_source_rule_id_cannot_repeat_within_one_catalog_rule(self):
         catalog = copy.deepcopy(self.catalog)
         rule_ids = catalog['rules'][0]['mainframe']['rule_ids']
