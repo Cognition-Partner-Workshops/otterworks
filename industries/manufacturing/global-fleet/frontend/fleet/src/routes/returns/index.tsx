@@ -7,12 +7,16 @@ function message(cause: unknown, fallback: string) {
   return cause instanceof Error ? cause.message : fallback
 }
 
-function lookupKey(value: string): ReturnKey {
+type SearchBy = 'plate' | 'vehicleId'
+
+function lookupKey(searchBy: SearchBy, value: string): ReturnKey | null {
   const trimmed = value.trim()
-  return /^\d+$/.test(trimmed) ? { vehicleId: Number(trimmed) } : { plate: trimmed }
+  if (searchBy === 'plate') return { plate: trimmed }
+  return /^\d+$/.test(trimmed) ? { vehicleId: Number(trimmed) } : null
 }
 
 export default function Returns() {
+  const [searchBy, setSearchBy] = useState<SearchBy>('plate')
   const [search, setSearch] = useState('')
   const [candidate, setCandidate] = useState<ReturnCandidate | null>(null)
   const [returnDate, setReturnDate] = useState('')
@@ -27,13 +31,14 @@ export default function Returns() {
     setError(null)
     setDone(null)
     setCandidate(null)
-    if (!search.trim()) {
-      setError('Enter a plate or vehicle id')
+    const key = search.trim() ? lookupKey(searchBy, search) : null
+    if (!key) {
+      setError(searchBy === 'plate' ? 'Enter a plate' : 'Enter a vehicle id (digits only)')
       return
     }
     setBusy(true)
     try {
-      setCandidate(await returnsApi.lookup(lookupKey(search)))
+      setCandidate(await returnsApi.lookup(key))
       setReturnDate('')
       setOdometer('')
       setNote('')
@@ -71,7 +76,14 @@ export default function Returns() {
       <h1>Returns</h1>
       <form aria-label="Find car" onSubmit={(event) => { void find(event) }}>
         <label>
-          Plate or vehicle id
+          Find by
+          <select value={searchBy} onChange={(event) => { setSearchBy(event.target.value as SearchBy) }}>
+            <option value="plate">Plate</option>
+            <option value="vehicleId">Vehicle id</option>
+          </select>
+        </label>
+        <label>
+          {searchBy === 'plate' ? 'Plate' : 'Vehicle id'}
           <input value={search} onChange={(event) => { setSearch(event.target.value) }} />
         </label>
         <button type="submit" disabled={busy}>Find car</button>

@@ -46,8 +46,9 @@ function renderAt(path: string) {
   )
 }
 
-async function findCar(value: string) {
-  fireEvent.change(screen.getByLabelText('Plate or vehicle id'), { target: { value } })
+function findCar(value: string, by: 'plate' | 'vehicleId' = 'plate') {
+  fireEvent.change(screen.getByLabelText('Find by'), { target: { value: by } })
+  fireEvent.change(screen.getByLabelText(by === 'plate' ? 'Plate' : 'Vehicle id'), { target: { value } })
   fireEvent.click(screen.getByRole('button', { name: 'Find car' }))
 }
 
@@ -70,7 +71,7 @@ describe('returns page', () => {
     vi.stubGlobal('fetch', fetchMock)
     renderAt('/returns')
 
-    await findCar(' ab12 cde ')
+    findCar(' ab12 cde ')
     expect(await screen.findByText(/Assigned to E123 \(Ada Lovelace\) since 2026-03-01/)).toBeInTheDocument()
     expect(screen.getByText('Last recorded odometer: 1200 miles')).toBeInTheDocument()
     expect(String(fetchMock.mock.calls[0][0])).toBe('/api/v1/returns/lookup?plate=ab12%20cde')
@@ -94,10 +95,30 @@ describe('returns page', () => {
     vi.stubGlobal('fetch', fetchMock)
     renderAt('/returns')
 
-    await findCar('7')
+    findCar('7', 'vehicleId')
     expect(await screen.findByText('No previous odometer reading')).toBeInTheDocument()
     expect(screen.getByLabelText('Odometer (km)')).toBeInTheDocument()
     expect(String((fetchMock.mock.calls[0] as unknown[])[0])).toBe('/api/v1/returns/lookup?vehicleId=7')
+  })
+
+  it('sends an all-digit plate as a plate, not a vehicle id', async () => {
+    const fetchMock = vi.fn(() => json(200, candidate))
+    vi.stubGlobal('fetch', fetchMock)
+    renderAt('/returns')
+
+    findCar('1234')
+    expect(await screen.findByRole('form', { name: 'Return car' })).toBeInTheDocument()
+    expect(String((fetchMock.mock.calls[0] as unknown[])[0])).toBe('/api/v1/returns/lookup?plate=1234')
+  })
+
+  it('rejects a non-numeric vehicle id without calling the service', () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    renderAt('/returns')
+
+    findCar('AB12', 'vehicleId')
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter a vehicle id (digits only)')
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('shows the already-returned error from the service', async () => {
@@ -107,7 +128,7 @@ describe('returns page', () => {
     })))
     renderAt('/returns')
 
-    await findCar('AB12 CDE')
+    findCar('AB12 CDE')
     expect(await screen.findByRole('alert')).toHaveTextContent('already returned')
     expect(screen.queryByRole('form', { name: 'Return car' })).not.toBeInTheDocument()
   })
@@ -121,7 +142,7 @@ describe('returns page', () => {
       })))
     renderAt('/returns')
 
-    await findCar('AB12 CDE')
+    findCar('AB12 CDE')
     fireEvent.change(await screen.findByLabelText('Odometer (miles)'), { target: { value: '1100' } })
     // The input's min blocks this in a browser; submit directly to prove the service check is shown.
     fireEvent.submit(screen.getByRole('form', { name: 'Return car' }))
