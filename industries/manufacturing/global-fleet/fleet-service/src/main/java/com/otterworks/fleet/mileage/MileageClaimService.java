@@ -98,7 +98,7 @@ public class MileageClaimService {
             BigDecimal distance,
             String purpose) {
         int wholeDistance = validateDistance(distance);
-        if (purpose != null && purpose.length() > 255) {
+        if (purpose != null && purpose.codePointCount(0, purpose.length()) > 255) {
             throw new MileageException(MileageReason.PURPOSE_TOO_LONG);
         }
         LocalDate claimDate = journeyDate == null ? today() : journeyDate;
