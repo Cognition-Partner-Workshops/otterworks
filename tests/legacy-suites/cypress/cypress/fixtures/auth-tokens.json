@@ -1,0 +1,5 @@
+{
+  "accessToken": "header.eyJzdWIiOiJ1c2VyLTEyMyJ9.sig",
+  "refreshToken": "refresh-token",
+  "expiresAt": 1740000000
+}

@@ -1,0 +1,14 @@
+{
+  "id": "doc-101",
+  "title": "Quarterly Planning",
+  "content": "Review objectives, delivery dates, and ownership for the next quarter.",
+  "ownerId": "user-123",
+  "ownerName": "Alex Morgan",
+  "parentId": null,
+  "sharedWith": [],
+  "collaborators": [],
+  "tags": ["planning"],
+  "wordCount": 68,
+  "createdAt": "2025-02-14T09:00:00.000Z",
+  "updatedAt": "2025-02-18T10:30:00.000Z"
+}

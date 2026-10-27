@@ -1,0 +1,12 @@
+{
+  "name": "otterworks-client-cypress-suite",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:e2e": "cypress run",
+    "open": "cypress open"
+  },
+  "devDependencies": {
+    "cypress": "^13.17.0"
+  }
+}

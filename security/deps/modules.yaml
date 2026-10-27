@@ -108,3 +108,8 @@ exempt:
     reason: >
       Capacitor Android shell. Ships no server-side JVM dependencies and needs the
       Android SDK to resolve, which the build image does not carry.
+
+  - path: tests/legacy-suites/selenium
+    reason: >
+      Browser automation fixture for the admin UI. It is not a shipped application
+      module and does not have a production runtime dependency graph.

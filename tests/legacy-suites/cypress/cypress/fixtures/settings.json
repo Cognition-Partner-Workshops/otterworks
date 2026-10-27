@@ -1,0 +1,7 @@
+{
+  "notificationEmail": true,
+  "notificationInApp": true,
+  "notificationDesktop": false,
+  "theme": "light",
+  "language": "en"
+}
