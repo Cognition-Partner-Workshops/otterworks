@@ -61,22 +61,24 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 
 	proxy := httputil.NewSingleHostReverseProxy(target)
 
-	// Wrap the default director to forward authenticated user identity.
+	// Rewrite the outbound request to forward the authenticated user identity.
 	// The auth-service issues JWTs with the user ID in the standard "sub" claim
 	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
-	defaultDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
-		// Never forward a client-supplied X-User-ID: downstream services trust this
-		// header as the verified caller, so it is only ever set from the JWT claims.
-		req.Header.Del("X-User-ID")
-		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
+	// Downstream services trust X-User-ID as the verified caller, so a
+	// client-supplied value is always dropped and the header is only ever set
+	// from the JWT claims.
+	proxy.Director = nil
+	proxy.Rewrite = func(pr *httputil.ProxyRequest) {
+		pr.SetURL(target)
+		pr.SetXForwarded()
+		pr.Out.Header.Del("X-User-ID")
+		if claims := middleware.GetJWTClaims(pr.In.Context()); claims != nil {
 			userID := claims.Subject
 			if userID == "" {
 				userID = claims.UserID
 			}
 			if userID != "" {
-				req.Header.Set("X-User-ID", userID)
+				pr.Out.Header.Set("X-User-ID", userID)
 			}
 		}
 	}
