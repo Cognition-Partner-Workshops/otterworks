@@ -1,5 +1,15 @@
 import type { Page, TestInfo } from "@playwright/test";
 
+// --- Sharing folder ---
+export type MockShare = {
+  id: string;
+  file_id: string;
+  shared_with: string;
+  permission: "viewer" | "editor";
+  shared_by: string;
+  created_at: string;
+};
+
 export type MockDocument = {
   id: string;
   title: string;
@@ -20,9 +30,13 @@ export type MockFile = {
   name: string;
   mime_type: string;
   owner_id: string;
-  folder_id: string;
+  folder_id: string | null;
   tags: string[];
   size: number;
+  size_bytes?: number;
+  s3_key?: string;
+  version?: number;
+  is_trashed?: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -38,6 +52,12 @@ export type Workspace = {
   };
   documents: MockDocument[];
   files?: MockFile[];
+  shares?: MockShare[];
+  starred?: {
+    itemId: string;
+    itemType: "file" | "folder" | "document";
+    starredAt: string;
+  }[];
   settings?: MockSettings;
 };
 
@@ -48,7 +68,6 @@ export type MockSettings = {
   notificationDesktop: boolean;
   theme: string;
   language: string;
->>>>>>> refs/remotes/origin/pr/2251
 };
 
 type MockAccount = Workspace["user"];
@@ -201,6 +220,41 @@ export async function mockOtterWorksApi(
       return;
     }
 
+    // --- Sharing folder ---
+    // handlers::list_shared_files: share scan order, deduplication, no sorting.
+    if (method === "GET" && path === "/api/v1/files/shared") {
+      const ids = [...new Set((workspace.shares ?? [])
+        .filter((share) => share.shared_with === workspace.user.id)
+        .map((share) => share.file_id))];
+      const files = ids.flatMap((id) => (workspace.files ?? [])
+        .filter((file) => file.id === id && !file.is_trashed));
+      const pageNumber = Math.max(1, Number(searchParams.get("page") ?? 1));
+      const size = Math.min(100, Number(searchParams.get("page_size") ?? 50));
+      await route.fulfill({ json: {
+        files: files.slice((pageNumber - 1) * size, pageNumber * size),
+        total: files.length, page: pageNumber, page_size: size,
+      } });
+      return;
+    }
+
+    const fileMatch = path.match(/^\/api\/v1\/files\/([^/]+)(\/download)?$/);
+    if (method === "GET" && fileMatch && workspace.files) {
+      const file = workspace.files.find((candidate) => candidate.id === fileMatch[1]);
+      if (!file) {
+        await route.fulfill({ status: 404, json: {
+          error: "file_not_found", message: `File not found: ${fileMatch[1]}`,
+        } });
+      } else if (fileMatch[2]) {
+        await route.fulfill({ json: {
+          url: `${new URL(request.url()).origin}/sharing-preview.pdf`, expires_in_secs: 3600,
+        } });
+      } else {
+        await route.fulfill({ json: { ...file,
+          shared_with: (workspace.shares ?? []).filter((share) => share.file_id === file.id),
+        } });
+      }
+      return;
+    }
     if (method === "GET" && path === "/api/v1/auth/profile") {
       const userId = subjectOf(request.headers()["authorization"]);
       const account = accounts.find((candidate) => candidate.id === userId);
@@ -403,10 +457,10 @@ export async function mockOtterWorksApi(
       } & (
         | { type: "document" }
         | {
-            type: "file";
-            mime_type: string;
-            folder_id: string;
-            size: number;
+      type: "file";
+      mime_type: string;
+      folder_id: string | null;
+      size: number;
           }
       );
       const documents: SearchRecord[] = workspace.documents

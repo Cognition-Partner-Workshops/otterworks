@@ -25,6 +25,13 @@ export const test = base.extend<{
         }, mockAccessToken(toscaData.workspace.user.id));
       }
 
+      // --- Sharing folder ---
+      await page.addInitScript(({ userId, starred }) => {
+        localStorage.setItem("otter_starred_items", JSON.stringify(
+          Object.fromEntries(starred.map((entry) => [`${userId}:${entry.itemId}`, entry])),
+        ));
+      }, { userId: toscaData.workspace.user.id, starred: toscaData.workspace.starred ?? [] });
+
       const attachUnmockedApiCalls = await mockOtterWorksApi(
         page,
         toscaData.workspace,
