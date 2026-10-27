@@ -19,17 +19,17 @@ class PersonEmployeeNumberTest extends AbstractPostgresIntegrationTest {
     @Test
     void personEmployeeNumberIsUnique() {
         long personId = jdbc.queryForObject(
-                "INSERT INTO person (employee_no, name) VALUES (?, ?) RETURNING id",
-                Long.class, "UNIQUE-EMP", "Test Employee");
+                "INSERT INTO person (employee_no, first_name, last_name) VALUES (?, ?, ?) RETURNING id",
+                Long.class, "UNIQUE-EMP", "Test", "Employee");
 
         assertThrows(DataIntegrityViolationException.class, () -> jdbc.update(
-                "INSERT INTO person (employee_no, name) VALUES (?, ?)",
-                "UNIQUE-EMP", "Duplicate Employee"));
+                "INSERT INTO person (employee_no, first_name, last_name) VALUES (?, ?, ?)",
+                "UNIQUE-EMP", "Duplicate", "Employee"));
 
         jdbc.update(
                 "INSERT INTO employment (person_id, grade, status, hire_date, leave_date) "
                         + "VALUES (?, ?, ?, ?, ?)",
-                personId, 7, "FORMER", LocalDate.of(2019, 1, 1), LocalDate.of(2022, 1, 1));
+                personId, 7, "LEFT", LocalDate.of(2019, 1, 1), LocalDate.of(2022, 1, 1));
         jdbc.update(
                 "INSERT INTO employment (person_id, grade, status, hire_date) VALUES (?, ?, ?, ?)",
                 personId, 8, "ACTIVE", LocalDate.of(2024, 1, 1));

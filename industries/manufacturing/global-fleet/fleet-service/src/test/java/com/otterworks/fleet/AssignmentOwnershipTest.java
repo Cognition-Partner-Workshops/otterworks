@@ -25,8 +25,8 @@ class AssignmentOwnershipTest extends AbstractPostgresIntegrationTest {
     @Test
     void GF12_assignmentAndClaimRequireOwner() throws Exception {
         long personId = jdbc.queryForObject(
-                "INSERT INTO person (employee_no, name) VALUES (?, ?) RETURNING id",
-                Long.class, "GF12-EMP", "Test Employee");
+                "INSERT INTO person (employee_no, first_name, last_name) VALUES (?, ?, ?) RETURNING id",
+                Long.class, "GF12-EMP", "Test", "Employee");
         long employmentId = jdbc.queryForObject(
                 "INSERT INTO employment (person_id, grade, status, hire_date) VALUES (?, ?, ?, ?) RETURNING id",
                 Long.class, personId, 7, "ACTIVE", LocalDate.of(2024, 1, 1));
