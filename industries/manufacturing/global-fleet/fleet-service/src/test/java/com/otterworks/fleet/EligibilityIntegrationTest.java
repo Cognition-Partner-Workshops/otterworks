@@ -427,9 +427,21 @@ class EligibilityIntegrationTest extends AbstractPostgresIntegrationTest {
             Employment byReference = historyLoader.employmentByLegacyRef("MF:" + row.employeeDbkey()).orElseThrow();
             Employment onDate = eligibilityService.employmentOn(row.employeeNo(), row.claimDate()).orElseThrow();
             assertEquals(byReference.getId(), onDate.getId());
+            String status = switch (row.status()) {
+                case "A", "APPROVED" -> "APPROVED";
+                case "P", "SUBMITTED", "PENDING" -> "PENDING";
+                case "R", "REJECTED" -> "REJECTED";
+                default -> throw new IllegalArgumentException("Unsupported mileage status: " + row.status());
+            };
             jdbc.update(
-                    "INSERT INTO mileage_claim (employment_id, claim_date, distance, status) VALUES (?, ?, ?, ?)",
-                    byReference.getId(), row.claimDate(), row.miles(), row.status());
+                    "INSERT INTO mileage_claim "
+                            + "(employment_id, claim_date, distance, status, paid_period) VALUES (?, ?, ?, ?, ?)",
+                    byReference.getId(),
+                    row.claimDate(),
+                    row.miles(),
+                    status,
+                    java.time.YearMonth.from(row.claimDate())
+                            .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMM")));
         }
 
         assertEquals(1, assignmentCount(e1010398Left));

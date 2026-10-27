@@ -22,8 +22,15 @@ INSERT INTO de.assignment (employment_id, vehicle_id, start_date, end_date)
     JOIN legacy.vehicle lv ON lv.id = a.vehicle_id JOIN de.vehicle v ON v.registration = lv.plate ORDER BY a.id;
 INSERT INTO de.car_request (employment_id, requested_on, status)
     SELECT x.employment_id, r.requested_on, r.status FROM legacy.car_request r JOIN de_emp x ON x.legacy_id = r.employee_id ORDER BY r.id;
-INSERT INTO de.mileage_claim (employment_id, claim_date, distance, status)
-    SELECT x.employment_id, c.claim_date, c.km, c.status FROM legacy.mileage_claim c JOIN de_emp x ON x.legacy_id = c.employee_id ORDER BY c.id;
+INSERT INTO de.mileage_claim (employment_id, claim_date, distance, status, rate, amount, paid_period, purpose)
+    SELECT x.employment_id, c.claim_date, c.km,
+           CASE c.status WHEN 'SUBMITTED' THEN 'PENDING' ELSE c.status END,
+           r.mileage_rate, round(c.km * r.mileage_rate, 2),
+           to_char(c.claim_date, 'YYYYMM'), c.purpose
+    FROM legacy.mileage_claim c
+    JOIN de_emp x ON x.legacy_id = c.employee_id
+    JOIN legacy.fleet_rule r ON r.country = 'DE'
+    ORDER BY c.id;
 COMMIT;
 \endif
 
@@ -47,10 +54,21 @@ INSERT INTO uk.assignment (employment_id, vehicle_id, start_date, end_date, reas
     SELECT x.employment_id, v.id, a.start_date, a.end_date, a.reason
     FROM legacy_uk.assignment a JOIN uk_emp x ON x.dbkey = a.emp_dbkey
     JOIN legacy_uk.vehicle lv ON lv.vehid = a.vehid JOIN uk.vehicle v ON v.registration = lv.plate ORDER BY a.asgid;
-INSERT INTO uk.mileage_claim (employment_id, benefit_period_id, claim_date, distance, status)
-    SELECT x.employment_id, b.id, c.claim_date, c.miles, c.status
+INSERT INTO uk.mileage_claim (
+    employment_id, benefit_period_id, claim_date, distance, status,
+    rate, amount, paid_period, purpose)
+    SELECT x.employment_id, b.id, c.claim_date, c.miles,
+           CASE c.status WHEN 'A' THEN 'APPROVED'
+                         WHEN 'P' THEN 'PENDING'
+                         WHEN 'R' THEN 'REJECTED' END,
+           COALESCE(b.mileage_rate, legacy_period.mileage_rate),
+           round(c.miles * COALESCE(b.mileage_rate, legacy_period.mileage_rate), 2),
+           to_char(c.claim_date, 'YYYYMM'), c.purpose
     FROM legacy_uk.mileage_claim c JOIN uk_emp x ON x.dbkey = c.emp_dbkey
-    LEFT JOIN uk.benefit_period b ON b.period = to_char(c.claim_date, 'YYYYMM') ORDER BY c.clmid;
+    LEFT JOIN uk.benefit_period b ON b.period = to_char(c.claim_date, 'YYYYMM')
+    LEFT JOIN legacy_uk.benefit_period legacy_period
+        ON legacy_period.period = to_char(c.claim_date, 'YYYYMM')
+    ORDER BY c.clmid;
 COMMIT;
 \endif
 
