@@ -7,7 +7,7 @@ import {
   SHARED_CUSTOMER_STATE,
   storageStateFor,
 } from "./fixtures/accounts";
-import { seedBillingCatalogIfEmpty } from "./fixtures/billing";
+import { seedBillingCatalog } from "./fixtures/billing";
 
 // Re-register every run because the access JWT lives 3600s and the client never
 // refreshes; --no-deps/UI-mode reuse of a file older than 1h gives 401, clears
@@ -33,8 +33,8 @@ setup("register the shared signed-in customer", async ({ request, baseURL }) => 
   await writeFile(SHARED_CUSTOMER_META, JSON.stringify(account, null, 2));
 });
 
-setup("seed the billing catalog once if billing-service is empty", async ({
+setup("add billing fixture data without modifying existing rows", async ({
   request,
 }) => {
-  await seedBillingCatalogIfEmpty(request);
+  await seedBillingCatalog(request);
 });
