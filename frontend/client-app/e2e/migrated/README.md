@@ -2,7 +2,9 @@
 
 These tests use real local services, not intercepted network responses. Each test
 registers a unique API user, seeds the four source screenshot documents, verifies
-the API total, and initializes browser auth tokens. See [Documents parity](documents/PARITY.md).
+the API total, and initializes browser auth tokens. See [Documents parity](documents/PARITY.md)
+and [Authentication parity](authentication/PARITY.md); Authentication tests register a
+disposable user (or none) and need no backend beyond the stack below.
 
 ## Prerequisites
 
