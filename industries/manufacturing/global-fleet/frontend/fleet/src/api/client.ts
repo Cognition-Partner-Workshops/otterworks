@@ -217,7 +217,7 @@ export interface ConfirmationResponse {
 
 const apiBase = import.meta.env.VITE_API_BASE ?? ''
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = init
     ? await fetch(`${apiBase}${path}`, init)
     : await fetch(`${apiBase}${path}`)
