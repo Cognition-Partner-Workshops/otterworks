@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Module id="MODULE-DASH" name="Dashboard" application="Client App" technology="HTML">
+  <ModuleAttributes>
+    <ModuleAttribute id="MA-DASH-001" name="DashboardHeading">
+      <Identification>
+        <Property name="Tag" value="h1" />
+        <Property name="ClassName" value="text-2xl font-bold text-gray-900" />
+        <Property name="InnerText" value="Dashboard" />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-DASH-002" name="DocumentCount">
+      <Identification>
+        <Property name="Tag" value="p" />
+        <Property name="ClassName" value="text-2xl font-bold text-gray-900" />
+        <Property name="InnerText" value="4" />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-DASH-003" name="DocumentsLabel">
+      <Identification>
+        <Property name="Tag" value="p" />
+        <Property name="ClassName" value="text-xs text-gray-500" />
+        <Property name="InnerText" value="Documents" />
+      </Identification>
+    </ModuleAttribute>
+  </ModuleAttributes>
+</Module>

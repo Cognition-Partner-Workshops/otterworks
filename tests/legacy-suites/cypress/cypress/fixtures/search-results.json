@@ -1,0 +1,14 @@
+{
+  "results": [
+    {
+      "id": "doc-101",
+      "type": "document",
+      "title": "Quarterly Planning",
+      "content_snippet": "Review quarterly objectives and dates.",
+      "updated_at": "2025-02-18T10:30:00.000Z"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 20
+}

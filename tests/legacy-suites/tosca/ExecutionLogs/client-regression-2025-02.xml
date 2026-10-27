@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ExecutionLog runId="RUN-CLIENT-2025-02" startedAt="2025-02-18T10:00:00Z" application="Client App">
+  <Execution testCaseRef="TC-AUTH-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="15800">
+    <Screenshot path="Screenshots/sign-in.png" />
+    <StepLog>
+      <Step stepRef="TC-AUTH-001-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-AUTH-001-STEP-02" result="Passed" durationMs="960" actionMode="Input" />
+      <Step stepRef="TC-AUTH-001-STEP-03" result="Passed" durationMs="1090" actionMode="Click" />
+      <Step stepRef="TC-AUTH-001-STEP-04" result="Passed" durationMs="1220" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-AUTH-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="15800">
+    <Screenshot path="Screenshots/sign-in.png" />
+    <StepLog>
+      <Step stepRef="TC-AUTH-002-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-AUTH-002-STEP-02" result="Passed" durationMs="960" actionMode="Input" />
+      <Step stepRef="TC-AUTH-002-STEP-03" result="Passed" durationMs="1090" actionMode="Click" />
+      <Step stepRef="TC-AUTH-002-STEP-04" result="Passed" durationMs="1220" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-AUTH-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="17500">
+    <Screenshot path="Screenshots/register.png" />
+    <StepLog>
+      <Step stepRef="TC-AUTH-003-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-AUTH-003-STEP-02" result="Passed" durationMs="960" actionMode="Input" />
+      <Step stepRef="TC-AUTH-003-STEP-03" result="Passed" durationMs="1090" actionMode="Input" />
+      <Step stepRef="TC-AUTH-003-STEP-04" result="Passed" durationMs="1220" actionMode="Click" />
+      <Step stepRef="TC-AUTH-003-STEP-05" result="Passed" durationMs="1350" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-AUTH-004" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="19200">
+    <Screenshot path="Screenshots/register.png" />
+    <StepLog>
+      <Step stepRef="TC-AUTH-004-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-AUTH-004-STEP-02" result="Passed" durationMs="960" actionMode="Input" />
+      <Step stepRef="TC-AUTH-004-STEP-03" result="Passed" durationMs="1090" actionMode="Input" />
+      <Step stepRef="TC-AUTH-004-STEP-04" result="Passed" durationMs="1220" actionMode="Input" />
+      <Step stepRef="TC-AUTH-004-STEP-05" result="Passed" durationMs="1350" actionMode="Click" />
+      <Step stepRef="TC-AUTH-004-STEP-06" result="Passed" durationMs="1480" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-DOC-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400">
+    <Screenshot path="Screenshots/documents.png" />
+    <StepLog>
+      <Step stepRef="TC-DOC-001-STEP-01" result="Passed" durationMs="830" actionMode="Verify" />
+      <Step stepRef="TC-DOC-001-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-DOC-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400">
+    <Screenshot path="Screenshots/documents.png" />
+    <StepLog>
+      <Step stepRef="TC-DOC-002-STEP-01" result="Passed" durationMs="830" actionMode="Click" />
+      <Step stepRef="TC-DOC-002-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-DOC-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100">
+    <Screenshot path="Screenshots/dashboard.png" />
+    <StepLog>
+      <Step stepRef="TC-DOC-003-STEP-01" result="Passed" durationMs="830" actionMode="Verify" />
+      <Step stepRef="TC-DOC-003-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+      <Step stepRef="TC-DOC-003-STEP-03" result="Passed" durationMs="1090" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-DOC-004" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400">
+    <Screenshot path="Screenshots/documents.png" />
+    <StepLog>
+      <Step stepRef="TC-DOC-004-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-DOC-004-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-SRCH-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400">
+    <Screenshot path="Screenshots/search.png" />
+    <StepLog>
+      <Step stepRef="TC-SRCH-001-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-SRCH-001-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-SRCH-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100">
+    <Screenshot path="Screenshots/search.png" />
+    <StepLog>
+      <Step stepRef="TC-SRCH-002-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-SRCH-002-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+      <Step stepRef="TC-SRCH-002-STEP-03" result="Passed" durationMs="1090" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-SRCH-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100">
+    <Screenshot path="Screenshots/search.png" />
+    <StepLog>
+      <Step stepRef="TC-SRCH-003-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-SRCH-003-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+      <Step stepRef="TC-SRCH-003-STEP-03" result="Passed" durationMs="1090" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-SHARE-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400">
+    <Screenshot path="Screenshots/sharing.png" />
+    <StepLog>
+      <Step stepRef="TC-SHARE-001-STEP-01" result="Passed" durationMs="830" actionMode="Verify" />
+      <Step stepRef="TC-SHARE-001-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-SHARE-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100">
+    <Screenshot path="Screenshots/sharing.png" />
+    <StepLog>
+      <Step stepRef="TC-SHARE-002-STEP-01" result="Passed" durationMs="830" actionMode="Verify" />
+      <Step stepRef="TC-SHARE-002-STEP-02" result="Passed" durationMs="5004" actionMode="Wait" />
+      <Step stepRef="TC-SHARE-002-STEP-03" result="Passed" durationMs="1090" actionMode="Click" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-SHARE-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400">
+    <Screenshot path="Screenshots/starred.png" />
+    <StepLog>
+      <Step stepRef="TC-SHARE-003-STEP-01" result="Passed" durationMs="830" actionMode="Verify" />
+      <Step stepRef="TC-SHARE-003-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-SET-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100">
+    <Screenshot path="Screenshots/settings.png" />
+    <StepLog>
+      <Step stepRef="TC-SET-001-STEP-01" result="Passed" durationMs="830" actionMode="Verify" />
+      <Step stepRef="TC-SET-001-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+      <Step stepRef="TC-SET-001-STEP-03" result="Passed" durationMs="1090" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-SET-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100">
+    <Screenshot path="Screenshots/settings.png" />
+    <StepLog>
+      <Step stepRef="TC-SET-002-STEP-01" result="Passed" durationMs="830" actionMode="Verify" />
+      <Step stepRef="TC-SET-002-STEP-02" result="Passed" durationMs="960" actionMode="Click" />
+      <Step stepRef="TC-SET-002-STEP-03" result="Passed" durationMs="1090" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-SET-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100">
+    <Screenshot path="Screenshots/settings.png" />
+    <StepLog>
+      <Step stepRef="TC-SET-003-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-SET-003-STEP-02" result="Passed" durationMs="960" actionMode="Click" />
+      <Step stepRef="TC-SET-003-STEP-03" result="Passed" durationMs="1090" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+</ExecutionLog>

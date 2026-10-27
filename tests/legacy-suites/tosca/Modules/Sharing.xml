@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Module id="MODULE-SHARE" name="Sharing" application="Client App" technology="HTML">
+  <ModuleAttributes>
+    <ModuleAttribute id="MA-SHARE-001" name="SharedHeading">
+      <Identification>
+        <Property name="Tag" value="h1" />
+        <Property name="ClassName" value="text-2xl font-bold text-gray-900" />
+        <Property name="InnerText" value="Shared with me" />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-SHARE-002" name="SharedFileLink">
+      <Identification>
+        <Property name="Tag" value="a" />
+        <Property name="ClassName" value="flex flex-col" />
+        <Property name="InnerText" value="Roadmap.pdf" />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-SHARE-003" name="OpenSharedItem">
+      <Identification>
+        <Property name="ClassName" value="shared-item__6a93f2" />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-SHARE-004" name="StarredHeading">
+      <Identification>
+        <Property name="Tag" value="h1" />
+        <Property name="ClassName" value="text-2xl font-bold text-gray-900" />
+        <Property name="InnerText" value="Starred" />
+      </Identification>
+    </ModuleAttribute>
+  </ModuleAttributes>
+</Module>

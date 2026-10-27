@@ -1,0 +1,4 @@
+TestCaseId,Instance,Query,Result,Type
+TC-SRCH-001,TitleSearch,quarterly,Quarterly Planning,all
+TC-SRCH-002,DocumentType,release,Release Checklist,document
+TC-SRCH-003,NoResults,unmatchedquery,,all

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-TPL-003" name="Create a document from a template" folder="Templates" application="Client App">
+  <TestCaseDesign sheetRef="Templates" instance="CreateFromTemplate" />
+  <TestSteps>
+    <TestStep id="TC-TPL-003-STEP-01" actionMode="Click" value="{XL[Templates.TemplateName]}" moduleRef="MODULE-TEMPLATES" attribute="ProjectBriefCard" />
+    <TestStep id="TC-TPL-003-STEP-02" actionMode="Click" value="" moduleRef="MODULE-TEMPLATES" attribute="CreateFromTemplate" />
+    <TestStep id="TC-TPL-003-STEP-03" actionMode="Verify" value="Document created" moduleRef="MODULE-TEMPLATES" attribute="TemplatesHeading" />
+  </TestSteps>
+</TestCase>

@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-AUTH-003" name="Validate required registration fields" folder="Authentication" application="Client App">
+  <TestCaseDesign sheetRef="Authentication" instance="RequiredName" />
+  <TestSteps>
+    <TestStep id="TC-AUTH-003-STEP-01" actionMode="Input" value="{XL[Authentication.Name]}" moduleRef="MODULE-AUTH" attribute="RegisterName" />
+    <TestStep id="TC-AUTH-003-STEP-02" actionMode="Input" value="{XL[Authentication.Email]}" moduleRef="MODULE-AUTH" attribute="RegisterEmail" />
+    <TestStep id="TC-AUTH-003-STEP-03" actionMode="Input" value="{XL[Authentication.Password]}" moduleRef="MODULE-AUTH" attribute="RegisterPassword" />
+    <TestStep id="TC-AUTH-003-STEP-04" actionMode="Click" value="" moduleRef="MODULE-AUTH" attribute="CreateAccountButton" />
+    <TestStep id="TC-AUTH-003-STEP-05" actionMode="Verify" value="Name is required" moduleRef="MODULE-AUTH" attribute="RegisterName" />
+  </TestSteps>
+</TestCase>

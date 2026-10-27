@@ -1,0 +1,4 @@
+TestCaseId,Instance,TemplateName,Result,Query
+TC-TPL-001,TemplateCollection,Project brief,,
+TC-TPL-002,TemplateFilter,Project brief,Project brief,
+TC-TPL-003,CreateFromTemplate,Project brief,,

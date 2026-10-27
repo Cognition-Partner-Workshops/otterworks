@@ -1,0 +1,4 @@
+TestCaseId,Instance,Name,Email,UpdatedName,Preference
+TC-SET-001,Profile,Alex Morgan,alex.morgan@example.test,,
+TC-SET-002,Notifications,Email notifications,,,
+TC-SET-003,SaveProfile,Alex Morgan,alex.morgan@example.test,Casey Taylor,

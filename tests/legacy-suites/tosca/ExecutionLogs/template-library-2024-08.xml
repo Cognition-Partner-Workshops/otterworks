@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ExecutionLog runId="RUN-TEMPLATE-2024-08" startedAt="2024-08-12T09:30:00Z" application="Client App">
+  <Execution testCaseRef="TC-TPL-001" result="Passed" startedAt="2024-08-12T09:30:00Z" durationMs="12400">
+    <StepLog>
+      <Step stepRef="TC-TPL-001-STEP-01" result="Passed" durationMs="830" actionMode="Verify" />
+      <Step stepRef="TC-TPL-001-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-TPL-002" result="Passed" startedAt="2024-08-12T09:30:00Z" durationMs="12400">
+    <StepLog>
+      <Step stepRef="TC-TPL-002-STEP-01" result="Passed" durationMs="830" actionMode="Input" />
+      <Step stepRef="TC-TPL-002-STEP-02" result="Passed" durationMs="960" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+  <Execution testCaseRef="TC-TPL-003" result="Passed" startedAt="2024-08-12T09:30:00Z" durationMs="14100">
+    <StepLog>
+      <Step stepRef="TC-TPL-003-STEP-01" result="Passed" durationMs="830" actionMode="Click" />
+      <Step stepRef="TC-TPL-003-STEP-02" result="Passed" durationMs="960" actionMode="Click" />
+      <Step stepRef="TC-TPL-003-STEP-03" result="Passed" durationMs="1090" actionMode="Verify" />
+    </StepLog>
+  </Execution>
+</ExecutionLog>

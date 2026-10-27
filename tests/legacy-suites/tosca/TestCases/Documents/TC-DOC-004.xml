@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-DOC-004" name="Filter documents by title" folder="Documents" application="Client App">
+  <TestCaseDesign sheetRef="Documents" instance="FilterDocument" />
+  <TestSteps>
+    <TestStep id="TC-DOC-004-STEP-01" actionMode="Input" value="{XL[Documents.Filter]}" moduleRef="MODULE-DOCS" attribute="DocumentFilter" />
+    <TestStep id="TC-DOC-004-STEP-02" actionMode="Verify" value="{XL[Documents.Title]}" moduleRef="MODULE-DOCS" attribute="DocumentCard" />
+  </TestSteps>
+</TestCase>

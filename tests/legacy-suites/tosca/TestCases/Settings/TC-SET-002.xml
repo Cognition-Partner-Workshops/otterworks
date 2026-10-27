@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-SET-002" name="Update email notification preference" folder="Settings" application="Client App">
+  <TestCaseDesign sheetRef="Settings" instance="Notifications" />
+  <TestSteps>
+    <TestStep id="TC-SET-002-STEP-01" actionMode="Verify" value="Settings" moduleRef="MODULE-SETTINGS" attribute="SettingsHeading" />
+    <TestStep id="TC-SET-002-STEP-02" actionMode="Click" value="" moduleRef="MODULE-SETTINGS" attribute="EmailNotifications" />
+    <TestStep id="TC-SET-002-STEP-03" actionMode="Verify" value="Enabled" moduleRef="MODULE-SETTINGS" attribute="EmailNotifications" />
+  </TestSteps>
+</TestCase>

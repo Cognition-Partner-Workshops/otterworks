@@ -1,0 +1,4 @@
+TestCaseId,Instance,FileName,DocumentTitle,Action
+TC-SHARE-001,SharedFile,Roadmap.pdf,,
+TC-SHARE-002,OpenSharedFile,Roadmap.pdf,,
+TC-SHARE-003,StarredDocument,,Quarterly Planning,

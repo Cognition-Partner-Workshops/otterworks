@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ExecutionList id="EL-CLIENT-001" name="Client App Regression" application="Client App">
+  <ExecutionEntry testCaseRef="TC-AUTH-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="15800" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-AUTH-001" />
+  <ExecutionEntry testCaseRef="TC-AUTH-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="15800" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-AUTH-002" />
+  <ExecutionEntry testCaseRef="TC-AUTH-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="17500" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-AUTH-003" />
+  <ExecutionEntry testCaseRef="TC-AUTH-004" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="19200" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-AUTH-004" />
+  <ExecutionEntry testCaseRef="TC-DOC-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-DOC-001" />
+  <ExecutionEntry testCaseRef="TC-DOC-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-DOC-002" />
+  <ExecutionEntry testCaseRef="TC-DOC-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-DOC-003" />
+  <ExecutionEntry testCaseRef="TC-DOC-004" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-DOC-004" />
+  <ExecutionEntry testCaseRef="TC-SRCH-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-SRCH-001" />
+  <ExecutionEntry testCaseRef="TC-SRCH-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-SRCH-002" />
+  <ExecutionEntry testCaseRef="TC-SRCH-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-SRCH-003" />
+  <ExecutionEntry testCaseRef="TC-SHARE-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-SHARE-001" />
+  <ExecutionEntry testCaseRef="TC-SHARE-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-SHARE-002" />
+  <ExecutionEntry testCaseRef="TC-SHARE-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="12400" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-SHARE-003" />
+  <ExecutionEntry testCaseRef="TC-SET-001" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-SET-001" />
+  <ExecutionEntry testCaseRef="TC-SET-002" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-SET-002" />
+  <ExecutionEntry testCaseRef="TC-SET-003" result="Passed" startedAt="2025-02-18T10:00:00Z" durationMs="14100" logRef="../ExecutionLogs/client-regression-2025-02.xml#TC-SET-003" />
+  <ExecutionEntry testCaseRef="TC-TPL-001" result="Passed" startedAt="2024-08-12T09:30:00Z" durationMs="12400" logRef="../ExecutionLogs/template-library-2024-08.xml#TC-TPL-001" />
+  <ExecutionEntry testCaseRef="TC-TPL-002" result="Passed" startedAt="2024-08-12T09:30:00Z" durationMs="12400" logRef="../ExecutionLogs/template-library-2024-08.xml#TC-TPL-002" />
+  <ExecutionEntry testCaseRef="TC-TPL-003" result="Passed" startedAt="2024-08-12T09:30:00Z" durationMs="14100" logRef="../ExecutionLogs/template-library-2024-08.xml#TC-TPL-003" />
+</ExecutionList>

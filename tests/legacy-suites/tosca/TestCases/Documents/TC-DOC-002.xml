@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TestCase id="TC-DOC-002" name="Open a document" folder="Documents" application="Client App">
+  <TestCaseDesign sheetRef="Documents" instance="OpenDocument" />
+  <TestSteps>
+    <TestStep id="TC-DOC-002-STEP-01" actionMode="Click" value="{XL[Documents.Title]}" moduleRef="MODULE-DOCS" attribute="DocumentCard" />
+    <TestStep id="TC-DOC-002-STEP-02" actionMode="Verify" value="{XL[Documents.Title]}" moduleRef="MODULE-DOCS" attribute="DocumentTitle" />
+  </TestSteps>
+</TestCase>

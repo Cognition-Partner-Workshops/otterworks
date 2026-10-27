@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Module id="MODULE-TEMPLATES" name="Templates" application="Client App" technology="HTML">
+  <ModuleAttributes>
+    <ModuleAttribute id="MA-TEMPLATES-001" name="TemplatesHeading">
+      <Identification>
+        <Property name="Tag" value="h1" />
+        <Property name="ClassName" value="text-2xl font-bold text-gray-900" />
+        <Property name="InnerText" value="Templates" />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-TEMPLATES-002" name="TemplateFilter">
+      <Identification>
+        <Property name="Tag" value="input" />
+        <Property name="ClassName" value="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm" />
+        <Property name="Type" value="text" />
+        <Property name="Placeholder" value="Search templates..." />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-TEMPLATES-003" name="ProjectBriefCard">
+      <Identification>
+        <Property name="Tag" value="a" />
+        <Property name="ClassName" value="group relative flex flex-col rounded-xl border border-gray-200 bg-white hover:shadow-md transition overflow-hidden" />
+        <Property name="InnerText" value="Project brief" />
+      </Identification>
+    </ModuleAttribute>
+    <ModuleAttribute id="MA-TEMPLATES-004" name="CreateFromTemplate">
+      <Identification>
+        <Property name="Tag" value="button" />
+        <Property name="ClassName" value="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium" />
+        <Property name="InnerText" value="Use template" />
+        <Property name="Type" value="button" />
+      </Identification>
+    </ModuleAttribute>
+  </ModuleAttributes>
+</Module>
