@@ -75,7 +75,7 @@ export async function middleware(req: NextRequest): Promise<NextResponse> {
   // Every state-changing API call, login included, must originate from the
   // dashboard itself: a valid cookie alone is not proof the user meant it.
   if (pathname.startsWith("/api/")) {
-    const rejected = csrfRejection(req.method, req.headers);
+    const rejected = csrfRejection(req);
     if (rejected) {
       return NextResponse.json({ error: rejected.message }, { status: rejected.status });
     }

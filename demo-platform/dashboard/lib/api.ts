@@ -25,7 +25,7 @@ export function withSession(
     req: NextRequest,
     routeCtx: { params: Promise<Record<string, string>> },
   ) => {
-    const rejected = csrfRejection(req.method, req.headers);
+    const rejected = csrfRejection(req);
     if (rejected) return error(rejected.status, rejected.message);
 
     let actor: string;

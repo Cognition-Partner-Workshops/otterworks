@@ -6,7 +6,8 @@
 // and still attaches the cookie to a request a tenant page forges. Two
 // independent checks close that path:
 //
-//  1. The request must come from the dashboard's own origin. Browsers always
+//  1. The request must come from the dashboard's own origin, scheme included
+//     (an http:// page on the dashboard host is a different origin). Browsers always
 //     send `Sec-Fetch-Site` and/or `Origin` on a non-GET request, so one that
 //     carries neither (and no `Referer`) is a non-browser client such as
 //     `demo-platform/scripts/tenant.sh`, which the cookie model cannot be
@@ -22,6 +23,12 @@
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
+export interface CsrfRequest {
+  method: string;
+  headers: Headers;
+  url: string;
+}
+
 export interface CsrfRejection {
   status: 403 | 415;
   message: string;
@@ -31,12 +38,36 @@ export function isStateChanging(method: string): boolean {
   return !SAFE_METHODS.has(method.toUpperCase());
 }
 
-function hostOf(value: string): string | null {
+function originOf(value: string): string | null {
   try {
-    return new URL(value).host.toLowerCase();
+    const { origin } = new URL(value);
+    return origin === "null" ? null : origin.toLowerCase();
   } catch {
     return null;
   }
+}
+
+function firstHeader(headers: Headers, name: string): string | undefined {
+  return headers.get(name)?.split(",")[0]?.trim().toLowerCase() || undefined;
+}
+
+// The origin this request was addressed to, as the browser saw it: behind the
+// ingress that is X-Forwarded-Proto/Host, in `next dev` it is the request URL.
+function ownOrigin(req: CsrfRequest): string | null {
+  let url: URL;
+  try {
+    url = new URL(req.url);
+  } catch {
+    return null;
+  }
+  const proto =
+    firstHeader(req.headers, "x-forwarded-proto") ??
+    url.protocol.replace(/:$/, "");
+  const host =
+    firstHeader(req.headers, "x-forwarded-host") ??
+    firstHeader(req.headers, "host") ??
+    url.host.toLowerCase();
+  return host ? `${proto}://${host}` : null;
 }
 
 function mediaType(contentType: string | null): string {
@@ -47,22 +78,20 @@ function mediaType(contentType: string | null): string {
  * Returns why a state-changing request must be refused, or null when it may
  * proceed. Safe methods always pass.
  */
-export function csrfRejection(method: string, headers: Headers): CsrfRejection | null {
-  if (!isStateChanging(method)) return null;
+export function csrfRejection(req: CsrfRequest): CsrfRejection | null {
+  const { headers } = req;
+  if (!isStateChanging(req.method)) return null;
 
   const fetchSite = headers.get("sec-fetch-site");
   if (fetchSite !== null && fetchSite !== "same-origin") {
     return { status: 403, message: "cross-site request refused" };
   }
 
-  const ownHost = (headers.get("x-forwarded-host") ?? headers.get("host") ?? "")
-    .split(",")[0]
-    ?.trim()
-    .toLowerCase();
   const source = headers.get("origin") ?? headers.get("referer");
   if (source !== null) {
-    const sourceHost = hostOf(source);
-    if (!ownHost || sourceHost === null || sourceHost !== ownHost) {
+    const own = ownOrigin(req);
+    const sourceOrigin = originOf(source);
+    if (own === null || sourceOrigin === null || sourceOrigin !== own) {
       return { status: 403, message: "cross-origin request refused" };
     }
   }
