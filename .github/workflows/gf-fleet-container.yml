@@ -5,14 +5,14 @@ on:
     paths:
       - industries/manufacturing/global-fleet/fleet-service/**
       - industries/manufacturing/global-fleet/terraform/gcp-fleet/**
-      - frontend/fleet/**
+      - industries/manufacturing/global-fleet/frontend/fleet/**
       - .github/workflows/gf-fleet-container.yml
   push:
     branches: [integration/global-fleet]
     paths:
       - industries/manufacturing/global-fleet/fleet-service/**
       - industries/manufacturing/global-fleet/terraform/gcp-fleet/**
-      - frontend/fleet/**
+      - industries/manufacturing/global-fleet/frontend/fleet/**
   workflow_dispatch:
 
 permissions:
@@ -40,7 +40,7 @@ jobs:
           - image: fleet-service
             context: industries/manufacturing/global-fleet/fleet-service
           - image: fleet-web
-            context: frontend/fleet
+            context: industries/manufacturing/global-fleet/frontend/fleet
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Check for a Dockerfile
