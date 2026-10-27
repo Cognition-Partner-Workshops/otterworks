@@ -1,0 +1,6 @@
+axe-core 4.14.0 · Version/26.6.2 Safari
+/login · WCAG 2.1 A/AA
+button-name (critical) — 1 element(s)
+• .absolute
+color-contrast (serious) — 1 element(s)
+• .text-gray-300 — #d1d5db on #f9fafb = 1.41:1 (needs 4.5:1)

@@ -1,0 +1,14 @@
+axe-core 4.14.0 · Version/26.6.2 Safari
+/ · WCAG 2.1 A/AA
+color-contrast (serious) — 11 element(s)
+• .hover\:bg-accent-600 — #ffffff on #c9862b = 3.03:1 (needs 4.5:1)
+• .p-5.border.border-gray-300:nth-child(1) > .text-accent-600.uppercase.tracking-wider — #a96e1f on #ffffff = 4.25:1 (needs 4.5:1)
+• .p-5.border.border-gray-300:nth-child(2) > .text-accent-600.uppercase.tracking-wider — #a96e1f on #ffffff = 4.25:1 (needs 4.5:1)
+• .p-5.border.border-gray-300:nth-child(3) > .text-accent-600.uppercase.tracking-wider — #a96e1f on #ffffff = 4.25:1 (needs 4.5:1)
+• .p-5.border.border-gray-300:nth-child(4) > .text-accent-600.uppercase.tracking-wider — #a96e1f on #ffffff = 4.25:1 (needs 4.5:1)
+• .p-5.border.border-gray-300:nth-child(5) > .text-accent-600.uppercase.tracking-wider — #a96e1f on #ffffff = 4.25:1 (needs 4.5:1)
+• li:nth-child(1) > .text-gray-400.uppercase.tracking-wider — #9ca3af on #ffffff = 2.53:1 (needs 4.5:1)
+• li:nth-child(2) > .text-gray-400.uppercase.tracking-wider — #9ca3af on #ffffff = 2.53:1 (needs 4.5:1)
+• li:nth-child(3) > .text-gray-400.uppercase.tracking-wider — #9ca3af on #ffffff = 2.53:1 (needs 4.5:1)
+• li:nth-child(4) > .text-gray-400.uppercase.tracking-wider — #9ca3af on #ffffff = 2.53:1 (needs 4.5:1)
+• .py-6 > .text-gray-400.text-xs — #9ca3af on #ffffff = 2.53:1 (needs 4.5:1)
