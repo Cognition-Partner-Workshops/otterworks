@@ -32,6 +32,10 @@ ROUNDING_MODES = {
     'UNNECESSARY',
 }
 ONE_SIDED_APPS = {'gf-mainframe-idms', 'gf-jsf-portal'}
+ONE_SIDED_APP_SIDES = {
+    'gf-mainframe-idms': 'mainframe',
+    'gf-jsf-portal': 'portal',
+}
 TEST_LAYERS = {'fleet-service', 'fleet-web'}
 
 
@@ -180,6 +184,35 @@ def check(catalog: dict, repo_root: Path) -> list[str]:
                     f'{where}.one_sided_app',
                     'one-sided rules must name gf-mainframe-idms or gf-jsf-portal',
                 )
+            else:
+                source_app = ONE_SIDED_APP_SIDES[one_sided_app]
+                other_app = 'portal' if source_app == 'mainframe' else 'mainframe'
+                source_data = rule.get(source_app)
+                if not isinstance(source_data, dict):
+                    error(
+                        f'{where}.{source_app}',
+                        'one-sided source app must have non-empty rule_ids or sources',
+                    )
+                else:
+                    source_rule_ids = source_data.get('rule_ids', [])
+                    source_sources = source_data.get('sources', [])
+                    has_rule_ids = isinstance(source_rule_ids, list) and bool(source_rule_ids)
+                    has_sources = isinstance(source_sources, list) and bool(source_sources)
+                    if not (has_rule_ids or has_sources):
+                        error(
+                            f'{where}.{source_app}',
+                            'one-sided source app must have non-empty rule_ids or sources',
+                        )
+
+                other_data = rule.get(other_app)
+                other_rule_ids = (
+                    other_data.get('rule_ids', []) if isinstance(other_data, dict) else []
+                )
+                if not isinstance(other_rule_ids, list) or other_rule_ids:
+                    error(
+                        f'{where}.{other_app}.rule_ids',
+                        'non-selected app must have empty rule_ids for a one-sided rule',
+                    )
         elif isinstance(verdict, str) and verdict in {'agree', 'differ'} and one_sided_app is not None:
             error(f'{where}.one_sided_app', 'agree and differ rules must set this to null')
 

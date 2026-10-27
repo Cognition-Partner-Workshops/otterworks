@@ -85,6 +85,14 @@ class CatalogCheckerTests(unittest.TestCase):
         self.assert_error(catalog, 'one-sided rules must name')
 
         catalog = copy.deepcopy(self.catalog)
+        rule = next(rule for rule in catalog['rules'] if rule['id'] == 'GF08')
+        rule['one_sided_app'] = 'gf-jsf-portal'
+        self.assert_error(
+            catalog,
+            'rules[7].portal: one-sided source app must have non-empty rule_ids or sources',
+        )
+
+        catalog = copy.deepcopy(self.catalog)
         rule = next(rule for rule in catalog['rules'] if rule['verdict'] == 'differ')
         rule['one_sided_app'] = 'gf-mainframe-idms'
         self.assert_error(catalog, 'agree and differ rules must set this to null')
