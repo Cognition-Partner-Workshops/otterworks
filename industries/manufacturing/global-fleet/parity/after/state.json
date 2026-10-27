@@ -1,1 +1,218 @@
-{"target": "https://t-gf-after.demo.otterworks.app", "recorded_at": null, "verdicts": {}}
+{
+  "target": "https://t-gf-after.demo.otterworks.app",
+  "recorded_at": "2026-10-27T21:10:42Z",
+  "verdicts": {
+    "holdout/HP-202510": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202510; holdout has 110 employees"
+    },
+    "holdout/HP-202511": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202511; holdout has 109 employees"
+    },
+    "holdout/HP-202512": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202512; holdout has 107 employees"
+    },
+    "holdout/HP-202601": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202601; holdout has 109 employees"
+    },
+    "holdout/HP-202602": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202602; holdout has 101 employees"
+    },
+    "holdout/HP-202603": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202603; holdout has 105 employees"
+    },
+    "holdout/HP-202604": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202604; holdout has 110 employees"
+    },
+    "holdout/HP-202605": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202605; holdout has 108 employees"
+    },
+    "holdout/HP-202606": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202606; holdout has 102 employees"
+    },
+    "holdout/HP-202607": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202607; holdout has 106 employees"
+    },
+    "holdout/HP-202608": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202608; holdout has 106 employees"
+    },
+    "holdout/HP-202609": {
+      "verdict": "no-after-result",
+      "detail": "after tenant has no benefit results for 202609; holdout has 111 employees"
+    },
+    "holdout/corpus-and-reference-port": {
+      "verdict": "agree",
+      "detail": "check_pairs.py exit 0"
+    },
+    "jsf/assignment/assignment-no-employee": {
+      "verdict": "not-run",
+      "detail": "UI-only page state with no REST equivalent"
+    },
+    "jsf/assignment/assignment-unknown": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/assignment/assignment-with-car": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/assignment/assignment-without-car": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/employees/employees-id": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/employees/employees-name": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/employees/employees-no-match": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/employees/employees-no-query": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/mileage/mileage-calculate": {
+      "verdict": "differ",
+      "detail": "GET /mileage/quote?distance=17: amount: expected '5.18', got 5.19"
+    },
+    "jsf/mileage/mileage-find-employee": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/mileage/mileage-find-unknown": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/mileage/mileage-open": {
+      "verdict": "not-run",
+      "detail": "UI-only page state with no REST equivalent"
+    },
+    "jsf/mileage/mileage-submit": {
+      "verdict": "not-run",
+      "detail": "write case: not replayed, the after tenant is read-only for this harness"
+    },
+    "jsf/mileage/mileage-submit-invalid": {
+      "verdict": "not-run",
+      "detail": "validation lives on the write endpoint (POST /mileage/claims); write case: not replayed, the after tenant is read-only for this harness"
+    },
+    "jsf/request/request-already-has-car": {
+      "verdict": "differ",
+      "detail": "GET /eligibility/car-request?employeeNo=E1009106&step=EMPLOYEE: allowed: expected False, got True"
+    },
+    "jsf/request/request-back": {
+      "verdict": "not-run",
+      "detail": "UI-only page state with no REST equivalent (wizard navigation)"
+    },
+    "jsf/request/request-below-grade": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/request/request-eligible-employee": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/request/request-open": {
+      "verdict": "not-run",
+      "detail": "UI-only page state with no REST equivalent"
+    },
+    "jsf/request/request-pool-no-selection": {
+      "verdict": "not-run",
+      "detail": "UI-only page state with no REST equivalent (wizard validation before any draft is saved)"
+    },
+    "jsf/request/request-pool-select": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/request/request-redirect-assignment": {
+      "verdict": "not-run",
+      "detail": "depends on the state written by request-step-three-submit, which is not replayed"
+    },
+    "jsf/request/request-reselect-employee": {
+      "verdict": "not-run",
+      "detail": "UI-only page state with no REST equivalent (wizard navigation)"
+    },
+    "jsf/request/request-step-three-submit": {
+      "verdict": "not-run",
+      "detail": "write case: not replayed, the after tenant is read-only for this harness"
+    },
+    "jsf/request/request-unknown-employee": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/return/return-date-before-start": {
+      "verdict": "not-run",
+      "detail": "validation lives on the write endpoint (POST /returns); write case: not replayed, the after tenant is read-only for this harness"
+    },
+    "jsf/return/return-found-assigned-car": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/return/return-open": {
+      "verdict": "not-run",
+      "detail": "UI-only page state with no REST equivalent"
+    },
+    "jsf/return/return-submit": {
+      "verdict": "not-run",
+      "detail": "write case: not replayed, the after tenant is read-only for this harness"
+    },
+    "jsf/return/return-unassigned-pool-car": {
+      "verdict": "not-run",
+      "detail": "depends on the state written by request-step-three-submit, which is not replayed"
+    },
+    "jsf/return/return-unknown-plate": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/statement/statement-2026-08": {
+      "verdict": "differ",
+      "detail": "GET /benefit/employees/E1009100/statement?period=202608: HTTP 404, expected 200 (PERIOD_NOT_FOUND)"
+    },
+    "jsf/statement/statement-2026-09": {
+      "verdict": "differ",
+      "detail": "GET /benefit/employees/E1009100/statement?period=202609: HTTP 404, expected 200 (PERIOD_NOT_FOUND)"
+    },
+    "jsf/statement/statement-2026-10-new-car": {
+      "verdict": "not-run",
+      "detail": "depends on the state written by request-step-three-submit, which is not replayed"
+    },
+    "jsf/statement/statement-default-period": {
+      "verdict": "differ",
+      "detail": "GET /benefit/employees/E1009100/statement: period: expected '202609', got '202610'; GET /benefit/employees/E1009100/statement: commuteDistance: expected 33, got 0"
+    },
+    "jsf/statement/statement-no-parameters": {
+      "verdict": "not-run",
+      "detail": "UI-only page state with no REST equivalent"
+    },
+    "jsf/statement/statement-unknown-employee": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/static/health": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    },
+    "jsf/static/jsf-css-resource": {
+      "verdict": "not-run",
+      "detail": "JSF static resource; the React app ships its own assets"
+    },
+    "jsf/static/unmapped-404": {
+      "verdict": "agree",
+      "detail": "REST answer matches the JSF fact"
+    }
+  }
+}
