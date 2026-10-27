@@ -1,24 +1,19 @@
 """Tests for document API endpoints."""
 
-import os
 import uuid
 
 import jwt
 import pytest
 from httpx import AsyncClient
 
-TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
-os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
-
-
-def _make_jwt(user_id: str) -> str:
-    return jwt.encode({"user_id": user_id}, TEST_JWT_SECRET, algorithm="HS256")
+from tests.conftest import TEST_JWT_SECRET, _make_jwt
 
 
 @pytest.mark.asyncio
 async def test_create_document(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={
             "title": "Test Document",
             "content": "Hello world",
@@ -38,6 +33,7 @@ async def test_create_document(client: AsyncClient, owner_id: uuid.UUID):
 async def test_get_document(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Doc", "content": "Body", "owner_id": str(owner_id)},
     )
     doc_id = create_resp.json()["id"]
@@ -58,6 +54,7 @@ async def test_list_documents(client: AsyncClient, owner_id: uuid.UUID):
     for i in range(3):
         await client.post(
             "/api/v1/documents/",
+            headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
     resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
@@ -72,6 +69,7 @@ async def test_list_documents_pagination(client: AsyncClient, owner_id: uuid.UUI
     for i in range(5):
         await client.post(
             "/api/v1/documents/",
+            headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
     resp = await client.get(
@@ -87,6 +85,7 @@ async def test_list_documents_pagination(client: AsyncClient, owner_id: uuid.UUI
 async def test_update_document(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Original", "content": "Old body", "owner_id": str(owner_id)},
     )
     doc_id = create_resp.json()["id"]
@@ -106,6 +105,7 @@ async def test_update_document(client: AsyncClient, owner_id: uuid.UUID):
 async def test_patch_document(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Original", "content": "Body", "owner_id": str(owner_id)},
     )
     doc_id = create_resp.json()["id"]
@@ -125,6 +125,7 @@ async def test_patch_document(client: AsyncClient, owner_id: uuid.UUID):
 async def test_delete_document(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "To Delete", "content": "", "owner_id": str(owner_id)},
     )
     doc_id = create_resp.json()["id"]
@@ -140,6 +141,7 @@ async def test_delete_document(client: AsyncClient, owner_id: uuid.UUID):
 async def test_document_versions(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Versioned", "content": "v1", "owner_id": str(owner_id)},
     )
     doc_id = create_resp.json()["id"]
@@ -161,6 +163,7 @@ async def test_document_versions(client: AsyncClient, owner_id: uuid.UUID):
 async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Restore Me", "content": "Original", "owner_id": str(owner_id)},
     )
     doc_id = create_resp.json()["id"]
@@ -185,10 +188,12 @@ async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
 async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
     await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Python Guide", "content": "Learn Python", "owner_id": str(owner_id)},
     )
     await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Rust Guide", "content": "Learn Rust", "owner_id": str(owner_id)},
     )
 
@@ -203,6 +208,7 @@ async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
 async def test_export_document_html(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Export", "content": "Content here", "owner_id": str(owner_id)},
     )
     doc_id = create_resp.json()["id"]
@@ -218,6 +224,7 @@ async def test_export_document_html(client: AsyncClient, owner_id: uuid.UUID):
 async def test_export_document_markdown(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Export MD", "content": "MD content", "owner_id": str(owner_id)},
     )
     doc_id = create_resp.json()["id"]
@@ -243,6 +250,32 @@ async def test_create_document_via_jwt(client: AsyncClient):
     data = resp.json()
     assert data["title"] == "JWT Doc"
     assert data["owner_id"] == str(user_id)
+
+
+@pytest.mark.asyncio
+async def test_create_document_rejects_other_owner_id(client: AsyncClient):
+    """An authenticated caller cannot name another user as owner_id."""
+    token = _make_jwt(str(uuid.uuid4()))
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Planted", "owner_id": str(uuid.uuid4())},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_create_document_accepts_own_owner_id(client: AsyncClient):
+    """An authenticated caller naming itself as owner_id still succeeds."""
+    user_id = uuid.uuid4()
+    token = _make_jwt(str(user_id))
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "Mine", "owner_id": str(user_id)},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(user_id)
 
 
 @pytest.mark.asyncio
@@ -277,5 +310,16 @@ async def test_create_document_no_auth_returns_401(client: AsyncClient):
     resp = await client.post(
         "/api/v1/documents/",
         json={"title": "No Auth Doc"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_create_document_with_owner_id_without_auth_returns_401(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": "No Auth Owner Doc", "owner_id": str(owner_id)},
     )
     assert resp.status_code == 401

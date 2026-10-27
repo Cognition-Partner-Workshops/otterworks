@@ -5,11 +5,17 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import _make_jwt
+
 
 async def _create(client: AsyncClient, owner_id: uuid.UUID, title: str, **kwargs):
     payload = {"title": title, "content": "body", "owner_id": str(owner_id)}
     payload.update(kwargs)
-    resp = await client.post("/api/v1/documents/", json=payload)
+    resp = await client.post(
+        "/api/v1/documents/",
+        json=payload,
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
+    )
     assert resp.status_code == 201
     return resp.json()
 

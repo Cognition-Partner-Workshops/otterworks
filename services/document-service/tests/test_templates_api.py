@@ -5,6 +5,8 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import _make_jwt
+
 
 @pytest.mark.asyncio
 async def test_create_template(client: AsyncClient):
@@ -54,6 +56,7 @@ async def test_create_document_from_template(client: AsyncClient, owner_id: uuid
 
     resp = await client.post(
         f"/api/v1/documents/from-template/{template_id}",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "My New Doc", "owner_id": str(owner_id)},
     )
     assert resp.status_code == 201
@@ -67,6 +70,7 @@ async def test_create_document_from_template(client: AsyncClient, owner_id: uuid
 async def test_create_from_template_not_found(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.post(
         f"/api/v1/documents/from-template/{uuid.uuid4()}",
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
         json={"title": "Orphan", "owner_id": str(owner_id)},
     )
     assert resp.status_code == 404
