@@ -31,6 +31,18 @@ INSERT INTO de.mileage_claim (employment_id, claim_date, distance, status, rate,
     JOIN de_emp x ON x.legacy_id = c.employee_id
     JOIN legacy.fleet_rule r ON r.country = 'DE'
     ORDER BY c.id;
+UPDATE de.mileage_claim c
+SET vehicle_id = (
+    SELECT a.vehicle_id
+    FROM de.employment e
+    JOIN de.employment e2 ON e2.person_id = e.person_id
+    JOIN de.assignment a ON a.employment_id = e2.id
+    WHERE e.id = c.employment_id
+      AND c.claim_date >= a.start_date
+      AND (a.end_date IS NULL OR c.claim_date <= a.end_date)
+    ORDER BY a.start_date DESC, a.id DESC
+    LIMIT 1
+);
 COMMIT;
 \endif
 
@@ -70,6 +82,18 @@ INSERT INTO uk.mileage_claim (
     LEFT JOIN legacy_uk.benefit_period legacy_period
         ON legacy_period.period = to_char(c.claim_date, 'YYYYMM')
     ORDER BY c.clmid;
+UPDATE uk.mileage_claim c
+SET vehicle_id = (
+    SELECT a.vehicle_id
+    FROM uk.employment e
+    JOIN uk.employment e2 ON e2.person_id = e.person_id
+    JOIN uk.assignment a ON a.employment_id = e2.id
+    WHERE e.id = c.employment_id
+      AND c.claim_date >= a.start_date
+      AND (a.end_date IS NULL OR c.claim_date <= a.end_date)
+    ORDER BY a.start_date DESC, a.id DESC
+    LIMIT 1
+);
 COMMIT;
 \endif
 
