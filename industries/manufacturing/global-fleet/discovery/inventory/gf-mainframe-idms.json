@@ -1,0 +1,1812 @@
+{
+  "app_id": "gf-mainframe-idms",
+  "country": "Mainframe country (GBP, miles, plates 'AB12 CDE', employee ids E101xxxx (202 occurrences) plus E1009xxx (15 occurrences, status X, transferred to the Java country under the same number); GB inferred)",
+  "stack": "CA IDMS FLEETSCH v1 (3 areas, 5 records, 5 sets), subschemas FLEETSS1 (online, update) and FLEETSS2 (batch, retrieval), 5 ADS dialogs + MAPC maps + premap/response processes, COBOL FLEBEN01 with IDMS DML, JCL FLEBEN01/FLEUNLD with ICETOOL/FTP/IDMSBCF",
+  "sources_read": [
+    "industries/manufacturing/global-fleet/mainframe/README.md",
+    "industries/manufacturing/global-fleet/ESTATE.md",
+    "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl",
+    "industries/manufacturing/global-fleet/mainframe/schema/FLEETSS1.ddl",
+    "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMENU.dlg",
+    "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEEMPI.dlg",
+    "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEASGN.dlg",
+    "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMILE.dlg",
+    "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLERETN.dlg",
+    "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEWORK.rec",
+    "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMENUM.map",
+    "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map",
+    "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map",
+    "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map",
+    "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map",
+    "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads",
+    "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads",
+    "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads",
+    "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads",
+    "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads",
+    "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl",
+    "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl",
+    "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl",
+    "industries/manufacturing/global-fleet/mainframe/copybooks/FLEMPU.cpy",
+    "industries/manufacturing/global-fleet/mainframe/copybooks/FLVEHU.cpy",
+    "industries/manufacturing/global-fleet/mainframe/copybooks/FLASGU.cpy",
+    "industries/manufacturing/global-fleet/mainframe/copybooks/FLMCLU.cpy",
+    "industries/manufacturing/global-fleet/mainframe/copybooks/FLBPDU.cpy",
+    "industries/manufacturing/global-fleet/mainframe/copybooks/FLBOUT.cpy",
+    "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md",
+    "industries/manufacturing/global-fleet/mainframe/unload/UNLOAD.cnt",
+    "industries/manufacturing/global-fleet/mainframe/unload/EMPLOYEE.dat",
+    "industries/manufacturing/global-fleet/mainframe/unload/VEHICLE.dat",
+    "industries/manufacturing/global-fleet/mainframe/unload/ASSIGNMENT.dat",
+    "industries/manufacturing/global-fleet/mainframe/unload/MILECLM.dat",
+    "industries/manufacturing/global-fleet/mainframe/unload/BENPRD.dat",
+    "industries/manufacturing/global-fleet/mainframe/holdout/PAIRS.sha256",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202510/IN/ASSIGNMENT.dat",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202510/IN/BENPRD.dat",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202510/IN/EMPLOYEE.dat",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202510/IN/MILECLM.dat",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202510/IN/VEHICLE.dat",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202510/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202511/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202512/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202601/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202602/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202603/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202604/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202605/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202606/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202607/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202608/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/mainframe/holdout/HP-202609/OUT/BENRPT.txt",
+    "industries/manufacturing/global-fleet/source-browser/Dockerfile",
+    "industries/manufacturing/global-fleet/source-browser/nginx.conf"
+  ],
+  "screens": [
+    {
+      "id": "FLEMENU",
+      "kind": "ads-dialog",
+      "title": "COMPANY CAR MENU",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMENU.dlg:4-14",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:1-33"
+      ],
+      "fields": [
+        {
+          "name": "WK-OPTION",
+          "io": "in",
+          "bound_to": "FLEWORK.WK-OPTION",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMENUM.map:12-13"
+        },
+        {
+          "name": "WK-MSG",
+          "io": "out",
+          "bound_to": "FLEWORK.WK-MSG",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMENUM.map:14"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "PREMAP",
+          "effect": "clear WK-OPTION; default WK-MSG 'SELECT AN OPTION' if blank; display",
+          "navigates_to": "",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:2-8"
+        },
+        {
+          "trigger": "ENTER option 1",
+          "effect": "transfer control NOFINISH",
+          "navigates_to": "FLEEMPI",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:13-14"
+        },
+        {
+          "trigger": "ENTER option 2",
+          "effect": "transfer control NOFINISH",
+          "navigates_to": "FLEASGN",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:15-16"
+        },
+        {
+          "trigger": "ENTER option 3",
+          "effect": "transfer control NOFINISH",
+          "navigates_to": "FLEMILE",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:17-18"
+        },
+        {
+          "trigger": "ENTER option X",
+          "effect": "LEAVE ADS",
+          "navigates_to": "(exit ADS)",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:19-20"
+        },
+        {
+          "trigger": "ENTER other",
+          "effect": "'INVALID OPTION' redisplay",
+          "navigates_to": "FLEMENU",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:21-23"
+        },
+        {
+          "trigger": "PF3",
+          "effect": "LEAVE ADS",
+          "navigates_to": "(exit ADS)",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:25-28"
+        },
+        {
+          "trigger": "CLEAR",
+          "effect": "LEAVE ADS",
+          "navigates_to": "(exit ADS)",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:30-33"
+        }
+      ],
+      "reached_from": [
+        "FLEEMPI",
+        "FLEASGN",
+        "FLEMILE",
+        "FLERETN",
+        "(ADS entry; no task-code definition in repo)"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "FLEMENUM",
+      "kind": "ads-map",
+      "title": "COMPANY CAR FLEET menu map (options 1,2,3,X only)",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMENUM.map:1-15"
+      ],
+      "fields": [
+        {
+          "name": "WK-OPTION",
+          "io": "in",
+          "bound_to": "FLEWORK",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMENUM.map:12-13"
+        },
+        {
+          "name": "WK-MSG",
+          "io": "out",
+          "bound_to": "FLEWORK",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMENUM.map:14"
+        }
+      ],
+      "actions": [],
+      "reached_from": [
+        "FLEMENU"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "FLEEMPI",
+      "kind": "ads-dialog",
+      "title": "EMPLOYEE CAR INQUIRY",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEEMPI.dlg:4-13",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:1-64",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:1-33"
+      ],
+      "fields": [
+        {
+          "name": "WK-EMPID",
+          "io": "in",
+          "bound_to": "FLEWORK.WK-EMPID",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:8"
+        },
+        {
+          "name": "EM-FORN",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:10"
+        },
+        {
+          "name": "EM-SURN",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:11"
+        },
+        {
+          "name": "EM-GRD",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:13"
+        },
+        {
+          "name": "EM-CC",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:15"
+        },
+        {
+          "name": "EM-STAT",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:17"
+        },
+        {
+          "name": "VH-PLATE",
+          "io": "out",
+          "bound_to": "VEHICLE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:20"
+        },
+        {
+          "name": "VH-MAKE",
+          "io": "out",
+          "bound_to": "VEHICLE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:22"
+        },
+        {
+          "name": "VH-MODL",
+          "io": "out",
+          "bound_to": "VEHICLE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:23"
+        },
+        {
+          "name": "VH-LIST",
+          "io": "out",
+          "bound_to": "VEHICLE (ZZZ,ZZ9.99)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:25-26"
+        },
+        {
+          "name": "AS-STRT",
+          "io": "out",
+          "bound_to": "ASSIGNMENT",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:28"
+        },
+        {
+          "name": "WK-BENEFIT",
+          "io": "out",
+          "bound_to": "FLEWORK (ZZZ,ZZ9.99)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:30-31"
+        },
+        {
+          "name": "WK-MSG",
+          "io": "out",
+          "bound_to": "FLEWORK",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:32"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "PREMAP",
+          "effect": "OBTAIN CALC EMPLOYEE by WK-EMPID, skip duplicates while EM-STAT='T'; OBTAIN FIRST ASSIGNMENT WITHIN EMP-ASSIGN (latest AS-STRT, no AS-END check); OBTAIN OWNER WITHIN VEH-ASSIGN; CALL MONDAYS (OBTAIN CALC BENEFIT-PERIOD for current YYYYMM, WK-MDAYS); WK-BENEFIT ROUNDED = VH-LIST*VH-BPCT/1200 - EM-CNTRB floored at 0 (full month, not prorated). Messages: EMPLOYEE NOT ON FILE / EMPLOYEE HAS LEFT / NO COMPANY CAR HELD",
+          "navigates_to": "",
+          "records_read": [
+            "EMPLOYEE",
+            "ASSIGNMENT",
+            "VEHICLE",
+            "BENEFIT-PERIOD"
+          ],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:2-48"
+        },
+        {
+          "trigger": "ENTER",
+          "effect": "if WK-EMPID blank 'ENTER AN EMPLOYEE ID'; else EXECUTE NEXT FUNCTION (re-runs dialog premap with the new id)",
+          "navigates_to": "FLEEMPI",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:50-58"
+        },
+        {
+          "trigger": "PF3",
+          "effect": "clear WK-EMPID; transfer control NOFINISH",
+          "navigates_to": "FLEMENU",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:60-64"
+        }
+      ],
+      "reached_from": [
+        "FLEMENU"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "FLEEMPIM",
+      "kind": "ads-map",
+      "title": "EMPLOYEE CAR INQUIRY map",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:1-33"
+      ],
+      "fields": [],
+      "actions": [],
+      "reached_from": [
+        "FLEEMPI"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "FLEASGN",
+      "kind": "ads-dialog",
+      "title": "ASSIGN COMPANY CAR",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEASGN.dlg:4-13",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:1-77",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:1-23"
+      ],
+      "fields": [
+        {
+          "name": "WK-EMPID",
+          "io": "in",
+          "bound_to": "FLEWORK.WK-EMPID",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:8"
+        },
+        {
+          "name": "EM-FORN",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:9"
+        },
+        {
+          "name": "EM-SURN",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:10"
+        },
+        {
+          "name": "EM-GRD",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:12"
+        },
+        {
+          "name": "WK-VEHID",
+          "io": "in",
+          "bound_to": "FLEWORK.WK-VEHID",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:14"
+        },
+        {
+          "name": "VH-PLATE",
+          "io": "out",
+          "bound_to": "VEHICLE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:15"
+        },
+        {
+          "name": "VH-MAKE",
+          "io": "out",
+          "bound_to": "VEHICLE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:16"
+        },
+        {
+          "name": "AS-STRT",
+          "io": "in",
+          "bound_to": "ASSIGNMENT (EDIT 9(8) REQUIRED)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:18-19"
+        },
+        {
+          "name": "AS-RSN",
+          "io": "in",
+          "bound_to": "ASSIGNMENT (no edit; NC/RP/PL by literal only)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:20-21"
+        },
+        {
+          "name": "WK-MSG",
+          "io": "out",
+          "bound_to": "FLEWORK",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:22"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "PREMAP",
+          "effect": "blank WK-EMPID -> 'ENTER EMPLOYEE AND VEHICLE'; OBTAIN CALC EMPLOYEE, skip EM-STAT='T' duplicates ('EMPLOYEE HAS LEFT'); EM-GRD < 07 -> 'GRADE NOT ELIGIBLE FOR A COMPANY CAR' and clear WK-EMPID",
+          "navigates_to": "",
+          "records_read": [
+            "EMPLOYEE"
+          ],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:2-34"
+        },
+        {
+          "trigger": "ENTER",
+          "effect": "OBTAIN CALC EMPLOYEE (+T-duplicate skip, no not-found or grade re-check); OBTAIN CALC VEHICLE ('VEHICLE NOT ON FILE'); IF EMP-VEHICLE MEMBER -> 'VEHICLE ALREADY HELD'; AS-RSN default 'NC'; AS-ASGID='A'+WK-NEXT-ASG(9); AS-END=0; FIND CURRENT EMPLOYEE; STORE ASSIGNMENT (auto-connected into EMP-ASSIGN and VEH-ASSIGN); IF AS-RSN NE 'PL' CONNECT VEHICLE TO EMP-VEHICLE; COMMIT; 'CAR ASSIGNED'",
+          "navigates_to": "FLEASGN",
+          "records_read": [
+            "EMPLOYEE",
+            "VEHICLE"
+          ],
+          "records_written": [
+            "ASSIGNMENT",
+            "VEHICLE (EMP-VEHICLE connect)"
+          ],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:36-71"
+        },
+        {
+          "trigger": "PF3",
+          "effect": "clear WK-EMPID WK-VEHID; transfer control NOFINISH",
+          "navigates_to": "FLEMENU",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:73-77"
+        }
+      ],
+      "reached_from": [
+        "FLEMENU"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "FLEASGNM",
+      "kind": "ads-map",
+      "title": "ASSIGN COMPANY CAR map",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEASGNM.map:1-23"
+      ],
+      "fields": [],
+      "actions": [],
+      "reached_from": [
+        "FLEASGN"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "FLEMILE",
+      "kind": "ads-dialog",
+      "title": "BUSINESS MILEAGE CLAIM",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMILE.dlg:4-13",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:1-72",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:1-26"
+      ],
+      "fields": [
+        {
+          "name": "WK-EMPID",
+          "io": "in",
+          "bound_to": "FLEWORK.WK-EMPID",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:8"
+        },
+        {
+          "name": "EM-FORN",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:9"
+        },
+        {
+          "name": "EM-SURN",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:10"
+        },
+        {
+          "name": "MC-DATE",
+          "io": "in",
+          "bound_to": "MILEAGE-CLAIM (EDIT 9(8) REQUIRED)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:12-13"
+        },
+        {
+          "name": "MC-MILES",
+          "io": "in",
+          "bound_to": "MILEAGE-CLAIM (EDIT 9(5) REQUIRED)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:15-16"
+        },
+        {
+          "name": "MC-PURP",
+          "io": "in",
+          "bound_to": "MILEAGE-CLAIM (optional)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:18"
+        },
+        {
+          "name": "BP-MRATE",
+          "io": "out",
+          "bound_to": "BENEFIT-PERIOD (9.999)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:20-21"
+        },
+        {
+          "name": "WK-AMOUNT",
+          "io": "out",
+          "bound_to": "FLEWORK (ZZZ,ZZ9.99)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:23-24"
+        },
+        {
+          "name": "WK-MSG",
+          "io": "out",
+          "bound_to": "FLEWORK",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:25"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "PREMAP",
+          "effect": "WK-TODAY=CURRENT DATE; OBTAIN CALC BENEFIT-PERIOD for current YYYYMM; not found or BP-STAT NE 'O' -> 'NO OPEN CLAIM PERIOD'; if WK-EMPID set, OBTAIN CALC EMPLOYEE (+T skip)",
+          "navigates_to": "",
+          "records_read": [
+            "BENEFIT-PERIOD",
+            "EMPLOYEE"
+          ],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:2-23"
+        },
+        {
+          "trigger": "ENTER",
+          "effect": "OBTAIN CALC EMPLOYEE ('EMPLOYEE NOT ON FILE', +T skip); MC-DATE outside BP-STRT..BP-END -> 'JOURNEY DATE OUTSIDE OPEN PERIOD'; MC-MILES=0 -> 'MILES REQUIRED'; WK-AMOUNT ROUNDED = MC-MILES*BP-MRATE (display only, not stored); MC-VEHID = owner VEHICLE of FIRST ASSIGNMENT WITHIN EMP-ASSIGN (no AS-END check) else spaces; MC-CLMID='C'+WK-NEXT-CLM(9); MC-STAT='P'; FIND CURRENT EMPLOYEE; FIND CALC BENEFIT-PERIOD; STORE MILEAGE-CLAIM (EMP-CLAIM mandatory auto, PERIOD-CLAIM optional auto); COMMIT; 'CLAIM SUBMITTED FOR APPROVAL'",
+          "navigates_to": "FLEMILE",
+          "records_read": [
+            "EMPLOYEE",
+            "BENEFIT-PERIOD",
+            "ASSIGNMENT",
+            "VEHICLE"
+          ],
+          "records_written": [
+            "MILEAGE-CLAIM"
+          ],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:25-66"
+        },
+        {
+          "trigger": "PF3",
+          "effect": "clear WK-EMPID; transfer control NOFINISH",
+          "navigates_to": "FLEMENU",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:68-72"
+        }
+      ],
+      "reached_from": [
+        "FLEMENU"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "FLEMILEM",
+      "kind": "ads-map",
+      "title": "BUSINESS MILEAGE CLAIM map",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:1-26"
+      ],
+      "fields": [],
+      "actions": [],
+      "reached_from": [
+        "FLEMILE"
+      ],
+      "reachable": true
+    },
+    {
+      "id": "FLERETN",
+      "kind": "ads-dialog",
+      "title": "COMPANY CAR RETURN",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLERETN.dlg:4-13",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:1-56",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:1-21"
+      ],
+      "fields": [
+        {
+          "name": "WK-VEHID",
+          "io": "in",
+          "bound_to": "FLEWORK.WK-VEHID",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:8"
+        },
+        {
+          "name": "VH-PLATE",
+          "io": "out",
+          "bound_to": "VEHICLE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:9"
+        },
+        {
+          "name": "EM-EMPID",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:11"
+        },
+        {
+          "name": "EM-SURN",
+          "io": "out",
+          "bound_to": "EMPLOYEE",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:12"
+        },
+        {
+          "name": "AS-STRT",
+          "io": "out",
+          "bound_to": "ASSIGNMENT",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:14"
+        },
+        {
+          "name": "WK-RETDT",
+          "io": "in",
+          "bound_to": "FLEWORK (EDIT 9(8) REQUIRED)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:16-17"
+        },
+        {
+          "name": "WK-ODO",
+          "io": "in",
+          "bound_to": "FLEWORK (never processed)",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:19"
+        },
+        {
+          "name": "WK-MSG",
+          "io": "out",
+          "bound_to": "FLEWORK",
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:20"
+        }
+      ],
+      "actions": [
+        {
+          "trigger": "PREMAP",
+          "effect": "blank WK-VEHID -> 'ENTER VEHICLE ID'; OBTAIN CALC VEHICLE ('VEHICLE NOT ON FILE'); OBTAIN LAST ASSIGNMENT WITHIN VEH-ASSIGN ('VEHICLE NEVER ASSIGNED'); OBTAIN OWNER WITHIN EMP-ASSIGN",
+          "navigates_to": "",
+          "records_read": [
+            "VEHICLE",
+            "ASSIGNMENT",
+            "EMPLOYEE"
+          ],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:2-25"
+        },
+        {
+          "trigger": "ENTER",
+          "effect": "OBTAIN CALC VEHICLE; OBTAIN LAST ASSIGNMENT WITHIN VEH-ASSIGN; AS-END NE 0 -> 'ALREADY RETURNED'; WK-RETDT < AS-STRT -> 'RETURN DATE BEFORE START'; AS-END=WK-RETDT; MODIFY ASSIGNMENT; IF EMP-VEHICLE MEMBER DISCONNECT VEHICLE FROM EMP-VEHICLE; COMMIT; 'CAR RETURNED'",
+          "navigates_to": "FLERETN",
+          "records_read": [
+            "VEHICLE",
+            "ASSIGNMENT"
+          ],
+          "records_written": [
+            "ASSIGNMENT",
+            "VEHICLE (EMP-VEHICLE disconnect)"
+          ],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:27-50"
+        },
+        {
+          "trigger": "PF3",
+          "effect": "clear WK-VEHID; transfer control NOFINISH",
+          "navigates_to": "FLEMENU",
+          "records_read": [],
+          "records_written": [],
+          "source": "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:52-56"
+        }
+      ],
+      "reached_from": [],
+      "reachable": false
+    },
+    {
+      "id": "FLERETNM",
+      "kind": "ads-map",
+      "title": "COMPANY CAR RETURN map",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:1-21"
+      ],
+      "fields": [],
+      "actions": [],
+      "reached_from": [
+        "FLERETN"
+      ],
+      "reachable": false
+    }
+  ],
+  "records": [
+    {
+      "id": "EMPLOYEE",
+      "kind": "idms-record",
+      "location_mode_or_pk": "CALC USING (EM-EMPID) DUPLICATES ARE LAST; record id 1001",
+      "area_or_schema": "EMP-REGION / FLEETSCH v1",
+      "fields": [
+        {
+          "name": "EM-EMPID",
+          "type": "X(8)",
+          "note": "CALC key, duplicates allowed (unload has 2: E1010398, E1010524 each T then A = rehire)"
+        },
+        {
+          "name": "EM-SURN",
+          "type": "X(20)",
+          "note": ""
+        },
+        {
+          "name": "EM-FORN",
+          "type": "X(15)",
+          "note": ""
+        },
+        {
+          "name": "EM-GRD",
+          "type": "9(2)",
+          "note": "01-12; online grade >= 07 for assignment"
+        },
+        {
+          "name": "EM-CC",
+          "type": "X(6)",
+          "note": "cost centre"
+        },
+        {
+          "name": "EM-HIRE",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "EM-LEAV",
+          "type": "9(8)",
+          "note": "0 = none"
+        },
+        {
+          "name": "EM-STAT",
+          "type": "X(1)",
+          "note": "88 A active / T terminated / X transferred"
+        },
+        {
+          "name": "EM-CNTRB",
+          "type": "S9(5)V99 COMP-3",
+          "note": "monthly employee contribution"
+        },
+        {
+          "name": "EM-LOC",
+          "type": "X(4)",
+          "note": "never referenced by any process/map/batch"
+        },
+        {
+          "name": "FILLER",
+          "type": "X(10)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:18-37"
+      ]
+    },
+    {
+      "id": "VEHICLE",
+      "kind": "idms-record",
+      "location_mode_or_pk": "CALC USING (VH-VEHID) DUPLICATES ARE NOT ALLOWED; record id 1002",
+      "area_or_schema": "FLEET-REGION / FLEETSCH v1",
+      "fields": [
+        {
+          "name": "VH-VEHID",
+          "type": "X(8)",
+          "note": "CALC key"
+        },
+        {
+          "name": "VH-PLATE",
+          "type": "X(8)",
+          "note": "e.g. 'MA69 VAA'"
+        },
+        {
+          "name": "VH-MAKE",
+          "type": "X(12)",
+          "note": ""
+        },
+        {
+          "name": "VH-MODL",
+          "type": "X(16)",
+          "note": ""
+        },
+        {
+          "name": "VH-LIST",
+          "type": "S9(7)V99 COMP-3",
+          "note": "list price"
+        },
+        {
+          "name": "VH-CO2",
+          "type": "9(3)",
+          "note": "never referenced"
+        },
+        {
+          "name": "VH-BPCT",
+          "type": "9(2)V99",
+          "note": "benefit percentage"
+        },
+        {
+          "name": "VH-FUEL",
+          "type": "X(1)",
+          "note": "88 P/D/H/E; never referenced"
+        },
+        {
+          "name": "VH-REGD",
+          "type": "9(8)",
+          "note": "never referenced"
+        },
+        {
+          "name": "FILLER",
+          "type": "X(8)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:39-58"
+      ]
+    },
+    {
+      "id": "ASSIGNMENT",
+      "kind": "idms-record",
+      "location_mode_or_pk": "VIA EMP-ASSIGN SET; record id 1003; AS-ASGID not a key",
+      "area_or_schema": "FLEET-REGION / FLEETSCH v1",
+      "fields": [
+        {
+          "name": "AS-ASGID",
+          "type": "X(10)",
+          "note": "'A'+9-digit WK-NEXT-ASG counter; never read"
+        },
+        {
+          "name": "AS-STRT",
+          "type": "9(8)",
+          "note": "EMP-ASSIGN sort key DESC"
+        },
+        {
+          "name": "AS-END",
+          "type": "9(8)",
+          "note": "0 = open"
+        },
+        {
+          "name": "AS-RSN",
+          "type": "X(2)",
+          "note": "88 NC/RP/PL; PL skips EMP-VEHICLE connect"
+        },
+        {
+          "name": "FILLER",
+          "type": "X(4)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:60-72"
+      ]
+    },
+    {
+      "id": "MILEAGE-CLAIM",
+      "kind": "idms-record",
+      "location_mode_or_pk": "VIA EMP-CLAIM SET; record id 1004",
+      "area_or_schema": "CLAIM-REGION / FLEETSCH v1",
+      "fields": [
+        {
+          "name": "MC-CLMID",
+          "type": "X(10)",
+          "note": "'C'+9-digit WK-NEXT-CLM; never read"
+        },
+        {
+          "name": "MC-VEHID",
+          "type": "X(8)",
+          "note": "written by FLEMILE, never read"
+        },
+        {
+          "name": "MC-DATE",
+          "type": "9(8)",
+          "note": "EMP-CLAIM sort key ASC"
+        },
+        {
+          "name": "MC-MILES",
+          "type": "9(5)",
+          "note": ""
+        },
+        {
+          "name": "MC-STAT",
+          "type": "X(1)",
+          "note": "88 A/P/R; online writes only P"
+        },
+        {
+          "name": "MC-PURP",
+          "type": "X(10)",
+          "note": "written by FLEMILE, never read"
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:74-87"
+      ]
+    },
+    {
+      "id": "BENEFIT-PERIOD",
+      "kind": "idms-record",
+      "location_mode_or_pk": "CALC USING (BP-PERIOD) DUPLICATES ARE NOT ALLOWED; record id 1005",
+      "area_or_schema": "CLAIM-REGION / FLEETSCH v1",
+      "fields": [
+        {
+          "name": "BP-PERIOD",
+          "type": "9(6)",
+          "note": "YYYYMM CALC key"
+        },
+        {
+          "name": "BP-STRT",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "BP-END",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "BP-MRATE",
+          "type": "9V999",
+          "note": "pounds per mile; 0.445 in all 13 unload periods"
+        },
+        {
+          "name": "BP-STAT",
+          "type": "X(1)",
+          "note": "88 O open / C closed; only FLEMILE checks it"
+        },
+        {
+          "name": "BP-RUNDT",
+          "type": "9(8)",
+          "note": "never referenced"
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:89-102"
+      ]
+    },
+    {
+      "id": "FLEWORK",
+      "kind": "flat-file",
+      "location_mode_or_pk": "IDD work record shared by all 5 dialogs (no key)",
+      "area_or_schema": "ADS work record",
+      "fields": [
+        {
+          "name": "WK-OPTION",
+          "type": "X(1)",
+          "note": ""
+        },
+        {
+          "name": "WK-EMPID",
+          "type": "X(8)",
+          "note": ""
+        },
+        {
+          "name": "WK-VEHID",
+          "type": "X(8)",
+          "note": ""
+        },
+        {
+          "name": "WK-PLATE",
+          "type": "X(8)",
+          "note": "never referenced"
+        },
+        {
+          "name": "WK-TODAY",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "WK-PERIOD",
+          "type": "9(6)",
+          "note": ""
+        },
+        {
+          "name": "WK-MDAYS",
+          "type": "9(2)",
+          "note": "computed, never used"
+        },
+        {
+          "name": "WK-BENEFIT",
+          "type": "S9(7)V99 COMP-3",
+          "note": ""
+        },
+        {
+          "name": "WK-MILES",
+          "type": "9(5)",
+          "note": "never referenced"
+        },
+        {
+          "name": "WK-AMOUNT",
+          "type": "S9(7)V99 COMP-3",
+          "note": ""
+        },
+        {
+          "name": "WK-RETDT",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "WK-ODO",
+          "type": "9(6)",
+          "note": "on FLERETNM map only"
+        },
+        {
+          "name": "WK-ASGID",
+          "type": "X(10)",
+          "note": ""
+        },
+        {
+          "name": "WK-NEXT-ASG",
+          "type": "9(9)",
+          "note": "id counter"
+        },
+        {
+          "name": "WK-NEXT-CLM",
+          "type": "9(9)",
+          "note": "id counter"
+        },
+        {
+          "name": "WK-MSG",
+          "type": "X(60)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEWORK.rec:4-22"
+      ]
+    },
+    {
+      "id": "FLEMPU/EMPLOYEE.dat",
+      "kind": "flat-file",
+      "location_mode_or_pk": "LRECL 100 FB, ORDER DBKEY; EU-DBKEY distinguishes duplicate EU-EMPID",
+      "area_or_schema": "unload",
+      "fields": [
+        {
+          "name": "EU-DBKEY",
+          "type": "9(10)",
+          "note": ""
+        },
+        {
+          "name": "EU-EMPID..EU-LOC",
+          "type": "as EMPLOYEE",
+          "note": ""
+        },
+        {
+          "name": "FILLER",
+          "type": "X(14)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/copybooks/FLEMPU.cpy:1-16",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:7-22",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:33",
+        "industries/manufacturing/global-fleet/mainframe/unload/UNLOAD.cnt:1"
+      ]
+    },
+    {
+      "id": "FLVEHU/VEHICLE.dat",
+      "kind": "flat-file",
+      "location_mode_or_pk": "LRECL 100 FB, ORDER CALC; carries EMP-VEHICLE owner key+dbkey",
+      "area_or_schema": "unload",
+      "fields": [
+        {
+          "name": "VU-DBKEY",
+          "type": "9(10)",
+          "note": ""
+        },
+        {
+          "name": "VU-VEHID..VU-REGD",
+          "type": "as VEHICLE",
+          "note": ""
+        },
+        {
+          "name": "VU-OWNR-EMPID",
+          "type": "X(8)",
+          "note": "EMP-VEHICLE owner, blank if not connected"
+        },
+        {
+          "name": "VU-OWNR-DBKEY",
+          "type": "9(10)",
+          "note": ""
+        },
+        {
+          "name": "FILLER",
+          "type": "X(7)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/copybooks/FLVEHU.cpy:1-17",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:24-40",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:34-35",
+        "industries/manufacturing/global-fleet/mainframe/unload/UNLOAD.cnt:2"
+      ]
+    },
+    {
+      "id": "FLASGU/ASSIGNMENT.dat",
+      "kind": "flat-file",
+      "location_mode_or_pk": "LRECL 64 FB, ORDER AREA; EMP-ASSIGN owner key+dbkey, VEH-ASSIGN owner key only",
+      "area_or_schema": "unload",
+      "fields": [
+        {
+          "name": "AU-ASGID",
+          "type": "X(10)",
+          "note": ""
+        },
+        {
+          "name": "AU-EMPID",
+          "type": "X(8)",
+          "note": ""
+        },
+        {
+          "name": "AU-EMP-DBKEY",
+          "type": "9(10)",
+          "note": ""
+        },
+        {
+          "name": "AU-VEHID",
+          "type": "X(8)",
+          "note": ""
+        },
+        {
+          "name": "AU-STRT",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "AU-END",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "AU-RSN",
+          "type": "X(2)",
+          "note": ""
+        },
+        {
+          "name": "FILLER",
+          "type": "X(10)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/copybooks/FLASGU.cpy:1-12",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:42-53",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:36-38",
+        "industries/manufacturing/global-fleet/mainframe/unload/UNLOAD.cnt:3"
+      ]
+    },
+    {
+      "id": "FLMCLU/MILECLM.dat",
+      "kind": "flat-file",
+      "location_mode_or_pk": "LRECL 64 FB, ORDER AREA; EMP-CLAIM owner key+dbkey; PERIOD-CLAIM membership not carried",
+      "area_or_schema": "unload",
+      "fields": [
+        {
+          "name": "MU-CLMID",
+          "type": "X(10)",
+          "note": ""
+        },
+        {
+          "name": "MU-EMPID",
+          "type": "X(8)",
+          "note": ""
+        },
+        {
+          "name": "MU-EMP-DBKEY",
+          "type": "9(10)",
+          "note": ""
+        },
+        {
+          "name": "MU-VEHID",
+          "type": "X(8)",
+          "note": ""
+        },
+        {
+          "name": "MU-DATE",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "MU-MILES",
+          "type": "9(5)",
+          "note": ""
+        },
+        {
+          "name": "MU-STAT",
+          "type": "X(1)",
+          "note": ""
+        },
+        {
+          "name": "MU-PURP",
+          "type": "X(10)",
+          "note": ""
+        },
+        {
+          "name": "FILLER",
+          "type": "X(4)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/copybooks/FLMCLU.cpy:1-13",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:55-67",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:39-40",
+        "industries/manufacturing/global-fleet/mainframe/unload/UNLOAD.cnt:4"
+      ]
+    },
+    {
+      "id": "FLBPDU/BENPRD.dat",
+      "kind": "flat-file",
+      "location_mode_or_pk": "LRECL 40 FB, ORDER CALC",
+      "area_or_schema": "unload",
+      "fields": [
+        {
+          "name": "PU-PERIOD",
+          "type": "9(6)",
+          "note": ""
+        },
+        {
+          "name": "PU-STRT",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "PU-END",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "PU-MRATE",
+          "type": "9V999",
+          "note": ""
+        },
+        {
+          "name": "PU-STAT",
+          "type": "X(1)",
+          "note": ""
+        },
+        {
+          "name": "PU-RUNDT",
+          "type": "9(8)",
+          "note": ""
+        },
+        {
+          "name": "FILLER",
+          "type": "X(5)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/copybooks/FLBPDU.cpy:1-11",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:69-79",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:41",
+        "industries/manufacturing/global-fleet/mainframe/unload/UNLOAD.cnt:5"
+      ]
+    },
+    {
+      "id": "FLBOUT/BENOUT",
+      "kind": "flat-file",
+      "location_mode_or_pk": "LRECL 64 FB, one record per employee occurrence (EMP dbkey) with car days>0 or approved miles>0",
+      "area_or_schema": "FLT.PROD.BENOUT.P<period> / holdout OUT/BENOUT.dat",
+      "fields": [
+        {
+          "name": "BO-PERIOD",
+          "type": "9(6)",
+          "note": ""
+        },
+        {
+          "name": "BO-EMPID",
+          "type": "X(8)",
+          "note": ""
+        },
+        {
+          "name": "BO-EMP-DBKEY",
+          "type": "9(10)",
+          "note": ""
+        },
+        {
+          "name": "BO-VEHID",
+          "type": "X(8)",
+          "note": "spaces when WS-DAYS=0"
+        },
+        {
+          "name": "BO-DAYS",
+          "type": "9(2)",
+          "note": ""
+        },
+        {
+          "name": "BO-TAXB",
+          "type": "S9(7)V99 COMP-3",
+          "note": "truncated, not ROUNDED"
+        },
+        {
+          "name": "BO-MILES",
+          "type": "9(6)",
+          "note": ""
+        },
+        {
+          "name": "BO-MREIM",
+          "type": "S9(7)V99 COMP-3",
+          "note": "sum of per-claim ROUNDED amounts"
+        },
+        {
+          "name": "BO-FLAG",
+          "type": "X(1)",
+          "note": "L = EM-LEAV within period"
+        },
+        {
+          "name": "FILLER",
+          "type": "X(13)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/copybooks/FLBOUT.cpy:1-14",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:81-96",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:20-23"
+      ]
+    },
+    {
+      "id": "BENRPT",
+      "kind": "flat-file",
+      "location_mode_or_pk": "FBA LRECL 133 SYSOUT print: RPT-HEAD1..3, one RPT-DETAIL per BENOUT, RPT-TOTAL",
+      "area_or_schema": "SYSOUT / holdout OUT/BENRPT.txt",
+      "fields": [
+        {
+          "name": "RPT-DETAIL",
+          "type": "EMP-ID DBKEY VEH-ID DAYS TAXABLE-BEN MILES MILE-REIM F",
+          "note": ""
+        },
+        {
+          "name": "RPT-TOTAL",
+          "type": "RECORDS WRITTEN, TOTAL TAXABLE, TOTAL REIMBURSED",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:78-113",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:24",
+        "industries/manufacturing/global-fleet/mainframe/holdout/HP-202510/OUT/BENRPT.txt:1-3"
+      ]
+    },
+    {
+      "id": "PARM-REC/SYSIN",
+      "kind": "flat-file",
+      "location_mode_or_pk": "80-byte card, cols 1-6 period YYYYMM",
+      "area_or_schema": "SYSIN",
+      "fields": [
+        {
+          "name": "PARM-PERIOD",
+          "type": "9(6)",
+          "note": ""
+        },
+        {
+          "name": "FILLER",
+          "type": "X(74)",
+          "note": ""
+        }
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:36-40",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:17-19"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "EMP-ASSIGN",
+      "kind": "idms-set",
+      "owner": "EMPLOYEE",
+      "member": "ASSIGNMENT",
+      "membership": "MANDATORY AUTOMATIC",
+      "order": "SORTED BY AS-STRT DESCENDING DUPLICATES LAST",
+      "pointers_or_index": "CHAIN LINKED TO PRIOR, LINKED TO OWNER (member NEXT 1/PRIOR 2/OWNER 3; owner NEXT 1/PRIOR 2)",
+      "used_by": [
+        "FLEEMPI",
+        "FLEASGN",
+        "FLEMILE",
+        "FLERETN",
+        "FLEBEN01",
+        "FLEUNLD"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:104-118",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:25",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:63-64",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:50",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:23",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:176-185",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:37"
+      ]
+    },
+    {
+      "id": "VEH-ASSIGN",
+      "kind": "idms-set",
+      "owner": "VEHICLE",
+      "member": "ASSIGNMENT",
+      "membership": "MANDATORY AUTOMATIC",
+      "order": "LAST (insertion order; LAST member = most recently stored)",
+      "pointers_or_index": "CHAIN LINKED TO PRIOR, LINKED TO OWNER (member NEXT 4/PRIOR 5/OWNER 6)",
+      "used_by": [
+        "FLEEMPI",
+        "FLEASGN",
+        "FLEMILE",
+        "FLERETN",
+        "FLEBEN01",
+        "FLEUNLD"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:119-131",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:31",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:53",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:17",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:31",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:205",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:38"
+      ]
+    },
+    {
+      "id": "EMP-VEHICLE",
+      "kind": "idms-set",
+      "owner": "EMPLOYEE",
+      "member": "VEHICLE",
+      "membership": "OPTIONAL MANUAL",
+      "order": "NEXT",
+      "pointers_or_index": "CHAIN LINKED TO PRIOR, LINKED TO OWNER (member NEXT 3/PRIOR 4/OWNER 5; owner NEXT 3/PRIOR 4); in FLEETSS1 only, NOT in FLEETSS2",
+      "used_by": [
+        "FLEASGN (CONNECT unless PL; MEMBER test)",
+        "FLERETN (DISCONNECT)",
+        "FLEUNLD (owner key+dbkey, though not in its subschema)"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:132-144",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSS1.ddl:25",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSS1.ddl:50-53",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:51-55",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:65-66",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:44-45",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:32-35"
+      ]
+    },
+    {
+      "id": "EMP-CLAIM",
+      "kind": "idms-set",
+      "owner": "EMPLOYEE",
+      "member": "MILEAGE-CLAIM",
+      "membership": "MANDATORY AUTOMATIC",
+      "order": "SORTED BY MC-DATE ASCENDING DUPLICATES LAST",
+      "pointers_or_index": "CHAIN LINKED TO PRIOR, LINKED TO OWNER (member NEXT 1/PRIOR 2/OWNER 3; owner NEXT 5/PRIOR 6)",
+      "used_by": [
+        "FLEMILE (STORE)",
+        "FLEBEN01 (walk, early exit at MC-DATE > BP-END)",
+        "FLEUNLD"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:145-159",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:60-62",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:225-243",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:39-40"
+      ]
+    },
+    {
+      "id": "PERIOD-CLAIM",
+      "kind": "idms-set",
+      "owner": "BENEFIT-PERIOD",
+      "member": "MILEAGE-CLAIM",
+      "membership": "OPTIONAL AUTOMATIC",
+      "order": "LAST",
+      "pointers_or_index": "CHAIN LINKED TO PRIOR, NOT linked to owner (member NEXT 4/PRIOR 5)",
+      "used_by": [
+        "FLEMILE (auto-connect on STORE after FIND CALC BENEFIT-PERIOD)"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:160-170",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:61-62"
+      ]
+    },
+    {
+      "id": "ASSIGNMENT->VEHICLE via AU-VEHID",
+      "kind": "implicit-join",
+      "owner": "VEHICLE.VU-VEHID",
+      "member": "ASSIGNMENT.dat AU-VEHID",
+      "membership": "flat-file foreign key replacing VEH-ASSIGN (key only, no dbkey)",
+      "order": "none (ORDER AREA)",
+      "pointers_or_index": "AU-VEHID",
+      "used_by": [
+        "FLEUNLD"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:36-38",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:49"
+      ]
+    },
+    {
+      "id": "MILEAGE-CLAIM->VEHICLE via MC-VEHID",
+      "kind": "implicit-join",
+      "owner": "VEHICLE",
+      "member": "MILEAGE-CLAIM",
+      "membership": "nullable (spaces when no assignment); informational, no set",
+      "order": "none",
+      "pointers_or_index": "MC-VEHID",
+      "used_by": [
+        "FLEMILE (write only)"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:49-55",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:80"
+      ]
+    },
+    {
+      "id": "BENOUT->EMPLOYEE via BO-EMPID+BO-EMP-DBKEY",
+      "kind": "implicit-join",
+      "owner": "EMPLOYEE",
+      "member": "BENOUT",
+      "membership": "NOT NULL; dbkey needed because EM-EMPID duplicates",
+      "order": "EMP-REGION area sweep (db-key order)",
+      "pointers_or_index": "BO-EMP-DBKEY",
+      "used_by": [
+        "FLEBEN01"
+      ],
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:246-248",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:5"
+      ]
+    }
+  ],
+  "batch_steps": [
+    {
+      "id": "FLEBEN01.STEP010",
+      "job": "FLEBEN01",
+      "step": "STEP010",
+      "program": "FLEBEN01 (COBOL/IDMS DML, subschema FLEETSS2, retrieval)",
+      "inputs": [
+        "SYSIN &PERIOD (SET PERIOD=202609)",
+        "IDMS FLEETSCH via FLEETSS2: EMPLOYEE (area sweep EMP-REGION), ASSIGNMENT (EMP-ASSIGN), VEHICLE (VEH-ASSIGN owner), MILEAGE-CLAIM (EMP-CLAIM), BENEFIT-PERIOD (CALC)",
+        "SYSCTL, SYSIDMS DMCL=FLTDMCL"
+      ],
+      "outputs": [
+        "BENOUT FLT.PROD.BENOUT.P&PERIOD FB 64",
+        "BENRPT SYSOUT FBA 133",
+        "SYSOUT (IDMS-ABORT DISPLAY)"
+      ],
+      "what_it_does": "For every EMPLOYEE occurrence in db-key order, skip if EM-HIRE > BP-END or (EM-LEAV<>0 and < BP-STRT); 2100: first EMP-ASSIGN member with AS-STRT <= BP-END (only one assignment per employee), if AS-END=0 or >= BP-STRT days = min(BP-END, AS-END, EM-LEAV) - max(AS-STRT,BP-STRT) + 1, taxable = (VH-LIST*VH-BPCT/1200 - EM-CNTRB)*days/period-days floored at 0 (no ROUNDED); 2200: sum approved MC-MILES in period and per-claim ROUNDED MC-MILES*BP-MRATE; 2300: write BENOUT + report line if days>0 or miles>0, flag L if EM-LEAV in period; 9000: totals line, FINISH. Any other DB status -> IDMS-ABORT RC=16, ROLLBACK, STOP RUN. Does not check BP-STAT or EM-STAT or EM-GRD or AS-RSN.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:1-25",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:114-283"
+      ]
+    },
+    {
+      "id": "FLEBEN01.STEP020",
+      "job": "FLEBEN01",
+      "step": "STEP020",
+      "program": "ICETOOL (COND=(4,LT))",
+      "inputs": [
+        "FLT.PROD.BENOUT.P&PERIOD"
+      ],
+      "outputs": [
+        "FLT.PROD.BENOUT.P&PERIOD..CNT ('BENOUT RECORDS ' + 6 digits)"
+      ],
+      "what_it_does": "Control count of BENOUT records",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:27-36"
+      ]
+    },
+    {
+      "id": "FLEBEN01.STEP030",
+      "job": "FLEBEN01",
+      "step": "STEP030",
+      "program": "FTP PARM='(EXIT' (COND=(4,LT))",
+      "inputs": [
+        "FLT.PROD.FTP.PAYROLL (FTP command deck, not in repo)"
+      ],
+      "outputs": [
+        "OUTPUT SYSOUT; presumably BENOUT to payroll (target not in repo)"
+      ],
+      "what_it_does": "Transfers to payroll per a command deck that is not committed",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEBEN01.jcl:38-40"
+      ]
+    },
+    {
+      "id": "FLEUNLD.STEP010",
+      "job": "FLEUNLD",
+      "step": "STEP010",
+      "program": "IDMSBCF UNLOAD SEGMENT FLTSEG01 USING SUBSCHEMA FLEETSS2",
+      "inputs": [
+        "IDMS FLEETSCH (all five record types)"
+      ],
+      "outputs": [
+        "FLT.UNLOAD.EMPLOYEE FB100 (FLEMPU, ORDER DBKEY)",
+        "FLT.UNLOAD.VEHICLE FB100 (FLVEHU, ORDER CALC, EMP-VEHICLE owner key+dbkey)",
+        "FLT.UNLOAD.ASSIGNMENT FB64 (FLASGU, ORDER AREA, EMP-ASSIGN key+dbkey, VEH-ASSIGN key)",
+        "FLT.UNLOAD.MILECLM FB64 (FLMCLU, ORDER AREA, EMP-CLAIM key+dbkey)",
+        "FLT.UNLOAD.BENPRD FB40 (FLBPDU, ORDER CALC)"
+      ],
+      "what_it_does": "Flat-file unload of the database; member records carry owner CALC key and db-key",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:1-43"
+      ]
+    },
+    {
+      "id": "FLEUNLD.STEP020",
+      "job": "FLEUNLD",
+      "step": "STEP020",
+      "program": "ICETOOL (COND=(4,LT))",
+      "inputs": [
+        "the five FLT.UNLOAD.* files"
+      ],
+      "outputs": [
+        "FLT.UNLOAD.CNT (DISP=MOD, appended)"
+      ],
+      "what_it_does": "Record counts per file; committed UNLOAD.cnt (217/120/119/1511/13) uses a different text format than the TOOLIN TEXT() lines",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:45-61",
+        "industries/manufacturing/global-fleet/mainframe/unload/UNLOAD.cnt:1-5"
+      ]
+    }
+  ],
+  "unreached": [
+    {
+      "item": "FLERETN (dialog) and FLERETNM (map)",
+      "kind": "screen",
+      "why_unreached": "No TRANSFER/LINK to 'FLERETN' anywhere: FLEMENU-ENTER only routes 1->FLEEMPI, 2->FLEASGN, 3->FLEMILE, X->LEAVE ADS; menu map lists only 1,2,3,X; repo-wide grep finds FLERETN only in its own dlg/map/process and ESTATE.md. No task-code definition in repo.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMENU.ads:10-23",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMENUM.map:7-10",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLERETN.dlg:4-13"
+      ]
+    },
+    {
+      "item": "FLERETN-PREMAP / FLERETN-ENTER / FLERETN-PF3, hence the only MODIFY ASSIGNMENT (AS-END) and DISCONNECT VEHICLE FROM EMP-VEHICLE",
+      "kind": "paragraph",
+      "why_unreached": "Belong to unreachable FLERETN; consequence: no reachable online path ever ends an assignment or disconnects EMP-VEHICLE, so FLEASGN 'VEHICLE ALREADY HELD' becomes permanent for a vehicle once assigned (non-PL). Yet unload has 18 assignments with AS-END<>0, so returns happen outside the reachable source.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:27-56",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:51-55"
+      ]
+    },
+    {
+      "item": "WK-ODO",
+      "kind": "column",
+      "why_unreached": "On FLERETNM map only; no process references it, so odometer is captured and discarded (and the map is unreachable).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLERETNM.map:19",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEWORK.rec:17",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLERETN.ads:27-50"
+      ]
+    },
+    {
+      "item": "WK-PLATE, WK-MILES",
+      "kind": "column",
+      "why_unreached": "Defined in FLEWORK; grep finds no reference in any map, process or batch.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEWORK.rec:9",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEWORK.rec:14"
+      ]
+    },
+    {
+      "item": "WK-MDAYS / subroutine MONDAYS result",
+      "kind": "column",
+      "why_unreached": "MONDAYS computes WK-MDAYS (and WK-PERIOD) but WK-BENEFIT uses full-month formula without it and FLEEMPIM does not display it: dead computation (only side effect is the BENEFIT-PERIOD OBTAIN).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:32-35",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEEMPI.ads:41-48",
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEEMPIM.map:29-31"
+      ]
+    },
+    {
+      "item": "EM-LOC, VH-CO2, VH-FUEL (88s), VH-REGD, BP-RUNDT",
+      "kind": "column",
+      "why_unreached": "Defined in schema, carried in unload; no process, map or FLEBEN01 statement references them (grep). Nothing writes BP-RUNDT though data has run dates.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:36",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:50",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:52-57",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:102"
+      ]
+    },
+    {
+      "item": "AS-ASGID, MC-CLMID, MC-VEHID, MC-PURP",
+      "kind": "column",
+      "why_unreached": "Written by FLEASGN/FLEMILE but never read by any dialog or by FLEBEN01.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:58-61",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:49-58",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:222-243"
+      ]
+    },
+    {
+      "item": "EM-SURN, EM-FORN, EM-GRD, EM-CC, EM-STAT, VH-PLATE, VH-MAKE, VH-MODL, AS-RSN, BP-STAT (batch side)",
+      "kind": "column",
+      "why_unreached": "FLEBEN01 never tests them: transferred (X)/terminated (T) employees, grade<07 holders and PL loans all get benefit; period status not checked though header says closed period. In the unload all 26 T/X occurrences carry EM-LEAV, so in the data they are only paid up to the leaving date.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:154-220",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:6-9",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:198-200",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:18-19"
+      ]
+    },
+    {
+      "item": "PERIOD-CLAIM set (read side)",
+      "kind": "set",
+      "why_unreached": "Only populated by STORE in FLEMILE (optional automatic); no OBTAIN WITHIN PERIOD-CLAIM anywhere; FLEBEN01 selects claims by MC-DATE via EMP-CLAIM; FLEUNLD does not carry its membership.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:160-170",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:61-62",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:225-243",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:39-40"
+      ]
+    },
+    {
+      "item": "FLEETSS2 entry PERIOD-CLAIM",
+      "kind": "subschema-entry",
+      "why_unreached": "In FLEETSS2 but never used by FLEBEN01 or FLEUNLD.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSS1.ddl:53",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:147-243",
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:31-41"
+      ]
+    },
+    {
+      "item": "FLEETSS1 entry PERIOD-CLAIM (retrieval)",
+      "kind": "subschema-entry",
+      "why_unreached": "Used only implicitly for auto-connect on STORE; never navigated.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSS1.ddl:27",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:61-62"
+      ]
+    },
+    {
+      "item": "FLEUNLD 'OWNER EMP-VEHICLE KEY AND DBKEY' under FLEETSS2",
+      "kind": "branch",
+      "why_unreached": "EMP-VEHICLE is not in FLEETSS2 (only in FLEETSS1), so as written the unload clause names a set its subschema lacks; yet VEHICLE.dat carries owners (101 set).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/jcl/FLEUNLD.jcl:32-35",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSS1.ddl:31-55"
+      ]
+    },
+    {
+      "item": "FLEASGN-ENTER 'VEHICLE ALREADY HELD' for pool cars",
+      "kind": "branch",
+      "why_unreached": "PL assignments never CONNECT to EMP-VEHICLE, so EMP-VEHICLE MEMBER is false for a car out on pool loan; a pool-loaned car can be re-assigned. Also no check that the employee already holds a car (unload: 20 employees with 2 open assignments).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:51-55",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:65-66"
+      ]
+    },
+    {
+      "item": "FLEASGN-ENTER grade/not-found checks",
+      "kind": "branch",
+      "why_unreached": "ENTER re-OBTAINs EMPLOYEE without DB-REC-NOT-FOUND or EM-GRD test; premap enforces grade by clearing WK-EMPID, but ENTER runs on edit errors and does not re-check (unload: 9 assignments held by grade<07 employees (7 at grade 05, 2 at grade 06)).",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:27-32",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:38-43",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEASGN.dlg:10-11",
+        "industries/manufacturing/global-fleet/mainframe/copybooks/LAYOUT.md:42-53"
+      ]
+    },
+    {
+      "item": "WHILE EM-STAT EQ 'T' loops without not-found exit",
+      "kind": "branch",
+      "why_unreached": "In FLEASGN-ENTER, FLEMILE-PREMAP and FLEMILE-ENTER the loop has no DB-REC-NOT-FOUND test: an employee whose only/last occurrence is T loops on a 0326 status (behaviour depends on ADS autostatus). Only FLEASGN-PREMAP and FLEEMPI-PREMAP exit with 'EMPLOYEE HAS LEFT'.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:40-43",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:17-20",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:34-37",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEASGN.ads:18-26"
+      ]
+    },
+    {
+      "item": "FLEMILE-ENTER 'MILES REQUIRED'",
+      "kind": "branch",
+      "why_unreached": "MC-MILES has EDIT PICTURE 9(5) REQUIRED; reachable only because the response runs on edit errors (EXECUTE ON EDIT ERRORS) with a zero value.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/ads/maps/FLEMILEM.map:15-16",
+        "industries/manufacturing/global-fleet/mainframe/ads/dialogs/FLEMILE.dlg:10-11",
+        "industries/manufacturing/global-fleet/mainframe/ads/process/FLEMILE.ads:43-47"
+      ]
+    },
+    {
+      "item": "WS-BENOUT-FS",
+      "kind": "column",
+      "why_unreached": "FILE STATUS declared but never tested.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:29-30",
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:62"
+      ]
+    },
+    {
+      "item": "FLEBEN01 2100 'IF WS-DAYS = 0 MOVE SPACES TO BO-VEHID' vs earlier branches",
+      "kind": "branch",
+      "why_unreached": "Reachable (leaver before car start, no car in period); note BO-VEHID is set before the WS-DAYS>0 test, so this blanks it. Listed to record that it is NOT dead.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:189-220"
+      ]
+    },
+    {
+      "item": "Subsequent assignments in 2100 loop",
+      "kind": "branch",
+      "why_unreached": "Loop stops at first EMP-ASSIGN member with AS-STRT<=BP-END; any other overlapping assignment (second car, earlier car returned mid-period) is never evaluated.",
+      "sources": [
+        "industries/manufacturing/global-fleet/mainframe/batch/FLEBEN01.cbl:176-188",
+        "industries/manufacturing/global-fleet/mainframe/schema/FLEETSCH.ddl:115-117"
+      ]
+    }
+  ],
+  "open_questions": [
+    "How are FLERETN, claim approval (MC-STAT A/R), and EMPLOYEE/VEHICLE/BENEFIT-PERIOD maintenance performed? No source writes MC-STAT 'A'/'R', stores/modifies EMPLOYEE, VEHICLE or BENEFIT-PERIOD, or sets BP-STAT 'C'/BP-RUNDT, yet the unload has 1313 A / 69 R claims, 18 ended assignments and 12 closed periods.",
+    "Is there an IDMS task code (outside repo) that starts FLERETN directly? Without it FLERETN is unreachable.",
+    "WK-NEXT-ASG / WK-NEXT-CLM live in the per-session work record: where are they seeded? As written each ADS session would restart at 1 and collide (unload ids look like A000700003, C000100007 stepping by 3/7).",
+    "FLEUNLD names EMP-VEHICLE under FLEETSS2 which lacks that set: was the real unload run under FLEETSS1, or is FLEETSS2 out of date?",
+    "Should the global app keep FLEBEN01's single-assignment-per-period rule (20 employees hold 2 open cars in the unload) and its truncation (no ROUNDED) of BO-TAXB vs ROUNDED per-claim mileage?",
+    "Benefit for T/X employees, grade<07 holders, and PL pool loans: FLEBEN01 pays them all (no EM-STAT/EM-GRD/AS-RSN test) — intended?",
+    "FLEEMPI shows a full-month benefit for the latest assignment even if returned (AS-END ignored) — does batch's prorated value govern?",
+    "FLEBEN01.STEP030 FTP command deck FLT.PROD.FTP.PAYROLL and its target are not in the repo.",
+    "Do the holdout BENRPT/BENOUT byte-match a rebuild? (Not run here; PAIRS.sha256 checksums verify, and BENOUT record counts equal RECORDS WRITTEN in all 12 months: 110,109,107,109,101,105,110,108,102,106,106,111.)"
+  ]
+}
