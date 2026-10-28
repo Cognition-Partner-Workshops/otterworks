@@ -370,17 +370,31 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T03:51:50Z",
+  "generated_at": "2026-10-28T03:52:19Z",
+  "hook_probe": "blocked:8b60a95f",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
     "service_principal": true,
     "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
   },
+  "inputs_sha": "de7e51f29885290cd7cf7150fd254397be959a4fbec45559b2877576019a1376",
+  "manifest_sha": "9734db5add44",
   "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1",
   "ready": true,
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
+  "signature": "54b14dbfe33c63f9cf5fe1919039868d9d5c4a863651e364ee18f341b100d2b0",
+  "signed_at": "2026-10-28T03:52:19+00:00",
+  "source": {
+    "family": "databricks",
+    "params": {
+      "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
+      "source_name": "ow_tp.ow_tp_analytics_src",
+      "target_name": "ow_tp.ow_tp_analytics"
+    },
+    "secret": "DATABRICKS_DEMO_HOST"
+  },
   "summary": {
     "ok": 12,
     "skipped": 1,
