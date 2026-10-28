@@ -332,7 +332,7 @@ phases:
             label: Ride as unproven cutover exceptions; pending requester decision
           - id: granted
             label: EXECUTE granted; prove routines in verification
-        selected: null
+        selected: unproven-exceptions
         important: true
       - id: scc-max-cycle
         description: The 5 packages form one SCC (undirected call edges via log_msg/f_md5_uuid + invoicing-rating calls + plans/dunning write overlap on subscriptions); derive ran with --max-cycle 6 so the SCC fits one batch.
@@ -362,9 +362,10 @@ phases:
             description: dbx-recon --family oracle PASS per batch — w1-b01 Delta track, w1-b02 Lakebase track.
         blockers:
           - id: b-execute-grant
-            description: Writing routines unproven pending the requester's EXECUTE decision.
+            description: Resolved — requester selected execute-posture=unproven-exceptions (no EXECUTE grant); writing routines park to STOP E as unproven cutover exceptions.
             check:
               kind: human-decision
+              resolved: decision execute-posture → unproven-exceptions
       - id: run-invoicing-wave-1b
         title: Rerun invoicing wave 1 under merge override (width 2)
         depends_on: [run-invoicing-wave-1]
@@ -373,9 +374,10 @@ phases:
             description: dbx-recon --family oracle PASS per batch — w1-b01 Delta track, w1-b02 Lakebase track.
         blockers:
           - id: b-execute-grant
-            description: Writing routines unproven pending the requester's EXECUTE decision.
+            description: Resolved — requester selected execute-posture=unproven-exceptions (no EXECUTE grant); writing routines park to STOP E as unproven cutover exceptions.
             check:
               kind: human-decision
+              resolved: decision execute-posture → unproven-exceptions
       - id: invoicing-stop-e
         title: STOP E park — legacy output, Databricks output, recon verdict side by side
         depends_on: [run-invoicing-wave-1b]
