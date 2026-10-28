@@ -1,0 +1,32 @@
+resources:
+  jobs:
+    ow_tp_usage_meter:
+      name: ow_tp_usage_meter
+      max_concurrent_runs: 1
+      description: >-
+        Loads the CSV snapshot in ow_tp_snap_files into the ow_tp_snap_* Delta
+        tables, recomputes ow_tp.ow_tp_usage_meter.ow_tp_usage_meter, then runs
+        the synced-table pipeline that copies it to Lakebase mig-billing-20261028.
+        Run `meter.py snapshot` and `databricks fs cp` first (see README).
+      schedule:
+        quartz_cron_expression: "0 30 3 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: load_snapshot
+          sql_task:
+            file:
+              path: ../sql/00_load_snapshot.sql
+            warehouse_id: ${var.warehouse_id}
+        - task_key: compute_meter
+          depends_on:
+            - task_key: load_snapshot
+          sql_task:
+            file:
+              path: ../sql/02_meter.sql
+            warehouse_id: ${var.warehouse_id}
+        - task_key: sync_to_lakebase
+          depends_on:
+            - task_key: compute_meter
+          pipeline_task:
+            pipeline_id: ${var.synced_table_pipeline_id}
