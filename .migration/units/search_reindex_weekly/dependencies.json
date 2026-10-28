@@ -1,16 +1,30 @@
 {
   "routines": [
     {
-      "routine": "search_reindex_weekly.py::main",
+      "routine": "analytics.ow_tp_analytics_search_reindex",
       "reads": [
-        "http:document-service/documents",
-        "http:file-service/files",
-        "meilisearch:documents",
-        "meilisearch:files"
+        "document-service.documents",
+        "file-service.files",
+        "meilisearch.documents",
+        "meilisearch.files"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.search_reindex_run"
+      ]
+    },
+    {
+      "routine": "analytics.search_reindex_run",
+      "reads": [
+        "document-service.documents",
+        "file-service.files",
+        "meilisearch.documents",
+        "meilisearch.files"
       ],
       "writes": [
-        "ow_tp.ow_tp_analytics_src.search_index_docs",
-        "ow_tp.ow_tp_analytics_src.search_reindex_report"
+        "meilisearch.documents",
+        "meilisearch.files",
+        "meilisearch.reindex_report"
       ],
       "calls": []
     }

@@ -1,10 +1,10 @@
 {
-  "version": "map-1793146609-search_reindex_weekly-v1",
-  "note": "Indexed documents as rows (index,doc_id,content hash) + reindex counts",
+  "version": "map-v1",
+  "target_kind": "databricks",
   "objects": [
     {
+      "root_table": "meilisearch.documents",
       "object": "ow_tp.ow_tp_analytics.search_index_docs",
-      "root_table": "ow_tp.ow_tp_analytics_src.search_index_docs",
       "key": {
         "source": [
           "index_name",
@@ -14,31 +14,25 @@
           "index_name",
           "doc_id"
         ]
-      },
-      "fields": [
-        {
-          "source": "index_name",
-          "target": "index_name",
-          "source_type": "string",
-          "target_type": "string"
-        },
-        {
-          "source": "doc_id",
-          "target": "doc_id",
-          "source_type": "string",
-          "target_type": "string"
-        },
-        {
-          "source": "doc_sha256",
-          "target": "doc_sha256",
-          "source_type": "string",
-          "target_type": "string"
-        }
-      ]
+      }
     },
     {
+      "root_table": "meilisearch.files",
+      "object": "ow_tp.ow_tp_analytics.search_index_docs",
+      "key": {
+        "source": [
+          "index_name",
+          "doc_id"
+        ],
+        "target": [
+          "index_name",
+          "doc_id"
+        ]
+      }
+    },
+    {
+      "root_table": "meilisearch.reindex_report",
       "object": "ow_tp.ow_tp_analytics.search_reindex_report",
-      "root_table": "ow_tp.ow_tp_analytics_src.search_reindex_report",
       "key": {
         "source": [
           "metric"
@@ -46,33 +40,7 @@
         "target": [
           "metric"
         ]
-      },
-      "fields": [
-        {
-          "source": "report_date",
-          "target": "report_date",
-          "source_type": "date",
-          "target_type": "date"
-        },
-        {
-          "source": "index_name",
-          "target": "index_name",
-          "source_type": "string",
-          "target_type": "string"
-        },
-        {
-          "source": "metric",
-          "target": "metric",
-          "source_type": "string",
-          "target_type": "string"
-        },
-        {
-          "source": "metric_value",
-          "target": "metric_value",
-          "source_type": "double",
-          "target_type": "double"
-        }
-      ]
+      }
     }
   ]
 }
