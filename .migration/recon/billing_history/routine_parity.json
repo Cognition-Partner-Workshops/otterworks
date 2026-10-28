@@ -1,0 +1,36 @@
+{
+  "routine_parity": [
+    {
+      "routine": "snapshot.customer_master",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "snapshot.customer_master_hist",
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_customer_master_hist.run.json"
+    },
+    {
+      "routine": "snapshot.entity_attr_value",
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_entity_attr_value.run.json"
+    },
+    {
+      "routine": "snapshot.invoice_header",
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_invoice_header.run.json"
+    },
+    {
+      "routine": "snapshot.invoice_line",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    }
+  ],
+  "unproven": [
+    "snapshot.customer_master",
+    "snapshot.invoice_line"
+  ],
+  "failed": []
+}

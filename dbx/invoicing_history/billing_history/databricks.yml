@@ -1,0 +1,13 @@
+# billing_history snapshot bundle — wave invoicing-1, batch w1-b01.
+# One bundle per unit batch (target-routing analytical deltas); deploys only to the
+# run-isolated target mig_1793146609 per .migration/allowed_targets.json, schedule PAUSED.
+bundle:
+  name: ow_tp_1793146609_billing_history
+
+include:
+  - resources/job_billing_history.yml
+
+targets:
+  mig_1793146609:
+    mode: development
+    default: true

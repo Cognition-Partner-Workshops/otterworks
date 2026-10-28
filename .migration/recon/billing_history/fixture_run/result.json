@@ -1,0 +1,215 @@
+{
+  "unit": "billing_history",
+  "mode": "fixture",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "sampled",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 506,
+    "source_rows_fetched": 304342,
+    "target_statements": 347,
+    "target_rows_fetched": 152107,
+    "elapsed_s": 190.508
+  },
+  "generated_at": "2026-10-28T01:12:29.506585+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {
+        "dictionary_unavailable": [
+          "customer_master: customer_master: information_schema.table_privileges read failed (ServerOperationError)",
+          "customer_master_hist: customer_master_hist: information_schema.table_privileges read failed (ServerOperationError)",
+          "entity_attr_value: entity_attr_value: information_schema.table_privileges read failed (ServerOperationError)",
+          "invoice_header: invoice_header: information_schema.table_privileges read failed (ServerOperationError)",
+          "invoice_line: invoice_line: information_schema.table_privileges read failed (ServerOperationError)"
+        ],
+        "structural_checks": {
+          "constraints": "unsupported",
+          "triggers": "unsupported",
+          "indexes": "unsupported",
+          "sequences_identity": "unsupported",
+          "grants": "unsupported"
+        },
+        "structural_diff": {},
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        },
+        "hole_kinds": [
+          "read"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {
+        "source_counts": {
+          "ow_billing.customer_master": 25001,
+          "ow_billing.customer_master_hist": 0,
+          "ow_billing.entity_attr_value": 8337,
+          "ow_billing.invoice_header": 18750,
+          "ow_billing.invoice_line": 150000
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 152107,
+      "stats": {
+        "customer_master": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 32,
+          "population": 25001,
+          "sampled": 25001,
+          "coverage": 1.0,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "customer_master_hist": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 0,
+          "population": 0,
+          "sampled": 0,
+          "coverage": 1.0,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "entity_attr_value": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 32,
+          "population": 8337,
+          "sampled": 8337,
+          "coverage": 1.0,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "invoice_header": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 32,
+          "population": 18750,
+          "sampled": 18750,
+          "coverage": 1.0,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "invoice_line": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 32,
+          "population": 150000,
+          "sampled": 100019,
+          "coverage": 0.666793,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [
+    "UNVERIFIED structural_parity: structure unavailable: customer_master: customer_master: information_schema.table_privileges read failed (ServerOperationError)",
+    "UNVERIFIED structural_parity: structure unavailable: customer_master_hist: customer_master_hist: information_schema.table_privileges read failed (ServerOperationError)",
+    "UNVERIFIED structural_parity: structure unavailable: entity_attr_value: entity_attr_value: information_schema.table_privileges read failed (ServerOperationError)",
+    "UNVERIFIED structural_parity: structure unavailable: invoice_header: invoice_header: information_schema.table_privileges read failed (ServerOperationError)",
+    "UNVERIFIED structural_parity: structure unavailable: invoice_line: invoice_line: information_schema.table_privileges read failed (ServerOperationError)"
+  ],
+  "verdict": "PASS",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "routine_parity_missing",
+      "class": "evidence"
+    },
+    {
+      "reason": "warnings",
+      "class": "structural"
+    },
+    {
+      "reason": "mode",
+      "class": "evidence"
+    },
+    {
+      "reason": "rerun_missing",
+      "class": "rerun_policy"
+    }
+  ],
+  "blocker_classes": [
+    "evidence",
+    "rerun_policy",
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": {
+    "family": "oracle",
+    "target_kind": "databricks",
+    "filled": [],
+    "unmapped": []
+  },
+  "rerun_proof": null,
+  "rerun_posture": "first_run_baseline",
+  "merge_block_reasons": [
+    "structural_gap",
+    "routine_parity_missing",
+    "warnings",
+    "mode",
+    "rerun_missing"
+  ],
+  "routine_parity": null,
+  "routine_writers": [
+    "snapshot.customer_master",
+    "snapshot.customer_master_hist",
+    "snapshot.entity_attr_value",
+    "snapshot.invoice_header",
+    "snapshot.invoice_line"
+  ],
+  "routine_dependencies": ".migration/units/billing_history/dependencies.json"
+}
