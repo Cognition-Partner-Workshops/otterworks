@@ -8,7 +8,7 @@
   "breaker_threshold": 1,
   "auto_merge": false,
   "max_minutes": 60,
-  "verify_depth": "threshold",
+  "verify_depth": "full",
   "capabilities": {
     "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
@@ -90,12 +90,19 @@
         "pkg_dunning"
       ],
       "write_targets": [
+        "JOB_NIGHTLY_DUNNING",
+        "JOB_PURGE_AUDIT_LOG",
         "billing_audit_log",
         "credit_notes",
         "dunning_attempts",
         "invoice_lines",
         "invoices",
         "notifications",
+        "pkg_dunning",
+        "pkg_invoicing",
+        "pkg_ow_util",
+        "pkg_plans",
+        "pkg_rating",
         "rating_periods",
         "rating_results",
         "subscriptions",
@@ -123,7 +130,7 @@
         "JOB_PURGE_AUDIT_LOG"
       ],
       "lakeflow_pipelines": [],
-      "verify_depth": "threshold",
+      "verify_depth": "full",
       "gates": [
         {
           "id": "recon_parity_billing_audit_log",
