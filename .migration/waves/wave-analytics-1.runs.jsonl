@@ -1,0 +1,5 @@
+{"manifest_sha": "c294c416952b", "plan_sha": "865e87744a6cc235b0875fb8d0bac6851e37fb5bb1c8707f1a58e2056c0ef031", "plan_step": "run-analytics-wave-1", "started": "2026-10-28T01:29:37+00:00"}
+{"manifest_sha": "7db83f76fc8f", "plan_sha": "865e87744a6cc235b0875fb8d0bac6851e37fb5bb1c8707f1a58e2056c0ef031", "plan_step": "run-analytics-wave-1", "started": "2026-10-28T01:44:31+00:00"}
+{"manifest_sha": "a5334d0e05ee", "plan_sha": "f9808fed96f9e4ed76e6de7fa4b96d67ee826cb2b66c22d560ef5dbca8f5be5b", "plan_step": "run-analytics-wave-1b", "started": "2026-10-28T01:59:53+00:00"}
+{"manifest_sha": "fe91090d634f", "plan_sha": "f9808fed96f9e4ed76e6de7fa4b96d67ee826cb2b66c22d560ef5dbca8f5be5b", "plan_step": "run-analytics-wave-1b", "started": "2026-10-28T02:28:29+00:00"}
+{"manifest_sha": "fe91090d634f", "merged": ["https://github.com/Cognition-Partner-Workshops/otterworks/pull/2304"], "plan_sha": "f9808fed96f9e4ed76e6de7fa4b96d67ee826cb2b66c22d560ef5dbca8f5be5b", "plan_step": "run-analytics-wave-1b", "started": "2026-10-28T02:55:51+00:00"}

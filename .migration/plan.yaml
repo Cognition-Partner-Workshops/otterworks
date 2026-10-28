@@ -97,10 +97,17 @@ phases:
           \ staging and target schemas."
       selected: accept
       important: true
+  - id: run-analytics-wave-1c
+    title: Wave 1c (a01 relaunch for live recon evidence + re-verify a02's fixed PR head)
+    depends_on:
+    - run-analytics-wave-1b
+    gates:
+    - id: w1c-recon
+      description: dbx-recon PASS per unit on the declared parity mechanism, on the reviewed heads.
   - id: run-analytics-wave-2
     title: Wave 2 remaining crons (width 4)
     depends_on:
-    - run-analytics-wave-1b
+    - run-analytics-wave-1c
     gates:
     - id: w2-recon
       description: dbx-recon PASS per unit on the declared parity mechanism.
