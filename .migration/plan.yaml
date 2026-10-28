@@ -11,7 +11,8 @@ phases:
   decisions:
   - id: parity-mechanism
     description: "Parity mechanism for analytics \u2014 the estate's `--family oracle`\
-      \ rule has no Oracle object to read in this pipeline."
+      \ rule has no Oracle object to read in this pipeline. Selected by the requester\
+      \ (parent chat) \u2014 recorded here; no approved markers touched."
     options:
     - id: snapshot-databricks
       label: "Recommended \u2014 materialize each unit's legacy output into ow_tp.ow_tp_analytics_src\
@@ -22,7 +23,7 @@ phases:
       label: "dbx-recon --family postgres for the Postgres-sourced units (analytics_daily,\
         \ user_activity_daily), databricks for the rest \u2014 mixed source blocks\
         \ per unit."
-    selected: null
+    selected: snapshot-databricks
     important: true
   - id: target-core
     description: Target surface for the converted jobs.
