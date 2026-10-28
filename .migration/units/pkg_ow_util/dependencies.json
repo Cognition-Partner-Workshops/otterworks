@@ -5,5 +5,5 @@
   {"routine": "ow_billing.pkg_ow_util.f_str2dt", "reads": [], "writes": [], "calls": []},
   {"routine": "ow_billing.pkg_ow_util.log_msg", "reads": [], "writes": ["ow_billing.billing_audit_log"], "calls": ["ow_billing.trg_billing_audit_log_id"]},
   {"routine": "ow_billing.trg_billing_audit_log_id", "reads": [], "writes": [], "calls": []},
-  {"routine": "ow_billing.job_purge_audit_log", "reads": ["ow_billing.billing_audit_log"], "writes": ["ow_billing.billing_audit_log"], "calls": []}
+  {"routine": "ow_billing.pkg_ow_util.job_purge_audit_log", "reads": ["ow_billing.billing_audit_log"], "writes": ["ow_billing.billing_audit_log"], "calls": []}
 ]}

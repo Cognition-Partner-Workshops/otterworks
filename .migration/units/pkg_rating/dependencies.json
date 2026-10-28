@@ -3,5 +3,5 @@
   {"routine": "ow_billing.pkg_rating.fn_usage_rating", "reads": ["ow_billing.usage_events", "ow_billing.rating_results"], "writes": [], "calls": []},
   {"routine": "ow_billing.pkg_rating.fn_usage_summary", "reads": ["ow_billing.usage_events"], "writes": [], "calls": []},
   {"routine": "ow_billing.pkg_rating.sp_finalize_rating", "reads": ["ow_billing.rating_periods"], "writes": ["ow_billing.rating_periods", "ow_billing.rating_results"], "calls": ["ow_billing.pkg_rating.compute_rating", "ow_billing.pkg_ow_util.f_md5_uuid", "ow_billing.pkg_ow_util.log_msg"]},
-  {"routine": "ow_billing.trg_usage_events_check", "reads": ["ow_billing.usage_events"], "writes": [], "calls": []}
+  {"routine": "ow_billing.pkg_rating.trg_usage_events_check", "reads": ["ow_billing.usage_events"], "writes": [], "calls": []}
 ]}
