@@ -59,11 +59,11 @@ FROM read_files(
 WHERE source = 'sqs' OR event_date LIKE concat(:ds, '%');
 
 -- Artifact rows land in analytics_daily_report keyed by their legacy S3 path.
--- partition_key = reports/analytics/daily/year=<y>/month=<m>/day=<d>/
+-- partition_key = analytics/daily/year=<y>/month=<m>/day=<d>/
 CREATE OR REPLACE TEMP VIEW analytics_artifacts AS
 SELECT
     concat(
-        'reports/analytics/daily/year=', substr(:ds, 1, 4),
+        'analytics/daily/year=', substr(:ds, 1, 4),
         '/month=', substr(:ds, 6, 2), '/day=', substr(:ds, 9, 2),
         '/', artifact_name
     ) AS s3_key,
