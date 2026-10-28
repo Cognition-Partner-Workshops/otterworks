@@ -58,7 +58,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.27'
       - run: go vet ./...
       - run: go test ./...
       - run: go build -o /dev/null ./cmd/server
@@ -74,7 +74,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
       - run: npm ci
       - run: npm run lint
       - run: npm test
@@ -107,7 +107,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v10.3.3
       - run: uv run --with pytest --with boto3==1.40.35 --with requests==2.32.5 --with flask==3.1.1 --with oracledb==2.5.1 --with 'psycopg[binary]==3.2.9' python -m pytest -q
       - run: uv run --with pytest --with boto3==1.40.35 --with requests==2.32.5 python -m pytest -q bridge/tests
       - run: uv run --with pytest --with flask==3.1.1 --with oracledb==2.5.1 python -m pytest -q
@@ -124,7 +124,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
           cache-dependency-path: frontend/client-app/package-lock.json
       - run: npm ci
