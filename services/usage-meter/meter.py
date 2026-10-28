@@ -109,7 +109,7 @@ def snapshot():
     if SNAPSHOT_DIR.exists():
         SNAPSHOT_DIR.rename(previous)
     partial.rename(SNAPSHOT_DIR)
-    shutil.rmtree(previous)
+    shutil.rmtree(previous, ignore_errors=True)
 
 
 def _norm(row):
