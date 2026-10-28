@@ -1,0 +1,131 @@
+{
+  "wave": 1,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "s-i-waves",
+  "width": 2,
+  "breaker_threshold": 1,
+  "auto_merge": false,
+  "max_minutes": 90,
+  "verify_depth": "threshold",
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "soft",
+    "ready": true
+  },
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN"
+  },
+  "base_branch": "mig-ow-tp-billing-20261028",
+  "pipelines": {
+    "invoicing": 2,
+    "custbill": 4,
+    "analytics": 2
+  },
+  "target_state": {
+    "operational": {
+      "kind": "lakebase",
+      "project": "ow-tp-billing",
+      "branch": "mig-billing-20261028"
+    },
+    "history": {
+      "kind": "delta",
+      "namespace": "ow_tp.ow_tp_invoicing"
+    }
+  },
+  "batches": [
+    {
+      "id": "w1-b01",
+      "units": [
+        "plans",
+        "usage_events",
+        "entity_attr_value",
+        "invoice_header",
+        "invoice_line"
+      ],
+      "write_targets": [
+        "entity_attr_value"
+      ],
+      "deploy_objects": [
+        "plans",
+        "usage_events",
+        "entity_attr_value",
+        "invoice_header",
+        "invoice_line"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "threshold",
+      "gates": [
+        {
+          "id": "recon_parity_plans",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/plans/result.json"
+        },
+        {
+          "id": "recon_parity_usage_events",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/usage_events/result.json"
+        },
+        {
+          "id": "recon_parity_entity_attr_value",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/entity_attr_value/result.json"
+        },
+        {
+          "id": "recon_parity_invoice_header",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/invoice_header/result.json"
+        },
+        {
+          "id": "recon_parity_invoice_line",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/invoice_line/result.json"
+        }
+      ],
+      "brief": "Lakebase snapshot loads into ow-tp-billing/mig-billing-20261028: PLANS, USAGE_EVENTS (+TRG_USAGE_EVENTS_CHECK contract), ENTITY_ATTR_VALUE (+TRG_ENTITY_ATTR_VALUE_SEQ sequence), INVOICE_HEADER, INVOICE_LINE. DD-MON-YY text dates -> DATE with null_unparseable + <f>_raw keep column. invoice_line carries 37 planted orphans on unenforced invoice_id -> invoice_header; no join-count gates. INVOICE_HEADER is also the shared read source for pipeline-2 CUSTBILL. Read .migration/units/<unit>/mapping_spec.json; evidence .migration/recon/<unit>/."
+    },
+    {
+      "id": "w1-b02",
+      "units": [
+        "subscriptions_hist",
+        "customer_master_hist"
+      ],
+      "write_targets": [
+        "customer_master_hist"
+      ],
+      "deploy_objects": [
+        "subscriptions_hist",
+        "customer_master_hist"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "threshold",
+      "gates": [
+        {
+          "id": "recon_parity_subscriptions_hist",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/subscriptions_hist/result.json"
+        },
+        {
+          "id": "recon_parity_customer_master_hist",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/customer_master_hist/result.json"
+        }
+      ],
+      "brief": "Delta history backfill into ow_tp.ow_tp_invoicing: SUBSCRIPTIONS_HIST, CUSTOMER_MASTER_HIST (155-col mirror). hist_dt is a STRING timestamp — compare verbatim. Ongoing capture comes from the Lakebase triggers converted in wave 2 plus hist sync provisioning. Read .migration/units/<unit>/mapping_spec.json; evidence .migration/recon/<unit>/."
+    }
+  ]
+}

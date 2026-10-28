@@ -1,0 +1,159 @@
+{
+  "wave": 2,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "s-i-waves",
+  "width": 1,
+  "breaker_threshold": 1,
+  "auto_merge": false,
+  "max_minutes": 180,
+  "verify_depth": "threshold",
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "soft",
+    "ready": true
+  },
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN"
+  },
+  "base_branch": "mig-ow-tp-billing-20261028",
+  "pipelines": {
+    "invoicing": 2,
+    "custbill": 4,
+    "analytics": 2
+  },
+  "target_state": {
+    "operational": {
+      "kind": "lakebase",
+      "project": "ow-tp-billing",
+      "branch": "mig-billing-20261028"
+    },
+    "history": {
+      "kind": "delta",
+      "namespace": "ow_tp.ow_tp_invoicing"
+    }
+  },
+  "batches": [
+    {
+      "id": "w2-b01",
+      "units": [
+        "pkg_ow_util",
+        "pkg_plans",
+        "pkg_rating",
+        "pkg_invoicing",
+        "pkg_dunning"
+      ],
+      "write_targets": [
+        "billing_audit_log",
+        "credit_notes",
+        "dunning_attempts",
+        "invoice_lines",
+        "invoices",
+        "notifications",
+        "rating_periods",
+        "rating_results",
+        "subscriptions",
+        "subscriptions_hist",
+        "tenants"
+      ],
+      "deploy_objects": [
+        "billing_audit_log",
+        "credit_notes",
+        "dunning_attempts",
+        "invoice_lines",
+        "invoices",
+        "notifications",
+        "rating_periods",
+        "rating_results",
+        "subscriptions",
+        "subscriptions_hist",
+        "tenants",
+        "pkg_ow_util",
+        "pkg_plans",
+        "pkg_rating",
+        "pkg_invoicing",
+        "pkg_dunning",
+        "JOB_NIGHTLY_DUNNING",
+        "JOB_PURGE_AUDIT_LOG"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "threshold",
+      "gates": [
+        {
+          "id": "recon_parity_billing_audit_log",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/billing_audit_log/result.json"
+        },
+        {
+          "id": "recon_parity_credit_notes",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/credit_notes/result.json"
+        },
+        {
+          "id": "recon_parity_dunning_attempts",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/dunning_attempts/result.json"
+        },
+        {
+          "id": "recon_parity_invoice_lines",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/invoice_lines/result.json"
+        },
+        {
+          "id": "recon_parity_invoices",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/invoices/result.json"
+        },
+        {
+          "id": "recon_parity_notifications",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/notifications/result.json"
+        },
+        {
+          "id": "recon_parity_rating_periods",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/rating_periods/result.json"
+        },
+        {
+          "id": "recon_parity_rating_results",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/rating_results/result.json"
+        },
+        {
+          "id": "recon_parity_subscriptions",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/subscriptions/result.json"
+        },
+        {
+          "id": "recon_parity_subscriptions_hist",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/subscriptions_hist/result.json"
+        },
+        {
+          "id": "recon_parity_tenants",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/tenants/result.json"
+        }
+      ],
+      "brief": "Routine SCC (cannot split — calls + shared writes on subscriptions/tenants): all 5 PL/SQL packages -> Lakebase ow-tp-billing/mig-billing-20261028, plus DDL + snapshot load of owned tables (billing_audit_log, credit_notes, dunning_attempts, invoice_lines, invoices, notifications, rating_periods, rating_results, subscriptions, subscriptions_hist staging, tenants writable copy per run decision). Convert triggers (TRG_*), sequences, and the two DBMS_SCHEDULER jobs -> Lakeflow Jobs PAUSED (quartz_cron + timezone + max_concurrent_runs=1). Package-state globals need session-scoped equivalents; EXECUTE IMMEDIATE sites need allow-list conversion; log_msg is autonomous-txn. Routines stay unproven (no Oracle EXECUTE) — recon is data/DDL parity only. Read .migration/units/<unit>/{dependencies,mapping_spec}.json."
+    }
+  ]
+}
