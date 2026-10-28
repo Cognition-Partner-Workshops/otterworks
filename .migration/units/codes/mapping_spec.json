@@ -1,0 +1,48 @@
+{
+  "version": "ow-tp-map-v1",
+  "objects": [
+    {
+      "object": "codes",
+      "root_table": "OW_BILLING.CODES",
+      "key": {
+        "source": [
+          "CODE_TYPE",
+          "CODE_VAL"
+        ],
+        "target": [
+          "code_type",
+          "code_val"
+        ]
+      },
+      "fields": [
+        {
+          "source": "CODE_TYPE",
+          "target": "code_type",
+          "source_type": "VARCHAR2",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "CODE_VAL",
+          "target": "code_val",
+          "source_type": "NUMBER(4,0)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "CODE_DESC",
+          "target": "code_desc",
+          "source_type": "VARCHAR2",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        }
+      ]
+    }
+  ]
+}
