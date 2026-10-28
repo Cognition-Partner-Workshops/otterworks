@@ -292,6 +292,20 @@ phases:
     - id: w2-recon
       description: parsed_records + finance_billing_totals PASS vs legacy parsed/*.psv
         + finance_billing_*.csv; quarantine holds rejects.
+    decisions:
+    - id: custbill-wave-2-halt
+      description: "Wave 2 halted with no passing batches: custbill-ldp deployed\
+        \ but recon FAILed by construction \u2014 the spec grades the rejects-only\
+        \ quarantine and the group-by rollup against the full root, and recon's\
+        \ _UC_PHYSICAL excludes MATERIALIZED_VIEW/STREAMING_TABLE (plugin defect).\
+        \ Decided by user:dhrov.subramanian@cognition.ai."
+      options:
+      - id: relaunch
+        label: Rescope/relaunch wave 2 after spec or plugin changes
+      - id: park
+        label: Park custbill at STOP E now with proven/unproven evidence side by side
+      selected: park
+      important: true
   - id: run-custbill-wave-3
     title: "Wave 3 \u2014 job (crontab + run_all.sh -> ow_tp_custbill_job), width\
       \ 1"
