@@ -19,7 +19,23 @@ Verifier: independent wave-verify session. Source and target read-only. Evidence
 - Harness note: oauth-m2m `sql.connect` hangs headless in this environment (connector 4.x); the run minted the session service principal's `access_token` via the SDK `Config().authenticate()` path — same identity, the harness's documented token branch. The `t.owner`→`table_owner` plugin bug was left unpatched so Tier 0 lands in `dictionary_unavailable` exactly as the child's run did; the structural class holds either way and the committed override clears it.
 - Cost of this verifier run: `{"source_statements": 10, "source_rows_fetched": 3, "target_statements": 4, "target_rows_fetched": 3, "elapsed_s": 4.205}`.
 
-## Batch a02 — unit `analytics_daily` (PR #2304)
+## Batch a02 — unit `analytics_daily` (PR #2295 — this verifier's assigned ticket)
+
+- Head verified: `8a612bb3bc9cb75464f9107ec666e29cb453cc9a` on `devin/1793151987-analytics-daily`, base `tp-run/databricks-1793146609` (merge-base `2e4a4854`). Two PRs exist for this unit; this ticket names PR #2295 / head `8a612bb3`. The manifest's a02 brief conflates the two (names #2304, describes this branch/head lineage).
+- Mode: `live` (the child's merge-evidence mode). Depth: `full` (keyed full diff), not lowered. Seed: `7` (child used `0`).
+- Tolerances `recon_tolerances.json` (`tol-20261027-v1`) and `allowed_targets.json` enforced from the base branch — the child did not loosen a tolerance.
+- `.migration/` footprint: `git diff --name-only` touches only `.migration/recon/analytics_daily/` — no `protected_files_tampered`.
+- Re-run result (`result.json`): `verdict=FAIL`, `parity=PASS`, `merge_eligible=false`, `blocker_classes=["structural"]` (`structural_gap` + `tier_failed`: informational PKs + grant visibility) — matches the child's blocker class.
+- Merge authority: `human_override` decision `mo-analytics-w1-structural` (committed manifest `merge_overrides`, `blocker_classes=["structural"]`, units `["analytics_daily"]`). The override lifts merge policy for the `structural` class only — it cannot clear a data-level parity divergence, and the `row_parity` gate's evidence does not show what its kind requires (below).
+- **Verifier verdict: FAIL.**
+  1. The `row_parity` gate evidence is vacuous: the committed `mapping_spec.json` declares `key` but zero `fields` for both objects, so the Tier 3 keyed diff compared key presence only (`checks_run=4` = 4 key matches, no field comparisons) — a keys-only diff cannot demonstrate row parity.
+  2. Independent adversarial probe (direct `SELECT` on both surfaces at verify time) found real value drift the keyed diff cannot see. `analytics_daily_summary` `report_date=2026-10-28`: source `files_uploaded=4, files_shared=7, files_deleted=7, active_files=11, bytes_uploaded=16215069`; target all zero. `analytics_daily_report`: target `hourly_breakdown` wraps events under an `hourly` key and buckets all 18 file events as `unknown` (source has top-level hour keys with typed buckets, e.g. hour `09`: `file_shared:3, file_deleted:1, file_uploaded:1`); `top_users` shape differs (`users` wrapper vs JSONL semantics) and per-user totals differ.
+  3. Root cause: `run_analytics_daily.sql` (lines 26-33) reproduces the legacy pandas mixed-batch quirk exactly — when a batch contains both `eventType` and `event_type` spellings, `event_type` rows stay unpromoted and collapse to `unknown`. The staging source (`ow_tp_analytics_src`) instead counts file metrics, so the staging mirror and the converted output diverge on this mixed fixture. Whichever side is "right," the declared parity surfaces do not match and row parity is unproven — a `data`-class finding outside `mo-analytics-w1-structural`'s scope.
+  4. Note for wave-close: PR #2304's code uses the naive `COALESCE(eventType, event_type, 'unknown')` (file events resolve to real types), so it does not carry this quirk — but the other verifier's PASS for it also rests on the same vacuous fields-less keyed diff; its report-json shape differences were not value-checked either.
+- Rerun-proof and routine-parity re-graded independently: `source_digest`/`shape_digest` reproduce exactly (`90546c64…`; fresh + evolved legs pass); 2 unproven writers, 0 failed — consistent with the child.
+- Cost of this verifier run: `{"source_statements": 20, "source_rows_fetched": 4, "target_statements": 18, "target_rows_fetched": 4, "elapsed_s": 17.222}`.
+
+## Batch a02 — unit `analytics_daily` (PR #2304 — other verifier, retained for the record)
 
 - Head verified: `8ad29795498a7fc1e52b3230180c10d02d87f4a0` on `devin/1793154552-wave1-a02-analytics-daily`, base `tp-run/databricks-1793146609`.
 - Mode: `live` (same as the child's merge-evidence mode). Depth: `full` (keyed full diff), as listed for this batch — not lowered. Seed: `7` (child used `0`).
@@ -39,5 +55,5 @@ Verifier: independent wave-verify session. Source and target read-only. Evidence
 ## Verdict
 
 - `a01` (usage_rollup_scala): **PASS** — parity PASS re-verified live at full depth; only structural blockers remain, cleared by `mo-analytics-w1-structural`.
-- `a02` (analytics_daily): **PASS** — parity PASS re-verified live at full depth; only structural blockers remain, cleared by `mo-analytics-w1-structural`.
-- Wave verdict: **PASS**.
+- `a02` (analytics_daily): **FAIL** — assigned PR #2295's `row_parity` gate evidence is vacuous (zero `fields` in the mapping spec → keys-only Tier 3) and an independent value-level probe shows real drift between the staged source and target (file metrics zeroed by the faithful mixed-batch `eventType`/`event_type` normalization quirk). The `mo-analytics-w1-structural` override covers `structural` blockers only; it cannot clear a data-level divergence.
+- Wave verdict: **FAIL**.
