@@ -1,0 +1,53 @@
+{
+  "routines": [
+    {
+      "routine": "OW_BILLING.PKG_PLANS.FN_LIST_PLANS",
+      "reads": [
+        "OW_BILLING.PLANS"
+      ],
+      "writes": [],
+      "calls": []
+    },
+    {
+      "routine": "OW_BILLING.PKG_PLANS.FN_ENTITLEMENT",
+      "reads": [
+        "OW_BILLING.SUBSCRIPTIONS",
+        "OW_BILLING.PLANS",
+        "OW_BILLING.TENANTS"
+      ],
+      "writes": [],
+      "calls": []
+    },
+    {
+      "routine": "OW_BILLING.PKG_PLANS.SP_CHANGE_PLAN",
+      "reads": [
+        "OW_BILLING.SUBSCRIPTIONS"
+      ],
+      "writes": [
+        "OW_BILLING.SUBSCRIPTIONS"
+      ],
+      "calls": [
+        "OW_BILLING.TRG_SUBSCRIPTIONS_HIST",
+        "OW_BILLING.TRG_SUB_NO_UNCANCEL"
+      ]
+    },
+    {
+      "routine": "OW_BILLING.TRG_SUB_NO_UNCANCEL",
+      "reads": [],
+      "writes": [
+        "OW_BILLING.SUBSCRIPTIONS"
+      ],
+      "calls": []
+    },
+    {
+      "routine": "OW_BILLING.TRG_SUBSCRIPTIONS_HIST",
+      "reads": [
+        "OW_BILLING.SUBSCRIPTIONS"
+      ],
+      "writes": [
+        "OW_BILLING.SUBSCRIPTIONS_HIST"
+      ],
+      "calls": []
+    }
+  ]
+}
