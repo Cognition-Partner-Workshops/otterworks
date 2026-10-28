@@ -80,3 +80,11 @@ parsed_records 18,750, quarantine 0, finance_billing_totals 204.
 
 `missing_rule` — the committed mapping spec lacks rules to grade
 rejects-only and rollup objects against a full-row root.
+
+## Coverage gaps (tp-pre-pr-self-check)
+
+- `make tp-smoke`: offline gates green (portal renderers, selftests); fails at
+  api-gateway step — `go` not installed on this VM (env gap, not code).
+- Idempotency: single pipeline run only; `dbx-recon rerun-proof` could not be
+  assembled (shape cannot read MVs) — reported as rerun_policy blocker.
+- Tier 3 keyed diff of parsed_records never executed (tier 1 gate).
