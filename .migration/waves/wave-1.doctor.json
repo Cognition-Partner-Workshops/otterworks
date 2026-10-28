@@ -359,7 +359,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T15:05:21Z",
+  "generated_at": "2026-10-28T15:49:27Z",
   "hook_probe": "blocked:d2afaee8",
   "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
   "identity": {
@@ -374,8 +374,8 @@
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
-  "signature": "4494e8d50f52d56167e042795eaf69df95f4c1f48fa342d7558d141126b9e7ec",
-  "signed_at": "2026-10-28T15:05:21+00:00",
+  "signature": "912d9a9969586fab6014d0761f2caba50538f8c2b54a4caaacee3918c2ce3afb",
+  "signed_at": "2026-10-28T15:49:27+00:00",
   "source": {
     "family": "oracle",
     "secret": "OW_BILLING_RO_DSN"

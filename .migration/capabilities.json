@@ -359,7 +359,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T15:05:21Z",
+  "generated_at": "2026-10-28T15:49:27Z",
   "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",

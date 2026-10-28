@@ -1,0 +1,219 @@
+{
+  "auto_merge": false,
+  "base_sha": "b6536400592d9725d9fff5e98d0bc163310a47f5",
+  "batches": [
+    {
+      "blocker_classes": [
+        "structural"
+      ],
+      "branch": "devin/1793202634-b1-plans",
+      "changed_paths": [
+        ".migration/recon/u-plans/fixtures/u_plans_exec_fixture.sql",
+        ".migration/recon/u-plans/mapping_spec_scoped.json",
+        ".migration/recon/u-plans/recon.summary.md",
+        ".migration/recon/u-plans/report.md",
+        ".migration/recon/u-plans/rerun_fresh_record.json",
+        ".migration/recon/u-plans/rerun_proof.json",
+        ".migration/recon/u-plans/result.json",
+        ".migration/recon/u-plans/routine_parity.json",
+        ".migration/recon/u-plans/runs/sp_change_plan.run.json",
+        ".migration/recon/u-plans/runs/trg_sub_no_uncancel.run.json",
+        ".migration/recon/u-plans/runs/trg_subscriptions_hist.run.json",
+        ".migration/recon/u-plans/shape_fresh.json",
+        "databricks/mig_1793185083/b1-plans/databricks.yml",
+        "databricks/mig_1793185083/b1-plans/ddl/001_tables.sql",
+        "databricks/mig_1793185083/b1-plans/ddl/002_routines.sql",
+        "databricks/mig_1793185083/b1-plans/extract/extract_u_plans.py",
+        "databricks/mig_1793185083/b1-plans/load/load_u_plans.py"
+      ],
+      "failure_class": "structural",
+      "gates": [
+        {
+          "evidence": {
+            "label": "live full-depth row parity on subscriptions + subscriptions_hist",
+            "path": ".migration/recon/u-plans/result.json",
+            "verdict": "parity PASS; merge blocked: trigger_extra x3 structural"
+          },
+          "id": "recon_pass",
+          "status": "passed"
+        },
+        {
+          "evidence": {
+            "label": "sp_change_plan, trg_subscriptions_hist, trg_sub_no_uncancel",
+            "path": ".migration/recon/u-plans/routine_parity.json",
+            "verdict": "3 proven / 0 unproven / 0 failed"
+          },
+          "id": "routine_parity",
+          "status": "passed"
+        },
+        {
+          "evidence": {
+            "path": ".migration/recon/u-plans/rerun_proof.json",
+            "verdict": "fresh pass; evolved unsupported (first run)"
+          },
+          "id": "rerun_proof",
+          "status": "passed"
+        }
+      ],
+      "id": "b1-plans",
+      "merge_authority": {
+        "kind": "harness"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "u-plans fully converted and deployed to Lakebase ow_tp.mig_1793185083 (tables+constraints, 3 routines, 2 triggers, Tenant One data) with all gates green \u2014 recon parity PASS in live mode \u2014 but merge_eligible=false on a structural blocker: the RO source principal sees zero OW_BILLING triggers, so the assigned target triggers report as trigger_extra.",
+      "parity": "PASS",
+      "pr_head": "c5b3d2730413f2a48e0c019b08a2acb5619a4eee",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2338",
+      "prompt_sha": "411deb5facfbdf59",
+      "recon_cost": {
+        "elapsed_s": 4.75,
+        "source_rows_fetched": 37,
+        "source_statements": 66,
+        "target_rows_fetched": 37,
+        "target_statements": 57
+      },
+      "recon_mode": "live",
+      "recon_verdict": "PASS",
+      "skill_feedback": [
+        "Guard resolves only inline literal SQL: parenthesized multi-line SQL constants are opaque to the resolver \u2014 inlined single-line literals or static .sql via `psql -f` only.",
+        "`export *DSN*=\"...$(databricks ...)\"` is blocked as a SQL-client command substitution; guard-clean form is a passwordless DSN env + `PGPASSWORD=$(databricks postgres generate-database-credential ...)` on the same exec line (credential minted per call).",
+        "Mapping spec asymmetry: spec declares root_where on filtered objects with no target_where and the engine requires symmetric scoping; worker-side fix is a scoped copy under .migration/recon/<unit>/ with target_where set to the identical predicate (committed spec untouched).",
+        "Oracle DATE must land as `timestamp(0)` on Lakebase per canonicalization type_map; `date` is only allowed with census_midnight_only evidence and breaks datetime identity canonicalization.",
+        "ALL_TRIGGERS/ALL_OBJECTS expose zero OW_BILLING triggers to the RO principal \u2014 deploying assigned target triggers yields trigger_extra tier-0 findings classed `structural` (merge-ineligible, not worker-fixable).",
+        "Dedicated routine-parity exec target can be a schema `<branch>_exec` on the allowlisted branch; run records need target_branch `mig-1793185083-exec`, snapshot `fixture:<repo-path>`, and must be committed before grading.",
+        "rerun-proof `--fresh` requires a wrapped run record {run,status,evidence,shape}, not raw `shape` output; `shape --out` is a file path and must run from the repo root for the allowlist check.",
+        "Redeploying functions with changed signatures fails on `cannot change return type`; routines DDL needs leading `DROP FUNCTION IF EXISTS` for idempotency.",
+        "factory-doctor rewrites .migration/capabilities.json on every run \u2014 restore via `git checkout` before committing so it doesn't appear in the PR."
+      ],
+      "status": "FAIL",
+      "write_targets": [
+        "ow_tp.mig_1793185083.subscriptions",
+        "ow_tp.mig_1793185083.subscriptions_hist",
+        "ow_tp.mig_1793185083.fn_list_plans",
+        "ow_tp.mig_1793185083.fn_entitlement",
+        "ow_tp.mig_1793185083.sp_change_plan"
+      ]
+    },
+    {
+      "blocker_classes": [
+        "evidence",
+        "structural"
+      ],
+      "branch": "devin/mig-1793185083-b1-quality",
+      "changed_paths": [
+        ".migration/recon/u-invoice-quality-pipeline/expectations_evidence.json",
+        ".migration/recon/u-invoice-quality-pipeline/recon.summary.md",
+        ".migration/recon/u-invoice-quality-pipeline/report.md",
+        ".migration/recon/u-invoice-quality-pipeline/rerun_proof.json",
+        ".migration/recon/u-invoice-quality-pipeline/result.json",
+        "databricks/mig_1793185083/b1-quality/databricks.yml",
+        "databricks/mig_1793185083/b1-quality/extract/[REDACTED SECRET: OW_TP_ORACLE_APP_PASSWORD]_extract.py",
+        "databricks/mig_1793185083/b1-quality/resources/ow_tp_invoice_quality_1793185083.job.yml",
+        "databricks/mig_1793185083/b1-quality/resources/ow_tp_invoice_quality_1793185083.pipeline.yml",
+        "databricks/mig_1793185083/b1-quality/src/invoice_quality.py"
+      ],
+      "failure_class": "non_merge_evidence",
+      "gates": [
+        {
+          "evidence": {
+            "label": "independent recount 37/0/0/0/50 vs live sink tags",
+            "path": ".migration/recon/u-invoice-quality-pipeline/expectations_evidence.json",
+            "verdict": "pass"
+          },
+          "id": "expectations_evidence",
+          "status": "passed"
+        },
+        {
+          "evidence": {
+            "label": "updates 6087100b (full refresh) + e3292f26 (rerun), pre_shape == prior committed shape",
+            "path": ".migration/recon/u-invoice-quality-pipeline/rerun_proof.json",
+            "verdict": "fresh=pass, evolved=pass"
+          },
+          "id": "rerun_proof",
+          "status": "passed"
+        }
+      ],
+      "id": "b1-quality",
+      "merge_authority": {
+        "decision_id": "mo-invoice-quality-catalog-grants",
+        "kind": "human_override"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "PASS downgraded: recon evidence was live/FAIL; u-invoice-quality-pipeline re-verified live: parity PASS, both gates pass with fresh evidence; merge blocked only by evidence+structural, waived by committed mo-invoice-quality-catalog-grants human_override; PR #2333 updated, not merged.",
+      "parity": "PASS",
+      "pr_head": "c3af070c0fb9c45993fa9043bedeaf0d546dfa44",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2333",
+      "prompt_sha": "0affad93e0cbe6f0",
+      "recon_cost": {
+        "elapsed_s": 17.352,
+        "source_rows_fetched": 0,
+        "source_statements": 28,
+        "target_rows_fetched": 0,
+        "target_statements": 28
+      },
+      "recon_mode": "live",
+      "recon_verdict": "FAIL",
+      "skill_feedback": [
+        "dbx_guard cannot trace dict/loop-dispatched execute() calls: statements against a legacy source must be literal execute(\"SELECT ...\") args, so the extract loop was rewritten as three literal calls (the QUERIES dict remains as documentation)",
+        "dbx_guard rejects shell $var interpolation inside SQL/table arguments; every table name and statement must be expanded literally in the command text",
+        "rerun-proof evolved leg: with --prior-proof, pre_shape read before the rerun must equal the prior committed proof's shape; when the landed schema is unchanged, pre_shape == prior == fresh grades evolved as pass",
+        "the extract upload is a freshness leg, not a merge gate: shape/rerun/expectations evidence all come from the live catalog + live source, so a stale extract would only matter if the Oracle fixture mutated"
+      ],
+      "status": "FAIL",
+      "write_targets": [
+        "ow_tp.mig_1793185083.invoice_line_quarantine",
+        "ow_tp.mig_1793185083.invoice_header_quarantine",
+        "ow_tp.mig_1793185083.customer_master_quarantine"
+      ]
+    }
+  ],
+  "breaker_tripped_on": null,
+  "brief": [
+    "Wave 1 close, plan step run-wave-1.",
+    "Landed: 0 of 2 batches passed their own recon.",
+    "Independent verify: NOT RUN.",
+    "Failed: b1-plans, b1-quality. Blocked: none. Held by circuit breaker: none.",
+    "Cost: estimated n/a; actual source_statements=94, target_statements=85, source_rows_fetched=37, target_rows_fetched=37, harness time 22s. Verifier depth full, overrides: b1-plans=full, b1-quality=full.",
+    "Awaiting manual merge: none reported",
+    "",
+    "Verifier findings: none.",
+    "",
+    "Skill feedback to fold in before the next wave:",
+    "- ALL_TRIGGERS/ALL_OBJECTS expose zero OW_BILLING triggers to the RO principal \u2014 deploying assigned target triggers yields trigger_extra tier-0 findings classed `structural` (merge-ineligible, not worker-fixable).",
+    "- Dedicated routine-parity exec target can be a schema `<branch>_exec` on the allowlisted branch; run records need target_branch `mig-1793185083-exec`, snapshot `fixture:<repo-path>`, and must be committed before grading.",
+    "- Guard resolves only inline literal SQL: parenthesized multi-line SQL constants are opaque to the resolver \u2014 inlined single-line literals or static .sql via `psql -f` only.",
+    "- Mapping spec asymmetry: spec declares root_where on filtered objects with no target_where and the engine requires symmetric scoping; worker-side fix is a scoped copy under .migration/recon/<unit>/ with target_where set to the identical predicate (committed spec untouched).",
+    "- Oracle DATE must land as `timestamp(0)` on Lakebase per canonicalization type_map; `date` is only allowed with census_midnight_only evidence and breaks datetime identity canonicalization.",
+    "- Redeploying functions with changed signatures fails on `cannot change return type`; routines DDL needs leading `DROP FUNCTION IF EXISTS` for idempotency.",
+    "- `export *DSN*=\"...$(databricks ...)\"` is blocked as a SQL-client command substitution; guard-clean form is a passwordless DSN env + `PGPASSWORD=$(databricks postgres generate-database-credential ...)` on the same exec line (credential minted per call).",
+    "- dbx_guard cannot trace dict/loop-dispatched execute() calls: statements against a legacy source must be literal execute(\"SELECT ...\") args, so the extract loop was rewritten as three literal calls (the QUERIES dict remains as documentation)",
+    "- dbx_guard rejects shell $var interpolation inside SQL/table arguments; every table name and statement must be expanded literally in the command text",
+    "- factory-doctor rewrites .migration/capabilities.json on every run \u2014 restore via `git checkout` before committing so it doesn't appear in the PR.",
+    "- rerun-proof `--fresh` requires a wrapped run record {run,status,evidence,shape}, not raw `shape` output; `shape --out` is a file path and must run from the repo root for the allowlist check.",
+    "- rerun-proof evolved leg: with --prior-proof, pre_shape read before the rerun must equal the prior committed proof's shape; when the landed schema is unchanged, pre_shape == prior == fresh grades evolved as pass",
+    "- the extract upload is a freshness leg, not a merge gate: shape/rerun/expectations evidence all come from the live catalog + live source, so a stale extract would only matter if the Oracle fixture mutated",
+    "",
+    "Per batch:",
+    "- b1-plans: FAIL. u-plans fully converted and deployed to Lakebase ow_tp.mig_1793185083 (tables+constraints, 3 routines, 2 triggers, Tenant One data) with all gates green \u2014 recon parity PASS in live mode \u2014 but merge_eligible=false on a structural blocker: the RO source principal sees zero OW_BILLING triggers, so the assigned target triggers report as trigger_extra. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2338",
+    "- b1-quality: FAIL. PASS downgraded: recon evidence was live/FAIL; u-invoice-quality-pipeline re-verified live: parity PASS, both gates pass with fresh evidence; merge blocked only by evidence+structural, waived by committed mo-invoice-quality-catalog-grants human_override; PR #2333 updated, not merged. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2333"
+  ],
+  "close": null,
+  "close_minutes": 10,
+  "closed": false,
+  "doctor_signed_at": "2026-10-28T15:49:27+00:00",
+  "hook_probe": "blocked:d2afaee8",
+  "manifest_sha": "8e590ea9d66a",
+  "merge_overrides": [],
+  "pipeline_order": {},
+  "plan_sha": "5aeaae34d7dd6aae026731dc1be897b38308b394d15deb0c33381269da655604",
+  "plan_step": "run-wave-1",
+  "resync": null,
+  "tag": "1",
+  "undeclared_write_targets": {},
+  "unreported_write_targets": [],
+  "verify": null,
+  "waived_gates": [],
+  "wave": 1,
+  "width": 2,
+  "write_target_overlaps": []
+}
