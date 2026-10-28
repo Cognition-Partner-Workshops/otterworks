@@ -1,6 +1,6 @@
 -- Recompute the meter from the snapshot tables. Mirrors pkg_rating.compute_rating:
---   periods      every finalized rating_period, plus each calendar month with usage
---                not covered by one
+--   periods      every finalized rating_period, plus, for usage outside them, the part of
+--                its calendar month between finalized periods (never overlapping one)
 --   subscription the latest-starting one overlapping the period
 --   used         units of events whose occurred_at day is in [period_start, period_end]
 --   rollover     finalized rollover_units of periods starting in the 3 months before,
@@ -9,19 +9,31 @@
 --                second at 1.5 x overage_rate; pro-rated by remaining days when the
 --                subscription is suspended (status 20) inside the period
 INSERT OVERWRITE ow_tp.ow_tp_usage_meter.ow_tp_usage_meter
-WITH periods AS (
-    SELECT tenant_id, CAST(period_start AS DATE) AS period_start,
-           CAST(period_end AS DATE) AS period_end
+WITH rp AS (
+    SELECT tenant_id, CAST(period_start AS DATE) AS ps, CAST(period_end AS DATE) AS pe
       FROM ow_tp.ow_tp_usage_meter.ow_tp_snap_rating_periods
-    UNION
-    SELECT u.tenant_id, CAST(date_trunc('MONTH', u.occurred_at) AS DATE),
-           last_day(CAST(u.occurred_at AS DATE))
+),
+uncovered AS (
+    SELECT DISTINCT u.tenant_id, CAST(u.occurred_at AS DATE) AS d
       FROM ow_tp.ow_tp_usage_meter.ow_tp_snap_usage_events u
      WHERE NOT EXISTS (
-           SELECT 1 FROM ow_tp.ow_tp_usage_meter.ow_tp_snap_rating_periods rp
-            WHERE rp.tenant_id = u.tenant_id
-              AND CAST(u.occurred_at AS DATE)
-                  BETWEEN CAST(rp.period_start AS DATE) AND CAST(rp.period_end AS DATE))
+           SELECT 1 FROM rp
+            WHERE rp.tenant_id = u.tenant_id AND CAST(u.occurred_at AS DATE) BETWEEN rp.ps AND rp.pe)
+),
+-- the part of the event's calendar month that lies between finalized periods
+gaps AS (
+    SELECT x.tenant_id,
+           coalesce(max(CASE WHEN rp.pe < x.d AND rp.pe >= trunc(x.d, 'MM') THEN date_add(rp.pe, 1) END),
+                    trunc(x.d, 'MM')) AS period_start,
+           coalesce(min(CASE WHEN rp.ps > x.d AND rp.ps <= last_day(x.d) THEN date_sub(rp.ps, 1) END),
+                    last_day(x.d)) AS period_end
+      FROM uncovered x LEFT JOIN rp ON rp.tenant_id = x.tenant_id
+     GROUP BY x.tenant_id, x.d
+),
+periods AS (
+    SELECT tenant_id, ps AS period_start, pe AS period_end FROM rp
+    UNION
+    SELECT tenant_id, period_start, period_end FROM gaps
 ),
 used AS (
     SELECT p.tenant_id, p.period_start, count(u.id) AS event_count,

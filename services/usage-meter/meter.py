@@ -13,6 +13,7 @@ import csv
 import datetime
 import json
 import os
+import shutil
 import subprocess
 import sys
 from decimal import Decimal
@@ -46,6 +47,7 @@ def lakebase_read_only(branch):
     conn = psycopg.connect(host=host, dbname=DATABASES[branch], user=user, password=token,
                            sslmode="require", options="-c default_transaction_read_only=on")
     conn.read_only = True
+    conn.isolation_level = psycopg.IsolationLevel.REPEATABLE_READ
     return conn
 
 
@@ -73,7 +75,7 @@ def _csv_value(v):
 
 def _write_csv(cur, table):
     rows = cur.fetchall()
-    out_dir = SNAPSHOT_DIR / table
+    out_dir = SNAPSHOT_DIR.with_name("snapshot.partial") / table
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / f"{table}.csv", "w", newline="") as fh:
         writer = csv.writer(fh)
@@ -83,6 +85,10 @@ def _write_csv(cur, table):
 
 
 def snapshot():
+    # One REPEATABLE READ transaction, so all six files come from the same revision;
+    # build/snapshot is replaced only once every export has succeeded.
+    partial = SNAPSHOT_DIR.with_name("snapshot.partial")
+    shutil.rmtree(partial, ignore_errors=True)
     with lakebase_read_only(SOURCE_BRANCH) as conn:
         cur = conn.cursor()
         cur.execute("SELECT id, code, included_units, overage_rate FROM ow_tp_invoicing.plans")
@@ -97,6 +103,8 @@ def snapshot():
         _write_csv(cur, "rating_periods")
         cur.execute("SELECT id, period_id, rollover_units FROM ow_tp_invoicing.rating_results")
         _write_csv(cur, "rating_results")
+    shutil.rmtree(SNAPSHOT_DIR, ignore_errors=True)
+    partial.rename(SNAPSHOT_DIR)
 
 
 def _norm(row):
@@ -154,16 +162,30 @@ def compare(tenant, secret_name, dsn_override):
         (tenant_id,), = cur.fetchall()
         cur.execute("""
 WITH t AS (SELECT id FROM ow_billing.tenants WHERE id = :tenant_id),
-periods AS (
+rp AS (
     SELECT rp.tenant_id, TRUNC(rp.period_start) AS ps, TRUNC(rp.period_end) AS pe
       FROM ow_billing.rating_periods rp JOIN t ON t.id = rp.tenant_id
-    UNION
-    SELECT u.tenant_id, TRUNC(u.occurred_at, 'MM'), LAST_DAY(TRUNC(u.occurred_at))
+),
+uncovered AS (
+    SELECT DISTINCT u.tenant_id, TRUNC(u.occurred_at) AS d
       FROM ow_billing.usage_events u JOIN t ON t.id = u.tenant_id
      WHERE NOT EXISTS (
-           SELECT 1 FROM ow_billing.rating_periods rp
-            WHERE rp.tenant_id = u.tenant_id
-              AND TRUNC(u.occurred_at) BETWEEN TRUNC(rp.period_start) AND TRUNC(rp.period_end))
+           SELECT 1 FROM rp
+            WHERE rp.tenant_id = u.tenant_id AND TRUNC(u.occurred_at) BETWEEN rp.ps AND rp.pe)
+),
+gaps AS (
+    SELECT x.tenant_id,
+           NVL(MAX(CASE WHEN rp.pe < x.d AND rp.pe >= TRUNC(x.d, 'MM') THEN rp.pe + 1 END),
+               TRUNC(x.d, 'MM')) AS ps,
+           NVL(MIN(CASE WHEN rp.ps > x.d AND rp.ps <= LAST_DAY(x.d) THEN rp.ps - 1 END),
+               LAST_DAY(x.d)) AS pe
+      FROM uncovered x LEFT JOIN rp ON rp.tenant_id = x.tenant_id
+     GROUP BY x.tenant_id, x.d
+),
+periods AS (
+    SELECT tenant_id, ps, pe FROM rp
+    UNION
+    SELECT tenant_id, ps, pe FROM gaps
 ),
 base AS (
     SELECT p.ps, p.pe, s.status_cd, TRUNC(s.suspended_on) AS suspended_on,
