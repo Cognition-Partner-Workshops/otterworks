@@ -1,0 +1,9 @@
+{
+  "objects": [
+    {
+      "root_table": "custbill_feed_file",
+      "object": "ow_tp.ow_tp_custbill.custbill_feed",
+      "notes": "Raw CUSTBILL fixed-width records (CBCUST01 layout, 65-char) as produced by the Oracle month-end extract and/or the SFTP drop landing. Snapshot load; one row per source record."
+    }
+  ]
+}

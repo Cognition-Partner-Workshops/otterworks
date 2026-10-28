@@ -1,0 +1,16 @@
+{
+  "routines": [
+    {
+      "routine": "parse_custbill_fixedwidth",
+      "reads": ["custbill_feed_file"],
+      "writes": ["parsed_records", "quarantine_rejects"],
+      "calls": []
+    },
+    {
+      "routine": "finance_excel_report",
+      "reads": ["parsed_records"],
+      "writes": ["finance_billing_totals", "custbill_ldp"],
+      "calls": []
+    }
+  ]
+}

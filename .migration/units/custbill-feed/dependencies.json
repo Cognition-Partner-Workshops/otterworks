@@ -1,0 +1,16 @@
+{
+  "routines": [
+    {
+      "routine": "oracle_custbill_extract",
+      "reads": ["invoice_header", "customer_master", "tenants"],
+      "writes": ["custbill_feed_file"],
+      "calls": []
+    },
+    {
+      "routine": "sftp_ingest_poll",
+      "reads": ["custbill_drop"],
+      "writes": ["custbill_feed_file"],
+      "calls": []
+    }
+  ]
+}

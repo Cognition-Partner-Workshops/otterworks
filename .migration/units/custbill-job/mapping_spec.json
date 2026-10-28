@@ -1,0 +1,9 @@
+{
+  "objects": [
+    {
+      "root_table": "custbill_job",
+      "object": "ow_tp_custbill_job",
+      "notes": "Deploy object: the Lakeflow Job replacing crontab/run_all.sh — tasks feed-load, pipeline run, report materialization; PAUSED schedule."
+    }
+  ]
+}

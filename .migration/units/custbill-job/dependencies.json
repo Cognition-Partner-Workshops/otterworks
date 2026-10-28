@@ -1,0 +1,10 @@
+{
+  "routines": [
+    {
+      "routine": "run_all",
+      "reads": ["finance_billing_totals"],
+      "writes": ["custbill_job"],
+      "calls": []
+    }
+  ]
+}

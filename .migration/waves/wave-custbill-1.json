@@ -1,0 +1,111 @@
+{
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "run_id": "1793146609",
+  "wave": 1,
+  "base_branch": "tp-run/databricks-1793146609",
+  "width": 1,
+  "breaker_threshold": 1,
+  "max_minutes": 60,
+  "close_minutes": 30,
+  "doctor_max_age": 15,
+  "auto_merge": false,
+  "target_namespace": "ow_tp.ow_tp_custbill",
+  "verify_depth": "full",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "run-custbill-wave-1",
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN",
+    "params": {
+      "source_name": "OW_BILLING",
+      "target_name": "ow_tp.ow_tp_custbill",
+      "http_path": "/sql/1.0/warehouses/565cd2fd713738c4"
+    }
+  },
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "hard",
+    "ready": true
+  },
+  "pipelines": {
+    "invoicing": 1,
+    "custbill": 3,
+    "analytics": 2
+  },
+  "target_state": {
+    "pipeline": {
+      "decision": "target-pipeline",
+      "target": "Lakeflow Declarative Pipeline with expectations + quarantine sink",
+      "ref": "plan.yaml decision target-pipeline"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Job ow_tp_custbill_job, PAUSED schedule",
+      "ref": "plan.yaml decision target-orchestration"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "target": "ow_tp_custbill.finance_billing_totals + report artifact surface",
+      "ref": "plan.yaml decision target-consumer"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "Snapshot files into ow_tp_custbill.custbill_feed staging",
+      "ref": "plan.yaml decision target-data-dependency"
+    },
+    "core": {
+      "decision": "target-core",
+      "na": "custbill is a reporting pipeline; no core OLTP tables"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "na": "SQL lives inside the declarative pipeline"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "na": "Lakebase belongs to invoicing"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no ML surfaces in custbill"
+    }
+  },
+  "batches": [
+    {
+      "id": "c01",
+      "units": [
+        "custbill-feed"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_custbill.custbill_feed"
+      ],
+      "deploy_objects": [],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "brief": "Convert tools/oracle_custbill_extract.py + jobs/sftp_ingest_poll.ksh: snapshot Oracle month-end extract (invoice_header join customer_master left join tenants, batch_no/tenant filter) plus the SFTP drop landing into ow_tp.ow_tp_custbill.custbill_feed staging table — one row per CBCUST01 65-char record, HDR/TRL rows kept tagged or dropped per spec. Snapshot load only; read-only OW_BILLING.",
+      "gates": [
+        {
+          "id": "custbill-feed-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        }
+      ]
+    }
+  ],
+  "cost_estimate": {
+    "parts": [
+      {
+        "mode": "live",
+        "depth": "full",
+        "row_counts_known": false
+      }
+    ]
+  }
+}
