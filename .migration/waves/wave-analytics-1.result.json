@@ -1,0 +1,259 @@
+{
+  "auto_merge": false,
+  "base_sha": "80b91f76ff3b56bfcad27edde0db96a05833fad6",
+  "batches": [
+    {
+      "blocker_classes": [
+        "structural"
+      ],
+      "branch": "devin/1793172000-wave1-a01-usage-rollup",
+      "changed_paths": [
+        ".migration/recon/usage_rollup_scala/bin/doctor_env.py",
+        ".migration/recon/usage_rollup_scala/bin/recon_env.py",
+        ".migration/recon/usage_rollup_scala/canonicalization.json",
+        ".migration/recon/usage_rollup_scala/mapping_spec.json",
+        ".migration/recon/usage_rollup_scala/notes.md",
+        ".migration/recon/usage_rollup_scala/recon.summary.md",
+        ".migration/recon/usage_rollup_scala/report.md",
+        ".migration/recon/usage_rollup_scala/rerun/evolved.json",
+        ".migration/recon/usage_rollup_scala/rerun/evolved_pre_shape.json",
+        ".migration/recon/usage_rollup_scala/rerun/evolved_shape.json",
+        ".migration/recon/usage_rollup_scala/rerun/fresh.json",
+        ".migration/recon/usage_rollup_scala/rerun/fresh_shape.json",
+        ".migration/recon/usage_rollup_scala/rerun/prior_shape.json",
+        ".migration/recon/usage_rollup_scala/rerun_proof.json",
+        ".migration/recon/usage_rollup_scala/result.json",
+        ".migration/recon/usage_rollup_scala/routine_parity.json",
+        "etl/dbx-usage-rollup/databricks.yml",
+        "etl/dbx-usage-rollup/resources/ow_tp_analytics_usage_rollup.job.yml",
+        "etl/dbx-usage-rollup/src/ensure_objects.sql",
+        "etl/dbx-usage-rollup/src/rollup_load.sql"
+      ],
+      "gates": [
+        {
+          "decision_id": null,
+          "evidence": ".migration/recon/usage_rollup_scala/result.json",
+          "evidence_meta": {
+            "label": "live row_parity recon (depth full)",
+            "rows": 3,
+            "verdict": "PASS"
+          },
+          "id": "usage_rollup_scala-recon",
+          "kind": "row_parity",
+          "status": "passed"
+        }
+      ],
+      "id": "a01",
+      "merge_authority": {
+        "decision_id": "mo-analytics-w1-structural",
+        "kind": "human_override"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "usage_rollup_scala converted to PAUSED Lakeflow job ow_tp_analytics_usage_rollup; live recon verdict PASS / parity PASS (3/3 rows), merge blocked structural -> human_override mo-analytics-w1-structural on PR #2296",
+      "parity": "PASS",
+      "pr_head": "b098f778e3ae58c3b13971f3fa860b6f4aecfa4d",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296",
+      "prompt_sha": "bccfe0cf986e67a4",
+      "recon_cost": {
+        "elapsed_s": 3.988,
+        "source_rows_fetched": 3,
+        "source_statements": 10,
+        "target_rows_fetched": 3,
+        "target_statements": 4
+      },
+      "recon_mode": "live",
+      "recon_verdict": "PASS",
+      "skill_feedback": [
+        "databricks family reads the live source as the session identity; no fixture endpoint exists, so --mode live is the merge evidence",
+        "databricks-sql-connector oauth-m2m sql.connect hangs in this environment; mint access_token via databricks.sdk.core.Config() for the same SP (bin/recon_env.py)",
+        "databricks target adapter requires mapping_spec object as a bare table name; committed spec's 3-part name needed a normalized copy",
+        "no committed databricks canonicalization file; empty [] ruleset is valid",
+        "factory-doctor reads ambient DATABRICKS_HTTP_PATH (points at a retired warehouse) and hits the same sql.connect hang; bin/doctor_env.py pins the manifest warehouse and shims connect to the session-SP token while keeping oauth-m2m auth describe",
+        "adapters._uc_schema_facts joins information_schema.table_privileges on t.owner; the column is table_owner (ServerOperationError -> dictionary_unavailable, structural blocker)",
+        "dbx_guard blocks ad-hoc python SQL scripts; per-statement literals via databricks api post /api/2.0/sql/statements or harness commands are the sanctioned path"
+      ],
+      "status": "PASS",
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.usage_rollup",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_usage_rollup"
+      ]
+    },
+    {
+      "blocker_classes": [
+        "data",
+        "structural"
+      ],
+      "branch": "devin/1793151987-analytics-daily",
+      "changed_paths": [
+        ".migration/recon/analytics_daily/canonicalization.json",
+        ".migration/recon/analytics_daily/mapping_spec.json",
+        ".migration/recon/analytics_daily/notes.md",
+        ".migration/recon/analytics_daily/recon.summary.md",
+        ".migration/recon/analytics_daily/report.md",
+        ".migration/recon/analytics_daily/rerun/evolved.json",
+        ".migration/recon/analytics_daily/rerun/fresh.json",
+        ".migration/recon/analytics_daily/rerun/fresh_shape.json",
+        ".migration/recon/analytics_daily/rerun/prior_shape.json",
+        ".migration/recon/analytics_daily/rerun_proof.json",
+        ".migration/recon/analytics_daily/result.json",
+        ".migration/recon/analytics_daily/routine_parity.json",
+        "etl/dbx-analytics/data/analytics_events_2026-10-28.jsonl",
+        "etl/dbx-analytics/databricks.yml",
+        "etl/dbx-analytics/resources/ow_tp_analytics_daily.job.yml",
+        "etl/dbx-analytics/src/ensure_objects.sql",
+        "etl/dbx-analytics/src/run_analytics_daily.sql",
+        "etl/dbx-analytics/tools/analytics_extract.py"
+      ],
+      "failure_class": "missing_rule",
+      "gates": [
+        {
+          "evidence": {
+            "path": ".migration/recon/analytics_daily/report.md",
+            "rows": 3,
+            "verdict": "parity FAIL \u2014 extra_doc x2: staging mirror lacks hourly_breakdown/top_users artifact keys the head emits"
+          },
+          "id": "analytics_daily-recon",
+          "status": "failed"
+        }
+      ],
+      "id": "a02",
+      "merge_authority": {
+        "decision_id": "mo-analytics-w1-structural",
+        "kind": "human_override"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "Verify rerun on PR #2304 head 2ffd02a1b: live recon parity FAIL, merge_eligible=false, blockers [data, structural] \u2014 data = staging report mirror lacks the hourly/top_users artifact keys the head now emits (needs wave decision); structural unchanged and covered by mo-analytics-w1-structural; job extract cannot run on this workspace so sql_task legs were run on the warehouse directly; pushed SQL fix (array_sort sign cast) + serverless env for extract + refreshed evidence.",
+      "parity": "FAIL",
+      "pr_head": "0ec64f18df20acf177b219e2506d7b57a816f779",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2304",
+      "prompt_sha": "1532b7be0f2cf1b1",
+      "recon_cost": {
+        "elapsed_s": 10.065,
+        "source_rows_fetched": 0,
+        "source_statements": 12,
+        "target_rows_fetched": 0,
+        "target_statements": 12
+      },
+      "recon_mode": "live",
+      "recon_verdict": "FAIL",
+      "skill_feedback": [
+        "rerun-proof must be regenerated against the exact --rerun-source set (digest-bound) or check_proof SystemExits; run records need {run,status,evidence,shape[,pre_shape]} with shape built from `dbx-recon shape` outputs",
+        "`databricks jobs run-now` and DATABRICKS_HOST env prefixes are dbx_guard-blocked; use `databricks bundle run` and ambient identity",
+        "job cannot execute end-to-end on this workspace: extract task needs fixture-only AWS_ENDPOINT_URL (boto3 NoRegionError on serverless) \u2014 sql_task statements executed directly on the warehouse as the evidence legs",
+        "array_sort comparator returning DOUBLE breaks this runtime \u2014 cast sign() to INT"
+      ],
+      "status": "FAIL",
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.analytics_daily_summary",
+        "ow_tp.ow_tp_analytics.analytics_daily_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_daily"
+      ]
+    }
+  ],
+  "breaker_tripped_on": null,
+  "brief": [
+    "Wave 1 close, plan step run-analytics-wave-1c.",
+    "Landed: 1 of 2 batches passed their own recon.",
+    "Independent verify: PASS.",
+    "Failed: a02. Blocked: none. Held by circuit breaker: none.",
+    "Cost: estimated n/a; actual source_statements=32, target_statements=20, source_rows_fetched=6, target_rows_fetched=6, harness time 18s. Verifier depth full, overrides: a01=full, a02=full.",
+    "Human override authority (merge_eligible=false): a01 (usage_rollup_scala) by mo-analytics-w1-structural.",
+    "",
+    "Wave-close review over 1 verified PRs (auto-merge off, nothing merged).",
+    "- review: [bug] PR #2296 BUG_pr-review-job-e71e7e9a965344e398898d1f86fff445_0001: UTC rollups shift across calendar days \u2014 etl/dbx-usage-rollup/src/rollup_load.sql:21 \u2014 with a non-UTC warehouse session, `date` groups near-midnight events under the session's date instead of their UTC date (`from_utc_timestamp` with UTC leaves the instant unchanged while the date cast uses the session timezone) \u2014 https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296#discussion_r4396619104",
+    "- review: [bug] PR #2296 BUG_pr-review-job-e71e7e9a965344e398898d1f86fff445_0002: Removed input days retain stale rollups \u2014 etl/dbx-usage-rollup/src/rollup_load.sql:63 \u2014 when an input day disappears, MERGE never removes its existing rollup; the snapshot table continues reporting usage for dates absent from the current input \u2014 https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296#discussion_r4396619177",
+    "- review: [bug] PR #2296 BUG_pr-review-job-e71e7e9a965344e398898d1f86fff445_0003: Numeric event timestamps lose their days \u2014 etl/dbx-usage-rollup/src/rollup_load.sql:43-46 \u2014 for supported epoch-millisecond JSON timestamps, `to_timestamp` does not interpret the value as milliseconds; valid events fail parsing or enter the wrong day instead of matching the legacy rollup \u2014 https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296#discussion_r4396619276",
+    "Awaiting manual merge: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296",
+    "",
+    "Verifier findings:",
+    "- Batch a01 (usage_rollup_scala, PR #2296, head b098f778) re-verified PASS: my independent live full-depth dbx-recon run returned verdict PASS / parity PASS with 3/3 rows and a clean keyed diff on key `date`, merge_eligible=false only for blocker class structural, which the committed manifest merge_overrides decision mo-analytics-w1-structural clears for this unit.",
+    "- git diff --name-only base...head touches only .migration/recon/usage_rollup_scala/ plus the etl/dbx-usage-rollup conversion \u2014 no .migration/ path outside the unit's recon dir, so no protected_files_tampered.",
+    "- Base-branch recon_tolerances.json (tol-20261027-v1) and allowed_targets.json were enforced on my run; the PR did not loosen a tolerance or widen the allowlist (the head's allowed_targets.json is merely an older base copy differing in lakebase_branches).",
+    "- Tier 0 structural parity stayed unverifiable because the shipping harness's grants read fails on information_schema.table_privileges (t.owner vs table_owner) \u2014 the same platform-side wall the child hit, yielding structural_gap+warnings of class structural, exactly the class mo-analytics-w1-structural clears.",
+    "- Gate usage_rollup_scala-recon (kind row_parity) was opened: the committed result.json records mode live, depth full, verdict PASS, parity PASS \u2014 the evidence shows what the gate kind requires; rerun_proof fresh/evolved legs both pass and its source_digest matches the four committed job files.",
+    "- Adversarial boundary probes (read-only SQL Statements API): zero null or duplicate keys on either side, identical aggregates (total_events=165, active_users=24, net_storage_bytes=12582912), identical null profiles, both anti-joins empty; deletes/late arrivals would surface as presence diffs \u2014 none present; the 3-row fixture limits skew/Unicode material, noted not blocking.",
+    "",
+    "Skill feedback to fold in before the next wave:",
+    "- `databricks jobs run-now` and DATABRICKS_HOST env prefixes are dbx_guard-blocked; use `databricks bundle run` and ambient identity",
+    "- adapters._uc_schema_facts joins information_schema.table_privileges on t.owner; the column is table_owner (ServerOperationError -> dictionary_unavailable, structural blocker)",
+    "- array_sort comparator returning DOUBLE breaks this runtime \u2014 cast sign() to INT",
+    "- databricks family reads the live source as the session identity; no fixture endpoint exists, so --mode live is the merge evidence",
+    "- databricks target adapter requires mapping_spec object as a bare table name; committed spec's 3-part name needed a normalized copy",
+    "- databricks-sql-connector oauth-m2m sql.connect hangs in this environment; mint access_token via databricks.sdk.core.Config() for the same SP (bin/recon_env.py)",
+    "- dbx_guard blocks ad-hoc python SQL scripts; per-statement literals via databricks api post /api/2.0/sql/statements or harness commands are the sanctioned path",
+    "- factory-doctor reads ambient DATABRICKS_HTTP_PATH (points at a retired warehouse) and hits the same sql.connect hang; bin/doctor_env.py pins the manifest warehouse and shims connect to the session-SP token while keeping oauth-m2m auth describe",
+    "- job cannot execute end-to-end on this workspace: extract task needs fixture-only AWS_ENDPOINT_URL (boto3 NoRegionError on serverless) \u2014 sql_task statements executed directly on the warehouse as the evidence legs",
+    "- no committed databricks canonicalization file; empty [] ruleset is valid",
+    "- rerun-proof must be regenerated against the exact --rerun-source set (digest-bound) or check_proof SystemExits; run records need {run,status,evidence,shape[,pre_shape]} with shape built from `dbx-recon shape` outputs",
+    "",
+    "Per batch:",
+    "- a01: PASS. usage_rollup_scala converted to PAUSED Lakeflow job ow_tp_analytics_usage_rollup; live recon verdict PASS / parity PASS (3/3 rows), merge blocked structural -> human_override mo-analytics-w1-structural on PR #2296 https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296",
+    "- a02: FAIL. Verify rerun on PR #2304 head 2ffd02a1b: live recon parity FAIL, merge_eligible=false, blockers [data, structural] \u2014 data = staging report mirror lacks the hourly/top_users artifact keys the head now emits (needs wave decision); structural unchanged and covered by mo-analytics-w1-structural; job extract cannot run on this workspace so sql_task legs were run on the warehouse directly; pushed SQL fix (array_sort sign cast) + serverless env for extract + refreshed evidence. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2304"
+  ],
+  "close": {
+    "changed_paths": [],
+    "merged_prs": [],
+    "merges": [],
+    "review_findings": [
+      "[bug] PR #2296 BUG_pr-review-job-e71e7e9a965344e398898d1f86fff445_0001: UTC rollups shift across calendar days \u2014 etl/dbx-usage-rollup/src/rollup_load.sql:21 \u2014 with a non-UTC warehouse session, `date` groups near-midnight events under the session's date instead of their UTC date (`from_utc_timestamp` with UTC leaves the instant unchanged while the date cast uses the session timezone) \u2014 https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296#discussion_r4396619104",
+      "[bug] PR #2296 BUG_pr-review-job-e71e7e9a965344e398898d1f86fff445_0002: Removed input days retain stale rollups \u2014 etl/dbx-usage-rollup/src/rollup_load.sql:63 \u2014 when an input day disappears, MERGE never removes its existing rollup; the snapshot table continues reporting usage for dates absent from the current input \u2014 https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296#discussion_r4396619177",
+      "[bug] PR #2296 BUG_pr-review-job-e71e7e9a965344e398898d1f86fff445_0003: Numeric event timestamps lose their days \u2014 etl/dbx-usage-rollup/src/rollup_load.sql:43-46 \u2014 for supported epoch-millisecond JSON timestamps, `to_timestamp` does not interpret the value as milliseconds; valid events fail parsing or enter the wrong day instead of matching the legacy rollup \u2014 https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296#discussion_r4396619276"
+    ],
+    "unmerged": [
+      {
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296",
+        "reason": "merge not recorded by the wave-close step and no merge commit on origin/tp-run/databricks-1793146609 has the gated head as its PR-side parent"
+      }
+    ]
+  },
+  "close_minutes": 30,
+  "closed": false,
+  "doctor_signed_at": "2026-10-28T03:03:53+00:00",
+  "hook_probe": "blocked:8b60a95f",
+  "manifest_sha": "a0a7ca1e37f2",
+  "merge_overrides": [
+    {
+      "batch": "a01",
+      "decision_id": "mo-analytics-w1-structural",
+      "units": [
+        "usage_rollup_scala"
+      ]
+    }
+  ],
+  "pipeline_order": {},
+  "plan_sha": "3b7f525b562f69e6e6efd0b7ed7b0069103eaa1b776cb606e35ae2356b725258",
+  "plan_step": "run-analytics-wave-1c",
+  "resync": null,
+  "tag": "analytics-1",
+  "undeclared_write_targets": {},
+  "unreported_write_targets": [],
+  "verify": {
+    "changed_paths": [
+      ".migration/recon/wave-analytics-1/report.md"
+    ],
+    "findings": [
+      "Batch a01 (usage_rollup_scala, PR #2296, head b098f778) re-verified PASS: my independent live full-depth dbx-recon run returned verdict PASS / parity PASS with 3/3 rows and a clean keyed diff on key `date`, merge_eligible=false only for blocker class structural, which the committed manifest merge_overrides decision mo-analytics-w1-structural clears for this unit.",
+      "git diff --name-only base...head touches only .migration/recon/usage_rollup_scala/ plus the etl/dbx-usage-rollup conversion \u2014 no .migration/ path outside the unit's recon dir, so no protected_files_tampered.",
+      "Base-branch recon_tolerances.json (tol-20261027-v1) and allowed_targets.json were enforced on my run; the PR did not loosen a tolerance or widen the allowlist (the head's allowed_targets.json is merely an older base copy differing in lakebase_branches).",
+      "Tier 0 structural parity stayed unverifiable because the shipping harness's grants read fails on information_schema.table_privileges (t.owner vs table_owner) \u2014 the same platform-side wall the child hit, yielding structural_gap+warnings of class structural, exactly the class mo-analytics-w1-structural clears.",
+      "Gate usage_rollup_scala-recon (kind row_parity) was opened: the committed result.json records mode live, depth full, verdict PASS, parity PASS \u2014 the evidence shows what the gate kind requires; rerun_proof fresh/evolved legs both pass and its source_digest matches the four committed job files.",
+      "Adversarial boundary probes (read-only SQL Statements API): zero null or duplicate keys on either side, identical aggregates (total_events=165, active_users=24, net_storage_bytes=12582912), identical null profiles, both anti-joins empty; deletes/late arrivals would surface as presence diffs \u2014 none present; the 3-row fixture limits skew/Unicode material, noted not blocking."
+    ],
+    "recon_cost": {
+      "elapsed_s": 4.205,
+      "source_rows_fetched": 3,
+      "source_statements": 10,
+      "target_rows_fetched": 3,
+      "target_statements": 4
+    },
+    "report_path": "recon/wave-analytics-1:.migration/recon/wave-analytics-1/report.md",
+    "unit_verdicts": {
+      "a01": "PASS"
+    },
+    "wave_verdict": "PASS"
+  },
+  "waived_gates": [],
+  "wave": 1,
+  "width": 2,
+  "write_target_overlaps": []
+}
