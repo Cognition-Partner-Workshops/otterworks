@@ -1,0 +1,14 @@
+{
+  "spec": {
+    "source_table_full_name": "ow_tp.ow_tp_dunning_risk.ow_tp_scores",
+    "primary_key_columns": ["tenant_id", "subscription_id"],
+    "scheduling_policy": "SNAPSHOT",
+    "branch": "projects/ow-tp-billing/branches/mig-dunning-risk",
+    "postgres_database": "databricks_postgres",
+    "create_database_objects_if_missing": true,
+    "new_pipeline_spec": {
+      "storage_catalog": "ow_tp",
+      "storage_schema": "ow_tp_dunning_risk"
+    }
+  }
+}

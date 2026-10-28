@@ -1,0 +1,40 @@
+bundle:
+  name: ow_tp_dunning_risk
+
+sync:
+  exclude:
+    - .local/**
+    - __pycache__/**
+
+variables:
+  sync_pipeline_id:
+    description: Managed pipeline ID returned by postgres get-synced-table after initial sync
+
+resources:
+  jobs:
+    ow_tp_dunning_risk_refresh:
+      name: ow_tp_dunning_risk_refresh
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: '0 0 6 * * ?'
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: ow_tp_score
+          sql_task:
+            warehouse_id: 565cd2fd713738c4
+            file:
+              path: ./score.sql
+              source: WORKSPACE
+        - task_key: ow_tp_sync
+          depends_on:
+            - task_key: ow_tp_score
+          pipeline_task:
+            pipeline_id: ${var.sync_pipeline_id}
+            full_refresh: true
+
+targets:
+  mig_ow_tp_billing_20261028:
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/ow_tp_dunning_risk
