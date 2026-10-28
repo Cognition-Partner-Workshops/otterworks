@@ -39,9 +39,13 @@
         "ow_tp.mig_1793185083.invoices",
         "ow_tp.mig_1793185083.invoice_lines",
         "ow_tp.mig_1793185083.credit_notes",
+        "ow_tp.mig_1793185083.subscriptions",
+        "ow_tp.mig_1793185083.plans",
+        "ow_tp.mig_1793185083.tenants",
         "ow_tp.mig_1793185083.usage_events",
         "ow_tp.mig_1793185083.rating_periods",
         "ow_tp.mig_1793185083.rating_results",
+        "ow_tp.mig_1793185083.codes",
         "ow_tp.mig_1793185083.compute_preview",
         "ow_tp.mig_1793185083.fn_invoice_preview",
         "ow_tp.mig_1793185083.fn_invoice_lines",
@@ -49,7 +53,8 @@
         "ow_tp.mig_1793185083.compute_rating",
         "ow_tp.mig_1793185083.fn_usage_rating",
         "ow_tp.mig_1793185083.fn_usage_summary",
-        "ow_tp.mig_1793185083.sp_finalize_rating"
+        "ow_tp.mig_1793185083.sp_finalize_rating",
+        "ow_tp.mig_1793185083.trg_usage_events_check"
       ],
       "deploy_objects": [
         "ow_tp.mig_1793185083.compute_preview",
@@ -59,7 +64,8 @@
         "ow_tp.mig_1793185083.compute_rating",
         "ow_tp.mig_1793185083.fn_usage_rating",
         "ow_tp.mig_1793185083.fn_usage_summary",
-        "ow_tp.mig_1793185083.sp_finalize_rating"
+        "ow_tp.mig_1793185083.sp_finalize_rating",
+        "ow_tp.mig_1793185083.trg_usage_events_check"
       ],
       "lakeflow_pipelines": [],
       "verify_depth": "full",
@@ -102,7 +108,7 @@
           "evidence": ".migration/recon/u-rating/rerun_proof.json"
         }
       ],
-      "brief": "Convert units u-invoice-history (OW_BILLING.PKG_INVOICING: COMPUTE_PREVIEW, FN_INVOICE_PREVIEW, FN_INVOICE_LINES, SP_ISSUE_INVOICE) and u-rating (OW_BILLING.PKG_RATING: COMPUTE_RATING, FN_USAGE_RATING, FN_USAGE_SUMMARY, SP_FINALIZE_RATING + trigger TRG_USAGE_EVENTS_CHECK). ONE PR PER UNIT — this batch opens two PRs against tp-run/databricks-1793185083, one per unit, never a combined PR. Read .migration/units/u-invoice-history/ and .migration/units/u-rating/ mapping_spec.json + dependencies.json. Tenant One only: tenant_id = '00000000-0000-0000-0000-000000000001' (subscription_id '20000000-0000-0000-0000-000000000001'); the filter literal stays in the converted code, not a manifest param. u-rating lands on the lakebase target: WRITABLE native Lakebase tables (no synced tables) usage_events, rating_periods, rating_results in database ow_tp, project ow-tp-billing, branch mig-1793185083 — load path SELECT-only Python against OW_BILLING_RO_DSN -> CSV -> static DDL CREATE TABLE -> psycopg `COPY ... FROM STDIN` using a per-session OAuth credential via generate-database-credential on the unpooled endpoint host (already in target_hosts; the -pooler variant refuses OAuth). No CREATE ROLE. Deploys compute_rating, fn_usage_rating, fn_usage_summary, sp_finalize_rating as same-named Postgres functions plus TRG_USAGE_EVENTS_CHECK as a Postgres trigger, parity proven by the harness. u-invoice-history lands on the databricks target: Delta tables invoice_header, invoice_line, invoices, invoice_lines, credit_notes in ow_tp.mig_1793185083 — load path SELECT-only extract -> CSV -> `databricks fs cp` into a UC volume under ow_tp.mig_1793185083 -> read_files -> CREATE TABLE AS. Deploys compute_preview, fn_invoice_preview, fn_invoice_lines, sp_issue_invoice as same-named Databricks SQL routines with parity. Cross-unit calls into PKG_RATING (COMPUTE_RATING from COMPUTE_PREVIEW, SP_FINALIZE_RATING from SP_ISSUE_INVOICE) are satisfied inside the batch: Delta SQL cannot call Lakebase functions, so the history conversion re-implements the needed rating logic as Databricks SQL and proves parity against Oracle for both the invoicing routines and the re-implemented rating logic. Source is oracle via secret name OW_BILLING_RO_DSN; read-only SELECT only, zero writes to Oracle. Recon per unit with its own target kind: dbx-recon --family oracle --mode live under tolerance profile tol-20261027-v1, pinned to --target-http-path /sql/1.0/warehouses/565cd2fd713738c4 — u-rating with --target-kind lakebase, evidence under .migration/recon/u-rating/; u-invoice-history with --target-kind databricks, evidence under .migration/recon/u-invoice-history/. Gates: recon_pass / recon_pass_rating (row parity per unit), routine_parity / routine_parity_rating (entry-point routines return equivalent results vs source), rerun_proof / rerun_proof_rating (rerun is idempotent per unit)."
+      "brief": "Convert units u-invoice-history (OW_BILLING.PKG_INVOICING: COMPUTE_PREVIEW, FN_INVOICE_PREVIEW, FN_INVOICE_LINES, SP_ISSUE_INVOICE) and u-rating (OW_BILLING.PKG_RATING: COMPUTE_RATING, FN_USAGE_RATING, FN_USAGE_SUMMARY, SP_FINALIZE_RATING + trigger TRG_USAGE_EVENTS_CHECK). ONE PR PER UNIT \u2014 this batch opens two PRs against tp-run/databricks-1793185083, one per unit, never a combined PR. Read .migration/units/u-invoice-history/ and .migration/units/u-rating/ mapping_spec.json + dependencies.json. Tenant One only: tenant_id = '00000000-0000-0000-0000-000000000001' (subscription_id '20000000-0000-0000-0000-000000000001'); the filter literal stays in the converted code, not a manifest param. Naming: write_targets/deploy_objects are logical names under target_namespace for every target kind \u2014 an entry's physical home is its unit's mapping_spec target_kind (u-rating = lakebase native tables, u-invoice-history = Delta); the same logical name may exist in both stores when a unit stages its own copy. u-rating lands on the lakebase target: WRITABLE native Lakebase tables (no synced tables) usage_events, rating_periods, rating_results in database ow_tp, project ow-tp-billing, branch mig-1793185083 \u2014 load path SELECT-only Python against OW_BILLING_RO_DSN -> CSV -> static DDL CREATE TABLE -> psycopg `COPY ... FROM STDIN` using a per-session OAuth credential via generate-database-credential on the unpooled endpoint host (already in target_hosts; the -pooler variant refuses OAuth). No CREATE ROLE. Deploys compute_rating, fn_usage_rating, fn_usage_summary, sp_finalize_rating as same-named Postgres functions plus TRG_USAGE_EVENTS_CHECK as a Postgres trigger enforcing units > 0 and kind_cd against `codes`; confirm `codes` exists in the ow_tp branch as pre-existing reference data (as PLANS/TENANTS already are) and stage it via the same extract path only if absent \u2014 say which in the PR. Its SUBSCRIPTIONS/PLANS reads resolve to the wave-1 Lakebase tables already in database ow_tp. u-invoice-history lands on the databricks target: Delta tables invoice_header, invoice_line, invoices, invoice_lines, credit_notes in ow_tp.mig_1793185083 \u2014 load path SELECT-only extract -> CSV -> `databricks fs cp` into a UC volume under ow_tp.mig_1793185083 -> read_files -> CREATE TABLE AS. Deploys compute_preview, fn_invoice_preview, fn_invoice_lines, sp_issue_invoice as same-named Databricks SQL routines with parity. Cross-target contract: Delta SQL can neither read Lakebase tables nor call Lakebase functions, so the Delta store is self-contained \u2014 the history unit stages its own Delta copies of every table its routines touch (subscriptions, plans, tenants, usage_events, rating_periods, rating_results) via the same extract -> volume -> read_files -> CREATE TABLE AS path, and SP_ISSUE_INVOICE's inlined SP_FINALIZE_RATING/COMPUTE_RATING logic writes Delta rating_periods/rating_results before writing the invoice. Parity evidence asserts those written Delta rating rows match Oracle for the same inputs (e.g. finalized November results after invoice issuance), not only routine return values. The Lakebase rating store stays the authoritative serving surface for rating consumers; recon per unit proves each store against Oracle independently. Source is oracle via secret name OW_BILLING_RO_DSN; read-only SELECT only, zero writes to Oracle. Recon per unit with its own target kind: dbx-recon --family oracle --mode live under tolerance profile tol-20261027-v1, pinned to --target-http-path /sql/1.0/warehouses/565cd2fd713738c4 \u2014 u-rating with --target-kind lakebase, evidence under .migration/recon/u-rating/; u-invoice-history with --target-kind databricks, evidence under .migration/recon/u-invoice-history/. Gates: recon_pass / recon_pass_rating (row parity per unit), routine_parity / routine_parity_rating (entry-point routines return equivalent results vs source), rerun_proof / rerun_proof_rating (rerun is idempotent per unit)."
     }
   ],
   "target_state": {
