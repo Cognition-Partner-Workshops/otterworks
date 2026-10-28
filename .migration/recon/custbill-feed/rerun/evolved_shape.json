@@ -1,0 +1,70 @@
+{
+  "target_kind": "databricks",
+  "catalog": "ow_tp",
+  "schema": "ow_tp_custbill",
+  "read_at": "2026-10-28T02:32:40.913376+00:00",
+  "tables": {
+    "custbill_feed": [
+      {
+        "name": "invoice_id",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "cust_no",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "cust_name",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "period_end",
+        "type": "date",
+        "nullable": true
+      },
+      {
+        "name": "total_amt",
+        "type": "decimal(14,2)",
+        "nullable": true
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "record_type",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "record_tag",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "raw_line",
+        "type": "string",
+        "nullable": false
+      },
+      {
+        "name": "source_file",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "batch_no",
+        "type": "bigint",
+        "nullable": true
+      },
+      {
+        "name": "landed_at",
+        "type": "timestamp",
+        "nullable": true
+      }
+    ]
+  }
+}
