@@ -1,0 +1,80 @@
+{
+  "target_kind": "databricks",
+  "catalog": "ow_tp",
+  "schema": "ow_tp_analytics",
+  "read_at": "2026-10-28T01:50:20.032636+00:00",
+  "tables": {
+    "usage_rollup": [
+      {
+        "name": "date",
+        "type": "date",
+        "nullable": true
+      },
+      {
+        "name": "active_users",
+        "type": "int",
+        "nullable": true
+      },
+      {
+        "name": "collab_sessions",
+        "type": "int",
+        "nullable": true
+      },
+      {
+        "name": "documents_created",
+        "type": "int",
+        "nullable": true
+      },
+      {
+        "name": "documents_edited",
+        "type": "int",
+        "nullable": true
+      },
+      {
+        "name": "documents_viewed",
+        "type": "int",
+        "nullable": true
+      },
+      {
+        "name": "files_downloaded",
+        "type": "int",
+        "nullable": true
+      },
+      {
+        "name": "files_uploaded",
+        "type": "int",
+        "nullable": true
+      },
+      {
+        "name": "net_storage_bytes",
+        "type": "bigint",
+        "nullable": true
+      },
+      {
+        "name": "storage_allocated_bytes",
+        "type": "bigint",
+        "nullable": true
+      },
+      {
+        "name": "storage_released_bytes",
+        "type": "bigint",
+        "nullable": true
+      },
+      {
+        "name": "total_events",
+        "type": "int",
+        "nullable": true
+      },
+      {
+        "name": "generated_at",
+        "type": "timestamp",
+        "nullable": true
+      },
+      {
+        "name": "day_count",
+        "type": "int",
+        "nullable": true
+      }
+    ]
+  }
+}

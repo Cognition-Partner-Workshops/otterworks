@@ -1,0 +1,26 @@
+resources:
+  jobs:
+    ow_tp_analytics_usage_rollup:
+      name: ow_tp_analytics_usage_rollup
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: "0 15 3 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: ensure_objects
+          max_retries: 2
+          min_retry_interval_millis: 60000
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/ensure_objects.sql
+        - task_key: rollup_load
+          depends_on:
+            - task_key: ensure_objects
+          max_retries: 2
+          min_retry_interval_millis: 60000
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/rollup_load.sql

@@ -1,0 +1,21 @@
+{
+  "routine_parity": [
+    {
+      "routine": "analytics.ow_tp_analytics_usage_rollup",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "analytics.usage_rollup_run",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    }
+  ],
+  "unproven": [
+    "analytics.ow_tp_analytics_usage_rollup",
+    "analytics.usage_rollup_run"
+  ],
+  "failed": []
+}
