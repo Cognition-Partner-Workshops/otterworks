@@ -1,0 +1,239 @@
+{
+  "unit": "customer_master",
+  "mode": "live",
+  "mapping_version": "ow-tp-map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "threshold",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 14,
+    "source_rows_fetched": 25001,
+    "target_statements": 9,
+    "target_rows_fetched": 25001,
+    "elapsed_s": 186.856
+  },
+  "generated_at": "2026-10-28T01:30:12.286900+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 1,
+      "stats": {
+        "customer_master": {
+          "source": {
+            "primary_key": [
+              "cust_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "cust_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [
+              "cust_id"
+            ],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "cust_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "customer_master": {
+            "constraints": [
+              "target PK is informational, not enforced: duplicate keys would be accepted"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "customer_master",
+          "check": "primary_key_informational_only",
+          "detail": "target PK is informational, not enforced: duplicate keys would be accepted",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "customer_master",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "customer_master",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "source_counts": {
+          "OW_BILLING.CUSTOMER_MASTER": 25001
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 155,
+      "stats": {
+        "deferred_to_tier3": [
+          "customer_master.tax_exempt_yn",
+          "customer_master.credit_hold_yn",
+          "customer_master.dunning_exempt_yn",
+          "customer_master.vip_yn",
+          "customer_master.flag_01",
+          "customer_master.flag_02",
+          "customer_master.flag_03",
+          "customer_master.flag_04",
+          "customer_master.flag_05",
+          "customer_master.flag_06",
+          "customer_master.flag_07",
+          "customer_master.flag_08",
+          "customer_master.flag_09",
+          "customer_master.flag_10",
+          "customer_master.flag_11",
+          "customer_master.flag_12",
+          "customer_master.flag_13",
+          "customer_master.flag_14",
+          "customer_master.flag_15",
+          "customer_master.flag_16",
+          "customer_master.flag_17",
+          "customer_master.flag_18",
+          "customer_master.flag_19",
+          "customer_master.flag_20"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 25001,
+      "stats": {
+        "customer_master": {
+          "mode": "full_diff",
+          "population": 25001,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    }
+  ],
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": {
+    "family": "oracle",
+    "target_kind": "databricks",
+    "filled": [],
+    "unmapped": []
+  },
+  "rerun_proof": null,
+  "rerun_posture": "not_applicable",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": [],
+  "routine_writers": [],
+  "routine_dependencies": ".migration/units/customer_master/dependencies.json"
+}

@@ -1,0 +1,99 @@
+{
+  "wave": 0,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "scaffold-wave-0",
+  "width": 1,
+  "breaker_threshold": 1,
+  "auto_merge": false,
+  "max_minutes": 30,
+  "verify_depth": "threshold",
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "soft",
+    "ready": true
+  },
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN"
+  },
+  "target_namespace": "ow_tp.ow_tp_invoicing",
+  "base_branch": "mig-ow-tp-billing-20261028",
+  "batches": [
+    {
+      "id": "w0-b01",
+      "units": [
+        "tenants"
+      ],
+      "write_targets": [
+        "tenants"
+      ],
+      "deploy_objects": [
+        "tenants"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "threshold",
+      "gates": [
+        {
+          "id": "recon_parity_tenants",
+          "kind": "row_parity",
+          "status": "passed",
+          "evidence": ".migration/recon/tenants/result.json"
+        }
+      ],
+      "brief": "Shared read-surface object TENANTS (OW_BILLING.TENANTS -> ow_tp.ow_tp_invoicing.tenants), snapshot-loaded once; invoicing owns it. Read .migration/units/tenants/mapping_spec.json; evidence .migration/recon/tenants/."
+    },
+    {
+      "id": "w0-b02",
+      "units": [
+        "codes"
+      ],
+      "write_targets": [
+        "codes"
+      ],
+      "deploy_objects": [
+        "codes"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "threshold",
+      "gates": [
+        {
+          "id": "recon_parity_codes",
+          "kind": "row_parity",
+          "status": "passed",
+          "evidence": ".migration/recon/codes/result.json"
+        }
+      ],
+      "brief": "Shared read-surface object CODES (OW_BILLING.CODES -> ow_tp.ow_tp_invoicing.codes), snapshot-loaded once; invoicing owns it. Read .migration/units/codes/mapping_spec.json; evidence .migration/recon/codes/."
+    },
+    {
+      "id": "w0-b03",
+      "units": [
+        "customer_master"
+      ],
+      "write_targets": [
+        "customer_master"
+      ],
+      "deploy_objects": [
+        "customer_master"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "threshold",
+      "gates": [
+        {
+          "id": "recon_parity_customer_master",
+          "kind": "row_parity",
+          "status": "passed",
+          "evidence": ".migration/recon/customer_master/result.json"
+        }
+      ],
+      "brief": "Shared read-surface object CUSTOMER_MASTER (OW_BILLING.CUSTOMER_MASTER -> ow_tp.ow_tp_invoicing.customer_master), snapshot-loaded once; invoicing owns it. Read .migration/units/customer_master/mapping_spec.json; evidence .migration/recon/customer_master/."
+    }
+  ]
+}

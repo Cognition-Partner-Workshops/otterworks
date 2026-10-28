@@ -1,0 +1,13 @@
+resources:
+  jobs:
+    ow_tp_invoicing_wave0_shell:
+      name: ow_tp_invoicing_wave0_shell
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: "UTC"
+        pause_status: PAUSED
+      tasks:
+        - task_key: shell_placeholder
+          notebook_task:
+            notebook_path: /Shared/migration/ow_tp_invoicing/shell
+            source: WORKSPACE
