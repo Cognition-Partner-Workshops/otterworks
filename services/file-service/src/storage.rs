@@ -1,3 +1,4 @@
+use aws_sdk_s3::error::ProvideErrorMetadata;
 use aws_sdk_s3::presigning::PresigningConfig;
 use bytes::Bytes;
 use std::time::Duration;
@@ -48,7 +49,17 @@ impl S3Client {
             .content_type(content_type)
             .send()
             .await
-            .map_err(|e| ServiceError::S3Error(format!("upload failed: {e}")))?;
+            .map_err(|e| {
+                let code = e.code().unwrap_or("unknown");
+                tracing::error!(
+                    key = %key,
+                    bucket = %self.bucket,
+                    error_code = %code,
+                    error = %e,
+                    "S3 put_object failed"
+                );
+                ServiceError::S3Error(format!("upload failed ({code})"))
+            })?;
 
         tracing::info!(key = %key, bucket = %self.bucket, "Uploaded object to S3");
         Ok(())
