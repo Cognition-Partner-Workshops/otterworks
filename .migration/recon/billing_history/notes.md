@@ -55,4 +55,8 @@ by batch c01 of wave-custbill-1 (PR #2290 notes).
   `parity_missing` rule; same shape batch c01 reported).
 - Rerun proof: `rerun/rerun_proof.json` — fresh `pass`, evolved `unsupported` with
   `nothing_evolved` (valid `first_run_baseline`); bound to the current job-source digest.
-- Gate report: `.migration/recon/wave-invoicing-1/w1-b01/report.json`.
+- Gate report: `.migration/recon/billing_history/w1-recon.report.json` — the manifest declares
+  `.migration/recon/wave-invoicing-1/w1-b01/report.json` as gate evidence, but the batch's write
+  surface is `.migration/recon/<unit_id>/` only; a copy written to the declared path was removed
+  by the wave owner (commit `ebe435a11`, "stray batch report.json outside unit recon dir"). The
+  file inside the unit dir carries the same payload plus a `declared_path` note.
