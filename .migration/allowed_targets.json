@@ -1,0 +1,21 @@
+{
+  "run_id": "1793185083",
+  "catalogs": ["ow_tp"],
+  "schema_prefix": "ow_tp_",
+  "job_prefix": "ow_tp_",
+  "legacy_sources": ["OW_BILLING_RO_DSN"],
+  "guard_mode": "block",
+  "run_mode": "live",
+  "load_mode": "snapshot",
+  "doctor_max_age": 30,
+  "target_hosts": ["ep-rapid-voice-d1ih8b1a.database.us-west-2.cloud.databricks.com", "dbc-8bc9474f-40ae.cloud.databricks.com"],
+  "bundle_targets": ["mig_1793185083"],
+  "lakebase_projects": ["ow-tp-billing"],
+  "lakebase_branches": ["mig-1793185083"],
+  "forbidden": {
+    "schemas": ["ow_tp.bronze", "ow_tp.silver", "ow_tp.gold", "ow_tp.airbyte_demo", "ow_tp.fivetran_metadata", "ow_tp._fivetran_setup_test", "ow_tp.fivetran_trimester_remoteness_staging"],
+    "lakebase_branches": ["production", "mig-1793176531", "mig-invoicing-w1", "mig-billing-20261028", "mig-usage-meter", "mig-dunning-risk", "mig-20261027-w0"],
+    "legacy": "OW_BILLING on 44.213.30.5:1521/FREEPDB1 is read-only in every phase"
+  },
+  "note": "Live run on ow-tp-billing branch mig-1793185083 (single-branch decision d-lakebase-branches); load posture is snapshot-only. Lakebase endpoint host ep-rapid-voice-d1ih8b1a.database.us-west-2.cloud.databricks.com is the unpooled host of projects/ow-tp-billing/branches/mig-1793185083/endpoints/primary (read_write, ACTIVE); the -pooler variant refuses OAuth. The run mints its own Lakebase DSN (LAKEBASE_MIGRATION_DSN points at another project and is not used)."
+}
