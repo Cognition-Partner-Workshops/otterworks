@@ -224,10 +224,31 @@ phases:
           - id: w1-recon
             description: ow_tp_custbill.custbill_feed row parity vs legacy CUSTBILL
               feed (dbx-recon --family oracle PASS).
+      - id: run-custbill-wave-1b
+        title: Wave 1b — wave-1 rerun with authorized merge override (structural
+          class), width 1
+        depends_on: [run-custbill-wave-1]
+        gates:
+          - id: w1-recon
+            description: ow_tp_custbill.custbill_feed row parity vs legacy CUSTBILL
+              feed (dbx-recon --family oracle PASS).
+        decisions:
+          - id: custbill-merge-override-w1
+            description: Merge override mo-custbill-w1-structural (authorized by
+              requester, .migration/authorizations.json) forgives the structural
+              blocker class on custbill-feed — Delta informational PK plus
+              platform-side target grants.
+            options:
+              - id: accept
+                label: Run wave 1b with merge_overrides citing mo-custbill-w1-structural
+              - id: hold
+                label: Hold wave-1 results parked; no merge-authorized rerun
+            selected: null
+            important: true
       - id: run-custbill-wave-2
         title: Wave 2 — pipeline (parsed_records + quarantine + finance_billing_totals;
           deploy ow_tp_custbill_ldp), width 1
-        depends_on: [run-custbill-wave-1]
+        depends_on: [run-custbill-wave-1b]
         gates:
           - id: w2-recon
             description: parsed_records + finance_billing_totals PASS vs legacy
@@ -320,6 +341,13 @@ phases:
             label: Accept width-2 shape; SCC as w1-b02
         selected: accept
         important: false
+      - id: mo-invoicing-w1-structural
+        description: Merge override authorized by the requester (committed .migration/authorizations.json entry of kind merge_override, by user) forgiving blocker class `structural` on the five-package batch w1-b02 — legacy declares 4 triggers in DDL but never installs them, so converted target objects cannot match structurally.
+        options:
+          - id: authorized
+            label: Authorized — w1-b02 may be merge-eligible on parity PASS despite the structural class
+        selected: authorized
+        important: true
     steps:
       - id: invoicing-inventory
         title: Inventory + coverage (STOP B — approved)
@@ -337,6 +365,17 @@ phases:
             description: Writing routines unproven pending the requester's EXECUTE decision.
             check:
               kind: human-decision
+      - id: run-invoicing-wave-1b
+        title: Rerun invoicing wave 1 under merge override (width 2)
+        depends_on: [run-invoicing-wave-1]
+        gates:
+          - id: w1b-recon
+            description: dbx-recon --family oracle PASS per batch — w1-b01 Delta track, w1-b02 Lakebase track.
+        blockers:
+          - id: b-execute-grant
+            description: Writing routines unproven pending the requester's EXECUTE decision.
+            check:
+              kind: human-decision
       - id: invoicing-stop-e
         title: STOP E park — legacy output, Databricks output, recon verdict side by side
-        depends_on: [run-invoicing-wave-1]
+        depends_on: [run-invoicing-wave-1b]
