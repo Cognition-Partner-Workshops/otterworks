@@ -100,14 +100,17 @@
         "invoice_header",
         "invoice_line",
         "plans",
+        "trg_entity_attr_value_seq",
+        "trg_usage_events_check",
         "usage_events"
       ],
       "deploy_objects": [
+        "invoice_header",
+        "invoice_line",
         "plans",
         "usage_events",
-        "entity_attr_value",
-        "invoice_header",
-        "invoice_line"
+        "trg_entity_attr_value_seq",
+        "trg_usage_events_check"
       ],
       "lakeflow_pipelines": [],
       "verify_depth": "full",
@@ -153,11 +156,12 @@
       ],
       "write_targets": [
         "customer_master_hist",
-        "subscriptions_hist"
+        "subscriptions_hist",
+        "trg_customer_master_hist"
       ],
       "deploy_objects": [
         "subscriptions_hist",
-        "customer_master_hist"
+        "trg_customer_master_hist"
       ],
       "lakeflow_pipelines": [],
       "verify_depth": "full",
@@ -177,5 +181,6 @@
       ],
       "brief": "Delta history backfill into ow_tp.ow_tp_invoicing: SUBSCRIPTIONS_HIST, CUSTOMER_MASTER_HIST (155-col mirror). hist_dt is a STRING timestamp \u2014 compare verbatim. Ongoing capture comes from the Lakebase triggers converted in wave 2 plus hist sync provisioning. Read .migration/units/<unit>/mapping_spec.json; evidence .migration/recon/<unit>/."
     }
-  ]
+  ],
+  "target_namespace": "ow_tp.ow_tp_invoicing"
 }
