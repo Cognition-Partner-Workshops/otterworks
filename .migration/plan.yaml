@@ -341,6 +341,13 @@ phases:
             label: Accept width-2 shape; SCC as w1-b02
         selected: accept
         important: false
+      - id: mo-invoicing-w1-structural
+        description: Merge override authorized by the requester (committed .migration/authorizations.json entry of kind merge_override, by user) forgiving blocker class `structural` on the five-package batch w1-b02 — legacy declares 4 triggers in DDL but never installs them, so converted target objects cannot match structurally.
+        options:
+          - id: authorized
+            label: Authorized — w1-b02 may be merge-eligible on parity PASS despite the structural class
+        selected: authorized
+        important: true
     steps:
       - id: invoicing-inventory
         title: Inventory + coverage (STOP B — approved)
@@ -358,6 +365,17 @@ phases:
             description: Writing routines unproven pending the requester's EXECUTE decision.
             check:
               kind: human-decision
+      - id: run-invoicing-wave-1b
+        title: Rerun invoicing wave 1 under merge override (width 2)
+        depends_on: [run-invoicing-wave-1]
+        gates:
+          - id: w1b-recon
+            description: dbx-recon --family oracle PASS per batch — w1-b01 Delta track, w1-b02 Lakebase track.
+        blockers:
+          - id: b-execute-grant
+            description: Writing routines unproven pending the requester's EXECUTE decision.
+            check:
+              kind: human-decision
       - id: invoicing-stop-e
         title: STOP E park — legacy output, Databricks output, recon verdict side by side
-        depends_on: [run-invoicing-wave-1]
+        depends_on: [run-invoicing-wave-1b]
