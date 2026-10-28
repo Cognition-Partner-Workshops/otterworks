@@ -40,6 +40,25 @@
       "namespace": "ow_tp.ow_tp_invoicing"
     }
   },
+  "merge_overrides": [
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "plans",
+        "usage_events",
+        "entity_attr_value",
+        "invoice_header",
+        "invoice_line"
+      ]
+    },
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "subscriptions_hist",
+        "customer_master_hist"
+      ]
+    }
+  ],
   "batches": [
     {
       "id": "w1-b01",
@@ -125,7 +144,7 @@
           "evidence": ".migration/recon/customer_master_hist/result.json"
         }
       ],
-      "brief": "Delta history backfill into ow_tp.ow_tp_invoicing: SUBSCRIPTIONS_HIST, CUSTOMER_MASTER_HIST (155-col mirror). hist_dt is a STRING timestamp — compare verbatim. Ongoing capture comes from the Lakebase triggers converted in wave 2 plus hist sync provisioning. Read .migration/units/<unit>/mapping_spec.json; evidence .migration/recon/<unit>/."
+      "brief": "Delta history backfill into ow_tp.ow_tp_invoicing: SUBSCRIPTIONS_HIST, CUSTOMER_MASTER_HIST (155-col mirror). hist_dt is a STRING timestamp \u2014 compare verbatim. Ongoing capture comes from the Lakebase triggers converted in wave 2 plus hist sync provisioning. Read .migration/units/<unit>/mapping_spec.json; evidence .migration/recon/<unit>/."
     }
   ]
 }
