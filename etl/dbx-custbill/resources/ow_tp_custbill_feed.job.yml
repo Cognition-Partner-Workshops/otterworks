@@ -1,0 +1,31 @@
+resources:
+  jobs:
+    ow_tp_custbill_feed:
+      name: ow_tp_custbill_feed
+      max_concurrent_runs: 1
+      description: >-
+        Snapshot landing for the CUSTBILL month-end feed: reads keyed feed
+        snapshots dropped in the custbill_drop volume (converted
+        oracle_custbill_extract + sftp_ingest_poll pair) and merges one row per
+        CBCUST01 65-char detail record into ow_tp_custbill.custbill_feed.
+      schedule:
+        quartz_cron_expression: "0 10 2 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: ensure_objects
+          sql_task:
+            file:
+              path: ../src/ensure_objects.sql
+            warehouse_id: ${var.warehouse_id}
+            parameters:
+              drop_path: ${var.drop_path}
+        - task_key: land_feed
+          depends_on:
+            - task_key: ensure_objects
+          sql_task:
+            file:
+              path: ../src/land_feed.sql
+            warehouse_id: ${var.warehouse_id}
+            parameters:
+              drop_path: ${var.drop_path}

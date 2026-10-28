@@ -1,0 +1,326 @@
+{
+  "unit": "custbill-feed",
+  "mode": "live",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "full",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 14,
+    "source_rows_fetched": 18750,
+    "target_statements": 9,
+    "target_rows_fetched": 18750,
+    "elapsed_s": 16.575
+  },
+  "generated_at": "2026-10-28T02:41:44.787689+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 1,
+      "stats": {
+        "custbill_feed": {
+          "source": {
+            "primary_key": [
+              "invoice_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "invoice_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [
+              "invoice_id"
+            ],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "cust_no",
+              "invoice_id",
+              "raw_line",
+              "record_tag"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "custbill_feed": {
+            "constraints": [
+              "target PK is informational, not enforced: duplicate keys would be accepted"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "custbill_feed",
+          "check": "primary_key_informational_only",
+          "detail": "target PK is informational, not enforced: duplicate keys would be accepted",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "custbill_feed",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "custbill_feed",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "source_counts": {
+          "ow_billing.invoice_header": 18750
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 18750,
+      "stats": {
+        "custbill_feed": {
+          "mode": "full_diff",
+          "population": 18750,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    }
+  ],
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": {
+    "family": "oracle",
+    "target_kind": "databricks",
+    "filled": [],
+    "unmapped": []
+  },
+  "rerun_proof": {
+    "unit": "custbill-feed",
+    "sources": [
+      "etl/dbx-custbill/src/ensure_objects.sql",
+      "etl/dbx-custbill/src/land_feed.sql"
+    ],
+    "prior_from": ".migration/recon/custbill-feed/rerun/prior_shape.json",
+    "fresh": "pass",
+    "evolved": "pass",
+    "passed": true,
+    "findings": [],
+    "notes": [],
+    "tables": [
+      "custbill_feed"
+    ],
+    "source_digest": "a2c57af0bc5bba128e3698d20ccaf240d21ad4c760fe2bb53d8312514cc4386c",
+    "evidence": {
+      "fresh": "databricks job run 88652120260415 (bundle ow_tp_custbill_feed, target mig_1793146609, on a fresh target after DROP TABLE)",
+      "evolved": "databricks job run 165607592354729 (bundle ow_tp_custbill_feed, target mig_1793146609, rerun over the landed table)"
+    },
+    "shape": {
+      "tables": {
+        "custbill_feed": [
+          {
+            "name": "invoice_id",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "cust_no",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "cust_name",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "period_end",
+            "type": "date",
+            "nullable": true
+          },
+          {
+            "name": "total_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "currency",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "record_type",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "record_tag",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "raw_line",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "source_file",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "batch_no",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "landed_at",
+            "type": "timestamp",
+            "nullable": true
+          }
+        ]
+      }
+    },
+    "shape_digest": "0884ecd018279176005e58f884c75175cd846342ea69654a6fce1798d6462a1a",
+    "prior_digest": "0884ecd018279176005e58f884c75175cd846342ea69654a6fce1798d6462a1a"
+  },
+  "rerun_posture": "required",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": [
+    {
+      "routine": "custbill.ow_tp_custbill_feed",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "custbill.oracle_custbill_extract",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "custbill.sftp_ingest_poll",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    }
+  ],
+  "routine_writers": [
+    "custbill.ow_tp_custbill_feed",
+    "custbill.oracle_custbill_extract",
+    "custbill.sftp_ingest_poll"
+  ],
+  "routine_dependencies": ".migration/units/custbill-feed/dependencies.json"
+}
