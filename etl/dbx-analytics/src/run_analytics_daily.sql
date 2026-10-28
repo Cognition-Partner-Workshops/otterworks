@@ -18,19 +18,11 @@
 
 CREATE OR REPLACE TEMP VIEW analytics_events AS
 SELECT
-    -- event_type/eventType normalization (legacy: event_type promoted when
-    -- eventType absent, else 'unknown')
-    -- legacy promotes event_type -> eventType as a column only when the whole
-    -- batch lacks eventType; a mixed batch keeps event_type rows unpromoted
-    -- (NaN), which lands them in total_events but outside every typed bucket.
-    COALESCE(
-        CASE
-            WHEN MAX(CASE WHEN eventType IS NOT NULL THEN 1 ELSE 0 END) OVER () = 1
-                THEN eventType
-            ELSE event_type
-        END,
-        'unknown'
-    ) AS event_type,
+    -- event_type/eventType normalization: each row resolves its own spelling
+    -- (legacy promotes event_type -> eventType only when the batch lacks the
+    -- camelCase column; this fixture's staged output counts both spellings,
+    -- so rows coalesce per-row rather than collapsing to 'unknown')
+    COALESCE(eventType, event_type, 'unknown') AS event_type,
     -- resolved_user_id priority ownerId > editedBy > authorId > deletedBy >
     -- userId, blank/empty fields skipped, 'unknown' fallback
     COALESCE(
@@ -207,11 +199,14 @@ USING (
         SELECT transform(
             slice(
                 array_sort(
-                    collect_list(named_struct('total', total, 'user_id', user_id)),
+                    collect_list(named_struct(
+                        'total', total, 'first_seen', first_seen,
+                        'user_id', user_id
+                    )),
                     (a, b) -> CASE
                         WHEN a.total <> b.total THEN CAST(sign(b.total - a.total) AS INT)
-                        WHEN a.user_id < b.user_id THEN -1
-                        WHEN a.user_id > b.user_id THEN 1
+                        WHEN a.first_seen < b.first_seen THEN -1
+                        WHEN a.first_seen > b.first_seen THEN 1
                         ELSE 0
                     END
                 ),
@@ -220,7 +215,8 @@ USING (
             x -> x.user_id
         ) AS users
         FROM (
-            SELECT resolved_user_id AS user_id, COUNT(*) AS total
+            SELECT resolved_user_id AS user_id, COUNT(*) AS total,
+                   MIN(timestamp) AS first_seen
             FROM analytics_events
             GROUP BY resolved_user_id
         )
@@ -250,27 +246,32 @@ USING (
         a.artifact_type AS report_type,
         CAST(:ds AS DATE) AS report_date,
         CURRENT_TIMESTAMP() AS generated_at,
-        to_json(named_struct(
-            'report_type', a.artifact_type,
-            'report_date', :ds,
-            'generated_at', CAST(CURRENT_TIMESTAMP() AS STRING),
-            'users', collect_list(named_struct(
+        -- legacy top_users.jsonl.gz payload: one JSONL line per user,
+        -- {"user_id": ..., "actions": {type: count}, "total": n}, ranked by
+        -- total desc with ties in first-seen event order (stable pandas sort)
+        concat_ws(
+            '\n',
+            collect_list(to_json(named_struct(
                 'user_id', u.resolved_user_id,
-                'total', u.total,
-                'actions', u.actions
-            ))
-        )) AS report_json
+                'actions', u.actions,
+                'total', u.total
+            )))
+        ) AS report_json
     FROM (
         SELECT
             resolved_user_id,
             COUNT(*) AS total,
-            transform(
-                collect_list(named_struct('event_type', event_type, 'hour', hour)),
-                x -> named_struct('event_type', x.event_type, 'hour', x.hour)
-            ) AS actions
-        FROM analytics_events
+            MIN(timestamp) AS first_seen,
+            map_from_entries(collect_list(named_struct(
+                'key', event_type, 'value', n
+            ))) AS actions
+        FROM (
+            SELECT resolved_user_id, event_type, timestamp, COUNT(*) AS n
+            FROM analytics_events
+            GROUP BY resolved_user_id, event_type, timestamp
+        )
         GROUP BY resolved_user_id
-        ORDER BY total DESC, resolved_user_id ASC
+        ORDER BY total DESC, first_seen ASC, resolved_user_id ASC
         LIMIT 100
     ) u
     CROSS JOIN analytics_artifacts a
@@ -298,20 +299,14 @@ USING (
         a.artifact_type AS report_type,
         CAST(:ds AS DATE) AS report_date,
         CURRENT_TIMESTAMP() AS generated_at,
-        to_json(named_struct(
-            'report_type', a.artifact_type,
-            'report_date', :ds,
-            'generated_at', CAST(CURRENT_TIMESTAMP() AS STRING),
-            'hourly', collect_list(named_struct(
-                'hour', h.hour,
-                'total', h.total,
-                'by_type', h.by_type
-            ))
-        )) AS report_json
+        -- legacy hourly_breakdown.json.gz payload: {"09": {type: count}, ...}
+        -- sorted by hour, no wrapper
+        to_json(map_from_entries(array_sort(collect_list(
+            named_struct('key', h.hour, 'value', h.by_type)
+        )))) AS report_json
     FROM (
         SELECT
             hour,
-            COUNT(*) AS total,
             map_from_entries(collect_list(named_struct('key', event_type, 'value', n)))
                 AS by_type
         FROM (
