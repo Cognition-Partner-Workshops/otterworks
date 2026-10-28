@@ -1,0 +1,418 @@
+{
+  "unit": "custbill-ldp",
+  "mode": "live",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "full",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 28,
+    "source_rows_fetched": 0,
+    "target_statements": 18,
+    "target_rows_fetched": 0,
+    "elapsed_s": 10.029
+  },
+  "generated_at": "2026-10-28T02:54:16.112255+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 3,
+      "stats": {
+        "parsed_records": {
+          "source": {
+            "primary_key": [
+              "invoice_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "invoice_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "quarantine": {
+          "source": {
+            "primary_key": [
+              "invoice_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "invoice_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "finance_billing_totals": {
+          "source": {
+            "primary_key": [
+              "invoice_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "invoice_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "parsed_records": {
+            "constraints": [
+              "source ('invoice_id',) -> expected ('invoice_id',), target ()",
+              "source NOT NULL invoice_id -> target invoice_id is nullable"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "quarantine": {
+            "constraints": [
+              "source ('invoice_id',) -> expected ('invoice_id',), target ()",
+              "source NOT NULL invoice_id -> target invoice_id is nullable"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "finance_billing_totals": {
+            "constraints": [
+              "source ('invoice_id',) -> expected ('invoice_id',), target ()"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "parsed_records",
+          "check": "primary_key_mismatch",
+          "detail": "source ('invoice_id',) -> expected ('invoice_id',), target ()",
+          "source_value": "('invoice_id',)",
+          "target_value": "()",
+          "rules_applied": []
+        },
+        {
+          "object": "parsed_records",
+          "check": "not_null_missing",
+          "detail": "source NOT NULL invoice_id -> target invoice_id is nullable",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "parsed_records",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "parsed_records",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "quarantine",
+          "check": "primary_key_mismatch",
+          "detail": "source ('invoice_id',) -> expected ('invoice_id',), target ()",
+          "source_value": "('invoice_id',)",
+          "target_value": "()",
+          "rules_applied": []
+        },
+        {
+          "object": "quarantine",
+          "check": "not_null_missing",
+          "detail": "source NOT NULL invoice_id -> target invoice_id is nullable",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "quarantine",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "quarantine",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "finance_billing_totals",
+          "check": "primary_key_mismatch",
+          "detail": "source ('invoice_id',) -> expected ('invoice_id',), target ()",
+          "source_value": "('invoice_id',)",
+          "target_value": "()",
+          "rules_applied": []
+        },
+        {
+          "object": "finance_billing_totals",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "finance_billing_totals",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": false,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "ow_billing.invoice_header": 18750
+        }
+      },
+      "findings": [
+        {
+          "object": "quarantine",
+          "check": "root_count",
+          "detail": "rows(ow_billing.invoice_header)=18750 vs target rows=0",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "finance_billing_totals",
+          "check": "root_count",
+          "detail": "rows(ow_billing.invoice_header)=18750 vs target rows=204",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "FAIL",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "data"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    },
+    {
+      "reason": "routine_parity_missing",
+      "class": "evidence"
+    },
+    {
+      "reason": "rerun_missing",
+      "class": "rerun_policy"
+    }
+  ],
+  "blocker_classes": [
+    "data",
+    "evidence",
+    "rerun_policy",
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": {
+    "family": "oracle",
+    "target_kind": "databricks",
+    "filled": [],
+    "unmapped": []
+  },
+  "rerun_proof": null,
+  "rerun_posture": "required",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed",
+    "routine_parity_missing",
+    "rerun_missing"
+  ],
+  "routine_parity": null,
+  "routine_writers": [
+    "custbill.ow_tp_custbill_ldp",
+    "custbill.parse_custbill_fixedwidth",
+    "custbill.finance_excel_report"
+  ],
+  "routine_dependencies": ".migration/units/custbill-ldp/dependencies.json"
+}

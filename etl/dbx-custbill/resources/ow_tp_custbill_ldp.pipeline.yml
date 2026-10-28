@@ -1,0 +1,11 @@
+resources:
+  pipelines:
+    ow_tp_custbill_ldp:
+      name: ow_tp_custbill_ldp
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+      serverless: true
+      continuous: false
+      libraries:
+        - file:
+            path: ../src/ow_tp_custbill_ldp.py
