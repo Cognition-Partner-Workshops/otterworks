@@ -2,7 +2,7 @@
 
 - **parity NOT_RUN, merge blocked (evidence, structural)**
 - Verdict: FAIL (all tiers)
-- Blockers: structural: structural_gap, tier_failed; evidence: routine_parity_missing, mode
+- Blockers: structural: structural_gap, tier_failed; evidence: mode
 - Mode: `structural`
 - Merge eligible: no (fixture/continuous evidence never merges)
 - Rerun posture: `not_applicable`
@@ -11,12 +11,8 @@
 - Tolerance version: `tol-20261027-v1`
 - Seed: `0`
 - Tier 3 depth: `threshold`
-- Generated: 2026-10-28T10:14:50.272635+00:00
-
-## Routine parity: routine_parity_missing (the unit has writing routines and no parity list; run `dbx-recon routine-parity` and pass `--routine-parity`)
-
-- `scaffold_ddl` no row
-- Cost: `{"source_statements": 113, "source_rows_fetched": 0, "target_statements": 99, "target_rows_fetched": 0, "elapsed_s": 60.972}`
+- Generated: 2026-10-28T10:25:31.629292+00:00
+- Cost: `{"source_statements": 113, "source_rows_fetched": 0, "target_statements": 99, "target_rows_fetched": 0, "elapsed_s": 55.515}`
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|

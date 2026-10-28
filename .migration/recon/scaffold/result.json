@@ -12,9 +12,9 @@
     "source_rows_fetched": 0,
     "target_statements": 99,
     "target_rows_fetched": 0,
-    "elapsed_s": 60.972
+    "elapsed_s": 55.515
   },
-  "generated_at": "2026-10-28T10:14:50.272635+00:00",
+  "generated_at": "2026-10-28T10:25:31.629292+00:00",
   "tiers": [
     {
       "tier": 0,
@@ -2091,10 +2091,6 @@
       "class": "structural"
     },
     {
-      "reason": "routine_parity_missing",
-      "class": "evidence"
-    },
-    {
       "reason": "mode",
       "class": "evidence"
     }
@@ -2134,12 +2130,9 @@
   "merge_block_reasons": [
     "structural_gap",
     "tier_failed",
-    "routine_parity_missing",
     "mode"
   ],
-  "routine_parity": null,
-  "routine_writers": [
-    "scaffold_ddl"
-  ],
+  "routine_parity": [],
+  "routine_writers": [],
   "routine_dependencies": ".migration/units/scaffold/dependencies.json"
 }
