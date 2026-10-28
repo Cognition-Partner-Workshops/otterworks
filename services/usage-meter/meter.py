@@ -105,11 +105,13 @@ def snapshot():
         cur.execute("SELECT id, period_id, rollover_units FROM ow_tp_invoicing.rating_results")
         _write_csv(cur, "rating_results")
     previous = SNAPSHOT_DIR.with_name("snapshot.previous")
-    shutil.rmtree(previous, ignore_errors=True)
+    if previous.exists():
+        shutil.rmtree(previous)
     if SNAPSHOT_DIR.exists():
         SNAPSHOT_DIR.rename(previous)
     partial.rename(SNAPSHOT_DIR)
-    shutil.rmtree(previous, ignore_errors=True)
+    if previous.exists():
+        shutil.rmtree(previous)
 
 
 def _norm(row):
