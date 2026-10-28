@@ -1,0 +1,21 @@
+{
+  "run_id": "1793176531",
+  "catalogs": ["ow_tp"],
+  "schema_prefix": "ow_tp_",
+  "job_prefix": "ow_tp_",
+  "legacy_sources": ["OW_BILLING_RO_DSN", "44.213.30.5"],
+  "guard_mode": "block",
+  "run_mode": "live",
+  "load_mode": "snapshot",
+  "target_hosts": ["ep-shiny-mud-d18oz1t2.database.us-west-2.cloud.databricks.com"],
+  "bundle_targets": ["mig_1793176531"],
+  "lakebase_projects": ["ow-tp-billing"],
+  "lakebase_branches": ["mig-*"],
+  "fixture_endpoints": ["AWS_ENDPOINT_URL"],
+  "forbidden": {
+    "schemas": ["ow_tp.bronze", "ow_tp.silver", "ow_tp.gold", "ow_tp.airbyte_demo", "ow_tp.fivetran_metadata", "ow_tp._fivetran_setup_test", "ow_tp.fivetran_trimester_remoteness_staging"],
+    "lakebase_branches": ["production"],
+    "legacy": "OW_BILLING on 44.213.30.5:1521/FREEPDB1 is read-only in every phase"
+  },
+  "fixture_note": "fixture tenant \"Tenant One\"; load posture is snapshot-only (extract copy, no federation/JDBC/CDC). Lakebase endpoint host ep-shiny-mud-d18oz1t2.database.us-west-2.cloud.databricks.com is the unpooled host of projects/ow-tp-billing/branches/mig-1793176531/endpoints/primary (read_write, ACTIVE); the -pooler variant refuses OAuth. The run mints its own per-session database credentials (LAKEBASE_MIGRATION_DSN points at another project and is not used)."
+}

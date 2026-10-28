@@ -117,3 +117,6 @@ testdata/legacy/manifests/*.json
 
 # Legacy ETL report output (created by the TP compose bind mount)
 etl/legacy-extra/reports/
+
+# migration workspace nonce (never commit)
+.migration/.hook_probe_nonce
