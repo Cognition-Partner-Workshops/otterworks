@@ -7,10 +7,10 @@
 - Merge authority: `harness` (human_override needs a merge_overrides entry in the committed wave manifest naming the unit)
 - Unverified by design: `customer_master_quarantine` unverified(by_design), `invoice_header_quarantine` unverified(by_design), `invoice_line_quarantine` unverified(by_design) (target rows <= root rows and structure graded; values not graded; merges only when the wave manifest's `by_design_unverified` declares the same objects)
 - Mapping `ow-tp-map-v1` / tolerances `tol-20261027-v1` / seed `0` / depth `threshold`
-- Generated: 2026-10-28T12:47:13.531200+00:00
-- Cost: source 28 statements / 0 rows fetched; target 28 statements / 0 rows; 14.494s
+- Generated: 2026-10-28T16:05:04.811255+00:00
+- Cost: source 28 statements / 0 rows fetched; target 28 statements / 0 rows; 17.352s
 - Structural checks: constraints=checked, triggers=checked, indexes=unsupported, sequences_identity=checked, grants=direct_only
-- Rerun proof: fresh `pass`, evolved `unsupported` (evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved)
+- Rerun proof: fresh `pass`, evolved `pass`
 
 | Tier | Checks | Result |
 |---|---|---|

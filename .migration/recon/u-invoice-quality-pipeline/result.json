@@ -12,9 +12,9 @@
     "source_rows_fetched": 0,
     "target_statements": 28,
     "target_rows_fetched": 0,
-    "elapsed_s": 14.494
+    "elapsed_s": 17.352
   },
-  "generated_at": "2026-10-28T12:47:13.531200+00:00",
+  "generated_at": "2026-10-28T16:05:04.811255+00:00",
   "tiers": [
     {
       "tier": 0,
@@ -335,8 +335,9 @@
     "sources": [
       "databricks/mig_1793185083/b1-quality/src/invoice_quality.py"
     ],
+    "prior_from": ".migration/recon/u-invoice-quality-pipeline/rerun_proof.json",
     "fresh": "pass",
-    "evolved": "unsupported",
+    "evolved": "pass",
     "passed": true,
     "findings": [],
     "notes": [],
@@ -347,8 +348,8 @@
     ],
     "source_digest": "85739ff8daad7d4a2e4847346c50a00edabbf76da8b07cb128080975f67446a2",
     "evidence": {
-      "fresh": "pipeline update a51bc826-e0c7-4085-8b65-98981150a789 (COMPLETED; initial landing)",
-      "evolved": "pipeline update 6cc5d8d6-7151-4a91-b1a0-71a3b28c636c (COMPLETED; rerun over existing sinks)"
+      "fresh": "pipeline update 6087100b-e4b6-4d99-bb6b-18ad722fa356 (COMPLETED; full refresh over refreshed extract)",
+      "evolved": "pipeline update e3292f26-51a0-4526-99be-2eb6d3e88902 (COMPLETED; rerun over existing sinks)"
     },
     "shape": {
       "tables": {
@@ -416,8 +417,7 @@
       }
     },
     "shape_digest": "e5040e6bc1e0d11a89b0fb7311aa7a12b77621b454d3900a7567886b3f93508d",
-    "unsupported_kind": "nothing_evolved",
-    "unsupported_reason": "evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved"
+    "prior_digest": "e5040e6bc1e0d11a89b0fb7311aa7a12b77621b454d3900a7567886b3f93508d"
   },
   "rerun_posture": "not_applicable",
   "merge_block_reasons": [

@@ -12,9 +12,9 @@
 - Tolerance version: `tol-20261027-v1`
 - Seed: `0`
 - Tier 3 depth: `threshold`
-- Generated: 2026-10-28T12:47:13.531200+00:00
-- Cost: `{"source_statements": 28, "source_rows_fetched": 0, "target_statements": 28, "target_rows_fetched": 0, "elapsed_s": 14.494}`
-- Rerun proof: fresh `pass`, evolved `unsupported` (evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved)
+- Generated: 2026-10-28T16:05:04.811255+00:00
+- Cost: `{"source_statements": 28, "source_rows_fetched": 0, "target_statements": 28, "target_rows_fetched": 0, "elapsed_s": 17.352}`
+- Rerun proof: fresh `pass`, evolved `pass`
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|
