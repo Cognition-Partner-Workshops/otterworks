@@ -1,0 +1,82 @@
+version: 1
+title: OtterWorks analytics jobs to Lakeflow Jobs (run 1793146609, pipeline analytics)
+summary: Five etl/ Python crons plus the analytics-service Scala usage rollup become
+  Lakeflow Jobs with retries on serverless warehouse 565cd2fd713738c4, catalog ow_tp,
+  schema ow_tp_analytics. Sources are SQS/DynamoDB/S3/MeiliSearch (LocalStack fixture)
+  and Postgres otterworks_analytics — no Oracle objects. Legacy outputs materialize
+  once into ow_tp.ow_tp_analytics_src (snapshot posture); dbx-recon is the only parity
+  authority.
+phases:
+  - id: foundation
+    title: Foundation
+    decisions:
+      - id: parity-mechanism
+        description: Parity mechanism for analytics — the estate's `--family oracle`
+          rule has no Oracle object to read in this pipeline.
+        options:
+          - id: snapshot-databricks
+            label: Recommended — materialize each unit's legacy output into
+              ow_tp.ow_tp_analytics_src (snapshot posture), then dbx-recon
+              --family databricks catalog-to-catalog vs ow_tp.ow_tp_analytics on
+              warehouse 565cd2fd713738c4. One uniform mechanism, inside the
+              allowlist, live-tested adapter.
+          - id: postgres-split
+            label: dbx-recon --family postgres for the Postgres-sourced units
+              (analytics_daily, user_activity_daily), databricks for the rest —
+              mixed source blocks per unit.
+        selected: null
+        important: true
+      - id: target-core
+        description: Target surface for the converted jobs.
+        options:
+          - id: lakeflow-jobs
+            label: Lakeflow Jobs with retries; outputs land in Delta under
+              ow_tp.ow_tp_analytics; schedules created PAUSED.
+        selected: lakeflow-jobs
+        important: false
+    steps:
+      - id: analytics-inventory
+        title: Inventory and boundary (STOP B, approved)
+        gates:
+          - id: coverage
+            description: 6/6 scheduled units covered; etl/legacy-extra/ and
+              MarketSeeder excluded.
+      - id: snapshot-schema
+        title: Materialize legacy outputs into ow_tp.ow_tp_analytics_src
+        depends_on: [analytics-inventory]
+        gates:
+          - id: snapshot-landed
+            description: Each unit's legacy run output lands as Delta rows in
+              ow_tp.ow_tp_analytics_src for recon source-side comparison.
+  - id: waves
+    title: Migration waves
+    steps:
+      - id: run-analytics-wave-1
+        title: Wave 1 pilot (width 2 — usage_rollup_scala, analytics_daily)
+        depends_on: [snapshot-schema]
+        gates:
+          - id: w1-recon
+            description: dbx-recon PASS per unit on the declared parity mechanism.
+      - id: run-analytics-wave-2
+        title: Wave 2 remaining crons (width 4)
+        depends_on: [run-analytics-wave-1]
+        gates:
+          - id: w2-recon
+            description: dbx-recon PASS per unit on the declared parity mechanism.
+  - id: cutover
+    title: Cutover
+    steps:
+      - id: stop-e-park
+        title: STOP E evidence packet — park for the requester
+        depends_on: [run-analytics-wave-2]
+        decisions:
+          - id: cutover-auth
+            description: Repoint production consumers to the migrated analytics
+              jobs under the customer-held cutover principal.
+            options:
+              - id: authorize
+                label: Proceed with the rehearsed repoint
+              - id: hold
+                label: Hold; production does not move
+            selected: null
+            important: true
