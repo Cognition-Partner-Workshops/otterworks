@@ -1,0 +1,74 @@
+{
+  "unit": "storage_cleanup_daily",
+  "sources": [
+    "etl/dbx-storage-cleanup/src/ensure_objects.sql",
+    "etl/dbx-storage-cleanup/src/storage_cleanup_run.sql",
+    "etl/dbx-storage-cleanup/resources/ow_tp_analytics_storage_cleanup.job.yml",
+    "etl/dbx-storage-cleanup/databricks.yml"
+  ],
+  "prior_from": ".migration/recon/storage_cleanup_daily/rerun/prior_shape.json",
+  "fresh": "pass",
+  "evolved": "pass",
+  "passed": true,
+  "findings": [],
+  "notes": [],
+  "tables": [
+    "storage_cleanup_report",
+    "storage_quarantine_actions"
+  ],
+  "source_digest": "068bfbd4dca74bc673b3ddbe1195b1016440f39d4b1b2e931b8985c2433f7d73",
+  "evidence": {
+    "fresh": "databricks bundle run ow_tp_analytics_storage_cleanup -t mig_1793146609 -> run 173981612121368 (empty target; ensure_objects landed tables, storage_cleanup_run merged 8 ledger + 15 metric rows)",
+    "evolved": "databricks bundle run ow_tp_analytics_storage_cleanup -t mig_1793146609 -> run 824313334198383 (over the landed tables in committed DDL shape; MERGE converged rows)"
+  },
+  "shape": {
+    "tables": {
+      "storage_quarantine_actions": [
+        {
+          "name": "s3_key",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "size_bytes",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "quarantine_key",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "quarantined_at",
+          "type": "date",
+          "nullable": true
+        }
+      ],
+      "storage_cleanup_report": [
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "shape_digest": "333e858f891943059aecd55cbd0919be8c9876fa312c5372cfcb546cf06eb970",
+  "prior_digest": "333e858f891943059aecd55cbd0919be8c9876fa312c5372cfcb546cf06eb970"
+}

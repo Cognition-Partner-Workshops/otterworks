@@ -1,0 +1,57 @@
+{
+  "run": "fresh",
+  "status": "pass",
+  "evidence": "databricks bundle run ow_tp_analytics_storage_cleanup -t mig_1793146609 -> run 173981612121368 (empty target; ensure_objects landed tables, storage_cleanup_run merged 8 ledger + 15 metric rows)",
+  "shape": {
+    "target_kind": "databricks",
+    "catalog": "ow_tp",
+    "schema": "ow_tp_analytics",
+    "read_at": "2026-10-28T04:31:31.718003+00:00",
+    "tables": {
+      "storage_quarantine_actions": [
+        {
+          "name": "s3_key",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "size_bytes",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "quarantine_key",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "quarantined_at",
+          "type": "date",
+          "nullable": true
+        }
+      ],
+      "storage_cleanup_report": [
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "objects": [
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.orphan_files",
+      "object": "storage_quarantine_actions",
+      "key": {
+        "source": ["s3_key"],
+        "target": ["s3_key"]
+      }
+    },
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.cleanup_report",
+      "object": "storage_cleanup_report",
+      "key": {
+        "source": ["metric"],
+        "target": ["metric"]
+      }
+    }
+  ],
+  "family": "databricks"
+}

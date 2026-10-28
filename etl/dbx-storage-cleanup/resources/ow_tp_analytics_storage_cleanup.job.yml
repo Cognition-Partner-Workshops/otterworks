@@ -1,0 +1,43 @@
+resources:
+  jobs:
+    ow_tp_analytics_storage_cleanup:
+      name: ow_tp_analytics_storage_cleanup
+      max_concurrent_runs: 1
+      description: >-
+        Daily storage orphan cleanup (converted
+        etl/scripts/storage_cleanup_daily.py): reads the day's S3
+        otterworks-file-storage/files listing snapshot and the DynamoDB
+        otterworks-file-metadata key snapshot landed in the storage_drop
+        volume, computes the orphan ledger and the savings report in SQL,
+        and merges them into ow_tp_analytics.storage_quarantine_actions and
+        ow_tp_analytics.storage_cleanup_report. The legacy script's
+        copy+delete quarantine is preserved as a ledger of quarantine
+        actions; source objects are never deleted.
+      schedule:
+        quartz_cron_expression: "0 15 3 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      parameters:
+        - name: ds
+          default: "{{job.start_time.iso_date}}"
+      tasks:
+        - task_key: ensure_objects
+          sql_task:
+            file:
+              path: ../src/ensure_objects.sql
+            warehouse_id: ${var.warehouse_id}
+          retry_on_timeout: false
+          min_retry_interval_millis: 30000
+          max_retries: 2
+        - task_key: storage_cleanup_run
+          depends_on:
+            - task_key: ensure_objects
+          sql_task:
+            file:
+              path: ../src/storage_cleanup_run.sql
+            warehouse_id: ${var.warehouse_id}
+            parameters:
+              ds: "{{job.parameters.ds}}"
+          retry_on_timeout: false
+          min_retry_interval_millis: 30000
+          max_retries: 2

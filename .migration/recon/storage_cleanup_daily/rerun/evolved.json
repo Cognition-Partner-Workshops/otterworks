@@ -1,0 +1,109 @@
+{
+  "run": "evolved",
+  "status": "pass",
+  "evidence": "databricks bundle run ow_tp_analytics_storage_cleanup -t mig_1793146609 -> run 824313334198383 (over the landed tables in committed DDL shape; MERGE converged rows)",
+  "shape": {
+    "target_kind": "databricks",
+    "catalog": "ow_tp",
+    "schema": "ow_tp_analytics",
+    "read_at": "2026-10-28T04:32:28.193523+00:00",
+    "tables": {
+      "storage_quarantine_actions": [
+        {
+          "name": "s3_key",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "size_bytes",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "quarantine_key",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "quarantined_at",
+          "type": "date",
+          "nullable": true
+        }
+      ],
+      "storage_cleanup_report": [
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "pre_shape": {
+    "target_kind": "databricks",
+    "catalog": "ow_tp",
+    "schema": "ow_tp_analytics",
+    "read_at": "2026-10-28T04:31:53.800943+00:00",
+    "tables": {
+      "storage_quarantine_actions": [
+        {
+          "name": "s3_key",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "size_bytes",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "quarantine_key",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "quarantined_at",
+          "type": "date",
+          "nullable": true
+        }
+      ],
+      "storage_cleanup_report": [
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  }
+}
