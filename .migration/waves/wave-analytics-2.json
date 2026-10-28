@@ -35,7 +35,7 @@
   },
   "pipelines": {
     "invoicing": 1,
-    "custbill": 1,
+    "custbill": 3,
     "analytics": 2
   },
   "batches": [
