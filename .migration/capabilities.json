@@ -1,0 +1,298 @@
+{
+  "blocking": [],
+  "checks": [
+    {
+      "data": {},
+      "detail": ".migration/ has all 2 required files",
+      "id": "workspace",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {},
+      "detail": ".migration/ top-level entries match the machine-file layout",
+      "id": "workspace_layout",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {},
+      "detail": "no .migration/authorizations.json (no legacy write, gate waiver or merge override is authorized)",
+      "id": "authorizations_file",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {
+        "allowlist": [
+          "ow_tp"
+        ],
+        "catalogs": [
+          "ow_tp"
+        ],
+        "expected": [
+          "ow_tp"
+        ],
+        "guard_mode": "block",
+        "legacy_sources": 3,
+        "outside": [],
+        "sub_results": [
+          {
+            "data": {
+              "catalogs": [
+                "ow_tp"
+              ],
+              "guard_mode": "block",
+              "legacy_sources": 3
+            },
+            "detail": "catalogs=['ow_tp'] guard_mode=block",
+            "id": "allowed_targets",
+            "status": "ok"
+          },
+          {
+            "data": {
+              "allowlist": [
+                "ow_tp"
+              ],
+              "expected": [
+                "ow_tp"
+              ],
+              "outside": []
+            },
+            "detail": "contract catalogs ['ow_tp'] are within the allowlist ['ow_tp']",
+            "id": "allowlist_matches_contract",
+            "status": "ok"
+          }
+        ]
+      },
+      "detail": "allowed_targets: catalogs=['ow_tp'] guard_mode=block; allowlist_matches_contract: contract catalogs ['ow_tp'] are within the allowlist ['ow_tp']",
+      "id": "allowed_targets",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {
+        ".migration/allowed_targets.json": "clean",
+        ".migration/recon_tolerances.json": "clean"
+      },
+      "detail": "allowed_targets.json and recon_tolerances.json are byte-equal to HEAD",
+      "id": "allowlist_committed",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {
+        "probe_nonce": "f8ad7ede",
+        "sub_results": [
+          {
+            "data": {},
+            "detail": "hooks.json registers dbx_guard.py (PreToolUse)",
+            "id": "hooks_files",
+            "status": "ok"
+          },
+          {
+            "data": {},
+            "detail": "dbx_guard.py blocks the probe command when invoked directly and names __dbx_guard_probe__f8ad7ede",
+            "id": "hook_guard_functional",
+            "status": "ok"
+          },
+          {
+            "data": {
+              "probe_nonce": "f8ad7ede"
+            },
+            "detail": "live probe was BLOCKED: the platform is running hooks.json",
+            "id": "hook_platform_loaded",
+            "status": "ok"
+          }
+        ]
+      },
+      "detail": "hooks_files: hooks.json registers dbx_guard.py (PreToolUse); hook_guard_functional: dbx_guard.py blocks the probe command when invoked directly and names __dbx_guard_probe__f8ad7ede; hook_platform_loaded: live probe was BLOCKED: the platform is running hooks.json",
+      "id": "hook_guard",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {
+        "found": {
+          "databricks-core": "/opt/.devin/plugins/cache/github.com_databricks_databricks-agent-skills_plugins_databricks_claude-ae11e7d0/0.2.10/skills/databricks-core",
+          "databricks-dabs": "/opt/.devin/plugins/cache/github.com_databricks_databricks-agent-skills_plugins_databricks_claude-ae11e7d0/0.2.10/skills/databricks-dabs",
+          "databricks-dbsql": "/opt/.devin/plugins/cache/github.com_databricks_databricks-agent-skills_plugins_databricks_claude-ae11e7d0/0.2.10/skills/databricks-dbsql",
+          "databricks-jobs": "/opt/.devin/plugins/cache/github.com_databricks_databricks-agent-skills_plugins_databricks_claude-ae11e7d0/0.2.10/skills/databricks-jobs",
+          "databricks-lakebase": "/opt/.devin/plugins/cache/github.com_databricks_databricks-agent-skills_plugins_databricks_claude-ae11e7d0/0.2.10/skills/databricks-lakebase",
+          "databricks-lakeflow-connect": "/opt/.devin/plugins/cache/github.com_databricks_databricks-agent-skills_plugins_databricks_claude-ae11e7d0/0.2.10/skills/databricks-lakeflow-connect",
+          "databricks-pipelines": "/opt/.devin/plugins/cache/github.com_databricks_databricks-agent-skills_plugins_databricks_claude-ae11e7d0/0.2.10/skills/databricks-pipelines",
+          "databricks-unity-catalog": "/opt/.devin/plugins/cache/github.com_databricks_databricks-agent-skills_plugins_databricks_claude-ae11e7d0/0.2.10/skills/databricks-unity-catalog"
+        }
+      },
+      "detail": "all 8 routed official skills present",
+      "id": "official_databricks_plugin",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {
+        "drivers": {
+          "databricks": true,
+          "oracle": true,
+          "postgres": false,
+          "sqlserver": false
+        },
+        "sub_results": [
+          {
+            "data": {},
+            "detail": "dbx-recon selftest PASS: 9 canonicalization rules exercised via python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1/skills/data-reconciliation/harness)",
+            "id": "recon_harness",
+            "status": "ok"
+          },
+          {
+            "data": {
+              "drivers": {
+                "databricks": true,
+                "oracle": true,
+                "postgres": false,
+                "sqlserver": false
+              }
+            },
+            "detail": "installed adapters: ['databricks', 'oracle']",
+            "id": "recon_drivers",
+            "status": "ok"
+          }
+        ]
+      },
+      "detail": "recon_harness: dbx-recon selftest PASS: 9 canonicalization rules exercised via python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1/skills/data-reconciliation/harness); recon_drivers: installed adapters: ['databricks', 'oracle']",
+      "id": "recon_harness",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {
+        "family": "oracle",
+        "harness": "python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1/skills/data-reconciliation/harness)",
+        "live_tested": [
+          "databricks",
+          "oracle",
+          "postgres",
+          "sqlserver"
+        ]
+      },
+      "detail": "oracle: live-tested source adapter (python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1/skills/data-reconciliation/harness))",
+      "id": "recon_family_supported",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {},
+      "detail": "not applicable at setup: no unit mapping exists yet under .migration/units/*/mapping_spec.json",
+      "id": "type_map_audit",
+      "reusable": true,
+      "status": "skipped"
+    },
+    {
+      "data": {
+        "mappings": {},
+        "units": []
+      },
+      "detail": "not applicable at setup: no unit mapping exists yet under .migration/units/*/mapping_spec.json",
+      "id": "delete_evidence",
+      "reusable": true,
+      "status": "skipped"
+    },
+    {
+      "data": {
+        "family": "oracle",
+        "indirect": [],
+        "roles": [],
+        "scope": "principal",
+        "stats": "connection opened readonly=True, session_user=OW_BILLING_RO; driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
+        "tables": [],
+        "unresolved": [],
+        "writable": {}
+      },
+      "detail": "setup probe, principal-level only (no unit mapping yet; table grants are checked per unit later): oracle: no write system privilege, no object grant beyond SELECT/READ, no write role on 0 in-scope table(s); connection opened readonly=True, session_user=OW_BILLING_RO; driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
+      "id": "source_principal_read_only",
+      "reusable": false,
+      "status": "ok"
+    },
+    {
+      "data": {},
+      "detail": "not applicable at setup: no unit mapping exists yet under .migration/units/*/mapping_spec.json",
+      "id": "dictionary_readable",
+      "reusable": true,
+      "status": "skipped"
+    },
+    {
+      "data": {
+        "checked": [],
+        "missing": [],
+        "unreadable_scopes": []
+      },
+      "detail": "no Databricks secret names referenced by the wave manifest or its briefs",
+      "id": "named_secrets_exist",
+      "reusable": false,
+      "status": "skipped"
+    },
+    {
+      "data": {
+        "auth_kind": "oauth-m2m",
+        "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+        "path": "/usr/local/bin/databricks",
+        "service_principal": true,
+        "sub_results": [
+          {
+            "data": {
+              "path": "/usr/local/bin/databricks"
+            },
+            "detail": "Databricks CLI v1.22.1",
+            "id": "databricks_cli",
+            "status": "ok"
+          },
+          {
+            "data": {
+              "auth_kind": "oauth-m2m"
+            },
+            "detail": "auth: oauth-m2m (service principal via the org blueprint)",
+            "id": "databricks_auth_kind",
+            "status": "ok"
+          },
+          {
+            "data": {
+              "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+              "service_principal": true,
+              "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
+            },
+            "detail": "authenticated as d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (service principal) on https://dbc-8bc9474f-40ae.cloud.databricks.com",
+            "id": "databricks_identity",
+            "status": "ok"
+          },
+          {
+            "data": {},
+            "detail": "default warehouse resolved: 565cd2fd713738c4",
+            "id": "databricks_warehouse",
+            "status": "ok"
+          }
+        ],
+        "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
+      },
+      "detail": "databricks_cli: Databricks CLI v1.22.1; databricks_auth_kind: auth: oauth-m2m (service principal via the org blueprint); databricks_identity: authenticated as d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (service principal) on https://dbc-8bc9474f-40ae.cloud.databricks.com; databricks_warehouse: default warehouse resolved: 565cd2fd713738c4",
+      "id": "databricks_identity",
+      "reusable": false,
+      "status": "ok"
+    }
+  ],
+  "generated_at": "2026-10-28T00:19:32Z",
+  "identity": {
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "service_principal": true,
+    "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
+  },
+  "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1",
+  "ready": true,
+  "reused_doctor": null,
+  "role": "setup",
+  "schema": "dbx-migration-factory/capabilities/1",
+  "summary": {
+    "ok": 11,
+    "skipped": 4
+  },
+  "workspace": "/home/ubuntu/repos/otterworks"
+}
