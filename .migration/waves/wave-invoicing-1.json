@@ -8,7 +8,7 @@
   "breaker_threshold": 1,
   "auto_merge": false,
   "max_minutes": 60,
-  "verify_depth": "threshold",
+  "verify_depth": "full",
   "capabilities": {
     "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
@@ -96,7 +96,11 @@
         "invoice_line"
       ],
       "write_targets": [
-        "entity_attr_value"
+        "entity_attr_value",
+        "invoice_header",
+        "invoice_line",
+        "plans",
+        "usage_events"
       ],
       "deploy_objects": [
         "plans",
@@ -106,7 +110,7 @@
         "invoice_line"
       ],
       "lakeflow_pipelines": [],
-      "verify_depth": "threshold",
+      "verify_depth": "full",
       "gates": [
         {
           "id": "recon_parity_plans",
@@ -148,14 +152,15 @@
         "customer_master_hist"
       ],
       "write_targets": [
-        "customer_master_hist"
+        "customer_master_hist",
+        "subscriptions_hist"
       ],
       "deploy_objects": [
         "subscriptions_hist",
         "customer_master_hist"
       ],
       "lakeflow_pipelines": [],
-      "verify_depth": "threshold",
+      "verify_depth": "full",
       "gates": [
         {
           "id": "recon_parity_subscriptions_hist",
