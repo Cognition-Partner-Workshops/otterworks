@@ -1,0 +1,111 @@
+{
+  "version": "ow-tp-map-v1",
+  "target_kind": "databricks",
+  "rerun_posture": "not_applicable",
+  "objects": [
+    {
+      "object": "subscriptions_hist",
+      "root_table": "OW_BILLING.SUBSCRIPTIONS_HIST",
+      "key": {
+        "source": [
+          "HIST_ID"
+        ],
+        "target": [
+          "hist_id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "HIST_ID",
+          "target": "hist_id",
+          "source_type": "NUMBER(12,0)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "HIST_DT",
+          "target": "hist_dt",
+          "source_type": "VARCHAR2(20)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "HIST_OP",
+          "target": "hist_op",
+          "source_type": "VARCHAR2(3)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        }
+      ]
+    }
+  ]
+}

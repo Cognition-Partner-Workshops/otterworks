@@ -1,0 +1,57 @@
+{
+  "version": "ow-tp-map-v1",
+  "target_kind": "lakebase",
+  "rerun_posture": "not_applicable",
+  "objects": [
+    {
+      "object": "billing_audit_log",
+      "root_table": "OW_BILLING.BILLING_AUDIT_LOG",
+      "key": {
+        "source": [
+          "LOG_ID"
+        ],
+        "target": [
+          "log_id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "LOG_ID",
+          "target": "log_id",
+          "source_type": "NUMBER(12,0)",
+          "target_type": "NUMERIC(12)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "LOGGED_AT",
+          "target": "logged_at",
+          "source_type": "DATE",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "MODULE",
+          "target": "module",
+          "source_type": "VARCHAR2(30)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "MESSAGE",
+          "target": "message",
+          "source_type": "VARCHAR2(4000)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        }
+      ]
+    }
+  ]
+}

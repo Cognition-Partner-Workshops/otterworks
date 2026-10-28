@@ -1,0 +1,253 @@
+{
+  "version": "ow-tp-map-v1",
+  "target_kind": "lakebase",
+  "rerun_posture": "not_applicable",
+  "objects": [
+    {
+      "object": "tenants",
+      "root_table": "OW_BILLING.TENANTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "NAME",
+          "target": "name",
+          "source_type": "VARCHAR2(200)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "tax_exempt_yn",
+          "source_type": "CHAR(1)",
+          "target_type": "CHAR(1)",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "target_type": "NUMERIC(4)",
+          "rules": [
+            "identity"
+          ]
+        }
+      ]
+    },
+    {
+      "object": "subscriptions",
+      "root_table": "OW_BILLING.SUBSCRIPTIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "target_type": "NUMERIC(4)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        }
+      ]
+    },
+    {
+      "object": "notifications",
+      "root_table": "OW_BILLING.NOTIFICATIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4,0)",
+          "target_type": "NUMERIC(4)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "SENT_AT",
+          "target": "sent_at",
+          "source_type": "TIMESTAMP",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        }
+      ]
+    },
+    {
+      "object": "dunning_attempts",
+      "root_table": "OW_BILLING.DUNNING_ATTEMPTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ATTEMPT_NO",
+          "target": "attempt_no",
+          "source_type": "NUMBER(4,0)",
+          "target_type": "NUMERIC(4)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "SCHEDULED_FOR",
+          "target": "scheduled_for",
+          "source_type": "DATE",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "target_type": "NUMERIC(4)",
+          "rules": [
+            "identity"
+          ]
+        }
+      ]
+    }
+  ]
+}

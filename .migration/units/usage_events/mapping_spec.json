@@ -1,0 +1,66 @@
+{
+  "version": "ow-tp-map-v1",
+  "target_kind": "lakebase",
+  "rerun_posture": "not_applicable",
+  "objects": [
+    {
+      "object": "usage_events",
+      "root_table": "OW_BILLING.USAGE_EVENTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "VARCHAR(2)",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "OCCURRED_AT",
+          "target": "occurred_at",
+          "source_type": "TIMESTAMP",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "UNITS",
+          "target": "units",
+          "source_type": "NUMBER(10,0)",
+          "target_type": "NUMERIC(10)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4,0)",
+          "target_type": "NUMERIC(4)",
+          "rules": [
+            "identity"
+          ]
+        }
+      ]
+    }
+  ]
+}
