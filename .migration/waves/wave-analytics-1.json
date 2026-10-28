@@ -121,7 +121,6 @@
   {
    "decision": "mo-analytics-w1-structural",
    "units": [
-    "usage_rollup_scala",
     "analytics_daily"
    ],
    "blocker_classes": [
