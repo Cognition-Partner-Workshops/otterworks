@@ -1,0 +1,35 @@
+{
+  "target_kind": "databricks",
+  "catalog": "ow_tp",
+  "schema": "ow_tp_analytics",
+  "read_at": "2026-10-28T04:29:45.377848+00:00",
+  "tables": {
+    "user_activity_report": [
+      {
+        "name": "report_date",
+        "type": "date",
+        "nullable": true
+      },
+      {
+        "name": "user_id",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "metric",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "metric_value",
+        "type": "string",
+        "nullable": true
+      },
+      {
+        "name": "generated_at",
+        "type": "timestamp",
+        "nullable": true
+      }
+    ]
+  }
+}

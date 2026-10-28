@@ -1,0 +1,40 @@
+{
+  "run": "fresh",
+  "status": "pass",
+  "evidence": "databricks bundle run ow_tp_analytics_user_activity -t mig_1793146609 -> run 255489704773403 (empty target; ensure_objects landed the table, run_user_activity landed rows for ds=2026-10-28)",
+  "shape": {
+    "target_kind": "databricks",
+    "catalog": "ow_tp",
+    "schema": "ow_tp_analytics",
+    "read_at": "2026-10-28T04:28:49.500760+00:00",
+    "tables": {
+      "user_activity_report": [
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  }
+}

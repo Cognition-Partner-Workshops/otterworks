@@ -1,0 +1,44 @@
+resources:
+  jobs:
+    ow_tp_analytics_user_activity:
+      name: ow_tp_analytics_user_activity
+      max_concurrent_runs: 1
+      description: >-
+        Daily user activity report (converted etl/scripts/user_activity_daily.py):
+        reads the legacy inputs mirrored under ow_tp.ow_tp_analytics_src —
+        the per-user top_users.jsonl.gz artifacts carried as report_json rows
+        of analytics_daily_report keyed analytics/daily/year=<y>/month=<m>/day=<d>/
+        over the 30-day lookback — recomputes per-user aggregates in SQL and
+        merges flattened (report_date, user_id, metric, metric_value) rows
+        into ow_tp_analytics.user_activity_report.
+      schedule:
+        # legacy cron: 0 5 * * * (etl/crontab), kept UTC and PAUSED for the wave
+        quartz_cron_expression: "0 0 5 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      parameters:
+        - name: ds
+          # UTC execution date of the run; override on a run-now for backfills
+          # (databricks jobs run-now --job-params '{"ds":"YYYY-MM-DD"}')
+          default: "{{job.start_time.iso_date}}"
+      tasks:
+        - task_key: ensure_objects
+          sql_task:
+            file:
+              path: ../src/ensure_objects.sql
+            warehouse_id: ${var.warehouse_id}
+          retry_on_timeout: false
+          min_retry_interval_millis: 30000
+          max_retries: 2
+        - task_key: run_user_activity
+          depends_on:
+            - task_key: ensure_objects
+          sql_task:
+            file:
+              path: ../src/run_user_activity.sql
+            warehouse_id: ${var.warehouse_id}
+            parameters:
+              ds: "{{job.parameters.ds}}"
+          retry_on_timeout: false
+          min_retry_interval_millis: 30000
+          max_retries: 2

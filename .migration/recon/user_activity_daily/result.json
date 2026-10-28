@@ -1,0 +1,275 @@
+{
+  "unit": "user_activity_daily",
+  "mode": "live",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 1,
+  "depth": "full",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 10,
+    "source_rows_fetched": 29,
+    "target_statements": 9,
+    "target_rows_fetched": 29,
+    "elapsed_s": 6.608
+  },
+  "generated_at": "2026-10-28T04:30:30.364848+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 1,
+      "stats": {
+        "user_activity_report": {
+          "source": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2": [
+                "all_privileges",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "user_activity_report": {
+            "grants": [
+              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "user_activity_report",
+          "check": "grant_missing",
+          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "user_activity_report",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "user_activity_report",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "source_counts": {
+          "ow_tp.ow_tp_analytics_src.user_activity_report": 29
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 29,
+      "stats": {
+        "user_activity_report": {
+          "mode": "full_diff",
+          "population": 29,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    }
+  ],
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": null,
+  "rerun_proof": {
+    "unit": "user_activity_daily",
+    "sources": [
+      "etl/dbx-user-activity/src/ensure_objects.sql",
+      "etl/dbx-user-activity/src/run_user_activity.sql",
+      "etl/dbx-user-activity/resources/ow_tp_analytics_user_activity.job.yml",
+      "etl/dbx-user-activity/databricks.yml"
+    ],
+    "prior_from": ".migration/recon/user_activity_daily/rerun/prior_shape.json",
+    "fresh": "pass",
+    "evolved": "pass",
+    "passed": true,
+    "findings": [],
+    "notes": [],
+    "tables": [
+      "user_activity_report"
+    ],
+    "source_digest": "6303d70dc42dbaaf84d9c514f30f60635a6878b36774c35dd900be198d869d9c",
+    "evidence": {
+      "fresh": "databricks bundle run ow_tp_analytics_user_activity -t mig_1793146609 -> run 255489704773403 (empty target; ensure_objects landed the table, run_user_activity landed rows for ds=2026-10-28)",
+      "evolved": "databricks bundle run ow_tp_analytics_user_activity -t mig_1793146609 -> run 130087694869085 (over the landed table in committed DDL shape; MERGE converged rows)"
+    },
+    "shape": {
+      "tables": {
+        "user_activity_report": [
+          {
+            "name": "report_date",
+            "type": "date",
+            "nullable": true
+          },
+          {
+            "name": "user_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "metric",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "metric_value",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "generated_at",
+            "type": "timestamp",
+            "nullable": true
+          }
+        ]
+      }
+    },
+    "shape_digest": "e7e0d01b9fbea009e62c7696a2633d837dc1c109b9e76f8dc34b8a2e864c4911",
+    "prior_digest": "e7e0d01b9fbea009e62c7696a2633d837dc1c109b9e76f8dc34b8a2e864c4911"
+  },
+  "rerun_posture": "required",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": [
+    {
+      "routine": "analytics.ow_tp_analytics_user_activity",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "analytics.user_activity_run",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    }
+  ],
+  "routine_writers": [
+    "analytics.ow_tp_analytics_user_activity",
+    "analytics.user_activity_run"
+  ],
+  "routine_dependencies": ".migration/units/user_activity_daily/dependencies.json"
+}

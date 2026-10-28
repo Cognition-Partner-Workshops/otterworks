@@ -1,0 +1,15 @@
+{
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "objects": [
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.user_activity_report",
+      "object": "user_activity_report",
+      "key": {
+        "source": ["report_date", "user_id", "metric"],
+        "target": ["report_date", "user_id", "metric"]
+      }
+    }
+  ],
+  "family": "databricks"
+}

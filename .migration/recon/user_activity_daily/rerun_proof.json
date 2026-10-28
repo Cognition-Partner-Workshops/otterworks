@@ -1,0 +1,56 @@
+{
+  "unit": "user_activity_daily",
+  "sources": [
+    "etl/dbx-user-activity/src/ensure_objects.sql",
+    "etl/dbx-user-activity/src/run_user_activity.sql",
+    "etl/dbx-user-activity/resources/ow_tp_analytics_user_activity.job.yml",
+    "etl/dbx-user-activity/databricks.yml"
+  ],
+  "prior_from": ".migration/recon/user_activity_daily/rerun/prior_shape.json",
+  "fresh": "pass",
+  "evolved": "pass",
+  "passed": true,
+  "findings": [],
+  "notes": [],
+  "tables": [
+    "user_activity_report"
+  ],
+  "source_digest": "6303d70dc42dbaaf84d9c514f30f60635a6878b36774c35dd900be198d869d9c",
+  "evidence": {
+    "fresh": "databricks bundle run ow_tp_analytics_user_activity -t mig_1793146609 -> run 255489704773403 (empty target; ensure_objects landed the table, run_user_activity landed rows for ds=2026-10-28)",
+    "evolved": "databricks bundle run ow_tp_analytics_user_activity -t mig_1793146609 -> run 130087694869085 (over the landed table in committed DDL shape; MERGE converged rows)"
+  },
+  "shape": {
+    "tables": {
+      "user_activity_report": [
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "user_id",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "shape_digest": "e7e0d01b9fbea009e62c7696a2633d837dc1c109b9e76f8dc34b8a2e864c4911",
+  "prior_digest": "e7e0d01b9fbea009e62c7696a2633d837dc1c109b9e76f8dc34b8a2e864c4911"
+}
