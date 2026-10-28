@@ -1,118 +1,118 @@
 {
-  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
-  "run_id": "1793146609",
-  "wave": 2,
-  "base_branch": "tp-run/databricks-1793146609",
-  "width": 1,
-  "breaker_threshold": 1,
-  "max_minutes": 60,
-  "close_minutes": 30,
-  "doctor_max_age": 15,
-  "auto_merge": false,
-  "target_namespace": "ow_tp.ow_tp_custbill",
-  "verify_depth": "full",
-  "child_skill": "unit-migration",
-  "verify_skill": "wave-verify",
-  "plan_step": "run-custbill-wave-2",
-  "source": {
-    "family": "oracle",
-    "secret": "OW_BILLING_RO_DSN",
-    "params": {
-      "source_name": "OW_BILLING",
-      "target_name": "ow_tp.ow_tp_custbill",
-      "http_path": "/sql/1.0/warehouses/565cd2fd713738c4"
-    }
-  },
-  "capabilities": {
-    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
-    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
-    "catalogs": [
-      "ow_tp"
-    ],
-    "guard_mode": "block",
-    "stop_mode": "hard",
-    "ready": true
-  },
-  "pipelines": {
-    "invoicing": 1,
-    "custbill": 3,
-    "analytics": 2
-  },
-  "target_state": {
-    "pipeline": {
-      "decision": "target-pipeline",
-      "target": "Lakeflow Declarative Pipeline with expectations + quarantine sink",
-      "ref": "plan.yaml decision target-pipeline"
-    },
-    "orchestration": {
-      "decision": "target-orchestration",
-      "target": "Lakeflow Job ow_tp_custbill_job, PAUSED schedule",
-      "ref": "plan.yaml decision target-orchestration"
-    },
-    "consumer": {
-      "decision": "target-consumer",
-      "target": "ow_tp_custbill.finance_billing_totals + report artifact surface",
-      "ref": "plan.yaml decision target-consumer"
-    },
-    "data_dependency": {
-      "decision": "target-data-dependency",
-      "target": "Snapshot files into ow_tp_custbill.custbill_feed staging",
-      "ref": "plan.yaml decision target-data-dependency"
-    },
-    "core": {
-      "decision": "target-core",
-      "na": "custbill is a reporting pipeline; no core OLTP tables"
-    },
-    "sql": {
-      "decision": "target-sql",
-      "na": "SQL lives inside the declarative pipeline"
-    },
-    "lakebase": {
-      "decision": "target-lakebase",
-      "na": "Lakebase belongs to invoicing"
-    },
-    "ml_scoring": {
-      "decision": "target-ml-scoring",
-      "na": "no ML surfaces in custbill"
-    }
-  },
-  "batches": [
+ "auto_merge": false,
+ "base_branch": "tp-run/databricks-1793146609",
+ "batches": [
+  {
+   "brief": "Convert jobs/parse_custbill_fixedwidth.sh + jobs/finance_excel_report.pl into Lakeflow Declarative Pipeline ow_tp_custbill_ldp: custbill_feed -> parsed_records (6-field CBCUST01 parse, ISO dates, implied-decimal amounts) with data expectations (length, date, currency in USD/EUR/GBP, record_type 01/02) routing rejects to ow_tp_custbill.quarantine; finance_billing_totals = month-end rollup keyed (currency, record_type) matching finance_billing_*.csv columns RecordCount/TotalAmount. Local plugin patches required BEFORE recon (apply to your session's plugin cache copy of skills/data-reconciliation/harness/recon/adapters.py): (1) in _uc_schema_facts change tp.grantee <> t.owner to tp.grantee <> t.table_owner (UC exposes table_owner); (2) inside _databricks_connect use sql.connect(server_hostname=host, http_path=http_path, access_token=_databricks_bearer()) for oauth-m2m (the connector's oauth_client_* kwargs drive interactive U2M and hang headless). Recon invocations: pass --target-http-path /sql/1.0/warehouses/565cd2fd713738c4 (the FULL warehouse path, not the bare id \u2014 bare id fails OpenSession). Override stale env DATABRICKS_HTTP_PATH with that path for every recon and grants probe.",
+   "deploy_objects": [
+    "ow_tp.ow_tp_custbill.ow_tp_custbill_ldp"
+   ],
+   "gates": [
     {
-      "id": "c01",
-      "units": [
-        "custbill-ldp"
-      ],
-      "write_targets": [
-        "ow_tp.ow_tp_custbill.finance_billing_totals",
-        "ow_tp.ow_tp_custbill.ow_tp_custbill_ldp",
-        "ow_tp.ow_tp_custbill.parsed_records",
-        "ow_tp.ow_tp_custbill.quarantine"
-      ],
-      "deploy_objects": [
-        "ow_tp.ow_tp_custbill.ow_tp_custbill_ldp"
-      ],
-      "lakeflow_pipelines": [
-        "ow_tp_custbill_ldp"
-      ],
-      "verify_depth": "full",
-      "brief": "Convert jobs/parse_custbill_fixedwidth.sh + jobs/finance_excel_report.pl into Lakeflow Declarative Pipeline ow_tp_custbill_ldp: custbill_feed -> parsed_records (6-field CBCUST01 parse, ISO dates, implied-decimal amounts) with data expectations (length, date, currency in USD/EUR/GBP, record_type 01/02) routing rejects to ow_tp_custbill.quarantine; finance_billing_totals = month-end rollup keyed (currency, record_type) matching finance_billing_*.csv columns RecordCount/TotalAmount.",
-      "gates": [
-        {
-          "id": "custbill-ldp-recon",
-          "kind": "row_parity",
-          "status": "pending",
-          "evidence": ""
-        }
-      ]
+     "evidence": "",
+     "id": "custbill-ldp-recon",
+     "kind": "row_parity",
+     "status": "pending"
     }
-  ],
-  "cost_estimate": {
-    "parts": [
-      {
-        "mode": "live",
-        "depth": "full",
-        "row_counts_known": false
-      }
-    ]
+   ],
+   "id": "c01",
+   "lakeflow_pipelines": [
+    "ow_tp_custbill_ldp"
+   ],
+   "units": [
+    "custbill-ldp"
+   ],
+   "verify_depth": "full",
+   "write_targets": [
+    "ow_tp.ow_tp_custbill.finance_billing_totals",
+    "ow_tp.ow_tp_custbill.ow_tp_custbill_ldp",
+    "ow_tp.ow_tp_custbill.parsed_records",
+    "ow_tp.ow_tp_custbill.quarantine"
+   ]
   }
+ ],
+ "breaker_threshold": 1,
+ "capabilities": {
+  "catalogs": [
+   "ow_tp"
+  ],
+  "guard_mode": "block",
+  "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+  "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+  "ready": true,
+  "stop_mode": "hard"
+ },
+ "child_skill": "unit-migration",
+ "close_minutes": 30,
+ "cost_estimate": {
+  "parts": [
+   {
+    "depth": "full",
+    "mode": "live",
+    "row_counts_known": false
+   }
+  ]
+ },
+ "doctor_max_age": 15,
+ "max_minutes": 60,
+ "pipelines": {
+  "analytics": 2,
+  "custbill": 3,
+  "invoicing": 1
+ },
+ "plan_step": "run-custbill-wave-2",
+ "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+ "run_id": "1793146609",
+ "source": {
+  "family": "oracle",
+  "params": {
+   "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
+   "source_name": "OW_BILLING",
+   "target_name": "ow_tp.ow_tp_custbill"
+  },
+  "secret": "OW_BILLING_RO_DSN"
+ },
+ "target_namespace": "ow_tp.ow_tp_custbill",
+ "target_state": {
+  "consumer": {
+   "decision": "target-consumer",
+   "ref": "plan.yaml decision target-consumer",
+   "target": "ow_tp_custbill.finance_billing_totals + report artifact surface"
+  },
+  "core": {
+   "decision": "target-core",
+   "na": "custbill is a reporting pipeline; no core OLTP tables"
+  },
+  "data_dependency": {
+   "decision": "target-data-dependency",
+   "ref": "plan.yaml decision target-data-dependency",
+   "target": "Snapshot files into ow_tp_custbill.custbill_feed staging"
+  },
+  "lakebase": {
+   "decision": "target-lakebase",
+   "na": "Lakebase belongs to invoicing"
+  },
+  "ml_scoring": {
+   "decision": "target-ml-scoring",
+   "na": "no ML surfaces in custbill"
+  },
+  "orchestration": {
+   "decision": "target-orchestration",
+   "ref": "plan.yaml decision target-orchestration",
+   "target": "Lakeflow Job ow_tp_custbill_job, PAUSED schedule"
+  },
+  "pipeline": {
+   "decision": "target-pipeline",
+   "ref": "plan.yaml decision target-pipeline",
+   "target": "Lakeflow Declarative Pipeline with expectations + quarantine sink"
+  },
+  "sql": {
+   "decision": "target-sql",
+   "na": "SQL lives inside the declarative pipeline"
+  }
+ },
+ "verify_depth": "full",
+ "verify_skill": "wave-verify",
+ "wave": 2,
+ "width": 1
 }
