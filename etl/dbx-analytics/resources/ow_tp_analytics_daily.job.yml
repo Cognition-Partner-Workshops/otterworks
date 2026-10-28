@@ -18,6 +18,12 @@ resources:
       parameters:
         - name: ds
           default: "{{job.start_time.iso_date}}"
+      environments:
+        - environment_key: default
+          spec:
+            client: "4"
+            dependencies:
+              - boto3
       tasks:
         - task_key: ensure_objects
           sql_task:
@@ -30,6 +36,7 @@ resources:
         - task_key: extract_analytics_events
           depends_on:
             - task_key: ensure_objects
+          environment_key: default
           spark_python_task:
             python_file: ../tools/analytics_extract.py
             parameters:
