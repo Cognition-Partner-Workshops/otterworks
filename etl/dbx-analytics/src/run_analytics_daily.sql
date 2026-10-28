@@ -209,7 +209,7 @@ USING (
                 array_sort(
                     collect_list(named_struct('total', total, 'user_id', user_id)),
                     (a, b) -> CASE
-                        WHEN a.total <> b.total THEN sign(b.total - a.total)
+                        WHEN a.total <> b.total THEN CAST(sign(b.total - a.total) AS INT)
                         WHEN a.user_id < b.user_id THEN -1
                         WHEN a.user_id > b.user_id THEN 1
                         ELSE 0

@@ -1,8 +1,8 @@
 # Recon report: unit `analytics_daily`
 
-- **parity PASS, merge blocked (structural)**
+- **parity FAIL, merge blocked (data, structural)**
 - Verdict: FAIL (all tiers)
-- Blockers: structural: structural_gap, tier_failed
+- Blockers: structural: structural_gap, tier_failed; data: tier_failed
 - Mode: `live`
 - Merge eligible: no (fixture/continuous evidence never merges)
 - Rerun posture: `required`
@@ -11,21 +11,19 @@
 - Tolerance version: `tol-20261027-v1`
 - Seed: `0`
 - Tier 3 depth: `full`
-- Generated: 2026-10-28T01:49:35.439745+00:00
+- Generated: 2026-10-28T03:27:36.081530+00:00
 
 ## Routine parity: 0 proven, 2 unproven, 0 failed
 
 - `analytics.ow_tp_analytics_daily` unproven: no committed run
 - `analytics.analytics_daily_run` unproven: no committed run
-- Cost: `{"source_statements": 20, "source_rows_fetched": 2, "target_statements": 18, "target_rows_fetched": 2, "elapsed_s": 12.868}`
+- Cost: `{"source_statements": 12, "source_rows_fetched": 0, "target_statements": 12, "target_rows_fetched": 0, "elapsed_s": 10.065}`
 - Rerun proof: fresh `pass`, evolved `pass`
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|
 | 0 | structural_parity | 2 | FAIL (8 findings) |
-| 1 | counts_through_mapping | 2 | PASS |
-| 2 | per_field_aggregates | 0 | PASS |
-| 3 | keyed_diffs | 2 | PASS |
+| 1 | counts_through_mapping | 2 | FAIL (1 findings) |
 
 ## Tier 0 coverage
 ```json
@@ -214,26 +212,5 @@
 }
 ```
 
-## Tier 3 coverage
-```json
-{
-  "analytics_daily_summary": {
-    "mode": "full_diff",
-    "population": 1,
-    "null_key_rows": {
-      "source": 0,
-      "target": 0
-    },
-    "duplicate_source_key_count": 0
-  },
-  "analytics_daily_report": {
-    "mode": "full_diff",
-    "population": 1,
-    "null_key_rows": {
-      "source": 0,
-      "target": 0
-    },
-    "duplicate_source_key_count": 0
-  }
-}
-```
+## Tier 1 findings (1)
+- `analytics_daily_report` root_count: rows(ow_tp.ow_tp_analytics_src.analytics_daily_report)=1 vs target rows=3

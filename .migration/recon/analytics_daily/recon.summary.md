@@ -1,13 +1,13 @@
-# Recon summary: `analytics_daily` - **parity PASS, merge blocked (structural)**
+# Recon summary: `analytics_daily` - **parity FAIL, merge blocked (data, structural)**
 
-- Blockers: structural: structural_gap, tier_failed
+- Blockers: structural: structural_gap, tier_failed; data: tier_failed
 - Verdict: FAIL / mode `live`
 - Merge eligible: no (fixture/continuous evidence never merges)
 - Rerun posture: `required`
 - Merge authority: `harness` (human_override needs a merge_overrides entry in the committed wave manifest naming the unit)
 - Mapping `map-v1` / tolerances `tol-20261027-v1` / seed `0` / depth `full`
-- Generated: 2026-10-28T01:49:35.439745+00:00
-- Cost: source 20 statements / 2 rows fetched; target 18 statements / 2 rows; 12.868s
+- Generated: 2026-10-28T03:27:36.081530+00:00
+- Cost: source 12 statements / 0 rows fetched; target 12 statements / 0 rows; 10.065s
 
 ## Routine parity: 0 proven, 2 unproven, 0 failed
 
@@ -19,11 +19,9 @@
 | Tier | Checks | Result |
 |---|---|---|
 | 0 structural_parity | 2 | FAIL (8) |
-| 1 counts_through_mapping | 2 | PASS |
-| 2 per_field_aggregates | 0 | PASS |
-| 3 keyed_diffs | 2 | PASS |
+| 1 counts_through_mapping | 2 | FAIL (1) |
 
-Top findings (5 of 8; full list in result.json):
+Top findings (5 of 9; full list in result.json):
 - T0 `analytics_daily_summary` not_null_extra: target report_date is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected
 - T0 `analytics_daily_summary` grant_missing: source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2
 - T0 `analytics_daily_summary` grant_extra: target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart

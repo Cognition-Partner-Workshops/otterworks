@@ -8,13 +8,13 @@
   "params": {},
   "snapshot": null,
   "cost": {
-    "source_statements": 20,
-    "source_rows_fetched": 2,
-    "target_statements": 18,
-    "target_rows_fetched": 2,
-    "elapsed_s": 12.868
+    "source_statements": 12,
+    "source_rows_fetched": 0,
+    "target_statements": 12,
+    "target_rows_fetched": 0,
+    "elapsed_s": 10.065
   },
-  "generated_at": "2026-10-28T01:49:35.439745+00:00",
+  "generated_at": "2026-10-28T03:27:36.081530+00:00",
   "tiers": [
     {
       "tier": 0,
@@ -254,7 +254,7 @@
     {
       "tier": 1,
       "name": "counts_through_mapping",
-      "passed": true,
+      "passed": false,
       "checks_run": 2,
       "stats": {
         "source_counts": {
@@ -262,47 +262,21 @@
           "ow_tp.ow_tp_analytics_src.analytics_daily_report": 1
         }
       },
-      "findings": []
-    },
-    {
-      "tier": 2,
-      "name": "per_field_aggregates",
-      "passed": true,
-      "checks_run": 0,
-      "stats": {},
-      "findings": []
-    },
-    {
-      "tier": 3,
-      "name": "keyed_diffs",
-      "passed": true,
-      "checks_run": 2,
-      "stats": {
-        "analytics_daily_summary": {
-          "mode": "full_diff",
-          "population": 1,
-          "null_key_rows": {
-            "source": 0,
-            "target": 0
-          },
-          "duplicate_source_key_count": 0
-        },
-        "analytics_daily_report": {
-          "mode": "full_diff",
-          "population": 1,
-          "null_key_rows": {
-            "source": 0,
-            "target": 0
-          },
-          "duplicate_source_key_count": 0
+      "findings": [
+        {
+          "object": "analytics_daily_report",
+          "check": "root_count",
+          "detail": "rows(ow_tp.ow_tp_analytics_src.analytics_daily_report)=1 vs target rows=3",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
         }
-      },
-      "findings": []
+      ]
     }
   ],
   "warnings": [],
   "verdict": "FAIL",
-  "parity": "PASS",
+  "parity": "FAIL",
   "merge_eligible": false,
   "merge_policy": "blocked",
   "blockers": [
@@ -312,10 +286,15 @@
     },
     {
       "reason": "tier_failed",
+      "class": "data"
+    },
+    {
+      "reason": "tier_failed",
       "class": "structural"
     }
   ],
   "blocker_classes": [
+    "data",
     "structural"
   ],
   "merge_authority": {
@@ -327,9 +306,11 @@
     "unit": "analytics_daily",
     "sources": [
       "etl/dbx-analytics/src/ensure_objects.sql",
-      "etl/dbx-analytics/src/run_analytics_daily.sql"
+      "etl/dbx-analytics/src/run_analytics_daily.sql",
+      "etl/dbx-analytics/resources/ow_tp_analytics_daily.job.yml",
+      "etl/dbx-analytics/tools/analytics_extract.py"
     ],
-    "prior_from": "/tmp/a02/prior_proof.json",
+    "prior_from": ".migration/recon/analytics_daily/rerun_proof.json",
     "fresh": "pass",
     "evolved": "pass",
     "passed": true,
@@ -339,10 +320,10 @@
       "analytics_daily_report",
       "analytics_daily_summary"
     ],
-    "source_digest": "2925276e24c981bb45394f0ade492066b4e584e0b5653ba9d168fe948374c90b",
+    "source_digest": "e877b95f0559647596c9ee8278925439d2c97ce8cf25c46a4c597acea6e8bcde",
     "evidence": {
-      "fresh": "databricks job run 895970208464476 (bundle ow_tp_analytics_daily, target mig_1793146609, on a fresh target after DROP TABLE)",
-      "evolved": "databricks job run 21125935139472 (bundle ow_tp_analytics_daily, target mig_1793146609, rerun over the landed tables)"
+      "fresh": "warehouse execution of ensure_objects.sql + run_analytics_daily.sql (ds=2026-10-28, sql_task statements via session SP on warehouse 565cd2fd713738c4) on a fresh target after DROP TABLE; bundle job run 580350719779334 reached extract only",
+      "evolved": "warehouse execution of run_analytics_daily.sql (ds=2026-10-28) rerun over the landed tables; MERGEs converged, shape stable"
     },
     "shape": {
       "tables": {

@@ -1,12 +1,8 @@
 {
   "run": "fresh",
   "status": "pass",
-  "evidence": "databricks job run 895970208464476 (bundle ow_tp_analytics_daily, target mig_1793146609, on a fresh target after DROP TABLE)",
+  "evidence": "warehouse execution of ensure_objects.sql + run_analytics_daily.sql (ds=2026-10-28, sql_task statements via session SP on warehouse 565cd2fd713738c4) on a fresh target after DROP TABLE; bundle job run 580350719779334 reached extract only",
   "shape": {
-    "target_kind": "databricks",
-    "catalog": "ow_tp",
-    "schema": "ow_tp_analytics",
-    "read_at": "2026-10-28T01:48:46.616066+00:00",
     "tables": {
       "analytics_daily_summary": [
         {

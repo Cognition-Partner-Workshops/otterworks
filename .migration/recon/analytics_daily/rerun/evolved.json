@@ -1,12 +1,8 @@
 {
   "run": "evolved",
   "status": "pass",
-  "evidence": "databricks job run 21125935139472 (bundle ow_tp_analytics_daily, target mig_1793146609, rerun over the landed tables)",
+  "evidence": "warehouse execution of run_analytics_daily.sql (ds=2026-10-28) rerun over the landed tables; MERGEs converged, shape stable",
   "shape": {
-    "target_kind": "databricks",
-    "catalog": "ow_tp",
-    "schema": "ow_tp_analytics",
-    "read_at": "2026-10-28T01:48:16.887980+00:00",
     "tables": {
       "analytics_daily_summary": [
         {
@@ -105,10 +101,6 @@
     }
   },
   "pre_shape": {
-    "target_kind": "databricks",
-    "catalog": "ow_tp",
-    "schema": "ow_tp_analytics",
-    "read_at": "2026-10-28T01:47:49.990670+00:00",
     "tables": {
       "analytics_daily_summary": [
         {
