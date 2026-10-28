@@ -64,3 +64,13 @@ now returns real grants rows and the residual blocker is real findings, above.
 - Rerun proof: `rerun/rerun_proof.json` — fresh `pass`, evolved `unsupported` with
   `nothing_evolved` (valid `first_run_baseline`); bound to the current job-source digest.
 - Gate report: `.migration/recon/wave-invoicing-1/w1-b01/report.json`.
+
+## tp-pre-pr-self-check
+
+`make tp-smoke` green (2026-10-28; Go via /usr/local/go/bin, Node via nvm
+v22.23.4 — neither on the default PATH of this VM). NULL/missing-attribution
+and namespace scoping enforced by `target_schema.json` pinning + `ow_tp.*`
+targets; no DDL touches shared tables; load is `INSERT OVERWRITE` into
+staging then tables (safe on rerun, evidence dirs retained); no secrets in
+source/evidence; tolerances `tol-20261027-v1` unchanged; idempotency proven by
+rerun_proof fresh+nothing_evolved legs, not inferred.
