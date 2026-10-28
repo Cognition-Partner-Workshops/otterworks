@@ -1,10 +1,10 @@
 {
-  "version": "map-1793146609-usage_rollup_scala-v1",
-  "note": "Scala nightly usage rollup; report rows land in Delta",
+  "version": "map-v1",
+  "target_kind": "databricks",
   "objects": [
     {
+      "root_table": "usage_rollup_output",
       "object": "ow_tp.ow_tp_analytics.usage_rollup",
-      "root_table": "ow_tp.ow_tp_analytics_src.usage_rollup",
       "key": {
         "source": [
           "date"
@@ -12,81 +12,7 @@
         "target": [
           "date"
         ]
-      },
-      "fields": [
-        {
-          "source": "date",
-          "target": "date",
-          "source_type": "date",
-          "target_type": "date"
-        },
-        {
-          "source": "totalEvents",
-          "target": "total_events",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "activeUsers",
-          "target": "active_users",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "documentsCreated",
-          "target": "documents_created",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "documentsViewed",
-          "target": "documents_viewed",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "documentsEdited",
-          "target": "documents_edited",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "filesUploaded",
-          "target": "files_uploaded",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "filesDownloaded",
-          "target": "files_downloaded",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "collabSessions",
-          "target": "collab_sessions",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "storageAllocatedBytes",
-          "target": "storage_allocated_bytes",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "storageReleasedBytes",
-          "target": "storage_released_bytes",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        },
-        {
-          "source": "netStorageBytes",
-          "target": "net_storage_bytes",
-          "source_type": "bigint",
-          "target_type": "bigint"
-        }
-      ]
+      }
     }
   ]
 }

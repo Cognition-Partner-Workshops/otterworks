@@ -1,10 +1,10 @@
 {
-  "version": "map-1793146609-audit_archive_weekly-v1",
-  "note": "Archived audit events as Delta rows + compliance report metrics",
+  "version": "map-v1",
+  "target_kind": "databricks",
   "objects": [
     {
+      "root_table": "otterworks-audit-archive.audit_events",
       "object": "ow_tp.ow_tp_analytics.audit_archive",
-      "root_table": "ow_tp.ow_tp_analytics_src.audit_archive",
       "key": {
         "source": [
           "event_id"
@@ -12,43 +12,11 @@
         "target": [
           "event_id"
         ]
-      },
-      "fields": [
-        {
-          "source": "event_id",
-          "target": "event_id",
-          "source_type": "string",
-          "target_type": "string"
-        },
-        {
-          "source": "tenant_id",
-          "target": "tenant_id",
-          "source_type": "string",
-          "target_type": "string"
-        },
-        {
-          "source": "event_type",
-          "target": "event_type",
-          "source_type": "string",
-          "target_type": "string"
-        },
-        {
-          "source": "occurred_at",
-          "target": "occurred_at",
-          "source_type": "timestamp",
-          "target_type": "timestamp"
-        },
-        {
-          "source": "s3_key",
-          "target": "s3_key",
-          "source_type": "string",
-          "target_type": "string"
-        }
-      ]
+      }
     },
     {
+      "root_table": "otterworks-audit-archive.compliance_report",
       "object": "ow_tp.ow_tp_analytics.audit_archive_report",
-      "root_table": "ow_tp.ow_tp_analytics_src.audit_archive_report",
       "key": {
         "source": [
           "metric"
@@ -56,27 +24,7 @@
         "target": [
           "metric"
         ]
-      },
-      "fields": [
-        {
-          "source": "report_date",
-          "target": "report_date",
-          "source_type": "date",
-          "target_type": "date"
-        },
-        {
-          "source": "metric",
-          "target": "metric",
-          "source_type": "string",
-          "target_type": "string"
-        },
-        {
-          "source": "metric_value",
-          "target": "metric_value",
-          "source_type": "double",
-          "target_type": "double"
-        }
-      ]
+      }
     }
   ]
 }

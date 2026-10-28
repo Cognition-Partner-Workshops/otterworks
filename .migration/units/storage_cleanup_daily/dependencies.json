@@ -1,14 +1,25 @@
 {
   "routines": [
     {
-      "routine": "storage_cleanup_daily.py::main",
+      "routine": "analytics.ow_tp_analytics_storage_cleanup",
       "reads": [
-        "s3:otterworks-file-storage/files/",
-        "dynamodb:otterworks-file-metadata"
+        "otterworks-file-storage.files",
+        "otterworks-file-metadata"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.storage_cleanup_run"
+      ]
+    },
+    {
+      "routine": "analytics.storage_cleanup_run",
+      "reads": [
+        "otterworks-file-storage.files",
+        "otterworks-file-metadata"
       ],
       "writes": [
-        "ow_tp.ow_tp_analytics_src.storage_quarantine_actions",
-        "ow_tp.ow_tp_analytics_src.storage_cleanup_report"
+        "otterworks-file-quarantine.orphans",
+        "otterworks-file-storage.cleanup_report"
       ],
       "calls": []
     }

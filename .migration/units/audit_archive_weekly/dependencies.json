@@ -1,13 +1,23 @@
 {
   "routines": [
     {
-      "routine": "audit_archive_weekly.py::main",
+      "routine": "analytics.ow_tp_analytics_audit_archive",
       "reads": [
-        "dynamodb:otterworks-audit-events"
+        "otterworks-audit-events"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.audit_archive_run"
+      ]
+    },
+    {
+      "routine": "analytics.audit_archive_run",
+      "reads": [
+        "otterworks-audit-events"
       ],
       "writes": [
-        "ow_tp.ow_tp_analytics_src.audit_archive",
-        "ow_tp.ow_tp_analytics_src.audit_archive_report"
+        "otterworks-audit-archive.audit_events",
+        "otterworks-audit-archive.compliance_report"
       ],
       "calls": []
     }

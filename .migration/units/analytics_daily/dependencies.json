@@ -1,14 +1,25 @@
 {
   "routines": [
     {
-      "routine": "analytics_daily.py::main",
+      "routine": "analytics.ow_tp_analytics_daily",
       "reads": [
-        "sqs:otterworks-analytics",
-        "dynamodb:otterworks-analytics-events"
+        "sqs.otterworks-analytics",
+        "otterworks-analytics-events"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.analytics_daily_run"
+      ]
+    },
+    {
+      "routine": "analytics.analytics_daily_run",
+      "reads": [
+        "sqs.otterworks-analytics",
+        "otterworks-analytics-events"
       ],
       "writes": [
-        "ow_tp.ow_tp_analytics_src.analytics_daily_summary",
-        "ow_tp.ow_tp_analytics_src.analytics_daily_report"
+        "otterworks_analytics.analytics_daily_summary",
+        "otterworks-data-lake.analytics_daily_report"
       ],
       "calls": []
     }

@@ -1,16 +1,30 @@
 {
   "routines": [
     {
-      "routine": "user_activity_daily.py::main",
+      "routine": "analytics.ow_tp_analytics_user_activity",
       "reads": [
-        "postgres:otterworks_analytics.users",
-        "postgres:otterworks_analytics.documents",
-        "postgres:otterworks_analytics.files",
-        "postgres:otterworks_analytics.activity_log",
-        "s3:otterworks-file-storage/files/"
+        "otterworks_analytics.users",
+        "otterworks_analytics.documents",
+        "otterworks_analytics.files",
+        "otterworks_analytics.activity_log",
+        "otterworks-file-storage.files"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.user_activity_run"
+      ]
+    },
+    {
+      "routine": "analytics.user_activity_run",
+      "reads": [
+        "otterworks_analytics.users",
+        "otterworks_analytics.documents",
+        "otterworks_analytics.files",
+        "otterworks_analytics.activity_log",
+        "otterworks-file-storage.files"
       ],
       "writes": [
-        "ow_tp.ow_tp_analytics_src.user_activity_report"
+        "otterworks-data-lake.user_activity_report"
       ],
       "calls": []
     }
