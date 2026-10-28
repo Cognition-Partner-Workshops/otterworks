@@ -1,0 +1,30 @@
+{
+  "verifier": "devin-9ee686c2aa1044afae35f9f23fa1978a",
+  "ran_at": "2026-10-28T18:45:00Z",
+  "scope": "read-only SELECT probes; source Oracle via OW_BILLING_RO_DSN, Lakebase via per-session generate-database-credential, Delta via SQL warehouse 565cd2fd713738c4",
+  "u_plans": {
+    "tenant_one_subscriptions": {"source": 1, "target": 1},
+    "target_scope_leak": {"subscriptions": 0, "subscriptions_hist": 0},
+    "duplicate_pk": {"source_subscriptions": 0, "target_subscriptions": 0},
+    "subscriptions_hist_rows": {"source_tenant_one": 0, "target": 0, "source_null_tenant": 0},
+    "decimal_extremes": {
+      "monthly_fee_max": {"source": "499", "target": "499.00"},
+      "monthly_fee_min": {"source": "49", "target": "49.00"},
+      "overage_rate_max": {"source": "0.055", "target": "0.055000"}
+    },
+    "null_ends_on": {"source": 1, "target": 1},
+    "empty_string_id_target": 0
+  },
+  "u_invoice_quality_pipeline": {
+    "independent_source_recount": {"orphan_invoice_lines": 37},
+    "estate_totals": {"invoice_line": 150000, "invoice_header": 18750, "customer_master": 25001},
+    "sink_totals": {"invoice_line_quarantine": 37, "invoice_header_quarantine": 0, "customer_master_quarantine": 50},
+    "reject_reason_tags": {
+      "invoice_line_quarantine": {"[\"line_has_header\"]": 37},
+      "invoice_header_quarantine": {},
+      "customer_master_quarantine": {"[\"cm_signup_dt_parseable\"]": 50}
+    },
+    "duplicate_pk": {"invoice_line_quarantine.line_id": 0, "customer_master_quarantine.cust_id": 0}
+  },
+  "verdict": "all probes clean; counts cross-check with the committed gate evidence and this run's recon results"
+}
