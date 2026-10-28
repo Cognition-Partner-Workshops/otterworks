@@ -16,8 +16,10 @@
       "status": "ok"
     },
     {
-      "data": {},
-      "detail": "no .migration/authorizations.json (no legacy write, gate waiver or merge override is authorized)",
+      "data": {
+        "entries": 1
+      },
+      "detail": "1 authorization entries in .migration/authorizations.json",
       "id": "authorizations_file",
       "reusable": false,
       "status": "ok"
@@ -357,7 +359,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T12:22:19Z",
+  "generated_at": "2026-10-28T15:05:21Z",
   "hook_probe": "blocked:d2afaee8",
   "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
   "identity": {
@@ -365,15 +367,15 @@
     "service_principal": true,
     "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
   },
-  "inputs_sha": "81697aa4748470f3452012d585aa824e9c2205ef589c551ceec237c20cd24cf3",
-  "manifest_sha": "312e3b4b3ad5",
+  "inputs_sha": "5cd7c0aa69b8170dff3ef7e604daf86a4e5e8ca2f8fb6c1d0cf17c6d77594700",
+  "manifest_sha": "8e590ea9d66a",
   "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.2",
   "ready": true,
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
-  "signature": "34faf198ed0bb84156ed7831cab80d98925d3d5c3c5d9f0c31ec223c6e53a2ce",
-  "signed_at": "2026-10-28T12:22:19+00:00",
+  "signature": "4494e8d50f52d56167e042795eaf69df95f4c1f48fa342d7558d141126b9e7ec",
+  "signed_at": "2026-10-28T15:05:21+00:00",
   "source": {
     "family": "oracle",
     "secret": "OW_BILLING_RO_DSN"
