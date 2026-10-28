@@ -34,6 +34,8 @@
         "u-rating"
       ],
       "write_targets": [
+        "ow_tp.mig_1793185083.invoice_header",
+        "ow_tp.mig_1793185083.invoice_line",
         "ow_tp.mig_1793185083.invoices",
         "ow_tp.mig_1793185083.invoice_lines",
         "ow_tp.mig_1793185083.credit_notes",
