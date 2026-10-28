@@ -306,9 +306,9 @@
           "source": "HIST_DT",
           "target": "hist_dt",
           "source_type": "VARCHAR2(20)",
-          "target_type": "DATE",
+          "target_type": "TIMESTAMP",
           "rules": [
-            "dd_mon_yy_or_null"
+            "dd_mon_yy_hh24miss_or_null"
           ],
           "evidence": [
             "d-dirty-date-policy"

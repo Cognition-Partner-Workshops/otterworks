@@ -60,15 +60,30 @@ Entry points (routines nothing in the batch calls → same-named
 unchanged, but `u-rating` cannot sit in wave 1 while `u-invoice-history`
 sits in wave 2. `pkg_invoicing.compute_preview` calls
 `pkg_rating.compute_rating` and `pkg_invoicing.sp_issue_invoice` calls
-`pkg_rating.sp_finalize_rating`, so u-invoice-history's transitive writes
-include `RATING_PERIODS`/`RATING_RESULTS` (and `USAGE_EVENTS` via
-`TRG_USAGE_EVENTS_CHECK` in the shared call graph). The two units form one
-SCC and must batch together — placing u-invoice-history in a later wave
-than u-rating is the only legal split *and* it still collides on the shared
-write targets, so they must share wave 2. That frees the wave-1 slot the
-edge-free, DDL-only `u-invoice-quality-pipeline` takes. Still four units,
-two per wave. `u-rating`'s Lakebase target in a wave-2 batch beside a Delta
-unit is a manifest-level note, not a spec violation.
+`pkg_rating.sp_finalize_rating`. Under `derive_waves` two independent edge
+rules then glue the units together (`derive_waves.py`):
+
+```python
+for unit, callees in called_units.items():
+    for callee in callees:
+        dependencies[unit].add(callee)
+        dependencies[callee].add(unit)          # calls are UNDIRECTED edges
+for unit in rows_by_unit:
+    for other in rows_by_unit:
+        if unit != other and (reads[unit] & writes[other] or writes[unit] & writes[other]):
+            dependencies[unit].add(other)       # read-vs-write and shared-write edges
+```
+
+A single directed call invoicing → rating is recorded as a *mutual*
+dependency (the tool's conservative co-batching model), forming a 2-unit
+SCC — "an SCC cannot be split". Independently of that, `writes[u-rating]
+intersect writes[u-invoice-history]` is non-empty (both units transitively
+write `RATING_PERIODS`, `RATING_RESULTS`, and `USAGE_EVENTS`), so the
+shared-write rule creates a second edge even if call edges were ignored.
+Two reasons, same batch: wave 2. That frees the wave-1 slot the edge-free,
+DDL-only `u-invoice-quality-pipeline` takes. Still four units, two per
+wave. `u-rating`'s Lakebase target in a wave-2 batch beside a Delta unit is
+a manifest-level note, not a spec violation.
 
 If the manager prefers the quality pipeline to run *after* the invoice
 snapshot it validates, `u-invoice-quality-pipeline` can move to wave 2/3
@@ -111,7 +126,7 @@ u-rating` (call edges, shared write targets) — the SCC.
 | `DATE` (STARTS_ON, ENDS_ON, SUSPENDED_ON, PERIOD_*, ISSUED_ON) | `DATE` | `identity`; `census_midnight_only` — live census: 0 non-midnight values in every DATE column |
 | `TIMESTAMP(6)` (OCCURRED_AT, CREATED_AT, ISSUED_AT) | `TIMESTAMP` / `TIMESTAMP_NTZ` | `identity` |
 | `VARCHAR2(9)` 'DD-MON-YY' (SIGNUP_DT, INVOICE_DT, DUE_DT) | typed `DATE` + `<col>_raw` `STRING`/`VARCHAR` | `dd_mon_yy_or_null` on the typed col; `d-dirty-date-policy` |
-| `VARCHAR2(20)` 'DD-MON-YY HH24:MI:SS' (HIST_DT) | `DATE` + `hist_dt_raw` | same dirty policy (values are a string timestamp) |
+| `VARCHAR2(20)` 'DD-MON-YY HH24:MI:SS' (HIST_DT) | `TIMESTAMP` + `hist_dt_raw` `VARCHAR` | `dd_mon_yy_hh24miss_or_null` — trigger writes `TO_CHAR(SYSDATE,'DD-MON-YY HH24:MI:SS')`, so a date-only parse would null or truncate the event time; `d-dirty-date-policy` |
 | `VARCHAR2(200)` GL_ACCT_CSV | `STRING` kept verbatim | `empty_string_is_null`; `csv_list` (multi-valued column, split deferred to consumers) |
 | `VARCHAR2(20)` SERVICE_PERIOD 'MMYYYY-MMYYYY' | `STRING` | `empty_string_is_null`; `period_string_mmyyyy` |
 | `SYS_REFCURSOR` returns | streaming row sets | entrypoints return cursors; converted units materialize the same columns |
@@ -147,16 +162,26 @@ u-rating` (call edges, shared write targets) — the SCC.
   Tenant-One-scoped where the column exists
   (`rerun_posture: not_applicable`; no watermark, no incremental merge).
   Tenant One literal: `tenant_id = '00000000-0000-0000-0000-000000000001'`.
-  Tables without `tenant_id` filter by the parent's literal key list:
-  `RATING_RESULTS` by `period_id IN` Tenant One's three period ids;
+  Tables without `tenant_id` filter through the parent's literal key
+  (`root_where` grammar allows literals only — no subqueries):
+  `RATING_RESULTS` by `subscription_id IN` Tenant One's one subscription
+  (`20000000-…-0001`) — stable across new periods, since
+  `SP_FINALIZE_RATING` writes every result under the same `subscription_id`;
   `INVOICE_LINES` by `invoice_id NOT IN` the four non-Tenant-One invoice
-  ids (its Tenant-One parent set is empty — `IN` needs ≥1 literal and the
-  grammar has no subqueries, so the complement expresses the same empty
-  slice and stays correct if Tenant One ever issues invoices). Reference
-  tables PLANS/CODES are unfiltered global data. `u-invoice-quality-pipeline`
-  carries **no** Tenant-One filter by design — its expectations must scan
-  the full estate or they would be vacuous (Tenant One owns zero bulk
-  rows).
+  ids (its Tenant-One parent set is empty — `IN` needs ≥1 literal, so the
+  complement expresses the same empty slice and stays correct if Tenant One
+  ever issues invoices). Reference tables PLANS/CODES are unfiltered global
+  data. `u-invoice-quality-pipeline` carries **no** Tenant-One filter by
+  design — its expectations must scan the full estate or they would be
+  vacuous (Tenant One owns zero bulk rows).
+- **Quarantine routing** (`u-invoice-quality-pipeline`): the three sink
+  objects' `root_table` is the recon grading bound (`by_design_unverified` →
+  sink rows ≤ root rows), **not** a snapshot copy. Each object declares its
+  own `expectations` block (`expect_or_quarantine` pass predicates —
+  anti-join for orphans, `try_to_date(...,'dd-MMM-yy')` parse checks for
+  dirty dates); only rows failing a predicate are written to the sink.
+  `root_where` is intentionally absent: the pipeline scans the full root
+  and routes violations.
 
 ## Tenant-One snapshot sizes (live-verified)
 
@@ -169,7 +194,7 @@ u-rating` (call edges, shared write targets) — the SCC.
 | subscriptions_hist | 0 | `tenant_id` |
 | usage_events | 1 | `tenant_id` |
 | rating_periods | 3 | `tenant_id` |
-| rating_results | 3 | `period_id IN` (3 period ids) |
+| rating_results | 3 | `subscription_id IN` (Tenant One's 1 subscription) |
 | invoices | 0 | `tenant_id` |
 | invoice_lines | 0 | `invoice_id NOT IN` (4 non-T1 ids) |
 | credit_notes | 0 | `tenant_id` |
@@ -184,6 +209,14 @@ u-rating` (call edges, shared write targets) — the SCC.
 | u-rating | snapshot read | per-object PKs | full | deterministic | 3 SELECTs, ≤7 rows |
 | u-invoice-history | snapshot read | per-object PKs | full | deterministic | 5 SELECTs, empty slices — DDL-only targets |
 | u-invoice-quality-pipeline | snapshot read over full estate | sink PKs | `by_design_unverified` on all three sinks | deterministic | 3 scans of INVOICE_LINE (150k), INVOICE_HEADER (18.7k), CUSTOMER_MASTER (25k) |
+
+### Quarantine expectations (declared per sink object)
+
+| sink | expectation (pass predicate; failures routed to sink) |
+|---|---|
+| invoice_line_quarantine | `INVOICE_ID IS NOT NULL AND INVOICE_ID IN (SELECT INVOICE_ID FROM OW_BILLING.INVOICE_HEADER)` — orphan check; `INVOICE_DT IS NULL OR try_to_date(INVOICE_DT,'dd-MMM-yy') IS NOT NULL` |
+| invoice_header_quarantine | `INVOICE_DT`/`DUE_DT` each `IS NULL OR try_to_date(...,'dd-MMM-yy') IS NOT NULL` |
+| customer_master_quarantine | `SIGNUP_DT IS NULL OR try_to_date(SIGNUP_DT,'dd-MMM-yy') IS NOT NULL` |
 
 Conversion notes for the wave workers (no code in this PR):
 `pkg_rating`/`pkg_invoicing` package-state globals become per-call
