@@ -3,7 +3,7 @@
  "run_id": "1793146609",
  "wave": 1,
  "base_branch": "tp-run/databricks-1793146609",
- "width": 2,
+ "width": 1,
  "breaker_threshold": 2,
  "max_minutes": 60,
  "close_minutes": 30,
@@ -13,7 +13,7 @@
  "verify_depth": "full",
  "child_skill": "unit-migration",
  "verify_skill": "wave-verify",
- "plan_step": "run-analytics-wave-1c",
+ "plan_step": "run-analytics-wave-1d",
  "source": {
   "family": "databricks",
   "secret": "DATABRICKS_DEMO_HOST",
@@ -77,30 +77,6 @@
  },
  "batches": [
   {
-   "id": "a01",
-   "units": [
-    "usage_rollup_scala"
-   ],
-   "write_targets": [
-    "ow_tp.ow_tp_analytics.usage_rollup",
-    "ow_tp.ow_tp_analytics.ow_tp_analytics_usage_rollup"
-   ],
-   "deploy_objects": [
-    "ow_tp.ow_tp_analytics.ow_tp_analytics_usage_rollup"
-   ],
-   "lakeflow_pipelines": [],
-   "verify_depth": "full",
-   "brief": "Relaunch for live recon evidence: convert services/analytics-service batch usage rollup (UsageRollupJob + UsageRollupAggregator + EventLoader; MarketSeeder excluded): read seed/usage-events.ndjson via ROLLUP_INPUT, emit per-day rollup to ow_tp.ow_tp_analytics.usage_rollup as Lakeflow Job ow_tp_analytics_usage_rollup (PAUSED schedule, retries). Snapshot load only. The earlier run's recon evidence was live/FAIL, so this run must produce a live merge-evidence recon run and report merge_authority {kind: human_override, decision_id: mo-analytics-w1-structural} if the structural blocker class still holds.",
-   "gates": [
-    {
-     "id": "usage_rollup_scala-recon",
-     "kind": "row_parity",
-     "status": "pending",
-     "evidence": ".migration/recon/wave-analytics-01/a01/report.json"
-    }
-   ]
-  },
-  {
    "id": "a02",
    "units": [
     "analytics_daily"
@@ -115,7 +91,7 @@
    ],
    "lakeflow_pipelines": [],
    "verify_depth": "full",
-   "brief": "Verify-only rerun of analytics_daily: the unit is already converted on branch devin/1793151987-analytics-daily, open PR #2304 at head 5fc3104ce with the close-review fixes applied (ds from job.start_time.iso_date, extract task wired, batch-level event_type promotion, per-user + hourly artifact rows, no zero-event row). Check out that head, run the merge-evidence recon on it, and report that existing PR #2304 \u2014 open no duplicate PR, do not re-convert. If the structural blocker class still holds report merge_authority {kind: human_override, decision_id: mo-analytics-w1-structural}.",
+   "brief": "Verify-only rerun of analytics_daily on PR #2304 at head b2947fa48 (branch devin/1793151987-analytics-daily): the head now keys artifact rows by the legacy s3 path analytics/daily/year=<y>/month=<m>/day=<d>/ and staging ow_tp_analytics_src.analytics_daily_report mirrors top_users.jsonl.gz + hourly_breakdown.json.gz under the same keys. Check out that head, run the merge-evidence recon on it, and report the existing PR #2304 \u2014 open no duplicate PR, do not re-convert. If the structural blocker class still holds report merge_authority {kind: human_override, decision_id: mo-analytics-w1-structural}.",
    "gates": [
     {
      "id": "analytics_daily-recon",
@@ -140,7 +116,7 @@
    }
   ]
  },
- "brief": "Wave-1c relaunch: a01 (usage_rollup_scala) fresh conversion for live recon evidence; a02 verifies the fixed head of PR #2304 (review bugs closed). Runs under plan step run-analytics-wave-1c with merge_override mo-analytics-w1-structural still covering the structural class on both units.",
+ "brief": "Wave-1d: verify-only rerun of a02 (analytics_daily) on the reviewed head after the artifact-mirror staging fix and the s3_key prefix alignment. a01 already merged under wave-1c.",
  "merge_overrides": [
   {
    "decision": "mo-analytics-w1-structural",

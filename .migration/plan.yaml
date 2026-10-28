@@ -104,6 +104,28 @@ phases:
     gates:
     - id: w1c-recon
       description: dbx-recon PASS per unit on the declared parity mechanism, on the reviewed heads.
+    decisions:
+    - id: analytics-daily-artifacts
+      description: 'Scope of analytics_daily_report parity: the artifact keys
+        top_users.jsonl.gz and hourly_breakdown.json.gz are part of the legacy
+        output set; the snapshot mirror ow_tp_analytics_src.analytics_daily_report
+        carries them keyed by legacy s3 path
+        (analytics/daily/year=<y>/month=<m>/day=<d>/). Selected per requester
+        decision (by user:dhrov.subramanian@cognition.ai, relayed via parent).'
+      options:
+      - id: mirror
+        label: "Mirror the artifact keys into staging \u2014 full legacy output coverage."
+      - id: target-only
+        label: "Accept artifact rows as target-only output, no legacy mirror."
+      selected: mirror
+      important: true
+  - id: run-analytics-wave-1d
+    title: Wave 1d (a02 verify-only rerun on #2304's fixed head after artifact mirror)
+    depends_on:
+    - run-analytics-wave-1c
+    gates:
+    - id: w1d-recon
+      description: dbx-recon PASS on analytics_daily against the mirrored staging.
   - id: run-analytics-wave-2
     title: Wave 2 remaining crons (width 4)
     depends_on:
