@@ -2,6 +2,9 @@
   "name": "otterworks-otter-projects",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "LOCAL_MODE=true next dev",
     "build": "next build",
