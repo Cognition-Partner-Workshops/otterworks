@@ -13,7 +13,10 @@ counts clean). `merge_eligible=false` — class `structural`:
   source staging table (all_privileges, select); on the target it is the
   table owner, so information_schema carries no grant row. Platform-inherent.
 
-No committed `merge_overrides` entry covers this unit -> merge_authority harness.
+Relaunch manifest `merge_overrides` carries exactly one entry covering this
+unit (`mo-analytics-w1-structural`, blocker_classes `structural`, units
+usage_rollup_scala + analytics_daily) -> report merge_authority
+human_override mo-analytics-w1-structural.
 
 ## Fixture
 

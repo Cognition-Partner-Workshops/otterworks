@@ -11,13 +11,13 @@
 - Tolerance version: `tol-20261027-v1`
 - Seed: `0`
 - Tier 3 depth: `full`
-- Generated: 2026-10-28T01:50:38.524329+00:00
+- Generated: 2026-10-28T02:31:36.979735+00:00
 
 ## Routine parity: 0 proven, 2 unproven, 0 failed
 
 - `analytics.ow_tp_analytics_usage_rollup` unproven: no committed run
 - `analytics.usage_rollup_run` unproven: no committed run
-- Cost: `{"source_statements": 10, "source_rows_fetched": 3, "target_statements": 9, "target_rows_fetched": 3, "elapsed_s": 6.387}`
+- Cost: `{"source_statements": 10, "source_rows_fetched": 3, "target_statements": 9, "target_rows_fetched": 3, "elapsed_s": 6.011}`
 - Rerun proof: fresh `pass`, evolved `pass`
 
 | Tier | Name | Checks | Result |
