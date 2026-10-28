@@ -30,14 +30,41 @@
     "analytics": 2
   },
   "target_state": {
-    "operational": {
-      "kind": "lakebase",
-      "project": "ow-tp-billing",
-      "branch": "mig-billing-20261028"
+    "core": {
+      "decision": "target-core",
+      "target": "Lakebase project ow-tp-billing branch mig-billing-20261028 (operational state) + Delta tables under ow_tp.ow_tp_invoicing (history)",
+      "ref": "plan.yaml decision target-core"
     },
-    "history": {
-      "kind": "delta",
-      "namespace": "ow_tp.ow_tp_invoicing"
+    "sql": {
+      "decision": "target-sql",
+      "na": "no SQL surface; snapshot loads and recon only"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "na": "no declarative pipelines"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Jobs for DBMS_SCHEDULER jobs, PAUSED (quartz_cron + timezone + max_concurrent_runs=1)",
+      "ref": "plan.yaml decision target-orchestration"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "na": "STOP E parks outputs side by side; no consumer repoint this run"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "target": "Lakebase project ow-tp-billing, branch mig-billing-20261028",
+      "ref": "plan.yaml decision target-lakebase"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no ML surfaces in invoicing"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "shared objects tenants/codes/customer_master snapshot-loaded under ow_tp.ow_tp_invoicing (invoicing-owned); shared ledger .migration/ledger.jsonl",
+      "ref": "plan.yaml decisions target-data-dependency / parity-mechanism"
     }
   },
   "merge_overrides": [
