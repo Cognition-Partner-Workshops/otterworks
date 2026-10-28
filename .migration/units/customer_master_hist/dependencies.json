@@ -1,0 +1,14 @@
+{
+  "routines": [
+    {
+      "routine": "OW_BILLING.TRG_CUSTOMER_MASTER_HIST",
+      "reads": [
+        "OW_BILLING.CUSTOMER_MASTER"
+      ],
+      "writes": [
+        "OW_BILLING.CUSTOMER_MASTER_HIST"
+      ],
+      "calls": []
+    }
+  ]
+}

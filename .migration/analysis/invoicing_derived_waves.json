@@ -1,0 +1,216 @@
+{
+  "units": {
+    "codes": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "customer_master": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "customer_master_hist": {
+      "depends_on": [],
+      "reads": [
+        "customer_master"
+      ],
+      "writes": [
+        "customer_master_hist"
+      ]
+    },
+    "entity_attr_value": {
+      "depends_on": [],
+      "reads": [],
+      "writes": [
+        "entity_attr_value"
+      ]
+    },
+    "invoice_header": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "invoice_line": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "pkg_dunning": {
+      "depends_on": [
+        "pkg_invoicing",
+        "pkg_ow_util",
+        "pkg_plans",
+        "pkg_rating"
+      ],
+      "reads": [
+        "dunning_attempts",
+        "invoices",
+        "notifications",
+        "subscriptions",
+        "tenants"
+      ],
+      "writes": [
+        "billing_audit_log",
+        "dunning_attempts",
+        "notifications",
+        "subscriptions",
+        "subscriptions_hist",
+        "tenants"
+      ]
+    },
+    "pkg_invoicing": {
+      "depends_on": [
+        "pkg_dunning",
+        "pkg_ow_util",
+        "pkg_plans",
+        "pkg_rating"
+      ],
+      "reads": [
+        "credit_notes",
+        "invoice_lines",
+        "plans",
+        "subscriptions",
+        "tenants"
+      ],
+      "writes": [
+        "billing_audit_log",
+        "credit_notes",
+        "invoice_lines",
+        "invoices",
+        "rating_periods",
+        "rating_results"
+      ]
+    },
+    "pkg_ow_util": {
+      "depends_on": [
+        "pkg_dunning",
+        "pkg_invoicing",
+        "pkg_plans",
+        "pkg_rating"
+      ],
+      "reads": [
+        "billing_audit_log",
+        "codes"
+      ],
+      "writes": [
+        "billing_audit_log"
+      ]
+    },
+    "pkg_plans": {
+      "depends_on": [
+        "pkg_dunning",
+        "pkg_invoicing",
+        "pkg_ow_util",
+        "pkg_rating"
+      ],
+      "reads": [
+        "plans",
+        "subscriptions",
+        "tenants"
+      ],
+      "writes": [
+        "billing_audit_log",
+        "subscriptions",
+        "subscriptions_hist"
+      ]
+    },
+    "pkg_rating": {
+      "depends_on": [
+        "pkg_dunning",
+        "pkg_invoicing",
+        "pkg_ow_util",
+        "pkg_plans"
+      ],
+      "reads": [
+        "plans",
+        "rating_periods",
+        "rating_results",
+        "subscriptions",
+        "usage_events"
+      ],
+      "writes": [
+        "billing_audit_log",
+        "rating_periods",
+        "rating_results"
+      ]
+    },
+    "plans": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "subscriptions_hist": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "tenants": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "usage_events": {
+      "depends_on": [],
+      "reads": [
+        "codes"
+      ],
+      "writes": []
+    }
+  },
+  "waves": [
+    {
+      "batches": [
+        {
+          "id": "w1-b01",
+          "units": [
+            "codes",
+            "customer_master",
+            "customer_master_hist",
+            "entity_attr_value",
+            "invoice_header"
+          ],
+          "write_targets": [
+            "customer_master_hist",
+            "entity_attr_value"
+          ]
+        },
+        {
+          "id": "w1-b02",
+          "units": [
+            "invoice_line",
+            "plans",
+            "subscriptions_hist",
+            "tenants",
+            "usage_events"
+          ],
+          "write_targets": []
+        },
+        {
+          "id": "w1-b03",
+          "units": [
+            "pkg_dunning",
+            "pkg_invoicing",
+            "pkg_ow_util",
+            "pkg_plans",
+            "pkg_rating"
+          ],
+          "write_targets": [
+            "billing_audit_log",
+            "credit_notes",
+            "dunning_attempts",
+            "invoice_lines",
+            "invoices",
+            "notifications",
+            "rating_periods",
+            "rating_results",
+            "subscriptions",
+            "subscriptions_hist",
+            "tenants"
+          ]
+        }
+      ],
+      "wave": 1
+    }
+  ]
+}

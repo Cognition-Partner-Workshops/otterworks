@@ -1,0 +1,12 @@
+{
+  "routines": [
+    {
+      "routine": "OW_BILLING.TRG_USAGE_EVENTS_CHECK",
+      "reads": [
+        "OW_BILLING.CODES"
+      ],
+      "writes": [],
+      "calls": []
+    }
+  ]
+}
