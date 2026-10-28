@@ -1,12 +1,12 @@
 {
   "run": "evolved",
   "status": "pass",
-  "evidence": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 336551696088202 (over the landed table in committed DDL shape; MERGE converged rows)",
+  "evidence": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 288842258229958 (over the landed table in committed DDL shape; MERGE converged rows)",
   "shape": {
     "target_kind": "databricks",
     "catalog": "ow_tp",
     "schema": "ow_tp_analytics",
-    "read_at": "2026-10-28T03:14:42.097804+00:00",
+    "read_at": "2026-10-28T03:34:30.100784+00:00",
     "tables": {
       "usage_rollup": [
         {
@@ -86,7 +86,7 @@
     "target_kind": "databricks",
     "catalog": "ow_tp",
     "schema": "ow_tp_analytics",
-    "read_at": "2026-10-28T03:14:20.645369+00:00",
+    "read_at": "2026-10-28T03:34:09.143559+00:00",
     "tables": {
       "usage_rollup": [
         {

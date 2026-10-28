@@ -15,10 +15,10 @@
   "tables": [
     "usage_rollup"
   ],
-  "source_digest": "99adb522b27b6e2028064cb8d0b1a0860ccbb4b32902bbdd8e4cdf8f040104a5",
+  "source_digest": "9f049a2d029e4caff818e2ef124f643c9dde23c9eb126e496e9a5d3caa80c0f4",
   "evidence": {
-    "fresh": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 51844703827653 (empty target; ensure_objects landed the table, rollup_load landed 3 rows)",
-    "evolved": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 336551696088202 (over the landed table in committed DDL shape; MERGE converged rows)"
+    "fresh": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 316251899760649 (empty target; ensure_objects landed the table, rollup_load landed 3 rows)",
+    "evolved": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 288842258229958 (over the landed table in committed DDL shape; MERGE converged rows)"
   },
   "shape": {
     "tables": {

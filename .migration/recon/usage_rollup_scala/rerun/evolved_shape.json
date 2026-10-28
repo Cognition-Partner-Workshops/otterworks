@@ -2,7 +2,7 @@
   "target_kind": "databricks",
   "catalog": "ow_tp",
   "schema": "ow_tp_analytics",
-  "read_at": "2026-10-28T03:14:42.097804+00:00",
+  "read_at": "2026-10-28T03:34:30.100784+00:00",
   "tables": {
     "usage_rollup": [
       {
