@@ -1,0 +1,21 @@
+resources:
+  jobs:
+    ow_tp_mig_0_w0_b01_scaffold:
+      name: ow_tp_mig_0_w0_b01_scaffold
+      max_concurrent_runs: 1
+      description: >-
+        Wave 0 scaffold for run 1793176531 (batch w0-b01): creates the
+        run-scoped schemas ow_tp.r1793176531_staging/_recon/_quarantine/_history
+        and the 14 structural OW_BILLING legacy_* mirrors under
+        ow_tp.r1793176531_recon. Idempotent DDL; snapshot row loads land
+        per-unit in later waves.
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: scaffold_ddl
+          sql_task:
+            file:
+              path: ../00_scaffold.sql
+            warehouse_id: ${var.warehouse_id}
