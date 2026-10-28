@@ -26,6 +26,16 @@ async fn main() -> std::io::Result<()> {
 
     let app_config = config::AppConfig::from_env();
     let s3_client = storage::S3Client::new(&app_config.aws).await;
+    match s3_client.verify_bucket().await {
+        Ok(()) => tracing::info!(bucket = %s3_client.bucket, "S3 bucket verified"),
+        Err(failure) => tracing::error!(
+            bucket = %failure.bucket,
+            code = failure.code.as_deref().unwrap_or("none"),
+            http_status = failure.http_status.unwrap_or(0),
+            "{failure}; uploads will fail and /ready reports not_ready until S3_BUCKET \
+             names a bucket this service can reach"
+        ),
+    }
     let meta_client = metadata::MetadataClient::new(&app_config.aws).await;
     let event_publisher = events::EventPublisher::new(&app_config.sns, &app_config.aws).await;
 
@@ -59,6 +69,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(events_data.clone())
             .app_data(redis_data.clone())
             .route("/health", web::get().to(handlers::health))
+            .route("/ready", web::get().to(handlers::ready))
             .route("/metrics", web::get().to(handlers::metrics))
             .service(
                 web::scope("/api/v1/files")

@@ -97,6 +97,32 @@ pub struct HealthResponse {
     pub version: String,
 }
 
+/// Body of `GET /ready`: `status` is `ready` or `not_ready`; `checks` names
+/// each dependency the service cannot work without.
+#[derive(Debug, Serialize)]
+pub struct ReadinessResponse {
+    pub status: String,
+    pub service: String,
+    pub checks: ReadinessChecks,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ReadinessChecks {
+    pub s3_bucket: BucketCheck,
+}
+
+#[derive(Debug, Serialize)]
+pub struct BucketCheck {
+    pub bucket: String,
+    pub ok: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub http_status: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
 #[derive(Debug, Serialize)]
 pub struct UploadResponse {
     pub file: FileMetadata,
