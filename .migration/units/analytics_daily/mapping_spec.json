@@ -1,0 +1,138 @@
+{
+  "version": "ow-tp-map-v1",
+  "objects": [
+    {
+      "object": "analytics_daily_summary",
+      "root_table": "postgres.otterworks_analytics.analytics_daily_summary",
+      "fields": [
+        {
+          "source": "report_date",
+          "target": "report_date",
+          "source_type": "DATE",
+          "target_type": "DATE",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "active_users",
+          "target": "active_users",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "active_documents",
+          "target": "active_documents",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "active_files",
+          "target": "active_files",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "total_events",
+          "target": "total_events",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "documents_created",
+          "target": "documents_created",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "documents_edited",
+          "target": "documents_edited",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "comments_added",
+          "target": "comments_added",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "files_uploaded",
+          "target": "files_uploaded",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "files_shared",
+          "target": "files_shared",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "files_deleted",
+          "target": "files_deleted",
+          "source_type": "INT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "bytes_uploaded",
+          "target": "bytes_uploaded",
+          "source_type": "BIGINT",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "updated_at",
+          "target": "updated_at",
+          "source_type": "TIMESTAMPTZ",
+          "target_type": "TIMESTAMP",
+          "rules": [
+            "nondeterministic:written-on-load"
+          ]
+        }
+      ]
+    },
+    {
+      "object": "analytics_daily_outputs",
+      "root_table": "s3.otterworks_data_lake.analytics_daily",
+      "notes": "hourly_breakdown+summary+top_users JSON.gz per day; land as Delta rows or UC volume files (plan decision target-storage)"
+    },
+    {
+      "object": "reports_analytics_daily",
+      "root_table": "s3.otterworks_data_lake.reports_analytics_daily",
+      "notes": "report.json per day; UC volume / file sink"
+    }
+  ]
+}

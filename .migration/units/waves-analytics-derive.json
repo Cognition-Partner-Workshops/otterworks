@@ -1,0 +1,136 @@
+{
+  "units": {
+    "analytics_daily": {
+      "depends_on": [],
+      "reads": [],
+      "writes": [
+        "ow_tp.ow_tp_analytics.analytics_daily_outputs",
+        "ow_tp.ow_tp_analytics.analytics_daily_summary",
+        "ow_tp.ow_tp_analytics.reports_analytics_daily"
+      ]
+    },
+    "audit_archive_weekly": {
+      "depends_on": [],
+      "reads": [
+        "ow_tp.ow_tp_analytics.audit_events"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics.audit_events",
+        "ow_tp.ow_tp_analytics.audit_events_archive",
+        "ow_tp.ow_tp_analytics.reports_audit_archive"
+      ]
+    },
+    "codes": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "customer_master": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "search_reindex_weekly": {
+      "depends_on": [],
+      "reads": [],
+      "writes": [
+        "ow_tp.ow_tp_analytics.search_documents_index",
+        "ow_tp.ow_tp_analytics.search_files_index"
+      ]
+    },
+    "storage_cleanup_daily": {
+      "depends_on": [],
+      "reads": [
+        "ow_tp.ow_tp_analytics.file_storage_inventory"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics.file_storage_inventory",
+        "ow_tp.ow_tp_analytics.quarantined_files",
+        "ow_tp.ow_tp_analytics.reports_storage_cleanup"
+      ]
+    },
+    "tenants": {
+      "depends_on": [],
+      "reads": [],
+      "writes": []
+    },
+    "usage_rollup": {
+      "depends_on": [],
+      "reads": [
+        "ow_tp.ow_tp_analytics.analytics_events"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics.usage_rollup_daily"
+      ]
+    },
+    "user_activity_daily": {
+      "depends_on": [
+        "analytics_daily"
+      ],
+      "reads": [
+        "ow_tp.ow_tp_analytics.analytics_daily_outputs",
+        "ow_tp.ow_tp_analytics.analytics_daily_summary"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics.reports_user_activity",
+        "ow_tp.ow_tp_analytics.user_activity_summaries"
+      ]
+    }
+  },
+  "waves": [
+    {
+      "batches": [
+        {
+          "id": "w1-b01",
+          "units": [
+            "analytics_daily",
+            "audit_archive_weekly",
+            "codes",
+            "customer_master",
+            "search_reindex_weekly"
+          ],
+          "write_targets": [
+            "ow_tp.ow_tp_analytics.analytics_daily_outputs",
+            "ow_tp.ow_tp_analytics.analytics_daily_summary",
+            "ow_tp.ow_tp_analytics.audit_events",
+            "ow_tp.ow_tp_analytics.audit_events_archive",
+            "ow_tp.ow_tp_analytics.reports_analytics_daily",
+            "ow_tp.ow_tp_analytics.reports_audit_archive",
+            "ow_tp.ow_tp_analytics.search_documents_index",
+            "ow_tp.ow_tp_analytics.search_files_index"
+          ]
+        },
+        {
+          "id": "w1-b02",
+          "units": [
+            "storage_cleanup_daily",
+            "tenants",
+            "usage_rollup"
+          ],
+          "write_targets": [
+            "ow_tp.ow_tp_analytics.file_storage_inventory",
+            "ow_tp.ow_tp_analytics.quarantined_files",
+            "ow_tp.ow_tp_analytics.reports_storage_cleanup",
+            "ow_tp.ow_tp_analytics.usage_rollup_daily"
+          ]
+        }
+      ],
+      "wave": 1
+    },
+    {
+      "batches": [
+        {
+          "id": "w2-b01",
+          "units": [
+            "user_activity_daily"
+          ],
+          "write_targets": [
+            "ow_tp.ow_tp_analytics.reports_user_activity",
+            "ow_tp.ow_tp_analytics.user_activity_summaries"
+          ]
+        }
+      ],
+      "wave": 2
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "routines": [
+    {
+      "routine": "usage_rollup",
+      "reads": [
+        "file.usage_events_ndjson",
+        "postgres.otterworks_analytics.analytics_events"
+      ],
+      "writes": [
+        "file.usage_rollup_output"
+      ],
+      "calls": []
+    }
+  ]
+}

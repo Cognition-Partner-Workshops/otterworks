@@ -1,0 +1,16 @@
+{
+  "routines": [
+    {
+      "routine": "audit_archive_weekly",
+      "reads": [
+        "dynamodb.otterworks_audit_events"
+      ],
+      "writes": [
+        "s3.otterworks_audit_archive.audit_archive",
+        "dynamodb.otterworks_audit_events",
+        "s3.otterworks_audit_archive.reports_compliance"
+      ],
+      "calls": []
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "routines": [
+    {
+      "routine": "storage_cleanup_daily",
+      "reads": [
+        "s3.otterworks_file_storage.files",
+        "dynamodb.otterworks_file_metadata"
+      ],
+      "writes": [
+        "s3.otterworks_file_quarantine.quarantined",
+        "s3.otterworks_file_storage.files",
+        "s3.otterworks_data_lake.reports_storage_cleanup"
+      ],
+      "calls": []
+    }
+  ]
+}

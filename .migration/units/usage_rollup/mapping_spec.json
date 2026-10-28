@@ -1,0 +1,199 @@
+{
+  "version": "ow-tp-map-v1",
+  "objects": [
+    {
+      "object": "usage_rollup_daily",
+      "root_table": "file.usage_rollup_output",
+      "fields": [
+        {
+          "source": "date",
+          "target": "date",
+          "source_type": "ISO date str",
+          "target_type": "DATE",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "totalEvents",
+          "target": "total_events",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "activeUsers",
+          "target": "active_users",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "documentsCreated",
+          "target": "documents_created",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "documentsViewed",
+          "target": "documents_viewed",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "documentsEdited",
+          "target": "documents_edited",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "filesUploaded",
+          "target": "files_uploaded",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "filesDownloaded",
+          "target": "files_downloaded",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "collabSessions",
+          "target": "collab_sessions",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "storageAllocatedBytes",
+          "target": "storage_allocated_bytes",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "storageReleasedBytes",
+          "target": "storage_released_bytes",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "netStorageBytes",
+          "target": "net_storage_bytes",
+          "source_type": "LONG",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        }
+      ],
+      "notes": "JSON report \u2192 Delta rows; generatedAt nondeterministic"
+    },
+    {
+      "object": "analytics_events",
+      "root_table": "postgres.otterworks_analytics.analytics_events",
+      "fields": [
+        {
+          "source": "id",
+          "target": "id",
+          "source_type": "BIGSERIAL",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "event_id",
+          "target": "event_id",
+          "source_type": "VARCHAR(64)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "event_type",
+          "target": "event_type",
+          "source_type": "VARCHAR(64)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "user_id",
+          "target": "user_id",
+          "source_type": "VARCHAR(128)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "resource_id",
+          "target": "resource_id",
+          "source_type": "VARCHAR(128)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "resource_type",
+          "target": "resource_type",
+          "source_type": "VARCHAR(64)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "metadata",
+          "target": "metadata",
+          "source_type": "TEXT(json)",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "occurred_at",
+          "target": "occurred_at",
+          "source_type": "BIGINT epoch-nanos",
+          "target_type": "BIGINT",
+          "rules": [
+            "unit:epoch-ns"
+          ]
+        }
+      ],
+      "notes": "source store the NDJSON export mirrors; kept for recon anchoring"
+    }
+  ]
+}

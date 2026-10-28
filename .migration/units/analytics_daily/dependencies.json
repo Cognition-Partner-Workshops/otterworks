@@ -1,0 +1,17 @@
+{
+  "routines": [
+    {
+      "routine": "analytics_daily",
+      "reads": [
+        "sqs.otterworks_analytics",
+        "dynamodb.otterworks_analytics_events"
+      ],
+      "writes": [
+        "s3.otterworks_data_lake.analytics_daily",
+        "s3.otterworks_data_lake.reports_analytics_daily",
+        "postgres.otterworks_analytics.analytics_daily_summary"
+      ],
+      "calls": []
+    }
+  ]
+}

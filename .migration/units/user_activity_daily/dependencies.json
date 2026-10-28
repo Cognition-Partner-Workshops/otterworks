@@ -1,0 +1,16 @@
+{
+  "routines": [
+    {
+      "routine": "user_activity_daily",
+      "reads": [
+        "postgres.otterworks_analytics.analytics_daily_summary",
+        "s3.otterworks_data_lake.analytics_daily"
+      ],
+      "writes": [
+        "s3.otterworks_data_lake.reports_user_activity",
+        "s3.otterworks_data_lake.user_activity_summaries"
+      ],
+      "calls": []
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "routines": [
+    {
+      "routine": "search_reindex_weekly",
+      "reads": [
+        "api.document_service.documents",
+        "api.file_service.files"
+      ],
+      "writes": [
+        "meilisearch.documents_index",
+        "meilisearch.files_index"
+      ],
+      "calls": []
+    }
+  ]
+}

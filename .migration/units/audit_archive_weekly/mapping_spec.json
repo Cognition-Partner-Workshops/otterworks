@@ -1,0 +1,19 @@
+{
+  "version": "ow-tp-map-v1",
+  "objects": [
+    {
+      "object": "audit_events_archive",
+      "root_table": "s3.otterworks_audit_archive.audit_archive",
+      "notes": "weekly gzip jsonl, GLACIER class on legacy; retention contract = compliance (90d)"
+    },
+    {
+      "object": "audit_events",
+      "root_table": "dynamodb.otterworks_audit_events",
+      "notes": "LEGACY WRITE: archived items batch-deleted from source table; needs legacy_write_authorized entry"
+    },
+    {
+      "object": "reports_audit_archive",
+      "root_table": "s3.otterworks_audit_archive.reports_compliance"
+    }
+  ]
+}

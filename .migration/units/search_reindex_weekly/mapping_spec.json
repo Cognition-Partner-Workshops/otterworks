@@ -1,0 +1,14 @@
+{
+  "version": "ow-tp-map-v1",
+  "objects": [
+    {
+      "object": "search_documents_index",
+      "root_table": "meilisearch.documents_index",
+      "notes": "delete+recreate index, settings patch, 500-doc batches; primaryKey id"
+    },
+    {
+      "object": "search_files_index",
+      "root_table": "meilisearch.files_index"
+    }
+  ]
+}
