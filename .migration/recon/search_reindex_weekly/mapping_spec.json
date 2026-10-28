@@ -1,0 +1,87 @@
+{
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "objects": [
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.search_index_documents",
+      "object": "search_index_docs",
+      "key": {
+        "source": [
+          "index_name",
+          "doc_id"
+        ],
+        "target": [
+          "index_name",
+          "doc_id"
+        ]
+      },
+      "target_where": "index_name = 'documents'",
+      "fields": [
+        {
+          "source": "doc_json",
+          "target": "doc_json",
+          "source_type": "string",
+          "target_type": "string"
+        }
+      ],
+      "root_where": "index_name = 'documents'"
+    },
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.search_index_files",
+      "object": "search_index_docs",
+      "key": {
+        "source": [
+          "index_name",
+          "doc_id"
+        ],
+        "target": [
+          "index_name",
+          "doc_id"
+        ]
+      },
+      "target_where": "index_name = 'files'",
+      "fields": [
+        {
+          "source": "doc_json",
+          "target": "doc_json",
+          "source_type": "string",
+          "target_type": "string"
+        }
+      ],
+      "root_where": "index_name = 'files'"
+    },
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.reindex_report",
+      "object": "search_reindex_report",
+      "key": {
+        "source": [
+          "metric"
+        ],
+        "target": [
+          "metric"
+        ]
+      },
+      "fields": [
+        {
+          "source": "metric_value",
+          "target": "metric_value",
+          "source_type": "string",
+          "target_type": "string"
+        },
+        {
+          "source": "report_date",
+          "target": "report_date",
+          "source_type": "date",
+          "target_type": "date"
+        },
+        {
+          "source": "generated_at",
+          "target": "generated_at",
+          "source_type": "timestamp",
+          "target_type": "timestamp"
+        }
+      ]
+    }
+  ],
+  "family": "databricks"
+}

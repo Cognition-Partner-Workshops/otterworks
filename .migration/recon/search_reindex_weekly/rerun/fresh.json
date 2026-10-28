@@ -1,0 +1,57 @@
+{
+  "run": "fresh",
+  "status": "pass",
+  "evidence": "databricks bundle run ow_tp_analytics_search_reindex -t mig_1793146609 -> run 780638694703120 (empty target; ensure_objects landed both tables, reindex_docs landed 28 rows, reindex_report landed 5 rows)",
+  "shape": {
+    "target_kind": "databricks",
+    "catalog": "ow_tp",
+    "schema": "ow_tp_analytics",
+    "read_at": "2026-10-28T04:29:12.927613+00:00",
+    "tables": {
+      "search_index_docs": [
+        {
+          "name": "index_name",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "doc_id",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "doc_sha256",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "doc_json",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "search_reindex_report": [
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  }
+}

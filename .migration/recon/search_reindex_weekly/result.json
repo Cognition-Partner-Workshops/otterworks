@@ -1,0 +1,423 @@
+{
+  "unit": "search_reindex_weekly",
+  "mode": "live",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "full",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 30,
+    "source_rows_fetched": 33,
+    "target_statements": 27,
+    "target_rows_fetched": 33,
+    "elapsed_s": 20.774
+  },
+  "generated_at": "2026-10-28T04:31:47.625298+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 3,
+      "stats": {
+        "search_index_docs": {
+          "source": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2": [
+                "all_privileges",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "search_reindex_report": {
+          "source": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2": [
+                "all_privileges",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "search_index_docs": {
+            "grants": [
+              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "search_reindex_report": {
+            "grants": [
+              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "search_index_docs",
+          "check": "grant_missing",
+          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "search_index_docs",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "search_index_docs",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "search_index_docs",
+          "check": "grant_missing",
+          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "search_index_docs",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "search_index_docs",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "search_reindex_report",
+          "check": "grant_missing",
+          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "search_reindex_report",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "search_reindex_report",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "ow_tp.ow_tp_analytics_src.search_index_documents": 13,
+          "ow_tp.ow_tp_analytics_src.search_index_files": 15,
+          "ow_tp.ow_tp_analytics_src.reindex_report": 5
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 33,
+      "stats": {
+        "search_index_docs": {
+          "mode": "full_diff",
+          "population": 15,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "search_reindex_report": {
+          "mode": "full_diff",
+          "population": 5,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    }
+  ],
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": null,
+  "rerun_proof": {
+    "unit": "search_reindex_weekly",
+    "sources": [
+      "etl/dbx-search-reindex/src/ensure_objects.sql",
+      "etl/dbx-search-reindex/src/reindex_docs.sql",
+      "etl/dbx-search-reindex/src/reindex_report.sql",
+      "etl/dbx-search-reindex/resources/ow_tp_analytics_search_reindex.job.yml",
+      "etl/dbx-search-reindex/databricks.yml"
+    ],
+    "prior_from": ".migration/recon/search_reindex_weekly/rerun/prior_shape.json",
+    "fresh": "pass",
+    "evolved": "pass",
+    "passed": true,
+    "findings": [],
+    "notes": [],
+    "tables": [
+      "search_index_docs",
+      "search_reindex_report"
+    ],
+    "source_digest": "8a9245fc6ea949064e0f8ebed0ffe2993bfab94e18eebe20376d5a0b2167bd9a",
+    "evidence": {
+      "fresh": "databricks bundle run ow_tp_analytics_search_reindex -t mig_1793146609 -> run 780638694703120 (empty target; ensure_objects landed both tables, reindex_docs landed 28 rows, reindex_report landed 5 rows)",
+      "evolved": "databricks bundle run ow_tp_analytics_search_reindex -t mig_1793146609 -> run 975360374613706 (over the landed tables in committed DDL shape; MERGE converged rows)"
+    },
+    "shape": {
+      "tables": {
+        "search_index_docs": [
+          {
+            "name": "index_name",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "doc_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "doc_sha256",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "doc_json",
+            "type": "string",
+            "nullable": true
+          }
+        ],
+        "search_reindex_report": [
+          {
+            "name": "metric",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "metric_value",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "report_date",
+            "type": "date",
+            "nullable": true
+          },
+          {
+            "name": "generated_at",
+            "type": "timestamp",
+            "nullable": true
+          }
+        ]
+      }
+    },
+    "shape_digest": "ce5e2253c1ead2cb48c65eeccf8e35e6c87591f026d52261fd5e141ff8c84cf2",
+    "prior_digest": "ce5e2253c1ead2cb48c65eeccf8e35e6c87591f026d52261fd5e141ff8c84cf2"
+  },
+  "rerun_posture": "required",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": [
+    {
+      "routine": "analytics.ow_tp_analytics_search_reindex",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "analytics.search_reindex_run",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    }
+  ],
+  "routine_writers": [
+    "analytics.ow_tp_analytics_search_reindex",
+    "analytics.search_reindex_run"
+  ],
+  "routine_dependencies": ".migration/units/search_reindex_weekly/dependencies.json"
+}
