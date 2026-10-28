@@ -1,0 +1,11 @@
+{
+  "version": "tol-20261027-v1",
+  "family": "oracle",
+  "mode": "live",
+  "full_diff_row_threshold": 5000000,
+  "sample_size": 100000,
+  "numeric_abs_tol": 0.0,
+  "aggregate_rel_tol": 1e-09,
+  "source_concurrency": 2,
+  "amendment_procedure": "Tolerances change only through a plan decision the human selected, never mid-run and never by a worker. An amendment adds a new versioned row (e.g. tol-20261027-v2) preserving every prior rule verbatim and names its re-verification scope; the previous version stays committed for already-verified units."
+}
