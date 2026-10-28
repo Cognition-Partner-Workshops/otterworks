@@ -189,7 +189,7 @@
           "u-rating": null
         },
         "family": "oracle",
-        "fields": 105,
+        "fields": 69,
         "harness": "python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.2/skills/data-reconciliation/harness)",
         "map": "skills/oracle-plsql/canonicalization.json",
         "target_kind": "mixed",
@@ -204,7 +204,7 @@
         ],
         "unmapped": []
       },
-      "detail": "105 typed fields agree with skills/oracle-plsql/canonicalization.json (databricks: 1, lakebase: 1 specs); 0 unmapped source types recorded, 0 undeclared targets the harness fills at run time (python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.2/skills/data-reconciliation/harness))",
+      "detail": "69 typed fields agree with skills/oracle-plsql/canonicalization.json (databricks: 1, lakebase: 1 specs); 0 unmapped source types recorded, 0 undeclared targets the harness fills at run time (python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.2/skills/data-reconciliation/harness))",
       "id": "type_map_audit",
       "reusable": true,
       "status": "ok"
@@ -247,9 +247,6 @@
           "OW_BILLING.INVOICES",
           "OW_BILLING.INVOICE_LINES",
           "OW_BILLING.CREDIT_NOTES",
-          "OW_BILLING.PLANS",
-          "OW_BILLING.TENANTS",
-          "OW_BILLING.SUBSCRIPTIONS",
           "OW_BILLING.USAGE_EVENTS",
           "OW_BILLING.RATING_PERIODS",
           "OW_BILLING.RATING_RESULTS"
@@ -261,7 +258,7 @@
         "unresolved": [],
         "writable": {}
       },
-      "detail": "oracle: no write system privilege, no object grant beyond SELECT/READ, no write role on 11 in-scope table(s); connection opened readonly=True, session_user=OW_BILLING_RO; driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
+      "detail": "oracle: no write system privilege, no object grant beyond SELECT/READ, no write role on 8 in-scope table(s); connection opened readonly=True, session_user=OW_BILLING_RO; driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
       "id": "source_principal_read_only",
       "reusable": false,
       "status": "ok"
@@ -276,9 +273,6 @@
           "OW_BILLING.INVOICES",
           "OW_BILLING.INVOICE_LINES",
           "OW_BILLING.CREDIT_NOTES",
-          "OW_BILLING.PLANS",
-          "OW_BILLING.TENANTS",
-          "OW_BILLING.SUBSCRIPTIONS",
           "OW_BILLING.USAGE_EVENTS",
           "OW_BILLING.RATING_PERIODS",
           "OW_BILLING.RATING_RESULTS"
@@ -301,7 +295,7 @@
           "all_tab_privs"
         ]
       },
-      "detail": "oracle: catalog views readable on 11 in-scope table(s)",
+      "detail": "oracle: catalog views readable on 8 in-scope table(s)",
       "id": "dictionary_readable",
       "reusable": true,
       "status": "ok"
@@ -365,7 +359,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T15:29:10Z",
+  "generated_at": "2026-10-28T15:44:01Z",
   "hook_probe": "blocked:d2afaee8",
   "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
   "identity": {
@@ -373,15 +367,15 @@
     "service_principal": true,
     "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
   },
-  "inputs_sha": "2e597f849167dbbed3a89e0c28362b1a07af2de6bbf0cb0e815a5db1ea5d7425",
-  "manifest_sha": "bf326cc57b63",
+  "inputs_sha": "5cd7c0aa69b8170dff3ef7e604daf86a4e5e8ca2f8fb6c1d0cf17c6d77594700",
+  "manifest_sha": "ccbef800b407",
   "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.2",
   "ready": true,
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
-  "signature": "42762ba66fcf2eb3fdeb7ef36d61a27dd518e02a1761e0b7e858d39c2fa2eaf9",
-  "signed_at": "2026-10-28T15:29:10+00:00",
+  "signature": "0ca8a137ee43466bf083b2a87717b9a42a22559be36a034b9e695a4758260cb1",
+  "signed_at": "2026-10-28T15:44:01+00:00",
   "source": {
     "family": "oracle",
     "secret": "OW_BILLING_RO_DSN"
