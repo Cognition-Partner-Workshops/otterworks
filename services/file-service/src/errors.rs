@@ -84,9 +84,18 @@ impl ResponseError for ServiceError {
             ),
         };
 
+        // Server-side failures carry bucket names, AWS error codes and request
+        // ids: keep that in the service log and hand clients a generic message.
+        let message = if status.is_server_error() {
+            tracing::error!(error = %self, error_type, "request failed");
+            format!("{error_type} (see file-service logs for details)")
+        } else {
+            self.to_string()
+        };
+
         HttpResponse::build(status).json(ErrorResponse {
             error: error_type.to_string(),
-            message: self.to_string(),
+            message,
         })
     }
 }

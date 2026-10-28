@@ -33,8 +33,16 @@ resources:
     cpu: 100m
     memory: 128Mi
 
+# Liveness: the process answers HTTP.
 healthCheck:
   path: /health
+  port: 8082
+
+# Readiness: the configured S3 bucket answers HeadBucket. A pod whose S3_BUCKET
+# names a missing or forbidden bucket stays out of the Service instead of
+# failing every upload with NoSuchBucket.
+readinessCheck:
+  path: /ready
   port: 8082
 
 monitoring:
