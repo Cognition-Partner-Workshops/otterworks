@@ -1,0 +1,58 @@
+{
+  "version": "map-v1",
+  "family": "oracle",
+  "target_kind": "databricks",
+  "rerun_posture": "first_run_baseline",
+  "objects": [
+    {
+      "root_table": "ow_billing.customer_master",
+      "object": "customer_master",
+      "key": {
+        "source": [
+          "cust_id"
+        ],
+        "target": "cust_id"
+      }
+    },
+    {
+      "root_table": "ow_billing.customer_master_hist",
+      "object": "customer_master_hist",
+      "key": {
+        "source": [
+          "hist_id"
+        ],
+        "target": "hist_id"
+      }
+    },
+    {
+      "root_table": "ow_billing.entity_attr_value",
+      "object": "entity_attr_value",
+      "key": {
+        "source": [
+          "eav_id"
+        ],
+        "target": "eav_id"
+      }
+    },
+    {
+      "root_table": "ow_billing.invoice_header",
+      "object": "invoice_header",
+      "key": {
+        "source": [
+          "invoice_id"
+        ],
+        "target": "invoice_id"
+      }
+    },
+    {
+      "root_table": "ow_billing.invoice_line",
+      "object": "invoice_line",
+      "key": {
+        "source": [
+          "line_id"
+        ],
+        "target": "line_id"
+      }
+    }
+  ]
+}

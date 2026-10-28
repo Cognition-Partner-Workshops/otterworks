@@ -1,0 +1,29 @@
+resources:
+  jobs:
+    ow_tp_1793146609_snapshot_billing_history:
+      name: ow_tp_1793146609_snapshot_billing_history
+      description: >-
+        Snapshot-load OW_BILLING invoicing history into ow_tp.ow_tp_invoicing_history
+        (wave invoicing-1, batch w1-b01). Extract files land on
+        /Volumes/ow_tp/ow_tp_invoicing_history/landing/billing_history via
+        extract.py --upload; this job recreates the five Delta tables (ddl.sql) and
+        overwrites them from the landed parquet (load.sql), so reruns converge.
+      schedule:
+        quartz_cron_expression: "0 0 3 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: ddl
+          sql_task:
+            warehouse_id: "565cd2fd713738c4"
+            file:
+              path: ../sql/ddl.sql
+              source: WORKSPACE
+        - task_key: load
+          depends_on:
+            - task_key: ddl
+          sql_task:
+            warehouse_id: "565cd2fd713738c4"
+            file:
+              path: ../sql/load.sql
+              source: WORKSPACE

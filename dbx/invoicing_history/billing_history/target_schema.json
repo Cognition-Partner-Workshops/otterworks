@@ -1,0 +1,2455 @@
+{
+  "customer_master": [
+    {
+      "name": "cust_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_seq_no",
+      "oracle_type": "NUMBER",
+      "precision": 12,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "tenant_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_no",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_name",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_name_upper",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "legal_name",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "dba_name",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_1",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_2",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_3",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_4",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_5",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_6",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "city",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "state_cd",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "zip",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "zip4",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "country_cd",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_1",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_2",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_3",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_4",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_5",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_6",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_city",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_state_cd",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_zip",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone1",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone2",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone3",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone4",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone1_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "phone2_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "phone3_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "phone4_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "fax",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "email_1",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "email_2",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "email_3",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "signup_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "last_activity_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "last_invoice_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "last_payment_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "terminate_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "status_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "sub_status_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "cust_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "segment_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "region_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "territory_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "channel_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "rate_class_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "tax_exempt_yn",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "credit_hold_yn",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "dunning_exempt_yn",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "vip_yn",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cur_bal_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "past_due_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "ytd_billed_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "ltd_billed_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "ytd_paid_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "credit_limit_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "related_acct_ids",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "child_acct_ids",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "promo_codes_csv",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "contact_notes",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "legacy_sys_key",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mainframe_acct_no",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "conversion_batch_no",
+      "oracle_type": "NUMBER",
+      "precision": 8,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "flag_01",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_02",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_03",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_04",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_05",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_06",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_07",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_08",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_09",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_10",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_11",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_12",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_13",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_14",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_15",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_16",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_17",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_18",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_19",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_20",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_01",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_02",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_03",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_04",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_05",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_06",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_07",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_08",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_09",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_10",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_11",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_12",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_13",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_14",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_15",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_16",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_17",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_18",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_19",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_20",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_21",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_22",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_23",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_24",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_25",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_26",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_27",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_28",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_29",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_30",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_31",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_32",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_33",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_34",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_35",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_36",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_37",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_38",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_39",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_40",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_amt_01",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_02",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_03",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_04",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_05",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_06",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_07",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_08",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_09",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_10",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_dt_01",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_02",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_03",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_04",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_05",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_06",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_07",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_08",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_09",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_10",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "created_by",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "created_dt",
+      "oracle_type": "DATE",
+      "precision": null,
+      "scale": null,
+      "delta_type": "TIMESTAMP_NTZ"
+    },
+    {
+      "name": "updated_by",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "updated_dt",
+      "oracle_type": "DATE",
+      "precision": null,
+      "scale": null,
+      "delta_type": "TIMESTAMP_NTZ"
+    },
+    {
+      "name": "row_version_no",
+      "oracle_type": "NUMBER",
+      "precision": 8,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    }
+  ],
+  "customer_master_hist": [
+    {
+      "name": "hist_id",
+      "oracle_type": "NUMBER",
+      "precision": 12,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "hist_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "hist_op",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_seq_no",
+      "oracle_type": "NUMBER",
+      "precision": 12,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "tenant_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_no",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_name",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_name_upper",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "legal_name",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "dba_name",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_1",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_2",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_3",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_4",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_5",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "addr_line_6",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "city",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "state_cd",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "zip",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "zip4",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "country_cd",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_1",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_2",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_3",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_4",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_5",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_addr_line_6",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_city",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_state_cd",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mail_zip",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone1",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone2",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone3",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone4",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "phone1_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "phone2_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "phone3_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "phone4_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "fax",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "email_1",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "email_2",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "email_3",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "signup_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "last_activity_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "last_invoice_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "last_payment_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "terminate_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "status_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "sub_status_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "cust_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "segment_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "region_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "territory_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "channel_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "rate_class_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "tax_exempt_yn",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "credit_hold_yn",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "dunning_exempt_yn",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "vip_yn",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cur_bal_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "past_due_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "ytd_billed_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "ltd_billed_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "ytd_paid_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "credit_limit_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "related_acct_ids",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "child_acct_ids",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "promo_codes_csv",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "contact_notes",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "legacy_sys_key",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "mainframe_acct_no",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "conversion_batch_no",
+      "oracle_type": "NUMBER",
+      "precision": 8,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "flag_01",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_02",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_03",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_04",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_05",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_06",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_07",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_08",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_09",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_10",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_11",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_12",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_13",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_14",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_15",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_16",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_17",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_18",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_19",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "flag_20",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_01",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_02",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_03",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_04",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_05",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_06",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_07",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_08",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_09",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_10",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_11",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_12",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_13",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_14",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_15",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_16",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_17",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_18",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_19",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_20",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_21",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_22",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_23",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_24",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_25",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_26",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_27",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_28",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_29",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_30",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_31",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_32",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_33",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_34",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_35",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_36",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_37",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_38",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_39",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_40",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_amt_01",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_02",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_03",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_04",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_05",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_06",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_07",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_08",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_09",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_amt_10",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "udf_dt_01",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_02",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_03",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_04",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_05",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_06",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_07",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_08",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_09",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "udf_dt_10",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "created_by",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "created_dt",
+      "oracle_type": "DATE",
+      "precision": null,
+      "scale": null,
+      "delta_type": "TIMESTAMP_NTZ"
+    },
+    {
+      "name": "updated_by",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "updated_dt",
+      "oracle_type": "DATE",
+      "precision": null,
+      "scale": null,
+      "delta_type": "TIMESTAMP_NTZ"
+    },
+    {
+      "name": "row_version_no",
+      "oracle_type": "NUMBER",
+      "precision": 8,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    }
+  ],
+  "entity_attr_value": [
+    {
+      "name": "eav_id",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "entity_type",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "entity_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "attr_name",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "attr_value",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "attr_type",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "created_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    }
+  ],
+  "invoice_header": [
+    {
+      "name": "invoice_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "invoice_no",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "tenant_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "invoice_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "due_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "status_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "total_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "batch_no",
+      "oracle_type": "NUMBER",
+      "precision": 8,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    }
+  ],
+  "invoice_line": [
+    {
+      "name": "line_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "invoice_no",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "invoice_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_no",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "cust_name",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "tenant_id",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "line_no",
+      "oracle_type": "NUMBER",
+      "precision": 6,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "line_type_cd",
+      "oracle_type": "NUMBER",
+      "precision": 4,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "item_desc",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "qty",
+      "oracle_type": "NUMBER",
+      "precision": 12,
+      "scale": 3,
+      "delta_type": "DECIMAL(12,3)"
+    },
+    {
+      "name": "unit_price",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 4,
+      "delta_type": "DECIMAL(14,4)"
+    },
+    {
+      "name": "amount",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "tax_amt",
+      "oracle_type": "NUMBER",
+      "precision": 14,
+      "scale": 2,
+      "delta_type": "DECIMAL(14,2)"
+    },
+    {
+      "name": "invoice_dt",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "service_period",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "posted_yn",
+      "oracle_type": "CHAR",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "gl_acct_csv",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    },
+    {
+      "name": "batch_no",
+      "oracle_type": "NUMBER",
+      "precision": 8,
+      "scale": 0,
+      "delta_type": "BIGINT"
+    },
+    {
+      "name": "src_system",
+      "oracle_type": "VARCHAR2",
+      "precision": null,
+      "scale": null,
+      "delta_type": "STRING"
+    }
+  ]
+}
