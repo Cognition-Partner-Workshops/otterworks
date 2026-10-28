@@ -1,0 +1,6 @@
+{"version": 1, "authorizations": [
+  {"id": "d-merge-overrides",
+   "kind": "merge_override",
+   "objects": ["tenants", "codes", "customer_master", "customer_master_hist", "subscriptions_hist", "entity_attr_value", "plans", "usage_events", "invoice_header", "invoice_line", "pkg_ow_util", "pkg_plans", "pkg_rating", "pkg_invoicing", "pkg_dunning", "custbill_sftp_ingest", "custbill_oracle_extract", "custbill_parse", "custbill_finance_report", "custbill_run_all", "analytics_daily", "audit_archive_weekly", "search_reindex_weekly", "storage_cleanup_daily", "user_activity_daily", "usage_rollup"],
+   "by": "user:dhrov.subramanian@cognition.ai"}
+]}
