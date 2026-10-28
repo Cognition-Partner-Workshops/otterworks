@@ -1,0 +1,72 @@
+{
+  "version": "ow-tp-map-v1",
+  "objects": [
+    {
+      "object": "custbill_records",
+      "root_table": "CUSTBILL_PARSED",
+      "key": {
+        "source": ["FEED_FILE", "LINE_NO"],
+        "target": ["feed_file", "line_no"]
+      },
+      "fields": [
+        {
+          "source": "FEED_FILE",
+          "target": "feed_file",
+          "source_type": "VARCHAR2",
+          "target_type": "STRING",
+          "rules": ["identity"]
+        },
+        {
+          "source": "LINE_NO",
+          "target": "line_no",
+          "source_type": "NUMBER",
+          "target_type": "BIGINT",
+          "rules": ["identity"]
+        },
+        {
+          "source": "CUST_ID",
+          "target": "cust_id",
+          "source_type": "CHAR(10)",
+          "target_type": "STRING",
+          "rules": ["rstrip_spaces"]
+        },
+        {
+          "source": "CUST_NAME",
+          "target": "cust_name",
+          "source_type": "CHAR(30)",
+          "target_type": "STRING",
+          "rules": ["rstrip_spaces"]
+        },
+        {
+          "source": "BILL_DATE",
+          "target": "bill_date",
+          "source_type": "CHAR(8)",
+          "target_type": "DATE",
+          "rules": ["yyyymmdd_to_iso_date"]
+        },
+        {
+          "source": "BILL_AMT",
+          "target": "bill_amt",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)",
+          "rules": ["implied_decimal_2"]
+        },
+        {
+          "source": "CURRENCY",
+          "target": "currency",
+          "source_type": "CHAR(3)",
+          "target_type": "STRING",
+          "rules": ["rstrip_spaces"]
+        },
+        {
+          "source": "REC_TYPE",
+          "target": "rec_type",
+          "source_type": "CHAR(2)",
+          "target_type": "STRING",
+          "rules": ["identity"]
+        }
+      ]
+    }
+  ],
+  "rerun_posture": "not_applicable"
+}

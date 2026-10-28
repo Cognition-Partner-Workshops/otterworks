@@ -1,0 +1,37 @@
+{
+  "version": "ow-tp-map-v1",
+  "objects": [
+    {
+      "object": "custbill_feed",
+      "root_table": "CUSTBILL_FEED",
+      "key": {
+        "source": ["FEED_FILE", "LINE_NO"],
+        "target": ["feed_file", "line_no"]
+      },
+      "fields": [
+        {
+          "source": "FEED_FILE",
+          "target": "feed_file",
+          "source_type": "VARCHAR2",
+          "target_type": "STRING",
+          "rules": ["identity"]
+        },
+        {
+          "source": "LINE_NO",
+          "target": "line_no",
+          "source_type": "NUMBER",
+          "target_type": "BIGINT",
+          "rules": ["identity"]
+        },
+        {
+          "source": "RECORD",
+          "target": "record_text",
+          "source_type": "CHAR(65)",
+          "target_type": "STRING",
+          "rules": ["identity"]
+        }
+      ]
+    }
+  ],
+  "rerun_posture": "not_applicable"
+}

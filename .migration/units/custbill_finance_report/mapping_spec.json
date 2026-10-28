@@ -1,0 +1,44 @@
+{
+  "version": "ow-tp-map-v1",
+  "objects": [
+    {
+      "object": "finance_billing_summary",
+      "root_table": "FINANCE_BILLING_REPORT",
+      "key": {
+        "source": ["CURRENCY", "REC_TYPE"],
+        "target": ["currency", "record_type"]
+      },
+      "fields": [
+        {
+          "source": "CURRENCY",
+          "target": "currency",
+          "source_type": "CHAR(3)",
+          "target_type": "STRING",
+          "rules": ["identity"]
+        },
+        {
+          "source": "REC_TYPE",
+          "target": "record_type",
+          "source_type": "CHAR(2)",
+          "target_type": "STRING",
+          "rules": ["rec_type_label_01_invoice_02_credit_else_unknown"]
+        },
+        {
+          "source": "RECORD_COUNT",
+          "target": "record_count",
+          "source_type": "NUMBER",
+          "target_type": "BIGINT",
+          "rules": ["count_per_group"]
+        },
+        {
+          "source": "TOTAL_AMT",
+          "target": "total_amount",
+          "source_type": "NUMBER",
+          "target_type": "DECIMAL(38,2)",
+          "rules": ["sum_per_group_2dp"]
+        }
+      ]
+    }
+  ],
+  "rerun_posture": "not_applicable"
+}

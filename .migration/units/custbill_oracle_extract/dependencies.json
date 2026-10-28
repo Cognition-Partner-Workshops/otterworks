@@ -1,0 +1,16 @@
+{
+  "routines": [
+    {
+      "routine": "etl/legacy-extra/tools/oracle_custbill_extract.py",
+      "reads": [
+        "OW_BILLING.INVOICE_HEADER",
+        "OW_BILLING.CUSTOMER_MASTER",
+        "OW_BILLING.TENANTS"
+      ],
+      "writes": [
+        "CUSTBILL_FEED"
+      ],
+      "calls": []
+    }
+  ]
+}

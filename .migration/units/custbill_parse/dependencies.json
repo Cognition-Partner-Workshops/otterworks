@@ -1,0 +1,14 @@
+{
+  "routines": [
+    {
+      "routine": "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh",
+      "reads": [
+        "CUSTBILL_FEED"
+      ],
+      "writes": [
+        "CUSTBILL_PARSED"
+      ],
+      "calls": []
+    }
+  ]
+}

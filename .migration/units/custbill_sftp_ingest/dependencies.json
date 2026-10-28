@@ -1,0 +1,14 @@
+{
+  "routines": [
+    {
+      "routine": "etl/legacy-extra/jobs/sftp_ingest_poll.ksh",
+      "reads": [
+        "sftp_drop.CUSTBILL_feed"
+      ],
+      "writes": [
+        "CUSTBILL_FEED"
+      ],
+      "calls": []
+    }
+  ]
+}

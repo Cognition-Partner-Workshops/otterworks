@@ -1,0 +1,14 @@
+{
+  "routines": [
+    {
+      "routine": "etl/legacy-extra/run_all.sh",
+      "reads": [
+        "CUSTBILL_FEED",
+        "CUSTBILL_PARSED",
+        "FINANCE_BILLING_REPORT"
+      ],
+      "writes": [],
+      "calls": []
+    }
+  ]
+}

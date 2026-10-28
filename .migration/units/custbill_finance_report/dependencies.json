@@ -1,0 +1,14 @@
+{
+  "routines": [
+    {
+      "routine": "etl/legacy-extra/jobs/finance_excel_report.pl",
+      "reads": [
+        "CUSTBILL_PARSED"
+      ],
+      "writes": [
+        "FINANCE_BILLING_REPORT"
+      ],
+      "calls": []
+    }
+  ]
+}
