@@ -34,8 +34,8 @@
     "ready": true
   },
   "pipelines": {
-    "invoicing": 1,
-    "custbill": 3,
+    "invoicing": 2,
+    "custbill": 4,
     "analytics": 2
   },
   "target_state": {
