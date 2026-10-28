@@ -422,7 +422,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T04:16:05Z",
+  "generated_at": "2026-10-28T04:22:09Z",
   "hook_probe": "blocked:6c2ceeb2",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
@@ -430,14 +430,14 @@
     "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
   },
   "inputs_sha": "693e7c09a450133c53d1bcedc5acac016c1b950b5770dbd5c28c3407f48415f6",
-  "manifest_sha": "cb6bf2f170a1",
+  "manifest_sha": "96fb20af7556",
   "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1",
   "ready": true,
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
-  "signature": "f6e85a47a88ce4f8e2f586f894c16f76c83190b03dbf2e71804db8d35eef249f",
-  "signed_at": "2026-10-28T04:16:05+00:00",
+  "signature": "626b61009da1914d0a0fbb0d78e19a2e0a8f0a4e53983a291e1ac8f08043a895",
+  "signed_at": "2026-10-28T04:22:09+00:00",
   "source": {
     "family": "oracle",
     "secret": "OW_BILLING_RO_DSN"
