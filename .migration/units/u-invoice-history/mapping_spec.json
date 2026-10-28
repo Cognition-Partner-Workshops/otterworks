@@ -1,6 +1,6 @@
 {
   "version": "ow-tp-map-v1",
-  "target_kind": "delta",
+  "target_kind": "databricks",
   "rerun_posture": "not_applicable",
   "objects": [
     {
@@ -55,7 +55,7 @@
           "source": "INVOICE_DT",
           "target": "invoice_dt",
           "source_type": "VARCHAR2(9)",
-          "target_type": "DATE",
+          "target_type": "STRING",
           "rules": [
             "dd_mon_yy_or_null"
           ],
@@ -79,7 +79,7 @@
           "source": "DUE_DT",
           "target": "due_dt",
           "source_type": "VARCHAR2(9)",
-          "target_type": "DATE",
+          "target_type": "STRING",
           "rules": [
             "dd_mon_yy_or_null"
           ],
@@ -283,7 +283,7 @@
           "source": "INVOICE_DT",
           "target": "invoice_dt",
           "source_type": "VARCHAR2(9)",
-          "target_type": "DATE",
+          "target_type": "STRING",
           "rules": [
             "dd_mon_yy_or_null"
           ],
