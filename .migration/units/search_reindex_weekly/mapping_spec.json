@@ -3,7 +3,7 @@
   "target_kind": "databricks",
   "objects": [
     {
-      "root_table": "meilisearch.documents",
+      "root_table": "ow_tp.ow_tp_analytics_src.search_index_documents",
       "object": "ow_tp.ow_tp_analytics.search_index_docs",
       "key": {
         "source": [
@@ -17,7 +17,7 @@
       }
     },
     {
-      "root_table": "meilisearch.files",
+      "root_table": "ow_tp.ow_tp_analytics_src.search_index_files",
       "object": "ow_tp.ow_tp_analytics.search_index_docs",
       "key": {
         "source": [
@@ -31,7 +31,7 @@
       }
     },
     {
-      "root_table": "meilisearch.reindex_report",
+      "root_table": "ow_tp.ow_tp_analytics_src.reindex_report",
       "object": "ow_tp.ow_tp_analytics.search_reindex_report",
       "key": {
         "source": [

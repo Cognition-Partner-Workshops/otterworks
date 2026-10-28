@@ -3,7 +3,7 @@
   "target_kind": "databricks",
   "objects": [
     {
-      "root_table": "otterworks-data-lake.user_activity_report",
+      "root_table": "ow_tp.ow_tp_analytics_src.user_activity_report",
       "object": "ow_tp.ow_tp_analytics.user_activity_report",
       "key": {
         "source": [

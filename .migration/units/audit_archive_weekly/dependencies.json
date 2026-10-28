@@ -3,7 +3,7 @@
     {
       "routine": "analytics.ow_tp_analytics_audit_archive",
       "reads": [
-        "otterworks-audit-events"
+        "otterworks_audit_events"
       ],
       "writes": [],
       "calls": [
@@ -13,11 +13,11 @@
     {
       "routine": "analytics.audit_archive_run",
       "reads": [
-        "otterworks-audit-events"
+        "otterworks_audit_events"
       ],
       "writes": [
-        "otterworks-audit-archive.audit_events",
-        "otterworks-audit-archive.compliance_report"
+        "ow_tp.ow_tp_analytics_src.audit_events",
+        "ow_tp.ow_tp_analytics_src.compliance_report"
       ],
       "calls": []
     }

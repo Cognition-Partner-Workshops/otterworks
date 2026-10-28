@@ -7,7 +7,7 @@
         "otterworks_analytics.documents",
         "otterworks_analytics.files",
         "otterworks_analytics.activity_log",
-        "otterworks-file-storage.files"
+        "otterworks_file_storage.files"
       ],
       "writes": [],
       "calls": [
@@ -21,10 +21,10 @@
         "otterworks_analytics.documents",
         "otterworks_analytics.files",
         "otterworks_analytics.activity_log",
-        "otterworks-file-storage.files"
+        "otterworks_file_storage.files"
       ],
       "writes": [
-        "otterworks-data-lake.user_activity_report"
+        "ow_tp.ow_tp_analytics_src.user_activity_report"
       ],
       "calls": []
     }

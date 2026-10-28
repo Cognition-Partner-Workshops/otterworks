@@ -3,7 +3,7 @@
   "target_kind": "databricks",
   "objects": [
     {
-      "root_table": "usage_rollup_output",
+      "root_table": "ow_tp.ow_tp_analytics_src.usage_rollup_output",
       "object": "ow_tp.ow_tp_analytics.usage_rollup",
       "key": {
         "source": [

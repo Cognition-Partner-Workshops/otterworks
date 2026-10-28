@@ -3,8 +3,8 @@
     {
       "routine": "analytics.ow_tp_analytics_storage_cleanup",
       "reads": [
-        "otterworks-file-storage.files",
-        "otterworks-file-metadata"
+        "otterworks_file_storage.files",
+        "otterworks_file_metadata"
       ],
       "writes": [],
       "calls": [
@@ -14,12 +14,12 @@
     {
       "routine": "analytics.storage_cleanup_run",
       "reads": [
-        "otterworks-file-storage.files",
-        "otterworks-file-metadata"
+        "otterworks_file_storage.files",
+        "otterworks_file_metadata"
       ],
       "writes": [
-        "otterworks-file-quarantine.orphans",
-        "otterworks-file-storage.cleanup_report"
+        "ow_tp.ow_tp_analytics_src.orphan_files",
+        "ow_tp.ow_tp_analytics_src.cleanup_report"
       ],
       "calls": []
     }
