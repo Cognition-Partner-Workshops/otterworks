@@ -19,7 +19,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -28,7 +28,7 @@
           "source": "TENANT_ID",
           "target": "tenant_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -85,7 +85,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -94,7 +94,7 @@
           "source": "TENANT_ID",
           "target": "tenant_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -142,7 +142,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -151,7 +151,7 @@
           "source": "PERIOD_ID",
           "target": "period_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -160,7 +160,7 @@
           "source": "SUBSCRIPTION_ID",
           "target": "subscription_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]

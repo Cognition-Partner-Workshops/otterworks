@@ -1,0 +1,149 @@
+{
+  "wave": 2,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "run-wave-2",
+  "width": 2,
+  "breaker_threshold": 2,
+  "auto_merge": false,
+  "max_minutes": 60,
+  "verify_depth": "full",
+  "doctor_max_age": 30,
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "ready": true,
+    "http_path": "/sql/1.0/warehouses/565cd2fd713738c4"
+  },
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN"
+  },
+  "target_namespace": "ow_tp.mig_1793185083",
+  "base_branch": "tp-run/databricks-1793185083",
+  "batches": [
+    {
+      "id": "w2-b01",
+      "units": [
+        "u-invoice-history",
+        "u-rating"
+      ],
+      "write_targets": [
+        "ow_tp.mig_1793185083.invoice_header",
+        "ow_tp.mig_1793185083.invoice_line",
+        "ow_tp.mig_1793185083.invoices",
+        "ow_tp.mig_1793185083.invoice_lines",
+        "ow_tp.mig_1793185083.credit_notes",
+        "ow_tp.mig_1793185083.usage_events",
+        "ow_tp.mig_1793185083.rating_periods",
+        "ow_tp.mig_1793185083.rating_results",
+        "ow_tp.mig_1793185083.compute_preview",
+        "ow_tp.mig_1793185083.fn_invoice_preview",
+        "ow_tp.mig_1793185083.fn_invoice_lines",
+        "ow_tp.mig_1793185083.sp_issue_invoice",
+        "ow_tp.mig_1793185083.compute_rating",
+        "ow_tp.mig_1793185083.fn_usage_rating",
+        "ow_tp.mig_1793185083.fn_usage_summary",
+        "ow_tp.mig_1793185083.sp_finalize_rating"
+      ],
+      "deploy_objects": [
+        "ow_tp.mig_1793185083.compute_preview",
+        "ow_tp.mig_1793185083.fn_invoice_preview",
+        "ow_tp.mig_1793185083.fn_invoice_lines",
+        "ow_tp.mig_1793185083.sp_issue_invoice",
+        "ow_tp.mig_1793185083.compute_rating",
+        "ow_tp.mig_1793185083.fn_usage_rating",
+        "ow_tp.mig_1793185083.fn_usage_summary",
+        "ow_tp.mig_1793185083.sp_finalize_rating"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "max_minutes": 60,
+      "gates": [
+        {
+          "id": "recon_pass",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/u-invoice-history/result.json"
+        },
+        {
+          "id": "recon_pass_rating",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/u-rating/result.json"
+        },
+        {
+          "id": "routine_parity",
+          "kind": "custom",
+          "status": "pending",
+          "evidence": ".migration/recon/u-invoice-history/routine_parity.json"
+        },
+        {
+          "id": "routine_parity_rating",
+          "kind": "custom",
+          "status": "pending",
+          "evidence": ".migration/recon/u-rating/routine_parity.json"
+        },
+        {
+          "id": "rerun_proof",
+          "kind": "custom",
+          "status": "pending",
+          "evidence": ".migration/recon/u-invoice-history/rerun_proof.json"
+        },
+        {
+          "id": "rerun_proof_rating",
+          "kind": "custom",
+          "status": "pending",
+          "evidence": ".migration/recon/u-rating/rerun_proof.json"
+        }
+      ],
+      "brief": "Convert units u-invoice-history (OW_BILLING.PKG_INVOICING: COMPUTE_PREVIEW, FN_INVOICE_PREVIEW, FN_INVOICE_LINES, SP_ISSUE_INVOICE) and u-rating (OW_BILLING.PKG_RATING: COMPUTE_RATING, FN_USAGE_RATING, FN_USAGE_SUMMARY, SP_FINALIZE_RATING + trigger TRG_USAGE_EVENTS_CHECK). ONE PR PER UNIT — this batch opens two PRs against tp-run/databricks-1793185083, one per unit, never a combined PR. Read .migration/units/u-invoice-history/ and .migration/units/u-rating/ mapping_spec.json + dependencies.json. Tenant One only: tenant_id = '00000000-0000-0000-0000-000000000001' (subscription_id '20000000-0000-0000-0000-000000000001'); the filter literal stays in the converted code, not a manifest param. u-rating lands on the lakebase target: WRITABLE native Lakebase tables (no synced tables) usage_events, rating_periods, rating_results in database ow_tp, project ow-tp-billing, branch mig-1793185083 — load path SELECT-only Python against OW_BILLING_RO_DSN -> CSV -> static DDL CREATE TABLE -> psycopg `COPY ... FROM STDIN` using a per-session OAuth credential via generate-database-credential on the unpooled endpoint host (already in target_hosts; the -pooler variant refuses OAuth). No CREATE ROLE. Deploys compute_rating, fn_usage_rating, fn_usage_summary, sp_finalize_rating as same-named Postgres functions plus TRG_USAGE_EVENTS_CHECK as a Postgres trigger, parity proven by the harness. u-invoice-history lands on the databricks target: Delta tables invoice_header, invoice_line, invoices, invoice_lines, credit_notes in ow_tp.mig_1793185083 — load path SELECT-only extract -> CSV -> `databricks fs cp` into a UC volume under ow_tp.mig_1793185083 -> read_files -> CREATE TABLE AS. Deploys compute_preview, fn_invoice_preview, fn_invoice_lines, sp_issue_invoice as same-named Databricks SQL routines with parity. Cross-unit calls into PKG_RATING (COMPUTE_RATING from COMPUTE_PREVIEW, SP_FINALIZE_RATING from SP_ISSUE_INVOICE) are satisfied inside the batch: Delta SQL cannot call Lakebase functions, so the history conversion re-implements the needed rating logic as Databricks SQL and proves parity against Oracle for both the invoicing routines and the re-implemented rating logic. Source is oracle via secret name OW_BILLING_RO_DSN; read-only SELECT only, zero writes to Oracle. Recon per unit with its own target kind: dbx-recon --family oracle --mode live under tolerance profile tol-20261027-v1, pinned to --target-http-path /sql/1.0/warehouses/565cd2fd713738c4 — u-rating with --target-kind lakebase, evidence under .migration/recon/u-rating/; u-invoice-history with --target-kind databricks, evidence under .migration/recon/u-invoice-history/. Gates: recon_pass / recon_pass_rating (row parity per unit), routine_parity / routine_parity_rating (entry-point routines return equivalent results vs source), rerun_proof / rerun_proof_rating (rerun is idempotent per unit)."
+    }
+  ],
+  "target_state": {
+    "core": {
+      "decision": "target-core",
+      "target": "Delta tables in ow_tp.mig_1793185083",
+      "ref": "ow_tp.mig_1793185083"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "target": "Delta tables in ow_tp.mig_1793185083",
+      "ref": "ow_tp.mig_1793185083"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "target": "Lakeflow Spark Declarative Pipeline",
+      "ref": "ow_tp_invoice_quality_1793185083"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Job PAUSED, deployed via DAB bundle target mig_1793185083",
+      "ref": "mig_1793185083"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "target": "no repoint; park at STOP E",
+      "ref": "stop-e"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "target": "Lakebase writable native tables for units with writing routines (synced SNAPSHOT tables only for read-only units); project ow-tp-billing branch mig-1793185083 database ow_tp",
+      "ref": "ow-tp-billing/mig-1793185083"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no scoring unit in wave 2; pkg_dunning is out of scope"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "shared ledger.jsonl",
+      "ref": ".migration/ledger.jsonl"
+    }
+  }
+}
