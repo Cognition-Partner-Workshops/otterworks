@@ -5,3 +5,4 @@
 {"manifest_sha": "fe91090d634f", "merged": ["https://github.com/Cognition-Partner-Workshops/otterworks/pull/2304"], "plan_sha": "f9808fed96f9e4ed76e6de7fa4b96d67ee826cb2b66c22d560ef5dbca8f5be5b", "plan_step": "run-analytics-wave-1b", "started": "2026-10-28T02:55:51+00:00"}
 {"manifest_sha": "a0a7ca1e37f2", "plan_sha": "3b7f525b562f69e6e6efd0b7ed7b0069103eaa1b776cb606e35ae2356b725258", "plan_step": "run-analytics-wave-1c", "started": "2026-10-28T03:04:02+00:00"}
 {"manifest_sha": "a0a7ca1e37f2", "merged": ["https://github.com/Cognition-Partner-Workshops/otterworks/pull/2296"], "plan_sha": "3b7f525b562f69e6e6efd0b7ed7b0069103eaa1b776cb606e35ae2356b725258", "plan_step": "run-analytics-wave-1c", "started": "2026-10-28T03:31:07+00:00"}
+{"manifest_sha": "9734db5add44", "plan_sha": "a12ddc34e5cc084ff17768071fdff9ef671739c480ee56d1bf090538d6d320ec", "plan_step": "run-analytics-wave-1d", "started": "2026-10-28T03:52:25+00:00"}

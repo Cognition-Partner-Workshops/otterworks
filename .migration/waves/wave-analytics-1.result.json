@@ -1,0 +1,161 @@
+{
+  "auto_merge": false,
+  "base_sha": "c1826b25f8453df2819a302d4bdff835d37e332b",
+  "batches": [
+    {
+      "blocker_classes": [
+        "structural"
+      ],
+      "branch": "devin/1793151987-analytics-daily",
+      "changed_paths": [
+        ".migration/recon/analytics_daily/canonicalization.json",
+        ".migration/recon/analytics_daily/mapping_spec.json",
+        ".migration/recon/analytics_daily/notes.md",
+        ".migration/recon/analytics_daily/recon.summary.md",
+        ".migration/recon/analytics_daily/report.md",
+        ".migration/recon/analytics_daily/rerun/evolved.json",
+        ".migration/recon/analytics_daily/rerun/evolved_shape.json",
+        ".migration/recon/analytics_daily/rerun/fresh.json",
+        ".migration/recon/analytics_daily/rerun/fresh_shape.json",
+        ".migration/recon/analytics_daily/rerun/prior_shape.json",
+        ".migration/recon/analytics_daily/rerun_proof.json",
+        ".migration/recon/analytics_daily/result.json",
+        ".migration/recon/analytics_daily/routine_parity.json",
+        "etl/dbx-analytics/data/analytics_events_2026-10-28.jsonl",
+        "etl/dbx-analytics/databricks.yml",
+        "etl/dbx-analytics/resources/ow_tp_analytics_daily.job.yml",
+        "etl/dbx-analytics/src/ensure_objects.sql",
+        "etl/dbx-analytics/src/run_analytics_daily.sql",
+        "etl/dbx-analytics/tools/analytics_extract.py"
+      ],
+      "gates": [
+        {
+          "decision_id": null,
+          "evidence": ".migration/recon/analytics_daily/result.json",
+          "evidence_meta": {
+            "label": "recon run --mode live --depth full --seed 0",
+            "rows": 4,
+            "verdict": "parity PASS; merge_eligible=false (structural: informational PK + SP grant visibility)"
+          },
+          "id": "analytics_daily-recon",
+          "kind": "row_parity",
+          "status": "passed"
+        }
+      ],
+      "id": "a02",
+      "merge_authority": {
+        "decision_id": "mo-analytics-w1-structural",
+        "kind": "human_override"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "Verify-only rerun at b2947fa48: live/full parity PASS, merge blocked only by structural (covered by committed override mo-analytics-w1-structural -> human_override); evidence refreshed and pushed \u2014 note this branch tracks PR #2295, not #2304 as briefed (#2304 carries a superseded wave-1b head 0ec64f18 without the artifact-keyed rows).",
+      "parity": "PASS",
+      "pr_head": "8a612bb3bc9cb75464f9107ec666e29cb453cc9a",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2295",
+      "prompt_sha": "27a91b46d82f331b",
+      "recon_cost": {
+        "elapsed_s": 9.921,
+        "source_rows_fetched": 4,
+        "source_statements": 20,
+        "target_rows_fetched": 4,
+        "target_statements": 8
+      },
+      "recon_mode": "live",
+      "recon_verdict": "PASS",
+      "skill_feedback": [
+        "Each `databricks experimental aitools tools query` runs in its own session \u2014 TEMP VIEWs do not persist across calls; materialize them as catalog-qualified views in the isolated schema, qualify MERGE USING refs, drop views after.",
+        "The guard needs literal --file paths and inline SQL (no globs or $var expansion); run one statement per call.",
+        "rerun_proof.json goes stale on any source edit (ConfigError on stale source_digest) \u2014 regenerate via `dbx-recon rerun-proof` with fresh+evolved run records before the merge-evidence run.",
+        "oauth-m2m sql.connect() hangs on this workspace; wrap the connector with an SDK-minted bearer token (same SP) for every recon subcommand, and override DATABRICKS_HTTP_PATH to a live warehouse (565cd2fd713738c4) \u2014 the env default points at a dead one.",
+        "PR numbering drifted across wave relaunches: the verified head b2947fa48 tracks PR #2295; PR #2304 carries superseded wave-1b head 0ec64f18 without artifact rows."
+      ],
+      "status": "PASS",
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.analytics_daily_summary",
+        "ow_tp.ow_tp_analytics.analytics_daily_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_daily"
+      ]
+    }
+  ],
+  "breaker_tripped_on": null,
+  "brief": [
+    "Wave 1 close, plan step run-analytics-wave-1d.",
+    "Landed: 1 of 1 batches passed their own recon.",
+    "Independent verify: FAIL.",
+    "Failed: none. Blocked: none. Held by circuit breaker: none.",
+    "Cost: estimated n/a; actual source_statements=40, target_statements=26, source_rows_fetched=8, target_rows_fetched=8, harness time 27s. Verifier depth full, overrides: a02=full.",
+    "Human override authority (merge_eligible=false): a02 (analytics_daily) by mo-analytics-w1-structural.",
+    "Awaiting manual merge: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2295",
+    "",
+    "Verifier findings:",
+    "- Batch a02 (analytics_daily, PR #2295 head 8a612bb3): the row_parity gate's evidence is vacuous \u2014 the committed mapping_spec.json declares keys but zero fields for both objects, so the Tier 3 keyed diff compared key presence only (checks_run=4) and cannot show row parity.",
+    "- Independent value-level probes found real drift between the declared surfaces: source analytics_daily_summary for 2026-10-28 shows files_uploaded=4, files_shared=7, files_deleted=7, active_files=11, bytes_uploaded=16215069 while the target row has all file metrics zeroed; target hourly_breakdown wraps events under an hourly key and buckets all 18 file events as unknown, and top_users shape and totals differ.",
+    "- Root cause of the drift: run_analytics_daily.sql reproduces the legacy pandas mixed-batch eventType/event_type normalization quirk exactly (event_type rows collapse to unknown when both spellings co-occur), so the converted output diverges from the staged source mirror that counts file metrics.",
+    "- The merge override mo-analytics-w1-structural clears only the structural blocker class and cannot lift this data-level parity divergence, so the unit fails even though my re-run's blocker classes match the child's.",
+    "- No protected files tampered: the PR's .migration/ diff is confined to .migration/recon/analytics_daily/, and base-branch tolerances tol-20261027-v1 were applied unmodified.",
+    "- My live/full re-run (seed 7 vs child's seed 0) reproduced the child's blocker classes (structural: informational PKs plus grant visibility), and rerun-proof digests and routine parity were re-graded identically.",
+    "- PR #2304's conversion of the same unit uses naive COALESCE normalization without the quirk, but the other verifier's PASS for it rests on the same vacuous fields-less keyed diff.",
+    "",
+    "Skill feedback to fold in before the next wave:",
+    "- Each `databricks experimental aitools tools query` runs in its own session \u2014 TEMP VIEWs do not persist across calls; materialize them as catalog-qualified views in the isolated schema, qualify MERGE USING refs, drop views after.",
+    "- PR numbering drifted across wave relaunches: the verified head b2947fa48 tracks PR #2295; PR #2304 carries superseded wave-1b head 0ec64f18 without artifact rows.",
+    "- The guard needs literal --file paths and inline SQL (no globs or $var expansion); run one statement per call.",
+    "- oauth-m2m sql.connect() hangs on this workspace; wrap the connector with an SDK-minted bearer token (same SP) for every recon subcommand, and override DATABRICKS_HTTP_PATH to a live warehouse (565cd2fd713738c4) \u2014 the env default points at a dead one.",
+    "- rerun_proof.json goes stale on any source edit (ConfigError on stale source_digest) \u2014 regenerate via `dbx-recon rerun-proof` with fresh+evolved run records before the merge-evidence run.",
+    "",
+    "Per batch:",
+    "- a02: PASS. Verify-only rerun at b2947fa48: live/full parity PASS, merge blocked only by structural (covered by committed override mo-analytics-w1-structural -> human_override); evidence refreshed and pushed \u2014 note this branch tracks PR #2295, not #2304 as briefed (#2304 carries a superseded wave-1b head 0ec64f18 without the artifact-keyed rows). https://github.com/Cognition-Partner-Workshops/otterworks/pull/2295"
+  ],
+  "close": null,
+  "close_minutes": 30,
+  "closed": false,
+  "doctor_signed_at": "2026-10-28T03:52:19+00:00",
+  "hook_probe": "blocked:8b60a95f",
+  "manifest_sha": "9734db5add44",
+  "merge_overrides": [
+    {
+      "batch": "a02",
+      "decision_id": "mo-analytics-w1-structural",
+      "units": [
+        "analytics_daily"
+      ]
+    }
+  ],
+  "pipeline_order": {},
+  "plan_sha": "a12ddc34e5cc084ff17768071fdff9ef671739c480ee56d1bf090538d6d320ec",
+  "plan_step": "run-analytics-wave-1d",
+  "resync": null,
+  "tag": "analytics-1",
+  "undeclared_write_targets": {},
+  "unreported_write_targets": [],
+  "verify": {
+    "changed_paths": [
+      ".migration/recon/wave-analytics-1/report.md"
+    ],
+    "findings": [
+      "Batch a02 (analytics_daily, PR #2295 head 8a612bb3): the row_parity gate's evidence is vacuous \u2014 the committed mapping_spec.json declares keys but zero fields for both objects, so the Tier 3 keyed diff compared key presence only (checks_run=4) and cannot show row parity.",
+      "Independent value-level probes found real drift between the declared surfaces: source analytics_daily_summary for 2026-10-28 shows files_uploaded=4, files_shared=7, files_deleted=7, active_files=11, bytes_uploaded=16215069 while the target row has all file metrics zeroed; target hourly_breakdown wraps events under an hourly key and buckets all 18 file events as unknown, and top_users shape and totals differ.",
+      "Root cause of the drift: run_analytics_daily.sql reproduces the legacy pandas mixed-batch eventType/event_type normalization quirk exactly (event_type rows collapse to unknown when both spellings co-occur), so the converted output diverges from the staged source mirror that counts file metrics.",
+      "The merge override mo-analytics-w1-structural clears only the structural blocker class and cannot lift this data-level parity divergence, so the unit fails even though my re-run's blocker classes match the child's.",
+      "No protected files tampered: the PR's .migration/ diff is confined to .migration/recon/analytics_daily/, and base-branch tolerances tol-20261027-v1 were applied unmodified.",
+      "My live/full re-run (seed 7 vs child's seed 0) reproduced the child's blocker classes (structural: informational PKs plus grant visibility), and rerun-proof digests and routine parity were re-graded identically.",
+      "PR #2304's conversion of the same unit uses naive COALESCE normalization without the quirk, but the other verifier's PASS for it rests on the same vacuous fields-less keyed diff."
+    ],
+    "recon_cost": {
+      "elapsed_s": 17.222,
+      "source_rows_fetched": 4,
+      "source_statements": 20,
+      "target_rows_fetched": 4,
+      "target_statements": 18
+    },
+    "report_path": "recon/wave-analytics-1:.migration/recon/wave-analytics-1/report.md",
+    "unit_verdicts": {
+      "a02": "FAIL"
+    },
+    "wave_verdict": "FAIL"
+  },
+  "waived_gates": [],
+  "wave": 1,
+  "width": 1,
+  "write_target_overlaps": []
+}
