@@ -1,0 +1,320 @@
+{
+  "unit": "usage_rollup_scala",
+  "mode": "live",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "full",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 10,
+    "source_rows_fetched": 3,
+    "target_statements": 9,
+    "target_rows_fetched": 3,
+    "elapsed_s": 6.998
+  },
+  "generated_at": "2026-10-28T03:34:54.274389+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 1,
+      "stats": {
+        "usage_rollup": {
+          "source": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2": [
+                "all_privileges",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "usage_rollup": {
+            "grants": [
+              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "usage_rollup",
+          "check": "grant_missing",
+          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "usage_rollup",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "usage_rollup",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 1,
+      "stats": {
+        "source_counts": {
+          "ow_tp.ow_tp_analytics_src.usage_rollup_output": 3
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "usage_rollup": {
+          "mode": "full_diff",
+          "population": 3,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    }
+  ],
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": null,
+  "rerun_proof": {
+    "unit": "usage_rollup_scala",
+    "sources": [
+      "etl/dbx-usage-rollup/src/ensure_objects.sql",
+      "etl/dbx-usage-rollup/src/rollup_load.sql",
+      "etl/dbx-usage-rollup/resources/ow_tp_analytics_usage_rollup.job.yml",
+      "etl/dbx-usage-rollup/databricks.yml"
+    ],
+    "prior_from": ".migration/recon/usage_rollup_scala/rerun/prior_shape.json",
+    "fresh": "pass",
+    "evolved": "pass",
+    "passed": true,
+    "findings": [],
+    "notes": [],
+    "tables": [
+      "usage_rollup"
+    ],
+    "source_digest": "9f049a2d029e4caff818e2ef124f643c9dde23c9eb126e496e9a5d3caa80c0f4",
+    "evidence": {
+      "fresh": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 316251899760649 (empty target; ensure_objects landed the table, rollup_load landed 3 rows)",
+      "evolved": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 288842258229958 (over the landed table in committed DDL shape; MERGE converged rows)"
+    },
+    "shape": {
+      "tables": {
+        "usage_rollup": [
+          {
+            "name": "date",
+            "type": "date",
+            "nullable": true
+          },
+          {
+            "name": "active_users",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "collab_sessions",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "documents_created",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "documents_edited",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "documents_viewed",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "files_downloaded",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "files_uploaded",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "net_storage_bytes",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "storage_allocated_bytes",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "storage_released_bytes",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "total_events",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "generated_at",
+            "type": "timestamp",
+            "nullable": true
+          },
+          {
+            "name": "day_count",
+            "type": "int",
+            "nullable": true
+          }
+        ]
+      }
+    },
+    "shape_digest": "8b225e53e3605e90d99cf44d8caf145519b014a821440e72f12cc6f88db1cb79",
+    "prior_digest": "8b225e53e3605e90d99cf44d8caf145519b014a821440e72f12cc6f88db1cb79"
+  },
+  "rerun_posture": "required",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": [
+    {
+      "routine": "analytics.ow_tp_analytics_usage_rollup",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "analytics.usage_rollup_run",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    }
+  ],
+  "routine_writers": [
+    "analytics.ow_tp_analytics_usage_rollup",
+    "analytics.usage_rollup_run"
+  ],
+  "routine_dependencies": ".migration/units/usage_rollup_scala/dependencies.json"
+}

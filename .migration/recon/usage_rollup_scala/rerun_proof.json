@@ -1,0 +1,101 @@
+{
+  "unit": "usage_rollup_scala",
+  "sources": [
+    "etl/dbx-usage-rollup/src/ensure_objects.sql",
+    "etl/dbx-usage-rollup/src/rollup_load.sql",
+    "etl/dbx-usage-rollup/resources/ow_tp_analytics_usage_rollup.job.yml",
+    "etl/dbx-usage-rollup/databricks.yml"
+  ],
+  "prior_from": ".migration/recon/usage_rollup_scala/rerun/prior_shape.json",
+  "fresh": "pass",
+  "evolved": "pass",
+  "passed": true,
+  "findings": [],
+  "notes": [],
+  "tables": [
+    "usage_rollup"
+  ],
+  "source_digest": "9f049a2d029e4caff818e2ef124f643c9dde23c9eb126e496e9a5d3caa80c0f4",
+  "evidence": {
+    "fresh": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 316251899760649 (empty target; ensure_objects landed the table, rollup_load landed 3 rows)",
+    "evolved": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 288842258229958 (over the landed table in committed DDL shape; MERGE converged rows)"
+  },
+  "shape": {
+    "tables": {
+      "usage_rollup": [
+        {
+          "name": "date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "active_users",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "collab_sessions",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "documents_created",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "documents_edited",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "documents_viewed",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_downloaded",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_uploaded",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "net_storage_bytes",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "storage_allocated_bytes",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "storage_released_bytes",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "total_events",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "day_count",
+          "type": "int",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "shape_digest": "8b225e53e3605e90d99cf44d8caf145519b014a821440e72f12cc6f88db1cb79",
+  "prior_digest": "8b225e53e3605e90d99cf44d8caf145519b014a821440e72f12cc6f88db1cb79"
+}

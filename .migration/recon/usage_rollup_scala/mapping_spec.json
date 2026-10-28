@@ -1,0 +1,19 @@
+{
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "objects": [
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.usage_rollup_output",
+      "object": "usage_rollup",
+      "key": {
+        "source": [
+          "date"
+        ],
+        "target": [
+          "date"
+        ]
+      }
+    }
+  ],
+  "family": "databricks"
+}
