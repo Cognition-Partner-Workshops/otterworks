@@ -34,3 +34,18 @@ Postgres `analytics_daily_summary` upsert + S3 report) → Lakeflow Job `ow_tp_a
 - No databricks-family canonicalization exists; `canonicalization.json` is an empty canon-v1 ruleset.
 - `run` requires `--routine-dependencies` alongside `--routine-parity`; `--mapping` needs the
   normalized spec (bare `object` names — catalog/schema come from `--target-catalog`/`--target-schema`).
+
+## Verify rerun (a02)
+- Merge-evidence recon re-run on head b01e9ee81: parity FAIL, merge_eligible=false,
+  blocker_classes [data, structural]. Tier0 structural_gap unchanged (informational PK +
+  grant visibility). Tier1 root_count: staging `analytics_daily_report` mirrors only
+  `report.json` (1 row); head emits report + hourly_breakdown + top_users (3 rows) per the
+  close-review contract — the staging seed never mirrored the two artifact keys.
+- New rerun_proof bound to head sources (digest e877b95f): fresh leg = DROP TABLE +
+  ensure_objects + run_analytics_daily(ds=2026-10-28) on warehouse 565cd2fd713738c4;
+  evolved leg = same script rerun over landed tables, MERGEs converged, shape stable.
+- Bundle job run 580350719779334 FAILED INTERNAL_ERROR at extract_analytics_events:
+  boto3 NoRegionError (fixture-only AWS_ENDPOINT_URL is absent on serverless); the real
+  extract cannot run on this workspace — sql_task statements were executed directly.
+- Fix in converted code: array_sort comparator `sign(...)` returns DOUBLE on this
+  runtime; cast to INT.
