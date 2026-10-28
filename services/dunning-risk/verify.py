@@ -150,6 +150,8 @@ def main() -> None:
             cursor.execute("SELECT row_to_json(s)::text FROM ow_tp_dunning_risk.ow_tp_scores_synced s")
             lakebaseRows = [json.loads(row[0], parse_float=Decimal) for row in cursor.fetchall()]
     compare(deltaRows, lakebaseRows)
+    if {str(row["as_of"]) for row in lakebaseRows} != {snapshot["as_of"]}:
+        raise ValueError("Lakebase as_of dates do not match the stored snapshot")
     compareOverdue(lakebaseRows, snapshot)
     legacy = legacyOverdue(date.fromisoformat(snapshot["as_of"]))
     drift = overdueMismatches(overdueFeatures(lakebaseRows), legacy)
