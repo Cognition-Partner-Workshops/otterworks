@@ -33,6 +33,25 @@ phases:
               ow_tp.ow_tp_analytics; schedules created PAUSED.
         selected: lakeflow-jobs
         important: false
+      - id: analytics-src-principal-keep-access
+        description: Source-principal grant posture for the snapshot staging
+          schema. The session SP (DE-shared) holds ALL_PRIVILEGES on catalog
+          ow_tp, which doctor's source_principal_read_only flags as writable
+          in scope. Under snapshot posture staging is sealed after
+          materialize; the SP is additionally scoped to SELECT + USE_SCHEMA on
+          ow_tp_analytics_src and ALL_PRIVILEGES only on the target schema
+          ow_tp_analytics, with staging ownership held by the catalog owner.
+        options:
+          - id: keep-access
+            label: Keep the catalog ALL_PRIVILEGES grant — staging stays
+              sealed by ownership/scoped grants; check passes by human
+              attestation (this decision).
+          - id: downgrade-catalog
+            label: Catalog owner revokes ALL_PRIVILEGES on ow_tp and grants
+              USE_CATALOG; would block the SP from provisioning future
+              schemas/targets without re-granting.
+        selected: keep-access
+        important: true
     steps:
       - id: analytics-inventory
         title: Inventory and boundary (STOP B, approved)
