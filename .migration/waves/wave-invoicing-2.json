@@ -40,6 +40,18 @@
       "namespace": "ow_tp.ow_tp_invoicing"
     }
   },
+  "merge_overrides": [
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "pkg_ow_util",
+        "pkg_plans",
+        "pkg_rating",
+        "pkg_invoicing",
+        "pkg_dunning"
+      ]
+    }
+  ],
   "batches": [
     {
       "id": "w2-b01",
@@ -153,7 +165,7 @@
           "evidence": ".migration/recon/tenants/result.json"
         }
       ],
-      "brief": "Routine SCC (cannot split — calls + shared writes on subscriptions/tenants): all 5 PL/SQL packages -> Lakebase ow-tp-billing/mig-billing-20261028, plus DDL + snapshot load of owned tables (billing_audit_log, credit_notes, dunning_attempts, invoice_lines, invoices, notifications, rating_periods, rating_results, subscriptions, subscriptions_hist staging, tenants writable copy per run decision). Convert triggers (TRG_*), sequences, and the two DBMS_SCHEDULER jobs -> Lakeflow Jobs PAUSED (quartz_cron + timezone + max_concurrent_runs=1). Package-state globals need session-scoped equivalents; EXECUTE IMMEDIATE sites need allow-list conversion; log_msg is autonomous-txn. Routines stay unproven (no Oracle EXECUTE) — recon is data/DDL parity only. Read .migration/units/<unit>/{dependencies,mapping_spec}.json."
+      "brief": "Routine SCC (cannot split \u2014 calls + shared writes on subscriptions/tenants): all 5 PL/SQL packages -> Lakebase ow-tp-billing/mig-billing-20261028, plus DDL + snapshot load of owned tables (billing_audit_log, credit_notes, dunning_attempts, invoice_lines, invoices, notifications, rating_periods, rating_results, subscriptions, subscriptions_hist staging, tenants writable copy per run decision). Convert triggers (TRG_*), sequences, and the two DBMS_SCHEDULER jobs -> Lakeflow Jobs PAUSED (quartz_cron + timezone + max_concurrent_runs=1). Package-state globals need session-scoped equivalents; EXECUTE IMMEDIATE sites need allow-list conversion; log_msg is autonomous-txn. Routines stay unproven (no Oracle EXECUTE) \u2014 recon is data/DDL parity only. Read .migration/units/<unit>/{dependencies,mapping_spec}.json."
     }
   ]
 }
