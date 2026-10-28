@@ -1,14 +1,13 @@
 version: 1
-title: OtterWorks analytics jobs to Lakeflow Jobs (run 1793146609, pipeline analytics)
-summary: Five etl/ Python crons plus the analytics-service Scala usage rollup become
-  Lakeflow Jobs with retries on serverless warehouse 565cd2fd713738c4, catalog ow_tp,
-  schema ow_tp_analytics. Sources are SQS/DynamoDB/S3/MeiliSearch (LocalStack fixture)
-  and Postgres otterworks_analytics — no Oracle objects. Legacy outputs materialize
-  once into ow_tp.ow_tp_analytics_src (snapshot posture); dbx-recon is the only parity
-  authority.
+title: OtterWorks billing estate to Databricks (run 1793146609)
+summary: Overnight migration run, three sibling pipelines on one ledger —
+  invoicing (Oracle OW_BILLING -> Lakebase + Delta), custbill (CUSTBILL chain ->
+  Lakeflow pipeline + Job), analytics (etl/ crons + Scala rollup -> Lakeflow Jobs).
+  Each sibling appends its own pipeline phase; the requester approves once in the
+  Plan view when all phases are committed.
 phases:
-  - id: foundation
-    title: Foundation
+  - id: analytics
+    title: Pipeline analytics — etl/ crons + Scala rollup -> Lakeflow Jobs
     decisions:
       - id: parity-mechanism
         description: Parity mechanism for analytics — the estate's `--family oracle`
@@ -41,19 +40,16 @@ phases:
           - id: coverage
             description: 6/6 scheduled units covered; etl/legacy-extra/ and
               MarketSeeder excluded.
-      - id: snapshot-schema
+      - id: analytics-snapshot-schema
         title: Materialize legacy outputs into ow_tp.ow_tp_analytics_src
         depends_on: [analytics-inventory]
         gates:
           - id: snapshot-landed
             description: Each unit's legacy run output lands as Delta rows in
               ow_tp.ow_tp_analytics_src for recon source-side comparison.
-  - id: waves
-    title: Migration waves
-    steps:
       - id: run-analytics-wave-1
         title: Wave 1 pilot (width 2 — usage_rollup_scala, analytics_daily)
-        depends_on: [snapshot-schema]
+        depends_on: [analytics-snapshot-schema]
         gates:
           - id: w1-recon
             description: dbx-recon PASS per unit on the declared parity mechanism.
@@ -63,10 +59,7 @@ phases:
         gates:
           - id: w2-recon
             description: dbx-recon PASS per unit on the declared parity mechanism.
-  - id: cutover
-    title: Cutover
-    steps:
-      - id: stop-e-park
+      - id: analytics-stop-e
         title: STOP E evidence packet — park for the requester
         depends_on: [run-analytics-wave-2]
         decisions:
