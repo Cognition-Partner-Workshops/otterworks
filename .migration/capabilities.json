@@ -1,7 +1,5 @@
 {
-  "blocking": [
-    "source_principal_read_only=fail"
-  ],
+  "blocking": [],
   "checks": [
     {
       "data": {},
@@ -199,28 +197,12 @@
         "stats": "connection opened readonly=True, session_user=OW_BILLING_RO; driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
         "tables": [],
         "unresolved": [],
-        "writable": {
-          "pkg_dunning": [
-            "execute"
-          ],
-          "pkg_invoicing": [
-            "execute"
-          ],
-          "pkg_ow_util": [
-            "execute"
-          ],
-          "pkg_plans": [
-            "execute"
-          ],
-          "pkg_rating": [
-            "execute"
-          ]
-        }
+        "writable": {}
       },
-      "detail": "setup probe, principal-level only (no unit mapping yet; table grants are checked per unit later): oracle: the source principal can write in scope (pkg_ow_util: execute; pkg_plans: execute; pkg_rating: execute; pkg_invoicing: execute; pkg_dunning: execute); the factory needs a SELECT-only principal, and driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
+      "detail": "setup probe, principal-level only (no unit mapping yet; table grants are checked per unit later): oracle: no write system privilege, no object grant beyond SELECT/READ, no write role on 0 in-scope table(s); connection opened readonly=True, session_user=OW_BILLING_RO; driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
       "id": "source_principal_read_only",
       "reusable": false,
-      "status": "fail"
+      "status": "ok"
     },
     {
       "data": {
@@ -290,7 +272,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T08:44:47Z",
+  "generated_at": "2026-10-28T09:38:37Z",
   "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
@@ -298,13 +280,12 @@
     "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
   },
   "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.2",
-  "ready": false,
+  "ready": true,
   "reused_doctor": null,
   "role": "setup",
   "schema": "dbx-migration-factory/capabilities/1",
   "summary": {
-    "fail": 1,
-    "ok": 8,
+    "ok": 9,
     "skipped": 5,
     "warn": 1
   },
