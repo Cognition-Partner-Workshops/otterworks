@@ -14,9 +14,9 @@
     "source_rows_fetched": 304342,
     "target_statements": 347,
     "target_rows_fetched": 152107,
-    "elapsed_s": 339.685
+    "elapsed_s": 356.654
   },
-  "generated_at": "2026-10-28T02:15:49.785070+00:00",
+  "generated_at": "2026-10-28T02:22:13.181395+00:00",
   "tiers": [
     {
       "tier": 0,
@@ -2437,21 +2437,18 @@
     },
     {
       "routine": "snapshot.customer_master_hist",
-      "status": "unproven",
-      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_customer_master_hist.run.json",
-      "reason": "evidence .migration/recon/billing_history/routine_runs/snapshot_customer_master_hist.run.json is not a committed file"
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_customer_master_hist.run.json"
     },
     {
       "routine": "snapshot.entity_attr_value",
-      "status": "unproven",
-      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_entity_attr_value.run.json",
-      "reason": "evidence .migration/recon/billing_history/routine_runs/snapshot_entity_attr_value.run.json is not a committed file"
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_entity_attr_value.run.json"
     },
     {
       "routine": "snapshot.invoice_header",
-      "status": "unproven",
-      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_invoice_header.run.json",
-      "reason": "evidence .migration/recon/billing_history/routine_runs/snapshot_invoice_header.run.json is not a committed file"
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_invoice_header.run.json"
     },
     {
       "routine": "snapshot.invoice_line",

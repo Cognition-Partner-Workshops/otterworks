@@ -11,16 +11,13 @@
 - Tolerance version: `tol-20261027-v1`
 - Seed: `0` | Params: `{'schema': 'OW_BILLING'}`
 - Tier 3 depth: `sampled`
-- Generated: 2026-10-28T02:15:49.785070+00:00
+- Generated: 2026-10-28T02:22:13.181395+00:00
 
-## Routine parity: 0 proven, 5 unproven, 0 failed
+## Routine parity: 3 proven, 2 unproven, 0 failed
 
 - `snapshot.customer_master` unproven: no committed run
-- `snapshot.customer_master_hist` unproven: evidence .migration/recon/billing_history/routine_runs/snapshot_customer_master_hist.run.json is not a committed file
-- `snapshot.entity_attr_value` unproven: evidence .migration/recon/billing_history/routine_runs/snapshot_entity_attr_value.run.json is not a committed file
-- `snapshot.invoice_header` unproven: evidence .migration/recon/billing_history/routine_runs/snapshot_invoice_header.run.json is not a committed file
 - `snapshot.invoice_line` unproven: no committed run
-- Cost: `{"source_statements": 506, "source_rows_fetched": 304342, "target_statements": 347, "target_rows_fetched": 152107, "elapsed_s": 339.685}`
+- Cost: `{"source_statements": 506, "source_rows_fetched": 304342, "target_statements": 347, "target_rows_fetched": 152107, "elapsed_s": 356.654}`
 - Rerun proof: fresh `pass`, evolved `unsupported` (evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved)
 
 | Tier | Name | Checks | Result |

@@ -6,15 +6,12 @@
 - Rerun posture: `first_run_baseline`
 - Merge authority: `harness` (human_override needs a merge_overrides entry in the committed wave manifest naming the unit)
 - Mapping `map-v1` / tolerances `tol-20261027-v1` / seed `0` / depth `sampled` / params `{'schema': 'OW_BILLING'}`
-- Generated: 2026-10-28T02:15:49.785070+00:00
-- Cost: source 506 statements / 304342 rows fetched; target 347 statements / 152107 rows; 339.685s
+- Generated: 2026-10-28T02:22:13.181395+00:00
+- Cost: source 506 statements / 304342 rows fetched; target 347 statements / 152107 rows; 356.654s
 
-## Routine parity: 0 proven, 5 unproven, 0 failed
+## Routine parity: 3 proven, 2 unproven, 0 failed
 
 - `snapshot.customer_master` unproven: no committed run
-- `snapshot.customer_master_hist` unproven: evidence .migration/recon/billing_history/routine_runs/snapshot_customer_master_hist.run.json is not a committed file
-- `snapshot.entity_attr_value` unproven: evidence .migration/recon/billing_history/routine_runs/snapshot_entity_attr_value.run.json is not a committed file
-- `snapshot.invoice_header` unproven: evidence .migration/recon/billing_history/routine_runs/snapshot_invoice_header.run.json is not a committed file
 - `snapshot.invoice_line` unproven: no committed run
 - Structural checks: constraints=checked, triggers=checked, indexes=unsupported, sequences_identity=checked, grants=direct_only
 - Rerun proof: fresh `pass`, evolved `unsupported` (evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved)

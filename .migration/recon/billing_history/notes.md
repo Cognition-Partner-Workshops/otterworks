@@ -1,28 +1,36 @@
 # w1-b01 billing_history — recon notes
 
-## Verdict
+## Verdict (final run, patched harness)
 
 `dbx-recon run --mode live --depth sampled` (tolerances `tol-20261027-v1`, oracle family):
-**row parity PASS** on all tiers (counts_through_mapping, per_field_aggregates, keyed_diffs)
-across the five invoicing-history tables; `merge_eligible=false`, merge blocked on class
-`structural` only.
+**row parity PASS** on all row tiers (counts_through_mapping, per_field_aggregates,
+keyed_diffs) across the five invoicing-history tables; `merge_eligible=false`, merge
+blocked on class `structural`.
 
-Blockers (`merge_block_reasons`):
+The brief's two local plugin patches were applied to the session's harness copy of
+`recon/adapters.py` (`tp.grantee <> t.table_owner`; `sql.connect(..., access_token=
+_databricks_bearer())`). With those, the grants probe reads cleanly: checks now report
+constraints=checked, triggers=checked, sequences_identity=checked, grants=direct_only
+(indexes=unsupported, an access path). The structural blocker remains as REAL findings,
+verbatim:
 
-- `structural_gap` — `structural_parity` tier could not read `information_schema.table_privileges`
-  for any of the five target tables (ServerOperationError → `dictionary_unavailable` per table).
-- `warnings` — the five UNVERIFIED structural warnings that follow from the same read failure.
+- `primary_key_mismatch` x5 — source PK exists but the Delta tables declare no
+  informational PRIMARY KEY: customer_master (cust_id), customer_master_hist (hist_id),
+  entity_attr_value (eav_id), invoice_header (invoice_id), invoice_line (line_id).
+- `grant_extra` x10 — two target grantees with no source counterpart on all five
+  tables: `2e90bc1d-e9a1-4703-8c48-ad28ebb1864d` (all_privileges) and
+  `bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d` (modify,select).
 
-## Harness defect (root cause of the structural blocker)
+Blockers (`merge_block_reasons`): `structural_gap`, `tier_failed` (both class
+`structural`). Reported verbatim per the brief; `mo-invoicing-w1-structural` not widened
+(it covers only the five packages, not billing_history).
+## Harness defect (superseded by the patched harness)
 
-`recon/adapters.py::_uc_schema_facts` joins
-`information_schema.table_privileges tp JOIN information_schema.tables t ...` on the target
-catalog and references `t.owner`. This workspace's `information_schema.tables` has no `owner`
-column (Databricks names it `table_owner`), so the grants read raises UNRESOLVED_COLUMN →
-`dictionary_unavailable` for every object → `structural_gap`. Platform-side hole, not a data
-mismatch; the harness plugin is read-only so it cannot be patched in-session. Same defect hit
-by batch c01 of wave-custbill-1 (PR #2290 notes).
-
+The earlier run's `dictionary_unavailable` hole was a harness defect
+(`_uc_schema_facts` referenced `t.owner`; UC names it `table_owner`, and
+`sql.connect(oauth_client_*)` drives interactive U2M that hangs headless).
+Both are patched in this session's harness copy per the brief; the clean probe
+now returns real grants rows and the residual blocker is real findings, above.
 ## Other environment deltas this unit derived
 
 - `databricks-sql-connector` 4.8.0 has no oauth-m2m client_credentials path in `sql.connect`

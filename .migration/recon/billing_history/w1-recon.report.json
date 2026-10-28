@@ -1,0 +1,90 @@
+{
+  "gate": "w1-recon",
+  "kind": "row_parity",
+  "batch": "w1-b01",
+  "unit": "billing_history",
+  "verdict": "passed",
+  "parity": "PASS",
+  "mode": "live",
+  "depth": "sampled",
+  "tolerance_version": "tol-20261027-v1",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "structural_findings": {
+    "primary_key_mismatch": [
+      "customer_master (source cust_id -> target none)",
+      "customer_master_hist (source hist_id -> target none)",
+      "entity_attr_value (source eav_id -> target none)",
+      "invoice_header (source invoice_id -> target none)",
+      "invoice_line (source line_id -> target none)"
+    ],
+    "grant_extra": [
+      "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+      "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+    ],
+    "objects": [
+      "ow_tp.ow_tp_invoicing_history.customer_master",
+      "ow_tp.ow_tp_invoicing_history.customer_master_hist",
+      "ow_tp.ow_tp_invoicing_history.entity_attr_value",
+      "ow_tp.ow_tp_invoicing_history.invoice_header",
+      "ow_tp.ow_tp_invoicing_history.invoice_line"
+    ]
+  },
+  "routine_parity": [
+    {
+      "routine": "snapshot.customer_master",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "snapshot.customer_master_hist",
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_customer_master_hist.run.json"
+    },
+    {
+      "routine": "snapshot.entity_attr_value",
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_entity_attr_value.run.json"
+    },
+    {
+      "routine": "snapshot.invoice_header",
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_invoice_header.run.json"
+    },
+    {
+      "routine": "snapshot.invoice_line",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    }
+  ],
+  "rerun_proof_passed": true,
+  "cost": {
+    "source_statements": 506,
+    "source_rows_fetched": 304342,
+    "target_statements": 347,
+    "target_rows_fetched": 152107,
+    "elapsed_s": 356.654
+  },
+  "rows": {
+    "source_counts": {
+      "ow_billing.customer_master": 25001,
+      "ow_billing.customer_master_hist": 0,
+      "ow_billing.entity_attr_value": 8337,
+      "ow_billing.invoice_header": 18750,
+      "ow_billing.invoice_line": 150000
+    }
+  },
+  "evidence": ".migration/recon/billing_history/result.json",
+  "report": ".migration/recon/billing_history/report.md",
+  "declared_path": ".migration/recon/wave-invoicing-1/w1-b01/report.json",
+  "declared_path_note": "manifest declares this path, but batch workers may only write .migration/recon/<unit_id>/; this file is the same gate evidence under the unit dir (convention set by w1-b02 commit 10aed76bd)."
+}
