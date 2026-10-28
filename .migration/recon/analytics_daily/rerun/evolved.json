@@ -1,0 +1,209 @@
+{
+  "run": "evolved",
+  "status": "pass",
+  "evidence": "databricks job run 21125935139472 (bundle ow_tp_analytics_daily, target mig_1793146609, rerun over the landed tables)",
+  "shape": {
+    "target_kind": "databricks",
+    "catalog": "ow_tp",
+    "schema": "ow_tp_analytics",
+    "read_at": "2026-10-28T01:48:16.887980+00:00",
+    "tables": {
+      "analytics_daily_summary": [
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": false
+        },
+        {
+          "name": "active_users",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "active_documents",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "active_files",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "total_events",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "documents_created",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "documents_edited",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "comments_added",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_uploaded",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_shared",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_deleted",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "bytes_uploaded",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ],
+      "analytics_daily_report": [
+        {
+          "name": "s3_key",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "report_type",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "report_json",
+          "type": "string",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "pre_shape": {
+    "target_kind": "databricks",
+    "catalog": "ow_tp",
+    "schema": "ow_tp_analytics",
+    "read_at": "2026-10-28T01:47:49.990670+00:00",
+    "tables": {
+      "analytics_daily_summary": [
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": false
+        },
+        {
+          "name": "active_users",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "active_documents",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "active_files",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "total_events",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "documents_created",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "documents_edited",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "comments_added",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_uploaded",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_shared",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_deleted",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "bytes_uploaded",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ],
+      "analytics_daily_report": [
+        {
+          "name": "s3_key",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "report_type",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "report_json",
+          "type": "string",
+          "nullable": true
+        }
+      ]
+    }
+  }
+}

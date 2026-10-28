@@ -1,0 +1,23 @@
+{
+  "version": "map-v1",
+  "family": "databricks",
+  "target_kind": "databricks",
+  "objects": [
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.analytics_daily_summary",
+      "object": "analytics_daily_summary",
+      "key": {
+        "source": ["report_date"],
+        "target": ["report_date"]
+      }
+    },
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.analytics_daily_report",
+      "object": "analytics_daily_report",
+      "key": {
+        "source": ["s3_key"],
+        "target": ["s3_key"]
+      }
+    }
+  ]
+}
