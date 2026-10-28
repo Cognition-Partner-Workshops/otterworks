@@ -1,8 +1,8 @@
 {
   "run": "evolved",
   "status": "pass",
-  "evidence": "databricks job run 165607592354729 (bundle ow_tp_custbill_feed, target mig_1793146609, rerun over the landed table)",
-  "shape": {
+  "evidence": "databricks job run 1040303351932837 (bundle ow_tp_custbill_feed, target mig_1793146609, rerun over the landed table)",
+  "pre_shape": {
     "tables": {
       "custbill_feed": [
         {
@@ -68,7 +68,7 @@
       ]
     }
   },
-  "pre_shape": {
+  "shape": {
     "tables": {
       "custbill_feed": [
         {

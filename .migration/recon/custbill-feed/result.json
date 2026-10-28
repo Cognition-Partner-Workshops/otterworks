@@ -12,9 +12,9 @@
     "source_rows_fetched": 18750,
     "target_statements": 9,
     "target_rows_fetched": 18750,
-    "elapsed_s": 16.575
+    "elapsed_s": 18.252
   },
-  "generated_at": "2026-10-28T02:41:44.787689+00:00",
+  "generated_at": "2026-10-28T01:19:31.819373+00:00",
   "tiers": [
     {
       "tier": 0,
@@ -218,10 +218,10 @@
     "tables": [
       "custbill_feed"
     ],
-    "source_digest": "a2c57af0bc5bba128e3698d20ccaf240d21ad4c760fe2bb53d8312514cc4386c",
+    "source_digest": "0e9d03afd5136c270e7042500bbada11649a906743ec46cf836082424388bf1f",
     "evidence": {
-      "fresh": "databricks job run 88652120260415 (bundle ow_tp_custbill_feed, target mig_1793146609, on a fresh target after DROP TABLE)",
-      "evolved": "databricks job run 165607592354729 (bundle ow_tp_custbill_feed, target mig_1793146609, rerun over the landed table)"
+      "fresh": "databricks job run 173209521907540 (bundle ow_tp_custbill_feed, target mig_1793146609, on a fresh target after DROP TABLE)",
+      "evolved": "databricks job run 1040303351932837 (bundle ow_tp_custbill_feed, target mig_1793146609, rerun over the landed table)"
     },
     "shape": {
       "tables": {
@@ -302,19 +302,19 @@
       "routine": "custbill.ow_tp_custbill_feed",
       "status": "unproven",
       "evidence": null,
-      "reason": "no committed run"
+      "reason": "no row in .migration/recon/custbill-feed/routine_parity.json"
     },
     {
       "routine": "custbill.oracle_custbill_extract",
       "status": "unproven",
       "evidence": null,
-      "reason": "no committed run"
+      "reason": "no row in .migration/recon/custbill-feed/routine_parity.json"
     },
     {
       "routine": "custbill.sftp_ingest_poll",
       "status": "unproven",
       "evidence": null,
-      "reason": "no committed run"
+      "reason": "no row in .migration/recon/custbill-feed/routine_parity.json"
     }
   ],
   "routine_writers": [

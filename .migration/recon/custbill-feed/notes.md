@@ -13,9 +13,7 @@ per-field aggregates clean). `merge_eligible=false` — class `structural`:
   grants. Revoking them is a catalog permission change the allowlist does not
   authorize.
 
-Committed wave manifest `merge_overrides` entry `mo-custbill-w1-structural`
-covers blocker class `structural` on unit `custbill-feed` -> merge_authority
-`human_override`, decision `mo-custbill-w1-structural`.
+No committed `merge_overrides` entry covers this unit -> merge_authority harness.
 
 ## Fixture
 
@@ -27,42 +25,33 @@ fixture copy exists). Live run is the merge evidence.
 
 1. `recon/adapters.py` `_uc_schema_facts`: the table_privileges join read
    `t.owner`; on Databricks `information_schema.tables` the column is
-   `table_owner`. Session-local patch applied per the wave brief.
+   `table_owner`. The query raised ServerOperationError -> structural tier read
+   `unverified` -> structural_gap + warnings blockers. Local harness copy
+   patched one column name; the verifier's harness will hit the same wall until
+   the plugin is fixed.
 2. `_databricks_connect` oauth-m2m (`oauth_client_id`/`oauth_client_secret`)
-   hangs at `sql.connect` in this environment. Session-local patch per the
-   brief: `sql.connect(server_hostname=host, http_path=http_path,
-   access_token=_databricks_bearer())`.
+   hangs indefinitely at `sql.connect` in this environment. Runs used the
+   supported `access_token` fallback: DATABRICKS_TOKEN minted from the session
+   SP via the SDK, client vars emptied. Same identity, no guard workaround.
 
 ## Mapping spec normalization
 
-Committed `.migration/units/custbill-feed/mapping_spec.json` writes `object`
-as 3-part `ow_tp.ow_tp_custbill.custbill_feed`; the Databricks target adapter
-only accepts a bare table name (it prefixes `--target-catalog --target-schema`
-itself). `run` was pointed at the normalized copy `mapping_spec.json` in this
-directory — same version/objects/keys, `object: custbill_feed`. The committed
-spec should be corrected at wave close.
+Committed `.migration/units/custbill-feed/mapping_spec.json` (and every
+databricks unit spec on this wave) writes `object` as a 3-part
+`catalog.schema.table`; the Databricks target adapter only accepts a bare table
+name (it prefixes `--target-catalog --target-schema` itself). `run` was pointed
+at the normalized copy `mapping_spec.json` in this directory — same
+version/objects/keys, `object: custbill_feed`. The committed spec should be
+corrected at wave close.
 
 ## Rerun proof (posture `required`)
 
 - fresh: `databricks bundle run ow_tp_custbill_feed -t mig_1793146609` after
-  DROP TABLE -> run 88652120260415 -> `rerun/fresh.json`
-- evolved: same job over the landed table -> run 165607592354729 ->
-  `rerun/evolved.json` (pre_shape = shape the committed DDL lands)
+  DROP TABLE -> run 173209521907540 -> `rerun/fresh.json`
+- evolved: same job over the landed table -> run 1040303351932837 ->
+  `rerun/evolved.json` (pre_shape = committed shape)
 - prior-shape: `rerun/prior_shape.json` = the shape the committed DDL
   (ensure_objects.sql) lands -> evolved leg `pass`.
-
-## Devin Review fixes (this PR)
-
-- `drop_path` was a declared-but-unused task parameter: `land_feed.sql` now
-  reads `read_files({{drop_path}} || '/*.feed', ...)` and `ensure_objects.sql`
-  creates the volume named by drop_path's basename (`IDENTIFIER` +
-  `regexp_extract`), so the configured drop location and the read agree.
-- Duplicate `invoice_id` across feed files: dedup now ranks by
-  `_metadata.file_modification_time DESC` (then file_path) — the newest
-  snapshot wins, not the lexicographically first path.
-- Snapshot semantics: `WHEN NOT MATCHED BY SOURCE THEN DELETE` makes the
-  table mirror the current drop; invoices absent from the latest extract no
-  longer linger in staging.
 
 ## Routine parity
 
@@ -71,9 +60,9 @@ ow_billing.invoice_header / the feed). No fixture snapshot + dedicated exec
 schema exists to grade them -> carried `unproven` (cutover exceptions, not
 merge blockers).
 
-## Deploy
+## Deploy fix this batch
 
-Bundle `mig_1793146609` deployed idempotently (`Resources: 1 unchanged`); job
-schedule remains PAUSED (`0 10 2 * * ?` UTC). Extract re-run live against
-OW_BILLING (read-only DSN) -> 18,750 records -> `CUSTBILL_DEMO_ORACLE.dat` +
-`.feed` uploaded to `/Volumes/ow_tp/ow_tp_custbill/custbill_drop/`.
+The bundle was deployed while `land_feed.sql` still interpolated
+`${var.drop_path}`; `bundle deploy` re-synced and run 173209521907540 landed.
+Job schedule remains PAUSED; run_364247554199631 (stale-deploy failure) is not
+evidence.
