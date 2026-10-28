@@ -15,6 +15,9 @@ resources:
         quartz_cron_expression: "0 15 3 * * ?"
         timezone_id: UTC
         pause_status: PAUSED
+      parameters:
+        - name: ds
+          default: "{{job.start_time.iso_date}}"
       tasks:
         - task_key: ensure_objects
           sql_task:
@@ -24,15 +27,28 @@ resources:
           retry_on_timeout: false
           min_retry_interval_millis: 30000
           max_retries: 2
-        - task_key: run_analytics_daily
+        - task_key: extract_analytics_events
           depends_on:
             - task_key: ensure_objects
+          spark_python_task:
+            python_file: ../tools/analytics_extract.py
+            parameters:
+              - "--ds"
+              - "{{job.parameters.ds}}"
+              - "--out"
+              - "/Volumes/ow_tp/ow_tp_analytics/analytics_drop/analytics_events_{{job.parameters.ds}}.jsonl"
+          retry_on_timeout: false
+          min_retry_interval_millis: 30000
+          max_retries: 2
+        - task_key: run_analytics_daily
+          depends_on:
+            - task_key: extract_analytics_events
           sql_task:
             file:
               path: ../src/run_analytics_daily.sql
             warehouse_id: ${var.warehouse_id}
             parameters:
-              ds: "2026-10-28"
+              ds: "{{job.parameters.ds}}"
           retry_on_timeout: false
           min_retry_interval_millis: 30000
           max_retries: 2

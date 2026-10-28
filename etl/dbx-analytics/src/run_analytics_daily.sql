@@ -20,7 +20,17 @@ CREATE OR REPLACE TEMP VIEW analytics_events AS
 SELECT
     -- event_type/eventType normalization (legacy: event_type promoted when
     -- eventType absent, else 'unknown')
-    COALESCE(eventType, event_type, 'unknown') AS event_type,
+    -- legacy promotes event_type -> eventType as a column only when the whole
+    -- batch lacks eventType; a mixed batch keeps event_type rows unpromoted
+    -- (NaN), which lands them in total_events but outside every typed bucket.
+    COALESCE(
+        CASE
+            WHEN MAX(CASE WHEN eventType IS NOT NULL THEN 1 ELSE 0 END) OVER () = 1
+                THEN eventType
+            ELSE event_type
+        END,
+        'unknown'
+    ) AS event_type,
     -- resolved_user_id priority ownerId > editedBy > authorId > deletedBy >
     -- userId, blank/empty fields skipped, 'unknown' fallback
     COALESCE(
@@ -48,6 +58,22 @@ FROM read_files(
 )
 WHERE source = 'sqs' OR event_date LIKE concat(:ds, '%');
 
+-- Artifact rows land in analytics_daily_report keyed by their legacy S3 path.
+-- partition_key = reports/analytics/daily/year=<y>/month=<m>/day=<d>/
+CREATE OR REPLACE TEMP VIEW analytics_artifacts AS
+SELECT
+    concat(
+        'reports/analytics/daily/year=', substr(:ds, 1, 4),
+        '/month=', substr(:ds, 6, 2), '/day=', substr(:ds, 9, 2),
+        '/', artifact_name
+    ) AS s3_key,
+    artifact_type
+FROM (
+    VALUES
+        ('top_users.jsonl.gz', 'analytics_top_users'),
+        ('hourly_breakdown.json.gz', 'analytics_hourly_breakdown')
+) AS t(artifact_name, artifact_type);
+
 -- Daily summary row (Postgres analytics_daily_summary upsert equivalent).
 MERGE INTO ow_tp.ow_tp_analytics.analytics_daily_summary AS tgt
 USING (
@@ -70,6 +96,8 @@ USING (
                           THEN sizeBytes END), 0) AS bytes_uploaded,
         CURRENT_TIMESTAMP() AS updated_at
     FROM analytics_events
+    -- legacy writes nothing when the day produced no events
+    HAVING COUNT(*) > 0
 ) AS src
 ON tgt.report_date = src.report_date
 WHEN MATCHED THEN UPDATE SET
@@ -173,17 +201,129 @@ USING (
         LIMIT 1
     ) p
     CROSS JOIN (
-        -- most active users: top 5 by total actions
-        SELECT collect_list(user_id) AS users
+        -- most active users: top 5 by total actions; 'unknown' stays (legacy
+        -- includes it) and the rank order is made explicit, not left to
+        -- collect_list's input order
+        SELECT transform(
+            slice(
+                array_sort(
+                    collect_list(named_struct('total', total, 'user_id', user_id)),
+                    (a, b) -> CASE
+                        WHEN a.total <> b.total THEN sign(b.total - a.total)
+                        WHEN a.user_id < b.user_id THEN -1
+                        WHEN a.user_id > b.user_id THEN 1
+                        ELSE 0
+                    END
+                ),
+                1, 5
+            ),
+            x -> x.user_id
+        ) AS users
         FROM (
             SELECT resolved_user_id AS user_id, COUNT(*) AS total
             FROM analytics_events
-            WHERE resolved_user_id <> 'unknown'
             GROUP BY resolved_user_id
-            ORDER BY total DESC, user_id ASC
-            LIMIT 5
         )
     ) u
+    WHERE s.total_events > 0
+) AS src
+ON tgt.s3_key = src.s3_key
+WHEN MATCHED THEN UPDATE SET
+    report_type = src.report_type,
+    report_date = src.report_date,
+    generated_at = CURRENT_TIMESTAMP(),
+    report_json = src.report_json
+WHEN NOT MATCHED THEN INSERT (
+    s3_key, report_type, report_date, generated_at, report_json
+) VALUES (
+    src.s3_key, src.report_type, src.report_date, src.generated_at,
+    src.report_json
+);
+
+-- Per-user activity artifact (legacy top_users.jsonl.gz): one row per user,
+-- serialized as the JSONL payload so downstream readers keep per-user
+-- activity after cutover.
+MERGE INTO ow_tp.ow_tp_analytics.analytics_daily_report AS tgt
+USING (
+    SELECT
+        a.s3_key,
+        a.artifact_type AS report_type,
+        CAST(:ds AS DATE) AS report_date,
+        CURRENT_TIMESTAMP() AS generated_at,
+        to_json(named_struct(
+            'report_type', a.artifact_type,
+            'report_date', :ds,
+            'generated_at', CAST(CURRENT_TIMESTAMP() AS STRING),
+            'users', collect_list(named_struct(
+                'user_id', u.resolved_user_id,
+                'total', u.total,
+                'actions', u.actions
+            ))
+        )) AS report_json
+    FROM (
+        SELECT
+            resolved_user_id,
+            COUNT(*) AS total,
+            transform(
+                collect_list(named_struct('event_type', event_type, 'hour', hour)),
+                x -> named_struct('event_type', x.event_type, 'hour', x.hour)
+            ) AS actions
+        FROM analytics_events
+        GROUP BY resolved_user_id
+        ORDER BY total DESC, resolved_user_id ASC
+        LIMIT 100
+    ) u
+    CROSS JOIN analytics_artifacts a
+    WHERE a.artifact_type = 'analytics_top_users'
+    GROUP BY a.s3_key, a.artifact_type
+) AS src
+ON tgt.s3_key = src.s3_key
+WHEN MATCHED THEN UPDATE SET
+    report_type = src.report_type,
+    report_date = src.report_date,
+    generated_at = CURRENT_TIMESTAMP(),
+    report_json = src.report_json
+WHEN NOT MATCHED THEN INSERT (
+    s3_key, report_type, report_date, generated_at, report_json
+) VALUES (
+    src.s3_key, src.report_type, src.report_date, src.generated_at,
+    src.report_json
+);
+
+-- Hourly breakdown artifact (legacy hourly_breakdown.json.gz).
+MERGE INTO ow_tp.ow_tp_analytics.analytics_daily_report AS tgt
+USING (
+    SELECT
+        a.s3_key,
+        a.artifact_type AS report_type,
+        CAST(:ds AS DATE) AS report_date,
+        CURRENT_TIMESTAMP() AS generated_at,
+        to_json(named_struct(
+            'report_type', a.artifact_type,
+            'report_date', :ds,
+            'generated_at', CAST(CURRENT_TIMESTAMP() AS STRING),
+            'hourly', collect_list(named_struct(
+                'hour', h.hour,
+                'total', h.total,
+                'by_type', h.by_type
+            ))
+        )) AS report_json
+    FROM (
+        SELECT
+            hour,
+            COUNT(*) AS total,
+            map_from_entries(collect_list(named_struct('key', event_type, 'value', n)))
+                AS by_type
+        FROM (
+            SELECT hour, event_type, COUNT(*) AS n
+            FROM analytics_events
+            GROUP BY hour, event_type
+        )
+        GROUP BY hour
+    ) h
+    CROSS JOIN analytics_artifacts a
+    WHERE a.artifact_type = 'analytics_hourly_breakdown'
+    GROUP BY a.s3_key, a.artifact_type
 ) AS src
 ON tgt.s3_key = src.s3_key
 WHEN MATCHED THEN UPDATE SET
