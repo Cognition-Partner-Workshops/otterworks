@@ -5,7 +5,7 @@
   "base_branch": "tp-run/databricks-1793146609",
   "width": 1,
   "breaker_threshold": 1,
-  "max_minutes": 90,
+  "max_minutes": 60,
   "close_minutes": 30,
   "doctor_max_age": 15,
   "auto_merge": false,
@@ -107,7 +107,8 @@
       {
         "mode": "live",
         "depth": "full",
-        "row_counts_known": false
+        "row_counts_known": false,
+        "note": "rerun after recon oauth-m2m auth fix"
       }
     ]
   }
