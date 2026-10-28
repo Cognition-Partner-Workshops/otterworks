@@ -170,7 +170,8 @@ def compare(tenant, secret_name, dsn_override):
         cur.execute("""
 WITH t AS (SELECT id FROM ow_billing.tenants WHERE id = :tenant_id),
 rp AS (
-    SELECT rp.tenant_id, TRUNC(rp.period_start) AS ps, TRUNC(rp.period_end) AS pe
+    SELECT rp.tenant_id, rp.period_start AS ps_ts, rp.period_end AS pe_ts,
+           TRUNC(rp.period_start) AS ps, TRUNC(rp.period_end) AS pe
       FROM ow_billing.rating_periods rp JOIN t ON t.id = rp.tenant_id
 ),
 uncovered AS (
@@ -190,12 +191,12 @@ gaps AS (
      GROUP BY x.tenant_id, x.d
 ),
 periods AS (
-    SELECT tenant_id, ps, pe FROM rp
+    SELECT tenant_id, ps, pe, ps_ts, pe_ts FROM rp
     UNION
-    SELECT tenant_id, ps, pe FROM gaps
+    SELECT tenant_id, ps, pe, ps, pe FROM gaps
 ),
 base AS (
-    SELECT p.ps, p.pe, s.status_cd, TRUNC(s.suspended_on) AS suspended_on,
+    SELECT p.ps, p.pe, p.ps_ts, p.pe_ts, s.status_cd, s.suspended_on,
            pl.code AS plan_code, pl.included_units AS included, pl.overage_rate AS rate,
            (SELECT COUNT(*) FROM ow_billing.usage_events u
              WHERE u.tenant_id = p.tenant_id
@@ -208,13 +209,13 @@ base AS (
            (SELECT NVL(SUM(rr.rollover_units), 0)
               FROM ow_billing.rating_results rr, ow_billing.rating_periods rp
              WHERE rp.id = rr.period_id AND rp.tenant_id = p.tenant_id
-               AND rp.period_start < p.ps
-               AND rp.period_start >= ADD_MONTHS(p.ps, -3)) AS banked
+               AND rp.period_start < p.ps_ts
+               AND rp.period_start >= ADD_MONTHS(p.ps_ts, -3)) AS banked
       FROM periods p
       OUTER APPLY (
            SELECT s.plan_id, s.status_cd, s.suspended_on FROM ow_billing.subscriptions s
-            WHERE s.tenant_id = p.tenant_id AND s.starts_on <= p.pe
-              AND (s.ends_on IS NULL OR s.ends_on >= p.ps)
+            WHERE s.tenant_id = p.tenant_id AND s.starts_on <= p.pe_ts
+              AND (s.ends_on IS NULL OR s.ends_on >= p.ps_ts)
             ORDER BY s.starts_on DESC FETCH FIRST 1 ROWS ONLY) s
       LEFT JOIN ow_billing.plans pl ON pl.id = s.plan_id
 ),
@@ -231,8 +232,8 @@ tiered AS (
            GREATEST(b.billable_raw - 101, 0) AS second_tier,
            ROUND(LEAST(b.billable_raw, 101) * b.rate
                  + GREATEST(b.billable_raw - 101, 0) * b.rate * 1.5, 2) AS overage_raw,
-           CASE WHEN b.status_cd = 20 AND b.suspended_on BETWEEN b.ps AND b.pe
-                THEN (b.pe - b.suspended_on + 1) / (b.pe - b.ps + 1) END AS factor
+           CASE WHEN b.status_cd = 20 AND b.suspended_on BETWEEN b.ps_ts AND b.pe_ts
+                THEN (b.pe_ts - b.suspended_on + 1) / (b.pe_ts - b.ps_ts + 1) END AS factor
       FROM billed b
 )
 SELECT ps, pe, plan_code, event_count, used, included, rollover,

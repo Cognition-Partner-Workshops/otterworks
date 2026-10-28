@@ -9,8 +9,12 @@
 --                second at 1.5 x overage_rate; pro-rated by remaining days when the
 --                subscription is suspended (status 20) inside the period
 INSERT OVERWRITE ow_tp.ow_tp_usage_meter.ow_tp_usage_meter
-WITH rp AS (
-    SELECT tenant_id, CAST(period_start AS DATE) AS ps, CAST(period_end AS DATE) AS pe
+WITH -- ps/pe are the day window for events; ps_ts/pe_ts keep the period's original
+-- timestamps for the subscription, rollover and suspension comparisons, which
+-- compute_rating makes on full DATE values (an Oracle DATE can carry a time).
+rp AS (
+    SELECT tenant_id, period_start AS ps_ts, period_end AS pe_ts,
+           CAST(period_start AS DATE) AS ps, CAST(period_end AS DATE) AS pe
       FROM ow_tp.ow_tp_usage_meter.ow_tp_snap_rating_periods
 ),
 uncovered AS (
@@ -31,9 +35,10 @@ gaps AS (
      GROUP BY x.tenant_id, x.d
 ),
 periods AS (
-    SELECT tenant_id, ps AS period_start, pe AS period_end FROM rp
+    SELECT tenant_id, ps AS period_start, pe AS period_end, ps_ts, pe_ts FROM rp
     UNION
-    SELECT tenant_id, period_start, period_end FROM gaps
+    SELECT tenant_id, period_start, period_end,
+           CAST(period_start AS TIMESTAMP_NTZ), CAST(period_end AS TIMESTAMP_NTZ) FROM gaps
 ),
 used AS (
     SELECT p.tenant_id, p.period_start, count(u.id) AS event_count,
@@ -49,24 +54,24 @@ banked AS (
       FROM periods p
       LEFT JOIN ow_tp.ow_tp_usage_meter.ow_tp_snap_rating_periods rp
         ON rp.tenant_id = p.tenant_id
-       AND rp.period_start < CAST(p.period_start AS TIMESTAMP_NTZ)
-       AND rp.period_start >= CAST(add_months(p.period_start, -3) AS TIMESTAMP_NTZ)
+       AND rp.period_start < p.ps_ts
+       AND rp.period_start >= add_months(p.ps_ts, -3)
       LEFT JOIN ow_tp.ow_tp_usage_meter.ow_tp_snap_rating_results rr ON rr.period_id = rp.id
      GROUP BY p.tenant_id, p.period_start
 ),
 sub AS (
     SELECT p.tenant_id, p.period_start, s.id AS subscription_id, s.plan_id, s.status_cd,
-           CAST(s.suspended_on AS DATE) AS suspended_on,
+           s.suspended_on,
            row_number() OVER (PARTITION BY p.tenant_id, p.period_start
                               ORDER BY s.starts_on DESC) AS rn
       FROM periods p
       JOIN ow_tp.ow_tp_usage_meter.ow_tp_snap_subscriptions s
         ON s.tenant_id = p.tenant_id
-       AND s.starts_on <= CAST(p.period_end AS TIMESTAMP_NTZ)
-       AND (s.ends_on IS NULL OR s.ends_on >= CAST(p.period_start AS TIMESTAMP_NTZ))
+       AND s.starts_on <= p.pe_ts
+       AND (s.ends_on IS NULL OR s.ends_on >= p.ps_ts)
 ),
 base AS (
-    SELECT p.tenant_id, p.period_start, p.period_end, s.subscription_id, s.plan_id,
+    SELECT p.tenant_id, p.period_start, p.period_end, p.ps_ts, p.pe_ts, s.subscription_id, s.plan_id,
            s.status_cd, s.suspended_on, pl.code AS plan_code,
            pl.included_units AS included, pl.overage_rate AS rate,
            u.event_count, u.used, b.prior
@@ -88,9 +93,11 @@ tiered AS (
            greatest(billable_raw - 101, 0) AS second_tier,
            round(least(billable_raw, 101) * rate
                  + greatest(billable_raw - 101, 0) * rate * 1.5, 2) AS overage_raw,
-           CASE WHEN status_cd = 20 AND suspended_on BETWEEN period_start AND period_end
-                THEN CAST(datediff(period_end, suspended_on) + 1 AS DECIMAL(38,18))
-                     / (datediff(period_end, period_start) + 1)
+           -- (period_end - suspended_on + 1) / (period_end - period_start + 1) in days,
+           -- fractional like Oracle DATE arithmetic
+           CASE WHEN status_cd = 20 AND suspended_on BETWEEN ps_ts AND pe_ts
+                THEN (CAST(unix_micros(CAST(pe_ts AS TIMESTAMP)) - unix_micros(CAST(suspended_on AS TIMESTAMP)) AS DECIMAL(38,18)) / 86400000000 + 1)
+                     / ((unix_micros(CAST(pe_ts AS TIMESTAMP)) - unix_micros(CAST(ps_ts AS TIMESTAMP))) / 86400000000 + 1)
            END AS factor
       FROM billed
 )
