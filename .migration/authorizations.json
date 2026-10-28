@@ -1,6 +1,11 @@
 {"version": 1, "authorizations": [
-  {"id": "d-merge-overrides",
-   "kind": "merge_override",
-   "objects": ["tenants", "codes", "customer_master", "customer_master_hist", "subscriptions_hist", "entity_attr_value", "plans", "usage_events", "invoice_header", "invoice_line", "pkg_ow_util", "pkg_plans", "pkg_rating", "pkg_invoicing", "pkg_dunning", "custbill_sftp_ingest", "custbill_oracle_extract", "custbill_parse", "custbill_finance_report", "custbill_run_all", "analytics_daily", "audit_archive_weekly", "search_reindex_weekly", "storage_cleanup_daily", "user_activity_daily", "usage_rollup"],
-   "by": "user:dhrov.subramanian@cognition.ai"}
+  {"id": "d-merge-overrides", "kind": "merge_override", "by": "user:dhrov.subramanian@cognition.ai", "wave": "wave-0", "objects": ["tenants", "codes", "customer_master"]},
+  {"id": "d-merge-overrides", "kind": "merge_override", "by": "user:dhrov.subramanian@cognition.ai", "wave": "wave-invoicing-1", "objects": ["plans", "usage_events", "entity_attr_value", "invoice_header", "invoice_line", "subscriptions_hist", "customer_master_hist"]},
+  {"id": "d-merge-overrides", "kind": "merge_override", "by": "user:dhrov.subramanian@cognition.ai", "wave": "wave-invoicing-2", "objects": ["pkg_ow_util", "pkg_plans", "pkg_rating", "pkg_invoicing", "pkg_dunning"]},
+  {"id": "d-merge-overrides", "kind": "merge_override", "by": "user:dhrov.subramanian@cognition.ai", "wave": "wave-custbill-1", "objects": ["custbill_sftp_ingest", "custbill_oracle_extract"]},
+  {"id": "d-merge-overrides", "kind": "merge_override", "by": "user:dhrov.subramanian@cognition.ai", "wave": "wave-custbill-2", "objects": ["custbill_parse"]},
+  {"id": "d-merge-overrides", "kind": "merge_override", "by": "user:dhrov.subramanian@cognition.ai", "wave": "wave-custbill-3", "objects": ["custbill_finance_report"]},
+  {"id": "d-merge-overrides", "kind": "merge_override", "by": "user:dhrov.subramanian@cognition.ai", "wave": "wave-custbill-4", "objects": ["custbill_run_all"]},
+  {"id": "d-merge-overrides", "kind": "merge_override", "by": "user:dhrov.subramanian@cognition.ai", "wave": "wave-analytics-1", "objects": ["analytics_daily", "audit_archive_weekly", "search_reindex_weekly", "storage_cleanup_daily", "usage_rollup"]},
+  {"id": "d-merge-overrides", "kind": "merge_override", "by": "user:dhrov.subramanian@cognition.ai", "wave": "wave-analytics-2", "objects": ["user_activity_daily"]}
 ]}
