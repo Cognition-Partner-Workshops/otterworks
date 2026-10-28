@@ -1,0 +1,21 @@
+{
+  "run_id": "ow-tp-billing-20261028",
+  "catalogs": ["ow_tp"],
+  "schema_prefix": "ow_tp_",
+  "job_prefix": "ow_tp_",
+  "legacy_sources": ["OW_BILLING_RO_DSN", "OW_TP_ORACLE_RO_DSN", "44.213.30.5"],
+  "guard_mode": "block",
+  "run_mode": "live",
+  "load_mode": "snapshot",
+  "target_hosts": ["LAKEBASE_MIGRATION_DSN"],
+  "bundle_targets": ["mig_ow_tp_billing_20261028"],
+  "lakebase_projects": ["ow-tp-billing"],
+  "lakebase_branches": ["mig-*"],
+  "fixture_endpoints": ["AWS_ENDPOINT_URL"],
+  "forbidden": {
+    "schemas": ["ow_tp.bronze", "ow_tp.silver", "ow_tp.gold", "ow_tp.airbyte_demo", "ow_tp.fivetran_metadata", "ow_tp._fivetran_setup_test", "ow_tp.fivetran_trimester_remoteness_staging"],
+    "lakebase_branches": ["production"],
+    "legacy": "OW_BILLING on 44.213.30.5:1521/FREEPDB1 is read-only in every phase"
+  },
+  "fixture_note": "fixture tenant \"Tenant One\"; load posture is snapshot-only (extract copy, no federation/JDBC/CDC). Lakebase endpoint hosts for ow-tp-billing mig-* branches are added when the branches are created."
+}

@@ -1,0 +1,22 @@
+{
+  "version": "tol-20261027-v1",
+  "family": "oracle",
+  "mode": "live",
+  "load_mode": "snapshot",
+  "full_diff_row_threshold": 5000000,
+  "sample_size": 100000,
+  "numeric_abs_tol": 0.0,
+  "aggregate_rel_tol": 1e-09,
+  "source_concurrency": 4,
+  "cdc_lag_max_s": 0.0,
+  "cdc_in_flight_max_rows": 0,
+  "pk_set_ranges": 64,
+  "pk_set_stream_every_range": false,
+  "accept_marker_only_window": false,
+  "accept_target_only_constraints": false,
+  "accept_unverified_check_constraints": false,
+  "populations": "full source population per unit mapping; fixture tenant is Tenant One for development evidence only",
+  "nondeterminism": "exact match on row content after canonicalization; no drift allowance (cdc_lag_max_s=0, cdc_in_flight_max_rows=0); run-scoped keys (run ids, timestamps) must be pinned or canonicalized in the mapping spec",
+  "degraded_mode": "not in effect; live recon required for merge eligibility. If live access is lost mid-run, the wave parks and degraded/snapshot evidence is recorded but never merges",
+  "amendment": "tolerances change only through a plan.yaml decision selected by the human. Every amendment preserves the old row (append a new version, never edit in place) and names the re-verification scope (units/tiers re-run under the new value)"
+}

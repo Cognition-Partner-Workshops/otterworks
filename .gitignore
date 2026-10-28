@@ -1,4 +1,5 @@
 .tp-preflight/
+.migration/.hook_probe_nonce
 # OS
 .DS_Store
 Thumbs.db
