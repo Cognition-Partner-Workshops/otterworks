@@ -3,11 +3,36 @@
   "target_kind": "lakebase",
   "rerun_posture": "first_run_baseline",
   "objects": [
-    {"root_table": "ow_billing.invoices", "object": "ow_tp_invoicing.invoices",
-     "key": {"source": ["id"], "target": "id"}},
-    {"root_table": "ow_billing.invoice_lines", "object": "ow_tp_invoicing.invoice_lines",
-     "key": {"source": ["id"], "target": "id"}},
-    {"root_table": "ow_billing.credit_notes", "object": "ow_tp_invoicing.credit_notes",
-     "key": {"source": ["id"], "target": "id"}}
-  ]
+    {
+      "root_table": "ow_billing.invoices",
+      "object": "ow_tp_invoicing.invoices",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "id"
+      }
+    },
+    {
+      "root_table": "ow_billing.invoice_lines",
+      "object": "ow_tp_invoicing.invoice_lines",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "id"
+      }
+    },
+    {
+      "root_table": "ow_billing.credit_notes",
+      "object": "ow_tp_invoicing.credit_notes",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": "id"
+      }
+    }
+  ],
+  "family": "oracle"
 }
