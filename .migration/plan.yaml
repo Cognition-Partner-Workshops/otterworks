@@ -79,11 +79,13 @@ phases:
       description: dbx-recon PASS per unit on the declared parity mechanism.
     decisions:
     - id: analytics-merge-override-w1
-      description: mo-analytics-w1-structural forgives the structural blocker class
+      description: 'mo-analytics-w1-structural forgives the structural blocker class
         (UC grant-visibility diffs vs staging-schema grants, informational-PK not_null_extra)
         on units usage_rollup_scala and analytics_daily so their parity-PASS batches
         become merge-eligible. Entry is a merge_override authored by the requester
-        in committed authorizations.json.
+        in committed authorizations.json. Selected per requester authorization: committed
+        entry mo-analytics-w1-structural (kind merge_override, objects usage_rollup_scala
+        + analytics_daily, by user:dhrov.subramanian@cognition.ai) at commit 0faf5d4db.'
       options:
       - id: accept
         label: "Accept the override \u2014 structural diffs are platform-inherent\
@@ -92,7 +94,7 @@ phases:
       - id: hold
         label: "Hold \u2014 keep the wave merge-blocked pending grant alignment between\
           \ staging and target schemas."
-      selected: null
+      selected: accept
       important: true
   - id: run-analytics-wave-2
     title: Wave 2 remaining crons (width 4)
@@ -114,7 +116,10 @@ phases:
         label: Proceed with the rehearsed repoint
       - id: hold
         label: Hold; production does not move
-      selected: null
+      - id: park
+        label: "Park \u2014 STOP E presents legacy output, Databricks output and recon\
+          \ verdict side by side; the requester decides cutover there."
+      selected: park
       important: true
 - id: custbill
   title: "Pipeline custbill \u2014 CUSTBILL finance-close chain -> Lakeflow Declarative\
