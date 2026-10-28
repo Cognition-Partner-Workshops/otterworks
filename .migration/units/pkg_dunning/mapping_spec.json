@@ -1,0 +1,15 @@
+{
+  "version": "map-v1",
+  "target_kind": "lakebase",
+  "rerun_posture": "first_run_baseline",
+  "objects": [
+    {"root_table": "ow_billing.dunning_attempts", "object": "ow_tp_invoicing.dunning_attempts",
+     "key": {"source": ["id"], "target": "id"}},
+    {"root_table": "ow_billing.notifications", "object": "ow_tp_invoicing.notifications",
+     "key": {"source": ["id"], "target": "id"}},
+    {"root_table": "ow_billing.tenants", "object": "ow_tp_invoicing.tenants",
+     "key": {"source": ["id"], "target": "id"}},
+    {"root_table": "ow_billing.subscriptions", "object": "ow_tp_invoicing.subscriptions",
+     "key": {"source": ["id"], "target": "id"}}
+  ]
+}

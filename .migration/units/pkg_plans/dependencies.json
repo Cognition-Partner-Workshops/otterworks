@@ -1,0 +1,7 @@
+{"routines": [
+  {"routine": "ow_billing.pkg_plans.fn_list_plans", "reads": ["ow_billing.plans"], "writes": [], "calls": ["ow_billing.pkg_ow_util.log_msg"]},
+  {"routine": "ow_billing.pkg_plans.fn_entitlement", "reads": ["ow_billing.tenants", "ow_billing.subscriptions", "ow_billing.plans"], "writes": [], "calls": []},
+  {"routine": "ow_billing.pkg_plans.sp_change_plan", "reads": ["ow_billing.subscriptions", "ow_billing.plans"], "writes": ["ow_billing.subscriptions"], "calls": ["ow_billing.pkg_ow_util.f_md5_uuid", "ow_billing.pkg_ow_util.log_msg", "ow_billing.trg_subscriptions_hist", "ow_billing.trg_sub_no_uncancel"]},
+  {"routine": "ow_billing.trg_subscriptions_hist", "reads": ["ow_billing.subscriptions"], "writes": ["ow_billing.subscriptions_hist"], "calls": []},
+  {"routine": "ow_billing.trg_sub_no_uncancel", "reads": ["ow_billing.subscriptions"], "writes": [], "calls": []}
+]}

@@ -233,3 +233,91 @@ phases:
                 label: Hold; production does not move
             selected: null
             important: true
+  - id: invoicing
+    title: Pipeline invoicing — OW_BILLING packages -> Lakebase + Delta
+    decisions:
+      - id: target-core
+        description: Core-table target for the operational track.
+        options:
+          - id: lakebase
+            label: Lakebase ow-tp-billing mig-* branch (OLTP operational state)
+        selected: lakebase
+        important: false
+      - id: target-lakebase
+        description: Lakebase target for the 5-package SCC and operational tables/triggers/sequences/jobs.
+        options:
+          - id: ow-tp-billing-mig
+            label: ow-tp-billing on mig-invoicing-w1, schema ow_tp_invoicing
+        selected: ow-tp-billing-mig
+        important: false
+      - id: target-sql
+        description: Delta history track for invoicing.
+        options:
+          - id: ow-tp-history
+            label: catalog ow_tp schema ow_tp_invoicing_history, warehouse 565cd2fd713738c4
+        selected: ow-tp-history
+        important: false
+      - id: target-pipeline
+        description: Pipeline target for scheduler jobs.
+        options:
+          - id: lakebase-routines
+            label: Lakebase routines invoked by Lakeflow Job (PAUSED)
+        selected: lakebase-routines
+        important: false
+      - id: target-orchestration
+        description: Orchestration for JOB_NIGHTLY_DUNNING/JOB_PURGE_AUDIT_LOG.
+        options:
+          - id: lakeflow-job-paused
+            label: Lakeflow Job calling the Lakebase routines, deployed PAUSED
+        selected: lakeflow-job-paused
+        important: false
+      - id: target-consumer
+        description: Consumer repoint for invoicing consumers.
+        options:
+          - id: na
+            label: No repoint — STOP E parks; cutover principal decides
+        selected: na
+        important: false
+      - id: target-data-dependency
+        description: How source data reaches targets.
+        options:
+          - id: snapshot
+            label: Snapshot load only — no federation/JDBC/CDC
+        selected: snapshot
+        important: false
+      - id: execute-posture
+        description: Read-only principal holds no EXECUTE on OW_BILLING packages; every writing routine stays `unproven` as a cutover exception until the requester grants EXECUTE (then re-prove in verification). Does not block the wave.
+        options:
+          - id: unproven-exceptions
+            label: Ride as unproven cutover exceptions; pending requester decision
+          - id: granted
+            label: EXECUTE granted; prove routines in verification
+        selected: null
+        important: true
+      - id: scc-max-cycle
+        description: The 5 packages form one SCC (undirected call edges via log_msg/f_md5_uuid + invoicing-rating calls + plans/dunning write overlap on subscriptions); derive ran with --max-cycle 6 so the SCC fits one batch.
+        options:
+          - id: accept
+            label: Accept width-2 shape; SCC as w1-b02
+        selected: accept
+        important: false
+    steps:
+      - id: invoicing-inventory
+        title: Inventory + coverage (STOP B — approved)
+        gates:
+          - id: coverage-card
+            description: Coverage report card presented to and approved by parent.
+      - id: run-invoicing-wave-1
+        title: Run invoicing wave 1 (width 2)
+        depends_on: [invoicing-inventory]
+        gates:
+          - id: w1-recon
+            description: dbx-recon --family oracle PASS per batch — w1-b01 Delta track, w1-b02 Lakebase track.
+        blockers:
+          - id: b-execute-grant
+            description: Writing routines unproven pending the requester's EXECUTE decision.
+            check:
+              kind: human-decision
+      - id: invoicing-stop-e
+        title: STOP E park — legacy output, Databricks output, recon verdict side by side
+        depends_on: [run-invoicing-wave-1]
