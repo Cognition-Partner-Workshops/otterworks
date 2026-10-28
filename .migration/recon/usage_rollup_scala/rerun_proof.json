@@ -17,8 +17,8 @@
   ],
   "source_digest": "99adb522b27b6e2028064cb8d0b1a0860ccbb4b32902bbdd8e4cdf8f040104a5",
   "evidence": {
-    "fresh": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 46494538742209 (empty target; ensure_objects landed the table, rollup_load landed 3 rows)",
-    "evolved": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 883137950269052 (over the landed table in committed DDL shape; MERGE converged rows)"
+    "fresh": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 51844703827653 (empty target; ensure_objects landed the table, rollup_load landed 3 rows)",
+    "evolved": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 336551696088202 (over the landed table in committed DDL shape; MERGE converged rows)"
   },
   "shape": {
     "tables": {

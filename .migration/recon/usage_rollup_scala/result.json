@@ -10,125 +10,38 @@
   "cost": {
     "source_statements": 10,
     "source_rows_fetched": 3,
-    "target_statements": 9,
+    "target_statements": 4,
     "target_rows_fetched": 3,
-    "elapsed_s": 6.011
+    "elapsed_s": 3.988
   },
-  "generated_at": "2026-10-28T02:31:36.979735+00:00",
+  "generated_at": "2026-10-28T03:15:14.327645+00:00",
   "tiers": [
     {
       "tier": 0,
       "name": "structural_parity",
-      "passed": false,
-      "checks_run": 1,
+      "passed": true,
+      "checks_run": 0,
       "stats": {
-        "usage_rollup": {
-          "source": {
-            "primary_key": [],
-            "primary_key_informational": [],
-            "unique": [],
-            "unique_nulls_equal": [],
-            "foreign_keys": [],
-            "foreign_keys_informational": [],
-            "not_null": [],
-            "indexes": [],
-            "check_count": 0,
-            "checks": [],
-            "identity_columns": [],
-            "partial": [],
-            "expression_unique": [],
-            "expression_indexes": [],
-            "triggers": {},
-            "grants": {
-              "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2": [
-                "all_privileges",
-                "select"
-              ]
-            },
-            "unsupported": [
-              "indexes"
-            ],
-            "privilege_denied": []
-          },
-          "target": {
-            "primary_key": [],
-            "primary_key_informational": [],
-            "unique": [],
-            "unique_nulls_equal": [],
-            "foreign_keys": [],
-            "foreign_keys_informational": [],
-            "not_null": [],
-            "indexes": [],
-            "check_count": 0,
-            "checks": [],
-            "identity_columns": [],
-            "partial": [],
-            "expression_unique": [],
-            "expression_indexes": [],
-            "triggers": {},
-            "grants": {
-              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
-                "all_privileges"
-              ],
-              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
-                "modify",
-                "select"
-              ]
-            },
-            "unsupported": [
-              "indexes"
-            ],
-            "privilege_denied": []
-          },
-          "identity": null
-        },
+        "dictionary_unavailable": [
+          "usage_rollup: usage_rollup_output: information_schema.table_privileges read failed (ServerOperationError)"
+        ],
         "structural_checks": {
-          "constraints": "checked",
-          "triggers": "checked",
+          "constraints": "unsupported",
+          "triggers": "unsupported",
           "indexes": "unsupported",
-          "sequences_identity": "checked",
-          "grants": "direct_only"
+          "sequences_identity": "unsupported",
+          "grants": "unsupported"
         },
-        "structural_diff": {
-          "usage_rollup": {
-            "grants": [
-              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
-              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
-              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
-            ]
-          }
-        },
+        "structural_diff": {},
         "dictionary": {
           "source": "live",
           "target": "live"
-        }
+        },
+        "hole_kinds": [
+          "read"
+        ]
       },
-      "findings": [
-        {
-          "object": "usage_rollup",
-          "check": "grant_missing",
-          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
-          "source_value": "None",
-          "target_value": "None",
-          "rules_applied": []
-        },
-        {
-          "object": "usage_rollup",
-          "check": "grant_extra",
-          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
-          "source_value": "None",
-          "target_value": "None",
-          "rules_applied": []
-        },
-        {
-          "object": "usage_rollup",
-          "check": "grant_extra",
-          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
-          "source_value": "None",
-          "target_value": "None",
-          "rules_applied": []
-        }
-      ]
+      "findings": []
     },
     {
       "tier": 1,
@@ -169,8 +82,10 @@
       "findings": []
     }
   ],
-  "warnings": [],
-  "verdict": "FAIL",
+  "warnings": [
+    "UNVERIFIED structural_parity: structure unavailable: usage_rollup: usage_rollup_output: information_schema.table_privileges read failed (ServerOperationError)"
+  ],
+  "verdict": "PASS",
   "parity": "PASS",
   "merge_eligible": false,
   "merge_policy": "blocked",
@@ -180,7 +95,7 @@
       "class": "structural"
     },
     {
-      "reason": "tier_failed",
+      "reason": "warnings",
       "class": "structural"
     }
   ],
@@ -211,8 +126,8 @@
     ],
     "source_digest": "99adb522b27b6e2028064cb8d0b1a0860ccbb4b32902bbdd8e4cdf8f040104a5",
     "evidence": {
-      "fresh": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 46494538742209 (empty target; ensure_objects landed the table, rollup_load landed 3 rows)",
-      "evolved": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 883137950269052 (over the landed table in committed DDL shape; MERGE converged rows)"
+      "fresh": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 51844703827653 (empty target; ensure_objects landed the table, rollup_load landed 3 rows)",
+      "evolved": "databricks bundle run ow_tp_analytics_usage_rollup -t mig_1793146609 -> run 336551696088202 (over the landed table in committed DDL shape; MERGE converged rows)"
     },
     "shape": {
       "tables": {
@@ -296,7 +211,7 @@
   "rerun_posture": "required",
   "merge_block_reasons": [
     "structural_gap",
-    "tier_failed"
+    "warnings"
   ],
   "routine_parity": [
     {
