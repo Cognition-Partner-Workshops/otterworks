@@ -12,10 +12,17 @@ INSERT OVERWRITE ow_tp.ow_tp_usage_meter.ow_tp_usage_meter
 WITH -- ps/pe are the day window for events; ps_ts/pe_ts keep the period's original
 -- timestamps for the subscription, rollover and suspension comparisons, which
 -- compute_rating makes on full DATE values (an Oracle DATE can carry a time).
+-- sp_finalize_rating keys a period by tenant || YYYY-MM-DD (pkg_ow_util.f_md5_uuid), so the
+-- meter keeps one period per tenant and start day: the latest-starting one, like the
+-- subscription rule.
 rp AS (
-    SELECT tenant_id, period_start AS ps_ts, period_end AS pe_ts,
-           CAST(period_start AS DATE) AS ps, CAST(period_end AS DATE) AS pe
-      FROM ow_tp.ow_tp_usage_meter.ow_tp_snap_rating_periods
+    SELECT tenant_id, ps_ts, pe_ts, ps, pe
+      FROM (SELECT tenant_id, period_start AS ps_ts, period_end AS pe_ts,
+                   CAST(period_start AS DATE) AS ps, CAST(period_end AS DATE) AS pe,
+                   row_number() OVER (PARTITION BY tenant_id, CAST(period_start AS DATE)
+                                      ORDER BY period_start DESC) AS rn
+              FROM ow_tp.ow_tp_usage_meter.ow_tp_snap_rating_periods)
+     WHERE rn = 1
 ),
 uncovered AS (
     SELECT DISTINCT u.tenant_id, CAST(u.occurred_at AS DATE) AS d
@@ -94,10 +101,15 @@ tiered AS (
            round(least(billable_raw, 101) * rate
                  + greatest(billable_raw - 101, 0) * rate * 1.5, 2) AS overage_raw,
            -- (period_end - suspended_on + 1) / (period_end - period_start + 1) in days,
-           -- fractional like Oracle DATE arithmetic
+           -- fractional like Oracle DATE arithmetic: calendar days plus the wall-clock
+           -- time-of-day difference, so no session-timezone or DST shift enters
            CASE WHEN status_cd = 20 AND suspended_on BETWEEN ps_ts AND pe_ts
-                THEN (CAST(unix_micros(CAST(pe_ts AS TIMESTAMP)) - unix_micros(CAST(suspended_on AS TIMESTAMP)) AS DECIMAL(38,18)) / 86400000000 + 1)
-                     / ((unix_micros(CAST(pe_ts AS TIMESTAMP)) - unix_micros(CAST(ps_ts AS TIMESTAMP))) / 86400000000 + 1)
+                THEN (CAST(datediff(CAST(pe_ts AS DATE), CAST(suspended_on AS DATE)) AS DECIMAL(38,18))
+                      + (hour(pe_ts) * 3600 + minute(pe_ts) * 60 + second(pe_ts)
+                         - hour(suspended_on) * 3600 - minute(suspended_on) * 60 - second(suspended_on)) / 86400 + 1)
+                     / (datediff(CAST(pe_ts AS DATE), CAST(ps_ts AS DATE))
+                        + (hour(pe_ts) * 3600 + minute(pe_ts) * 60 + second(pe_ts)
+                           - hour(ps_ts) * 3600 - minute(ps_ts) * 60 - second(ps_ts)) / 86400 + 1)
            END AS factor
       FROM billed
 )

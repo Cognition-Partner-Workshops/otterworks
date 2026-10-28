@@ -170,9 +170,13 @@ def compare(tenant, secret_name, dsn_override):
         cur.execute("""
 WITH t AS (SELECT id FROM ow_billing.tenants WHERE id = :tenant_id),
 rp AS (
-    SELECT rp.tenant_id, rp.period_start AS ps_ts, rp.period_end AS pe_ts,
-           TRUNC(rp.period_start) AS ps, TRUNC(rp.period_end) AS pe
-      FROM ow_billing.rating_periods rp JOIN t ON t.id = rp.tenant_id
+    SELECT tenant_id, ps_ts, pe_ts, ps, pe
+      FROM (SELECT rp.tenant_id, rp.period_start AS ps_ts, rp.period_end AS pe_ts,
+                   TRUNC(rp.period_start) AS ps, TRUNC(rp.period_end) AS pe,
+                   ROW_NUMBER() OVER (PARTITION BY rp.tenant_id, TRUNC(rp.period_start)
+                                      ORDER BY rp.period_start DESC) AS rn
+              FROM ow_billing.rating_periods rp JOIN t ON t.id = rp.tenant_id)
+     WHERE rn = 1
 ),
 uncovered AS (
     SELECT DISTINCT u.tenant_id, TRUNC(u.occurred_at) AS d
