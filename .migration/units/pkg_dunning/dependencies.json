@@ -1,0 +1,6 @@
+{"routines": [
+  {"routine": "ow_billing.pkg_dunning.fn_overdue_accounts", "reads": ["ow_billing.invoices", "ow_billing.tenants"], "writes": [], "calls": []},
+  {"routine": "ow_billing.pkg_dunning.sp_schedule_dunning", "reads": ["ow_billing.invoices", "ow_billing.tenants"], "writes": ["ow_billing.dunning_attempts", "ow_billing.notifications"], "calls": ["ow_billing.pkg_ow_util.f_md5_uuid", "ow_billing.pkg_ow_util.log_msg"]},
+  {"routine": "ow_billing.pkg_dunning.sp_suspend_overdue", "reads": ["ow_billing.invoices", "ow_billing.tenants"], "writes": ["ow_billing.subscriptions", "ow_billing.tenants", "ow_billing.notifications"], "calls": ["ow_billing.pkg_ow_util.f_md5_uuid", "ow_billing.pkg_ow_util.log_msg"]},
+  {"routine": "ow_billing.pkg_dunning.job_nightly_dunning", "reads": [], "writes": [], "calls": ["ow_billing.pkg_dunning.sp_schedule_dunning", "ow_billing.pkg_dunning.sp_suspend_overdue"]}
+]}

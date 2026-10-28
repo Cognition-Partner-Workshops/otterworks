@@ -1,0 +1,19 @@
+{
+  "version": "map-v1",
+  "family": "oracle",
+  "target_kind": "databricks",
+  "objects": [
+    {
+      "root_table": "ow_billing.invoice_header",
+      "object": "ow_tp.ow_tp_custbill.custbill_feed",
+      "key": {
+        "source": [
+          "invoice_id"
+        ],
+        "target": [
+          "invoice_id"
+        ]
+      }
+    }
+  ]
+}

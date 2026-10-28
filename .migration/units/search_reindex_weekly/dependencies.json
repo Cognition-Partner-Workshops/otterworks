@@ -1,0 +1,32 @@
+{
+  "routines": [
+    {
+      "routine": "analytics.ow_tp_analytics_search_reindex",
+      "reads": [
+        "document_service.documents",
+        "file_service.files",
+        "meilisearch.documents",
+        "meilisearch.files"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.search_reindex_run"
+      ]
+    },
+    {
+      "routine": "analytics.search_reindex_run",
+      "reads": [
+        "document_service.documents",
+        "file_service.files",
+        "meilisearch.documents",
+        "meilisearch.files"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.search_index_documents",
+        "ow_tp.ow_tp_analytics_src.search_index_files",
+        "ow_tp.ow_tp_analytics_src.reindex_report"
+      ],
+      "calls": []
+    }
+  ]
+}

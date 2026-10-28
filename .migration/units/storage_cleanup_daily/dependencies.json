@@ -1,0 +1,27 @@
+{
+  "routines": [
+    {
+      "routine": "analytics.ow_tp_analytics_storage_cleanup",
+      "reads": [
+        "otterworks_file_storage.files",
+        "otterworks_file_metadata"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.storage_cleanup_run"
+      ]
+    },
+    {
+      "routine": "analytics.storage_cleanup_run",
+      "reads": [
+        "otterworks_file_storage.files",
+        "otterworks_file_metadata"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.orphan_files",
+        "ow_tp.ow_tp_analytics_src.cleanup_report"
+      ],
+      "calls": []
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "routines": [
+    {
+      "routine": "analytics.ow_tp_analytics_usage_rollup",
+      "reads": [
+        "usage_events_ndjson"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.usage_rollup_run"
+      ]
+    },
+    {
+      "routine": "analytics.usage_rollup_run",
+      "reads": [
+        "usage_events_ndjson"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.usage_rollup_output"
+      ],
+      "calls": []
+    }
+  ]
+}

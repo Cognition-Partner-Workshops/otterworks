@@ -1,0 +1,6 @@
+{"routines": [
+  {"routine": "ow_billing.pkg_invoicing.compute_preview", "reads": ["ow_billing.subscriptions", "ow_billing.plans", "ow_billing.credit_notes", "ow_billing.tenants"], "writes": [], "calls": ["ow_billing.pkg_rating.compute_rating"]},
+  {"routine": "ow_billing.pkg_invoicing.fn_invoice_preview", "reads": [], "writes": [], "calls": ["ow_billing.pkg_invoicing.compute_preview"]},
+  {"routine": "ow_billing.pkg_invoicing.fn_invoice_lines", "reads": ["ow_billing.invoice_lines"], "writes": [], "calls": []},
+  {"routine": "ow_billing.pkg_invoicing.sp_issue_invoice", "reads": ["ow_billing.credit_notes", "ow_billing.invoice_lines"], "writes": ["ow_billing.invoices", "ow_billing.invoice_lines", "ow_billing.credit_notes"], "calls": ["ow_billing.pkg_rating.sp_finalize_rating", "ow_billing.pkg_ow_util.f_md5_uuid", "ow_billing.pkg_ow_util.log_msg"]}
+]}

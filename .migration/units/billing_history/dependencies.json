@@ -1,0 +1,7 @@
+{"routines": [
+  {"routine": "snapshot.customer_master", "reads": ["ow_billing.customer_master"], "writes": ["ow_billing.customer_master"], "calls": []},
+  {"routine": "snapshot.customer_master_hist", "reads": ["ow_billing.customer_master_hist"], "writes": ["ow_billing.customer_master_hist"], "calls": []},
+  {"routine": "snapshot.entity_attr_value", "reads": ["ow_billing.entity_attr_value"], "writes": ["ow_billing.entity_attr_value"], "calls": []},
+  {"routine": "snapshot.invoice_header", "reads": ["ow_billing.invoice_header"], "writes": ["ow_billing.invoice_header"], "calls": []},
+  {"routine": "snapshot.invoice_line", "reads": ["ow_billing.invoice_line"], "writes": ["ow_billing.invoice_line"], "calls": []}
+]}

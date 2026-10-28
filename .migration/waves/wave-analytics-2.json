@@ -1,0 +1,203 @@
+{
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "run_id": "1793146609",
+  "wave": 2,
+  "base_branch": "tp-run/databricks-1793146609",
+  "width": 4,
+  "breaker_threshold": 2,
+  "max_minutes": 60,
+  "close_minutes": 30,
+  "doctor_max_age": 15,
+  "auto_merge": false,
+  "target_namespace": "ow_tp.ow_tp_analytics",
+  "verify_depth": "full",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "run-analytics-wave-2",
+  "source": {
+    "family": "databricks",
+    "secret": "DATABRICKS_DEMO_HOST",
+    "params": {
+      "source_name": "ow_tp.ow_tp_analytics_src",
+      "target_name": "ow_tp.ow_tp_analytics",
+      "http_path": "/sql/1.0/warehouses/565cd2fd713738c4"
+    }
+  },
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "hard",
+    "ready": true
+  },
+  "pipelines": {
+    "invoicing": 1,
+    "custbill": 3,
+    "analytics": 2
+  },
+  "target_state": {
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Jobs ow_tp_analytics_*, PAUSED schedules",
+      "ref": "plan.yaml decision target-core"
+    },
+    "core": {
+      "decision": "target-core",
+      "target": "Delta tables under ow_tp.ow_tp_analytics",
+      "ref": "plan.yaml decision target-core"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "na": "no SQL surface; PySpark/Scala job code"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "na": "jobs not declarative pipelines"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "na": "report surfaces land as Delta rows"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "na": "Lakebase belongs to invoicing"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no ML surfaces in analytics"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "Legacy outputs materialize to ow_tp.ow_tp_analytics_src (snapshot posture)",
+      "ref": "plan.yaml decision parity-mechanism"
+    }
+  },
+  "batches": [
+    {
+      "id": "a01",
+      "units": [
+        "audit_archive_weekly"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.audit_archive",
+        "ow_tp.ow_tp_analytics.audit_archive_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_audit_archive"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_audit_archive"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "brief": "Convert etl/scripts/audit_archive_weekly.py (DynamoDB otterworks-audit-events >90d -> GLACIER jsonl + batch deletes + compliance report) to Lakeflow Job ow_tp_analytics_audit_archive: archived event rows to ow_tp.ow_tp_analytics.audit_archive, report metrics to audit_archive_report. PAUSED schedule, retries. Never delete from source \u2014 quarantine semantics preserved as ledger rows.",
+      "gates": [
+        {
+          "id": "audit_archive_weekly-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-01/a01/report.json"
+        }
+      ]
+    },
+    {
+      "id": "a02",
+      "units": [
+        "search_reindex_weekly"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.search_index_docs",
+        "ow_tp.ow_tp_analytics.search_reindex_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_search_reindex"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_search_reindex"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "brief": "Convert etl/scripts/search_reindex_weekly.py (document-service + file-service REST pagination -> MeiliSearch documents/files reindex + counts) to Lakeflow Job ow_tp_analytics_search_reindex: indexed docs to ow_tp.ow_tp_analytics.search_index_docs (index_name,doc_id,doc_sha256), counts to search_reindex_report. PAUSED schedule, retries.",
+      "gates": [
+        {
+          "id": "search_reindex_weekly-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-02/a02/report.json"
+        }
+      ]
+    },
+    {
+      "id": "a03",
+      "units": [
+        "storage_cleanup_daily"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.storage_quarantine_actions",
+        "ow_tp.ow_tp_analytics.storage_cleanup_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_storage_cleanup"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_storage_cleanup"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "brief": "Convert etl/scripts/storage_cleanup_daily.py (S3 otterworks-file-storage/files + DynamoDB otterworks-file-metadata orphans -> quarantine copy+delete + savings report) to Lakeflow Job ow_tp_analytics_storage_cleanup: quarantine action ledger to ow_tp.ow_tp_analytics.storage_quarantine_actions, report to storage_cleanup_report. PAUSED schedule, retries.",
+      "gates": [
+        {
+          "id": "storage_cleanup_daily-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-03/a03/report.json"
+        }
+      ]
+    },
+    {
+      "id": "a04",
+      "units": [
+        "user_activity_daily"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.user_activity_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_user_activity"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_user_activity"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "brief": "Convert etl/scripts/user_activity_daily.py (Postgres otterworks_analytics aggregates + per-user S3 file reads -> admin-service activity reports) to Lakeflow Job ow_tp_analytics_user_activity: report rows to ow_tp.ow_tp_analytics.user_activity_report. PAUSED schedule, retries.",
+      "gates": [
+        {
+          "id": "user_activity_daily-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-04/a04/report.json"
+        }
+      ]
+    }
+  ],
+  "cost_estimate": {
+    "parts": [
+      {
+        "mode": "live",
+        "depth": "full",
+        "row_counts_known": false
+      },
+      {
+        "mode": "live",
+        "depth": "full",
+        "row_counts_known": false
+      },
+      {
+        "mode": "live",
+        "depth": "full",
+        "row_counts_known": false
+      },
+      {
+        "mode": "live",
+        "depth": "full",
+        "row_counts_known": false
+      }
+    ]
+  }
+}

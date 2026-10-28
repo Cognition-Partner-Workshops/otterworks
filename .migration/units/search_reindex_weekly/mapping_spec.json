@@ -1,0 +1,47 @@
+{
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "objects": [
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.search_index_documents",
+      "object": "ow_tp.ow_tp_analytics.search_index_docs",
+      "key": {
+        "source": [
+          "index_name",
+          "doc_id"
+        ],
+        "target": [
+          "index_name",
+          "doc_id"
+        ]
+      }
+    },
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.search_index_files",
+      "object": "ow_tp.ow_tp_analytics.search_index_docs",
+      "key": {
+        "source": [
+          "index_name",
+          "doc_id"
+        ],
+        "target": [
+          "index_name",
+          "doc_id"
+        ]
+      }
+    },
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.reindex_report",
+      "object": "ow_tp.ow_tp_analytics.search_reindex_report",
+      "key": {
+        "source": [
+          "metric"
+        ],
+        "target": [
+          "metric"
+        ]
+      }
+    }
+  ],
+  "family": "databricks"
+}

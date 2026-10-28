@@ -1,0 +1,43 @@
+{
+  "version": "map-v1",
+  "family": "oracle",
+  "target_kind": "databricks",
+  "objects": [
+    {
+      "root_table": "ow_billing.invoice_header",
+      "object": "ow_tp.ow_tp_custbill.parsed_records",
+      "key": {
+        "source": [
+          "invoice_id"
+        ],
+        "target": [
+          "invoice_id"
+        ]
+      }
+    },
+    {
+      "root_table": "ow_billing.invoice_header",
+      "object": "ow_tp.ow_tp_custbill.quarantine",
+      "key": {
+        "source": [
+          "invoice_id"
+        ],
+        "target": [
+          "invoice_id"
+        ]
+      }
+    },
+    {
+      "root_table": "ow_billing.invoice_header",
+      "object": "ow_tp.ow_tp_custbill.finance_billing_totals",
+      "key": {
+        "source": [
+          "batch_no"
+        ],
+        "target": [
+          "billing_period"
+        ]
+      }
+    }
+  ]
+}

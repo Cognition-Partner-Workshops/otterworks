@@ -1,0 +1,35 @@
+{
+  "routines": [
+    {
+      "routine": "custbill.ow_tp_custbill_ldp",
+      "reads": [
+        "ow_billing.invoice_header"
+      ],
+      "writes": [],
+      "calls": [
+        "custbill.parse_custbill_fixedwidth",
+        "custbill.finance_excel_report"
+      ]
+    },
+    {
+      "routine": "custbill.parse_custbill_fixedwidth",
+      "reads": [
+        "ow_billing.invoice_header"
+      ],
+      "writes": [
+        "ow_billing.invoice_header"
+      ],
+      "calls": []
+    },
+    {
+      "routine": "custbill.finance_excel_report",
+      "reads": [
+        "ow_billing.invoice_header"
+      ],
+      "writes": [
+        "ow_billing.invoice_header"
+      ],
+      "calls": []
+    }
+  ]
+}

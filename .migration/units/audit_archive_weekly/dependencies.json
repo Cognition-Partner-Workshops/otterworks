@@ -1,0 +1,25 @@
+{
+  "routines": [
+    {
+      "routine": "analytics.ow_tp_analytics_audit_archive",
+      "reads": [
+        "otterworks_audit_events"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.audit_archive_run"
+      ]
+    },
+    {
+      "routine": "analytics.audit_archive_run",
+      "reads": [
+        "otterworks_audit_events"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.audit_events",
+        "ow_tp.ow_tp_analytics_src.compliance_report"
+      ],
+      "calls": []
+    }
+  ]
+}

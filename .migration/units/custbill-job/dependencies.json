@@ -1,0 +1,12 @@
+{
+  "routines": [
+    {
+      "routine": "custbill.ow_tp_custbill_job",
+      "reads": [
+        "ow_billing.invoice_header"
+      ],
+      "writes": [],
+      "calls": []
+    }
+  ]
+}

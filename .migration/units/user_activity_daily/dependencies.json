@@ -1,0 +1,32 @@
+{
+  "routines": [
+    {
+      "routine": "analytics.ow_tp_analytics_user_activity",
+      "reads": [
+        "otterworks_analytics.users",
+        "otterworks_analytics.documents",
+        "otterworks_analytics.files",
+        "otterworks_analytics.activity_log",
+        "otterworks_file_storage.files"
+      ],
+      "writes": [],
+      "calls": [
+        "analytics.user_activity_run"
+      ]
+    },
+    {
+      "routine": "analytics.user_activity_run",
+      "reads": [
+        "otterworks_analytics.users",
+        "otterworks_analytics.documents",
+        "otterworks_analytics.files",
+        "otterworks_analytics.activity_log",
+        "otterworks_file_storage.files"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.user_activity_report"
+      ],
+      "calls": []
+    }
+  ]
+}
