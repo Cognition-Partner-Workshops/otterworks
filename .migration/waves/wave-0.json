@@ -73,12 +73,20 @@
         "scaffold"
       ],
       "write_targets": [
-        "ow_tp.r1793176531_staging",
-        "ow_tp.r1793176531_recon",
-        "ow_tp.r1793176531_quarantine",
-        "ow_tp.r1793176531_history",
-        "mig-1793176531.ow_tp",
-        "mig_1793176531"
+        "ow_tp.r1793176531_recon.legacy_codes",
+        "ow_tp.r1793176531_recon.legacy_tenants",
+        "ow_tp.r1793176531_recon.legacy_plans",
+        "ow_tp.r1793176531_recon.legacy_subscriptions",
+        "ow_tp.r1793176531_recon.legacy_usage_events",
+        "ow_tp.r1793176531_recon.legacy_rating_periods",
+        "ow_tp.r1793176531_recon.legacy_rating_results",
+        "ow_tp.r1793176531_recon.legacy_invoices",
+        "ow_tp.r1793176531_recon.legacy_invoice_lines",
+        "ow_tp.r1793176531_recon.legacy_credit_notes",
+        "ow_tp.r1793176531_recon.legacy_dunning_attempts",
+        "ow_tp.r1793176531_recon.legacy_notifications",
+        "ow_tp.r1793176531_recon.legacy_billing_audit_log",
+        "ow_tp.r1793176531_recon.legacy_subscriptions_hist"
       ],
       "deploy_objects": [],
       "lakeflow_pipelines": [],
@@ -92,7 +100,7 @@
           "evidence": ".migration/recon/scaffold/result.json"
         }
       ],
-      "brief": "Unit: scaffold (serial, width 1). Track: UC Delta schemas + recon legacy mirrors + Lakebase schema + DAB bundle shell.\nSource: OW_BILLING (read-only; secret name OW_BILLING_RO_DSN only) as the structure reference for the legacy_* mirrors.\nTargets: exactly this batch's write_targets in .migration/waves/wave-0.json.\nSpec: .migration/units/scaffold/mapping_spec.json (14 OW_BILLING tables -> ow_tp.r1793176531_recon.legacy_* mirror shells; tolerances .migration/recon_tolerances.json tol-20261027-v1).\nWork: create schemas ow_tp.r1793176531_staging/_recon/_quarantine/_history (idempotent DDL in the repo under databricks/mig_1793176531/); create the 14 legacy_* structural mirrors per the mapping spec (structure only — snapshot row loads land per-unit in later waves); create Lakebase schema ow_tp on project ow-tp-billing branch mig-1793176531 (host ep-shiny-mud-d18oz1t2.database.us-west-2.cloud.databricks.com, unpooled endpoint, per-session credential via databricks postgres generate-database-credential); create the empty DAB bundle shell for bundle target mig_1793176531 (PAUSED); run the recon harness install check.\nDialect skill: skills/oracle-plsql/SKILL.md; type map oracle->databricks for the mirror DDL.\nRecon: dbx-recon --family oracle --mode structural (Tier-0 only; mode is merge_block_reasons by design for scaffold) -> .migration/recon/scaffold/result.json, the ONLY .migration path you may write.\nGuard learned rules: literal -f for SQL files (no shell-expanded SQL args); split Oracle extract and psycopg/databricks load into two programs; never rm a path under databricks/ (git rm or python); no heredocs mentioning psql-like tokens; OW_BILLING_RO_DSN built in-process from AWS Secrets Manager ow-tp/oracle/ow_billing_ro (us-east-1), never printed or exported from command substitution.\nDone when: recon result.json committed at the PR head; one PR against tp-run/databricks-1793176531, never merged by you; nothing else."
+      "brief": "Unit: scaffold (serial, width 1). Track: UC Delta schemas + recon legacy mirrors + Lakebase schema + DAB bundle shell.\nSource: OW_BILLING (read-only; secret name OW_BILLING_RO_DSN only) as the structure reference for the legacy_* mirrors.\nWrite targets you own: exactly this batch's write_targets in .migration/waves/wave-0.json (the 14 ow_tp.r1793176531_recon.legacy_* mirrors). The run schemas, Lakebase schema and bundle shell below are untracked scaffold infrastructure, not write targets.\nSpec: .migration/units/scaffold/mapping_spec.json (14 OW_BILLING tables -> ow_tp.r1793176531_recon.legacy_* mirror shells; tolerances .migration/recon_tolerances.json tol-20261027-v1).\nWork: create schemas ow_tp.r1793176531_staging/_recon/_quarantine/_history (idempotent DDL in the repo under databricks/mig_1793176531/); create the 14 legacy_* structural mirrors per the mapping spec (structure only \u2014 snapshot row loads land per-unit in later waves); create Lakebase schema ow_tp on project ow-tp-billing branch mig-1793176531 (host ep-shiny-mud-d18oz1t2.database.us-west-2.cloud.databricks.com, unpooled endpoint, per-session credential via databricks postgres generate-database-credential); create the empty DAB bundle shell for bundle target mig_1793176531 (PAUSED); run the recon harness install check.\nDialect skill: skills/oracle-plsql/SKILL.md; type map oracle->databricks for the mirror DDL.\nRecon: dbx-recon --family oracle --mode structural (Tier-0 only; mode is merge_block_reasons by design for scaffold) -> .migration/recon/scaffold/result.json, the ONLY .migration path you may write.\nGuard learned rules: literal -f for SQL files (no shell-expanded SQL args); split Oracle extract and psycopg/databricks load into two programs; never rm a path under databricks/ (git rm or python); no heredocs mentioning psql-like tokens; OW_BILLING_RO_DSN built in-process from AWS Secrets Manager ow-tp/oracle/ow_billing_ro (us-east-1), never printed or exported from command substitution.\nDone when: recon result.json committed at the PR head; one PR against tp-run/databricks-1793176531, never merged by you; nothing else."
     }
   ]
 }
