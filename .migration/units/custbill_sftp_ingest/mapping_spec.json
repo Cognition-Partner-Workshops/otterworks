@@ -19,7 +19,7 @@
         {
           "source": "LINE_NO",
           "target": "line_no",
-          "source_type": "NUMBER",
+          "source_type": "NUMBER(18,0)",
           "target_type": "BIGINT",
           "rules": ["identity"]
         },

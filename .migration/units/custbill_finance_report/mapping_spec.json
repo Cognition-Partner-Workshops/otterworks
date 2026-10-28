@@ -26,7 +26,7 @@
         {
           "source": "RECORD_COUNT",
           "target": "record_count",
-          "source_type": "NUMBER",
+          "source_type": "NUMBER(18,0)",
           "target_type": "BIGINT",
           "rules": ["count_per_group"]
         },
