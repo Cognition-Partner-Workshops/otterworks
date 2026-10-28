@@ -1,0 +1,104 @@
+{
+  "wave": 4,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "custbill-waves",
+  "width": 5,
+  "breaker_threshold": 1,
+  "auto_merge": false,
+  "max_minutes": 60,
+  "verify_depth": "sampled",
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "soft",
+    "ready": true
+  },
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN"
+  },
+  "target_namespace": "ow_tp.ow_tp_custbill",
+  "base_branch": "mig-ow-tp-billing-20261028",
+  "pipelines": {
+    "invoicing": 2,
+    "custbill": 4,
+    "analytics": 2
+  },
+  "batches": [
+    {
+      "id": "w4-b01",
+      "units": [
+        "custbill_run_all"
+      ],
+      "write_targets": [],
+      "deploy_objects": [],
+      "lakeflow_pipelines": [
+        "ow_tp_custbill"
+      ],
+      "verify_depth": "sampled",
+      "gates": [
+        {
+          "id": "lakeflow_job_ran",
+          "kind": "custom",
+          "status": "pending",
+          "evidence": ""
+        }
+      ],
+      "brief": "Convert run_all.sh into the ow_tp_custbill Lakeflow Job task graph: ingest \u2192 parse \u2192 finance report as ordered job tasks (legacy sequences them with sleep 600 + '||true' suppression; the job replaces both with real task dependencies and real failure semantics). Writes nothing itself \u2014 operational parity only: the job runs and refreshes custbill_feed \u2192 custbill_records \u2192 finance_billing_summary. Cron equivalents: ingest */15, parse 5-59/15, report 10 2 * * *, full chain 0 6 * * 0 (crontab in etl/legacy-extra/crontab); keep schedules PAUSED like every bundle job this run. Gate: custom lakeflow_job_ran \u2014 one manual run of the job DAG completes all tasks."
+    }
+  ],
+  "target_state": {
+    "core": {
+      "decision": "target-core",
+      "target": "ow_tp catalog, per-batch schemas",
+      "ref": "ow_tp"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "target": "experimental aitools tools query",
+      "ref": "databricks experimental aitools tools query"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "target": "Lakeflow Declarative Pipeline with expectations + quarantine",
+      "ref": "ow_tp_custbill"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Jobs, PAUSED schedules",
+      "ref": "ow_tp_ prefix"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "target": "no repoint; park at STOP E",
+      "ref": "stop-e"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "na": "custbill lands on Delta via the Lakeflow pipeline; Lakebase ow-tp-billing is invoicing's operational target"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no scoring unit in custbill; dunning-risk is an adjacent session gated on pipeline 1"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "shared ledger.jsonl",
+      "ref": ".migration/ledger.jsonl"
+    }
+  },
+  "merge_overrides": [
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "custbill_run_all"
+      ]
+    }
+  ]
+}

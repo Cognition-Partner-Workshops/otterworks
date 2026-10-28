@@ -1,0 +1,116 @@
+{
+  "wave": 1,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "custbill-waves",
+  "width": 5,
+  "breaker_threshold": 1,
+  "auto_merge": false,
+  "max_minutes": 60,
+  "verify_depth": "full",
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "soft",
+    "ready": true
+  },
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN"
+  },
+  "target_namespace": "ow_tp.ow_tp_custbill",
+  "base_branch": "mig-ow-tp-billing-20261028",
+  "pipelines": {
+    "invoicing": 2,
+    "custbill": 4,
+    "analytics": 2
+  },
+  "batches": [
+    {
+      "id": "w1-b01",
+      "units": [
+        "custbill_sftp_ingest",
+        "custbill_oracle_extract"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_custbill.custbill_feed"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_custbill.custbill_feed"
+      ],
+      "lakeflow_pipelines": [
+        "ow_tp_custbill"
+      ],
+      "verify_depth": "full",
+      "gates": [
+        {
+          "id": "recon_parity_custbill_feed",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        },
+        {
+          "id": "feed_record_identity",
+          "kind": "byte_compare",
+          "status": "pending",
+          "evidence": ""
+        }
+      ],
+      "brief": "Convert the two CUSTBILL feed producers into one Lakeflow landing leg on ow_tp.ow_tp_custbill.custbill_feed. Units: custbill_sftp_ingest (etl/legacy-extra/jobs/sftp_ingest_poll.ksh \u2014 SFTP drop CUSTBILL*.dat size-settle poll, cp to incoming, archive copy; drops lock/hostname quirks) and custbill_oracle_extract (etl/legacy-extra/tools/oracle_custbill_extract.py \u2014 deterministic OW_BILLING.INVOICE_HEADER extract, batch_no=ns_batch_no(ns) OR tenant_id=ADMIN_TENANT_ID, NFKD-transliterated 65-char records, atomic tmp\u2192replace, aborts whole file on amount >999,999,999,999c). Both write the same landing surface by contract (D6) \u2014 same batch co-schedules them, not sequencing: split into custbill_feed_mainframe/_oracle is a standing plan alternative, not needed at 18.8k rows. Preserve the 65-char record byte layout and feed_file/line_no lineage keys. Read .migration/units/custbill_sftp_ingest/mapping_spec.json and .migration/units/custbill_oracle_extract/mapping_spec.json. Source: oracle via OW_BILLING_RO_DSN (read-only, no package EXECUTE) + SFTP drop (fixture-generated files). Gates: row_parity + record byte-identity vs pinned replay; evidence .migration/recon/custbill_feed/."
+    }
+  ],
+  "target_state": {
+    "core": {
+      "decision": "target-core",
+      "target": "ow_tp catalog, per-batch schemas",
+      "ref": "ow_tp"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "target": "experimental aitools tools query",
+      "ref": "databricks experimental aitools tools query"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "target": "Lakeflow Declarative Pipeline with expectations + quarantine",
+      "ref": "ow_tp_custbill"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Jobs, PAUSED schedules",
+      "ref": "ow_tp_ prefix"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "target": "no repoint; park at STOP E",
+      "ref": "stop-e"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "na": "custbill lands on Delta via the Lakeflow pipeline; Lakebase ow-tp-billing is invoicing's operational target"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no scoring unit in custbill; dunning-risk is an adjacent session gated on pipeline 1"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "shared ledger.jsonl",
+      "ref": ".migration/ledger.jsonl"
+    }
+  },
+  "merge_overrides": [
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "custbill_sftp_ingest",
+        "custbill_oracle_extract"
+      ]
+    }
+  ]
+}

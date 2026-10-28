@@ -1,0 +1,114 @@
+{
+  "wave": 3,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "custbill-waves",
+  "width": 5,
+  "breaker_threshold": 1,
+  "auto_merge": false,
+  "max_minutes": 60,
+  "verify_depth": "full",
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "soft",
+    "ready": true
+  },
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN"
+  },
+  "target_namespace": "ow_tp.ow_tp_custbill",
+  "base_branch": "mig-ow-tp-billing-20261028",
+  "pipelines": {
+    "invoicing": 2,
+    "custbill": 4,
+    "analytics": 2
+  },
+  "batches": [
+    {
+      "id": "w3-b01",
+      "units": [
+        "custbill_finance_report"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_custbill.finance_billing_summary"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_custbill.finance_billing_summary"
+      ],
+      "lakeflow_pipelines": [
+        "ow_tp_custbill"
+      ],
+      "verify_depth": "full",
+      "gates": [
+        {
+          "id": "recon_parity_finance_billing_summary",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        },
+        {
+          "id": "finance_csv_leg",
+          "kind": "export_file",
+          "status": "pending",
+          "evidence": ""
+        }
+      ],
+      "brief": "Convert finance_excel_report.pl into ow_tp.ow_tp_custbill.finance_billing_summary plus the finance CSV leg. Groups by (currency, rec_type): rec_type label 01\u2192INVOICE, 02\u2192CREDIT, other\u2192UNKNOWN(<raw>); outputs record_count and total_amount %.2f per group. Consumer contract (D4): CSV header Currency,RecordType,RecordCount,TotalAmount \u2014 Flask /api/reports/finance?ns= + admin-dashboard billing-report read it via csv.DictReader on the newest file; keep that exact layout in the export leg (the legacy .xls is a byte-copied CSV). Dead sendmail leg is not migrated. Read .migration/units/custbill_finance_report/mapping_spec.json. Gates: aggregate row_parity (count+sum per key, rel_tol 1e-9) + export_file leg proving the CSV contract; evidence .migration/recon/finance_billing_summary/."
+    }
+  ],
+  "target_state": {
+    "core": {
+      "decision": "target-core",
+      "target": "ow_tp catalog, per-batch schemas",
+      "ref": "ow_tp"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "target": "experimental aitools tools query",
+      "ref": "databricks experimental aitools tools query"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "target": "Lakeflow Declarative Pipeline with expectations + quarantine",
+      "ref": "ow_tp_custbill"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Jobs, PAUSED schedules",
+      "ref": "ow_tp_ prefix"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "target": "no repoint; park at STOP E",
+      "ref": "stop-e"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "na": "custbill lands on Delta via the Lakeflow pipeline; Lakebase ow-tp-billing is invoicing's operational target"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no scoring unit in custbill; dunning-risk is an adjacent session gated on pipeline 1"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "shared ledger.jsonl",
+      "ref": ".migration/ledger.jsonl"
+    }
+  },
+  "merge_overrides": [
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "custbill_finance_report"
+      ]
+    }
+  ]
+}

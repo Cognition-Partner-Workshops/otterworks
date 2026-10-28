@@ -1,0 +1,108 @@
+{
+  "wave": 2,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "custbill-waves",
+  "width": 5,
+  "breaker_threshold": 1,
+  "auto_merge": false,
+  "max_minutes": 60,
+  "verify_depth": "full",
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "soft",
+    "ready": true
+  },
+  "source": {
+    "family": "oracle",
+    "secret": "OW_BILLING_RO_DSN"
+  },
+  "target_namespace": "ow_tp.ow_tp_custbill",
+  "base_branch": "mig-ow-tp-billing-20261028",
+  "pipelines": {
+    "invoicing": 2,
+    "custbill": 4,
+    "analytics": 2
+  },
+  "batches": [
+    {
+      "id": "w2-b01",
+      "units": [
+        "custbill_parse"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_custbill.custbill_records"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_custbill.custbill_records"
+      ],
+      "lakeflow_pipelines": [
+        "ow_tp_custbill"
+      ],
+      "verify_depth": "full",
+      "gates": [
+        {
+          "id": "recon_parity_custbill_records",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        }
+      ],
+      "brief": "Convert parse_custbill_fixedwidth.sh into the typed table ow_tp.ow_tp_custbill.custbill_records over the feed. Copybook CBCUST01, 65-char records: cust_id X(10) rtrim; cust_name X(30) rtrim (Oracle leg already NFKD-transliterated); bill_date 9(8) YYYYMMDD\u2192DATE, legacy does no digit validation; bill_amt 9(10)V99 implied-decimal\u2192DECIMAL(12,2) (legacy divides by 100); currency X(3); rec_type X(2) (01 invoice / 02 credit). Strip HDR/TRL wrappers. Legacy emits $4=sprintf('%.2f',$4/100) \u2014 keep cents\u2192dollars exact. Reads .migration/units/custbill_parse/mapping_spec.json; replay fixtures must include \u22651 rec_type=02 credit (live batch 85559852 has none). Gates: row_parity + typed-field compare vs legacy .psv replay; evidence .migration/recon/custbill_records/."
+    }
+  ],
+  "target_state": {
+    "core": {
+      "decision": "target-core",
+      "target": "ow_tp catalog, per-batch schemas",
+      "ref": "ow_tp"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "target": "experimental aitools tools query",
+      "ref": "databricks experimental aitools tools query"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "target": "Lakeflow Declarative Pipeline with expectations + quarantine",
+      "ref": "ow_tp_custbill"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Jobs, PAUSED schedules",
+      "ref": "ow_tp_ prefix"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "target": "no repoint; park at STOP E",
+      "ref": "stop-e"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "na": "custbill lands on Delta via the Lakeflow pipeline; Lakebase ow-tp-billing is invoicing's operational target"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no scoring unit in custbill; dunning-risk is an adjacent session gated on pipeline 1"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "shared ledger.jsonl",
+      "ref": ".migration/ledger.jsonl"
+    }
+  },
+  "merge_overrides": [
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "custbill_parse"
+      ]
+    }
+  ]
+}
