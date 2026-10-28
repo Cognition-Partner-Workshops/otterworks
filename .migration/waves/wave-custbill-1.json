@@ -1,5 +1,5 @@
 {
-  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "repo": "git-manager.devin.ai/proxy/github.com/Cognition-Partner-Workshops/otterworks",
   "run_id": "1793146609",
   "wave": 1,
   "base_branch": "tp-run/databricks-1793146609",
@@ -91,7 +91,7 @@
       ],
       "lakeflow_pipelines": [],
       "verify_depth": "full",
-      "brief": "Convert tools/oracle_custbill_extract.py + jobs/sftp_ingest_poll.ksh: snapshot Oracle month-end extract (invoice_header join customer_master left join tenants, batch_no/tenant filter) plus the SFTP drop landing into ow_tp.ow_tp_custbill.custbill_feed staging table — one row per CBCUST01 65-char record, HDR/TRL rows kept tagged or dropped per spec. Snapshot load only; read-only OW_BILLING.",
+      "brief": "Convert tools/oracle_custbill_extract.py + jobs/sftp_ingest_poll.ksh: snapshot Oracle month-end extract (invoice_header join customer_master left join tenants, batch_no/tenant filter) plus the SFTP drop landing into ow_tp.ow_tp_custbill.custbill_feed staging table \u2014 one row per CBCUST01 65-char record, HDR/TRL rows kept tagged or dropped per spec. Snapshot load only; read-only OW_BILLING.",
       "gates": [
         {
           "id": "custbill-feed-recon",
