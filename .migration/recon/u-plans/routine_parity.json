@@ -1,0 +1,21 @@
+{
+  "routine_parity": [
+    {
+      "routine": "ow_billing.pkg_plans.sp_change_plan",
+      "status": "proven",
+      "evidence": ".migration/recon/u-plans/runs/sp_change_plan.run.json"
+    },
+    {
+      "routine": "ow_billing.trg_sub_no_uncancel",
+      "status": "proven",
+      "evidence": ".migration/recon/u-plans/runs/trg_sub_no_uncancel.run.json"
+    },
+    {
+      "routine": "ow_billing.trg_subscriptions_hist",
+      "status": "proven",
+      "evidence": ".migration/recon/u-plans/runs/trg_subscriptions_hist.run.json"
+    }
+  ],
+  "unproven": [],
+  "failed": []
+}
