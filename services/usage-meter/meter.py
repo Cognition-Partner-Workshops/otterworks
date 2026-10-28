@@ -110,8 +110,12 @@ def snapshot():
     if SNAPSHOT_DIR.exists():
         SNAPSHOT_DIR.rename(previous)
     partial.rename(SNAPSHOT_DIR)
-    if previous.exists():
+    try:
         shutil.rmtree(previous)
+    except FileNotFoundError:
+        pass
+    except OSError as exc:
+        print(f"warning: new snapshot is in place but {previous} was not removed: {exc}", file=sys.stderr)
 
 
 def _norm(row):
