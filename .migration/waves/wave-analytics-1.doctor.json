@@ -20,8 +20,10 @@
       "status": "warn"
     },
     {
-      "data": {},
-      "detail": "no .migration/authorizations.json (no legacy write, gate waiver or merge override is authorized)",
+      "data": {
+        "entries": 3
+      },
+      "detail": "3 authorization entries in .migration/authorizations.json",
       "id": "authorizations_file",
       "reusable": false,
       "status": "ok"
@@ -367,22 +369,22 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T01:29:20Z",
+  "generated_at": "2026-10-28T01:59:45Z",
   "hook_probe": "blocked:8b60a95f",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
     "service_principal": true,
     "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
   },
-  "inputs_sha": "0faa088d82c457fc5541595c6cb907945f80b3cabca5d941a4204bcba832288e",
-  "manifest_sha": "c294c416952b",
+  "inputs_sha": "0f310e4ef3006f55661f36007d1417066acb9371e7cbe43c004afa216adde38d",
+  "manifest_sha": "a5334d0e05ee",
   "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1",
   "ready": true,
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
-  "signature": "9900f56f3ebe6e7bbc19c0e6fa6d3608af3c07051d0a279d4eaf7c0f57246e5f",
-  "signed_at": "2026-10-28T01:29:20+00:00",
+  "signature": "7c252febe713bb4d69a413be9b9175dba756a3358c2212019fec4f65650985a7",
+  "signed_at": "2026-10-28T01:59:45+00:00",
   "source": {
     "family": "databricks",
     "params": {

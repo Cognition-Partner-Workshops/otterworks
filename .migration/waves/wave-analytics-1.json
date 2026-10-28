@@ -13,7 +13,7 @@
   "verify_depth": "full",
   "child_skill": "unit-migration",
   "verify_skill": "wave-verify",
-  "plan_step": "run-analytics-wave-1",
+  "plan_step": "run-analytics-wave-1b",
   "source": {
     "family": "databricks",
     "secret": "DATABRICKS_DEMO_HOST",
@@ -139,5 +139,18 @@
         "row_counts_known": false
       }
     ]
-  }
+  },
+  "brief": "Wave-1b: rerun of run-analytics-wave-1 under merge_override mo-analytics-w1-structural (structural class, both units)",
+  "merge_overrides": [
+    {
+      "decision": "mo-analytics-w1-structural",
+      "units": [
+        "usage_rollup_scala",
+        "analytics_daily"
+      ],
+      "blocker_classes": [
+        "structural"
+      ]
+    }
+  ]
 }
