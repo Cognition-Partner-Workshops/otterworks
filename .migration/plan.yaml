@@ -118,6 +118,23 @@ phases:
       - id: target-only
         label: "Accept artifact rows as target-only output, no legacy mirror."
       selected: mirror
+    - id: analytics-daily-field-diff
+      description: 'Field-level diff scope for the analytics_daily keyed recon.
+        Current mapping_spec declares keys but zero fields, so the Tier-3 diff
+        compares key presence only. add-fields grades every non-key column of
+        both objects under tol-20261027-v1: analytics_daily_summary
+        (active_users, active_documents, active_files, total_events,
+        documents_created, documents_edited, comments_added, files_uploaded,
+        files_shared, files_deleted, bytes_uploaded — updated_at is a
+        run-generated timestamp, excluded) and analytics_daily_report
+        (report_type, report_date, report_json — generated_at is a
+        run-generated timestamp, excluded).'
+      options:
+      - id: add-fields
+        label: "Declare the non-key fields; value-level row diff under tolerances."
+      - id: keys-only
+        label: "Keep key-presence-only diff (current spec behavior)."
+      selected: null
       important: true
   - id: run-analytics-wave-1d
     title: Wave 1d (a02 verify-only rerun on #2304's fixed head after artifact mirror)
