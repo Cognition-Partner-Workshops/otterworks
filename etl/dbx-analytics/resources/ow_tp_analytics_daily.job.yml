@@ -1,0 +1,38 @@
+resources:
+  jobs:
+    ow_tp_analytics_daily:
+      name: ow_tp_analytics_daily
+      max_concurrent_runs: 1
+      description: >-
+        Daily analytics aggregation (converted etl/scripts/analytics_daily.py):
+        reads the day's event snapshot landed in the analytics_drop volume
+        (converted SQS otterworks-analytics drain + DynamoDB
+        otterworks-analytics-events scan pair), recomputes the daily rollup in
+        SQL, merges one summary row into
+        ow_tp_analytics.analytics_daily_summary and the daily report row into
+        ow_tp_analytics.analytics_daily_report.
+      schedule:
+        quartz_cron_expression: "0 15 3 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: ensure_objects
+          sql_task:
+            file:
+              path: ../src/ensure_objects.sql
+            warehouse_id: ${var.warehouse_id}
+          retry_on_timeout: false
+          min_retry_interval_millis: 30000
+          max_retries: 2
+        - task_key: run_analytics_daily
+          depends_on:
+            - task_key: ensure_objects
+          sql_task:
+            file:
+              path: ../src/run_analytics_daily.sql
+            warehouse_id: ${var.warehouse_id}
+            parameters:
+              ds: "2026-10-28"
+          retry_on_timeout: false
+          min_retry_interval_millis: 30000
+          max_retries: 2
