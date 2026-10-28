@@ -1,7 +1,7 @@
 {
   "routines": [
     {
-      "routine": "databricks/mig_1793176531/00_scaffold.sql",
+      "routine": "scaffold_ddl",
       "reads": [
         "OW_BILLING.CODES",
         "OW_BILLING.TENANTS",

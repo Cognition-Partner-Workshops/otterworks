@@ -86,9 +86,12 @@
         "ow_tp.r1793176531_recon.legacy_dunning_attempts",
         "ow_tp.r1793176531_recon.legacy_notifications",
         "ow_tp.r1793176531_recon.legacy_billing_audit_log",
-        "ow_tp.r1793176531_recon.legacy_subscriptions_hist"
+        "ow_tp.r1793176531_recon.legacy_subscriptions_hist",
+        "scaffold_ddl"
       ],
-      "deploy_objects": [],
+      "deploy_objects": [
+        "scaffold_ddl"
+      ],
       "lakeflow_pipelines": [],
       "verify_depth": "sampled",
       "max_minutes": 60,
