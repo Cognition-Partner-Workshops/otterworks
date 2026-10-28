@@ -1,0 +1,185 @@
+{
+  "auto_merge": false,
+  "base_sha": "6a3b330090440698e2fe89de28c1788238aa03ae",
+  "batches": [
+    {
+      "blocker_classes": [
+        "structural"
+      ],
+      "branch": "devin/1793154591-custbill-feed",
+      "changed_paths": [
+        ".migration/recon/custbill-feed/mapping_spec.json",
+        ".migration/recon/custbill-feed/notes.md",
+        ".migration/recon/custbill-feed/recon.summary.md",
+        ".migration/recon/custbill-feed/report.md",
+        ".migration/recon/custbill-feed/rerun/evolved.json",
+        ".migration/recon/custbill-feed/rerun/evolved_pre_shape.json",
+        ".migration/recon/custbill-feed/rerun/evolved_shape.json",
+        ".migration/recon/custbill-feed/rerun/fresh.json",
+        ".migration/recon/custbill-feed/rerun/fresh_shape.json",
+        ".migration/recon/custbill-feed/rerun/prior_shape.json",
+        ".migration/recon/custbill-feed/rerun_proof.json",
+        ".migration/recon/custbill-feed/result.json",
+        ".migration/recon/custbill-feed/routine_parity.json",
+        "etl/dbx-custbill/databricks.yml",
+        "etl/dbx-custbill/resources/ow_tp_custbill_feed.job.yml",
+        "etl/dbx-custbill/src/ensure_objects.sql",
+        "etl/dbx-custbill/src/land_feed.sql",
+        "etl/dbx-custbill/tools/custbill_extract.py"
+      ],
+      "gates": [
+        {
+          "decision_id": null,
+          "evidence": ".migration/recon/custbill-feed/result.json",
+          "evidence_meta": {
+            "label": "row_parity",
+            "rows": 18750,
+            "verdict": "parity PASS, merge blocked (structural)"
+          },
+          "id": "custbill-feed-recon",
+          "kind": "row_parity",
+          "status": "passed"
+        }
+      ],
+      "id": "c01",
+      "merge_authority": {
+        "decision_id": "mo-custbill-w1-structural",
+        "kind": "human_override"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "custbill-feed: Oracle custbill extract + SFTP landing converted to a PAUSED Databricks bundle landing 18,750 rows in ow_tp.ow_tp_custbill.custbill_feed; live recon parity PASS, merge blocked on structural only (informational PK + platform grants) \u2014 covered by mo-custbill-w1-structural.",
+      "parity": "PASS",
+      "pr_head": "60ab686d601a34015f16d6a0ee66421172b54b6f",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2305",
+      "prompt_sha": "117377ca5926412a",
+      "recon_cost": {
+        "elapsed_s": 17.525,
+        "source_rows_fetched": 18750,
+        "source_statements": 14,
+        "target_rows_fetched": 18750,
+        "target_statements": 9
+      },
+      "recon_mode": "live",
+      "recon_verdict": "PASS",
+      "skill_feedback": [
+        "Databricks target adapter needs mapping `object` as a bare table name (it prepends --target-catalog/--target-schema); keep a normalized copy under .migration/recon/<unit>/ since the committed spec is protected.",
+        "dbx_guard blocks non-literal SQL through python: ad-hoc DDL (DROP TABLE for the rerun fresh leg) must go through a script with a literal sql.connect(host literal) and literal cur.execute(); argv-passed statements count as built at run time.",
+        "`databricks fs` on UC volumes requires the dbfs: scheme (dbfs:/Volumes/...) and no env prefix; `databricks api post` is blocked outright.",
+        "Fixture-first fails closed for family oracle: allowed_targets fixture_endpoints declares AWS_ENDPOINT_URL only, so live mode is the merge evidence.",
+        "rerun-proof evolved leg passes when --prior-shape equals the committed-DDL shape and the rerun lands the identical shape; --param is only needed for ${} placeholders in spec predicates (custbill has none).",
+        "make tp-smoke needs PATH=/usr/local/go/bin:$HOME/.nvm/versions/node/v22.23.4/bin:$PATH on this VM."
+      ],
+      "status": "PASS",
+      "write_targets": [
+        "ow_tp.ow_tp_custbill.custbill_feed",
+        "ow_tp.ow_tp_custbill.ow_tp_custbill_feed"
+      ]
+    }
+  ],
+  "breaker_tripped_on": null,
+  "brief": [
+    "Wave 1 close, plan step run-custbill-wave-1b.",
+    "Landed: 1 of 1 batches passed their own recon.",
+    "Independent verify: PASS.",
+    "Failed: none. Blocked: none. Held by circuit breaker: none.",
+    "Cost: estimated n/a; actual source_statements=28, target_statements=18, source_rows_fetched=37500, target_rows_fetched=37500, harness time 34s. Verifier depth full, overrides: c01=full.",
+    "Human override authority (merge_eligible=false): c01 (custbill-feed) by mo-custbill-w1-structural.",
+    "",
+    "Wave-close review over 1 verified PRs (auto-merge off, nothing merged).",
+    "- review: [bug] etl/dbx-custbill/src/land_feed.sql:43-44 \u2014 Removed invoices remain in staging: MERGE leaves existing staging rows untouched when a new extract omits an invoice, so a shrinking/empty snapshot retains invoices absent from Oracle.",
+    "- review: [bug] etl/dbx-custbill/src/land_feed.sql:38-41 \u2014 Old snapshots win duplicate invoices: ROW_NUMBER selects the lexicographically first path regardless of snapshot age; a later extract in another file can never update that invoice.",
+    "- review: [bug] etl/dbx-custbill/src/land_feed.sql:33 \u2014 Configured drop_path ignored: read_files still reads the original volume instead of the job's configured parameter (ow_tp_custbill_feed.job.yml:28-29); new feed files go unlanded and old files can be replayed.",
+    "- review: [flag] .migration/recon/custbill-feed/result.json:152-157 \u2014 Field parity unverified: reported aggregate pass contains zero checks while the mapping specifies only invoice_id; the clean key comparison is not proof that amounts/dates/records match.",
+    "- review: [flag] .migration/recon/custbill-feed/result.json:196-199 \u2014 Override absent from recon result: committed wave override not claimed here; merge_authority remains harness and merge_eligible false. Confirm wave verification accepts separate override evidence.",
+    "- review: [flag] etl/dbx-custbill/resources/ow_tp_custbill_feed.job.yml:15-29 \u2014 Feed upload remains external to the job: bundle runs only DDL and landing tasks, never invokes custbill_extract.py; confirm the intended owner and schedule for producing/uploading each feed.",
+    "Awaiting manual merge: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2305",
+    "",
+    "Verifier findings:",
+    "- Batch c01 (custbill-feed) PASS on human_override mo-custbill-w1-structural: the verifier's independent live/full re-run reproduced parity PASS (18,750 rows, clean keyed full diff and per-field aggregates) with merge_eligible=false and blocker_classes=['structural'] only \u2014 an informational target PK and two platform-side grants \u2014 matching the committed manifest merge_overrides and authorizations.json entry exactly.",
+    "- The committed mapping spec's three-part object name ow_tp.ow_tp_custbill.custbill_feed is refused by the Databricks target adapter, so child and verifier both ran a normalized copy with object=custbill_feed that is otherwise identical \u2014 the committed spec should be corrected at wave close.",
+    "- The harness required the two session-local adapters.py patches named in the wave brief (tp.grantee <> t.table_owner in _uc_schema_facts; bearer-token sql.connect in _databricks_connect because connector oauth-m2m hangs headless) \u2014 an upstream plugin fix is needed.",
+    "- Three custbill routines (ow_tp_custbill_feed, oracle_custbill_extract, sftp_ingest_poll) are unproven \u2014 no committed run on a dedicated exec target against a fixture snapshot \u2014 and carry over as cutover exceptions, not merge blockers.",
+    "- The dbx_guard hook blocked the brief's DATABRICKS_HTTP_PATH env-override form as an identity swap; the verifier used --target-http-path /sql/1.0/warehouses/565cd2fd713738c4 instead, which takes precedence inside the harness and reaches the same warehouse.",
+    "- Adversarial probes found no duplicate invoice_id despite the informational PK, no HDR/TRL leakage, no nulls in required columns, all total_amt values scale-2, and an idempotent MERGE; the consumer table ow_tp_custbill.finance_billing_totals is not yet deployed and is a later-wave concern, not this unit's gate.",
+    "",
+    "Skill feedback to fold in before the next wave:",
+    "- Databricks target adapter needs mapping `object` as a bare table name (it prepends --target-catalog/--target-schema); keep a normalized copy under .migration/recon/<unit>/ since the committed spec is protected.",
+    "- Fixture-first fails closed for family oracle: allowed_targets fixture_endpoints declares AWS_ENDPOINT_URL only, so live mode is the merge evidence.",
+    "- `databricks fs` on UC volumes requires the dbfs: scheme (dbfs:/Volumes/...) and no env prefix; `databricks api post` is blocked outright.",
+    "- dbx_guard blocks non-literal SQL through python: ad-hoc DDL (DROP TABLE for the rerun fresh leg) must go through a script with a literal sql.connect(host literal) and literal cur.execute(); argv-passed statements count as built at run time.",
+    "- make tp-smoke needs PATH=/usr/local/go/bin:$HOME/.nvm/versions/node/v22.23.4/bin:$PATH on this VM.",
+    "- rerun-proof evolved leg passes when --prior-shape equals the committed-DDL shape and the rerun lands the identical shape; --param is only needed for ${} placeholders in spec predicates (custbill has none).",
+    "",
+    "Per batch:",
+    "- c01: PASS. custbill-feed: Oracle custbill extract + SFTP landing converted to a PAUSED Databricks bundle landing 18,750 rows in ow_tp.ow_tp_custbill.custbill_feed; live recon parity PASS, merge blocked on structural only (informational PK + platform grants) \u2014 covered by mo-custbill-w1-structural. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2305"
+  ],
+  "close": {
+    "changed_paths": [],
+    "merged_prs": [],
+    "merges": [],
+    "review_findings": [
+      "[bug] etl/dbx-custbill/src/land_feed.sql:43-44 \u2014 Removed invoices remain in staging: MERGE leaves existing staging rows untouched when a new extract omits an invoice, so a shrinking/empty snapshot retains invoices absent from Oracle.",
+      "[bug] etl/dbx-custbill/src/land_feed.sql:38-41 \u2014 Old snapshots win duplicate invoices: ROW_NUMBER selects the lexicographically first path regardless of snapshot age; a later extract in another file can never update that invoice.",
+      "[bug] etl/dbx-custbill/src/land_feed.sql:33 \u2014 Configured drop_path ignored: read_files still reads the original volume instead of the job's configured parameter (ow_tp_custbill_feed.job.yml:28-29); new feed files go unlanded and old files can be replayed.",
+      "[flag] .migration/recon/custbill-feed/result.json:152-157 \u2014 Field parity unverified: reported aggregate pass contains zero checks while the mapping specifies only invoice_id; the clean key comparison is not proof that amounts/dates/records match.",
+      "[flag] .migration/recon/custbill-feed/result.json:196-199 \u2014 Override absent from recon result: committed wave override not claimed here; merge_authority remains harness and merge_eligible false. Confirm wave verification accepts separate override evidence.",
+      "[flag] etl/dbx-custbill/resources/ow_tp_custbill_feed.job.yml:15-29 \u2014 Feed upload remains external to the job: bundle runs only DDL and landing tasks, never invokes custbill_extract.py; confirm the intended owner and schedule for producing/uploading each feed."
+    ],
+    "unmerged": [
+      {
+        "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2305",
+        "reason": "cannot resolve origin/tp-run/databricks-1793146609 (Command '['git', '-C', '/home/ubuntu/otterworks-tp-run', 'fetch', '-q', 'origin', '+refs/heads/tp-run/databricks-1793146609:refs/remotes/origin/tp-run/databricks-1793146609']' returned non-zero exit status 128.)"
+      }
+    ]
+  },
+  "close_minutes": 30,
+  "closed": true,
+  "doctor_signed_at": "2026-10-28T02:28:12+00:00",
+  "hook_probe": "blocked:0f305eab",
+  "manifest_sha": "e4ee347b60d7",
+  "merge_overrides": [
+    {
+      "batch": "c01",
+      "decision_id": "mo-custbill-w1-structural",
+      "units": [
+        "custbill-feed"
+      ]
+    }
+  ],
+  "pipeline_order": {},
+  "plan_sha": "6171ffeaa85828290a89ecb40776149a8319b5acaa84ec3ca5fdde6cefeee76b",
+  "plan_step": "run-custbill-wave-1b",
+  "resync": null,
+  "tag": "custbill-1",
+  "undeclared_write_targets": {},
+  "unreported_write_targets": [],
+  "verify": {
+    "changed_paths": [
+      ".migration/recon/wave-custbill-1/report.md"
+    ],
+    "findings": [
+      "Batch c01 (custbill-feed) PASS on human_override mo-custbill-w1-structural: the verifier's independent live/full re-run reproduced parity PASS (18,750 rows, clean keyed full diff and per-field aggregates) with merge_eligible=false and blocker_classes=['structural'] only \u2014 an informational target PK and two platform-side grants \u2014 matching the committed manifest merge_overrides and authorizations.json entry exactly.",
+      "The committed mapping spec's three-part object name ow_tp.ow_tp_custbill.custbill_feed is refused by the Databricks target adapter, so child and verifier both ran a normalized copy with object=custbill_feed that is otherwise identical \u2014 the committed spec should be corrected at wave close.",
+      "The harness required the two session-local adapters.py patches named in the wave brief (tp.grantee <> t.table_owner in _uc_schema_facts; bearer-token sql.connect in _databricks_connect because connector oauth-m2m hangs headless) \u2014 an upstream plugin fix is needed.",
+      "Three custbill routines (ow_tp_custbill_feed, oracle_custbill_extract, sftp_ingest_poll) are unproven \u2014 no committed run on a dedicated exec target against a fixture snapshot \u2014 and carry over as cutover exceptions, not merge blockers.",
+      "The dbx_guard hook blocked the brief's DATABRICKS_HTTP_PATH env-override form as an identity swap; the verifier used --target-http-path /sql/1.0/warehouses/565cd2fd713738c4 instead, which takes precedence inside the harness and reaches the same warehouse.",
+      "Adversarial probes found no duplicate invoice_id despite the informational PK, no HDR/TRL leakage, no nulls in required columns, all total_amt values scale-2, and an idempotent MERGE; the consumer table ow_tp_custbill.finance_billing_totals is not yet deployed and is a later-wave concern, not this unit's gate."
+    ],
+    "recon_cost": {
+      "elapsed_s": 16.562,
+      "source_rows_fetched": 18750,
+      "source_statements": 14,
+      "target_rows_fetched": 18750,
+      "target_statements": 9
+    },
+    "report_path": "recon/wave-custbill-1:.migration/recon/wave-custbill-1/report.md",
+    "unit_verdicts": {
+      "c01": "PASS"
+    },
+    "wave_verdict": "PASS"
+  },
+  "waived_gates": [],
+  "wave": 1,
+  "width": 1,
+  "write_target_overlaps": []
+}
