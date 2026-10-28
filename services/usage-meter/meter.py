@@ -86,7 +86,8 @@ def _write_csv(cur, table):
 
 def snapshot():
     # One REPEATABLE READ transaction, so all six files come from the same revision;
-    # build/snapshot is replaced only once every export has succeeded.
+    # build/snapshot is replaced only once every export has succeeded, and the old
+    # export stays in build/snapshot.previous until the new one is in place.
     partial = SNAPSHOT_DIR.with_name("snapshot.partial")
     shutil.rmtree(partial, ignore_errors=True)
     with lakebase_read_only(SOURCE_BRANCH) as conn:
@@ -103,8 +104,12 @@ def snapshot():
         _write_csv(cur, "rating_periods")
         cur.execute("SELECT id, period_id, rollover_units FROM ow_tp_invoicing.rating_results")
         _write_csv(cur, "rating_results")
-    shutil.rmtree(SNAPSHOT_DIR, ignore_errors=True)
+    previous = SNAPSHOT_DIR.with_name("snapshot.previous")
+    shutil.rmtree(previous, ignore_errors=True)
+    if SNAPSHOT_DIR.exists():
+        SNAPSHOT_DIR.rename(previous)
     partial.rename(SNAPSHOT_DIR)
+    shutil.rmtree(previous)
 
 
 def _norm(row):
