@@ -4,7 +4,7 @@
   "rerun_posture": "not_applicable",
   "objects": [
     {
-      "object": "invoice_header",
+      "object": "invoice_header_ref",
       "root_table": "OW_BILLING.INVOICE_HEADER",
       "key": {
         "source": [
@@ -136,7 +136,7 @@
       "root_where": "tenant_id = '00000000-0000-0000-0000-000000000001'"
     },
     {
-      "object": "invoice_line",
+      "object": "invoice_line_ref",
       "root_table": "OW_BILLING.INVOICE_LINE",
       "key": {
         "source": [
@@ -585,6 +585,466 @@
         }
       ],
       "root_where": "tenant_id = '00000000-0000-0000-0000-000000000001'"
+    },
+    {
+      "object": "plans_ref",
+      "root_table": "OW_BILLING.PLANS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "CODE",
+          "target": "code",
+          "source_type": "VARCHAR2(50)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TIER_CD",
+          "target": "tier_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "MONTHLY_FEE",
+          "target": "monthly_fee",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "decimal(12,2)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "INCLUDED_UNITS",
+          "target": "included_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "OVERAGE_RATE",
+          "target": "overage_rate",
+          "source_type": "NUMBER(12,6)",
+          "target_type": "decimal(12,6)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "ACTIVE_YN",
+          "target": "active_yn",
+          "source_type": "CHAR(1)",
+          "target_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null"
+          ]
+        }
+      ]
+    },
+    {
+      "object": "tenants_ref",
+      "root_table": "OW_BILLING.TENANTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "NAME",
+          "target": "name",
+          "source_type": "VARCHAR2(200)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "tax_exempt_yn",
+          "source_type": "CHAR(1)",
+          "target_type": "string",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        }
+      ],
+      "root_where": "id = '00000000-0000-0000-0000-000000000001'"
+    },
+    {
+      "object": "subscriptions_ref",
+      "root_table": "OW_BILLING.SUBSCRIPTIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_midnight_only"
+          ]
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_midnight_only"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_midnight_only"
+          ]
+        }
+      ],
+      "root_where": "tenant_id = '00000000-0000-0000-0000-000000000001'"
+    },
+    {
+      "object": "usage_events_ref",
+      "root_table": "OW_BILLING.USAGE_EVENTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "OCCURRED_AT",
+          "target": "occurred_at",
+          "source_type": "TIMESTAMP(6)",
+          "target_type": "timestamp_ntz",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "UNITS",
+          "target": "units",
+          "source_type": "NUMBER(10)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        }
+      ],
+      "root_where": "tenant_id = '00000000-0000-0000-0000-000000000001'"
+    },
+    {
+      "object": "rating_periods_ref",
+      "root_table": "OW_BILLING.RATING_PERIODS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PERIOD_START",
+          "target": "period_start",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_midnight_only"
+          ]
+        },
+        {
+          "source": "PERIOD_END",
+          "target": "period_end",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_midnight_only"
+          ]
+        }
+      ],
+      "root_where": "tenant_id = '00000000-0000-0000-0000-000000000001'"
+    },
+    {
+      "object": "rating_results_ref",
+      "root_table": "OW_BILLING.RATING_RESULTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PERIOD_ID",
+          "target": "period_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "SUBSCRIPTION_ID",
+          "target": "subscription_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "string",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "USED_UNITS",
+          "target": "used_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "QUOTA_UNITS",
+          "target": "quota_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "ROLLOVER_UNITS",
+          "target": "rollover_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "BILLABLE_UNITS",
+          "target": "billable_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "bigint",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "OVERAGE_AMOUNT",
+          "target": "overage_amount",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "decimal(12,2)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "CREATED_AT",
+          "target": "created_at",
+          "source_type": "TIMESTAMP(6)",
+          "target_type": "timestamp_ntz",
+          "rules": [
+            "identity"
+          ]
+        }
+      ],
+      "root_where": "subscription_id IN ('20000000-0000-0000-0000-000000000001')"
     }
   ]
 }
