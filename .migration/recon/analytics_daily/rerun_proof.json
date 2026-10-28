@@ -1,0 +1,122 @@
+{
+  "unit": "analytics_daily",
+  "sources": [
+    "etl/dbx-analytics/src/ensure_objects.sql",
+    "etl/dbx-analytics/src/run_analytics_daily.sql"
+  ],
+  "prior_from": ".migration/recon/analytics_daily/rerun/prior_shape.json",
+  "fresh": "pass",
+  "evolved": "pass",
+  "passed": true,
+  "findings": [],
+  "notes": [],
+  "tables": [
+    "analytics_daily_report",
+    "analytics_daily_summary"
+  ],
+  "source_digest": "2925276e24c981bb45394f0ade492066b4e584e0b5653ba9d168fe948374c90b",
+  "evidence": {
+    "fresh": "databricks job run 286808941338501 (bundle ow_tp_analytics_daily, target mig_1793146609, on a fresh target after DROP TABLE)",
+    "evolved": "databricks job run 287160147473335 (bundle ow_tp_analytics_daily, target mig_1793146609, rerun over the landed tables)"
+  },
+  "shape": {
+    "tables": {
+      "analytics_daily_summary": [
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": false
+        },
+        {
+          "name": "active_users",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "active_documents",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "active_files",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "total_events",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "documents_created",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "documents_edited",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "comments_added",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_uploaded",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_shared",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "files_deleted",
+          "type": "int",
+          "nullable": true
+        },
+        {
+          "name": "bytes_uploaded",
+          "type": "bigint",
+          "nullable": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ],
+      "analytics_daily_report": [
+        {
+          "name": "s3_key",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "report_type",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "report_json",
+          "type": "string",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "shape_digest": "90546c64de3f219110bb7d8eeb563cd6c785f299503f30af0ab91042a8bb8054",
+  "prior_digest": "90546c64de3f219110bb7d8eeb563cd6c785f299503f30af0ab91042a8bb8054"
+}

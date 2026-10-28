@@ -1,0 +1,37 @@
+{"source": "sqs", "event_id": "evt-2026-10-28-001", "timestamp": "2026-10-28T08:00:00Z", "ownerId": "u-t1-alice", "documentId": "doc-t1-001", "eventType": "document_created"}
+{"source": "sqs", "event_id": "evt-2026-10-28-002", "timestamp": "2026-10-28T09:07:11Z", "ownerId": "u-t1-alice", "documentId": "doc-t1-002", "eventType": "document_created"}
+{"source": "sqs", "event_id": "evt-2026-10-28-003", "timestamp": "2026-10-28T10:14:22Z", "ownerId": "u-t1-alice", "documentId": "doc-t1-003", "eventType": "document_created"}
+{"source": "sqs", "event_id": "evt-2026-10-28-004", "timestamp": "2026-10-28T09:21:33Z", "editedBy": "u-t1-dave", "documentId": "doc-t1-004", "eventType": "document_created"}
+{"source": "sqs", "event_id": "evt-2026-10-28-005", "timestamp": "2026-10-28T12:28:44Z", "editedBy": "u-t1-dave", "documentId": "doc-t1-005", "eventType": "document_created"}
+{"source": "sqs", "event_id": "evt-2026-10-28-006", "timestamp": "2026-10-28T09:35:55Z", "ownerId": "u-t1-alice", "documentId": "doc-t1-004", "eventType": "document_edited"}
+{"source": "sqs", "event_id": "evt-2026-10-28-007", "timestamp": "2026-10-28T11:42:06Z", "userId": "u-t1-alice", "documentId": "doc-t1-005", "eventType": "document_edited"}
+{"source": "sqs", "event_id": "evt-2026-10-28-008", "timestamp": "2026-10-28T08:49:17Z", "editedBy": "u-t1-dave", "documentId": "doc-t1-006", "eventType": "document_edited"}
+{"source": "sqs", "event_id": "evt-2026-10-28-009", "timestamp": "2026-10-28T10:56:28Z", "editedBy": "u-t1-dave", "documentId": "doc-t1-007", "eventType": "document_edited"}
+{"source": "sqs", "event_id": "evt-2026-10-28-010", "timestamp": "2026-10-28T14:03:39Z", "editedBy": "u-t1-dave", "documentId": "doc-t1-008", "eventType": "document_edited"}
+{"source": "sqs", "event_id": "evt-2026-10-28-011", "timestamp": "2026-10-28T09:10:50Z", "authorId": "u-t1-carol", "documentId": "doc-t1-009", "eventType": "document_edited"}
+{"source": "sqs", "event_id": "evt-2026-10-28-012", "timestamp": "2026-10-28T13:17:01Z", "authorId": "u-t1-carol", "documentId": "doc-t1-009", "eventType": "document_edited"}
+{"source": "sqs", "event_id": "evt-2026-10-28-013", "timestamp": "2026-10-28T08:24:12Z", "ownerId": "u-t1-alice", "documentId": "doc-t1-001", "eventType": "comment_added"}
+{"source": "sqs", "event_id": "evt-2026-10-28-014", "timestamp": "2026-10-28T12:31:23Z", "ownerId": "u-t1-alice", "documentId": "doc-t1-002", "eventType": "comment_added"}
+{"source": "sqs", "event_id": "evt-2026-10-28-015", "timestamp": "2026-10-28T15:38:34Z", "ownerId": "u-t1-alice", "documentId": "doc-t1-003", "eventType": "comment_added"}
+{"source": "sqs", "event_id": "evt-2026-10-28-016", "timestamp": "2026-10-28T09:45:45Z", "editedBy": "u-t1-dave", "documentId": "doc-t1-004", "eventType": "comment_added"}
+{"source": "sqs", "event_id": "evt-2026-10-28-017", "timestamp": "2026-10-28T11:52:56Z", "editedBy": "u-t1-dave", "documentId": "doc-t1-005", "eventType": "comment_added"}
+{"source": "sqs", "event_id": "evt-2026-10-28-018", "timestamp": "2026-10-28T12:59:07Z", "authorId": "u-t1-carol", "documentId": "doc-t1-001", "eventType": "comment_added"}
+{"source": "sqs", "event_id": "evt-2026-10-28-019", "timestamp": "2026-10-28T15:06:18Z", "deletedBy": "u-t1-bob", "documentId": "doc-t1-002", "eventType": "comment_added"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-020", "timestamp": "2026-10-28T09:13:29Z", "ownerId": "u-t1-alice", "fileId": "file-t1-001", "sizeBytes": 4000000, "event_date": "2026-10-28", "event_type": "file_uploaded"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-021", "timestamp": "2026-10-28T10:20:40Z", "ownerId": "u-t1-alice", "fileId": "file-t1-002", "sizeBytes": 5000000, "event_date": "2026-10-28", "event_type": "file_uploaded"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-022", "timestamp": "2026-10-28T13:27:51Z", "editedBy": "u-t1-dave", "fileId": "file-t1-003", "sizeBytes": 4215069, "event_date": "2026-10-28", "event_type": "file_uploaded"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-023", "timestamp": "2026-10-28T14:34:02Z", "deletedBy": "u-t1-bob", "fileId": "file-t1-004", "sizeBytes": 3000000, "event_date": "2026-10-28", "event_type": "file_uploaded"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-024", "timestamp": "2026-10-28T08:41:13Z", "ownerId": "u-t1-alice", "fileId": "file-t1-003", "event_date": "2026-10-28", "event_type": "file_shared"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-025", "timestamp": "2026-10-28T10:48:24Z", "ownerId": "u-t1-alice", "fileId": "file-t1-004", "event_date": "2026-10-28", "event_type": "file_shared"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-026", "timestamp": "2026-10-28T11:55:35Z", "editedBy": "u-t1-dave", "fileId": "file-t1-005", "event_date": "2026-10-28", "event_type": "file_shared"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-027", "timestamp": "2026-10-28T12:02:46Z", "authorId": "u-t1-carol", "fileId": "file-t1-006", "event_date": "2026-10-28", "event_type": "file_shared"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-028", "timestamp": "2026-10-28T13:09:57Z", "authorId": "u-t1-carol", "fileId": "file-t1-007", "event_date": "2026-10-28", "event_type": "file_shared"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-029", "timestamp": "2026-10-28T14:16:08Z", "authorId": "u-t1-carol", "fileId": "file-t1-008", "event_date": "2026-10-28", "event_type": "file_shared"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-030", "timestamp": "2026-10-28T15:23:19Z", "deletedBy": "u-t1-bob", "fileId": "file-t1-009", "event_date": "2026-10-28", "event_type": "file_shared"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-031", "timestamp": "2026-10-28T08:30:30Z", "userId": "u-t1-alice", "fileId": "file-t1-005", "event_date": "2026-10-28", "event_type": "file_deleted"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-032", "timestamp": "2026-10-28T10:37:41Z", "editedBy": "u-t1-dave", "fileId": "file-t1-006", "event_date": "2026-10-28", "event_type": "file_deleted"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-033", "timestamp": "2026-10-28T11:44:52Z", "authorId": "u-t1-carol", "fileId": "file-t1-007", "event_date": "2026-10-28", "event_type": "file_deleted"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-034", "timestamp": "2026-10-28T12:51:03Z", "authorId": "u-t1-carol", "fileId": "file-t1-008", "event_date": "2026-10-28", "event_type": "file_deleted"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-035", "timestamp": "2026-10-28T13:58:14Z", "deletedBy": "u-t1-bob", "fileId": "file-t1-009", "event_date": "2026-10-28", "event_type": "file_deleted"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-036", "timestamp": "2026-10-28T14:05:25Z", "deletedBy": "u-t1-bob", "fileId": "file-t1-010", "event_date": "2026-10-28", "event_type": "file_deleted"}
+{"source": "dynamodb", "event_id": "evt-2026-10-28-037", "timestamp": "2026-10-28T14:12:36Z", "deletedBy": "u-t1-bob", "fileId": "file-t1-011", "event_date": "2026-10-28", "event_type": "file_deleted"}

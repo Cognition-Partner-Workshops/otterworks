@@ -1,0 +1,472 @@
+{
+  "unit": "analytics_daily",
+  "mode": "live",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "full",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 20,
+    "source_rows_fetched": 2,
+    "target_statements": 18,
+    "target_rows_fetched": 2,
+    "elapsed_s": 14.057
+  },
+  "generated_at": "2026-10-28T01:37:06.322332+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 2,
+      "stats": {
+        "analytics_daily_summary": {
+          "source": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2": [
+                "all_privileges",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [
+              "report_date"
+            ],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "report_date"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "analytics_daily_report": {
+          "source": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2": [
+                "all_privileges",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [
+              "s3_key"
+            ],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "s3_key"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "analytics_daily_summary": {
+            "constraints": [
+              "target report_date is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected"
+            ],
+            "grants": [
+              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "analytics_daily_report": {
+            "constraints": [
+              "target s3_key is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected"
+            ],
+            "grants": [
+              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "analytics_daily_summary",
+          "check": "not_null_extra",
+          "detail": "target report_date is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "analytics_daily_summary",
+          "check": "grant_missing",
+          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "analytics_daily_summary",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "analytics_daily_summary",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "analytics_daily_report",
+          "check": "not_null_extra",
+          "detail": "target s3_key is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "analytics_daily_report",
+          "check": "grant_missing",
+          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "analytics_daily_report",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "analytics_daily_report",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "source_counts": {
+          "ow_tp.ow_tp_analytics_src.analytics_daily_summary": 1,
+          "ow_tp.ow_tp_analytics_src.analytics_daily_report": 1
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "analytics_daily_summary": {
+          "mode": "full_diff",
+          "population": 1,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "analytics_daily_report": {
+          "mode": "full_diff",
+          "population": 1,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    }
+  ],
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": null,
+  "rerun_proof": {
+    "unit": "analytics_daily",
+    "sources": [
+      "etl/dbx-analytics/src/ensure_objects.sql",
+      "etl/dbx-analytics/src/run_analytics_daily.sql"
+    ],
+    "prior_from": ".migration/recon/analytics_daily/rerun/prior_shape.json",
+    "fresh": "pass",
+    "evolved": "pass",
+    "passed": true,
+    "findings": [],
+    "notes": [],
+    "tables": [
+      "analytics_daily_report",
+      "analytics_daily_summary"
+    ],
+    "source_digest": "2925276e24c981bb45394f0ade492066b4e584e0b5653ba9d168fe948374c90b",
+    "evidence": {
+      "fresh": "databricks job run 286808941338501 (bundle ow_tp_analytics_daily, target mig_1793146609, on a fresh target after DROP TABLE)",
+      "evolved": "databricks job run 287160147473335 (bundle ow_tp_analytics_daily, target mig_1793146609, rerun over the landed tables)"
+    },
+    "shape": {
+      "tables": {
+        "analytics_daily_summary": [
+          {
+            "name": "report_date",
+            "type": "date",
+            "nullable": false
+          },
+          {
+            "name": "active_users",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "active_documents",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "active_files",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "total_events",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "documents_created",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "documents_edited",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "comments_added",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "files_uploaded",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "files_shared",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "files_deleted",
+            "type": "int",
+            "nullable": true
+          },
+          {
+            "name": "bytes_uploaded",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "updated_at",
+            "type": "timestamp",
+            "nullable": true
+          }
+        ],
+        "analytics_daily_report": [
+          {
+            "name": "s3_key",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "report_type",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "report_date",
+            "type": "date",
+            "nullable": true
+          },
+          {
+            "name": "generated_at",
+            "type": "timestamp",
+            "nullable": true
+          },
+          {
+            "name": "report_json",
+            "type": "string",
+            "nullable": true
+          }
+        ]
+      }
+    },
+    "shape_digest": "90546c64de3f219110bb7d8eeb563cd6c785f299503f30af0ab91042a8bb8054",
+    "prior_digest": "90546c64de3f219110bb7d8eeb563cd6c785f299503f30af0ab91042a8bb8054"
+  },
+  "rerun_posture": "required",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": [
+    {
+      "routine": "analytics.ow_tp_analytics_daily",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "analytics.analytics_daily_run",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    }
+  ],
+  "routine_writers": [
+    "analytics.ow_tp_analytics_daily",
+    "analytics.analytics_daily_run"
+  ],
+  "routine_dependencies": ".migration/units/analytics_daily/dependencies.json"
+}
