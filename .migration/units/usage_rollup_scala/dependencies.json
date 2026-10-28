@@ -1,0 +1,14 @@
+{
+  "routines": [
+    {
+      "routine": "UsageRollupJob.main",
+      "reads": [
+        "file:seed/usage-events.ndjson"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.usage_rollup"
+      ],
+      "calls": []
+    }
+  ]
+}

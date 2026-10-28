@@ -1,0 +1,16 @@
+{
+  "routines": [
+    {
+      "routine": "storage_cleanup_daily.py::main",
+      "reads": [
+        "s3:otterworks-file-storage/files/",
+        "dynamodb:otterworks-file-metadata"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.storage_quarantine_actions",
+        "ow_tp.ow_tp_analytics_src.storage_cleanup_report"
+      ],
+      "calls": []
+    }
+  ]
+}

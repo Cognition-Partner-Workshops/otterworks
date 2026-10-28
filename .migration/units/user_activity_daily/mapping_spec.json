@@ -1,0 +1,48 @@
+{
+  "version": "map-1793146609-user_activity_daily-v1",
+  "note": "Per-user activity report rows consumed by admin-service",
+  "objects": [
+    {
+      "object": "ow_tp.ow_tp_analytics.user_activity_report",
+      "root_table": "ow_tp.ow_tp_analytics_src.user_activity_report",
+      "key": {
+        "source": [
+          "report_date",
+          "user_id",
+          "metric"
+        ],
+        "target": [
+          "report_date",
+          "user_id",
+          "metric"
+        ]
+      },
+      "fields": [
+        {
+          "source": "report_date",
+          "target": "report_date",
+          "source_type": "date",
+          "target_type": "date"
+        },
+        {
+          "source": "user_id",
+          "target": "user_id",
+          "source_type": "string",
+          "target_type": "string"
+        },
+        {
+          "source": "metric",
+          "target": "metric",
+          "source_type": "string",
+          "target_type": "string"
+        },
+        {
+          "source": "metric_value",
+          "target": "metric_value",
+          "source_type": "double",
+          "target_type": "double"
+        }
+      ]
+    }
+  ]
+}

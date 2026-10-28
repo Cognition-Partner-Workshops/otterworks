@@ -1,0 +1,18 @@
+{
+  "routines": [
+    {
+      "routine": "user_activity_daily.py::main",
+      "reads": [
+        "postgres:otterworks_analytics.users",
+        "postgres:otterworks_analytics.documents",
+        "postgres:otterworks_analytics.files",
+        "postgres:otterworks_analytics.activity_log",
+        "s3:otterworks-file-storage/files/"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.user_activity_report"
+      ],
+      "calls": []
+    }
+  ]
+}

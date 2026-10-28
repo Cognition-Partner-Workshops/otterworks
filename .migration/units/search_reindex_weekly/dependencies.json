@@ -1,0 +1,18 @@
+{
+  "routines": [
+    {
+      "routine": "search_reindex_weekly.py::main",
+      "reads": [
+        "http:document-service/documents",
+        "http:file-service/files",
+        "meilisearch:documents",
+        "meilisearch:files"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.search_index_docs",
+        "ow_tp.ow_tp_analytics_src.search_reindex_report"
+      ],
+      "calls": []
+    }
+  ]
+}

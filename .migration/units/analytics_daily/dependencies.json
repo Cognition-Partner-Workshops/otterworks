@@ -1,0 +1,16 @@
+{
+  "routines": [
+    {
+      "routine": "analytics_daily.py::main",
+      "reads": [
+        "sqs:otterworks-analytics",
+        "dynamodb:otterworks-analytics-events"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.analytics_daily_summary",
+        "ow_tp.ow_tp_analytics_src.analytics_daily_report"
+      ],
+      "calls": []
+    }
+  ]
+}

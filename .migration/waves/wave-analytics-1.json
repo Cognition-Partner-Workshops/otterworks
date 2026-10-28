@@ -1,0 +1,101 @@
+{
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "run_id": "1793146609",
+  "wave": 1,
+  "base_branch": "tp-run/databricks-1793146609",
+  "width": 2,
+  "breaker_threshold": 2,
+  "max_minutes": 60,
+  "close_minutes": 30,
+  "doctor_max_age": 15,
+  "auto_merge": false,
+  "target_namespace": "ow_tp.ow_tp_analytics",
+  "verify_depth": "full",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "plan_step": "run-analytics-wave-1",
+  "source": {
+    "family": "databricks",
+    "secret": "DATABRICKS_DEMO_HOST",
+    "params": {
+      "source_name": "ow_tp.ow_tp_analytics_src",
+      "target_name": "ow_tp.ow_tp_analytics",
+      "http_path": "/sql/1.0/warehouses/565cd2fd713738c4"
+    }
+  },
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "hard",
+    "ready": true
+  },
+  "pipelines": {
+    "invoicing": 1,
+    "custbill": 1,
+    "analytics": 2
+  },
+  "batches": [
+    {
+      "id": "a01",
+      "units": [
+        "usage_rollup_scala"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_analytics_src.usage_rollup",
+        "ow_tp.ow_tp_analytics.usage_rollup"
+      ],
+      "deploy_objects": [],
+      "verify_depth": "full",
+      "brief": "seed/usage-events.ndjson via ROLLUP_INPUT",
+      "gates": [
+        {
+          "id": "usage_rollup_scala-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        }
+      ]
+    },
+    {
+      "id": "a02",
+      "units": [
+        "analytics_daily"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_analytics_src.analytics_daily_summary",
+        "ow_tp.ow_tp_analytics_src.analytics_daily_report",
+        "ow_tp.ow_tp_analytics.analytics_daily_summary",
+        "ow_tp.ow_tp_analytics.analytics_daily_report"
+      ],
+      "deploy_objects": [],
+      "verify_depth": "full",
+      "brief": "SQS otterworks-analytics + DynamoDB otterworks-analytics-events",
+      "gates": [
+        {
+          "id": "analytics_daily-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        }
+      ]
+    }
+  ],
+  "cost_estimate": {
+    "parts": [
+      {
+        "mode": "live",
+        "depth": "full",
+        "row_counts_known": false
+      },
+      {
+        "mode": "live",
+        "depth": "full",
+        "row_counts_known": false
+      }
+    ]
+  }
+}

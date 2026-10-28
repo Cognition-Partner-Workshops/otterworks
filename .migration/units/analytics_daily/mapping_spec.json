@@ -1,0 +1,132 @@
+{
+  "version": "map-1793146609-analytics_daily-v1",
+  "note": "Postgres upsert + S3 daily report; report rows normalized to metric rows",
+  "objects": [
+    {
+      "object": "ow_tp.ow_tp_analytics.analytics_daily_summary",
+      "root_table": "ow_tp.ow_tp_analytics_src.analytics_daily_summary",
+      "key": {
+        "source": [
+          "report_date"
+        ],
+        "target": [
+          "report_date"
+        ]
+      },
+      "fields": [
+        {
+          "source": "report_date",
+          "target": "report_date",
+          "source_type": "date",
+          "target_type": "date"
+        },
+        {
+          "source": "active_users",
+          "target": "active_users",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "active_documents",
+          "target": "active_documents",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "active_files",
+          "target": "active_files",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "total_events",
+          "target": "total_events",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "documents_created",
+          "target": "documents_created",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "documents_edited",
+          "target": "documents_edited",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "comments_added",
+          "target": "comments_added",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "files_uploaded",
+          "target": "files_uploaded",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "files_shared",
+          "target": "files_shared",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "files_deleted",
+          "target": "files_deleted",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        },
+        {
+          "source": "bytes_uploaded",
+          "target": "bytes_uploaded",
+          "source_type": "bigint",
+          "target_type": "bigint"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.ow_tp_analytics.analytics_daily_report",
+      "root_table": "ow_tp.ow_tp_analytics_src.analytics_daily_report",
+      "key": {
+        "source": [
+          "s3_key",
+          "metric"
+        ],
+        "target": [
+          "s3_key",
+          "metric"
+        ]
+      },
+      "fields": [
+        {
+          "source": "s3_key",
+          "target": "s3_key",
+          "source_type": "string",
+          "target_type": "string"
+        },
+        {
+          "source": "report_date",
+          "target": "report_date",
+          "source_type": "date",
+          "target_type": "date"
+        },
+        {
+          "source": "metric",
+          "target": "metric",
+          "source_type": "string",
+          "target_type": "string"
+        },
+        {
+          "source": "metric_value",
+          "target": "metric_value",
+          "source_type": "double",
+          "target_type": "double"
+        }
+      ]
+    }
+  ]
+}

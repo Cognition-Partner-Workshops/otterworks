@@ -1,0 +1,15 @@
+{
+  "routines": [
+    {
+      "routine": "audit_archive_weekly.py::main",
+      "reads": [
+        "dynamodb:otterworks-audit-events"
+      ],
+      "writes": [
+        "ow_tp.ow_tp_analytics_src.audit_archive",
+        "ow_tp.ow_tp_analytics_src.audit_archive_report"
+      ],
+      "calls": []
+    }
+  ]
+}
