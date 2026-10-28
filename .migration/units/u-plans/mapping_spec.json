@@ -19,7 +19,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -28,7 +28,7 @@
           "source": "CODE",
           "target": "code",
           "source_type": "VARCHAR2(50)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(50)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -103,7 +103,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -112,7 +112,7 @@
           "source": "NAME",
           "target": "name",
           "source_type": "VARCHAR2(200)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(200)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -158,7 +158,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -167,7 +167,7 @@
           "source": "TENANT_ID",
           "target": "tenant_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -176,7 +176,7 @@
           "source": "PLAN_ID",
           "target": "plan_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -250,7 +250,7 @@
           "source": "CODE_TYPE",
           "target": "code_type",
           "source_type": "VARCHAR2(30)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(30)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -271,7 +271,7 @@
           "source": "CODE_DESC",
           "target": "code_desc",
           "source_type": "VARCHAR2(80)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(80)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -306,7 +306,7 @@
           "source": "HIST_DT",
           "target": "hist_dt",
           "source_type": "VARCHAR2(20)",
-          "target_type": "TIMESTAMP",
+          "target_type": "text",
           "rules": [
             "dd_mon_yy_hh24miss_or_null"
           ],
@@ -318,7 +318,7 @@
           "source": "HIST_DT",
           "target": "hist_dt_raw",
           "source_type": "VARCHAR2(20)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(20)",
           "rules": [
             "empty_string_is_null"
           ],
@@ -330,7 +330,7 @@
           "source": "HIST_OP",
           "target": "hist_op",
           "source_type": "VARCHAR2(3)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(3)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -339,7 +339,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -348,7 +348,7 @@
           "source": "TENANT_ID",
           "target": "tenant_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -357,7 +357,7 @@
           "source": "PLAN_ID",
           "target": "plan_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]

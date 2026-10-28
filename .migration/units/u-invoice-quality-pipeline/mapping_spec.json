@@ -1,6 +1,6 @@
 {
   "version": "ow-tp-map-v1",
-  "target_kind": "delta",
+  "target_kind": "databricks",
   "rerun_posture": "not_applicable",
   "objects": [
     {
