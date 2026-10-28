@@ -1,0 +1,124 @@
+{
+  "unit": "pkg_rating",
+  "sources": [
+    "databricks/mig_1793146609/lakebase/10_ow_tp_invoicing_state.sql"
+  ],
+  "fresh": "pass",
+  "evolved": "unsupported",
+  "passed": true,
+  "findings": [],
+  "notes": [],
+  "tables": [
+    "rating_periods",
+    "rating_results",
+    "usage_events"
+  ],
+  "source_digest": "e86f2606432d2cf48ef3f8ec1a04bb0414ac5a5d40cf32013a1a1fddd93c9907",
+  "evidence": {
+    "fresh": "exec:apply 10_ow_tp_invoicing_state.sql + load_state.py fresh 2026-10-28T00:55Z",
+    "evolved": "exec:re-apply 10_ow_tp_invoicing_state.sql + load_state.py rerun 2026-10-28T01:05Z"
+  },
+  "shape": {
+    "tables": {
+      "rating_periods": [
+        {
+          "name": "id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "tenant_id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "period_start",
+          "type": "timestamp(0)",
+          "nullable": false
+        },
+        {
+          "name": "period_end",
+          "type": "timestamp(0)",
+          "nullable": false
+        }
+      ],
+      "rating_results": [
+        {
+          "name": "id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "period_id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "subscription_id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "used_units",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "quota_units",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "rollover_units",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "billable_units",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "overage_amount",
+          "type": "decimal(12,2)",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp(6)",
+          "nullable": false
+        }
+      ],
+      "usage_events": [
+        {
+          "name": "id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "tenant_id",
+          "type": "varchar(36)",
+          "nullable": false
+        },
+        {
+          "name": "occurred_at",
+          "type": "timestamp(6)",
+          "nullable": false
+        },
+        {
+          "name": "units",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "kind_cd",
+          "type": "bigint",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "shape_digest": "586bceb0e7586065823a9de6ac3d339485ef6bdea76d18084ee809b0268ac46f",
+  "unsupported_kind": "nothing_evolved",
+  "unsupported_reason": "evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved"
+}

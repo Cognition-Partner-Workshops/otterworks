@@ -1,0 +1,215 @@
+{
+ "run": "evolved",
+ "status": "pass",
+ "evidence": "exec:re-apply 10_ow_tp_invoicing_state.sql + load_state.py rerun 2026-10-28T01:05Z",
+ "shape": {
+  "tables": {
+   "invoices": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "period_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "issued_at",
+     "type": "timestamp(6)",
+     "nullable": false
+    },
+    {
+     "name": "subtotal",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "tax",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "total",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "status_cd",
+     "type": "bigint",
+     "nullable": false
+    }
+   ],
+   "invoice_lines": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "invoice_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "line_no",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "line_type",
+     "type": "varchar(10)",
+     "nullable": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(400)",
+     "nullable": false
+    },
+    {
+     "name": "amount",
+     "type": "decimal(12,2)",
+     "nullable": false
+    }
+   ],
+   "credit_notes": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "issued_on",
+     "type": "timestamp(0)",
+     "nullable": false
+    },
+    {
+     "name": "amount",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "remaining_amount",
+     "type": "decimal(12,2)",
+     "nullable": false
+    }
+   ]
+  }
+ },
+ "pre_shape": {
+  "tables": {
+   "invoices": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "period_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "issued_at",
+     "type": "timestamp(6)",
+     "nullable": false
+    },
+    {
+     "name": "subtotal",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "tax",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "total",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "status_cd",
+     "type": "bigint",
+     "nullable": false
+    }
+   ],
+   "invoice_lines": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "invoice_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "line_no",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "line_type",
+     "type": "varchar(10)",
+     "nullable": false
+    },
+    {
+     "name": "description",
+     "type": "varchar(400)",
+     "nullable": false
+    },
+    {
+     "name": "amount",
+     "type": "decimal(12,2)",
+     "nullable": false
+    }
+   ],
+   "credit_notes": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "issued_on",
+     "type": "timestamp(0)",
+     "nullable": false
+    },
+    {
+     "name": "amount",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "remaining_amount",
+     "type": "decimal(12,2)",
+     "nullable": false
+    }
+   ]
+  }
+ }
+}

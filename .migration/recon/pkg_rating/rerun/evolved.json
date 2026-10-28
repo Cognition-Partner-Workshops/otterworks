@@ -1,0 +1,205 @@
+{
+ "run": "evolved",
+ "status": "pass",
+ "evidence": "exec:re-apply 10_ow_tp_invoicing_state.sql + load_state.py rerun 2026-10-28T01:05Z",
+ "shape": {
+  "tables": {
+   "rating_periods": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "period_start",
+     "type": "timestamp(0)",
+     "nullable": false
+    },
+    {
+     "name": "period_end",
+     "type": "timestamp(0)",
+     "nullable": false
+    }
+   ],
+   "rating_results": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "period_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "subscription_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "used_units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "quota_units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "rollover_units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "billable_units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "overage_amount",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "created_at",
+     "type": "timestamp(6)",
+     "nullable": false
+    }
+   ],
+   "usage_events": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "occurred_at",
+     "type": "timestamp(6)",
+     "nullable": false
+    },
+    {
+     "name": "units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "kind_cd",
+     "type": "bigint",
+     "nullable": false
+    }
+   ]
+  }
+ },
+ "pre_shape": {
+  "tables": {
+   "rating_periods": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "period_start",
+     "type": "timestamp(0)",
+     "nullable": false
+    },
+    {
+     "name": "period_end",
+     "type": "timestamp(0)",
+     "nullable": false
+    }
+   ],
+   "rating_results": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "period_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "subscription_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "used_units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "quota_units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "rollover_units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "billable_units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "overage_amount",
+     "type": "decimal(12,2)",
+     "nullable": false
+    },
+    {
+     "name": "created_at",
+     "type": "timestamp(6)",
+     "nullable": false
+    }
+   ],
+   "usage_events": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "occurred_at",
+     "type": "timestamp(6)",
+     "nullable": false
+    },
+    {
+     "name": "units",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "kind_cd",
+     "type": "bigint",
+     "nullable": false
+    }
+   ]
+  }
+ }
+}

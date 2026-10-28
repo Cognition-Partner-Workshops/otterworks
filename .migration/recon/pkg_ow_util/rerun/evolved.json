@@ -1,0 +1,91 @@
+{
+ "run": "evolved",
+ "status": "pass",
+ "evidence": "exec:re-apply 10_ow_tp_invoicing_state.sql + load_state.py rerun 2026-10-28T01:05Z",
+ "shape": {
+  "tables": {
+   "billing_audit_log": [
+    {
+     "name": "log_id",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "logged_at",
+     "type": "timestamp(0)",
+     "nullable": false
+    },
+    {
+     "name": "module",
+     "type": "varchar(30)",
+     "nullable": true
+    },
+    {
+     "name": "message",
+     "type": "varchar(4000)",
+     "nullable": true
+    }
+   ],
+   "codes": [
+    {
+     "name": "code_type",
+     "type": "varchar(30)",
+     "nullable": false
+    },
+    {
+     "name": "code_val",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "code_desc",
+     "type": "varchar(80)",
+     "nullable": false
+    }
+   ]
+  }
+ },
+ "pre_shape": {
+  "tables": {
+   "billing_audit_log": [
+    {
+     "name": "log_id",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "logged_at",
+     "type": "timestamp(0)",
+     "nullable": false
+    },
+    {
+     "name": "module",
+     "type": "varchar(30)",
+     "nullable": true
+    },
+    {
+     "name": "message",
+     "type": "varchar(4000)",
+     "nullable": true
+    }
+   ],
+   "codes": [
+    {
+     "name": "code_type",
+     "type": "varchar(30)",
+     "nullable": false
+    },
+    {
+     "name": "code_val",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "code_desc",
+     "type": "varchar(80)",
+     "nullable": false
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,330 @@
+# Recon report: unit `pkg_ow_util`
+
+- **parity PASS, merge blocked (rerun_policy)**
+- Verdict: PASS (all tiers)
+- Blockers: rerun_policy: rerun_missing
+- Mode: `transactional` (both sides live: PASS scoped to the consistency window that held and the target's applied CDC watermark)
+- Merge eligible: no (fixture/continuous evidence never merges)
+- Rerun posture: `first_run_baseline`
+- Merge authority: `harness` (human_override needs a merge_overrides entry in the committed wave manifest naming the unit)
+- Mapping version: `map-v1`
+- Tolerance version: `tol-20261027-v1`
+- Seed: `0`
+- Tier 3 depth: `threshold`
+- Generated: 2026-10-28T00:53:12.035369+00:00
+
+## Routine parity: 0 proven, 13 unproven, 0 failed
+
+- `ow_billing.pkg_dunning.sp_schedule_dunning` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_dunning.sp_suspend_overdue` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_dunning.job_nightly_dunning` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_invoicing.compute_preview` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_invoicing.fn_invoice_preview` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_invoicing.sp_issue_invoice` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_ow_util.log_msg` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_ow_util.job_purge_audit_log` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_plans.fn_list_plans` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_plans.sp_change_plan` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.trg_subscriptions_hist` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_rating.compute_rating` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- `ow_billing.pkg_rating.sp_finalize_rating` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
+- Cost: `{"source_statements": 71, "source_rows_fetched": 129, "target_statements": 65, "target_rows_fetched": 97, "elapsed_s": 16.246}`
+
+| Tier | Name | Checks | Result |
+|---|---|---|---|
+| 0 | consistency_window | 2 | PASS |
+| 1 | counts_through_mapping | 2 | PASS |
+| 2 | per_field_aggregates | 0 | PASS |
+| 3 | keyed_diffs | 32 | PASS |
+| 5 | pk_set_diff | 2 | PASS |
+| 6 | cdc_lag_ordering | 0 | PASS |
+| 7 | schema_parity | 2 | PASS |
+
+## Tier 0 coverage
+```json
+{
+  "isolation": {
+    "source": "snapshot",
+    "target": "repeatable_read"
+  },
+  "strength": {
+    "source": "snapshot",
+    "target": "snapshot"
+  },
+  "markers": {
+    "billing_audit_log": {
+      "source_open": [
+        "0",
+        null
+      ],
+      "source_close": [
+        "0",
+        null
+      ],
+      "target_open": [
+        0,
+        null
+      ],
+      "target_close": [
+        0,
+        null
+      ],
+      "in_flight_at_open": 0
+    },
+    "codes": {
+      "source_open": [
+        "32",
+        "USAGE_KIND",
+        "99"
+      ],
+      "source_close": [
+        "32",
+        "USAGE_KIND",
+        "99"
+      ],
+      "target_open": [
+        32,
+        "USAGE_KIND",
+        99
+      ],
+      "target_close": [
+        32,
+        "USAGE_KIND",
+        99
+      ],
+      "in_flight_at_open": 0
+    }
+  }
+}
+```
+
+## Tier 1 coverage
+```json
+{
+  "source_counts": {
+    "ow_billing.billing_audit_log": 0,
+    "ow_billing.codes": 32
+  }
+}
+```
+
+## Tier 3 coverage
+```json
+{
+  "billing_audit_log": {
+    "mode": "full_diff",
+    "population": 0,
+    "null_key_rows": {
+      "source": 0,
+      "target": 0
+    },
+    "duplicate_source_key_count": 0
+  },
+  "codes": {
+    "mode": "full_diff",
+    "population": 32,
+    "null_key_rows": {
+      "source": 0,
+      "target": 0
+    },
+    "duplicate_source_key_count": 0
+  }
+}
+```
+
+## Tier 5 coverage
+```json
+{
+  "billing_audit_log": {
+    "ranges": 0,
+    "population": 0,
+    "target_population": 0,
+    "delete_evidence": {
+      "status": "absent",
+      "kind": null,
+      "applied_position": null,
+      "horizon": [
+        null,
+        null
+      ],
+      "events": 0,
+      "in_flight_deletes": 0,
+      "aged_deletes": 0,
+      "reinserted": 0,
+      "detail": ""
+    }
+  },
+  "codes": {
+    "ranges": 34,
+    "population": 32,
+    "fingerprint": "unavailable: every range streamed",
+    "mismatched_ranges": 34,
+    "keys_streamed": 130,
+    "missing_on_target": 0,
+    "extra_on_target": 0,
+    "in_flight_missing": 0,
+    "in_flight_updates": 0,
+    "in_flight_deletes": 0,
+    "delete_evidence": {
+      "status": "absent",
+      "kind": null,
+      "applied_position": null,
+      "horizon": [
+        null,
+        null
+      ],
+      "events": 0,
+      "in_flight_deletes": 0,
+      "aged_deletes": 0,
+      "reinserted": 0,
+      "detail": ""
+    },
+    "rows_ahead_on_target": 0,
+    "rows_behind_on_target": 0
+  }
+}
+```
+
+## Tier 6 coverage
+```json
+{
+  "billing_audit_log": {
+    "watermark": null,
+    "note": "no watermark declared: the window markers alone prove stillness",
+    "in_flight_deletes": 0
+  },
+  "codes": {
+    "watermark": null,
+    "note": "no watermark declared: the window markers alone prove stillness",
+    "in_flight_deletes": 0
+  }
+}
+```
+
+## Tier 7 coverage
+```json
+{
+  "billing_audit_log": {
+    "source": {
+      "primary_key": [
+        "log_id"
+      ],
+      "primary_key_informational": [],
+      "unique": [],
+      "unique_nulls_equal": [],
+      "foreign_keys": [],
+      "foreign_keys_informational": [],
+      "not_null": [
+        "log_id",
+        "logged_at"
+      ],
+      "indexes": [],
+      "check_count": 0,
+      "checks": [],
+      "identity_columns": [],
+      "partial": [],
+      "expression_unique": [],
+      "expression_indexes": [],
+      "triggers": {},
+      "grants": {},
+      "unsupported": [],
+      "privilege_denied": []
+    },
+    "target": {
+      "primary_key": [
+        "log_id"
+      ],
+      "primary_key_informational": [],
+      "unique": [],
+      "unique_nulls_equal": [],
+      "foreign_keys": [],
+      "foreign_keys_informational": [],
+      "not_null": [
+        "log_id",
+        "logged_at"
+      ],
+      "indexes": [],
+      "check_count": 0,
+      "checks": [],
+      "identity_columns": [],
+      "partial": [],
+      "expression_unique": [],
+      "expression_indexes": [],
+      "triggers": {},
+      "grants": {},
+      "unsupported": [],
+      "privilege_denied": []
+    },
+    "identity": null
+  },
+  "codes": {
+    "source": {
+      "primary_key": [
+        "code_type",
+        "code_val"
+      ],
+      "primary_key_informational": [],
+      "unique": [],
+      "unique_nulls_equal": [],
+      "foreign_keys": [],
+      "foreign_keys_informational": [],
+      "not_null": [
+        "code_desc",
+        "code_type",
+        "code_val"
+      ],
+      "indexes": [],
+      "check_count": 0,
+      "checks": [],
+      "identity_columns": [],
+      "partial": [],
+      "expression_unique": [],
+      "expression_indexes": [],
+      "triggers": {},
+      "grants": {},
+      "unsupported": [],
+      "privilege_denied": []
+    },
+    "target": {
+      "primary_key": [
+        "code_type",
+        "code_val"
+      ],
+      "primary_key_informational": [],
+      "unique": [],
+      "unique_nulls_equal": [],
+      "foreign_keys": [],
+      "foreign_keys_informational": [],
+      "not_null": [
+        "code_desc",
+        "code_type",
+        "code_val"
+      ],
+      "indexes": [],
+      "check_count": 0,
+      "checks": [],
+      "identity_columns": [],
+      "partial": [],
+      "expression_unique": [],
+      "expression_indexes": [],
+      "triggers": {},
+      "grants": {},
+      "unsupported": [],
+      "privilege_denied": []
+    },
+    "identity": null
+  },
+  "structural_checks": {
+    "constraints": "checked",
+    "triggers": "checked",
+    "indexes": "checked",
+    "sequences_identity": "checked",
+    "grants": "direct_only"
+  },
+  "structural_diff": {},
+  "dictionary": {
+    "source": "live",
+    "target": "live"
+  }
+}
+```

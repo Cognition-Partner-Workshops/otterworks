@@ -1,0 +1,47 @@
+{
+  "target_kind": "lakebase",
+  "catalog": "ow_tp",
+  "schema": "ow_tp_invoicing",
+  "read_at": "2026-10-28T00:54:14.186002+00:00",
+  "tables": {
+    "billing_audit_log": [
+      {
+        "name": "log_id",
+        "type": "bigint",
+        "nullable": false
+      },
+      {
+        "name": "logged_at",
+        "type": "timestamp(0)",
+        "nullable": false
+      },
+      {
+        "name": "module",
+        "type": "varchar(30)",
+        "nullable": true
+      },
+      {
+        "name": "message",
+        "type": "varchar(4000)",
+        "nullable": true
+      }
+    ],
+    "codes": [
+      {
+        "name": "code_type",
+        "type": "varchar(30)",
+        "nullable": false
+      },
+      {
+        "name": "code_val",
+        "type": "bigint",
+        "nullable": false
+      },
+      {
+        "name": "code_desc",
+        "type": "varchar(80)",
+        "nullable": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "unit": "pkg_ow_util",
+  "sources": [
+    "databricks/mig_1793146609/lakebase/10_ow_tp_invoicing_state.sql"
+  ],
+  "fresh": "pass",
+  "evolved": "unsupported",
+  "passed": true,
+  "findings": [],
+  "notes": [],
+  "tables": [
+    "billing_audit_log",
+    "codes"
+  ],
+  "source_digest": "e86f2606432d2cf48ef3f8ec1a04bb0414ac5a5d40cf32013a1a1fddd93c9907",
+  "evidence": {
+    "fresh": "exec:apply 10_ow_tp_invoicing_state.sql + load_state.py fresh 2026-10-28T00:55Z",
+    "evolved": "exec:re-apply 10_ow_tp_invoicing_state.sql + load_state.py rerun 2026-10-28T01:05Z"
+  },
+  "shape": {
+    "tables": {
+      "billing_audit_log": [
+        {
+          "name": "log_id",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "logged_at",
+          "type": "timestamp(0)",
+          "nullable": false
+        },
+        {
+          "name": "module",
+          "type": "varchar(30)",
+          "nullable": true
+        },
+        {
+          "name": "message",
+          "type": "varchar(4000)",
+          "nullable": true
+        }
+      ],
+      "codes": [
+        {
+          "name": "code_type",
+          "type": "varchar(30)",
+          "nullable": false
+        },
+        {
+          "name": "code_val",
+          "type": "bigint",
+          "nullable": false
+        },
+        {
+          "name": "code_desc",
+          "type": "varchar(80)",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "shape_digest": "c50690c80d9ba77210474b4cfb45c14d9aabb30bbbab5cb1cb91e27b42f6fce6",
+  "unsupported_kind": "nothing_evolved",
+  "unsupported_reason": "evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved"
+}

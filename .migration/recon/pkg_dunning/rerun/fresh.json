@@ -1,0 +1,122 @@
+{
+ "run": "fresh",
+ "status": "pass",
+ "evidence": "exec:apply 10_ow_tp_invoicing_state.sql + load_state.py fresh 2026-10-28T00:55Z",
+ "shape": {
+  "tables": {
+   "dunning_attempts": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "invoice_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "attempt_no",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "scheduled_for",
+     "type": "timestamp(0)",
+     "nullable": false
+    },
+    {
+     "name": "status_cd",
+     "type": "bigint",
+     "nullable": false
+    }
+   ],
+   "notifications": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "kind_cd",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "sent_at",
+     "type": "timestamp(6)",
+     "nullable": false
+    }
+   ],
+   "tenants": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "name",
+     "type": "varchar(200)",
+     "nullable": false
+    },
+    {
+     "name": "tax_exempt_yn",
+     "type": "char(1)",
+     "nullable": false
+    },
+    {
+     "name": "status_cd",
+     "type": "bigint",
+     "nullable": false
+    }
+   ],
+   "subscriptions": [
+    {
+     "name": "id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "tenant_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "plan_id",
+     "type": "varchar(36)",
+     "nullable": false
+    },
+    {
+     "name": "starts_on",
+     "type": "timestamp(0)",
+     "nullable": false
+    },
+    {
+     "name": "ends_on",
+     "type": "timestamp(0)",
+     "nullable": true
+    },
+    {
+     "name": "status_cd",
+     "type": "bigint",
+     "nullable": false
+    },
+    {
+     "name": "suspended_on",
+     "type": "timestamp(0)",
+     "nullable": true
+    }
+   ]
+  }
+ }
+}

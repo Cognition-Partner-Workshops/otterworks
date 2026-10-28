@@ -1,0 +1,109 @@
+{
+  "target_kind": "lakebase",
+  "catalog": "ow_tp",
+  "schema": "ow_tp_invoicing",
+  "read_at": "2026-10-28T00:54:15.515007+00:00",
+  "tables": {
+    "invoices": [
+      {
+        "name": "id",
+        "type": "varchar(36)",
+        "nullable": false
+      },
+      {
+        "name": "tenant_id",
+        "type": "varchar(36)",
+        "nullable": false
+      },
+      {
+        "name": "period_id",
+        "type": "varchar(36)",
+        "nullable": false
+      },
+      {
+        "name": "issued_at",
+        "type": "timestamp(6)",
+        "nullable": false
+      },
+      {
+        "name": "subtotal",
+        "type": "decimal(12,2)",
+        "nullable": false
+      },
+      {
+        "name": "tax",
+        "type": "decimal(12,2)",
+        "nullable": false
+      },
+      {
+        "name": "total",
+        "type": "decimal(12,2)",
+        "nullable": false
+      },
+      {
+        "name": "status_cd",
+        "type": "bigint",
+        "nullable": false
+      }
+    ],
+    "invoice_lines": [
+      {
+        "name": "id",
+        "type": "varchar(36)",
+        "nullable": false
+      },
+      {
+        "name": "invoice_id",
+        "type": "varchar(36)",
+        "nullable": false
+      },
+      {
+        "name": "line_no",
+        "type": "bigint",
+        "nullable": false
+      },
+      {
+        "name": "line_type",
+        "type": "varchar(10)",
+        "nullable": false
+      },
+      {
+        "name": "description",
+        "type": "varchar(400)",
+        "nullable": false
+      },
+      {
+        "name": "amount",
+        "type": "decimal(12,2)",
+        "nullable": false
+      }
+    ],
+    "credit_notes": [
+      {
+        "name": "id",
+        "type": "varchar(36)",
+        "nullable": false
+      },
+      {
+        "name": "tenant_id",
+        "type": "varchar(36)",
+        "nullable": false
+      },
+      {
+        "name": "issued_on",
+        "type": "timestamp(0)",
+        "nullable": false
+      },
+      {
+        "name": "amount",
+        "type": "decimal(12,2)",
+        "nullable": false
+      },
+      {
+        "name": "remaining_amount",
+        "type": "decimal(12,2)",
+        "nullable": false
+      }
+    ]
+  }
+}
