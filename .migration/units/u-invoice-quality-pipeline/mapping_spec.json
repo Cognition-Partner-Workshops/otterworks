@@ -1,0 +1,163 @@
+{
+  "version": "ow-tp-map-v1",
+  "target_kind": "delta",
+  "rerun_posture": "not_applicable",
+  "objects": [
+    {
+      "object": "invoice_line_quarantine",
+      "root_table": "OW_BILLING.INVOICE_LINE",
+      "key": {
+        "source": [
+          "LINE_ID"
+        ],
+        "target": [
+          "line_id"
+        ]
+      },
+      "grading": "by_design_unverified",
+      "fields": [
+        {
+          "source": "LINE_ID",
+          "target": "line_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoice_dt",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        }
+      ],
+      "routing_note": "No snapshot copy: root_table is the recon grading bound, not a load filter. The Lakeflow pipeline scans the full root and routes only rows that fail an expectation below into this sink (expect_or_quarantine); root_where is intentionally absent.",
+      "expectations": [
+        {
+          "name": "line_has_header",
+          "mode": "expect_or_quarantine",
+          "pass_predicate": "INVOICE_ID IS NOT NULL AND INVOICE_ID IN (SELECT INVOICE_ID FROM OW_BILLING.INVOICE_HEADER)",
+          "violations": "rows failing pass_predicate are written to this sink"
+        },
+        {
+          "name": "line_invoice_dt_parseable",
+          "mode": "expect_or_quarantine",
+          "pass_predicate": "INVOICE_DT IS NULL OR try_to_date(INVOICE_DT, 'dd-MMM-yy') IS NOT NULL",
+          "violations": "rows failing pass_predicate are written to this sink"
+        }
+      ]
+    },
+    {
+      "object": "invoice_header_quarantine",
+      "root_table": "OW_BILLING.INVOICE_HEADER",
+      "key": {
+        "source": [
+          "INVOICE_ID"
+        ],
+        "target": [
+          "invoice_id"
+        ]
+      },
+      "grading": "by_design_unverified",
+      "fields": [
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoice_dt",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "DUE_DT",
+          "target": "due_dt",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        }
+      ],
+      "routing_note": "No snapshot copy: root_table is the recon grading bound, not a load filter. The Lakeflow pipeline scans the full root and routes only rows that fail an expectation below into this sink (expect_or_quarantine); root_where is intentionally absent.",
+      "expectations": [
+        {
+          "name": "header_invoice_dt_parseable",
+          "mode": "expect_or_quarantine",
+          "pass_predicate": "INVOICE_DT IS NULL OR try_to_date(INVOICE_DT, 'dd-MMM-yy') IS NOT NULL",
+          "violations": "rows failing pass_predicate are written to this sink"
+        },
+        {
+          "name": "header_due_dt_parseable",
+          "mode": "expect_or_quarantine",
+          "pass_predicate": "DUE_DT IS NULL OR try_to_date(DUE_DT, 'dd-MMM-yy') IS NOT NULL",
+          "violations": "rows failing pass_predicate are written to this sink"
+        }
+      ]
+    },
+    {
+      "object": "customer_master_quarantine",
+      "root_table": "OW_BILLING.CUSTOMER_MASTER",
+      "key": {
+        "source": [
+          "CUST_ID"
+        ],
+        "target": [
+          "cust_id"
+        ]
+      },
+      "grading": "by_design_unverified",
+      "fields": [
+        {
+          "source": "CUST_ID",
+          "target": "cust_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "SIGNUP_DT",
+          "target": "signup_dt",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        }
+      ],
+      "routing_note": "No snapshot copy: root_table is the recon grading bound, not a load filter. The Lakeflow pipeline scans the full root and routes only rows that fail an expectation below into this sink (expect_or_quarantine); root_where is intentionally absent.",
+      "expectations": [
+        {
+          "name": "cm_signup_dt_parseable",
+          "mode": "expect_or_quarantine",
+          "pass_predicate": "SIGNUP_DT IS NULL OR try_to_date(SIGNUP_DT, 'dd-MMM-yy') IS NOT NULL",
+          "violations": "rows failing pass_predicate are written to this sink"
+        }
+      ]
+    }
+  ]
+}

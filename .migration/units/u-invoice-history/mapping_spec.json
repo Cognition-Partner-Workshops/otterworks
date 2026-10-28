@@ -1,0 +1,590 @@
+{
+  "version": "ow-tp-map-v1",
+  "target_kind": "delta",
+  "rerun_posture": "not_applicable",
+  "objects": [
+    {
+      "object": "invoice_header",
+      "root_table": "OW_BILLING.INVOICE_HEADER",
+      "key": {
+        "source": [
+          "INVOICE_ID"
+        ],
+        "target": [
+          "invoice_id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_NO",
+          "target": "invoice_no",
+          "source_type": "VARCHAR2(30)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "CUST_ID",
+          "target": "cust_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoice_dt",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "DATE",
+          "rules": [
+            "dd_mon_yy_or_null"
+          ],
+          "evidence": [
+            "d-dirty-date-policy"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoice_dt_raw",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ],
+          "evidence": [
+            "d-dirty-date-policy"
+          ]
+        },
+        {
+          "source": "DUE_DT",
+          "target": "due_dt",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "DATE",
+          "rules": [
+            "dd_mon_yy_or_null"
+          ],
+          "evidence": [
+            "d-dirty-date-policy"
+          ]
+        },
+        {
+          "source": "DUE_DT",
+          "target": "due_dt_raw",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ],
+          "evidence": [
+            "d-dirty-date-policy"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "TOTAL_AMT",
+          "target": "total_amt",
+          "source_type": "NUMBER(14,2)",
+          "target_type": "DECIMAL(14,2)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "BATCH_NO",
+          "target": "batch_no",
+          "source_type": "NUMBER(8)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        }
+      ],
+      "root_where": "tenant_id = '00000000-0000-0000-0000-000000000001'"
+    },
+    {
+      "object": "invoice_line",
+      "root_table": "OW_BILLING.INVOICE_LINE",
+      "key": {
+        "source": [
+          "LINE_ID"
+        ],
+        "target": [
+          "line_id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "LINE_ID",
+          "target": "line_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_NO",
+          "target": "invoice_no",
+          "source_type": "VARCHAR2(30)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "CUST_ID",
+          "target": "cust_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "CUST_NO",
+          "target": "cust_no",
+          "source_type": "VARCHAR2(20)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "CUST_NAME",
+          "target": "cust_name",
+          "source_type": "VARCHAR2(200)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "LINE_NO",
+          "target": "line_no",
+          "source_type": "NUMBER(6)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "LINE_TYPE_CD",
+          "target": "line_type_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "ITEM_DESC",
+          "target": "item_desc",
+          "source_type": "VARCHAR2(400)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "QTY",
+          "target": "qty",
+          "source_type": "NUMBER(12,3)",
+          "target_type": "DECIMAL(12,3)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "UNIT_PRICE",
+          "target": "unit_price",
+          "source_type": "NUMBER(14,4)",
+          "target_type": "DECIMAL(14,4)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "AMOUNT",
+          "target": "amount",
+          "source_type": "NUMBER(14,2)",
+          "target_type": "DECIMAL(14,2)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "TAX_AMT",
+          "target": "tax_amt",
+          "source_type": "NUMBER(14,2)",
+          "target_type": "DECIMAL(14,2)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoice_dt",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "DATE",
+          "rules": [
+            "dd_mon_yy_or_null"
+          ],
+          "evidence": [
+            "d-dirty-date-policy"
+          ]
+        },
+        {
+          "source": "INVOICE_DT",
+          "target": "invoice_dt_raw",
+          "source_type": "VARCHAR2(9)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ],
+          "evidence": [
+            "d-dirty-date-policy"
+          ]
+        },
+        {
+          "source": "SERVICE_PERIOD",
+          "target": "service_period",
+          "source_type": "VARCHAR2(20)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ],
+          "evidence": [
+            "period_string_mmyyyy"
+          ]
+        },
+        {
+          "source": "POSTED_YN",
+          "target": "posted_yn",
+          "source_type": "CHAR(1)",
+          "target_type": "STRING",
+          "rules": [
+            "rstrip_spaces",
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "GL_ACCT_CSV",
+          "target": "gl_acct_csv",
+          "source_type": "VARCHAR2(200)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ],
+          "evidence": [
+            "csv_list"
+          ]
+        },
+        {
+          "source": "BATCH_NO",
+          "target": "batch_no",
+          "source_type": "NUMBER(8)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "SRC_SYSTEM",
+          "target": "src_system",
+          "source_type": "VARCHAR2(10)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        }
+      ],
+      "root_where": "tenant_id = '00000000-0000-0000-0000-000000000001'"
+    },
+    {
+      "object": "invoices",
+      "root_table": "OW_BILLING.INVOICES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "PERIOD_ID",
+          "target": "period_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ISSUED_AT",
+          "target": "issued_at",
+          "source_type": "TIMESTAMP(6)",
+          "target_type": "TIMESTAMP_NTZ",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "SUBTOTAL",
+          "target": "subtotal",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "TAX",
+          "target": "tax",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "TOTAL",
+          "target": "total",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        }
+      ],
+      "root_where": "tenant_id = '00000000-0000-0000-0000-000000000001'"
+    },
+    {
+      "object": "invoice_lines",
+      "root_table": "OW_BILLING.INVOICE_LINES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "LINE_NO",
+          "target": "line_no",
+          "source_type": "NUMBER(6)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_fits_int64"
+          ]
+        },
+        {
+          "source": "LINE_TYPE",
+          "target": "line_type",
+          "source_type": "VARCHAR2(10)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "DESCRIPTION",
+          "target": "description",
+          "source_type": "VARCHAR2(400)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "AMOUNT",
+          "target": "amount",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)",
+          "rules": [
+            "identity"
+          ]
+        }
+      ],
+      "root_where": "invoice_id NOT IN ('60000000-0000-0000-0000-000000000001','60000000-0000-0000-0000-000000000002','60000000-0000-0000-0000-000000000003','60000000-0000-0000-0000-000000000009')"
+    },
+    {
+      "object": "credit_notes",
+      "root_table": "OW_BILLING.CREDIT_NOTES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING",
+          "rules": [
+            "empty_string_is_null"
+          ]
+        },
+        {
+          "source": "ISSUED_ON",
+          "target": "issued_on",
+          "source_type": "DATE",
+          "target_type": "DATE",
+          "rules": [
+            "identity"
+          ],
+          "evidence": [
+            "census_midnight_only"
+          ]
+        },
+        {
+          "source": "AMOUNT",
+          "target": "amount",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "REMAINING_AMOUNT",
+          "target": "remaining_amount",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)",
+          "rules": [
+            "identity"
+          ]
+        }
+      ],
+      "root_where": "tenant_id = '00000000-0000-0000-0000-000000000001'"
+    }
+  ]
+}
