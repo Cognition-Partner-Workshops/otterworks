@@ -1,0 +1,697 @@
+{
+  "version": "ow-tp-scaffold-v1",
+  "note": "wave 0 scaffold: run-scoped recon legacy mirrors OW_BILLING.<T> -> ow_tp.r1793176531_recon.legacy_<t> (structural only; snapshot row loads land per-unit in later waves). Schemas r1793176531_staging/_recon/_quarantine/_history, Lakebase ow-tp-billing branch mig-1793176531 database ow_tp, bundle shell mig_1793176531.",
+  "objects": [
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_codes",
+      "root_table": "OW_BILLING.CODES",
+      "key": {
+        "source": [
+          "CODE_TYPE",
+          "CODE_VAL"
+        ],
+        "target": [
+          "code_type",
+          "code_val"
+        ]
+      },
+      "fields": [
+        {
+          "source": "CODE_TYPE",
+          "target": "code_type",
+          "source_type": "VARCHAR2(30)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "CODE_VAL",
+          "target": "code_val",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "CODE_DESC",
+          "target": "code_desc",
+          "source_type": "VARCHAR2(80)",
+          "target_type": "STRING"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_tenants",
+      "root_table": "OW_BILLING.TENANTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "NAME",
+          "target": "name",
+          "source_type": "VARCHAR2(200)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "tax_exempt_yn",
+          "source_type": "CHAR(1)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_plans",
+      "root_table": "OW_BILLING.PLANS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "CODE",
+          "target": "code",
+          "source_type": "VARCHAR2(50)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TIER_CD",
+          "target": "tier_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "MONTHLY_FEE",
+          "target": "monthly_fee",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)"
+        },
+        {
+          "source": "INCLUDED_UNITS",
+          "target": "included_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "OVERAGE_RATE",
+          "target": "overage_rate",
+          "source_type": "NUMBER(12,6)",
+          "target_type": "DECIMAL(12,6)"
+        },
+        {
+          "source": "ACTIVE_YN",
+          "target": "active_yn",
+          "source_type": "CHAR(1)",
+          "target_type": "STRING"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_subscriptions",
+      "root_table": "OW_BILLING.SUBSCRIPTIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_usage_events",
+      "root_table": "OW_BILLING.USAGE_EVENTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "OCCURRED_AT",
+          "target": "occurred_at",
+          "source_type": "TIMESTAMP",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "UNITS",
+          "target": "units",
+          "source_type": "NUMBER(10)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_rating_periods",
+      "root_table": "OW_BILLING.RATING_PERIODS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "PERIOD_START",
+          "target": "period_start",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "PERIOD_END",
+          "target": "period_end",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_rating_results",
+      "root_table": "OW_BILLING.RATING_RESULTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "PERIOD_ID",
+          "target": "period_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "SUBSCRIPTION_ID",
+          "target": "subscription_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "USED_UNITS",
+          "target": "used_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "QUOTA_UNITS",
+          "target": "quota_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "ROLLOVER_UNITS",
+          "target": "rollover_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "BILLABLE_UNITS",
+          "target": "billable_units",
+          "source_type": "NUMBER(10)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "OVERAGE_AMOUNT",
+          "target": "overage_amount",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)"
+        },
+        {
+          "source": "CREATED_AT",
+          "target": "created_at",
+          "source_type": "TIMESTAMP",
+          "target_type": "timestamp_ntz"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_invoices",
+      "root_table": "OW_BILLING.INVOICES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "PERIOD_ID",
+          "target": "period_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "ISSUED_AT",
+          "target": "issued_at",
+          "source_type": "TIMESTAMP",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "SUBTOTAL",
+          "target": "subtotal",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)"
+        },
+        {
+          "source": "TAX",
+          "target": "tax",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)"
+        },
+        {
+          "source": "TOTAL",
+          "target": "total",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)"
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_invoice_lines",
+      "root_table": "OW_BILLING.INVOICE_LINES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "LINE_NO",
+          "target": "line_no",
+          "source_type": "NUMBER(6)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "LINE_TYPE",
+          "target": "line_type",
+          "source_type": "VARCHAR2(10)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "DESCRIPTION",
+          "target": "description",
+          "source_type": "VARCHAR2(400)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "AMOUNT",
+          "target": "amount",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_credit_notes",
+      "root_table": "OW_BILLING.CREDIT_NOTES",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "ISSUED_ON",
+          "target": "issued_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "AMOUNT",
+          "target": "amount",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)"
+        },
+        {
+          "source": "REMAINING_AMOUNT",
+          "target": "remaining_amount",
+          "source_type": "NUMBER(12,2)",
+          "target_type": "DECIMAL(12,2)"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_dunning_attempts",
+      "root_table": "OW_BILLING.DUNNING_ATTEMPTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "INVOICE_ID",
+          "target": "invoice_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "ATTEMPT_NO",
+          "target": "attempt_no",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "SCHEDULED_FOR",
+          "target": "scheduled_for",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_notifications",
+      "root_table": "OW_BILLING.NOTIFICATIONS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "KIND_CD",
+          "target": "kind_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "SENT_AT",
+          "target": "sent_at",
+          "source_type": "TIMESTAMP",
+          "target_type": "timestamp_ntz"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_billing_audit_log",
+      "root_table": "OW_BILLING.BILLING_AUDIT_LOG",
+      "key": {
+        "source": [
+          "LOG_ID"
+        ],
+        "target": [
+          "log_id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "LOG_ID",
+          "target": "log_id",
+          "source_type": "NUMBER(12)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "LOGGED_AT",
+          "target": "logged_at",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "MODULE",
+          "target": "module",
+          "source_type": "VARCHAR2(30)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "MESSAGE",
+          "target": "message",
+          "source_type": "VARCHAR2(4000)",
+          "target_type": "STRING"
+        }
+      ]
+    },
+    {
+      "object": "ow_tp.r1793176531_recon.legacy_subscriptions_hist",
+      "root_table": "OW_BILLING.SUBSCRIPTIONS_HIST",
+      "key": {
+        "source": [
+          "HIST_ID"
+        ],
+        "target": [
+          "hist_id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "HIST_ID",
+          "target": "hist_id",
+          "source_type": "NUMBER(12)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "HIST_DT",
+          "target": "hist_dt",
+          "source_type": "VARCHAR2(20)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "HIST_OP",
+          "target": "hist_op",
+          "source_type": "VARCHAR2(3)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "TENANT_ID",
+          "target": "tenant_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "PLAN_ID",
+          "target": "plan_id",
+          "source_type": "VARCHAR2(36)",
+          "target_type": "STRING"
+        },
+        {
+          "source": "STARTS_ON",
+          "target": "starts_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "ENDS_ON",
+          "target": "ends_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4)",
+          "target_type": "BIGINT"
+        },
+        {
+          "source": "SUSPENDED_ON",
+          "target": "suspended_on",
+          "source_type": "DATE",
+          "target_type": "timestamp_ntz"
+        }
+      ]
+    }
+  ],
+  "rerun_posture": "not_applicable"
+}
