@@ -34,7 +34,7 @@ resources:
             full_refresh: true
 
 targets:
-  mig_1793146609:
+  mig_ow_tp_billing_20261028:
     default: true
     workspace:
       root_path: /Workspace/Users/${workspace.current_user.userName}/ow_tp_dunning_risk

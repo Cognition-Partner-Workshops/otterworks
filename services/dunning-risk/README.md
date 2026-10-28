@@ -1,10 +1,11 @@
 # Dunning risk: snapshot → Delta → Lakebase
 
 An explainable 0–100 score, not a probability or a suspension action. All billing
-reads use one SELECT snapshot from `mig-invoicing-w1.ow_tp_invoicing`, with a fresh
-branch-scoped OAuth credential and `default_transaction_read_only=on`. No Oracle
-access, federation, JDBC, CDC, source mutations, or changes to the invoicing
-migration. Existing environment OAuth M2M configuration is used unchanged.
+reads are one SELECT-only snapshot of legacy Oracle `OW_BILLING` (tenants,
+subscriptions, invoices, dunning_attempts, credit_notes) taken by the read-only
+principal named by secret `OW_BILLING_RO_DSN` inside a `SET TRANSACTION READ ONLY`
+transaction. Oracle is never written. No federation, JDBC or CDC: the snapshot is a
+one-off extract copy. Existing environment OAuth M2M configuration is used unchanged.
 
 ## Rules (`ow_tp_dunning_v1`)
 
@@ -43,9 +44,11 @@ duplicate IDs, missing tenant attribution and cross-tenant attempts fail closed.
 
 Run from this directory. Use the preconfigured service principal; **never export
 host/auth/identity variables**, use a PAT, or use `LAKEBASE_MIGRATION_DSN`.
-The branch `mig-dunning-risk` already exists, based on `production` with a seven-day
-TTL; do not change `mig-invoicing-w1` or its expiry. All Lakebase writes are through
-the Databricks-managed synced table, never a direct Postgres connection.
+`snapshot.py` needs `OW_BILLING_RO_DSN` in the environment (`user/pass@host:port/service`
+or JSON `{user, password, dsn}`); it is read by name and never printed. The Lakebase
+branch `mig-dunning-risk` already exists, based on `production` with a seven-day TTL.
+All Lakebase writes are through the Databricks-managed synced table, never a direct
+Postgres connection.
 
 ```sh
 python3 -m venv .venv
@@ -60,8 +63,9 @@ databricks experimental aitools tools query --warehouse 565cd2fd713738c4 --file 
 The immutable JSON snapshot is stored in Delta `ow_tp.ow_tp_dunning_risk.ow_tp_snapshots`
 with its SHA-256 ID. Exact payload replays do not append another snapshot. The score
 table is atomically overwritten from the latest captured snapshot, with deterministic
-tie-breaking by snapshot ID. Source date fields are cast to dates in the source
-SELECT and as-of is the capture's UTC date. Empty tenant snapshots are rejected.
+tie-breaking by snapshot ID. Oracle DATE columns are rendered as dates, `issued_at`
+as a timestamp, NUMBER(12,2) amounts exactly; as-of is the capture's UTC date read
+from the Oracle clock (`SYS_EXTRACT_UTC`). Empty tenant snapshots are rejected.
 This bounded demo uses inline SQL up to 8 MB; it is not a bulk-ingestion system.
 
 Initial sync creation (once only; the live instance already exists). The guard
@@ -83,8 +87,8 @@ The bundle defines a **PAUSED** daily job: SQL scoring on existing warehouse
 or cluster resources are defined. Supply the pipeline ID when validating/deploying:
 
 ```sh
-databricks bundle validate -t mig_1793146609 --var sync_pipeline_id=0688c8f0-0812-479f-910c-d1a8c1c2ff81
-databricks bundle deploy -t mig_1793146609 --var sync_pipeline_id=0688c8f0-0812-479f-910c-d1a8c1c2ff81
+databricks bundle validate -t mig_ow_tp_billing_20261028 --var sync_pipeline_id=0688c8f0-0812-479f-910c-d1a8c1c2ff81
+databricks bundle deploy -t mig_ow_tp_billing_20261028 --var sync_pipeline_id=0688c8f0-0812-479f-910c-d1a8c1c2ff81
 ```
 
 For a **new source snapshot**, first repeat the snapshot/staging commands above.
@@ -113,7 +117,12 @@ negative totals, suspended tenants, and subscription fan-out/no-subscription.
 The verifier SELECTs the complete Lakebase copy using a separately minted target
 credential and read-only connection. It compares every column as multisets,
 including duplicate multiplicity, snapshot provenance and component points;
-matching row counts alone cannot pass. It emits equal SHA-256 hashes and examples
+matching row counts alone cannot pass. It then replays the body of legacy
+`pkg_dunning.fn_overdue_accounts` on Oracle as one SELECT (status 40, issued before
+the as-of calendar day, calendar-day age; no package execution, read-only
+transaction) aggregated per tenant, and requires the Lakebase rows'
+`overdue_invoices`, `oldest_overdue_days` and `overdue_total` to match it exactly
+for every tenant. `verify.py` therefore needs `OW_BILLING_RO_DSN` too. It emits equal SHA-256 hashes and examples
 selected from the **Lakebase rows**: Tenant One plus two or three distinct tenants,
 preferring overdue, paid and credit history when available. Missing one category
 does not invalidate full-row parity; fewer than two examples fail this demo proof.

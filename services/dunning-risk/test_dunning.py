@@ -16,7 +16,7 @@ from verify import compare, historyExamples, tableHash
 def fixture() -> dict[str, Any]:
     return {
         "captured_at": "2026-03-20T12:00:00.000000Z", "as_of": "2026-03-20",
-        "source": "ow-tp-billing/mig-invoicing-w1/ow_tp_invoicing",
+        "source": "oracle/OW_BILLING",
         "tenants": [{"id": "t", "name": "Tenant One", "status_cd": 10}],
         "subscriptions": [], "invoices": [], "dunning_attempts": [], "credit_notes": [],
     }
@@ -33,7 +33,7 @@ class SafetyTests(unittest.TestCase):
 
     def testEmptyAndWrongSourceRejected(self) -> None:
         snapshot = fixture()
-        snapshot["source"] = "production"
+        snapshot["source"] = "ow-tp-billing/mig-invoicing-w1/ow_tp_invoicing"
         with self.assertRaises(ValueError):
             validateSnapshot(snapshot)
         snapshot = fixture()

@@ -1,71 +1,98 @@
-"""Read one consistent snapshot of migrated billing state; never modify the source."""
+"""Read one consistent, read-only snapshot of legacy OW_BILLING state from Oracle."""
 
 import json
-import subprocess
+import os
+import re
 import sys
+from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-import psycopg
+import oracledb
 
-from prepare import validateSnapshot
+from prepare import SOURCE, validateSnapshot
+
+_DSN_RE = re.compile(
+    r"^(?:oracle://)?(?P<user>[^:/@\s]+)[:/](?P<password>[^@\s]*)@(?P<host>[^:/@\s]+)"
+    r":(?P<port>\d+)/(?P<service>[^\s/]+)\s*$")
 
 
-def cliJson(*args: str) -> Any:
-    result = subprocess.run(
-        ["databricks", *args, "--output", "json"],
-        check=True, capture_output=True, text=True,
-    )
-    return json.loads(result.stdout)
+def oracleConnect(secretName: str = "OW_BILLING_RO_DSN") -> oracledb.Connection:
+    """Connect with the read-only principal named by the secret; the value is never printed."""
+    raw = os.environ.get(secretName)
+    if not raw:
+        raise SystemExit(f"secret {secretName} is not set in the environment")
+    if raw.lstrip().startswith("{"):
+        obj = json.loads(raw)
+        dsn = obj.get("dsn") or f"{obj['host']}:{obj['port']}/{obj.get('service') or obj['service_name']}"
+        return oracledb.connect(user=obj["user"], password=obj["password"], dsn=dsn)
+    match = _DSN_RE.match(raw)
+    if not match:
+        raise SystemExit(f"secret {secretName} is not a user/pass@host:port/service DSN")
+    return oracledb.connect(user=match["user"], password=match["password"],
+                            dsn=f"{match['host']}:{match['port']}/{match['service']}")
+
+
+def jsonValue(value: Any) -> Any:
+    if isinstance(value, Decimal):
+        rendered = float(value)
+        if Decimal(repr(rendered)) != value:
+            raise ValueError(f"amount {value} is not exactly representable")
+        return rendered
+    if isinstance(value, datetime):
+        return value.isoformat(sep="T", timespec="seconds")
+    if isinstance(value, date):
+        return value.isoformat()
+    return value
+
+
+def rows(cursor: oracledb.Cursor, columns: tuple[str, ...]) -> list[dict[str, Any]]:
+    return [dict(zip(columns, map(jsonValue, row))) for row in cursor.fetchall()]
 
 
 def main() -> None:
     outputPath = Path(sys.argv[1])
-    endpointPath = "projects/ow-tp-billing/branches/mig-invoicing-w1/endpoints/primary"
-    identity = cliJson("current-user", "me")["userName"]
-    endpoint = cliJson("postgres", "get-endpoint", endpointPath)
-    credential = cliJson("postgres", "generate-database-credential", endpointPath)
-    with psycopg.connect(
-        host=endpoint["status"]["hosts"]["host"], dbname="ow_tp", user=identity,
-        password=credential["token"], sslmode="require", connect_timeout=30,
-        autocommit=True, options="-c default_transaction_read_only=on",
-    ) as connection:
+    with oracleConnect() as connection:
         with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT json_build_object(
-                    'captured_at', to_char(current_timestamp AT TIME ZONE 'UTC',
-                                          'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
-                    'as_of', (current_timestamp AT TIME ZONE 'UTC')::date,
-                    'source', 'ow-tp-billing/mig-invoicing-w1/ow_tp_invoicing',
-                    'tenants', (SELECT coalesce(json_agg(t ORDER BY t.id), '[]')
-                        FROM (SELECT id, name, status_cd FROM ow_tp_invoicing.tenants) t),
-                    'subscriptions', (SELECT coalesce(json_agg(s ORDER BY s.id), '[]')
-                        FROM (SELECT id, tenant_id, status_cd,
-                                     starts_on::date AS starts_on, ends_on::date AS ends_on
-                              FROM ow_tp_invoicing.subscriptions) s),
-                    'invoices', (SELECT coalesce(json_agg(i ORDER BY i.id), '[]')
-                        FROM (SELECT id, tenant_id, issued_at, total, status_cd
-                              FROM ow_tp_invoicing.invoices) i),
-                    'dunning_attempts', (SELECT coalesce(json_agg(d ORDER BY d.id), '[]')
-                        FROM (SELECT id, tenant_id, invoice_id, attempt_no,
-                                     scheduled_for::date AS scheduled_for, status_cd
-                              FROM ow_tp_invoicing.dunning_attempts) d),
-                    'credit_notes', (SELECT coalesce(json_agg(c ORDER BY c.id), '[]')
-                        FROM (SELECT id, tenant_id, issued_on::date AS issued_on,
-                                     amount, remaining_amount
-                              FROM ow_tp_invoicing.credit_notes) c)
-                )::text
-            """)
-            row = cursor.fetchone()
-    if row is None:
-        raise RuntimeError("No source snapshot returned")
-    payload = row[0]
-    snapshot = json.loads(payload)
+            cursor.execute("SET TRANSACTION READ ONLY")
+            cursor.execute("SELECT SYS_EXTRACT_UTC(SYSTIMESTAMP) FROM dual")
+            capturedAt = cursor.fetchone()[0]
+            cursor.execute("SELECT id, name, status_cd FROM ow_billing.tenants ORDER BY id")
+            tenants = rows(cursor, ("id", "name", "status_cd"))
+            cursor.execute("SELECT id, tenant_id, status_cd, starts_on, ends_on "
+                           "FROM ow_billing.subscriptions ORDER BY id")
+            subscriptions = rows(cursor, ("id", "tenant_id", "status_cd", "starts_on", "ends_on"))
+            cursor.execute("SELECT id, tenant_id, issued_at, total, status_cd "
+                           "FROM ow_billing.invoices ORDER BY id")
+            invoices = rows(cursor, ("id", "tenant_id", "issued_at", "total", "status_cd"))
+            cursor.execute("SELECT id, tenant_id, invoice_id, attempt_no, scheduled_for, status_cd "
+                           "FROM ow_billing.dunning_attempts ORDER BY id")
+            attempts = rows(cursor, ("id", "tenant_id", "invoice_id", "attempt_no", "scheduled_for", "status_cd"))
+            cursor.execute("SELECT id, tenant_id, issued_on, amount, remaining_amount "
+                           "FROM ow_billing.credit_notes ORDER BY id")
+            credits = rows(cursor, ("id", "tenant_id", "issued_on", "amount", "remaining_amount"))
+        connection.rollback()
+    for row in subscriptions:
+        row["starts_on"] = row["starts_on"][:10]
+        row["ends_on"] = row["ends_on"][:10] if row["ends_on"] else None
+    for row in attempts:
+        row["scheduled_for"] = row["scheduled_for"][:10]
+    for row in credits:
+        row["issued_on"] = row["issued_on"][:10]
+    snapshot = {
+        "captured_at": capturedAt.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "as_of": capturedAt.date().isoformat(),
+        "source": SOURCE,
+        "tenants": tenants, "subscriptions": subscriptions, "invoices": invoices,
+        "dunning_attempts": attempts, "credit_notes": credits,
+    }
     validateSnapshot(snapshot)
-    if not snapshot["tenants"] or not any(t["name"] == "Tenant One" for t in snapshot["tenants"]):
+    if not any(t["name"] == "Tenant One" for t in snapshot["tenants"]):
         raise ValueError("Expected billing fixture (including Tenant One) is missing")
+    payload = json.dumps(snapshot, separators=(",", ":"))
     outputPath.write_text(payload + "\n")
-    print(json.dumps({"captured_at": snapshot["captured_at"], "rows": {
+    print(json.dumps({"captured_at": snapshot["captured_at"], "as_of": snapshot["as_of"], "rows": {
         name: len(snapshot[name]) for name in (
             "tenants", "subscriptions", "invoices", "dunning_attempts", "credit_notes"
         )

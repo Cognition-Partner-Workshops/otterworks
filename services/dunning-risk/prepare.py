@@ -8,9 +8,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+SOURCE = "oracle/OW_BILLING"
+
 
 def validateSnapshot(snapshot: dict[str, Any]) -> None:
-    if snapshot["source"] != "ow-tp-billing/mig-invoicing-w1/ow_tp_invoicing":
+    if snapshot["source"] != SOURCE:
         raise ValueError("Unexpected source")
     datetime.fromisoformat(snapshot["as_of"])
     datetime.fromisoformat(snapshot["captured_at"].replace("Z", "+00:00"))
