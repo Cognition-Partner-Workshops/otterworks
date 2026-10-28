@@ -107,7 +107,7 @@ evidence are not deleted by a refresh.
 .venv/bin/python test_dunning.py --warehouse-sql .local/ow_tp_score_tests.sql
 databricks experimental aitools tools query --warehouse 565cd2fd713738c4 --file .local/ow_tp_score_tests.sql --output json
 databricks experimental aitools tools query --warehouse 565cd2fd713738c4 --file export.sql --output json > .local/ow_tp_delta_rows.json
-.venv/bin/python verify.py .local/ow_tp_delta_rows.json > .local/ow_tp_parity.json
+.venv/bin/python verify.py .local/ow_tp_delta_rows.json .local/ow_tp_snapshot.json > .local/ow_tp_parity.json
 ```
 
 The warehouse regression query exercises the **actual scoring SQL**, not a second
@@ -118,11 +118,14 @@ The verifier SELECTs the complete Lakebase copy using a separately minted target
 credential and read-only connection. It compares every column as multisets,
 including duplicate multiplicity, snapshot provenance and component points;
 matching row counts alone cannot pass. It then replays the body of legacy
-`pkg_dunning.fn_overdue_accounts` on Oracle as one SELECT (status 40, issued before
-the as-of calendar day, calendar-day age; no package execution, read-only
-transaction) aggregated per tenant, and requires the Lakebase rows'
-`overdue_invoices`, `oldest_overdue_days` and `overdue_total` to match it exactly
-for every tenant. `verify.py` therefore needs `OW_BILLING_RO_DSN` too. It emits equal SHA-256 hashes and examples
+`pkg_dunning.fn_overdue_accounts` (status 40, issued before the as-of calendar day,
+calendar-day age) over the staged snapshot file, whose SHA-256 must equal the
+`snapshot_id` carried by every Lakebase row, and requires the rows'
+`overdue_invoices`, `oldest_overdue_days` and `overdue_total` to match per tenant.
+The same predicate is also run on live Oracle as one SELECT (read-only transaction,
+no package execution) and reported as `legacy_freshness` — `MATCH` or `DRIFT` — without
+failing verification, since Oracle may have moved on since capture. `verify.py`
+therefore needs `OW_BILLING_RO_DSN` too. It emits equal SHA-256 hashes and examples
 selected from the **Lakebase rows**: Tenant One plus two or three distinct tenants,
 preferring overdue, paid and credit history when available. Missing one category
 does not invalidate full-row parity; fewer than two examples fail this demo proof.

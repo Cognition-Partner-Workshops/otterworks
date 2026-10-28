@@ -1,5 +1,7 @@
 """Compare complete Delta and Lakebase rows as multisets, then the Lakebase overdue features
-against a SELECT-only replay of legacy pkg_dunning.fn_overdue_accounts on Oracle."""
+against a replay of legacy pkg_dunning.fn_overdue_accounts over the exact stored snapshot
+(bound by snapshot_id). A SELECT-only replay on live Oracle is reported separately as a
+freshness check; it never fails verification, because Oracle may have moved on since capture."""
 
 import hashlib
 import json
@@ -71,9 +73,25 @@ def overdueFeatures(rows: list[dict[str, Any]]) -> dict[str, tuple[int, int, Dec
     return features
 
 
+def snapshotOverdue(snapshot: dict[str, Any]) -> dict[str, tuple[int, int, Decimal]]:
+    """fn_overdue_accounts body over the stored snapshot: status 40, issued before the as-of
+    calendar day, age in calendar days since issue; aggregated per tenant."""
+    asOf = date.fromisoformat(snapshot["as_of"])
+    features: dict[str, tuple[int, int, Decimal]] = {}
+    for invoice in snapshot["invoices"]:
+        issued = datetime.fromisoformat(invoice["issued_at"]).date()
+        if invoice["status_cd"] != 40 or issued >= asOf:
+            continue
+        count, oldest, total = features.get(invoice["tenant_id"], (0, 0, Decimal("0.00")))
+        features[invoice["tenant_id"]] = (
+            count + 1, max(oldest, (asOf - issued).days),
+            (total + max(Decimal(str(invoice["total"])), Decimal(0))).quantize(Decimal("0.01")))
+    return features
+
+
 def legacyOverdue(asOf: date) -> dict[str, tuple[int, int, Decimal]]:
-    """fn_overdue_accounts body (status 40, issued before the as-of calendar day, calendar-day age)
-    aggregated per tenant; SELECT-only under the read-only principal, no package execution."""
+    """Same predicate on live Oracle (SELECT-only, read-only transaction, no package execution).
+    Freshness evidence only: live rows may legitimately differ from the captured snapshot."""
     with oracleConnect() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SET TRANSACTION READ ONLY")
@@ -91,18 +109,33 @@ def legacyOverdue(asOf: date) -> dict[str, tuple[int, int, Decimal]]:
     return legacy
 
 
-def compareOverdue(lakebaseRows: list[dict[str, Any]], legacy: dict[str, tuple[int, int, Decimal]]) -> None:
-    synced = overdueFeatures(lakebaseRows)
+def overdueMismatches(synced: dict[str, tuple[int, int, Decimal]],
+                      expected: dict[str, tuple[int, int, Decimal]]) -> list[str]:
     zero = (0, 0, Decimal("0.00"))
-    mismatches = {tenant: (synced[tenant], legacy.get(tenant, zero))
-                  for tenant in synced if synced[tenant] != legacy.get(tenant, zero)}
-    mismatches.update({tenant: (zero, legacy[tenant]) for tenant in legacy if tenant not in synced})
+    return sorted({tenant for tenant in synced if synced[tenant] != expected.get(tenant, zero)}
+                  | {tenant for tenant in expected if tenant not in synced})
+
+
+def compareOverdue(lakebaseRows: list[dict[str, Any]], snapshot: dict[str, Any]) -> None:
+    snapshotId = {str(row["snapshot_id"]) for row in lakebaseRows}
+    if snapshotId != {snapshot["snapshot_id"]}:
+        raise ValueError(f"Lakebase rows carry snapshot_id {sorted(snapshotId)}, not the stored snapshot {snapshot['snapshot_id']}")
+    mismatches = overdueMismatches(overdueFeatures(lakebaseRows), snapshotOverdue(snapshot))
     if mismatches:
-        raise ValueError(f"overdue features differ from fn_overdue_accounts for {sorted(mismatches)}")
+        raise ValueError(f"overdue features differ from fn_overdue_accounts over the stored snapshot for {mismatches}")
+
+
+def loadSnapshot(path: Path) -> dict[str, Any]:
+    """The staged snapshot file; its SHA-256 is the snapshot_id prepare.py stored in Delta."""
+    payload = path.read_text()
+    snapshot = json.loads(payload, parse_float=Decimal)
+    snapshot["snapshot_id"] = hashlib.sha256(payload.encode()).hexdigest()
+    return snapshot
 
 
 def main() -> None:
     exported = json.loads(Path(sys.argv[1]).read_text())
+    snapshot = loadSnapshot(Path(sys.argv[2]))
     deltaRows = [json.loads(row["row_json"], parse_float=Decimal) for row in exported]
     endpointPath = "projects/ow-tp-billing/branches/mig-dunning-risk/endpoints/primary"
     identity = cliJson("current-user", "me")["userName"]
@@ -117,11 +150,9 @@ def main() -> None:
             cursor.execute("SELECT row_to_json(s)::text FROM ow_tp_dunning_risk.ow_tp_scores_synced s")
             lakebaseRows = [json.loads(row[0], parse_float=Decimal) for row in cursor.fetchall()]
     compare(deltaRows, lakebaseRows)
-    asOf = {date.fromisoformat(str(row["as_of"])) for row in lakebaseRows}
-    if len(asOf) != 1:
-        raise ValueError(f"Lakebase rows carry {len(asOf)} distinct as_of dates")
-    legacy = legacyOverdue(asOf.pop())
-    compareOverdue(lakebaseRows, legacy)
+    compareOverdue(lakebaseRows, snapshot)
+    legacy = legacyOverdue(date.fromisoformat(snapshot["as_of"]))
+    drift = overdueMismatches(overdueFeatures(lakebaseRows), legacy)
     fixtureRows = [row for row in lakebaseRows if row["tenant_name"] == "Tenant One"]
     if not fixtureRows:
         raise ValueError("Tenant One is missing")
@@ -135,8 +166,11 @@ def main() -> None:
         "lakebase_table": "ow_tp_dunning_risk.ow_tp_scores_synced",
         "matched_rows": len(deltaRows), "missing_rows": 0, "extra_rows": 0,
         "delta_sha256": tableHash(deltaRows), "lakebase_sha256": tableHash(lakebaseRows),
+        "snapshot_id": snapshot["snapshot_id"], "as_of": snapshot["as_of"],
+        "overdue_semantics": "MATCH fn_overdue_accounts replayed over the stored snapshot "
+                             "(status 40, issued before as-of day, calendar-day age)",
+        "legacy_freshness": "MATCH live Oracle" if not drift else f"DRIFT since capture for tenants {drift}",
         "legacy_overdue_tenants": {tenant: list(map(str, feature)) for tenant, feature in sorted(legacy.items())},
-        "overdue_semantics": "MATCH fn_overdue_accounts (status 40, issued before as-of day, calendar-day age)",
         "tenant_one": fixtureRows, "history_examples": examples,
     }, default=str, indent=2))
 

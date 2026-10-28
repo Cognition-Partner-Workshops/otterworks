@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from prepare import snapshotSql, validateSnapshot
-from verify import compare, historyExamples, tableHash
+from verify import compare, historyExamples, overdueMismatches, snapshotOverdue, tableHash
 
 
 def fixture() -> dict[str, Any]:
@@ -82,6 +82,19 @@ class SafetyTests(unittest.TestCase):
             compare([{"id": "a"}], [{"id": "a"}, {"id": "a"}])
         with self.assertRaises(ValueError):
             compare([{"id": None}], [{"id": "null"}])
+
+    def testSnapshotOverdueFollowsFnOverdueAccounts(self) -> None:
+        snapshot = fixture()
+        snapshot["invoices"] = [
+            {"id": "a", "tenant_id": "t", "issued_at": "2026-03-06T00:00:00", "total": 161.29, "status_cd": 40},
+            {"id": "b", "tenant_id": "t", "issued_at": "2026-03-20T00:00:00", "total": 50, "status_cd": 40},
+            {"id": "c", "tenant_id": "t", "issued_at": "2026-03-01T00:00:00", "total": 10, "status_cd": 30},
+            {"id": "d", "tenant_id": "t", "issued_at": "2026-02-01T00:00:00", "total": -5, "status_cd": 40},
+        ]
+        self.assertEqual(snapshotOverdue(snapshot), {"t": (2, 47, Decimal("161.29"))})
+        synced = {"t": (2, 47, Decimal("161.29")), "u": (0, 0, Decimal("0.00"))}
+        self.assertEqual(overdueMismatches(synced, snapshotOverdue(snapshot)), [])
+        self.assertEqual(overdueMismatches({"t": (1, 47, Decimal("161.29"))}, snapshotOverdue(snapshot)), ["t"])
 
     def testTableHashIgnoresRowOrderButRetainsDuplicates(self) -> None:
         rows = [{"id": "a"}, {"id": "b"}]
