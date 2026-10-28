@@ -1,0 +1,15 @@
+bundle:
+  name: mig_0_w0-b01
+
+include:
+  - resources/*.yml
+
+targets:
+  mig_1793176531:
+    default: true
+    workspace:
+      host: https://dbc-8bc9474f-40ae.cloud.databricks.com
+
+variables:
+  warehouse_id:
+    default: "565cd2fd713738c4"
