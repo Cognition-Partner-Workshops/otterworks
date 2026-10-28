@@ -1,8 +1,8 @@
 # Recon report: unit `pkg_dunning`
 
-- **parity PASS, merge blocked (rerun_policy, structural)**
+- **parity PASS, merge blocked (structural)**
 - Verdict: FAIL (all tiers)
-- Blockers: structural: structural_gap, tier_failed; rerun_policy: rerun_missing
+- Blockers: structural: structural_gap, tier_failed
 - Mode: `transactional` (both sides live: PASS scoped to the consistency window that held and the target's applied CDC watermark)
 - Merge eligible: no (fixture/continuous evidence never merges)
 - Rerun posture: `first_run_baseline`
@@ -11,7 +11,7 @@
 - Tolerance version: `tol-20261027-v1`
 - Seed: `0`
 - Tier 3 depth: `threshold`
-- Generated: 2026-10-28T00:53:18.455760+00:00
+- Generated: 2026-10-28T00:54:49.048606+00:00
 
 ## Routine parity: 0 proven, 13 unproven, 0 failed
 
@@ -28,7 +28,8 @@
 - `ow_billing.trg_subscriptions_hist` unproven: no row in .migration/recon/pkg_dunning/routine_parity.json
 - `ow_billing.pkg_rating.compute_rating` unproven: no row in .migration/recon/pkg_dunning/routine_parity.json
 - `ow_billing.pkg_rating.sp_finalize_rating` unproven: no row in .migration/recon/pkg_dunning/routine_parity.json
-- Cost: `{"source_statements": 216, "source_rows_fetched": 548, "target_statements": 200, "target_rows_fetched": 418, "elapsed_s": 22.712}`
+- Cost: `{"source_statements": 216, "source_rows_fetched": 548, "target_statements": 200, "target_rows_fetched": 418, "elapsed_s": 21.501}`
+- Rerun proof: fresh `pass`, evolved `unsupported` (evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved)
 
 | Tier | Name | Checks | Result |
 |---|---|---|---|

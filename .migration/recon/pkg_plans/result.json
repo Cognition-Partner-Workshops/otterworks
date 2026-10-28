@@ -12,9 +12,9 @@
     "source_rows_fetched": 282,
     "target_statements": 117,
     "target_rows_fetched": 215,
-    "elapsed_s": 16.982
+    "elapsed_s": 13.625
   },
-  "generated_at": "2026-10-28T00:53:12.768102+00:00",
+  "generated_at": "2026-10-28T00:54:41.213365+00:00",
   "tiers": [
     {
       "tier": 0,
@@ -573,14 +573,9 @@
     {
       "reason": "tier_failed",
       "class": "structural"
-    },
-    {
-      "reason": "rerun_missing",
-      "class": "rerun_policy"
     }
   ],
   "blocker_classes": [
-    "rerun_policy",
     "structural"
   ],
   "merge_authority": {
@@ -593,12 +588,164 @@
     "filled": [],
     "unmapped": []
   },
-  "rerun_proof": null,
+  "rerun_proof": {
+    "unit": "pkg_plans",
+    "sources": [
+      "databricks/mig_1793146609/lakebase/10_ow_tp_invoicing_state.sql"
+    ],
+    "fresh": "pass",
+    "evolved": "unsupported",
+    "passed": true,
+    "findings": [],
+    "notes": [],
+    "tables": [
+      "plans",
+      "subscriptions",
+      "subscriptions_hist"
+    ],
+    "source_digest": "e86f2606432d2cf48ef3f8ec1a04bb0414ac5a5d40cf32013a1a1fddd93c9907",
+    "evidence": {
+      "fresh": "exec:apply 10_ow_tp_invoicing_state.sql + load_state.py fresh 2026-10-28T00:55Z",
+      "evolved": "exec:re-apply 10_ow_tp_invoicing_state.sql + load_state.py rerun 2026-10-28T01:05Z"
+    },
+    "shape": {
+      "tables": {
+        "subscriptions": [
+          {
+            "name": "id",
+            "type": "varchar(36)",
+            "nullable": false
+          },
+          {
+            "name": "tenant_id",
+            "type": "varchar(36)",
+            "nullable": false
+          },
+          {
+            "name": "plan_id",
+            "type": "varchar(36)",
+            "nullable": false
+          },
+          {
+            "name": "starts_on",
+            "type": "timestamp(0)",
+            "nullable": false
+          },
+          {
+            "name": "ends_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          },
+          {
+            "name": "status_cd",
+            "type": "bigint",
+            "nullable": false
+          },
+          {
+            "name": "suspended_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          }
+        ],
+        "subscriptions_hist": [
+          {
+            "name": "hist_id",
+            "type": "bigint",
+            "nullable": false
+          },
+          {
+            "name": "hist_dt",
+            "type": "varchar(20)",
+            "nullable": true
+          },
+          {
+            "name": "hist_op",
+            "type": "varchar(3)",
+            "nullable": true
+          },
+          {
+            "name": "id",
+            "type": "varchar(36)",
+            "nullable": true
+          },
+          {
+            "name": "tenant_id",
+            "type": "varchar(36)",
+            "nullable": true
+          },
+          {
+            "name": "plan_id",
+            "type": "varchar(36)",
+            "nullable": true
+          },
+          {
+            "name": "starts_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          },
+          {
+            "name": "ends_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          },
+          {
+            "name": "status_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "suspended_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          }
+        ],
+        "plans": [
+          {
+            "name": "id",
+            "type": "varchar(36)",
+            "nullable": false
+          },
+          {
+            "name": "code",
+            "type": "varchar(50)",
+            "nullable": false
+          },
+          {
+            "name": "tier_cd",
+            "type": "bigint",
+            "nullable": false
+          },
+          {
+            "name": "monthly_fee",
+            "type": "decimal(12,2)",
+            "nullable": false
+          },
+          {
+            "name": "included_units",
+            "type": "bigint",
+            "nullable": false
+          },
+          {
+            "name": "overage_rate",
+            "type": "decimal(12,6)",
+            "nullable": false
+          },
+          {
+            "name": "active_yn",
+            "type": "char(1)",
+            "nullable": false
+          }
+        ]
+      }
+    },
+    "shape_digest": "a4fb78827029133bf62986a2f7895a5cd67ec3147892cb1f82ea8cecddeb6623",
+    "unsupported_kind": "nothing_evolved",
+    "unsupported_reason": "evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved"
+  },
   "rerun_posture": "first_run_baseline",
   "merge_block_reasons": [
     "structural_gap",
-    "tier_failed",
-    "rerun_missing"
+    "tier_failed"
   ],
   "routine_parity": [
     {

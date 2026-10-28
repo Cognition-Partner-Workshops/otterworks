@@ -1,13 +1,12 @@
-# Recon summary: `pkg_ow_util` - **parity PASS, merge blocked (rerun_policy)**
+# Recon summary: `pkg_ow_util` - **parity PASS, merge eligible**
 
-- Blockers: rerun_policy: rerun_missing
 - Verdict: PASS / mode `transactional` (both sides live: PASS scoped to the consistency window that held and the target's applied CDC watermark)
-- Merge eligible: no (fixture/continuous evidence never merges)
+- Merge eligible: yes (fixture/continuous evidence never merges)
 - Rerun posture: `first_run_baseline`
 - Merge authority: `harness` (human_override needs a merge_overrides entry in the committed wave manifest naming the unit)
 - Mapping `map-v1` / tolerances `tol-20261027-v1` / seed `0` / depth `threshold`
-- Generated: 2026-10-28T00:53:12.035369+00:00
-- Cost: source 71 statements / 129 rows fetched; target 65 statements / 97 rows; 16.246s
+- Generated: 2026-10-28T00:54:34.947068+00:00
+- Cost: source 71 statements / 129 rows fetched; target 65 statements / 97 rows; 7.322s
 
 ## Routine parity: 0 proven, 13 unproven, 0 failed
 
@@ -26,6 +25,7 @@
 - `ow_billing.pkg_rating.sp_finalize_rating` unproven: no row in .migration/recon/pkg_ow_util/routine_parity.json
 - Structural checks: constraints=checked, triggers=checked, indexes=checked, sequences_identity=checked, grants=direct_only
 - Consistency window: source isolation `snapshot`, target isolation `repeatable_read`, held
+- Rerun proof: fresh `pass`, evolved `unsupported` (evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved)
 
 | Tier | Checks | Result |
 |---|---|---|

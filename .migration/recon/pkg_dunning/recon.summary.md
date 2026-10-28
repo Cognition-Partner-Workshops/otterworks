@@ -1,13 +1,13 @@
-# Recon summary: `pkg_dunning` - **parity PASS, merge blocked (rerun_policy, structural)**
+# Recon summary: `pkg_dunning` - **parity PASS, merge blocked (structural)**
 
-- Blockers: structural: structural_gap, tier_failed; rerun_policy: rerun_missing
+- Blockers: structural: structural_gap, tier_failed
 - Verdict: FAIL / mode `transactional` (both sides live: PASS scoped to the consistency window that held and the target's applied CDC watermark)
 - Merge eligible: no (fixture/continuous evidence never merges)
 - Rerun posture: `first_run_baseline`
 - Merge authority: `harness` (human_override needs a merge_overrides entry in the committed wave manifest naming the unit)
 - Mapping `map-v1` / tolerances `tol-20261027-v1` / seed `0` / depth `threshold`
-- Generated: 2026-10-28T00:53:18.455760+00:00
-- Cost: source 216 statements / 548 rows fetched; target 200 statements / 418 rows; 22.712s
+- Generated: 2026-10-28T00:54:49.048606+00:00
+- Cost: source 216 statements / 548 rows fetched; target 200 statements / 418 rows; 21.501s
 
 ## Routine parity: 0 proven, 13 unproven, 0 failed
 
@@ -26,6 +26,7 @@
 - `ow_billing.pkg_rating.sp_finalize_rating` unproven: no row in .migration/recon/pkg_dunning/routine_parity.json
 - Structural checks: constraints=checked, triggers=checked, indexes=checked, sequences_identity=checked, grants=direct_only
 - Consistency window: source isolation `snapshot`, target isolation `repeatable_read`, held
+- Rerun proof: fresh `pass`, evolved `unsupported` (evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved)
 
 | Tier | Checks | Result |
 |---|---|---|
