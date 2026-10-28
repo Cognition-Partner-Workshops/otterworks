@@ -11,10 +11,11 @@
     {
       "data": {
         "unexpected": [
-          "plan.yaml"
+          "plan.yaml",
+          "stop-e"
         ]
       },
-      "detail": "plan.yaml are not read by any tool; prose belongs on the plan step's ticket or in plan.yaml (decisions/blockers), not in .migration/",
+      "detail": "plan.yaml, stop-e are not read by any tool; prose belongs on the plan step's ticket or in plan.yaml (decisions/blockers), not in .migration/",
       "id": "workspace_layout",
       "reusable": false,
       "status": "warn"
@@ -369,31 +370,17 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T03:03:53Z",
-  "hook_probe": "blocked:8b60a95f",
+  "generated_at": "2026-10-28T03:51:29Z",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
     "service_principal": true,
     "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
   },
-  "inputs_sha": "de7e51f29885290cd7cf7150fd254397be959a4fbec45559b2877576019a1376",
-  "manifest_sha": "a0a7ca1e37f2",
   "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1",
   "ready": true,
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
-  "signature": "7cfb7feb01689cc95d4ca5dc0dbccb9af33a3fd5b813e27fe76214069b1770a9",
-  "signed_at": "2026-10-28T03:03:53+00:00",
-  "source": {
-    "family": "databricks",
-    "params": {
-      "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
-      "source_name": "ow_tp.ow_tp_analytics_src",
-      "target_name": "ow_tp.ow_tp_analytics"
-    },
-    "secret": "DATABRICKS_DEMO_HOST"
-  },
   "summary": {
     "ok": 12,
     "skipped": 1,
