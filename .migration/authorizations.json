@@ -1,1 +1,1 @@
-{"version": 1, "authorizations": [  {"id": "mo-custbill-w1-structural", "kind": "merge_override",  "objects": ["custbill-feed"], "by": "user:dhrov.subramanian@cognition.ai"} ]} 
+{"version": 1, "authorizations": [  {"id": "mo-custbill-w1-structural", "kind": "merge_override",  "objects": ["custbill-feed"], "by": "user:dhrov.subramanian@cognition.ai"},  {"id": "mo-invoicing-w1-structural", "kind": "merge_override",  "objects": ["pkg_dunning", "pkg_invoicing", "pkg_ow_util", "pkg_plans", "pkg_rating"],  "by": "user:dhrov.subramanian@cognition.ai"} ]}
