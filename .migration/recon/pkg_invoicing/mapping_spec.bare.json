@@ -1,0 +1,39 @@
+{
+ "version": "map-v1",
+ "family": "oracle",
+ "target_kind": "lakebase",
+ "rerun_posture": "first_run_baseline",
+ "objects": [
+  {
+   "root_table": "ow_billing.invoices",
+   "object": "invoices",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  },
+  {
+   "root_table": "ow_billing.invoice_lines",
+   "object": "invoice_lines",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  },
+  {
+   "root_table": "ow_billing.credit_notes",
+   "object": "credit_notes",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  }
+ ],
+ "note": "object names de-qualified to bare table names for LakebaseTargetAdapter (--target-schema ow_tp_invoicing); otherwise identical to .migration/units/pkg_invoicing/mapping_spec.json"
+}

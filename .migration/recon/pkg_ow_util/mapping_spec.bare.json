@@ -1,0 +1,33 @@
+{
+ "version": "map-v1",
+ "family": "oracle",
+ "target_kind": "lakebase",
+ "rerun_posture": "first_run_baseline",
+ "objects": [
+  {
+   "root_table": "ow_billing.billing_audit_log",
+   "object": "billing_audit_log",
+   "key": {
+    "source": [
+     "log_id"
+    ],
+    "target": "log_id"
+   }
+  },
+  {
+   "root_table": "ow_billing.codes",
+   "object": "codes",
+   "key": {
+    "source": [
+     "code_type",
+     "code_val"
+    ],
+    "target": [
+     "code_type",
+     "code_val"
+    ]
+   }
+  }
+ ],
+ "note": "object names de-qualified to bare table names for LakebaseTargetAdapter (--target-schema ow_tp_invoicing); otherwise identical to .migration/units/pkg_ow_util/mapping_spec.json"
+}

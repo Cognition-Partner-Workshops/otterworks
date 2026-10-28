@@ -1,0 +1,262 @@
+{
+ "routines": [
+  {
+   "routine": "ow_billing.pkg_dunning.fn_overdue_accounts",
+   "reads": [
+    "ow_billing.invoices",
+    "ow_billing.tenants"
+   ],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_dunning.sp_schedule_dunning",
+   "reads": [
+    "ow_billing.invoices",
+    "ow_billing.tenants"
+   ],
+   "writes": [
+    "ow_billing.dunning_attempts",
+    "ow_billing.notifications"
+   ],
+   "calls": [
+    "ow_billing.pkg_ow_util.f_md5_uuid",
+    "ow_billing.pkg_ow_util.log_msg"
+   ]
+  },
+  {
+   "routine": "ow_billing.pkg_dunning.sp_suspend_overdue",
+   "reads": [
+    "ow_billing.invoices",
+    "ow_billing.tenants"
+   ],
+   "writes": [
+    "ow_billing.subscriptions",
+    "ow_billing.tenants",
+    "ow_billing.notifications"
+   ],
+   "calls": [
+    "ow_billing.pkg_ow_util.f_md5_uuid",
+    "ow_billing.pkg_ow_util.log_msg"
+   ]
+  },
+  {
+   "routine": "ow_billing.pkg_dunning.job_nightly_dunning",
+   "reads": [],
+   "writes": [],
+   "calls": [
+    "ow_billing.pkg_dunning.sp_schedule_dunning",
+    "ow_billing.pkg_dunning.sp_suspend_overdue"
+   ]
+  },
+  {
+   "routine": "ow_billing.pkg_invoicing.compute_preview",
+   "reads": [
+    "ow_billing.subscriptions",
+    "ow_billing.plans",
+    "ow_billing.credit_notes",
+    "ow_billing.tenants"
+   ],
+   "writes": [],
+   "calls": [
+    "ow_billing.pkg_rating.compute_rating"
+   ]
+  },
+  {
+   "routine": "ow_billing.pkg_invoicing.fn_invoice_preview",
+   "reads": [],
+   "writes": [],
+   "calls": [
+    "ow_billing.pkg_invoicing.compute_preview"
+   ]
+  },
+  {
+   "routine": "ow_billing.pkg_invoicing.fn_invoice_lines",
+   "reads": [
+    "ow_billing.invoice_lines"
+   ],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_invoicing.sp_issue_invoice",
+   "reads": [
+    "ow_billing.credit_notes",
+    "ow_billing.invoice_lines"
+   ],
+   "writes": [
+    "ow_billing.invoices",
+    "ow_billing.invoice_lines",
+    "ow_billing.credit_notes"
+   ],
+   "calls": [
+    "ow_billing.pkg_rating.sp_finalize_rating",
+    "ow_billing.pkg_ow_util.f_md5_uuid",
+    "ow_billing.pkg_ow_util.log_msg"
+   ]
+  },
+  {
+   "routine": "ow_billing.pkg_ow_util.f_md5_uuid",
+   "reads": [],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_ow_util.f_code_desc",
+   "reads": [
+    "ow_billing.codes"
+   ],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_ow_util.f_dt2str",
+   "reads": [],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_ow_util.f_str2dt",
+   "reads": [],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_ow_util.log_msg",
+   "reads": [],
+   "writes": [
+    "ow_billing.billing_audit_log"
+   ],
+   "calls": [
+    "ow_billing.trg_billing_audit_log_id"
+   ]
+  },
+  {
+   "routine": "ow_billing.trg_billing_audit_log_id",
+   "reads": [],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_ow_util.job_purge_audit_log",
+   "reads": [
+    "ow_billing.billing_audit_log"
+   ],
+   "writes": [
+    "ow_billing.billing_audit_log"
+   ],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_plans.fn_list_plans",
+   "reads": [
+    "ow_billing.plans"
+   ],
+   "writes": [],
+   "calls": [
+    "ow_billing.pkg_ow_util.log_msg"
+   ]
+  },
+  {
+   "routine": "ow_billing.pkg_plans.fn_entitlement",
+   "reads": [
+    "ow_billing.tenants",
+    "ow_billing.subscriptions",
+    "ow_billing.plans"
+   ],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_plans.sp_change_plan",
+   "reads": [
+    "ow_billing.subscriptions",
+    "ow_billing.plans"
+   ],
+   "writes": [
+    "ow_billing.subscriptions"
+   ],
+   "calls": [
+    "ow_billing.pkg_ow_util.f_md5_uuid",
+    "ow_billing.pkg_ow_util.log_msg",
+    "ow_billing.trg_subscriptions_hist",
+    "ow_billing.trg_sub_no_uncancel"
+   ]
+  },
+  {
+   "routine": "ow_billing.trg_subscriptions_hist",
+   "reads": [
+    "ow_billing.subscriptions"
+   ],
+   "writes": [
+    "ow_billing.subscriptions_hist"
+   ],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.trg_sub_no_uncancel",
+   "reads": [
+    "ow_billing.subscriptions"
+   ],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_rating.compute_rating",
+   "reads": [
+    "ow_billing.subscriptions",
+    "ow_billing.plans",
+    "ow_billing.usage_events",
+    "ow_billing.rating_periods",
+    "ow_billing.rating_results"
+   ],
+   "writes": [
+    "ow_billing.rating_periods",
+    "ow_billing.rating_results"
+   ],
+   "calls": [
+    "ow_billing.pkg_ow_util.log_msg"
+   ]
+  },
+  {
+   "routine": "ow_billing.pkg_rating.fn_usage_rating",
+   "reads": [
+    "ow_billing.usage_events",
+    "ow_billing.rating_results"
+   ],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_rating.fn_usage_summary",
+   "reads": [
+    "ow_billing.usage_events"
+   ],
+   "writes": [],
+   "calls": []
+  },
+  {
+   "routine": "ow_billing.pkg_rating.sp_finalize_rating",
+   "reads": [
+    "ow_billing.rating_periods"
+   ],
+   "writes": [
+    "ow_billing.rating_periods",
+    "ow_billing.rating_results"
+   ],
+   "calls": [
+    "ow_billing.pkg_rating.compute_rating",
+    "ow_billing.pkg_ow_util.f_md5_uuid",
+    "ow_billing.pkg_ow_util.log_msg"
+   ]
+  },
+  {
+   "routine": "ow_billing.pkg_rating.trg_usage_events_check",
+   "reads": [
+    "ow_billing.usage_events"
+   ],
+   "writes": [],
+   "calls": []
+  }
+ ]
+}

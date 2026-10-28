@@ -1,0 +1,49 @@
+{
+ "version": "map-v1",
+ "family": "oracle",
+ "target_kind": "lakebase",
+ "rerun_posture": "first_run_baseline",
+ "objects": [
+  {
+   "root_table": "ow_billing.dunning_attempts",
+   "object": "dunning_attempts",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  },
+  {
+   "root_table": "ow_billing.notifications",
+   "object": "notifications",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  },
+  {
+   "root_table": "ow_billing.tenants",
+   "object": "tenants",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  },
+  {
+   "root_table": "ow_billing.subscriptions",
+   "object": "subscriptions",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  }
+ ],
+ "note": "object names de-qualified to bare table names for LakebaseTargetAdapter (--target-schema ow_tp_invoicing); otherwise identical to .migration/units/pkg_dunning/mapping_spec.json"
+}

@@ -1,0 +1,39 @@
+{
+ "version": "map-v1",
+ "family": "oracle",
+ "target_kind": "lakebase",
+ "rerun_posture": "first_run_baseline",
+ "objects": [
+  {
+   "root_table": "ow_billing.rating_periods",
+   "object": "rating_periods",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  },
+  {
+   "root_table": "ow_billing.rating_results",
+   "object": "rating_results",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  },
+  {
+   "root_table": "ow_billing.usage_events",
+   "object": "usage_events",
+   "key": {
+    "source": [
+     "id"
+    ],
+    "target": "id"
+   }
+  }
+ ],
+ "note": "object names de-qualified to bare table names for LakebaseTargetAdapter (--target-schema ow_tp_invoicing); otherwise identical to .migration/units/pkg_rating/mapping_spec.json"
+}
