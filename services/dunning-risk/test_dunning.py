@@ -96,6 +96,14 @@ class SafetyTests(unittest.TestCase):
         ]
         self.assertEqual([row["tenant_id"] for row in historyExamples(rows * 2)], ["d", "p", "c"])
 
+    def testHistoryExamplesAllowTwoCategories(self) -> None:
+        rows = [
+            {"tenant_id": name, "subscription_id": "s", "risk_score": score,
+             "paid_invoices": paid, "overdue_invoices": overdue, "credit_note_count": 0}
+            for name, score, paid, overdue in (("d", 85, 0, 1), ("p", 0, 1, 0))
+        ]
+        self.assertEqual([row["tenant_id"] for row in historyExamples(rows)], ["d", "p"])
+
 
 def warehouseTests() -> str:
     snapshot = fixture()

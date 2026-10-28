@@ -114,8 +114,10 @@ The verifier SELECTs the complete Lakebase copy using a separately minted target
 credential and read-only connection. It compares every column as multisets,
 including duplicate multiplicity, snapshot provenance and component points;
 matching row counts alone cannot pass. It emits equal SHA-256 hashes and examples
-selected from the **Lakebase rows**, including Tenant One and distinct tenants with
-overdue, paid and credit history. Raw snapshots/exports and credentials are never
+selected from the **Lakebase rows**: Tenant One plus two or three distinct tenants,
+preferring overdue, paid and credit history when available. Missing one category
+does not invalidate full-row parity; fewer than two examples fail this demo proof.
+Raw snapshots/exports and credentials are never
 committed or bundled. Live results belong in the PR description.
 
 Repository `make tp-smoke` was attempted: it passed the pre-Go gates, then stopped
