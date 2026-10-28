@@ -66,25 +66,6 @@
       "ref": "plan.yaml decisions target-data-dependency / parity-mechanism"
     }
   },
-  "merge_overrides": [
-    {
-      "decision": "d-merge-overrides",
-      "units": [
-        "plans",
-        "usage_events",
-        "entity_attr_value",
-        "invoice_header",
-        "invoice_line"
-      ]
-    },
-    {
-      "decision": "d-merge-overrides",
-      "units": [
-        "subscriptions_hist",
-        "customer_master_hist"
-      ]
-    }
-  ],
   "batches": [
     {
       "id": "w1-b01",
