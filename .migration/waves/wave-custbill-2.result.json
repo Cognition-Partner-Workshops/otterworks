@@ -1,0 +1,110 @@
+{
+  "auto_merge": false,
+  "base_sha": "bd80df0e36a17f3bbc1e30130e74583cca95fc10",
+  "batches": [
+    {
+      "blocker_classes": [
+        "data",
+        "evidence",
+        "rerun_policy",
+        "structural"
+      ],
+      "branch": "devin/1793155647-custbill-ldp-c01",
+      "changed_paths": [
+        ".migration/recon/custbill-ldp/mapping_spec.json",
+        ".migration/recon/custbill-ldp/notes.md",
+        ".migration/recon/custbill-ldp/recon.summary.md",
+        ".migration/recon/custbill-ldp/report.md",
+        ".migration/recon/custbill-ldp/result.json",
+        "etl/dbx-custbill/resources/ow_tp_custbill_ldp.pipeline.yml",
+        "etl/dbx-custbill/src/ow_tp_custbill_ldp.py"
+      ],
+      "failure_class": "missing_rule",
+      "gates": [
+        {
+          "evidence": {
+            "label": "row_parity",
+            "path": ".migration/recon/custbill-ldp/result.json",
+            "rows": 18750,
+            "verdict": "FAIL"
+          },
+          "id": "custbill-ldp-recon",
+          "status": "failed"
+        }
+      ],
+      "id": "c01",
+      "merge_authority": {
+        "kind": "harness"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "custbill-ldp converted and deployed (parsed_records 18,750, quarantine 0, finance_billing_totals 204) but the committed spec cannot grade a rejects-only table and a rollup against the full root \u2014 harness emits by-construction data blockers plus SDP MV-visibility rerun/structural gaps; FAIL, harness is merge authority.",
+      "parity": "FAIL",
+      "pr_head": "fb832d124100c4b01a85912b2e93ce97ea821681",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2308",
+      "prompt_sha": "7ad924bff726ef03",
+      "recon_cost": {
+        "elapsed_s": 10.029,
+        "source_rows_fetched": 0,
+        "source_statements": 28,
+        "target_rows_fetched": 0,
+        "target_statements": 18
+      },
+      "recon_mode": "live",
+      "recon_verdict": "FAIL",
+      "skill_feedback": [
+        "SDP @dp.table emits MATERIALIZED_VIEWs on serverless \u2014 invisible to _UC_PHYSICAL in adapters.py: shape cannot read them (rerun-proof impossible under posture required) and tier0 reports structural gaps; SDP units need a documented proof path or plugin fix",
+        "@dp.expect_or_drop predicates evaluate on output columns \u2014 a column referenced by an expectation must stay in the projection (raw_line retained in parsed_records)",
+        "Committed mapping_spec grades rejects-only quarantine and group-by rollup objects literally against the full source root \u2014 grading scope for non-1:1 target kinds needs plan-level scoping rules, not worker-editable root_where/target_where",
+        "Committed spec object names needed normalization to bare table names (target adapter prefixes catalog/schema; wave-1 convention)",
+        "make tp-smoke fails on this VM at the api-gateway step \u2014 no go toolchain installed; offline gates green"
+      ],
+      "status": "FAIL",
+      "write_targets": [
+        "ow_tp.ow_tp_custbill.finance_billing_totals",
+        "ow_tp.ow_tp_custbill.ow_tp_custbill_ldp",
+        "ow_tp.ow_tp_custbill.parsed_records",
+        "ow_tp.ow_tp_custbill.quarantine"
+      ]
+    }
+  ],
+  "breaker_tripped_on": "missing_rule",
+  "brief": [
+    "Wave 2 close, plan step run-custbill-wave-2.",
+    "Landed: 0 of 1 batches passed their own recon.",
+    "Independent verify: NOT RUN.",
+    "Failed: c01. Blocked: none. Held by circuit breaker: none.",
+    "Cost: estimated n/a; actual source_statements=28, target_statements=18, source_rows_fetched=0, target_rows_fetched=0, harness time 10s. Verifier depth full, overrides: c01=full.",
+    "Awaiting manual merge: none reported",
+    "",
+    "Verifier findings: none.",
+    "",
+    "Skill feedback to fold in before the next wave:",
+    "- @dp.expect_or_drop predicates evaluate on output columns \u2014 a column referenced by an expectation must stay in the projection (raw_line retained in parsed_records)",
+    "- Committed mapping_spec grades rejects-only quarantine and group-by rollup objects literally against the full source root \u2014 grading scope for non-1:1 target kinds needs plan-level scoping rules, not worker-editable root_where/target_where",
+    "- Committed spec object names needed normalization to bare table names (target adapter prefixes catalog/schema; wave-1 convention)",
+    "- SDP @dp.table emits MATERIALIZED_VIEWs on serverless \u2014 invisible to _UC_PHYSICAL in adapters.py: shape cannot read them (rerun-proof impossible under posture required) and tier0 reports structural gaps; SDP units need a documented proof path or plugin fix",
+    "- make tp-smoke fails on this VM at the api-gateway step \u2014 no go toolchain installed; offline gates green",
+    "",
+    "Per batch:",
+    "- c01: FAIL. custbill-ldp converted and deployed (parsed_records 18,750, quarantine 0, finance_billing_totals 204) but the committed spec cannot grade a rejects-only table and a rollup against the full root \u2014 harness emits by-construction data blockers plus SDP MV-visibility rerun/structural gaps; FAIL, harness is merge authority. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2308"
+  ],
+  "close": null,
+  "close_minutes": 30,
+  "closed": false,
+  "doctor_signed_at": "2026-10-28T02:46:48+00:00",
+  "hook_probe": "blocked:0f305eab",
+  "manifest_sha": "caf7e6cfa989",
+  "merge_overrides": [],
+  "pipeline_order": {},
+  "plan_sha": "55c64f0f372af9f6dcadf215cf6f874487c01be3fc6ff1e02372718f0b1d6a2e",
+  "plan_step": "run-custbill-wave-2",
+  "resync": null,
+  "tag": "custbill-2",
+  "undeclared_write_targets": {},
+  "unreported_write_targets": [],
+  "verify": null,
+  "waived_gates": [],
+  "wave": 2,
+  "width": 1,
+  "write_target_overlaps": []
+}
