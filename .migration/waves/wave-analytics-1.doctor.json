@@ -369,7 +369,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T01:43:35Z",
+  "generated_at": "2026-10-28T01:44:10Z",
   "hook_probe": "blocked:8b60a95f",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
@@ -377,14 +377,14 @@
     "userName": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2"
   },
   "inputs_sha": "da0dc2503fa1d377cfd843719f3500b646dcc62905d9ccebd02890ec4dbe8ced",
-  "manifest_sha": "c294c416952b",
+  "manifest_sha": "023c28956c7f",
   "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1",
   "ready": true,
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
-  "signature": "ad70062abea0a56a1ceb210cf0a8ab9b8d0f2dc5bcd64b034ef1acf320b715bb",
-  "signed_at": "2026-10-28T01:43:35+00:00",
+  "signature": "63ac796b81662a27c1ced314c42a04181558cda18b3caa9d179959e42ba501de",
+  "signed_at": "2026-10-28T01:44:11+00:00",
   "source": {
     "family": "databricks",
     "params": {

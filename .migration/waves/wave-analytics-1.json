@@ -5,7 +5,7 @@
   "base_branch": "tp-run/databricks-1793146609",
   "width": 2,
   "breaker_threshold": 2,
-  "max_minutes": 60,
+  "max_minutes": 75,
   "close_minutes": 30,
   "doctor_max_age": 15,
   "auto_merge": false,
@@ -139,5 +139,6 @@
         "row_counts_known": false
       }
     ]
-  }
+  },
+  "brief": "Relaunch of run-analytics-wave-1 after protected_files_tampered cleanup on both batch heads; verify leg runs this time"
 }
