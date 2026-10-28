@@ -1,0 +1,113 @@
+{
+  "gate": "w1-recon",
+  "kind": "row_parity",
+  "batch": "w1-b02",
+  "unit": "pkg_ow_util",
+  "verdict": "passed",
+  "parity": "PASS",
+  "mode": "transactional",
+  "depth": "threshold",
+  "tolerance_version": "tol-20261027-v1",
+  "merge_eligible": true,
+  "merge_policy": "eligible",
+  "blocker_classes": [],
+  "merge_block_reasons": [],
+  "routine_parity": [
+    {
+      "routine": "ow_billing.pkg_dunning.sp_schedule_dunning",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_dunning.sp_suspend_overdue",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_dunning.job_nightly_dunning",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_invoicing.compute_preview",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_invoicing.fn_invoice_preview",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_invoicing.sp_issue_invoice",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_ow_util.log_msg",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_ow_util.job_purge_audit_log",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_plans.fn_list_plans",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_plans.sp_change_plan",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.trg_subscriptions_hist",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_rating.compute_rating",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    },
+    {
+      "routine": "ow_billing.pkg_rating.sp_finalize_rating",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no row in .migration/recon/pkg_ow_util/routine_parity.json"
+    }
+  ],
+  "rerun_proof_passed": true,
+  "cost": {
+    "source_statements": 71,
+    "source_rows_fetched": 129,
+    "target_statements": 65,
+    "target_rows_fetched": 97,
+    "elapsed_s": 7.322
+  },
+  "rows": {
+    "source_counts": {
+      "ow_billing.billing_audit_log": 0,
+      "ow_billing.codes": 32
+    }
+  },
+  "evidence": ".migration/recon/pkg_ow_util/result.json",
+  "report": ".migration/recon/pkg_ow_util/report.md",
+  "declared_path": ".migration/recon/wave-invoicing-1/w1-b02/report.json",
+  "declared_path_note": "manifest declares this path, but batch workers may only write .migration/recon/<unit_id>/; the stray copy was removed (commit 876bb33c5) \u2014 this file is the same gate evidence under the unit dir."
+}
