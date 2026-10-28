@@ -7,7 +7,7 @@
   "width": 1,
   "breaker_threshold": 1,
   "auto_merge": false,
-  "max_minutes": 180,
+  "max_minutes": 60,
   "verify_depth": "threshold",
   "capabilities": {
     "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
