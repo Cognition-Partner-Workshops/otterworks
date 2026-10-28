@@ -1,29 +1,42 @@
 {
+  "version": "map-v1",
+  "target_kind": "databricks",
   "objects": [
     {
-      "root_table": "custbill_feed_file",
-      "object": "ow_tp.ow_tp_custbill.custbill_feed",
-      "notes": "Input edge: reads the staging feed table written by custbill-feed."
-    },
-    {
-      "root_table": "parsed_records",
+      "root_table": "ow_billing.invoice_header",
       "object": "ow_tp.ow_tp_custbill.parsed_records",
-      "notes": "Validated parse output (cust_id, cust_name, bill_date ISO, bill_amount 2dp, currency, record_type)."
+      "key": {
+        "source": [
+          "invoice_id"
+        ],
+        "target": [
+          "invoice_id"
+        ]
+      }
     },
     {
-      "root_table": "quarantine_rejects",
+      "root_table": "ow_billing.invoice_header",
       "object": "ow_tp.ow_tp_custbill.quarantine",
-      "notes": "Expectation-failed records: bad length, bad date, unknown currency/record_type, implied-decimal overflow."
+      "key": {
+        "source": [
+          "invoice_id"
+        ],
+        "target": [
+          "invoice_id"
+        ]
+      }
     },
     {
-      "root_table": "finance_billing_totals",
+      "root_table": "ow_billing.invoice_header",
       "object": "ow_tp.ow_tp_custbill.finance_billing_totals",
-      "notes": "Month-end rollup keyed (currency, record_type): RecordCount + TotalAmount, matching finance_billing_*.csv."
-    },
-    {
-      "root_table": "custbill_ldp",
-      "object": "ow_tp_custbill_ldp",
-      "notes": "Deploy object: the Lakeflow Declarative Pipeline itself (pipeline definition, expectations, quarantine sink)."
+      "key": {
+        "source": [
+          "batch_no"
+        ],
+        "target": [
+          "billing_period"
+        ]
+      }
     }
   ]
 }

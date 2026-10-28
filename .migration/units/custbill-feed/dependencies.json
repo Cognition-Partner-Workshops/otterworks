@@ -1,15 +1,36 @@
 {
   "routines": [
     {
-      "routine": "oracle_custbill_extract",
-      "reads": ["invoice_header", "customer_master", "tenants"],
-      "writes": ["custbill_feed_file"],
+      "routine": "custbill.ow_tp_custbill_feed",
+      "reads": [
+        "custbill_drop",
+        "ow_billing.invoice_header"
+      ],
+      "writes": [],
+      "calls": [
+        "custbill.oracle_custbill_extract",
+        "custbill.sftp_ingest_poll"
+      ]
+    },
+    {
+      "routine": "custbill.oracle_custbill_extract",
+      "reads": [
+        "ow_billing.customer_master",
+        "ow_billing.tenants"
+      ],
+      "writes": [
+        "ow_billing.invoice_header"
+      ],
       "calls": []
     },
     {
-      "routine": "sftp_ingest_poll",
-      "reads": ["custbill_drop"],
-      "writes": ["custbill_feed_file"],
+      "routine": "custbill.sftp_ingest_poll",
+      "reads": [
+        "custbill_drop"
+      ],
+      "writes": [
+        "ow_billing.invoice_header"
+      ],
       "calls": []
     }
   ]

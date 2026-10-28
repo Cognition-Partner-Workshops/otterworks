@@ -1,9 +1,18 @@
 {
+  "version": "map-v1",
+  "target_kind": "databricks",
   "objects": [
     {
-      "root_table": "custbill_feed_file",
+      "root_table": "ow_billing.invoice_header",
       "object": "ow_tp.ow_tp_custbill.custbill_feed",
-      "notes": "Raw CUSTBILL fixed-width records (CBCUST01 layout, 65-char) as produced by the Oracle month-end extract and/or the SFTP drop landing. Snapshot load; one row per source record."
+      "key": {
+        "source": [
+          "invoice_id"
+        ],
+        "target": [
+          "invoice_id"
+        ]
+      }
     }
   ]
 }

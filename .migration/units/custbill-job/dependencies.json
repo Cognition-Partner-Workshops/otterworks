@@ -1,9 +1,11 @@
 {
   "routines": [
     {
-      "routine": "run_all",
-      "reads": ["finance_billing_totals"],
-      "writes": ["custbill_job"],
+      "routine": "custbill.ow_tp_custbill_job",
+      "reads": [
+        "ow_billing.invoice_header"
+      ],
+      "writes": [],
       "calls": []
     }
   ]

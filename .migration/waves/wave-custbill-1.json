@@ -83,9 +83,12 @@
         "custbill-feed"
       ],
       "write_targets": [
-        "ow_tp.ow_tp_custbill.custbill_feed"
+        "ow_tp.ow_tp_custbill.custbill_feed",
+        "ow_tp.ow_tp_custbill.ow_tp_custbill_feed"
       ],
-      "deploy_objects": [],
+      "deploy_objects": [
+        "ow_tp.ow_tp_custbill.ow_tp_custbill_feed"
+      ],
       "lakeflow_pipelines": [],
       "verify_depth": "full",
       "brief": "Convert tools/oracle_custbill_extract.py + jobs/sftp_ingest_poll.ksh: snapshot Oracle month-end extract (invoice_header join customer_master left join tenants, batch_no/tenant filter) plus the SFTP drop landing into ow_tp.ow_tp_custbill.custbill_feed staging table — one row per CBCUST01 65-char record, HDR/TRL rows kept tagged or dropped per spec. Snapshot load only; read-only OW_BILLING.",

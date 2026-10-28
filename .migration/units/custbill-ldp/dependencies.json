@@ -1,15 +1,34 @@
 {
   "routines": [
     {
-      "routine": "parse_custbill_fixedwidth",
-      "reads": ["custbill_feed_file"],
-      "writes": ["parsed_records", "quarantine_rejects"],
+      "routine": "custbill.ow_tp_custbill_ldp",
+      "reads": [
+        "ow_billing.invoice_header"
+      ],
+      "writes": [],
+      "calls": [
+        "custbill.parse_custbill_fixedwidth",
+        "custbill.finance_excel_report"
+      ]
+    },
+    {
+      "routine": "custbill.parse_custbill_fixedwidth",
+      "reads": [
+        "ow_billing.invoice_header"
+      ],
+      "writes": [
+        "ow_billing.invoice_header"
+      ],
       "calls": []
     },
     {
-      "routine": "finance_excel_report",
-      "reads": ["parsed_records"],
-      "writes": ["finance_billing_totals", "custbill_ldp"],
+      "routine": "custbill.finance_excel_report",
+      "reads": [
+        "ow_billing.invoice_header"
+      ],
+      "writes": [
+        "ow_billing.invoice_header"
+      ],
       "calls": []
     }
   ]

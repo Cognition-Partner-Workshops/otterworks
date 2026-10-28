@@ -1,9 +1,18 @@
 {
+  "version": "map-v1",
+  "target_kind": "databricks",
   "objects": [
     {
-      "root_table": "custbill_job",
-      "object": "ow_tp_custbill_job",
-      "notes": "Deploy object: the Lakeflow Job replacing crontab/run_all.sh — tasks feed-load, pipeline run, report materialization; PAUSED schedule."
+      "root_table": "ow_billing.invoice_header",
+      "object": "ow_tp.ow_tp_custbill.ow_tp_custbill_job",
+      "key": {
+        "source": [
+          "invoice_id"
+        ],
+        "target": [
+          "job_id"
+        ]
+      }
     }
   ]
 }
