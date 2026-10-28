@@ -16,8 +16,10 @@
       "status": "ok"
     },
     {
-      "data": {},
-      "detail": "no .migration/authorizations.json (no legacy write, gate waiver or merge override is authorized)",
+      "data": {
+        "entries": 1
+      },
+      "detail": "1 authorization entries in .migration/authorizations.json",
       "id": "authorizations_file",
       "reusable": false,
       "status": "ok"
@@ -357,7 +359,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T12:22:19Z",
+  "generated_at": "2026-10-28T15:05:21Z",
   "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
