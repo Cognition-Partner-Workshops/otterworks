@@ -1,0 +1,437 @@
+{
+  "unit": "u-invoice-quality-pipeline",
+  "mode": "live",
+  "mapping_version": "ow-tp-map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "threshold",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 28,
+    "source_rows_fetched": 0,
+    "target_statements": 28,
+    "target_rows_fetched": 0,
+    "elapsed_s": 14.494
+  },
+  "generated_at": "2026-10-28T12:47:13.531200+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 3,
+      "stats": {
+        "invoice_line_quarantine": {
+          "source": {
+            "table_type": null,
+            "primary_key": [
+              "line_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "line_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": "MATERIALIZED_VIEW",
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "line_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "invoice_header_quarantine": {
+          "source": {
+            "table_type": null,
+            "primary_key": [
+              "invoice_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "invoice_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": "MATERIALIZED_VIEW",
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "invoice_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "customer_master_quarantine": {
+          "source": {
+            "table_type": null,
+            "primary_key": [
+              "cust_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "cust_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": "MATERIALIZED_VIEW",
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "cust_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "invoice_line_quarantine": {
+            "grants": [
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "invoice_header_quarantine": {
+            "grants": [
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "customer_master_quarantine": {
+            "grants": [
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "platform_inherent": [],
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "invoice_line_quarantine",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "invoice_header_quarantine",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "customer_master_quarantine",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 3,
+      "stats": {
+        "source_counts": {
+          "OW_BILLING.INVOICE_LINE": 150000,
+          "OW_BILLING.INVOICE_HEADER": 18750,
+          "OW_BILLING.CUSTOMER_MASTER": 25001
+        },
+        "by_design_unverified": [
+          "invoice_line_quarantine",
+          "invoice_header_quarantine",
+          "customer_master_quarantine"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {},
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    },
+    {
+      "reason": "by_design_unverified",
+      "class": "evidence"
+    }
+  ],
+  "blocker_classes": [
+    "evidence",
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "grading": {
+    "invoice_line_quarantine": "by_design_unverified",
+    "invoice_header_quarantine": "by_design_unverified",
+    "customer_master_quarantine": "by_design_unverified"
+  },
+  "type_map": {
+    "family": "oracle",
+    "target_kind": "databricks",
+    "filled": [],
+    "unmapped": []
+  },
+  "rerun_proof": {
+    "unit": "u-invoice-quality-pipeline",
+    "sources": [
+      "databricks/mig_1793185083/b1-quality/src/invoice_quality.py"
+    ],
+    "fresh": "pass",
+    "evolved": "unsupported",
+    "passed": true,
+    "findings": [],
+    "notes": [],
+    "tables": [
+      "customer_master_quarantine",
+      "invoice_header_quarantine",
+      "invoice_line_quarantine"
+    ],
+    "source_digest": "85739ff8daad7d4a2e4847346c50a00edabbf76da8b07cb128080975f67446a2",
+    "evidence": {
+      "fresh": "pipeline update a51bc826-e0c7-4085-8b65-98981150a789 (COMPLETED; initial landing)",
+      "evolved": "pipeline update 6cc5d8d6-7151-4a91-b1a0-71a3b28c636c (COMPLETED; rerun over existing sinks)"
+    },
+    "shape": {
+      "tables": {
+        "invoice_line_quarantine": [
+          {
+            "name": "line_id",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "invoice_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "invoice_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "reject_reasons",
+            "type": "array<string>",
+            "nullable": true
+          }
+        ],
+        "invoice_header_quarantine": [
+          {
+            "name": "invoice_id",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "invoice_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "due_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "reject_reasons",
+            "type": "array<string>",
+            "nullable": true
+          }
+        ],
+        "customer_master_quarantine": [
+          {
+            "name": "cust_id",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "signup_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "reject_reasons",
+            "type": "array<string>",
+            "nullable": true
+          }
+        ]
+      }
+    },
+    "shape_digest": "e5040e6bc1e0d11a89b0fb7311aa7a12b77621b454d3900a7567886b3f93508d",
+    "unsupported_kind": "nothing_evolved",
+    "unsupported_reason": "evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved"
+  },
+  "rerun_posture": "not_applicable",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed",
+    "by_design_unverified"
+  ],
+  "routine_parity": [],
+  "routine_writers": [],
+  "routine_dependencies": ".migration/units/u-invoice-quality-pipeline/dependencies.json",
+  "target_table_kinds": {
+    "invoice_line_quarantine": "MATERIALIZED_VIEW",
+    "invoice_header_quarantine": "MATERIALIZED_VIEW",
+    "customer_master_quarantine": "MATERIALIZED_VIEW"
+  },
+  "rerun_posture_reason": "not_applicable(MATERIALIZED_VIEW)"
+}

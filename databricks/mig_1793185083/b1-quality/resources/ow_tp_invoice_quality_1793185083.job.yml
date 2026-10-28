@@ -1,0 +1,20 @@
+resources:
+  jobs:
+    ow_tp_invoice_quality_1793185083_job:
+      name: ow_tp_invoice_quality_1793185083_job
+      max_concurrent_runs: 1
+      description: >-
+        Lakeflow Job driving pipeline ow_tp_invoice_quality_1793185083 (run
+        1793185083, batch b1-quality): full-refresh the OW_BILLING
+        invoice-quality quarantine sinks under ow_tp.mig_1793185083. The
+        schedule stays PAUSED until cutover; wave work triggers updates
+        manually.
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: refresh_invoice_quality_sinks
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.ow_tp_invoice_quality_1793185083.id}
+            full_refresh: true

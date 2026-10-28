@@ -1,0 +1,12 @@
+resources:
+  pipelines:
+    ow_tp_invoice_quality_1793185083:
+      name: ow_tp_invoice_quality_1793185083
+      catalog: ow_tp
+      schema: mig_1793185083
+      serverless: true
+      libraries:
+        - file:
+            path: ../src/invoice_quality.py
+      configuration:
+        pipelines.channel: CURRENT

@@ -1,0 +1,89 @@
+{
+  "unit": "u-invoice-quality-pipeline",
+  "sources": [
+    "databricks/mig_1793185083/b1-quality/src/invoice_quality.py"
+  ],
+  "fresh": "pass",
+  "evolved": "unsupported",
+  "passed": true,
+  "findings": [],
+  "notes": [],
+  "tables": [
+    "customer_master_quarantine",
+    "invoice_header_quarantine",
+    "invoice_line_quarantine"
+  ],
+  "source_digest": "85739ff8daad7d4a2e4847346c50a00edabbf76da8b07cb128080975f67446a2",
+  "evidence": {
+    "fresh": "pipeline update a51bc826-e0c7-4085-8b65-98981150a789 (COMPLETED; initial landing)",
+    "evolved": "pipeline update 6cc5d8d6-7151-4a91-b1a0-71a3b28c636c (COMPLETED; rerun over existing sinks)"
+  },
+  "shape": {
+    "tables": {
+      "invoice_line_quarantine": [
+        {
+          "name": "line_id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "invoice_dt",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "reject_reasons",
+          "type": "array<string>",
+          "nullable": true
+        }
+      ],
+      "invoice_header_quarantine": [
+        {
+          "name": "invoice_id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "invoice_dt",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "due_dt",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "reject_reasons",
+          "type": "array<string>",
+          "nullable": true
+        }
+      ],
+      "customer_master_quarantine": [
+        {
+          "name": "cust_id",
+          "type": "string",
+          "nullable": false
+        },
+        {
+          "name": "signup_dt",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "reject_reasons",
+          "type": "array<string>",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "shape_digest": "e5040e6bc1e0d11a89b0fb7311aa7a12b77621b454d3900a7567886b3f93508d",
+  "unsupported_kind": "nothing_evolved",
+  "unsupported_reason": "evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved"
+}

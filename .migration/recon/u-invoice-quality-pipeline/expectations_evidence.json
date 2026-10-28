@@ -1,0 +1,63 @@
+{
+  "unit": "u-invoice-quality-pipeline",
+  "gate": "expectations_evidence",
+  "verdict": "pass",
+  "method": "per-expectation violating-row recount over the extract the pipeline consumed (read_files on dbfs:/Volumes/ow_tp/mig_1793185083/ow_tp_invoice_quality_extract/*.csv) vs the rows each quarantine sink tagged with that expectation's reject_reason; the pipeline's own evaluation is the deployed code under review, so the recount is the independent leg",
+  "source_extract": "dbfs:/Volumes/ow_tp/mig_1793185083/ow_tp_invoice_quality_extract/{invoice_line,invoice_header,customer_master}.csv (literal SELECT-only extract of OW_BILLING.INVOICE_LINE/INVOICE_HEADER/CUSTOMER_MASTER, unfiltered = full estate)",
+  "expectations": [
+    {
+      "name": "line_has_header",
+      "mode": "expect_or_quarantine",
+      "pass_predicate": "INVOICE_ID IS NOT NULL AND INVOICE_ID IN (SELECT INVOICE_ID FROM OW_BILLING.INVOICE_HEADER)",
+      "implemented_as": "LEFT ANTI check in src/invoice_quality.py: lines whose invoice_id is NULL or absent from deduped headers carry 'line_has_header' in reject_reasons -> invoice_line_quarantine",
+      "source_violations_recount": 37,
+      "sink_rows_tagged": 37,
+      "verdict": "fires as specced"
+    },
+    {
+      "name": "line_invoice_dt_parseable",
+      "mode": "expect_or_quarantine",
+      "pass_predicate": "INVOICE_DT IS NULL OR try_to_date(INVOICE_DT, 'dd-MMM-yy') IS NOT NULL",
+      "implemented_as": "try_to_date check in src/invoice_quality.py -> invoice_line_quarantine",
+      "source_violations_recount": 0,
+      "sink_rows_tagged": 0,
+      "verdict": "fires as specced"
+    },
+    {
+      "name": "header_invoice_dt_parseable",
+      "mode": "expect_or_quarantine",
+      "pass_predicate": "INVOICE_DT IS NULL OR try_to_date(INVOICE_DT, 'dd-MMM-yy') IS NOT NULL",
+      "implemented_as": "try_to_date check in src/invoice_quality.py -> invoice_header_quarantine",
+      "source_violations_recount": 0,
+      "sink_rows_tagged": 0,
+      "verdict": "fires as specced"
+    },
+    {
+      "name": "header_due_dt_parseable",
+      "mode": "expect_or_quarantine",
+      "pass_predicate": "DUE_DT IS NULL OR try_to_date(DUE_DT, 'dd-MMM-yy') IS NOT NULL",
+      "implemented_as": "try_to_date check in src/invoice_quality.py -> invoice_header_quarantine",
+      "source_violations_recount": 0,
+      "sink_rows_tagged": 0,
+      "verdict": "fires as specced"
+    },
+    {
+      "name": "cm_signup_dt_parseable",
+      "mode": "expect_or_quarantine",
+      "pass_predicate": "SIGNUP_DT IS NULL OR try_to_date(SIGNUP_DT, 'dd-MMM-yy') IS NOT NULL",
+      "implemented_as": "try_to_date check in src/invoice_quality.py -> customer_master_quarantine",
+      "source_violations_recount": 50,
+      "sink_rows_tagged": 50,
+      "verdict": "fires as specced"
+    }
+  ],
+  "sink_totals": {
+    "invoice_line_quarantine": 37,
+    "invoice_header_quarantine": 0,
+    "customer_master_quarantine": 50
+  },
+  "notes": [
+    "reject_reasons may carry multiple reasons per row; every sink row's reason set was exploded for the tagged counts (invoice_line 37 tagged rows = 37 rows, invoice_header 0, customer_master 50)",
+    "pipeline updates a51bc826-e0c7-4085-8b65-98981150a789 (land) and 6cc5d8d6-7151-4a91-b1a0-71a3b28c636c (rerun) both COMPLETED"
+  ]
+}
