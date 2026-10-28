@@ -102,13 +102,5 @@
       "target": "shared ledger.jsonl",
       "ref": ".migration/ledger.jsonl"
     }
-  },
-  "merge_overrides": [
-    {
-      "decision": "d-merge-overrides",
-      "units": [
-        "custbill_finance_report"
-      ]
-    }
-  ]
+  }
 }
