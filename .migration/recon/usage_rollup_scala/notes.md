@@ -13,7 +13,12 @@ counts clean). `merge_eligible=false` — class `structural`:
   source staging table (all_privileges, select); on the target it is the
   table owner, so information_schema carries no grant row. Platform-inherent.
 
-No committed `merge_overrides` entry covers this unit -> merge_authority harness.
+The committed wave manifest carries exactly one `merge_overrides` entry
+covering this unit: `mo-analytics-w1-structural` (blocker_classes
+`structural`, units usage_rollup_scala + analytics_daily) -> merge_authority
+human_override mo-analytics-w1-structural. result.json's own
+`merge_authority` field stays `harness` — the harness records the raw
+verdict; the committed override is the workflow's authority.
 
 ## Fixture
 
