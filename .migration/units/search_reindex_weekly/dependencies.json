@@ -7,8 +7,9 @@
         "api.file_service.files"
       ],
       "writes": [
-        "meilisearch.documents_index",
-        "meilisearch.files_index"
+        "ow_tp.ow_tp_analytics_src.search_index_documents",
+        "ow_tp.ow_tp_analytics_src.search_index_files",
+        "ow_tp.ow_tp_analytics_src.reindex_report"
       ],
       "calls": []
     }

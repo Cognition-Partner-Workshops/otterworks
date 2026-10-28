@@ -1,10 +1,12 @@
 {
-  "version": "ow-tp-map-v1",
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "family": "databricks",
+  "rerun_posture": "required",
   "objects": [
     {
-      "object": "quarantined_files",
-      "root_table": "s3.otterworks_file_quarantine.quarantined",
-      "notes": "copied orphan objects; quarantine destination on target",
+      "root_table": "ow_tp.ow_tp_analytics_src.orphan_files",
+      "object": "ow_tp.ow_tp_analytics.storage_quarantine_actions",
       "key": {
         "source": [
           "s3_key"
@@ -12,32 +14,21 @@
         "target": [
           "s3_key"
         ]
-      }
+      },
+      "notes": "legacy: s3.otterworks-file-quarantine/quarantined (quarantined object ledger)"
     },
     {
-      "object": "file_storage_inventory",
-      "root_table": "s3.otterworks_file_storage.files",
-      "notes": "LEGACY WRITE: source-object deletes after quarantine copy; needs legacy_write_authorized entry",
+      "root_table": "ow_tp.ow_tp_analytics_src.cleanup_report",
+      "object": "ow_tp.ow_tp_analytics.storage_cleanup_report",
       "key": {
         "source": [
-          "s3_key"
+          "metric"
         ],
         "target": [
-          "s3_key"
+          "metric"
         ]
-      }
-    },
-    {
-      "object": "reports_storage_cleanup",
-      "root_table": "s3.otterworks_data_lake.reports_storage_cleanup",
-      "key": {
-        "source": [
-          "report_date"
-        ],
-        "target": [
-          "report_date"
-        ]
-      }
+      },
+      "notes": "legacy: s3.otterworks-data-lake/reports/storage_cleanup/* (per-run cleanup report)"
     }
   ]
 }

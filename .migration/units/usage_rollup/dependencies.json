@@ -7,7 +7,7 @@
         "postgres.otterworks_analytics.analytics_events"
       ],
       "writes": [
-        "file.usage_rollup_output"
+        "ow_tp.ow_tp_analytics_src.usage_rollup_output"
       ],
       "calls": []
     }

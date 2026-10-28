@@ -1,0 +1,112 @@
+{
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "run_id": "mig-ow-tp-billing-20261028",
+  "wave": 2,
+  "base_branch": "mig-ow-tp-billing-20261028",
+  "plan_step": "s-an-waves",
+  "width": 1,
+  "breaker_threshold": 1,
+  "max_minutes": 60,
+  "close_minutes": 30,
+  "doctor_max_age": 15,
+  "auto_merge": false,
+  "target_namespace": "ow_tp.ow_tp_analytics",
+  "verify_depth": "full",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "source": {
+    "family": "databricks",
+    "secret": "DATABRICKS_DEMO_HOST",
+    "params": {
+      "source_name": "ow_tp.ow_tp_analytics_src",
+      "target_name": "ow_tp.ow_tp_analytics",
+      "http_path": "/sql/1.0/warehouses/565cd2fd713738c4"
+    }
+  },
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "hard",
+    "ready": true
+  },
+  "pipelines": {
+    "invoicing": 1,
+    "custbill": 3,
+    "analytics": 2
+  },
+  "target_state": {
+    "core": {
+      "decision": "target-core",
+      "target": "Delta tables under ow_tp.ow_tp_analytics; per-batch isolated schemas ow_tp.ow_tp_analytics__wave<N>_<unit>",
+      "ref": "plan.yaml decision target-core"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "na": "no SQL surface; PySpark/Scala job code"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "na": "jobs not declarative pipelines"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Jobs ow_tp_analytics_* in bundle ow_tp_analytics, PAUSED schedules, retries",
+      "ref": "plan.yaml decision target-orchestration"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "na": "STOP E parks outputs side by side; no consumer repoint this run"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "na": "analytics waves write Delta only; Lakebase usage meter is separate step s-a-usage-meter"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no ML surfaces in analytics"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "legacy outputs materialize to ow_tp.ow_tp_analytics_src (snapshot posture); shared ledger .migration/ledger.jsonl",
+      "ref": "plan.yaml decisions target-data-dependency / parity-mechanism"
+    }
+  },
+  "merge_overrides": [
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "user_activity_daily"
+      ]
+    }
+  ],
+  "batches": [
+    {
+      "id": "w2-b01",
+      "units": [
+        "user_activity_daily"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.user_activity_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_user_activity_daily"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_user_activity_daily"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "brief": "Batch w2-b01 (pipeline analytics, wave 2 of 2 \u2014 serial, depends on wave-1 analytics_daily).\n- user_activity_daily: etl/scripts/user_activity_daily.py \u2014 30-day lookback over analytics_daily_summary + analytics daily top_users -> reports_user_activity + user_activity_summaries; job ow_tp_analytics_user_activity. Preserve silent-skip on missing days and the reports/user-activity/latest/ pointer contract (admin-service consumer, no repoint this run).\nReads only wave-1 target outputs (intra-pipeline edge); recon target-side vs captured legacy 30-day window materialized to ow_tp.ow_tp_analytics_src. Tolerance tol-20261027-v1. Read .migration/units/user_activity_daily/{dependencies.json,mapping_spec.json} and .migration/capabilities.json; evidence .migration/recon/wave-analytics-02/w2-b01/.",
+      "gates": [
+        {
+          "id": "user_activity_daily-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-02/w2-b01/report.json"
+        }
+      ]
+    }
+  ]
+}

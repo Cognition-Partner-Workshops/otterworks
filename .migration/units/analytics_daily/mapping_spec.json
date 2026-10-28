@@ -1,175 +1,101 @@
 {
-  "version": "ow-tp-map-v1",
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "family": "databricks",
+  "rerun_posture": "required",
   "objects": [
     {
-      "object": "analytics_daily_summary",
-      "root_table": "postgres.otterworks_analytics.analytics_daily_summary",
+      "root_table": "ow_tp.ow_tp_analytics_src.analytics_daily_summary",
+      "object": "ow_tp.ow_tp_analytics.analytics_daily_summary",
+      "key": {
+        "source": [
+          "report_date"
+        ],
+        "target": [
+          "report_date"
+        ]
+      },
       "fields": [
         {
           "source": "report_date",
           "target": "report_date",
-          "source_type": "DATE",
-          "target_type": "DATE",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "DATE"
         },
         {
           "source": "active_users",
           "target": "active_users",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "active_documents",
           "target": "active_documents",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "active_files",
           "target": "active_files",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "total_events",
           "target": "total_events",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "documents_created",
           "target": "documents_created",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "documents_edited",
           "target": "documents_edited",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "comments_added",
           "target": "comments_added",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "files_uploaded",
           "target": "files_uploaded",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "files_shared",
           "target": "files_shared",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "files_deleted",
           "target": "files_deleted",
-          "source_type": "INT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "bytes_uploaded",
           "target": "bytes_uploaded",
-          "source_type": "BIGINT",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source_type": "INT"
         },
         {
           "source": "updated_at",
           "target": "updated_at",
-          "source_type": "TIMESTAMPTZ",
-          "target_type": "TIMESTAMP",
-          "rules": [
-            "nondeterministic:written-on-load"
-          ],
-          "evidence": []
+          "source_type": "TIMESTAMPTZ"
         }
       ],
-      "key": {
-        "source": [
-          "report_date"
-        ],
-        "target": [
-          "report_date"
-        ]
-      }
+      "notes": "legacy: postgres.otterworks_analytics.analytics_daily_summary (daily aggregate write)"
     },
     {
-      "object": "analytics_daily_outputs",
-      "root_table": "s3.otterworks_data_lake.analytics_daily",
-      "notes": "hourly_breakdown+summary+top_users JSON.gz per day; land as Delta rows or UC volume files (plan decision target-storage)",
+      "root_table": "ow_tp.ow_tp_analytics_src.analytics_daily_report",
+      "object": "ow_tp.ow_tp_analytics.analytics_daily_report",
       "key": {
         "source": [
-          "report_date"
+          "s3_key"
         ],
         "target": [
-          "report_date"
+          "s3_key"
         ]
-      }
-    },
-    {
-      "object": "reports_analytics_daily",
-      "root_table": "s3.otterworks_data_lake.reports_analytics_daily",
-      "notes": "report.json per day; UC volume / file sink",
-      "key": {
-        "source": [
-          "report_date"
-        ],
-        "target": [
-          "report_date"
-        ]
-      }
+      },
+      "notes": "legacy: s3.otterworks-data-lake/reports/analytics_daily/* (per-run report rows)"
     }
   ]
 }

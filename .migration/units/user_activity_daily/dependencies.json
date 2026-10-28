@@ -3,12 +3,11 @@
     {
       "routine": "user_activity_daily",
       "reads": [
-        "postgres.otterworks_analytics.analytics_daily_summary",
-        "s3.otterworks_data_lake.analytics_daily"
+        "ow_tp.ow_tp_analytics_src.analytics_daily_summary",
+        "ow_tp.ow_tp_analytics_src.analytics_daily_report"
       ],
       "writes": [
-        "s3.otterworks_data_lake.reports_user_activity",
-        "s3.otterworks_data_lake.user_activity_summaries"
+        "ow_tp.ow_tp_analytics_src.user_activity_report"
       ],
       "calls": []
     }

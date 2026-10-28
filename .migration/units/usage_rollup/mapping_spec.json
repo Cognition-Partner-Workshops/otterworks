@@ -1,235 +1,71 @@
 {
-  "version": "ow-tp-map-v1",
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "family": "databricks",
+  "rerun_posture": "required",
   "objects": [
     {
-      "object": "usage_rollup_daily",
-      "root_table": "file.usage_rollup_output",
+      "root_table": "ow_tp.ow_tp_analytics_src.usage_rollup_output",
+      "object": "ow_tp.ow_tp_analytics.usage_rollup",
+      "key": {
+        "source": [
+          "date"
+        ],
+        "target": [
+          "date"
+        ]
+      },
       "fields": [
         {
           "source": "date",
-          "target": "date",
-          "source_type": "ISO date str",
-          "target_type": "DATE",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "target": "date"
         },
         {
-          "source": "totalEvents",
-          "target": "total_events",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "total_events",
+          "target": "total_events"
         },
         {
-          "source": "activeUsers",
-          "target": "active_users",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "active_users",
+          "target": "active_users"
         },
         {
-          "source": "documentsCreated",
-          "target": "documents_created",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "documents_created",
+          "target": "documents_created"
         },
         {
-          "source": "documentsViewed",
-          "target": "documents_viewed",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "documents_viewed",
+          "target": "documents_viewed"
         },
         {
-          "source": "documentsEdited",
-          "target": "documents_edited",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "documents_edited",
+          "target": "documents_edited"
         },
         {
-          "source": "filesUploaded",
-          "target": "files_uploaded",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "files_uploaded",
+          "target": "files_uploaded"
         },
         {
-          "source": "filesDownloaded",
-          "target": "files_downloaded",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "files_downloaded",
+          "target": "files_downloaded"
         },
         {
-          "source": "collabSessions",
-          "target": "collab_sessions",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "collab_sessions",
+          "target": "collab_sessions"
         },
         {
-          "source": "storageAllocatedBytes",
-          "target": "storage_allocated_bytes",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "storage_allocated_bytes",
+          "target": "storage_allocated_bytes"
         },
         {
-          "source": "storageReleasedBytes",
-          "target": "storage_released_bytes",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "storage_released_bytes",
+          "target": "storage_released_bytes"
         },
         {
-          "source": "netStorageBytes",
-          "target": "net_storage_bytes",
-          "source_type": "LONG",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
+          "source": "net_storage_bytes",
+          "target": "net_storage_bytes"
         }
       ],
-      "notes": "JSON report \u2192 Delta rows; generatedAt nondeterministic",
-      "key": {
-        "source": [
-          "date"
-        ],
-        "target": [
-          "date"
-        ]
-      }
-    },
-    {
-      "object": "analytics_events",
-      "root_table": "postgres.otterworks_analytics.analytics_events",
-      "fields": [
-        {
-          "source": "id",
-          "target": "id",
-          "source_type": "BIGSERIAL",
-          "target_type": "BIGINT",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
-        },
-        {
-          "source": "event_id",
-          "target": "event_id",
-          "source_type": "VARCHAR(64)",
-          "target_type": "STRING",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
-        },
-        {
-          "source": "event_type",
-          "target": "event_type",
-          "source_type": "VARCHAR(64)",
-          "target_type": "STRING",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
-        },
-        {
-          "source": "user_id",
-          "target": "user_id",
-          "source_type": "VARCHAR(128)",
-          "target_type": "STRING",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
-        },
-        {
-          "source": "resource_id",
-          "target": "resource_id",
-          "source_type": "VARCHAR(128)",
-          "target_type": "STRING",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
-        },
-        {
-          "source": "resource_type",
-          "target": "resource_type",
-          "source_type": "VARCHAR(64)",
-          "target_type": "STRING",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
-        },
-        {
-          "source": "metadata",
-          "target": "metadata",
-          "source_type": "TEXT(json)",
-          "target_type": "STRING",
-          "rules": [
-            "identity"
-          ],
-          "evidence": []
-        },
-        {
-          "source": "occurred_at",
-          "target": "occurred_at",
-          "source_type": "BIGINT epoch-nanos",
-          "target_type": "BIGINT",
-          "rules": [
-            "unit:epoch-ns"
-          ],
-          "evidence": []
-        }
-      ],
-      "notes": "source store the NDJSON export mirrors; kept for recon anchoring",
-      "key": {
-        "source": [
-          "event_id"
-        ],
-        "target": [
-          "event_id"
-        ]
-      }
+      "notes": "legacy: scripts/run-usage-rollup.sh NDJSON->json rollup output (usage_rollup_output.*)"
     }
   ]
 }

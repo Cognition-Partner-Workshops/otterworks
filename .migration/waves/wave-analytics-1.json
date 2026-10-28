@@ -1,0 +1,179 @@
+{
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "run_id": "mig-ow-tp-billing-20261028",
+  "wave": 1,
+  "base_branch": "mig-ow-tp-billing-20261028",
+  "plan_step": "s-an-waves",
+  "width": 2,
+  "breaker_threshold": 2,
+  "max_minutes": 60,
+  "close_minutes": 30,
+  "doctor_max_age": 15,
+  "auto_merge": false,
+  "target_namespace": "ow_tp.ow_tp_analytics",
+  "verify_depth": "full",
+  "child_skill": "unit-migration",
+  "verify_skill": "wave-verify",
+  "source": {
+    "family": "databricks",
+    "secret": "DATABRICKS_DEMO_HOST",
+    "params": {
+      "source_name": "ow_tp.ow_tp_analytics_src",
+      "target_name": "ow_tp.ow_tp_analytics",
+      "http_path": "/sql/1.0/warehouses/565cd2fd713738c4"
+    }
+  },
+  "capabilities": {
+    "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+    "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
+    "catalogs": [
+      "ow_tp"
+    ],
+    "guard_mode": "block",
+    "stop_mode": "hard",
+    "ready": true
+  },
+  "pipelines": {
+    "invoicing": 1,
+    "custbill": 3,
+    "analytics": 2
+  },
+  "target_state": {
+    "core": {
+      "decision": "target-core",
+      "target": "Delta tables under ow_tp.ow_tp_analytics; per-batch isolated schemas ow_tp.ow_tp_analytics__wave<N>_<unit>",
+      "ref": "plan.yaml decision target-core"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "na": "no SQL surface; PySpark/Scala job code"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "na": "jobs not declarative pipelines"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "Lakeflow Jobs ow_tp_analytics_* in bundle ow_tp_analytics, PAUSED schedules, retries",
+      "ref": "plan.yaml decision target-orchestration"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "na": "STOP E parks outputs side by side; no consumer repoint this run"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "na": "analytics waves write Delta only; Lakebase usage meter is separate step s-a-usage-meter"
+    },
+    "ml_scoring": {
+      "decision": "target-ml-scoring",
+      "na": "no ML surfaces in analytics"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "legacy outputs materialize to ow_tp.ow_tp_analytics_src (snapshot posture); shared ledger .migration/ledger.jsonl",
+      "ref": "plan.yaml decisions target-data-dependency / parity-mechanism"
+    }
+  },
+  "merge_overrides": [
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "analytics_daily",
+        "audit_archive_weekly",
+        "search_reindex_weekly"
+      ]
+    },
+    {
+      "decision": "d-merge-overrides",
+      "units": [
+        "storage_cleanup_daily",
+        "usage_rollup"
+      ]
+    }
+  ],
+  "batches": [
+    {
+      "id": "w1-b01",
+      "units": [
+        "analytics_daily",
+        "audit_archive_weekly",
+        "search_reindex_weekly"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.analytics_daily_summary",
+        "ow_tp.ow_tp_analytics.analytics_daily_report",
+        "ow_tp.ow_tp_analytics.audit_archive",
+        "ow_tp.ow_tp_analytics.audit_archive_report",
+        "ow_tp.ow_tp_analytics.search_index_docs",
+        "ow_tp.ow_tp_analytics.search_reindex_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_daily",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_audit_archive_weekly",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_search_reindex_weekly"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_daily",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_audit_archive_weekly",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_search_reindex_weekly"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "brief": "Batch w1-b01 (pipeline analytics, wave 1 of 2). Convert three independent leaf units, one Lakeflow Job each in bundle ow_tp_analytics (PAUSED schedules, retries):\n- analytics_daily: etl/scripts/analytics_daily.py \u2014 SQS otterworks-analytics + DynamoDB otterworks-analytics-events -> ow_tp.ow_tp_analytics.analytics_daily_summary + analytics_daily_outputs + reports_analytics_daily; job ow_tp_analytics_daily. Preserve eventType normalization, resolved_user_id mapping, hour buckets, ON CONFLICT (report_date) upsert semantics.\n- audit_archive_weekly: etl/scripts/audit_archive_weekly.py \u2014 DynamoDB otterworks-audit-events >90d -> audit_events_archive + audit_events + reports_audit_archive; job ow_tp_analytics_audit_archive. LEGACY WRITE (batch delete of archived items) is inert until a committed legacy_write_authorized entry; target-side prune only.\n- search_reindex_weekly: etl/scripts/search_reindex_weekly.py \u2014 document/file service HTTP APIs -> search_documents_index + search_files_index Delta surfaces; job ow_tp_analytics_search_reindex. Never touches the legacy MeiliSearch instance; keep the numberOfDocuments assert as a job gate.\nSnapshot posture: materialize each unit's legacy source extract to ow_tp.ow_tp_analytics_src first (fixture via AWS_ENDPOINT_URL for AWS stores), then recon src vs target per tol-20261027-v1. Read .migration/units/<unit>/{dependencies.json,mapping_spec.json} and .migration/capabilities.json; evidence .migration/recon/wave-analytics-01/<batch>/.",
+      "gates": [
+        {
+          "id": "analytics_daily-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-01/w1-b01/report.json"
+        },
+        {
+          "id": "audit_archive_weekly-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-01/w1-b01/report.json"
+        },
+        {
+          "id": "search_reindex_weekly-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-01/w1-b01/report.json"
+        }
+      ]
+    },
+    {
+      "id": "w1-b02",
+      "units": [
+        "storage_cleanup_daily",
+        "usage_rollup"
+      ],
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.storage_cleanup_report",
+        "ow_tp.ow_tp_analytics.storage_quarantine_actions",
+        "ow_tp.ow_tp_analytics.usage_rollup",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_storage_cleanup_daily",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_usage_rollup"
+      ],
+      "deploy_objects": [
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_storage_cleanup_daily",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_usage_rollup"
+      ],
+      "lakeflow_pipelines": [],
+      "verify_depth": "full",
+      "brief": "Batch w1-b02 (pipeline analytics, wave 1 of 2). Convert two independent leaf units:\n- storage_cleanup_daily: etl/scripts/storage_cleanup_daily.py \u2014 S3 otterworks-file-storage/files + DynamoDB otterworks-file-metadata -> file_storage_inventory + quarantined_files + reports_storage_cleanup; job ow_tp_analytics_storage_cleanup. LEGACY WRITE (delete of quarantined source objects) is inert until a committed legacy_write_authorized entry; preserve copy-then-delete pairing on the target side only.\n- usage_rollup: services/analytics-service UsageRollupJob (Scala; EventLoader + UsageRollupAggregator; CronJob 0 2 * * *) \u2014 NDJSON events -> ow_tp.ow_tp_analytics.usage_rollup_daily; job ow_tp_analytics_usage_rollup. Preserve per-day aggregation incl. metadata[bytes] try->0 coercion; generatedAt is nondeterministic (excluded from parity).\nSnapshot posture: materialize source extracts to ow_tp.ow_tp_analytics_src (fixture via AWS_ENDPOINT_URL); usage_rollup input is the deterministic seed (165 events over 3 days). Recon per tol-20261027-v1. Read .migration/units/<unit>/{dependencies.json,mapping_spec.json} and .migration/capabilities.json; evidence .migration/recon/wave-analytics-01/<batch>/.",
+      "gates": [
+        {
+          "id": "storage_cleanup_daily-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-01/w1-b02/report.json"
+        },
+        {
+          "id": "usage_rollup-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ".migration/recon/wave-analytics-01/w1-b02/report.json"
+        }
+      ]
+    }
+  ]
+}

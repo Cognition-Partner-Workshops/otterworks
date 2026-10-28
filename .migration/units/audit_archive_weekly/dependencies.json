@@ -6,9 +6,8 @@
         "dynamodb.otterworks_audit_events"
       ],
       "writes": [
-        "s3.otterworks_audit_archive.audit_archive",
-        "dynamodb.otterworks_audit_events",
-        "s3.otterworks_audit_archive.reports_compliance"
+        "ow_tp.ow_tp_analytics_src.audit_events",
+        "ow_tp.ow_tp_analytics_src.compliance_report"
       ],
       "calls": []
     }

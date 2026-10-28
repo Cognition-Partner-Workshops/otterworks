@@ -1,30 +1,51 @@
 {
-  "version": "ow-tp-map-v1",
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "family": "databricks",
+  "rerun_posture": "required",
   "objects": [
     {
-      "object": "search_documents_index",
-      "root_table": "meilisearch.documents_index",
-      "notes": "delete+recreate index, settings patch, 500-doc batches; primaryKey id",
+      "root_table": "ow_tp.ow_tp_analytics_src.search_index_documents",
+      "object": "ow_tp.ow_tp_analytics.search_index_docs",
       "key": {
         "source": [
-          "id"
+          "index_name",
+          "doc_id"
         ],
         "target": [
-          "id"
+          "index_name",
+          "doc_id"
         ]
-      }
+      },
+      "notes": "legacy: meilisearch documents_index (post-reindex state)"
     },
     {
-      "object": "search_files_index",
-      "root_table": "meilisearch.files_index",
+      "root_table": "ow_tp.ow_tp_analytics_src.search_index_files",
+      "object": "ow_tp.ow_tp_analytics.search_index_docs",
       "key": {
         "source": [
-          "id"
+          "index_name",
+          "doc_id"
         ],
         "target": [
-          "id"
+          "index_name",
+          "doc_id"
         ]
-      }
+      },
+      "notes": "legacy: meilisearch files_index (post-reindex state)"
+    },
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.reindex_report",
+      "object": "ow_tp.ow_tp_analytics.search_reindex_report",
+      "key": {
+        "source": [
+          "metric"
+        ],
+        "target": [
+          "metric"
+        ]
+      },
+      "notes": "legacy: per-run reindex report surface"
     }
   ]
 }

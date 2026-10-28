@@ -7,9 +7,8 @@
         "dynamodb.otterworks_file_metadata"
       ],
       "writes": [
-        "s3.otterworks_file_quarantine.quarantined",
-        "s3.otterworks_file_storage.files",
-        "s3.otterworks_data_lake.reports_storage_cleanup"
+        "ow_tp.ow_tp_analytics_src.orphan_files",
+        "ow_tp.ow_tp_analytics_src.cleanup_report"
       ],
       "calls": []
     }

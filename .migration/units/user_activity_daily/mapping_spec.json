@@ -1,30 +1,25 @@
 {
-  "version": "ow-tp-map-v1",
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "family": "databricks",
+  "rerun_posture": "required",
   "objects": [
     {
-      "object": "reports_user_activity",
-      "root_table": "s3.otterworks_data_lake.reports_user_activity",
-      "notes": "activity_report.json per day + latest/ pointer read by admin-service",
+      "root_table": "ow_tp.ow_tp_analytics_src.user_activity_report",
+      "object": "ow_tp.ow_tp_analytics.user_activity_report",
       "key": {
         "source": [
-          "report_date"
+          "report_date",
+          "user_id",
+          "metric"
         ],
         "target": [
-          "report_date"
+          "report_date",
+          "user_id",
+          "metric"
         ]
-      }
-    },
-    {
-      "object": "user_activity_summaries",
-      "root_table": "s3.otterworks_data_lake.user_activity_summaries",
-      "key": {
-        "source": [
-          "user_id"
-        ],
-        "target": [
-          "user_id"
-        ]
-      }
+      },
+      "notes": "legacy: s3.otterworks-data-lake/reports/user_activity/* + user_activity_summaries/*"
     }
   ]
 }

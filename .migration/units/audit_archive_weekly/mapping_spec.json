@@ -1,10 +1,12 @@
 {
-  "version": "ow-tp-map-v1",
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "family": "databricks",
+  "rerun_posture": "required",
   "objects": [
     {
-      "object": "audit_events_archive",
-      "root_table": "s3.otterworks_audit_archive.audit_archive",
-      "notes": "weekly gzip jsonl, GLACIER class on legacy; retention contract = compliance (90d)",
+      "root_table": "ow_tp.ow_tp_analytics_src.audit_events",
+      "object": "ow_tp.ow_tp_analytics.audit_archive",
       "key": {
         "source": [
           "event_id"
@@ -12,32 +14,21 @@
         "target": [
           "event_id"
         ]
-      }
+      },
+      "notes": "legacy: dynamodb.otterworks_audit_events rows archived to s3.otterworks-audit-archive/audit_archive/*"
     },
     {
-      "object": "audit_events",
-      "root_table": "dynamodb.otterworks_audit_events",
-      "notes": "LEGACY WRITE: archived items batch-deleted from source table; needs legacy_write_authorized entry",
+      "root_table": "ow_tp.ow_tp_analytics_src.compliance_report",
+      "object": "ow_tp.ow_tp_analytics.audit_archive_report",
       "key": {
         "source": [
-          "event_id"
+          "metric"
         ],
         "target": [
-          "event_id"
+          "metric"
         ]
-      }
-    },
-    {
-      "object": "reports_audit_archive",
-      "root_table": "s3.otterworks_audit_archive.reports_compliance",
-      "key": {
-        "source": [
-          "report_date"
-        ],
-        "target": [
-          "report_date"
-        ]
-      }
+      },
+      "notes": "legacy: s3.otterworks-audit-archive/reports/compliance/*"
     }
   ]
 }
