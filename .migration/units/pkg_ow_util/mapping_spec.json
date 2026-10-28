@@ -1,32 +1,12 @@
 {
   "version": "map-v1",
+  "family": "oracle",
   "target_kind": "lakebase",
   "rerun_posture": "first_run_baseline",
   "objects": [
-    {
-      "root_table": "ow_billing.billing_audit_log",
-      "object": "ow_tp_invoicing.billing_audit_log",
-      "key": {
-        "source": [
-          "log_id"
-        ],
-        "target": "log_id"
-      }
-    },
-    {
-      "root_table": "ow_billing.codes",
-      "object": "ow_tp_invoicing.codes",
-      "key": {
-        "source": [
-          "code_type",
-          "code_val"
-        ],
-        "target": [
-          "code_type",
-          "code_val"
-        ]
-      }
-    }
-  ],
-  "family": "oracle"
+    {"root_table": "ow_billing.billing_audit_log", "object": "ow_tp_invoicing.billing_audit_log",
+     "key": {"source": ["log_id"], "target": "log_id"}},
+    {"root_table": "ow_billing.codes", "object": "ow_tp_invoicing.codes",
+     "key": {"source": ["code_type", "code_val"], "target": ["code_type", "code_val"]}}
+  ]
 }

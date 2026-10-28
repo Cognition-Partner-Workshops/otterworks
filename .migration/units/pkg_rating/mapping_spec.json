@@ -1,38 +1,14 @@
 {
   "version": "map-v1",
+  "family": "oracle",
   "target_kind": "lakebase",
   "rerun_posture": "first_run_baseline",
   "objects": [
-    {
-      "root_table": "ow_billing.rating_periods",
-      "object": "ow_tp_invoicing.rating_periods",
-      "key": {
-        "source": [
-          "id"
-        ],
-        "target": "id"
-      }
-    },
-    {
-      "root_table": "ow_billing.rating_results",
-      "object": "ow_tp_invoicing.rating_results",
-      "key": {
-        "source": [
-          "id"
-        ],
-        "target": "id"
-      }
-    },
-    {
-      "root_table": "ow_billing.usage_events",
-      "object": "ow_tp_invoicing.usage_events",
-      "key": {
-        "source": [
-          "id"
-        ],
-        "target": "id"
-      }
-    }
-  ],
-  "family": "oracle"
+    {"root_table": "ow_billing.rating_periods", "object": "ow_tp_invoicing.rating_periods",
+     "key": {"source": ["id"], "target": "id"}},
+    {"root_table": "ow_billing.rating_results", "object": "ow_tp_invoicing.rating_results",
+     "key": {"source": ["id"], "target": "id"}},
+    {"root_table": "ow_billing.usage_events", "object": "ow_tp_invoicing.usage_events",
+     "key": {"source": ["id"], "target": "id"}}
+  ]
 }
