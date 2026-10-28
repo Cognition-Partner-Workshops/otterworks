@@ -273,7 +273,7 @@ phases:
         label: Run wave 1b with merge_overrides citing mo-custbill-w1-structural
       - id: hold
         label: Hold wave-1 results parked; no merge-authorized rerun
-      selected: null
+      selected: accept
       important: true
   - id: run-custbill-wave-2
     title: "Wave 2 \u2014 pipeline (parsed_records + quarantine + finance_billing_totals;\
@@ -305,7 +305,7 @@ phases:
         label: Proceed with the rehearsed repoint
       - id: hold
         label: Hold; production does not move
-      selected: null
+      selected: hold
       important: true
 - id: invoicing
   title: "Pipeline invoicing \u2014 OW_BILLING packages -> Lakebase + Delta"
