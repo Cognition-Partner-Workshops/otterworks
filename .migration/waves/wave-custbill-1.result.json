@@ -1,0 +1,97 @@
+{
+  "auto_merge": false,
+  "base_sha": "58978154e469db06a613697f4c190a5707ec2007",
+  "batches": [
+    {
+      "blocker_classes": [
+        "evidence"
+      ],
+      "branch": "devin/1793146609-custbill-feed",
+      "changed_paths": [
+        ".migration/recon/custbill-feed/blocked.md",
+        "etl/dbx-custbill/databricks.yml",
+        "etl/dbx-custbill/resources/ow_tp_custbill_feed.job.yml",
+        "etl/dbx-custbill/src/ensure_objects.sql",
+        "etl/dbx-custbill/src/land_feed.sql",
+        "etl/dbx-custbill/tools/custbill_extract.py"
+      ],
+      "failure_class": "missing_rule",
+      "gates": [
+        {
+          "evidence": {
+            "path": ".migration/recon/custbill-feed/blocked.md",
+            "verdict": "NOT_RUN: sql-connector cannot open a session in this env; only access_token auth works; harness path to bearer is guard-blocked as identity swap"
+          },
+          "id": "custbill-feed-recon",
+          "status": "failed"
+        }
+      ],
+      "id": "c01",
+      "merge_authority": {
+        "kind": "harness"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "Converted, deployed (bundle mig_1793146609, job ow_tp_custbill_feed PAUSED) and loaded custbill_feed with 18,750 keyed rows matching the Oracle batch; merge-evidence recon blocked because databricks-sql-connector cannot open a session (U2M interactive / oauth-m2m hang) and the env fix is guard-blocked.",
+      "parity": "NOT_RUN",
+      "pr_head": "88ce7114a8fd1492577e886f33a8c7adf7619e35",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2290",
+      "prompt_sha": "2f9536c8ab929406",
+      "recon_mode": "live",
+      "recon_verdict": "NOT_RUN",
+      "skill_feedback": [
+        "dbx-recon's _databricks_connect uses connector oauth_client_id/oauth_client_secret kwargs which fall into interactive U2M OAuth and hang under this env's DATABRICKS_CLIENT_SECRET; only access_token= works \u2014 harness needs an m2m-capable auth path or documented env contract",
+        "dbx_guard treats DATABRICKS_* env manipulation around dbx-recon as identity swap, so the SDK-bearer fallback cannot be reached from a shell command",
+        "invoice_id is absent from the 65-char CBCUST01 record; the keyed .feed JSONL sidecar had to be derived to satisfy the mapping-spec key contract",
+        "TEMP VIEWs do not persist across Statements API calls; landing must be a single-statement MERGE with the read_files/parse inline in USING",
+        "DATABRICKS_HTTP_PATH env points at a non-existent warehouse; wave param http_path=565cd2fd713738c4 is the valid one",
+        "unqualified Oracle names in the legacy extract resolve to the [REDACTED SECRET: OW_TP_ORACLE_APP_PASSWORD]_ro login schema (ORA-00942); converted extract must schema-qualify [REDACTED SECRET: OW_TP_ORACLE_APP_PASSWORD].*"
+      ],
+      "status": "BLOCKED",
+      "write_targets": [
+        "ow_tp.ow_tp_custbill.custbill_feed",
+        "ow_tp.ow_tp_custbill.ow_tp_custbill_feed"
+      ]
+    }
+  ],
+  "breaker_tripped_on": "missing_rule",
+  "brief": [
+    "Wave 1 close, plan step run-custbill-wave-1.",
+    "Landed: 0 of 1 batches passed their own recon.",
+    "Independent verify: NOT RUN.",
+    "Failed: none. Blocked: c01. Held by circuit breaker: none.",
+    "Cost: estimated n/a; actual source_statements=0, target_statements=0, source_rows_fetched=0, target_rows_fetched=0, harness time 0s. Verifier depth full, overrides: c01=full.",
+    "Awaiting manual merge: none reported",
+    "",
+    "Verifier findings: none.",
+    "",
+    "Skill feedback to fold in before the next wave:",
+    "- DATABRICKS_HTTP_PATH env points at a non-existent warehouse; wave param http_path=565cd2fd713738c4 is the valid one",
+    "- TEMP VIEWs do not persist across Statements API calls; landing must be a single-statement MERGE with the read_files/parse inline in USING",
+    "- dbx-recon's _databricks_connect uses connector oauth_client_id/oauth_client_secret kwargs which fall into interactive U2M OAuth and hang under this env's DATABRICKS_CLIENT_SECRET; only access_token= works \u2014 harness needs an m2m-capable auth path or documented env contract",
+    "- dbx_guard treats DATABRICKS_* env manipulation around dbx-recon as identity swap, so the SDK-bearer fallback cannot be reached from a shell command",
+    "- invoice_id is absent from the 65-char CBCUST01 record; the keyed .feed JSONL sidecar had to be derived to satisfy the mapping-spec key contract",
+    "- unqualified Oracle names in the legacy extract resolve to the [REDACTED SECRET: OW_TP_ORACLE_APP_PASSWORD]_ro login schema (ORA-00942); converted extract must schema-qualify [REDACTED SECRET: OW_TP_ORACLE_APP_PASSWORD].*",
+    "",
+    "Per batch:",
+    "- c01: BLOCKED. Converted, deployed (bundle mig_1793146609, job ow_tp_custbill_feed PAUSED) and loaded custbill_feed with 18,750 keyed rows matching the Oracle batch; merge-evidence recon blocked because databricks-sql-connector cannot open a session (U2M interactive / oauth-m2m hang) and the env fix is guard-blocked. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2290"
+  ],
+  "close": null,
+  "close_minutes": 30,
+  "closed": false,
+  "doctor_signed_at": "2026-10-28T00:43:40+00:00",
+  "hook_probe": "blocked:0f305eab",
+  "manifest_sha": "ec6a5ce8ab6a",
+  "merge_overrides": [],
+  "pipeline_order": {},
+  "plan_sha": "facfae18a50dde2538e220efaacdca0f6c5b1d4096c84278b71a5d182aaae938",
+  "plan_step": "run-custbill-wave-1",
+  "resync": null,
+  "tag": "custbill-1",
+  "undeclared_write_targets": {},
+  "unreported_write_targets": [],
+  "verify": null,
+  "waived_gates": [],
+  "wave": 1,
+  "width": 1,
+  "write_target_overlaps": []
+}
