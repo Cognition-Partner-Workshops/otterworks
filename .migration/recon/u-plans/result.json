@@ -1,0 +1,740 @@
+{
+  "unit": "u-plans",
+  "mode": "live",
+  "mapping_version": "ow-tp-map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "full",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 66,
+    "source_rows_fetched": 37,
+    "target_statements": 57,
+    "target_rows_fetched": 37,
+    "elapsed_s": 5.089
+  },
+  "generated_at": "2026-10-28T18:24:05.078608+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 5,
+      "stats": {
+        "plans": {
+          "source": {
+            "table_type": null,
+            "primary_key": [
+              "id"
+            ],
+            "primary_key_informational": [],
+            "unique": [
+              [
+                "code"
+              ]
+            ],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "active_yn",
+              "code",
+              "id",
+              "included_units",
+              "monthly_fee",
+              "overage_rate",
+              "tier_cd"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": null,
+            "primary_key": [
+              "id"
+            ],
+            "primary_key_informational": [],
+            "unique": [
+              [
+                "code"
+              ]
+            ],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "active_yn",
+              "code",
+              "id",
+              "included_units",
+              "monthly_fee",
+              "overage_rate",
+              "tier_cd"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "tenants": {
+          "source": {
+            "table_type": null,
+            "primary_key": [
+              "id"
+            ],
+            "primary_key_informational": [],
+            "unique": [
+              [
+                "name"
+              ]
+            ],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "id",
+              "name",
+              "status_cd",
+              "tax_exempt_yn"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": null,
+            "primary_key": [
+              "id"
+            ],
+            "primary_key_informational": [],
+            "unique": [
+              [
+                "name"
+              ]
+            ],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "id",
+              "name",
+              "status_cd",
+              "tax_exempt_yn"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "subscriptions": {
+          "source": {
+            "table_type": null,
+            "primary_key": [
+              "id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [
+              [
+                [
+                  "plan_id"
+                ],
+                "ow_billing.plans",
+                [
+                  "id"
+                ],
+                "no action",
+                "no action"
+              ],
+              [
+                [
+                  "tenant_id"
+                ],
+                "ow_billing.tenants",
+                [
+                  "id"
+                ],
+                "no action",
+                "no action"
+              ]
+            ],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "id",
+              "plan_id",
+              "starts_on",
+              "status_cd",
+              "tenant_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": null,
+            "primary_key": [
+              "id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [
+              [
+                [
+                  "plan_id"
+                ],
+                "mig_1793185083.plans",
+                [
+                  "id"
+                ],
+                "no action",
+                "no action"
+              ],
+              [
+                [
+                  "tenant_id"
+                ],
+                "mig_1793185083.tenants",
+                [
+                  "id"
+                ],
+                "no action",
+                "no action"
+              ]
+            ],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "id",
+              "plan_id",
+              "starts_on",
+              "status_cd",
+              "tenant_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {
+              "trg_sub_no_uncancel": [
+                "before",
+                [
+                  "update"
+                ],
+                "row"
+              ],
+              "trg_subscriptions_hist": [
+                "after",
+                [
+                  "delete",
+                  "update"
+                ],
+                "row"
+              ]
+            },
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "codes": {
+          "source": {
+            "table_type": null,
+            "primary_key": [
+              "code_type",
+              "code_val"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "code_desc",
+              "code_type",
+              "code_val"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": null,
+            "primary_key": [
+              "code_type",
+              "code_val"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "code_desc",
+              "code_type",
+              "code_val"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "subscriptions_hist": {
+          "source": {
+            "table_type": null,
+            "primary_key": [
+              "hist_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "hist_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": null,
+            "primary_key": [
+              "hist_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "hist_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "checked",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "subscriptions": {
+            "triggers": [
+              "after delete row: target 1, source 0: writes the legacy app makes today behave differently",
+              "after update row: target 1, source 0: writes the legacy app makes today behave differently",
+              "before update row: target 1, source 0: writes the legacy app makes today behave differently"
+            ]
+          }
+        },
+        "platform_inherent": [],
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "subscriptions",
+          "check": "trigger_extra",
+          "detail": "after delete row: target 1, source 0: writes the legacy app makes today behave differently",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "subscriptions",
+          "check": "trigger_extra",
+          "detail": "after update row: target 1, source 0: writes the legacy app makes today behave differently",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "subscriptions",
+          "check": "trigger_extra",
+          "detail": "before update row: target 1, source 0: writes the legacy app makes today behave differently",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {
+        "source_counts": {
+          "OW_BILLING.PLANS": 3,
+          "OW_BILLING.TENANTS": 1,
+          "OW_BILLING.SUBSCRIPTIONS": 1,
+          "OW_BILLING.CODES": 32,
+          "OW_BILLING.SUBSCRIPTIONS_HIST": 0
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 32,
+      "stats": {
+        "deferred_to_tier3": [
+          "plans.id",
+          "plans.code",
+          "plans.active_yn",
+          "tenants.id",
+          "tenants.name",
+          "tenants.tax_exempt_yn",
+          "subscriptions.id",
+          "subscriptions.tenant_id",
+          "subscriptions.plan_id",
+          "codes.code_type",
+          "codes.code_desc",
+          "subscriptions_hist.hist_dt",
+          "subscriptions_hist.hist_dt_raw",
+          "subscriptions_hist.hist_op",
+          "subscriptions_hist.id",
+          "subscriptions_hist.tenant_id",
+          "subscriptions_hist.plan_id"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 37,
+      "stats": {
+        "plans": {
+          "mode": "full_diff",
+          "population": 3,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "tenants": {
+          "mode": "full_diff",
+          "population": 1,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "subscriptions": {
+          "mode": "full_diff",
+          "population": 1,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "codes": {
+          "mode": "full_diff",
+          "population": 32,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "subscriptions_hist": {
+          "mode": "full_diff",
+          "population": 0,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    }
+  ],
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "grading": {
+    "plans": "full",
+    "tenants": "full",
+    "subscriptions": "full",
+    "codes": "full",
+    "subscriptions_hist": "full"
+  },
+  "type_map": {
+    "family": "oracle",
+    "target_kind": "lakebase",
+    "filled": [],
+    "unmapped": []
+  },
+  "rerun_proof": {
+    "unit": "u-plans",
+    "sources": [
+      "databricks/mig_1793185083/b1-plans/ddl/001_tables.sql",
+      "databricks/mig_1793185083/b1-plans/ddl/002_routines.sql",
+      "databricks/mig_1793185083/b1-plans/load/load_u_plans.py"
+    ],
+    "fresh": "pass",
+    "evolved": "unsupported",
+    "passed": true,
+    "findings": [],
+    "notes": [
+      "DDL hint: mig_1793185083.plans is created by the DDL and was not recorded by the fresh run",
+      "DDL hint: mig_1793185083.codes is created by the DDL and was not recorded by the fresh run",
+      "DDL hint: mig_1793185083.tenants is created by the DDL and was not recorded by the fresh run"
+    ],
+    "tables": [
+      "subscriptions",
+      "subscriptions_hist"
+    ],
+    "source_digest": "5fdee8a8556aafa9f197eceb507ba3a50c3742269c1a4d11e8b41bea8440eb65",
+    "evidence": {
+      "fresh": ".migration/recon/u-plans/shape_fresh.json"
+    },
+    "shape": {
+      "tables": {
+        "subscriptions": [
+          {
+            "name": "id",
+            "type": "varchar(36)",
+            "nullable": false
+          },
+          {
+            "name": "tenant_id",
+            "type": "varchar(36)",
+            "nullable": false
+          },
+          {
+            "name": "plan_id",
+            "type": "varchar(36)",
+            "nullable": false
+          },
+          {
+            "name": "starts_on",
+            "type": "timestamp(0)",
+            "nullable": false
+          },
+          {
+            "name": "ends_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          },
+          {
+            "name": "status_cd",
+            "type": "bigint",
+            "nullable": false
+          },
+          {
+            "name": "suspended_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          }
+        ],
+        "subscriptions_hist": [
+          {
+            "name": "hist_id",
+            "type": "bigint",
+            "nullable": false
+          },
+          {
+            "name": "hist_dt",
+            "type": "text",
+            "nullable": true
+          },
+          {
+            "name": "hist_dt_raw",
+            "type": "varchar(20)",
+            "nullable": true
+          },
+          {
+            "name": "hist_op",
+            "type": "varchar(3)",
+            "nullable": true
+          },
+          {
+            "name": "id",
+            "type": "varchar(36)",
+            "nullable": true
+          },
+          {
+            "name": "tenant_id",
+            "type": "varchar(36)",
+            "nullable": true
+          },
+          {
+            "name": "plan_id",
+            "type": "varchar(36)",
+            "nullable": true
+          },
+          {
+            "name": "starts_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          },
+          {
+            "name": "ends_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          },
+          {
+            "name": "status_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "suspended_on",
+            "type": "timestamp(0)",
+            "nullable": true
+          }
+        ]
+      }
+    },
+    "shape_digest": "fc6cdb75626cafc71470b74929f051162915e38ba6f9fc7ecd50ceb5a9111d72",
+    "unsupported_kind": "no_evolved_record",
+    "unsupported_reason": "no evolved record: pre-create the table in its previous committed shape (the prior proof's shape) and run again"
+  },
+  "rerun_posture": "not_applicable",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": [
+    {
+      "routine": "ow_billing.pkg_plans.sp_change_plan",
+      "status": "proven",
+      "evidence": ".migration/recon/u-plans/runs/sp_change_plan.run.json"
+    },
+    {
+      "routine": "ow_billing.trg_sub_no_uncancel",
+      "status": "proven",
+      "evidence": ".migration/recon/u-plans/runs/trg_sub_no_uncancel.run.json"
+    },
+    {
+      "routine": "ow_billing.trg_subscriptions_hist",
+      "status": "proven",
+      "evidence": ".migration/recon/u-plans/runs/trg_subscriptions_hist.run.json"
+    }
+  ],
+  "routine_writers": [
+    "ow_billing.pkg_plans.sp_change_plan",
+    "ow_billing.trg_sub_no_uncancel",
+    "ow_billing.trg_subscriptions_hist"
+  ],
+  "routine_dependencies": ".migration/units/u-plans/dependencies.json"
+}
