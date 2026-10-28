@@ -1,7 +1,7 @@
 {
   "run": "evolved",
   "status": "pass",
-  "evidence": "warehouse execution of run_analytics_daily.sql (ds=2026-10-28) rerun over the landed tables; MERGEs converged, shape stable",
+  "evidence": "warehouse execution of run_analytics_daily.sql at head b2947fa48 (ds=2026-10-28) via session SP on warehouse 565cd2fd713738c4; TEMP VIEWs materialized as catalog-qualified views ow_tp.ow_tp_analytics.{analytics_events,analytics_artifacts} (each aitools query runs its own session) then dropped; extract task cannot run serverless (boto3 NoRegionError), sql_task statements executed directly; evolved leg: same job statements rerun over landed tables, MERGEs converged (0 insert, 1 update each)",
   "shape": {
     "tables": {
       "analytics_daily_summary": [

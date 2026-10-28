@@ -49,3 +49,20 @@ Postgres `analytics_daily_summary` upsert + S3 report) → Lakeflow Job `ow_tp_a
   extract cannot run on this workspace — sql_task statements were executed directly.
 - Fix in converted code: array_sort comparator `sign(...)` returns DOUBLE on this
   runtime; cast to INT.
+
+## Verify rerun 2 (a02) — head b2947fa48 (artifact keys = legacy s3 path)
+- Merge-evidence recon `run --mode live --depth full --seed 0`: parity PASS, merge_eligible=false,
+  blocker_classes [structural] (structural_gap + warnings: informational PK, SP grant visibility).
+  Covered by committed merge_overrides mo-analytics-w1-structural -> merge_authority human_override.
+  Cost: source 20 stmts/4 rows, target 8 stmts/4 rows, 9.9s.
+- Fixture mode run first: failed closed as designed (never merge-eligible).
+- rerun_proof regenerated for head sources (digest 3a1addcf): fresh leg DROP TABLEs + ensure_objects +
+  run_analytics_daily(ds=2026-10-28); evolved leg rerun over landed tables, MERGEs converged,
+  shape digest identical to prior proof (90546c64) — schema unchanged, only s3_key values re-keyed.
+- Execution path: each `aitools tools query` runs its own session, so the job's TEMP VIEWs were
+  materialized as catalog-qualified views ow_tp.ow_tp_analytics.{analytics_events,analytics_artifacts},
+  MERGE USING refs qualified, views dropped after; guard clears only catalog-qualified writes.
+  Committed job file unchanged (sql_task runs the file in one session on the real job).
+- Discrepancy for wave close: this head/branch (devin/1793151987-analytics-daily) tracks PR #2295;
+  PR #2304 tracks devin/1793154552-wave1-a02-analytics-daily @ 0ec64f18 — a superseded wave-1b
+  conversion without the artifact rows.

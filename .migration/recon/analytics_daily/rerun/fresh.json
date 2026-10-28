@@ -1,7 +1,7 @@
 {
   "run": "fresh",
   "status": "pass",
-  "evidence": "warehouse execution of ensure_objects.sql + run_analytics_daily.sql (ds=2026-10-28, sql_task statements via session SP on warehouse 565cd2fd713738c4) on a fresh target after DROP TABLE; bundle job run 580350719779334 reached extract only",
+  "evidence": "warehouse execution of run_analytics_daily.sql at head b2947fa48 (ds=2026-10-28) via session SP on warehouse 565cd2fd713738c4; TEMP VIEWs materialized as catalog-qualified views ow_tp.ow_tp_analytics.{analytics_events,analytics_artifacts} (each aitools query runs its own session) then dropped; extract task cannot run serverless (boto3 NoRegionError), sql_task statements executed directly; fresh leg: DROP TABLEs + ensure_objects.sql + job statements",
   "shape": {
     "tables": {
       "analytics_daily_summary": [

@@ -16,10 +16,10 @@
     "analytics_daily_report",
     "analytics_daily_summary"
   ],
-  "source_digest": "e877b95f0559647596c9ee8278925439d2c97ce8cf25c46a4c597acea6e8bcde",
+  "source_digest": "3a1addcf38b3d868eb9fa45c93ca733861a297760671d31682e2a4d4b307af18",
   "evidence": {
-    "fresh": "warehouse execution of ensure_objects.sql + run_analytics_daily.sql (ds=2026-10-28, sql_task statements via session SP on warehouse 565cd2fd713738c4) on a fresh target after DROP TABLE; bundle job run 580350719779334 reached extract only",
-    "evolved": "warehouse execution of run_analytics_daily.sql (ds=2026-10-28) rerun over the landed tables; MERGEs converged, shape stable"
+    "fresh": "warehouse execution of run_analytics_daily.sql at head b2947fa48 (ds=2026-10-28) via session SP on warehouse 565cd2fd713738c4; TEMP VIEWs materialized as catalog-qualified views ow_tp.ow_tp_analytics.{analytics_events,analytics_artifacts} (each aitools query runs its own session) then dropped; extract task cannot run serverless (boto3 NoRegionError), sql_task statements executed directly; fresh leg: DROP TABLEs + ensure_objects.sql + job statements",
+    "evolved": "warehouse execution of run_analytics_daily.sql at head b2947fa48 (ds=2026-10-28) via session SP on warehouse 565cd2fd713738c4; TEMP VIEWs materialized as catalog-qualified views ow_tp.ow_tp_analytics.{analytics_events,analytics_artifacts} (each aitools query runs its own session) then dropped; extract task cannot run serverless (boto3 NoRegionError), sql_task statements executed directly; evolved leg: same job statements rerun over landed tables, MERGEs converged (0 insert, 1 update each)"
   },
   "shape": {
     "tables": {
