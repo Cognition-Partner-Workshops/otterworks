@@ -3,7 +3,7 @@
   "repo": "github.com/Cognition-Partner-Workshops/otterworks",
   "child_skill": "unit-migration",
   "verify_skill": "wave-verify",
-  "plan_step": "run-invoicing-wave-1",
+  "plan_step": "run-invoicing-wave-1b",
   "width": 2,
   "breaker_threshold": 3,
   "auto_merge": false,
@@ -117,7 +117,7 @@
         "snapshot.invoice_line"
       ],
       "lakeflow_pipelines": [],
-      "brief": "Snapshot-load the invoicing history surface from OW_BILLING into Delta under ow_tp.ow_tp_invoicing_history: customer_master, customer_master_hist, entity_attr_value, invoice_header, invoice_line (read-only principal, snapshot load, no federation). Keys per mapping_spec.json. Tolerances tol-20261027-v1 (family oracle, live). Write only to the declared write_targets.",
+      "brief": "Snapshot-load the invoicing history surface from OW_BILLING into Delta under ow_tp.ow_tp_invoicing_history: customer_master, customer_master_hist, entity_attr_value, invoice_header, invoice_line (read-only principal, snapshot load, no federation). Keys per mapping_spec.json. Tolerances tol-20261027-v1 (family oracle, live). Write only to the declared write_targets. Local plugin patch required before recon: in the plugin cache skills/data-reconciliation/harness/recon/adapters.py, _uc_schema_facts, change \"tp.grantee <> t.owner\" to \"tp.grantee <> t.table_owner\" (UC exposes table_owner); same file: inside _databricks_connect use sql.connect(server_hostname=host, http_path=http_path, access_token=_databricks_bearer()) for oauth-m2m. Pass --target-http-path 565cd2fd713738c4 to dbx-recon.",
       "gates": [
         {
           "id": "w1-recon",
@@ -190,6 +190,21 @@
           "status": "pending",
           "evidence": ""
         }
+      ]
+    }
+  ],
+  "merge_overrides": [
+    {
+      "blocker_classes": [
+        "structural"
+      ],
+      "decision": "mo-invoicing-w1-structural",
+      "units": [
+        "pkg_dunning",
+        "pkg_invoicing",
+        "pkg_ow_util",
+        "pkg_plans",
+        "pkg_rating"
       ]
     }
   ]
