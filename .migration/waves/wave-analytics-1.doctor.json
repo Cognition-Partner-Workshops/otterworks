@@ -369,7 +369,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T01:59:45Z",
+  "generated_at": "2026-10-28T02:28:01Z",
   "hook_probe": "blocked:8b60a95f",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
@@ -383,8 +383,8 @@
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
-  "signature": "7c252febe713bb4d69a413be9b9175dba756a3358c2212019fec4f65650985a7",
-  "signed_at": "2026-10-28T01:59:45+00:00",
+  "signature": "9e6d65c3db94b05c96a9265ec6dcce69a45a247b84f092ea9db954ec4a5e5076",
+  "signed_at": "2026-10-28T02:28:01+00:00",
   "source": {
     "family": "databricks",
     "params": {
