@@ -18,11 +18,11 @@
     "warnings"
   ],
   "routine_parity": {
-    "snapshot.customer_master": "proven",
+    "snapshot.customer_master": "unproven",
     "snapshot.customer_master_hist": "proven",
     "snapshot.entity_attr_value": "proven",
     "snapshot.invoice_header": "proven",
-    "snapshot.invoice_line": "proven"
+    "snapshot.invoice_line": "unproven"
   },
   "rerun_proof_passed": true,
   "cost": {
@@ -30,9 +30,9 @@
     "source_rows_fetched": 304342,
     "target_statements": 347,
     "target_rows_fetched": 152107,
-    "elapsed_s": 416.009
+    "elapsed_s": 366.952
   },
-  "row_counts": {
+  "rows": {
     "source_counts": {
       "ow_billing.customer_master": 25001,
       "ow_billing.customer_master_hist": 0,

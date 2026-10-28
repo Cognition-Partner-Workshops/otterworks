@@ -14,9 +14,9 @@
     "source_rows_fetched": 304342,
     "target_statements": 347,
     "target_rows_fetched": 152107,
-    "elapsed_s": 416.009
+    "elapsed_s": 366.952
   },
-  "generated_at": "2026-10-28T01:24:54.480548+00:00",
+  "generated_at": "2026-10-28T01:32:09.199761+00:00",
   "tiers": [
     {
       "tier": 0,
@@ -1979,8 +1979,9 @@
   "routine_parity": [
     {
       "routine": "snapshot.customer_master",
-      "status": "proven",
-      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_customer_master.run.json"
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
     },
     {
       "routine": "snapshot.customer_master_hist",
@@ -1999,8 +2000,9 @@
     },
     {
       "routine": "snapshot.invoice_line",
-      "status": "proven",
-      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_invoice_line.run.json"
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
     }
   ],
   "routine_writers": [

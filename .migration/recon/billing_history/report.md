@@ -11,11 +11,13 @@
 - Tolerance version: `tol-20261027-v1`
 - Seed: `0` | Params: `{'schema': 'OW_BILLING'}`
 - Tier 3 depth: `sampled`
-- Generated: 2026-10-28T01:24:54.480548+00:00
+- Generated: 2026-10-28T01:32:09.199761+00:00
 
-## Routine parity: 5 proven, 0 unproven, 0 failed
+## Routine parity: 3 proven, 2 unproven, 0 failed
 
-- Cost: `{"source_statements": 506, "source_rows_fetched": 304342, "target_statements": 347, "target_rows_fetched": 152107, "elapsed_s": 416.009}`
+- `snapshot.customer_master` unproven: no committed run
+- `snapshot.invoice_line` unproven: no committed run
+- Cost: `{"source_statements": 506, "source_rows_fetched": 304342, "target_statements": 347, "target_rows_fetched": 152107, "elapsed_s": 366.952}`
 - Rerun proof: fresh `pass`, evolved `unsupported` (evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved)
 - **WARNING: UNVERIFIED structural_parity: structure unavailable: customer_master: customer_master: information_schema.table_privileges read failed (ServerOperationError)**
 - **WARNING: UNVERIFIED structural_parity: structure unavailable: customer_master_hist: customer_master_hist: information_schema.table_privileges read failed (ServerOperationError)**

@@ -46,9 +46,13 @@ by batch c01 of wave-custbill-1 (PR #2290 notes).
 - Fixture-first run: `.migration/recon/billing_history/fixture_run/` (parity PASS — fixture
   evidence is never merge-eligible).
 - Merge-evidence run: `result.json` + `report.md` + `recon.summary.md` (this dir, live mode).
-- Routine parity: `routine_parity.json` — 5/5 writers proven, run records in `routine_runs/`
+- Routine parity: `routine_parity.json` — 3/5 writers proven, run records in `routine_runs/`
   (golden = committed fixture parquet under `dbx/.../extract/fixture/`, observed = dedicated
-  exec schema `ow_tp.billing_history_exec`).
+  exec schema `ow_tp.billing_history_exec`). `snapshot.customer_master` and
+  `snapshot.invoice_line` are `unproven`: the contract's full-row-dict run records come to
+  162MB / 183MB, over GitHub's 100MB file cap — the remote refused the push, so those two
+  records could not be committed (unproven rows are carried, not blocking, per the harness's
+  `parity_missing` rule; same shape batch c01 reported).
 - Rerun proof: `rerun/rerun_proof.json` — fresh `pass`, evolved `unsupported` with
   `nothing_evolved` (valid `first_run_baseline`); bound to the current job-source digest.
 - Gate report: `.migration/recon/wave-invoicing-1/w1-b01/report.json`.
