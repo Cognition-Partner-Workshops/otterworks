@@ -1,0 +1,122 @@
+{
+  "auto_merge": false,
+  "base_sha": "af4d9017bdc3a3209aa53079fbba705622860484",
+  "batches": [
+    {
+      "blocker_classes": [
+        "evidence",
+        "structural"
+      ],
+      "branch": "devin/1793181665-w0-b01-scaffold",
+      "changed_paths": [
+        ".migration/recon/scaffold/result.json",
+        ".migration/recon/scaffold/report.md",
+        ".migration/recon/scaffold/recon.summary.md",
+        "databricks/mig_1793176531/00_scaffold.sql",
+        "databricks/mig_1793176531/databricks.yml",
+        "databricks/mig_1793176531/resources/ow_tp_scaffold.job.yml"
+      ],
+      "failure_class": "structural_gap",
+      "gates": [
+        {
+          "evidence": {
+            "path": ".migration/recon/scaffold/result.json",
+            "verdict": "FAIL \u2014 Tier-0: 14 info (PK informational probes passed) + residual errors grant_extra x28, foreign_key_missing x13, routine_parity_missing, mode"
+          },
+          "id": "w0_scaffold_structural",
+          "status": "failed"
+        }
+      ],
+      "id": "w0-b01",
+      "merge_authority": {
+        "kind": "harness"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "Scaffold landed \u2014 4 run schemas + 14 structural legacy_* mirrors (NOT NULL/UNIQUE/FK converged) + DAB shell mig_0_w0-b01 deployed and run PAUSED; structural recon FAIL as designed (mode) plus platform-inherent grant_extra x28 and UC-adapter FK-ref normalization foreign_key_missing x13; PR #2324 open, CI green.",
+      "parity": "NOT_RUN",
+      "pr_head": "bcb7c1821b917f093906a7f7ad36f11f21c3cabb",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2324",
+      "prompt_sha": "4ffa949ae729bc83",
+      "recon_cost": {
+        "elapsed_s": 71.763,
+        "source_rows_fetched": 0,
+        "source_statements": 113,
+        "target_rows_fetched": 0,
+        "target_statements": 99
+      },
+      "recon_mode": "structural",
+      "recon_verdict": "FAIL",
+      "skill_feedback": [
+        "CLI v1.22.1 has no `databricks sql execute` or `experimental aitools`: deploy SQL through the bundle's sql_task job on the signed warehouse (`bundle deploy` + `bundle run`, -t mig_1793176531).",
+        "dbx-recon is not on PATH (plugin blueprint snapshot failed): run `python3 -m recon.cli` from the repo root with PYTHONPATH=<plugin>/skills/data-reconciliation/harness; --allowed-targets-file must be the relative path .migration/allowed_targets.json.",
+        "`--out .migration/recon/<unit>/result.json` makes result.json a DIRECTORY; pass --out .migration/recon/<unit> so result.json lands as the declared evidence file.",
+        "Mirror DDL must carry full source structure, not just key+fields: every source NOT NULL column, UNIQUE constraints, and informational FOREIGN KEYs, else not_null_missing/unique_missing/foreign_key_missing findings.",
+        "UC adapter reports informational FK `references` as schema.table (catalog stripped) while the comparator expects the catalog-qualified spec object \u2014 a harness normalization gap; FKs declared correctly still read foreign_key_missing.",
+        "UC information_schema.table_privileges shows grantees by principal UUID, not the session's client-id spelling, so own_principals cannot downgrade the owner's grant_extra to info; catalog-inherited grants report as error-class structural_gap.",
+        "No fixture endpoint exists for the scaffold unit; fixture-first is N/A and the live structural run is the declared gate evidence.",
+        "make tp-smoke requires Go, absent from this VM (blueprint snapshot build failed): recorded as unverified, not a regression."
+      ],
+      "status": "FAIL",
+      "write_targets": [
+        "ow_tp.r1793176531_recon.legacy_codes",
+        "ow_tp.r1793176531_recon.legacy_tenants",
+        "ow_tp.r1793176531_recon.legacy_plans",
+        "ow_tp.r1793176531_recon.legacy_subscriptions",
+        "ow_tp.r1793176531_recon.legacy_usage_events",
+        "ow_tp.r1793176531_recon.legacy_rating_periods",
+        "ow_tp.r1793176531_recon.legacy_rating_results",
+        "ow_tp.r1793176531_recon.legacy_invoices",
+        "ow_tp.r1793176531_recon.legacy_invoice_lines",
+        "ow_tp.r1793176531_recon.legacy_credit_notes",
+        "ow_tp.r1793176531_recon.legacy_dunning_attempts",
+        "ow_tp.r1793176531_recon.legacy_notifications",
+        "ow_tp.r1793176531_recon.legacy_billing_audit_log",
+        "ow_tp.r1793176531_recon.legacy_subscriptions_hist",
+        "scaffold_ddl"
+      ]
+    }
+  ],
+  "breaker_tripped_on": "structural_gap",
+  "brief": [
+    "Wave 0 close, plan step s1.4.",
+    "Landed: 0 of 1 batches passed their own recon.",
+    "Independent verify: NOT RUN.",
+    "Failed: w0-b01. Blocked: none. Held by circuit breaker: none.",
+    "Cost: estimated n/a; actual source_statements=113, target_statements=99, source_rows_fetched=0, target_rows_fetched=0, harness time 72s. Verifier depth sampled, overrides: w0-b01=sampled.",
+    "Awaiting manual merge: none reported",
+    "",
+    "Verifier findings: none.",
+    "",
+    "Skill feedback to fold in before the next wave:",
+    "- CLI v1.22.1 has no `databricks sql execute` or `experimental aitools`: deploy SQL through the bundle's sql_task job on the signed warehouse (`bundle deploy` + `bundle run`, -t mig_1793176531).",
+    "- Mirror DDL must carry full source structure, not just key+fields: every source NOT NULL column, UNIQUE constraints, and informational FOREIGN KEYs, else not_null_missing/unique_missing/foreign_key_missing findings.",
+    "- No fixture endpoint exists for the scaffold unit; fixture-first is N/A and the live structural run is the declared gate evidence.",
+    "- UC adapter reports informational FK `references` as schema.table (catalog stripped) while the comparator expects the catalog-qualified spec object \u2014 a harness normalization gap; FKs declared correctly still read foreign_key_missing.",
+    "- UC information_schema.table_privileges shows grantees by principal UUID, not the session's client-id spelling, so own_principals cannot downgrade the owner's grant_extra to info; catalog-inherited grants report as error-class structural_gap.",
+    "- `--out .migration/recon/<unit>/result.json` makes result.json a DIRECTORY; pass --out .migration/recon/<unit> so result.json lands as the declared evidence file.",
+    "- dbx-recon is not on PATH (plugin blueprint snapshot failed): run `python3 -m recon.cli` from the repo root with PYTHONPATH=<plugin>/skills/data-reconciliation/harness; --allowed-targets-file must be the relative path .migration/allowed_targets.json.",
+    "- make tp-smoke requires Go, absent from this VM (blueprint snapshot build failed): recorded as unverified, not a regression.",
+    "",
+    "Per batch:",
+    "- w0-b01: FAIL. Scaffold landed \u2014 4 run schemas + 14 structural legacy_* mirrors (NOT NULL/UNIQUE/FK converged) + DAB shell mig_0_w0-b01 deployed and run PAUSED; structural recon FAIL as designed (mode) plus platform-inherent grant_extra x28 and UC-adapter FK-ref normalization foreign_key_missing x13; PR #2324 open, CI green. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2324"
+  ],
+  "close": null,
+  "close_minutes": 30,
+  "closed": false,
+  "doctor_signed_at": "2026-10-28T10:00:14+00:00",
+  "hook_probe": "blocked:9cd6dff1",
+  "manifest_sha": "1610a71afc8c",
+  "merge_overrides": [],
+  "pipeline_order": {},
+  "plan_sha": "367b35532bb95f037f1a47cc432b7b9dd4334ef72ba50f09165feb03a98b2476",
+  "plan_step": "s1.4",
+  "resync": null,
+  "tag": "0",
+  "undeclared_write_targets": {},
+  "unreported_write_targets": [],
+  "verify": null,
+  "waived_gates": [],
+  "wave": 0,
+  "width": 1,
+  "write_target_overlaps": []
+}
