@@ -17,9 +17,9 @@
     },
     {
       "data": {
-        "entries": 1
+        "entries": 2
       },
-      "detail": "1 authorization entries in .migration/authorizations.json",
+      "detail": "2 authorization entries in .migration/authorizations.json",
       "id": "authorizations_file",
       "reusable": false,
       "status": "ok"
@@ -359,7 +359,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T15:49:27Z",
+  "generated_at": "2026-10-28T18:09:27Z",
   "http_path": "/sql/1.0/warehouses/565cd2fd713738c4",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",

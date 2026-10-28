@@ -1,12 +1,12 @@
 {
   "auto_merge": false,
-  "base_sha": "b6536400592d9725d9fff5e98d0bc163310a47f5",
+  "base_sha": "db5266da69f1ff687a65199add26cbffcd18d7ba",
   "batches": [
     {
       "blocker_classes": [
         "structural"
       ],
-      "branch": "devin/1793202634-b1-plans",
+      "branch": "devin/1793185083-b1-plans",
       "changed_paths": [
         ".migration/recon/u-plans/fixtures/u_plans_exec_fixture.sql",
         ".migration/recon/u-plans/mapping_spec_scoped.json",
@@ -26,22 +26,20 @@
         "databricks/mig_1793185083/b1-plans/extract/extract_u_plans.py",
         "databricks/mig_1793185083/b1-plans/load/load_u_plans.py"
       ],
-      "failure_class": "structural",
       "gates": [
         {
           "evidence": {
-            "label": "live full-depth row parity on subscriptions + subscriptions_hist",
             "path": ".migration/recon/u-plans/result.json",
-            "verdict": "parity PASS; merge blocked: trigger_extra x3 structural"
+            "rows": 37,
+            "verdict": "parity PASS (tiers 1-3), live mode"
           },
           "id": "recon_pass",
           "status": "passed"
         },
         {
           "evidence": {
-            "label": "sp_change_plan, trg_subscriptions_hist, trg_sub_no_uncancel",
             "path": ".migration/recon/u-plans/routine_parity.json",
-            "verdict": "3 proven / 0 unproven / 0 failed"
+            "verdict": "3 proven, 0 unproven, 0 failed"
           },
           "id": "routine_parity",
           "status": "passed"
@@ -49,7 +47,7 @@
         {
           "evidence": {
             "path": ".migration/recon/u-plans/rerun_proof.json",
-            "verdict": "fresh pass; evolved unsupported (first run)"
+            "verdict": "fresh pass, evolved unsupported (not_applicable posture)"
           },
           "id": "rerun_proof",
           "status": "passed"
@@ -57,33 +55,29 @@
       ],
       "id": "b1-plans",
       "merge_authority": {
-        "kind": "harness"
+        "decision_id": "mo-plans-trigger-visibility",
+        "kind": "human_override"
       },
       "merge_eligible": false,
-      "one_line_summary": "u-plans fully converted and deployed to Lakebase ow_tp.mig_1793185083 (tables+constraints, 3 routines, 2 triggers, Tenant One data) with all gates green \u2014 recon parity PASS in live mode \u2014 but merge_eligible=false on a structural blocker: the RO source principal sees zero OW_BILLING triggers, so the assigned target triggers report as trigger_extra.",
+      "one_line_summary": "u-plans converted and loaded to Lakebase ow_tp.mig_1793185083 (5 tables + 3 routines + 2 triggers); live recon parity PASS but verdict FAIL, merge blocked structural (trigger_extra), covered by override mo-plans-trigger-visibility; PR #2342 open, CI 6/6 green.",
       "parity": "PASS",
-      "pr_head": "c5b3d2730413f2a48e0c019b08a2acb5619a4eee",
-      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2338",
-      "prompt_sha": "411deb5facfbdf59",
+      "pr_head": "d5b4e00f7d0886cff610448259c71016014fa2c6",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2342",
+      "prompt_sha": "64b49b4087a2d375",
       "recon_cost": {
-        "elapsed_s": 4.75,
+        "elapsed_s": 5.089,
         "source_rows_fetched": 37,
         "source_statements": 66,
         "target_rows_fetched": 37,
         "target_statements": 57
       },
       "recon_mode": "live",
-      "recon_verdict": "PASS",
+      "recon_verdict": "FAIL",
       "skill_feedback": [
-        "Guard resolves only inline literal SQL: parenthesized multi-line SQL constants are opaque to the resolver \u2014 inlined single-line literals or static .sql via `psql -f` only.",
-        "`export *DSN*=\"...$(databricks ...)\"` is blocked as a SQL-client command substitution; guard-clean form is a passwordless DSN env + `PGPASSWORD=$(databricks postgres generate-database-credential ...)` on the same exec line (credential minted per call).",
-        "Mapping spec asymmetry: spec declares root_where on filtered objects with no target_where and the engine requires symmetric scoping; worker-side fix is a scoped copy under .migration/recon/<unit>/ with target_where set to the identical predicate (committed spec untouched).",
-        "Oracle DATE must land as `timestamp(0)` on Lakebase per canonicalization type_map; `date` is only allowed with census_midnight_only evidence and breaks datetime identity canonicalization.",
-        "ALL_TRIGGERS/ALL_OBJECTS expose zero OW_BILLING triggers to the RO principal \u2014 deploying assigned target triggers yields trigger_extra tier-0 findings classed `structural` (merge-ineligible, not worker-fixable).",
-        "Dedicated routine-parity exec target can be a schema `<branch>_exec` on the allowlisted branch; run records need target_branch `mig-1793185083-exec`, snapshot `fixture:<repo-path>`, and must be committed before grading.",
-        "rerun-proof `--fresh` requires a wrapped run record {run,status,evidence,shape}, not raw `shape` output; `shape --out` is a file path and must run from the repo root for the allowlist check.",
-        "Redeploying functions with changed signatures fails on `cannot change return type`; routines DDL needs leading `DROP FUNCTION IF EXISTS` for idempotency.",
-        "factory-doctor rewrites .migration/capabilities.json on every run \u2014 restore via `git checkout` before committing so it doesn't appear in the PR."
+        "dbx_guard resolves only a single string literal in execute() or a NAME = triple-quoted-literal assignment; open().read(), argv paths, adjacent literals and concatenation are opaque blocks, so static .sql files must be embedded as literals by a generated runner script.",
+        "Shell-expanded DSN assignments (VAR=\"...$TOKEN\") block as 'shell expansion inside the SQL argument'; the Lakebase OAuth credential must be minted inside Python and exported via os.environ before exec'ing `python3 -m recon.cli`.",
+        "recon `shape --out` writes the shape JSON at the path itself (a file); rerun-proof's --fresh record wraps it as {run,status,evidence,shape} and --source/--rerun-source must name the same committed job files both times.",
+        "--capabilities is rejected for --target-kind lakebase (no own-principal carve-out), and `python3 -m recon.cli` needs PYTHONPATH=<harness> with cwd=repo root for .migration/allowed_targets.json to resolve."
       ],
       "status": "FAIL",
       "write_targets": [
@@ -116,8 +110,9 @@
       "gates": [
         {
           "evidence": {
-            "label": "independent recount 37/0/0/0/50 vs live sink tags",
+            "label": "5/5 expectations fire as specced (37 orphan lines, 50 bad signup dates)",
             "path": ".migration/recon/u-invoice-quality-pipeline/expectations_evidence.json",
+            "rows": 5,
             "verdict": "pass"
           },
           "id": "expectations_evidence",
@@ -125,9 +120,9 @@
         },
         {
           "evidence": {
-            "label": "updates 6087100b (full refresh) + e3292f26 (rerun), pre_shape == prior committed shape",
+            "label": "fresh=pass, evolved=pass (idempotent rerun)",
             "path": ".migration/recon/u-invoice-quality-pipeline/rerun_proof.json",
-            "verdict": "fresh=pass, evolved=pass"
+            "verdict": "pass"
           },
           "id": "rerun_proof",
           "status": "passed"
@@ -139,9 +134,9 @@
         "kind": "human_override"
       },
       "merge_eligible": false,
-      "one_line_summary": "PASS downgraded: recon evidence was live/FAIL; u-invoice-quality-pipeline re-verified live: parity PASS, both gates pass with fresh evidence; merge blocked only by evidence+structural, waived by committed mo-invoice-quality-catalog-grants human_override; PR #2333 updated, not merged.",
+      "one_line_summary": "PASS downgraded: recon evidence was live/FAIL; Adopted the already-landed b1-quality SDP (PR #2333, parity PASS over live recon); verified deployed pipeline IDLE + job PAUSED + sinks 37/0/50 against committed evidence, merged latest run base onto the branch; merge blocked only by structural grant_extra + evidence by_design_unverified covered by mo-invoice-quality-catalog-grants.",
       "parity": "PASS",
-      "pr_head": "c3af070c0fb9c45993fa9043bedeaf0d546dfa44",
+      "pr_head": "91e8e816d0822f06b412afd50c128d2a4ed162cd",
       "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2333",
       "prompt_sha": "0affad93e0cbe6f0",
       "recon_cost": {
@@ -153,12 +148,7 @@
       },
       "recon_mode": "live",
       "recon_verdict": "FAIL",
-      "skill_feedback": [
-        "dbx_guard cannot trace dict/loop-dispatched execute() calls: statements against a legacy source must be literal execute(\"SELECT ...\") args, so the extract loop was rewritten as three literal calls (the QUERIES dict remains as documentation)",
-        "dbx_guard rejects shell $var interpolation inside SQL/table arguments; every table name and statement must be expanded literally in the command text",
-        "rerun-proof evolved leg: with --prior-proof, pre_shape read before the rerun must equal the prior committed proof's shape; when the landed schema is unchanged, pre_shape == prior == fresh grades evolved as pass",
-        "the extract upload is a freshness leg, not a merge gate: shape/rerun/expectations evidence all come from the live catalog + live source, so a stale extract would only matter if the Oracle fixture mutated"
-      ],
+      "skill_feedback": [],
       "status": "FAIL",
       "write_targets": [
         "ow_tp.mig_1793185083.invoice_line_quarantine",
@@ -179,28 +169,19 @@
     "Verifier findings: none.",
     "",
     "Skill feedback to fold in before the next wave:",
-    "- ALL_TRIGGERS/ALL_OBJECTS expose zero OW_BILLING triggers to the RO principal \u2014 deploying assigned target triggers yields trigger_extra tier-0 findings classed `structural` (merge-ineligible, not worker-fixable).",
-    "- Dedicated routine-parity exec target can be a schema `<branch>_exec` on the allowlisted branch; run records need target_branch `mig-1793185083-exec`, snapshot `fixture:<repo-path>`, and must be committed before grading.",
-    "- Guard resolves only inline literal SQL: parenthesized multi-line SQL constants are opaque to the resolver \u2014 inlined single-line literals or static .sql via `psql -f` only.",
-    "- Mapping spec asymmetry: spec declares root_where on filtered objects with no target_where and the engine requires symmetric scoping; worker-side fix is a scoped copy under .migration/recon/<unit>/ with target_where set to the identical predicate (committed spec untouched).",
-    "- Oracle DATE must land as `timestamp(0)` on Lakebase per canonicalization type_map; `date` is only allowed with census_midnight_only evidence and breaks datetime identity canonicalization.",
-    "- Redeploying functions with changed signatures fails on `cannot change return type`; routines DDL needs leading `DROP FUNCTION IF EXISTS` for idempotency.",
-    "- `export *DSN*=\"...$(databricks ...)\"` is blocked as a SQL-client command substitution; guard-clean form is a passwordless DSN env + `PGPASSWORD=$(databricks postgres generate-database-credential ...)` on the same exec line (credential minted per call).",
-    "- dbx_guard cannot trace dict/loop-dispatched execute() calls: statements against a legacy source must be literal execute(\"SELECT ...\") args, so the extract loop was rewritten as three literal calls (the QUERIES dict remains as documentation)",
-    "- dbx_guard rejects shell $var interpolation inside SQL/table arguments; every table name and statement must be expanded literally in the command text",
-    "- factory-doctor rewrites .migration/capabilities.json on every run \u2014 restore via `git checkout` before committing so it doesn't appear in the PR.",
-    "- rerun-proof `--fresh` requires a wrapped run record {run,status,evidence,shape}, not raw `shape` output; `shape --out` is a file path and must run from the repo root for the allowlist check.",
-    "- rerun-proof evolved leg: with --prior-proof, pre_shape read before the rerun must equal the prior committed proof's shape; when the landed schema is unchanged, pre_shape == prior == fresh grades evolved as pass",
-    "- the extract upload is a freshness leg, not a merge gate: shape/rerun/expectations evidence all come from the live catalog + live source, so a stale extract would only matter if the Oracle fixture mutated",
+    "- --capabilities is rejected for --target-kind lakebase (no own-principal carve-out), and `python3 -m recon.cli` needs PYTHONPATH=<harness> with cwd=repo root for .migration/allowed_targets.json to resolve.",
+    "- Shell-expanded DSN assignments (VAR=\"...$TOKEN\") block as 'shell expansion inside the SQL argument'; the Lakebase OAuth credential must be minted inside Python and exported via os.environ before exec'ing `python3 -m recon.cli`.",
+    "- dbx_guard resolves only a single string literal in execute() or a NAME = triple-quoted-literal assignment; open().read(), argv paths, adjacent literals and concatenation are opaque blocks, so static .sql files must be embedded as literals by a generated runner script.",
+    "- recon `shape --out` writes the shape JSON at the path itself (a file); rerun-proof's --fresh record wraps it as {run,status,evidence,shape} and --source/--rerun-source must name the same committed job files both times.",
     "",
     "Per batch:",
-    "- b1-plans: FAIL. u-plans fully converted and deployed to Lakebase ow_tp.mig_1793185083 (tables+constraints, 3 routines, 2 triggers, Tenant One data) with all gates green \u2014 recon parity PASS in live mode \u2014 but merge_eligible=false on a structural blocker: the RO source principal sees zero OW_BILLING triggers, so the assigned target triggers report as trigger_extra. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2338",
-    "- b1-quality: FAIL. PASS downgraded: recon evidence was live/FAIL; u-invoice-quality-pipeline re-verified live: parity PASS, both gates pass with fresh evidence; merge blocked only by evidence+structural, waived by committed mo-invoice-quality-catalog-grants human_override; PR #2333 updated, not merged. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2333"
+    "- b1-plans: FAIL. u-plans converted and loaded to Lakebase ow_tp.mig_1793185083 (5 tables + 3 routines + 2 triggers); live recon parity PASS but verdict FAIL, merge blocked structural (trigger_extra), covered by override mo-plans-trigger-visibility; PR #2342 open, CI 6/6 green. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2342",
+    "- b1-quality: FAIL. PASS downgraded: recon evidence was live/FAIL; Adopted the already-landed b1-quality SDP (PR #2333, parity PASS over live recon); verified deployed pipeline IDLE + job PAUSED + sinks 37/0/50 against committed evidence, merged latest run base onto the branch; merge blocked only by structural grant_extra + evidence by_design_unverified covered by mo-invoice-quality-catalog-grants. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2333"
   ],
   "close": null,
   "close_minutes": 10,
   "closed": false,
-  "doctor_signed_at": "2026-10-28T15:49:27+00:00",
+  "doctor_signed_at": "2026-10-28T18:09:27+00:00",
   "hook_probe": "blocked:d2afaee8",
   "manifest_sha": "8e590ea9d66a",
   "merge_overrides": [],
