@@ -10,7 +10,7 @@
   "target_hosts": ["LAKEBASE_MIGRATION_DSN"],
   "bundle_targets": ["mig_1793146609"],
   "lakebase_projects": ["ow-tp-billing"],
-  "lakebase_branches": ["mig-*"],
+  "lakebase_branches": ["mig-*", "projects/ow-tp-billing/branches/mig-*"],
   "fixture_endpoints": ["AWS_ENDPOINT_URL"],
   "forbidden": {
     "schemas": ["ow_tp.bronze", "ow_tp.silver", "ow_tp.gold", "ow_tp.airbyte_demo", "ow_tp.fivetran_metadata", "ow_tp._fivetran_setup_test", "ow_tp.fivetran_trimester_remoteness_staging"],
