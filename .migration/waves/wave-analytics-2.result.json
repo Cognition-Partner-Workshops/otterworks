@@ -1,0 +1,380 @@
+{
+  "auto_merge": false,
+  "base_sha": "8fdababa408f49da11719b94e64913e3afa06c4f",
+  "batches": [
+    {
+      "blocker_classes": [
+        "data",
+        "structural"
+      ],
+      "branch": "devin/1793161871-audit-archive-weekly",
+      "changed_paths": [
+        "etl/dbx-audit-archive/databricks.yml",
+        "etl/dbx-audit-archive/resources/ow_tp_analytics_audit_archive.job.yml",
+        "etl/dbx-audit-archive/src/ensure_objects.sql",
+        "etl/dbx-audit-archive/src/archive_load.sql",
+        ".migration/recon/audit_archive_weekly/bin/doctor_env.py",
+        ".migration/recon/audit_archive_weekly/bin/ensure_only.py",
+        ".migration/recon/audit_archive_weekly/bin/recon_env.py",
+        ".migration/recon/audit_archive_weekly/bin/reset_target.py",
+        ".migration/recon/audit_archive_weekly/canonicalization.json",
+        ".migration/recon/audit_archive_weekly/mapping_spec.json",
+        ".migration/recon/audit_archive_weekly/notes.md",
+        ".migration/recon/audit_archive_weekly/recon.summary.md",
+        ".migration/recon/audit_archive_weekly/report.md",
+        ".migration/recon/audit_archive_weekly/rerun/evolved.json",
+        ".migration/recon/audit_archive_weekly/rerun/evolved_shape.json",
+        ".migration/recon/audit_archive_weekly/rerun/fresh.json",
+        ".migration/recon/audit_archive_weekly/rerun/fresh_shape.json",
+        ".migration/recon/audit_archive_weekly/rerun/prior_shape.json",
+        ".migration/recon/audit_archive_weekly/rerun_proof.json",
+        ".migration/recon/audit_archive_weekly/result.json",
+        ".migration/recon/audit_archive_weekly/routine_parity.json"
+      ],
+      "failure_class": "missing_rule",
+      "gates": [
+        {
+          "evidence": {
+            "label": "mode=live depth=full parity FAIL (duplicate_source_key); merge blocked data+structural",
+            "path": ".migration/recon/audit_archive_weekly/result.json",
+            "verdict": "FAIL"
+          },
+          "id": "audit_archive_weekly-recon",
+          "status": "failed"
+        }
+      ],
+      "id": "a01",
+      "merge_authority": {
+        "kind": "harness"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "Converted audit_archive_weekly to PAUSED Lakeflow job ow_tp_analytics_audit_archive (bundle etl/dbx-audit-archive, rerun-proof pass); recon live/full FAIL \u2014 committed spec keys audit_events on non-unique event_id (event type, 4 values/120 rows; unique col is actor) -> duplicate_source_key, a spec-key defect needing a plan decision; plus platform-inherent structural grant blockers and no merge_overrides entry in wave-analytics-2 -> harness authority, merge_eligible=false; PR #2316.",
+      "parity": "FAIL",
+      "pr_head": "6806e8bd0016e3d78d91ea3aa9976df9428b9866",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2316",
+      "prompt_sha": "ff2071cbb51ef575",
+      "recon_cost": {
+        "elapsed_s": 15.36,
+        "source_rows_fetched": 135,
+        "source_statements": 20,
+        "target_rows_fetched": 135,
+        "target_statements": 18
+      },
+      "recon_mode": "live",
+      "recon_verdict": "FAIL",
+      "skill_feedback": [
+        "INSERT OVERWRITE (not keyed MERGE) is the idempotent load for a staged ledger whose spec key does not identify rows",
+        "harness _databricks_connect credentials_provider=Config().authenticate is incompatible with sql-connector 4.8.0/sdk 0.157.0 (provider must return a header factory, not a dict) \u2014 session shim: credentials_provider=lambda: cfg.authenticate",
+        "dbx_guard resolves only literal cur.execute statements; loops over statement lists and heredoc-written scripts are unresolvable",
+        "dbx-recon shape --out takes a file path, not a directory",
+        "Databricks target adapter needs bare table names in mapping_spec object; committed 3-part names need a normalized copy",
+        "dbx-recon run must pass --target-http-path /sql/1.0/warehouses/565cd2fd713738c4 because ambient DATABRICKS_HTTP_PATH points at a retired warehouse"
+      ],
+      "status": "FAIL",
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.audit_archive",
+        "ow_tp.ow_tp_analytics.audit_archive_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_audit_archive"
+      ]
+    },
+    {
+      "blocker_classes": [
+        "structural"
+      ],
+      "branch": "devin/1793161654-w2-a02-search-reindex",
+      "changed_paths": [
+        ".migration/recon/search_reindex_weekly/bin/grant_select_self.py",
+        ".migration/recon/search_reindex_weekly/bin/recon_env.py",
+        ".migration/recon/search_reindex_weekly/bin/reset_target.py",
+        ".migration/recon/search_reindex_weekly/canonicalization.json",
+        ".migration/recon/search_reindex_weekly/mapping_spec.json",
+        ".migration/recon/search_reindex_weekly/notes.md",
+        ".migration/recon/search_reindex_weekly/recon.summary.md",
+        ".migration/recon/search_reindex_weekly/report.md",
+        ".migration/recon/search_reindex_weekly/rerun/evolved.json",
+        ".migration/recon/search_reindex_weekly/rerun/evolved_pre_shape.json",
+        ".migration/recon/search_reindex_weekly/rerun/fresh.json",
+        ".migration/recon/search_reindex_weekly/rerun/fresh_shape.json",
+        ".migration/recon/search_reindex_weekly/rerun/prior_shape.json",
+        ".migration/recon/search_reindex_weekly/rerun_proof.json",
+        ".migration/recon/search_reindex_weekly/result.json",
+        ".migration/recon/search_reindex_weekly/routine_parity.json",
+        "etl/dbx-search-reindex/databricks.yml",
+        "etl/dbx-search-reindex/resources/ow_tp_analytics_search_reindex.job.yml",
+        "etl/dbx-search-reindex/src/ensure_objects.sql",
+        "etl/dbx-search-reindex/src/reindex_docs.sql",
+        "etl/dbx-search-reindex/src/reindex_report.sql"
+      ],
+      "failure_class": "structural_gap",
+      "gates": [
+        {
+          "evidence": {
+            "label": "unit recon result (live, depth full, seed 0)",
+            "path": ".migration/recon/search_reindex_weekly/result.json",
+            "rows": 33,
+            "verdict": "parity PASS \u2014 tier-1 13+15+5 rows matched, tier-3 keyed full diff clean on declared fields"
+          },
+          "id": "search_reindex_weekly-recon",
+          "status": "passed"
+        }
+      ],
+      "id": "a02",
+      "merge_authority": {
+        "kind": "harness"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "search_reindex_weekly converted to Lakeflow job ow_tp_analytics_search_reindex and deployed (PAUSED, retries); parity PASS at full depth (28 doc rows + 5 metric rows) and rerun proof both legs pass, but merge_eligible=false on structural grant parity (owner-excluded grant_missing + schema-inherited grant_extra) and no committed merge_override exists \u2014 needs a wave-2 override decision, same class wave-1 cleared via mo-analytics-w1-structural.",
+      "parity": "PASS",
+      "pr_head": "0d05ed1fd15b5aa939770a00d712771fffe11356",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2317",
+      "prompt_sha": "7093c7ec16500af9",
+      "recon_cost": {
+        "elapsed_s": 20.774,
+        "source_rows_fetched": 33,
+        "source_statements": 30,
+        "target_rows_fetched": 33,
+        "target_statements": 27
+      },
+      "recon_mode": "live",
+      "recon_verdict": "FAIL",
+      "skill_feedback": [
+        "Union spec: two source roots landing in one target need PAIRED root_where+target_where per object (engine rejects target_where alone) plus declared fields \u2014 normalized copy lives in .migration/recon/search_reindex_weekly/mapping_spec.json because the committed units/ spec carries FQ object names the adapter cannot run and zero fields (vacuous row_parity evidence, cf. wave-1 a02 verifier FAIL).",
+        "sql-connector 4.8 + 0.6.1 harness: credentials_provider must return a header factory; Config().authenticate returns a dict -> 'dict object is not callable'. Shimmed via bin/recon_env.py monkeypatching adapters._databricks_connect to the access_token path (same SP identity).",
+        "dbx_guard rejects parameterized/iterating SQL in helper scripts and heredoc-written SQL literals; literal one-statement .py files pass (bin/reset_target.py, bin/grant_select_self.py).",
+        "Grant-parity tier reads grantee <> table_owner: the owning principal's grants are invisible, so grant_missing on the session SP is unfixable while it owns the tables; schema-level SP grants surface as inherited table-level grant_extra that cannot be revoked at table scope. Structural class identical to wave-1's mo-analytics-w1-structural; wave-2 manifest has merge_overrides null so no committed override covers this unit."
+      ],
+      "status": "FAIL",
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.search_index_docs",
+        "ow_tp.ow_tp_analytics.search_reindex_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_search_reindex"
+      ]
+    },
+    {
+      "blocker_classes": [
+        "structural"
+      ],
+      "branch": "devin/1793161541-wave2-a03",
+      "changed_paths": [
+        ".migration/recon/storage_cleanup_daily/bin/doctor_env.py",
+        ".migration/recon/storage_cleanup_daily/bin/ensure_target.py",
+        ".migration/recon/storage_cleanup_daily/bin/recon_env.py",
+        ".migration/recon/storage_cleanup_daily/bin/reset_target.py",
+        ".migration/recon/storage_cleanup_daily/canonicalization.json",
+        ".migration/recon/storage_cleanup_daily/mapping_spec.json",
+        ".migration/recon/storage_cleanup_daily/notes.md",
+        ".migration/recon/storage_cleanup_daily/recon.summary.md",
+        ".migration/recon/storage_cleanup_daily/report.md",
+        ".migration/recon/storage_cleanup_daily/rerun/evolved.json",
+        ".migration/recon/storage_cleanup_daily/rerun/evolved_pre_shape.json",
+        ".migration/recon/storage_cleanup_daily/rerun/evolved_shape.json",
+        ".migration/recon/storage_cleanup_daily/rerun/fresh.json",
+        ".migration/recon/storage_cleanup_daily/rerun/fresh_shape.json",
+        ".migration/recon/storage_cleanup_daily/rerun/prior_shape.json",
+        ".migration/recon/storage_cleanup_daily/rerun_proof.json",
+        ".migration/recon/storage_cleanup_daily/result.json",
+        ".migration/recon/storage_cleanup_daily/routine_parity.json",
+        "etl/dbx-storage-cleanup/data/files_listing_2026-10-28.jsonl",
+        "etl/dbx-storage-cleanup/data/metadata_keys_2026-10-28.jsonl",
+        "etl/dbx-storage-cleanup/databricks.yml",
+        "etl/dbx-storage-cleanup/resources/ow_tp_analytics_storage_cleanup.job.yml",
+        "etl/dbx-storage-cleanup/src/ensure_objects.sql",
+        "etl/dbx-storage-cleanup/src/storage_cleanup_run.sql"
+      ],
+      "failure_class": "structural",
+      "gates": [
+        {
+          "evidence": {
+            "label": "recon run --mode live --depth full --seed 0",
+            "path": ".migration/recon/storage_cleanup_daily/result.json",
+            "rows": 23,
+            "verdict": "parity PASS; merge_eligible=false (structural: grant asymmetry, platform-inherent)"
+          },
+          "id": "storage_cleanup_daily-recon",
+          "status": "passed"
+        }
+      ],
+      "id": "a03",
+      "merge_authority": {
+        "kind": "harness"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "storage_cleanup_daily converted to Lakeflow job ow_tp_analytics_storage_cleanup (quarantine ledger + savings report, PAUSED schedule, retries 2); recon live parity PASS, merge blocked on structural grant asymmetry \u2014 merge_authority harness, no wave-2 override.",
+      "parity": "PASS",
+      "pr_head": "c0c18891ee3bf8c08e79f9f49b6fb831645f0192",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2318",
+      "prompt_sha": "2ff7ec8885c11c93",
+      "recon_cost": {
+        "elapsed_s": 15.89,
+        "source_rows_fetched": 23,
+        "source_statements": 20,
+        "target_rows_fetched": 23,
+        "target_statements": 18
+      },
+      "recon_mode": "live",
+      "recon_verdict": "FAIL",
+      "skill_feedback": [
+        "sql-connector 4.8.0/sdk 0.157.0: credentials_provider=Config().authenticate returns a dict but the connector calls it -> wrap as lambda (patched plugin-cache adapters.py; a01's launcher shim equivalent).",
+        "Ambient DATABRICKS_HTTP_PATH points at retired warehouse 890be8990bf134aa; always pass --target-http-path /sql/1.0/warehouses/565cd2fd713738c4.",
+        "Committed mapping_spec writes object as catalog.schema.table; Databricks adapter requires bare table names -> run used normalized copy in recon dir.",
+        "dbx_guard: scripts under .migration/recon/<unit>/bin/ with literal cur.execute(...) pass; loop-built SQL in /tmp is unresolvable and blocked.",
+        "Fixture-first fails closed: no databricks fixture endpoint in allowed_targets.json -> live run is the merge evidence (fixture never counts toward the 3-run cap).",
+        "Spark ROUND(x,4) renders 0.0000 for zero; wrap CAST(CAST(ROUND(...) AS DOUBLE) AS STRING) to reproduce legacy str(round(x,4)) == '0.0'.",
+        "--canonicalization is required; empty [] ruleset is valid for family databricks.",
+        "rerun-proof: prior-shape for a first-run unit = shape read of the committed DDL shape (same digest as evolved pre_shape).",
+        "boto3 on serverless is unusable (wave-1 NoRegionError); converted input drop is committed data/*.jsonl uploaded to UC volume storage_drop.",
+        "wave-analytics-2 manifest has merge_overrides: null -> every unit reports FAIL on structural; wave 2 needs its own mo-* entry (wave-1 used mo-analytics-w1-structural)."
+      ],
+      "status": "FAIL",
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.storage_quarantine_actions",
+        "ow_tp.ow_tp_analytics.storage_cleanup_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_storage_cleanup"
+      ]
+    },
+    {
+      "blocker_classes": [
+        "structural"
+      ],
+      "branch": "devin/1793161540-wave2-a04-user-activity",
+      "changed_paths": [
+        ".migration/recon/user_activity_daily/bin/doctor_env.py",
+        ".migration/recon/user_activity_daily/bin/recon_env.py",
+        ".migration/recon/user_activity_daily/bin/reset_target.py",
+        ".migration/recon/user_activity_daily/canonicalization.json",
+        ".migration/recon/user_activity_daily/fixture/recon.summary.md",
+        ".migration/recon/user_activity_daily/fixture/report.md",
+        ".migration/recon/user_activity_daily/fixture/result.json",
+        ".migration/recon/user_activity_daily/mapping_spec.json",
+        ".migration/recon/user_activity_daily/notes.md",
+        ".migration/recon/user_activity_daily/recon.summary.md",
+        ".migration/recon/user_activity_daily/report.md",
+        ".migration/recon/user_activity_daily/rerun/evolved.json",
+        ".migration/recon/user_activity_daily/rerun/evolved_pre_shape.json",
+        ".migration/recon/user_activity_daily/rerun/evolved_shape.json",
+        ".migration/recon/user_activity_daily/rerun/fresh.json",
+        ".migration/recon/user_activity_daily/rerun/prior_shape.json",
+        ".migration/recon/user_activity_daily/rerun_proof.json",
+        ".migration/recon/user_activity_daily/result.json",
+        ".migration/recon/user_activity_daily/routine_parity.json",
+        ".migration/recon/wave-analytics-04/a04/report.json",
+        "etl/dbx-user-activity/databricks.yml",
+        "etl/dbx-user-activity/resources/ow_tp_analytics_user_activity.job.yml",
+        "etl/dbx-user-activity/src/ensure_objects.sql",
+        "etl/dbx-user-activity/src/run_user_activity.sql"
+      ],
+      "failure_class": "protected_files_tampered",
+      "gates": [
+        {
+          "evidence": ".migration/recon/wave-analytics-04/a04/report.json",
+          "id": "user_activity_daily-recon",
+          "status": "passed"
+        }
+      ],
+      "id": "a04",
+      "merge_authority": {
+        "kind": "harness"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "PR changed protected files (.migration/recon/wave-analytics-04/a04/report.json); user_activity_daily converted to Lakeflow job ow_tp_analytics_user_activity; live recon parity PASS (29 rows both sides), merge blocked structural (platform grants, no source counterparts, wave-2 manifest has no merge_overrides); rerun proof fresh+evolved pass; PR #2315 opened.",
+      "parity": "PASS",
+      "pr_head": "b96c2ece723f0ae570859857327166daa9eca44c",
+      "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2315",
+      "prompt_sha": "12315bf6c4106186",
+      "recon_cost": {
+        "elapsed_s": 6.608,
+        "source_rows_fetched": 29,
+        "source_statements": 10,
+        "target_rows_fetched": 29,
+        "target_statements": 9
+      },
+      "recon_mode": "live",
+      "recon_verdict": "FAIL",
+      "skill_feedback": [
+        "Per-user S3 inputs are mirrored as ow_tp_analytics_src.analytics_daily_report.report_json rows keyed by legacy s3 path (decision analytics-daily-artifacts=mirror), not volume files; extract file_day via regexp_extract+make_date.",
+        "Legacy file window is day_offset 0..29 on file days ([ds-29, ds]), one day narrower than the Postgres BETWEEN ds-30..ds; the file loop is the parity-relevant span.",
+        "Missing days/keys skip silently in legacy (bare except); NULL file_day falling out of BETWEEN reproduces it.",
+        "actions_by_type.<type> emits a metric row only for keys present in the day's actions map; absent keys produce nothing.",
+        "Declared parity surface covers only flattened per-user metric rows; reproducing trends/daily_summaries would create null_key/extra findings.",
+        "databricks-sql-connector 4.8.0 requires credentials_provider to return a callable; harness passes Config().authenticate (returns a dict) -> 'dict' object is not callable; patched local harness copy, plugin cache untouched.",
+        "run's --object must be bare (adapter prefixes catalog/schema); committed mapping_spec uses 3-part names -> normalized copy in the evidence dir.",
+        "No committed databricks canonicalization file exists; an empty [] ruleset satisfies --canonicalization.",
+        "bundle run --params takes comma k=v pairs (ds=YYYY-MM-DD), not a JSON --job-params flag.",
+        "Session oauth-m2m SP mints usable tokens via databricks.sdk.core Config().authenticate; direct api post for SQL is guard-blocked -> literal-statement scripts."
+      ],
+      "status": "FAIL",
+      "write_targets": [
+        "ow_tp.ow_tp_analytics.user_activity_report",
+        "ow_tp.ow_tp_analytics.ow_tp_analytics_user_activity"
+      ]
+    }
+  ],
+  "breaker_tripped_on": null,
+  "brief": [
+    "Wave 2 close, plan step run-analytics-wave-2.",
+    "Landed: 0 of 4 batches passed their own recon.",
+    "Independent verify: NOT RUN.",
+    "Failed: a01, a02, a03, a04. Blocked: none. Held by circuit breaker: none.",
+    "Cost: estimated n/a; actual source_statements=80, target_statements=72, source_rows_fetched=220, target_rows_fetched=220, harness time 59s. Verifier depth full, overrides: a01=full, a02=full, a03=full, a04=full.",
+    "Awaiting manual merge: none reported",
+    "",
+    "Verifier findings: none.",
+    "",
+    "Skill feedback to fold in before the next wave:",
+    "- --canonicalization is required; empty [] ruleset is valid for family databricks.",
+    "- Ambient DATABRICKS_HTTP_PATH points at retired warehouse 890be8990bf134aa; always pass --target-http-path /sql/1.0/warehouses/565cd2fd713738c4.",
+    "- Committed mapping_spec writes object as catalog.schema.table; Databricks adapter requires bare table names -> run used normalized copy in recon dir.",
+    "- Databricks target adapter needs bare table names in mapping_spec object; committed 3-part names need a normalized copy",
+    "- Declared parity surface covers only flattened per-user metric rows; reproducing trends/daily_summaries would create null_key/extra findings.",
+    "- Fixture-first fails closed: no databricks fixture endpoint in allowed_targets.json -> live run is the merge evidence (fixture never counts toward the 3-run cap).",
+    "- Grant-parity tier reads grantee <> table_owner: the owning principal's grants are invisible, so grant_missing on the session SP is unfixable while it owns the tables; schema-level SP grants surface as inherited table-level grant_extra that cannot be revoked at table scope. Structural class identical to wave-1's mo-analytics-w1-structural; wave-2 manifest has merge_overrides null so no committed override covers this unit.",
+    "- INSERT OVERWRITE (not keyed MERGE) is the idempotent load for a staged ledger whose spec key does not identify rows",
+    "- Legacy file window is day_offset 0..29 on file days ([ds-29, ds]), one day narrower than the Postgres BETWEEN ds-30..ds; the file loop is the parity-relevant span.",
+    "- Missing days/keys skip silently in legacy (bare except); NULL file_day falling out of BETWEEN reproduces it.",
+    "- No committed databricks canonicalization file exists; an empty [] ruleset satisfies --canonicalization.",
+    "- Per-user S3 inputs are mirrored as ow_tp_analytics_src.analytics_daily_report.report_json rows keyed by legacy s3 path (decision analytics-daily-artifacts=mirror), not volume files; extract file_day via regexp_extract+make_date.",
+    "- Session oauth-m2m SP mints usable tokens via databricks.sdk.core Config().authenticate; direct api post for SQL is guard-blocked -> literal-statement scripts.",
+    "- Spark ROUND(x,4) renders 0.0000 for zero; wrap CAST(CAST(ROUND(...) AS DOUBLE) AS STRING) to reproduce legacy str(round(x,4)) == '0.0'.",
+    "- Union spec: two source roots landing in one target need PAIRED root_where+target_where per object (engine rejects target_where alone) plus declared fields \u2014 normalized copy lives in .migration/recon/search_reindex_weekly/mapping_spec.json because the committed units/ spec carries FQ object names the adapter cannot run and zero fields (vacuous row_parity evidence, cf. wave-1 a02 verifier FAIL).",
+    "- actions_by_type.<type> emits a metric row only for keys present in the day's actions map; absent keys produce nothing.",
+    "- boto3 on serverless is unusable (wave-1 NoRegionError); converted input drop is committed data/*.jsonl uploaded to UC volume storage_drop.",
+    "- bundle run --params takes comma k=v pairs (ds=YYYY-MM-DD), not a JSON --job-params flag.",
+    "- databricks-sql-connector 4.8.0 requires credentials_provider to return a callable; harness passes Config().authenticate (returns a dict) -> 'dict' object is not callable; patched local harness copy, plugin cache untouched.",
+    "- dbx-recon run must pass --target-http-path /sql/1.0/warehouses/565cd2fd713738c4 because ambient DATABRICKS_HTTP_PATH points at a retired warehouse",
+    "- dbx-recon shape --out takes a file path, not a directory",
+    "- dbx_guard rejects parameterized/iterating SQL in helper scripts and heredoc-written SQL literals; literal one-statement .py files pass (bin/reset_target.py, bin/grant_select_self.py).",
+    "- dbx_guard resolves only literal cur.execute statements; loops over statement lists and heredoc-written scripts are unresolvable",
+    "- dbx_guard: scripts under .migration/recon/<unit>/bin/ with literal cur.execute(...) pass; loop-built SQL in /tmp is unresolvable and blocked.",
+    "- harness _databricks_connect credentials_provider=Config().authenticate is incompatible with sql-connector 4.8.0/sdk 0.157.0 (provider must return a header factory, not a dict) \u2014 session shim: credentials_provider=lambda: cfg.authenticate",
+    "- rerun-proof: prior-shape for a first-run unit = shape read of the committed DDL shape (same digest as evolved pre_shape).",
+    "- run's --object must be bare (adapter prefixes catalog/schema); committed mapping_spec uses 3-part names -> normalized copy in the evidence dir.",
+    "- sql-connector 4.8 + 0.6.1 harness: credentials_provider must return a header factory; Config().authenticate returns a dict -> 'dict object is not callable'. Shimmed via bin/recon_env.py monkeypatching adapters._databricks_connect to the access_token path (same SP identity).",
+    "- sql-connector 4.8.0/sdk 0.157.0: credentials_provider=Config().authenticate returns a dict but the connector calls it -> wrap as lambda (patched plugin-cache adapters.py; a01's launcher shim equivalent).",
+    "- wave-analytics-2 manifest has merge_overrides: null -> every unit reports FAIL on structural; wave 2 needs its own mo-* entry (wave-1 used mo-analytics-w1-structural).",
+    "",
+    "Per batch:",
+    "- a01: FAIL. Converted audit_archive_weekly to PAUSED Lakeflow job ow_tp_analytics_audit_archive (bundle etl/dbx-audit-archive, rerun-proof pass); recon live/full FAIL \u2014 committed spec keys audit_events on non-unique event_id (event type, 4 values/120 rows; unique col is actor) -> duplicate_source_key, a spec-key defect needing a plan decision; plus platform-inherent structural grant blockers and no merge_overrides entry in wave-analytics-2 -> harness authority, merge_eligible=false; PR #2316. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2316",
+    "- a02: FAIL. search_reindex_weekly converted to Lakeflow job ow_tp_analytics_search_reindex and deployed (PAUSED, retries); parity PASS at full depth (28 doc rows + 5 metric rows) and rerun proof both legs pass, but merge_eligible=false on structural grant parity (owner-excluded grant_missing + schema-inherited grant_extra) and no committed merge_override exists \u2014 needs a wave-2 override decision, same class wave-1 cleared via mo-analytics-w1-structural. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2317",
+    "- a03: FAIL. storage_cleanup_daily converted to Lakeflow job ow_tp_analytics_storage_cleanup (quarantine ledger + savings report, PAUSED schedule, retries 2); recon live parity PASS, merge blocked on structural grant asymmetry \u2014 merge_authority harness, no wave-2 override. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2318",
+    "- a04: FAIL. PR changed protected files (.migration/recon/wave-analytics-04/a04/report.json); user_activity_daily converted to Lakeflow job ow_tp_analytics_user_activity; live recon parity PASS (29 rows both sides), merge blocked structural (platform grants, no source counterparts, wave-2 manifest has no merge_overrides); rerun proof fresh+evolved pass; PR #2315 opened. https://github.com/Cognition-Partner-Workshops/otterworks/pull/2315"
+  ],
+  "close": null,
+  "close_minutes": 30,
+  "closed": false,
+  "doctor_signed_at": "2026-10-28T04:24:30+00:00",
+  "hook_probe": "blocked:8b60a95f",
+  "manifest_sha": "2ac112676b76",
+  "merge_overrides": [],
+  "pipeline_order": {},
+  "plan_sha": "403414708267326d03ee91d9083acf98088e46e451b738ceb130f6ec5f8f0f70",
+  "plan_step": "run-analytics-wave-2",
+  "resync": null,
+  "tag": "analytics-2",
+  "undeclared_write_targets": {},
+  "unreported_write_targets": [],
+  "verify": null,
+  "waived_gates": [],
+  "wave": 2,
+  "width": 4,
+  "write_target_overlaps": []
+}
