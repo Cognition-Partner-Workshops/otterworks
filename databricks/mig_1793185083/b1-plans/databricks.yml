@@ -1,0 +1,13 @@
+bundle:
+  name: mig_1_b1-plans
+
+# Pure-Lakebase batch: no jobs or pipelines to deploy. The bundle file exists so
+# the batch's converted artifacts sit under the wave's bundle naming convention
+# (mig_<run_id>_<batch_id>). Load + routine deploy are the guard-clean
+# psycopg path in load/ and ddl/.
+
+targets:
+  mig_1793185083:
+    default: true
+    workspace:
+      host: https://dbc-8bc9474f-40ae.cloud.databricks.com
