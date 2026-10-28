@@ -140,7 +140,7 @@
       }
     ]
   },
-  "brief": "Wave-1b: rerun of run-analytics-wave-1 under merge_override mo-analytics-w1-structural (structural class, both units)",
+  "brief": "Wave-1b relaunch: run-analytics-wave-1b under merge_override mo-analytics-w1-structural (structural class, both units); paused run superseded",
   "merge_overrides": [
     {
       "decision": "mo-analytics-w1-structural",
