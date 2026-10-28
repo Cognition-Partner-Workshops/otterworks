@@ -3,7 +3,7 @@
   "repo": "github.com/Cognition-Partner-Workshops/otterworks",
   "child_skill": "unit-migration",
   "verify_skill": "wave-verify",
-  "plan_step": "run-invoicing-wave-1",
+  "plan_step": "run-invoicing-wave-1b",
   "width": 2,
   "breaker_threshold": 3,
   "auto_merge": false,
@@ -21,35 +21,82 @@
   "capabilities": {
     "identity": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
-    "catalogs": ["ow_tp"],
+    "catalogs": [
+      "ow_tp"
+    ],
     "ready": true,
     "guard_mode": "block"
   },
   "target_state": {
-    "core": {"decision": "target-core", "target": "ow-tp-billing", "ref": "mig-invoicing-w1"},
-    "lakebase": {"decision": "target-lakebase", "target": "ow-tp-billing", "ref": "mig-invoicing-w1"},
-    "sql": {"decision": "target-sql", "target": "ow_tp", "ref": "warehouse-565cd2fd713738c4"},
-    "pipeline": {"decision": "target-pipeline", "target": "lakeflow-job", "ref": "paused"},
-    "orchestration": {"decision": "target-orchestration", "target": "lakeflow-job", "ref": "paused"},
-    "consumer": {"decision": "target-consumer", "na": "no repoint — STOP E parks"},
-    "data_dependency": {"decision": "target-data-dependency", "target": "snapshot", "ref": "no federation/JDBC/CDC"}
+    "core": {
+      "decision": "target-core",
+      "target": "ow-tp-billing",
+      "ref": "mig-invoicing-w1"
+    },
+    "lakebase": {
+      "decision": "target-lakebase",
+      "target": "ow-tp-billing",
+      "ref": "mig-invoicing-w1"
+    },
+    "sql": {
+      "decision": "target-sql",
+      "target": "ow_tp",
+      "ref": "warehouse-565cd2fd713738c4"
+    },
+    "pipeline": {
+      "decision": "target-pipeline",
+      "target": "lakeflow-job",
+      "ref": "paused"
+    },
+    "orchestration": {
+      "decision": "target-orchestration",
+      "target": "lakeflow-job",
+      "ref": "paused"
+    },
+    "consumer": {
+      "decision": "target-consumer",
+      "na": "no repoint — STOP E parks"
+    },
+    "data_dependency": {
+      "decision": "target-data-dependency",
+      "target": "snapshot",
+      "ref": "no federation/JDBC/CDC"
+    }
   },
   "verify_depth": "sampled",
   "max_minutes": 45,
   "cost_estimate": {
     "mode": "live",
     "depth": "sampled",
-    "source_statements": {"tier1": 17, "tier2": 17, "tier3": 725, "tier4": 0, "total": 759},
-    "target_statements": {"tier1": 17, "tier2": 17, "tier3": 338, "tier4": 0, "total": 372},
+    "source_statements": {
+      "tier1": 17,
+      "tier2": 17,
+      "tier3": 725,
+      "tier4": 0,
+      "total": 759
+    },
+    "target_statements": {
+      "tier1": 17,
+      "tier2": 17,
+      "tier3": 338,
+      "tier4": 0,
+      "total": 372
+    },
     "source_rows_fetched": 306424,
     "target_rows_fetched": 153212,
     "row_counts_known": true
   },
-  "pipelines": {"invoicing": 1, "custbill": 3, "analytics": 2},
+  "pipelines": {
+    "invoicing": 1,
+    "custbill": 3,
+    "analytics": 2
+  },
   "batches": [
     {
       "id": "w1-b01",
-      "units": ["billing_history"],
+      "units": [
+        "billing_history"
+      ],
       "write_targets": [
         "ow_tp.ow_tp_invoicing_history.customer_master",
         "ow_tp.ow_tp_invoicing_history.customer_master_hist",
@@ -70,14 +117,25 @@
         "snapshot.invoice_line"
       ],
       "lakeflow_pipelines": [],
-      "brief": "Snapshot-load the invoicing history surface from OW_BILLING into Delta under ow_tp.ow_tp_invoicing_history: customer_master, customer_master_hist, entity_attr_value, invoice_header, invoice_line (read-only principal, snapshot load, no federation). Keys per mapping_spec.json. Tolerances tol-20261027-v1 (family oracle, live). Write only to the declared write_targets.",
+      "brief": "Snapshot-load the invoicing history surface from OW_BILLING into Delta under ow_tp.ow_tp_invoicing_history: customer_master, customer_master_hist, entity_attr_value, invoice_header, invoice_line (read-only principal, snapshot load, no federation). Keys per mapping_spec.json. Tolerances tol-20261027-v1 (family oracle, live). Write only to the declared write_targets. Local plugin patches required BEFORE recon (apply to your session's plugin cache copy of skills/data-reconciliation/harness/recon/adapters.py): (1) in _uc_schema_facts change \"tp.grantee <> t.owner\" to \"tp.grantee <> t.table_owner\" (UC exposes table_owner); (2) inside _databricks_connect use sql.connect(server_hostname=host, http_path=http_path, access_token=_databricks_bearer()) for oauth-m2m (the connector's oauth_client_* kwargs drive interactive U2M and hang headless). Recon invocations: pass --target-http-path /sql/1.0/warehouses/565cd2fd713738c4 (the FULL warehouse path, not the bare id — bare id fails OpenSession). Override the stale env DATABRICKS_HTTP_PATH with /sql/1.0/warehouses/565cd2fd713738c4 for every recon and grants probe you run. The previous run's structural blocker on this batch was the Delta informational-PK/grant surface seen through a stale grants probe; with the table_owner patch + correct http path the probe should read cleanly. If a structural blocker still stands after a clean probe, report its exact objects verbatim in your structured output — do not widen mo-invoicing-w1-structural (it covers only the five packages, not billing_history).",
       "gates": [
-        {"id": "w1-recon", "kind": "row_parity", "status": "pending", "evidence": ".migration/recon/wave-invoicing-1/w1-b01/report.json"}
+        {
+          "id": "w1-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        }
       ]
     },
     {
       "id": "w1-b02",
-      "units": ["pkg_dunning", "pkg_invoicing", "pkg_ow_util", "pkg_plans", "pkg_rating"],
+      "units": [
+        "pkg_dunning",
+        "pkg_invoicing",
+        "pkg_ow_util",
+        "pkg_plans",
+        "pkg_rating"
+      ],
       "write_targets": [
         "ow_tp_invoicing.billing_audit_log",
         "ow_tp_invoicing.credit_notes",
@@ -124,9 +182,29 @@
         "ow_tp_invoicing.job_nightly_dunning"
       ],
       "lakeflow_pipelines": [],
-      "brief": "Convert the OW_BILLING invoicing package layer (pkg_ow_util, pkg_plans, pkg_rating, pkg_invoicing, pkg_dunning + triggers trg_billing_audit_log_id/trg_subscriptions_hist/trg_sub_no_uncancel/trg_usage_events_check + jobs JOB_NIGHTLY_DUNNING/JOB_PURGE_AUDIT_LOG) to Lakebase project ow-tp-billing on new branch mig-invoicing-w1 (schema ow_tp_invoicing). Snapshot-load every read/written table (codes, plans, tenants, subscriptions, subscriptions_hist, usage_events, rating_periods, rating_results, invoices, invoice_lines, credit_notes, dunning_attempts, notifications, billing_audit_log) via the read-only principal. All writing routines are unproven cutover exceptions pending the requester's EXECUTE grant — flag each as unproven; no EXECUTE is available to prove them. Tolerances tol-20261027-v1. One PR to the run branch.",
+      "brief": "Convert the OW_BILLING invoicing package layer (pkg_ow_util, pkg_plans, pkg_rating, pkg_invoicing, pkg_dunning + triggers trg_billing_audit_log_id/trg_subscriptions_hist/trg_sub_no_uncancel/trg_usage_events_check + jobs JOB_NIGHTLY_DUNNING/JOB_PURGE_AUDIT_LOG) to Lakebase project ow-tp-billing on new branch mig-invoicing-w1 (schema ow_tp_invoicing). Snapshot-load every read/written table (codes, plans, tenants, subscriptions, subscriptions_hist, usage_events, rating_periods, rating_results, invoices, invoice_lines, credit_notes, dunning_attempts, notifications, billing_audit_log) via the read-only principal. All writing routines are unproven cutover exceptions — the requester selected execute-posture=unproven-exceptions (no EXECUTE grant); flag each as unproven. Tolerances tol-20261027-v1. One PR to the run branch. Merge authority: the requester authorized decision mo-invoicing-w1-structural (committed .migration/authorizations.json, kind merge_override) forgiving blocker class `structural` on exactly this batch's five units — the legacy estate declares 4 triggers in DDL but never installs them (all_triggers empty), so converted target triggers surface as trigger_extra by class and cannot be fixed in converted code. If parity is PASS and the only blocker class is structural, report merge_authority {kind: \"human_override\", decision_id: \"mo-invoicing-w1-structural\"} in your structured output — the wave's merge_overrides entry covers it only when you claim that decision id.",
       "gates": [
-        {"id": "w1-recon", "kind": "row_parity", "status": "pending", "evidence": ".migration/recon/wave-invoicing-1/w1-b02/report.json"}
+        {
+          "id": "w1-recon",
+          "kind": "row_parity",
+          "status": "pending",
+          "evidence": ""
+        }
+      ]
+    }
+  ],
+  "merge_overrides": [
+    {
+      "blocker_classes": [
+        "structural"
+      ],
+      "decision": "mo-invoicing-w1-structural",
+      "units": [
+        "pkg_dunning",
+        "pkg_invoicing",
+        "pkg_ow_util",
+        "pkg_plans",
+        "pkg_rating"
       ]
     }
   ]

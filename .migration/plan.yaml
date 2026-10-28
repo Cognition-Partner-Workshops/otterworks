@@ -1,323 +1,432 @@
 version: 1
 title: OtterWorks billing estate to Databricks (run 1793146609)
-summary: Overnight migration run, three sibling pipelines on one ledger —
-  invoicing (Oracle OW_BILLING -> Lakebase + Delta), custbill (CUSTBILL chain ->
-  Lakeflow pipeline + Job), analytics (etl/ crons + Scala rollup -> Lakeflow Jobs).
-  Each sibling appends its own pipeline phase; the requester approves once in the
-  Plan view when all phases are committed.
+summary: "Overnight migration run, three sibling pipelines on one ledger \u2014 invoicing\
+  \ (Oracle OW_BILLING -> Lakebase + Delta), custbill (CUSTBILL chain -> Lakeflow\
+  \ pipeline + Job), analytics (etl/ crons + Scala rollup -> Lakeflow Jobs). Each\
+  \ sibling appends its own pipeline phase; the requester approves once in the Plan\
+  \ view when all phases are committed."
 phases:
-  - id: analytics
-    title: Pipeline analytics — etl/ crons + Scala rollup -> Lakeflow Jobs
+- id: analytics
+  title: "Pipeline analytics \u2014 etl/ crons + Scala rollup -> Lakeflow Jobs"
+  decisions:
+  - id: parity-mechanism
+    description: "Parity mechanism for analytics \u2014 the estate's `--family oracle`\
+      \ rule has no Oracle object to read in this pipeline. Selected by the requester\
+      \ (parent chat) \u2014 recorded here; no approved markers touched."
+    options:
+    - id: snapshot-databricks
+      label: "Recommended \u2014 materialize each unit's legacy output into ow_tp.ow_tp_analytics_src\
+        \ (snapshot posture), then dbx-recon --family databricks catalog-to-catalog\
+        \ vs ow_tp.ow_tp_analytics on warehouse 565cd2fd713738c4. One uniform mechanism,\
+        \ inside the allowlist, live-tested adapter."
+    - id: postgres-split
+      label: "dbx-recon --family postgres for the Postgres-sourced units (analytics_daily,\
+        \ user_activity_daily), databricks for the rest \u2014 mixed source blocks\
+        \ per unit."
+    selected: snapshot-databricks
+    important: true
+  - id: target-core
+    description: Target surface for the converted jobs.
+    options:
+    - id: lakeflow-jobs
+      label: Lakeflow Jobs with retries; outputs land in Delta under ow_tp.ow_tp_analytics;
+        schedules created PAUSED.
+    selected: lakeflow-jobs
+    important: false
+  - id: analytics-src-principal-keep-access
+    description: Source-principal grant posture for the snapshot staging schema. The
+      session SP (DE-shared) holds ALL_PRIVILEGES on catalog ow_tp, which doctor's
+      source_principal_read_only flags as writable in scope. Under snapshot posture
+      staging is sealed after materialize; the SP is additionally scoped to SELECT
+      + USE_SCHEMA on ow_tp_analytics_src and ALL_PRIVILEGES only on the target schema
+      ow_tp_analytics, with staging ownership held by the catalog owner.
+    options:
+    - id: keep-access
+      label: "Keep the catalog ALL_PRIVILEGES grant \u2014 staging stays sealed by\
+        \ ownership/scoped grants; check passes by human attestation (this decision)."
+    - id: downgrade-catalog
+      label: Catalog owner revokes ALL_PRIVILEGES on ow_tp and grants USE_CATALOG;
+        would block the SP from provisioning future schemas/targets without re-granting.
+    selected: keep-access
+    important: true
+  steps:
+  - id: analytics-inventory
+    title: Inventory and boundary (STOP B, approved)
+    gates:
+    - id: coverage
+      description: 6/6 scheduled units covered; etl/legacy-extra/ and MarketSeeder
+        excluded.
+  - id: analytics-snapshot-schema
+    title: Materialize legacy outputs into ow_tp.ow_tp_analytics_src
+    depends_on:
+    - analytics-inventory
+    gates:
+    - id: snapshot-landed
+      description: Each unit's legacy run output lands as Delta rows in ow_tp.ow_tp_analytics_src
+        for recon source-side comparison.
+  - id: run-analytics-wave-1
+    title: "Wave 1 pilot (width 2 \u2014 usage_rollup_scala, analytics_daily)"
+    depends_on:
+    - analytics-snapshot-schema
+    gates:
+    - id: w1-recon
+      description: dbx-recon PASS per unit on the declared parity mechanism.
+  - id: run-analytics-wave-1b
+    title: Wave 1b (relaunch of wave-1 with merge_overrides for structural blockers)
+    depends_on:
+    - run-analytics-wave-1
+    gates:
+    - id: w1b-recon
+      description: dbx-recon PASS per unit on the declared parity mechanism.
     decisions:
-      - id: parity-mechanism
-        description: Parity mechanism for analytics — the estate's `--family oracle`
-          rule has no Oracle object to read in this pipeline.
-        options:
-          - id: snapshot-databricks
-            label: Recommended — materialize each unit's legacy output into
-              ow_tp.ow_tp_analytics_src (snapshot posture), then dbx-recon
-              --family databricks catalog-to-catalog vs ow_tp.ow_tp_analytics on
-              warehouse 565cd2fd713738c4. One uniform mechanism, inside the
-              allowlist, live-tested adapter.
-          - id: postgres-split
-            label: dbx-recon --family postgres for the Postgres-sourced units
-              (analytics_daily, user_activity_daily), databricks for the rest —
-              mixed source blocks per unit.
-        selected: null
-        important: true
-      - id: target-core
-        description: Target surface for the converted jobs.
-        options:
-          - id: lakeflow-jobs
-            label: Lakeflow Jobs with retries; outputs land in Delta under
-              ow_tp.ow_tp_analytics; schedules created PAUSED.
-        selected: lakeflow-jobs
-        important: false
-    steps:
-      - id: analytics-inventory
-        title: Inventory and boundary (STOP B, approved)
-        gates:
-          - id: coverage
-            description: 6/6 scheduled units covered; etl/legacy-extra/ and
-              MarketSeeder excluded.
-      - id: analytics-snapshot-schema
-        title: Materialize legacy outputs into ow_tp.ow_tp_analytics_src
-        depends_on: [analytics-inventory]
-        gates:
-          - id: snapshot-landed
-            description: Each unit's legacy run output lands as Delta rows in
-              ow_tp.ow_tp_analytics_src for recon source-side comparison.
-      - id: run-analytics-wave-1
-        title: Wave 1 pilot (width 2 — usage_rollup_scala, analytics_daily)
-        depends_on: [analytics-snapshot-schema]
-        gates:
-          - id: w1-recon
-            description: dbx-recon PASS per unit on the declared parity mechanism.
-      - id: run-analytics-wave-2
-        title: Wave 2 remaining crons (width 4)
-        depends_on: [run-analytics-wave-1]
-        gates:
-          - id: w2-recon
-            description: dbx-recon PASS per unit on the declared parity mechanism.
-      - id: analytics-stop-e
-        title: STOP E evidence packet — park for the requester
-        depends_on: [run-analytics-wave-2]
-        decisions:
-          - id: cutover-auth
-            description: Repoint production consumers to the migrated analytics
-              jobs under the customer-held cutover principal.
-            options:
-              - id: authorize
-                label: Proceed with the rehearsed repoint
-              - id: hold
-                label: Hold; production does not move
-            selected: null
-            important: true
-  - id: custbill
-    title: Pipeline custbill — CUSTBILL finance-close chain -> Lakeflow
-      Declarative Pipeline + Lakeflow Job
+    - id: analytics-merge-override-w1
+      description: 'mo-analytics-w1-structural forgives the structural blocker class
+        (UC grant-visibility diffs vs staging-schema grants, informational-PK not_null_extra)
+        on units usage_rollup_scala and analytics_daily so their parity-PASS batches
+        become merge-eligible. Entry is a merge_override authored by the requester
+        in committed authorizations.json. Selected per requester authorization: committed
+        entry mo-analytics-w1-structural (kind merge_override, objects usage_rollup_scala
+        + analytics_daily, by user:dhrov.subramanian@cognition.ai) at commit 0faf5d4db.'
+      options:
+      - id: accept
+        label: "Accept the override \u2014 structural diffs are platform-inherent\
+          \ (staging vs target ownership); authorize mo-analytics-w1-structural covering\
+          \ units usage_rollup_scala and analytics_daily."
+      - id: hold
+        label: "Hold \u2014 keep the wave merge-blocked pending grant alignment between\
+          \ staging and target schemas."
+      selected: accept
+      important: true
+  - id: run-analytics-wave-2
+    title: Wave 2 remaining crons (width 4)
+    depends_on:
+    - run-analytics-wave-1b
+    gates:
+    - id: w2-recon
+      description: dbx-recon PASS per unit on the declared parity mechanism.
+  - id: analytics-stop-e
+    title: "STOP E evidence packet \u2014 park for the requester"
+    depends_on:
+    - run-analytics-wave-2
     decisions:
-      - id: custbill-shared-source
-        description: D2 — Oracle invoice_header/customer_master/tenants are also
-          migrated by invoicing; custbill reads them read-only for its extract.
-        options:
-          - id: wave0
-            label: Migrate once under owner pipeline invoicing; custbill consumes
-              the snapshot read-only
-        selected: wave0
-        important: false
-      - id: custbill-source-feed
-        description: D3 — upstream feed (Oracle month-end extract + SFTP drop)
-          reaches the target as exported files only; snapshot load.
-        options:
-          - id: loader
-            label: Auto Loader over exported files into ow_tp_custbill.custbill_feed
-          - id: federate
-            label: Lakehouse Federation read-only
-          - id: connect
-            label: Lakeflow Connect managed connector
-        selected: loader
-        important: false
-      - id: custbill-handoff
-        description: D7 — SFTP drop CUSTBILL*.dat fixed-width 65-char contract;
-          re-platform transport at cutover.
-        options:
-          - id: preserve
-            label: Preserve the format contract exactly
-        selected: preserve
-        important: false
-      - id: custbill-scheduler
-        description: D5 — crontab + run_all.sh ordering becomes Lakeflow Job task
-          dependencies.
-        options:
-          - id: jobs
-            label: Replace with ow_tp_custbill_job Lakeflow Job, PAUSED schedule
-          - id: retain
-            label: Keep external scheduler triggering Databricks
-          - id: hybrid
-            label: Hybrid with completion signal
-        selected: jobs
-        important: false
-      - id: custbill-consumer
-        description: D4 — finance_billing_*.csv consumer is the legacy-billing Flask
-          service /api/reports/finance (plus dead sendmail leg). Cutover-adjacent;
-          parked — requester decides at STOP E. `park` is a placeholder so the plan
-          is approvable; it decides nothing.
-        options:
-          - id: park
-            label: Park — decided at STOP E, never by a session
-          - id: repoint
-            label: Re-point the consumer at the target at cutover
-          - id: dual
-            label: Dual-publish during coexistence
-          - id: rebuild
-            label: Rebuild the report surface on the target
-        selected: park
-        important: true
-      - id: target-pipeline
-        description: Target surface for the parse/validate/aggregate chain.
-        options:
-          - id: ldp
-            label: Lakeflow Declarative Pipeline with expectations + quarantine sink
-        selected: ldp
-        important: false
-      - id: target-orchestration
-        description: Target surface for scheduling/orchestration.
-        options:
-          - id: lakeflow-job
-            label: Lakeflow Job ow_tp_custbill_job wrapping the pipeline, PAUSED
-        selected: lakeflow-job
-        important: false
-      - id: target-consumer
-        description: Target surface for the finance report consumer; tied to
-          custbill-consumer, parked at STOP E.
-        options:
-          - id: report-table
-            label: ow_tp_custbill.finance_billing_totals + report artifact surface
-        selected: report-table
-        important: false
-      - id: target-data-dependency
-        description: Target surface for the upstream feed.
-        options:
-          - id: snapshot-feed
-            label: Snapshot files into ow_tp_custbill.custbill_feed staging
-        selected: snapshot-feed
-        important: false
-      - id: target-core
-        description: N/A — no core OLTP tables migrate under custbill.
-        options:
-          - id: na
-            label: Not applicable — reporting pipeline only
-        selected: na
-        important: false
-      - id: target-sql
-        description: N/A — SQL lives inside the declarative pipeline.
-        options:
-          - id: na
-            label: Not applicable
-        selected: na
-        important: false
-      - id: target-lakebase
-        description: N/A — Lakebase belongs to invoicing.
-        options:
-          - id: na
-            label: Not applicable
-        selected: na
-        important: false
-      - id: target-ml-scoring
-        description: N/A — no model training or scoring in custbill.
-        options:
-          - id: na
-            label: Not applicable
-        selected: na
-        important: false
-    steps:
-      - id: custbill-inventory
-        title: Inventory and boundary (STOP B, approved)
-        gates:
-          - id: coverage
-            description: 12 objects covered — 3 units + 9 support/docs exclusions;
-              etl/ crons belong to analytics.
-      - id: run-custbill-wave-1
-        title: Wave 1 — feed (extract + ingest -> custbill_feed), width 1
-        depends_on: [custbill-inventory]
-        gates:
-          - id: w1-recon
-            description: ow_tp_custbill.custbill_feed row parity vs legacy CUSTBILL
-              feed (dbx-recon --family oracle PASS).
-      - id: run-custbill-wave-2
-        title: Wave 2 — pipeline (parsed_records + quarantine + finance_billing_totals;
-          deploy ow_tp_custbill_ldp), width 1
-        depends_on: [run-custbill-wave-1]
-        gates:
-          - id: w2-recon
-            description: parsed_records + finance_billing_totals PASS vs legacy
-              parsed/*.psv + finance_billing_*.csv; quarantine holds rejects.
-      - id: run-custbill-wave-3
-        title: Wave 3 — job (crontab + run_all.sh -> ow_tp_custbill_job), width 1
-        depends_on: [run-custbill-wave-2]
-        gates:
-          - id: w3-job
-            description: ow_tp_custbill_job exists, task DAG wired, schedule PAUSED.
-      - id: custbill-stop-e
-        title: STOP E evidence packet — park for the requester
-        depends_on: [run-custbill-wave-3]
-        decisions:
-          - id: custbill-cutover-auth
-            description: Repoint the finance report consumer under the
-              customer-held cutover principal.
-            options:
-              - id: authorize
-                label: Proceed with the rehearsed repoint
-              - id: hold
-                label: Hold; production does not move
-            selected: null
-            important: true
-  - id: invoicing
-    title: Pipeline invoicing — OW_BILLING packages -> Lakebase + Delta
+    - id: cutover-auth
+      description: Repoint production consumers to the migrated analytics jobs under
+        the customer-held cutover principal.
+      options:
+      - id: authorize
+        label: Proceed with the rehearsed repoint
+      - id: hold
+        label: Hold; production does not move
+      - id: park
+        label: "Park \u2014 STOP E presents legacy output, Databricks output and recon\
+          \ verdict side by side; the requester decides cutover there."
+      selected: park
+      important: true
+- id: custbill
+  title: "Pipeline custbill \u2014 CUSTBILL finance-close chain -> Lakeflow Declarative\
+    \ Pipeline + Lakeflow Job"
+  decisions:
+  - id: custbill-shared-source
+    description: "D2 \u2014 Oracle invoice_header/customer_master/tenants are also\
+      \ migrated by invoicing; custbill reads them read-only for its extract."
+    options:
+    - id: wave0
+      label: Migrate once under owner pipeline invoicing; custbill consumes the snapshot
+        read-only
+    selected: wave0
+    important: false
+  - id: custbill-source-feed
+    description: "D3 \u2014 upstream feed (Oracle month-end extract + SFTP drop) reaches\
+      \ the target as exported files only; snapshot load."
+    options:
+    - id: loader
+      label: Auto Loader over exported files into ow_tp_custbill.custbill_feed
+    - id: federate
+      label: Lakehouse Federation read-only
+    - id: connect
+      label: Lakeflow Connect managed connector
+    selected: loader
+    important: false
+  - id: custbill-handoff
+    description: "D7 \u2014 SFTP drop CUSTBILL*.dat fixed-width 65-char contract;\
+      \ re-platform transport at cutover."
+    options:
+    - id: preserve
+      label: Preserve the format contract exactly
+    selected: preserve
+    important: false
+  - id: custbill-scheduler
+    description: "D5 \u2014 crontab + run_all.sh ordering becomes Lakeflow Job task\
+      \ dependencies."
+    options:
+    - id: jobs
+      label: Replace with ow_tp_custbill_job Lakeflow Job, PAUSED schedule
+    - id: retain
+      label: Keep external scheduler triggering Databricks
+    - id: hybrid
+      label: Hybrid with completion signal
+    selected: jobs
+    important: false
+  - id: custbill-consumer
+    description: "D4 \u2014 finance_billing_*.csv consumer is the legacy-billing Flask\
+      \ service /api/reports/finance (plus dead sendmail leg). Cutover-adjacent; parked\
+      \ \u2014 requester decides at STOP E. `park` is a placeholder so the plan is\
+      \ approvable; it decides nothing."
+    options:
+    - id: park
+      label: "Park \u2014 decided at STOP E, never by a session"
+    - id: repoint
+      label: Re-point the consumer at the target at cutover
+    - id: dual
+      label: Dual-publish during coexistence
+    - id: rebuild
+      label: Rebuild the report surface on the target
+    selected: park
+    important: true
+  - id: target-pipeline
+    description: Target surface for the parse/validate/aggregate chain.
+    options:
+    - id: ldp
+      label: Lakeflow Declarative Pipeline with expectations + quarantine sink
+    selected: ldp
+    important: false
+  - id: target-orchestration
+    description: Target surface for scheduling/orchestration.
+    options:
+    - id: lakeflow-job
+      label: Lakeflow Job ow_tp_custbill_job wrapping the pipeline, PAUSED
+    selected: lakeflow-job
+    important: false
+  - id: target-consumer
+    description: Target surface for the finance report consumer; tied to custbill-consumer,
+      parked at STOP E.
+    options:
+    - id: report-table
+      label: ow_tp_custbill.finance_billing_totals + report artifact surface
+    selected: report-table
+    important: false
+  - id: target-data-dependency
+    description: Target surface for the upstream feed.
+    options:
+    - id: snapshot-feed
+      label: Snapshot files into ow_tp_custbill.custbill_feed staging
+    selected: snapshot-feed
+    important: false
+  - id: target-core
+    description: "N/A \u2014 no core OLTP tables migrate under custbill."
+    options:
+    - id: na
+      label: "Not applicable \u2014 reporting pipeline only"
+    selected: na
+    important: false
+  - id: target-sql
+    description: "N/A \u2014 SQL lives inside the declarative pipeline."
+    options:
+    - id: na
+      label: Not applicable
+    selected: na
+    important: false
+  - id: target-lakebase
+    description: "N/A \u2014 Lakebase belongs to invoicing."
+    options:
+    - id: na
+      label: Not applicable
+    selected: na
+    important: false
+  - id: target-ml-scoring
+    description: "N/A \u2014 no model training or scoring in custbill."
+    options:
+    - id: na
+      label: Not applicable
+    selected: na
+    important: false
+  steps:
+  - id: custbill-inventory
+    title: Inventory and boundary (STOP B, approved)
+    gates:
+    - id: coverage
+      description: "12 objects covered \u2014 3 units + 9 support/docs exclusions;\
+        \ etl/ crons belong to analytics."
+  - id: run-custbill-wave-1
+    title: "Wave 1 \u2014 feed (extract + ingest -> custbill_feed), width 1"
+    depends_on:
+    - custbill-inventory
+    gates:
+    - id: w1-recon
+      description: ow_tp_custbill.custbill_feed row parity vs legacy CUSTBILL feed
+        (dbx-recon --family oracle PASS).
+  - id: run-custbill-wave-1b
+    title: "Wave 1b \u2014 wave-1 rerun with authorized merge override (structural\
+      \ class), width 1"
+    depends_on:
+    - run-custbill-wave-1
+    gates:
+    - id: w1-recon
+      description: ow_tp_custbill.custbill_feed row parity vs legacy CUSTBILL feed
+        (dbx-recon --family oracle PASS).
     decisions:
-      - id: target-core
-        description: Core-table target for the operational track.
-        options:
-          - id: lakebase
-            label: Lakebase ow-tp-billing mig-* branch (OLTP operational state)
-        selected: lakebase
-        important: false
-      - id: target-lakebase
-        description: Lakebase target for the 5-package SCC and operational tables/triggers/sequences/jobs.
-        options:
-          - id: ow-tp-billing-mig
-            label: ow-tp-billing on mig-invoicing-w1, schema ow_tp_invoicing
-        selected: ow-tp-billing-mig
-        important: false
-      - id: target-sql
-        description: Delta history track for invoicing.
-        options:
-          - id: ow-tp-history
-            label: catalog ow_tp schema ow_tp_invoicing_history, warehouse 565cd2fd713738c4
-        selected: ow-tp-history
-        important: false
-      - id: target-pipeline
-        description: Pipeline target for scheduler jobs.
-        options:
-          - id: lakebase-routines
-            label: Lakebase routines invoked by Lakeflow Job (PAUSED)
-        selected: lakebase-routines
-        important: false
-      - id: target-orchestration
-        description: Orchestration for JOB_NIGHTLY_DUNNING/JOB_PURGE_AUDIT_LOG.
-        options:
-          - id: lakeflow-job-paused
-            label: Lakeflow Job calling the Lakebase routines, deployed PAUSED
-        selected: lakeflow-job-paused
-        important: false
-      - id: target-consumer
-        description: Consumer repoint for invoicing consumers.
-        options:
-          - id: na
-            label: No repoint — STOP E parks; cutover principal decides
-        selected: na
-        important: false
-      - id: target-data-dependency
-        description: How source data reaches targets.
-        options:
-          - id: snapshot
-            label: Snapshot load only — no federation/JDBC/CDC
-        selected: snapshot
-        important: false
-      - id: execute-posture
-        description: Read-only principal holds no EXECUTE on OW_BILLING packages; every writing routine stays `unproven` as a cutover exception until the requester grants EXECUTE (then re-prove in verification). Does not block the wave.
-        options:
-          - id: unproven-exceptions
-            label: Ride as unproven cutover exceptions; pending requester decision
-          - id: granted
-            label: EXECUTE granted; prove routines in verification
-        selected: null
-        important: true
-      - id: scc-max-cycle
-        description: The 5 packages form one SCC (undirected call edges via log_msg/f_md5_uuid + invoicing-rating calls + plans/dunning write overlap on subscriptions); derive ran with --max-cycle 6 so the SCC fits one batch.
-        options:
-          - id: accept
-            label: Accept width-2 shape; SCC as w1-b02
-        selected: accept
-        important: false
-    steps:
-      - id: invoicing-inventory
-        title: Inventory + coverage (STOP B — approved)
-        gates:
-          - id: coverage-card
-            description: Coverage report card presented to and approved by parent.
-      - id: run-invoicing-wave-1
-        title: Run invoicing wave 1 (width 2)
-        depends_on: [invoicing-inventory]
-        gates:
-          - id: w1-recon
-            description: dbx-recon --family oracle PASS per batch — w1-b01 Delta track, w1-b02 Lakebase track.
-        blockers:
-          - id: b-execute-grant
-            description: Writing routines unproven pending the requester's EXECUTE decision.
-            check:
-              kind: human-decision
-      - id: invoicing-stop-e
-        title: STOP E park — legacy output, Databricks output, recon verdict side by side
-        depends_on: [run-invoicing-wave-1]
+    - id: custbill-merge-override-w1
+      description: "Merge override mo-custbill-w1-structural (authorized by requester,\
+        \ .migration/authorizations.json) forgives the structural blocker class on\
+        \ custbill-feed \u2014 Delta informational PK plus platform-side target grants."
+      options:
+      - id: accept
+        label: Run wave 1b with merge_overrides citing mo-custbill-w1-structural
+      - id: hold
+        label: Hold wave-1 results parked; no merge-authorized rerun
+      selected: accept
+      important: true
+  - id: run-custbill-wave-2
+    title: "Wave 2 \u2014 pipeline (parsed_records + quarantine + finance_billing_totals;\
+      \ deploy ow_tp_custbill_ldp), width 1"
+    depends_on:
+    - run-custbill-wave-1b
+    gates:
+    - id: w2-recon
+      description: parsed_records + finance_billing_totals PASS vs legacy parsed/*.psv
+        + finance_billing_*.csv; quarantine holds rejects.
+  - id: run-custbill-wave-3
+    title: "Wave 3 \u2014 job (crontab + run_all.sh -> ow_tp_custbill_job), width\
+      \ 1"
+    depends_on:
+    - run-custbill-wave-2
+    gates:
+    - id: w3-job
+      description: ow_tp_custbill_job exists, task DAG wired, schedule PAUSED.
+  - id: custbill-stop-e
+    title: "STOP E evidence packet \u2014 park for the requester"
+    depends_on:
+    - run-custbill-wave-3
+    decisions:
+    - id: custbill-cutover-auth
+      description: Repoint the finance report consumer under the customer-held cutover
+        principal.
+      options:
+      - id: authorize
+        label: Proceed with the rehearsed repoint
+      - id: hold
+        label: Hold; production does not move
+      selected: hold
+      important: true
+- id: invoicing
+  title: "Pipeline invoicing \u2014 OW_BILLING packages -> Lakebase + Delta"
+  decisions:
+  - id: target-core
+    description: Core-table target for the operational track.
+    options:
+    - id: lakebase
+      label: Lakebase ow-tp-billing mig-* branch (OLTP operational state)
+    selected: lakebase
+    important: false
+  - id: target-lakebase
+    description: Lakebase target for the 5-package SCC and operational tables/triggers/sequences/jobs.
+    options:
+    - id: ow-tp-billing-mig
+      label: ow-tp-billing on mig-invoicing-w1, schema ow_tp_invoicing
+    selected: ow-tp-billing-mig
+    important: false
+  - id: target-sql
+    description: Delta history track for invoicing.
+    options:
+    - id: ow-tp-history
+      label: catalog ow_tp schema ow_tp_invoicing_history, warehouse 565cd2fd713738c4
+    selected: ow-tp-history
+    important: false
+  - id: target-pipeline
+    description: Pipeline target for scheduler jobs.
+    options:
+    - id: lakebase-routines
+      label: Lakebase routines invoked by Lakeflow Job (PAUSED)
+    selected: lakebase-routines
+    important: false
+  - id: target-orchestration
+    description: Orchestration for JOB_NIGHTLY_DUNNING/JOB_PURGE_AUDIT_LOG.
+    options:
+    - id: lakeflow-job-paused
+      label: Lakeflow Job calling the Lakebase routines, deployed PAUSED
+    selected: lakeflow-job-paused
+    important: false
+  - id: target-consumer
+    description: Consumer repoint for invoicing consumers.
+    options:
+    - id: na
+      label: "No repoint \u2014 STOP E parks; cutover principal decides"
+    selected: na
+    important: false
+  - id: target-data-dependency
+    description: How source data reaches targets.
+    options:
+    - id: snapshot
+      label: "Snapshot load only \u2014 no federation/JDBC/CDC"
+    selected: snapshot
+    important: false
+  - id: execute-posture
+    description: Read-only principal holds no EXECUTE on OW_BILLING packages; every
+      writing routine stays `unproven` as a cutover exception until the requester
+      grants EXECUTE (then re-prove in verification). Does not block the wave.
+    options:
+    - id: unproven-exceptions
+      label: Ride as unproven cutover exceptions; pending requester decision
+    - id: granted
+      label: EXECUTE granted; prove routines in verification
+    selected: unproven-exceptions
+    important: true
+  - id: scc-max-cycle
+    description: The 5 packages form one SCC (undirected call edges via log_msg/f_md5_uuid
+      + invoicing-rating calls + plans/dunning write overlap on subscriptions); derive
+      ran with --max-cycle 6 so the SCC fits one batch.
+    options:
+    - id: accept
+      label: Accept width-2 shape; SCC as w1-b02
+    selected: accept
+    important: false
+  - id: mo-invoicing-w1-structural
+    description: "Merge override authorized by the requester (committed .migration/authorizations.json\
+      \ entry of kind merge_override, by user) forgiving blocker class `structural`\
+      \ on the five-package batch w1-b02 \u2014 legacy declares 4 triggers in DDL\
+      \ but never installs them, so converted target objects cannot match structurally."
+    options:
+    - id: authorized
+      label: "Authorized \u2014 w1-b02 may be merge-eligible on parity PASS despite\
+        \ the structural class"
+    selected: authorized
+    important: true
+  steps:
+  - id: invoicing-inventory
+    title: "Inventory + coverage (STOP B \u2014 approved)"
+    gates:
+    - id: coverage-card
+      description: Coverage report card presented to and approved by parent.
+  - id: run-invoicing-wave-1
+    title: Run invoicing wave 1 (width 2)
+    depends_on:
+    - invoicing-inventory
+    gates:
+    - id: w1-recon
+      description: "dbx-recon --family oracle PASS per batch \u2014 w1-b01 Delta track,\
+        \ w1-b02 Lakebase track."
+    blockers:
+    - id: b-execute-grant
+      description: Resolved — requester selected execute-posture=unproven-exceptions (no EXECUTE grant); writing routines park to STOP E as unproven cutover exceptions.
+      check:
+        kind: human-decision
+        resolved: decision execute-posture → unproven-exceptions
+  - id: run-invoicing-wave-1b
+    title: Rerun invoicing wave 1 under merge override (width 2)
+    depends_on:
+    - run-invoicing-wave-1
+    gates:
+    - id: w1b-recon
+      description: "dbx-recon --family oracle PASS per batch \u2014 w1-b01 Delta track,\
+        \ w1-b02 Lakebase track."
+    blockers:
+    - id: b-execute-grant
+      description: Resolved — requester selected execute-posture=unproven-exceptions (no EXECUTE grant); writing routines park to STOP E as unproven cutover exceptions.
+      check:
+        kind: human-decision
+        resolved: decision execute-posture → unproven-exceptions
+  - id: invoicing-stop-e
+    title: "STOP E park \u2014 legacy output, Databricks output, recon verdict side\
+      \ by side"
+    depends_on:
+    - run-invoicing-wave-1b
