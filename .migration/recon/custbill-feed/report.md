@@ -11,14 +11,14 @@
 - Tolerance version: `tol-20261027-v1`
 - Seed: `0`
 - Tier 3 depth: `full`
-- Generated: 2026-10-28T02:33:20.582787+00:00
+- Generated: 2026-10-28T02:41:44.787689+00:00
 
 ## Routine parity: 0 proven, 3 unproven, 0 failed
 
 - `custbill.ow_tp_custbill_feed` unproven: no committed run
 - `custbill.oracle_custbill_extract` unproven: no committed run
 - `custbill.sftp_ingest_poll` unproven: no committed run
-- Cost: `{"source_statements": 14, "source_rows_fetched": 18750, "target_statements": 9, "target_rows_fetched": 18750, "elapsed_s": 17.525}`
+- Cost: `{"source_statements": 14, "source_rows_fetched": 18750, "target_statements": 9, "target_rows_fetched": 18750, "elapsed_s": 16.575}`
 - Rerun proof: fresh `pass`, evolved `pass`
 
 | Tier | Name | Checks | Result |

@@ -9,8 +9,12 @@
 -- `.dat` artifact. HDR/TRL wrapper lines carry no invoice_id and are dropped
 -- here (per spec latitude).
 --
--- Idempotent: MERGE on invoice_id. A rerun re-reads every feed file and
--- converges to the same staged rows; files may be re-dropped harmlessly.
+-- Idempotent snapshot load: MERGE on invoice_id from the current drop
+-- contents (read_files over the task's drop_path parameter). A rerun re-reads
+-- every feed file and converges to the same staged rows; files may be
+-- re-dropped harmlessly. The drop is the snapshot: rows absent from the
+-- current feeds are deleted, and duplicate invoice_ids resolve to the
+-- most recently modified feed file.
 
 MERGE INTO ow_tp.ow_tp_custbill.custbill_feed AS tgt
 USING (
@@ -30,14 +34,14 @@ USING (
         CAST(NULL AS BIGINT) AS batch_no,
         CURRENT_TIMESTAMP() AS landed_at
     FROM read_files(
-        '/Volumes/ow_tp/ow_tp_custbill/custbill_drop/*.feed',
+        {{drop_path}} || '/*.feed',
         format => 'json',
         schema => 'invoice_id STRING, record STRING, tag STRING'
     )
     WHERE invoice_id IS NOT NULL AND record IS NOT NULL
     QUALIFY ROW_NUMBER() OVER (
         PARTITION BY invoice_id
-        ORDER BY _metadata.file_path
+        ORDER BY _metadata.file_modification_time DESC, _metadata.file_path
     ) = 1
 ) AS src
 ON tgt.invoice_id = src.invoice_id
@@ -59,4 +63,5 @@ WHEN NOT MATCHED THEN INSERT (
     src.invoice_id, src.cust_no, src.cust_name, src.period_end, src.total_amt,
     src.currency, src.record_type, src.record_tag, src.raw_line,
     src.source_file, src.batch_no, src.landed_at
-);
+)
+WHEN NOT MATCHED BY SOURCE THEN DELETE;

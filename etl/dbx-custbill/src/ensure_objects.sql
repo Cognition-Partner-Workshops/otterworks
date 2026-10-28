@@ -5,7 +5,14 @@
 
 CREATE SCHEMA IF NOT EXISTS ow_tp.ow_tp_custbill;
 
-CREATE VOLUME IF NOT EXISTS ow_tp.ow_tp_custbill.custbill_drop;
+-- Drop volume follows the job's drop_path parameter so ensure_objects and
+-- land_feed agree wherever the bundle points the drop.
+CREATE VOLUME IF NOT EXISTS IDENTIFIER(
+    'ow_tp.ow_tp_custbill.' ||
+    CASE WHEN {{drop_path}} RLIKE '/[^/]+$'
+         THEN regexp_extract({{drop_path}}, '([^/]+)$', 1)
+         ELSE 'custbill_drop' END
+);
 
 -- Staging feed: one row per CBCUST01 65-char detail record, keyed by the
 -- invoice_id the extract join carried (lineage back to

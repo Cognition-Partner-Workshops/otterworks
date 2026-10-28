@@ -18,6 +18,8 @@ resources:
             file:
               path: ../src/ensure_objects.sql
             warehouse_id: ${var.warehouse_id}
+            parameters:
+              drop_path: ${var.drop_path}
         - task_key: land_feed
           depends_on:
             - task_key: ensure_objects

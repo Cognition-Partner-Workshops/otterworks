@@ -45,11 +45,24 @@ spec should be corrected at wave close.
 ## Rerun proof (posture `required`)
 
 - fresh: `databricks bundle run ow_tp_custbill_feed -t mig_1793146609` after
-  DROP TABLE -> run 438667301453854 -> `rerun/fresh.json`
-- evolved: same job over the landed table -> run 616353221220346 ->
+  DROP TABLE -> run 88652120260415 -> `rerun/fresh.json`
+- evolved: same job over the landed table -> run 165607592354729 ->
   `rerun/evolved.json` (pre_shape = shape the committed DDL lands)
 - prior-shape: `rerun/prior_shape.json` = the shape the committed DDL
   (ensure_objects.sql) lands -> evolved leg `pass`.
+
+## Devin Review fixes (this PR)
+
+- `drop_path` was a declared-but-unused task parameter: `land_feed.sql` now
+  reads `read_files({{drop_path}} || '/*.feed', ...)` and `ensure_objects.sql`
+  creates the volume named by drop_path's basename (`IDENTIFIER` +
+  `regexp_extract`), so the configured drop location and the read agree.
+- Duplicate `invoice_id` across feed files: dedup now ranks by
+  `_metadata.file_modification_time DESC` (then file_path) — the newest
+  snapshot wins, not the lexicographically first path.
+- Snapshot semantics: `WHEN NOT MATCHED BY SOURCE THEN DELETE` makes the
+  table mirror the current drop; invoices absent from the latest extract no
+  longer linger in staging.
 
 ## Routine parity
 
