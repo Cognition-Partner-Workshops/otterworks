@@ -12,9 +12,9 @@
     "source_rows_fetched": 2,
     "target_statements": 18,
     "target_rows_fetched": 2,
-    "elapsed_s": 13.601
+    "elapsed_s": 12.95
   },
-  "generated_at": "2026-10-28T02:32:45.227248+00:00",
+  "generated_at": "2026-10-28T02:59:50.274506+00:00",
   "tiers": [
     {
       "tier": 0,
@@ -339,10 +339,10 @@
       "analytics_daily_report",
       "analytics_daily_summary"
     ],
-    "source_digest": "2925276e24c981bb45394f0ade492066b4e584e0b5653ba9d168fe948374c90b",
+    "source_digest": "a2e1129fdaa56f93420bd3787deb2359cfd7f5c6278692007f6cd739965580df",
     "evidence": {
-      "fresh": "databricks job run 782484648127138 (bundle ow_tp_analytics_daily, target mig_1793146609, on a fresh target after DROP TABLE)",
-      "evolved": "databricks job run 868505293976237 (bundle ow_tp_analytics_daily, target mig_1793146609, rerun over the landed tables)"
+      "fresh": "databricks job run 415265826655662 (bundle ow_tp_analytics_daily, target mig_1793146609, on a fresh target after DROP TABLE)",
+      "evolved": "databricks job run 1120670056662214 (bundle ow_tp_analytics_daily, target mig_1793146609, rerun over the landed tables)"
     },
     "shape": {
       "tables": {

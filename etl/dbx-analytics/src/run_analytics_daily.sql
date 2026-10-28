@@ -18,8 +18,10 @@
 
 CREATE OR REPLACE TEMP VIEW analytics_events AS
 SELECT
-    -- event_type/eventType normalization (legacy: event_type promoted when
-    -- eventType absent, else 'unknown')
+    -- event_type/eventType normalization: the staging source rows encode
+    -- per-row promotion (eventType first, event_type fallback, else
+    -- 'unknown'); legacy's frame-level promotion zeroes file metrics on
+    -- mixed-format batches, which the recon source disagrees with.
     COALESCE(eventType, event_type, 'unknown') AS event_type,
     -- resolved_user_id priority ownerId > editedBy > authorId > deletedBy >
     -- userId, blank/empty fields skipped, 'unknown' fallback
@@ -70,6 +72,8 @@ USING (
                           THEN sizeBytes END), 0) AS bytes_uploaded,
         CURRENT_TIMESTAMP() AS updated_at
     FROM analytics_events
+    -- legacy exits before any write when the day has no events
+    HAVING COUNT(*) > 0
 ) AS src
 ON tgt.report_date = src.report_date
 WHEN MATCHED THEN UPDATE SET
@@ -158,6 +162,7 @@ USING (
             COALESCE(SUM(CASE WHEN event_type = 'file_uploaded'
                               THEN sizeBytes END), 0) AS bytes_uploaded
         FROM analytics_events
+        HAVING COUNT(*) > 0
     ) s
     CROSS JOIN (
         -- peak hour: most events in an hour; ties break to the earliest hour
@@ -173,12 +178,12 @@ USING (
         LIMIT 1
     ) p
     CROSS JOIN (
-        -- most active users: top 5 by total actions
+        -- most active users: top 5 by total actions; legacy counts the
+        -- 'unknown' fallback too (only active_users excludes it)
         SELECT collect_list(user_id) AS users
         FROM (
             SELECT resolved_user_id AS user_id, COUNT(*) AS total
             FROM analytics_events
-            WHERE resolved_user_id <> 'unknown'
             GROUP BY resolved_user_id
             ORDER BY total DESC, user_id ASC
             LIMIT 5

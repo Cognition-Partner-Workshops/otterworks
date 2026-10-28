@@ -15,6 +15,11 @@ resources:
         quartz_cron_expression: "0 15 3 * * ?"
         timezone_id: UTC
         pause_status: PAUSED
+      parameters:
+        - name: ds
+          # UTC execution date of the run; override on a run-now for backfills
+          # (databricks jobs run-now --job-params '{"ds":"YYYY-MM-DD"}')
+          default: "{{job.start_time.iso_date}}"
       tasks:
         - task_key: ensure_objects
           sql_task:
@@ -32,7 +37,7 @@ resources:
               path: ../src/run_analytics_daily.sql
             warehouse_id: ${var.warehouse_id}
             parameters:
-              ds: "2026-10-28"
+              ds: "{{job.parameters.ds}}"
           retry_on_timeout: false
           min_retry_interval_millis: 30000
           max_retries: 2

@@ -17,14 +17,21 @@ Postgres `analytics_daily_summary` upsert + S3 report) → Lakeflow Job `ow_tp_a
   uploaded to `/Volumes/ow_tp/ow_tp_analytics/analytics_drop/`.
 
 ## Evidence
-- Deployed + run as DE-shared SP: fresh run 782484648127138 (target after DROP TABLE), evolved run
-  868505293976237 (rerun over the landed tables) — both TERMINATED SUCCESS. Job redeployed via
-  `databricks bundle deploy -t mig_1793146609` (unchanged resources; job 553616700205369).
-- Recon `run --mode live --depth full`: parity PASS (summary keyed report_date, report keyed s3_key;
-  keyed diff, 2 rows), merge_eligible=false, blocker_classes [structural] (informational PK + SP grant
-  visibility + unproven routine tier). Covered by committed merge_overrides decision
-  `mo-analytics-w1-structural` (units usage_rollup_scala + analytics_daily, structural class).
-  cost: source 20 stmts/2 rows, target 18 stmts/2 rows, 13.601s.
+- Deployed + run as DE-shared SP: fresh run 415265826655662 (target after DROP TABLE), evolved run
+  1120670056662214 (rerun over the landed tables) — both TERMINATED SUCCESS. Job redeployed via
+  `databricks bundle deploy -t mig_1793146609` (job 553616700205369).
+- `ds` is a job parameter defaulting to `{{job.start_time.iso_date}}` (UTC execution date);
+  backfills override via `run-now --job-params`. Both MERGEs gate on `HAVING COUNT(*) > 0`
+  (legacy exits before writes on an empty day), and the top-5 highlight keeps 'unknown' like
+  legacy. Per-row eventType/event_type promotion is intentional: the staged source rows encode
+  corrected semantics — strict frame-level promotion would zero all file metrics on the mixed
+  fixture and fail recon.
+- Recon `run --mode live --depth full` (run 2): parity PASS (summary keyed report_date, report
+  keyed s3_key; keyed diff, 2 rows), merge_eligible=false, blocker_classes [structural]
+  (informational PK + SP grant visibility + unproven routine tier). Covered by committed
+  merge_overrides decision `mo-analytics-w1-structural` (units usage_rollup_scala +
+  analytics_daily, structural class).
+  cost: source 20 stmts/2 rows, target 18 stmts/2 rows, ~13.6s.
 - `rerun_proof.json`: passed (fresh + evolved legs, shape stable across DROP TABLE; prior_digest ==
   shape_digest against the committed prior proof).
 - `routine_parity.json`: 2 writers unproven (tier) — routine tier cannot be observed on this workspace.

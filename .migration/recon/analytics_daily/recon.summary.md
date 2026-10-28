@@ -6,8 +6,8 @@
 - Rerun posture: `required`
 - Merge authority: `harness` (human_override needs a merge_overrides entry in the committed wave manifest naming the unit)
 - Mapping `map-v1` / tolerances `tol-20261027-v1` / seed `0` / depth `full`
-- Generated: 2026-10-28T02:32:45.227248+00:00
-- Cost: source 20 statements / 2 rows fetched; target 18 statements / 2 rows; 13.601s
+- Generated: 2026-10-28T02:59:50.274506+00:00
+- Cost: source 20 statements / 2 rows fetched; target 18 statements / 2 rows; 12.95s
 
 ## Routine parity: 0 proven, 2 unproven, 0 failed
 
