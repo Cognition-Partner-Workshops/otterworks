@@ -151,21 +151,6 @@ phases:
     - id: w2-recon
       description: dbx-recon PASS per unit on the declared parity mechanism.
     decisions:
-    - id: audit-events-key
-      description: 'Recon key for audit_events -> audit_archive. Legacy own
-        DynamoDB key is composite (event_id, timestamp) per
-        etl/scripts/audit_archive_weekly.py delete_item Key. Measured on
-        warehouse 565cd2fd713738c4: both src and target carry 120 rows;
-        distinct event_id=4 (an event type, not a key), distinct actor=120,
-        distinct (event_id, timestamp)=100 — no candidate is unique on this
-        fixture; actor is unique only by fixture accident.'
-      options:
-      - id: event-id-timestamp
-        label: "Key on (event_id, timestamp) — matches legacy's own composite key (recommended)."
-      - id: actor
-        label: "Key on actor — unique on this fixture, but not a real key."
-      selected: null
-      important: true
   - id: analytics-stop-e
     title: "STOP E evidence packet \u2014 park for the requester"
     depends_on:
