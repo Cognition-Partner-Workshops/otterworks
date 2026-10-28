@@ -1,0 +1,2468 @@
+{
+  "unit": "billing_history",
+  "mode": "live",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "sampled",
+  "params": {
+    "schema": "OW_BILLING"
+  },
+  "snapshot": null,
+  "cost": {
+    "source_statements": 506,
+    "source_rows_fetched": 304342,
+    "target_statements": 347,
+    "target_rows_fetched": 152107,
+    "elapsed_s": 417.432
+  },
+  "generated_at": "2026-10-28T02:00:29.771629+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 5,
+      "stats": {
+        "customer_master": {
+          "source": {
+            "primary_key": [
+              "cust_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "cust_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "cust_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "customer_master_hist": {
+          "source": {
+            "primary_key": [
+              "hist_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "hist_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "hist_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "entity_attr_value": {
+          "source": {
+            "primary_key": [
+              "eav_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "attr_name",
+              "eav_id",
+              "entity_id",
+              "entity_type"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "attr_name",
+              "eav_id",
+              "entity_id",
+              "entity_type"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "invoice_header": {
+          "source": {
+            "primary_key": [
+              "invoice_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "invoice_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "invoice_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "invoice_line": {
+          "source": {
+            "primary_key": [
+              "line_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "line_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "line_id"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "customer_master": {
+            "constraints": [
+              "source ('cust_id',) -> expected ('cust_id',), target ()"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "customer_master_hist": {
+            "constraints": [
+              "source ('hist_id',) -> expected ('hist_id',), target ()"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "entity_attr_value": {
+            "constraints": [
+              "source ('eav_id',) -> expected ('eav_id',), target ()"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "invoice_header": {
+            "constraints": [
+              "source ('invoice_id',) -> expected ('invoice_id',), target ()"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "invoice_line": {
+            "constraints": [
+              "source ('line_id',) -> expected ('line_id',), target ()"
+            ],
+            "grants": [
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "customer_master",
+          "check": "primary_key_mismatch",
+          "detail": "source ('cust_id',) -> expected ('cust_id',), target ()",
+          "source_value": "('cust_id',)",
+          "target_value": "()",
+          "rules_applied": []
+        },
+        {
+          "object": "customer_master",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "customer_master",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "customer_master_hist",
+          "check": "primary_key_mismatch",
+          "detail": "source ('hist_id',) -> expected ('hist_id',), target ()",
+          "source_value": "('hist_id',)",
+          "target_value": "()",
+          "rules_applied": []
+        },
+        {
+          "object": "customer_master_hist",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "customer_master_hist",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "entity_attr_value",
+          "check": "primary_key_mismatch",
+          "detail": "source ('eav_id',) -> expected ('eav_id',), target ()",
+          "source_value": "('eav_id',)",
+          "target_value": "()",
+          "rules_applied": []
+        },
+        {
+          "object": "entity_attr_value",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "entity_attr_value",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "invoice_header",
+          "check": "primary_key_mismatch",
+          "detail": "source ('invoice_id',) -> expected ('invoice_id',), target ()",
+          "source_value": "('invoice_id',)",
+          "target_value": "()",
+          "rules_applied": []
+        },
+        {
+          "object": "invoice_header",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "invoice_header",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "invoice_line",
+          "check": "primary_key_mismatch",
+          "detail": "source ('line_id',) -> expected ('line_id',), target ()",
+          "source_value": "('line_id',)",
+          "target_value": "()",
+          "rules_applied": []
+        },
+        {
+          "object": "invoice_line",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "invoice_line",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 5,
+      "stats": {
+        "source_counts": {
+          "ow_billing.customer_master": 25001,
+          "ow_billing.customer_master_hist": 0,
+          "ow_billing.entity_attr_value": 8337,
+          "ow_billing.invoice_header": 18750,
+          "ow_billing.invoice_line": 150000
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 152107,
+      "stats": {
+        "customer_master": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 32,
+          "population": 25001,
+          "sampled": 25001,
+          "coverage": 1.0,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "customer_master_hist": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 0,
+          "population": 0,
+          "sampled": 0,
+          "coverage": 1.0,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "entity_attr_value": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 32,
+          "population": 8337,
+          "sampled": 8337,
+          "coverage": 1.0,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "invoice_header": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 32,
+          "population": 18750,
+          "sampled": 18750,
+          "coverage": 1.0,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "invoice_line": {
+          "mode": "stratified_sample",
+          "sampling": "stratified",
+          "strata": 32,
+          "population": 150000,
+          "sampled": 100019,
+          "coverage": 0.666793,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "PASS",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    }
+  ],
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": {
+    "family": "oracle",
+    "target_kind": "databricks",
+    "filled": [],
+    "unmapped": []
+  },
+  "rerun_proof": {
+    "unit": "billing_history",
+    "sources": [
+      "dbx/invoicing_history/billing_history/run.py",
+      "dbx/invoicing_history/billing_history/_runner.py",
+      "dbx/invoicing_history/billing_history/sql/ddl.sql",
+      "dbx/invoicing_history/billing_history/sql/load.sql",
+      "dbx/invoicing_history/billing_history/resources/job_billing_history.yml"
+    ],
+    "fresh": "pass",
+    "evolved": "unsupported",
+    "passed": true,
+    "findings": [],
+    "notes": [],
+    "tables": [
+      "customer_master",
+      "customer_master_hist",
+      "entity_attr_value",
+      "invoice_header",
+      "invoice_line"
+    ],
+    "source_digest": "610431f752e63f1055b130756d8f37430be1e1f7faebd9da1b9cc0ec11d85115",
+    "evidence": {
+      "fresh": ".migration/recon/billing_history/rerun/fresh_shape.json",
+      "evolved": ".migration/recon/billing_history/rerun/evolved_shape.json"
+    },
+    "shape": {
+      "tables": {
+        "customer_master": [
+          {
+            "name": "cust_id",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "cust_seq_no",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "tenant_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_no",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_name",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_name_upper",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "legal_name",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "dba_name",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_1",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_2",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_3",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_4",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_5",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_6",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "city",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "state_cd",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "zip",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "zip4",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "country_cd",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_1",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_2",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_3",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_4",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_5",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_6",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_city",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_state_cd",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_zip",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone1",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone2",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone3",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone4",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone1_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "phone2_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "phone3_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "phone4_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "fax",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "email_1",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "email_2",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "email_3",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "signup_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "last_activity_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "last_invoice_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "last_payment_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "terminate_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "status_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "sub_status_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "cust_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "segment_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "region_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "territory_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "channel_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "rate_class_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "tax_exempt_yn",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "credit_hold_yn",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "dunning_exempt_yn",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "vip_yn",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cur_bal_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "past_due_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "ytd_billed_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "ltd_billed_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "ytd_paid_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "credit_limit_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "related_acct_ids",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "child_acct_ids",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "promo_codes_csv",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "contact_notes",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "legacy_sys_key",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mainframe_acct_no",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "conversion_batch_no",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "flag_01",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_02",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_03",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_04",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_05",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_06",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_07",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_08",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_09",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_10",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_11",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_12",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_13",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_14",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_15",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_16",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_17",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_18",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_19",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_20",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_01",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_02",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_03",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_04",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_05",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_06",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_07",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_08",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_09",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_10",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_11",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_12",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_13",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_14",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_15",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_16",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_17",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_18",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_19",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_20",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_21",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_22",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_23",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_24",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_25",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_26",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_27",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_28",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_29",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_30",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_31",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_32",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_33",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_34",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_35",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_36",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_37",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_38",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_39",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_40",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_01",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_02",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_03",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_04",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_05",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_06",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_07",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_08",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_09",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_10",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_01",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_02",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_03",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_04",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_05",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_06",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_07",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_08",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_09",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_10",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "created_by",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "created_dt",
+            "type": "timestamp_ntz",
+            "nullable": true
+          },
+          {
+            "name": "updated_by",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "updated_dt",
+            "type": "timestamp_ntz",
+            "nullable": true
+          },
+          {
+            "name": "row_version_no",
+            "type": "bigint",
+            "nullable": true
+          }
+        ],
+        "customer_master_hist": [
+          {
+            "name": "hist_id",
+            "type": "bigint",
+            "nullable": false
+          },
+          {
+            "name": "hist_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "hist_op",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_seq_no",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "tenant_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_no",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_name",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_name_upper",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "legal_name",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "dba_name",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_1",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_2",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_3",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_4",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_5",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "addr_line_6",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "city",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "state_cd",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "zip",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "zip4",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "country_cd",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_1",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_2",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_3",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_4",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_5",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_addr_line_6",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_city",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_state_cd",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mail_zip",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone1",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone2",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone3",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone4",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "phone1_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "phone2_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "phone3_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "phone4_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "fax",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "email_1",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "email_2",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "email_3",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "signup_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "last_activity_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "last_invoice_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "last_payment_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "terminate_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "status_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "sub_status_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "cust_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "segment_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "region_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "territory_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "channel_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "rate_class_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "tax_exempt_yn",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "credit_hold_yn",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "dunning_exempt_yn",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "vip_yn",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cur_bal_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "past_due_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "ytd_billed_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "ltd_billed_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "ytd_paid_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "credit_limit_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "related_acct_ids",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "child_acct_ids",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "promo_codes_csv",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "contact_notes",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "legacy_sys_key",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "mainframe_acct_no",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "conversion_batch_no",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "flag_01",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_02",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_03",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_04",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_05",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_06",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_07",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_08",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_09",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_10",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_11",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_12",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_13",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_14",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_15",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_16",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_17",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_18",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_19",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "flag_20",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_01",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_02",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_03",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_04",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_05",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_06",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_07",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_08",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_09",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_10",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_11",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_12",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_13",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_14",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_15",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_16",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_17",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_18",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_19",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_20",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_21",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_22",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_23",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_24",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_25",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_26",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_27",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_28",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_29",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_30",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_31",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_32",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_33",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_34",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_35",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_36",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_37",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_38",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_39",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_40",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_01",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_02",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_03",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_04",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_05",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_06",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_07",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_08",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_09",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_amt_10",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_01",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_02",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_03",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_04",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_05",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_06",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_07",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_08",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_09",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "udf_dt_10",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "created_by",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "created_dt",
+            "type": "timestamp_ntz",
+            "nullable": true
+          },
+          {
+            "name": "updated_by",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "updated_dt",
+            "type": "timestamp_ntz",
+            "nullable": true
+          },
+          {
+            "name": "row_version_no",
+            "type": "bigint",
+            "nullable": true
+          }
+        ],
+        "entity_attr_value": [
+          {
+            "name": "eav_id",
+            "type": "bigint",
+            "nullable": false
+          },
+          {
+            "name": "entity_type",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "entity_id",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "attr_name",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "attr_value",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "attr_type",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "created_dt",
+            "type": "string",
+            "nullable": true
+          }
+        ],
+        "invoice_header": [
+          {
+            "name": "invoice_id",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "invoice_no",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "tenant_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "invoice_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "due_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "status_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "total_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "batch_no",
+            "type": "bigint",
+            "nullable": true
+          }
+        ],
+        "invoice_line": [
+          {
+            "name": "line_id",
+            "type": "string",
+            "nullable": false
+          },
+          {
+            "name": "invoice_no",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "invoice_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_no",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "cust_name",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "tenant_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "line_no",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "line_type_cd",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "item_desc",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "qty",
+            "type": "decimal(12,3)",
+            "nullable": true
+          },
+          {
+            "name": "unit_price",
+            "type": "decimal(14,4)",
+            "nullable": true
+          },
+          {
+            "name": "amount",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "tax_amt",
+            "type": "decimal(14,2)",
+            "nullable": true
+          },
+          {
+            "name": "invoice_dt",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "service_period",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "posted_yn",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "gl_acct_csv",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "batch_no",
+            "type": "bigint",
+            "nullable": true
+          },
+          {
+            "name": "src_system",
+            "type": "string",
+            "nullable": true
+          }
+        ]
+      }
+    },
+    "shape_digest": "2b5bc6d3adfe57877f7fbd1bd865f99d7c1552150243ea1f6187defa2f55cf06",
+    "unsupported_kind": "nothing_evolved",
+    "unsupported_reason": "evolved pre_shape equals the fresh shape: nothing evolved, so the run proves only what fresh proved"
+  },
+  "rerun_posture": "first_run_baseline",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": [
+    {
+      "routine": "snapshot.customer_master",
+      "status": "unproven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_customer_master.run.json",
+      "reason": "evidence .migration/recon/billing_history/routine_runs/snapshot_customer_master.run.json is not a committed file"
+    },
+    {
+      "routine": "snapshot.customer_master_hist",
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_customer_master_hist.run.json"
+    },
+    {
+      "routine": "snapshot.entity_attr_value",
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_entity_attr_value.run.json"
+    },
+    {
+      "routine": "snapshot.invoice_header",
+      "status": "proven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_invoice_header.run.json"
+    },
+    {
+      "routine": "snapshot.invoice_line",
+      "status": "unproven",
+      "evidence": ".migration/recon/billing_history/routine_runs/snapshot_invoice_line.run.json",
+      "reason": "evidence .migration/recon/billing_history/routine_runs/snapshot_invoice_line.run.json is not a committed file"
+    }
+  ],
+  "routine_writers": [
+    "snapshot.customer_master",
+    "snapshot.customer_master_hist",
+    "snapshot.entity_attr_value",
+    "snapshot.invoice_header",
+    "snapshot.invoice_line"
+  ],
+  "routine_dependencies": ".migration/units/billing_history/dependencies.json"
+}

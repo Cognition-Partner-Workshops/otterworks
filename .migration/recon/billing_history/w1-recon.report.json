@@ -1,0 +1,46 @@
+{
+  "gate": "w1-recon",
+  "kind": "row_parity",
+  "batch": "w1-b01",
+  "unit": "billing_history",
+  "verdict": "passed",
+  "parity": "PASS",
+  "mode": "live",
+  "depth": "sampled",
+  "tolerance_version": "tol-20261027-v1",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blocker_classes": [
+    "structural"
+  ],
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": {
+    "snapshot.customer_master": "unproven",
+    "snapshot.customer_master_hist": "proven",
+    "snapshot.entity_attr_value": "proven",
+    "snapshot.invoice_header": "proven",
+    "snapshot.invoice_line": "unproven"
+  },
+  "rerun_proof_passed": true,
+  "cost": {
+    "source_statements": 506,
+    "source_rows_fetched": 304342,
+    "target_statements": 347,
+    "target_rows_fetched": 152107,
+    "elapsed_s": 417.432
+  },
+  "rows": {
+    "ow_billing.customer_master": 25001,
+    "ow_billing.customer_master_hist": 0,
+    "ow_billing.entity_attr_value": 8337,
+    "ow_billing.invoice_header": 18750,
+    "ow_billing.invoice_line": 150000
+  },
+  "evidence": {
+    "result": ".migration/recon/billing_history/result.json",
+    "report": ".migration/recon/billing_history/report.md"
+  }
+}
