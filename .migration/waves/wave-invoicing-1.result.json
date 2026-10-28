@@ -1,0 +1,135 @@
+{
+  "auto_merge": false,
+  "base_sha": "87bfbeb778bab53d5590e06e5d924505c4e90712",
+  "batches": [
+    {
+      "blocker_classes": [
+        "source_principal_read_only"
+      ],
+      "branch": "devin/1793162106-w1-b01-billing",
+      "changed_paths": [],
+      "failure_class": "source_principal_read_only",
+      "gates": [
+        {
+          "evidence": "no run: preflight blocked at source_principal_read_only",
+          "id": "recon_parity_plans",
+          "status": "failed"
+        },
+        {
+          "evidence": "no run: preflight blocked at source_principal_read_only",
+          "id": "recon_parity_usage_events",
+          "status": "failed"
+        },
+        {
+          "evidence": "no run: preflight blocked at source_principal_read_only",
+          "id": "recon_parity_entity_attr_value",
+          "status": "failed"
+        },
+        {
+          "evidence": "no run: preflight blocked at source_principal_read_only",
+          "id": "recon_parity_invoice_header",
+          "status": "failed"
+        },
+        {
+          "evidence": "no run: preflight blocked at source_principal_read_only",
+          "id": "recon_parity_invoice_line",
+          "status": "failed"
+        }
+      ],
+      "id": "w1-b01",
+      "merge_authority": {
+        "kind": "harness"
+      },
+      "merge_eligible": false,
+      "one_line_summary": "BLOCKED at factory-doctor preflight: source_principal_read_only=fail \u2014 OW_BILLING_RO holds EXECUTE on pkg_{dunning,invoicing,ow_util,plans,rating} (operator-authorized for wave-2, applied after the 04:21Z doctor signatures); nothing converted, deployed, or reconciled.",
+      "parity": "NOT_RUN",
+      "prompt_sha": "028a75fd14393c27",
+      "recon_mode": "not_run",
+      "recon_verdict": "NOT_RUN",
+      "skill_feedback": [
+        "OW_BILLING_RO_DSN is kept out of the session shell env; bind it via exec env secret:org:OW_BILLING_RO_DSN or the doctor fails 'source secret not set'"
+      ],
+      "status": "BLOCKED",
+      "write_targets": [
+        "entity_attr_value",
+        "invoice_header",
+        "invoice_line",
+        "plans",
+        "trg_entity_attr_value_seq",
+        "trg_usage_events_check",
+        "usage_events"
+      ]
+    },
+    {
+      "branch": "mig-ow-tp-billing-20261028",
+      "changed_paths": [],
+      "failure_class": "source_principal_read_only",
+      "gates": [
+        {
+          "evidence": "not run \u2014 batch blocked at preflight: factory-doctor source_principal_read_only fail (OW_BILLING_RO holds EXECUTE on pkg_ow_util/pkg_plans/pkg_rating/pkg_invoicing/pkg_dunning)",
+          "id": "recon_parity_subscriptions_hist",
+          "status": "failed"
+        },
+        {
+          "evidence": "not run \u2014 batch blocked at preflight: factory-doctor source_principal_read_only fail (OW_BILLING_RO holds EXECUTE on pkg_ow_util/pkg_plans/pkg_rating/pkg_invoicing/pkg_dunning)",
+          "id": "recon_parity_customer_master_hist",
+          "status": "failed"
+        }
+      ],
+      "id": "w1-b02",
+      "merge_eligible": false,
+      "one_line_summary": "BLOCKED at preflight: doctor source_principal_read_only fails \u2014 OW_BILLING_RO was granted EXECUTE on all 5 PKG_* packages (operator-authorized for wave-2 probes) after wave-invoicing-1's doctor record was signed at 04:22Z; no conversion, deploy, or recon ran.",
+      "parity": "NOT_RUN",
+      "prompt_sha": "6d598a734a0ed30d",
+      "recon_mode": "none (blocked at factory-doctor preflight)",
+      "recon_verdict": "NOT_RUN",
+      "skill_feedback": [
+        "factory-doctor source_principal_read_only has no sanctioned exception path for an operator-authorized EXECUTE grant on oracle (the --source-attested decision route is rejected for families with a privilege query), so a wave-2 prerequisite grant breaks every later child preflight"
+      ],
+      "status": "BLOCKED",
+      "write_targets": [
+        "customer_master_hist",
+        "subscriptions_hist",
+        "trg_customer_master_hist"
+      ]
+    }
+  ],
+  "breaker_tripped_on": "source_principal_read_only",
+  "brief": [
+    "Wave 1 close, plan step s-i-waves.",
+    "Landed: 0 of 2 batches passed their own recon.",
+    "Independent verify: NOT RUN.",
+    "Failed: none. Blocked: w1-b01, w1-b02. Held by circuit breaker: none.",
+    "Cost: no estimate in the manifest and no recon_cost reported.",
+    "Awaiting manual merge: none reported",
+    "",
+    "Verifier findings: none.",
+    "",
+    "Skill feedback to fold in before the next wave:",
+    "- OW_BILLING_RO_DSN is kept out of the session shell env; bind it via exec env secret:org:OW_BILLING_RO_DSN or the doctor fails 'source secret not set'",
+    "- factory-doctor source_principal_read_only has no sanctioned exception path for an operator-authorized EXECUTE grant on oracle (the --source-attested decision route is rejected for families with a privilege query), so a wave-2 prerequisite grant breaks every later child preflight",
+    "",
+    "Per batch:",
+    "- w1-b01: BLOCKED. BLOCKED at factory-doctor preflight: source_principal_read_only=fail \u2014 OW_BILLING_RO holds EXECUTE on pkg_{dunning,invoicing,ow_util,plans,rating} (operator-authorized for wave-2, applied after the 04:21Z doctor signatures); nothing converted, deployed, or reconciled.",
+    "- w1-b02: BLOCKED. BLOCKED at preflight: doctor source_principal_read_only fails \u2014 OW_BILLING_RO was granted EXECUTE on all 5 PKG_* packages (operator-authorized for wave-2 probes) after wave-invoicing-1's doctor record was signed at 04:22Z; no conversion, deploy, or recon ran."
+  ],
+  "close": null,
+  "close_minutes": 10,
+  "closed": false,
+  "doctor_signed_at": "2026-10-28T04:28:24+00:00",
+  "hook_probe": "blocked:6c2ceeb2",
+  "manifest_sha": "5fd6f360bae4",
+  "merge_overrides": [],
+  "pipeline_order": {},
+  "plan_sha": "d3d8133c17b88c3bc78b6c8a2827656c77d34a12b200759c85ae6031876d6cbd",
+  "plan_step": "s-i-waves",
+  "resync": null,
+  "tag": "invoicing-1",
+  "undeclared_write_targets": {},
+  "unreported_write_targets": [],
+  "verify": null,
+  "waived_gates": [],
+  "wave": 1,
+  "width": 2,
+  "write_target_overlaps": []
+}

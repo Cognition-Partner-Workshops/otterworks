@@ -422,7 +422,7 @@
       "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T04:21:35Z",
+  "generated_at": "2026-10-28T04:28:24Z",
   "hook_probe": "blocked:6c2ceeb2",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
@@ -436,8 +436,8 @@
   "reused_doctor": null,
   "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
-  "signature": "3183b38badbfaa920e5984f344a5e0debe334f276a0041c6b06754fc03add82a",
-  "signed_at": "2026-10-28T04:21:35+00:00",
+  "signature": "5212fd00baf257502634fcc3ef8512568255bd72c8593b84f7890c259871bd21",
+  "signed_at": "2026-10-28T04:28:24+00:00",
   "source": {
     "family": "oracle",
     "secret": "OW_BILLING_RO_DSN"
