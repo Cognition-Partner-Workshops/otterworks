@@ -4,16 +4,40 @@
     {
       "object": "quarantined_files",
       "root_table": "s3.otterworks_file_quarantine.quarantined",
-      "notes": "copied orphan objects; quarantine destination on target"
+      "notes": "copied orphan objects; quarantine destination on target",
+      "key": {
+        "source": [
+          "s3_key"
+        ],
+        "target": [
+          "s3_key"
+        ]
+      }
     },
     {
       "object": "file_storage_inventory",
       "root_table": "s3.otterworks_file_storage.files",
-      "notes": "LEGACY WRITE: source-object deletes after quarantine copy; needs legacy_write_authorized entry"
+      "notes": "LEGACY WRITE: source-object deletes after quarantine copy; needs legacy_write_authorized entry",
+      "key": {
+        "source": [
+          "s3_key"
+        ],
+        "target": [
+          "s3_key"
+        ]
+      }
     },
     {
       "object": "reports_storage_cleanup",
-      "root_table": "s3.otterworks_data_lake.reports_storage_cleanup"
+      "root_table": "s3.otterworks_data_lake.reports_storage_cleanup",
+      "key": {
+        "source": [
+          "report_date"
+        ],
+        "target": [
+          "report_date"
+        ]
+      }
     }
   ]
 }

@@ -4,11 +4,27 @@
     {
       "object": "reports_user_activity",
       "root_table": "s3.otterworks_data_lake.reports_user_activity",
-      "notes": "activity_report.json per day + latest/ pointer read by admin-service"
+      "notes": "activity_report.json per day + latest/ pointer read by admin-service",
+      "key": {
+        "source": [
+          "report_date"
+        ],
+        "target": [
+          "report_date"
+        ]
+      }
     },
     {
       "object": "user_activity_summaries",
-      "root_table": "s3.otterworks_data_lake.user_activity_summaries"
+      "root_table": "s3.otterworks_data_lake.user_activity_summaries",
+      "key": {
+        "source": [
+          "user_id"
+        ],
+        "target": [
+          "user_id"
+        ]
+      }
     }
   ]
 }

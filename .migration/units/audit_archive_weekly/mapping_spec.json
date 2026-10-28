@@ -4,16 +4,40 @@
     {
       "object": "audit_events_archive",
       "root_table": "s3.otterworks_audit_archive.audit_archive",
-      "notes": "weekly gzip jsonl, GLACIER class on legacy; retention contract = compliance (90d)"
+      "notes": "weekly gzip jsonl, GLACIER class on legacy; retention contract = compliance (90d)",
+      "key": {
+        "source": [
+          "event_id"
+        ],
+        "target": [
+          "event_id"
+        ]
+      }
     },
     {
       "object": "audit_events",
       "root_table": "dynamodb.otterworks_audit_events",
-      "notes": "LEGACY WRITE: archived items batch-deleted from source table; needs legacy_write_authorized entry"
+      "notes": "LEGACY WRITE: archived items batch-deleted from source table; needs legacy_write_authorized entry",
+      "key": {
+        "source": [
+          "event_id"
+        ],
+        "target": [
+          "event_id"
+        ]
+      }
     },
     {
       "object": "reports_audit_archive",
-      "root_table": "s3.otterworks_audit_archive.reports_compliance"
+      "root_table": "s3.otterworks_audit_archive.reports_compliance",
+      "key": {
+        "source": [
+          "report_date"
+        ],
+        "target": [
+          "report_date"
+        ]
+      }
     }
   ]
 }

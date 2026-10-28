@@ -12,7 +12,8 @@
           "target_type": "DATE",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "totalEvents",
@@ -21,7 +22,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "activeUsers",
@@ -30,7 +32,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "documentsCreated",
@@ -39,7 +42,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "documentsViewed",
@@ -48,7 +52,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "documentsEdited",
@@ -57,7 +62,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "filesUploaded",
@@ -66,7 +72,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "filesDownloaded",
@@ -75,7 +82,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "collabSessions",
@@ -84,7 +92,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "storageAllocatedBytes",
@@ -93,7 +102,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "storageReleasedBytes",
@@ -102,7 +112,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "netStorageBytes",
@@ -111,10 +122,19 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         }
       ],
-      "notes": "JSON report \u2192 Delta rows; generatedAt nondeterministic"
+      "notes": "JSON report \u2192 Delta rows; generatedAt nondeterministic",
+      "key": {
+        "source": [
+          "date"
+        ],
+        "target": [
+          "date"
+        ]
+      }
     },
     {
       "object": "analytics_events",
@@ -127,7 +147,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "event_id",
@@ -136,7 +157,8 @@
           "target_type": "STRING",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "event_type",
@@ -145,7 +167,8 @@
           "target_type": "STRING",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "user_id",
@@ -154,7 +177,8 @@
           "target_type": "STRING",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "resource_id",
@@ -163,7 +187,8 @@
           "target_type": "STRING",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "resource_type",
@@ -172,7 +197,8 @@
           "target_type": "STRING",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "metadata",
@@ -181,7 +207,8 @@
           "target_type": "STRING",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "occurred_at",
@@ -190,10 +217,19 @@
           "target_type": "BIGINT",
           "rules": [
             "unit:epoch-ns"
-          ]
+          ],
+          "evidence": []
         }
       ],
-      "notes": "source store the NDJSON export mirrors; kept for recon anchoring"
+      "notes": "source store the NDJSON export mirrors; kept for recon anchoring",
+      "key": {
+        "source": [
+          "event_id"
+        ],
+        "target": [
+          "event_id"
+        ]
+      }
     }
   ]
 }

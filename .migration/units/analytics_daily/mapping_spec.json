@@ -12,7 +12,8 @@
           "target_type": "DATE",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "active_users",
@@ -21,7 +22,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "active_documents",
@@ -30,7 +32,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "active_files",
@@ -39,7 +42,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "total_events",
@@ -48,7 +52,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "documents_created",
@@ -57,7 +62,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "documents_edited",
@@ -66,7 +72,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "comments_added",
@@ -75,7 +82,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "files_uploaded",
@@ -84,7 +92,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "files_shared",
@@ -93,7 +102,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "files_deleted",
@@ -102,7 +112,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "bytes_uploaded",
@@ -111,7 +122,8 @@
           "target_type": "BIGINT",
           "rules": [
             "identity"
-          ]
+          ],
+          "evidence": []
         },
         {
           "source": "updated_at",
@@ -120,19 +132,44 @@
           "target_type": "TIMESTAMP",
           "rules": [
             "nondeterministic:written-on-load"
-          ]
+          ],
+          "evidence": []
         }
-      ]
+      ],
+      "key": {
+        "source": [
+          "report_date"
+        ],
+        "target": [
+          "report_date"
+        ]
+      }
     },
     {
       "object": "analytics_daily_outputs",
       "root_table": "s3.otterworks_data_lake.analytics_daily",
-      "notes": "hourly_breakdown+summary+top_users JSON.gz per day; land as Delta rows or UC volume files (plan decision target-storage)"
+      "notes": "hourly_breakdown+summary+top_users JSON.gz per day; land as Delta rows or UC volume files (plan decision target-storage)",
+      "key": {
+        "source": [
+          "report_date"
+        ],
+        "target": [
+          "report_date"
+        ]
+      }
     },
     {
       "object": "reports_analytics_daily",
       "root_table": "s3.otterworks_data_lake.reports_analytics_daily",
-      "notes": "report.json per day; UC volume / file sink"
+      "notes": "report.json per day; UC volume / file sink",
+      "key": {
+        "source": [
+          "report_date"
+        ],
+        "target": [
+          "report_date"
+        ]
+      }
     }
   ]
 }

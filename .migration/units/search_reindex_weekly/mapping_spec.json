@@ -4,11 +4,27 @@
     {
       "object": "search_documents_index",
       "root_table": "meilisearch.documents_index",
-      "notes": "delete+recreate index, settings patch, 500-doc batches; primaryKey id"
+      "notes": "delete+recreate index, settings patch, 500-doc batches; primaryKey id",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": [
+          "id"
+        ]
+      }
     },
     {
       "object": "search_files_index",
-      "root_table": "meilisearch.files_index"
+      "root_table": "meilisearch.files_index",
+      "key": {
+        "source": [
+          "id"
+        ],
+        "target": [
+          "id"
+        ]
+      }
     }
   ]
 }
