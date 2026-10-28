@@ -1,0 +1,56 @@
+{
+  "version": "ow-tp-map-v1",
+  "objects": [
+    {
+      "object": "tenants",
+      "root_table": "OW_BILLING.TENANTS",
+      "key": {
+        "source": [
+          "ID"
+        ],
+        "target": [
+          "id"
+        ]
+      },
+      "fields": [
+        {
+          "source": "ID",
+          "target": "id",
+          "source_type": "VARCHAR2",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "NAME",
+          "target": "name",
+          "source_type": "VARCHAR2",
+          "target_type": "STRING",
+          "rules": [
+            "identity"
+          ]
+        },
+        {
+          "source": "TAX_EXEMPT_YN",
+          "target": "tax_exempt_yn",
+          "source_type": "CHAR",
+          "target_type": "STRING",
+          "rules": [
+            "rstrip_spaces"
+          ]
+        },
+        {
+          "source": "STATUS_CD",
+          "target": "status_cd",
+          "source_type": "NUMBER(4,0)",
+          "target_type": "BIGINT",
+          "rules": [
+            "identity"
+          ]
+        }
+      ]
+    }
+  ],
+  "rerun_posture": "not_applicable"
+}

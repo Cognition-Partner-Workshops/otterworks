@@ -11,10 +11,13 @@
     {
       "data": {
         "unexpected": [
+          "bundles",
+          "extract_shared.py",
+          "gen_shared.py",
           "ledger.jsonl"
         ]
       },
-      "detail": "ledger.jsonl are not read by any tool; prose belongs on the plan step's ticket or in plan.yaml (decisions/blockers), not in .migration/",
+      "detail": "bundles, extract_shared.py, gen_shared.py, ledger.jsonl are not read by any tool; prose belongs on the plan step's ticket or in plan.yaml (decisions/blockers), not in .migration/",
       "id": "workspace_layout",
       "reusable": false,
       "status": "warn"
@@ -138,8 +141,8 @@
         "drivers": {
           "databricks": true,
           "oracle": true,
-          "postgres": true,
-          "sqlserver": true
+          "postgres": false,
+          "sqlserver": false
         },
         "sub_results": [
           {
@@ -153,17 +156,17 @@
               "drivers": {
                 "databricks": true,
                 "oracle": true,
-                "postgres": true,
-                "sqlserver": true
+                "postgres": false,
+                "sqlserver": false
               }
             },
-            "detail": "installed adapters: ['databricks', 'oracle', 'postgres', 'sqlserver']",
+            "detail": "installed adapters: ['databricks', 'oracle']",
             "id": "recon_drivers",
             "status": "ok"
           }
         ]
       },
-      "detail": "recon_harness: dbx-recon selftest PASS: 9 canonicalization rules exercised via python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1/skills/data-reconciliation/harness); recon_drivers: installed adapters: ['databricks', 'oracle', 'postgres', 'sqlserver']",
+      "detail": "recon_harness: dbx-recon selftest PASS: 9 canonicalization rules exercised via python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1/skills/data-reconciliation/harness); recon_drivers: installed adapters: ['databricks', 'oracle']",
       "id": "recon_harness",
       "reusable": false,
       "status": "ok"
@@ -185,44 +188,98 @@
       "status": "ok"
     },
     {
-      "data": {},
-      "detail": "not applicable at setup: no unit mapping exists yet under .migration/units/*/mapping_spec.json",
+      "data": {
+        "family": "oracle",
+        "fields": 162,
+        "harness": "python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1/skills/data-reconciliation/harness)",
+        "map": "skills/oracle-plsql/canonicalization.json",
+        "target_kind": "databricks",
+        "target_kinds": {
+          "/home/ubuntu/wt-unt16-3/.migration/units/codes/mapping_spec.json": "databricks",
+          "/home/ubuntu/wt-unt16-3/.migration/units/customer_master/mapping_spec.json": "databricks",
+          "/home/ubuntu/wt-unt16-3/.migration/units/tenants/mapping_spec.json": "databricks"
+        },
+        "undeclared": 0,
+        "unmapped": []
+      },
+      "detail": "162 typed fields agree with skills/oracle-plsql/canonicalization.json (databricks: 3 specs); 0 unmapped source types recorded, 0 undeclared targets the harness fills at run time (python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1/skills/data-reconciliation/harness))",
       "id": "type_map_audit",
       "reusable": true,
-      "status": "skipped"
+      "status": "ok"
     },
     {
       "data": {
-        "mappings": {},
-        "units": []
+        "mappings": {
+          "codes": {
+            "detail": "no object declares delete_evidence (drain-before-run contract applies)",
+            "status": "ok"
+          },
+          "customer_master": {
+            "detail": "no object declares delete_evidence (drain-before-run contract applies)",
+            "status": "ok"
+          },
+          "tenants": {
+            "detail": "no object declares delete_evidence (drain-before-run contract applies)",
+            "status": "ok"
+          }
+        },
+        "units": [
+          "codes",
+          "customer_master",
+          "tenants"
+        ]
       },
-      "detail": "not applicable at setup: no unit mapping exists yet under .migration/units/*/mapping_spec.json",
+      "detail": "codes: no object declares delete_evidence (drain-before-run contract applies); customer_master: no object declares delete_evidence (drain-before-run contract applies); tenants: no object declares delete_evidence (drain-before-run contract applies)",
       "id": "delete_evidence",
       "reusable": true,
-      "status": "skipped"
+      "status": "ok"
     },
     {
       "data": {
         "family": "oracle",
         "indirect": [],
         "roles": [],
-        "scope": "principal",
         "stats": "connection opened readonly=True, session_user=OW_BILLING_RO; driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
-        "tables": [],
+        "tables": [
+          "OW_BILLING.CODES",
+          "OW_BILLING.CUSTOMER_MASTER",
+          "OW_BILLING.TENANTS"
+        ],
         "unresolved": [],
         "writable": {}
       },
-      "detail": "setup probe, principal-level only (no unit mapping yet; table grants are checked per unit later): oracle: no write system privilege, no object grant beyond SELECT/READ, no write role on 0 in-scope table(s); connection opened readonly=True, session_user=OW_BILLING_RO; driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
+      "detail": "oracle: no write system privilege, no object grant beyond SELECT/READ, no write role on 3 in-scope table(s); connection opened readonly=True, session_user=OW_BILLING_RO; driver-level read-only (SQL Server readonly=True, Postgres default_transaction_read_only) is advisory, a hint the server may ignore; only the principal's grants stop writes",
       "id": "source_principal_read_only",
       "reusable": false,
       "status": "ok"
     },
     {
-      "data": {},
-      "detail": "not applicable at setup: no unit mapping exists yet under .migration/units/*/mapping_spec.json",
+      "data": {
+        "family": "oracle",
+        "harness": "python -m recon.cli (cwd /opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1/skills/data-reconciliation/harness)",
+        "tables": [
+          "OW_BILLING.CODES",
+          "OW_BILLING.CUSTOMER_MASTER",
+          "OW_BILLING.TENANTS"
+        ],
+        "trigger_census": {},
+        "views": [
+          "all_constraints",
+          "all_cons_columns",
+          "all_tab_columns",
+          "all_indexes",
+          "all_ind_columns",
+          "all_ind_expressions",
+          "all_triggers",
+          "all_tab_identity_cols",
+          "all_sequences",
+          "all_tab_privs"
+        ]
+      },
+      "detail": "oracle: catalog views readable on 3 in-scope table(s)",
       "id": "dictionary_readable",
       "reusable": true,
-      "status": "skipped"
+      "status": "ok"
     },
     {
       "data": {
@@ -281,34 +338,9 @@
       "id": "databricks_identity",
       "reusable": false,
       "status": "ok"
-    },
-    {
-      "data": {
-        "branch": "dbx-doctor-probe-cf4293e3",
-        "parent_branch": "production",
-        "project": "ow-tp-billing"
-      },
-      "detail": "branch created and deleted",
-      "id": "lakebase_branch_create",
-      "reusable": false,
-      "status": "ok"
-    },
-    {
-      "data": {
-        "catalog_owner": "dhrov.subramanian@cognition.ai",
-        "exists": true,
-        "missing": [],
-        "owner": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
-        "principal": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
-        "schema": "ow_tp.ow_tp_billing"
-      },
-      "detail": "schema ow_tp.ow_tp_billing is owned by d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
-      "id": "analytical_target_grants",
-      "reusable": false,
-      "status": "ok"
     }
   ],
-  "generated_at": "2026-10-28T00:34:41Z",
+  "generated_at": "2026-10-28T01:31:56Z",
   "identity": {
     "host": "https://dbc-8bc9474f-40ae.cloud.databricks.com",
     "service_principal": true,
@@ -317,12 +349,12 @@
   "plugin_root": "/opt/.devin/plugins/cache/github.com_Cognition-Partner-Workshops_dbx-migration-plugin-5890f19a/0.6.1",
   "ready": true,
   "reused_doctor": null,
-  "role": "setup",
+  "role": "orchestrator",
   "schema": "dbx-migration-factory/capabilities/1",
   "summary": {
-    "ok": 12,
-    "skipped": 4,
+    "ok": 13,
+    "skipped": 1,
     "warn": 1
   },
-  "workspace": "/home/ubuntu/work/mig-ow-tp-billing-20261028"
+  "workspace": "/home/ubuntu/wt-unt16-3"
 }
