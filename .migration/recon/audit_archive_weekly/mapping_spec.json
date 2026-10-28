@@ -1,0 +1,31 @@
+{
+  "version": "map-v1",
+  "target_kind": "databricks",
+  "objects": [
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.audit_events",
+      "object": "audit_archive",
+      "key": {
+        "source": [
+          "event_id"
+        ],
+        "target": [
+          "event_id"
+        ]
+      }
+    },
+    {
+      "root_table": "ow_tp.ow_tp_analytics_src.compliance_report",
+      "object": "audit_archive_report",
+      "key": {
+        "source": [
+          "metric"
+        ],
+        "target": [
+          "metric"
+        ]
+      }
+    }
+  ],
+  "family": "databricks"
+}

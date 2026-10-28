@@ -1,0 +1,20 @@
+bundle:
+  name: mig_1793146609_audit_archive
+
+include:
+  - resources/*.yml
+
+targets:
+  mig_1793146609:
+    default: true
+    workspace:
+      host: https://dbc-8bc9474f-40ae.cloud.databricks.com
+
+variables:
+  warehouse_id:
+    description: SQL warehouse the analytics audit-archive job's sql_tasks run on
+    default: "565cd2fd713738c4"
+  catalog:
+    default: ow_tp
+  schema:
+    default: ow_tp_analytics

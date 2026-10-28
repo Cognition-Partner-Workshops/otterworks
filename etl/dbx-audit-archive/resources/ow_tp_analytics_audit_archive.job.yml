@@ -1,0 +1,26 @@
+resources:
+  jobs:
+    ow_tp_analytics_audit_archive:
+      name: ow_tp_analytics_audit_archive
+      max_concurrent_runs: 1
+      schedule:
+        quartz_cron_expression: "0 30 7 ? * MON"
+        timezone_id: UTC
+        pause_status: PAUSED
+      tasks:
+        - task_key: ensure_objects
+          max_retries: 2
+          min_retry_interval_millis: 60000
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/ensure_objects.sql
+        - task_key: archive_load
+          depends_on:
+            - task_key: ensure_objects
+          max_retries: 2
+          min_retry_interval_millis: 60000
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/archive_load.sql

@@ -1,0 +1,149 @@
+{
+  "run": "evolved",
+  "status": "pass",
+  "evidence": "databricks bundle run ow_tp_analytics_audit_archive -t mig_1793146609 -> run 660661020843482 (tables pre-created in committed DDL shape; INSERT OVERWRITE re-landed 120 + 15 rows idempotently)",
+  "shape": {
+    "target_kind": "databricks",
+    "catalog": "ow_tp",
+    "schema": "ow_tp_analytics",
+    "read_at": "2026-10-28T04:30:21.868441+00:00",
+    "tables": {
+      "audit_archive": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "resource",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "tenant",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "timestamp",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "archived_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "archive_s3_key",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "audit_archive_report": [
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "pre_shape": {
+    "target_kind": "databricks",
+    "catalog": "ow_tp",
+    "schema": "ow_tp_analytics",
+    "read_at": "2026-10-28T04:30:00.002787+00:00",
+    "tables": {
+      "audit_archive": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "resource",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "tenant",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "timestamp",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "archived_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "archive_s3_key",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "audit_archive_report": [
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  }
+}

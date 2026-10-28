@@ -1,0 +1,93 @@
+{
+  "unit": "audit_archive_weekly",
+  "sources": [
+    "etl/dbx-audit-archive/src/ensure_objects.sql",
+    "etl/dbx-audit-archive/src/archive_load.sql",
+    "etl/dbx-audit-archive/resources/ow_tp_analytics_audit_archive.job.yml"
+  ],
+  "prior_from": ".migration/recon/audit_archive_weekly/rerun/prior_shape.json",
+  "fresh": "pass",
+  "evolved": "pass",
+  "passed": true,
+  "findings": [],
+  "notes": [],
+  "tables": [
+    "audit_archive",
+    "audit_archive_report"
+  ],
+  "source_digest": "a308dc5e9acb51650e06f41b254a70373541dd3865cb0a544043832741a7416f",
+  "evidence": {
+    "fresh": "databricks bundle run ow_tp_analytics_audit_archive -t mig_1793146609 -> run 945578853418146 (empty target; ensure_objects landed both tables, archive_load landed 120 + 15 rows)",
+    "evolved": "databricks bundle run ow_tp_analytics_audit_archive -t mig_1793146609 -> run 660661020843482 (tables pre-created in committed DDL shape; INSERT OVERWRITE re-landed 120 + 15 rows idempotently)"
+  },
+  "shape": {
+    "tables": {
+      "audit_archive": [
+        {
+          "name": "event_id",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "resource",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "tenant",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "timestamp",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "archived_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "archive_s3_key",
+          "type": "string",
+          "nullable": true
+        }
+      ],
+      "audit_archive_report": [
+        {
+          "name": "metric",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "metric_value",
+          "type": "string",
+          "nullable": true
+        },
+        {
+          "name": "report_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "generated_at",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "shape_digest": "32d53316cbbde7131f3f453287427a0316b73c5a7e77dc90198ffd810722b48b",
+  "prior_digest": "32d53316cbbde7131f3f453287427a0316b73c5a7e77dc90198ffd810722b48b"
+}

@@ -1,0 +1,483 @@
+{
+  "unit": "audit_archive_weekly",
+  "mode": "live",
+  "mapping_version": "map-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "full",
+  "params": {},
+  "snapshot": null,
+  "cost": {
+    "source_statements": 20,
+    "source_rows_fetched": 135,
+    "target_statements": 18,
+    "target_rows_fetched": 135,
+    "elapsed_s": 15.36
+  },
+  "generated_at": "2026-10-28T04:30:53.277848+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 2,
+      "stats": {
+        "audit_archive": {
+          "source": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2": [
+                "all_privileges",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "audit_archive_report": {
+          "source": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2": [
+                "all_privileges",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {
+              "2e90bc1d-e9a1-4703-8c48-ad28ebb1864d": [
+                "all_privileges"
+              ],
+              "bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d": [
+                "modify",
+                "select"
+              ]
+            },
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "audit_archive": {
+            "grants": [
+              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          },
+          "audit_archive_report": {
+            "grants": [
+              "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+              "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+              "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart"
+            ]
+          }
+        },
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "audit_archive",
+          "check": "grant_missing",
+          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive_report",
+          "check": "grant_missing",
+          "detail": "source grant d9d1c4ec-29da-4ec7-9aa0-e932710d61e2 (all_privileges,select) has no target grant for d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive_report",
+          "check": "grant_extra",
+          "detail": "target grant 2e90bc1d-e9a1-4703-8c48-ad28ebb1864d (all_privileges) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive_report",
+          "check": "grant_extra",
+          "detail": "target grant bc8a2ef7-7af5-41c4-a4a4-0bb0d3de444d (modify,select) has no source counterpart",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 2,
+      "stats": {
+        "source_counts": {
+          "ow_tp.ow_tp_analytics_src.audit_events": 120,
+          "ow_tp.ow_tp_analytics_src.compliance_report": 15
+        }
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 0,
+      "stats": {},
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": false,
+      "checks_run": 27,
+      "stats": {
+        "audit_archive": {
+          "mode": "full_diff",
+          "population": 120,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 4
+        },
+        "audit_archive_report": {
+          "mode": "full_diff",
+          "population": 15,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": [
+        {
+          "object": "audit_archive",
+          "check": "duplicate_source_key",
+          "detail": "key=('document.share',) seen 28 times",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive",
+          "check": "duplicate_source_key",
+          "detail": "key=('document.view',) seen 24 times",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive",
+          "check": "duplicate_source_key",
+          "detail": "key=('file.download',) seen 38 times",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive",
+          "check": "duplicate_source_key",
+          "detail": "key=('login',) seen 30 times",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive",
+          "check": "duplicate_target_key",
+          "detail": "key=('document.share',) seen 28 times",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive",
+          "check": "duplicate_target_key",
+          "detail": "key=('document.view',) seen 24 times",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive",
+          "check": "duplicate_target_key",
+          "detail": "key=('file.download',) seen 38 times",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        },
+        {
+          "object": "audit_archive",
+          "check": "duplicate_target_key",
+          "detail": "key=('login',) seen 30 times",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": []
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "verdict": "FAIL",
+  "parity": "FAIL",
+  "merge_eligible": false,
+  "merge_policy": "blocked",
+  "blockers": [
+    {
+      "reason": "structural_gap",
+      "class": "structural"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "data"
+    },
+    {
+      "reason": "tier_failed",
+      "class": "structural"
+    }
+  ],
+  "blocker_classes": [
+    "data",
+    "structural"
+  ],
+  "merge_authority": {
+    "kind": "harness",
+    "decision_id": null
+  },
+  "type_map": null,
+  "rerun_proof": {
+    "unit": "audit_archive_weekly",
+    "sources": [
+      "etl/dbx-audit-archive/src/ensure_objects.sql",
+      "etl/dbx-audit-archive/src/archive_load.sql",
+      "etl/dbx-audit-archive/resources/ow_tp_analytics_audit_archive.job.yml"
+    ],
+    "prior_from": ".migration/recon/audit_archive_weekly/rerun/prior_shape.json",
+    "fresh": "pass",
+    "evolved": "pass",
+    "passed": true,
+    "findings": [],
+    "notes": [],
+    "tables": [
+      "audit_archive",
+      "audit_archive_report"
+    ],
+    "source_digest": "a308dc5e9acb51650e06f41b254a70373541dd3865cb0a544043832741a7416f",
+    "evidence": {
+      "fresh": "databricks bundle run ow_tp_analytics_audit_archive -t mig_1793146609 -> run 945578853418146 (empty target; ensure_objects landed both tables, archive_load landed 120 + 15 rows)",
+      "evolved": "databricks bundle run ow_tp_analytics_audit_archive -t mig_1793146609 -> run 660661020843482 (tables pre-created in committed DDL shape; INSERT OVERWRITE re-landed 120 + 15 rows idempotently)"
+    },
+    "shape": {
+      "tables": {
+        "audit_archive": [
+          {
+            "name": "event_id",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "action",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "actor",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "resource",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "tenant",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "timestamp",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "archived_at",
+            "type": "timestamp",
+            "nullable": true
+          },
+          {
+            "name": "archive_s3_key",
+            "type": "string",
+            "nullable": true
+          }
+        ],
+        "audit_archive_report": [
+          {
+            "name": "metric",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "metric_value",
+            "type": "string",
+            "nullable": true
+          },
+          {
+            "name": "report_date",
+            "type": "date",
+            "nullable": true
+          },
+          {
+            "name": "generated_at",
+            "type": "timestamp",
+            "nullable": true
+          }
+        ]
+      }
+    },
+    "shape_digest": "32d53316cbbde7131f3f453287427a0316b73c5a7e77dc90198ffd810722b48b",
+    "prior_digest": "32d53316cbbde7131f3f453287427a0316b73c5a7e77dc90198ffd810722b48b"
+  },
+  "rerun_posture": "required",
+  "merge_block_reasons": [
+    "structural_gap",
+    "tier_failed"
+  ],
+  "routine_parity": [
+    {
+      "routine": "analytics.ow_tp_analytics_audit_archive",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    },
+    {
+      "routine": "analytics.audit_archive_run",
+      "status": "unproven",
+      "evidence": null,
+      "reason": "no committed run"
+    }
+  ],
+  "routine_writers": [
+    "analytics.ow_tp_analytics_audit_archive",
+    "analytics.audit_archive_run"
+  ],
+  "routine_dependencies": ".migration/units/audit_archive_weekly/dependencies.json"
+}
