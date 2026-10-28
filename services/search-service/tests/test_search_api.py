@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -104,6 +106,48 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert data["suggestions"] == []
+
+    def test_suggest_ranked_without_ranking_score(self, client, mock_meilisearch_client):
+        """Ranked suggest tolerates hits that carry no _rankingScore."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [{"title": "Test Doc 1"}, {"title": "Test Doc 2"}],
+        }
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Test Doc 1", "Test Doc 2"]
+
+    def test_suggest_ranked_orders_by_ranking_score(self, client, mock_meilisearch_client):
+        """Ranked suggest requests showRankingScore and sorts by it descending."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 3,
+            "hits": [
+                {"title": "Low", "_rankingScore": 0.2},
+                {"title": "High", "_rankingScore": 0.9},
+                {"title": "Unscored"},
+            ],
+        }
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["High", "Low", "Unscored"]
+        _, kwargs_or_params = mock_index.search.call_args[0]
+        assert kwargs_or_params["showRankingScore"] is True
+
+    def test_suggest_ranked_backend_failure_degrades_to_empty(self, client, mock_meilisearch_client):
+        """A MeiliSearch failure on the ranked path returns 200 with no suggestions."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = RuntimeError("meilisearch down")
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json() == {"suggestions": [], "query": "te"}
 
 
 class TestAdvancedSearchEndpoint:
