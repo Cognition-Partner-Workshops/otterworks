@@ -1,0 +1,143 @@
+{
+  "routine": "OW_BILLING.PKG_PLANS.SP_CHANGE_PLAN",
+  "target_family": "lakebase",
+  "target_branch": "mig-1793185083-exec",
+  "snapshot": "fixture:.migration/recon/u-plans/fixtures/u_plans_exec_fixture.sql",
+  "evidence": ".migration/recon/u-plans/runs/sp_change_plan.run.json",
+  "golden": {
+    "OW_BILLING.SUBSCRIPTIONS": [
+      {
+        "id": "e0e2749c-b09b-ca7e-cc79-2df82c624de4",
+        "tenant_id": "t",
+        "plan_id": "p2",
+        "starts_on": "2025-06-01",
+        "ends_on": null,
+        "status_cd": 10,
+        "suspended_on": null
+      },
+      {
+        "id": "sub-cancelled",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-02-01",
+        "ends_on": "2025-05-31",
+        "status_cd": 30,
+        "suspended_on": null
+      },
+      {
+        "id": "sub-closed",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-03-01",
+        "ends_on": "2025-01-01",
+        "status_cd": 10,
+        "suspended_on": null
+      },
+      {
+        "id": "sub-open-1",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-01-01",
+        "ends_on": "2025-05-31",
+        "status_cd": 10,
+        "suspended_on": null
+      }
+    ],
+    "OW_BILLING.SUBSCRIPTIONS_HIST": [
+      {
+        "hist_id": 1,
+        "hist_dt": "28-OCT-26 16:04:51",
+        "hist_dt_raw": "28-OCT-26 16:04:51",
+        "hist_op": "UPD",
+        "id": "sub-open-1",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-01-01",
+        "ends_on": null,
+        "status_cd": 10,
+        "suspended_on": null
+      },
+      {
+        "hist_id": 2,
+        "hist_dt": "28-OCT-26 16:04:51",
+        "hist_dt_raw": "28-OCT-26 16:04:51",
+        "hist_op": "UPD",
+        "id": "sub-cancelled",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-02-01",
+        "ends_on": null,
+        "status_cd": 30,
+        "suspended_on": null
+      }
+    ]
+  },
+  "observed": {
+    "OW_BILLING.SUBSCRIPTIONS": [
+      {
+        "id": "e0e2749c-b09b-ca7e-cc79-2df82c624de4",
+        "tenant_id": "t",
+        "plan_id": "p2",
+        "starts_on": "2025-06-01",
+        "ends_on": null,
+        "status_cd": 10,
+        "suspended_on": null
+      },
+      {
+        "id": "sub-cancelled",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-02-01",
+        "ends_on": "2025-05-31",
+        "status_cd": 30,
+        "suspended_on": null
+      },
+      {
+        "id": "sub-closed",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-03-01",
+        "ends_on": "2025-01-01",
+        "status_cd": 10,
+        "suspended_on": null
+      },
+      {
+        "id": "sub-open-1",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-01-01",
+        "ends_on": "2025-05-31",
+        "status_cd": 10,
+        "suspended_on": null
+      }
+    ],
+    "OW_BILLING.SUBSCRIPTIONS_HIST": [
+      {
+        "hist_id": 1,
+        "hist_dt": "28-OCT-26 16:04:51",
+        "hist_dt_raw": "28-OCT-26 16:04:51",
+        "hist_op": "UPD",
+        "id": "sub-open-1",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-01-01",
+        "ends_on": null,
+        "status_cd": 10,
+        "suspended_on": null
+      },
+      {
+        "hist_id": 2,
+        "hist_dt": "28-OCT-26 16:04:51",
+        "hist_dt_raw": "28-OCT-26 16:04:51",
+        "hist_op": "UPD",
+        "id": "sub-cancelled",
+        "tenant_id": "t",
+        "plan_id": "p1",
+        "starts_on": "2024-02-01",
+        "ends_on": null,
+        "status_cd": 30,
+        "suspended_on": null
+      }
+    ]
+  }
+}
