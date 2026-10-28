@@ -19,7 +19,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -28,7 +28,7 @@
           "source": "CODE",
           "target": "code",
           "source_type": "VARCHAR2(50)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(50)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -37,7 +37,7 @@
           "source": "TIER_CD",
           "target": "tier_cd",
           "source_type": "NUMBER(4,0)",
-          "target_type": "NUMERIC(4)",
+          "target_type": "bigint",
           "rules": [
             "identity"
           ]
@@ -46,7 +46,7 @@
           "source": "MONTHLY_FEE",
           "target": "monthly_fee",
           "source_type": "NUMBER(12,2)",
-          "target_type": "NUMERIC(12,2)",
+          "target_type": "numeric(12,2)",
           "rules": [
             "identity"
           ]
@@ -55,7 +55,7 @@
           "source": "INCLUDED_UNITS",
           "target": "included_units",
           "source_type": "NUMBER(10,0)",
-          "target_type": "NUMERIC(10)",
+          "target_type": "bigint",
           "rules": [
             "identity"
           ]
@@ -64,7 +64,7 @@
           "source": "OVERAGE_RATE",
           "target": "overage_rate",
           "source_type": "NUMBER(12,6)",
-          "target_type": "NUMERIC(12,6)",
+          "target_type": "numeric(12,6)",
           "rules": [
             "identity"
           ]
@@ -73,7 +73,7 @@
           "source": "ACTIVE_YN",
           "target": "active_yn",
           "source_type": "CHAR(1)",
-          "target_type": "CHAR(1)",
+          "target_type": "char(1)",
           "rules": [
             "rstrip_spaces",
             "empty_string_is_null"

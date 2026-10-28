@@ -19,7 +19,7 @@
           "source": "EAV_ID",
           "target": "eav_id",
           "source_type": "NUMBER(14,0)",
-          "target_type": "NUMERIC(14)",
+          "target_type": "bigint",
           "rules": [
             "identity"
           ]
@@ -28,7 +28,7 @@
           "source": "ENTITY_TYPE",
           "target": "entity_type",
           "source_type": "VARCHAR2(30)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(30)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -37,7 +37,7 @@
           "source": "ENTITY_ID",
           "target": "entity_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -46,7 +46,7 @@
           "source": "ATTR_NAME",
           "target": "attr_name",
           "source_type": "VARCHAR2(100)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(100)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -55,7 +55,7 @@
           "source": "ATTR_VALUE",
           "target": "attr_value",
           "source_type": "VARCHAR2(4000)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(4000)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -64,27 +64,16 @@
           "source": "ATTR_TYPE",
           "target": "attr_type",
           "source_type": "VARCHAR2(10)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(10)",
           "rules": [
             "empty_string_is_null"
           ]
         },
         {
           "source": "CREATED_DT",
-          "target": "created_dt",
-          "source_type": "VARCHAR2(9)",
-          "target_type": "DATE",
-          "rules": [
-            "to_date_dd_mon_yy",
-            "null_unparseable",
-            "keep_raw:created_dt_raw"
-          ]
-        },
-        {
-          "source": "CREATED_DT",
           "target": "created_dt_raw",
           "source_type": "VARCHAR2(9)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(9)",
           "rules": [
             "identity"
           ]

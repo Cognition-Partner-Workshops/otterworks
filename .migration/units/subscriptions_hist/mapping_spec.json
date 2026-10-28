@@ -73,7 +73,7 @@
           "source": "STARTS_ON",
           "target": "starts_on",
           "source_type": "DATE",
-          "target_type": "TIMESTAMP",
+          "target_type": "timestamp_ntz",
           "rules": [
             "identity"
           ]
@@ -82,7 +82,7 @@
           "source": "ENDS_ON",
           "target": "ends_on",
           "source_type": "DATE",
-          "target_type": "TIMESTAMP",
+          "target_type": "timestamp_ntz",
           "rules": [
             "identity"
           ]
@@ -100,7 +100,7 @@
           "source": "SUSPENDED_ON",
           "target": "suspended_on",
           "source_type": "DATE",
-          "target_type": "TIMESTAMP",
+          "target_type": "timestamp_ntz",
           "rules": [
             "identity"
           ]

@@ -19,7 +19,7 @@
           "source": "LINE_ID",
           "target": "line_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -28,7 +28,7 @@
           "source": "INVOICE_NO",
           "target": "invoice_no",
           "source_type": "VARCHAR2(30)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(30)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -37,7 +37,7 @@
           "source": "INVOICE_ID",
           "target": "invoice_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -46,7 +46,7 @@
           "source": "CUST_ID",
           "target": "cust_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -55,7 +55,7 @@
           "source": "CUST_NO",
           "target": "cust_no",
           "source_type": "VARCHAR2(20)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(20)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -64,7 +64,7 @@
           "source": "CUST_NAME",
           "target": "cust_name",
           "source_type": "VARCHAR2(200)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(200)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -73,7 +73,7 @@
           "source": "TENANT_ID",
           "target": "tenant_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -82,7 +82,7 @@
           "source": "LINE_NO",
           "target": "line_no",
           "source_type": "NUMBER(6,0)",
-          "target_type": "NUMERIC(6)",
+          "target_type": "bigint",
           "rules": [
             "identity"
           ]
@@ -91,7 +91,7 @@
           "source": "LINE_TYPE_CD",
           "target": "line_type_cd",
           "source_type": "NUMBER(4,0)",
-          "target_type": "NUMERIC(4)",
+          "target_type": "bigint",
           "rules": [
             "identity"
           ]
@@ -100,7 +100,7 @@
           "source": "ITEM_DESC",
           "target": "item_desc",
           "source_type": "VARCHAR2(400)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(400)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -109,7 +109,7 @@
           "source": "QTY",
           "target": "qty",
           "source_type": "NUMBER(12,3)",
-          "target_type": "NUMERIC(12,3)",
+          "target_type": "numeric(12,3)",
           "rules": [
             "identity"
           ]
@@ -118,7 +118,7 @@
           "source": "UNIT_PRICE",
           "target": "unit_price",
           "source_type": "NUMBER(14,4)",
-          "target_type": "NUMERIC(14,4)",
+          "target_type": "numeric(14,4)",
           "rules": [
             "identity"
           ]
@@ -127,7 +127,7 @@
           "source": "AMOUNT",
           "target": "amount",
           "source_type": "NUMBER(14,2)",
-          "target_type": "NUMERIC(14,2)",
+          "target_type": "numeric(14,2)",
           "rules": [
             "identity"
           ]
@@ -136,27 +136,16 @@
           "source": "TAX_AMT",
           "target": "tax_amt",
           "source_type": "NUMBER(14,2)",
-          "target_type": "NUMERIC(14,2)",
+          "target_type": "numeric(14,2)",
           "rules": [
             "identity"
           ]
         },
         {
           "source": "INVOICE_DT",
-          "target": "invoice_dt",
-          "source_type": "VARCHAR2(9)",
-          "target_type": "DATE",
-          "rules": [
-            "to_date_dd_mon_yy",
-            "null_unparseable",
-            "keep_raw:invoice_dt_raw"
-          ]
-        },
-        {
-          "source": "INVOICE_DT",
           "target": "invoice_dt_raw",
           "source_type": "VARCHAR2(9)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(9)",
           "rules": [
             "identity"
           ]
@@ -165,7 +154,7 @@
           "source": "SERVICE_PERIOD",
           "target": "service_period",
           "source_type": "VARCHAR2(20)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(20)",
           "rules": [
             "keep_raw"
           ]
@@ -174,7 +163,7 @@
           "source": "POSTED_YN",
           "target": "posted_yn",
           "source_type": "CHAR(1)",
-          "target_type": "CHAR(1)",
+          "target_type": "char(1)",
           "rules": [
             "rstrip_spaces",
             "empty_string_is_null"
@@ -184,7 +173,7 @@
           "source": "GL_ACCT_CSV",
           "target": "gl_acct_csv",
           "source_type": "VARCHAR2(200)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(200)",
           "rules": [
             "csv_keep_raw"
           ]
@@ -193,7 +182,7 @@
           "source": "BATCH_NO",
           "target": "batch_no",
           "source_type": "NUMBER(8,0)",
-          "target_type": "NUMERIC(8)",
+          "target_type": "bigint",
           "rules": [
             "identity"
           ]
@@ -202,7 +191,7 @@
           "source": "SRC_SYSTEM",
           "target": "src_system",
           "source_type": "VARCHAR2(10)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(10)",
           "rules": [
             "empty_string_is_null"
           ]

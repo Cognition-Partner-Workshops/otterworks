@@ -19,7 +19,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -28,7 +28,7 @@
           "source": "TENANT_ID",
           "target": "tenant_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -37,7 +37,7 @@
           "source": "PLAN_ID",
           "target": "plan_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "VARCHAR(2)",
+          "target_type": "varchar(36)",
           "rules": [
             "empty_string_is_null"
           ]
@@ -46,7 +46,7 @@
           "source": "STARTS_ON",
           "target": "starts_on",
           "source_type": "DATE",
-          "target_type": "TIMESTAMP",
+          "target_type": "timestamp(0)",
           "rules": [
             "identity"
           ]
@@ -55,7 +55,7 @@
           "source": "ENDS_ON",
           "target": "ends_on",
           "source_type": "DATE",
-          "target_type": "TIMESTAMP",
+          "target_type": "timestamp(0)",
           "rules": [
             "identity"
           ]
@@ -64,7 +64,7 @@
           "source": "STATUS_CD",
           "target": "status_cd",
           "source_type": "NUMBER(4,0)",
-          "target_type": "NUMERIC(4)",
+          "target_type": "bigint",
           "rules": [
             "identity"
           ]
@@ -73,7 +73,7 @@
           "source": "SUSPENDED_ON",
           "target": "suspended_on",
           "source_type": "DATE",
-          "target_type": "TIMESTAMP",
+          "target_type": "timestamp(0)",
           "rules": [
             "identity"
           ]
@@ -96,7 +96,7 @@
           "source": "HIST_ID",
           "target": "hist_id",
           "source_type": "NUMBER(12,0)",
-          "target_type": "BIGINT",
+          "target_type": "bigint",
           "rules": [
             "identity"
           ]
@@ -105,7 +105,7 @@
           "source": "HIST_DT",
           "target": "hist_dt",
           "source_type": "VARCHAR2(20)",
-          "target_type": "STRING",
+          "target_type": "varchar(20)",
           "rules": [
             "identity"
           ]
@@ -114,7 +114,7 @@
           "source": "HIST_OP",
           "target": "hist_op",
           "source_type": "VARCHAR2(3)",
-          "target_type": "STRING",
+          "target_type": "varchar(3)",
           "rules": [
             "identity"
           ]
@@ -123,7 +123,7 @@
           "source": "ID",
           "target": "id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "STRING",
+          "target_type": "varchar(36)",
           "rules": [
             "identity"
           ]
@@ -132,7 +132,7 @@
           "source": "TENANT_ID",
           "target": "tenant_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "STRING",
+          "target_type": "varchar(36)",
           "rules": [
             "identity"
           ]
@@ -141,7 +141,7 @@
           "source": "PLAN_ID",
           "target": "plan_id",
           "source_type": "VARCHAR2(36)",
-          "target_type": "STRING",
+          "target_type": "varchar(36)",
           "rules": [
             "identity"
           ]
@@ -150,7 +150,7 @@
           "source": "STARTS_ON",
           "target": "starts_on",
           "source_type": "DATE",
-          "target_type": "TIMESTAMP",
+          "target_type": "timestamp(0)",
           "rules": [
             "identity"
           ]
@@ -159,7 +159,7 @@
           "source": "ENDS_ON",
           "target": "ends_on",
           "source_type": "DATE",
-          "target_type": "TIMESTAMP",
+          "target_type": "timestamp(0)",
           "rules": [
             "identity"
           ]
@@ -168,7 +168,7 @@
           "source": "STATUS_CD",
           "target": "status_cd",
           "source_type": "NUMBER(4,0)",
-          "target_type": "BIGINT",
+          "target_type": "bigint",
           "rules": [
             "identity"
           ]
@@ -177,7 +177,7 @@
           "source": "SUSPENDED_ON",
           "target": "suspended_on",
           "source_type": "DATE",
-          "target_type": "TIMESTAMP",
+          "target_type": "timestamp(0)",
           "rules": [
             "identity"
           ]
