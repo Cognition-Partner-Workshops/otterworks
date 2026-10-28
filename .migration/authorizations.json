@@ -1,10 +1,13 @@
-[
-  {
-    "id": "mo-invoice-quality-catalog-grants",
-    "kind": "merge_override",
-    "by": "user:dhrov.subramanian",
-    "wave": "wave-1",
-    "objects": ["u-invoice-quality-pipeline"],
-    "blocker_classes": ["structural", "evidence"]
-  }
-]
+{
+  "version": 1,
+  "authorizations": [
+    {
+      "id": "mo-invoice-quality-catalog-grants",
+      "kind": "merge_override",
+      "by": "user:dhrov.subramanian",
+      "wave": "wave-1",
+      "objects": ["u-invoice-quality-pipeline"],
+      "blocker_classes": ["structural", "evidence"]
+    }
+  ]
+}
