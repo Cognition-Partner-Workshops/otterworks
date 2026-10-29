@@ -5,6 +5,25 @@ pub struct AppConfig {
     pub server: ServerConfig,
     pub aws: AwsConfig,
     pub sns: SnsConfig,
+    pub auth: AuthConfig,
+}
+
+/// HMAC keys bearer tokens are verified against: `JWT_SECRET` (shared with
+/// auth-service and api-gateway) and, optionally, `JWT_PEER_SECRET`.
+#[derive(Clone)]
+pub struct AuthConfig {
+    pub jwt_secrets: Vec<String>,
+}
+
+impl std::fmt::Debug for AuthConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AuthConfig")
+            .field(
+                "jwt_secrets",
+                &format!("[REDACTED; {}]", self.jwt_secrets.len()),
+            )
+            .finish()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -35,6 +54,7 @@ impl AppConfig {
             server: ServerConfig::from_env(),
             aws: AwsConfig::from_env(),
             sns: SnsConfig::from_env(),
+            auth: AuthConfig::from_env(),
         }
     }
 }
@@ -76,6 +96,18 @@ impl SnsConfig {
     pub fn from_env() -> Self {
         Self {
             topic_arn: env::var("SNS_TOPIC_ARN").ok(),
+        }
+    }
+}
+
+impl AuthConfig {
+    pub fn from_env() -> Self {
+        Self {
+            jwt_secrets: ["JWT_SECRET", "JWT_PEER_SECRET"]
+                .iter()
+                .filter_map(|name| env::var(name).ok())
+                .filter(|secret| !secret.is_empty())
+                .collect(),
         }
     }
 }
