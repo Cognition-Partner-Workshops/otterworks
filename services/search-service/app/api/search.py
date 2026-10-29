@@ -15,6 +15,8 @@ logger = structlog.get_logger()
 
 search_bp = Blueprint("search", __name__)
 
+RANKED_SUGGESTIONS_FLAG = "chaos:search-service:suggest_500"
+
 _redis_client: redis_lib.Redis | None = None
 
 
@@ -90,29 +92,18 @@ def suggest() -> tuple:
     if not prefix or len(prefix) < 2:
         return jsonify({"suggestions": [], "query": prefix}), 200
 
-    # CHAOS: when this flag is active the ranking-score enrichment path runs.
-    # This path was introduced to sort suggestions by relevance using
-    # _rankingScore, but MeiliSearch only returns that field when explicitly
-    # requested via attributesToRetrieve — without it the key lookup raises
-    # KeyError and crashes the handler with a 500.
-    if _chaos_active("chaos:search-service:suggest_500"):
-        service = _get_service()
-        raw_suggestions = service.suggest(prefix)
-        if not raw_suggestions:
-            # Simulate the same KeyError that fires when results exist but
-            # _rankingScore is missing — ensures chaos fires even with an
-            # empty index.
-            raw_suggestions = [{}]
-        # Sort by MeiliSearch ranking score for better relevance ordering.
-        ranked = sorted(raw_suggestions, key=lambda s: s["_rankingScore"], reverse=True)  # type: ignore[index]
-        return jsonify({"suggestions": ranked, "query": prefix}), 200
+    # The ranking-score ordering is gated behind a flag. MeiliSearch only
+    # returns _rankingScore when asked for it (showRankingScore), so the
+    # service layer requests it and falls back to 0.0 when it is absent;
+    # any failure degrades to an empty suggestion list instead of a 500.
+    ranked = _chaos_active(RANKED_SUGGESTIONS_FLAG)
 
     try:
         service = _get_service()
-        suggestions = service.suggest(prefix)
+        suggestions = service.suggest(prefix, ranked=ranked)
         return jsonify({"suggestions": suggestions, "query": prefix}), 200
     except Exception:
-        logger.exception("suggest_failed", prefix=prefix)
+        logger.exception("suggest_failed", prefix=prefix, ranked=ranked)
         return jsonify({"suggestions": [], "query": prefix}), 200
 
 
