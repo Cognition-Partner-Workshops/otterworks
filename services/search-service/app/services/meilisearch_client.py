@@ -68,6 +68,14 @@ def get_search_analytics() -> AnalyticsData:
     )
 
 
+def _ranking_score(hit: dict[str, Any]) -> float:
+    """Return a hit's ``_rankingScore``, or 0.0 when missing or not numeric."""
+    score = hit.get("_rankingScore")
+    if isinstance(score, (int, float)) and not isinstance(score, bool):
+        return float(score)
+    return 0.0
+
+
 class MeiliSearchService:
     """Client for MeiliSearch search and indexing operations."""
 
@@ -248,8 +256,13 @@ class MeiliSearchService:
         )
 
     def suggest(self, prefix: str, size: int = 10) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching."""
-        suggestions: list[str] = []
+        """Autocomplete suggestions using MeiliSearch prefix matching.
+
+        Hits from both indexes are merged and ordered by ``_rankingScore``
+        (only returned when ``showRankingScore`` is requested). A hit without
+        a score is kept and sorts last rather than failing the request.
+        """
+        ranked: list[tuple[float, str]] = []
         seen: set[str] = set()
 
         for index_name in [self.documents_index_name, self.files_index_name]:
@@ -257,18 +270,16 @@ class MeiliSearchService:
             result = index.search(prefix, {
                 "limit": size,
                 "attributesToRetrieve": ["title", "name"],
+                "showRankingScore": True,
             })
-            for hit in result["hits"]:
+            for hit in result.get("hits", []):
                 text = hit.get("title") or hit.get("name", "")
                 if text and text not in seen:
-                    suggestions.append(text)
+                    ranked.append((_ranking_score(hit), text))
                     seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
 
-        return suggestions
+        ranked.sort(key=lambda item: item[0], reverse=True)
+        return [text for _, text in ranked[:size]]
 
     def _wait_and_check(self, task_uid: int, timeout_in_ms: int = 10000) -> None:
         """Wait for a MeiliSearch task and raise on failure."""
