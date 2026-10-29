@@ -1,15 +1,23 @@
 package com.otterworks.report.config;
 
+import com.otterworks.report.security.JwtAuthFilter;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 // LEGACY: WebSecurityConfigurerAdapter removed in Spring Security 6.
 // Upgrade target: SecurityFilterChain @Bean method
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Security configuration using the deprecated WebSecurityConfigurerAdapter pattern.
+ *
+ * Every API route requires a valid auth-service access token (see {@link JwtAuthFilter});
+ * the archive and reconciliation read paths additionally require the ADMIN role. Per-report
+ * ownership is enforced in {@code ReportService}, so every controller route inherits it.
  *
  * UPGRADE NOTES:
  * - Replace extends WebSecurityConfigurerAdapter with a @Bean SecurityFilterChain method
@@ -21,6 +29,14 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    static final String ADMIN_ROLE = "ADMIN";
+
+    private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // LEGACY: Uses deprecated antMatchers() and authorizeRequests()
@@ -30,11 +46,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
+            .exceptionHandling()
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+            .and()
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeRequests()
                 .antMatchers("/health", "/metrics", "/actuator/**").permitAll()
                 .antMatchers("/swagger-ui/**", "/swagger-resources/**", "/v2/api-docs/**").permitAll()
-                .antMatchers("/api/v1/reports/**").permitAll()  // TODO: Add JWT validation
-                .antMatchers("/api/reports/reconciliation/**", "/api/archive/**", "/api/v1/archive/**").permitAll()
+                .antMatchers("/api/reports/reconciliation/**", "/api/v1/reports/reconciliation/**",
+                        "/api/archive/**", "/api/v1/archive/**", "/api/v1/reports/archive/**")
+                    .hasRole(ADMIN_ROLE)
+                .antMatchers("/api/v1/reports/**").authenticated()
+                .anyRequest().authenticated()
             .and()
             .headers()
                 .frameOptions().deny()
