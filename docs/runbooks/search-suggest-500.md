@@ -23,11 +23,26 @@
    redis-cli EXISTS chaos:search-service:suggest_500
    ```
 
-<!-- TODO: Complete investigation steps -->
+3. Reproduce locally: `curl -i "http://localhost:8087/api/v1/search/suggest?q=te"` returns
+   `500` while the flag is set, and the traceback points at the `_rankingScore` lookup in
+   `app/api/search.py` `suggest()`.
+
+## Root Cause
+
+The ranking-score enrichment in `suggest()` indexed `_rankingScore` on every hit, but
+`MeiliSearchService.suggest()` never asked MeiliSearch for the score (`showRankingScore`),
+so the lookup raised `KeyError` (or `TypeError` on plain-string suggestions). The sort ran
+outside the handler's `try`/`except`, so the exception surfaced as a 500.
 
 ## Resolution Steps
 
-<!-- TODO -->
+1. Clear the flag to stop the bleeding: `redis-cli DEL chaos:search-service:suggest_500`.
+2. The code fix moves ranking into `MeiliSearchService.suggest()`: it requests
+   `showRankingScore`, reads the score with a default (`_ranking_score`), merges hits from
+   both indexes, and the handler keeps every failure inside `try`/`except` so `/suggest`
+   degrades to an empty list with 200 instead of 500.
+3. Confirm recovery: the `SearchSuggestHighErrorRate` alert resolves within one evaluation
+   window and `/suggest` returns 200 with or without the flag.
 
 ## Post-Incident
 
