@@ -122,3 +122,51 @@ class TestIndexer:
     def test_process_event_unknown_action(self, indexer: Indexer):
         result = indexer.process_event({"action": "unknown", "data": {}})
         assert result is None
+
+
+class TestSuggestRanking:
+    """MeiliSearchService.suggest ranking-score handling."""
+
+    def test_requests_ranking_score(self, meilisearch_service, mock_meilisearch_client):
+        """suggest asks MeiliSearch for _rankingScore explicitly."""
+        meilisearch_service.suggest("te")
+
+        for call in mock_meilisearch_client.index.return_value.search.call_args_list:
+            assert call.args[1]["showRankingScore"] is True
+
+    def test_merges_indexes_by_score_and_dedupes(self, meilisearch_service, mock_meilisearch_client):
+        """Hits from both indexes are merged by score with duplicates dropped."""
+        docs_index = MagicMock()
+        docs_index.search.return_value = {
+            "hits": [
+                {"title": "Quarterly Report", "_rankingScore": 0.4},
+                {"title": "Shared Title", "_rankingScore": 0.95},
+            ]
+        }
+        files_index = MagicMock()
+        files_index.search.return_value = {
+            "hits": [
+                {"name": "Shared Title", "_rankingScore": 0.1},
+                {"name": "budget.xlsx", "_rankingScore": 0.8},
+                {"name": "unscored.pdf"},
+            ]
+        }
+        mock_meilisearch_client.index.side_effect = lambda name: (
+            docs_index if name == meilisearch_service.documents_index_name else files_index
+        )
+
+        assert meilisearch_service.suggest("te") == [
+            "Shared Title",
+            "budget.xlsx",
+            "Quarterly Report",
+            "unscored.pdf",
+        ]
+
+    def test_size_caps_merged_results(self, meilisearch_service, mock_meilisearch_client):
+        """The size limit applies after merging both indexes."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "hits": [{"title": f"Doc {i}", "_rankingScore": i / 10} for i in range(10)]
+        }
+
+        assert len(meilisearch_service.suggest("do", size=3)) == 3
