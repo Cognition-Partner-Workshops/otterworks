@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -104,6 +106,66 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert data["suggestions"] == []
+
+    def test_suggest_requests_ranking_score(self, client, mock_meilisearch_client):
+        """Suggest asks MeiliSearch to include _rankingScore on every hit."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {"estimatedTotalHits": 0, "hits": []}
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        _, params = mock_index.search.call_args.args
+        assert params["showRankingScore"] is True
+
+    def test_suggest_orders_by_ranking_score_across_indexes(self, client, mock_meilisearch_client):
+        """Suggestions are sorted by _rankingScore, highest first, across both indexes."""
+        docs_index = MagicMock()
+        docs_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [
+                {"title": "Low", "_rankingScore": 0.4},
+                {"title": "High", "_rankingScore": 0.9},
+            ],
+        }
+        files_index = MagicMock()
+        files_index.search.return_value = {
+            "estimatedTotalHits": 1,
+            "hits": [{"name": "Middle", "_rankingScore": 0.7}],
+        }
+        indexes = {
+            "test-otterworks-documents": docs_index,
+            "test-otterworks-files": files_index,
+        }
+        mock_meilisearch_client.index.side_effect = lambda name: indexes.get(name, MagicMock())
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["High", "Middle", "Low"]
+
+    def test_suggest_without_ranking_score_still_returns_200(self, client, mock_meilisearch_client):
+        """Regression for SearchSuggestHighErrorRate: a hit missing _rankingScore must not 500."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 3,
+            "hits": [
+                {"title": "No score"},
+                {"title": "Bad score", "_rankingScore": "n/a"},
+                {"title": "Scored", "_rankingScore": 0.5},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Scored", "No score", "Bad score"]
+
+    def test_suggest_backend_error_degrades_to_empty(self, client, mock_meilisearch_client):
+        """A MeiliSearch failure yields an empty suggestion list, never a 5xx."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = RuntimeError("meilisearch unavailable")
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json() == {"suggestions": [], "query": "te"}
 
 
 class TestAdvancedSearchEndpoint:
