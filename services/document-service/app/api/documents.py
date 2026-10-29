@@ -48,28 +48,32 @@ def _get_jwt_secret() -> str:
     return os.environ.get("JWT_SECRET", "")
 
 
-def _extract_user_id(request: Request) -> UUID | None:
-    """Extract user ID from the Authorization JWT."""
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header[len("Bearer "):]
-        secret = _get_jwt_secret()
-        if secret:
-            try:
-                payload = jwt.decode(token, secret, algorithms=["HS256", "HS384"])
-                user_id_str = payload.get("user_id") or payload.get("sub")
-                if user_id_str:
-                    return UUID(str(user_id_str))
-            except (jwt.PyJWTError, ValueError):
-                pass
-        else:
-            forwarded_user_id = request.headers.get("X-User-ID")
-            if forwarded_user_id:
-                try:
-                    return UUID(str(forwarded_user_id))
-                except ValueError:
-                    pass
+def require_jwt_secret() -> str:
+    """Return the JWT verification key, failing when it is not configured."""
+    secret = _get_jwt_secret()
+    if not secret:
+        raise RuntimeError("JWT_SECRET must be set to authenticate document-service callers")
+    return secret
 
+
+def _extract_user_id(request: Request) -> UUID | None:
+    """Extract user ID from the Authorization JWT.
+
+    Identity comes only from a token verified with ``JWT_SECRET``; headers such as
+    ``X-User-ID`` are never trusted.
+    """
+    auth_header = request.headers.get("Authorization")
+    secret = _get_jwt_secret()
+    if not secret or not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header[len("Bearer "):]
+    try:
+        payload = jwt.decode(token, secret, algorithms=["HS256", "HS384"])
+        user_id_str = payload.get("user_id") or payload.get("sub")
+        if user_id_str:
+            return UUID(str(user_id_str))
+    except (jwt.PyJWTError, ValueError):
+        pass
     return None
 
 
@@ -134,15 +138,17 @@ async def create_document_no_slash(
 
 @router.get("/search", response_model=DocumentListResponse)
 async def search_documents(
+    request: Request,
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    """Search documents by title or content."""
+    """Search the caller's documents by title or content."""
+    user_id = _require_user_id(request)
     await _maybe_inject_latency()
     service = DocumentService(db)
-    items, total = await service.search(q, page=page, size=size)
+    items, total = await service.search(q, owner_id=user_id, page=page, size=size)
     return DocumentListResponse(
         items=items,
         total=total,
@@ -153,8 +159,9 @@ async def search_documents(
 
 
 @router.get("/exports", response_class=PlainTextResponse)
-async def read_export(name: str = Query(..., min_length=1)):
+async def read_export(request: Request, name: str = Query(..., min_length=1)):
     """Return a previously rendered export from the export archive."""
+    _require_user_id(request)
     archive = ExportArchive()
     try:
         return archive.read_export(name)
@@ -178,7 +185,7 @@ async def get_shared_document(
 
 
 async def _do_list_documents(
-    owner_id: UUID | None,
+    owner_id: UUID,
     folder_id: UUID | None,
     page: int,
     size: int,
@@ -199,7 +206,7 @@ async def _do_list_documents(
 
 
 async def _do_filter_documents(
-    owner_id: UUID | None,
+    owner_id: UUID,
     folder_id: UUID | None,
     title: str | None,
     content_type: str | None,
@@ -212,7 +219,7 @@ async def _do_filter_documents(
     await _maybe_inject_latency()
     repo = DocumentQueryRepository(db)
     filters = {
-        "owner_id": str(owner_id) if owner_id else None,
+        "owner_id": str(owner_id),
         "title_contains": title,
         "content_type": content_type,
         "folder_id": str(folder_id) if folder_id else None,
@@ -253,6 +260,14 @@ def _is_filtered(
     )
 
 
+def _list_owner(request: Request, owner_id: UUID | None) -> UUID:
+    """The owner a list request is scoped to: always the authenticated caller."""
+    user_id = _require_user_id(request)
+    if owner_id is not None and owner_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    return user_id
+
+
 @router.get("/", response_model=DocumentListResponse)
 async def list_documents(
     request: Request,
@@ -267,7 +282,7 @@ async def list_documents(
     db: AsyncSession = Depends(get_db),
 ):
     """List documents with optional filtering and pagination."""
-    effective_owner = owner_id or _extract_user_id(request)
+    effective_owner = _list_owner(request, owner_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,
@@ -301,7 +316,7 @@ async def list_documents_no_slash(
     db: AsyncSession = Depends(get_db),
 ):
     """List documents (no trailing slash)."""
-    effective_owner = owner_id or _extract_user_id(request)
+    effective_owner = _list_owner(request, owner_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,

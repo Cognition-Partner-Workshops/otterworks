@@ -1,14 +1,12 @@
 """Tests for document API endpoints."""
 
-import os
 import uuid
 
 import jwt
 import pytest
 from httpx import AsyncClient
 
-TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
-os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
+from tests.conftest import TEST_JWT_SECRET, auth_headers
 
 
 def _make_jwt(user_id: str) -> str:
@@ -60,7 +58,11 @@ async def test_list_documents(client: AsyncClient, owner_id: uuid.UUID):
             "/api/v1/documents/",
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
-    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 3
@@ -75,7 +77,9 @@ async def test_list_documents_pagination(client: AsyncClient, owner_id: uuid.UUI
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
     resp = await client.get(
-        "/api/v1/documents/", params={"owner_id": str(owner_id), "page": 1, "size": 2}
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "page": 1, "size": 2},
+        headers=auth_headers(owner_id),
     )
     data = resp.json()
     assert data["total"] == 5
@@ -192,11 +196,75 @@ async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
         json={"title": "Rust Guide", "content": "Learn Rust", "owner_id": str(owner_id)},
     )
 
-    resp = await client.get("/api/v1/documents/search", params={"q": "Python"})
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "Python"}, headers=auth_headers(owner_id)
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 1
     assert data["items"][0]["title"] == "Python Guide"
+
+
+@pytest.mark.asyncio
+async def test_search_requires_authentication(client: AsyncClient):
+    resp = await client.get("/api/v1/documents/search", params={"q": "Python"})
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_search_only_returns_callers_documents(client: AsyncClient, owner_id: uuid.UUID):
+    other = uuid.uuid4()
+    for owner in (owner_id, other):
+        await client.post(
+            "/api/v1/documents/",
+            json={"title": "Python Guide", "content": "", "owner_id": str(owner)},
+        )
+
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "Python"}, headers=auth_headers(owner_id)
+    )
+
+    assert resp.status_code == 200
+    assert [item["owner_id"] for item in resp.json()["items"]] == [str(owner_id)]
+
+
+@pytest.mark.asyncio
+async def test_list_requires_authentication(client: AsyncClient, owner_id: uuid.UUID):
+    for path in ("/api/v1/documents/", "/api/v1/documents"):
+        resp = await client.get(path, params={"owner_id": str(owner_id)})
+        assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_list_ignores_x_user_id_header(client: AsyncClient, owner_id: uuid.UUID):
+    resp = await client.get(
+        "/api/v1/documents/",
+        headers={"Authorization": "Bearer forged", "X-User-ID": str(owner_id)},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_list_is_scoped_to_caller(client: AsyncClient, owner_id: uuid.UUID):
+    other = uuid.uuid4()
+    for owner in (owner_id, other):
+        await client.post(
+            "/api/v1/documents/",
+            json={"title": "Doc", "content": "", "owner_id": str(owner)},
+        )
+
+    for path in ("/api/v1/documents/", "/api/v1/documents"):
+        resp = await client.get(path, headers=auth_headers(owner_id))
+        assert resp.status_code == 200
+        assert [item["owner_id"] for item in resp.json()["items"]] == [str(owner_id)]
+
+
+@pytest.mark.asyncio
+async def test_list_rejects_another_owner_id(client: AsyncClient, owner_id: uuid.UUID):
+    other = uuid.uuid4()
+    for params in ({"owner_id": str(other)}, {"owner_id": str(other), "title": "doc"}):
+        resp = await client.get("/api/v1/documents/", params=params, headers=auth_headers(owner_id))
+        assert resp.status_code == 403
 
 
 @pytest.mark.asyncio

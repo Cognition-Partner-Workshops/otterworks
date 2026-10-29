@@ -1,25 +1,47 @@
 """Shared test fixtures."""
 
+import os
 import uuid
 from collections.abc import AsyncGenerator
 
+import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import Uuid
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.api import documents as documents_api
-from app.db.base import Base
-from app.db.session import get_db
-from app.main import app
-from app.middleware import request_log
-from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: F401
+TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
+os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
+os.environ.setdefault("SHARE_LINK_SECRET", "test-share-link-secret")
+
+from app.api import documents as documents_api  # noqa: E402
+from app.db.base import Base  # noqa: E402
+from app.db.session import get_db  # noqa: E402
+from app.main import app  # noqa: E402
+from app.middleware import request_log  # noqa: E402
+from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: E402, F401
+
+
+def auth_headers(user_id: uuid.UUID | str) -> dict[str, str]:
+    token = jwt.encode({"user_id": str(user_id)}, TEST_JWT_SECRET, algorithm="HS256")
+    return {"Authorization": f"Bearer {token}"}
+
+
+def _store_uuids_hyphenated(self, dialect):  # noqa: ANN001, ANN202 - SQLAlchemy hook
+    """Store uuids the way Postgres renders them, so raw owner_id SQL matches on SQLite."""
+
+    def process(value):  # noqa: ANN001, ANN202
+        return None if value is None else str(value)
+
+    return process
+
+
+Uuid.bind_processor = _store_uuids_hyphenated
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-TestingSessionLocal = async_sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+TestingSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 @pytest.fixture(autouse=True)

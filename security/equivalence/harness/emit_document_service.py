@@ -31,6 +31,17 @@ from uuid import UUID
 
 HARNESS_VERSION = 1
 
+# The app verifies every caller's JWT, so the fixture signs its own.
+FIXTURE_JWT_SECRET = "fixture-jwt-secret-5d1e9a"  # noqa: S105
+FIXTURE_CALLER = "aaaaaaaa-0000-4000-8000-00000000000a"
+
+
+def fixture_auth(user_id: str = FIXTURE_CALLER) -> dict[str, str]:
+    import jwt
+
+    token = jwt.encode({"user_id": user_id}, os.environ["JWT_SECRET"], algorithm="HS256")
+    return {"Authorization": f"Bearer {token}"}
+
 # The emitter is executed from the module directory so the application package
 # imports; sys.path[0] is the harness directory, not the working directory.
 sys.path.insert(0, os.getcwd())
@@ -176,7 +187,7 @@ class AppClient:
 
         app.dependency_overrides[get_db] = _override_get_db
         self._client_ctx = AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://fixture"
+            transport=ASGITransport(app=app), base_url="http://fixture", headers=fixture_auth()
         )
         return await self._client_ctx.__aenter__()
 
@@ -217,7 +228,7 @@ async def share_link_http_roundtrip(fixture: Fixture, args: dict[str, Any]) -> d
     """Mint a share link over HTTP and read the document back through it."""
     document_id = args["document_id"]
     owner_id = args["owner_id"]
-    headers = {"Authorization": "Bearer fixture", "X-User-ID": owner_id}
+    headers = fixture_auth(owner_id)
     async with AppClient(fixture) as client:
         minted = await client.post(
             f"/api/v1/documents/{document_id}/share", headers=headers
@@ -329,6 +340,7 @@ async def main() -> int:
     spec = json.loads(args.cases.read_text(encoding="utf-8"))
     seed = json.loads(args.seed.read_text(encoding="utf-8"))
 
+    os.environ.setdefault("JWT_SECRET", FIXTURE_JWT_SECRET)
     for key, value in spec.get("env", {}).items():
         os.environ[key] = value
 
