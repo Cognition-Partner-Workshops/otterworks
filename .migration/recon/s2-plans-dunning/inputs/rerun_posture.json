@@ -1,0 +1,5 @@
+{
+ "version": 1,
+ "posture": "required",
+ "why": "recon reruns after every shadow cycle; fixture tenant Tenant One (00000000-0000-0000-0000-000000000001) seeds the shadow run"
+}

@@ -1,0 +1,48 @@
+{
+ "version": 1,
+ "slice": "s3-custbill-finance",
+ "routines": {
+  "OW_BILLING.TRG_CUSTOMER_MASTER_SEQ": {
+   "writes": [],
+   "reads": []
+  },
+  "OW_BILLING.TRG_CUSTOMER_MASTER_HIST": {
+   "writes": [
+    "OW_BILLING.CUSTOMER_MASTER_HIST"
+   ],
+   "reads": [
+    "OW_BILLING.CUSTOMER_MASTER"
+   ]
+  },
+  "OW_BILLING.TRG_ENTITY_ATTR_VALUE_SEQ": {
+   "writes": [],
+   "reads": []
+  }
+ },
+ "jobs": {
+  "etl/legacy-extra/tools/oracle_custbill_extract.py": {
+   "writes": [],
+   "reads": [
+    "OW_BILLING.CUSTOMER_MASTER",
+    "OW_BILLING.INVOICE_HEADER",
+    "OW_BILLING.TENANTS"
+   ]
+  },
+  "etl/legacy-extra/jobs/sftp_ingest_poll.ksh": {
+   "writes": [],
+   "reads": []
+  },
+  "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh": {
+   "writes": [],
+   "reads": []
+  },
+  "etl/legacy-extra/jobs/finance_excel_report.pl": {
+   "writes": [],
+   "reads": []
+  },
+  "etl/legacy-extra/run_all.sh": {
+   "writes": [],
+   "reads": []
+  }
+ }
+}

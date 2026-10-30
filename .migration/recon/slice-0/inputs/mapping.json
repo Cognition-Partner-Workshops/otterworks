@@ -1,0 +1,298 @@
+{
+ "version": "unt19-20261030-v1",
+ "slice": "slice-0",
+ "track": "lakebase",
+ "tolerances": "tol-20261027-v1",
+ "tolerance_mode": "exact",
+ "objects": [
+  {
+   "object": "ow_billing.codes",
+   "root_table": "OW_BILLING.CODES",
+   "key": {
+    "source": [
+     "CODE_TYPE",
+     "CODE_VAL"
+    ],
+    "target": [
+     "code_type",
+     "code_val"
+    ]
+   },
+   "fields": [
+    {
+     "source": "CODE_TYPE",
+     "target": "code_type",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:10",
+      "census:dba_tab_columns:CODES.CODE_TYPE"
+     ]
+    },
+    {
+     "source": "CODE_VAL",
+     "target": "code_val",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:10",
+      "census:dba_tab_columns:CODES.CODE_VAL"
+     ]
+    },
+    {
+     "source": "CODE_DESC",
+     "target": "code_desc",
+     "source_type": "VARCHAR2(80)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:10",
+      "census:dba_tab_columns:CODES.CODE_DESC"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 32
+  },
+  {
+   "object": "ow_billing.plans",
+   "root_table": "OW_BILLING.PLANS",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:49",
+      "census:dba_tab_columns:PLANS.ID"
+     ]
+    },
+    {
+     "source": "CODE",
+     "target": "code",
+     "source_type": "VARCHAR2(50)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:49",
+      "census:dba_tab_columns:PLANS.CODE"
+     ]
+    },
+    {
+     "source": "TIER_CD",
+     "target": "tier_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:49",
+      "census:dba_tab_columns:PLANS.TIER_CD"
+     ]
+    },
+    {
+     "source": "MONTHLY_FEE",
+     "target": "monthly_fee",
+     "source_type": "NUMBER(12,2)",
+     "target_type": "NUMERIC(12,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:49",
+      "census:dba_tab_columns:PLANS.MONTHLY_FEE"
+     ]
+    },
+    {
+     "source": "INCLUDED_UNITS",
+     "target": "included_units",
+     "source_type": "NUMBER(10,0)",
+     "target_type": "NUMERIC(10,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:49",
+      "census:dba_tab_columns:PLANS.INCLUDED_UNITS"
+     ]
+    },
+    {
+     "source": "OVERAGE_RATE",
+     "target": "overage_rate",
+     "source_type": "NUMBER(12,6)",
+     "target_type": "NUMERIC(12,6)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:49",
+      "census:dba_tab_columns:PLANS.OVERAGE_RATE"
+     ]
+    },
+    {
+     "source": "ACTIVE_YN",
+     "target": "active_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "TEXT",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:49",
+      "census:dba_tab_columns:PLANS.ACTIVE_YN"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 3
+  },
+  {
+   "object": "ow_billing.tenants",
+   "root_table": "OW_BILLING.TENANTS",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:40",
+      "census:dba_tab_columns:TENANTS.ID"
+     ]
+    },
+    {
+     "source": "NAME",
+     "target": "name",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:40",
+      "census:dba_tab_columns:TENANTS.NAME"
+     ]
+    },
+    {
+     "source": "TAX_EXEMPT_YN",
+     "target": "tax_exempt_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "TEXT",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:40",
+      "census:dba_tab_columns:TENANTS.TAX_EXEMPT_YN"
+     ]
+    },
+    {
+     "source": "STATUS_CD",
+     "target": "status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:40",
+      "census:dba_tab_columns:TENANTS.STATUS_CD"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 70
+  },
+  {
+   "object": "ow_billing.billing_audit_log",
+   "root_table": "OW_BILLING.BILLING_AUDIT_LOG",
+   "key": {
+    "source": [
+     "LOG_ID"
+    ],
+    "target": [
+     "log_id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "LOG_ID",
+     "target": "log_id",
+     "source_type": "NUMBER(12,0)",
+     "target_type": "NUMERIC(12,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:169",
+      "census:dba_tab_columns:BILLING_AUDIT_LOG.LOG_ID"
+     ]
+    },
+    {
+     "source": "LOGGED_AT",
+     "target": "logged_at",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:169",
+      "census:dba_tab_columns:BILLING_AUDIT_LOG.LOGGED_AT"
+     ]
+    },
+    {
+     "source": "MODULE",
+     "target": "module",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:169",
+      "census:dba_tab_columns:BILLING_AUDIT_LOG.MODULE"
+     ]
+    },
+    {
+     "source": "MESSAGE",
+     "target": "message",
+     "source_type": "VARCHAR2(4000)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:169",
+      "census:dba_tab_columns:BILLING_AUDIT_LOG.MESSAGE"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": null
+  }
+ ],
+ "rerun_posture": "required"
+}

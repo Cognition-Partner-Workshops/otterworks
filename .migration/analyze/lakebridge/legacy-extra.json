@@ -1,0 +1,117 @@
+{
+   "inventory" : [
+      {
+         "complexityLevel" : "LOW",
+         "functionCall" : {
+            "MAINFRAME@127.0.0.1" : 1
+         },
+         "lineCount" : 22,
+         "name" : "docker-compose.sftp.yml",
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "UNKNOWN"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "docker-compose.sftp.yml",
+         "statementCount" : 2
+      },
+      {
+         "complexityLevel" : "MEDIUM",
+         "conditionalStatements" : [
+            {
+               "content" : "if [ \"`hostname`\" = \"otterworks-etl-prod-01\" ]; then",
+               "lineNumber" : 20
+            },
+            {
+               "content" : "if [ -f $LOCKFILE ]; then",
+               "lineNumber" : 33
+            }
+         ],
+         "functionCall" : {
+            "CBCUST01" : 1,
+            "DD" : 1,
+            "GSUB" : 3,
+            "SPRINTF" : 1,
+            "SUBSTR" : 3
+         },
+         "lineCount" : 81,
+         "loopsAndCursors" : [
+            {
+               "content" : "for f in $INCOMING/CUSTBILL*.dat; do",
+               "lineNumber" : 42
+            }
+         ],
+         "name" : "parse_custbill_fixedwidth.sh",
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "IF_START"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "jobs/parse_custbill_fixedwidth.sh",
+         "statementCount" : 1
+      },
+      {
+         "complexityLevel" : "MEDIUM",
+         "conditionalStatements" : [
+            {
+               "content" : "if [ \"`hostname`\" = \"otterworks-etl-prod-01\" ]; then",
+               "lineNumber" : 15
+            },
+            {
+               "content" : "if [ -f $LOCKFILE ]; then",
+               "lineNumber" : 33
+            },
+            {
+               "content" : "if [ \"$s1\" != \"$s2\" ]; then",
+               "lineNumber" : 54
+            }
+         ],
+         "functionCall" : {
+            "BEARING" : 1,
+            "LOCK" : 1,
+            "MAINFRAME" : 1,
+            "PASS" : 1
+         },
+         "lineCount" : 70,
+         "loopsAndCursors" : [
+            {
+               "content" : "for f in $SFTP_DROP/CUSTBILL*.dat; do",
+               "lineNumber" : 47
+            }
+         ],
+         "name" : "sftp_ingest_poll.ksh",
+         "objectRel" : [
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "compares"
+            }
+         ],
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "WHILE_LOOP"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "jobs/sftp_ingest_poll.ksh",
+         "statementCount" : 1
+      },
+      {
+         "complexityLevel" : "LOW",
+         "lineCount" : 28,
+         "name" : "run_all.sh",
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "IF_START"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "run_all.sh",
+         "statementCount" : 1
+      }
+   ],
+   "runInfo" : {
+      "inputFolder" : "/home/ubuntu/repos/otterworks/etl/legacy-extra",
+      "reportName" : "/home/ubuntu/work/lakebridge/legacy-extra.xlsx",
+      "sourceTechnology" : "SQL",
+      "startTime" : "2026-10-30T18:21:30Z"
+   }
+}

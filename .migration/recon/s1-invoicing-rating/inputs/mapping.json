@@ -1,0 +1,557 @@
+{
+ "version": "unt19-20261030-v1",
+ "slice": "s1-invoicing-rating",
+ "track": "lakebase",
+ "tolerances": "tol-20261027-v1",
+ "tolerance_mode": "exact",
+ "objects": [
+  {
+   "object": "ow_billing.invoices",
+   "root_table": "OW_BILLING.INVOICES",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:109",
+      "census:dba_tab_columns:INVOICES.ID"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:109",
+      "census:dba_tab_columns:INVOICES.TENANT_ID"
+     ]
+    },
+    {
+     "source": "PERIOD_ID",
+     "target": "period_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:109",
+      "census:dba_tab_columns:INVOICES.PERIOD_ID"
+     ]
+    },
+    {
+     "source": "ISSUED_AT",
+     "target": "issued_at",
+     "source_type": "TIMESTAMP(6)",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:109",
+      "census:dba_tab_columns:INVOICES.ISSUED_AT"
+     ]
+    },
+    {
+     "source": "SUBTOTAL",
+     "target": "subtotal",
+     "source_type": "NUMBER(12,2)",
+     "target_type": "NUMERIC(12,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:109",
+      "census:dba_tab_columns:INVOICES.SUBTOTAL"
+     ]
+    },
+    {
+     "source": "TAX",
+     "target": "tax",
+     "source_type": "NUMBER(12,2)",
+     "target_type": "NUMERIC(12,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:109",
+      "census:dba_tab_columns:INVOICES.TAX"
+     ]
+    },
+    {
+     "source": "TOTAL",
+     "target": "total",
+     "source_type": "NUMBER(12,2)",
+     "target_type": "NUMERIC(12,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:109",
+      "census:dba_tab_columns:INVOICES.TOTAL"
+     ]
+    },
+    {
+     "source": "STATUS_CD",
+     "target": "status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:109",
+      "census:dba_tab_columns:INVOICES.STATUS_CD"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 4
+  },
+  {
+   "object": "ow_billing.invoice_lines",
+   "root_table": "OW_BILLING.INVOICE_LINES",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:123",
+      "census:dba_tab_columns:INVOICE_LINES.ID"
+     ]
+    },
+    {
+     "source": "INVOICE_ID",
+     "target": "invoice_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:123",
+      "census:dba_tab_columns:INVOICE_LINES.INVOICE_ID"
+     ]
+    },
+    {
+     "source": "LINE_NO",
+     "target": "line_no",
+     "source_type": "NUMBER(6,0)",
+     "target_type": "NUMERIC(6,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:123",
+      "census:dba_tab_columns:INVOICE_LINES.LINE_NO"
+     ]
+    },
+    {
+     "source": "LINE_TYPE",
+     "target": "line_type",
+     "source_type": "VARCHAR2(10)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:123",
+      "census:dba_tab_columns:INVOICE_LINES.LINE_TYPE"
+     ]
+    },
+    {
+     "source": "DESCRIPTION",
+     "target": "description",
+     "source_type": "VARCHAR2(400)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:123",
+      "census:dba_tab_columns:INVOICE_LINES.DESCRIPTION"
+     ]
+    },
+    {
+     "source": "AMOUNT",
+     "target": "amount",
+     "source_type": "NUMBER(12,2)",
+     "target_type": "NUMERIC(12,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:123",
+      "census:dba_tab_columns:INVOICE_LINES.AMOUNT"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 4
+  },
+  {
+   "object": "ow_billing.credit_notes",
+   "root_table": "OW_BILLING.CREDIT_NOTES",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:135",
+      "census:dba_tab_columns:CREDIT_NOTES.ID"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:135",
+      "census:dba_tab_columns:CREDIT_NOTES.TENANT_ID"
+     ]
+    },
+    {
+     "source": "ISSUED_ON",
+     "target": "issued_on",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:135",
+      "census:dba_tab_columns:CREDIT_NOTES.ISSUED_ON"
+     ]
+    },
+    {
+     "source": "AMOUNT",
+     "target": "amount",
+     "source_type": "NUMBER(12,2)",
+     "target_type": "NUMERIC(12,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:135",
+      "census:dba_tab_columns:CREDIT_NOTES.AMOUNT"
+     ]
+    },
+    {
+     "source": "REMAINING_AMOUNT",
+     "target": "remaining_amount",
+     "source_type": "NUMBER(12,2)",
+     "target_type": "NUMERIC(12,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:135",
+      "census:dba_tab_columns:CREDIT_NOTES.REMAINING_AMOUNT"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 5
+  },
+  {
+   "object": "ow_billing.rating_periods",
+   "root_table": "OW_BILLING.RATING_PERIODS",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:84",
+      "census:dba_tab_columns:RATING_PERIODS.ID"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:84",
+      "census:dba_tab_columns:RATING_PERIODS.TENANT_ID"
+     ]
+    },
+    {
+     "source": "PERIOD_START",
+     "target": "period_start",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:84",
+      "census:dba_tab_columns:RATING_PERIODS.PERIOD_START"
+     ]
+    },
+    {
+     "source": "PERIOD_END",
+     "target": "period_end",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:84",
+      "census:dba_tab_columns:RATING_PERIODS.PERIOD_END"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 3
+  },
+  {
+   "object": "ow_billing.rating_results",
+   "root_table": "OW_BILLING.RATING_RESULTS",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "census:dba_tab_columns:RATING_RESULTS.ID"
+     ]
+    },
+    {
+     "source": "PERIOD_ID",
+     "target": "period_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "census:dba_tab_columns:RATING_RESULTS.PERIOD_ID"
+     ]
+    },
+    {
+     "source": "SUBSCRIPTION_ID",
+     "target": "subscription_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "census:dba_tab_columns:RATING_RESULTS.SUBSCRIPTION_ID"
+     ]
+    },
+    {
+     "source": "USED_UNITS",
+     "target": "used_units",
+     "source_type": "NUMBER(10,0)",
+     "target_type": "NUMERIC(10,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "census:dba_tab_columns:RATING_RESULTS.USED_UNITS"
+     ]
+    },
+    {
+     "source": "QUOTA_UNITS",
+     "target": "quota_units",
+     "source_type": "NUMBER(10,0)",
+     "target_type": "NUMERIC(10,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "census:dba_tab_columns:RATING_RESULTS.QUOTA_UNITS"
+     ]
+    },
+    {
+     "source": "ROLLOVER_UNITS",
+     "target": "rollover_units",
+     "source_type": "NUMBER(10,0)",
+     "target_type": "NUMERIC(10,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "census:dba_tab_columns:RATING_RESULTS.ROLLOVER_UNITS"
+     ]
+    },
+    {
+     "source": "BILLABLE_UNITS",
+     "target": "billable_units",
+     "source_type": "NUMBER(10,0)",
+     "target_type": "NUMERIC(10,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "census:dba_tab_columns:RATING_RESULTS.BILLABLE_UNITS"
+     ]
+    },
+    {
+     "source": "OVERAGE_AMOUNT",
+     "target": "overage_amount",
+     "source_type": "NUMBER(12,2)",
+     "target_type": "NUMERIC(12,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "census:dba_tab_columns:RATING_RESULTS.OVERAGE_AMOUNT"
+     ]
+    },
+    {
+     "source": "CREATED_AT",
+     "target": "created_at",
+     "source_type": "TIMESTAMP(6)",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:94",
+      "census:dba_tab_columns:RATING_RESULTS.CREATED_AT"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 3
+  },
+  {
+   "object": "ow_billing.usage_events",
+   "root_table": "OW_BILLING.USAGE_EVENTS",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:74",
+      "census:dba_tab_columns:USAGE_EVENTS.ID"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:74",
+      "census:dba_tab_columns:USAGE_EVENTS.TENANT_ID"
+     ]
+    },
+    {
+     "source": "OCCURRED_AT",
+     "target": "occurred_at",
+     "source_type": "TIMESTAMP(6)",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:74",
+      "census:dba_tab_columns:USAGE_EVENTS.OCCURRED_AT"
+     ]
+    },
+    {
+     "source": "UNITS",
+     "target": "units",
+     "source_type": "NUMBER(10,0)",
+     "target_type": "NUMERIC(10,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:74",
+      "census:dba_tab_columns:USAGE_EVENTS.UNITS"
+     ]
+    },
+    {
+     "source": "KIND_CD",
+     "target": "kind_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:74",
+      "census:dba_tab_columns:USAGE_EVENTS.KIND_CD"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 817
+  }
+ ],
+ "rerun_posture": "required"
+}

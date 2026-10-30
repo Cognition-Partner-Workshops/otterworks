@@ -1,0 +1,8 @@
+{
+ "ow_billing.invoices": "full",
+ "ow_billing.invoice_lines": "full",
+ "ow_billing.credit_notes": "full",
+ "ow_billing.rating_periods": "full",
+ "ow_billing.rating_results": "full",
+ "ow_billing.usage_events": "full"
+}

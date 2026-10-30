@@ -1,0 +1,1359 @@
+{
+   "inventory" : [
+      {
+         "complexityLevel" : "HIGH",
+         "functionCall" : {
+            "LOWER" : 1,
+            "NVL" : 1,
+            "RAWTOHEX" : 1,
+            "STANDARD_HASH" : 1,
+            "SUBSTR" : 7,
+            "TO_CHAR" : 2,
+            "TO_DATE" : 1
+         },
+         "lineCount" : 83,
+         "name" : "01_pkg_util.sql",
+         "objectRel" : [
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "billing_audit_log"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "codes"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "dual"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "v_desc"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "v_hex"
+            }
+         ],
+         "procAndFunctionCount" : 5,
+         "scriptCategories" : [
+            "COMMIT",
+            "CREATE_PROCEDURE",
+            "DYNAMIC_SQL",
+            "EXCEPTION_WHEN_OTHERS",
+            "INSERT_INTO",
+            "PACKAGE",
+            "PROGRAM_DECLARATION",
+            "READ_DML_INTO_VAR",
+            "RETURN",
+            "UNKNOWN",
+            "VAR_ASSIGNMENT"
+         ],
+         "scriptType" : "ETL",
+         "sourceFile" : "packages/01_pkg_util.sql",
+         "statementCount" : 35
+      },
+      {
+         "complexityLevel" : "MEDIUM",
+         "functionCall" : {
+            "DECODE" : 4,
+            "GREATEST" : 1,
+            "NVL" : 2,
+            "TO_CHAR" : 2,
+            "TO_DATE" : 1
+         },
+         "lineCount" : 111,
+         "loopsAndCursors" : [
+            {
+               "content" : "FOR r IN c_open_subs LOOP",
+               "lineNumber" : 90
+            }
+         ],
+         "name" : "02_pkg_plans.sql",
+         "objectRel" : [
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "g_last_plan_code"
+            },
+            {
+               "action" : "read",
+               "count" : 3,
+               "object" : "plans"
+            },
+            {
+               "action" : "read",
+               "count" : 3,
+               "object" : "subscriptions"
+            },
+            {
+               "action" : "write",
+               "count" : 2,
+               "object" : "subscriptions"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "tenants"
+            }
+         ],
+         "procAndFunctionCount" : 3,
+         "scriptCategories" : [
+            "CREATE_PROCEDURE",
+            "DYNAMIC_SQL",
+            "END_LOOP",
+            "EXCEPTION_WHEN_OTHERS",
+            "FOR_LOOP",
+            "OPEN",
+            "PACKAGE",
+            "PROGRAM_DECLARATION",
+            "READ_DML_INTO_VAR",
+            "RETURN",
+            "UNKNOWN",
+            "VAR_ASSIGNMENT"
+         ],
+         "scriptType" : "ETL",
+         "sourceFile" : "packages/02_pkg_plans.sql",
+         "statementCount" : 31
+      },
+      {
+         "complexityLevel" : "VERY_HIGH",
+         "functionCall" : {
+            "ADD_MONTHS" : 1,
+            "CAST" : 1,
+            "COMPUTE_RATING" : 2,
+            "COUNT" : 1,
+            "DECODE" : 2,
+            "GREATEST" : 4,
+            "LEAST" : 3,
+            "NUMBER" : 1,
+            "NVL" : 8,
+            "ROUND" : 3,
+            "SUM" : 1,
+            "TO_CHAR" : 10
+         },
+         "lineCount" : 223,
+         "loopsAndCursors" : [
+            {
+               "content" : "FOR r IN (SELECT u.units, u.occurred_at FROM usage_events u",
+               "lineNumber" : 77
+            },
+            {
+               "content" : "FOR r IN (SELECT rr.rollover_units",
+               "lineNumber" : 87
+            }
+         ],
+         "name" : "03_pkg_rating.sql",
+         "objectRel" : [
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "dual"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "plans"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "rating_periods"
+            },
+            {
+               "action" : "write",
+               "count" : 2,
+               "object" : "rating_periods"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "rating_results"
+            },
+            {
+               "action" : "write",
+               "count" : 2,
+               "object" : "rating_results"
+            },
+            {
+               "action" : "read",
+               "count" : 2,
+               "object" : "subscriptions"
+            },
+            {
+               "action" : "read",
+               "count" : 2,
+               "object" : "usage_events"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "v_sub_id"
+            }
+         ],
+         "procAndFunctionCount" : 4,
+         "scriptCategories" : [
+            "CREATE_PROCEDURE",
+            "END_LOOP",
+            "FOR_LOOP",
+            "IF_END",
+            "IF_START",
+            "OPEN",
+            "PACKAGE",
+            "PROGRAM_DECLARATION",
+            "READ_DML_INTO_VAR",
+            "RETURN",
+            "UNKNOWN",
+            "VAR_ASSIGNMENT"
+         ],
+         "scriptType" : "ETL",
+         "sourceFile" : "packages/03_pkg_rating.sql",
+         "statementCount" : 86
+      },
+      {
+         "complexityLevel" : "VERY_HIGH",
+         "conditionalStatements" : [
+            {
+               "content" : "IF v_line_type = 'plan' OR v_line_type = 'usage' THEN",
+               "lineNumber" : 164
+            }
+         ],
+         "functionCall" : {
+            "CAST" : 1,
+            "COMPUTE_PREVIEW" : 1,
+            "DECODE" : 2,
+            "FN_INVOICE_PREVIEW" : 1,
+            "GREATEST" : 2,
+            "LEAST" : 1,
+            "NVL" : 4,
+            "ROUND" : 10,
+            "TO_CHAR" : 3
+         },
+         "lineCount" : 200,
+         "loopsAndCursors" : [
+            {
+               "content" : "FOR r IN (SELECT remaining_amount FROM credit_notes",
+               "lineNumber" : 53
+            },
+            {
+               "content" : "FOR r IN (SELECT id, remaining_amount FROM credit_notes",
+               "lineNumber" : 182
+            }
+         ],
+         "name" : "04_pkg_invoicing.sql",
+         "objectRel" : [
+            {
+               "action" : "read",
+               "count" : 2,
+               "object" : "credit_notes"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "credit_notes"
+            },
+            {
+               "action" : "read",
+               "count" : 2,
+               "object" : "dual"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "g_tax"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "invoice_lines"
+            },
+            {
+               "action" : "write",
+               "count" : 2,
+               "object" : "invoice_lines"
+            },
+            {
+               "action" : "write",
+               "count" : 3,
+               "object" : "invoices"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "plans"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "subscriptions"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "tenants"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "v_exempt"
+            }
+         ],
+         "procAndFunctionCount" : 4,
+         "scriptCategories" : [
+            "CLOSE_CURSOR",
+            "CREATE_PROCEDURE",
+            "DYNAMIC_SQL",
+            "ELSE_IF",
+            "END_LOOP",
+            "FOR_LOOP",
+            "IF_END",
+            "IF_START",
+            "INSERT_INTO",
+            "OPEN",
+            "PACKAGE",
+            "PROGRAM_DECLARATION",
+            "READ_DML_INTO_VAR",
+            "RETURN",
+            "UNKNOWN",
+            "UPDATE",
+            "VAR_ASSIGNMENT"
+         ],
+         "scriptType" : "ETL",
+         "sourceFile" : "packages/04_pkg_invoicing.sql",
+         "statementCount" : 81
+      },
+      {
+         "complexityLevel" : "HIGH",
+         "conditionalStatements" : [
+            {
+               "content" : "IF v_active > 0 THEN",
+               "lineNumber" : 80
+            }
+         ],
+         "functionCall" : {
+            "CAST" : 3,
+            "COUNT" : 1,
+            "DECODE" : 2,
+            "MAX" : 1,
+            "NVL" : 1,
+            "TO_CHAR" : 9,
+            "TRUNC" : 8
+         },
+         "lineCount" : 105,
+         "loopsAndCursors" : [
+            {
+               "content" : "FOR inv IN (SELECT id, tenant_id FROM invoices",
+               "lineNumber" : 40
+            },
+            {
+               "content" : "FOR t IN (SELECT DISTINCT i.tenant_id FROM invoices i",
+               "lineNumber" : 74
+            }
+         ],
+         "name" : "05_pkg_dunning.sql",
+         "objectRel" : [
+            {
+               "action" : "read",
+               "count" : 2,
+               "object" : "dual"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "dunning_attempts"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "dunning_attempts"
+            },
+            {
+               "action" : "read",
+               "count" : 3,
+               "object" : "invoices"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "notifications"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "notifications"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "subscriptions"
+            },
+            {
+               "action" : "read",
+               "count" : 2,
+               "object" : "tenants"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "tenants"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "v_active"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "v_attempt"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "v_next"
+            }
+         ],
+         "procAndFunctionCount" : 3,
+         "scriptCategories" : [
+            "CREATE_PROCEDURE",
+            "END_LOOP",
+            "EXCEPTION_WHEN_OTHERS",
+            "IF_END",
+            "IF_START",
+            "INSERT_INTO",
+            "PACKAGE",
+            "PROGRAM_DECLARATION",
+            "READ_DML_INTO_VAR",
+            "RETURN",
+            "UNKNOWN",
+            "UPDATE",
+            "VAR_ASSIGNMENT"
+         ],
+         "scriptType" : "ETL",
+         "sourceFile" : "packages/05_pkg_dunning.sql",
+         "statementCount" : 37
+      },
+      {
+         "complexityLevel" : "MEDIUM",
+         "conditionalStatements" : [
+            {
+               "content" : "IF :NEW.log_id IS NULL THEN",
+               "lineNumber" : 183
+            },
+            {
+               "content" : "IF UPDATING THEN v_op := 'UPD'; ELSE v_op := 'DEL'; END IF;",
+               "lineNumber" : 212
+            },
+            {
+               "content" : "IF :OLD.status_cd = 30 THEN",
+               "lineNumber" : 232
+            },
+            {
+               "content" : "IF NVL(:NEW.units, 0) <= 0 THEN",
+               "lineNumber" : 245
+            },
+            {
+               "content" : "IF v_cnt = 0 THEN",
+               "lineNumber" : 250
+            }
+         ],
+         "functionCall" : {
+            "COUNT" : 1,
+            "INVOICES" : 2,
+            "NUMBER" : 28,
+            "NVL" : 1,
+            "PLANS" : 1,
+            "RAISE_APPLICATION_ERROR" : 2,
+            "RATING_PERIODS" : 2,
+            "SUBSCRIPTIONS" : 1,
+            "TENANTS" : 7,
+            "TO_CHAR" : 1
+         },
+         "lineCount" : 256,
+         "name" : "01_tables.sql",
+         "objectRel" : [
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : ":NEW.log_id"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "billing_audit_log"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "codes"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "codes"
+            },
+            {
+               "action" : "write",
+               "count" : 21,
+               "object" : "codes"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "credit_notes"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "dual"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "dunning_attempts"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "invoice_lines"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "invoices"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "notifications"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "plans"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "rating_periods"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "rating_results"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "subscriptions"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "subscriptions_hist"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "subscriptions_hist"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "tenants"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "usage_events"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "v_cnt"
+            }
+         ],
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "COMMIT",
+            "CREATE_SEQUENCE",
+            "IF_END",
+            "IF_START",
+            "INSERT_INTO",
+            "READ_DML_INTO_VAR",
+            "TABLE_DDL",
+            "TRIGGER",
+            "UNKNOWN"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "schema/01_tables.sql",
+         "statementCount" : 56
+      },
+      {
+         "complexityLevel" : "MEDIUM",
+         "conditionalStatements" : [
+            {
+               "content" : "IF :NEW.cust_seq_no IS NULL THEN",
+               "lineNumber" : 350
+            },
+            {
+               "content" : "IF UPDATING THEN v_op := 'UPD'; ELSE v_op := 'DEL'; END IF;",
+               "lineNumber" : 364
+            },
+            {
+               "content" : "IF :NEW.eav_id IS NULL THEN",
+               "lineNumber" : 395
+            }
+         ],
+         "functionCall" : {
+            "NUMBER" : 74,
+            "NVL" : 1,
+            "TO_CHAR" : 1,
+            "UPPER" : 1
+         },
+         "lineCount" : 442,
+         "name" : "02_horror.sql",
+         "objectRel" : [
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : ":NEW.cust_seq_no"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : ":NEW.eav_id"
+            },
+            {
+               "action" : "write",
+               "count" : 11,
+               "object" : "codes"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "customer_master"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "customer_master_hist"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "customer_master_hist"
+            },
+            {
+               "action" : "read",
+               "count" : 2,
+               "object" : "dual"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "entity_attr_value"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "invoice_header"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "invoice_line"
+            }
+         ],
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "COMMIT",
+            "CREATE_SEQUENCE",
+            "IF_END",
+            "INSERT_INTO",
+            "TABLE_DDL",
+            "TRIGGER",
+            "UNKNOWN"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "schema/02_horror.sql",
+         "statementCount" : 33
+      },
+      {
+         "complexityLevel" : "LOW",
+         "lineCount" : 122,
+         "name" : "03_seed_static.sql",
+         "objectRel" : [
+            {
+               "action" : "write",
+               "count" : 5,
+               "object" : "credit_notes"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "customer_master"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "dunning_attempts"
+            },
+            {
+               "action" : "write",
+               "count" : 4,
+               "object" : "entity_attr_value"
+            },
+            {
+               "action" : "write",
+               "count" : 4,
+               "object" : "invoice_lines"
+            },
+            {
+               "action" : "write",
+               "count" : 4,
+               "object" : "invoices"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "notifications"
+            },
+            {
+               "action" : "write",
+               "count" : 3,
+               "object" : "plans"
+            },
+            {
+               "action" : "write",
+               "count" : 3,
+               "object" : "rating_periods"
+            },
+            {
+               "action" : "write",
+               "count" : 3,
+               "object" : "rating_results"
+            },
+            {
+               "action" : "write",
+               "count" : 10,
+               "object" : "subscriptions"
+            },
+            {
+               "action" : "write",
+               "count" : 10,
+               "object" : "tenants"
+            },
+            {
+               "action" : "write",
+               "count" : 13,
+               "object" : "usage_events"
+            }
+         ],
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "COMMIT",
+            "INSERT_INTO",
+            "UNKNOWN"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "schema/03_seed_static.sql",
+         "statementCount" : 66
+      },
+      {
+         "complexityLevel" : "LOW",
+         "lineCount" : 32,
+         "name" : "04_jobs.sql",
+         "objectRel" : [
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "billing_audit_log"
+            }
+         ],
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "UNKNOWN"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "schema/04_jobs.sql",
+         "statementCount" : 4
+      },
+      {
+         "complexityLevel" : "LOW",
+         "conditionalStatements" : [
+            {
+               "content" : "IF marker_columns = 0 THEN",
+               "lineNumber" : 13
+            }
+         ],
+         "functionCall" : {
+            "COUNT" : 1,
+            "USING" : 1
+         },
+         "lineCount" : 180,
+         "name" : "04_upgrade_static.sql",
+         "objectRel" : [
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "customer_master"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "customer_master"
+            },
+            {
+               "action" : "read",
+               "count" : 13,
+               "object" : "dual"
+            },
+            {
+               "action" : "read",
+               "count" : 4,
+               "object" : "entity_attr_value"
+            },
+            {
+               "action" : "write",
+               "count" : 4,
+               "object" : "entity_attr_value"
+            },
+            {
+               "action" : "write",
+               "count" : 2,
+               "object" : "fixture_meta"
+            },
+            {
+               "action" : "read",
+               "count" : 2,
+               "object" : "invoice_lines"
+            },
+            {
+               "action" : "write",
+               "count" : 2,
+               "object" : "invoice_lines"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "invoices"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "invoices"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "marker_columns"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "subscriptions"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "subscriptions"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "tenants"
+            },
+            {
+               "action" : "write",
+               "count" : 1,
+               "object" : "tenants"
+            },
+            {
+               "action" : "read",
+               "count" : 3,
+               "object" : "usage_events"
+            },
+            {
+               "action" : "write",
+               "count" : 3,
+               "object" : "usage_events"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "user_tab_columns"
+            }
+         ],
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "COMMIT",
+            "IF_END",
+            "IF_START",
+            "INSERT_INTO",
+            "MERGE",
+            "READ_DML_INTO_VAR",
+            "UNKNOWN",
+            "VAR_DECLARE"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "schema/04_upgrade_static.sql",
+         "statementCount" : 23
+      },
+      {
+         "complexityLevel" : "LOW",
+         "lineCount" : 10,
+         "name" : "01_users.sql",
+         "procAndFunctionCount" : 1,
+         "scriptCategories" : [
+            "CREATE_PROCEDURE",
+            "UNKNOWN"
+         ],
+         "scriptType" : "ETL",
+         "sourceFile" : "setup/01_users.sql",
+         "statementCount" : 3
+      },
+      {
+         "complexityLevel" : "MEDIUM",
+         "conditionalStatements" : [
+            {
+               "content" : "if [ \"${table_marker}\" = \"1\" ]; then",
+               "lineNumber" : 35
+            },
+            {
+               "content" : "if [ \"${column_marker}\" = \"0\" ]; then",
+               "lineNumber" : 47
+            },
+            {
+               "content" : "if [ \"${column_marker}\" != \"1\" ]; then",
+               "lineNumber" : 66
+            },
+            {
+               "content" : "if [ \"$(echo \"${user_exists}\" | tr -d '[:space:]')\" = \"0\" ]; then",
+               "lineNumber" : 101
+            },
+            {
+               "content" : "if [ \"${invalid}\" != \"0\" ]; then",
+               "lineNumber" : 134
+            }
+         ],
+         "functionCall" : {
+            "COUNT" : 5,
+            "DIRECTORY" : 1,
+            "RUN_SQL" : 1,
+            "USING" : 2
+         },
+         "lineCount" : 170,
+         "name" : "00_init.sh",
+         "objectRel" : [
+            {
+               "action" : "read",
+               "count" : 2,
+               "object" : "all_objects"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "all_tab_columns"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "all_tables"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "all_users"
+            },
+            {
+               "action" : "create",
+               "count" : 1,
+               "object" : "fixture_meta"
+            },
+            {
+               "action" : "write",
+               "count" : 2,
+               "object" : "fixture_meta"
+            },
+            {
+               "action" : "read",
+               "count" : 1,
+               "object" : "ow_billing.fixture_meta"
+            }
+         ],
+         "procAndFunctionCount" : 0,
+         "scriptCategories" : [
+            "COMMIT",
+            "IF_START",
+            "MERGE",
+            "UNKNOWN"
+         ],
+         "scriptType" : "SQL",
+         "sourceFile" : "startup/00_init.sh",
+         "statementCount" : 25
+      }
+   ],
+   "object_lineage" : [
+      {
+         "target" : ":NEW.cust_seq_no",
+         "writes" : [
+            {
+               "file" : "schema/02_horror.sql",
+               "sources" : [
+                  "dual"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : ":NEW.eav_id",
+         "writes" : [
+            {
+               "file" : "schema/02_horror.sql",
+               "sources" : [
+                  "dual"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : ":NEW.log_id",
+         "writes" : [
+            {
+               "file" : "schema/01_tables.sql",
+               "sources" : [
+                  "dual"
+               ]
+            }
+         ]
+      },
+      {
+         "reads" : [
+            "schema/01_tables.sql"
+         ],
+         "target" : "codes"
+      },
+      {
+         "reads" : [
+            "schema/04_upgrade_static.sql"
+         ],
+         "target" : "customer_master",
+         "writes" : [
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "customer_master",
+                  "dual"
+               ]
+            }
+         ]
+      },
+      {
+         "reads" : [
+            "packages/01_pkg_util.sql",
+            "packages/04_pkg_invoicing.sql",
+            "packages/05_pkg_dunning.sql",
+            "schema/01_tables.sql",
+            "schema/02_horror.sql",
+            "schema/04_upgrade_static.sql"
+         ],
+         "target" : "dual"
+      },
+      {
+         "reads" : [
+            "packages/05_pkg_dunning.sql"
+         ],
+         "target" : "dunning_attempts"
+      },
+      {
+         "reads" : [
+            "schema/04_upgrade_static.sql"
+         ],
+         "target" : "entity_attr_value",
+         "writes" : [
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "entity_attr_value"
+               ]
+            },
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "entity_attr_value"
+               ]
+            },
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "entity_attr_value"
+               ]
+            },
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "entity_attr_value"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : "g_last_plan_code",
+         "writes" : [
+            {
+               "file" : "packages/02_pkg_plans.sql",
+               "sources" : [
+                  "plans",
+                  "subscriptions"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : "g_tax",
+         "writes" : [
+            {
+               "file" : "packages/04_pkg_invoicing.sql",
+               "sources" : [
+                  "dual"
+               ]
+            }
+         ]
+      },
+      {
+         "reads" : [
+            "schema/04_upgrade_static.sql"
+         ],
+         "target" : "invoice_lines",
+         "writes" : [
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "invoice_lines"
+               ]
+            },
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "invoice_lines"
+               ]
+            }
+         ]
+      },
+      {
+         "reads" : [
+            "packages/05_pkg_dunning.sql",
+            "schema/04_upgrade_static.sql"
+         ],
+         "target" : "invoices",
+         "writes" : [
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "invoices"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : "marker_columns",
+         "writes" : [
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "user_tab_columns"
+               ]
+            }
+         ]
+      },
+      {
+         "reads" : [
+            "packages/05_pkg_dunning.sql"
+         ],
+         "target" : "notifications",
+         "writes" : [
+            {
+               "file" : "packages/05_pkg_dunning.sql",
+               "sources" : [
+                  "dual",
+                  "notifications"
+               ]
+            }
+         ]
+      },
+      {
+         "reads" : [
+            "packages/02_pkg_plans.sql"
+         ],
+         "target" : "plans"
+      },
+      {
+         "reads" : [
+            "packages/02_pkg_plans.sql",
+            "packages/03_pkg_rating.sql",
+            "schema/04_upgrade_static.sql"
+         ],
+         "target" : "subscriptions",
+         "writes" : [
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "subscriptions"
+               ]
+            }
+         ]
+      },
+      {
+         "reads" : [
+            "packages/04_pkg_invoicing.sql",
+            "packages/05_pkg_dunning.sql",
+            "schema/04_upgrade_static.sql"
+         ],
+         "target" : "tenants",
+         "writes" : [
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "tenants"
+               ]
+            }
+         ]
+      },
+      {
+         "reads" : [
+            "schema/04_upgrade_static.sql"
+         ],
+         "target" : "usage_events",
+         "writes" : [
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "usage_events"
+               ]
+            },
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "usage_events"
+               ]
+            },
+            {
+               "file" : "schema/04_upgrade_static.sql",
+               "sources" : [
+                  "dual",
+                  "usage_events"
+               ]
+            }
+         ]
+      },
+      {
+         "reads" : [
+            "schema/04_upgrade_static.sql"
+         ],
+         "target" : "user_tab_columns"
+      },
+      {
+         "target" : "v_active",
+         "writes" : [
+            {
+               "file" : "packages/05_pkg_dunning.sql",
+               "sources" : [
+                  "invoices",
+                  "tenants"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : "v_attempt",
+         "writes" : [
+            {
+               "file" : "packages/05_pkg_dunning.sql",
+               "sources" : [
+                  "dunning_attempts",
+                  "invoices"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : "v_cnt",
+         "writes" : [
+            {
+               "file" : "schema/01_tables.sql",
+               "sources" : [
+                  "codes"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : "v_exempt",
+         "writes" : [
+            {
+               "file" : "packages/04_pkg_invoicing.sql",
+               "sources" : [
+                  "tenants"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : "v_hex",
+         "writes" : [
+            {
+               "file" : "packages/01_pkg_util.sql",
+               "sources" : [
+                  "dual"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : "v_next",
+         "writes" : [
+            {
+               "file" : "packages/05_pkg_dunning.sql",
+               "sources" : [
+                  "dual"
+               ]
+            }
+         ]
+      },
+      {
+         "target" : "v_sub_id",
+         "writes" : [
+            {
+               "file" : "packages/03_pkg_rating.sql",
+               "sources" : [
+                  "subscriptions"
+               ]
+            }
+         ]
+      }
+   ],
+   "runInfo" : {
+      "inputFolder" : "/home/ubuntu/repos/otterworks/services/legacy-billing/db/oracle",
+      "reportName" : "/home/ubuntu/work/lakebridge/oracle.xlsx",
+      "runDurationSeconds" : 1,
+      "sourceTechnology" : "SQL",
+      "startTime" : "2026-10-30T18:20:17Z"
+   }
+}

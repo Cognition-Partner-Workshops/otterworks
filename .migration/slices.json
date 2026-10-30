@@ -1,0 +1,229 @@
+{
+  "version": 1,
+  "run": "unt19-20261030",
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING"
+  },
+  "slices": [
+    {
+      "id": "slice-0",
+      "name": "Shared reference, tenants and the audit log",
+      "track": "lakebase",
+      "routing": "none",
+      "tables": [
+        "OW_BILLING.CODES",
+        "OW_BILLING.PLANS",
+        "OW_BILLING.TENANTS",
+        "OW_BILLING.BILLING_AUDIT_LOG"
+      ],
+      "routines": [
+        "OW_BILLING.PKG_OW_UTIL.*",
+        "OW_BILLING.TRG_BILLING_AUDIT_LOG_ID"
+      ],
+      "jobs": [
+        "JOB_PURGE_AUDIT_LOG"
+      ],
+      "consumers": [],
+      "depends_on": [],
+      "writers": {
+        "OW_BILLING.TENANTS": [
+          "OW_BILLING.PKG_DUNNING.SP_SUSPEND_OVERDUE (packages/05_pkg_dunning.sql:81)",
+          "legacy-billing-flask-app backends/oracle.py:141 ensure_tenant INSERT"
+        ],
+        "OW_BILLING.BILLING_AUDIT_LOG": [
+          "OW_BILLING.PKG_OW_UTIL.LOG_MSG (packages/01_pkg_util.sql:70, autonomous txn, called from every package)",
+          "JOB_PURGE_AUDIT_LOG DELETE (schema/04_jobs.sql:22)"
+        ]
+      },
+      "excluded": [
+        {
+          "object": "OW_BILLING.FIXTURE_META",
+          "decision": "d-fixture-meta-excluded",
+          "why": "fixture bookkeeping (2 rows, no PK, written only by schema/04_upgrade_static.sql:170 MERGE); no consumer reads it"
+        },
+        {
+          "object": "OW_BILLING.SEQ_*",
+          "decision": "d-sequences-become-identity",
+          "why": "5 sequences feed BEFORE INSERT id triggers; the owning table's slice gives the column an identity/sequence default (dialect trap 10); not migrated as objects"
+        },
+        {
+          "object": "etl/scripts/audit_archive_weekly.py",
+          "decision": "d-analytics-scope-finance-only",
+          "why": "DynamoDB->S3 Glacier housekeeping (etl/scripts/audit_archive_weekly.py:61,113); no finance consumer"
+        },
+        {
+          "object": "etl/scripts/search_reindex_weekly.py",
+          "decision": "d-analytics-scope-finance-only",
+          "why": "Meilisearch reindex (etl/scripts/search_reindex_weekly.py:30-75); platform housekeeping"
+        },
+        {
+          "object": "etl/scripts/storage_cleanup_daily.py",
+          "decision": "d-analytics-scope-finance-only",
+          "why": "S3/DynamoDB cleanup (etl/scripts/storage_cleanup_daily.py:46,76); platform housekeeping"
+        }
+      ]
+    },
+    {
+      "id": "s1-invoicing-rating",
+      "name": "Invoicing with rating merged in (canary)",
+      "track": "lakebase",
+      "routing": "jdbc_url",
+      "route_group": "billing-app",
+      "canary": true,
+      "auto_merge": false,
+      "verify_depth": "full",
+      "rollback_window_h": 24,
+      "green_cycles": 2,
+      "tables": [
+        "OW_BILLING.INVOICES",
+        "OW_BILLING.INVOICE_LINES",
+        "OW_BILLING.CREDIT_NOTES",
+        "OW_BILLING.RATING_PERIODS",
+        "OW_BILLING.RATING_RESULTS",
+        "OW_BILLING.USAGE_EVENTS"
+      ],
+      "routines": [
+        "OW_BILLING.PKG_INVOICING.*",
+        "OW_BILLING.PKG_RATING.*",
+        "OW_BILLING.TRG_USAGE_EVENTS_CHECK"
+      ],
+      "jobs": [],
+      "consumers": [
+        "legacy-billing-flask-app"
+      ],
+      "depends_on": [],
+      "merged_from": {
+        "rating": "PKG_INVOICING.COMPUTE_PREVIEW -> PKG_RATING.COMPUTE_RATING (packages/04_pkg_invoicing.sql:48); PKG_INVOICING.SP_ISSUE_INVOICE -> PKG_RATING.SP_FINALIZE_RATING (04_pkg_invoicing.sql:134) which writes RATING_PERIODS/RATING_RESULTS (03_pkg_rating.sql:185-209)"
+      }
+    },
+    {
+      "id": "s2-plans-dunning",
+      "name": "Plans and dunning (shared SUBSCRIPTIONS write)",
+      "track": "lakebase",
+      "routing": "jdbc_url",
+      "route_group": "billing-app",
+      "canary": false,
+      "auto_merge": true,
+      "verify_depth": "full",
+      "rollback_window_h": 24,
+      "green_cycles": 2,
+      "tables": [
+        "OW_BILLING.SUBSCRIPTIONS",
+        "OW_BILLING.SUBSCRIPTIONS_HIST",
+        "OW_BILLING.DUNNING_ATTEMPTS",
+        "OW_BILLING.NOTIFICATIONS"
+      ],
+      "routines": [
+        "OW_BILLING.PKG_PLANS.*",
+        "OW_BILLING.PKG_DUNNING.*",
+        "OW_BILLING.TRG_SUBSCRIPTIONS_HIST",
+        "OW_BILLING.TRG_SUB_NO_UNCANCEL"
+      ],
+      "jobs": [
+        "JOB_NIGHTLY_DUNNING"
+      ],
+      "consumers": [
+        "legacy-billing-flask-app",
+        "admin-dashboard"
+      ],
+      "depends_on": [
+        "s1-invoicing-rating"
+      ],
+      "merged_from": {
+        "plans+dunning": "both UPDATE SUBSCRIPTIONS (02_pkg_plans.sql:91, 05_pkg_dunning.sql:82) and fire TRG_SUBSCRIPTIONS_HIST (01_tables.sql:206); dunning reads INVOICES (05_pkg_dunning.sql:25,40,74) hence depends_on s1"
+      }
+    },
+    {
+      "id": "s3-custbill-finance",
+      "name": "CUSTBILL month-end chain and finance report tables",
+      "track": "delta",
+      "routing": "api",
+      "route_group": "finance",
+      "canary": false,
+      "auto_merge": true,
+      "verify_depth": "full",
+      "rollback_window_h": 72,
+      "green_cycles": 1,
+      "tables": [
+        "OW_BILLING.INVOICE_HEADER",
+        "OW_BILLING.INVOICE_LINE",
+        "OW_BILLING.CUSTOMER_MASTER",
+        "OW_BILLING.CUSTOMER_MASTER_HIST",
+        "OW_BILLING.ENTITY_ATTR_VALUE"
+      ],
+      "routines": [
+        "OW_BILLING.TRG_CUSTOMER_MASTER_SEQ",
+        "OW_BILLING.TRG_CUSTOMER_MASTER_HIST",
+        "OW_BILLING.TRG_ENTITY_ATTR_VALUE_SEQ"
+      ],
+      "jobs": [
+        "etl/legacy-extra/tools/oracle_custbill_extract.py",
+        "etl/legacy-extra/jobs/sftp_ingest_poll.ksh",
+        "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh",
+        "etl/legacy-extra/jobs/finance_excel_report.pl",
+        "etl/legacy-extra/run_all.sh"
+      ],
+      "consumers": [
+        "finance-report-endpoint",
+        "admin-dashboard",
+        "finance-csv"
+      ],
+      "depends_on": [],
+      "target_shape": "Lakeflow Declarative Pipeline (bronze fixed-width -> silver with expectations + quarantine -> gold finance_billing) plus a Lakeflow Job replacing crontab 02:10 / Sunday 06:00 (etl/legacy-extra/crontab)"
+    },
+    {
+      "id": "s4-analytics-jobs",
+      "name": "Finance-facing analytics crons as Lakeflow Jobs",
+      "track": "delta",
+      "routing": "none",
+      "canary": false,
+      "auto_merge": true,
+      "verify_depth": "full",
+      "rollback_window_h": 72,
+      "green_cycles": 1,
+      "tables": [],
+      "routines": [],
+      "jobs": [
+        "etl/scripts/analytics_daily.py",
+        "etl/scripts/user_activity_daily.py",
+        "services/analytics-service/batch/UsageRollupJob"
+      ],
+      "consumers": [
+        "finance-s3-reports"
+      ],
+      "depends_on": [],
+      "target_shape": "Lakeflow Jobs with retries on --family databricks; sources are SQS/DynamoDB/S3/Postgres/NDJSON, not OW_BILLING (etl/scripts/analytics_daily.py:53,113,346; etl/scripts/user_activity_daily.py:55,78; UsageRollupJob.scala:36,45); user_activity_daily runs after analytics_daily (both touch analytics_daily_summary)"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "d-fixture-meta-excluded",
+      "status": "proposed"
+    },
+    {
+      "id": "d-sequences-become-identity",
+      "status": "proposed"
+    },
+    {
+      "id": "d-analytics-scope-finance-only",
+      "status": "proposed",
+      "note": "analytics_daily, user_activity_daily and the Scala usage rollup are in scope; the three housekeeping crons are excluded"
+    },
+    {
+      "id": "d-codes-on-delta",
+      "status": "needs_stop1",
+      "note": "finance-report-endpoint decodes INV_STATUS via CODES (services/legacy-billing/app/reports.py:46-70) while slice-0 is lakebase; proposal: CODES also landed in ow_tp as a static seed (schema/03_seed_static.sql) owned by slice-0, refreshed by the s3 pipeline"
+    },
+    {
+      "id": "d-customer-master-read-path",
+      "status": "needs_stop1",
+      "note": "facade /me and /customer read CUSTOMER_MASTER and ENTITY_ATTR_VALUE (services/legacy-billing/app/facade.py:123,287,294), which s3 lands on Delta; proposal: those two reads go through the s3 api route; alternative is a Lakebase synced copy"
+    },
+    {
+      "id": "d-tenants-written-by-dunning",
+      "status": "proposed",
+      "note": "TENANTS stays slice-0 only; PKG_DUNNING.SP_SUSPEND_OVERDUE (05_pkg_dunning.sql:81) and backends/oracle.py:141 write it as a slice-0 write; slices.py cannot express a shared_writes row for a table held by one slice"
+    }
+  ]
+}

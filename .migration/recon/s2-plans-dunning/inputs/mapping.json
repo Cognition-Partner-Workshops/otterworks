@@ -1,0 +1,413 @@
+{
+ "version": "unt19-20261030-v1",
+ "slice": "s2-plans-dunning",
+ "track": "lakebase",
+ "tolerances": "tol-20261027-v1",
+ "tolerance_mode": "exact",
+ "objects": [
+  {
+   "object": "ow_billing.subscriptions",
+   "root_table": "OW_BILLING.SUBSCRIPTIONS",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:61",
+      "census:dba_tab_columns:SUBSCRIPTIONS.ID"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:61",
+      "census:dba_tab_columns:SUBSCRIPTIONS.TENANT_ID"
+     ]
+    },
+    {
+     "source": "PLAN_ID",
+     "target": "plan_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:61",
+      "census:dba_tab_columns:SUBSCRIPTIONS.PLAN_ID"
+     ]
+    },
+    {
+     "source": "STARTS_ON",
+     "target": "starts_on",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:61",
+      "census:dba_tab_columns:SUBSCRIPTIONS.STARTS_ON"
+     ]
+    },
+    {
+     "source": "ENDS_ON",
+     "target": "ends_on",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:61",
+      "census:dba_tab_columns:SUBSCRIPTIONS.ENDS_ON"
+     ]
+    },
+    {
+     "source": "STATUS_CD",
+     "target": "status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:61",
+      "census:dba_tab_columns:SUBSCRIPTIONS.STATUS_CD"
+     ]
+    },
+    {
+     "source": "SUSPENDED_ON",
+     "target": "suspended_on",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:61",
+      "census:dba_tab_columns:SUBSCRIPTIONS.SUSPENDED_ON"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 70
+  },
+  {
+   "object": "ow_billing.subscriptions_hist",
+   "root_table": "OW_BILLING.SUBSCRIPTIONS_HIST",
+   "key": {
+    "source": [
+     "HIST_ID"
+    ],
+    "target": [
+     "hist_id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "HIST_ID",
+     "target": "hist_id",
+     "source_type": "NUMBER(12,0)",
+     "target_type": "NUMERIC(12,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.HIST_ID"
+     ]
+    },
+    {
+     "source": "HIST_DT",
+     "target": "hist_dt",
+     "source_type": "VARCHAR2(20)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.HIST_DT"
+     ]
+    },
+    {
+     "source": "HIST_OP",
+     "target": "hist_op",
+     "source_type": "VARCHAR2(3)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.HIST_OP"
+     ]
+    },
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.ID"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.TENANT_ID"
+     ]
+    },
+    {
+     "source": "PLAN_ID",
+     "target": "plan_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.PLAN_ID"
+     ]
+    },
+    {
+     "source": "STARTS_ON",
+     "target": "starts_on",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.STARTS_ON"
+     ]
+    },
+    {
+     "source": "ENDS_ON",
+     "target": "ends_on",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.ENDS_ON"
+     ]
+    },
+    {
+     "source": "STATUS_CD",
+     "target": "status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.STATUS_CD"
+     ]
+    },
+    {
+     "source": "SUSPENDED_ON",
+     "target": "suspended_on",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:190",
+      "census:dba_tab_columns:SUBSCRIPTIONS_HIST.SUSPENDED_ON"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": null
+  },
+  {
+   "object": "ow_billing.dunning_attempts",
+   "root_table": "OW_BILLING.DUNNING_ATTEMPTS",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:145",
+      "census:dba_tab_columns:DUNNING_ATTEMPTS.ID"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:145",
+      "census:dba_tab_columns:DUNNING_ATTEMPTS.TENANT_ID"
+     ]
+    },
+    {
+     "source": "INVOICE_ID",
+     "target": "invoice_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:145",
+      "census:dba_tab_columns:DUNNING_ATTEMPTS.INVOICE_ID"
+     ]
+    },
+    {
+     "source": "ATTEMPT_NO",
+     "target": "attempt_no",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:145",
+      "census:dba_tab_columns:DUNNING_ATTEMPTS.ATTEMPT_NO"
+     ]
+    },
+    {
+     "source": "SCHEDULED_FOR",
+     "target": "scheduled_for",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:145",
+      "census:dba_tab_columns:DUNNING_ATTEMPTS.SCHEDULED_FOR"
+     ]
+    },
+    {
+     "source": "STATUS_CD",
+     "target": "status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:145",
+      "census:dba_tab_columns:DUNNING_ATTEMPTS.STATUS_CD"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 1
+  },
+  {
+   "object": "ow_billing.notifications",
+   "root_table": "OW_BILLING.NOTIFICATIONS",
+   "key": {
+    "source": [
+     "ID"
+    ],
+    "target": [
+     "id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "ID",
+     "target": "id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:158",
+      "census:dba_tab_columns:NOTIFICATIONS.ID"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "TEXT",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:158",
+      "census:dba_tab_columns:NOTIFICATIONS.TENANT_ID"
+     ]
+    },
+    {
+     "source": "KIND_CD",
+     "target": "kind_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "NUMERIC(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:158",
+      "census:dba_tab_columns:NOTIFICATIONS.KIND_CD"
+     ]
+    },
+    {
+     "source": "SENT_AT",
+     "target": "sent_at",
+     "source_type": "TIMESTAMP(6)",
+     "target_type": "TIMESTAMP",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/01_tables.sql:158",
+      "census:dba_tab_columns:NOTIFICATIONS.SENT_AT"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 1
+  }
+ ],
+ "rerun_posture": "required"
+}

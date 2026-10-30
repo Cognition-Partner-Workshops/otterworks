@@ -1,0 +1,10 @@
+{
+ "version": 1,
+ "tolerances": "tol-20261027-v1",
+ "tolerance_mode": "exact",
+ "fixture_tenant": {
+  "name": "Tenant One",
+  "id": "00000000-0000-0000-0000-000000000001"
+ },
+ "width": 4
+}

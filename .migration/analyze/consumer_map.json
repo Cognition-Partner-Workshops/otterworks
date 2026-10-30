@@ -1,0 +1,93 @@
+{
+ "version": 1,
+ "consumers": {
+  "legacy-billing-flask-app": {
+   "what": "services/legacy-billing/app (facade.py + backends/oracle.py) behind the API gateway when BILLING_BACKEND=oracle",
+   "route_group": "billing-app",
+   "routing": "jdbc_url (one oracledb connection, services/legacy-billing/app/oracle_conn.py:8-15)",
+   "calls": [
+    "OW_BILLING.PKG_PLANS.FN_LIST_PLANS (backends/oracle.py:57)",
+    "OW_BILLING.PKG_PLANS.FN_ENTITLEMENT (:61)",
+    "OW_BILLING.PKG_PLANS.SP_CHANGE_PLAN (:77)",
+    "OW_BILLING.PKG_RATING.FN_USAGE_RATING (:85)",
+    "OW_BILLING.PKG_RATING.FN_USAGE_SUMMARY (:92)",
+    "OW_BILLING.PKG_RATING.SP_FINALIZE_RATING (:99)",
+    "OW_BILLING.PKG_INVOICING.FN_INVOICE_PREVIEW (:106)",
+    "OW_BILLING.PKG_INVOICING.SP_ISSUE_INVOICE (:113)",
+    "OW_BILLING.PKG_INVOICING.FN_INVOICE_LINES (:119)",
+    "OW_BILLING.PKG_DUNNING.FN_OVERDUE_ACCOUNTS (:123)",
+    "OW_BILLING.PKG_DUNNING.SP_SCHEDULE_DUNNING (:127)",
+    "OW_BILLING.PKG_DUNNING.SP_SUSPEND_OVERDUE (:131)"
+   ],
+   "reads": [
+    "OW_BILLING.TENANTS (facade.py:113)",
+    "OW_BILLING.CODES (facade.py:114,215,245,342,394)",
+    "OW_BILLING.CUSTOMER_MASTER (facade.py:123,287)",
+    "OW_BILLING.USAGE_EVENTS (facade.py:214)",
+    "OW_BILLING.INVOICES (facade.py:243,267)",
+    "OW_BILLING.RATING_PERIODS (facade.py:244)",
+    "OW_BILLING.ENTITY_ATTR_VALUE (facade.py:294)",
+    "OW_BILLING.DUNNING_ATTEMPTS (facade.py:341)"
+   ],
+   "writes": [
+    "OW_BILLING.USAGE_EVENTS (facade.py:401 INSERT)",
+    "OW_BILLING.SUBSCRIPTIONS (backends/oracle.py:68 UPDATE, :161 INSERT)",
+    "OW_BILLING.TENANTS (backends/oracle.py:141 INSERT)"
+   ],
+   "slices": [
+    "s1-invoicing-rating",
+    "s2-plans-dunning",
+    "slice-0 (reads)",
+    "s3-custbill-finance (reads CUSTOMER_MASTER, ENTITY_ATTR_VALUE: d-customer-master-read-path)"
+   ]
+  },
+  "finance-report-endpoint": {
+   "what": "services/legacy-billing/app/reports.py: /api/reports/{month-end,reconciliation,finance} and the /api/v1/billing/admin/reports/* mirrors",
+   "route_group": "finance",
+   "routing": "api",
+   "reads": [
+    "OW_BILLING.INVOICE_HEADER (reports.py:46,67)",
+    "OW_BILLING.INVOICE_LINE (reports.py:68)",
+    "OW_BILLING.CODES (reports.py:47,69)",
+    "OW_BILLING.CUSTOMER_MASTER (reports.py:87)",
+    "reports/finance_billing_*.csv (reports.py:221)"
+   ],
+   "slices": [
+    "s3-custbill-finance",
+    "slice-0 (CODES: d-codes-on-delta)"
+   ]
+  },
+  "admin-dashboard": {
+   "what": "frontend/admin-dashboard billing-report.service.ts via the gateway",
+   "route_group": "finance (reports) / billing-app (overdue, dunning)",
+   "routing": "api",
+   "reads": [
+    "/api/v1/billing/admin/reports/{month-end,reconciliation,finance} (billing-report.service.ts:16,20,24) -> finance-report-endpoint",
+    "/api/v1/billing/admin/overdue, /dunning (:28,32) -> PKG_DUNNING.FN_OVERDUE_ACCOUNTS, DUNNING_ATTEMPTS"
+   ],
+   "slices": [
+    "s3-custbill-finance",
+    "s2-plans-dunning"
+   ]
+  },
+  "finance-csv": {
+   "what": "reports/finance_billing_YYYYMMDD.csv (+ .xls) written by etl/legacy-extra/jobs/finance_excel_report.pl from the parsed CUSTBILL extract (ETL_UPGRADE_GUIDE_ADDENDUM.md); read by finance-report-endpoint",
+   "route_group": "finance",
+   "routing": "api",
+   "reads": [
+    "OW_BILLING.INVOICE_HEADER, CUSTOMER_MASTER, TENANTS via etl/legacy-extra/tools/oracle_custbill_extract.py:22-24"
+   ],
+   "slices": [
+    "s3-custbill-finance"
+   ]
+  },
+  "finance-s3-reports": {
+   "what": "S3 report objects written by etl/scripts/analytics_daily.py:427 and user_activity_daily.py:207; no OW_BILLING reads",
+   "route_group": "none",
+   "routing": "none",
+   "slices": [
+    "s4-analytics-jobs"
+   ]
+  }
+ }
+}

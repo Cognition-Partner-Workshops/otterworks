@@ -1,0 +1,7 @@
+{
+ "ow_tp.billing.invoice_header": "full",
+ "ow_tp.billing.invoice_line": "full",
+ "ow_tp.billing.customer_master": "full",
+ "ow_tp.billing.customer_master_hist": "full",
+ "ow_tp.billing.entity_attr_value": "full"
+}
