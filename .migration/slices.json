@@ -62,7 +62,8 @@
           "decision": "d-analytics-scope-finance-only",
           "why": "S3/DynamoDB cleanup (etl/scripts/storage_cleanup_daily.py:46,76); platform housekeeping"
         }
-      ]
+      ],
+      "green_cycles": 3
     },
     {
       "id": "s1-invoicing-rating",
@@ -74,7 +75,7 @@
       "auto_merge": false,
       "verify_depth": "full",
       "rollback_window_h": 24,
-      "green_cycles": 2,
+      "green_cycles": 3,
       "tables": [
         "OW_BILLING.INVOICES",
         "OW_BILLING.INVOICE_LINES",
@@ -107,7 +108,7 @@
       "auto_merge": true,
       "verify_depth": "full",
       "rollback_window_h": 24,
-      "green_cycles": 2,
+      "green_cycles": 3,
       "tables": [
         "OW_BILLING.SUBSCRIPTIONS",
         "OW_BILLING.SUBSCRIPTIONS_HIST",
@@ -144,7 +145,7 @@
       "auto_merge": true,
       "verify_depth": "full",
       "rollback_window_h": 72,
-      "green_cycles": 1,
+      "green_cycles": 3,
       "tables": [
         "OW_BILLING.INVOICE_HEADER",
         "OW_BILLING.INVOICE_LINE",
@@ -181,7 +182,7 @@
       "auto_merge": true,
       "verify_depth": "full",
       "rollback_window_h": 72,
-      "green_cycles": 1,
+      "green_cycles": 3,
       "tables": [],
       "routines": [],
       "jobs": [
