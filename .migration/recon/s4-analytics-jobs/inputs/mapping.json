@@ -1,0 +1,61 @@
+{
+ "version": "unt19-20261030-v1",
+ "slice": "s4-analytics-jobs",
+ "track": "delta",
+ "tolerances": "tol-20261027-v1",
+ "tolerance_mode": "exact",
+ "objects": [
+  {
+   "object": "ow_tp.analytics.analytics_daily_summary",
+   "root_table": "analytics.analytics_daily_summary",
+   "key": {
+    "source": [
+     "summary_date"
+    ],
+    "target": [
+     "summary_date"
+    ]
+   },
+   "fields": [
+    {
+     "source": "summary_date",
+     "target": "summary_date",
+     "source_type": "date",
+     "target_type": "DATE",
+     "rules": [],
+     "evidence": [
+      "etl/scripts/analytics_daily.py:356"
+     ]
+    }
+   ],
+   "grading": "full"
+  },
+  {
+   "object": "ow_tp.analytics.usage_rollup_daily",
+   "root_table": "rollup.usage_rollup_daily",
+   "key": {
+    "source": [
+     "day"
+    ],
+    "target": [
+     "day"
+    ]
+   },
+   "fields": [
+    {
+     "source": "day",
+     "target": "day",
+     "source_type": "string",
+     "target_type": "DATE",
+     "rules": [],
+     "evidence": [
+      "docs/BATCH-USAGE-ROLLUP.md",
+      "UsageRollupJob.scala:36"
+     ]
+    }
+   ],
+   "grading": "full"
+  }
+ ],
+ "rerun_posture": "required"
+}

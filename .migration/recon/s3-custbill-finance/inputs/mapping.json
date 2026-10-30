@@ -1,0 +1,4528 @@
+{
+ "version": "unt19-20261030-v1",
+ "slice": "s3-custbill-finance",
+ "track": "delta",
+ "tolerances": "tol-20261027-v1",
+ "tolerance_mode": "exact",
+ "objects": [
+  {
+   "object": "ow_tp.billing.invoice_header",
+   "root_table": "OW_BILLING.INVOICE_HEADER",
+   "key": {
+    "source": [
+     "INVOICE_ID"
+    ],
+    "target": [
+     "invoice_id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "INVOICE_ID",
+     "target": "invoice_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "census:dba_tab_columns:INVOICE_HEADER.INVOICE_ID"
+     ]
+    },
+    {
+     "source": "INVOICE_NO",
+     "target": "invoice_no",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "census:dba_tab_columns:INVOICE_HEADER.INVOICE_NO"
+     ]
+    },
+    {
+     "source": "CUST_ID",
+     "target": "cust_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "census:dba_tab_columns:INVOICE_HEADER.CUST_ID"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "census:dba_tab_columns:INVOICE_HEADER.TENANT_ID"
+     ]
+    },
+    {
+     "source": "INVOICE_DT",
+     "target": "invoice_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "census:dba_tab_columns:INVOICE_HEADER.INVOICE_DT"
+     ]
+    },
+    {
+     "source": "DUE_DT",
+     "target": "due_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "census:dba_tab_columns:INVOICE_HEADER.DUE_DT"
+     ]
+    },
+    {
+     "source": "STATUS_CD",
+     "target": "status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "census:dba_tab_columns:INVOICE_HEADER.STATUS_CD"
+     ]
+    },
+    {
+     "source": "TOTAL_AMT",
+     "target": "total_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "census:dba_tab_columns:INVOICE_HEADER.TOTAL_AMT"
+     ]
+    },
+    {
+     "source": "BATCH_NO",
+     "target": "batch_no",
+     "source_type": "NUMBER(8,0)",
+     "target_type": "DECIMAL(8,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:429",
+      "census:dba_tab_columns:INVOICE_HEADER.BATCH_NO"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 18750
+  },
+  {
+   "object": "ow_tp.billing.invoice_line",
+   "root_table": "OW_BILLING.INVOICE_LINE",
+   "key": {
+    "source": [
+     "LINE_ID"
+    ],
+    "target": [
+     "line_id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "LINE_ID",
+     "target": "line_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.LINE_ID"
+     ]
+    },
+    {
+     "source": "INVOICE_NO",
+     "target": "invoice_no",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.INVOICE_NO"
+     ]
+    },
+    {
+     "source": "INVOICE_ID",
+     "target": "invoice_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.INVOICE_ID"
+     ]
+    },
+    {
+     "source": "CUST_ID",
+     "target": "cust_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.CUST_ID"
+     ]
+    },
+    {
+     "source": "CUST_NO",
+     "target": "cust_no",
+     "source_type": "VARCHAR2(20)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.CUST_NO"
+     ]
+    },
+    {
+     "source": "CUST_NAME",
+     "target": "cust_name",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.CUST_NAME"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.TENANT_ID"
+     ]
+    },
+    {
+     "source": "LINE_NO",
+     "target": "line_no",
+     "source_type": "NUMBER(6,0)",
+     "target_type": "DECIMAL(6,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.LINE_NO"
+     ]
+    },
+    {
+     "source": "LINE_TYPE_CD",
+     "target": "line_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.LINE_TYPE_CD"
+     ]
+    },
+    {
+     "source": "ITEM_DESC",
+     "target": "item_desc",
+     "source_type": "VARCHAR2(400)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.ITEM_DESC"
+     ]
+    },
+    {
+     "source": "QTY",
+     "target": "qty",
+     "source_type": "NUMBER(12,3)",
+     "target_type": "DECIMAL(12,3)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.QTY"
+     ]
+    },
+    {
+     "source": "UNIT_PRICE",
+     "target": "unit_price",
+     "source_type": "NUMBER(14,4)",
+     "target_type": "DECIMAL(14,4)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.UNIT_PRICE"
+     ]
+    },
+    {
+     "source": "AMOUNT",
+     "target": "amount",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.AMOUNT"
+     ]
+    },
+    {
+     "source": "TAX_AMT",
+     "target": "tax_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.TAX_AMT"
+     ]
+    },
+    {
+     "source": "INVOICE_DT",
+     "target": "invoice_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.INVOICE_DT"
+     ]
+    },
+    {
+     "source": "SERVICE_PERIOD",
+     "target": "service_period",
+     "source_type": "VARCHAR2(20)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.SERVICE_PERIOD"
+     ]
+    },
+    {
+     "source": "POSTED_YN",
+     "target": "posted_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.POSTED_YN"
+     ]
+    },
+    {
+     "source": "GL_ACCT_CSV",
+     "target": "gl_acct_csv",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.GL_ACCT_CSV"
+     ]
+    },
+    {
+     "source": "BATCH_NO",
+     "target": "batch_no",
+     "source_type": "NUMBER(8,0)",
+     "target_type": "DECIMAL(8,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.BATCH_NO"
+     ]
+    },
+    {
+     "source": "SRC_SYSTEM",
+     "target": "src_system",
+     "source_type": "VARCHAR2(10)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:405",
+      "census:dba_tab_columns:INVOICE_LINE.SRC_SYSTEM"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 150000
+  },
+  {
+   "object": "ow_tp.billing.customer_master",
+   "root_table": "OW_BILLING.CUSTOMER_MASTER",
+   "key": {
+    "source": [
+     "CUST_ID"
+    ],
+    "target": [
+     "cust_id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "CUST_ID",
+     "target": "cust_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CUST_ID"
+     ]
+    },
+    {
+     "source": "CUST_SEQ_NO",
+     "target": "cust_seq_no",
+     "source_type": "NUMBER(12,0)",
+     "target_type": "DECIMAL(12,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CUST_SEQ_NO"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.TENANT_ID"
+     ]
+    },
+    {
+     "source": "CUST_NO",
+     "target": "cust_no",
+     "source_type": "VARCHAR2(20)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CUST_NO"
+     ]
+    },
+    {
+     "source": "CUST_NAME",
+     "target": "cust_name",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CUST_NAME"
+     ]
+    },
+    {
+     "source": "CUST_NAME_UPPER",
+     "target": "cust_name_upper",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CUST_NAME_UPPER"
+     ]
+    },
+    {
+     "source": "LEGAL_NAME",
+     "target": "legal_name",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.LEGAL_NAME"
+     ]
+    },
+    {
+     "source": "DBA_NAME",
+     "target": "dba_name",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.DBA_NAME"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_1",
+     "target": "addr_line_1",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.ADDR_LINE_1"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_2",
+     "target": "addr_line_2",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.ADDR_LINE_2"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_3",
+     "target": "addr_line_3",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.ADDR_LINE_3"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_4",
+     "target": "addr_line_4",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.ADDR_LINE_4"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_5",
+     "target": "addr_line_5",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.ADDR_LINE_5"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_6",
+     "target": "addr_line_6",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.ADDR_LINE_6"
+     ]
+    },
+    {
+     "source": "CITY",
+     "target": "city",
+     "source_type": "VARCHAR2(80)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CITY"
+     ]
+    },
+    {
+     "source": "STATE_CD",
+     "target": "state_cd",
+     "source_type": "VARCHAR2(4)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.STATE_CD"
+     ]
+    },
+    {
+     "source": "ZIP",
+     "target": "zip",
+     "source_type": "VARCHAR2(12)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.ZIP"
+     ]
+    },
+    {
+     "source": "ZIP4",
+     "target": "zip4",
+     "source_type": "VARCHAR2(6)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.ZIP4"
+     ]
+    },
+    {
+     "source": "COUNTRY_CD",
+     "target": "country_cd",
+     "source_type": "VARCHAR2(4)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.COUNTRY_CD"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_1",
+     "target": "mail_addr_line_1",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAIL_ADDR_LINE_1"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_2",
+     "target": "mail_addr_line_2",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAIL_ADDR_LINE_2"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_3",
+     "target": "mail_addr_line_3",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAIL_ADDR_LINE_3"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_4",
+     "target": "mail_addr_line_4",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAIL_ADDR_LINE_4"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_5",
+     "target": "mail_addr_line_5",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAIL_ADDR_LINE_5"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_6",
+     "target": "mail_addr_line_6",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAIL_ADDR_LINE_6"
+     ]
+    },
+    {
+     "source": "MAIL_CITY",
+     "target": "mail_city",
+     "source_type": "VARCHAR2(80)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAIL_CITY"
+     ]
+    },
+    {
+     "source": "MAIL_STATE_CD",
+     "target": "mail_state_cd",
+     "source_type": "VARCHAR2(4)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAIL_STATE_CD"
+     ]
+    },
+    {
+     "source": "MAIL_ZIP",
+     "target": "mail_zip",
+     "source_type": "VARCHAR2(12)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAIL_ZIP"
+     ]
+    },
+    {
+     "source": "PHONE1",
+     "target": "phone1",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PHONE1"
+     ]
+    },
+    {
+     "source": "PHONE2",
+     "target": "phone2",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PHONE2"
+     ]
+    },
+    {
+     "source": "PHONE3",
+     "target": "phone3",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PHONE3"
+     ]
+    },
+    {
+     "source": "PHONE4",
+     "target": "phone4",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PHONE4"
+     ]
+    },
+    {
+     "source": "PHONE1_TYPE_CD",
+     "target": "phone1_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PHONE1_TYPE_CD"
+     ]
+    },
+    {
+     "source": "PHONE2_TYPE_CD",
+     "target": "phone2_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PHONE2_TYPE_CD"
+     ]
+    },
+    {
+     "source": "PHONE3_TYPE_CD",
+     "target": "phone3_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PHONE3_TYPE_CD"
+     ]
+    },
+    {
+     "source": "PHONE4_TYPE_CD",
+     "target": "phone4_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PHONE4_TYPE_CD"
+     ]
+    },
+    {
+     "source": "FAX",
+     "target": "fax",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FAX"
+     ]
+    },
+    {
+     "source": "EMAIL_1",
+     "target": "email_1",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.EMAIL_1"
+     ]
+    },
+    {
+     "source": "EMAIL_2",
+     "target": "email_2",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.EMAIL_2"
+     ]
+    },
+    {
+     "source": "EMAIL_3",
+     "target": "email_3",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.EMAIL_3"
+     ]
+    },
+    {
+     "source": "SIGNUP_DT",
+     "target": "signup_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.SIGNUP_DT"
+     ]
+    },
+    {
+     "source": "LAST_ACTIVITY_DT",
+     "target": "last_activity_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.LAST_ACTIVITY_DT"
+     ]
+    },
+    {
+     "source": "LAST_INVOICE_DT",
+     "target": "last_invoice_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.LAST_INVOICE_DT"
+     ]
+    },
+    {
+     "source": "LAST_PAYMENT_DT",
+     "target": "last_payment_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.LAST_PAYMENT_DT"
+     ]
+    },
+    {
+     "source": "TERMINATE_DT",
+     "target": "terminate_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.TERMINATE_DT"
+     ]
+    },
+    {
+     "source": "STATUS_CD",
+     "target": "status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.STATUS_CD"
+     ]
+    },
+    {
+     "source": "SUB_STATUS_CD",
+     "target": "sub_status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.SUB_STATUS_CD"
+     ]
+    },
+    {
+     "source": "CUST_TYPE_CD",
+     "target": "cust_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CUST_TYPE_CD"
+     ]
+    },
+    {
+     "source": "SEGMENT_CD",
+     "target": "segment_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.SEGMENT_CD"
+     ]
+    },
+    {
+     "source": "REGION_CD",
+     "target": "region_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.REGION_CD"
+     ]
+    },
+    {
+     "source": "TERRITORY_CD",
+     "target": "territory_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.TERRITORY_CD"
+     ]
+    },
+    {
+     "source": "CHANNEL_CD",
+     "target": "channel_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CHANNEL_CD"
+     ]
+    },
+    {
+     "source": "RATE_CLASS_CD",
+     "target": "rate_class_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.RATE_CLASS_CD"
+     ]
+    },
+    {
+     "source": "TAX_EXEMPT_YN",
+     "target": "tax_exempt_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.TAX_EXEMPT_YN"
+     ]
+    },
+    {
+     "source": "CREDIT_HOLD_YN",
+     "target": "credit_hold_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CREDIT_HOLD_YN"
+     ]
+    },
+    {
+     "source": "DUNNING_EXEMPT_YN",
+     "target": "dunning_exempt_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.DUNNING_EXEMPT_YN"
+     ]
+    },
+    {
+     "source": "VIP_YN",
+     "target": "vip_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.VIP_YN"
+     ]
+    },
+    {
+     "source": "CUR_BAL_AMT",
+     "target": "cur_bal_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CUR_BAL_AMT"
+     ]
+    },
+    {
+     "source": "PAST_DUE_AMT",
+     "target": "past_due_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PAST_DUE_AMT"
+     ]
+    },
+    {
+     "source": "YTD_BILLED_AMT",
+     "target": "ytd_billed_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.YTD_BILLED_AMT"
+     ]
+    },
+    {
+     "source": "LTD_BILLED_AMT",
+     "target": "ltd_billed_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.LTD_BILLED_AMT"
+     ]
+    },
+    {
+     "source": "YTD_PAID_AMT",
+     "target": "ytd_paid_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.YTD_PAID_AMT"
+     ]
+    },
+    {
+     "source": "CREDIT_LIMIT_AMT",
+     "target": "credit_limit_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CREDIT_LIMIT_AMT"
+     ]
+    },
+    {
+     "source": "RELATED_ACCT_IDS",
+     "target": "related_acct_ids",
+     "source_type": "VARCHAR2(2000)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.RELATED_ACCT_IDS"
+     ]
+    },
+    {
+     "source": "CHILD_ACCT_IDS",
+     "target": "child_acct_ids",
+     "source_type": "VARCHAR2(2000)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CHILD_ACCT_IDS"
+     ]
+    },
+    {
+     "source": "PROMO_CODES_CSV",
+     "target": "promo_codes_csv",
+     "source_type": "VARCHAR2(1000)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.PROMO_CODES_CSV"
+     ]
+    },
+    {
+     "source": "CONTACT_NOTES",
+     "target": "contact_notes",
+     "source_type": "VARCHAR2(4000)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CONTACT_NOTES"
+     ]
+    },
+    {
+     "source": "LEGACY_SYS_KEY",
+     "target": "legacy_sys_key",
+     "source_type": "VARCHAR2(50)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.LEGACY_SYS_KEY"
+     ]
+    },
+    {
+     "source": "MAINFRAME_ACCT_NO",
+     "target": "mainframe_acct_no",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.MAINFRAME_ACCT_NO"
+     ]
+    },
+    {
+     "source": "CONVERSION_BATCH_NO",
+     "target": "conversion_batch_no",
+     "source_type": "NUMBER(8,0)",
+     "target_type": "DECIMAL(8,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CONVERSION_BATCH_NO"
+     ]
+    },
+    {
+     "source": "FLAG_01",
+     "target": "flag_01",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_01"
+     ]
+    },
+    {
+     "source": "FLAG_02",
+     "target": "flag_02",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_02"
+     ]
+    },
+    {
+     "source": "FLAG_03",
+     "target": "flag_03",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_03"
+     ]
+    },
+    {
+     "source": "FLAG_04",
+     "target": "flag_04",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_04"
+     ]
+    },
+    {
+     "source": "FLAG_05",
+     "target": "flag_05",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_05"
+     ]
+    },
+    {
+     "source": "FLAG_06",
+     "target": "flag_06",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_06"
+     ]
+    },
+    {
+     "source": "FLAG_07",
+     "target": "flag_07",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_07"
+     ]
+    },
+    {
+     "source": "FLAG_08",
+     "target": "flag_08",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_08"
+     ]
+    },
+    {
+     "source": "FLAG_09",
+     "target": "flag_09",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_09"
+     ]
+    },
+    {
+     "source": "FLAG_10",
+     "target": "flag_10",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_10"
+     ]
+    },
+    {
+     "source": "FLAG_11",
+     "target": "flag_11",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_11"
+     ]
+    },
+    {
+     "source": "FLAG_12",
+     "target": "flag_12",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_12"
+     ]
+    },
+    {
+     "source": "FLAG_13",
+     "target": "flag_13",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_13"
+     ]
+    },
+    {
+     "source": "FLAG_14",
+     "target": "flag_14",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_14"
+     ]
+    },
+    {
+     "source": "FLAG_15",
+     "target": "flag_15",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_15"
+     ]
+    },
+    {
+     "source": "FLAG_16",
+     "target": "flag_16",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_16"
+     ]
+    },
+    {
+     "source": "FLAG_17",
+     "target": "flag_17",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_17"
+     ]
+    },
+    {
+     "source": "FLAG_18",
+     "target": "flag_18",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_18"
+     ]
+    },
+    {
+     "source": "FLAG_19",
+     "target": "flag_19",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_19"
+     ]
+    },
+    {
+     "source": "FLAG_20",
+     "target": "flag_20",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.FLAG_20"
+     ]
+    },
+    {
+     "source": "UDF_01",
+     "target": "udf_01",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_01"
+     ]
+    },
+    {
+     "source": "UDF_02",
+     "target": "udf_02",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_02"
+     ]
+    },
+    {
+     "source": "UDF_03",
+     "target": "udf_03",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_03"
+     ]
+    },
+    {
+     "source": "UDF_04",
+     "target": "udf_04",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_04"
+     ]
+    },
+    {
+     "source": "UDF_05",
+     "target": "udf_05",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_05"
+     ]
+    },
+    {
+     "source": "UDF_06",
+     "target": "udf_06",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_06"
+     ]
+    },
+    {
+     "source": "UDF_07",
+     "target": "udf_07",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_07"
+     ]
+    },
+    {
+     "source": "UDF_08",
+     "target": "udf_08",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_08"
+     ]
+    },
+    {
+     "source": "UDF_09",
+     "target": "udf_09",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_09"
+     ]
+    },
+    {
+     "source": "UDF_10",
+     "target": "udf_10",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_10"
+     ]
+    },
+    {
+     "source": "UDF_11",
+     "target": "udf_11",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_11"
+     ]
+    },
+    {
+     "source": "UDF_12",
+     "target": "udf_12",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_12"
+     ]
+    },
+    {
+     "source": "UDF_13",
+     "target": "udf_13",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_13"
+     ]
+    },
+    {
+     "source": "UDF_14",
+     "target": "udf_14",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_14"
+     ]
+    },
+    {
+     "source": "UDF_15",
+     "target": "udf_15",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_15"
+     ]
+    },
+    {
+     "source": "UDF_16",
+     "target": "udf_16",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_16"
+     ]
+    },
+    {
+     "source": "UDF_17",
+     "target": "udf_17",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_17"
+     ]
+    },
+    {
+     "source": "UDF_18",
+     "target": "udf_18",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_18"
+     ]
+    },
+    {
+     "source": "UDF_19",
+     "target": "udf_19",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_19"
+     ]
+    },
+    {
+     "source": "UDF_20",
+     "target": "udf_20",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_20"
+     ]
+    },
+    {
+     "source": "UDF_21",
+     "target": "udf_21",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_21"
+     ]
+    },
+    {
+     "source": "UDF_22",
+     "target": "udf_22",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_22"
+     ]
+    },
+    {
+     "source": "UDF_23",
+     "target": "udf_23",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_23"
+     ]
+    },
+    {
+     "source": "UDF_24",
+     "target": "udf_24",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_24"
+     ]
+    },
+    {
+     "source": "UDF_25",
+     "target": "udf_25",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_25"
+     ]
+    },
+    {
+     "source": "UDF_26",
+     "target": "udf_26",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_26"
+     ]
+    },
+    {
+     "source": "UDF_27",
+     "target": "udf_27",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_27"
+     ]
+    },
+    {
+     "source": "UDF_28",
+     "target": "udf_28",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_28"
+     ]
+    },
+    {
+     "source": "UDF_29",
+     "target": "udf_29",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_29"
+     ]
+    },
+    {
+     "source": "UDF_30",
+     "target": "udf_30",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_30"
+     ]
+    },
+    {
+     "source": "UDF_31",
+     "target": "udf_31",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_31"
+     ]
+    },
+    {
+     "source": "UDF_32",
+     "target": "udf_32",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_32"
+     ]
+    },
+    {
+     "source": "UDF_33",
+     "target": "udf_33",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_33"
+     ]
+    },
+    {
+     "source": "UDF_34",
+     "target": "udf_34",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_34"
+     ]
+    },
+    {
+     "source": "UDF_35",
+     "target": "udf_35",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_35"
+     ]
+    },
+    {
+     "source": "UDF_36",
+     "target": "udf_36",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_36"
+     ]
+    },
+    {
+     "source": "UDF_37",
+     "target": "udf_37",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_37"
+     ]
+    },
+    {
+     "source": "UDF_38",
+     "target": "udf_38",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_38"
+     ]
+    },
+    {
+     "source": "UDF_39",
+     "target": "udf_39",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_39"
+     ]
+    },
+    {
+     "source": "UDF_40",
+     "target": "udf_40",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_40"
+     ]
+    },
+    {
+     "source": "UDF_AMT_01",
+     "target": "udf_amt_01",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_01"
+     ]
+    },
+    {
+     "source": "UDF_AMT_02",
+     "target": "udf_amt_02",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_02"
+     ]
+    },
+    {
+     "source": "UDF_AMT_03",
+     "target": "udf_amt_03",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_03"
+     ]
+    },
+    {
+     "source": "UDF_AMT_04",
+     "target": "udf_amt_04",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_04"
+     ]
+    },
+    {
+     "source": "UDF_AMT_05",
+     "target": "udf_amt_05",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_05"
+     ]
+    },
+    {
+     "source": "UDF_AMT_06",
+     "target": "udf_amt_06",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_06"
+     ]
+    },
+    {
+     "source": "UDF_AMT_07",
+     "target": "udf_amt_07",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_07"
+     ]
+    },
+    {
+     "source": "UDF_AMT_08",
+     "target": "udf_amt_08",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_08"
+     ]
+    },
+    {
+     "source": "UDF_AMT_09",
+     "target": "udf_amt_09",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_09"
+     ]
+    },
+    {
+     "source": "UDF_AMT_10",
+     "target": "udf_amt_10",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_AMT_10"
+     ]
+    },
+    {
+     "source": "UDF_DT_01",
+     "target": "udf_dt_01",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_01"
+     ]
+    },
+    {
+     "source": "UDF_DT_02",
+     "target": "udf_dt_02",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_02"
+     ]
+    },
+    {
+     "source": "UDF_DT_03",
+     "target": "udf_dt_03",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_03"
+     ]
+    },
+    {
+     "source": "UDF_DT_04",
+     "target": "udf_dt_04",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_04"
+     ]
+    },
+    {
+     "source": "UDF_DT_05",
+     "target": "udf_dt_05",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_05"
+     ]
+    },
+    {
+     "source": "UDF_DT_06",
+     "target": "udf_dt_06",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_06"
+     ]
+    },
+    {
+     "source": "UDF_DT_07",
+     "target": "udf_dt_07",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_07"
+     ]
+    },
+    {
+     "source": "UDF_DT_08",
+     "target": "udf_dt_08",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_08"
+     ]
+    },
+    {
+     "source": "UDF_DT_09",
+     "target": "udf_dt_09",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_09"
+     ]
+    },
+    {
+     "source": "UDF_DT_10",
+     "target": "udf_dt_10",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UDF_DT_10"
+     ]
+    },
+    {
+     "source": "CREATED_BY",
+     "target": "created_by",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CREATED_BY"
+     ]
+    },
+    {
+     "source": "CREATED_DT",
+     "target": "created_dt",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP_NTZ",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.CREATED_DT"
+     ]
+    },
+    {
+     "source": "UPDATED_BY",
+     "target": "updated_by",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UPDATED_BY"
+     ]
+    },
+    {
+     "source": "UPDATED_DT",
+     "target": "updated_dt",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP_NTZ",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.UPDATED_DT"
+     ]
+    },
+    {
+     "source": "ROW_VERSION_NO",
+     "target": "row_version_no",
+     "source_type": "NUMBER(8,0)",
+     "target_type": "DECIMAL(8,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:22",
+      "census:dba_tab_columns:CUSTOMER_MASTER.ROW_VERSION_NO"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 25001
+  },
+  {
+   "object": "ow_tp.billing.customer_master_hist",
+   "root_table": "OW_BILLING.CUSTOMER_MASTER_HIST",
+   "key": {
+    "source": [
+     "HIST_ID"
+    ],
+    "target": [
+     "hist_id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "HIST_ID",
+     "target": "hist_id",
+     "source_type": "NUMBER(12,0)",
+     "target_type": "DECIMAL(12,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.HIST_ID"
+     ]
+    },
+    {
+     "source": "HIST_DT",
+     "target": "hist_dt",
+     "source_type": "VARCHAR2(20)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.HIST_DT"
+     ]
+    },
+    {
+     "source": "HIST_OP",
+     "target": "hist_op",
+     "source_type": "VARCHAR2(3)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.HIST_OP"
+     ]
+    },
+    {
+     "source": "CUST_ID",
+     "target": "cust_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CUST_ID"
+     ]
+    },
+    {
+     "source": "CUST_SEQ_NO",
+     "target": "cust_seq_no",
+     "source_type": "NUMBER(12,0)",
+     "target_type": "DECIMAL(12,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CUST_SEQ_NO"
+     ]
+    },
+    {
+     "source": "TENANT_ID",
+     "target": "tenant_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.TENANT_ID"
+     ]
+    },
+    {
+     "source": "CUST_NO",
+     "target": "cust_no",
+     "source_type": "VARCHAR2(20)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CUST_NO"
+     ]
+    },
+    {
+     "source": "CUST_NAME",
+     "target": "cust_name",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CUST_NAME"
+     ]
+    },
+    {
+     "source": "CUST_NAME_UPPER",
+     "target": "cust_name_upper",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CUST_NAME_UPPER"
+     ]
+    },
+    {
+     "source": "LEGAL_NAME",
+     "target": "legal_name",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.LEGAL_NAME"
+     ]
+    },
+    {
+     "source": "DBA_NAME",
+     "target": "dba_name",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.DBA_NAME"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_1",
+     "target": "addr_line_1",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.ADDR_LINE_1"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_2",
+     "target": "addr_line_2",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.ADDR_LINE_2"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_3",
+     "target": "addr_line_3",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.ADDR_LINE_3"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_4",
+     "target": "addr_line_4",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.ADDR_LINE_4"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_5",
+     "target": "addr_line_5",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.ADDR_LINE_5"
+     ]
+    },
+    {
+     "source": "ADDR_LINE_6",
+     "target": "addr_line_6",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.ADDR_LINE_6"
+     ]
+    },
+    {
+     "source": "CITY",
+     "target": "city",
+     "source_type": "VARCHAR2(80)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CITY"
+     ]
+    },
+    {
+     "source": "STATE_CD",
+     "target": "state_cd",
+     "source_type": "VARCHAR2(4)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.STATE_CD"
+     ]
+    },
+    {
+     "source": "ZIP",
+     "target": "zip",
+     "source_type": "VARCHAR2(12)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.ZIP"
+     ]
+    },
+    {
+     "source": "ZIP4",
+     "target": "zip4",
+     "source_type": "VARCHAR2(6)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.ZIP4"
+     ]
+    },
+    {
+     "source": "COUNTRY_CD",
+     "target": "country_cd",
+     "source_type": "VARCHAR2(4)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.COUNTRY_CD"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_1",
+     "target": "mail_addr_line_1",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_1"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_2",
+     "target": "mail_addr_line_2",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_2"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_3",
+     "target": "mail_addr_line_3",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_3"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_4",
+     "target": "mail_addr_line_4",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_4"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_5",
+     "target": "mail_addr_line_5",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_5"
+     ]
+    },
+    {
+     "source": "MAIL_ADDR_LINE_6",
+     "target": "mail_addr_line_6",
+     "source_type": "VARCHAR2(120)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAIL_ADDR_LINE_6"
+     ]
+    },
+    {
+     "source": "MAIL_CITY",
+     "target": "mail_city",
+     "source_type": "VARCHAR2(80)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAIL_CITY"
+     ]
+    },
+    {
+     "source": "MAIL_STATE_CD",
+     "target": "mail_state_cd",
+     "source_type": "VARCHAR2(4)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAIL_STATE_CD"
+     ]
+    },
+    {
+     "source": "MAIL_ZIP",
+     "target": "mail_zip",
+     "source_type": "VARCHAR2(12)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAIL_ZIP"
+     ]
+    },
+    {
+     "source": "PHONE1",
+     "target": "phone1",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PHONE1"
+     ]
+    },
+    {
+     "source": "PHONE2",
+     "target": "phone2",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PHONE2"
+     ]
+    },
+    {
+     "source": "PHONE3",
+     "target": "phone3",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PHONE3"
+     ]
+    },
+    {
+     "source": "PHONE4",
+     "target": "phone4",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PHONE4"
+     ]
+    },
+    {
+     "source": "PHONE1_TYPE_CD",
+     "target": "phone1_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PHONE1_TYPE_CD"
+     ]
+    },
+    {
+     "source": "PHONE2_TYPE_CD",
+     "target": "phone2_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PHONE2_TYPE_CD"
+     ]
+    },
+    {
+     "source": "PHONE3_TYPE_CD",
+     "target": "phone3_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PHONE3_TYPE_CD"
+     ]
+    },
+    {
+     "source": "PHONE4_TYPE_CD",
+     "target": "phone4_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PHONE4_TYPE_CD"
+     ]
+    },
+    {
+     "source": "FAX",
+     "target": "fax",
+     "source_type": "VARCHAR2(25)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FAX"
+     ]
+    },
+    {
+     "source": "EMAIL_1",
+     "target": "email_1",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.EMAIL_1"
+     ]
+    },
+    {
+     "source": "EMAIL_2",
+     "target": "email_2",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.EMAIL_2"
+     ]
+    },
+    {
+     "source": "EMAIL_3",
+     "target": "email_3",
+     "source_type": "VARCHAR2(200)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.EMAIL_3"
+     ]
+    },
+    {
+     "source": "SIGNUP_DT",
+     "target": "signup_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.SIGNUP_DT"
+     ]
+    },
+    {
+     "source": "LAST_ACTIVITY_DT",
+     "target": "last_activity_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.LAST_ACTIVITY_DT"
+     ]
+    },
+    {
+     "source": "LAST_INVOICE_DT",
+     "target": "last_invoice_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.LAST_INVOICE_DT"
+     ]
+    },
+    {
+     "source": "LAST_PAYMENT_DT",
+     "target": "last_payment_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.LAST_PAYMENT_DT"
+     ]
+    },
+    {
+     "source": "TERMINATE_DT",
+     "target": "terminate_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.TERMINATE_DT"
+     ]
+    },
+    {
+     "source": "STATUS_CD",
+     "target": "status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.STATUS_CD"
+     ]
+    },
+    {
+     "source": "SUB_STATUS_CD",
+     "target": "sub_status_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.SUB_STATUS_CD"
+     ]
+    },
+    {
+     "source": "CUST_TYPE_CD",
+     "target": "cust_type_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CUST_TYPE_CD"
+     ]
+    },
+    {
+     "source": "SEGMENT_CD",
+     "target": "segment_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.SEGMENT_CD"
+     ]
+    },
+    {
+     "source": "REGION_CD",
+     "target": "region_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.REGION_CD"
+     ]
+    },
+    {
+     "source": "TERRITORY_CD",
+     "target": "territory_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.TERRITORY_CD"
+     ]
+    },
+    {
+     "source": "CHANNEL_CD",
+     "target": "channel_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CHANNEL_CD"
+     ]
+    },
+    {
+     "source": "RATE_CLASS_CD",
+     "target": "rate_class_cd",
+     "source_type": "NUMBER(4,0)",
+     "target_type": "DECIMAL(4,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.RATE_CLASS_CD"
+     ]
+    },
+    {
+     "source": "TAX_EXEMPT_YN",
+     "target": "tax_exempt_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.TAX_EXEMPT_YN"
+     ]
+    },
+    {
+     "source": "CREDIT_HOLD_YN",
+     "target": "credit_hold_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CREDIT_HOLD_YN"
+     ]
+    },
+    {
+     "source": "DUNNING_EXEMPT_YN",
+     "target": "dunning_exempt_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.DUNNING_EXEMPT_YN"
+     ]
+    },
+    {
+     "source": "VIP_YN",
+     "target": "vip_yn",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.VIP_YN"
+     ]
+    },
+    {
+     "source": "CUR_BAL_AMT",
+     "target": "cur_bal_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CUR_BAL_AMT"
+     ]
+    },
+    {
+     "source": "PAST_DUE_AMT",
+     "target": "past_due_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PAST_DUE_AMT"
+     ]
+    },
+    {
+     "source": "YTD_BILLED_AMT",
+     "target": "ytd_billed_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.YTD_BILLED_AMT"
+     ]
+    },
+    {
+     "source": "LTD_BILLED_AMT",
+     "target": "ltd_billed_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.LTD_BILLED_AMT"
+     ]
+    },
+    {
+     "source": "YTD_PAID_AMT",
+     "target": "ytd_paid_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.YTD_PAID_AMT"
+     ]
+    },
+    {
+     "source": "CREDIT_LIMIT_AMT",
+     "target": "credit_limit_amt",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CREDIT_LIMIT_AMT"
+     ]
+    },
+    {
+     "source": "RELATED_ACCT_IDS",
+     "target": "related_acct_ids",
+     "source_type": "VARCHAR2(2000)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.RELATED_ACCT_IDS"
+     ]
+    },
+    {
+     "source": "CHILD_ACCT_IDS",
+     "target": "child_acct_ids",
+     "source_type": "VARCHAR2(2000)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CHILD_ACCT_IDS"
+     ]
+    },
+    {
+     "source": "PROMO_CODES_CSV",
+     "target": "promo_codes_csv",
+     "source_type": "VARCHAR2(1000)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.PROMO_CODES_CSV"
+     ]
+    },
+    {
+     "source": "CONTACT_NOTES",
+     "target": "contact_notes",
+     "source_type": "VARCHAR2(4000)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CONTACT_NOTES"
+     ]
+    },
+    {
+     "source": "LEGACY_SYS_KEY",
+     "target": "legacy_sys_key",
+     "source_type": "VARCHAR2(50)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.LEGACY_SYS_KEY"
+     ]
+    },
+    {
+     "source": "MAINFRAME_ACCT_NO",
+     "target": "mainframe_acct_no",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.MAINFRAME_ACCT_NO"
+     ]
+    },
+    {
+     "source": "CONVERSION_BATCH_NO",
+     "target": "conversion_batch_no",
+     "source_type": "NUMBER(8,0)",
+     "target_type": "DECIMAL(8,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CONVERSION_BATCH_NO"
+     ]
+    },
+    {
+     "source": "FLAG_01",
+     "target": "flag_01",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_01"
+     ]
+    },
+    {
+     "source": "FLAG_02",
+     "target": "flag_02",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_02"
+     ]
+    },
+    {
+     "source": "FLAG_03",
+     "target": "flag_03",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_03"
+     ]
+    },
+    {
+     "source": "FLAG_04",
+     "target": "flag_04",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_04"
+     ]
+    },
+    {
+     "source": "FLAG_05",
+     "target": "flag_05",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_05"
+     ]
+    },
+    {
+     "source": "FLAG_06",
+     "target": "flag_06",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_06"
+     ]
+    },
+    {
+     "source": "FLAG_07",
+     "target": "flag_07",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_07"
+     ]
+    },
+    {
+     "source": "FLAG_08",
+     "target": "flag_08",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_08"
+     ]
+    },
+    {
+     "source": "FLAG_09",
+     "target": "flag_09",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_09"
+     ]
+    },
+    {
+     "source": "FLAG_10",
+     "target": "flag_10",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_10"
+     ]
+    },
+    {
+     "source": "FLAG_11",
+     "target": "flag_11",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_11"
+     ]
+    },
+    {
+     "source": "FLAG_12",
+     "target": "flag_12",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_12"
+     ]
+    },
+    {
+     "source": "FLAG_13",
+     "target": "flag_13",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_13"
+     ]
+    },
+    {
+     "source": "FLAG_14",
+     "target": "flag_14",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_14"
+     ]
+    },
+    {
+     "source": "FLAG_15",
+     "target": "flag_15",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_15"
+     ]
+    },
+    {
+     "source": "FLAG_16",
+     "target": "flag_16",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_16"
+     ]
+    },
+    {
+     "source": "FLAG_17",
+     "target": "flag_17",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_17"
+     ]
+    },
+    {
+     "source": "FLAG_18",
+     "target": "flag_18",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_18"
+     ]
+    },
+    {
+     "source": "FLAG_19",
+     "target": "flag_19",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_19"
+     ]
+    },
+    {
+     "source": "FLAG_20",
+     "target": "flag_20",
+     "source_type": "CHAR(1)",
+     "target_type": "STRING",
+     "rules": [
+      "rstrip_spaces",
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.FLAG_20"
+     ]
+    },
+    {
+     "source": "UDF_01",
+     "target": "udf_01",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_01"
+     ]
+    },
+    {
+     "source": "UDF_02",
+     "target": "udf_02",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_02"
+     ]
+    },
+    {
+     "source": "UDF_03",
+     "target": "udf_03",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_03"
+     ]
+    },
+    {
+     "source": "UDF_04",
+     "target": "udf_04",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_04"
+     ]
+    },
+    {
+     "source": "UDF_05",
+     "target": "udf_05",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_05"
+     ]
+    },
+    {
+     "source": "UDF_06",
+     "target": "udf_06",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_06"
+     ]
+    },
+    {
+     "source": "UDF_07",
+     "target": "udf_07",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_07"
+     ]
+    },
+    {
+     "source": "UDF_08",
+     "target": "udf_08",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_08"
+     ]
+    },
+    {
+     "source": "UDF_09",
+     "target": "udf_09",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_09"
+     ]
+    },
+    {
+     "source": "UDF_10",
+     "target": "udf_10",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_10"
+     ]
+    },
+    {
+     "source": "UDF_11",
+     "target": "udf_11",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_11"
+     ]
+    },
+    {
+     "source": "UDF_12",
+     "target": "udf_12",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_12"
+     ]
+    },
+    {
+     "source": "UDF_13",
+     "target": "udf_13",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_13"
+     ]
+    },
+    {
+     "source": "UDF_14",
+     "target": "udf_14",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_14"
+     ]
+    },
+    {
+     "source": "UDF_15",
+     "target": "udf_15",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_15"
+     ]
+    },
+    {
+     "source": "UDF_16",
+     "target": "udf_16",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_16"
+     ]
+    },
+    {
+     "source": "UDF_17",
+     "target": "udf_17",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_17"
+     ]
+    },
+    {
+     "source": "UDF_18",
+     "target": "udf_18",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_18"
+     ]
+    },
+    {
+     "source": "UDF_19",
+     "target": "udf_19",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_19"
+     ]
+    },
+    {
+     "source": "UDF_20",
+     "target": "udf_20",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_20"
+     ]
+    },
+    {
+     "source": "UDF_21",
+     "target": "udf_21",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_21"
+     ]
+    },
+    {
+     "source": "UDF_22",
+     "target": "udf_22",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_22"
+     ]
+    },
+    {
+     "source": "UDF_23",
+     "target": "udf_23",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_23"
+     ]
+    },
+    {
+     "source": "UDF_24",
+     "target": "udf_24",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_24"
+     ]
+    },
+    {
+     "source": "UDF_25",
+     "target": "udf_25",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_25"
+     ]
+    },
+    {
+     "source": "UDF_26",
+     "target": "udf_26",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_26"
+     ]
+    },
+    {
+     "source": "UDF_27",
+     "target": "udf_27",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_27"
+     ]
+    },
+    {
+     "source": "UDF_28",
+     "target": "udf_28",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_28"
+     ]
+    },
+    {
+     "source": "UDF_29",
+     "target": "udf_29",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_29"
+     ]
+    },
+    {
+     "source": "UDF_30",
+     "target": "udf_30",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_30"
+     ]
+    },
+    {
+     "source": "UDF_31",
+     "target": "udf_31",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_31"
+     ]
+    },
+    {
+     "source": "UDF_32",
+     "target": "udf_32",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_32"
+     ]
+    },
+    {
+     "source": "UDF_33",
+     "target": "udf_33",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_33"
+     ]
+    },
+    {
+     "source": "UDF_34",
+     "target": "udf_34",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_34"
+     ]
+    },
+    {
+     "source": "UDF_35",
+     "target": "udf_35",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_35"
+     ]
+    },
+    {
+     "source": "UDF_36",
+     "target": "udf_36",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_36"
+     ]
+    },
+    {
+     "source": "UDF_37",
+     "target": "udf_37",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_37"
+     ]
+    },
+    {
+     "source": "UDF_38",
+     "target": "udf_38",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_38"
+     ]
+    },
+    {
+     "source": "UDF_39",
+     "target": "udf_39",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_39"
+     ]
+    },
+    {
+     "source": "UDF_40",
+     "target": "udf_40",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_40"
+     ]
+    },
+    {
+     "source": "UDF_AMT_01",
+     "target": "udf_amt_01",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_01"
+     ]
+    },
+    {
+     "source": "UDF_AMT_02",
+     "target": "udf_amt_02",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_02"
+     ]
+    },
+    {
+     "source": "UDF_AMT_03",
+     "target": "udf_amt_03",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_03"
+     ]
+    },
+    {
+     "source": "UDF_AMT_04",
+     "target": "udf_amt_04",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_04"
+     ]
+    },
+    {
+     "source": "UDF_AMT_05",
+     "target": "udf_amt_05",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_05"
+     ]
+    },
+    {
+     "source": "UDF_AMT_06",
+     "target": "udf_amt_06",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_06"
+     ]
+    },
+    {
+     "source": "UDF_AMT_07",
+     "target": "udf_amt_07",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_07"
+     ]
+    },
+    {
+     "source": "UDF_AMT_08",
+     "target": "udf_amt_08",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_08"
+     ]
+    },
+    {
+     "source": "UDF_AMT_09",
+     "target": "udf_amt_09",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_09"
+     ]
+    },
+    {
+     "source": "UDF_AMT_10",
+     "target": "udf_amt_10",
+     "source_type": "NUMBER(14,2)",
+     "target_type": "DECIMAL(14,2)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_AMT_10"
+     ]
+    },
+    {
+     "source": "UDF_DT_01",
+     "target": "udf_dt_01",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_01"
+     ]
+    },
+    {
+     "source": "UDF_DT_02",
+     "target": "udf_dt_02",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_02"
+     ]
+    },
+    {
+     "source": "UDF_DT_03",
+     "target": "udf_dt_03",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_03"
+     ]
+    },
+    {
+     "source": "UDF_DT_04",
+     "target": "udf_dt_04",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_04"
+     ]
+    },
+    {
+     "source": "UDF_DT_05",
+     "target": "udf_dt_05",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_05"
+     ]
+    },
+    {
+     "source": "UDF_DT_06",
+     "target": "udf_dt_06",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_06"
+     ]
+    },
+    {
+     "source": "UDF_DT_07",
+     "target": "udf_dt_07",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_07"
+     ]
+    },
+    {
+     "source": "UDF_DT_08",
+     "target": "udf_dt_08",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_08"
+     ]
+    },
+    {
+     "source": "UDF_DT_09",
+     "target": "udf_dt_09",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_09"
+     ]
+    },
+    {
+     "source": "UDF_DT_10",
+     "target": "udf_dt_10",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UDF_DT_10"
+     ]
+    },
+    {
+     "source": "CREATED_BY",
+     "target": "created_by",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CREATED_BY"
+     ]
+    },
+    {
+     "source": "CREATED_DT",
+     "target": "created_dt",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP_NTZ",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.CREATED_DT"
+     ]
+    },
+    {
+     "source": "UPDATED_BY",
+     "target": "updated_by",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UPDATED_BY"
+     ]
+    },
+    {
+     "source": "UPDATED_DT",
+     "target": "updated_dt",
+     "source_type": "DATE",
+     "target_type": "TIMESTAMP_NTZ",
+     "rules": [
+      "datetime_utc_truncate_ms"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.UPDATED_DT"
+     ]
+    },
+    {
+     "source": "ROW_VERSION_NO",
+     "target": "row_version_no",
+     "source_type": "NUMBER(8,0)",
+     "target_type": "DECIMAL(8,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:181",
+      "census:dba_tab_columns:CUSTOMER_MASTER_HIST.ROW_VERSION_NO"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": null
+  },
+  {
+   "object": "ow_tp.billing.entity_attr_value",
+   "root_table": "OW_BILLING.ENTITY_ATTR_VALUE",
+   "key": {
+    "source": [
+     "EAV_ID"
+    ],
+    "target": [
+     "eav_id"
+    ]
+   },
+   "fields": [
+    {
+     "source": "EAV_ID",
+     "target": "eav_id",
+     "source_type": "NUMBER(14,0)",
+     "target_type": "DECIMAL(14,0)",
+     "rules": [],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:378",
+      "census:dba_tab_columns:ENTITY_ATTR_VALUE.EAV_ID"
+     ]
+    },
+    {
+     "source": "ENTITY_TYPE",
+     "target": "entity_type",
+     "source_type": "VARCHAR2(30)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:378",
+      "census:dba_tab_columns:ENTITY_ATTR_VALUE.ENTITY_TYPE"
+     ]
+    },
+    {
+     "source": "ENTITY_ID",
+     "target": "entity_id",
+     "source_type": "VARCHAR2(36)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:378",
+      "census:dba_tab_columns:ENTITY_ATTR_VALUE.ENTITY_ID"
+     ]
+    },
+    {
+     "source": "ATTR_NAME",
+     "target": "attr_name",
+     "source_type": "VARCHAR2(100)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:378",
+      "census:dba_tab_columns:ENTITY_ATTR_VALUE.ATTR_NAME"
+     ]
+    },
+    {
+     "source": "ATTR_VALUE",
+     "target": "attr_value",
+     "source_type": "VARCHAR2(4000)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:378",
+      "census:dba_tab_columns:ENTITY_ATTR_VALUE.ATTR_VALUE"
+     ]
+    },
+    {
+     "source": "ATTR_TYPE",
+     "target": "attr_type",
+     "source_type": "VARCHAR2(10)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:378",
+      "census:dba_tab_columns:ENTITY_ATTR_VALUE.ATTR_TYPE"
+     ]
+    },
+    {
+     "source": "CREATED_DT",
+     "target": "created_dt",
+     "source_type": "VARCHAR2(9)",
+     "target_type": "STRING",
+     "rules": [
+      "empty_string_is_null"
+     ],
+     "evidence": [
+      "services/legacy-billing/db/oracle/schema/02_horror.sql:378",
+      "census:dba_tab_columns:ENTITY_ATTR_VALUE.CREATED_DT"
+     ]
+    }
+   ],
+   "grading": "full",
+   "row_count_stats": 8337
+  }
+ ],
+ "rerun_posture": "required"
+}

@@ -1,0 +1,398 @@
+{
+ "version": 1,
+ "source": {
+  "family": "oracle",
+  "schema": "OW_BILLING",
+  "endpoint": "44.213.30.5:1521/FREEPDB1",
+  "principal_secret": "OW_TP_ORACLE_RO_DSN"
+ },
+ "objects": [
+  {
+   "name": "JOB_NIGHTLY_DUNNING",
+   "kind": "JOB",
+   "status": "VALID"
+  },
+  {
+   "name": "JOB_PURGE_AUDIT_LOG",
+   "kind": "JOB",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_DUNNING.FN_OVERDUE_ACCOUNTS",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_DUNNING.SP_SCHEDULE_DUNNING",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_DUNNING.SP_SUSPEND_OVERDUE",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_INVOICING.COMPUTE_PREVIEW",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_INVOICING.FN_INVOICE_PREVIEW",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_INVOICING.FN_INVOICE_LINES",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_INVOICING.SP_ISSUE_INVOICE",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_OW_UTIL.F_MD5_UUID",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_OW_UTIL.F_CODE_DESC",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_OW_UTIL.F_DT2STR",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_OW_UTIL.F_STR2DT",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_OW_UTIL.LOG_MSG",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_PLANS.FN_LIST_PLANS",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_PLANS.FN_ENTITLEMENT",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_PLANS.SP_CHANGE_PLAN",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_RATING.COMPUTE_RATING",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_RATING.FN_USAGE_RATING",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_RATING.FN_USAGE_SUMMARY",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.PKG_RATING.SP_FINALIZE_RATING",
+   "kind": "PACKAGE_ROUTINE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.SEQ_BILLING_AUDIT_LOG",
+   "kind": "SEQUENCE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.SEQ_CUSTOMER_MASTER",
+   "kind": "SEQUENCE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.SEQ_CUSTOMER_MASTER_HIST",
+   "kind": "SEQUENCE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.SEQ_ENTITY_ATTR_VALUE",
+   "kind": "SEQUENCE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.SEQ_SUBSCRIPTIONS_HIST",
+   "kind": "SEQUENCE",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.BILLING_AUDIT_LOG",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": null
+  },
+  {
+   "name": "OW_BILLING.CODES",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 32
+  },
+  {
+   "name": "OW_BILLING.CREDIT_NOTES",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 5
+  },
+  {
+   "name": "OW_BILLING.CUSTOMER_MASTER",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 25001
+  },
+  {
+   "name": "OW_BILLING.CUSTOMER_MASTER_HIST",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": null
+  },
+  {
+   "name": "OW_BILLING.DUNNING_ATTEMPTS",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 1
+  },
+  {
+   "name": "OW_BILLING.ENTITY_ATTR_VALUE",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 8337
+  },
+  {
+   "name": "OW_BILLING.FIXTURE_META",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 2
+  },
+  {
+   "name": "OW_BILLING.INVOICES",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 4
+  },
+  {
+   "name": "OW_BILLING.INVOICE_HEADER",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 18750
+  },
+  {
+   "name": "OW_BILLING.INVOICE_LINE",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 150000
+  },
+  {
+   "name": "OW_BILLING.INVOICE_LINES",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 4
+  },
+  {
+   "name": "OW_BILLING.NOTIFICATIONS",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 1
+  },
+  {
+   "name": "OW_BILLING.PLANS",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 3
+  },
+  {
+   "name": "OW_BILLING.RATING_PERIODS",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 3
+  },
+  {
+   "name": "OW_BILLING.RATING_RESULTS",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 3
+  },
+  {
+   "name": "OW_BILLING.SUBSCRIPTIONS",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 70
+  },
+  {
+   "name": "OW_BILLING.SUBSCRIPTIONS_HIST",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": null
+  },
+  {
+   "name": "OW_BILLING.TENANTS",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 70
+  },
+  {
+   "name": "OW_BILLING.USAGE_EVENTS",
+   "kind": "TABLE",
+   "status": "VALID",
+   "num_rows_stats": 817
+  },
+  {
+   "name": "OW_BILLING.TRG_BILLING_AUDIT_LOG_ID",
+   "kind": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.TRG_CUSTOMER_MASTER_HIST",
+   "kind": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.TRG_CUSTOMER_MASTER_SEQ",
+   "kind": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.TRG_ENTITY_ATTR_VALUE_SEQ",
+   "kind": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.TRG_SUBSCRIPTIONS_HIST",
+   "kind": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.TRG_SUB_NO_UNCANCEL",
+   "kind": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "name": "OW_BILLING.TRG_USAGE_EVENTS_CHECK",
+   "kind": "TRIGGER",
+   "status": "VALID"
+  },
+  {
+   "name": "etl/legacy-extra/tools/oracle_custbill_extract.py",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "etl/legacy-extra/jobs/sftp_ingest_poll.ksh",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "etl/legacy-extra/jobs/finance_excel_report.pl",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "etl/legacy-extra/run_all.sh",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "etl/scripts/analytics_daily.py",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "etl/scripts/user_activity_daily.py",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "services/analytics-service/batch/UsageRollupJob",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "etl/scripts/audit_archive_weekly.py",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "etl/scripts/search_reindex_weekly.py",
+   "kind": "BATCH_ASSET"
+  },
+  {
+   "name": "etl/scripts/storage_cleanup_daily.py",
+   "kind": "BATCH_ASSET"
+  }
+ ],
+ "triggers": [
+  {
+   "name": "OW_BILLING.TRG_BILLING_AUDIT_LOG_ID",
+   "table": "OW_BILLING.BILLING_AUDIT_LOG",
+   "event": "INSERT",
+   "status": "ENABLED"
+  },
+  {
+   "name": "OW_BILLING.TRG_CUSTOMER_MASTER_HIST",
+   "table": "OW_BILLING.CUSTOMER_MASTER",
+   "event": "UPDATE OR DELETE",
+   "status": "ENABLED"
+  },
+  {
+   "name": "OW_BILLING.TRG_CUSTOMER_MASTER_SEQ",
+   "table": "OW_BILLING.CUSTOMER_MASTER",
+   "event": "INSERT",
+   "status": "ENABLED"
+  },
+  {
+   "name": "OW_BILLING.TRG_ENTITY_ATTR_VALUE_SEQ",
+   "table": "OW_BILLING.ENTITY_ATTR_VALUE",
+   "event": "INSERT",
+   "status": "ENABLED"
+  },
+  {
+   "name": "OW_BILLING.TRG_SUBSCRIPTIONS_HIST",
+   "table": "OW_BILLING.SUBSCRIPTIONS",
+   "event": "UPDATE OR DELETE",
+   "status": "ENABLED"
+  },
+  {
+   "name": "OW_BILLING.TRG_SUB_NO_UNCANCEL",
+   "table": "OW_BILLING.SUBSCRIPTIONS",
+   "event": "UPDATE",
+   "status": "ENABLED"
+  },
+  {
+   "name": "OW_BILLING.TRG_USAGE_EVENTS_CHECK",
+   "table": "OW_BILLING.USAGE_EVENTS",
+   "event": "INSERT",
+   "status": "ENABLED"
+  }
+ ],
+ "scheduler_jobs": [
+  {
+   "name": "JOB_NIGHTLY_DUNNING",
+   "enabled": "FALSE",
+   "state": "DISABLED",
+   "repeat_interval": "FREQ=DAILY;BYHOUR=2;BYMINUTE=0"
+  },
+  {
+   "name": "JOB_PURGE_AUDIT_LOG",
+   "enabled": "FALSE",
+   "state": "DISABLED",
+   "repeat_interval": "FREQ=DAILY;BYHOUR=3;BYMINUTE=30"
+  }
+ ]
+}

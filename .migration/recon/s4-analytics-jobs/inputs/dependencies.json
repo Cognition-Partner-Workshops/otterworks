@@ -1,0 +1,19 @@
+{
+ "version": 1,
+ "slice": "s4-analytics-jobs",
+ "routines": {},
+ "jobs": {
+  "etl/scripts/analytics_daily.py": {
+   "writes": [],
+   "reads": []
+  },
+  "etl/scripts/user_activity_daily.py": {
+   "writes": [],
+   "reads": []
+  },
+  "services/analytics-service/batch/UsageRollupJob": {
+   "writes": [],
+   "reads": []
+  }
+ }
+}

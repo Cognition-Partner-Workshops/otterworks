@@ -1,0 +1,51 @@
+{
+  "version": 2,
+  "repo": "github.com/Cognition-Partner-Workshops/otterworks",
+  "base_branch": "mig/unt19-20261030",
+  "migration_principal": "d9d1c4ec-29da-4ec7-9aa0-e932710d61e2",
+  "targets": {
+    "catalog": "ow_tp",
+    "schema_prefix": "mig_unt19_20261030_",
+    "lakebase": {
+      "project": "ow-tp-billing",
+      "branch": "mig-unt19-20261030"
+    },
+    "warehouse_http_path": "/sql/1.0/warehouses/565cd2fd713738c4"
+  },
+  "forbidden_catalogs": [],
+  "forbidden_targets": [
+    "prod",
+    "production"
+  ],
+  "bundle_targets": [
+    "migration"
+  ],
+  "legacy_sources": [
+    "OW_TP_ORACLE_RO_DSN",
+    "44.213.30.5"
+  ],
+  "width": 4,
+  "breaker": 3,
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING",
+    "host": "44.213.30.5:1521/FREEPDB1",
+    "secret": "OW_TP_ORACLE_RO_DSN",
+    "secret_note": "the stored dsn host is stale (instance relaunched 2026-10-27); re-save it with 44.213.30.5 before slice-0 runs",
+    "kind": "loaded_from_export",
+    "mode": "snapshot",
+    "access": "ow_tp.mig_unt19_20261030_src"
+  },
+  "fixture_tenant": {
+    "name": "Tenant One",
+    "id": "00000000-0000-0000-0000-000000000001"
+  },
+  "cutover_principal": "customer-held (Dhrov)",
+  "tolerances": {
+    "version": "tol-20261027-v1",
+    "exact": true,
+    "per_type": {},
+    "full_diff_row_threshold": 1000000,
+    "blocking_findings": []
+  }
+}

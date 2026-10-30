@@ -1,0 +1,42 @@
+{
+ "version": 1,
+ "slice": "slice-0",
+ "routines": {
+  "OW_BILLING.PKG_OW_UTIL.F_MD5_UUID": {
+   "writes": [],
+   "reads": []
+  },
+  "OW_BILLING.PKG_OW_UTIL.F_CODE_DESC": {
+   "writes": [],
+   "reads": [
+    "OW_BILLING.CODES"
+   ]
+  },
+  "OW_BILLING.PKG_OW_UTIL.F_DT2STR": {
+   "writes": [],
+   "reads": []
+  },
+  "OW_BILLING.PKG_OW_UTIL.F_STR2DT": {
+   "writes": [],
+   "reads": []
+  },
+  "OW_BILLING.PKG_OW_UTIL.LOG_MSG": {
+   "writes": [
+    "OW_BILLING.BILLING_AUDIT_LOG"
+   ],
+   "reads": []
+  },
+  "OW_BILLING.TRG_BILLING_AUDIT_LOG_ID": {
+   "writes": [],
+   "reads": []
+  }
+ },
+ "jobs": {
+  "JOB_PURGE_AUDIT_LOG": {
+   "writes": [
+    "OW_BILLING.BILLING_AUDIT_LOG"
+   ],
+   "reads": []
+  }
+ }
+}

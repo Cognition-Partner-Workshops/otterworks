@@ -1,0 +1,6 @@
+{
+ "ow_billing.codes": "full",
+ "ow_billing.plans": "full",
+ "ow_billing.tenants": "full",
+ "ow_billing.billing_audit_log": "by_design_unverified"
+}
