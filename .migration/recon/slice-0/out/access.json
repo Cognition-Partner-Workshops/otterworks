@@ -1,0 +1,85 @@
+{
+  "access": "ow_tp.mig_unt19_20261030_src",
+  "kind": "loaded_from_export",
+  "mode": "snapshot",
+  "export_manifest": ".migration/recon/slice-0/out/export_manifest.json",
+  "volume": "/Volumes/ow_tp/mig_unt19_20261030_src/export",
+  "snapshot_at": "2026-10-31T22:31:25+00:00",
+  "tables": {
+    "BILLING_AUDIT_LOG": "ow_tp.mig_unt19_20261030_src.billing_audit_log",
+    "CODES": "ow_tp.mig_unt19_20261030_src.codes",
+    "CUSTOMER_MASTER": "ow_tp.mig_unt19_20261030_src.customer_master",
+    "CUSTOMER_MASTER_HIST": "ow_tp.mig_unt19_20261030_src.customer_master_hist",
+    "ENTITY_ATTR_VALUE": "ow_tp.mig_unt19_20261030_src.entity_attr_value",
+    "INVOICE_HEADER": "ow_tp.mig_unt19_20261030_src.invoice_header",
+    "INVOICE_LINE": "ow_tp.mig_unt19_20261030_src.invoice_line",
+    "PLANS": "ow_tp.mig_unt19_20261030_src.plans",
+    "SUBSCRIPTIONS_HIST": "ow_tp.mig_unt19_20261030_src.subscriptions_hist",
+    "TENANTS": "ow_tp.mig_unt19_20261030_src.tenants",
+    "CREDIT_NOTES": "ow_tp.mig_unt19_20261030_src.credit_notes",
+    "NOTIFICATIONS": "ow_tp.mig_unt19_20261030_src.notifications",
+    "RATING_PERIODS": "ow_tp.mig_unt19_20261030_src.rating_periods",
+    "SUBSCRIPTIONS": "ow_tp.mig_unt19_20261030_src.subscriptions",
+    "USAGE_EVENTS": "ow_tp.mig_unt19_20261030_src.usage_events",
+    "INVOICES": "ow_tp.mig_unt19_20261030_src.invoices",
+    "RATING_RESULTS": "ow_tp.mig_unt19_20261030_src.rating_results",
+    "DUNNING_ATTEMPTS": "ow_tp.mig_unt19_20261030_src.dunning_attempts",
+    "INVOICE_LINES": "ow_tp.mig_unt19_20261030_src.invoice_lines"
+  },
+  "fk_order": [
+    "BILLING_AUDIT_LOG",
+    "CODES",
+    "CUSTOMER_MASTER",
+    "CUSTOMER_MASTER_HIST",
+    "ENTITY_ATTR_VALUE",
+    "INVOICE_HEADER",
+    "INVOICE_LINE",
+    "PLANS",
+    "SUBSCRIPTIONS_HIST",
+    "TENANTS",
+    "CREDIT_NOTES",
+    "NOTIFICATIONS",
+    "RATING_PERIODS",
+    "SUBSCRIPTIONS",
+    "USAGE_EVENTS",
+    "INVOICES",
+    "RATING_RESULTS",
+    "DUNNING_ATTEMPTS",
+    "INVOICE_LINES"
+  ],
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING",
+    "secret": "OW_TP_ORACLE_RO_DSN",
+    "read_path": "oracledb SELECT inside SET TRANSACTION READ ONLY; no federation, JDBC connection or CDC pipeline was created"
+  },
+  "loader": {
+    "export": ".migration/recon/slice-0/out/export_snapshot.py",
+    "load_sql": ".migration/recon/slice-0/out/load/",
+    "mechanism": "databricks fs cp -> volume; CREATE OR REPLACE TABLE AS SELECT ... FROM read_files(csv, explicit string schema, FAILFAST) with per-column CASTs from the oracle type map"
+  },
+  "gates": {
+    "g-snapshot-counts": "PASS",
+    "evidence": ".migration/recon/slice-0/out/counts_check.json"
+  },
+  "anomalies_landed_as_is": [
+    {
+      "kind": "orphaned_rows",
+      "target": "oracle.OW_BILLING.INVOICE_LINE",
+      "count": 37,
+      "rule": "INVOICE_LINE.invoice_id with no INVOICE_HEADER row"
+    },
+    {
+      "kind": "dirty_dates",
+      "target": "oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT",
+      "count": 50,
+      "rule": "SIGNUP_DT does not parse as DD-MON-YY"
+    },
+    {
+      "kind": "malformed_csv_lists",
+      "target": "oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS",
+      "count": 31,
+      "rule": "non-null value not matching ^\\d{5}(,\\d{5})*$"
+    }
+  ]
+}
