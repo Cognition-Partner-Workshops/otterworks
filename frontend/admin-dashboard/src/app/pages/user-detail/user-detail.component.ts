@@ -16,7 +16,6 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.c
 
 @Component({
   selector: 'app-user-detail',
-  standalone: true,
   imports: [
     CommonModule, RouterModule, MatCardModule, MatIconModule, MatButtonModule,
     MatProgressSpinnerModule, MatProgressBarModule, MatTableModule, MatChipsModule,

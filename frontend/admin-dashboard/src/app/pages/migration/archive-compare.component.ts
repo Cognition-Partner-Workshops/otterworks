@@ -35,7 +35,6 @@ const rtrim = (s: string): string => s.replace(/ +$/, '');
  */
 @Component({
   selector: 'app-archive-compare',
-  standalone: true,
   imports: [
     CommonModule, FormsModule, MatCardModule, MatIconModule, MatButtonModule, MatInputModule,
     MatFormFieldModule, MatProgressSpinnerModule, MatTooltipModule,

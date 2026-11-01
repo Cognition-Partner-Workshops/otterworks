@@ -11,7 +11,6 @@ import { ServiceHealth } from '../../core/models/system-health.model';
 
 @Component({
   selector: 'app-health',
-  standalone: true,
   imports: [
     CommonModule, MatCardModule, MatIconModule, MatButtonModule,
     MatProgressSpinnerModule, MatChipsModule,

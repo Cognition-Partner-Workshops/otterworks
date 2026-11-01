@@ -7,7 +7,6 @@ import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [CommonModule, RouterOutlet, SidebarComponent, ToolbarComponent],
   template: `
     <div class="app-layout" *ngIf="authService.isAuthenticated; else loginView">

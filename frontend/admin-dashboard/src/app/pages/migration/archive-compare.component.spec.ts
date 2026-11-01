@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ArchiveCompareComponent } from './archive-compare.component';
 import { ArchiveDocument } from '../../core/models/migration.model';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 function doc(store: string, ownerName: string, eventTs: string): ArchiveDocument {
   return {
@@ -27,7 +28,8 @@ describe('ArchiveCompareComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ArchiveCompareComponent, HttpClientTestingModule, NoopAnimationsModule],
+      imports: [ArchiveCompareComponent, NoopAnimationsModule],
+      providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()],
     }).compileComponents();
     fixture = TestBed.createComponent(ArchiveCompareComponent);
     component = fixture.componentInstance;
