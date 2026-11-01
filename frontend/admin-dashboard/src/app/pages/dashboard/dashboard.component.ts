@@ -12,7 +12,6 @@ import { DashboardStats } from '../../core/models/analytics.model';
 
 @Component({
   selector: 'app-dashboard',
-  standalone: true,
   imports: [CommonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, NgChartsModule],
   template: `
     <div class="page-container">

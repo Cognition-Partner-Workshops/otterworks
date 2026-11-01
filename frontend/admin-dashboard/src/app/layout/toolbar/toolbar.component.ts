@@ -8,7 +8,6 @@ import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-toolbar',
-  standalone: true,
   imports: [CommonModule, MatToolbarModule, MatIconModule, MatButtonModule, MatMenuModule],
   template: `
     <mat-toolbar class="app-toolbar">

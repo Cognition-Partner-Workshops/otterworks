@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { HTTP_INTERCEPTORS, HttpClient, HttpContext } from '@angular/common/http';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HTTP_INTERCEPTORS, HttpClient, HttpContext, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { JwtInterceptor } from './jwt.interceptor';
 import { AuthService } from '../services/auth.service';
 import { PEER_REQUEST } from '../services/migration-api.service';
@@ -14,10 +14,11 @@ describe('JwtInterceptor', () => {
     auth = jasmine.createSpyObj<AuthService>('AuthService', ['getToken', 'logout']);
     auth.getToken.and.returnValue('tok');
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
       providers: [
         { provide: AuthService, useValue: auth },
         { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
       ],
     });
     http = TestBed.inject(HttpClient);

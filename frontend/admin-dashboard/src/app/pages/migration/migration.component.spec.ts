@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -7,6 +7,7 @@ import { BehaviorSubject } from 'rxjs';
 import { ParamMap } from '@angular/router';
 import { MigrationComponent } from './migration.component';
 import { ReconciliationReport } from '../../core/models/migration.model';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 const REPORT: ReconciliationReport = {
   run_id: 'r20260924150000',
@@ -40,9 +41,15 @@ describe('MigrationComponent', () => {
   async function setup(params: Record<string, string>): Promise<void> {
     params$ = new BehaviorSubject<ParamMap>(convertToParamMap(params));
     await TestBed.configureTestingModule({
-      imports: [MigrationComponent, HttpClientTestingModule, NoopAnimationsModule, RouterTestingModule],
+      imports: [
+        MigrationComponent,
+        NoopAnimationsModule,
+        RouterTestingModule,
+      ],
       providers: [
         { provide: ActivatedRoute, useValue: { paramMap: params$.asObservable() } },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(MigrationComponent);
