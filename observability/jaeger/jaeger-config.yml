@@ -1,58 +1,38 @@
-# Jaeger All-in-One Configuration for Development
-#
-# This configuration runs Jaeger in all-in-one mode with in-memory
-# storage, suitable for local development and testing.
+service:
+  extensions: [jaeger_storage, jaeger_query, healthcheckv2]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [jaeger_storage_exporter]
 
-# Collector settings
-collector:
-  # OTLP receiver (preferred ingestion path via OTel Collector)
-  otlp:
-    enabled: true
-    grpc:
-      host-port: 0.0.0.0:4317
+extensions:
+  healthcheckv2:
+    use_v2: true
     http:
-      host-port: 0.0.0.0:4318
+      endpoint: 0.0.0.0:13133
+  jaeger_query:
+    storage:
+      traces: memory
+    http:
+      endpoint: 0.0.0.0:16686
+  jaeger_storage:
+    backends:
+      memory:
+        memory:
+          max_traces: 50000
 
-  # Zipkin receiver for backwards compatibility
-  zipkin:
-    host-port: 0.0.0.0:9411
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
 
-  # Number of queue workers for span processing
-  num-workers: 4
-  queue-size: 2000
+processors:
+  batch: {}
 
-# Query / UI settings
-query:
-  base-path: /
-  max-traces: 200
-  ui:
-    config:
-      archiveEnabled: false
-      dependencies:
-        menuEnabled: true
-      monitor:
-        menuEnabled: true
-
-# Storage backend
-storage:
-  type: memory
-  memory:
-    max-traces: 50000
-
-# Sampling strategies served to SDKs
-sampling:
-  default-strategy:
-    type: probabilistic
-    param: 1.0
-
-# Logging
-log-level: info
-
-# Metrics
-metrics-backend: prometheus
-metrics-http-route: /metrics
-
-# Admin / health
-admin:
-  http:
-    host-port: 0.0.0.0:14269
+exporters:
+  jaeger_storage_exporter:
+    trace_storage: memory

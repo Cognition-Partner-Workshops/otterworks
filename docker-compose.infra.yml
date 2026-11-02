@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: otterworks-postgres
     environment:
       POSTGRES_USER: otterworks
@@ -74,7 +74,7 @@ services:
     security_opt:
     - no-new-privileges:true
   meilisearch:
-    image: getmeili/meilisearch:v1.6
+    image: getmeili/meilisearch:v1.56.1
     container_name: otterworks-meilisearch
     environment:
       MEILI_ENV: development
@@ -95,7 +95,7 @@ services:
     security_opt:
     - no-new-privileges:true
   prometheus:
-    image: prom/prometheus:v2.51.0
+    image: prom/prometheus:v3.13.5
     container_name: otterworks-prometheus
     command:
     - --config.file=/etc/prometheus/prometheus.yml
@@ -128,7 +128,7 @@ services:
     tmpfs:
     - /tmp
   grafana:
-    image: grafana/grafana:10.4.0
+    image: grafana/grafana:12.4.14
     container_name: otterworks-grafana
     environment:
       GF_SECURITY_ADMIN_USER: admin
@@ -166,25 +166,22 @@ services:
     tmpfs:
     - /tmp
   jaeger:
-    image: jaegertracing/all-in-one:1.55
+    image: jaegertracing/jaeger:2.20.0
     container_name: otterworks-jaeger
-    environment:
-      COLLECTOR_OTLP_ENABLED: 'true'
-      SPAN_STORAGE_TYPE: memory
-      MEMORY_MAX_TRACES: '50000'
-      METRICS_STORAGE_TYPE: prometheus
+    command: ["--config=/etc/jaeger/config.yml"]
+    volumes:
+    - ./observability/jaeger/jaeger-config.yml:/etc/jaeger/config.yml:ro
     ports:
     - 16686:16686
     - 4317:4317
     - 4318:4318
-    - 14269:14269
     healthcheck:
       test:
       - CMD
       - wget
       - --spider
       - -q
-      - http://localhost:14269/
+      - http://localhost:13133/status
       interval: 10s
       timeout: 5s
       retries: 3
@@ -222,7 +219,7 @@ services:
     tmpfs:
     - /tmp
   fluent-bit:
-    image: fluent/fluent-bit:3.0
+    image: fluent/fluent-bit:5.1.5-debug
     container_name: otterworks-fluent-bit
     ports:
     - 2020:2020
@@ -236,9 +233,8 @@ services:
     healthcheck:
       test:
       - CMD
-      - wget
-      - --spider
-      - -q
+      - curl
+      - -fsS
       - http://localhost:2020/api/v1/health
       interval: 10s
       timeout: 5s
