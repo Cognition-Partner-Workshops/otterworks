@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -104,6 +106,104 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert data["suggestions"] == []
+
+
+    def test_suggest_orders_by_ranking_score(self, client, mock_meilisearch_client):
+        """Suggestions are ordered by MeiliSearch _rankingScore, highest first."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 3,
+            "hits": [
+                {"title": "Quarterly plan", "_rankingScore": 0.42},
+                {"title": "Quarterly report", "_rankingScore": 0.97},
+                {"title": "Quarterly notes", "_rankingScore": 0.65},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=qu")
+        assert response.status_code == 200
+        data = response.get_json()
+        assert data["suggestions"] == ["Quarterly report", "Quarterly notes", "Quarterly plan"]
+        _, kwargs_or_opts = mock_index.search.call_args[0]
+        assert kwargs_or_opts["showRankingScore"] is True
+
+    def test_suggest_without_ranking_score_does_not_500(self, client, mock_meilisearch_client):
+        """Hits missing _rankingScore (older MeiliSearch) still return 200 in original order."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [
+                {"title": "Test Doc 1"},
+                {"title": "Test Doc 2"},
+            ],
+        }
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Test Doc 1", "Test Doc 2"]
+
+    def test_suggest_empty_index_returns_empty_list(self, client, mock_meilisearch_client):
+        """No hits in either index yields 200 with an empty suggestion list."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {"estimatedTotalHits": 0, "hits": []}
+
+        response = client.get("/api/v1/search/suggest?q=zz")
+        assert response.status_code == 200
+        assert response.get_json() == {"suggestions": [], "query": "zz"}
+
+    def test_suggest_backend_error_degrades_to_empty(self, client, mock_meilisearch_client):
+        """A MeiliSearch failure never surfaces as a 5xx from /suggest."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = RuntimeError("meilisearch down")
+
+        response = client.get("/api/v1/search/suggest?q=te")
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+
+
+class TestSuggestRanking:
+    """Tests for MeiliSearchService.suggest ranking across indexes."""
+
+    def test_suggest_ranks_across_indexes_and_dedupes(self, meilisearch_service, mock_meilisearch_client):
+        """Documents and files hits are merged by score; duplicates and size are respected."""
+        docs_index = MagicMock()
+        docs_index.search.return_value = {
+            "hits": [
+                {"title": "Budget 2026", "_rankingScore": 0.5},
+                {"title": "Budget draft", "_rankingScore": 0.9},
+            ]
+        }
+        files_index = MagicMock()
+        files_index.search.return_value = {
+            "hits": [
+                {"name": "budget.xlsx", "_rankingScore": 0.7},
+                {"name": "Budget draft", "_rankingScore": 0.95},
+                {"name": "budget-old.xlsx"},
+            ]
+        }
+        mock_meilisearch_client.index.side_effect = lambda name: (
+            docs_index if name == meilisearch_service.documents_index_name else files_index
+        )
+
+        assert meilisearch_service.suggest("bu") == [
+            "Budget draft",
+            "budget.xlsx",
+            "Budget 2026",
+            "budget-old.xlsx",
+        ]
+        assert meilisearch_service.suggest("bu", size=2) == ["Budget draft", "budget.xlsx"]
+
+    def test_suggest_ignores_non_numeric_scores(self, meilisearch_service, mock_meilisearch_client):
+        """A malformed _rankingScore is treated as 0 rather than raising."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "hits": [
+                {"title": "Alpha", "_rankingScore": "not-a-number"},
+                {"title": "Beta", "_rankingScore": 0.1},
+            ]
+        }
+
+        assert meilisearch_service.suggest("al") == ["Beta", "Alpha"]
 
 
 class TestAdvancedSearchEndpoint:
