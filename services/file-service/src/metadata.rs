@@ -24,6 +24,44 @@ pub struct MetadataClient {
     pub shares_table: String,
 }
 
+/// Level of access a caller needs on a file.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FileAccess {
+    /// Owner, or any user the file is shared with.
+    Read,
+    /// Owner only (move, rename, trash, restore, delete, share management).
+    Owner,
+}
+
+/// Decide whether `caller` may access `file` at `access` level given the
+/// share record (if any) that names the caller. Denials surface as
+/// `FileNotFound` so an unauthorized caller cannot tell whether the id exists.
+pub fn authorize_file_access(
+    file: &FileMetadata,
+    caller_share: Option<&FileShare>,
+    caller: &Uuid,
+    access: FileAccess,
+) -> Result<(), ServiceError> {
+    if file.owner_id == *caller {
+        return Ok(());
+    }
+    let shared = caller_share.is_some_and(|s| s.file_id == file.id && s.shared_with == *caller);
+    match access {
+        FileAccess::Read if shared => Ok(()),
+        _ => Err(ServiceError::FileNotFound(file.id.to_string())),
+    }
+}
+
+pub fn authorize_folder_access(folder: &Folder, caller: &Uuid) -> Result<(), ServiceError> {
+    if folder.owner_id == *caller {
+        Ok(())
+    } else {
+        Err(ServiceError::FolderNotFound(folder.id.to_string()))
+    }
+}
+
+const OWNED_CONDITION: &str = "attribute_exists(id) AND owner_id = :owner";
+
 impl MetadataClient {
     pub async fn new(config: &AwsConfig) -> Self {
         let mut aws_config_builder = aws_config::defaults(aws_config::BehaviorVersion::latest())
@@ -110,25 +148,57 @@ impl MetadataClient {
         parse_file_metadata(item)
     }
 
-    pub async fn delete_file(&self, file_id: &Uuid) -> Result<(), ServiceError> {
+    /// Load a file only if `caller` is allowed `access` to it.
+    pub async fn get_file_for(
+        &self,
+        file_id: &Uuid,
+        caller: &Uuid,
+        access: FileAccess,
+    ) -> Result<FileMetadata, ServiceError> {
+        let file = self.get_file(file_id).await?;
+        if file.owner_id == *caller {
+            return Ok(file);
+        }
+        let caller_share = match access {
+            FileAccess::Read => self.find_existing_share(file_id, caller).await?,
+            FileAccess::Owner => None,
+        };
+        authorize_file_access(&file, caller_share.as_ref(), caller, access)?;
+        Ok(file)
+    }
+
+    /// Delete a file record, but only if it is owned by `owner`.
+    pub async fn delete_file(&self, file_id: &Uuid, owner: &Uuid) -> Result<(), ServiceError> {
         self.client
             .delete_item()
             .table_name(&self.files_table)
             .key("id", AttributeValue::S(file_id.to_string()))
+            .condition_expression(OWNED_CONDITION)
+            .expression_attribute_values(":owner", AttributeValue::S(owner.to_string()))
             .send()
             .await
-            .map_err(|e| ServiceError::DynamoError(e.to_string()))?;
+            .map_err(|e| {
+                if is_conditional_check_failed(&e) {
+                    return ServiceError::FileNotFound(file_id.to_string());
+                }
+                ServiceError::DynamoError(e.to_string())
+            })?;
         Ok(())
     }
 
-    pub async fn trash_file(&self, file_id: &Uuid) -> Result<FileMetadata, ServiceError> {
+    pub async fn trash_file(
+        &self,
+        file_id: &Uuid,
+        owner: &Uuid,
+    ) -> Result<FileMetadata, ServiceError> {
         let now = Utc::now();
         self.client
             .update_item()
             .table_name(&self.files_table)
             .key("id", AttributeValue::S(file_id.to_string()))
             .update_expression("SET is_trashed = :t, updated_at = :u")
-            .condition_expression("attribute_exists(id)")
+            .condition_expression(OWNED_CONDITION)
+            .expression_attribute_values(":owner", AttributeValue::S(owner.to_string()))
             .expression_attribute_values(":t", AttributeValue::Bool(true))
             .expression_attribute_values(":u", AttributeValue::S(now.to_rfc3339()))
             .send()
@@ -143,14 +213,19 @@ impl MetadataClient {
         self.get_file(file_id).await
     }
 
-    pub async fn restore_file(&self, file_id: &Uuid) -> Result<FileMetadata, ServiceError> {
+    pub async fn restore_file(
+        &self,
+        file_id: &Uuid,
+        owner: &Uuid,
+    ) -> Result<FileMetadata, ServiceError> {
         let now = Utc::now();
         self.client
             .update_item()
             .table_name(&self.files_table)
             .key("id", AttributeValue::S(file_id.to_string()))
             .update_expression("SET is_trashed = :t, updated_at = :u")
-            .condition_expression("attribute_exists(id)")
+            .condition_expression(OWNED_CONDITION)
+            .expression_attribute_values(":owner", AttributeValue::S(owner.to_string()))
             .expression_attribute_values(":t", AttributeValue::Bool(false))
             .expression_attribute_values(":u", AttributeValue::S(now.to_rfc3339()))
             .send()
@@ -168,6 +243,7 @@ impl MetadataClient {
     pub async fn rename_file(
         &self,
         file_id: &Uuid,
+        owner: &Uuid,
         name: &str,
     ) -> Result<FileMetadata, ServiceError> {
         let now = Utc::now();
@@ -176,7 +252,8 @@ impl MetadataClient {
             .table_name(&self.files_table)
             .key("id", AttributeValue::S(file_id.to_string()))
             .update_expression("SET #n = :n, updated_at = :u")
-            .condition_expression("attribute_exists(id)")
+            .condition_expression(OWNED_CONDITION)
+            .expression_attribute_values(":owner", AttributeValue::S(owner.to_string()))
             .expression_attribute_names("#n", "name")
             .expression_attribute_values(":n", AttributeValue::S(name.to_string()))
             .expression_attribute_values(":u", AttributeValue::S(now.to_rfc3339()))
@@ -195,6 +272,7 @@ impl MetadataClient {
     pub async fn move_file(
         &self,
         file_id: &Uuid,
+        owner: &Uuid,
         folder_id: Option<Uuid>,
     ) -> Result<FileMetadata, ServiceError> {
         let now = Utc::now();
@@ -203,7 +281,8 @@ impl MetadataClient {
             .update_item()
             .table_name(&self.files_table)
             .key("id", AttributeValue::S(file_id.to_string()))
-            .condition_expression("attribute_exists(id)")
+            .condition_expression(OWNED_CONDITION)
+            .expression_attribute_values(":owner", AttributeValue::S(owner.to_string()))
             .expression_attribute_values(":u", AttributeValue::S(now.to_rfc3339()));
 
         if let Some(fid) = &folder_id {
@@ -352,9 +431,21 @@ impl MetadataClient {
         parse_folder(item)
     }
 
+    /// Load a folder only if it is owned by `caller`.
+    pub async fn get_folder_for(
+        &self,
+        folder_id: &Uuid,
+        caller: &Uuid,
+    ) -> Result<Folder, ServiceError> {
+        let folder = self.get_folder(folder_id).await?;
+        authorize_folder_access(&folder, caller)?;
+        Ok(folder)
+    }
+
     pub async fn update_folder(
         &self,
         folder_id: &Uuid,
+        owner: &Uuid,
         name: Option<String>,
         parent_id: Option<Uuid>,
     ) -> Result<Folder, ServiceError> {
@@ -365,7 +456,8 @@ impl MetadataClient {
             .update_item()
             .table_name(&self.folders_table)
             .key("id", AttributeValue::S(folder_id.to_string()))
-            .condition_expression("attribute_exists(id)")
+            .condition_expression(OWNED_CONDITION)
+            .expression_attribute_values(":owner", AttributeValue::S(owner.to_string()))
             .expression_attribute_values(":u", AttributeValue::S(now.to_rfc3339()));
 
         if let Some(n) = &name {
@@ -391,14 +483,22 @@ impl MetadataClient {
         self.get_folder(folder_id).await
     }
 
-    pub async fn delete_folder(&self, folder_id: &Uuid) -> Result<(), ServiceError> {
+    /// Delete a folder record, but only if it is owned by `owner`.
+    pub async fn delete_folder(&self, folder_id: &Uuid, owner: &Uuid) -> Result<(), ServiceError> {
         self.client
             .delete_item()
             .table_name(&self.folders_table)
             .key("id", AttributeValue::S(folder_id.to_string()))
+            .condition_expression(OWNED_CONDITION)
+            .expression_attribute_values(":owner", AttributeValue::S(owner.to_string()))
             .send()
             .await
-            .map_err(|e| ServiceError::DynamoError(e.to_string()))?;
+            .map_err(|e| {
+                if is_conditional_check_failed(&e) {
+                    return ServiceError::FolderNotFound(folder_id.to_string());
+                }
+                ServiceError::DynamoError(e.to_string())
+            })?;
         Ok(())
     }
 
@@ -876,6 +976,106 @@ mod tests {
         let share = parse_file_share(&item).unwrap();
         assert_eq!(share.permission, SharePermission::Editor);
         assert_eq!(share.file_id, file_id);
+    }
+
+    fn sample_file(owner: Uuid) -> FileMetadata {
+        let now = Utc::now();
+        FileMetadata {
+            id: Uuid::new_v4(),
+            name: "report.pdf".into(),
+            mime_type: "application/pdf".into(),
+            size_bytes: 10,
+            s3_key: "files/x".into(),
+            folder_id: None,
+            owner_id: owner,
+            version: 1,
+            is_trashed: false,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
+    fn sample_share(
+        file: &FileMetadata,
+        shared_with: Uuid,
+        permission: SharePermission,
+    ) -> FileShare {
+        FileShare {
+            id: Uuid::new_v4(),
+            file_id: file.id,
+            shared_with,
+            permission,
+            shared_by: file.owner_id,
+            created_at: Utc::now(),
+        }
+    }
+
+    #[test]
+    fn owner_has_every_access_level() {
+        let owner = Uuid::new_v4();
+        let file = sample_file(owner);
+        assert!(authorize_file_access(&file, None, &owner, FileAccess::Read).is_ok());
+        assert!(authorize_file_access(&file, None, &owner, FileAccess::Owner).is_ok());
+    }
+
+    #[test]
+    fn stranger_is_denied_as_not_found() {
+        let file = sample_file(Uuid::new_v4());
+        let attacker = Uuid::new_v4();
+        for access in [FileAccess::Read, FileAccess::Owner] {
+            let err = authorize_file_access(&file, None, &attacker, access).unwrap_err();
+            assert!(matches!(err, ServiceError::FileNotFound(_)), "{access:?}");
+        }
+    }
+
+    #[test]
+    fn share_grants_read_but_not_owner_access() {
+        let file = sample_file(Uuid::new_v4());
+        let viewer = Uuid::new_v4();
+        for permission in [SharePermission::Viewer, SharePermission::Editor] {
+            let share = sample_share(&file, viewer, permission);
+            assert!(authorize_file_access(&file, Some(&share), &viewer, FileAccess::Read).is_ok());
+            assert!(matches!(
+                authorize_file_access(&file, Some(&share), &viewer, FileAccess::Owner),
+                Err(ServiceError::FileNotFound(_))
+            ));
+        }
+    }
+
+    #[test]
+    fn share_for_someone_else_does_not_grant_access() {
+        let file = sample_file(Uuid::new_v4());
+        let share = sample_share(&file, Uuid::new_v4(), SharePermission::Editor);
+        let attacker = Uuid::new_v4();
+        assert!(matches!(
+            authorize_file_access(&file, Some(&share), &attacker, FileAccess::Read),
+            Err(ServiceError::FileNotFound(_))
+        ));
+        let other_file = sample_file(file.owner_id);
+        let wrong_file_share = sample_share(&other_file, attacker, SharePermission::Editor);
+        assert!(matches!(
+            authorize_file_access(&file, Some(&wrong_file_share), &attacker, FileAccess::Read),
+            Err(ServiceError::FileNotFound(_))
+        ));
+    }
+
+    #[test]
+    fn folder_access_is_owner_only() {
+        let owner = Uuid::new_v4();
+        let now = Utc::now();
+        let folder = Folder {
+            id: Uuid::new_v4(),
+            name: "docs".into(),
+            parent_id: None,
+            owner_id: owner,
+            created_at: now,
+            updated_at: now,
+        };
+        assert!(authorize_folder_access(&folder, &owner).is_ok());
+        assert!(matches!(
+            authorize_folder_access(&folder, &Uuid::new_v4()),
+            Err(ServiceError::FolderNotFound(_))
+        ));
     }
 
     #[test]
