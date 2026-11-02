@@ -24,14 +24,14 @@ jobs:
   deps:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           version: latest
       # 21 and 17 first so $JAVA_HOME_21_X64 (the legacy-portal Lambda modules) and
       # $JAVA_HOME_17_X64 (the Gradle modules) exist, then 11 as the ambient JDK the
       # other Maven modules build on.
-      - uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           java-version: |
@@ -40,7 +40,7 @@ jobs:
             11
       # notification-service ships no Gradle wrapper, so the harness invokes the
       # `gradle` on PATH — the runner image does not carry one.
-      - uses: gradle/actions/setup-gradle@da187c8e6ffbd3802e00f2477aa5a822b25f2dda # v4.4.4
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
         with:
           # 8.6, matching ci.yml and auth-service's wrapper: the suite counts this job
           # reports have to come from the toolchain the services are built with.
@@ -75,7 +75,7 @@ jobs:
             echo "::error::the advisory gate was inconclusive (exit $gate); refusing to grade"
             exit "$gate"
           fi
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: dependency-remediation-reports

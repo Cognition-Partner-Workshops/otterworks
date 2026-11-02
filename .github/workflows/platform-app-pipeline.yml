@@ -56,9 +56,9 @@ jobs:
       RUN_TOKEN: ${{ inputs.run_token }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check out platform standards at ${{ inputs.standards_ref }}
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Cognition-Partner-Workshops/otterworks
           ref: ${{ inputs.standards_ref }}
@@ -109,7 +109,7 @@ jobs:
           exit "${PIPESTATUS[0]}"
       - name: Create kind cluster
         if: steps.policy.outcome == 'success' && steps.trivy.outcome == 'success'
-        uses: helm/kind-action@0025e74a8c7512023d06dc019c617aa3cf561fde # v1.10.0
+        uses: helm/kind-action@1544676c07bb3570fcb70166beaa07c4528fd4aa # v1.15.1
         with:
           cluster_name: platform-verify
       - id: kind
@@ -120,7 +120,7 @@ jobs:
         run: .standards/platform/standards/scripts/kind-verify.sh "$APP_DIR" "$IMAGE" "$TAG"
       - name: Upload evidence
         if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: evidence-${{ steps.meta.outputs.app }}
           path: |
@@ -194,8 +194,8 @@ jobs:
       - name: Check the run token
         run: |
           [[ "$RUN_TOKEN" =~ ^[a-z0-9]{3,12}$ ]] || { echo "eks_deploy needs a run_token of 3-12 lowercase letters or digits"; exit 1; }
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Cognition-Partner-Workshops/otterworks
           ref: ${{ inputs.standards_ref }}
@@ -213,7 +213,7 @@ jobs:
           print(v['workload'],v['app'])")
           echo "WORKLOAD=$workload" >> "$GITHUB_ENV"
           echo "CHART_APP=$chart_app" >> "$GITHUB_ENV"
-      - uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
+      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
