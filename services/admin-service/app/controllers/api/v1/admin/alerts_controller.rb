@@ -27,6 +27,13 @@ module Api
           'info'     => 'low',
         }.freeze
 
+        # Grafana raises these synthetic alerts when a rule's query fails or
+        # returns no data (execErrState / noDataState). They carry the rule's
+        # own labels and annotations, so without this guard a Prometheus outage
+        # files a "P95 latency spike on document-service" incident and pages
+        # the on-call for a service that may be perfectly healthy.
+        DATASOURCE_ALERT_NAMES = %w[DatasourceError DatasourceNoData].freeze
+
         # POST /api/v1/admin/alerts/ingest
         def ingest
           alerts = params[:alerts]
@@ -50,6 +57,14 @@ module Api
           severity         = SEVERITY_MAP.fetch(labels[:severity].to_s, 'medium')
           summary          = annotations[:summary].to_s
           description      = annotations[:description].to_s.presence || summary
+
+          if DATASOURCE_ALERT_NAMES.include?(alert_name)
+            Rails.logger.warn(
+              "Alert #{alert_name} (#{status}) for rule #{labels[:rulename].presence || 'unknown'} " \
+              "skipped — Grafana datasource problem, not a #{affected_service.presence || 'service'} incident"
+            )
+            return { skipped: true, alert: alert_name, reason: 'datasource_alert' }
+          end
 
           if status == 'resolved'
             resolve_incident(affected_service, alert_name)
