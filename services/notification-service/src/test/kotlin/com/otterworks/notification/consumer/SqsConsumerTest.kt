@@ -137,4 +137,82 @@ class SqsConsumerTest {
         assertEquals("", event.ownerId)
         assertEquals("", event.sharedWithUserId)
     }
+
+    @Test
+    fun `parseMessage accepts legacy epoch-seconds timestamp`() {
+        val body = """
+            {
+                "eventType": "file_shared",
+                "fileId": "file-123",
+                "ownerId": "owner-1",
+                "sharedWithUserId": "user-2",
+                "timestamp": 1704067200
+            }
+        """.trimIndent()
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("file_shared", event.eventType)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage accepts legacy epoch-millis timestamp`() {
+        val body = """{"eventType":"document_edited","userId":"user-1","documentId":"doc-1","timestamp":1704067200000}"""
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage accepts epoch timestamp encoded as a string`() {
+        val body = """{"eventType":"comment_added","userId":"user-1","timestamp":"1704067200"}"""
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage accepts SNS-wrapped legacy message with epoch timestamp and extra fields`() {
+        val innerMessage = """{"eventType":"file_shared","fileId":"file-9","ownerId":"owner-9","sharedWithUserId":"user-9","folderId":null,"name":"q3.pdf","sizeBytes":1024,"timestamp":1718447400}"""
+        val escapedInner = innerMessage.replace("\"", "\\\"")
+        val body = """
+            {
+                "Type": "Notification",
+                "MessageId": "msg-456",
+                "TopicArn": "arn:aws:sns:us-east-1:000000000000:test-topic",
+                "Message": "$escapedInner"
+            }
+        """.trimIndent()
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("file_shared", event.eventType)
+        assertEquals("file-9", event.fileId)
+        assertEquals("2024-06-15T10:30:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage ignores unknown fields from newer producers`() {
+        val body = """{"eventType":"file_shared","fileId":"file-1","mimeType":"text/plain","timestamp":"2024-01-01T00:00:00Z"}"""
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("file-1", event.fileId)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage returns null when timestamp is not a string or number`() {
+        val body = """{"eventType":"file_shared","timestamp":{"seconds":1704067200}}"""
+
+        assertNull(consumer.parseMessage(body))
+    }
 }
