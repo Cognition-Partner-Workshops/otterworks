@@ -23,6 +23,9 @@ scenarios:
     description: >
       File uploads fail: file-service writes to a non-existent S3 bucket and
       returns 5xx. Classic "uploads are broken" incident.
+      NOTE: only images built before the upload_file chaos override was removed
+      honour this flag. Current builds always use S3_BUCKET; use file-bad-bucket
+      for the same symptom.
 
   search-suggest-500:
     mechanism: chaos
