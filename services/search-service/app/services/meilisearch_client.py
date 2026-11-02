@@ -40,6 +40,12 @@ def record_search_analytics(query: str, result_count: int) -> None:
             _search_analytics["queries"] = _search_analytics["queries"][-MAX_ANALYTICS_ENTRIES:]
 
 
+def _ranking_score(hit: dict[str, Any]) -> float:
+    """Return a hit's MeiliSearch ``_rankingScore``, or 0.0 when absent."""
+    score = hit.get("_rankingScore")
+    return float(score) if isinstance(score, (int, float)) else 0.0
+
+
 def get_search_analytics() -> AnalyticsData:
     """Compute search analytics from recorded queries."""
     with _analytics_lock:
@@ -248,25 +254,33 @@ class MeiliSearchService:
         )
 
     def suggest(self, prefix: str, size: int = 10) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching."""
-        suggestions: list[str] = []
-        seen: set[str] = set()
+        """Autocomplete suggestions using MeiliSearch prefix matching.
 
+        Hits from both indexes are merged and ordered by ``_rankingScore``,
+        which MeiliSearch only returns when ``showRankingScore`` is requested.
+        Hits without a score sort last instead of failing the request.
+        """
+        hits: list[dict[str, Any]] = []
         for index_name in [self.documents_index_name, self.files_index_name]:
             index = self.client.index(index_name)
             result = index.search(prefix, {
                 "limit": size,
                 "attributesToRetrieve": ["title", "name"],
+                "showRankingScore": True,
             })
-            for hit in result["hits"]:
-                text = hit.get("title") or hit.get("name", "")
-                if text and text not in seen:
-                    suggestions.append(text)
-                    seen.add(text)
-                    if len(suggestions) >= size:
-                        break
-            if len(suggestions) >= size:
-                break
+            hits.extend(result.get("hits") or [])
+
+        hits.sort(key=_ranking_score, reverse=True)
+
+        suggestions: list[str] = []
+        seen: set[str] = set()
+        for hit in hits:
+            text = hit.get("title") or hit.get("name", "")
+            if text and text not in seen:
+                suggestions.append(text)
+                seen.add(text)
+                if len(suggestions) >= size:
+                    break
 
         return suggestions
 
