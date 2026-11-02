@@ -1,8 +1,9 @@
 {
  "version": 1,
  "slice": "s1-invoicing-rating",
- "routines": {
-  "OW_BILLING.PKG_RATING.COMPUTE_RATING": {
+ "routines": [
+  {
+   "routine": "OW_BILLING.PKG_RATING.COMPUTE_RATING",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG"
    ],
@@ -11,9 +12,11 @@
     "OW_BILLING.RATING_RESULTS",
     "OW_BILLING.SUBSCRIPTIONS",
     "OW_BILLING.USAGE_EVENTS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_RATING.FN_USAGE_RATING": {
+  {
+   "routine": "OW_BILLING.PKG_RATING.FN_USAGE_RATING",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG"
    ],
@@ -22,15 +25,19 @@
     "OW_BILLING.RATING_RESULTS",
     "OW_BILLING.SUBSCRIPTIONS",
     "OW_BILLING.USAGE_EVENTS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_RATING.FN_USAGE_SUMMARY": {
+  {
+   "routine": "OW_BILLING.PKG_RATING.FN_USAGE_SUMMARY",
    "writes": [],
    "reads": [
     "OW_BILLING.USAGE_EVENTS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_RATING.SP_FINALIZE_RATING": {
+  {
+   "routine": "OW_BILLING.PKG_RATING.SP_FINALIZE_RATING",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG",
     "OW_BILLING.RATING_PERIODS",
@@ -41,9 +48,11 @@
     "OW_BILLING.RATING_RESULTS",
     "OW_BILLING.SUBSCRIPTIONS",
     "OW_BILLING.USAGE_EVENTS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_INVOICING.COMPUTE_PREVIEW": {
+  {
+   "routine": "OW_BILLING.PKG_INVOICING.COMPUTE_PREVIEW",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG"
    ],
@@ -54,9 +63,11 @@
     "OW_BILLING.SUBSCRIPTIONS",
     "OW_BILLING.TENANTS",
     "OW_BILLING.USAGE_EVENTS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_INVOICING.FN_INVOICE_PREVIEW": {
+  {
+   "routine": "OW_BILLING.PKG_INVOICING.FN_INVOICE_PREVIEW",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG"
    ],
@@ -67,15 +78,19 @@
     "OW_BILLING.SUBSCRIPTIONS",
     "OW_BILLING.TENANTS",
     "OW_BILLING.USAGE_EVENTS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_INVOICING.FN_INVOICE_LINES": {
+  {
+   "routine": "OW_BILLING.PKG_INVOICING.FN_INVOICE_LINES",
    "writes": [],
    "reads": [
     "OW_BILLING.INVOICE_LINES"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_INVOICING.SP_ISSUE_INVOICE": {
+  {
+   "routine": "OW_BILLING.PKG_INVOICING.SP_ISSUE_INVOICE",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG",
     "OW_BILLING.CREDIT_NOTES",
@@ -91,14 +106,17 @@
     "OW_BILLING.RATING_RESULTS",
     "OW_BILLING.SUBSCRIPTIONS",
     "OW_BILLING.USAGE_EVENTS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.TRG_USAGE_EVENTS_CHECK": {
+  {
+   "routine": "OW_BILLING.TRG_USAGE_EVENTS_CHECK",
    "writes": [],
    "reads": [
     "OW_BILLING.CODES"
-   ]
+   ],
+   "calls": []
   }
- },
+ ],
  "jobs": {}
 }

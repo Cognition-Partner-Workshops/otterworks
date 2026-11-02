@@ -1,0 +1,11 @@
+{
+  "source": "oracle",
+  "snapshot_at": "2026-10-31T22:31:25+00:00",
+  "export_manifest": ".migration/recon/slice-0/out/export_manifest.json",
+  "row_counts": {
+    "SUBSCRIPTIONS": 70,
+    "SUBSCRIPTIONS_HIST": 0,
+    "DUNNING_ATTEMPTS": 1,
+    "NOTIFICATIONS": 1
+  }
+}

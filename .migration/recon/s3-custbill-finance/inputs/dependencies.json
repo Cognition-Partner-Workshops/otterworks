@@ -1,24 +1,30 @@
 {
  "version": 1,
  "slice": "s3-custbill-finance",
- "routines": {
-  "OW_BILLING.TRG_CUSTOMER_MASTER_SEQ": {
+ "routines": [
+  {
+   "routine": "OW_BILLING.TRG_CUSTOMER_MASTER_SEQ",
    "writes": [],
-   "reads": []
+   "reads": [],
+   "calls": []
   },
-  "OW_BILLING.TRG_CUSTOMER_MASTER_HIST": {
+  {
+   "routine": "OW_BILLING.TRG_CUSTOMER_MASTER_HIST",
    "writes": [
     "OW_BILLING.CUSTOMER_MASTER_HIST"
    ],
    "reads": [
     "OW_BILLING.CUSTOMER_MASTER"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.TRG_ENTITY_ATTR_VALUE_SEQ": {
+  {
+   "routine": "OW_BILLING.TRG_ENTITY_ATTR_VALUE_SEQ",
    "writes": [],
-   "reads": []
+   "reads": [],
+   "calls": []
   }
- },
+ ],
  "jobs": {
   "etl/legacy-extra/tools/oracle_custbill_extract.py": {
    "writes": [],
