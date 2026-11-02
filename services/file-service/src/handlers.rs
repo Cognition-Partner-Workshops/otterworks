@@ -213,7 +213,12 @@ pub async fn get_file_metadata(
     let file = meta
         .get_file_for(&file_id, &caller.0, FileAccess::Read)
         .await?;
-    let shares = meta.list_shares(&file_id).await.unwrap_or_default();
+    // Only the owner sees the full recipient list; a recipient sees just
+    // their own share so other recipients' ids are not disclosed.
+    let mut shares = meta.list_shares(&file_id).await.unwrap_or_default();
+    if file.owner_id != caller.0 {
+        shares.retain(|s| s.shared_with == caller.0);
+    }
     Ok(HttpResponse::Ok().json(FileDetailResponse {
         file,
         shared_with: shares,
