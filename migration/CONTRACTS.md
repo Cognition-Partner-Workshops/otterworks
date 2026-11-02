@@ -33,7 +33,7 @@ Companion files (also binding, owned as noted):
 3. No secrets in git. Secrets come from AWS Secrets Manager, Kubernetes Secrets created by
    scripts, or Azure Key Vault. Never print secret values in logs or transcripts.
 4. Python: 3.12. Java in `services/report-service`: stays source/target **1.8**, Spring Boot 2.5.x.
-   .NET in `services/audit-service`: `net8.0`. Terraform: >= 1.6, providers pinned with `~>`,
+   .NET in `services/audit-service`: `net10.0`. Terraform: >= 1.6, providers pinned with `~>`,
    `terraform fmt -check` and `terraform validate` clean.
 5. Every cloud or cluster object is created only by Terraform or the ops deploy script, carries the
    token in its name, and carries the tags/labels of §3.3. Kubernetes never creates AWS resources
