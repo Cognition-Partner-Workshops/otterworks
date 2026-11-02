@@ -1,0 +1,36 @@
+# JOB_PURGE_AUDIT_LOG (services/legacy-billing/db/oracle/schema/04_jobs.sql): DBMS_SCHEDULER
+# 'FREQ=DAILY;BYHOUR=3;BYMINUTE=30', DELETE FROM billing_audit_log WHERE logged_at < SYSDATE - 90.
+# Lakeflow Job on serverless, paused (the Oracle job is also created DISABLED). The retention that
+# was hardcoded in the job text is a job parameter. Dialect trap 16: the Oracle job's
+# WHEN OTHERS THEN NULL is dropped, so a failed purge fails the run instead of hiding.
+resources:
+  jobs:
+    purge_audit_log:
+      name: mig_unt19-20261030_slice-0_purge_audit_log
+      description: Audit log retention for OW_BILLING.BILLING_AUDIT_LOG on the Lakebase run branch (legacy JOB_PURGE_AUDIT_LOG).
+      schedule:
+        quartz_cron_expression: "0 30 3 * * ?"
+        timezone_id: UTC
+        pause_status: PAUSED
+      max_concurrent_runs: 1
+      parameters:
+        - name: retention_days
+          default: ${var.retention_days}
+        - name: endpoint_id
+          default: primary
+      tasks:
+        - task_key: purge
+          environment_key: default
+          spark_python_task:
+            python_file: ../src/purge_audit_log.py
+            parameters:
+              - "--retention-days"
+              - "{{job.parameters.retention_days}}"
+              - "--endpoint-id"
+              - "{{job.parameters.endpoint_id}}"
+      environments:
+        - environment_key: default
+          spec:
+            client: "3"
+            dependencies:
+              - "psycopg[binary]>=3.2,<4"
