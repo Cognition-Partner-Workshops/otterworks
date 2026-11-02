@@ -1,9 +1,17 @@
 package com.otterworks.notification.consumer
 
 import aws.sdk.kotlin.services.sqs.SqsClient
+import aws.sdk.kotlin.services.sqs.model.DeleteMessageRequest
+import aws.sdk.kotlin.services.sqs.model.Message
 import com.otterworks.notification.config.AppConfig
+import com.otterworks.notification.model.SqsNotificationMessage
 import com.otterworks.notification.service.NotificationService
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -27,7 +35,11 @@ class SqsConsumerTest {
         sqsWaitTimeSeconds = 5,
     )
 
-    private val consumer = SqsConsumer(sqsClient, notificationService, config)
+    private val meterRegistry = SimpleMeterRegistry()
+    private val consumer = SqsConsumer(sqsClient, notificationService, config, meterRegistry)
+
+    private fun processingErrors(): Double =
+        meterRegistry.counter("notifications.processing.errors").count()
 
     @Test
     fun `parseMessage parses direct SQS message`() {
@@ -136,5 +148,112 @@ class SqsConsumerTest {
         assertEquals("", event.fileId)
         assertEquals("", event.ownerId)
         assertEquals("", event.sharedWithUserId)
+    }
+
+    @Test
+    fun `parseMessage accepts legacy epoch seconds timestamp`() {
+        val body = """
+            {
+                "eventType": "file_shared",
+                "fileId": "file-123",
+                "timestamp": 1704067200
+            }
+        """.trimIndent()
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage accepts legacy epoch milliseconds timestamp`() {
+        val body = """
+            {
+                "eventType": "file_shared",
+                "fileId": "file-123",
+                "timestamp": 1704067200000
+            }
+        """.trimIndent()
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage accepts epoch timestamp inside SNS envelope`() {
+        val innerMessage = """{"eventType":"comment_added","userId":"user-1","documentId":"doc-1","timestamp":1704067200}"""
+        val body = """{"Type":"Notification","MessageId":"msg-1","Message":"${innerMessage.replace("\"", "\\\"")}"}"""
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("comment_added", event.eventType)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `strict parser decodes epoch timestamp through FlexibleTimestampSerializer`() {
+        val strict = Json {
+            ignoreUnknownKeys = false
+            isLenient = false
+        }
+
+        val event = strict.decodeFromString<SqsNotificationMessage>(
+            """{"eventType":"file_shared","fileId":"file-1","timestamp":1704067200}""",
+        )
+
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `handleMessage deletes unparseable message and counts the error`() = runBlocking {
+        val msg = Message {
+            messageId = "poison-1"
+            receiptHandle = "rh-poison-1"
+            body = "not json at all"
+        }
+
+        consumer.handleMessage(msg)
+
+        coVerify(exactly = 0) { notificationService.processEvent(any()) }
+        coVerify(exactly = 1) {
+            sqsClient.deleteMessage(match<DeleteMessageRequest> { it.receiptHandle == "rh-poison-1" })
+        }
+        assertEquals(1.0, processingErrors())
+    }
+
+    @Test
+    fun `handleMessage processes and deletes valid message`() = runBlocking {
+        val msg = Message {
+            messageId = "ok-1"
+            receiptHandle = "rh-ok-1"
+            body = """{"eventType":"file_shared","fileId":"file-1","timestamp":1704067200}"""
+        }
+
+        consumer.handleMessage(msg)
+
+        coVerify(exactly = 1) { notificationService.processEvent(match { it.fileId == "file-1" }) }
+        coVerify(exactly = 1) {
+            sqsClient.deleteMessage(match<DeleteMessageRequest> { it.receiptHandle == "rh-ok-1" })
+        }
+        assertEquals(0.0, processingErrors())
+    }
+
+    @Test
+    fun `handleMessage keeps message in queue when processing fails`() = runBlocking {
+        coEvery { notificationService.processEvent(any()) } throws IllegalStateException("downstream down")
+        val msg = Message {
+            messageId = "retry-1"
+            receiptHandle = "rh-retry-1"
+            body = """{"eventType":"file_shared","fileId":"file-1","timestamp":"2024-01-01T00:00:00Z"}"""
+        }
+
+        consumer.handleMessage(msg)
+
+        coVerify(exactly = 0) { sqsClient.deleteMessage(any<DeleteMessageRequest>()) }
+        assertEquals(1.0, processingErrors())
     }
 }
