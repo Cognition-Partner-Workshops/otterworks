@@ -94,6 +94,11 @@ PROCESS_MEMORY_LIMIT_BYTES = Gauge(
     "Memory limit of the cgroup the service runs in (0 when unlimited).",
     ["service"],
 )
+CHAOS_FLAG_ACTIVE = Gauge(
+    "otterworks_chaos_flag_active",
+    "1 while a Redis chaos flag is degrading the service, 0 otherwise.",
+    ["service", "flag"],
+)
 
 # The counter lives in a list so the endpoint task, which runs in a copy of the
 # middleware's context, increments the same object the middleware reads.

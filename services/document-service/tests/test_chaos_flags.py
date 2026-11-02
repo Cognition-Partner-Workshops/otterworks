@@ -4,24 +4,32 @@ import pytest
 import redis as redis_lib
 
 from app import chaos
+from app.telemetry import CHAOS_FLAG_ACTIVE, SERVICE
 
 
 class _CountingRedis:
-    def __init__(self, active: bool) -> None:
+    """Fake Redis answering PTTL: -2 missing, -1 no expiry, else ms remaining."""
+
+    def __init__(self, active: bool, ttl_ms: int = 600_000) -> None:
         self.active = active
+        self.ttl_ms = ttl_ms
         self.calls = 0
 
-    def exists(self, key: str) -> int:
+    def pttl(self, key: str) -> int:
         self.calls += 1
-        return int(self.active)
+        return self.ttl_ms if self.active else -2
 
 
 class _DownRedis:
     calls = 0
 
-    def exists(self, key: str) -> int:
+    def pttl(self, key: str) -> int:
         self.calls += 1
         raise redis_lib.ConnectionError("connection refused")
+
+
+def _gauge(key: str) -> float:
+    return CHAOS_FLAG_ACTIVE.labels(SERVICE, key)._value.get()
 
 
 @pytest.fixture(autouse=True)
@@ -68,3 +76,28 @@ def test_redis_client_uses_bounded_timeouts(monkeypatch: pytest.MonkeyPatch) -> 
     assert kwargs["socket_timeout"] == chaos.REDIS_TIMEOUT_SECONDS
     assert kwargs["socket_connect_timeout"] == chaos.REDIS_TIMEOUT_SECONDS
     assert chaos.REDIS_TIMEOUT_SECONDS < 1
+
+
+def test_flag_without_expiry_is_ignored(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A key written with SET instead of SETEX must not degrade the service indefinitely."""
+    forever = _CountingRedis(active=True, ttl_ms=-1)
+    monkeypatch.setattr(chaos, "get_redis", lambda: forever)
+
+    assert chaos.flag_active("chaos:document-service:slow_queries") is False
+    assert forever.calls == 1
+    assert _gauge("chaos:document-service:slow_queries") == 0
+
+
+def test_flag_state_is_exported_as_a_gauge(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake = _CountingRedis(active=True)
+    monkeypatch.setattr(chaos, "get_redis", lambda: fake)
+    now = 1000.0
+    monkeypatch.setattr(chaos.time, "monotonic", lambda: now)
+
+    assert chaos.flag_active("gauge-flag") is True
+    assert _gauge("gauge-flag") == 1
+
+    now += chaos.FLAG_CACHE_SECONDS + 0.01
+    fake.active = False
+    assert chaos.flag_active("gauge-flag") is False
+    assert _gauge("gauge-flag") == 0
