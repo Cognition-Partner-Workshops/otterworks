@@ -89,7 +89,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: reaper
-              image: alpine/k8s:1.30.3
+              image: alpine/k8s:1.34.13
               command: ["/bin/sh","-c"]
               args:
                 - |
