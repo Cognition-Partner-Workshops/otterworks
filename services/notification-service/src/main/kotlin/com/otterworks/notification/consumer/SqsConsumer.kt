@@ -2,7 +2,10 @@ package com.otterworks.notification.consumer
 
 import aws.sdk.kotlin.services.sqs.SqsClient
 import aws.sdk.kotlin.services.sqs.model.DeleteMessageRequest
+import aws.sdk.kotlin.services.sqs.model.Message
+import aws.sdk.kotlin.services.sqs.model.MessageAttributeValue
 import aws.sdk.kotlin.services.sqs.model.ReceiveMessageRequest
+import aws.sdk.kotlin.services.sqs.model.SendMessageRequest
 import com.otterworks.notification.config.AppConfig
 import com.otterworks.notification.model.SqsNotificationMessage
 import com.otterworks.notification.service.NotificationService
@@ -14,25 +17,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import redis.clients.jedis.JedisPool
-import redis.clients.jedis.JedisPoolConfig
 
 private val logger = KotlinLogging.logger {}
-
-// Lazy Redis pool for chaos flag checks.
-private val redisPool: JedisPool by lazy {
-    val host = System.getenv("REDIS_HOST") ?: "localhost"
-    val port = System.getenv("REDIS_PORT")?.toIntOrNull() ?: 6379
-    JedisPool(JedisPoolConfig(), host, port, 1000)
-}
-
-private fun chaosActive(flag: String): Boolean {
-    return try {
-        redisPool.resource.use { jedis -> jedis.exists(flag) }
-    } catch (e: Exception) {
-        false
-    }
-}
 
 class SqsConsumer(
     private val sqsClient: SqsClient,
@@ -42,21 +28,14 @@ class SqsConsumer(
 ) {
     private val processingErrorsCounter: Counter? =
         meterRegistry?.counter("notifications.processing.errors")
-    // Standard lenient parser used in normal operation.
+    private val deadLetteredCounter: Counter? =
+        meterRegistry?.counter("notifications.messages.deadlettered")
+
+    // Producers and the SNS envelope carry fields this service does not declare,
+    // so unknown keys are ignored. Field types stay strict; the timestamp field
+    // accepts both RFC 3339 strings and epoch numbers via EventTimestampSerializer.
     private val json = Json {
         ignoreUnknownKeys = true
-        isLenient = true
-    }
-
-    // CHAOS: strict parser that rejects messages whose timestamp field is not
-    // a valid RFC 3339 string.  Legacy events emitted by older service versions
-    // use Unix epoch integers for timestamps, which are rejected here.
-    // When the chaos flag is active, every such message throws
-    // SerializationException, is never deleted from the queue, and becomes
-    // visible again after the SQS visibility timeout — causing queue depth to
-    // climb indefinitely while the consumer appears healthy.
-    private val strictJson = Json {
-        ignoreUnknownKeys = false
         isLenient = false
     }
 
@@ -81,22 +60,7 @@ class SqsConsumer(
                 for (msg in messages) {
                     launch {
                         try {
-                            val body = msg.body ?: return@launch
-                            val event = parseMessage(body)
-
-                            if (event != null) {
-                                notificationService.processEvent(event)
-
-                                val deleteRequest = DeleteMessageRequest {
-                                    queueUrl = config.sqsQueueUrl
-                                    receiptHandle = msg.receiptHandle
-                                }
-                                sqsClient.deleteMessage(deleteRequest)
-                                logger.debug { "Deleted SQS message: ${msg.messageId}" }
-                            } else {
-                                processingErrorsCounter?.increment()
-                                logger.warn { "Failed to parse SQS message: ${msg.messageId}" }
-                            }
+                            handleMessage(msg)
                         } catch (e: Exception) {
                             logger.error(e) { "Error processing SQS message: ${msg.messageId}" }
                         }
@@ -113,21 +77,81 @@ class SqsConsumer(
         }
     }
 
+    /**
+     * Processes one received message.
+     *
+     * A message that cannot be parsed will never succeed, so it is moved to the
+     * dead-letter queue (when configured) and deleted; leaving it in the queue
+     * would make it reappear after every visibility timeout. A message that
+     * parses but fails downstream is left in place so SQS redelivers it.
+     */
+    internal suspend fun handleMessage(msg: Message) {
+        val body = msg.body
+        val event = body?.let(::parseMessage)
+
+        if (event == null) {
+            processingErrorsCounter?.increment()
+            logger.warn { "SQS message ${msg.messageId} cannot be parsed (${body?.length ?: 0} bytes); dead-lettering it" }
+            deadLetter(msg, reason = if (body == null) "empty body" else "deserialization failed")
+            return
+        }
+
+        notificationService.processEvent(event)
+        delete(msg)
+        logger.debug { "Deleted SQS message: ${msg.messageId}" }
+    }
+
     internal fun parseMessage(body: String): SqsNotificationMessage? {
-        val parser = if (chaosActive("chaos:notification-service:consumer_strict_schema")) strictJson else json
         return try {
             // Try parsing as direct message first
-            parser.decodeFromString<SqsNotificationMessage>(body)
-        } catch (_: Exception) {
+            json.decodeFromString<SqsNotificationMessage>(body)
+        } catch (direct: Exception) {
             try {
                 // Try unwrapping SNS envelope
-                val snsWrapper = parser.decodeFromString<SnsEnvelope>(body)
-                parser.decodeFromString<SqsNotificationMessage>(snsWrapper.Message)
-            } catch (e: Exception) {
-                logger.error(e) { "Failed to parse message body" }
+                val snsWrapper = json.decodeFromString<SnsEnvelope>(body)
+                json.decodeFromString<SqsNotificationMessage>(snsWrapper.Message)
+            } catch (envelope: Exception) {
+                logger.error(envelope) {
+                    "Failed to parse message body as an event (${direct.message}) or as an SNS envelope"
+                }
                 null
             }
         }
+    }
+
+    private suspend fun deadLetter(msg: Message, reason: String) {
+        val dlqUrl = config.sqsDeadLetterQueueUrl
+        if (dlqUrl != null) {
+            sqsClient.sendMessage(
+                SendMessageRequest {
+                    queueUrl = dlqUrl
+                    messageBody = msg.body ?: ""
+                    messageAttributes = mapOf(
+                        "failureReason" to stringAttribute(reason),
+                        "sourceMessageId" to stringAttribute(msg.messageId ?: "unknown"),
+                        "sourceQueueUrl" to stringAttribute(config.sqsQueueUrl),
+                    )
+                },
+            )
+        } else {
+            logger.warn { "SQS_DLQ_URL is not set; dropping unparseable SQS message ${msg.messageId}" }
+        }
+        delete(msg)
+        deadLetteredCounter?.increment()
+    }
+
+    private suspend fun delete(msg: Message) {
+        sqsClient.deleteMessage(
+            DeleteMessageRequest {
+                queueUrl = config.sqsQueueUrl
+                receiptHandle = msg.receiptHandle
+            },
+        )
+    }
+
+    private fun stringAttribute(value: String) = MessageAttributeValue {
+        dataType = "String"
+        stringValue = value
     }
 }
 
