@@ -1,5 +1,6 @@
 package com.otterworks.notification.model
 
+import com.otterworks.notification.serialization.FlexibleTimestampSerializer
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -39,6 +40,7 @@ data class SqsNotificationMessage(
     val userId: String = "",
     val actorId: String = "",
     val mentionedUserId: String = "",
+    @Serializable(with = FlexibleTimestampSerializer::class)
     val timestamp: String,
 )
 
