@@ -38,7 +38,7 @@ class PostgresMetricsRepository(db: AnalyticsDb)(using ec: ExecutionContext) ext
   private def toEpochNanos(i: Instant): Long = i.getEpochSecond * 1000000000L + i.getNano
   private def fromEpochNanos(n: Long): Instant = Instant.ofEpochSecond(n / 1000000000L, n % 1000000000L)
 
-  private given GetResult[AnalyticsEvent] = GetResult { r =>
+  private given GetResult[AnalyticsEvent] = GetResult(using r =>
     AnalyticsEvent(
       eventId = r.nextString(),
       eventType = r.nextString(),
@@ -48,11 +48,11 @@ class PostgresMetricsRepository(db: AnalyticsDb)(using ec: ExecutionContext) ext
       metadata = decodeMetadata(r.nextString()),
       timestamp = fromEpochNanos(r.nextLong())
     )
-  }
+  )
 
-  private given GetResult[DailyMetric] = GetResult { r =>
+  private given GetResult[DailyMetric] = GetResult(using r =>
     DailyMetric(eventDate = r.nextString(), eventType = r.nextString(), eventCount = r.nextLong())
-  }
+  )
 
   /** Load the full event log in insertion order (matches the in-memory buffer). */
   private def loadAll(): Future[Seq[AnalyticsEvent]] =

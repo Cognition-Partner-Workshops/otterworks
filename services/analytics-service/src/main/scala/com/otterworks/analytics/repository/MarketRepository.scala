@@ -15,31 +15,31 @@ import scala.concurrent.{ExecutionContext, Future}
  */
 class MarketRepository(db: AnalyticsDb)(using ec: ExecutionContext):
 
-  private given GetResult[MarketSeries] = GetResult { r =>
+  private given GetResult[MarketSeries] = GetResult(using r =>
     MarketSeries(r.nextString(), r.nextString(), r.nextString(), r.nextString(), r.nextString())
-  }
+  )
 
-  private given GetResult[PricePoint] = GetResult { r =>
+  private given GetResult[PricePoint] = GetResult(using r =>
     PricePoint(r.nextString(), r.nextString(), r.nextBigDecimal(), r.nextString())
-  }
+  )
 
-  private given GetResult[Product] = GetResult { r =>
+  private given GetResult[Product] = GetResult(using r =>
     Product(
       r.nextString(), r.nextString(), r.nextString(), r.nextString(),
       r.nextBigDecimal(), r.nextBigDecimal(), r.nextBigDecimal(), r.nextBigDecimal(), r.nextString()
     )
-  }
+  )
 
-  private given GetResult[MarginRow] = GetResult { r =>
+  private given GetResult[MarginRow] = GetResult(using r =>
     MarginRow(
       r.nextString(), r.nextString(), r.nextString(), r.nextString(), r.nextBigDecimal(),
       r.nextBigDecimal(), r.nextBigDecimal(), r.nextBigDecimal(), r.nextBigDecimal(), r.nextBigDecimal()
     )
-  }
+  )
 
-  private given GetResult[MarginSeriesPoint] = GetResult { r =>
+  private given GetResult[MarginSeriesPoint] = GetResult(using r =>
     MarginSeriesPoint(r.nextString(), r.nextBigDecimal())
-  }
+  )
 
   // ── series & products ─────────────────────────────────────────
 
