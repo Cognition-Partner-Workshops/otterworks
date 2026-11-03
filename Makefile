@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record ingest-up ingest-scan ingest-export ingest-test ingest-down demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
 
@@ -386,6 +386,25 @@ deps-transcript-baseline: ## Prove the recorded before-state still reproduces (M
 deps-record: ## Record the transcripts as the reference evidence (REASON="..." required)
 	@test -n "$(REASON)" || (echo 'REASON is required, e.g. make deps-record REASON="baseline on commons-text 1.9"' >&2; exit 2)
 	$(DEPS) transcript --record --reason "$(REASON)" $(if $(MODULE),--module $(MODULE),) $(if $(ALLOW_RERECORD),--allow-rerecord,)
+
+# ── Third-party scanner export (security/ingest/) ──
+# SonarQube Community on the box produces the export an ingest-mode scan reads.
+INGEST_COMPOSE := docker compose -f security/ingest/docker-compose.sonarqube.yml -p $(or $(RUN_TOKEN),ingest)
+
+ingest-up: ## Start SonarQube Community locally (RUN_TOKEN=<token> names the project)
+	$(INGEST_COMPOSE) up -d --wait sonarqube
+
+ingest-scan: ## Analyse the repository with sonar-scanner (SONAR_TOKEN required)
+	$(INGEST_COMPOSE) run --rm scanner
+
+ingest-export: ## Write the issues as JSON (OUT=<file>, NOISE=1 merges the inert fixture)
+	python3 security/ingest/sonar_export.py --out $(or $(OUT),sonarqube-export.json) $(if $(NOISE),--noise security/ingest/fixtures/inert-noise.json,)
+
+ingest-test: ## Unit-test the exporter and check the fixture still points at real lines
+	uv run --with pytest==8.3.3 pytest -q security/ingest/tests
+
+ingest-down: ## Stop SonarQube and delete its volumes
+	$(INGEST_COMPOSE) down -v
 
 test-report: ## Run report-service tests only
 	cd services/report-service && mvn test
