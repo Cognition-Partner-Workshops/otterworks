@@ -59,7 +59,7 @@ Regenerate the catalog with `python3 tools/catalog/generate.py`. It is determini
 | `fct_returns` | one row per returned order line, with reason, method, refund and days after the order |
 | `product_engagement` | one row per product: written reviews, fit votes, helpful votes, favorites, pending back-in-stock alerts, units sold and returned, top return reason |
 
-The loader also copies reviews (no text or names), returns and their lines, favorites and back-in-stock requests (no email addresses). `dbt build` runs the models and tests, including key uniqueness, relationships, order totals that balance, no negative stock, and returns that never exceed the quantity or amount bought.
+The loader also copies reviews (no text or names), returns and their lines, favorites and back-in-stock requests (no email addresses). `dbt build` runs 52 models and tests, including key uniqueness, relationships, order totals that balance, no negative stock, and returns that never exceed the quantity or amount bought.
 
 ## Deploy (t-retail)
 
