@@ -46,6 +46,8 @@ services:
 
   loader:
     build: data-platform/ottershops
+    # Runs as the host user so it can read the bind-mounted key file (mode 600).
+    user: "${OTTERSHOPS_LOADER_UID:-1000}"
     environment:
       PG_DSN: postgresql://ottershops:ottershops_dev@postgres:5432/ottershops
       SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT:-yd76133.us-east-2.aws}

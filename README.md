@@ -62,9 +62,13 @@ make down
 
 | App | Framework | Port | Description |
 |-----|-----------|------|-------------|
-| Web App | React 18 / Vite SPA | 3000 | Main user-facing application (served by nginx in production) |
+| Web App | Next.js 15 (App Router) | 3000 | OtterShops storefront on this branch; see [OtterShops retail demo](#ottershops-retail-demo) |
 | Admin Dashboard | Angular 17 | 4200 | Administrative interface |
 | Mobile (Android/iOS) | Capacitor | — | Native shells wrapping the Web App SPA; see [`frontend/client-app`](frontend/client-app/) |
+
+## OtterShops retail demo
+
+On the `demo-retail` branch the web app is OtterShops, a fictional apparel store backed by `services/order-service` (Spring Boot, Postgres) with a Snowflake data platform in `data-platform/ottershops`. Run it with `docker compose -f docker-compose.ottershops.yml up --build` and open http://localhost:3000. Details, demo data and checks are in [docs/OTTERSHOPS.md](docs/OTTERSHOPS.md).
 
 ## Architecture
 
