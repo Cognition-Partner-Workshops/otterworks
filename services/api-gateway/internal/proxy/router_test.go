@@ -57,6 +57,7 @@ func TestProxyDirectorRemovesSpoofedUserID(t *testing.T) {
 			var testHandler http.Handler = router
 			if tt.token != "" {
 				req.Header.Set("Authorization", "Bearer "+tt.token)
+				req.Header.Set("Connection", "X-User-ID")
 				testHandler = middleware.JWTAuth(middleware.JWTConfig{
 					Secret:     secret,
 					PrefixPath: middleware.DefaultPrefixPaths(),
