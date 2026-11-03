@@ -1,0 +1,104 @@
+{
+  "target_kind": "lakebase",
+  "read_at": "2026-11-02T15:00:25.588527+00:00",
+  "tables": {
+    "codes": [
+      {
+        "name": "code_type",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "name": "code_val",
+        "type": "decimal(4,0)",
+        "nullable": false
+      },
+      {
+        "name": "code_desc",
+        "type": "text",
+        "nullable": false
+      }
+    ],
+    "plans": [
+      {
+        "name": "id",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "name": "code",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "name": "tier_cd",
+        "type": "decimal(4,0)",
+        "nullable": false
+      },
+      {
+        "name": "monthly_fee",
+        "type": "decimal(12,2)",
+        "nullable": false
+      },
+      {
+        "name": "included_units",
+        "type": "decimal(10,0)",
+        "nullable": false
+      },
+      {
+        "name": "overage_rate",
+        "type": "decimal(12,6)",
+        "nullable": false
+      },
+      {
+        "name": "active_yn",
+        "type": "text",
+        "nullable": false
+      }
+    ],
+    "tenants": [
+      {
+        "name": "id",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "name": "name",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "name": "tax_exempt_yn",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "name": "status_cd",
+        "type": "decimal(4,0)",
+        "nullable": false
+      }
+    ],
+    "billing_audit_log": [
+      {
+        "name": "log_id",
+        "type": "bigint",
+        "nullable": false
+      },
+      {
+        "name": "logged_at",
+        "type": "timestamp",
+        "nullable": false
+      },
+      {
+        "name": "module",
+        "type": "text",
+        "nullable": true
+      },
+      {
+        "name": "message",
+        "type": "text",
+        "nullable": true
+      }
+    ]
+  }
+}

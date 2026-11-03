@@ -1,0 +1,753 @@
+{
+  "unit": "slice-0",
+  "mode": "snapshot",
+  "mapping_version": "unt19-20261030-v1",
+  "tolerance_version": "tol-20261027-v1",
+  "seed": 0,
+  "depth": "full",
+  "params": {},
+  "snapshot": {
+    "source": "oracle",
+    "snapshot_at": "2026-10-31T22:31:25+00:00",
+    "export_manifest": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2362 (.migration/recon/slice-0/out/export_manifest.json, commit 415b07336)",
+    "row_counts": {
+      "CODES": 32,
+      "PLANS": 3,
+      "TENANTS": 70,
+      "BILLING_AUDIT_LOG": 0
+    }
+  },
+  "cost": {
+    "source_statements": 40,
+    "source_rows_fetched": 105,
+    "target_statements": 43,
+    "target_rows_fetched": 105,
+    "elapsed_s": 36.743
+  },
+  "generated_at": "2026-11-03T14:04:28.010273+00:00",
+  "tiers": [
+    {
+      "tier": 0,
+      "name": "structural_parity",
+      "passed": false,
+      "checks_run": 4,
+      "stats": {
+        "codes": {
+          "source": {
+            "table_type": null,
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": null,
+            "primary_key": [
+              "code_type",
+              "code_val"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "code_desc",
+              "code_type",
+              "code_val"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "plans": {
+          "source": {
+            "table_type": null,
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": null,
+            "primary_key": [
+              "id"
+            ],
+            "primary_key_informational": [],
+            "unique": [
+              [
+                "code"
+              ]
+            ],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "active_yn",
+              "code",
+              "id",
+              "included_units",
+              "monthly_fee",
+              "overage_rate",
+              "tier_cd"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "tenants": {
+          "source": {
+            "table_type": null,
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": null,
+            "primary_key": [
+              "id"
+            ],
+            "primary_key_informational": [],
+            "unique": [
+              [
+                "name"
+              ]
+            ],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "id",
+              "name",
+              "status_cd",
+              "tax_exempt_yn"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "billing_audit_log": {
+          "source": {
+            "table_type": null,
+            "primary_key": [],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [
+              "indexes"
+            ],
+            "privilege_denied": []
+          },
+          "target": {
+            "table_type": null,
+            "primary_key": [
+              "log_id"
+            ],
+            "primary_key_informational": [],
+            "unique": [],
+            "unique_nulls_equal": [],
+            "foreign_keys": [],
+            "foreign_keys_informational": [],
+            "not_null": [
+              "log_id",
+              "logged_at"
+            ],
+            "indexes": [],
+            "check_count": 0,
+            "checks": [],
+            "identity_columns": [
+              "log_id"
+            ],
+            "partial": [],
+            "expression_unique": [],
+            "expression_indexes": [],
+            "triggers": {},
+            "grants": {},
+            "unsupported": [],
+            "privilege_denied": []
+          },
+          "identity": null
+        },
+        "structural_checks": {
+          "constraints": "checked",
+          "triggers": "checked",
+          "indexes": "unsupported",
+          "sequences_identity": "checked",
+          "grants": "direct_only"
+        },
+        "structural_diff": {
+          "codes": {
+            "constraints": [
+              "source () -> expected (), target ('code_type', 'code_val')",
+              "target code_desc is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected"
+            ]
+          },
+          "plans": {
+            "constraints": [
+              "source () -> expected (), target ('id',)",
+              "target unique ('code',) has no source counterpart: legacy-valid duplicates would be rejected",
+              "target active_yn is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+              "target code is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+              "target included_units is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+              "target monthly_fee is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+              "target overage_rate is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+              "target tier_cd is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected"
+            ]
+          },
+          "tenants": {
+            "constraints": [
+              "source () -> expected (), target ('id',)",
+              "target unique ('name',) has no source counterpart: legacy-valid duplicates would be rejected",
+              "target name is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+              "target status_cd is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+              "target tax_exempt_yn is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected"
+            ]
+          },
+          "billing_audit_log": {
+            "constraints": [
+              "target logged_at is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected"
+            ],
+            "sequences_identity": [
+              "target log_id is identity but source log_id is not: target-generated keys diverge from the source's"
+            ]
+          }
+        },
+        "platform_inherent": [],
+        "dictionary": {
+          "source": "live",
+          "target": "live"
+        }
+      },
+      "findings": [
+        {
+          "object": "codes",
+          "check": "primary_key_mismatch",
+          "detail": "source () -> expected (), target ('code_type', 'code_val')",
+          "source_value": "()",
+          "target_value": "('code_type', 'code_val')",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "codes",
+          "check": "not_null_extra",
+          "detail": "target code_desc is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "plans",
+          "check": "primary_key_mismatch",
+          "detail": "source () -> expected (), target ('id',)",
+          "source_value": "()",
+          "target_value": "('id',)",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "plans",
+          "check": "unique_extra",
+          "detail": "target unique ('code',) has no source counterpart: legacy-valid duplicates would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "plans",
+          "check": "not_null_extra",
+          "detail": "target active_yn is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "plans",
+          "check": "not_null_extra",
+          "detail": "target code is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "plans",
+          "check": "not_null_extra",
+          "detail": "target included_units is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "plans",
+          "check": "not_null_extra",
+          "detail": "target monthly_fee is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "plans",
+          "check": "not_null_extra",
+          "detail": "target overage_rate is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "plans",
+          "check": "not_null_extra",
+          "detail": "target tier_cd is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "tenants",
+          "check": "primary_key_mismatch",
+          "detail": "source () -> expected (), target ('id',)",
+          "source_value": "()",
+          "target_value": "('id',)",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "tenants",
+          "check": "unique_extra",
+          "detail": "target unique ('name',) has no source counterpart: legacy-valid duplicates would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "tenants",
+          "check": "not_null_extra",
+          "detail": "target name is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "tenants",
+          "check": "not_null_extra",
+          "detail": "target status_cd is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "tenants",
+          "check": "not_null_extra",
+          "detail": "target tax_exempt_yn is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "billing_audit_log",
+          "check": "not_null_extra",
+          "detail": "target logged_at is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        },
+        {
+          "object": "billing_audit_log",
+          "check": "identity_extra",
+          "detail": "target log_id is identity but source log_id is not: target-generated keys diverge from the source's",
+          "source_value": "None",
+          "target_value": "None",
+          "rules_applied": [],
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "tier": 1,
+      "name": "counts_through_mapping",
+      "passed": true,
+      "checks_run": 4,
+      "stats": {
+        "source_counts": {
+          "ow_tp.mig_unt19_20261030_src.CODES": 32,
+          "ow_tp.mig_unt19_20261030_src.PLANS": 3,
+          "ow_tp.mig_unt19_20261030_src.TENANTS": 70,
+          "ow_tp.mig_unt19_20261030_src.BILLING_AUDIT_LOG": 0
+        },
+        "by_design_unverified": [
+          "billing_audit_log"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 2,
+      "name": "per_field_aggregates",
+      "passed": true,
+      "checks_run": 14,
+      "stats": {
+        "deferred_to_tier3": [
+          "codes.code_type",
+          "codes.code_desc",
+          "plans.id",
+          "plans.code",
+          "plans.active_yn",
+          "tenants.id",
+          "tenants.name",
+          "tenants.tax_exempt_yn"
+        ]
+      },
+      "findings": []
+    },
+    {
+      "tier": 3,
+      "name": "keyed_diffs",
+      "passed": true,
+      "checks_run": 105,
+      "stats": {
+        "codes": {
+          "mode": "full_diff",
+          "population": 32,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "plans": {
+          "mode": "full_diff",
+          "population": 3,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        },
+        "tenants": {
+          "mode": "full_diff",
+          "population": 70,
+          "null_key_rows": {
+            "source": 0,
+            "target": 0
+          },
+          "duplicate_source_key_count": 0
+        }
+      },
+      "findings": []
+    }
+  ],
+  "warnings": [],
+  "parity": "NOT_RUN",
+  "findings": [
+    {
+      "class": "structural",
+      "code": "primary_key_mismatch",
+      "object": "codes",
+      "detail": "source () -> expected (), target ('code_type', 'code_val')",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "codes",
+      "detail": "target code_desc is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "primary_key_mismatch",
+      "object": "plans",
+      "detail": "source () -> expected (), target ('id',)",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "unique_extra",
+      "object": "plans",
+      "detail": "target unique ('code',) has no source counterpart: legacy-valid duplicates would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "plans",
+      "detail": "target active_yn is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "plans",
+      "detail": "target code is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "plans",
+      "detail": "target included_units is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "plans",
+      "detail": "target monthly_fee is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "plans",
+      "detail": "target overage_rate is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "plans",
+      "detail": "target tier_cd is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "primary_key_mismatch",
+      "object": "tenants",
+      "detail": "source () -> expected (), target ('id',)",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "unique_extra",
+      "object": "tenants",
+      "detail": "target unique ('name',) has no source counterpart: legacy-valid duplicates would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "tenants",
+      "detail": "target name is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "tenants",
+      "detail": "target status_cd is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "tenants",
+      "detail": "target tax_exempt_yn is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "not_null_extra",
+      "object": "billing_audit_log",
+      "detail": "target logged_at is NOT NULL but its source column is nullable: legacy-valid NULLs would be rejected",
+      "blocking": false
+    },
+    {
+      "class": "structural",
+      "code": "identity_extra",
+      "object": "billing_audit_log",
+      "detail": "target log_id is identity but source log_id is not: target-generated keys diverge from the source's",
+      "blocking": false
+    },
+    {
+      "class": "evidence",
+      "code": "routine_parity_missing",
+      "object": "OW_BILLING.PKG_OW_UTIL.F_CODE_DESC",
+      "detail": "writing routine has no routine_parity row",
+      "blocking": false
+    },
+    {
+      "class": "evidence",
+      "code": "routine_parity_missing",
+      "object": "OW_BILLING.PKG_OW_UTIL.F_DT2STR",
+      "detail": "writing routine has no routine_parity row",
+      "blocking": false
+    },
+    {
+      "class": "evidence",
+      "code": "routine_parity_missing",
+      "object": "OW_BILLING.PKG_OW_UTIL.F_MD5_UUID",
+      "detail": "writing routine has no routine_parity row",
+      "blocking": false
+    },
+    {
+      "class": "evidence",
+      "code": "routine_parity_missing",
+      "object": "OW_BILLING.PKG_OW_UTIL.F_STR2DT",
+      "detail": "writing routine has no routine_parity row",
+      "blocking": false
+    },
+    {
+      "class": "evidence",
+      "code": "routine_parity_missing",
+      "object": "OW_BILLING.PKG_OW_UTIL.LOG_MSG",
+      "detail": "writing routine has no routine_parity row",
+      "blocking": false
+    },
+    {
+      "class": "evidence",
+      "code": "routine_parity_missing",
+      "object": "OW_BILLING.TRG_BILLING_AUDIT_LOG_ID",
+      "detail": "writing routine has no routine_parity row",
+      "blocking": false
+    },
+    {
+      "class": "evidence",
+      "code": "routine_parity_missing",
+      "object": "ow_billing.pkg_ow_util.log_msg",
+      "detail": "writing routine has no routine_parity row",
+      "blocking": false
+    },
+    {
+      "class": "evidence",
+      "code": "by_design_unverified",
+      "object": "billing_audit_log",
+      "detail": "object graded by_design_unverified: values not graded",
+      "blocking": false
+    },
+    {
+      "class": "rerun_policy",
+      "code": "rerun_missing",
+      "object": "slice-0",
+      "detail": "no rerun proof for this slice",
+      "blocking": false
+    }
+  ],
+  "routine_parity": null,
+  "routine_writers": [
+    "OW_BILLING.PKG_OW_UTIL.F_CODE_DESC",
+    "OW_BILLING.PKG_OW_UTIL.F_DT2STR",
+    "OW_BILLING.PKG_OW_UTIL.F_MD5_UUID",
+    "OW_BILLING.PKG_OW_UTIL.F_STR2DT",
+    "OW_BILLING.PKG_OW_UTIL.LOG_MSG",
+    "OW_BILLING.TRG_BILLING_AUDIT_LOG_ID",
+    "ow_billing.pkg_ow_util.log_msg"
+  ],
+  "routine_dependencies": ".migration/recon/slice-0/inputs/dependencies.json",
+  "grading": {
+    "codes": "full",
+    "plans": "full",
+    "tenants": "full",
+    "billing_audit_log": "by_design_unverified"
+  },
+  "type_map": {
+    "family": "oracle",
+    "target_kind": "lakebase",
+    "filled": [],
+    "unmapped": []
+  },
+  "rerun_proof": null,
+  "rerun_posture": "required"
+}
