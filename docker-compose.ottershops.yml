@@ -35,7 +35,10 @@ services:
       - "${ORDER_SERVICE_PORT:-8080}:8080"
 
   web:
-    build: frontend/client-app
+    build:
+      context: frontend/client-app
+      args:
+        NODE_IMAGE: ${OTTERSHOPS_NODE_IMAGE:-node:20-alpine}
     environment:
       ORDER_SERVICE_URL: http://order-service:8080
     depends_on:

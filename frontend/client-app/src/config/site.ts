@@ -10,7 +10,7 @@ export const departments: Department[] = [
     slug: "women", label: "Women", href: "/c/women",
     columns: [
       { title: "Shop by category", links: [cat("women", "Dresses"), cat("women", "Sweaters"), cat("women", "Shirts & Blouses"), cat("women", "Skirts"), cat("women", "Tees & Tanks"), cat("women", "Jeans"), cat("women", "Coats & Jackets"), cat("women", "Activewear"), cat("women", "Sleepwear")] },
-      { title: "Featured", links: [{ label: "New Arrivals", href: "/c/new-arrivals?department=women" }, { label: "Black Friday Deals", href: "/sale?department=women" }, { label: "Essentials Forever", href: "/c/essentials-forever?department=women" }, { label: "Maternity", href: "/c/maternity" }] },
+      { title: "Featured", links: [{ label: "New Arrivals", href: "/c/new-arrivals?department=women" }, { label: "Sale", href: "/sale?department=women" }, { label: "Essentials Forever", href: "/c/essentials-forever?department=women" }, { label: "Maternity", href: "/c/maternity" }] },
       { title: "Shop by fit", links: [fit("women", "Skinny"), fit("women", "Straight"), fit("women", "Wide-Leg"), fit("women", "Relaxed"), fit("women", "Wrap")] },
     ],
     feature: { title: "Knits for cold mornings", href: "/c/women?category=sweaters", image: "/images/editorial/editorial-12.webp" },
@@ -19,7 +19,7 @@ export const departments: Department[] = [
     slug: "men", label: "Men", href: "/c/men",
     columns: [
       { title: "Shop by category", links: [cat("men", "Tees"), cat("men", "Shirts"), cat("men", "Hoodies & Sweatshirts"), cat("men", "Pants & Chinos"), cat("men", "Jeans"), cat("men", "Jackets & Coats"), cat("men", "Sweaters"), cat("men", "Activewear")] },
-      { title: "Featured", links: [{ label: "New Arrivals", href: "/c/new-arrivals?department=men" }, { label: "Black Friday Deals", href: "/sale?department=men" }, { label: "Essentials Forever", href: "/c/essentials-forever?department=men" }] },
+      { title: "Featured", links: [{ label: "New Arrivals", href: "/c/new-arrivals?department=men" }, { label: "Sale", href: "/sale?department=men" }, { label: "Essentials Forever", href: "/c/essentials-forever?department=men" }] },
       { title: "Shop by fit", links: [fit("men", "Slim"), fit("men", "Straight"), fit("men", "Athletic Taper"), fit("men", "Relaxed")] },
     ],
     feature: { title: "Layers that work hard", href: "/c/men?category=jackets+%26+coats", image: "/images/editorial/editorial-23.webp" },
