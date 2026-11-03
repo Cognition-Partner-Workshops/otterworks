@@ -30,6 +30,11 @@ export interface Config {
 }
 
 export function loadConfig(): Config {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret?.trim()) {
+    throw new Error('JWT_SECRET must be set and not blank');
+  }
+
   return {
     httpPort: parseInt(process.env.HTTP_PORT || '8084', 10),
     redis: {
@@ -40,7 +45,7 @@ export function loadConfig(): Config {
       keyPrefix: process.env.REDIS_KEY_PREFIX || 'collab:',
     },
     jwt: {
-      secret: process.env.JWT_SECRET || 'otterworks-dev-secret',
+      secret: jwtSecret,
       issuer: process.env.JWT_ISSUER || 'otterworks-auth-service',
     },
     cors: {
