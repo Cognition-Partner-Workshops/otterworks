@@ -9,6 +9,7 @@ import structlog
 from flask import Blueprint, current_app, jsonify, request
 
 from app.api.health import SEARCH_COUNT
+from app.middleware.auth import get_caller
 from app.services.meilisearch_client import MeiliSearchService, get_search_analytics
 
 logger = structlog.get_logger()
@@ -89,6 +90,7 @@ def suggest() -> tuple:
     prefix = request.args.get("q", "")
     if not prefix or len(prefix) < 2:
         return jsonify({"suggestions": [], "query": prefix}), 200
+    owner_id = request.headers.get("X-User-ID", "").strip() or None
 
     # CHAOS: when this flag is active the ranking-score enrichment path runs.
     # This path was introduced to sort suggestions by relevance using
@@ -97,7 +99,7 @@ def suggest() -> tuple:
     # KeyError and crashes the handler with a 500.
     if _chaos_active("chaos:search-service:suggest_500"):
         service = _get_service()
-        raw_suggestions = service.suggest(prefix)
+        raw_suggestions = service.suggest(prefix, owner_id=owner_id)
         if not raw_suggestions:
             # Simulate the same KeyError that fires when results exist but
             # _rankingScore is missing — ensures chaos fires even with an
@@ -109,7 +111,7 @@ def suggest() -> tuple:
 
     try:
         service = _get_service()
-        suggestions = service.suggest(prefix)
+        suggestions = service.suggest(prefix, owner_id=owner_id)
         return jsonify({"suggestions": suggestions, "query": prefix}), 200
     except Exception:
         logger.exception("suggest_failed", prefix=prefix)
@@ -160,6 +162,8 @@ def advanced_search() -> tuple:
 @search_bp.route("/analytics", methods=["GET"])
 def search_analytics() -> tuple:
     """Search analytics: popular queries, zero-result queries."""
+    if not get_caller().is_trusted:
+        return jsonify({"error": "admin role required"}), 403
     try:
         analytics = get_search_analytics()
         return jsonify(analytics.to_dict()), 200
