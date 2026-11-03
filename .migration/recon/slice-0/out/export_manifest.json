@@ -1,0 +1,254 @@
+{
+  "run": "unt19-20261030",
+  "slice": "slice-0",
+  "kind": "loaded_from_export",
+  "mode": "snapshot",
+  "generator_version": "1",
+  "source": {
+    "family": "oracle",
+    "schema": "OW_BILLING",
+    "principal_secret": "OW_TP_ORACLE_RO_DSN",
+    "isolation": "SET TRANSACTION READ ONLY (one consistent read point for every table)"
+  },
+  "snapshot_at": "2026-10-31T22:31:25+00:00",
+  "volume": "/Volumes/ow_tp/mig_unt19_20261030_src/export",
+  "fk_order": [
+    "BILLING_AUDIT_LOG",
+    "CODES",
+    "CUSTOMER_MASTER",
+    "CUSTOMER_MASTER_HIST",
+    "ENTITY_ATTR_VALUE",
+    "INVOICE_HEADER",
+    "INVOICE_LINE",
+    "PLANS",
+    "SUBSCRIPTIONS_HIST",
+    "TENANTS",
+    "CREDIT_NOTES",
+    "NOTIFICATIONS",
+    "RATING_PERIODS",
+    "SUBSCRIPTIONS",
+    "USAGE_EVENTS",
+    "INVOICES",
+    "RATING_RESULTS",
+    "DUNNING_ATTEMPTS",
+    "INVOICE_LINES"
+  ],
+  "targets": {
+    "oracle.OW_BILLING.BILLING_AUDIT_LOG": {
+      "rows": 0,
+      "pk": [
+        "LOG_ID"
+      ],
+      "slice": "slice-0",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/BILLING_AUDIT_LOG.csv",
+      "bytes": 32,
+      "delta": "ow_tp.mig_unt19_20261030_src.billing_audit_log"
+    },
+    "oracle.OW_BILLING.CODES": {
+      "rows": 32,
+      "pk": [
+        "CODE_TYPE",
+        "CODE_VAL"
+      ],
+      "slice": "slice-0",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/CODES.csv",
+      "bytes": 724,
+      "delta": "ow_tp.mig_unt19_20261030_src.codes"
+    },
+    "oracle.OW_BILLING.CUSTOMER_MASTER": {
+      "rows": 25001,
+      "pk": [
+        "CUST_ID"
+      ],
+      "slice": "s3-custbill-finance",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/CUSTOMER_MASTER.csv",
+      "bytes": 13001272,
+      "delta": "ow_tp.mig_unt19_20261030_src.customer_master",
+      "checksum": "9c44818abb342800c855ca025c699db6",
+      "checksum_rule": "md5 of 'pk:amount\\n' lines in PK order (testdata/legacy/oracle_billing_seed.py Checksum)"
+    },
+    "oracle.OW_BILLING.CUSTOMER_MASTER_HIST": {
+      "rows": 0,
+      "pk": [
+        "HIST_ID"
+      ],
+      "slice": "s3-custbill-finance",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/CUSTOMER_MASTER_HIST.csv",
+      "bytes": 1596,
+      "delta": "ow_tp.mig_unt19_20261030_src.customer_master_hist"
+    },
+    "oracle.OW_BILLING.ENTITY_ATTR_VALUE": {
+      "rows": 8337,
+      "pk": [
+        "EAV_ID"
+      ],
+      "slice": "s3-custbill-finance",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/ENTITY_ATTR_VALUE.csv",
+      "bytes": 704906,
+      "delta": "ow_tp.mig_unt19_20261030_src.entity_attr_value"
+    },
+    "oracle.OW_BILLING.INVOICE_HEADER": {
+      "rows": 18750,
+      "pk": [
+        "INVOICE_ID"
+      ],
+      "slice": "s3-custbill-finance",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/INVOICE_HEADER.csv",
+      "bytes": 3118709,
+      "delta": "ow_tp.mig_unt19_20261030_src.invoice_header"
+    },
+    "oracle.OW_BILLING.INVOICE_LINE": {
+      "rows": 150000,
+      "pk": [
+        "LINE_ID"
+      ],
+      "slice": "s3-custbill-finance",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/INVOICE_LINE.csv",
+      "bytes": 44457609,
+      "delta": "ow_tp.mig_unt19_20261030_src.invoice_line",
+      "checksum": "88a66751f0b08b476b492105a2efc537",
+      "checksum_rule": "md5 of 'pk:amount\\n' lines in PK order (testdata/legacy/oracle_billing_seed.py Checksum)"
+    },
+    "oracle.OW_BILLING.PLANS": {
+      "rows": 3,
+      "pk": [
+        "ID"
+      ],
+      "slice": "slice-0",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/PLANS.csv",
+      "bytes": 251,
+      "delta": "ow_tp.mig_unt19_20261030_src.plans"
+    },
+    "oracle.OW_BILLING.SUBSCRIPTIONS_HIST": {
+      "rows": 0,
+      "pk": [
+        "HIST_ID"
+      ],
+      "slice": "s2-plans-dunning",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/SUBSCRIPTIONS_HIST.csv",
+      "bytes": 86,
+      "delta": "ow_tp.mig_unt19_20261030_src.subscriptions_hist"
+    },
+    "oracle.OW_BILLING.TENANTS": {
+      "rows": 70,
+      "pk": [
+        "ID"
+      ],
+      "slice": "slice-0",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/TENANTS.csv",
+      "bytes": 4177,
+      "delta": "ow_tp.mig_unt19_20261030_src.tenants"
+    },
+    "oracle.OW_BILLING.CREDIT_NOTES": {
+      "rows": 5,
+      "pk": [
+        "ID"
+      ],
+      "slice": "s1-invoicing-rating",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/CREDIT_NOTES.csv",
+      "bytes": 545,
+      "delta": "ow_tp.mig_unt19_20261030_src.credit_notes"
+    },
+    "oracle.OW_BILLING.NOTIFICATIONS": {
+      "rows": 1,
+      "pk": [
+        "ID"
+      ],
+      "slice": "s2-plans-dunning",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/NOTIFICATIONS.csv",
+      "bytes": 125,
+      "delta": "ow_tp.mig_unt19_20261030_src.notifications"
+    },
+    "oracle.OW_BILLING.RATING_PERIODS": {
+      "rows": 3,
+      "pk": [
+        "ID"
+      ],
+      "slice": "s1-invoicing-rating",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/RATING_PERIODS.csv",
+      "bytes": 379,
+      "delta": "ow_tp.mig_unt19_20261030_src.rating_periods"
+    },
+    "oracle.OW_BILLING.SUBSCRIPTIONS": {
+      "rows": 70,
+      "pk": [
+        "ID"
+      ],
+      "slice": "s2-plans-dunning",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/SUBSCRIPTIONS.csv",
+      "bytes": 9601,
+      "delta": "ow_tp.mig_unt19_20261030_src.subscriptions"
+    },
+    "oracle.OW_BILLING.USAGE_EVENTS": {
+      "rows": 817,
+      "pk": [
+        "ID"
+      ],
+      "slice": "s1-invoicing-rating",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/USAGE_EVENTS.csv",
+      "bytes": 81631,
+      "delta": "ow_tp.mig_unt19_20261030_src.usage_events"
+    },
+    "oracle.OW_BILLING.INVOICES": {
+      "rows": 4,
+      "pk": [
+        "ID"
+      ],
+      "slice": "s1-invoicing-rating",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/INVOICES.csv",
+      "bytes": 663,
+      "delta": "ow_tp.mig_unt19_20261030_src.invoices"
+    },
+    "oracle.OW_BILLING.RATING_RESULTS": {
+      "rows": 3,
+      "pk": [
+        "ID"
+      ],
+      "slice": "s1-invoicing-rating",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/RATING_RESULTS.csv",
+      "bytes": 543,
+      "delta": "ow_tp.mig_unt19_20261030_src.rating_results"
+    },
+    "oracle.OW_BILLING.DUNNING_ATTEMPTS": {
+      "rows": 1,
+      "pk": [
+        "ID"
+      ],
+      "slice": "s2-plans-dunning",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/DUNNING_ATTEMPTS.csv",
+      "bytes": 195,
+      "delta": "ow_tp.mig_unt19_20261030_src.dunning_attempts"
+    },
+    "oracle.OW_BILLING.INVOICE_LINES": {
+      "rows": 4,
+      "pk": [
+        "ID"
+      ],
+      "slice": "s1-invoicing-rating",
+      "file": "/Volumes/ow_tp/mig_unt19_20261030_src/export/INVOICE_LINES.csv",
+      "bytes": 439,
+      "delta": "ow_tp.mig_unt19_20261030_src.invoice_lines"
+    }
+  },
+  "planted_anomalies": [
+    {
+      "kind": "orphaned_rows",
+      "target": "oracle.OW_BILLING.INVOICE_LINE",
+      "count": 37,
+      "rule": "INVOICE_LINE.invoice_id with no INVOICE_HEADER row"
+    },
+    {
+      "kind": "dirty_dates",
+      "target": "oracle.OW_BILLING.CUSTOMER_MASTER.SIGNUP_DT",
+      "count": 50,
+      "rule": "SIGNUP_DT does not parse as DD-MON-YY"
+    },
+    {
+      "kind": "malformed_csv_lists",
+      "target": "oracle.OW_BILLING.CUSTOMER_MASTER.RELATED_ACCT_IDS",
+      "count": 31,
+      "rule": "non-null value not matching ^\\d{5}(,\\d{5})*$"
+    }
+  ],
+  "type_gaps": []
+}

@@ -1,0 +1,150 @@
+{
+  "gate": "g-snapshot-counts",
+  "verdict": "PASS",
+  "checked_at": "2026-10-31T22:37:02+00:00",
+  "oracle_census": "live COUNT inside the export's READ ONLY transaction (export_manifest.json targets[].rows); census.json num_rows_stats shown for reference (optimizer stats, null where never gathered)",
+  "landed": "ow_tp.mig_unt19_20261030_src.<table> via counts_check.sql on warehouse 565cd2fd713738c4",
+  "checksums": "checksum_check.sql recomputes the seed-contract md5 (ordered pk:amount lines) on Delta for CUSTOMER_MASTER and INVOICE_LINE",
+  "cast_null_check": "cast_null_check.sql: per-cast-column NULL counts on Delta equal empty-field counts in the CSV export for all 121 cast columns (no silent CAST failures)",
+  "tables": [
+    {
+      "table": "BILLING_AUDIT_LOG",
+      "oracle_snapshot_rows": 0,
+      "landed_rows": 0,
+      "census_num_rows_stats": null,
+      "match": true
+    },
+    {
+      "table": "CODES",
+      "oracle_snapshot_rows": 32,
+      "landed_rows": 32,
+      "census_num_rows_stats": 32,
+      "match": true
+    },
+    {
+      "table": "CUSTOMER_MASTER",
+      "oracle_snapshot_rows": 25001,
+      "landed_rows": 25001,
+      "census_num_rows_stats": 25001,
+      "match": true,
+      "export_checksum": "9c44818abb342800c855ca025c699db6",
+      "landed_checksum": "9c44818abb342800c855ca025c699db6",
+      "checksum_match": true
+    },
+    {
+      "table": "CUSTOMER_MASTER_HIST",
+      "oracle_snapshot_rows": 0,
+      "landed_rows": 0,
+      "census_num_rows_stats": null,
+      "match": true
+    },
+    {
+      "table": "ENTITY_ATTR_VALUE",
+      "oracle_snapshot_rows": 8337,
+      "landed_rows": 8337,
+      "census_num_rows_stats": 8337,
+      "match": true
+    },
+    {
+      "table": "INVOICE_HEADER",
+      "oracle_snapshot_rows": 18750,
+      "landed_rows": 18750,
+      "census_num_rows_stats": 18750,
+      "match": true
+    },
+    {
+      "table": "INVOICE_LINE",
+      "oracle_snapshot_rows": 150000,
+      "landed_rows": 150000,
+      "census_num_rows_stats": 150000,
+      "match": true,
+      "export_checksum": "88a66751f0b08b476b492105a2efc537",
+      "landed_checksum": "88a66751f0b08b476b492105a2efc537",
+      "checksum_match": true
+    },
+    {
+      "table": "PLANS",
+      "oracle_snapshot_rows": 3,
+      "landed_rows": 3,
+      "census_num_rows_stats": 3,
+      "match": true
+    },
+    {
+      "table": "SUBSCRIPTIONS_HIST",
+      "oracle_snapshot_rows": 0,
+      "landed_rows": 0,
+      "census_num_rows_stats": null,
+      "match": true
+    },
+    {
+      "table": "TENANTS",
+      "oracle_snapshot_rows": 70,
+      "landed_rows": 70,
+      "census_num_rows_stats": 70,
+      "match": true
+    },
+    {
+      "table": "CREDIT_NOTES",
+      "oracle_snapshot_rows": 5,
+      "landed_rows": 5,
+      "census_num_rows_stats": 5,
+      "match": true
+    },
+    {
+      "table": "NOTIFICATIONS",
+      "oracle_snapshot_rows": 1,
+      "landed_rows": 1,
+      "census_num_rows_stats": 1,
+      "match": true
+    },
+    {
+      "table": "RATING_PERIODS",
+      "oracle_snapshot_rows": 3,
+      "landed_rows": 3,
+      "census_num_rows_stats": 3,
+      "match": true
+    },
+    {
+      "table": "SUBSCRIPTIONS",
+      "oracle_snapshot_rows": 70,
+      "landed_rows": 70,
+      "census_num_rows_stats": 70,
+      "match": true
+    },
+    {
+      "table": "USAGE_EVENTS",
+      "oracle_snapshot_rows": 817,
+      "landed_rows": 817,
+      "census_num_rows_stats": 817,
+      "match": true
+    },
+    {
+      "table": "INVOICES",
+      "oracle_snapshot_rows": 4,
+      "landed_rows": 4,
+      "census_num_rows_stats": 4,
+      "match": true
+    },
+    {
+      "table": "RATING_RESULTS",
+      "oracle_snapshot_rows": 3,
+      "landed_rows": 3,
+      "census_num_rows_stats": 3,
+      "match": true
+    },
+    {
+      "table": "DUNNING_ATTEMPTS",
+      "oracle_snapshot_rows": 1,
+      "landed_rows": 1,
+      "census_num_rows_stats": 1,
+      "match": true
+    },
+    {
+      "table": "INVOICE_LINES",
+      "oracle_snapshot_rows": 4,
+      "landed_rows": 4,
+      "census_num_rows_stats": 4,
+      "match": true
+    }
+  ]
+}
