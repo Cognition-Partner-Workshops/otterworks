@@ -22,6 +22,7 @@ export interface ProductImage { position: number; url: string; alt: string; colo
 
 export interface ProductDetail extends Omit<ProductCard, "image" | "hoverImage"> {
   description: string; details: string; materials: string; images: ProductImage[]; skus: SkuView[]; related: ProductCard[];
+  recommended: ProductCard[];
 }
 
 export interface Facet { value: string; count: number }
@@ -48,6 +49,12 @@ export interface Bag {
   id: string; items: BagLine[]; itemCount: number; listSubtotalCents: number; subtotalCents: number;
   discountCents: number; merchandiseCents: number; promoCode: string | null; promoDescription: string | null;
   promoError: string | null; freeShippingThresholdCents: number; freeShippingRemainingCents: number;
+  saved: SavedLine[];
+}
+
+export interface SavedLine {
+  sku: string; productId: string; name: string; color: string; size: string; image: string | null;
+  unitPriceCents: number; unitListCents: number; stock: number;
 }
 
 export interface Fee { code: string; label: string; amountCents: number }
@@ -77,7 +84,43 @@ export interface Order {
   shipTo: Address | null; phone: string | null; promoCode: string | null; lines: OrderLine[]; subtotalCents: number;
   discountCents: number; shippingCents: number; fees: Fee[]; feesCents: number; taxRate: number; taxCents: number;
   totalCents: number; cardBrand: string; cardLast4: string; pointsEarned: number; createdAt: string;
+  tracking: Tracking | null; returns: ReturnView[]; returnBy: string;
+}
+
+export interface TrackingStep { code: string; label: string; at: string | null; done: boolean }
+export interface Tracking { currentStep: string; carrier: string | null; trackingNumber: string | null; estimatedArrival: string | null; steps: TrackingStep[] }
+export interface ReturnView {
+  returnNumber: string; status: string; method: "MAIL" | "STORE"; refundCents: number; createdAt: string;
+  lines: { lineNo: number; quantity: number; reason: string; refundCents: number }[];
 }
 
 export interface Customer { id: string; email: string; firstName: string; lastName: string; rewardsPoints: number; createdAt: string }
 export interface OrderSummary { orderNumber: string; status: string; fulfillment: string; itemCount: number; totalCents: number; createdAt: string; image: string | null }
+
+export interface Suggestion { type: "category" | "collection"; label: string; href: string }
+export interface SuggestResult { query: string; terms: Suggestion[]; products: ProductCard[]; totalProducts: number }
+
+export interface Review {
+  id: number; author: string; location: string | null; rating: number; title: string | null; body: string;
+  fitNote: string | null; sizePurchased: string | null; verified: boolean; helpfulCount: number; createdAt: string;
+}
+export interface ReviewPage {
+  summary: {
+    rating: number; ratingCount: number; writtenCount: number; histogram: Record<string, number>;
+    fit: { runsSmall: number; trueToSize: number; runsLarge: number; verdict: string | null };
+  };
+  reviews: Review[]; total: number; page: number; pageSize: number; sort: string; rating: number | null;
+}
+
+export interface StoreStock {
+  storeId: string; storeName: string; address: string; city: string; state: string; zip: string; phone: string;
+  hours: string; pickupEnabled: boolean; readyInHours: number; quantity: number;
+  level: "IN_STOCK" | "LIMITED" | "UNAVAILABLE"; canPickUp: boolean;
+}
+export interface Availability { sku: string; productId: string; color: string; size: string; onlineStock: number; stores: StoreStock[] }
+
+export interface WishlistItem { productId: string; color: string | null; addedAt: string; product: ProductCard }
+export interface Wishlist { id: string; member: boolean; items: WishlistItem[]; count: number }
+
+export interface SavedAddress extends Address { id: string; label: string | null; phone: string | null; isDefault: boolean }
+export interface GiftCardBalance { last4: string; balanceCents: number; expiresOn: string | null }

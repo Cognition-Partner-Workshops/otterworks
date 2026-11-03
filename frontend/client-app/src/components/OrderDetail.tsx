@@ -5,10 +5,13 @@ import { useEffect, useState } from "react";
 import { call, HttpError } from "@/lib/client";
 import { money } from "@/lib/format";
 import type { Order } from "@/lib/types";
+import { OrderTimeline } from "./OrderTimeline";
+import { ReturnForm } from "./ReturnForm";
 
 export function OrderDetail({ number, email, placed }: { number: string; email?: string; placed?: boolean }) {
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [returning, setReturning] = useState(false);
 
   useEffect(() => {
     const qs = email ? `?email=${encodeURIComponent(email)}` : "";
@@ -17,6 +20,9 @@ export function OrderDetail({ number, email, placed }: { number: string; email?:
 
   if (error) return <div className="mx-auto max-w-3xl px-4 py-16 text-center"><p className="text-lg font-semibold">{error}</p><Link href="/order-lookup" className="btn mt-6">Look up an order</Link></div>;
   if (!order) return <div className="mx-auto max-w-3xl px-4 py-16">Loading order...</div>;
+  const returnOpen = new Date(order.returnBy).getTime() > Date.now();
+  const returnedQty = order.returns.flatMap((r) => r.lines).reduce((n, l) => n + l.quantity, 0);
+  const canReturn = returnOpen && returnedQty < order.lines.reduce((n, l) => n + l.quantity, 0);
   const invoice = `/api/orders/${order.orderNumber}/invoice?email=${encodeURIComponent(order.email)}`;
 
   return (
@@ -26,6 +32,7 @@ export function OrderDetail({ number, email, placed }: { number: string; email?:
       <p className="mt-2 text-sm text-neutral-600">
         Placed {new Date(order.createdAt).toLocaleString()} · Status <span className="font-semibold" data-testid="order-status">{order.status}</span> · A confirmation was sent to {order.email}.
       </p>
+      {order.tracking && <OrderTimeline tracking={order.tracking} />}
       <div className="mt-8 grid gap-8 md:grid-cols-2">
         <section className="bg-sand p-5 text-sm" data-testid="fulfillment-details">
           {order.fulfillment === "PICKUP" && order.pickup ? (
@@ -65,6 +72,26 @@ export function OrderDetail({ number, email, placed }: { number: string; email?:
           </dl>
         </section>
       </div>
+      <section className="mt-10" aria-labelledby="returns-heading" data-testid="returns">
+        <h2 id="returns-heading" className="text-lg font-semibold">Returns</h2>
+        {order.returns.map((r) => (
+          <div key={r.returnNumber} className="mt-3 border p-4 text-sm" data-testid="return-summary">
+            <p className="font-semibold">Return <span data-testid="return-number">{r.returnNumber}</span> · {r.status === "REQUESTED" ? "Requested" : r.status}</p>
+            <p className="mt-1 text-neutral-600">{r.lines.reduce((n, l) => n + l.quantity, 0)} item(s) · {r.method === "MAIL" ? "Mail it back with the prepaid label we emailed." : "Bring it to any OtterShops store with this return number."}</p>
+            <p className="mt-1">Refund of <span className="font-semibold" data-testid="return-refund">{money(r.refundCents)}</span> to {order.cardBrand} ending {order.cardLast4} once we receive it.</p>
+          </div>
+        ))}
+        {returning ? (
+          <ReturnForm order={order} onCancel={() => setReturning(false)} onCreated={(r) => { setOrder({ ...order, returns: [...order.returns, r] }); setReturning(false); }} />
+        ) : canReturn ? (
+          <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
+            <button type="button" onClick={() => setReturning(true)} className="btn-outline" data-testid="start-return">Start a return</button>
+            <span className="text-neutral-600">Free returns until {new Date(order.returnBy).toLocaleDateString("en-US", { month: "long", day: "numeric" })}.</span>
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-neutral-600">{returnOpen ? "Everything on this order has a return in progress." : "The 45-day return window for this order has closed."}</p>
+        )}
+      </section>
       <Link href="/" className="btn-outline mt-10">Continue shopping</Link>
     </div>
   );

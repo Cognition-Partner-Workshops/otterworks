@@ -17,6 +17,9 @@ interface BagContextValue {
   remove: (sku: string) => Promise<void>;
   applyPromo: (code: string) => Promise<void>;
   removePromo: () => Promise<void>;
+  saveForLater: (sku: string) => Promise<void>;
+  moveToBag: (sku: string) => Promise<void>;
+  removeSaved: (sku: string) => Promise<void>;
   refresh: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   register: (body: { email: string; password: string; firstName: string; lastName: string }) => Promise<void>;
@@ -104,6 +107,9 @@ export function BagProvider({ children }: { children: React.ReactNode }) {
     remove: (sku) => mutate(`/items/${encodeURIComponent(sku)}`, "DELETE"),
     applyPromo: (code) => mutate("/promo", "POST", { code }),
     removePromo: () => mutate("/promo", "DELETE"),
+    saveForLater: (sku) => mutate("/saved", "POST", { sku }),
+    moveToBag: (sku) => mutate(`/saved/${encodeURIComponent(sku)}/move`, "POST"),
+    removeSaved: (sku) => mutate(`/saved/${encodeURIComponent(sku)}`, "DELETE"),
     refresh: load,
     signIn: async (email, password) => signedIn(await call("/auth/login", { method: "POST", body: { email, password, bagId: bag?.id } })),
     register: async (body) => signedIn(await call("/auth/register", { method: "POST", body: { ...body, bagId: bag?.id } })),

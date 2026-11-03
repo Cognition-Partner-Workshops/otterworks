@@ -138,9 +138,15 @@ export async function ProductListing(props: {
         </aside>
         <section>
           {data.items.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-lg font-semibold">No matches</p>
-              <p className="mt-2 text-sm text-neutral-600">Try removing a filter, or browse <Link href="/c/new-arrivals" className="underline">New Arrivals</Link>.</p>
+            <div className="py-16 text-center" data-testid="no-results">
+              <p className="text-lg font-semibold">{props.scope.q ? `We couldn't find anything for "${props.scope.q}"` : "No matches"}</p>
+              <p className="mt-2 text-sm text-neutral-600">Check the spelling, try a more general word, or remove a filter.</p>
+              <p className="mt-6 text-sm font-semibold">Popular right now</p>
+              <ul className="mt-2 flex flex-wrap justify-center gap-2 text-sm">
+                {[["Jeans", "/search?q=jeans"], ["Hoodies", "/search?q=hoodie"], ["Dresses", "/search?q=dress"], ["New Arrivals", "/c/new-arrivals"], ["Sale", "/sale"]].map(([l, h]) => (
+                  <li key={h}><Link href={h} className="inline-block rounded-full border px-3 py-1 hover:border-teal">{l}</Link></li>
+                ))}
+              </ul>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4" data-testid="product-grid">

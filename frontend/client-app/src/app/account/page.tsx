@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { AddressBook } from "@/components/AddressBook";
 import { useBag } from "@/components/BagProvider";
 import { call } from "@/lib/client";
 import { money } from "@/lib/format";
@@ -63,6 +64,8 @@ export default function AccountPage() {
           </ul>
         )}
       </section>
+      <AddressBook />
+      <p className="mt-10 text-sm"><Link href="/favorites" className="underline">View your favorites</Link></p>
     </div>
   );
 }

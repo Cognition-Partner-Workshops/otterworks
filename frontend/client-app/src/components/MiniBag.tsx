@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { money } from "@/lib/format";
 import { useBag } from "./BagProvider";
+import { FreeShippingBar } from "./FreeShippingBar";
 
 export function MiniBag() {
   const { bag, drawerOpen, setDrawerOpen } = useBag();
@@ -37,11 +38,7 @@ export function MiniBag() {
         </div>
         {bag && items.length > 0 && (
           <div className="space-y-3 border-t p-4">
-            {bag.freeShippingRemainingCents > 0 ? (
-              <p className="text-sm">You&apos;re {money(bag.freeShippingRemainingCents)} away from free standard shipping.</p>
-            ) : (
-              <p className="text-sm text-teal">You&apos;ve unlocked free standard shipping.</p>
-            )}
+            <FreeShippingBar bag={bag} />
             <div className="flex justify-between font-semibold"><span>Subtotal</span><span>{money(bag.merchandiseCents)}</span></div>
             <Link href="/bag" onClick={() => setDrawerOpen(false)} className="block bg-teal py-3 text-center font-semibold text-white hover:bg-teal-dark" data-testid="view-bag">
               View bag &amp; check out

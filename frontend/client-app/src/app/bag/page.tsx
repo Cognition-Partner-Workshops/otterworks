@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useBag } from "@/components/BagProvider";
+import { FreeShippingBar } from "@/components/FreeShippingBar";
 import { HttpError } from "@/lib/client";
 import { money } from "@/lib/format";
 
 export default function BagPage() {
-  const { bag, ready, setQuantity, remove, applyPromo, removePromo } = useBag();
+  const { bag, ready, setQuantity, remove, applyPromo, removePromo, saveForLater, moveToBag, removeSaved } = useBag();
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -25,11 +26,39 @@ export default function BagPage() {
   }
 
   if (!ready) return <div className="mx-auto max-w-5xl px-4 py-10">Loading your bag...</div>;
+  const saved = bag?.saved ?? [];
+  const savedSection = saved.length > 0 && (
+    <section className="mt-10" aria-labelledby="saved-heading" data-testid="saved-for-later">
+      <h2 id="saved-heading" className="text-xl font-semibold">Saved for later ({saved.length})</h2>
+      <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+        {saved.map((l) => (
+          <li key={l.sku} className="flex gap-3 border p-3 text-sm" data-testid="saved-line">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {l.image && <img src={l.image.replace(".webp", "-sm.webp")} alt="" className="h-24 w-20 object-cover" />}
+            <div className="flex flex-1 flex-col gap-1">
+              <Link href={`/p/${l.productId}`} className="font-semibold hover:underline">{l.name}</Link>
+              <p className="text-neutral-600">{l.color} · Size {l.size}</p>
+              <p className={l.unitPriceCents < l.unitListCents ? "text-sale" : ""}>{money(l.unitPriceCents)}</p>
+              {l.stock === 0 && <p className="text-xs font-semibold text-sale">Sold out</p>}
+              <div className="mt-auto flex gap-3">
+                <button type="button" disabled={busy || l.stock === 0} onClick={() => run(() => moveToBag(l.sku))} className="text-xs font-semibold underline disabled:opacity-40" data-testid="move-to-bag">Move to bag</button>
+                <button type="button" disabled={busy} onClick={() => run(() => removeSaved(l.sku))} className="text-xs underline">Remove</button>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
   if (!bag || bag.items.length === 0) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-16 text-center">
-        <h1 className="font-display text-3xl font-bold">Your bag is empty</h1>
-        <Link href="/c/new-arrivals" className="btn mt-6">Shop new arrivals</Link>
+      <div className="mx-auto max-w-5xl px-4 py-16">
+        <div className="text-center">
+          <h1 className="font-display text-3xl font-bold">Your bag is empty</h1>
+          <Link href="/c/new-arrivals" className="btn mt-6">Shop new arrivals</Link>
+        </div>
+        {error && <p className="mt-3 text-sm text-sale" role="alert">{error}</p>}
+        {savedSection}
       </div>
     );
   }
@@ -39,6 +68,7 @@ export default function BagPage() {
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-8 md:grid-cols-[1fr_360px]">
       <section>
         <h1 className="font-display text-3xl font-bold">Bag ({bag.itemCount})</h1>
+        <div className="mt-4"><FreeShippingBar bag={bag} /></div>
         <ul className="mt-6 divide-y border-y">
           {bag.items.map((l) => (
             <li key={l.sku} className="flex gap-4 py-4" data-testid="bag-line">
@@ -58,6 +88,7 @@ export default function BagPage() {
                     <button type="button" aria-label="Increase quantity" disabled={busy} onClick={() => run(() => setQuantity(l.sku, l.quantity + 1))} className="px-3 py-1 disabled:opacity-30">+</button>
                   </div>
                   <button type="button" onClick={() => run(() => remove(l.sku))} className="text-xs underline" data-testid="remove-line">Remove</button>
+                  <button type="button" onClick={() => run(() => saveForLater(l.sku))} className="text-xs underline" data-testid="save-for-later">Save for later</button>
                 </div>
               </div>
               <div className="text-right text-sm">
@@ -69,6 +100,7 @@ export default function BagPage() {
           ))}
         </ul>
         {error && <p className="mt-3 text-sm text-sale" role="alert">{error}</p>}
+        {savedSection}
       </section>
 
       <aside className="h-fit space-y-4 bg-sand p-6">
@@ -97,7 +129,6 @@ export default function BagPage() {
           <div className="flex justify-between"><dt>Shipping</dt><dd>{bag.freeShippingRemainingCents === 0 ? "Free" : "Calculated at checkout"}</dd></div>
           <div className="flex justify-between border-t pt-2 text-base font-semibold"><dt>Estimated total</dt><dd data-testid="bag-total">{money(bag.merchandiseCents)}</dd></div>
         </dl>
-        {bag.freeShippingRemainingCents > 0 && <p className="text-xs">Add {money(bag.freeShippingRemainingCents)} more for free standard shipping.</p>}
         <Link href="/checkout" className="btn w-full" data-testid="checkout-button">Checkout</Link>
         <p className="text-xs text-neutral-500">Tax is calculated at checkout.</p>
       </aside>

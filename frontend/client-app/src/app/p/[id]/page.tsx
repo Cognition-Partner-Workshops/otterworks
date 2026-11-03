@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PdpBuy } from "@/components/PdpBuy";
 import { ProductCard } from "@/components/ProductCard";
+import { RecentlyViewed } from "@/components/RecentlyViewed";
+import { Reviews } from "@/components/Reviews";
 import { api, ApiError } from "@/lib/api";
 import { titleCase } from "@/lib/format";
 
@@ -32,11 +34,19 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       </nav>
       <PdpBuy p={p} />
       {p.related.length > 0 && (
-        <section className="mt-16">
-          <h2 className="mb-4 font-display text-2xl font-bold">You may also like</h2>
+        <section className="mt-16" data-testid="complete-the-look">
+          <h2 className="mb-4 font-display text-2xl font-bold">Complete the look</h2>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">{p.related.map((r) => <ProductCard key={r.id} p={r} />)}</div>
         </section>
       )}
+      <Reviews productId={p.id} sizes={[...new Set(p.skus.map((s) => s.size))]} />
+      {p.recommended.length > 0 && (
+        <section className="mt-16" data-testid="recommended">
+          <h2 className="mb-4 font-display text-2xl font-bold">You may also like</h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">{p.recommended.slice(0, 4).map((r) => <ProductCard key={r.id} p={r} />)}</div>
+        </section>
+      )}
+      <RecentlyViewed current={p} />
     </div>
   );
 }
