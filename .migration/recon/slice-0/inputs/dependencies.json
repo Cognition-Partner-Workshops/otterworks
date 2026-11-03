@@ -1,36 +1,48 @@
 {
  "version": 1,
  "slice": "slice-0",
- "routines": {
-  "OW_BILLING.PKG_OW_UTIL.F_MD5_UUID": {
+ "routines": [
+  {
+   "routine": "OW_BILLING.PKG_OW_UTIL.F_MD5_UUID",
    "writes": [],
-   "reads": []
+   "reads": [],
+   "calls": []
   },
-  "OW_BILLING.PKG_OW_UTIL.F_CODE_DESC": {
+  {
+   "routine": "OW_BILLING.PKG_OW_UTIL.F_CODE_DESC",
    "writes": [],
    "reads": [
     "OW_BILLING.CODES"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_OW_UTIL.F_DT2STR": {
+  {
+   "routine": "OW_BILLING.PKG_OW_UTIL.F_DT2STR",
    "writes": [],
-   "reads": []
+   "reads": [],
+   "calls": []
   },
-  "OW_BILLING.PKG_OW_UTIL.F_STR2DT": {
+  {
+   "routine": "OW_BILLING.PKG_OW_UTIL.F_STR2DT",
    "writes": [],
-   "reads": []
+   "reads": [],
+   "calls": []
   },
-  "OW_BILLING.PKG_OW_UTIL.LOG_MSG": {
+  {
+   "routine": "OW_BILLING.PKG_OW_UTIL.LOG_MSG",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG"
    ],
-   "reads": []
+   "reads": [],
+   "calls": []
   },
-  "OW_BILLING.TRG_BILLING_AUDIT_LOG_ID": {
+  {
+   "routine": "OW_BILLING.TRG_BILLING_AUDIT_LOG_ID",
    "writes": [],
-   "reads": []
+   "reads": [],
+   "calls": []
   }
- },
+ ],
  "jobs": {
   "JOB_PURGE_AUDIT_LOG": {
    "writes": [

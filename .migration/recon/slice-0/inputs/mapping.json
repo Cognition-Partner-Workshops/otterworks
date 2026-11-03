@@ -6,7 +6,7 @@
  "tolerance_mode": "exact",
  "objects": [
   {
-   "object": "ow_billing.codes",
+   "object": "codes",
    "root_table": "OW_BILLING.CODES",
    "key": {
     "source": [
@@ -61,7 +61,7 @@
    "row_count_stats": 32
   },
   {
-   "object": "ow_billing.plans",
+   "object": "plans",
    "root_table": "OW_BILLING.PLANS",
    "key": {
     "source": [
@@ -161,7 +161,7 @@
    "row_count_stats": 3
   },
   {
-   "object": "ow_billing.tenants",
+   "object": "tenants",
    "root_table": "OW_BILLING.TENANTS",
    "key": {
     "source": [
@@ -228,7 +228,7 @@
    "row_count_stats": 70
   },
   {
-   "object": "ow_billing.billing_audit_log",
+   "object": "billing_audit_log",
    "root_table": "OW_BILLING.BILLING_AUDIT_LOG",
    "key": {
     "source": [

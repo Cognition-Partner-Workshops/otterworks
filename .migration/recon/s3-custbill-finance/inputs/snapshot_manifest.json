@@ -1,0 +1,12 @@
+{
+  "source": "oracle",
+  "snapshot_at": "2026-10-31T22:31:25+00:00",
+  "export_manifest": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2362 (.migration/recon/slice-0/out/export_manifest.json, commit 415b07336)",
+  "row_counts": {
+    "INVOICE_HEADER": 18750,
+    "INVOICE_LINE": 150000,
+    "CUSTOMER_MASTER": 25001,
+    "CUSTOMER_MASTER_HIST": 0,
+    "ENTITY_ATTR_VALUE": 8337
+  }
+}

@@ -352,15 +352,24 @@
           },
           {
             "source": "CHAR(n)",
-            "target": "char(n)"
+            "target": "char(n)",
+            "accepts": [
+              "text"
+            ]
           },
           {
             "source": "CHAR",
-            "target": "char"
+            "target": "char",
+            "accepts": [
+              "text"
+            ]
           },
           {
             "source": "NCHAR(n)",
-            "target": "char(n)"
+            "target": "char(n)",
+            "accepts": [
+              "text"
+            ]
           },
           {
             "source": "CLOB",

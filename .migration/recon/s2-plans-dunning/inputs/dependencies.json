@@ -1,23 +1,28 @@
 {
  "version": 1,
  "slice": "s2-plans-dunning",
- "routines": {
-  "OW_BILLING.PKG_PLANS.FN_LIST_PLANS": {
+ "routines": [
+  {
+   "routine": "OW_BILLING.PKG_PLANS.FN_LIST_PLANS",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG"
    ],
    "reads": [
     "OW_BILLING.PLANS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_PLANS.FN_ENTITLEMENT": {
+  {
+   "routine": "OW_BILLING.PKG_PLANS.FN_ENTITLEMENT",
    "writes": [],
    "reads": [
     "OW_BILLING.SUBSCRIPTIONS",
     "OW_BILLING.TENANTS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_PLANS.SP_CHANGE_PLAN": {
+  {
+   "routine": "OW_BILLING.PKG_PLANS.SP_CHANGE_PLAN",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG",
     "OW_BILLING.SUBSCRIPTIONS",
@@ -25,15 +30,19 @@
    ],
    "reads": [
     "OW_BILLING.SUBSCRIPTIONS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_DUNNING.FN_OVERDUE_ACCOUNTS": {
+  {
+   "routine": "OW_BILLING.PKG_DUNNING.FN_OVERDUE_ACCOUNTS",
    "writes": [],
    "reads": [
     "OW_BILLING.INVOICES"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_DUNNING.SP_SCHEDULE_DUNNING": {
+  {
+   "routine": "OW_BILLING.PKG_DUNNING.SP_SCHEDULE_DUNNING",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG",
     "OW_BILLING.DUNNING_ATTEMPTS"
@@ -41,9 +50,11 @@
    "reads": [
     "OW_BILLING.DUNNING_ATTEMPTS",
     "OW_BILLING.INVOICES"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.PKG_DUNNING.SP_SUSPEND_OVERDUE": {
+  {
+   "routine": "OW_BILLING.PKG_DUNNING.SP_SUSPEND_OVERDUE",
    "writes": [
     "OW_BILLING.BILLING_AUDIT_LOG",
     "OW_BILLING.NOTIFICATIONS",
@@ -56,23 +67,28 @@
     "OW_BILLING.NOTIFICATIONS",
     "OW_BILLING.SUBSCRIPTIONS",
     "OW_BILLING.TENANTS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.TRG_SUBSCRIPTIONS_HIST": {
+  {
+   "routine": "OW_BILLING.TRG_SUBSCRIPTIONS_HIST",
    "writes": [
     "OW_BILLING.SUBSCRIPTIONS_HIST"
    ],
    "reads": [
     "OW_BILLING.SUBSCRIPTIONS"
-   ]
+   ],
+   "calls": []
   },
-  "OW_BILLING.TRG_SUB_NO_UNCANCEL": {
+  {
+   "routine": "OW_BILLING.TRG_SUB_NO_UNCANCEL",
    "writes": [],
    "reads": [
     "OW_BILLING.SUBSCRIPTIONS"
-   ]
+   ],
+   "calls": []
   }
- },
+ ],
  "jobs": {
   "JOB_NIGHTLY_DUNNING": {
    "writes": [
