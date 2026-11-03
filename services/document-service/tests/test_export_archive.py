@@ -71,3 +71,48 @@ async def test_export_endpoint_404s_for_unreadable_file(client, monkeypatch, tmp
     resp = await client.get("/api/v1/documents/exports", params={"name": "locked.md"})
 
     assert resp.status_code == 404
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["../outside.txt", "/etc/passwd", "reports/../../outside.txt", "reports/../.."],
+)
+def test_rejects_names_outside_the_archive(archive, tmp_path, name):
+    (tmp_path.parent / "outside.txt").write_text("secret\n", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError):
+        archive.read_export(name)
+
+
+def test_rejects_symlink_escaping_the_archive(archive, tmp_path):
+    outside = tmp_path.parent / "outside.txt"
+    outside.write_text("secret\n", encoding="utf-8")
+    (tmp_path / "link.md").symlink_to(outside)
+
+    with pytest.raises(FileNotFoundError):
+        archive.read_export("link.md")
+
+
+def test_reads_subdirectory_name_that_normalises_inside(archive):
+    assert archive.read_export("reports/../reports/q3.md") == "# Q3\n"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("name", ["../outside.txt", "/etc/passwd", "reports/../../outside.txt"])
+async def test_export_endpoint_404s_for_names_outside_the_archive(
+    client, monkeypatch, tmp_path, name
+):
+    archive_dir = tmp_path / "archive"
+    (archive_dir / "reports").mkdir(parents=True)
+    (archive_dir / "reports" / "q3.md").write_text("# Q3\n", encoding="utf-8")
+    (tmp_path / "outside.txt").write_text("secret\n", encoding="utf-8")
+    monkeypatch.setenv("EXPORT_ARCHIVE_DIR", str(archive_dir))
+
+    resp = await client.get("/api/v1/documents/exports", params={"name": name})
+
+    assert resp.status_code == 404
+    assert "secret" not in resp.text
+
+    ok = await client.get("/api/v1/documents/exports", params={"name": "reports/q3.md"})
+    assert ok.status_code == 200
+    assert ok.text == "# Q3\n"
