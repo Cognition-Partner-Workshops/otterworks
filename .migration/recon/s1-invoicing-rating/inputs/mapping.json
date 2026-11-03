@@ -6,7 +6,7 @@
  "tolerance_mode": "exact",
  "objects": [
   {
-   "object": "ow_billing.invoices",
+   "object": "invoices",
    "root_table": "OW_BILLING.INVOICES",
    "key": {
     "source": [
@@ -118,7 +118,7 @@
    "row_count_stats": 4
   },
   {
-   "object": "ow_billing.invoice_lines",
+   "object": "invoice_lines",
    "root_table": "OW_BILLING.INVOICE_LINES",
    "key": {
     "source": [
@@ -208,7 +208,7 @@
    "row_count_stats": 4
   },
   {
-   "object": "ow_billing.credit_notes",
+   "object": "credit_notes",
    "root_table": "OW_BILLING.CREDIT_NOTES",
    "key": {
     "source": [
@@ -285,7 +285,7 @@
    "row_count_stats": 5
   },
   {
-   "object": "ow_billing.rating_periods",
+   "object": "rating_periods",
    "root_table": "OW_BILLING.RATING_PERIODS",
    "key": {
     "source": [
@@ -353,7 +353,7 @@
    "row_count_stats": 3
   },
   {
-   "object": "ow_billing.rating_results",
+   "object": "rating_results",
    "root_table": "OW_BILLING.RATING_RESULTS",
    "key": {
     "source": [
@@ -476,7 +476,7 @@
    "row_count_stats": 3
   },
   {
-   "object": "ow_billing.usage_events",
+   "object": "usage_events",
    "root_table": "OW_BILLING.USAGE_EVENTS",
    "key": {
     "source": [

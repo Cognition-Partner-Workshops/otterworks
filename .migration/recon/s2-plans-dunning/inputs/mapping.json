@@ -6,7 +6,7 @@
  "tolerance_mode": "exact",
  "objects": [
   {
-   "object": "ow_billing.subscriptions",
+   "object": "subscriptions",
    "root_table": "OW_BILLING.SUBSCRIPTIONS",
    "key": {
     "source": [
@@ -111,7 +111,7 @@
    "row_count_stats": 70
   },
   {
-   "object": "ow_billing.subscriptions_hist",
+   "object": "subscriptions_hist",
    "root_table": "OW_BILLING.SUBSCRIPTIONS_HIST",
    "key": {
     "source": [
@@ -253,7 +253,7 @@
    "row_count_stats": null
   },
   {
-   "object": "ow_billing.dunning_attempts",
+   "object": "dunning_attempts",
    "root_table": "OW_BILLING.DUNNING_ATTEMPTS",
    "key": {
     "source": [
@@ -343,7 +343,7 @@
    "row_count_stats": 1
   },
   {
-   "object": "ow_billing.notifications",
+   "object": "notifications",
    "root_table": "OW_BILLING.NOTIFICATIONS",
    "key": {
     "source": [

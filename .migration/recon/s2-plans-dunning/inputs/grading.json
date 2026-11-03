@@ -1,6 +1,6 @@
 {
- "ow_billing.subscriptions": "full",
- "ow_billing.subscriptions_hist": "full",
- "ow_billing.dunning_attempts": "full",
- "ow_billing.notifications": "full"
+ "subscriptions": "full",
+ "subscriptions_hist": "full",
+ "dunning_attempts": "full",
+ "notifications": "full"
 }
