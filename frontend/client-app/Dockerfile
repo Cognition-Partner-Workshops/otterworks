@@ -1,21 +1,22 @@
-FROM node:20-alpine AS builder
-
-ARG VITE_COLLAB_WS_URL=ws://localhost:8084
-ENV VITE_COLLAB_WS_URL=$VITE_COLLAB_WS_URL
-
+FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts
+RUN npm ci --no-audit --no-fund
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.27-alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
-
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production PORT=3000 HOSTNAME=0.0.0.0 NEXT_TELEMETRY_DISABLED=1
+RUN adduser -D -u 1001 app
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+USER 1001
 EXPOSE 3000
-HEALTHCHECK --interval=10s --timeout=3s CMD wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1
-
-# API_GATEWAY_URL default for runtime (can be overridden by Helm/docker-compose env);
-# substituted into the nginx config template at container start.
-ENV API_GATEWAY_URL=http://api-gateway:8080
+CMD ["node", "server.js"]

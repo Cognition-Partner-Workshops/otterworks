@@ -1,9 +1,7 @@
 node_modules
-dist
+.next
 test-results
 playwright-report
-mobile
 e2e
-bdd
-Dockerfile
-.dockerignore
+*.md
+!IMAGE_CREDITS.md

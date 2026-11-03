@@ -1,50 +1,17 @@
 import type { Config } from "tailwindcss";
 
-// OtterWorks classic-enterprise theme: navy/steel primary, flat square corners,
-// muted amber accent, system sans stack.
-const config: Config = {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+export default {
+  content: ["./src/**/*.{ts,tsx}"],
   theme: {
-    borderRadius: {
-      none: "0",
-      sm: "1px",
-      DEFAULT: "2px",
-      md: "2px",
-      lg: "2px",
-      xl: "2px",
-      "2xl": "2px",
-      "3xl": "2px",
-      full: "9999px",
-    },
     extend: {
       colors: {
-        otter: {
-          50: "#f4f5f7",
-          100: "#e7eaef",
-          200: "#c8d1dd",
-          300: "#a1b0c4",
-          400: "#6d84a4",
-          500: "#3f5a82",
-          600: "#1f3a5f",
-          700: "#1a3252",
-          800: "#152a45",
-          900: "#102138",
-        },
-        accent: {
-          400: "#d99a3d",
-          500: "#c9862b",
-          600: "#a96e1f",
-        },
+        ink: "#1b1f23",
+        teal: { DEFAULT: "#0f5e63", dark: "#0a4448", light: "#e6f1f1" },
+        sale: "#c8102e",
+        sand: "#f6f3ee",
       },
-      fontFamily: {
-        sans: ['"Segoe UI"', "Helvetica", "Arial", "sans-serif"],
-      },
+      fontFamily: { sans: ["var(--font-sans)", "system-ui", "sans-serif"], display: ["var(--font-display)", "Georgia", "serif"] },
     },
   },
   plugins: [],
-};
-
-export default config;
+} satisfies Config;

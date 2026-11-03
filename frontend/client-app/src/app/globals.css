@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { @apply bg-white text-ink antialiased; }
+.btn { @apply inline-flex items-center justify-center bg-teal px-6 py-3 font-semibold text-white hover:bg-teal-dark disabled:cursor-not-allowed disabled:opacity-50; }
+.btn-outline { @apply inline-flex items-center justify-center border border-ink px-6 py-3 font-semibold hover:bg-ink hover:text-white; }
+.input { @apply w-full border border-neutral-300 px-3 py-2 text-sm focus:border-teal focus:outline-none; }
+.label { @apply mb-1 block text-sm font-medium; }
