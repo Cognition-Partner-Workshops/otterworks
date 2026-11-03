@@ -29,6 +29,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Commons Configuration 2.8.0 — portal settings file with interpolation -->
         <commons-configuration2.version>2.8.0</commons-configuration2.version>
+        <!-- Override the Boot 2.7.18 BOM pins for the two JDBC drivers (both still 2.x / 42.x). -->
+        <h2.version>2.5.252</h2.version>
+        <postgresql.version>42.7.14</postgresql.version>
     </properties>
 
     <dependencies>
