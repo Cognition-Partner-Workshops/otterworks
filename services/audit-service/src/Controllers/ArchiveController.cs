@@ -1,4 +1,5 @@
 using OtterWorks.AuditService.Archive;
+using OtterWorks.AuditService.Security;
 
 namespace OtterWorks.AuditService.Controllers;
 
@@ -11,9 +12,11 @@ public static class ArchiveController
 {
     public static void MapArchiveEndpoints(this WebApplication app)
     {
-        app.MapGet("/api/audit/archive/{docId}/events", GetEvents).WithName("GetArchiveEvents");
-        app.MapGet("/api/v1/audit/archive/{docId}", GetDocument).WithName("GetArchiveDocumentV1");
-        app.MapGet("/api/v1/audit/archive/{docId}/events", GetEvents).WithName("GetArchiveEventsV1Events");
+        // The archive store has no notion of who may see a document, so these reads are admin-only.
+        var archive = app.MapGroup("").RequireAuthorization(AuditAuthorization.AdminPolicy);
+        archive.MapGet("/api/audit/archive/{docId}/events", GetEvents).WithName("GetArchiveEvents");
+        archive.MapGet("/api/v1/audit/archive/{docId}", GetDocument).WithName("GetArchiveDocumentV1");
+        archive.MapGet("/api/v1/audit/archive/{docId}/events", GetEvents).WithName("GetArchiveEventsV1Events");
         app.MapGet("/health/archive", ArchiveHealth).WithName("ArchiveHealth");
     }
 

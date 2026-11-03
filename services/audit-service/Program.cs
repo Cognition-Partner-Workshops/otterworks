@@ -2,12 +2,14 @@ using Amazon.DynamoDBv2;
 using Amazon.S3;
 using Amazon.SimpleNotificationService;
 using Amazon.SQS;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OtterWorks.AuditService.Archive;
 using OtterWorks.AuditService.Config;
 using OtterWorks.AuditService.Controllers;
 using OtterWorks.AuditService.Middleware;
+using OtterWorks.AuditService.Security;
 using OtterWorks.AuditService.Services;
 using Prometheus;
 using Serilog;
@@ -95,11 +97,27 @@ builder.Services.AddHealthChecks()
 // Prometheus metrics
 builder.Services.AddSingleton(Metrics.DefaultRegistry);
 
+// Authentication: validate the auth-service JWT forwarded by the api-gateway (same JWT_SECRET
+// as the gateway); authorization: admin-only policy for org-wide reports, export and archive.
+var jwtSecret = builder.Configuration["JWT_SECRET"];
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    throw new InvalidOperationException("JWT_SECRET must be set: the audit API authorizes callers from the auth-service JWT.");
+}
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options => AuditAuthorization.ConfigureJwtBearer(options, jwtSecret));
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuditAuthorization.AdminPolicy, policy => policy.RequireRole(AuditAuthorization.AdminRole));
+});
+
 var app = builder.Build();
 
 // Middleware pipeline
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Prometheus metrics endpoint
 app.UseHttpMetrics();
