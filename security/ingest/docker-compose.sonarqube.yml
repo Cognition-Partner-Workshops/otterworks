@@ -1,0 +1,39 @@
+# SonarQube Community for producing a third-party scanner export locally.
+#   docker compose -f security/ingest/docker-compose.sonarqube.yml -p "$RUN_TOKEN" up -d sonarqube
+#   docker compose -f security/ingest/docker-compose.sonarqube.yml -p "$RUN_TOKEN" run --rm scanner
+#   docker compose -f security/ingest/docker-compose.sonarqube.yml -p "$RUN_TOKEN" down -v
+# SONAR_TOKEN is a local user token minted against this container; it never leaves the machine.
+# Only the scanner needs it, and it checks at start-up, so `up sonarqube` and `down -v` work before a token exists.
+services:
+  sonarqube:
+    image: sonarqube:community
+    environment:
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    ports:
+      - "127.0.0.1:9000:9000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/api/system/status | grep -q '\"UP\"'"]
+      interval: 10s
+      retries: 30
+
+  scanner:
+    image: sonarsource/sonar-scanner-cli
+    profiles: ["scan"]
+    network_mode: host
+    environment:
+      SONAR_HOST_URL: http://localhost:9000
+      SONAR_TOKEN: ${SONAR_TOKEN:-}
+    volumes:
+      - ../..:/usr/src:ro
+    entrypoint:
+      - sh
+      - -c
+      - '[ -n "$$SONAR_TOKEN" ] || { echo "SONAR_TOKEN is not set: mint a token against the local SonarQube first" >&2; exit 2; }; exec /usr/bin/entrypoint.sh sonar-scanner "$$@"'
+      - scanner
+    command:
+      - -Dsonar.projectKey=otterworks
+      - -Dsonar.sources=.
+      - -Dsonar.working.directory=/tmp/scannerwork
+      - -Dsonar.exclusions=**/node_modules/**,**/*.min.js,**/vendor/**
+      - -Dsonar.java.binaries=/tmp
+      - -Dsonar.scm.disabled=true
