@@ -24,7 +24,7 @@ public final class ProductViews {
                          String description, String details, String materials, PriceInfo price,
                          List<ProductImage> images, List<Swatch> colors, List<String> sizes, List<SkuView> skus,
                          Product.StockState stockState, double rating, int reviewCount, boolean isNew,
-                         List<String> collections, List<Card> related) {}
+                         List<String> collections, List<Card> related, List<Card> recommended) {}
 
     static List<Swatch> swatches(Product p, CatalogService catalog) {
         Map<String, List<Sku>> byColor = new LinkedHashMap<>();
@@ -55,6 +55,18 @@ public final class ProductViews {
                 .map(r -> card(r, catalog)).toList();
         return new Detail(p.id(), p.name(), p.label(), p.department(), p.category(), p.fit(), p.description(),
                 p.details(), p.materials(), catalog.price(p), p.images(), swatches(p, catalog), sizes(p), skus,
-                p.stockState(), p.rating(), p.reviewCount(), p.isNew(), p.collections(), related);
+                p.stockState(), p.rating(), p.reviewCount(), p.isNew(), p.collections(), related,
+                recommended(p, catalog, 8));
+    }
+
+    /** "You may also like": same department and category, in stock, best rated first, excluding Complete the Look. */
+    static List<Card> recommended(Product p, CatalogService catalog, int limit) {
+        return catalog.products().stream()
+                .filter(o -> !o.id().equals(p.id()) && !p.related().contains(o.id()))
+                .filter(o -> o.department().equals(p.department()) && o.stockState() != Product.StockState.SOLD_OUT)
+                .sorted(java.util.Comparator.comparing((Product o) -> !o.category().equals(p.category()))
+                        .thenComparing(java.util.Comparator.comparingDouble(Product::rating).reversed())
+                        .thenComparing(Product::id))
+                .limit(limit).map(o -> card(o, catalog)).toList();
     }
 }

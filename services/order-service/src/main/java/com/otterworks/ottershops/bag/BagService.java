@@ -106,6 +106,48 @@ public class BagService {
         return price(bags.items(bagId), null, null);
     }
 
+    public record SavedLine(String sku, String productId, String name, String color, String size, String image,
+                            int unitPriceCents, int unitListCents, int stock) {}
+
+    public List<SavedLine> saved(UUID bagId) {
+        List<SavedLine> out = new ArrayList<>();
+        for (String id : bags.saved(bagId)) {
+            catalog.findSku(id).ifPresent(sku -> catalog.findProduct(sku.productId()).ifPresent(p -> {
+                var price = catalog.price(p);
+                out.add(new SavedLine(sku.sku(), p.id(), p.name(), sku.color(), sku.size(), catalog.imageFor(p, sku.color()),
+                        price.priceCents(), price.listCents(), sku.stock()));
+            }));
+        }
+        return out;
+    }
+
+    /** Moves a bag line to "saved for later"; it keeps no quantity and is not priced into the bag. */
+    @Transactional
+    public PricedBag saveForLater(UUID bagId, UUID customerId, String sku) {
+        BagRepository.BagRow bag = access(bagId, customerId, true);
+        Map<String, Integer> items = bags.items(bagId);
+        if (!items.containsKey(sku)) throw ApiException.notFound("Bag item");
+        bags.removeItem(bagId, sku);
+        bags.save(bagId, sku);
+        return price(bags.items(bagId), bag.promoCode(), null);
+    }
+
+    @Transactional
+    public PricedBag moveToBag(UUID bagId, UUID customerId, String sku) {
+        access(bagId, customerId, true);
+        if (!bags.saved(bagId).contains(sku)) throw ApiException.notFound("Saved item");
+        PricedBag priced = setQuantity(bagId, customerId, sku, 1, true);
+        bags.unsave(bagId, sku);
+        return priced;
+    }
+
+    @Transactional
+    public PricedBag removeSaved(UUID bagId, UUID customerId, String sku) {
+        BagRepository.BagRow bag = access(bagId, customerId, true);
+        bags.unsave(bagId, sku);
+        return price(bags.items(bagId), bag.promoCode(), null);
+    }
+
     /**
      * Gives a signed-in shopper their guest bag. With no member bag the guest bag is adopted; otherwise
      * guest lines are merged into the member bag (quantities summed, capped at stock) and the guest bag closed.
@@ -127,6 +169,7 @@ public class BagService {
             int merged = Math.min(Math.min(existing.getOrDefault(sku, 0) + qty, stock), MAX_PER_LINE);
             if (merged > 0) bags.setQuantity(target, sku, merged);
         });
+        bags.saved(guestBagId).forEach(sku -> bags.save(target, sku));
         if (guest.get().promoCode() != null) bags.setPromo(target, guest.get().promoCode());
         bags.markConverted(guestBagId);
         return target;

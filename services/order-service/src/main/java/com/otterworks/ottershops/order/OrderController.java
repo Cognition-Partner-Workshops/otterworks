@@ -7,7 +7,11 @@ import com.otterworks.ottershops.common.Money;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,10 +31,12 @@ public class OrderController {
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.of("America/Los_Angeles"));
     private final OrderRepository orders;
     private final CurrentCustomer current;
+    private final ReturnService returns;
 
-    public OrderController(OrderRepository orders, CurrentCustomer current) {
+    public OrderController(OrderRepository orders, CurrentCustomer current, ReturnService returns) {
         this.orders = orders;
         this.current = current;
+        this.returns = returns;
     }
 
     /** The owner sees their order when signed in; anyone else needs the order number and the order email. */
@@ -96,6 +102,18 @@ public class OrderController {
                 """.formatted(h(o.invoiceNumber()), h(o.invoiceNumber()), h(o.orderNumber()), DATE.format(o.createdAt()),
                 h(o.email()), fulfil, rows, totals, h(o.cardBrand()), h(o.cardLast4()));
         return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
+    }
+
+    @PostMapping("/orders/{number}/returns")
+    @ResponseStatus(HttpStatus.CREATED)
+    public OrderView.ReturnView startReturn(@PathVariable String number, @RequestBody ReturnService.Request body,
+                                            HttpServletRequest req) {
+        return returns.create(authorized(number, body.email(), req), body);
+    }
+
+    @GetMapping("/returns/reasons")
+    public List<String> returnReasons() {
+        return ReturnService.REASONS.stream().sorted().toList();
     }
 
     @GetMapping("/account")

@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -71,5 +72,19 @@ public class BagRepository {
 
     private void touch(UUID bagId) {
         jdbc.update("UPDATE bags SET updated_at = now() WHERE id = ?", bagId);
+    }
+
+    public List<String> saved(UUID bagId) {
+        return jdbc.queryForList("SELECT sku FROM bag_saved_items WHERE bag_id = ? ORDER BY saved_at DESC, sku", String.class, bagId);
+    }
+
+    public void save(UUID bagId, String sku) {
+        jdbc.update("INSERT INTO bag_saved_items (bag_id, sku) VALUES (?, ?) ON CONFLICT (bag_id, sku) DO UPDATE SET saved_at = now()", bagId, sku);
+        touch(bagId);
+    }
+
+    public void unsave(UUID bagId, String sku) {
+        jdbc.update("DELETE FROM bag_saved_items WHERE bag_id = ? AND sku = ?", bagId, sku);
+        touch(bagId);
     }
 }

@@ -11,7 +11,8 @@ public record OrderView(UUID id, String orderNumber, String invoiceNumber, Strin
                         String fulfillment, String shippingMethod, Pickup pickup, Address shipTo, String phone,
                         String promoCode, List<Line> lines, int subtotalCents, int discountCents, int shippingCents,
                         List<Fee> fees, int feesCents, BigDecimal taxRate, int taxCents, int totalCents,
-                        String cardBrand, String cardLast4, int pointsEarned, Instant createdAt) {
+                        String cardBrand, String cardLast4, int pointsEarned, Instant createdAt,
+                        OrderTracking tracking, List<ReturnView> returns, Instant returnBy) {
 
     public record Line(int lineNo, String sku, String productId, String name, String color, String size, String image,
                        int quantity, int unitListCents, int unitPriceCents, int discountCents, int lineTotalCents) {}
@@ -23,4 +24,9 @@ public record OrderView(UUID id, String orderNumber, String invoiceNumber, Strin
 
     public record Summary(String orderNumber, String status, String fulfillment, int itemCount, int totalCents,
                           Instant createdAt, String image) {}
+
+    public record ReturnLine(int lineNo, int quantity, String reason, int refundCents) {}
+
+    public record ReturnView(String returnNumber, String status, String method, int refundCents, Instant createdAt,
+                             List<ReturnLine> lines) {}
 }

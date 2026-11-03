@@ -35,12 +35,12 @@ public class BagController {
     public record BagView(UUID id, List<PricedBag.Line> items, int itemCount, int listSubtotalCents,
                           int subtotalCents, int discountCents, int merchandiseCents, String promoCode,
                           String promoDescription, String promoError, int freeShippingThresholdCents,
-                          int freeShippingRemainingCents) {
-        static BagView of(UUID id, PricedBag b) {
+                          int freeShippingRemainingCents, List<BagService.SavedLine> saved) {
+        static BagView of(UUID id, PricedBag b, List<BagService.SavedLine> saved) {
             int remaining = Math.max(0, FeeCalculator.FREE_SHIPPING_THRESHOLD_CENTS - b.merchandiseCents());
             return new BagView(id, b.lines(), b.itemCount(), b.listSubtotalCents(), b.subtotalCents(),
                     b.discountCents(), b.merchandiseCents(), b.promoCode(), b.promoDescription(), b.promoError(),
-                    FeeCalculator.FREE_SHIPPING_THRESHOLD_CENTS, b.lines().isEmpty() ? 0 : remaining);
+                    FeeCalculator.FREE_SHIPPING_THRESHOLD_CENTS, b.lines().isEmpty() ? 0 : remaining, saved);
         }
     }
 
@@ -49,37 +49,56 @@ public class BagController {
     public BagView create(HttpServletRequest req) {
         UUID customer = current.id(req).orElse(null);
         UUID id = bags.create(customer);
-        return BagView.of(id, bags.view(id, customer));
+        return view(id, bags.view(id, customer));
     }
 
     @GetMapping("/{id}")
     public BagView get(@PathVariable UUID id, HttpServletRequest req) {
-        return BagView.of(id, bags.view(id, current.id(req).orElse(null)));
+        return view(id, bags.view(id, current.id(req).orElse(null)));
     }
 
     @PostMapping("/{id}/items")
     public BagView add(@PathVariable UUID id, @RequestBody AddItem body, HttpServletRequest req) {
         int qty = body.quantity() == null ? 1 : body.quantity();
-        return BagView.of(id, bags.setQuantity(id, current.id(req).orElse(null), body.sku(), Math.max(1, qty), true));
+        return view(id, bags.setQuantity(id, current.id(req).orElse(null), body.sku(), Math.max(1, qty), true));
     }
 
     @PatchMapping("/{id}/items/{sku}")
     public BagView update(@PathVariable UUID id, @PathVariable String sku, @RequestBody SetQuantity body, HttpServletRequest req) {
-        return BagView.of(id, bags.setQuantity(id, current.id(req).orElse(null), sku, body.quantity(), false));
+        return view(id, bags.setQuantity(id, current.id(req).orElse(null), sku, body.quantity(), false));
     }
 
     @DeleteMapping("/{id}/items/{sku}")
     public BagView remove(@PathVariable UUID id, @PathVariable String sku, HttpServletRequest req) {
-        return BagView.of(id, bags.removeItem(id, current.id(req).orElse(null), sku));
+        return view(id, bags.removeItem(id, current.id(req).orElse(null), sku));
     }
 
     @PostMapping("/{id}/promo")
     public BagView applyPromo(@PathVariable UUID id, @RequestBody ApplyPromo body, HttpServletRequest req) {
-        return BagView.of(id, bags.applyPromo(id, current.id(req).orElse(null), body.code()));
+        return view(id, bags.applyPromo(id, current.id(req).orElse(null), body.code()));
     }
 
     @DeleteMapping("/{id}/promo")
     public BagView removePromo(@PathVariable UUID id, HttpServletRequest req) {
-        return BagView.of(id, bags.removePromo(id, current.id(req).orElse(null)));
+        return view(id, bags.removePromo(id, current.id(req).orElse(null)));
+    }
+
+    @PostMapping("/{id}/saved")
+    public BagView saveForLater(@PathVariable UUID id, @RequestBody AddItem body, HttpServletRequest req) {
+        return view(id, bags.saveForLater(id, current.id(req).orElse(null), body.sku()));
+    }
+
+    @PostMapping("/{id}/saved/{sku}/move")
+    public BagView moveToBag(@PathVariable UUID id, @PathVariable String sku, HttpServletRequest req) {
+        return view(id, bags.moveToBag(id, current.id(req).orElse(null), sku));
+    }
+
+    @DeleteMapping("/{id}/saved/{sku}")
+    public BagView removeSaved(@PathVariable UUID id, @PathVariable String sku, HttpServletRequest req) {
+        return view(id, bags.removeSaved(id, current.id(req).orElse(null), sku));
+    }
+
+    private BagView view(UUID id, PricedBag priced) {
+        return BagView.of(id, priced, bags.saved(id));
     }
 }

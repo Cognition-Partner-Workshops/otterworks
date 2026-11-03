@@ -18,10 +18,14 @@ import java.util.UUID;
 public class OrderRepository {
     private final JdbcTemplate jdbc;
     private final CatalogService catalog;
+    private final ReturnService returns;
+    private final java.time.Clock clock;
 
-    public OrderRepository(JdbcTemplate jdbc, CatalogService catalog) {
+    public OrderRepository(JdbcTemplate jdbc, CatalogService catalog, ReturnService returns, java.time.Clock clock) {
         this.jdbc = jdbc;
         this.catalog = catalog;
+        this.returns = returns;
+        this.clock = clock;
     }
 
     public String nextOrderNumber() {
@@ -118,11 +122,14 @@ public class OrderRepository {
                     : BigDecimal.valueOf(tax * 100L).divide(BigDecimal.valueOf(base), 2, RoundingMode.HALF_UP);
         }
         int total = rs.getInt("total_cents");
+        java.time.Instant placed = rs.getTimestamp("created_at").toInstant();
         boolean member = rs.getObject("customer_id") != null;
         return new OrderView(id, rs.getString("order_number"), rs.getString("invoice_number"), rs.getString("email"),
                 rs.getString("status"), fulfillment, rs.getString("shipping_method"), pickup, ship, rs.getString("phone"),
                 rs.getString("promo_code"), lines, subtotal, discount, shipping, fees, rs.getInt("fees_cents"), rate, tax,
                 total, rs.getString("card_brand"), rs.getString("card_last4"), member ? total / 100 : 0,
-                rs.getTimestamp("created_at").toInstant());
+                placed, OrderTracking.of(id, fulfillment, rs.getString("shipping_method"),
+                        pickup == null ? 0 : pickup.readyInHours(), placed, clock.instant()),
+                returns.forOrder(id), placed.plus(ReturnService.WINDOW));
     }
 }
