@@ -66,9 +66,9 @@ dependencies {
 
     // Metrics & Tracing
     implementation("io.micrometer:micrometer-registry-prometheus:$micrometerVersion")
-    implementation("io.opentelemetry:opentelemetry-api:1.67.0")
-    implementation("io.opentelemetry:opentelemetry-sdk:1.67.0")
-    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.67.0")
+    implementation("io.opentelemetry:opentelemetry-api:1.51.0")
+    implementation("io.opentelemetry:opentelemetry-sdk:1.51.0")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.51.0")
 
     // Redis (chaos flag checks)
     implementation("redis.clients:jedis:5.2.0")
