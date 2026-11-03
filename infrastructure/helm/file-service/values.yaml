@@ -10,8 +10,10 @@ service:
   port: 80
   targetPort: 8082
 
+# file-service is reached only through api-gateway; it must not be published on
+# its own host.
 ingress:
-  enabled: true
+  enabled: false
   className: nginx
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
