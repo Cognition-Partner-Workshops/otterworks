@@ -37,6 +37,11 @@ BACKEND_SERVICES=(
 )
 FRONTEND_SERVICES=(web-app admin-dashboard)
 ALL_SERVICES=("${BACKEND_SERVICES[@]}" "${FRONTEND_SERVICES[@]}")
+# Services that exist only on some demo branches. They have no golden `:main`
+# image, so they are never part of a profile; a branch opts in by listing them
+# in its tenant services file (see tenant_services_file).
+BRANCH_SERVICES=(order-service)
+KNOWN_SERVICES=("${ALL_SERVICES[@]}" "${BRANCH_SERVICES[@]}")
 
 # Service profiles. A full tenant is ~1.5 vCPU / 3.5GiB of requests, which does
 # not multiply to 100 tenants affordably -- but few labs exercise all 13
@@ -57,14 +62,37 @@ profile_services() {
   esac
 }
 
+# A branch can pin exactly which services its tenant runs with
+# infrastructure/helm/tenant-values/<id>/services (one name per line, '#'
+# comments allowed). It wins over the default profile but not over an explicit
+# --profile / TENANT_PROFILE, and deploy-tenant.sh uninstalls any known service
+# the list leaves out, so a branch that drops services does not keep running them.
+tenant_services_file() {
+  printf '%s/infrastructure/helm/tenant-values/%s/services' "$1" "$(sanitize_id "$2")"
+}
+
+# Echo the services listed in a tenant services file; fails on an unknown name.
+read_tenant_services() {
+  local file="$1" line svc known k
+  while IFS= read -r line || [ -n "${line}" ]; do
+    svc="$(printf '%s' "${line%%#*}" | tr -d '[:space:]')"
+    [ -n "${svc}" ] || continue
+    known=false
+    for k in "${KNOWN_SERVICES[@]}"; do [ "${k}" = "${svc}" ] && known=true; done
+    [ "${known}" = true ] || { err "unknown service '${svc}' in ${file}"; return 1; }
+    printf '%s\n' "${svc}"
+  done < "${file}"
+}
+
 # The gateway proxies each route to http://<service>:<containerPort>, so every
 # backend Service must be exposed on its container port (mirrors deploy-dev.sh).
 declare -A CONTAINER_PORT=(
   [api-gateway]=8080 [auth-service]=8081 [file-service]=8082 [document-service]=8083
   [collab-service]=8084 [notification-service]=8086 [search-service]=8087
   [analytics-service]=8088 [admin-service]=8089 [audit-service]=8090 [report-service]=8091
+  [order-service]=8080
 )
-JVM_SERVICES=" auth-service report-service notification-service analytics-service "
+JVM_SERVICES=" auth-service report-service notification-service analytics-service order-service "
 
 # Naming ----------------------------------------------------------------------
 # Namespace must be RFC-1123 (lowercase alnum + '-'); DB name uses '_'.
@@ -376,6 +404,20 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.Aws__Region=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.Aws__DynamoDbTable=${DDB_AUDIT}")
       EXTRA_ARGS+=(--set-string "config.Aws__S3ArchiveBucket=${S3_AUDIT_BUCKET}") ;;
+    order-service)
+      # Same split as auth-service: queries on the transaction pooler (the
+      # driver already disables server-side prepared statements), Flyway on the
+      # session port for its advisory lock.
+      EXTRA_ARGS+=(--set-string "config.SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_ENDPOINT_PORT}/${T_DB_NAME}")
+      EXTRA_ARGS+=(--set-string "config.SPRING_DATASOURCE_USERNAME=${DB_USER}")
+      EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_SESSION_PORT}/${T_DB_NAME}")
+      EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_USER=${DB_USER}")
+      # The tenant database is shared with auth-service, whose Flyway history
+      # is public.flyway_schema_history; a second service reading that table
+      # would take auth's versions for its own.
+      EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_TABLE=order_service_schema_history")
+      add_secret SPRING_FLYWAY_PASSWORD "${DB_PASSWORD}"
+      add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}" ;;
     report-service)
       EXTRA_ARGS+=(--set-string "config.DB_HOST=${DB_ENDPOINT_HOST}" --set-string "config.DB_PORT=${DB_ENDPOINT_PORT}")
       EXTRA_ARGS+=(--set-string "config.DB_NAME=${T_DB_NAME}" --set-string "config.DB_USER=${DB_USER}")

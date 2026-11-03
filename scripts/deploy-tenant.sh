@@ -20,6 +20,9 @@
 #       [--ttl 72h] [--host-suffix demo.example.com] [--skip-db] \
 #       [--profile core|full]
 #
+# Services: --profile / TENANT_PROFILE if given, else the branch's
+#   infrastructure/helm/tenant-values/<ID>/services list if it has one, else full.
+#
 # Required env: AWS creds (exported), DB_PASSWORD. JWT_SECRET / SECRET_KEY_BASE
 #   are taken from the environment, else carried over from the tenant's existing
 #   Kubernetes Secrets on a redeploy, else generated for a brand-new tenant.
@@ -42,7 +45,8 @@ SKIP_DB=false
 # Deploy only the services the lab needs. At 100 tenants the difference between
 # "core" and "full" is roughly 100 vCPU of requests. Defaults to "full" so no
 # existing lab loses a service; see profile_services in lib/tenant-common.sh.
-PROFILE="${TENANT_PROFILE:-full}"
+# A branch's tenant services file (tenant_services_file) replaces the default.
+PROFILE="${TENANT_PROFILE:-}"
 while [ $# -gt 0 ]; do
   case "$1" in
     --tier)        TIER="$2"; shift 2 ;;
@@ -59,8 +63,23 @@ done
 
 [ -n "${ATTENDEE_ID}" ] || { err "Usage: $0 <ATTENDEE_ID> [--tier A|B] [--image-tag TAG] [--branch BRANCH] [--ttl 72h|never] [--profile core|full]"; exit 1; }
 case "${TIER}" in A|B) ;; *) err "--tier must be A or B"; exit 1 ;; esac
-case "${PROFILE}" in core|full) ;; *) err "--profile must be core or full"; exit 1 ;; esac
-mapfile -t TENANT_SERVICES < <(profile_services "${PROFILE}")
+SERVICES_FILE="$(tenant_services_file "${REPO_ROOT}" "${ATTENDEE_ID}")"
+if [ -z "${PROFILE}" ] && [ -f "${SERVICES_FILE}" ]; then
+  PROFILE="branch"
+  TENANT_SERVICES=()
+  services_out="$(read_tenant_services "${SERVICES_FILE}")" || exit 1
+  mapfile -t TENANT_SERVICES <<<"${services_out}"
+  [ -n "${TENANT_SERVICES[0]:-}" ] || { err "${SERVICES_FILE#"${REPO_ROOT}/"} lists no services"; exit 1; }
+else
+  PROFILE="${PROFILE:-full}"
+  case "${PROFILE}" in core|full) ;; *) err "--profile must be core or full"; exit 1 ;; esac
+  mapfile -t TENANT_SERVICES < <(profile_services "${PROFILE}")
+fi
+tenant_runs() {
+  local s
+  for s in "${TENANT_SERVICES[@]}"; do [ "${s}" = "$1" ] && return 0; done
+  return 1
+}
 
 require_bins aws kubectl helm terraform jq
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-$(aws sts get-caller-identity --query Account --output text 2>/dev/null)}"
@@ -537,6 +556,20 @@ for service in "${TENANT_SERVICES[@]}"; do
   deploy_service "${service}" || FAILED+=("${service}")
 done
 
+# A branch that lists its services owns the whole set: anything it does not
+# list is removed, so services from an earlier deploy (or another profile) do
+# not keep running and get woken with the tenant. Only known service releases
+# are touched; Redis/MeiliSearch and anything else in the namespace stay.
+if [ "${PROFILE}" = "branch" ]; then
+  for service in "${KNOWN_SERVICES[@]}"; do
+    tenant_runs "${service}" && continue
+    helm status "${service}" --namespace "${NS}" >/dev/null 2>&1 || continue
+    log "Removing ${service}: not listed in ${SERVICES_FILE#"${REPO_ROOT}/"}"
+    helm uninstall "${service}" --namespace "${NS}" --wait --timeout 2m ||
+      warn "Could not uninstall ${service} from ${NS}"
+  done
+fi
+
 # ---------- Shared ingress (host/path routing, ONE shared ALB/NLB) ----------
 apply_ingress() {
   local sid; sid="$(sanitize_id "${ATTENDEE_ID}")"
@@ -545,6 +578,19 @@ apply_ingress() {
     # every tenant; the web host serves the SPA, the api host the gateway.
     local web_host="t-${sid}.${HOST_SUFFIX}"
     local api_host="api-t-${sid}.${HOST_SUFFIX}"
+    # No gateway, no api host: a rule for a missing Service only serves 503s.
+    local api_rule=""
+    if tenant_runs api-gateway; then
+      api_rule="    - host: ${api_host}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: api-gateway, port: { number: 8080 } }"
+    else
+      api_host="(none)"
+    fi
     log "Applying shared ingress for ${NS} (hosts ${web_host}, ${api_host})..."
     kubectl apply -n "${NS}" -f - <<YAML
 apiVersion: networking.k8s.io/v1
@@ -561,13 +607,7 @@ spec:
             pathType: Prefix
             backend:
               service: { name: web-app, port: { number: 80 } }
-    - host: ${api_host}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service: { name: api-gateway, port: { number: 8080 } }
+${api_rule}
 YAML
   else
     # Fallback: path-based routing on the shared ingress IP when no wildcard DNS

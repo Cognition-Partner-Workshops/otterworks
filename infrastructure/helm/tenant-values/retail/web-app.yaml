@@ -1,0 +1,4 @@
+# The storefront's /api/* route handler and server-side reads go straight to
+# order-service; there is no api-gateway on this tenant.
+config:
+  ORDER_SERVICE_URL: http://order-service:8080

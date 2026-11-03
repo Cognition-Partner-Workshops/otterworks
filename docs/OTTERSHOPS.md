@@ -58,6 +58,17 @@ Regenerate the catalog with `python3 tools/catalog/generate.py`. It is determini
 
 `dbt build` runs 35 models and tests, including key uniqueness, relationships, order totals that balance, and no negative stock.
 
+## Deploy (t-retail)
+
+The `demo-retail` branch is the store's tenant: pushing it runs `.github/workflows/cd-tenant.yml`, which builds the services the push changed (`order-service`, `web-app`), tags them `tenant-retail`, and has the ops dashboard run `scripts/deploy-tenant.sh retail` from the branch.
+
+- `infrastructure/helm/tenant-values/retail/services` lists what the tenant runs: `web-app` and `order-service` only. Any other OtterWorks release left in the namespace is uninstalled on deploy. Redis and MeiliSearch still come up with every tenant.
+- `infrastructure/helm/tenant-values/retail/web-app.yaml` points the storefront at `http://order-service:8080`. Add an `order-service.yaml` next to it for per-tenant settings, for example `config: { PROMO_ENABLED: "true" }`.
+- order-service uses the tenant database `otterworks_retail` through PgBouncer. Flyway runs on the session port and records its versions in `order_service_schema_history`.
+- `order-service` exists only on this branch, so it has no `:main` image. A tenant without a `tenant-retail` build of it fails the deploy. To rebuild everything, run the workflow on `demo-retail` with `rebuild_all`.
+- Redeploy after changes: commit on top of the branch and push `demo-retail`. Then check with `demo-platform/scripts/tenant.sh status retail` and run `scripts/ottershops/smoke.sh https://t-retail.demo.otterworks.app`.
+- The Snowflake loader does not run in the cluster. Run it locally (see above).
+
 ## Checks
 
 ```bash

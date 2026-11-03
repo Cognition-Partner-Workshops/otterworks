@@ -1,0 +1,4 @@
+# OtterShops storefront: the Next.js store and the API it proxies /api/* to.
+# Nothing else from the golden app runs on this tenant.
+web-app
+order-service

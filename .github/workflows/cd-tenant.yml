@@ -78,6 +78,7 @@ jobs:
             report-service: ['services/report-service/**']
             web-app: ['frontend/client-app/**']
             admin-dashboard: ['frontend/admin-dashboard/**']
+            order-service: ['services/order-service/**']
             deployable: ['services/**', 'frontend/**', 'infrastructure/helm/**', 'scripts/**']
 
       # The document-service chart ships copies of the incident alert rules
@@ -107,7 +108,15 @@ jobs:
           echo "golden=${golden}" >> "$GITHUB_OUTPUT"
 
           if [ "${REBUILD_ALL}" = "true" ]; then
-            services="$(printf '%s\n' "${ALL_SERVICES[@]}" | jq -R . | jq -sc .)"
+            # Plus whatever the branch's tenant services file adds, e.g. a
+            # branch-only service that has no golden image to fall back to.
+            rebuild=("${ALL_SERVICES[@]}")
+            services_file="$(tenant_services_file . "$(branch_tenant_id "${GITHUB_REF_NAME}")")"
+            if [ -f "${services_file}" ]; then
+              mapfile -t listed < <(read_tenant_services "${services_file}")
+              rebuild+=("${listed[@]}")
+            fi
+            services="$(printf '%s\n' "${rebuild[@]}" | jq -R . | jq -sc 'unique')"
           else
             # paths-filter emits every matching filter, including the
             # 'deployable' catch-all, which is not a service.
