@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { tap, delay, map, catchError } from 'rxjs/operators';
+import { tap, switchMap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 export interface AuthUser {
@@ -9,11 +9,6 @@ export interface AuthUser {
   email: string;
   displayName: string;
   role: string;
-  token: string;
-}
-
-interface LoginResponse {
-  user: AuthUser;
   token: string;
 }
 
@@ -45,12 +40,14 @@ export class AuthService {
   }
 
   /**
-   * Signs in against the tenant gateway so the stored bearer token is one the backends accept;
-   * falls back to the offline mock user when no gateway is reachable (local dev, static demos).
+   * Signs in through the gateway (auth-service). Only accounts whose access token carries the
+   * ADMIN (or SUPER_ADMIN) role are let in; admin-service enforces the same rule server-side.
    */
   login(email: string, password: string): Observable<AuthUser> {
+    if (!email || !password) {
+      return throwError(() => new Error('Invalid credentials'));
+    }
     return this.gatewayLogin(email, password).pipe(
-      catchError(() => this.mockLogin(email, password)),
       tap(user => {
         localStorage.setItem(this.TOKEN_KEY, user.token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
@@ -80,27 +77,38 @@ export class AuthService {
 
   private gatewayLogin(email: string, password: string): Observable<AuthUser> {
     return this.http.post<GatewayLoginResponse>('/api/v1/auth/login', { email, password }).pipe(
-      map(res => ({
-        id: res.user.id,
-        email: res.user.email,
-        displayName: res.user.displayName || 'Admin User',
-        role: 'admin',
-        token: res.accessToken,
-      })),
+      catchError((err: HttpErrorResponse) =>
+        throwError(() => new Error(err.status === 401 ? 'Invalid email or password' : 'Login failed. Please try again.'))
+      ),
+      switchMap(res => {
+        const role = adminRole(res.accessToken);
+        if (!role) {
+          return throwError(() => new Error('This account does not have admin access'));
+        }
+        return of({
+          id: res.user.id,
+          email: res.user.email,
+          displayName: res.user.displayName || 'Admin User',
+          role,
+          token: res.accessToken,
+        });
+      }),
     );
   }
+}
 
-  private mockLogin(email: string, password: string): Observable<AuthUser> {
-    if (password.length < 1) {
-      return throwError(() => new Error('Invalid credentials'));
-    }
-    const user: AuthUser = {
-      id: 'a0000000-0000-0000-0000-000000000001',
-      email,
-      displayName: 'Admin User',
-      role: 'admin',
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJ1c2VyX2lkIjoiYTAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwiZW1haWwiOiJhZG1pbkBvdHRlcndvcmtzLmRldiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcwNDA2NzIwMCwiZXhwIjoxOTI0OTA1NjAwfQ.hD5dwgrPNRTzbXa6lbA83Aru7BvQVIQc0rGVySkF1fA',
-    };
-    return of(user).pipe(delay(800));
+/** Returns 'super_admin' or 'admin' when the JWT's role claims grant admin access, else null. */
+function adminRole(token: string): string | null {
+  let claims: { role?: unknown; roles?: unknown };
+  try {
+    const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    claims = JSON.parse(atob(payload));
+  } catch {
+    return null;
   }
+  const roles = [claims.role, ...(Array.isArray(claims.roles) ? claims.roles : [])]
+    .filter((r): r is string => typeof r === 'string')
+    .map(r => r.toLowerCase());
+  if (roles.includes('super_admin')) return 'super_admin';
+  return roles.includes('admin') ? 'admin' : null;
 }
