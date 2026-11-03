@@ -1,6 +1,5 @@
 package com.otterworks.ottershops.checkout;
 
-import com.otterworks.ottershops.auth.CustomerRepository;
 import com.otterworks.ottershops.bag.BagRepository;
 import com.otterworks.ottershops.bag.BagService;
 import com.otterworks.ottershops.bag.PricedBag;
@@ -17,6 +16,7 @@ import com.otterworks.ottershops.pricing.FeeCalculator;
 import com.otterworks.ottershops.pricing.Fulfillment;
 import com.otterworks.ottershops.pricing.ShippingMethod;
 import com.otterworks.ottershops.pricing.Totals;
+import com.otterworks.ottershops.rewards.RewardsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -42,11 +42,11 @@ public class CheckoutService {
     private final FeeCalculator fees;
     private final PaymentProvider payments;
     private final OrderRepository orders;
-    private final CustomerRepository customers;
+    private final RewardsService rewards;
 
     public CheckoutService(JdbcTemplate jdbc, BagRepository bagRepo, BagService bags, CatalogService catalog,
                            FeeCalculator fees, PaymentProvider payments, OrderRepository orders,
-                           CustomerRepository customers) {
+                           RewardsService rewards) {
         this.jdbc = jdbc;
         this.bagRepo = bagRepo;
         this.bags = bags;
@@ -54,7 +54,7 @@ public class CheckoutService {
         this.fees = fees;
         this.payments = payments;
         this.orders = orders;
-        this.customers = customers;
+        this.rewards = rewards;
     }
 
     public record QuoteView(PricedBag bag, Totals totals, String fulfillment, String shippingMethod, Store store) {}
@@ -146,7 +146,7 @@ public class CheckoutService {
         for (Fee fee : totals.fees()) orders.insertFee(orderId, fee);
         orders.insertInvoice(orders.nextInvoiceNumber(), orderId, totals.totalCents());
         bagRepo.markConverted(req.bagId());
-        if (customerId != null) customers.addPoints(customerId, totals.totalCents() / 100);
+        if (customerId != null) rewards.earn(customerId, orderId, bag.lines());
         log.info("order {} placed: {} items, total {} cents, {}", number, bag.itemCount(), totals.totalCents(), f);
         return orders.findByNumber(number).orElseThrow();
     }

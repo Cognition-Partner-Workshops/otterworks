@@ -130,11 +130,11 @@ pickup() { echo "{\"bagId\":\"$bag\",\"email\":\"maya@ottershops.test\",\"fulfil
 req POST /checkout "$(pickup "$closed")"; expect 400 "pickup-disabled store rejected"
 before=$(curl -s -b "$JAR" "$API/account" | jq -r .customer.rewardsPoints)
 req POST /checkout "$(pickup "$store")"; expect 201 "member pickup order"
-pnum=$(jq -r .orderNumber <<<"$resp"); total=$(jq -r .totalCents <<<"$resp")
+pnum=$(jq -r .orderNumber <<<"$resp"); earned=$(jq -r .pointsEarned <<<"$resp")
 req GET /account; expect 200 "account"
 jq -e --arg n "$pnum" '.orders[] | select(.orderNumber==$n)' <<<"$resp" >/dev/null || fail "order missing from history"; ok "order in history"
 after=$(jq -r .customer.rewardsPoints <<<"$resp")
-(( after - before == total / 100 )) || fail "points $before -> $after for $total cents"; ok "rewards +$((after - before)) points"
+(( after - before == earned )) || fail "points $before -> $after, order earned $earned"; ok "rewards +$((after - before)) points"
 # Address book and favorites claim for the signed-in shopper.
 req POST /account/addresses '{"label":"Smoke","name":"Maya Otter","line1":"1 Main St","city":"Denver","state":"ZZ","zip":"80202"}'; expect 400 "address with bad state"
 req POST /account/addresses '{"label":"Smoke","name":"Maya Otter","line1":"1 Main St","city":"Denver","state":"CO","zip":"80202"}'; expect 200 "save address"

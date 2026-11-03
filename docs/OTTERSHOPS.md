@@ -44,7 +44,7 @@ Regenerate the catalog with `python3 tools/catalog/generate.py`. It is determini
 - Standard shipping is $7.99 and free from $50 after discounts. Express is $19.99. Pickup is free.
 - Colorado deliveries add the $0.29 retail delivery fee. California pickups add a $0.10 bag fee.
 - Tax applies to merchandise plus shipping, at the destination state's rate or the store's state for pickup (5% where no rate is listed).
-- Members earn 1 rewards point per whole dollar of the order total.
+- Members earn 1 rewards point per whole dollar of merchandise after discounts (shipping, fees, tax and gift cards don't earn). Every balance change is written to `rewards_ledger`.
 
 ## Snowflake marts
 

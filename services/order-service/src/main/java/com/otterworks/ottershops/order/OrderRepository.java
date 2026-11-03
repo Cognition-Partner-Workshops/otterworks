@@ -72,7 +72,9 @@ public class OrderRepository {
 
     public Optional<OrderView> findByNumber(String number) {
         return jdbc.query("""
-                SELECT o.*, i.invoice_number FROM orders o LEFT JOIN invoices i ON i.order_id = o.id
+                SELECT o.*, i.invoice_number,
+                       (SELECT coalesce(sum(points), 0) FROM rewards_ledger r WHERE r.order_id = o.id AND r.kind = 'EARN') AS points_earned
+                FROM orders o LEFT JOIN invoices i ON i.order_id = o.id
                 WHERE o.order_number = ?""", (rs, n) -> map(rs), number.trim().toUpperCase()).stream().findFirst();
     }
 
@@ -123,11 +125,10 @@ public class OrderRepository {
         }
         int total = rs.getInt("total_cents");
         java.time.Instant placed = rs.getTimestamp("created_at").toInstant();
-        boolean member = rs.getObject("customer_id") != null;
         return new OrderView(id, rs.getString("order_number"), rs.getString("invoice_number"), rs.getString("email"),
                 rs.getString("status"), fulfillment, rs.getString("shipping_method"), pickup, ship, rs.getString("phone"),
                 rs.getString("promo_code"), lines, subtotal, discount, shipping, fees, rs.getInt("fees_cents"), rate, tax,
-                total, rs.getString("card_brand"), rs.getString("card_last4"), member ? total / 100 : 0,
+                total, rs.getString("card_brand"), rs.getString("card_last4"), rs.getInt("points_earned"),
                 placed, OrderTracking.of(id, fulfillment, rs.getString("shipping_method"),
                         pickup == null ? 0 : pickup.readyInHours(), placed, clock.instant()),
                 returns.forOrder(id), placed.plus(ReturnService.WINDOW));
