@@ -22,6 +22,7 @@ services:
     build:
       context: services/order-service
       args:
+        REGISTRY: ${OTTERSHOPS_REGISTRY:-}
         MAVEN_MIRROR_URL: ${MAVEN_MIRROR_URL:-}
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ottershops
@@ -38,7 +39,7 @@ services:
     build:
       context: frontend/client-app
       args:
-        NODE_IMAGE: ${OTTERSHOPS_NODE_IMAGE:-node:20-alpine}
+        REGISTRY: ${OTTERSHOPS_REGISTRY:-}
     environment:
       ORDER_SERVICE_URL: http://order-service:8080
     depends_on:
@@ -48,7 +49,10 @@ services:
       - "${WEB_PORT:-3000}:3000"
 
   loader:
-    build: data-platform/ottershops
+    build:
+      context: data-platform/ottershops
+      args:
+        REGISTRY: ${OTTERSHOPS_REGISTRY:-}
     # Runs as the host user so it can read the bind-mounted key file (mode 600).
     user: "${OTTERSHOPS_LOADER_UID:-1000}"
     environment:

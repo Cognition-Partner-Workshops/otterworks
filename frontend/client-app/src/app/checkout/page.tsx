@@ -78,7 +78,7 @@ export default function CheckoutPage() {
       await refresh();
       router.push(`/order/${order.orderNumber}?email=${encodeURIComponent(order.email)}&placed=1`);
     } catch (err) {
-      if (err instanceof HttpError && err.status === 402) setError(`Your card was declined. ${err.message} No order was placed and you have not been charged.`);
+      if (err instanceof HttpError && err.status === 402) setError(`${err.message} No order was placed and you have not been charged.`);
       else setError(err instanceof HttpError ? err.message : "Could not place your order. Please try again.");
       setPlacing(false);
     }
@@ -189,7 +189,7 @@ export default function CheckoutPage() {
             {t.discountCents > 0 && <div className="flex justify-between text-sale"><dt>Promo {bag.promoCode}</dt><dd>−{money(t.discountCents)}</dd></div>}
             <div className="flex justify-between"><dt>{fulfillment === "PICKUP" ? "Pickup" : "Shipping"}</dt><dd>{t.shippingCents === 0 ? "Free" : money(t.shippingCents)}</dd></div>
             {t.fees.map((f) => <div key={f.code} className="flex justify-between"><dt>{f.label}</dt><dd>{money(f.amountCents)}</dd></div>)}
-            <div className="flex justify-between"><dt>Tax ({(Number(t.taxRate) * 100).toFixed(2)}%)</dt><dd>{money(t.taxCents)}</dd></div>
+            <div className="flex justify-between"><dt>Tax ({Number(t.taxRate).toFixed(2)}%)</dt><dd>{money(t.taxCents)}</dd></div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold"><dt>Total</dt><dd data-testid="order-total">{money(t.totalCents)}</dd></div>
           </dl>
         ) : (

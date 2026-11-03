@@ -34,18 +34,18 @@ public class OrderRepository {
 
     public void insertOrder(UUID id, String number, UUID customerId, String email, String fulfillment, String method,
                             String storeId, OrderView.Address a, String phone, String promo, int subtotal, int discount,
-                            int shipping, int fees, int tax, int total, String provider, String reference,
+                            int shipping, int fees, BigDecimal taxRate, int tax, int total, String provider, String reference,
                             String brand, String last4) {
         jdbc.update("""
                 INSERT INTO orders (id, order_number, customer_id, email, status, fulfillment, shipping_method, store_id,
                   ship_name, ship_line1, ship_line2, ship_city, ship_state, ship_zip, phone, promo_code,
-                  subtotal_cents, discount_cents, shipping_cents, fees_cents, tax_cents, total_cents,
+                  subtotal_cents, discount_cents, shipping_cents, fees_cents, tax_rate, tax_cents, total_cents,
                   payment_provider, payment_reference, card_brand, card_last4)
-                VALUES (?, ?, ?, ?, 'PLACED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                VALUES (?, ?, ?, ?, 'PLACED', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 id, number, customerId, email, fulfillment, method, storeId,
                 a == null ? null : a.name(), a == null ? null : a.line1(), a == null ? null : a.line2(),
                 a == null ? null : a.city(), a == null ? null : a.state(), a == null ? null : a.zip(),
-                phone, promo, subtotal, discount, shipping, fees, tax, total, provider, reference, brand, last4);
+                phone, promo, subtotal, discount, shipping, fees, taxRate, tax, total, provider, reference, brand, last4);
     }
 
     public void insertLine(UUID orderId, OrderView.Line l) {
@@ -112,8 +112,11 @@ public class OrderRepository {
         int shipping = rs.getInt("shipping_cents");
         int tax = rs.getInt("tax_cents");
         int base = subtotal - discount + shipping;
-        BigDecimal rate = base == 0 ? BigDecimal.ZERO
-                : BigDecimal.valueOf(tax * 100L).divide(BigDecimal.valueOf(base), 2, RoundingMode.HALF_UP);
+        BigDecimal rate = rs.getBigDecimal("tax_rate");
+        if (rate == null) {
+            rate = base == 0 ? BigDecimal.ZERO
+                    : BigDecimal.valueOf(tax * 100L).divide(BigDecimal.valueOf(base), 2, RoundingMode.HALF_UP);
+        }
         int total = rs.getInt("total_cents");
         boolean member = rs.getObject("customer_id") != null;
         return new OrderView(id, rs.getString("order_number"), rs.getString("invoice_number"), rs.getString("email"),

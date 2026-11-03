@@ -135,7 +135,7 @@ public class CheckoutService {
         String number = orders.nextOrderNumber();
         orders.insertOrder(orderId, number, customerId, email, f.name(), f == Fulfillment.SHIP ? m.name() : null,
                 store == null ? null : store.id(), address, trim(req.phone()), bag.promoCode(), totals.subtotalCents(),
-                totals.discountCents(), totals.shippingCents(), totals.feesCents(), totals.taxCents(),
+                totals.discountCents(), totals.shippingCents(), totals.feesCents(), totals.taxRate(), totals.taxCents(),
                 totals.totalCents(), payments.name(), payment.reference(), payment.cardBrand(), payment.last4());
         int lineNo = 1;
         for (PricedBag.Line l : bag.lines()) {

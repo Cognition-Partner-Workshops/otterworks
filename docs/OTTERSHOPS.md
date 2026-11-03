@@ -20,6 +20,7 @@ open http://localhost:3000
 ```
 
 If Maven Central rate-limits the build, set `MAVEN_MIRROR_URL=https://maven-central.storage-download.googleapis.com/maven2/`.
+If Docker Hub rate-limits base image pulls, set `OTTERSHOPS_REGISTRY=mirror.gcr.io/library/`.
 
 The loader stays idle unless `OTTERSHOPS_SNOWFLAKE_KEY_FILE` points at the private key of the `OTTERSHOPS_SVC` Snowflake user. Keys are never committed. To create the Snowflake objects and that user, generate an RSA key pair and run `data-platform/ottershops/snowflake/bootstrap.py <public-key>` with an admin PAT (`SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_ADMIN_USER`, `SNOWFLAKE_PAT`).
 

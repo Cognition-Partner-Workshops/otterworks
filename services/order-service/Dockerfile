@@ -1,4 +1,6 @@
-FROM maven:3.9-eclipse-temurin-21 AS build
+# Optional pull-through mirror, e.g. REGISTRY=mirror.gcr.io/library/
+ARG REGISTRY=
+FROM ${REGISTRY}maven:3.9-eclipse-temurin-21 AS build
 # Optional Maven Central mirror, e.g. when the build host is rate-limited by repo.maven.apache.org.
 ARG MAVEN_MIRROR_URL=""
 WORKDIR /src
@@ -8,7 +10,7 @@ RUN mvn -B -q dependency:go-offline
 COPY src ./src
 RUN mvn -B -q -DskipTests package
 
-FROM eclipse-temurin:21-jre-alpine
+FROM ${REGISTRY}eclipse-temurin:21-jre-alpine
 WORKDIR /app
 RUN adduser -D -u 1001 app
 COPY --from=build /src/target/order-service.jar /app/order-service.jar

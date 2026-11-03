@@ -1,4 +1,6 @@
-FROM python:3.12-slim
+# Optional pull-through mirror, e.g. REGISTRY=mirror.gcr.io/library/
+ARG REGISTRY=
+FROM ${REGISTRY}python:3.12-slim
 WORKDIR /app
 COPY loader/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

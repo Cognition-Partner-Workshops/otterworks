@@ -9,8 +9,7 @@ export function StoreSearch({ selected, onSelect, actionLabel = "Pick up here" }
   const [stores, setStores] = useState<Store[] | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function search(e?: React.FormEvent) {
-    e?.preventDefault();
+  async function search() {
     setBusy(true);
     try {
       setStores((await call<{ stores: Store[] }>(`/stores?q=${encodeURIComponent(q.trim())}`)).stores);
@@ -21,10 +20,20 @@ export function StoreSearch({ selected, onSelect, actionLabel = "Pick up here" }
 
   return (
     <div>
-      <form onSubmit={search} className="flex gap-2">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="ZIP code or city" aria-label="ZIP code or city" className="input" data-testid="store-query" />
-        <button type="submit" disabled={busy} className="btn-outline px-4 py-2 text-sm" data-testid="store-search">Search</button>
-      </form>
+      {/* Not a <form>: this renders inside the checkout form, and nested forms submit the outer one. */}
+      <div className="flex gap-2">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void search();
+            }
+          }}
+          placeholder="ZIP code or city" aria-label="ZIP code or city" className="input" data-testid="store-query" />
+        <button type="button" onClick={() => void search()} disabled={busy} className="btn-outline px-4 py-2 text-sm" data-testid="store-search">Search</button>
+      </div>
       {stores && stores.length === 0 && <p className="mt-3 text-sm text-neutral-600">No stores found. Try another ZIP or city.</p>}
       {stores && stores.length > 0 && (
         <ul className="mt-3 divide-y border" data-testid="store-results">
