@@ -8,6 +8,8 @@ import com.otterworks.ottershops.pricing.CodeDiscount;
 import com.otterworks.ottershops.pricing.PriceInfo;
 import com.otterworks.ottershops.pricing.PricedLine;
 import com.otterworks.ottershops.pricing.PricingService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ import java.util.UUID;
 
 @Service
 public class BagService {
+    private static final Logger log = LoggerFactory.getLogger(BagService.class);
     public static final int MAX_PER_LINE = 10;
 
     private final BagRepository bags;
@@ -78,6 +81,10 @@ public class BagService {
                 throw ApiException.badRequest("QUANTITY_LIMIT", "You can buy up to " + MAX_PER_LINE + " of an item");
             }
             bags.setQuantity(bagId, skuId, target);
+            if (sku.stock() <= CatalogService.LOW_STOCK_SKU) {
+                BagRepository.Demand d = bags.openDemand(skuId);
+                log.info("low-stock demand sku={} stock={} openBags={} unitsInBags={}", skuId, sku.stock(), d.bags(), d.units());
+            }
         }
         return price(bags.items(bagId), bag.promoCode(), null);
     }

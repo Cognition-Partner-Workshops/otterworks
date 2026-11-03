@@ -39,6 +39,16 @@ public class BagRepository {
     }
 
     /** Items in insertion order, keyed by SKU. */
+    public record Demand(int bags, int units) {}
+
+    public Demand openDemand(String sku) {
+        return jdbc.queryForObject("""
+                SELECT count(*), coalesce(sum(i.quantity), 0)
+                FROM bag_items i JOIN bags b ON b.id = i.bag_id
+                WHERE i.sku = ? AND b.status = 'OPEN'""",
+                (rs, n) -> new Demand(rs.getInt(1), rs.getInt(2)), sku);
+    }
+
     public Map<String, Integer> items(UUID bagId) {
         Map<String, Integer> items = new LinkedHashMap<>();
         jdbc.query("SELECT sku, quantity FROM bag_items WHERE bag_id = ? ORDER BY added_at, sku",
