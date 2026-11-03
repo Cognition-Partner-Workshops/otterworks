@@ -41,3 +41,8 @@ ottershops:
     provider: ${PAYMENT_PROVIDER:mock}
   catalog:
     refresh-ms: 60000
+  feeds:
+    prices: ${PRICE_FEED_LOCATION:classpath*:feeds/prices/*.csv}
+    price-cron: ${PRICE_FEED_CRON:0 15 2 * * *}
+  ops:
+    api-key: ${OPS_API_KEY:}

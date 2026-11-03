@@ -29,6 +29,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ottershops
       SPRING_DATASOURCE_PASSWORD: ottershops_dev
       PROMO_ENABLED: ${PROMO_ENABLED:-}
+      OPS_API_KEY: ${OTTERSHOPS_OPS_KEY:-ottershops-ops-local}
     depends_on:
       postgres:
         condition: service_healthy
