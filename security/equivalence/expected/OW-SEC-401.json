@@ -502,9 +502,9 @@
  "finding": "OW-SEC-401",
  "fingerprint": {
   "cases_sha256": "e5e712c2e7cde249eeac558f8e7990d59eadceaa94b80caaecea3b499a2b6a58",
-  "emitter_sha256": "085ebb3cb2d4f1799457ba0bdec2528f8bb2d5c6eff853f78c81b3340ffa0dc9",
+  "emitter_sha256": "c64695c472a57fa0de6f21cecc12a1e903d8d96f0fd3f8a4ce5738ca90a3edf0",
   "observed_sha256": {
-   "services/document-service/app/api/documents.py": "0026eb7fda38ff10fce4d7699512a2d2af87f51b032c99ef000b7c20a8e75ca5"
+   "services/document-service/app/api/documents.py": "48e4095f3a52334e83076b01b42b13a81a58a3e16d83cf378c674e203253f421"
   },
   "seed_sha256": "8fdf4fcc58c4b0e23d90cb65e10c372edce4633651cabff071ebdc8c6ac7ee97",
   "subject_sha256": {
@@ -517,25 +517,25 @@
   "app.services.document_query_repository:DocumentQueryRepository.search_documents": "search_documents(self, *, owner_id: 'str | None' = None, title_contains: 'str | None' = None, content_type: 'str | None' = None, folder_id: 'str | None' = None, sort: 'str' = 'updated_at', direction: 'str' = 'desc', limit: 'int' = 20, offset: 'int' = 0) -> 'list[dict[str, Any]]'"
  },
  "module": "document-service",
- "reason": "route handler now maps every unreadable-export OSError to the recorded 404; refresh observed-file provenance and suite pass list",
- "recorded_at": "2026-08-18T01:19:28.827608+00:00",
+ "reason": "document-service no longer trusts X-User-ID; the fixture now signs its share-link requests with a per-run JWT secret (PR #1764)",
+ "recorded_at": "2026-10-01T17:08:22.337147+00:00",
  "rerecorded_from": {
   "fingerprint": {
    "cases_sha256": "e5e712c2e7cde249eeac558f8e7990d59eadceaa94b80caaecea3b499a2b6a58",
-   "emitter_sha256": "085ebb3cb2d4f1799457ba0bdec2528f8bb2d5c6eff853f78c81b3340ffa0dc9",
+   "emitter_sha256": "a20756c5a898bd29dc1f703f70ded8aab4cccd6979e53d907c40edb0d692f84c",
    "observed_sha256": {
-    "services/document-service/app/api/documents.py": "dfac23263dfc7d0d548f34c33b2abcb3c8b09b6b8eeafd543ad03df8702934e1"
+    "services/document-service/app/api/documents.py": "48e4095f3a52334e83076b01b42b13a81a58a3e16d83cf378c674e203253f421"
    },
    "seed_sha256": "8fdf4fcc58c4b0e23d90cb65e10c372edce4633651cabff071ebdc8c6ac7ee97",
    "subject_sha256": {
     "services/document-service/app/services/document_query_repository.py": "a79c49a410fe174bab2247f776088d76d747c8bacc96c8f91fd5e0d281b95e6d"
    }
   },
-  "reason": "harness v2: subject vs observes split so one finding's refactor no longer regrades its neighbours",
-  "recorded_at": "2026-08-18T00:47:16.618672+00:00"
+  "reason": "document-service no longer trusts X-User-ID; the fixture now signs its share-link requests with a JWT (PR #1764)",
+  "recorded_at": "2026-10-01T17:04:14.283793+00:00"
  },
  "suite": {
-  "command": "poetry run pytest -q --junitxml=/tmp/ow-equivalence-junit-y77h6q2j/junit.xml",
+  "command": "poetry run pytest -q --junitxml=/home/ubuntu/tmp/ow-equivalence-junit-arjgwzep/junit.xml",
   "exit_code": 1,
   "failed": [
    "tests.test_documents_api::test_delete_document",
@@ -549,6 +549,9 @@
    "tests.test_documents_api::test_update_document"
   ],
   "passed": [
+   "tests.test_chaos_flags::test_flag_read_is_cached_within_window",
+   "tests.test_chaos_flags::test_redis_client_uses_bounded_timeouts",
+   "tests.test_chaos_flags::test_unreachable_redis_reads_off_and_backs_off",
    "tests.test_comments_api::test_add_comment",
    "tests.test_comments_api::test_add_comment_document_not_found",
    "tests.test_comments_api::test_delete_comment",
@@ -582,6 +585,8 @@
    "tests.test_documents_api::test_list_documents",
    "tests.test_documents_api::test_list_documents_pagination",
    "tests.test_documents_api::test_search_documents",
+   "tests.test_documents_api::test_x_user_id_header_not_trusted_alongside_invalid_jwt",
+   "tests.test_documents_api::test_x_user_id_header_not_trusted_when_jwt_secret_unset",
    "tests.test_export_archive::test_export_endpoint_404s_for_undecodable_file",
    "tests.test_export_archive::test_export_endpoint_404s_for_unknown_name",
    "tests.test_export_archive::test_export_endpoint_404s_for_unreadable_file",
@@ -591,11 +596,24 @@
    "tests.test_export_archive::test_reads_export_in_subdirectory",
    "tests.test_health::test_health_check",
    "tests.test_health::test_metrics",
+   "tests.test_migrate::test_complete_legacy_schema_is_stamped_then_upgraded",
+   "tests.test_migrate::test_empty_database_just_upgrades",
+   "tests.test_migrate::test_partial_unversioned_schema_refuses_to_stamp",
+   "tests.test_request_log::test_large_stream_is_delivered_whole_but_only_a_prefix_is_logged",
+   "tests.test_request_log::test_logged_request_keeps_body_but_not_bearer_token",
+   "tests.test_request_log::test_redact_body_masks_minted_tokens_only",
+   "tests.test_request_log::test_redact_headers_masks_credentials_only",
+   "tests.test_request_log::test_redact_query_masks_share_tokens_only",
    "tests.test_share_link::test_garbage_token_is_rejected",
    "tests.test_share_link::test_minted_token_verifies",
    "tests.test_share_link::test_share_endpoint_round_trip",
    "tests.test_share_link::test_token_is_stable_across_calls",
    "tests.test_share_link::test_token_of_another_document_is_rejected",
+   "tests.test_stats_rollup::test_loop_survives_duplicate_check_failure_after_commit",
+   "tests.test_stats_rollup::test_other_host_still_writes_its_own_row",
+   "tests.test_stats_rollup::test_same_host_rerun_reuses_its_row",
+   "tests.test_telemetry::test_list_reports_query_count",
+   "tests.test_telemetry::test_metrics_expose_query_fanout",
    "tests.test_templates_api::test_create_document_from_template",
    "tests.test_templates_api::test_create_from_template_not_found",
    "tests.test_templates_api::test_create_template",

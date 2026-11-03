@@ -14,6 +14,10 @@ If a service token is configured the middleware will accept it on any
 endpoint; if it is not configured (e.g. local dev), only the gateway
 identity path is available and internal endpoints become reachable only
 via the gateway.
+
+Index mutation (``/index/...``) and ``/reindex`` are administrative: a
+plain user identity is not enough. They require the service token or a
+gateway-forwarded ``X-User-Roles`` header containing ``ADMIN``.
 """
 
 from __future__ import annotations
@@ -24,6 +28,8 @@ from flask import jsonify, request
 logger = structlog.get_logger()
 
 PUBLIC_PREFIXES = ("/health", "/metrics")
+ADMIN_PREFIXES = ("/api/v1/search/index", "/api/v1/search/reindex")
+ADMIN_ROLE = "ADMIN"
 
 
 def require_auth(app):
@@ -33,6 +39,8 @@ def require_auth(app):
     * All other requests must present either a valid service token in
       the ``Authorization`` header or an ``X-User-ID`` header set by
       the API gateway after JWT validation.
+    * Index mutation and reindex paths additionally require the service
+      token or the ``ADMIN`` role in the gateway-set ``X-User-Roles``.
     """
     auth_config = app.config["APP_CONFIG"].auth
 
@@ -45,6 +53,8 @@ def require_auth(app):
         if any(path.startswith(p) for p in PUBLIC_PREFIXES):
             return None
 
+        endpoint = request.endpoint or ""
+
         # Accept a valid service token if one is configured.
         if auth_config.service_token:
             token = _extract_bearer_token()
@@ -53,12 +63,24 @@ def require_auth(app):
 
         # Otherwise require gateway-injected user identity.
         user_id = request.headers.get("X-User-ID", "").strip()
-        if user_id:
-            return None
+        if not user_id:
+            logger.warning("auth_rejected", endpoint=endpoint, path=path)
+            return jsonify({"error": "unauthorized"}), 401
 
-        endpoint = request.endpoint or ""
-        logger.warning("auth_rejected", endpoint=endpoint, path=path)
-        return jsonify({"error": "unauthorized"}), 401
+        if _is_admin_path(path) and ADMIN_ROLE not in _user_roles():
+            logger.warning("auth_forbidden", endpoint=endpoint, path=path, user_id=user_id)
+            return jsonify({"error": "forbidden"}), 403
+
+        return None
+
+
+def _is_admin_path(path: str) -> bool:
+    return any(path == p or path.startswith(p + "/") for p in ADMIN_PREFIXES)
+
+
+def _user_roles() -> set[str]:
+    raw = request.headers.get("X-User-Roles", "")
+    return {r.strip().upper() for r in raw.split(",") if r.strip()}
 
 
 def _extract_bearer_token() -> str:

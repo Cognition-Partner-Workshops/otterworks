@@ -1,5 +1,6 @@
 """OtterWorks Document Service - FastAPI application."""
 
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -34,6 +35,8 @@ structlog.configure(
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     logger.info("document_service_starting")
+    if not os.environ.get("JWT_SECRET"):
+        raise RuntimeError("JWT_SECRET environment variable is required but not set")
     await upgrade_to_head(engine)
     rollup_task = stats_rollup.start(async_session)
 

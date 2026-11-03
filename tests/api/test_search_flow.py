@@ -7,12 +7,20 @@ pytestmark = pytest.mark.api_flow
 
 def test_search_index_query_suggest_advanced_and_delete_flow(api_client):
     user = api_client.register_user("search-flow")
+    admin = api_client.login_admin()
     document_id = str(uuid.uuid4())
     title = f"Unique Search Flow {api_client.run_id}"
 
-    index_response = api_client.client.post(
+    forbidden_index = api_client.client.post(
         "/api/v1/search/index/document",
         headers=user.auth_headers,
+        json={"id": document_id, "title": title, "owner_id": user.id},
+    )
+    assert forbidden_index.status_code == 403, forbidden_index.text
+
+    index_response = api_client.client.post(
+        "/api/v1/search/index/document",
+        headers=admin.auth_headers,
         json={
             "id": document_id,
             "title": title,
@@ -50,9 +58,15 @@ def test_search_index_query_suggest_advanced_and_delete_flow(api_client):
     )
     assert advanced_response.status_code == 200, advanced_response.text
 
-    delete_response = api_client.client.delete(
+    forbidden_delete = api_client.client.delete(
         f"/api/v1/search/index/document/{document_id}",
         headers=user.auth_headers,
+    )
+    assert forbidden_delete.status_code == 403, forbidden_delete.text
+
+    delete_response = api_client.client.delete(
+        f"/api/v1/search/index/document/{document_id}",
+        headers=admin.auth_headers,
     )
     assert delete_response.status_code in {200, 404}, delete_response.text
     api_client.indexed_documents.remove(document_id)
@@ -79,9 +93,10 @@ def test_search_validation_and_pagination_bounds(api_client):
     assert short_suggest.status_code == 200, short_suggest.text
     assert short_suggest.json()["suggestions"] == []
 
+    admin = api_client.login_admin()
     empty_index = api_client.client.post(
         "/api/v1/search/index/document",
-        headers=user.auth_headers,
+        headers=admin.auth_headers,
         json={},
     )
     assert empty_index.status_code == 400
