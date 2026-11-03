@@ -52,7 +52,7 @@ public class ReviewService {
     public Page list(String productId, String sort, Integer rating, int page, int pageSize) {
         Product p = catalog.product(productId);
         String order = SORTS.getOrDefault(sort == null ? "helpful" : sort, SORTS.get("helpful"));
-        String sortKey = SORTS.containsKey(sort) ? sort : "helpful";
+        String sortKey = sort != null && SORTS.containsKey(sort) ? sort : "helpful";
         if (rating != null && (rating < 1 || rating > 5)) throw ApiException.badRequest("RATING_INVALID", "Rating filter must be 1-5");
         int size = Math.max(1, Math.min(pageSize, 20));
         int pg = Math.max(1, page);
