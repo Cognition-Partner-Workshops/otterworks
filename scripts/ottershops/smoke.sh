@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# API smoke test for OtterShops: browse, guest checkout, decline, oversell, pickup, lookup.
+# API smoke test for OtterShops: browse, guest checkout, decline, oversell, pickup, lookup,
+# plus search, reviews, favorites, store stock, back-in-stock, save for later, gift cards,
+# tracking, returns and the address book.
 # Usage: scripts/ottershops/smoke.sh [BASE_URL]   (default http://localhost:3000)
 set -euo pipefail
 BASE="${1:-http://localhost:3000}"
@@ -68,6 +70,52 @@ if [[ -n "$low" ]]; then
   bag=$b1; req POST /checkout "$(checkout 4242424242424242)"; expect 409 "oversell returns 409"
 fi
 
+# Discovery, reviews and store stock.
+req GET "/search/suggest?q=denim"; expect 200 "search suggestions"
+(( $(jq -r .totalProducts <<<"$resp") > 0 )) || fail "no suggestions for denim"; ok "suggestions found products"
+req GET "/search/suggest?q=zzqxv"; expect 200 "empty suggestions"
+[[ "$(jq -r .totalProducts <<<"$resp")" == "0" ]] || fail "nonsense query matched"; ok "no-result query is empty"
+req GET "/products/$pid/reviews?sort=helpful"; expect 200 "reviews list"
+req GET "/products/$pid/reviews?rating=9"; expect 400 "bad rating filter"
+req POST "/products/$pid/reviews" '{"rating":5,"title":"Smoke","body":"Fits well and washes fine.","fitNote":"True to size","author":"Smoke"}'; expect 201 "write review"
+rid=$(jq -r .id <<<"$resp")
+req POST "/reviews/$rid/helpful" '{"voter":"smoke-voter"}'; expect 200 "helpful vote"
+req POST "/reviews/$rid/helpful" '{"voter":"smoke-voter"}'; expect 409 "second vote rejected"
+req GET "/products/$pid/availability?sku=$sku&q=CA"; expect 200 "store availability"
+(( $(jq '.stores | length' <<<"$resp") > 0 )) || fail "no stores for CA"; ok "stores returned for CA"
+req POST /stock-notifications "{\"sku\":\"$sku\",\"email\":\"ava@example.com\"}"; expect 409 "notify-me refused for in-stock size"
+gone=$(curl -s "$API/products?pageSize=60" | jq -r '.items[].id' | while read -r p; do
+  curl -s "$API/products/$p" | jq -r '.skus[] | select(.stock == 0) | .sku'; done | head -1)
+if [[ -n "$gone" ]]; then
+  req POST /stock-notifications "{\"sku\":\"$gone\",\"email\":\"ava@example.com\"}"; expect 201 "notify-me for sold-out size"
+fi
+
+# Favorites, save for later, gift cards.
+req POST /wishlists; expect 201 "guest favorites list"
+wl=$(jq -r .id <<<"$resp")
+req PUT "/wishlists/$wl/items/$pid" '{"color":null}'; expect 200 "favorite a product"
+[[ "$(jq -r .count <<<"$resp")" == "1" ]] || fail "favorite not saved"; ok "favorite saved"
+req DELETE "/wishlists/$wl/items/$pid"; expect 200 "unfavorite"
+req PUT "/wishlists/$wl/items/$pid" '{"color":null}'; expect 200 "favorite again for claim"
+new_bag
+req POST "/bags/$bag/items" "{\"sku\":\"$sku\",\"quantity\":1}"; expect 200 "add for save-for-later"
+req POST "/bags/$bag/saved" "{\"sku\":\"$sku\"}"; expect 200 "save for later"
+[[ "$(jq -r '.itemCount' <<<"$resp")" == "0" && "$(jq -r '.saved | length' <<<"$resp")" == "1" ]] || fail "save for later state"; ok "line moved to saved"
+req POST "/bags/$bag/saved/$sku/move" ; expect 200 "move back to bag"
+[[ "$(jq -r '.itemCount' <<<"$resp")" == "1" ]] || fail "move to bag"; ok "line back in bag"
+req POST /gift-cards/balance '{"number":"6006 4912 3456 7890","pin":"1234"}'; expect 200 "gift card balance"
+[[ "$(jq -r .balanceCents <<<"$resp")" == "5000" ]] || fail "gift card balance"; ok "balance is \$50.00"
+req POST /gift-cards/balance '{"number":"6006491234567890","pin":"9999"}'; expect 404 "wrong gift card PIN"
+
+# Tracking and returns on the guest order.
+req GET "/orders/$number?email=ava@example.com"; expect 200 "order detail"
+jq -e '.tracking.steps | length >= 4' <<<"$resp" >/dev/null || fail "no tracking timeline"; ok "tracking timeline"
+req POST "/orders/$number/returns" '{"email":"ava@example.com","method":"MAIL","lines":[{"lineNo":1,"quantity":1,"reason":"Nope"}]}'; expect 400 "return needs a valid reason"
+req POST "/orders/$number/returns" '{"email":"ava@example.com","method":"MAIL","lines":[{"lineNo":1,"quantity":1,"reason":"Too small"}]}'; expect 201 "start a return"
+(( $(jq -r .refundCents <<<"$resp") > 0 )) || fail "zero refund"; ok "refund $(jq -r .refundCents <<<"$resp") cents"
+req POST "/orders/$number/returns" '{"email":"ava@example.com","method":"MAIL","lines":[{"lineNo":1,"quantity":1,"reason":"Too small"}]}'; expect 409 "line can't be returned twice"
+req POST "/orders/$number/returns" '{"email":"someone@else.com","method":"MAIL","lines":[{"lineNo":1,"quantity":1,"reason":"Too small"}]}'; expect 404 "return with wrong email"
+
 # Member pickup with guest bag merge.
 new_bag
 req POST "/bags/$bag/items" "{\"sku\":\"$sku\",\"quantity\":1}"; expect 200 "guest adds item"
@@ -87,6 +135,18 @@ req GET /account; expect 200 "account"
 jq -e --arg n "$pnum" '.orders[] | select(.orderNumber==$n)' <<<"$resp" >/dev/null || fail "order missing from history"; ok "order in history"
 after=$(jq -r .customer.rewardsPoints <<<"$resp")
 (( after - before == total / 100 )) || fail "points $before -> $after for $total cents"; ok "rewards +$((after - before)) points"
+# Address book and favorites claim for the signed-in shopper.
+req POST /account/addresses '{"label":"Smoke","name":"Maya Otter","line1":"1 Main St","city":"Denver","state":"ZZ","zip":"80202"}'; expect 400 "address with bad state"
+req POST /account/addresses '{"label":"Smoke","name":"Maya Otter","line1":"1 Main St","city":"Denver","state":"CO","zip":"80202"}'; expect 200 "save address"
+aid=$(jq -r '[.[] | select(.label=="Smoke")][0].id' <<<"$resp")
+[[ -n "$aid" && "$aid" != null ]] || fail "address not in book"; ok "address in book"
+req POST "/account/addresses/$aid/default"; expect 200 "make address default"
+jq -e --arg a "$aid" '.[] | select(.id==$a and .isDefault)' <<<"$resp" >/dev/null || fail "default not set"; ok "default address set"
+req DELETE "/account/addresses/$aid"; expect 200 "delete address"
+jq -e --arg a "$aid" 'all(.[]; .id != $a)' <<<"$resp" >/dev/null || fail "address not deleted"; ok "address removed"
+req POST /wishlists/claim "{\"wishlistId\":\"$wl\"}"; expect 200 "claim guest favorites"
+jq -e --arg p "$pid" '.member and (.items[] | select(.productId==$p))' <<<"$resp" >/dev/null || fail "favorites not merged"; ok "guest favorites merged into account"
+req DELETE "/wishlists/$(jq -r .id <<<"$resp")/items/$pid"; expect 200 "tidy member favorites"
 req POST /auth/logout; expect 204 "sign out"
 req GET /account; expect 401 "account requires sign-in"
 
