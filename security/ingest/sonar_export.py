@@ -1,6 +1,6 @@
 """Export SonarQube issues as a JSON file a Devin ingest-mode scan can read.
 
-Usage:
+Usage (see docker-compose.sonarqube.yml for bringing SonarQube up and scanning):
   python3 security/ingest/sonar_export.py --out export.json [--noise security/ingest/fixtures/inert-noise.json]
 
 Reads SONAR_HOST_URL (default http://localhost:9000) and SONAR_TOKEN from the
@@ -33,11 +33,15 @@ def normalise(issue: dict, project: str) -> dict:
 
 
 def fetch(host: str, token: str, project: str) -> list[dict]:
+    if urllib.parse.urlparse(host).scheme not in ("http", "https"):
+        raise ValueError(f"SONAR_HOST_URL must be http or https: {host}")
     auth = base64.b64encode(f"{token}:".encode()).decode()
     rows, page = [], 1
     while True:
         q = urllib.parse.urlencode({"componentKeys": project, "ps": PAGE, "p": page, "resolved": "false"})
         req = urllib.request.Request(f"{host}/api/issues/search?{q}", headers={"Authorization": f"Basic {auth}"})
+        # Scheme is checked above, so a file:// URL cannot reach urlopen.
+        # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
         with urllib.request.urlopen(req, timeout=60) as r:
             data = json.load(r)
         rows += [normalise(i, project) for i in data.get("issues", [])]
