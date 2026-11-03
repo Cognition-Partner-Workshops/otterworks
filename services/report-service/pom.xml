@@ -30,17 +30,31 @@
         <!-- LEGACY: SpringFox 3.0 (dead project). Upgrade target: springdoc-openapi 2.x -->
         <springfox.version>3.0.0</springfox.version>
         <!-- LEGACY: Apache POI 4.1.2 (2020). Upgrade target: 5.2+ -->
-        <poi.version>4.1.2</poi.version>
+        <poi.version>5.4.0</poi.version>
         <!-- LEGACY: iText 5.5.13.3 (AGPL, pre-license-change). Upgrade target: OpenPDF or iText 7+ -->
         <itext.version>5.5.13.3</itext.version>
         <!-- LEGACY: Commons Lang 2.6 (EOL). Upgrade target: commons-lang3 -->
         <commons-lang.version>2.6</commons-lang.version>
         <!-- LEGACY: Commons IO 2.6 (2018). Upgrade target: 2.15+ -->
-        <commons-io.version>2.6</commons-io.version>
+        <commons-io.version>2.18.0</commons-io.version>
         <!-- LEGACY: Guava 28.0 (2019, many CVEs). Upgrade target: 33+ -->
-        <guava.version>28.0-jre</guava.version>
+        <guava.version>32.0.0-jre</guava.version>
         <!-- Commons Text 1.9 — report banner/footer interpolation -->
-        <commons-text.version>1.9</commons-text.version>
+        <commons-text.version>1.10.0</commons-text.version>
+        <!-- Security overrides of Boot 2.5.15-managed versions (smallest releases outside the advisory ranges) -->
+        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <jackson-bom.version>2.18.11</jackson-bom.version>
+        <h2.version>2.2.220</h2.version>
+        <json-path.version>2.9.0</json-path.version>
+        <micrometer.version>1.15.12</micrometer.version>
+        <!-- micrometer 1.13+ keeps Boot 2.5's io.micrometer.prometheus registry only in -prometheus-simpleclient, which needs simpleclient 0.16.0 -->
+        <prometheus-pushgateway.version>0.16.0</prometheus-pushgateway.version>
+        <log4j2.version>2.25.5</log4j2.version>
+        <tomcat.version>9.0.121</tomcat.version>
+        <assertj.version>3.27.7</assertj.version>
+        <postgresql.version>42.7.12</postgresql.version>
+        <xmlunit2.version>2.10.0</xmlunit2.version>
+        <snakeyaml.version>2.0</snakeyaml.version>
     </properties>
 
     <dependencies>
@@ -91,7 +105,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>12.6.1.jre8</version>
+            <version>12.6.5.jre8</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -159,7 +173,7 @@
         <!-- Observability (also legacy versions) -->
         <dependency>
             <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
+            <artifactId>micrometer-registry-prometheus-simpleclient</artifactId>
         </dependency>
 
         <!-- LEGACY: OpenCSV 4.6 (2018). Upgrade target: 5.9+ -->
@@ -201,6 +215,22 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <!-- Security pins for transitive dependencies (opencsv, springfox) -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>1.11.0</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.classgraph</groupId>
+                <artifactId>classgraph</artifactId>
+                <version>4.8.112</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <finalName>report-service</finalName>
