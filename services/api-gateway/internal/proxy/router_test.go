@@ -17,6 +17,7 @@ import (
 func TestProxyDirectorRemovesSpoofedUserID(t *testing.T) {
 	const secret = "proxy-test-jwt-secret"
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Forwarded-For", r.Header.Get("X-Forwarded-For"))
 		_, _ = io.WriteString(w, r.Header.Get("X-User-ID"))
 	}))
 	defer backend.Close()
@@ -54,6 +55,7 @@ func TestProxyDirectorRemovesSpoofedUserID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequest(http.MethodGet, "/api/v1/search/", nil)
 			req.Header.Set("X-User-ID", "spoofed-user")
+			req.Header.Set("X-Forwarded-For", "6.6.6.6")
 			var testHandler http.Handler = router
 			if tt.token != "" {
 				req.Header.Set("Authorization", "Bearer "+tt.token)
@@ -69,6 +71,9 @@ func TestProxyDirectorRemovesSpoofedUserID(t *testing.T) {
 
 			require.Equal(t, http.StatusOK, rec.Code)
 			require.Equal(t, tt.wantUser, rec.Body.String())
+			forwardedFor := rec.Header().Get("X-Forwarded-For")
+			require.NotEmpty(t, forwardedFor)
+			require.NotContains(t, forwardedFor, "6.6.6.6")
 		})
 	}
 }

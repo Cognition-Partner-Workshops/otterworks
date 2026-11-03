@@ -60,9 +60,13 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 	}
 
 	defaultDirector := httputil.NewSingleHostReverseProxy(target).Director
+	// Rewrite the outbound request to forward authenticated user identity.
+	// The auth-service issues JWTs with the user ID in the standard "sub" claim
+	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
 	proxy := &httputil.ReverseProxy{
 		Rewrite: func(proxyReq *httputil.ProxyRequest) {
 			defaultDirector(proxyReq.Out)
+			proxyReq.SetXForwarded()
 			proxyReq.Out.Header.Del("X-User-ID")
 			if claims := middleware.GetJWTClaims(proxyReq.In.Context()); claims != nil {
 				userID := claims.Subject
@@ -76,9 +80,6 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		},
 	}
 
-	// Rewrite the outbound request to forward authenticated user identity.
-	// The auth-service issues JWTs with the user ID in the standard "sub" claim
-	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		cfg.Logger.Error().
 			Err(err).
