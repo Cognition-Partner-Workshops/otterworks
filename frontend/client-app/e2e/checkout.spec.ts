@@ -20,7 +20,7 @@ test("guest browses, bags an item and checks out", async ({ page }) => {
   let picked = false;
   for (let i = 0; i < n && !picked; i++) {
     await swatches.nth(i).click();
-    const size = page.locator('[data-testid^="size-"]:not([disabled])').first();
+    const size = page.locator('[data-testid^="size-"][data-available="true"]').first();
     if (await size.count()) {
       await size.click();
       picked = true;

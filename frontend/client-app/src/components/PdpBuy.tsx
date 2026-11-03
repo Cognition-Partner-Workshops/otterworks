@@ -116,6 +116,7 @@ export function PdpBuy({ p }: { p: ProductDetail }) {
                 aria-pressed={s.size === size}
                 aria-label={s.soldOut ? `${s.size}, sold out. Choose to get a back-in-stock alert` : s.size}
                 data-testid={`size-${s.size}`}
+                data-available={!s.soldOut}
                 onClick={() => { setSize(s.size); setQty(1); setError(null); }}
                 className={`border py-2 text-sm ${s.size === size ? (s.soldOut ? "border-ink text-neutral-500 line-through" : "border-ink bg-ink text-white") : s.soldOut ? "border-dashed border-neutral-300 text-neutral-400 line-through hover:border-ink" : "border-neutral-300 hover:border-ink"}`}
               >
