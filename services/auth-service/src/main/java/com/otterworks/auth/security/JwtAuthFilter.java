@@ -40,7 +40,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         Claims claims = jwtTokenProvider.validateAndGetClaims(token);
 
         String tokenType = claims.get("type", String.class);
-        if ("refresh".equals(tokenType)) {
+        if (tokenType != null && !"access".equals(tokenType)) {
           filterChain.doFilter(request, response);
           return;
         }

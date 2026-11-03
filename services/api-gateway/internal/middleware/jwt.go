@@ -18,6 +18,7 @@ type JWTClaims struct {
 	UserID string   `json:"user_id,omitempty"`
 	Email  string   `json:"email,omitempty"`
 	Roles  []string `json:"roles,omitempty"`
+	Type   string   `json:"type,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -37,6 +38,9 @@ func DefaultPublicPaths() []string {
 		"/api/v1/auth/register",
 	}
 }
+
+// refreshPath is the only route that accepts an auth-service refresh token as its bearer.
+const refreshPath = "/api/v1/auth/refresh"
 
 // DefaultPrefixPaths returns paths where any sub-path also skips JWT validation.
 func DefaultPrefixPaths() []string {
@@ -78,6 +82,10 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 			}
 			if err != nil {
 				writeJSONError(w, http.StatusUnauthorized, fmt.Sprintf("invalid token: %v", err))
+				return
+			}
+			if !tokenTypeAllowed(claims.Type, r.URL.Path) {
+				writeJSONError(w, http.StatusUnauthorized, "invalid token: not an access token")
 				return
 			}
 
@@ -128,6 +136,21 @@ func validateToken(tokenStr, secret string) (*JWTClaims, error) {
 	}
 
 	return claims, nil
+}
+
+// tokenTypeAllowed rejects auth-service refresh tokens (type "refresh") and any other
+// non-access type everywhere except the refresh endpoint. auth-service stamps
+// type "access" on every access token it issues; tokens with no type claim are not
+// issued by auth-service as refresh tokens and are treated as access tokens.
+func tokenTypeAllowed(tokenType, path string) bool {
+	switch tokenType {
+	case "", "access":
+		return true
+	case "refresh":
+		return path == refreshPath
+	default:
+		return false
+	}
 }
 
 func isPublicPath(path string, exactPaths map[string]bool, prefixPaths []string) bool {
