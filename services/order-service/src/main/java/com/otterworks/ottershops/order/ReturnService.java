@@ -40,8 +40,7 @@ public class ReturnService {
 
     /** Refund for {@code qty} units of a line: its paid unit price plus the order's tax rate on it. */
     static int refund(OrderView.Line line, int qty, BigDecimal taxRate) {
-        BigDecimal merch = BigDecimal.valueOf(line.lineTotalCents()).multiply(BigDecimal.valueOf(qty))
-                .divide(BigDecimal.valueOf(line.quantity()), 0, RoundingMode.HALF_UP);
+        BigDecimal merch = BigDecimal.valueOf((long) line.unitPriceCents() * qty);
         BigDecimal tax = merch.multiply(taxRate).divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP);
         return merch.add(tax).intValueExact();
     }
