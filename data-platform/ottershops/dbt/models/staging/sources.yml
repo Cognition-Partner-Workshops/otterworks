@@ -16,3 +16,8 @@ sources:
       - name: product_collections
       - name: stores
       - name: sku_snapshots
+      - name: reviews
+      - name: returns
+      - name: return_lines
+      - name: stock_notifications
+      - name: wishlist_items

@@ -2,7 +2,8 @@
 
 Every LOAD_INTERVAL_SECONDS (default 300):
   * orders (+ lines, fees) and customers changed since the last watermark are appended to RAW;
-  * products, collections and stores are re-snapshotted when their content hash changes;
+  * reviews, returns (+ lines) and back-in-stock requests changed since their watermarks are appended;
+  * products, collections, stores and favorites are re-snapshotted when their content hash changes;
   * SKU stock is snapshotted in full once per day and for changed SKUs on every run;
   * dbt builds STAGING and MARTS and runs its tests.
 Staging models de-duplicate appended rows by key, so re-loading is always safe.
@@ -45,6 +46,22 @@ RAW_TABLES = {
     "PRODUCT_COLLECTIONS": "product_id string, collection_slug string",
     "STORES": "id string, name string, address string, city string, state string, zip string, pickup_enabled boolean, pickup_ready_hours number",
     "SKU_SNAPSHOTS": "sku string, product_id string, color string, color_family string, size string, stock number, snapshot_at timestamp_tz",
+    "REVIEWS": """id number, product_id string, customer_id string, rating number, fit_note string, size_purchased string,
+        verified boolean, helpful_count number, created_at timestamp_tz, updated_at timestamp_tz""",
+    "RETURNS": "id string, return_number string, order_id string, status string, method string, refund_cents number, created_at timestamp_tz, updated_at timestamp_tz",
+    "RETURN_LINES": "return_id string, line_no number, quantity number, reason string, refund_cents number",
+    "STOCK_NOTIFICATIONS": "id number, sku string, customer_id string, status string, created_at timestamp_tz, updated_at timestamp_tz",
+    "WISHLIST_ITEMS": "wishlist_id string, customer_id string, product_id string, color string, added_at timestamp_tz",
+}
+
+# Incremental tables keyed on updated_at. Review text, author names and alert emails stay in Postgres.
+INCREMENTAL = {
+    "REVIEWS": ("reviews_wm", "select id, product_id, customer_id, rating, fit_note, size_purchased, verified, helpful_count, "
+                "created_at, updated_at from reviews where updated_at > %s order by updated_at"),
+    "RETURNS": ("returns_wm", "select id, return_number, order_id, status, method, refund_cents, created_at, updated_at "
+                "from returns where updated_at > %s order by updated_at"),
+    "STOCK_NOTIFICATIONS": ("stock_notifications_wm", "select id, sku, customer_id, status, created_at, updated_at "
+                            "from stock_notifications where updated_at > %s order by updated_at"),
 }
 
 ORDER_COLS = ("id, order_number, customer_id, email, status, fulfillment, shipping_method, store_id, ship_city, ship_state, ship_zip, "
@@ -54,6 +71,8 @@ SNAPSHOTS = {
     "PRODUCTS": "select id, name, label, department, category, fit, list_price_cents, markdown_price_cents, rating::float8, review_count, is_new, created_at from products order by id",
     "PRODUCT_COLLECTIONS": "select product_id, collection_slug from product_collections order by 1, 2",
     "STORES": "select id, name, address, city, state, zip, pickup_enabled, pickup_ready_hours from stores order by id",
+    "WISHLIST_ITEMS": "select i.wishlist_id, w.customer_id, i.product_id, i.color, i.added_at from wishlist_items i "
+                      "join wishlists w on w.id = i.wishlist_id order by 1, 3",
 }
 
 
@@ -129,6 +148,17 @@ class Loader:
         if customers:
             counts["customers"] = self.insert("CUSTOMERS", RAW_TABLES["CUSTOMERS"], customers, loaded_at)
             self.put_state("customers_wm", customers[-1][-1].isoformat())
+        # Engagement and post-purchase
+        for table, (key, sql) in INCREMENTAL.items():
+            rows = pg.execute(sql, (self.state.get(key, EPOCH),)).fetchall()
+            if not rows:
+                continue
+            counts[table.lower()] = self.insert(table, RAW_TABLES[table], rows, loaded_at)
+            if table == "RETURNS":
+                counts["return_lines"] = self.insert("RETURN_LINES", RAW_TABLES["RETURN_LINES"], pg.execute(
+                    "select return_id, line_no, quantity, reason, refund_cents from return_lines where return_id = any(%s)",
+                    ([r[0] for r in rows],)).fetchall(), loaded_at)
+            self.put_state(key, rows[-1][-1].isoformat())
         # Small reference tables: reload on change
         for table, sql in SNAPSHOTS.items():
             rows = pg.execute(sql).fetchall()

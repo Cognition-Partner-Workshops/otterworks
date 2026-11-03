@@ -39,3 +39,25 @@ models:
     columns:
       - name: sales_day_id
         tests: [unique, not_null]
+  - name: fct_returns
+    description: One row per returned order line.
+    columns:
+      - name: return_line_id
+        tests: [unique, not_null]
+      - name: order_line_id
+        tests:
+          - not_null
+          - relationships: {to: ref('fct_order_lines'), field: order_line_id}
+      - name: method
+        tests:
+          - accepted_values: {values: ["MAIL", "STORE"]}
+      - name: reason
+        tests: [not_null]
+  - name: product_engagement
+    description: Reviews, fit, favorites, back-in-stock asks and returns per product.
+    columns:
+      - name: product_id
+        tests:
+          - unique
+          - not_null
+          - relationships: {to: ref('dim_products'), field: product_id}
