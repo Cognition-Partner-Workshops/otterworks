@@ -1,9 +1,11 @@
 package com.otterworks.report.controller;
 
 import com.otterworks.report.model.Report;
+import com.otterworks.report.model.ReportCategory;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportResponse;
 import com.otterworks.report.model.ReportStatus;
+import com.otterworks.report.security.ReportCaller;
 import com.otterworks.report.service.ReportService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,10 +34,12 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -56,6 +61,10 @@ public class ReportController {
 
     private static final Logger logger = LoggerFactory.getLogger(ReportController.class);
 
+    /** Categories built from org-wide audit/compliance data; only admins may create or read them. */
+    private static final Set<ReportCategory> ADMIN_ONLY_CATEGORIES =
+            EnumSet.of(ReportCategory.AUDIT_LOG, ReportCategory.COMPLIANCE);
+
     private final ReportService reportService;
 
     public ReportController(ReportService reportService) {
@@ -66,14 +75,22 @@ public class ReportController {
     @ApiOperation(value = "Create a new report", notes = "Submits a report generation request. The report is generated asynchronously.")
     @ApiResponses({
             @ApiResponse(code = 202, message = "Report request accepted"),
-            @ApiResponse(code = 400, message = "Invalid request")
+            @ApiResponse(code = 400, message = "Invalid request"),
+            @ApiResponse(code = 403, message = "Category requires the ADMIN role")
     })
     public ResponseEntity<ReportResponse> createReport(
-            @Valid @RequestBody ReportRequest request) {
+            @Valid @RequestBody ReportRequest request,
+            Authentication authentication) {
+
+        ReportCaller caller = ReportCaller.from(authentication);
+        if (ADMIN_ONLY_CATEGORIES.contains(request.getCategory()) && !caller.isAdmin()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        request.setRequestedBy(caller.getUserId());
 
         logger.info("Report request: name={}, category={}, type={}, by={}",
-                request.getReportName(), request.getCategory(),
-                request.getReportType(), request.getRequestedBy());
+                sanitizeForLog(request.getReportName()), request.getCategory(),
+                request.getReportType(), sanitizeForLog(caller.getUserId()));
 
         Report report = reportService.createReport(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -88,9 +105,10 @@ public class ReportController {
     })
     public ResponseEntity<ReportResponse> getReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
-        Optional<Report> report = reportService.getReport(id);
+        Optional<Report> report = findAccessibleReport(id, ReportCaller.from(authentication));
         if (!report.isPresent()) { // LEGACY: !isPresent() instead of isEmpty()
             return ResponseEntity.notFound().build();
         }
@@ -98,20 +116,34 @@ public class ReportController {
     }
 
     @GetMapping
-    @ApiOperation(value = "List reports", notes = "List reports filtered by user ID or status")
+    @ApiOperation(value = "List reports",
+            notes = "Lists the caller's reports, optionally by status. Admins may list any user's or all reports.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Reports"),
+            @ApiResponse(code = 403, message = "userId is another user and the caller is not an admin")
+    })
     public ResponseEntity<Map<String, Object>> listReports(
-            @ApiParam(value = "Filter by user ID")
+            @ApiParam(value = "Filter by user ID (admins only, or the caller's own ID)")
             @RequestParam(required = false) String userId,
             @ApiParam(value = "Filter by status")
-            @RequestParam(required = false) ReportStatus status) {
+            @RequestParam(required = false) ReportStatus status,
+            Authentication authentication) {
 
+        ReportCaller caller = ReportCaller.from(authentication);
         List<Report> reports;
-        if (userId != null) {
-            reports = reportService.getReportsByUser(userId);
-        } else if (status != null) {
-            reports = reportService.getReportsByStatus(status);
+        if (caller.isAdmin()) {
+            if (userId != null) {
+                reports = reportService.getReportsByUser(userId, status);
+            } else {
+                reports = reportService.getReportsByStatus(status != null ? status : ReportStatus.COMPLETED);
+            }
         } else {
-            reports = reportService.getReportsByStatus(ReportStatus.COMPLETED);
+            if (userId != null && !userId.equals(caller.getUserId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            reports = reportService.getReportsByUser(caller.getUserId(), status).stream()
+                    .filter(report -> !ADMIN_ONLY_CATEGORIES.contains(report.getCategory()))
+                    .collect(Collectors.toList());
         }
 
         List<ReportResponse> responses = reports.stream()
@@ -135,9 +167,10 @@ public class ReportController {
     })
     public ResponseEntity<Resource> downloadReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
-        Optional<Report> optReport = reportService.getReport(id);
+        Optional<Report> optReport = findAccessibleReport(id, ReportCaller.from(authentication));
         if (!optReport.isPresent()) {
             return ResponseEntity.notFound().build();
         }
@@ -187,8 +220,12 @@ public class ReportController {
     })
     public ResponseEntity<Void> deleteReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication authentication) {
 
+        if (!findAccessibleReport(id, ReportCaller.from(authentication)).isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
         boolean deleted = reportService.deleteReport(id);
         if (!deleted) {
             return ResponseEntity.notFound().build();
@@ -197,6 +234,20 @@ public class ReportController {
     }
 
     // ----- Private helpers -----
+
+    /**
+     * Reports the caller may not access are reported as absent, so sequential ids
+     * cannot be probed for existence.
+     */
+    private static String sanitizeForLog(String value) {
+        return value == null ? null : value.replaceAll("[\r\n]", "_");
+    }
+
+    private Optional<Report> findAccessibleReport(Long id, ReportCaller caller) {
+        return reportService.getReport(id)
+                .filter(report -> caller.canAccess(report.getRequestedBy()))
+                .filter(report -> caller.isAdmin() || !ADMIN_ONLY_CATEGORIES.contains(report.getCategory()));
+    }
 
     private String getContentType(com.otterworks.report.model.ReportType reportType) {
         // LEGACY: switch without enhanced syntax
