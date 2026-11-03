@@ -6,3 +6,6 @@
 3e3bb913f964e56dc9a9e16d4130abbc690c008d:infrastructure/terraform/azure/containerapps.tf:hashicorp-tf-password:171
 # Cypress auth fixture value is mock test data.
 b2af9224bda84f9a66c3c4fdf33cc4008520ad8f:tests/legacy-suites/cypress/cypress/fixtures/auth-tokens.json:generic-api-key:2
+# Equivalence emitter's fixture JWT key: signs in-process fixture callers against a
+# throwaway SQLite seed; it is not a deployed secret.
+44d13825ac3205d027602ce41fdd5e6d9c824209:security/equivalence/harness/emit_document_service.py:generic-api-key:35

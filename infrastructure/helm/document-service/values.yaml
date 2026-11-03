@@ -14,20 +14,14 @@ service:
   port: 8083
   targetPort: 8083
 
+# document-service is cluster-internal: callers reach it through api-gateway,
+# which authenticates the request first. Do not publish it on its own host.
 ingress:
-  enabled: true
+  enabled: false
   className: nginx
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-  hosts:
-    - host: document-service.otterworks.workshop.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - secretName: document-service-tls
-      hosts:
-        - document-service.otterworks.workshop.example.com
+  annotations: {}
+  hosts: []
+  tls: []
 
 resources:
   limits:
@@ -96,4 +90,5 @@ config: {}
 
 # Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
 # stringData) and injected via envFrom. Populate at deploy time; never commit values.
+# The service refuses to start without JWT_SECRET and SHARE_LINK_SECRET.
 secrets: {}

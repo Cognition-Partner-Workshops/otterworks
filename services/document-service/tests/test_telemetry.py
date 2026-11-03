@@ -5,6 +5,8 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import auth_headers
+
 
 @pytest.mark.asyncio
 async def test_list_reports_query_count(client: AsyncClient, owner_id: uuid.UUID):
@@ -13,14 +15,22 @@ async def test_list_reports_query_count(client: AsyncClient, owner_id: uuid.UUID
             "/api/v1/documents/",
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
-    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
+    )
     assert resp.status_code == 200
     assert int(resp.headers["X-DB-Queries"]) >= 2
 
 
 @pytest.mark.asyncio
 async def test_metrics_expose_query_fanout(client: AsyncClient, owner_id: uuid.UUID):
-    await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
+    )
     resp = await client.get("/metrics")
     assert resp.status_code == 200
     assert "otterworks_db_queries_per_request_bucket" in resp.text
