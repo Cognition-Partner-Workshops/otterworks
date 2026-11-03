@@ -39,4 +39,13 @@ class MockPaymentProviderTest {
     void requestToStringNeverShowsCardNumber() {
         assertFalse(new PaymentRequest(1, "USD", "4242424242424242", 1, 2030, "123", "A", "k").toString().contains("4242"));
     }
+
+    @Test
+    void identifiesNetworkFromBin() {
+        assertEquals("Visa", MockPaymentProvider.brand("4242424242424242"));
+        assertEquals("Mastercard", MockPaymentProvider.brand("5105105105105100"));
+        assertEquals("Mastercard", MockPaymentProvider.brand("2223003122003222"));
+        assertEquals("Amex", MockPaymentProvider.brand("378282246310005"));
+        assertEquals("Discover", MockPaymentProvider.brand("6011111111111117"));
+    }
 }

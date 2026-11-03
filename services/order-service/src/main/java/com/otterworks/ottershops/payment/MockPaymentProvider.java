@@ -2,6 +2,7 @@ package com.otterworks.ottershops.payment;
 
 import java.time.Clock;
 import java.time.YearMonth;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -41,6 +42,10 @@ public class MockPaymentProvider implements PaymentProvider {
         if (!cvc.matches("\\d{3,4}")) {
             return new PaymentResult(PaymentResult.Status.INVALID, null, brand, last4, "Check the security code");
         }
+        if ("Card".equals(brand)) {
+            return new PaymentResult(PaymentResult.Status.DECLINED, null, brand, last4,
+                    "Your card was declined. We accept Visa, Mastercard, American Express and Discover.");
+        }
         if (DECLINE_CARD.equals(number)) {
             return new PaymentResult(PaymentResult.Status.DECLINED, null, brand, last4, "Your card was declined. Try another card.");
         }
@@ -68,28 +73,26 @@ public class MockPaymentProvider implements PaymentProvider {
         return sum % 10 == 0;
     }
 
+    private record BinRange(int low, int high, String brand) {}
+
+    private static final List<BinRange> BIN_RANGES = List.of(
+            new BinRange(400000, 499999, "Visa"),
+            new BinRange(222100, 272099, "Mastercard"),
+            new BinRange(510000, 550000, "Mastercard"),
+            new BinRange(340000, 349999, "Amex"),
+            new BinRange(370000, 379999, "Amex"),
+            new BinRange(601100, 601199, "Discover"),
+            new BinRange(650000, 659999, "Discover"));
+
     static String brand(String n) {
-        if (n.startsWith("4")) {
-            return "Visa";
+        if (n.length() < 6) {
+            return "Card";
         }
-        if (n.startsWith("34") || n.startsWith("37")) {
-            return "Amex";
-        }
-        if (n.startsWith("6011") || n.startsWith("65")) {
-            return "Discover";
-        }
-        if (n.length() >= 2) {
-            int two = Integer.parseInt(n.substring(0, 2));
-            if (two >= 51 && two <= 55) {
-                return "Mastercard";
-            }
-        }
-        if (n.length() >= 4) {
-            int four = Integer.parseInt(n.substring(0, 4));
-            if (four >= 2221 && four <= 2720) {
-                return "Mastercard";
-            }
-        }
-        return "Card";
+        int bin = Integer.parseInt(n.substring(0, 6));
+        return BIN_RANGES.stream()
+                .filter(r -> bin >= r.low() && bin <= r.high())
+                .map(BinRange::brand)
+                .findFirst()
+                .orElse("Card");
     }
 }
