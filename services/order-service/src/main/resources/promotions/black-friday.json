@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "id": "black-friday-2026",
+  "name": "Black Friday",
+  "headline": "Black Friday: 40% off almost everything",
+  "subhead": "Plus take an extra 15% off with code BLACKFRIDAY at checkout.",
+  "bannerText": "BLACK FRIDAY | 40% off sitewide + extra 15% with code BLACKFRIDAY | Ends in",
+  "startsAt": "2026-11-01T00:00:00Z",
+  "endsAt": "2026-12-01T07:59:59Z",
+  "percentOff": 40,
+  "excludedCollections": ["maternity", "gift-cards", "essentials-forever"],
+  "codes": [
+    { "code": "BLACKFRIDAY",  "description": "Extra 15% off sale-eligible styles", "percentOff": 15, "minSubtotalCents": 0,    "appliesToExcluded": false },
+    { "code": "OTTERWELCOME", "description": "10% off your order of $75+",          "percentOff": 10, "minSubtotalCents": 7500, "appliesToExcluded": true }
+  ]
+}

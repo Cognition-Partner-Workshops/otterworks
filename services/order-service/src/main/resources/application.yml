@@ -1,0 +1,43 @@
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ottershops}
+    username: ${SPRING_DATASOURCE_USERNAME:ottershops}
+    password: ${SPRING_DATASOURCE_PASSWORD:ottershops_dev}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      data-source-properties:
+        prepareThreshold: 0
+  flyway:
+    enabled: true
+    url: ${SPRING_FLYWAY_URL:${spring.datasource.url}}
+    user: ${SPRING_FLYWAY_USER:${spring.datasource.username}}
+    password: ${SPRING_FLYWAY_PASSWORD:${spring.datasource.password}}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+  jackson:
+    default-property-inclusion: non_null
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info
+
+ottershops:
+  promotions:
+    file: ${PROMOTIONS_FILE:classpath:promotions/black-friday.json}
+    enabled-override: ${PROMO_ENABLED:}
+  payments:
+    provider: ${PAYMENT_PROVIDER:mock}
+  catalog:
+    refresh-ms: 60000
