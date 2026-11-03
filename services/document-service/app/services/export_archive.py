@@ -20,9 +20,7 @@ class ExportArchive:
     """Serves rendered export files from the archive directory."""
 
     def __init__(self, base_dir: str | None = None):
-        self.base_dir = base_dir or os.environ.get(
-            "EXPORT_ARCHIVE_DIR", DEFAULT_ARCHIVE_DIR
-        )
+        self.base_dir = base_dir or os.environ.get("EXPORT_ARCHIVE_DIR", DEFAULT_ARCHIVE_DIR)
 
     def read_export(self, name: str) -> str:
         """Return the contents of the named export.
@@ -31,9 +29,9 @@ class ExportArchive:
         ``FileNotFoundError`` when the export does not exist.
         """
         path = os.path.join(self.base_dir, name)
-        root = os.path.realpath(self.base_dir)
+        root = os.path.join(os.path.realpath(self.base_dir), "")
         resolved = os.path.realpath(path)
-        if os.path.commonpath([root, resolved]) != root:
+        if not resolved.startswith(root):
             logger.warning("export_read_outside_archive", name=name)
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
         logger.debug("export_read", name=name)
