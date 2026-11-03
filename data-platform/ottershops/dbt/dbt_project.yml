@@ -1,0 +1,17 @@
+name: ottershops
+version: "1.0.0"
+config-version: 2
+profile: ottershops
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+clean-targets: ["target", "logs"]
+
+models:
+  ottershops:
+    staging:
+      +schema: STAGING
+      +materialized: view
+    marts:
+      +schema: MARTS
+      +materialized: table

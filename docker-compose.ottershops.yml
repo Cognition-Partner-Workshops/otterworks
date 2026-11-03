@@ -1,0 +1,67 @@
+# OtterShops retail demo: storefront, order service, Postgres and the Snowflake loader.
+#   docker compose -f docker-compose.ottershops.yml up --build
+# The loader needs Snowflake access; without OTTERSHOPS_SNOWFLAKE_KEY_FILE it stays idle.
+name: ottershops
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ottershops
+      POSTGRES_USER: ottershops
+      POSTGRES_PASSWORD: ottershops_dev
+    volumes:
+      - ottershops-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ottershops -d ottershops"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  order-service:
+    build:
+      context: services/order-service
+      args:
+        MAVEN_MIRROR_URL: ${MAVEN_MIRROR_URL:-}
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ottershops
+      SPRING_DATASOURCE_USERNAME: ottershops
+      SPRING_DATASOURCE_PASSWORD: ottershops_dev
+      PROMO_ENABLED: ${PROMO_ENABLED:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${ORDER_SERVICE_PORT:-8080}:8080"
+
+  web:
+    build: frontend/client-app
+    environment:
+      ORDER_SERVICE_URL: http://order-service:8080
+    depends_on:
+      order-service:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
+  loader:
+    build: data-platform/ottershops
+    environment:
+      PG_DSN: postgresql://ottershops:ottershops_dev@postgres:5432/ottershops
+      SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT:-yd76133.us-east-2.aws}
+      SNOWFLAKE_USER: OTTERSHOPS_SVC
+      SNOWFLAKE_PRIVATE_KEY_PATH: /run/secrets/snowflake_key
+      LOAD_INTERVAL_SECONDS: ${LOAD_INTERVAL_SECONDS:-300}
+    secrets:
+      - snowflake_key
+    depends_on:
+      order-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+secrets:
+  snowflake_key:
+    file: ${OTTERSHOPS_SNOWFLAKE_KEY_FILE:-./data-platform/ottershops/no-key.pem}
+
+volumes:
+  ottershops-pg:

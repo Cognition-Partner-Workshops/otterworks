@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: fct_orders
+    description: One row per placed order.
+    columns:
+      - name: order_id
+        tests: [unique, not_null]
+      - name: order_number
+        tests: [unique, not_null]
+      - name: fulfillment
+        tests:
+          - accepted_values: {values: ["SHIP", "PICKUP"]}
+      - name: total_cents
+        tests: [not_null]
+  - name: fct_order_lines
+    columns:
+      - name: order_line_id
+        tests: [unique, not_null]
+      - name: order_id
+        tests:
+          - not_null
+          - relationships: {to: ref('fct_orders'), field: order_id}
+      - name: product_id
+        tests:
+          - relationships: {to: ref('dim_products'), field: product_id}
+  - name: dim_products
+    columns:
+      - name: product_id
+        tests: [unique, not_null]
+  - name: dim_customers
+    columns:
+      - name: customer_id
+        tests: [unique, not_null]
+  - name: inventory_daily
+    columns:
+      - name: inventory_day_id
+        tests: [unique, not_null]
+  - name: sales_daily
+    columns:
+      - name: sales_day_id
+        tests: [unique, not_null]

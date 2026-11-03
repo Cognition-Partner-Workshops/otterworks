@@ -1,0 +1,13 @@
+ottershops:
+  target: prod
+  outputs:
+    prod:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER', 'OTTERSHOPS_SVC') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      role: OTTERSHOPS_PIPELINE
+      warehouse: OTTERSHOPS_WH
+      database: OTTERSHOPS
+      schema: STAGING
+      threads: 4
