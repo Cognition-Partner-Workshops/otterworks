@@ -637,8 +637,9 @@ secret_value() { kubectl -n "$1" get secret "$2" -o "jsonpath={.data.$3}" 2>/dev
 # Let the BEFORE deployment's api-gateway accept the AFTER deployment's session tokens
 # (JWT_PEER_SECRET), so the AFTER admin dashboard's Before/After archive panel can read
 # the peer through its /peer proxy. Each tenant mints its own JWT_SECRET, so without this
-# every peer read is a 401. Only the api-gateway release is upgraded; the peer's other
-# services are untouched. No-op when the BEFORE namespace is not deployed yet.
+# every peer read is a 401. The api-gateway and report-service releases are upgraded
+# (report-service verifies the token again behind the gateway); the peer's other services
+# are untouched. No-op when the BEFORE namespace is not deployed yet.
 trust_peer_tokens() {
   local after_token="$1" before_ns after_ns secret
   after_ns="$(demo_namespace "${after_token}")"
@@ -649,13 +650,19 @@ trust_peer_tokens() {
   fi
   secret="$(kubectl -n "${after_ns}" get secret api-gateway-secrets -o jsonpath='{.data.JWT_SECRET}' | base64 -d)"
   [ -n "${secret}" ] || { dwarn "${after_ns}/api-gateway-secrets has no JWT_SECRET; not wiring peer trust"; return 0; }
-  if [ "$(kubectl -n "${before_ns}" get secret api-gateway-secrets -o jsonpath='{.data.JWT_PEER_SECRET}' | base64 -d)" = "${secret}" ]; then
-    dlog "${before_ns}/api-gateway already trusts ${after_ns} tokens"; return 0
-  fi
-  helm -n "${before_ns}" upgrade api-gateway "${REPO_ROOT}/infrastructure/helm/api-gateway" \
-    --reuse-values --set-string "secrets.JWT_PEER_SECRET=${secret}" --timeout 4m >/dev/null
-  kubectl -n "${before_ns}" rollout status deployment/api-gateway --timeout=240s || dwarn "api-gateway rollout in ${before_ns} not confirmed"
-  dlog "${before_ns}/api-gateway now accepts ${after_ns} session tokens (JWT_PEER_SECRET)"
+  local svc
+  for svc in api-gateway report-service; do
+    if ! kubectl -n "${before_ns}" get secret "${svc}-secrets" >/dev/null 2>&1; then
+      dwarn "${before_ns}/${svc}-secrets not found; not wiring peer trust for ${svc}"; continue
+    fi
+    if [ "$(kubectl -n "${before_ns}" get secret "${svc}-secrets" -o jsonpath='{.data.JWT_PEER_SECRET}' | base64 -d)" = "${secret}" ]; then
+      dlog "${before_ns}/${svc} already trusts ${after_ns} tokens"; continue
+    fi
+    helm -n "${before_ns}" upgrade "${svc}" "${REPO_ROOT}/infrastructure/helm/${svc}" \
+      --reuse-values --set-string "secrets.JWT_PEER_SECRET=${secret}" --timeout 4m >/dev/null
+    kubectl -n "${before_ns}" rollout status "deployment/${svc}" --timeout=240s || dwarn "${svc} rollout in ${before_ns} not confirmed"
+    dlog "${before_ns}/${svc} now accepts ${after_ns} session tokens (JWT_PEER_SECRET)"
+  done
 }
 
 # Wire the archive-store Secret into the services that read it (§10.4). Done
