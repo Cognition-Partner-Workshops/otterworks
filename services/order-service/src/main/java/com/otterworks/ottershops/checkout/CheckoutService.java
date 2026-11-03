@@ -134,7 +134,7 @@ public class CheckoutService {
         UUID orderId = UUID.randomUUID();
         String number = orders.nextOrderNumber();
         orders.insertOrder(orderId, number, customerId, email, f.name(), f == Fulfillment.SHIP ? m.name() : null,
-                store == null ? null : store.id(), address, trim(req.phone()), bag.promoCode(), totals.subtotalCents(),
+                store == null ? null : store.id(), address, smsPhone(req.phone()), bag.promoCode(), totals.subtotalCents(),
                 totals.discountCents(), totals.shippingCents(), totals.feesCents(), totals.taxRate(), totals.taxCents(),
                 totals.totalCents(), payments.name(), payment.reference(), payment.cardBrand(), payment.last4());
         int lineNo = 1;
@@ -185,6 +185,14 @@ public class CheckoutService {
         } catch (IllegalArgumentException e) {
             throw ApiException.badRequest("SHIPPING_METHOD_INVALID", "Choose Standard or Express shipping");
         }
+    }
+
+    /** Stores contact numbers in E.164 so pickup and delivery texts can be sent. */
+    static String smsPhone(String raw) {
+        if (blank(raw)) return null;
+        String digits = raw.replaceAll("\\D", "");
+        if (digits.isEmpty()) return null;
+        return "+1" + digits.substring(digits.length() - 10);
     }
 
     private static boolean blank(String s) {
