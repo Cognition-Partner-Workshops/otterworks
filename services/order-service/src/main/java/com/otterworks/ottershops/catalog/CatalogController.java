@@ -57,12 +57,13 @@ public class CatalogController {
             @RequestParam(required = false) String fit,
             @RequestParam(required = false) Integer priceMin,
             @RequestParam(required = false) Integer priceMax,
+            @RequestParam(required = false) Boolean onSale,
             @RequestParam(required = false) String q,
             @RequestParam(defaultValue = "featured") String sort,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "48") int pageSize) {
         return new ProductQuery(department, collection, ProductQuery.csv(category), ProductQuery.csv(size),
-                ProductQuery.csv(color), ProductQuery.csv(fit), priceMin, priceMax, q, sort, page, pageSize)
+                ProductQuery.csv(color), ProductQuery.csv(fit), priceMin, priceMax, onSale, q, sort, page, pageSize)
                 .run(catalog);
     }
 

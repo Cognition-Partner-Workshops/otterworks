@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 /** PLP filtering, sorting, faceting and paging over the in-memory catalog. */
 public record ProductQuery(String department, String collection, Set<String> categories, Set<String> sizes,
-                           Set<String> colors, Set<String> fits, Integer priceMin, Integer priceMax, String q,
+                           Set<String> colors, Set<String> fits, Integer priceMin, Integer priceMax, Boolean onSale, String q,
                            String sort, int page, int pageSize) {
 
     public record Facet(String value, int count) {}
@@ -41,6 +41,7 @@ public record ProductQuery(String department, String collection, Set<String> cat
                 .filter(matchAny(fits, p -> p.fit() == null ? List.of() : List.of(p.fit())))
                 .filter(p -> priceMin == null || catalog.price(p).priceCents() >= priceMin)
                 .filter(p -> priceMax == null || catalog.price(p).priceCents() <= priceMax)
+                .filter(p -> !Boolean.TRUE.equals(onSale) || catalog.price(p).onSale())
                 .sorted(comparator(catalog))
                 .toList();
         int size = Math.max(1, Math.min(pageSize, 200));
