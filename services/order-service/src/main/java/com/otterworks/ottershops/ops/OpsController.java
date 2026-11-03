@@ -1,6 +1,7 @@
 package com.otterworks.ottershops.ops;
 
 import com.otterworks.ottershops.common.ApiException;
+import com.otterworks.ottershops.warehouse.WarehouseExportJob;
 import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +19,12 @@ public class OpsController {
     private final JobRunRepository runs;
     private final Map<String, Runnable> jobs;
 
-    public OpsController(OpsAuth auth, JobRunRepository runs, PriceFeedJob priceFeed, PickupReadyJob pickupReady) {
+    public OpsController(OpsAuth auth, JobRunRepository runs, PriceFeedJob priceFeed, PickupReadyJob pickupReady,
+                         WarehouseExportJob warehouseExport) {
         this.auth = auth;
         this.runs = runs;
-        this.jobs = Map.of(PriceFeedJob.JOB, priceFeed::run, PickupReadyJob.JOB, pickupReady::run);
+        this.jobs = Map.of(PriceFeedJob.JOB, priceFeed::run, PickupReadyJob.JOB, pickupReady::run,
+                WarehouseExportJob.JOB, warehouseExport::run);
     }
 
     @GetMapping("/jobs/runs")
