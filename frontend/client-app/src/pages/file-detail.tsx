@@ -56,7 +56,7 @@ function FileDetailContent() {
 
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [resolvedUsers, setResolvedUsers] = useState<Record<string, { name: string; email: string }>>({});
+  const [resolvedUsers, setResolvedUsers] = useState<Record<string, { name: string; email?: string }>>({});
 
   useEffect(() => {
     if (!file?.sharedWith?.length) return;
@@ -68,13 +68,10 @@ function FileDetailContent() {
     Promise.allSettled(
       userIds.map((id) => authApi.lookupUserById(id))
     ).then((results) => {
-      const newUsers: Record<string, { name: string; email: string }> = {};
+      const newUsers: Record<string, { name: string; email?: string }> = {};
       results.forEach((result, i) => {
-        if (result.status === "fulfilled") {
-          newUsers[userIds[i]] = {
-            name: result.value.displayName || result.value.email,
-            email: result.value.email,
-          };
+        if (result.status === "fulfilled" && result.value.displayName) {
+          newUsers[userIds[i]] = { name: result.value.displayName };
         }
       });
       if (Object.keys(newUsers).length > 0) {

@@ -264,13 +264,70 @@ class AuthControllerIntegrationTest {
         .andExpect(jsonPath("$.content").isArray());
   }
 
-  private void createTestUser(String email, String password, String displayName) {
+  @Test
+  void usersLookup_shouldRequireAuthentication() throws Exception {
+    createTestUser("target@otterworks.dev", "password123", "Target User");
+
+    mockMvc
+        .perform(get("/api/v1/auth/users/lookup").param("email", "target@otterworks.dev"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void usersLookup_shouldNotExposePiiToRegularUsers() throws Exception {
+    createTestUser("target@otterworks.dev", "password123", "Target User");
+    String accessToken =
+        registerAndGetAccessToken("caller@otterworks.dev", "password123", "Caller User");
+
+    mockMvc
+        .perform(
+            get("/api/v1/auth/users/lookup")
+                .param("email", "target@otterworks.dev")
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").isNotEmpty())
+        .andExpect(jsonPath("$.displayName").value("Target User"))
+        .andExpect(jsonPath("$.email").doesNotExist())
+        .andExpect(jsonPath("$.roles").doesNotExist())
+        .andExpect(jsonPath("$.lastLoginAt").doesNotExist())
+        .andExpect(jsonPath("$.createdAt").doesNotExist());
+  }
+
+  @Test
+  void usersById_shouldRequireAuthentication() throws Exception {
+    User target = createTestUser("target@otterworks.dev", "password123", "Target User");
+
+    mockMvc
+        .perform(get("/api/v1/auth/users/by-id/" + target.getId()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void usersById_shouldNotExposePiiToRegularUsers() throws Exception {
+    User target = createTestUser("target@otterworks.dev", "password123", "Target User");
+    String accessToken =
+        registerAndGetAccessToken("caller@otterworks.dev", "password123", "Caller User");
+
+    mockMvc
+        .perform(
+            get("/api/v1/auth/users/by-id/" + target.getId())
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(target.getId().toString()))
+        .andExpect(jsonPath("$.displayName").value("Target User"))
+        .andExpect(jsonPath("$.email").doesNotExist())
+        .andExpect(jsonPath("$.roles").doesNotExist())
+        .andExpect(jsonPath("$.lastLoginAt").doesNotExist())
+        .andExpect(jsonPath("$.createdAt").doesNotExist());
+  }
+
+  private User createTestUser(String email, String password, String displayName) {
     User user = new User();
     user.setEmail(email);
     user.setPasswordHash(passwordEncoder.encode(password));
     user.setDisplayName(displayName);
     user.setRoles(Set.of(User.Role.USER));
-    userRepository.save(user);
+    return userRepository.save(user);
   }
 
   private String registerAndGetAccessToken(String email, String password, String displayName)
