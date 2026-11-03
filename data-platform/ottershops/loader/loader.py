@@ -28,6 +28,7 @@ snowflake.connector.paramstyle = "qmark"
 
 PG_DSN = os.environ.get("PG_DSN", "postgresql://ottershops:ottershops_dev@localhost:5432/ottershops")
 INTERVAL = int(os.environ.get("LOAD_INTERVAL_SECONDS", "300"))
+BATCH_SIZE = int(os.environ.get("LOAD_BATCH_SIZE", "1000"))
 DBT_DIR = pathlib.Path(os.environ.get("DBT_PROJECT_DIR", pathlib.Path(__file__).resolve().parent.parent / "dbt"))
 EPOCH = "1970-01-01T00:00:00+00:00"
 
@@ -131,7 +132,8 @@ class Loader:
         counts = {}
         # Orders, lines, fees
         wm = self.state.get("orders_wm", EPOCH)
-        orders = pg.execute(f"select {ORDER_COLS} from orders where updated_at > %s order by updated_at", (wm,)).fetchall()
+        orders = pg.execute(f"select {ORDER_COLS} from orders where updated_at > %s order by updated_at limit %s",
+                            (wm, BATCH_SIZE)).fetchall()
         if orders:
             ids = [o[0] for o in orders]
             counts["orders"] = self.insert("ORDERS", RAW_TABLES["ORDERS"], orders, loaded_at)
@@ -144,7 +146,7 @@ class Loader:
         # Customers (never the password hash)
         wm = self.state.get("customers_wm", EPOCH)
         customers = pg.execute("select id, email, first_name, last_name, rewards_points, created_at, updated_at from customers "
-                               "where updated_at > %s order by updated_at", (wm,)).fetchall()
+                               "where updated_at > %s order by updated_at limit %s", (wm, BATCH_SIZE)).fetchall()
         if customers:
             counts["customers"] = self.insert("CUSTOMERS", RAW_TABLES["CUSTOMERS"], customers, loaded_at)
             self.put_state("customers_wm", customers[-1][-1].isoformat())
