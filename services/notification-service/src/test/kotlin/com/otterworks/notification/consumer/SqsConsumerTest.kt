@@ -1,9 +1,14 @@
 package com.otterworks.notification.consumer
 
 import aws.sdk.kotlin.services.sqs.SqsClient
+import aws.sdk.kotlin.services.sqs.model.Message
 import com.otterworks.notification.config.AppConfig
+import com.otterworks.notification.model.SqsNotificationMessage
 import com.otterworks.notification.service.NotificationService
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -25,6 +30,7 @@ class SqsConsumerTest {
         sqsPollIntervalMs = 1000,
         sqsMaxMessages = 10,
         sqsWaitTimeSeconds = 5,
+        sqsMaxReceiveCount = 3,
     )
 
     private val consumer = SqsConsumer(sqsClient, notificationService, config)
@@ -136,5 +142,141 @@ class SqsConsumerTest {
         assertEquals("", event.fileId)
         assertEquals("", event.ownerId)
         assertEquals("", event.sharedWithUserId)
+    }
+
+    @Test
+    fun `parseMessage accepts legacy epoch-seconds timestamp`() {
+        val body = """
+            {
+                "eventType": "file_shared",
+                "fileId": "file-123",
+                "ownerId": "owner-1",
+                "sharedWithUserId": "user-2",
+                "timestamp": 1704067200
+            }
+        """.trimIndent()
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("file_shared", event.eventType)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage accepts legacy epoch-millis timestamp`() {
+        val body = """{"eventType":"document_edited","userId":"user-1","documentId":"doc-1","timestamp":1704067200123}"""
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("2024-01-01T00:00:00.123Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage accepts epoch timestamp sent as a numeric string`() {
+        val body = """{"eventType":"document_edited","userId":"user-1","documentId":"doc-1","timestamp":"1704067200"}"""
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage keeps RFC 3339 timestamps unchanged`() {
+        val body = """{"eventType":"document_edited","userId":"user-1","documentId":"doc-1","timestamp":"2024-06-15T10:30:00+02:00"}"""
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("2024-06-15T10:30:00+02:00", event.timestamp)
+    }
+
+    @Test
+    fun `parseMessage unwraps a full SNS envelope carrying a legacy message`() {
+        val innerMessage = """{"eventType":"user_mentioned","mentionedUserId":"user-9","actorId":"actor-1","documentId":"doc-1","timestamp":1704067200}"""
+        val escapedInner = innerMessage.replace("\"", "\\\"")
+        val body = """
+            {
+                "Type": "Notification",
+                "MessageId": "msg-123",
+                "TopicArn": "arn:aws:sns:us-east-1:000000000000:test-topic",
+                "Subject": "file event",
+                "Message": "$escapedInner",
+                "Timestamp": "2024-01-01T00:00:00.000Z",
+                "SignatureVersion": "1",
+                "Signature": "abc",
+                "SigningCertURL": "https://sns.us-east-1.amazonaws.com/cert.pem",
+                "UnsubscribeURL": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe"
+            }
+        """.trimIndent()
+
+        val event = consumer.parseMessage(body)
+
+        assertNotNull(event)
+        assertEquals("user_mentioned", event.eventType)
+        assertEquals("user-9", event.mentionedUserId)
+        assertEquals("2024-01-01T00:00:00Z", event.timestamp)
+    }
+
+    @Test
+    fun `handleMessage processes and deletes a legacy message`() = runTest {
+        val msg = Message {
+            messageId = "m-1"
+            receiptHandle = "rh-1"
+            body = """{"eventType":"file_shared","fileId":"f-1","ownerId":"o-1","sharedWithUserId":"u-2","timestamp":1704067200}"""
+            attributes = mapOf("ApproximateReceiveCount" to "1")
+        }
+
+        consumer.handleMessage(msg)
+
+        coVerify(exactly = 1) { notificationService.processEvent(any<SqsNotificationMessage>()) }
+        coVerify(exactly = 1) { sqsClient.deleteMessage(match { it.receiptHandle == "rh-1" }) }
+    }
+
+    @Test
+    fun `handleMessage leaves an unparseable message for redelivery below the receive cap`() = runTest {
+        val msg = Message {
+            messageId = "m-2"
+            receiptHandle = "rh-2"
+            body = "not json at all"
+            attributes = mapOf("ApproximateReceiveCount" to "2")
+        }
+
+        consumer.handleMessage(msg)
+
+        coVerify(exactly = 0) { notificationService.processEvent(any<SqsNotificationMessage>()) }
+        coVerify(exactly = 0) { sqsClient.deleteMessage(any()) }
+    }
+
+    @Test
+    fun `handleMessage drops an unparseable message once the receive cap is reached`() = runTest {
+        val msg = Message {
+            messageId = "m-3"
+            receiptHandle = "rh-3"
+            body = "not json at all"
+            attributes = mapOf("ApproximateReceiveCount" to "3")
+        }
+
+        consumer.handleMessage(msg)
+
+        coVerify(exactly = 0) { notificationService.processEvent(any<SqsNotificationMessage>()) }
+        coVerify(exactly = 1) { sqsClient.deleteMessage(match { it.receiptHandle == "rh-3" }) }
+    }
+
+    @Test
+    fun `handleMessage keeps the message when processing fails`() = runTest {
+        coEvery { notificationService.processEvent(any<SqsNotificationMessage>()) } throws IllegalStateException("dynamo down")
+        val msg = Message {
+            messageId = "m-4"
+            receiptHandle = "rh-4"
+            body = """{"eventType":"file_shared","fileId":"f-1","ownerId":"o-1","sharedWithUserId":"u-2","timestamp":"2024-01-01T00:00:00Z"}"""
+            attributes = mapOf("ApproximateReceiveCount" to "1")
+        }
+
+        consumer.handleMessage(msg)
+
+        coVerify(exactly = 0) { sqsClient.deleteMessage(any()) }
     }
 }
