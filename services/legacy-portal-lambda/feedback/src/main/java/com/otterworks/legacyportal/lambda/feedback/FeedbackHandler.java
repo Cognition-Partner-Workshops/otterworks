@@ -52,10 +52,6 @@ public final class FeedbackHandler
             APIGatewayV2HTTPEvent event, com.amazonaws.services.lambda.runtime.Context context) {
         String path = event == null || event.getRawPath() == null ? "" : event.getRawPath();
         String method = requestMethod(event);
-        // FAIL_READS=1 is the canary demo's bad build: the same code, with every GET answering 500.
-        if (failReads && "GET".equals(method)) {
-            return error(500, path);
-        }
         Route route = route(path);
         if (route == null) {
             return error(404, path);
@@ -65,6 +61,15 @@ public final class FeedbackHandler
             APIGatewayV2HTTPResponse response = error(405, path);
             response.getHeaders().put("Allow", route.allowedMethods());
             return response;
+        }
+
+        String callerId = route == Route.ROOT ? callerId(event) : null;
+        if (route == Route.ROOT && callerId == null) {
+            return error(401, path);
+        }
+        // FAIL_READS=1 is the canary demo's bad build: the same code, with every GET answering 500.
+        if (failReads && "GET".equals(method)) {
+            return error(500, path);
         }
 
         try {
@@ -83,6 +88,9 @@ public final class FeedbackHandler
                 if (request == null || !valid(request)) {
                     return error(400, path);
                 }
+                if (!callerId.equals(request.userId)) {
+                    return error(403, path);
+                }
                 result = FeedbackResponse.from(service.submit(request.userId, request.rating, request.message));
                 successStatus = 201;
             } else if (route == Route.ROOT) {
@@ -94,6 +102,9 @@ public final class FeedbackHandler
                 }
                 if (userId == null) {
                     return error(400, path);
+                }
+                if (!callerId.equals(userId)) {
+                    return error(403, path);
                 }
                 result = service.listForUser(userId).stream().map(FeedbackResponse::from).toList();
                 successStatus = 200;
@@ -168,6 +179,18 @@ public final class FeedbackHandler
         }
         String method = event.getRequestContext().getHttp().getMethod();
         return method == null ? "" : method;
+    }
+
+    private static String callerId(APIGatewayV2HTTPEvent event) {
+        if (event == null
+                || event.getRequestContext() == null
+                || event.getRequestContext().getAuthorizer() == null
+                || event.getRequestContext().getAuthorizer().getJwt() == null
+                || event.getRequestContext().getAuthorizer().getJwt().getClaims() == null) {
+            return null;
+        }
+        String sub = event.getRequestContext().getAuthorizer().getJwt().getClaims().get("sub");
+        return notBlank(sub) ? sub : null;
     }
 
     private static String header(APIGatewayV2HTTPEvent event, String name) {
@@ -272,6 +295,8 @@ public final class FeedbackHandler
     private static String reason(int status) {
         return switch (status) {
             case 400 -> "Bad Request";
+            case 401 -> "Unauthorized";
+            case 403 -> "Forbidden";
             case 404 -> "Not Found";
             case 405 -> "Method Not Allowed";
             case 415 -> "Unsupported Media Type";

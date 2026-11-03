@@ -57,12 +57,76 @@ class FeedbackHandlerTest {
     }
 
     @Test
-    void emptyUserIdIsValidAndMissingUserIdIsBadRequest() throws Exception {
+    void userCannotListAnotherUsersFeedback() {
+        repository.save(new Feedback(null, "alice", 5, "alice's message", Instant.now()));
+
+        APIGatewayV2HTTPResponse response = request(
+                "GET", "/api/feedback", "userId=alice", null, null, null, "bob");
+
+        assertError(response, 403, "/api/feedback", "Forbidden");
+        assertFalse(response.getBody().contains("alice's message"));
+    }
+
+    @Test
+    void userCannotSubmitFeedbackAsAnotherUser() {
+        APIGatewayV2HTTPResponse response = request(
+                "POST", "/api/feedback", null,
+                "{\"userId\":\"alice\",\"rating\":5,\"message\":\"forged\"}",
+                "application/json", null, "bob");
+
+        assertError(response, 403, "/api/feedback", "Forbidden");
+        assertTrue(repository.rows.isEmpty());
+    }
+
+    @Test
+    void unauthenticatedListAndSubmitAre401() {
+        APIGatewayV2HTTPResponse list = request(
+                "GET", "/api/feedback", "userId=alice", null, null, null, (String) null);
+        APIGatewayV2HTTPResponse submit = request(
+                "POST", "/api/feedback", null,
+                "{\"userId\":\"alice\",\"rating\":5,\"message\":\"unauthenticated\"}",
+                "application/json", null, (String) null);
+
+        assertError(list, 401, "/api/feedback", "Unauthorized");
+        assertError(submit, 401, "/api/feedback", "Unauthorized");
+        assertTrue(repository.rows.isEmpty());
+    }
+
+    @Test
+    void forgedUserIdHeaderDoesNotOverrideCaller() {
+        APIGatewayV2HTTPResponse response = request(
+                "GET", "/api/feedback", "userId=alice", null, null, null,
+                false, "bob", Map.of("X-User-ID", "alice"));
+
+        assertError(response, 403, "/api/feedback", "Forbidden");
+    }
+
+    @Test
+    void ownerCanListOwnFeedback() throws Exception {
+        repository.save(new Feedback(null, "alice", 5, "alice's message", Instant.now()));
+
+        APIGatewayV2HTTPResponse response = request(
+                "GET", "/api/feedback", "userId=alice", null, null, null, "alice");
+        JsonNode body = JSON.readTree(response.getBody());
+
+        assertEquals(200, response.getStatusCode());
+        assertEquals("alice's message", body.get(0).get("message").asText());
+    }
+
+    @Test
+    void averageRatingStillPublic() {
+        APIGatewayV2HTTPResponse response = request(
+                "GET", "/api/feedback/average-rating", null, null, null, null, (String) null);
+
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    void emptyUserIdIsForbiddenAndMissingUserIdIsBadRequest() throws Exception {
         APIGatewayV2HTTPResponse empty = request("GET", "/api/feedback", "userId=", null, null, null);
         APIGatewayV2HTTPResponse missing = request("GET", "/api/feedback", null, null, null, null);
 
-        assertEquals(200, empty.getStatusCode());
-        assertEquals("[]", empty.getBody());
+        assertError(empty, 403, "/api/feedback", "Forbidden");
         assertError(missing, 400, "/api/feedback", "Bad Request");
     }
 
@@ -112,9 +176,9 @@ class FeedbackHandlerTest {
     @Test
     void jacksonCoercesStringAndFloatingRating() throws Exception {
         APIGatewayV2HTTPResponse stringRating = post(
-                "{\"userId\":\"u\",\"rating\":\"4\",\"message\":\"string\"}", "application/json", null);
+                "{\"userId\":\"u\",\"rating\":\"4\",\"message\":\"string\"}", "application/json", null, "u");
         APIGatewayV2HTTPResponse floatRating = post(
-                "{\"userId\":\"u\",\"rating\":4.7,\"message\":\"float\"}", "application/json", null);
+                "{\"userId\":\"u\",\"rating\":4.7,\"message\":\"float\"}", "application/json", null, "u");
 
         assertEquals(201, stringRating.getStatusCode());
         assertEquals(4, JSON.readTree(stringRating.getBody()).get("rating").asInt());
@@ -127,7 +191,7 @@ class FeedbackHandlerTest {
         assertEquals(400, post("{\"userId\":", "application/json", null).getStatusCode());
         assertEquals(415, post("rating=5", "text/plain", null).getStatusCode());
         assertEquals(415, request("POST", "/api/feedback", null,
-                "{\"userId\":\"u\",\"rating\":1,\"message\":\"x\"}", null, null).getStatusCode());
+                "{\"userId\":\"u\",\"rating\":1,\"message\":\"x\"}", null, null, "u").getStatusCode());
     }
 
     @Test
@@ -146,7 +210,7 @@ class FeedbackHandlerTest {
     @Test
     void unacceptableAcceptIsCheckedAfterPostHasBeenSaved() {
         APIGatewayV2HTTPResponse response = post(
-                "{\"userId\":\"xml\",\"rating\":5,\"message\":\"saved\"}", "application/json", "application/xml");
+                "{\"userId\":\"xml\",\"rating\":5,\"message\":\"saved\"}", "application/json", "application/xml", "xml");
 
         assertEquals(406, response.getStatusCode());
         assertEquals("", response.getBody());
@@ -157,18 +221,19 @@ class FeedbackHandlerTest {
     @Test
     void acceptsJsonMediaRangesAndRejectsExplicitZeroQuality() {
         assertEquals(201, post("{\"userId\":\"u\",\"rating\":2,\"message\":\"x\"}",
-                "application/problem+json; charset=utf-8", "application/*;q=0.8").getStatusCode());
+                "application/problem+json; charset=utf-8", "application/*;q=0.8", "u").getStatusCode());
         assertEquals(406, post("{\"userId\":\"u\",\"rating\":2,\"message\":\"x\"}",
-                "application/json", "application/json;q=0, */*;q=1").getStatusCode());
+                "application/json", "application/json;q=0, */*;q=1", "u").getStatusCode());
         assertEquals(201, post("{\"userId\":\"u\",\"rating\":2,\"message\":\"x\"}",
-                "application/json", "application/json;q=0.8, application/xml;q=1").getStatusCode());
+                "application/json", "application/json;q=0.8, application/xml;q=1", "u").getStatusCode());
     }
 
     @Test
     void supportsTrailingSlashAndFirstDecodedQueryValue() throws Exception {
         APIGatewayV2HTTPResponse created = request("POST", "/api/feedback/", null,
-                "{\"userId\":\"a b\",\"rating\":1,\"message\":\"x\"}", "application/json", null);
-        APIGatewayV2HTTPResponse listed = request("GET", "/api/feedback", "userId=a+b&userId=other", null, null, null);
+                "{\"userId\":\"a b\",\"rating\":1,\"message\":\"x\"}", "application/json", null, "a b");
+        APIGatewayV2HTTPResponse listed = request(
+                "GET", "/api/feedback", "userId=a+b&userId=other", null, null, null, "a b");
 
         assertEquals(201, created.getStatusCode());
         assertEquals("a b", JSON.readTree(listed.getBody()).get(0).get("userId").asText());
@@ -179,7 +244,7 @@ class FeedbackHandlerTest {
         String json = "{\"userId\":\"u\",\"rating\":3,\"message\":\"encoded\"}";
         String encoded = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
         APIGatewayV2HTTPResponse response = request("POST", "/api/feedback", null, encoded,
-                "application/json", null, true);
+                "application/json", null, true, "u");
 
         assertEquals(201, response.getStatusCode());
         assertEquals("encoded", JSON.readTree(response.getBody()).get("message").asText());
@@ -188,7 +253,7 @@ class FeedbackHandlerTest {
     @Test
     void unknownJsonFieldsAreIgnoredAndNullRatingDefaultsToZero() throws Exception {
         APIGatewayV2HTTPResponse unknown = post(
-                "{\"userId\":\"u\",\"rating\":2,\"message\":\"x\",\"extra\":true}", "application/json", null);
+                "{\"userId\":\"u\",\"rating\":2,\"message\":\"x\",\"extra\":true}", "application/json", null, "u");
         APIGatewayV2HTTPResponse nullRating = post(
                 "{\"userId\":\"u\",\"rating\":null,\"message\":\"x\"}", "application/json", null);
 
@@ -198,6 +263,10 @@ class FeedbackHandlerTest {
 
     private APIGatewayV2HTTPResponse post(String body, String contentType, String accept) {
         return request("POST", "/api/feedback", null, body, contentType, accept);
+    }
+
+    private APIGatewayV2HTTPResponse post(String body, String contentType, String accept, String callerSub) {
+        return request("POST", "/api/feedback", null, body, contentType, accept, callerSub);
     }
 
     @Test
@@ -214,15 +283,54 @@ class FeedbackHandlerTest {
 
     private APIGatewayV2HTTPResponse request(
             String method, String path, String rawQuery, String body, String contentType, String accept) {
-        return request(method, path, rawQuery, body, contentType, accept, false);
+        return request(method, path, rawQuery, body, contentType, accept, false, "u1", Map.of());
+    }
+
+    private APIGatewayV2HTTPResponse request(
+            String method, String path, String rawQuery, String body, String contentType, String accept, String callerSub) {
+        return request(method, path, rawQuery, body, contentType, accept, false, callerSub, Map.of());
     }
 
     private APIGatewayV2HTTPResponse request(
             String method, String path, String rawQuery, String body, String contentType, String accept, boolean base64) {
+        return request(method, path, rawQuery, body, contentType, accept, base64, "u1", Map.of());
+    }
+
+    private APIGatewayV2HTTPResponse request(
+            String method,
+            String path,
+            String rawQuery,
+            String body,
+            String contentType,
+            String accept,
+            boolean base64,
+            String callerSub) {
+        return request(method, path, rawQuery, body, contentType, accept, base64, callerSub, Map.of());
+    }
+
+    private APIGatewayV2HTTPResponse request(
+            String method,
+            String path,
+            String rawQuery,
+            String body,
+            String contentType,
+            String accept,
+            boolean base64,
+            String callerSub,
+            Map<String, String> additionalHeaders) {
         APIGatewayV2HTTPEvent.RequestContext.Http http = new APIGatewayV2HTTPEvent.RequestContext.Http();
         http.setMethod(method);
         APIGatewayV2HTTPEvent.RequestContext context = new APIGatewayV2HTTPEvent.RequestContext();
         context.setHttp(http);
+        if (callerSub != null) {
+            APIGatewayV2HTTPEvent.RequestContext.Authorizer.JWT jwt =
+                    new APIGatewayV2HTTPEvent.RequestContext.Authorizer.JWT();
+            jwt.setClaims(Map.of("sub", callerSub));
+            APIGatewayV2HTTPEvent.RequestContext.Authorizer authorizer =
+                    new APIGatewayV2HTTPEvent.RequestContext.Authorizer();
+            authorizer.setJwt(jwt);
+            context.setAuthorizer(authorizer);
+        }
         APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
         event.setRawPath(path);
         event.setRawQueryString(rawQuery);
@@ -236,6 +344,7 @@ class FeedbackHandlerTest {
         if (accept != null) {
             headers.put("Accept", accept);
         }
+        headers.putAll(additionalHeaders);
         event.setHeaders(headers);
         return handler.handleRequest(event, null);
     }
