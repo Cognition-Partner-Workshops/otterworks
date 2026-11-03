@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.23"
     kotlin("plugin.serialization") version "1.9.23"
-    id("io.ktor.plugin") version "2.3.9"
+    id("io.ktor.plugin") version "2.3.13"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -16,11 +16,11 @@ repositories {
     mavenCentral()
 }
 
-val ktorVersion = "2.3.9"
-val awsSdkVersion = "1.0.70"
-val coroutinesVersion = "1.8.0"
-val koinVersion = "3.5.3"
-val micrometerVersion = "1.12.4"
+val ktorVersion = "2.3.13"
+val awsSdkVersion = "1.3.112"
+val coroutinesVersion = "1.9.0"
+val koinVersion = "3.5.6"
+val micrometerVersion = "1.12.13"
 val commonsTextVersion = "1.9"
 
 dependencies {
@@ -60,24 +60,24 @@ dependencies {
     implementation("io.insert-koin:koin-logger-slf4j:$koinVersion")
 
     // Logging
-    implementation("ch.qos.logback:logback-classic:1.5.3")
+    implementation("ch.qos.logback:logback-classic:1.5.38")
     implementation("net.logstash.logback:logstash-logback-encoder:7.4")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.5")
 
     // Metrics & Tracing
     implementation("io.micrometer:micrometer-registry-prometheus:$micrometerVersion")
-    implementation("io.opentelemetry:opentelemetry-api:1.36.0")
-    implementation("io.opentelemetry:opentelemetry-sdk:1.36.0")
-    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.36.0")
+    implementation("io.opentelemetry:opentelemetry-api:1.67.0")
+    implementation("io.opentelemetry:opentelemetry-sdk:1.67.0")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.67.0")
 
     // Redis (chaos flag checks)
-    implementation("redis.clients:jedis:5.1.3")
+    implementation("redis.clients:jedis:5.2.0")
 
     // Testing
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.23")
-    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("io.mockk:mockk:1.14.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
     testImplementation("io.insert-koin:koin-test:$koinVersion")
 }
