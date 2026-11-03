@@ -1,12 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { money } from "@/lib/format";
 import { useBag } from "./BagProvider";
 import { FreeShippingBar } from "./FreeShippingBar";
 
 export function MiniBag() {
   const { bag, drawerOpen, setDrawerOpen } = useBag();
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDrawerOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [drawerOpen, setDrawerOpen]);
   if (!drawerOpen) return null;
   const items = bag?.items ?? [];
   return (
