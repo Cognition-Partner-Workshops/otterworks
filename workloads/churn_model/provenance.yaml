@@ -209,11 +209,11 @@ usage:
   query_count_runtime: pending
 data_quality:
   playbook: Snowflake workload data-quality gate
-  run_id: SFNFR_20261104-churn_model-dev-20261104T223655Z
+  run_id: SFNFR_20261104-churn_model-dev-20261104T223858Z
   phase: dev
-  commit: 00905aaedd7d58f0af45e2fdf350fa1dbf3b2530
+  commit: 587f65681cdbd4f67c75e882120eaa388e54dc96
   session: https://partner-workshops.devinenterprise.com/sessions/c53ce4a60ff643b1bc116ecfa5422d94
-  ran_at: '2026-11-04T22:37:05Z'
+  ran_at: '2026-11-04T22:39:09Z'
   status: fail
   summary:
     pass: 30
