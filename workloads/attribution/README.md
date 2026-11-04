@@ -28,7 +28,7 @@ Every session that touches a workload follows these rules.
 
    - `phase` is `dev` (a Devin session building or testing the workload) or `runtime` (the deployed endpoint, task or app).
    - `commit` is the full SHA of the code running. A dev session uses `HEAD`. Runtime uses the commit that was deployed.
-   - `run_id` is `<RUN_TOKEN>-<workload>-<phase>-<UTC yyyymmddThhmmssZ>`, built by `make_run_id()`. The run token for this program is `SFNFR_20261104`.
+   - `run_id` is `<RUN_TOKEN>-<workload>-<phase>-<UTC yyyymmddThhmmssZ>`, built by `make_run_id()`. The helper rejects a run ID whose workload or phase differs from the tag's. The run token for this program is `SFNFR_20261104`.
    - `session_url` is present only when the phase is `dev`, and it is required then. The helper rejects a runtime tag that carries one.
    - The tag must fit Snowflake's 2000-character `QUERY_TAG` limit.
 4. **Tasks carry their own tag.** A task run does not inherit the tag of the session that created it. Set `QUERY_TAG` on the task itself with `create_task_sql()` or `alter_task_query_tag_sql()`. The default phase is `runtime`, and the task runs on `WH_<WORKLOAD>`. Name the task `DB_<WORKLOAD>.ANALYTICS.REFRESH_<WORKLOAD>`.

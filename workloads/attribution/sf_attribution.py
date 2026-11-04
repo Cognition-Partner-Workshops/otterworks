@@ -32,7 +32,10 @@ IDENT_RE = re.compile(r"^[a-z][a-z0-9]*(_[a-z0-9]+)*$")
 CSID_RE = re.compile(r"^cs_[a-z][a-z0-9]*(_[a-z0-9]+)*$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 RUN_TOKEN_RE = re.compile(r"^[A-Z][A-Z0-9]*_[0-9]{8}$")
-RUN_ID_RE = re.compile(r"^(?P<token>[A-Z][A-Z0-9]*_[0-9]{8})-[A-Za-z0-9_.:-]+$")
+RUN_ID_RE = re.compile(
+    r"^(?P<token>[A-Z][A-Z0-9]*_[0-9]{8})-(?P<workload>[a-z][a-z0-9]*(?:_[a-z0-9]+)*)"
+    r"-(?P<phase>dev|runtime)-(?P<stamp>[0-9]{8}T[0-9]{6}Z)$"
+)
 SESSION_URL_RE = re.compile(r"^https://[A-Za-z0-9.-]+/sessions/[0-9a-f]{32}$")
 SF_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]{0,254}$")
 
@@ -151,8 +154,15 @@ def query_tag(
     _check_phase(phase)
     if not isinstance(commit, str) or not COMMIT_RE.match(commit):
         raise AttributionError(f"commit must be a full 40-character lower-case SHA, got {commit!r}")
-    if not isinstance(run_id, str) or not RUN_ID_RE.match(run_id):
-        raise AttributionError(f"run_id must start with a run token such as {RUN_TOKEN}-, got {run_id!r}")
+    match = RUN_ID_RE.fullmatch(run_id) if isinstance(run_id, str) else None
+    if not match:
+        raise AttributionError(
+            f"run_id must look like {RUN_TOKEN}-<workload>-<phase>-<yyyymmddThhmmssZ>, got {run_id!r}"
+        )
+    if match["workload"] != endpoint.workload or match["phase"] != phase:
+        raise AttributionError(
+            f"run_id {run_id!r} belongs to {match['workload']}/{match['phase']}, not {endpoint.workload}/{phase}"
+        )
     tag = {
         "csid": endpoint.csid,
         "workload": endpoint.workload,

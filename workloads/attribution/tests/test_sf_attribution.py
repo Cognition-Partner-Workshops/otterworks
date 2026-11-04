@@ -14,6 +14,7 @@ import sf_attribution as attr  # noqa: E402
 COMMIT = "63afed16fa75e4cea44499e1567c3562543afaa7"
 SESSION = "https://partner-workshops.devinenterprise.com/sessions/e69f745063454d4ba5274736ab6a6356"
 RUN_ID = "SFNFR_20261104-doc_usage_dashboard-dev-20261104T201600Z"
+RUNTIME_RUN_ID = "SFNFR_20261104-doc_usage_dashboard-runtime-20261104T201600Z"
 EP = attr.Endpoint("doc_usage_dashboard", "account_usage")
 
 
@@ -57,10 +58,10 @@ def test_dev_tag_has_fixed_keys_and_session_url() -> None:
 
 
 def test_runtime_tag_has_no_session_url() -> None:
-    tag = attr.query_tag(EP, phase="runtime", commit=COMMIT, run_id=RUN_ID)
+    tag = attr.query_tag(EP, phase="runtime", commit=COMMIT, run_id=RUNTIME_RUN_ID)
     assert "session_url" not in tag
     with pytest.raises(attr.AttributionError, match="runtime"):
-        attr.query_tag(EP, phase="runtime", commit=COMMIT, run_id=RUN_ID, session_url=SESSION)
+        attr.query_tag(EP, phase="runtime", commit=COMMIT, run_id=RUNTIME_RUN_ID, session_url=SESSION)
 
 
 @pytest.mark.parametrize(
@@ -73,12 +74,25 @@ def test_runtime_tag_has_no_session_url() -> None:
         {"commit": COMMIT.upper()},
         {"run_id": "doc_usage_dashboard-dev-1"},
         {"run_id": "SFNFR_20261104"},
+        {"run_id": "SFNFR_20261104-doc_usage_dashboard-dev-anything"},
+        {"run_id": "SFNFR_20261104-churn_model-dev-20261104T201600Z"},
+        {"run_id": RUNTIME_RUN_ID},
     ],
 )
 def test_tag_refuses_incomplete_labels(kwargs: dict) -> None:
     base = {"phase": "dev", "commit": COMMIT, "run_id": RUN_ID, "session_url": SESSION}
     with pytest.raises(attr.AttributionError):
         attr.query_tag(EP, **{**base, **kwargs})
+
+
+def test_tag_refuses_run_id_of_another_workload_or_phase() -> None:
+    churn = attr.Endpoint("churn_model", "account_score")
+    with pytest.raises(attr.AttributionError, match="belongs to doc_usage_dashboard/dev"):
+        attr.query_tag(churn, phase="runtime", commit=COMMIT, run_id=attr.make_run_id("doc_usage_dashboard", "dev"))
+    with pytest.raises(attr.AttributionError, match="belongs to churn_model/dev"):
+        attr.query_tag(churn, phase="runtime", commit=COMMIT, run_id=attr.make_run_id("churn_model", "dev"))
+    tag = attr.query_tag(churn, phase="runtime", commit=COMMIT, run_id=attr.make_run_id("churn_model", "runtime"))
+    assert tag["run_id"].startswith("SFNFR_20261104-churn_model-runtime-")
 
 
 def test_tag_json_is_compact_and_parses() -> None:
@@ -119,7 +133,7 @@ def test_connection_params_label_every_connection() -> None:
 def test_connection_params_require_key_pair() -> None:
     with pytest.raises(attr.AttributionError, match="key pair"):
         attr.connection_params(
-            EP, account="xy12345", private_key_file="", phase="runtime", commit=COMMIT, run_id=RUN_ID
+            EP, account="xy12345", private_key_file="", phase="runtime", commit=COMMIT, run_id=RUNTIME_RUN_ID
         )
 
 
@@ -132,26 +146,34 @@ def test_connect_passes_params_to_connector(monkeypatch) -> None:
     monkeypatch.setitem(sys.modules, "snowflake", pkg)
     monkeypatch.setitem(sys.modules, "snowflake.connector", fake)
     conn = attr.connect(
-        EP, account="xy12345", private_key_file="/k.p8", phase="runtime", commit=COMMIT, run_id=RUN_ID, role="R_X"
+        EP,
+        account="xy12345",
+        private_key_file="/k.p8",
+        phase="runtime",
+        commit=COMMIT,
+        run_id=RUNTIME_RUN_ID,
+        role="R_X",
     )
     assert conn == "conn"
     assert calls[0]["role"] == "R_X" and calls[0]["application"] == "Devin_Demo"
 
 
 def test_task_carries_its_own_runtime_tag() -> None:
-    sql = attr.create_task_sql(EP, schedule="USING CRON 0 1 * * * UTC", body="SELECT 1", commit=COMMIT, run_id=RUN_ID)
+    sql = attr.create_task_sql(
+        EP, schedule="USING CRON 0 1 * * * UTC", body="SELECT 1", commit=COMMIT, run_id=RUNTIME_RUN_ID
+    )
     assert sql.startswith("CREATE OR REPLACE TASK DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD")
     assert "WAREHOUSE = WH_DOC_USAGE_DASHBOARD" in sql
     literal = sql.split("QUERY_TAG = ", 1)[1].split("\n", 1)[0]
     assert literal.startswith("'") and literal.endswith("'")
     tag = json.loads(literal[1:-1])
     assert tag["phase"] == "runtime" and "session_url" not in tag
-    alter = attr.alter_task_query_tag_sql(EP, commit=COMMIT, run_id=RUN_ID)
+    alter = attr.alter_task_query_tag_sql(EP, commit=COMMIT, run_id=RUNTIME_RUN_ID)
     assert alter.startswith("ALTER TASK DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD SET QUERY_TAG = '")
 
 
 def test_streamlit_sets_tag_on_its_session() -> None:
-    sql = attr.streamlit_query_tag_sql(EP, commit=COMMIT, run_id=RUN_ID)
+    sql = attr.streamlit_query_tag_sql(EP, commit=COMMIT, run_id=RUNTIME_RUN_ID)
     assert sql.startswith('ALTER SESSION SET QUERY_TAG = \'{"csid":"cs_doc_usage_dashboard_account_usage"')
 
 
@@ -220,7 +242,7 @@ def test_cli_tag_and_ddl(capsys) -> None:
             "--commit",
             COMMIT,
             "--run-id",
-            RUN_ID,
+            RUNTIME_RUN_ID,
         ]
     )
     assert rc == 0
