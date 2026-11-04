@@ -24,9 +24,11 @@ def task_sql(commit, run_id):
     endpoint = attr.Endpoint.from_csid(CONSUMERS[WORKLOAD][0], WORKLOAD)
     names = attr.names([WORKLOAD])
     body = (
-        f"BEGIN\n  CALL {endpoint.database}.RAW.LOAD_RAW();\n"
+        f"BEGIN\n  CALL {names[f'ops_schema_{WORKLOAD}']}.CHECK_FAULT_SWITCH('REFRESH_DOC_USAGE_DASHBOARD');\n"
+        f"  CALL {endpoint.database}.RAW.LOAD_RAW();\n"
         f"  EXECUTE DBT PROJECT {names[f'dbt_project_{WORKLOAD}']} "
-        "ARGS = 'build --target runtime --select path:models/doc_usage_dashboard';\nEND;"
+        "ARGS = 'build --target runtime --select path:models/doc_usage_dashboard';\n"
+        f"  CALL {names[f'ops_schema_{WORKLOAD}']}.RECORD_REFRESH('{attr.task_name(WORKLOAD)}');\nEND;"
     )
     return attr.create_task_sql(
         endpoint, schedule='USING CRON 0 * * * * UTC', body=body,
@@ -69,7 +71,7 @@ def query_is_compliant(query_type, query_text, query_tag, first_in_session, runt
                 and setter and setter[1] == attr.sql_string(runtime_tag))
 
 
-def verify_run(cur, names, task, runtime_tag, started):
+def verify_run(cur, names, task, runtime_tag, role, started):
     history_sql = (
         'SELECT NAME,STATE,SCHEDULED_TIME,QUERY_START_TIME,COMPLETED_TIME,QUERY_ID,ERROR_CODE,ERROR_MESSAGE '
         f"FROM TABLE({names[f'db_{WORKLOAD}']}.INFORMATION_SCHEMA.TASK_HISTORY("
@@ -93,10 +95,10 @@ def verify_run(cur, names, task, runtime_tag, started):
         f"FROM TABLE({names[f'db_{WORKLOAD}']}.INFORMATION_SCHEMA.QUERY_HISTORY_BY_WAREHOUSE("
         f"WAREHOUSE_NAME=>'{names[f'wh_{WORKLOAD}']}',END_TIME_RANGE_START=>TO_TIMESTAMP_LTZ(%s),"
         'END_TIME_RANGE_END=>TO_TIMESTAMP_LTZ(%s),RESULT_LIMIT=>10000)) '
-        'WHERE START_TIME >= %s AND START_TIME <= %s ORDER BY START_TIME'
+        'WHERE START_TIME >= %s AND START_TIME <= %s AND ROLE_NAME = %s ORDER BY START_TIME'
     )
     print('QUERY_HISTORY SQL:', query_sql, '\nPARAMETERS:', row[3], row[4], row[3], row[4], flush=True)
-    queries = cur.execute(query_sql, (row[3], row[4], row[3], row[4])).fetchall()
+    queries = cur.execute(query_sql, (row[3], row[4], row[3], row[4], role)).fetchall()
     if len(queries) >= 10000:
         raise AssertionError('Query history result limit reached')
     first_query_sql = (
@@ -128,12 +130,21 @@ def verify_run(cur, names, task, runtime_tag, started):
             'mismatch_count': len(mismatches)}
 
 
-def verify_or_suspend(cur, names, task, runtime_tag, started):
+def verify_or_suspend(cur, names, task, runtime_tag, role, started):
     try:
-        return verify_run(cur, names, task, runtime_tag, started)
+        return verify_run(cur, names, task, runtime_tag, role, started)
     except Exception:
         cur.execute(f'ALTER TASK {task} SUSPEND')
         raise
+
+
+def current_branch(repo=ROOT):
+    branch = subprocess.check_output(
+        ['git', '-C', str(repo), 'rev-parse', '--abbrev-ref', 'HEAD'], text=True,
+    ).strip()
+    if branch == 'HEAD':
+        raise ValueError('Deploy requires a named branch; HEAD is detached')
+    return branch
 
 
 def main():
@@ -142,9 +153,14 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--directory', type=Path, required=True)
     args = parser.parse_args()
-    pushed = subprocess.check_output([
-        'git', '-C', str(ROOT), 'ls-remote', 'origin', 'refs/heads/devin/1793825355-sf-pipeline',
-    ], text=True).split()[0]
+    branch = current_branch()
+    remote_ref = f'refs/heads/{branch}'
+    remote = subprocess.check_output(
+        ['git', '-C', str(ROOT), 'ls-remote', 'origin', remote_ref], text=True,
+    ).split()
+    if not remote:
+        raise ValueError(f'Current branch is not pushed to origin: {branch}')
+    pushed = remote[0]
     if args.commit != pushed or args.commit != attr.current_commit(str(ROOT)):
         raise ValueError('Deploy only the current, pushed branch HEAD')
     names = attr.names([WORKLOAD])
@@ -184,7 +200,7 @@ def main():
         started = cur.execute('SELECT CURRENT_TIMESTAMP()').fetchone()[0]
         cur.execute(f'EXECUTE TASK {task}')
         try:
-            evidence.update(verify_or_suspend(cur, names, task, tag, started))
+            evidence.update(verify_or_suspend(cur, names, task, tag, os.environ['SNOWFLAKE_ROLE'], started))
         except Exception as error:
             evidence['verification_error'] = str(error)
             args.output.write_text(json.dumps(evidence, default=str, indent=2))

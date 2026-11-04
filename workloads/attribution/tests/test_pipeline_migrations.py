@@ -7,6 +7,42 @@ import sf_attribution as attr
 MIGRATIONS = Path(__file__).resolve().parents[2] / 'snowflake/pipeline_migrations'
 
 
+def test_ops_migration_renders_only_known_jinja_variables():
+    names = attr.names(['doc_usage_dashboard'])
+    migration = MIGRATIONS / 'doc_usage_dashboard/V1.9.0__ops_freshness_fault_switch.sql'
+    sql = migration.read_text()
+    variables = set(re.findall(r'{{\s*(\w+)\s*}}', sql))
+    assert variables <= names.keys()
+    rendered = re.sub(r'{{\s*(\w+)\s*}}', lambda match: names[match[1]], sql)
+    assert '{{' not in rendered
+
+
+def test_ops_runtime_role_migration_renders_with_attributed_names():
+    names = attr.names(['doc_usage_dashboard'])
+    migration = MIGRATIONS / 'doc_usage_dashboard/V1.10.0__ops_runtime_role.sql'
+    sql = migration.read_text()
+    variables = set(re.findall(r'{{\s*(\w+)\s*}}', sql))
+    assert variables <= names.keys()
+    rendered = re.sub(r'{{\s*(\w+)\s*}}', lambda match: names[match[1]], sql)
+    assert 'CREATE ROLE IF NOT EXISTS SFNFR_20261104_OPS_DOC_USAGE_DASHBOARD' in rendered
+    assert 'GRANT ROLE SFNFR_20261104_OPS_DOC_USAGE_DASHBOARD TO USER SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE' in rendered
+    assert 'GRANT ROLE SFNFR_20261104_OPS_DOC_USAGE_DASHBOARD TO ROLE SFNFR_20261104_BUILDER' in rendered
+    for grant in (
+        'GRANT USAGE ON DATABASE SFNFR_20261104_DB_DOC_USAGE_DASHBOARD',
+        'GRANT USAGE ON SCHEMA SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS',
+        'GRANT USAGE ON SCHEMA SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS',
+        'GRANT USAGE, MONITOR ON WAREHOUSE SFNFR_20261104_WH_DOC_USAGE_DASHBOARD',
+        'GRANT SELECT ON VIEW SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.WORKLOAD_FRESHNESS',
+        'GRANT SELECT ON TABLE SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.REFRESH_LOG',
+        'GRANT SELECT ON TABLE SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.REFRESH_TABLES',
+        'GRANT SELECT ON TABLE SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.FAULT_SWITCH',
+        'GRANT UPDATE ON TABLE SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.FAULT_SWITCH',
+        'GRANT OPERATE, MONITOR ON TASK SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD',
+    ):
+        assert grant in rendered
+    assert '{{' not in rendered
+
+
 def test_pipeline_migrations_do_not_change_masking_policies():
     for path in MIGRATIONS.rglob('*.sql'):
         sql = path.read_text().upper()

@@ -22,6 +22,7 @@ def test_names_follow_the_rules() -> None:
     assert EP.service_user == "SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE"
     assert EP.warehouse == "SFNFR_20261104_WH_DOC_USAGE_DASHBOARD"
     assert EP.database == "SFNFR_20261104_DB_DOC_USAGE_DASHBOARD"
+    assert attr.ops_role("doc_usage_dashboard") == "SFNFR_20261104_OPS_DOC_USAGE_DASHBOARD"
     assert attr.resource_monitor_name("churn_model") == "SFNFR_20261104_RM_CHURN_MODEL"
     assert attr.task_name("churn_model") == "SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.REFRESH_CHURN_MODEL"
     assert attr.streamlit_name("doc_usage_dashboard") == "SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP"
@@ -238,8 +239,22 @@ def test_pipeline_names_are_workload_scoped():
     names = attr.names(['churn_model'])
     assert names['stage_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_FILES'
     assert names['format_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_CSV'
+    assert names['ops_schema_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.OPS'
     assert names['history_churn_model'] == 'SFNFR_20261104_GOVERNANCE.SCHEMACHANGE.PIPELINE_CHURN_MODEL'
     assert names['dbt_project_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.OTTERWORKS_DBT'
     assert names['dbt_stage_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.DBT_SOURCE_FILES'
     assert names['proof_schema_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.PIPELINE_FRESH_PROOF'
     assert names['proof_history_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.PIPELINE_FRESH_PROOF.CHANGE_HISTORY'
+
+
+def test_pipeline_names_include_runtime_ops_objects():
+    names = attr.names(['doc_usage_dashboard'])
+    assert names['ops_role_doc_usage_dashboard'] == 'SFNFR_20261104_OPS_DOC_USAGE_DASHBOARD'
+    assert names['task_doc_usage_dashboard'] == attr.task_name('doc_usage_dashboard')
+    assert names['svc_user_doc_usage_dashboard'] == attr.service_user(EP.csid)
+    assert names['builder_role'] == 'SFNFR_20261104_BUILDER'
+
+
+def test_ops_role_validates_workload_identifier():
+    with pytest.raises(attr.AttributionError):
+        attr.ops_role('Doc-Usage')
