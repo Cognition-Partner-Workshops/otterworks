@@ -60,7 +60,7 @@ def verify_run(cur, names, task, runtime_tag, started):
     history_sql = (
         'SELECT NAME,STATE,SCHEDULED_TIME,QUERY_START_TIME,COMPLETED_TIME,QUERY_ID,ERROR_CODE,ERROR_MESSAGE '
         f"FROM TABLE({names[f'db_{WORKLOAD}']}.INFORMATION_SCHEMA.TASK_HISTORY("
-        f"TASK_NAME=>'{task.split('.')[-1]}',SCHEDULED_TIME_RANGE_START=>%s,RESULT_LIMIT=>10)) "
+        f"TASK_NAME=>'{task.split('.')[-1]}',SCHEDULED_TIME_RANGE_START=>TO_TIMESTAMP_LTZ(%s),RESULT_LIMIT=>10)) "
         'ORDER BY SCHEDULED_TIME DESC'
     )
     deadline = time.monotonic() + 900
@@ -78,8 +78,8 @@ def verify_run(cur, names, task, runtime_tag, started):
     query_sql = (
         'SELECT QUERY_ID,START_TIME,ROLE_NAME,QUERY_TYPE,LEFT(QUERY_TEXT,60),QUERY_TAG '
         f"FROM TABLE({names[f'db_{WORKLOAD}']}.INFORMATION_SCHEMA.QUERY_HISTORY_BY_WAREHOUSE("
-        f"WAREHOUSE_NAME=>'{names[f'wh_{WORKLOAD}']}',END_TIME_RANGE_START=>%s,"
-        'END_TIME_RANGE_END=>%s,RESULT_LIMIT=>10000)) '
+        f"WAREHOUSE_NAME=>'{names[f'wh_{WORKLOAD}']}',END_TIME_RANGE_START=>TO_TIMESTAMP_LTZ(%s),"
+        'END_TIME_RANGE_END=>TO_TIMESTAMP_LTZ(%s),RESULT_LIMIT=>10000)) '
         'WHERE START_TIME >= %s AND START_TIME <= %s ORDER BY START_TIME'
     )
     print('QUERY_HISTORY SQL:', query_sql, '\nPARAMETERS:', row[3], row[4], row[3], row[4], flush=True)
@@ -135,7 +135,7 @@ def main():
         task = attr.task_name(WORKLOAD)
         cur.execute(f'ALTER TASK {task} RESUME')
         print('TASK DEFINITION:', cur.execute(f"SHOW TASKS LIKE 'REFRESH_DOC_USAGE_DASHBOARD' IN SCHEMA {endpoint.database}.ANALYTICS").fetchall(), flush=True)
-        print('TASK PARAMETERS:', cur.execute(f'SHOW PARAMETERS IN TASK {task}').fetchall(), flush=True)
+        print('TASK PARAMETERS:', cur.execute(f"SHOW PARAMETERS LIKE 'QUERY_TAG' IN TASK {task}").fetchall(), flush=True)
         args.output.write_text(json.dumps(evidence, indent=2))
         cur.execute(f'ALTER SESSION SET QUERY_TAG = {attr.sql_string(tag)}')
         started = cur.execute('SELECT CURRENT_TIMESTAMP()').fetchone()[0]

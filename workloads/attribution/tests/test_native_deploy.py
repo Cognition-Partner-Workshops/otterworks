@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -30,3 +31,31 @@ def test_deployment_uploads_only_dbt_source(tmp_path):
     for name in ['dbt_project.yml', 'model.sql', '.gitignore', 'run.py']:
         (tmp_path / name).write_text('')
     assert [file.name for file in deploy.project_files(tmp_path)] == ['dbt_project.yml', 'model.sql']
+
+
+@pytest.mark.parametrize('state,query_tag,error', [
+    ('SUCCEEDED', 'runtime-tag', None),
+    ('FAILED', 'runtime-tag', 'Task failed'),
+    ('SUCCEEDED', '', 'runtime query-tag mismatch'),
+    ('SUCCEEDED', None, 'Missing queries'),
+])
+def test_runtime_verification(state, query_tag, error):
+    now = datetime.now(timezone.utc)
+
+    class Cursor:
+        def execute(self, sql, params):
+            assert 'TO_TIMESTAMP_LTZ(%s)' in sql
+            self.sql = sql
+            return self
+
+        def fetchall(self):
+            if 'TASK_HISTORY(' in self.sql:
+                return [('TASK', state, now, now, now, 'task-query', None, None)]
+            return [] if query_tag is None else [('query', now, 'BUILDER', 'SELECT', 'select 1', query_tag)]
+
+    args = (Cursor(), deploy.attr.names([deploy.WORKLOAD]), 'DB.ANALYTICS.TASK', 'runtime-tag', now)
+    if error:
+        with pytest.raises(AssertionError if state == 'SUCCEEDED' else RuntimeError, match=error):
+            deploy.verify_run(*args)
+    else:
+        assert deploy.verify_run(*args)['mismatch_count'] == 0
