@@ -46,6 +46,9 @@ def main():
     schema = f'{endpoint.database}.{attr.ANALYTICS_SCHEMA}'
     stage = f'{schema}.{WORKLOAD.upper()}_APP_STAGE'
     app = attr.streamlit_name(WORKLOAD)
+    # The container runtime installs pyproject.toml dependencies from PyPI; egress is limited to the PyPI hosts.
+    pypi_rule = f'{schema}.PYPI_EGRESS'
+    pypi_eai = f'{attr.RUN_TOKEN}_EAI_{WORKLOAD.upper()}_PYPI'
     run_id = attr.make_run_id(WORKLOAD, 'runtime')
     tag_sql = prepare_app(args.commit, args.directory, endpoint, run_id)
     evidence = {'commit': args.commit, 'run_id': run_id, 'streamlit_query_tag_sql': tag_sql}
@@ -58,6 +61,11 @@ def main():
             f'GRANT ROLE {reader} TO USER {endpoint.service_user}',
             f'GRANT USAGE ON WAREHOUSE {endpoint.warehouse} TO ROLE {reader}',
             f'GRANT CREATE STAGE, CREATE STREAMLIT ON SCHEMA {schema} TO ROLE {reader}',
+            f"CREATE NETWORK RULE IF NOT EXISTS {pypi_rule} MODE = EGRESS TYPE = HOST_PORT "
+            "VALUE_LIST = ('pypi.org', 'files.pythonhosted.org')",
+            f'CREATE EXTERNAL ACCESS INTEGRATION IF NOT EXISTS {pypi_eai} '
+            f'ALLOWED_NETWORK_RULES = ({pypi_rule}) ENABLED = TRUE',
+            f'GRANT USAGE ON INTEGRATION {pypi_eai} TO ROLE {reader}',
         ):
             print(sql.split(' RSA_PUBLIC_KEY')[0], flush=True)
             cur.execute(sql)
@@ -82,6 +90,7 @@ def main():
             # Container runtime: the warehouse runtime runs as an owner's-rights procedure and rejects ALTER SESSION,
             # so it could not set the runtime QUERY_TAG. Queries still run on QUERY_WAREHOUSE.
             "RUNTIME_NAME = 'SYSTEM$ST_CONTAINER_RUNTIME_PY3_11' COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU "
+            f"EXTERNAL_ACCESS_INTEGRATIONS = ({pypi_eai}) "
             "TITLE = 'Storage quota by account'"
         )
         print(create, flush=True)
