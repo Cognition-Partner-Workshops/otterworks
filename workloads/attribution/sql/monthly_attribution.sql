@@ -17,7 +17,7 @@ SELECT
     SUM(q.credits_attributed_compute
         + COALESCE(q.credits_used_query_acceleration, 0)) AS credits
 FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY q
-WHERE q.warehouse_name LIKE 'WH\\_%'
+WHERE q.warehouse_name LIKE 'SFNFR\\_20261104\\_WH\\_%'
   AND q.start_time >= DATEADD('month', -1, DATE_TRUNC('month', CURRENT_DATE()))
 GROUP BY ALL
 ORDER BY month, workload, csid, phase, commit;
@@ -27,13 +27,13 @@ WITH metered AS (
     SELECT DATE_TRUNC('month', start_time) AS month, warehouse_name,
            SUM(credits_used_compute) AS credits_metered
     FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
-    WHERE warehouse_name LIKE 'WH\\_%'
+    WHERE warehouse_name LIKE 'SFNFR\\_20261104\\_WH\\_%'
     GROUP BY ALL
 ), attributed AS (
     SELECT DATE_TRUNC('month', start_time) AS month, warehouse_name,
            SUM(credits_attributed_compute) AS credits_attributed
     FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY
-    WHERE warehouse_name LIKE 'WH\\_%'
+    WHERE warehouse_name LIKE 'SFNFR\\_20261104\\_WH\\_%'
     GROUP BY ALL
 )
 SELECT m.month, m.warehouse_name, t.tag_value AS devin_csid,
@@ -50,7 +50,7 @@ ORDER BY m.month, m.warehouse_name;
 --    or from a client other than Devin_Demo. Both should return no rows.
 SELECT q.query_id, q.user_name, q.warehouse_name, q.query_tag, q.start_time
 FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY q
-WHERE q.warehouse_name LIKE 'WH\\_%'
+WHERE q.warehouse_name LIKE 'SFNFR\\_20261104\\_WH\\_%'
   AND TRY_PARSE_JSON(q.query_tag):csid IS NULL;
 
 -- The connector sends `application` in CLIENT_ENVIRONMENT; confirm the key on a live session before
@@ -58,5 +58,5 @@ WHERE q.warehouse_name LIKE 'WH\\_%'
 SELECT s.session_id, s.user_name, s.client_application_id,
        PARSE_JSON(s.client_environment):APPLICATION::STRING AS application
 FROM SNOWFLAKE.ACCOUNT_USAGE.SESSIONS s
-WHERE s.user_name LIKE 'SVC\\_CS\\_%'
+WHERE s.user_name LIKE 'SFNFR\\_20261104\\_SVC\\_CS\\_%'
   AND COALESCE(PARSE_JSON(s.client_environment):APPLICATION::STRING, '') <> 'Devin_Demo';

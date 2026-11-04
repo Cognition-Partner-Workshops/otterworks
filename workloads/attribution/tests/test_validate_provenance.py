@@ -78,11 +78,11 @@ def test_reported_usage_accepts_real_zero() -> None:
 @pytest.mark.parametrize(
     "mutate, needle",
     [
-        (lambda d: d["warehouse"].update(name="WH_OTHER"), "warehouse/name"),
+        (lambda d: d["warehouse"].update(name="SFNFR_20261104_WH_OTHER"), "warehouse/name"),
         (lambda d: d["warehouse"].update(auto_suspend_seconds=300), "auto_suspend_seconds"),
         (lambda d: d["warehouse"].update(size="SMALL"), "size"),
-        (lambda d: d["warehouse"]["resource_monitor"].update(name="RM_SHARED"), "resource_monitor"),
-        (lambda d: d["endpoints"][0].update(service_user="SVC_CS_DOC_USAGE_DASHBOARD"), "service_user"),
+        (lambda d: d["warehouse"]["resource_monitor"].update(name="SFNFR_20261104_RM_SHARED"), "resource_monitor"),
+        (lambda d: d["endpoints"][0].update(service_user="SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD"), "service_user"),
         (lambda d: d["endpoints"][0].update(application="other"), "application"),
         (lambda d: d["endpoints"][0].update(csid="cs_doc_usage_dashboard_other"), "csids"),
         (lambda d: d["source"].update(commit="63afed1"), "commit"),
@@ -94,7 +94,7 @@ def test_reported_usage_accepts_real_zero() -> None:
         (lambda d: d["deployed_objects"][1].update(devin_csid=d["endpoints"][0]["csid"]), "does not carry"),
         (lambda d: d["deployed_objects"].pop(0), "database"),
         (lambda d: d["deployed_objects"][0].update(state="deployed"), "deployed_at"),
-        (lambda d: d["deployed_objects"][7].update(name="DB_OTHER.ANALYTICS.REFRESH_X"), "outside"),
+        (lambda d: d["deployed_objects"][7].update(name="SFNFR_20261104_DB_OTHER.ANALYTICS.REFRESH_X"), "outside"),
         (lambda d: d.update(extra=1), "extra"),
     ],
 )
