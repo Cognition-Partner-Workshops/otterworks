@@ -1,0 +1,60 @@
+# Provenance for the doc_search_api workload (daily refresh).
+# Schema and rules: workloads/attribution/README.md. Validate with `python workloads/attribution/validate_provenance.py` (see README).
+# Usage figures Snowflake has not reported yet are `pending`; 0 means a reported zero.
+schema_version: 1
+workload: doc_search_api
+spec: workloads/doc_search_api.yaml
+run_token: SFNFR_20261104
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  commit: "093a322802114276a74a54332485709f63f2d625"
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
+  session: https://partner-workshops.devinenterprise.com/sessions/e69f745063454d4ba5274736ab6a6356
+endpoints:
+  - csid: cs_doc_search_api_top_items
+    service_user: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    application: Devin_Demo
+warehouse:
+  name: WH_DOC_SEARCH_API
+  size: XSMALL
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: RM_DOC_SEARCH_API
+    frequency: MONTHLY
+    credit_quota: 10
+deployed_objects:
+  - type: database
+    name: DB_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    state: planned
+  - type: schema
+    name: DB_DOC_SEARCH_API.RAW
+    state: planned
+  - type: schema
+    name: DB_DOC_SEARCH_API.ANALYTICS
+    state: planned
+  - type: warehouse
+    name: WH_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    state: planned
+  - type: resource_monitor
+    name: RM_DOC_SEARCH_API
+    state: planned
+  - type: user
+    name: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    state: planned
+  - type: table
+    name: DB_DOC_SEARCH_API.ANALYTICS.DOC_SEARCH_API
+    state: planned
+  - type: task
+    name: DB_DOC_SEARCH_API.ANALYTICS.REFRESH_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    state: planned
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  credits_dev: pending
+  credits_runtime: pending
+  credits_idle: pending
+  query_count_dev: pending
+  query_count_runtime: pending
