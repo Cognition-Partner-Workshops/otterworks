@@ -164,6 +164,23 @@ if [ -z "${SECRET_KEY_BASE:-}" ]; then
   [ -n "${SECRET_KEY_BASE}" ] || SECRET_KEY_BASE="$(openssl rand -hex 64)"
 fi
 
+# ---------- Per-tenant backing-service credentials ----------
+# The tenant's Redis and MeiliSearch each require a credential, so a gap in the
+# network policy alone never hands another tenant their sessions, chaos flags or
+# search indexes. Reused across redeploys for the same reason as JWT_SECRET: a
+# rotated value would lock out every pod Helm does not restart.
+BACKING_AUTH_SECRET="tenant-backing-auth"
+BACKING_AUTH_CREATED=false
+T_REDIS_PASSWORD="$(existing_tenant_secret "${BACKING_AUTH_SECRET}" REDIS_PASSWORD)" ||
+  { err "Refusing to rotate the tenant Redis password; retry"; exit 1; }
+T_MEILI_KEY="$(existing_tenant_secret "${BACKING_AUTH_SECRET}" MEILI_MASTER_KEY)" ||
+  { err "Refusing to rotate the tenant MeiliSearch master key; retry"; exit 1; }
+if [ -z "${T_REDIS_PASSWORD}" ] || [ -z "${T_MEILI_KEY}" ]; then
+  BACKING_AUTH_CREATED=true
+  [ -n "${T_REDIS_PASSWORD}" ] || T_REDIS_PASSWORD="$(openssl rand -hex 32)"
+  [ -n "${T_MEILI_KEY}" ] || T_MEILI_KEY="$(openssl rand -hex 32)"
+fi
+
 # ---------- Namespace + isolation guardrails ----------
 log "Creating namespace ${NS} with quota / limits / network policy..."
 kubectl apply -f - <<YAML
@@ -221,7 +238,15 @@ spec:
         memory: 128Mi
 ---
 # Tenant isolation: allow traffic only from within this namespace, the shared
-# ingress controller, and monitoring. Cross-tenant pod-to-pod traffic is denied.
+# ingress controller, and monitoring. Cross-tenant pod-to-pod traffic is denied
+# in both directions. Enforced by the VPC CNI's network-policy agent
+# (enableNetworkPolicy in platform/terraform/modules/eks/main.tf).
+#
+# Egress is default-deny except for this namespace, cluster DNS, the shared
+# PgBouncer pooler, monitoring (OTLP traces), the RDS port inside the VPC, and
+# anything outside the private address ranges (AWS APIs, ECR, external SaaS).
+# Pod IPs are VPC addresses, so the private-range carve-out is what keeps a
+# tenant pod from dialling another tenant's pods directly.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -229,7 +254,7 @@ metadata:
   namespace: ${NS}
 spec:
   podSelector: {}
-  policyTypes: [Ingress]
+  policyTypes: [Ingress, Egress]
   ingress:
     - from:
         - namespaceSelector:
@@ -241,7 +266,57 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: monitoring
+  egress:
+    - to:
+        - podSelector: {}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ${PGBOUNCER_NAMESPACE:-otterworks-platform}
+          podSelector:
+            matchLabels:
+              app: pgbouncer
+      ports:
+        - { protocol: TCP, port: 6432 }
+        - { protocol: TCP, port: 6433 }
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+    - to:
+        - ipBlock: { cidr: 10.0.0.0/8 }
+        - ipBlock: { cidr: 172.16.0.0/12 }
+        - ipBlock: { cidr: 192.168.0.0/16 }
+      ports:
+        - { protocol: TCP, port: ${RDS_PORT:-5432} }
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16]
 YAML
+
+# Written through a mode-600 file so the values never reach the process
+# argument list (ps / /proc/*/cmdline), as with the Helm secret values.
+apply_backing_auth_secret() {
+  local env_file; env_file="$(mktemp)"; chmod 600 "${env_file}"
+  printf 'REDIS_PASSWORD=%s\nMEILI_MASTER_KEY=%s\n' "${T_REDIS_PASSWORD}" "${T_MEILI_KEY}" > "${env_file}"
+  kubectl -n "${NS}" create secret generic "${BACKING_AUTH_SECRET}" \
+    --from-env-file="${env_file}" --dry-run=client -o yaml | kubectl apply -f - >/dev/null \
+    && local rc=0 || local rc=1
+  rm -f "${env_file}"
+  return "${rc}"
+}
+apply_backing_auth_secret || { err "Could not write ${BACKING_AUTH_SECRET} in ${NS}"; exit 1; }
 
 # ---------- IRSA trust: allow this tenant namespace to assume the shared roles ----------
 ensure_irsa_trust() {
@@ -378,7 +453,15 @@ spec:
       containers:
         - name: redis
           image: redis:7-alpine
-          args: ["--save","","--appendonly","no"]
+          # $(REDIS_PASSWORD) is expanded by the kubelet from the env below.
+          args: ["--save","","--appendonly","no","--requirepass","$(REDIS_PASSWORD)"]
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom: { secretKeyRef: { name: tenant-backing-auth, key: REDIS_PASSWORD } }
+            # Lets `kubectl exec deploy/redis -- redis-cli` (scripts/inject-bug.sh,
+            # demo-platform/reaper/idle-suspend.sh) authenticate unchanged.
+            - name: REDISCLI_AUTH
+              valueFrom: { secretKeyRef: { name: tenant-backing-auth, key: REDIS_PASSWORD } }
           ports: [{ containerPort: 6379 }]
           readinessProbe:
             tcpSocket: { port: 6379 }
@@ -415,6 +498,10 @@ spec:
           env:
             - { name: MEILI_ENV, value: "development" }
             - { name: MEILI_NO_ANALYTICS, value: "true" }
+            # With a master key set every route except /health requires it,
+            # development mode included.
+            - name: MEILI_MASTER_KEY
+              valueFrom: { secretKeyRef: { name: tenant-backing-auth, key: MEILI_MASTER_KEY } }
           ports: [{ containerPort: 7700 }]
           readinessProbe:
             httpGet: { path: /health, port: 7700 }
@@ -536,6 +623,17 @@ FAILED=()
 for service in "${TENANT_SERVICES[@]}"; do
   deploy_service "${service}" || FAILED+=("${service}")
 done
+
+# Helm restarts only pods whose spec changed, and a new Secret value is not a
+# spec change: on the redeploy that first turns on Redis/MeiliSearch auth, pods
+# that were already running would keep connecting without credentials.
+if [ "${BACKING_AUTH_CREATED}" = true ]; then
+  for service in api-gateway file-service document-service collab-service notification-service search-service; do
+    kubectl -n "${NS}" get deployment "${service}" >/dev/null 2>&1 || continue
+    kubectl -n "${NS}" rollout restart "deployment/${service}" >/dev/null ||
+      warn "could not restart ${service} onto the new Redis/MeiliSearch credentials"
+  done
+fi
 
 # ---------- Shared ingress (host/path routing, ONE shared ALB/NLB) ----------
 apply_ingress() {

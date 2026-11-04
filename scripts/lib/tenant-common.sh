@@ -259,6 +259,8 @@ urlencode()  { jq -rn --arg s "$1" '$s|@uri'; }
 # Build per-service Helm --set flags (EXTRA_ARGS) + secret pairs (SECRET_KV) for
 # a tenant. Requires these tenant-scoped globals to be set by the caller:
 #   T_REDIS_HOST, T_MEILI_URL, T_DB_NAME, T_WIRE_EVENTING (true/false)
+# and optionally T_REDIS_PASSWORD / T_MEILI_KEY (the tenant's backing-service
+# credentials; wired only when set).
 build_helm_args() {
   local service=$1
   EXTRA_ARGS=()
@@ -295,6 +297,15 @@ build_helm_args() {
       api-gateway|auth-service|document-service|collab-service|admin-service)
         add_secret JWT_SECRET "${JWT_SECRET}" ;;
     esac
+  fi
+  if [ -n "${T_REDIS_PASSWORD:-}" ]; then
+    case "$service" in
+      api-gateway|file-service|document-service|collab-service|notification-service|search-service)
+        add_secret REDIS_PASSWORD "${T_REDIS_PASSWORD}" ;;
+    esac
+  fi
+  if [ -n "${T_MEILI_KEY:-}" ] && [ "$service" = search-service ]; then
+    add_secret MEILISEARCH_API_KEY "${T_MEILI_KEY}"
   fi
 
   local sns_topic=""; local sqs_notif=""

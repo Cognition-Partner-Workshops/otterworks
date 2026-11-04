@@ -53,14 +53,15 @@ func New(getter Getter) *Flags {
 	return &Flags{getter: getter, now: time.Now, cache: map[string]cached{}}
 }
 
-// NewRedis returns a Flags backed by the Redis at addr, or a disabled reader
-// when addr is empty.
-func NewRedis(addr string) *Flags {
+// NewRedis returns a Flags backed by the Redis at addr, authenticating with
+// password when it is non-empty, or a disabled reader when addr is empty.
+func NewRedis(addr, password string) *Flags {
 	if addr == "" {
 		return New(nil)
 	}
 	client := redis.NewClient(&redis.Options{
 		Addr:         addr,
+		Password:     password,
 		DialTimeout:  redisTimeout,
 		ReadTimeout:  redisTimeout,
 		WriteTimeout: redisTimeout,
