@@ -23,6 +23,10 @@ from jsonschema import validate
 
 SPEC_PATH = Path(__file__).resolve().parents[2] / "shared" / "openapi" / "search-service.yaml"
 BASE_URL = os.environ.get("SEARCH_SERVICE_URL", "http://localhost:8087")
+SERVICE_TOKEN = os.environ.get(
+    "SEARCH_SERVICE_TOKEN", "otterworks-local-dev-search-token-change-me"
+)
+SERVICE_AUTH = {"Authorization": f"Bearer {SERVICE_TOKEN}"}
 
 
 @pytest.fixture(scope="session")
@@ -298,7 +302,7 @@ class TestIndexEndpoints:
         """POST /api/v1/search/index/document without body returns 400."""
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/index/document",
-            headers={"Content-Type": "application/json", "X-User-ID": "test-user-001"},
+            headers={"Content-Type": "application/json", **SERVICE_AUTH},
         )
         # Flask returns 400 for missing JSON body
         assert resp.status_code == 400
@@ -310,7 +314,7 @@ class TestIndexEndpoints:
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/index/document",
             json={"title": "Test Doc"},
-            headers={"X-User-ID": "test-user-001"},
+            headers=SERVICE_AUTH,
         )
         assert resp.status_code == 400
         body = resp.json()
@@ -320,7 +324,7 @@ class TestIndexEndpoints:
         """POST /api/v1/search/index/file without body returns 400."""
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/index/file",
-            headers={"Content-Type": "application/json", "X-User-ID": "test-user-001"},
+            headers={"Content-Type": "application/json", **SERVICE_AUTH},
         )
         assert resp.status_code == 400
         body = resp.json()
@@ -331,11 +335,29 @@ class TestIndexEndpoints:
         resp = requests.post(
             f"{BASE_URL}/api/v1/search/index/file",
             json={"id": "file-001"},
-            headers={"X-User-ID": "test-user-001"},
+            headers=SERVICE_AUTH,
         )
         assert resp.status_code == 400
         body = resp.json()
         assert "error" in body
+
+
+    @pytest.mark.parametrize(
+        ("method", "path"),
+        [
+            ("post", "/api/v1/search/index/document"),
+            ("post", "/api/v1/search/index/file"),
+            ("delete", "/api/v1/search/index/document/doc-001"),
+            ("delete", "/api/v1/search/index/file/file-001"),
+            ("post", "/api/v1/search/reindex"),
+        ],
+    )
+    def test_index_endpoints_reject_user_identity(self, method: str, path: str) -> None:
+        """Internal index routes refuse gateway user identity without the service token."""
+        resp = requests.request(
+            method, f"{BASE_URL}{path}", json={}, headers={"X-User-ID": "test-user-001"}
+        )
+        assert resp.status_code == 401
 
 
 class TestSpecCompleteness:

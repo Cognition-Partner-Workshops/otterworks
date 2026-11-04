@@ -20,7 +20,7 @@
 #       [--ttl 72h] [--host-suffix demo.example.com] [--skip-db] \
 #       [--profile core|full]
 #
-# Required env: AWS creds (exported), DB_PASSWORD. JWT_SECRET / SECRET_KEY_BASE
+# Required env: AWS creds (exported), DB_PASSWORD. JWT_SECRET / SECRET_KEY_BASE / SEARCH_SERVICE_TOKEN
 #   are taken from the environment, else carried over from the tenant's existing
 #   Kubernetes Secrets on a redeploy, else generated for a brand-new tenant.
 # ------------------------------------------------------------------------------
@@ -162,6 +162,11 @@ if [ -z "${SECRET_KEY_BASE:-}" ]; then
   SECRET_KEY_BASE="$(existing_tenant_secret admin-service-secrets SECRET_KEY_BASE)" ||
     { err "Refusing to rotate SECRET_KEY_BASE; set it explicitly or retry"; exit 1; }
   [ -n "${SECRET_KEY_BASE}" ] || SECRET_KEY_BASE="$(openssl rand -hex 64)"
+fi
+if [ -z "${SEARCH_SERVICE_TOKEN:-}" ]; then
+  SEARCH_SERVICE_TOKEN="$(existing_tenant_secret search-service-secrets SEARCH_SERVICE_TOKEN)" ||
+    { err "Refusing to rotate SEARCH_SERVICE_TOKEN; set it explicitly or retry"; exit 1; }
+  [ -n "${SEARCH_SERVICE_TOKEN}" ] || SEARCH_SERVICE_TOKEN="$(openssl rand -hex 32)"
 fi
 
 # ---------- Namespace + isolation guardrails ----------

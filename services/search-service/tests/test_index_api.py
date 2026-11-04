@@ -2,6 +2,14 @@
 
 from __future__ import annotations
 
+import pytest
+
+
+@pytest.fixture()
+def client(service_client):
+    """Index routes are internal: every call here presents the service token."""
+    return service_client
+
 
 class TestIndexDocumentEndpoint:
     """Tests for POST /api/v1/search/index/document."""
