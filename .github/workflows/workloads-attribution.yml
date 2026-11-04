@@ -1,0 +1,23 @@
+name: Workload attribution
+
+on:
+  push:
+    paths:
+      - "workloads/**"
+      - ".github/workflows/workloads-attribution.yml"
+  pull_request:
+    paths:
+      - "workloads/**"
+      - ".github/workflows/workloads-attribution.yml"
+
+jobs:
+  attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - run: uv run --with ruff==0.9.10 ruff check workloads/attribution
+      - run: make workloads-test
+      - run: make workloads-provenance
