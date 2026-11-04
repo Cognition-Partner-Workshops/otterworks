@@ -6,3 +6,8 @@ logging:
   level:
     com.otterworks: DEBUG
     org.springframework.security: INFO
+
+otterworks:
+  dev-admin:
+    # Opt-in password for the seeded admin account (locked by V5); unset keeps it locked.
+    password: ${DEV_ADMIN_PASSWORD:}
