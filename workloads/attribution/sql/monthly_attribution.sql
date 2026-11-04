@@ -4,36 +4,67 @@
 -- the second query reports idle time per workload warehouse. A month that has not been
 -- reported yet is written as `pending` in provenance.yaml, never as 0.
 
+-- Attributed credits are split by how much of each query's run falls in each month, so a query
+-- running over a month-end is counted in the same months as the warehouse hours that metered it.
+
 -- 1. Attributed compute per label.
+WITH months AS (
+    SELECT DATEADD('month', -SEQ4(), DATE_TRUNC('month', CURRENT_DATE()))::TIMESTAMP_LTZ AS month
+    FROM TABLE(GENERATOR(ROWCOUNT => 13))
+), attributed_by_month AS (
+    SELECT m.month, q.*,
+           IFF(q.end_time > q.start_time,
+               DATEDIFF('millisecond', GREATEST(q.start_time, m.month),
+                        LEAST(q.end_time, DATEADD('month', 1, m.month)))
+                 / DATEDIFF('millisecond', q.start_time, q.end_time),
+               IFF(DATE_TRUNC('month', q.start_time) = m.month, 1, 0)) AS month_share
+    FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY q
+    JOIN months m
+      ON q.start_time < DATEADD('month', 1, m.month)
+     AND GREATEST(q.end_time, q.start_time) >= m.month
+    WHERE q.warehouse_name LIKE 'WH\\_%'
+)
 SELECT
-    DATE_TRUNC('month', q.start_time)                 AS month,
-    TRY_PARSE_JSON(q.query_tag):csid::STRING          AS csid,
-    TRY_PARSE_JSON(q.query_tag):workload::STRING      AS workload,
-    TRY_PARSE_JSON(q.query_tag):commit::STRING        AS commit,
-    TRY_PARSE_JSON(q.query_tag):phase::STRING         AS phase,
-    q.warehouse_name,
-    q.user_name,
-    COUNT(*)                                          AS query_count,
-    SUM(q.credits_attributed_compute
-        + COALESCE(q.credits_used_query_acceleration, 0)) AS credits
-FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY q
-WHERE q.warehouse_name LIKE 'WH\\_%'
-  AND q.start_time >= DATEADD('month', -1, DATE_TRUNC('month', CURRENT_DATE()))
+    a.month,
+    TRY_PARSE_JSON(a.query_tag):csid::STRING          AS csid,
+    TRY_PARSE_JSON(a.query_tag):workload::STRING      AS workload,
+    TRY_PARSE_JSON(a.query_tag):commit::STRING        AS commit,
+    TRY_PARSE_JSON(a.query_tag):phase::STRING         AS phase,
+    a.warehouse_name,
+    a.user_name,
+    COUNT_IF(DATE_TRUNC('month', a.start_time) = a.month) AS query_count,
+    SUM((a.credits_attributed_compute
+        + COALESCE(a.credits_used_query_acceleration, 0)) * a.month_share) AS credits
+FROM attributed_by_month a
+WHERE a.month >= DATEADD('month', -1, DATE_TRUNC('month', CURRENT_DATE()))
+  AND a.month_share > 0
 GROUP BY ALL
 ORDER BY month, workload, csid, phase, commit;
 
--- 2. Idle time per workload warehouse: metered compute minus attributed compute.
+-- 2. Idle time per workload warehouse: metered compute minus attributed compute, by billing month.
 WITH metered AS (
     SELECT DATE_TRUNC('month', start_time) AS month, warehouse_name,
            SUM(credits_used_compute) AS credits_metered
     FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_METERING_HISTORY
     WHERE warehouse_name LIKE 'WH\\_%'
+      AND start_time >= DATEADD('month', -12, DATE_TRUNC('month', CURRENT_DATE()))
     GROUP BY ALL
+), months AS (
+    SELECT DATEADD('month', -SEQ4(), DATE_TRUNC('month', CURRENT_DATE()))::TIMESTAMP_LTZ AS month
+    FROM TABLE(GENERATOR(ROWCOUNT => 13))
 ), attributed AS (
-    SELECT DATE_TRUNC('month', start_time) AS month, warehouse_name,
-           SUM(credits_attributed_compute) AS credits_attributed
-    FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY
-    WHERE warehouse_name LIKE 'WH\\_%'
+    SELECT m.month, q.warehouse_name,
+           SUM(q.credits_attributed_compute *
+               IFF(q.end_time > q.start_time,
+                   DATEDIFF('millisecond', GREATEST(q.start_time, m.month),
+                            LEAST(q.end_time, DATEADD('month', 1, m.month)))
+                     / DATEDIFF('millisecond', q.start_time, q.end_time),
+                   IFF(DATE_TRUNC('month', q.start_time) = m.month, 1, 0))) AS credits_attributed
+    FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY q
+    JOIN months m
+      ON q.start_time < DATEADD('month', 1, m.month)
+     AND GREATEST(q.end_time, q.start_time) >= m.month
+    WHERE q.warehouse_name LIKE 'WH\\_%'
     GROUP BY ALL
 )
 SELECT m.month, m.warehouse_name, t.tag_value AS devin_csid,
