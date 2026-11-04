@@ -23,3 +23,10 @@ def test_usage_task_runtime_attribution():
 def test_usage_task_rejects_missing_attribution(commit, run_id):
     with pytest.raises(deploy.attr.AttributionError):
         deploy.task_sql(commit, run_id)
+
+
+def test_deployment_uploads_only_dbt_source(tmp_path):
+    assert deploy.project_files(tmp_path) == []
+    for name in ['dbt_project.yml', 'model.sql', '.gitignore', 'run.py']:
+        (tmp_path / name).write_text('')
+    assert [file.name for file in deploy.project_files(tmp_path)] == ['dbt_project.yml', 'model.sql']

@@ -52,6 +52,10 @@ def prepare_project(commit, directory, runtime_tag):
     return project
 
 
+def project_files(project):
+    return sorted(file for file in project.rglob('*') if file.is_file() and file.suffix in ('.sql', '.yml'))
+
+
 def verify_run(cur, names, task, runtime_tag, started):
     history_sql = (
         'SELECT NAME,STATE,SCHEDULED_TIME,QUERY_START_TIME,COMPLETED_TIME,QUERY_ID,ERROR_CODE,ERROR_MESSAGE '
@@ -112,10 +116,10 @@ def main():
         cur = con.cursor()
         cur.execute('USE SECONDARY ROLES NONE')
         cur.execute(f"CREATE STAGE IF NOT EXISTS {names[f'dbt_stage_{WORKLOAD}']}")
-        for file in sorted(project.rglob('*')):
-            if file.is_file():
-                folder = file.relative_to(project).parent.as_posix()
-                cur.execute(f"PUT 'file://{file}' @{names[f'dbt_stage_{WORKLOAD}']}/{args.commit}/{folder}/ AUTO_COMPRESS=FALSE OVERWRITE=FALSE")
+        for file in project_files(project):
+            folder = file.relative_to(project).parent.as_posix()
+            folder = '' if folder == '.' else folder + '/'
+            cur.execute(f"PUT 'file://{file}' @{names[f'dbt_stage_{WORKLOAD}']}/{args.commit}/{folder} AUTO_COMPRESS=FALSE OVERWRITE=FALSE")
         create = (
             f"CREATE OR REPLACE DBT PROJECT {names[f'dbt_project_{WORKLOAD}']} "
             f"FROM '@{names[f'dbt_stage_{WORKLOAD}']}/{args.commit}' "
