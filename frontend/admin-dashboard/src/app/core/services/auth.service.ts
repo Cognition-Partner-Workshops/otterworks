@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { tap, delay, map, catchError } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { tap, map, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 export interface AuthUser {
@@ -9,11 +9,6 @@ export interface AuthUser {
   email: string;
   displayName: string;
   role: string;
-  token: string;
-}
-
-interface LoginResponse {
-  user: AuthUser;
   token: string;
 }
 
@@ -45,12 +40,12 @@ export class AuthService {
   }
 
   /**
-   * Signs in against the tenant gateway so the stored bearer token is one the backends accept;
-   * falls back to the offline mock user when no gateway is reachable (local dev, static demos).
+   * Signs in against the tenant gateway so the stored bearer token is one the backends accept.
+   * Any gateway error is a login failure: nothing is stored and the error surfaces to the caller.
    */
   login(email: string, password: string): Observable<AuthUser> {
     return this.gatewayLogin(email, password).pipe(
-      catchError(() => this.mockLogin(email, password)),
+      catchError((err: unknown) => throwError(() => new Error(this.loginErrorMessage(err)))),
       tap(user => {
         localStorage.setItem(this.TOKEN_KEY, user.token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
@@ -90,17 +85,14 @@ export class AuthService {
     );
   }
 
-  private mockLogin(email: string, password: string): Observable<AuthUser> {
-    if (password.length < 1) {
-      return throwError(() => new Error('Invalid credentials'));
+  private loginErrorMessage(err: unknown): string {
+    const status = err instanceof HttpErrorResponse ? err.status : -1;
+    if (status === 400 || status === 401) {
+      return 'Invalid email or password.';
     }
-    const user: AuthUser = {
-      id: 'a0000000-0000-0000-0000-000000000001',
-      email,
-      displayName: 'Admin User',
-      role: 'admin',
-      token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAwMDAwMDEiLCJ1c2VyX2lkIjoiYTAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAxIiwiZW1haWwiOiJhZG1pbkBvdHRlcndvcmtzLmRldiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTcwNDA2NzIwMCwiZXhwIjoxOTI0OTA1NjAwfQ.hD5dwgrPNRTzbXa6lbA83Aru7BvQVIQc0rGVySkF1fA',
-    };
-    return of(user).pipe(delay(800));
+    if (status === 0) {
+      return 'Unable to reach the sign-in service. Please try again.';
+    }
+    return 'Login failed. Please try again.';
   }
 }
