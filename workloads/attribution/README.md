@@ -40,7 +40,7 @@ Every session that touches a workload follows these rules.
    - the repository, commit, pull request and session behind the current state
    - the endpoints and their service users
    - the warehouse and its monitor
-   - every object the workload owns, with its `state` (`planned`, `deployed` or `dropped`). A deployed or dropped object also needs `deployed_at` and `deployed_commit`.
+   - every object the workload owns, with its `state` (`planned`, `deployed` or `dropped`). A deployed or dropped object also needs `deployed_at` and `deployed_commit`. A task or Streamlit app must have the name `task_name()` or `streamlit_name()` builds, and there is at most one of each.
    - the usage figures
 
    A session that deploys or changes objects updates the file in the same pull request.
