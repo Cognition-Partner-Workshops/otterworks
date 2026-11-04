@@ -1,6 +1,7 @@
 version: 2
 unit_tests:
   - name: search_spec_normalization
+    config: {tags: [dq, dq_doc_search_api, dq_worked_example]}
     model: doc_search_api
     overrides: {"macros":{"is_incremental":false}}
     given:
@@ -25,6 +26,7 @@ unit_tests:
         - {"window_end_date":"2026-11-01","window_days":28,"account_id":"00000000-0000-4000-8000-000000000101","item_type":"document","rank":1,"term":null,"document_id":"00000000-0000-4000-8000-000000000202","document_title":"Onboarding Checklist","search_count":3,"zero_result_count":null,"last_searched_at":"2026-10-31 12:00:00"}
         - {"window_end_date":"2026-11-01","window_days":28,"account_id":"00000000-0000-4000-8000-000000000101","item_type":"document","rank":2,"term":null,"document_id":"00000000-0000-4000-8000-000000000201","document_title":"Q3 Budget Plan","search_count":3,"zero_result_count":null,"last_searched_at":"2026-10-28 11:00:00"}
   - name: search_spec_zero_results
+    config: {tags: [dq, dq_doc_search_api, dq_worked_example]}
     model: doc_search_api
     overrides: {"macros":{"is_incremental":false}}
     given:
@@ -50,6 +52,7 @@ unit_tests:
         - {"window_end_date":"2026-11-01","window_days":28,"account_id":"00000000-0000-4000-8000-000000000101","item_type":"document","rank":1,"term":null,"document_id":"00000000-0000-4000-8000-000000000202","document_title":"Onboarding Checklist","search_count":3,"zero_result_count":null,"last_searched_at":"2026-10-31 12:00:00"}
         - {"window_end_date":"2026-11-01","window_days":28,"account_id":"00000000-0000-4000-8000-000000000101","item_type":"document","rank":2,"term":null,"document_id":"00000000-0000-4000-8000-000000000201","document_title":"Q3 Budget Plan","search_count":3,"zero_result_count":null,"last_searched_at":"2026-10-28 11:00:00"}
   - name: search_spec_document_tie_break
+    config: {tags: [dq, dq_doc_search_api, dq_worked_example]}
     model: doc_search_api
     overrides: {"macros":{"is_incremental":false}}
     given:

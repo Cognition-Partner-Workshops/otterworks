@@ -96,6 +96,51 @@
         "query_count_dev": {"$ref": "#/$defs/count"},
         "query_count_runtime": {"$ref": "#/$defs/count"}
       }
+    },
+    "data_quality": {
+      "description": "Latest result of the 'Snowflake workload data-quality gate' playbook, written by workloads/dbt/dq_gate.py. A failed or errored test always names its cause.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["playbook", "run_id", "phase", "commit", "ran_at", "status", "summary", "tests"],
+      "properties": {
+        "playbook": {"const": "Snowflake workload data-quality gate"},
+        "run_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*_[0-9]{8}-[a-z0-9_]+-(dev|runtime)-[0-9]{8}T[0-9]{6}Z$"},
+        "phase": {"enum": ["dev", "runtime"]},
+        "commit": {"$ref": "#/$defs/commit"},
+        "session": {"$ref": "#/$defs/session_url"},
+        "ran_at": {"$ref": "#/$defs/timestamp"},
+        "status": {"enum": ["pass", "fail"]},
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass", "fail", "error", "warn", "skipped"],
+          "properties": {
+            "pass": {"type": "integer", "minimum": 0},
+            "fail": {"type": "integer", "minimum": 0},
+            "error": {"type": "integer", "minimum": 0},
+            "warn": {"type": "integer", "minimum": 0},
+            "skipped": {"type": "integer", "minimum": 0}
+          }
+        },
+        "tests": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "check", "status", "failures"],
+            "properties": {
+              "name": {"type": "string"},
+              "check": {"enum": ["freshness", "row_count", "uniqueness", "accepted_range", "worked_example"]},
+              "status": {"enum": ["pass", "fail", "error", "warn", "skipped"]},
+              "failures": {"type": "integer", "minimum": 0},
+              "cause": {"type": "string", "minLength": 10}
+            },
+            "if": {"properties": {"status": {"enum": ["fail", "error"]}}},
+            "then": {"required": ["cause"]}
+          }
+        }
+      }
     }
   },
   "$defs": {
