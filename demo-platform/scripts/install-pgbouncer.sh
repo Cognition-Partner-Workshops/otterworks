@@ -56,21 +56,19 @@ RDS_HOST="${RDS_HOST%%:*}"
 kubectl create namespace "${NS}" --dry-run=client -o yaml | kubectl apply -f -
 
 # PgBouncer's auth_file, in its own format: "user" "password", one per line.
-# Applied as YAML on stdin so the password never lands in a file, an argv, or
-# the shell history. stringData, so no base64 step handles it either.
+# Built and applied on stdin/env so the password never lands in a file, an
+# argv, or the shell history. The master login's line is rewritten; the
+# per-tenant login lines deploy-tenant.sh maintains here are carried over, so
+# re-running this does not lock every tenant out of the pooler.
 log "writing userlist Secret (credential stays on stdin)..."
-kubectl apply -f - >/dev/null <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: pgbouncer-auth
-  namespace: ${NS}
-  labels: { app: pgbouncer }
-type: Opaque
-stringData:
-  userlist.txt: |
-    "${DB_USER}" "${DB_PASSWORD}"
-EOF
+tenant_lines="$(kubectl -n "${NS}" get secret pgbouncer-auth -o json 2>/dev/null \
+                  | jq -r '.data["userlist.txt"] // "" | @base64d' \
+                  | awk -v r="\"${DB_USER}\"" 'NF && $1 != r' || true)"
+USERLIST="$(printf '"%s" "%s"\n' "${DB_USER}" "${DB_PASSWORD}"; [ -z "${tenant_lines}" ] || printf '%s\n' "${tenant_lines}")" \
+  jq -n --arg ns "${NS}" '{apiVersion: "v1", kind: "Secret", type: "Opaque",
+          metadata: {name: "pgbouncer-auth", namespace: $ns, labels: {app: "pgbouncer"}},
+          stringData: {"userlist.txt": ($ENV.USERLIST + "\n")}}' \
+  | kubectl apply -f - >/dev/null
 
 # PgBouncer reads its config and userlist only at startup, and a ConfigMap or
 # Secret changing underneath a running pod restarts nothing. Without this the

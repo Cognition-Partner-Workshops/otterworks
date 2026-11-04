@@ -128,7 +128,7 @@ Replaces the current TTL reaper (which deletes namespaces but **leaves orphan DB
 - **VPC IP exhaustion (VPC-CNI):** every pod takes a subnet IP. High-tens × 15 pods can exhaust subnets / per-node ENI caps → hard failure. **Enable prefix delegation** and/or widen subnets *before* scaling.
 - **RDS connections:** pools × services × tenants exhausts `max_connections` (measured: 16 idle backends per tenant, ~112 available). **PgBouncer** now fronts the instance — same tenant, 1 server connection — with a session-mode port for migrations.
 - **ingress-nginx:** each tenant adds Ingress objects → nginx config reloads; fine for dozens, watch reload time in the high-tens.
-- **Least-privilege DB:** give each tenant DB its own restricted user instead of the RDS master (rotate via the control plane).
+- **Least-privilege DB:** done for tenants: each gets its own login role owning only `otterworks_<id>` (`scripts/lib/tenant-common.sh`); rotation via the control plane is still open.
 
 ---
 
