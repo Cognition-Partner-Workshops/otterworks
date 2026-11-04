@@ -34,6 +34,7 @@ COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 RUN_TOKEN_RE = re.compile(r"^[A-Z][A-Z0-9]*_[0-9]{8}$")
 RUN_ID_RE = re.compile(r"^(?P<token>[A-Z][A-Z0-9]*_[0-9]{8})-[A-Za-z0-9_.:-]+$")
 SESSION_URL_RE = re.compile(r"^https://[A-Za-z0-9.-]+/sessions/[0-9a-f]{32}$")
+SF_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]{0,254}$")
 
 
 class AttributionError(ValueError):
@@ -280,6 +281,8 @@ def service_user_ddl(endpoint: Endpoint, *, rsa_public_key: str, role: str | Non
         f"DEFAULT_WAREHOUSE = {endpoint.warehouse}",
     ]
     if role:
+        if not SF_IDENT_RE.fullmatch(role):
+            raise AttributionError(f"role must be an unquoted Snowflake identifier, got {role!r}")
         parts.append(f"DEFAULT_ROLE = {role}")
     parts.append(f"COMMENT = {sql_string(f'Key-pair service user for {endpoint.csid}')}")
     return " ".join(parts)

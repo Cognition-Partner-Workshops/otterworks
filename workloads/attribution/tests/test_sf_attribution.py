@@ -180,6 +180,20 @@ def test_service_user_ddl_strips_pem_armor() -> None:
         attr.service_user_ddl(EP, rsa_public_key="-----BEGIN PUBLIC KEY-----\n-----END PUBLIC KEY-----")
 
 
+def test_service_user_ddl_sets_a_plain_role_only() -> None:
+    sql = attr.service_user_ddl(EP, rsa_public_key="MIIB", role="R_DOC_USAGE")
+    assert "DEFAULT_ROLE = R_DOC_USAGE " in sql
+
+
+@pytest.mark.parametrize(
+    "role",
+    ["R_X COMMENT = 'x'", "R_X; DROP DATABASE DB_CHURN_MODEL", '"R X"', "1ROLE", "R-X", "R_X\n"],
+)
+def test_service_user_ddl_refuses_role_that_is_not_an_identifier(role: str) -> None:
+    with pytest.raises(attr.AttributionError, match="role"):
+        attr.service_user_ddl(EP, rsa_public_key="MIIB", role=role)
+
+
 def test_object_tags_cover_warehouse_database_task_streamlit() -> None:
     stmts = attr.object_tag_ddl("doc_usage_dashboard", [EP.csid], streamlit=True)
     assert [s.split()[1] for s in stmts] == ["WAREHOUSE", "DATABASE", "TASK", "STREAMLIT"]
