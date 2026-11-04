@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mapsource Name="ThistlecombeMutual.ClaimsHub.Maps.Payment_to_LedgerPost" BizTalkServerMapperTool_Version="3.0" Version="2" XRange="100" YRange="420" OmitXmlDeclaration="Yes" TreatElementsAsRecords="No" OptimizeValueMapping="Yes" GenerateDefaultFixedNodes="Yes" CopyPIs="No" method="xml" xmlVersion="1.0" IgnoreNamespacesForLinks="Yes">
+  <SrcTree>
+    <Reference Location="..\Schemas\Canonical_PaymentInstruction.xsd" />
+  </SrcTree>
+  <TrgTree>
+    <Reference Location="..\Schemas\ClaimsDb_LedgerPost.xsd" />
+  </TrgTree>
+  <ScriptTypePrecedence>
+    <CSharp Enabled="Yes" />
+    <ExternalAssembly Enabled="Yes" />
+    <VbNet Enabled="Yes" />
+    <JScript Enabled="Yes" />
+    <XsltCallTemplate Enabled="Yes" />
+    <Xslt Enabled="Yes" />
+  </ScriptTypePrecedence>
+  <TreeValues>
+    <TestValues />
+    <ConstantValues />
+  </TreeValues>
+  <Pages>
+    <Page Name="Page 1">
+      <Links />
+      <Functoids>
+      <Functoid FunctoidID="1" Functoid-FID="260" Functoid-Name="Scripting" X-Cell="48" Y-Cell="25" ScriptName="MakeVendorReference" />
+      <Functoid FunctoidID="2" Functoid-FID="260" Functoid-Name="Scripting" X-Cell="56" Y-Cell="30" ScriptName="FormatMoney" />
+      <Functoid FunctoidID="3" Functoid-FID="302" Functoid-Name="Cumulative Sum" X-Cell="64" Y-Cell="35" />
+      <Functoid FunctoidID="4" Functoid-FID="313" Functoid-Name="Record Count" X-Cell="72" Y-Cell="40" />
+      </Functoids>
+    </Page>
+  </Pages>
+  <!-- The compiled XSLT this map emits is kept beside it as Payment_to_LedgerPost.xslt; the Mapper regenerates it on build. -->
+</mapsource>

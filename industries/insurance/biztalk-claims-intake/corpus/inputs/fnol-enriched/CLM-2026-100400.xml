@@ -1,0 +1,30 @@
+<ns0:Root xmlns:ns0="http://schemas.microsoft.com/BizTalk/2003/aggschema">
+  <InputMessagePart_0>
+    <ns0:Claim xmlns:ns0="http://schemas.thistlecombe.example/canonical/claim"><ClaimNumber>CLM-2026-100400</ClaimNumber><SourceRqUID>6f1c3a2e-0000-4b1a-9c0d-000000000000</SourceRqUID><Agency><Id>AG-0417</Id><Name>Harbourline Brokers</Name></Agency><PolicyNumber>POL-AUTO-48100</PolicyNumber><LineOfBusiness>AUTO</LineOfBusiness><Claimant><FullName>Imogen Castellanos</FullName><TaxIdMasked>***-**-7000</TaxIdMasked><PriorFraudFlag>false</PriorFraudFlag></Claimant><Loss><LossDate>2026-09-02</LossDate><ReportedDate>2026-09-02</ReportedDate><CauseCode>GLAS</CauseCode><Description>Windscreen cracked by road debris on the interstate</Description><EstimatedAmount>412.00</EstimatedAmount><Injury>false</Injury><PoliceReport>false</PoliceReport><City>Bristol</City><State>RI</State><PostalCode>02809</PostalCode></Loss><Vehicle><VIN>1HGCM82633A100000</VIN><Driveable>true</Driveable></Vehicle></ns0:Claim>
+  </InputMessagePart_0>
+  <InputMessagePart_1>
+    <ns0:PolicyInqRs xmlns:ns0="http://schemas.thistlecombe.example/acord/policy">
+      <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000000</RqUID>
+      <PolicyNumber>POL-AUTO-48100</PolicyNumber>
+      <PolicyStatusCd>Active</PolicyStatusCd>
+      <LOBCd>AUTO</LOBCd>
+      <EffectiveDt>2026-01-15</EffectiveDt>
+      <ExpirationDt>2027-01-14</ExpirationDt>
+      <DeductibleAmt>250.00</DeductibleAmt>
+      <CoverageLimitAmt>50000.00</CoverageLimitAmt>
+      <InsuredPartyId>PTY-070000</InsuredPartyId>
+      <Coverage>
+        <CoverageCd>COLL</CoverageCd>
+        <LimitAmt>50000.00</LimitAmt>
+      </Coverage>
+      <Coverage>
+        <CoverageCd>COMP</CoverageCd>
+        <LimitAmt>50000.00</LimitAmt>
+      </Coverage>
+      <Coverage>
+        <CoverageCd>GLAS</CoverageCd>
+        <LimitAmt>2500.00</LimitAmt>
+      </Coverage>
+    </ns0:PolicyInqRs>
+  </InputMessagePart_1>
+</ns0:Root>

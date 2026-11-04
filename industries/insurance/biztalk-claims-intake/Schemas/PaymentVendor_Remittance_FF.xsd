@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.thistlecombe.example/vendor/remittance" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="http://schemas.thistlecombe.example/vendor/remittance" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <schemaEditorExtension:schemaInfo namespaceAlias="b" extensionClass="Microsoft.BizTalk.FlatFileExtension.FlatFileExtension" standardName="Flat File" xmlns:schemaEditorExtension="http://schemas.microsoft.com/BizTalk/2003/SchemaEditorExtensions" />
+      <b:schemaInfo standard="Flat File" codepage="20127" root_reference="Remittance" displayroot_reference="Remittance" default_pad_char=" " pad_char_type="char" count_positions_by_byte="false" parser_optimization="speed" lookahead_depth="3" suppress_empty_nodes="false" generate_empty_nodes="true" allow_early_termination="false" early_terminate_optional_fields="false" allow_message_breakup_of_infix_root="false" compile_parse_tables="false" />
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- Positional flat file the payment vendor ingests. Fixed-width, CRLF between records, one HDR, n PAY, one TRL whose counts and totals must equal the body. -->
+  <xs:element name="Remittance">
+    <xs:annotation>
+      <xs:appinfo>
+        <b:recordInfo structure="delimited" child_delimiter_type="hex" child_delimiter="0xD 0xA" child_order="postfix" sequence_number="1" />
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Header">
+          <xs:annotation>
+            <xs:appinfo>
+              <b:recordInfo structure="positional" tag_name="HDR" sequence_number="1" />
+            </xs:appinfo>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="RecordType" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="3" pos_offset="0" justification="left" sequence_number="1" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="SenderId" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="10" pos_offset="3" justification="left" sequence_number="2" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="VendorCode" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="6" pos_offset="13" justification="left" sequence_number="3" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="FileDate" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="8" pos_offset="19" justification="left" sequence_number="4" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="InstructionId" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="16" pos_offset="27" justification="left" sequence_number="5" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="Currency" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="3" pos_offset="43" justification="left" sequence_number="6" /></xs:appinfo></xs:annotation></xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Payment" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:appinfo>
+              <b:recordInfo structure="positional" tag_name="PAY" sequence_number="2" />
+            </xs:appinfo>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="RecordType" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="3" pos_offset="0" justification="left" sequence_number="1" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="LineNo" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="4" pos_offset="3" justification="right" pad_char="0" sequence_number="2" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="ClaimNumber" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="15" pos_offset="7" justification="left" sequence_number="3" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="PayeeName" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="30" pos_offset="22" justification="left" sequence_number="4" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="PayeeType" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="2" pos_offset="52" justification="left" sequence_number="5" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="LineType" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="3" pos_offset="54" justification="left" sequence_number="6" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="AmountCents" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="12" pos_offset="57" justification="right" pad_char="0" sequence_number="7" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="DebitCreditInd" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="1" pos_offset="69" justification="left" sequence_number="8" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="ValueDate" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="8" pos_offset="70" justification="left" sequence_number="9" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="GLAccount" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="8" pos_offset="78" justification="left" sequence_number="10" /></xs:appinfo></xs:annotation></xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Trailer">
+          <xs:annotation>
+            <xs:appinfo>
+              <b:recordInfo structure="positional" tag_name="TRL" sequence_number="3" />
+            </xs:appinfo>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="RecordType" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="3" pos_offset="0" justification="left" sequence_number="1" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="PaymentCount" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="6" pos_offset="3" justification="right" pad_char="0" sequence_number="2" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="DebitTotalCents" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="14" pos_offset="9" justification="right" pad_char="0" sequence_number="3" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="CreditTotalCents" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="14" pos_offset="23" justification="right" pad_char="0" sequence_number="4" /></xs:appinfo></xs:annotation></xs:element>
+              <xs:element name="HashTotal" type="xs:string"><xs:annotation><xs:appinfo><b:fieldInfo pos_length="10" pos_offset="37" justification="right" pad_char="0" sequence_number="5" /></xs:appinfo></xs:annotation></xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

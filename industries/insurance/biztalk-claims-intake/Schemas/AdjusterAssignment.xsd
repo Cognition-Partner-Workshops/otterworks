@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.thistlecombe.example/claims/assignment" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="http://schemas.thistlecombe.example/claims/assignment" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo root_reference="AssignmentRequest" displayroot_reference="AssignmentRequest" />
+      <b:properties>
+        <b:property name="ClaimsHub.ClaimNumber" xpath="/*[local-name()='AssignmentRequest']/*[local-name()='ClaimNumber']" />
+        <b:property name="ClaimsHub.Region" xpath="/*[local-name()='AssignmentRequest']/*[local-name()='Region']" />
+      </b:properties>
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- Three roots: the request the claims system raises, the roster query and result from the WCF-SQL port, and the notice the hub mails. -->
+  <xs:element name="AssignmentRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="RequestId" type="xs:string" />
+        <xs:element name="ClaimNumber" type="xs:string" />
+        <xs:element name="LineOfBusiness" type="xs:string" />
+        <xs:element name="LossCause" type="xs:string" />
+        <xs:element name="Region" type="xs:string" />
+        <xs:element name="Severity" type="xs:string" />
+        <xs:element name="RequiredSkill" type="xs:string" />
+        <xs:element name="RequestedDt" type="xs:date" />
+        <xs:element name="ClaimantName" type="xs:string" />
+        <xs:element name="EstimatedAmount" type="xs:decimal" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RosterQuery">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Region" type="xs:string" />
+        <xs:element name="Skill" type="xs:string" />
+        <xs:element name="AsOfDt" type="xs:date" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RosterResult">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Adjuster" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="AdjusterId" type="xs:string" />
+              <xs:element name="Name" type="xs:string" />
+              <xs:element name="Email" type="xs:string" />
+              <xs:element name="Region" type="xs:string" />
+              <xs:element name="Skills" type="xs:string" />
+              <xs:element name="OpenClaims" type="xs:int" />
+              <xs:element name="MaxClaims" type="xs:int" />
+              <xs:element name="Available" type="xs:boolean" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="AssignmentNotice">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="To" type="xs:string" />
+        <xs:element name="Subject" type="xs:string" />
+        <xs:element name="ClaimNumber" type="xs:string" />
+        <xs:element name="AdjusterId" type="xs:string" />
+        <xs:element name="AdjusterName" type="xs:string" />
+        <xs:element name="Severity" type="xs:string" />
+        <xs:element name="SlaDays" type="xs:int" />
+        <xs:element name="Body" type="xs:string" />
+        <xs:element name="Escalated" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

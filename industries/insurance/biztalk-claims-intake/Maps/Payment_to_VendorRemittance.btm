@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mapsource Name="ThistlecombeMutual.ClaimsHub.Maps.Payment_to_VendorRemittance" BizTalkServerMapperTool_Version="3.0" Version="2" XRange="100" YRange="420" OmitXmlDeclaration="Yes" TreatElementsAsRecords="No" OptimizeValueMapping="Yes" GenerateDefaultFixedNodes="Yes" CopyPIs="No" method="xml" xmlVersion="1.0" IgnoreNamespacesForLinks="Yes">
+  <SrcTree>
+    <Reference Location="..\Schemas\Canonical_PaymentInstruction.xsd" />
+  </SrcTree>
+  <TrgTree>
+    <Reference Location="..\Schemas\PaymentVendor_Remittance_FF.xsd" />
+  </TrgTree>
+  <ScriptTypePrecedence>
+    <CSharp Enabled="Yes" />
+    <ExternalAssembly Enabled="Yes" />
+    <VbNet Enabled="Yes" />
+    <JScript Enabled="Yes" />
+    <XsltCallTemplate Enabled="Yes" />
+    <Xslt Enabled="Yes" />
+  </ScriptTypePrecedence>
+  <TreeValues>
+    <TestValues />
+    <ConstantValues />
+  </TreeValues>
+  <Pages>
+    <Page Name="Page 1">
+      <Links />
+      <Functoids>
+      <Functoid FunctoidID="1" Functoid-FID="323" Functoid-Name="Looping" X-Cell="48" Y-Cell="25" />
+      <Functoid FunctoidID="2" Functoid-FID="313" Functoid-Name="Record Count" X-Cell="56" Y-Cell="30" />
+      <Functoid FunctoidID="3" Functoid-FID="302" Functoid-Name="Cumulative Sum" X-Cell="64" Y-Cell="35" />
+      <Functoid FunctoidID="4" Functoid-FID="109" Functoid-Name="Multiplication" X-Cell="72" Y-Cell="40" />
+      <Functoid FunctoidID="5" Functoid-FID="314" Functoid-Name="Round" X-Cell="80" Y-Cell="45" />
+      <Functoid FunctoidID="6" Functoid-FID="200" Functoid-Name="Absolute Value" X-Cell="88" Y-Cell="50" />
+      <Functoid FunctoidID="7" Functoid-FID="316" Functoid-Name="Value Mapping" X-Cell="96" Y-Cell="55" />
+      <Functoid FunctoidID="8" Functoid-FID="108" Functoid-Name="String Find" X-Cell="104" Y-Cell="60" />
+      </Functoids>
+    </Page>
+  </Pages>
+  <!-- The compiled XSLT this map emits is kept beside it as Payment_to_VendorRemittance.xslt; the Mapper regenerates it on build. -->
+</mapsource>

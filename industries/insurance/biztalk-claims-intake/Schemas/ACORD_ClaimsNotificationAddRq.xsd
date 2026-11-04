@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.thistlecombe.example/acord/claims/fnol" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="http://schemas.thistlecombe.example/acord/claims/fnol" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo root_reference="ClaimsSvcRq" displayroot_reference="ClaimsSvcRq" />
+      <b:properties>
+        <b:property name="ClaimsHub.ClaimNumber" xpath="/*[local-name()='ClaimsSvcRq']/*[local-name()='ClaimsNotificationAddRq']/*[local-name()='ClaimsOccurrence']/*[local-name()='ClaimNumber']" />
+        <b:property name="ClaimsHub.LossCauseCd" xpath="/*[local-name()='ClaimsSvcRq']/*[local-name()='ClaimsNotificationAddRq']/*[local-name()='ClaimsOccurrence']/*[local-name()='LossCauseCd']" />
+        <b:property name="ClaimsHub.AgencyId" xpath="/*[local-name()='ClaimsSvcRq']/*[local-name()='ClaimsNotificationAddRq']/*[local-name()='Producer']/*[local-name()='ProducerId']" />
+      </b:properties>
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- ACORD P&C style first notice of loss: one ClaimsNotificationAddRq per request. -->
+  <xs:element name="ClaimsSvcRq">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="RqUID" type="xs:string" />
+        <xs:element name="TransactionRequestDt" type="xs:dateTime" />
+        <xs:element name="ClaimsNotificationAddRq">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Producer">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="ProducerId" type="xs:string" />
+                    <xs:element name="ProducerName" type="xs:string" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Policy">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="PolicyNumber" type="xs:string" />
+                    <xs:element name="LOBCd" type="xs:string" />
+                    <xs:element name="EffectiveDt" type="xs:date" minOccurs="0" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="InsuredOrPrincipal">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="GivenName" type="xs:string" />
+                    <xs:element name="Surname" type="xs:string" />
+                    <xs:element name="TaxId" type="xs:string" minOccurs="0" />
+                    <xs:element name="PhoneNumber" type="xs:string" minOccurs="0" />
+                    <xs:element name="EmailAddr" type="xs:string" minOccurs="0" />
+                    <xs:element name="PriorFraudFlagInd" type="xs:boolean" minOccurs="0" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="ClaimsOccurrence">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="ClaimNumber" type="xs:string" />
+                    <xs:element name="LossDt" type="xs:date" />
+                    <xs:element name="ReportedDt" type="xs:date" />
+                    <xs:element name="LossCauseCd" type="xs:string" />
+                    <xs:element name="IncidentDesc" type="xs:string" />
+                    <xs:element name="EstimatedLossAmt" type="xs:decimal" />
+                    <xs:element name="InjuryInd" type="xs:boolean" />
+                    <xs:element name="PoliceReportInd" type="xs:boolean" minOccurs="0" />
+                    <xs:element name="Addr">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="City" type="xs:string" />
+                          <xs:element name="StateProvCd" type="xs:string" />
+                          <xs:element name="PostalCode" type="xs:string" />
+                        </xs:sequence>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="AutoLossInfo" minOccurs="0">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="VIN" type="xs:string" />
+                    <xs:element name="DriveableInd" type="xs:boolean" />
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

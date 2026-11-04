@@ -1,0 +1,27 @@
+<ns0:PaymentInstruction xmlns:ns0="http://schemas.thistlecombe.example/canonical/payment">
+  <InstructionId>PI-2026-880103</InstructionId>
+  <ClaimNumber>CLM-2026-100409</ClaimNumber>
+  <PolicyNumber>POL-AUTO-48133</PolicyNumber>
+  <VendorCode>PAYV02</VendorCode>
+  <Payee>
+    <Name>Cormac Delahunty</Name>
+    <PayeeType>CL</PayeeType>
+    <BankAccountMasked>****1219</BankAccountMasked>
+  </Payee>
+  <ValueDate>2026-10-04</ValueDate>
+  <CurrencyCd>USD</CurrencyCd>
+  <Line>
+    <LineNo>1</LineNo>
+    <LineType>IND</LineType>
+    <Amount>10630.00</Amount>
+    <GLAccount>61010100</GLAccount>
+    <Memo>Indemnity per adjuster estimate</Memo>
+  </Line>
+  <Line>
+    <LineNo>2</LineNo>
+    <LineType>SLV</LineType>
+    <Amount>-782.47</Amount>
+    <GLAccount>41050200</GLAccount>
+    <Memo>Salvage recovery credit</Memo>
+  </Line>
+</ns0:PaymentInstruction>

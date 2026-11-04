@@ -1,0 +1,10 @@
+{
+  "ClaimNumber": "CLM-2026-100405",
+  "Outcome": "FRAUD_REVIEW",
+  "Reasons": [
+    "Reported more than 30 days after loss"
+  ],
+  "RulesFired": [
+    "FraudFlagLateReport"
+  ]
+}

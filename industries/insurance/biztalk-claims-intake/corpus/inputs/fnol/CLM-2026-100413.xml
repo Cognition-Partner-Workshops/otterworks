@@ -1,0 +1,40 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000013</RqUID>
+  <TransactionRequestDt>2026-09-21T08:28:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0922</ProducerId>
+      <ProducerName>Penrose &amp; Daughters</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-AUTO-48191</PolicyNumber>
+      <LOBCd>AUTO</LOBCd>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Bartholomew</GivenName>
+      <Surname>Okafor</Surname>
+      <TaxId>113-53-7169</TaxId>
+        <PhoneNumber>401-555-1481</PhoneNumber>
+        <EmailAddr>bartholomew.okafor@example.net</EmailAddr>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100413</ClaimNumber>
+      <LossDt>2026-09-20</LossDt>
+      <ReportedDt>2026-09-21</ReportedDt>
+      <LossCauseCd>COLL</LossCauseCd>
+      <IncidentDesc>Rear-ended at a stop light; other driver admitted fault at the scene</IncidentDesc>
+      <EstimatedLossAmt>5200.00</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+        <PoliceReportInd>false</PoliceReportInd>
+      <Addr>
+        <City>Camden</City>
+        <StateProvCd>ME</StateProvCd>
+        <PostalCode>04843</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+      <AutoLossInfo>
+        <VIN>1HGCM82633A111843</VIN>
+        <DriveableInd>false</DriveableInd>
+      </AutoLossInfo>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>

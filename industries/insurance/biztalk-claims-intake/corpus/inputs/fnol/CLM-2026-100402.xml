@@ -1,0 +1,40 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000002</RqUID>
+  <TransactionRequestDt>2026-09-05T08:17:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-1305</ProducerId>
+      <ProducerName>Marlow Street Agency</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-AUTO-48114</PolicyNumber>
+      <LOBCd>AUTO</LOBCd>
+        <EffectiveDt>2026-08-30</EffectiveDt>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Hollis</GivenName>
+      <Surname>Brightwater</Surname>
+      <TaxId>102-42-7026</TaxId>
+        <PhoneNumber>401-555-1074</PhoneNumber>
+        <EmailAddr>hollis.brightwater@example.net</EmailAddr>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100402</ClaimNumber>
+      <LossDt>2026-09-05</LossDt>
+      <ReportedDt>2026-09-05</ReportedDt>
+      <LossCauseCd>TOWG</LossCauseCd>
+      <IncidentDesc>Vehicle would not start in a supermarket car park, towed to dealer</IncidentDesc>
+      <EstimatedLossAmt>185.50</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+      <Addr>
+        <City>Mystic</City>
+        <StateProvCd>CT</StateProvCd>
+        <PostalCode>06355</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+      <AutoLossInfo>
+        <VIN>1HGCM82633A101822</VIN>
+        <DriveableInd>true</DriveableInd>
+      </AutoLossInfo>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>

@@ -1,0 +1,97 @@
+#if __DESIGNER_DATA
+#error Do not define __DESIGNER_DATA.
+<?xml version="1.0" encoding="utf-8"?>
+<om:MetaModel MajorVersion="1" MinorVersion="3" Core="2b131234-7959-458d-834f-2dc0e1cb6d05" ScheduleModel="66366196-361d-448d-976f-cab5e87496d2" xmlns:om="http://schemas.microsoft.com/BizTalk/2003/DesignerData">
+  <om:Element Type="Module" OID="d2e7c1a0-0000-4000-8000-000000000021" LowerBound="1.1" HigherBound="100.1">
+    <om:Property Name="Name" Value="ThistlecombeMutual.ClaimsHub.Orchestrations" />
+    <om:Element Type="ServiceDeclaration" OID="d2e7c1a0-0000-4000-8000-000000000022" ParentLink="Module_ServiceDeclaration" LowerBound="12.1" HigherBound="99.1">
+      <om:Property Name="Name" Value="AdjusterAssignment" />
+    </om:Element>
+  </om:Element>
+</om:MetaModel>
+#endif // __DESIGNER_DATA
+[Microsoft.XLANGs.BaseTypes.BPELExportable(false)]
+module ThistlecombeMutual.ClaimsHub.Orchestrations
+{
+    internal porttype AssignmentReceivePortType
+    {
+        oneway ReceiveRequest
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.AssignmentRequest
+        };
+    };
+
+    internal porttype RosterPortType
+    {
+        requestresponse QueryRoster
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.RosterQuery,
+            ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.RosterResult
+        };
+    };
+
+    internal porttype NoticePortType
+    {
+        oneway SendNotice
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.AssignmentNotice
+        };
+    };
+
+    internal porttype ArchivePortType
+    {
+        oneway Archive
+        {
+            ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.AssignmentRequest
+        };
+    };
+
+    [Microsoft.XLANGs.BaseTypes.BPELExportable(false)]
+    internal service AdjusterAssignment
+    {
+        port implements AssignmentReceivePortType AssignmentIn;
+        port uses RosterPortType Roster;
+        port uses NoticePortType Notice;
+        port uses ArchivePortType Archive;
+
+        message ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.AssignmentRequest msgRequest;
+        message ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.RosterQuery msgRosterQuery;
+        message ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.RosterResult msgRoster;
+        message ThistlecombeMutual.ClaimsHub.Schemas.AdjusterAssignment.AssignmentNotice msgNotice;
+
+        System.Boolean escalated;
+
+        body ()
+        {
+            // Shape: Receive_Request (activating). Raised by FnolIntake or by the claims system directly.
+            activate receive (AssignmentIn.ReceiveRequest, msgRequest);
+
+            // Shape: Parallel_Actions. Both branches must finish before the notice goes out.
+            parallel
+            {
+                // Branch 1: find an adjuster. Map AssignmentRequest_to_RosterQuery, then WCF-SQL solicit-response.
+                construct msgRosterQuery
+                {
+                    transform (msgRosterQuery) = ThistlecombeMutual.ClaimsHub.Maps.AssignmentRequest_to_RosterQuery (msgRequest);
+                }
+                send (Roster.QueryRoster, msgRosterQuery);
+                receive (Roster.QueryRoster, msgRoster);
+            },
+            {
+                // Branch 2: archive the request for the regulator (FILE send port, seven year retention).
+                send (Archive.Archive, msgRequest);
+            }
+
+            // Shape: Construct_Notice, two-source map Roster_AssignmentRequest_to_Notice.
+            // The map picks the least loaded eligible adjuster or escalates to the supervisor.
+            construct msgNotice
+            {
+                transform (msgNotice) = ThistlecombeMutual.ClaimsHub.Maps.Roster_AssignmentRequest_to_Notice (msgRoster, msgRequest);
+            }
+            escalated = System.Convert.ToBoolean(xpath(msgNotice, "string(/*[local-name()='AssignmentNotice']/*[local-name()='Escalated'])"));
+
+            // Shape: Send_Notice (SMTP). Escalations go to the supervisor address the map chose.
+            send (Notice.SendNotice, msgNotice);
+        }
+    }
+}

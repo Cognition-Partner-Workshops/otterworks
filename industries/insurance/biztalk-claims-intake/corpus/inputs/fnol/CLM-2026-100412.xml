@@ -1,0 +1,34 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000012</RqUID>
+  <TransactionRequestDt>2026-09-19T08:27:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0417</ProducerId>
+      <ProducerName>Harbourline Brokers</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-HOME-48184</PolicyNumber>
+      <LOBCd>HOME</LOBCd>
+        <EffectiveDt>2026-06-01</EffectiveDt>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Linnea</GivenName>
+      <Surname>Stroud</Surname>
+      <TaxId>112-52-7156</TaxId>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100412</ClaimNumber>
+      <LossDt>2026-09-18</LossDt>
+      <ReportedDt>2026-09-19</ReportedDt>
+      <LossCauseCd>WIND</LossCauseCd>
+      <IncidentDesc>Shingles and a section of fence lost in the overnight storm</IncidentDesc>
+      <EstimatedLossAmt>4100.00</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+      <Addr>
+        <City>Mystic</City>
+        <StateProvCd>CT</StateProvCd>
+        <PostalCode>06355</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>
