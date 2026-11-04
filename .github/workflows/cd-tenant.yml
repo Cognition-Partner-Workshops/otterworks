@@ -17,6 +17,18 @@ name: Deploy tenant environment
 # Deployment goes through the ops dashboard API, never straight at the cluster:
 # the dashboard runs the work as a runner Job under its own IRSA role, so this
 # workflow needs no EKS access.
+#
+# A branch's copy of this file is code its author controls, so the two kinds of
+# push get different identities (demo-platform/infra/terraform/iam_github_actions.tf):
+#   main               AWS_ROLE_ARN: moves the golden `main` tag, reads the
+#                      dashboard passcode and redeploys t-main via tenant.sh.
+#   workshop-*/demo-*  AWS_BRANCH_ROLE_ARN: pushes the immutable
+#                      `<slug>-<sha>` tag and nothing else -- it cannot move a
+#                      tag or read the passcode. The deploy is a POST to the
+#                      dashboard's /api/cd/deploy with a GitHub OIDC token; the
+#                      dashboard derives the tenant from the signed branch name,
+#                      refuses perpetual or ambiguous ids and branches that do
+#                      not own the tenant, and only then deploys those tags.
 
 on:
   push:
@@ -51,7 +63,6 @@ jobs:
     outputs:
       services: ${{ steps.select.outputs.services }}
       image_tag: ${{ steps.select.outputs.image_tag }}
-      tenant_tag: ${{ steps.select.outputs.tenant_tag }}
       golden: ${{ steps.select.outputs.golden }}
       deploy: ${{ steps.select.outputs.deploy }}
     steps:
@@ -92,12 +103,21 @@ jobs:
           REBUILD_ALL: ${{ inputs.rebuild_all }}
           DEPLOYABLE: ${{ steps.changes.outputs.deployable }}
           TENANT_PREFIX: ${{ vars.TENANT_PREFIX }}
+          PERPETUAL_TENANT_IDS: ${{ vars.PERPETUAL_TENANT_IDS || 'main,cloud-worker' }}
         run: |
           set -euo pipefail
           source scripts/lib/tenant-common.sh
 
+          # Fail early, before anything is built, for a branch that could never
+          # deploy: one naming a perpetual tenant (workshop-main) or one whose
+          # name does not map to exactly one tenant id. The dashboard makes the
+          # same check authoritatively; this only saves the build minutes.
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            tenant_id="$(cd_branch_tenant_id "${GITHUB_REF_NAME}")"
+            echo "::notice::branch ${GITHUB_REF_NAME} deploys tenant ${tenant_id}"
+          fi
+
           slug="$(branch_tag_slug "${GITHUB_REF_NAME}")"
-          echo "tenant_tag=$(tenant_image_tag "$(branch_tenant_id "${GITHUB_REF_NAME}")")" >> "$GITHUB_OUTPUT"
           echo "image_tag=${TENANT_PREFIX:+${TENANT_PREFIX}-}${slug}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
           # Only this repository's main is the golden app. A fork publishing to
@@ -113,6 +133,9 @@ jobs:
             # 'deployable' catch-all, which is not a service.
             services="$(printf '%s' "${CHANGED}" | jq -c '[.[] | select(. != "deployable")]')"
           fi
+          # A fork's main builds nothing: it has no golden tag to publish and no
+          # tenant to deploy, and the main CD role does not trust it.
+          if [ "${GITHUB_REF_NAME}" = "main" ] && [ -n "${TENANT_PREFIX}" ]; then services='[]'; fi
           echo "services=${services}" >> "$GITHUB_OUTPUT"
 
           # A push that touches nothing deployable -- docs, CI config, the
@@ -153,10 +176,12 @@ jobs:
           esac
           echo "path=${path}" >> "$GITHUB_OUTPUT"
 
+      # Branch builds never see the main role: it is the only one that can move
+      # `main` or read the dashboard passcode.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ needs.plan.outputs.golden == 'true' && secrets.AWS_ROLE_ARN || secrets.AWS_BRANCH_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to ECR
@@ -166,13 +191,13 @@ jobs:
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       # Each tag has a job:
-      #   <slug>-<sha>  immutable, exactly what this run built
-      #   tenant-<id>   the environment's current build, what it deploys
+      #   <slug>-<sha>  immutable, exactly what this run built; a branch tenant
+      #                 deploys it by name, after the dashboard's ownership check
       #   main          the golden image every other tenant falls back to
       #
       # The repositories are IMMUTABLE, so only the first is pushed by the
-      # build; the moving tags are re-pointed afterwards (see "Move tags"). A
-      # rerun of a commit already in the registry skips the build.
+      # build; `main` is re-pointed afterwards, on main only (see "Move main").
+      # A rerun of a commit already in the registry skips the build.
       - name: Check for existing image
         id: existing
         env:
@@ -199,16 +224,16 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
           tags: ${{ steps.ecr.outputs.registry }}/otterworks/${{ matrix.service }}:${{ needs.plan.outputs.image_tag }}
 
-      # Re-point each moving tag at the image just pushed. Untag, then re-tag
-      # from the pushed manifest; the previous build stays reachable by its own
-      # <slug>-<sha> tag. The old tag is only removed once the new image is
-      # known to exist, so a failed build leaves the environment deployable.
-      - name: Move tags
+      # Re-point the golden `main` tag at the image just pushed. Untag, then
+      # re-tag from the pushed manifest; the previous build stays reachable by
+      # its own <slug>-<sha> tag. The old tag is only removed once the new image
+      # is known to exist, so a failed build leaves the environment deployable.
+      # main only: nothing else may move a tag, and no other role can.
+      - name: Move main
+        if: needs.plan.outputs.golden == 'true'
         env:
           REPOSITORY: otterworks/${{ matrix.service }}
           IMAGE_TAG: ${{ needs.plan.outputs.image_tag }}
-          TENANT_TAG: ${{ needs.plan.outputs.tenant_tag }}
-          GOLDEN: ${{ needs.plan.outputs.golden }}
         run: |
           set -euo pipefail
           image="$(aws ecr batch-get-image --repository-name "${REPOSITORY}" \
@@ -218,34 +243,31 @@ jobs:
           digest="$(jq -r '.imageId.imageDigest' <<<"${image}")"
           [ -n "${manifest}" ] && [ "${manifest}" != "null" ] || { echo "::error::${REPOSITORY}:${IMAGE_TAG} not found"; exit 1; }
 
-          tags=("${TENANT_TAG}")
-          if [ "${GOLDEN}" = "true" ]; then tags+=(main); fi
-          for t in "${tags[@]}"; do
-            previous="$(aws ecr batch-get-image --repository-name "${REPOSITORY}" \
-                          --image-ids "imageTag=${t}" --query 'images[0]' --output json 2>/dev/null || echo null)"
-            current="$(jq -r '.imageId.imageDigest // empty' <<<"${previous}")"
-            if [ "${current}" = "${digest}" ]; then
-              echo "${REPOSITORY}:${t} already points at ${digest}"
-              continue
-            fi
+          t=main
+          previous="$(aws ecr batch-get-image --repository-name "${REPOSITORY}" \
+                        --image-ids "imageTag=${t}" --query 'images[0]' --output json 2>/dev/null || echo null)"
+          current="$(jq -r '.imageId.imageDigest // empty' <<<"${previous}")"
+          if [ "${current}" = "${digest}" ]; then
+            echo "${REPOSITORY}:${t} already points at ${digest}"
+            exit 0
+          fi
+          if [ -n "${current}" ]; then
+            aws ecr batch-delete-image --repository-name "${REPOSITORY}" \
+              --image-ids "imageTag=${t}" --query 'failures' --output text
+          fi
+          if ! aws ecr put-image --repository-name "${REPOSITORY}" --image-tag "${t}" \
+                 --image-manifest "${manifest}" --image-manifest-media-type "${media_type}" \
+                 --query 'image.imageId' --output text; then
+            echo "::error::failed to point ${REPOSITORY}:${t} at ${digest}"
             if [ -n "${current}" ]; then
-              aws ecr batch-delete-image --repository-name "${REPOSITORY}" \
-                --image-ids "imageTag=${t}" --query 'failures' --output text
+              echo "restoring ${REPOSITORY}:${t} -> ${current}"
+              aws ecr put-image --repository-name "${REPOSITORY}" --image-tag "${t}" \
+                --image-manifest "$(jq -r '.imageManifest' <<<"${previous}")" \
+                --image-manifest-media-type "$(jq -r '.imageManifestMediaType' <<<"${previous}")" \
+                --query 'image.imageId' --output text || echo "::error::restore of ${REPOSITORY}:${t} failed"
             fi
-            if ! aws ecr put-image --repository-name "${REPOSITORY}" --image-tag "${t}" \
-                   --image-manifest "${manifest}" --image-manifest-media-type "${media_type}" \
-                   --query 'image.imageId' --output text; then
-              echo "::error::failed to point ${REPOSITORY}:${t} at ${digest}"
-              if [ -n "${current}" ]; then
-                echo "restoring ${REPOSITORY}:${t} -> ${current}"
-                aws ecr put-image --repository-name "${REPOSITORY}" --image-tag "${t}" \
-                  --image-manifest "$(jq -r '.imageManifest' <<<"${previous}")" \
-                  --image-manifest-media-type "$(jq -r '.imageManifestMediaType' <<<"${previous}")" \
-                  --query 'image.imageId' --output text || echo "::error::restore of ${REPOSITORY}:${t} failed"
-              fi
-              exit 1
-            fi
-          done
+            exit 1
+          fi
 
   deploy:
     needs: [plan, build]
@@ -257,17 +279,41 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Configure AWS credentials
+        if: github.ref_name == 'main'
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Creates the tenant with a 72h TTL if the branch has none, otherwise
-      # redeploys it in place and pushes its expiry back out to 72h. `main` is the perpetual tenant and must already
-      # exist -- CD deliberately cannot create a perpetual environment (see
-      # `tenant.sh persist`), so a missing t-main is an error, not a silent
-      # ephemeral tenant on the golden branch.
-      - name: Sync tenant environment
+      # `main` is the perpetual tenant and must already exist -- CD
+      # deliberately cannot create a perpetual environment (see `tenant.sh
+      # persist`), so a missing t-main is an error, not a silent ephemeral
+      # tenant on the golden branch.
+      - name: Sync perpetual tenant
+        if: github.ref_name == 'main'
         env:
           TENANT_PREFIX: ${{ vars.TENANT_PREFIX }}
         run: demo-platform/scripts/tenant.sh sync "${GITHUB_REF_NAME}"
+
+      # Creates the branch's tenant with a 72h TTL if it has none, otherwise
+      # redeploys it in place and pushes its expiry back out to 72h. No AWS
+      # credentials and no passcode: the dashboard authenticates this run by
+      # its GitHub OIDC token (audience otterworks-demo-ops, which STS does not
+      # accept) and decides from the signed branch name which tenant, if any,
+      # it may deploy.
+      - name: Deploy branch tenant
+        if: github.ref_name != 'main'
+        env:
+          OPS_HOST: ${{ vars.OPS_HOST || 'https://ops.otterworks.app' }}
+          SERVICES: ${{ needs.plan.outputs.services }}
+          IMAGE_TAG: ${{ needs.plan.outputs.image_tag }}
+        run: |
+          set -euo pipefail
+          token="$(curl -fsS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+                     "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=otterworks-demo-ops" | jq -r '.value')"
+          echo "::add-mask::${token}"
+          body="$(jq -nc --argjson s "${SERVICES:-[]}" --arg t "${IMAGE_TAG}" '{services:$s, image_tag:$t}')"
+          code="$(curl -sS -o response.json -w '%{http_code}' -X POST "${OPS_HOST%/}/api/cd/deploy" \
+                    -H "Authorization: Bearer ${token}" -H 'Content-Type: application/json' -d "${body}")"
+          jq -c . response.json 2>/dev/null || cat response.json
+          case "${code}" in 2??) ;; *) echo "::error::dashboard refused the deploy (HTTP ${code})"; exit 1 ;; esac

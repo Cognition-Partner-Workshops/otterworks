@@ -53,6 +53,10 @@ spec:
               value: {{ .Values.perpetualTenantIds | quote }}
             - name: PERPETUAL_HOST_SUFFIX
               value: {{ .Values.perpetualHostSuffix | quote }}
+            - name: CD_OIDC_AUDIENCE
+              value: {{ .Values.cd.oidcAudience | quote }}
+            - name: CD_TRUSTED_REPOS
+              value: {{ .Values.cd.trustedRepos | quote }}
             {{- if .Values.repoHttpsUrl }}
             - name: REPO_HTTPS_URL
               value: {{ .Values.repoHttpsUrl | quote }}

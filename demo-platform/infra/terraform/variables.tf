@@ -136,23 +136,38 @@ variable "enable_github_actions_role" {
   default     = true
 }
 
-# owner/repo => the branch patterns (git ref names, may contain *) whose workflow
-# runs in that repository may assume the CD role.
-#
-# Downstream forks ship the same environments from the same registry, so they
-# are trusted too -- but only for the ephemeral branch prefixes. `main` is the
-# golden app and the perpetual environment, which this repository owns: a fork's
-# main is a copy of it, and deploying that copy would let anyone with write
-# access to a fork replace the environment everyone else demos from.
-variable "github_actions_trusted_repos" {
-  description = "Repositories (owner/repo) and the branch patterns whose workflow runs may assume the CD role."
-  type        = map(list(string))
-  default = {
-    "Cognition-Partner-Workshops/otterworks" = ["main", "workshop-*", "demo-*"]
-    "COG-GTM/otterworks"                     = ["workshop-*", "demo-*"]
-  }
+# The one repository whose `main` publishes the golden image and deploys the
+# perpetual tenant. Only `refs/heads/main` of this repository may assume the
+# main CD role (otterworks-github-actions).
+variable "github_actions_main_repo" {
+  description = "Repository (owner/repo) whose main branch may assume the main CD role."
+  type        = string
+  default     = "Cognition-Partner-Workshops/otterworks"
 }
 
+# owner/repo => the branch patterns (git ref names, may contain *) whose workflow
+# runs may assume the branch CD role (otterworks-github-actions-branch), which
+# can only push new immutable image tags.
+#
+# Downstream forks ship the same environments from the same registry, so they
+# are trusted too. `main` is never a branch pattern here: it belongs to the main
+# role, and only in github_actions_main_repo.
+variable "github_actions_branch_repos" {
+  description = "Repositories (owner/repo) and the workshop-*/demo-* branch patterns whose runs may assume the branch CD role."
+  type        = map(list(string))
+  default = {
+    "Cognition-Partner-Workshops/otterworks" = ["workshop-*", "demo-*"]
+    "COG-GTM/otterworks"                     = ["workshop-*", "demo-*"]
+  }
+
+  validation {
+    condition = alltrue(flatten([
+      for refs in values(var.github_actions_branch_repos) :
+      [for ref in refs : can(regex("^(workshop|demo)-", ref))]
+    ]))
+    error_message = "Branch CD patterns must start with workshop- or demo-; main belongs to the main CD role."
+  }
+}
 
 variable "creator_tag" {
   description = "Value of the `creator` tag applied to every resource in this layer"

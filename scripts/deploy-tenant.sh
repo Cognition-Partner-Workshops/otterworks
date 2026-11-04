@@ -445,20 +445,16 @@ tag_exists() {
     --region "${AWS_REGION}" >/dev/null 2>&1
 }
 
-# CI publishes each service a branch changed as `tenant-<id>` (and `main` for
-# the golden app), so a tenant runs its branch's build of the services that
-# branch touched and the golden build of everything else. There is deliberately
-# no "newest image in the repo" fallback: that is whichever branch built last,
-# i.e. another tenant's code, and it once put a customer skin on t-main.
-TENANT_TAG=""
-[ -n "${TENANT_BRANCH_ARG}" ] &&
-  TENANT_TAG="$(tenant_image_tag "${ATTENDEE_ID}")"
-
+# A tenant runs its branch's build of the services that branch touched and the
+# golden build of everything else. The branch builds arrive explicitly, as
+# immutable tags in BUG_IMAGE_TAG_<service> (the dashboard sets them only after
+# checking the branch owns the tenant); anything not named falls back to the
+# golden `main`, which only this repository's main can move. There is
+# deliberately no lookup of a `tenant-<id>` tag: any branch able to push could
+# write one -- `workshop-main` once could write `tenant-main` -- and no
+# "newest image in the repo" fallback either, which is another tenant's code.
 resolve_tag() {
   local service="$1"
-  if [ -n "${TENANT_TAG}" ] && tag_exists "${service}" "${TENANT_TAG}"; then
-    echo "${TENANT_TAG}"; return 0
-  fi
   if tag_exists "${service}" main; then
     echo "main"; return 0
   fi
@@ -479,7 +475,7 @@ deploy_service() {
     err "No :main image in ECR for ${service}; rebuild the golden images (cd-tenant.yml on main, rebuild_all) instead of deploying another branch's build."
     return 1
   fi
-  # Moving tags (tenant-<id>, main) are re-pointed by CD without the tag text
+  # The moving `main` tag is re-pointed by CD without the tag text
   # changing, which would leave the pod template identical and roll nothing
   # out. Pin the digest so every retag is a new pod template.
   local digest

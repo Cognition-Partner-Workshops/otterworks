@@ -74,6 +74,17 @@ export const env = {
       .filter(Boolean);
     return new Set(list);
   },
+  // Audience CD workflows request their GitHub OIDC token for. Distinct from
+  // sts.amazonaws.com so a token minted for the dashboard cannot be exchanged
+  // for AWS credentials, and vice versa. Empty disables /api/cd/deploy.
+  get cdOidcAudience(): string {
+    return process.env.CD_OIDC_AUDIENCE ?? "otterworks-demo-ops";
+  },
+  // Repositories whose workshop-*/demo-* pushes may deploy, with the tenant id
+  // prefix each one is held to: `owner/repo=prefix,...` (empty prefix allowed).
+  get cdTrustedRepos(): string {
+    return process.env.CD_TRUSTED_REPOS ?? "Cognition-Partner-Workshops/otterworks=";
+  },
   get sessionTtlSeconds(): number {
     const raw = process.env.SESSION_TTL_SECONDS;
     const n = raw ? Number(raw) : NaN;

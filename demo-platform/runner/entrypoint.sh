@@ -143,8 +143,8 @@ run_deploy() {
 
   local args=(--tier "${TIER}" --ttl "${TTL}" --host-suffix "${HOST_SUFFIX}")
   [ -n "${IMAGE_TAG:-}" ] && args+=(--image-tag "${IMAGE_TAG}")
-  # Prefer images built from this tenant's own branch (see deploy-tenant.sh's
-  # tag resolution) over whatever was pushed to a service's repo most recently.
+  # A CD branch's own builds arrive as BUG_IMAGE_TAG_<service> (immutable
+  # tags, set by the dashboard after its ownership check); the rest is `main`.
   [ -n "${TENANT_BRANCH:-}" ] && args+=(--branch "${TENANT_BRANCH}")
   # Secrets (DB_PASSWORD/JWT_SECRET/SECRET_KEY_BASE) are read from the env by the
   # script; they are NOT placed on this argv.
