@@ -15,9 +15,10 @@ data "aws_iam_policy_document" "lambda_assume" {
 }
 
 resource "aws_iam_role" "lambda" {
-  name               = "${local.name}-lambda"
-  description        = "Execution role of the ${local.name} context functions"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
+  name                 = "${local.name}-lambda"
+  permissions_boundary = local.permissions_boundary_arn
+  description          = "Execution role of the ${local.name} context functions"
+  assume_role_policy   = data.aws_iam_policy_document.lambda_assume.json
 }
 
 data "aws_iam_policy_document" "lambda" {

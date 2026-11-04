@@ -156,6 +156,7 @@ resource "aws_iam_role" "devin_builder" {
   name                 = "devin-cw-builder"
   assume_role_policy   = data.aws_iam_policy_document.devin_trust.json
   max_session_duration = 14400
+  permissions_boundary = aws_iam_policy.devin_engineer_boundary.arn
 }
 
 resource "aws_iam_role_policy_attachment" "devin_builder_read_only" {
@@ -215,9 +216,67 @@ resource "aws_iam_role_policy_attachment" "devin_engineer_power_user" {
   policy_arn = "arn:${local.partition}:iam::aws:policy/PowerUserAccess"
 }
 
-# PowerUserAccess leaves IAM out. The engineer role may create and wire the roles and
-# policies that its own Terraform runs need, and nothing that touches the Devin roles,
-# the console user or the account's human users.
+locals {
+  engineer_boundary_name = "devin-aws-engineer-boundary"
+  iam_arn                = "arn:${local.partition}:iam::${local.account_id}"
+  aws_policy_arn         = "arn:${local.partition}:iam::aws:policy"
+
+  # Policies the engineer may attach to a role it manages: customer policies of its own
+  # runs, plus the AWS managed service policies the lp-* Terraform roots attach.
+  engineer_attachable_policies = [
+    "${local.iam_arn}:policy/lp-*",
+    "${local.aws_policy_arn}/service-role/AWSCodeDeployRoleForLambdaLimited",
+    "${local.aws_policy_arn}/AmazonSSMManagedInstanceCore",
+    "${local.aws_policy_arn}/CloudWatchAgentServerPolicy",
+  ]
+
+  iam_read_actions = [
+    "iam:Get*",
+    "iam:List*",
+    "iam:SimulatePrincipalPolicy",
+    "iam:SimulateCustomPolicy",
+  ]
+}
+
+# Permissions boundary of every role the engineer creates or edits, and of the builder
+# role it attaches run policies to. A bounded role keeps the engineer's non-IAM reach at
+# most and can write nothing in IAM, so no role the engineer touches outranks it.
+resource "aws_iam_policy" "devin_engineer_boundary" {
+  name        = local.engineer_boundary_name
+  description = "Permissions boundary for roles managed by devin-aws-engineer"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "NonIamServices"
+        Effect    = "Allow"
+        NotAction = ["iam:*", "organizations:*", "account:*"]
+        Resource  = "*"
+      },
+      {
+        Sid      = "IamRead"
+        Effect   = "Allow"
+        Action   = local.iam_read_actions
+        Resource = "*"
+      },
+      {
+        Sid    = "NoDevinRoles"
+        Effect = "Deny"
+        Action = ["sts:AssumeRole", "sts:TagSession", "sts:SetSourceIdentity"]
+        Resource = [
+          "${local.iam_arn}:role/devin-*",
+        ]
+      },
+    ]
+  })
+}
+
+# PowerUserAccess leaves IAM out. The engineer role may create and wire the lp-* roles
+# and policies that its own Terraform runs need. Every role it creates or edits must carry
+# the devin-aws-engineer-boundary, it may attach only lp-* customer policies and a short
+# list of AWS service policies, and it cannot write to the Devin roles, the boundary, the
+# console user or the account's human users.
 resource "aws_iam_role_policy" "devin_engineer_iam" {
   name = "devin-aws-engineer-iam"
   role = aws_iam_role.devin_engineer.id
@@ -226,46 +285,65 @@ resource "aws_iam_role_policy" "devin_engineer_iam" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = [
-          "iam:Get*",
-          "iam:List*",
-          "iam:SimulatePrincipalPolicy",
-          "iam:SimulateCustomPolicy",
-        ]
+        Sid      = "IamRead"
+        Effect   = "Allow"
+        Action   = local.iam_read_actions
         Resource = "*"
       },
       {
+        Sid    = "BoundedRunRoles"
         Effect = "Allow"
         Action = [ # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
           "iam:CreateRole",
           "iam:DeleteRole",
-          "iam:UpdateRole",
-          "iam:UpdateRoleDescription",
           "iam:UpdateAssumeRolePolicy",
-          "iam:TagRole",
-          "iam:UntagRole",
           "iam:PutRolePolicy",
           "iam:DeleteRolePolicy",
-          "iam:AttachRolePolicy",
-          "iam:DetachRolePolicy",
+          "iam:PutRolePermissionsBoundary",
+        ]
+        Resource = ["${local.iam_arn}:role/lp-*"]
+        Condition = {
+          StringEquals = { "iam:PermissionsBoundary" = aws_iam_policy.devin_engineer_boundary.arn }
+        }
+      },
+      {
+        Sid      = "BoundedRunRoleAttachments"
+        Effect   = "Allow"
+        Action   = ["iam:AttachRolePolicy", "iam:DetachRolePolicy"] # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
+        Resource = ["${local.iam_arn}:role/lp-*"]
+        Condition = {
+          StringEquals = { "iam:PermissionsBoundary" = aws_iam_policy.devin_engineer_boundary.arn }
+          ArnLike      = { "iam:PolicyARN" = local.engineer_attachable_policies }
+        }
+      },
+      {
+        Sid    = "RunRoleLifecycle"
+        Effect = "Allow"
+        Action = [ # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
+          "iam:UpdateRole",
+          "iam:UpdateRoleDescription",
+          "iam:TagRole",
+          "iam:UntagRole",
           "iam:PassRole",
           "iam:CreateInstanceProfile",
           "iam:DeleteInstanceProfile",
           "iam:AddRoleToInstanceProfile",
           "iam:RemoveRoleFromInstanceProfile",
           "iam:TagInstanceProfile",
-          "iam:CreateServiceLinkedRole",
         ]
         Resource = [
-          "arn:${local.partition}:iam::${local.account_id}:role/lp-*",
-          "arn:${local.partition}:iam::${local.account_id}:role/otterworks-*",
-          "arn:${local.partition}:iam::${local.account_id}:role/aws-service-role/*",
-          "arn:${local.partition}:iam::${local.account_id}:instance-profile/lp-*",
-          "arn:${local.partition}:iam::${local.account_id}:instance-profile/otterworks-*",
+          "${local.iam_arn}:role/lp-*",
+          "${local.iam_arn}:instance-profile/lp-*",
         ]
       },
       {
+        Sid      = "ServiceLinkedRoles"
+        Effect   = "Allow"
+        Action   = ["iam:CreateServiceLinkedRole"]
+        Resource = ["${local.iam_arn}:role/aws-service-role/*"]
+      },
+      {
+        Sid    = "RunPolicies"
         Effect = "Allow"
         Action = [ # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
           "iam:CreatePolicy",
@@ -276,18 +354,68 @@ resource "aws_iam_role_policy" "devin_engineer_iam" {
           "iam:TagPolicy",
           "iam:UntagPolicy",
         ]
-        Resource = [
-          "arn:${local.partition}:iam::${local.account_id}:policy/lp-*",
-          "arn:${local.partition}:iam::${local.account_id}:policy/otterworks-*",
-        ]
+        Resource = ["${local.iam_arn}:policy/lp-*"]
       },
       {
+        Sid      = "RunPolicyOnBuilder"
         Effect   = "Allow"
         Action   = ["iam:AttachRolePolicy", "iam:DetachRolePolicy"] # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
         Resource = [aws_iam_role.devin_builder.arn]
         Condition = {
-          ArnLike = { "iam:PolicyARN" = "arn:${local.partition}:iam::${local.account_id}:policy/lp-*" }
+          StringEquals = { "iam:PermissionsBoundary" = aws_iam_policy.devin_engineer_boundary.arn }
+          ArnLike      = { "iam:PolicyARN" = "${local.iam_arn}:policy/lp-*" }
         }
+      },
+      {
+        Sid    = "DenyUnboundedRoleWrites"
+        Effect = "Deny"
+        Action = [
+          "iam:CreateRole",
+          "iam:DeleteRole",
+          "iam:UpdateAssumeRolePolicy",
+          "iam:PutRolePolicy",
+          "iam:DeleteRolePolicy",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+          "iam:PutRolePermissionsBoundary",
+        ]
+        Resource = "*"
+        Condition = {
+          StringNotEquals = { "iam:PermissionsBoundary" = aws_iam_policy.devin_engineer_boundary.arn }
+        }
+      },
+      {
+        Sid       = "DenyOtherAttachablePolicies"
+        Effect    = "Deny"
+        Action    = ["iam:AttachRolePolicy", "iam:DetachRolePolicy"]
+        Resource  = "*"
+        Condition = { ArnNotLike = { "iam:PolicyARN" = local.engineer_attachable_policies } }
+      },
+      {
+        Sid      = "DenyBoundaryRemoval"
+        Effect   = "Deny"
+        Action   = ["iam:DeleteRolePermissionsBoundary", "iam:DeleteUserPermissionsBoundary", "iam:PutUserPermissionsBoundary"]
+        Resource = "*"
+      },
+      {
+        Sid    = "DenyDevinRoleWrites"
+        Effect = "Deny"
+        NotAction = concat(local.iam_read_actions, [
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+        ])
+        Resource = ["${local.iam_arn}:role/devin-*"]
+      },
+      {
+        Sid       = "DenyUserGroupAndBoundaryWrites"
+        Effect    = "Deny"
+        NotAction = local.iam_read_actions
+        Resource = [
+          "${local.iam_arn}:user/*",
+          "${local.iam_arn}:group/*",
+          "${local.iam_arn}:policy/devin-*",
+          aws_iam_policy.devin_engineer_boundary.arn,
+        ]
       },
     ]
   })

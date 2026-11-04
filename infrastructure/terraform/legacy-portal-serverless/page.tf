@@ -32,7 +32,8 @@ resource "aws_cloudwatch_event_api_destination" "devin_webhook" {
 }
 
 resource "aws_iam_role" "eventbridge_invoke" {
-  name = "${local.name}-eventbridge-invoke"
+  name                 = "${local.name}-eventbridge-invoke"
+  permissions_boundary = local.permissions_boundary_arn
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

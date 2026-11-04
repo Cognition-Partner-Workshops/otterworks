@@ -55,3 +55,9 @@ variable "log_retention_days" {
   type        = number
   default     = 7
 }
+
+variable "permissions_boundary_name" {
+  description = "Managed policy every run role carries as its permissions boundary. The devin-aws-engineer role may only create or edit roles bounded by it (infrastructure/terraform/cloud-worker/iam.tf)."
+  type        = string
+  default     = "devin-aws-engineer-boundary"
+}
