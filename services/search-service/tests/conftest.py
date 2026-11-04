@@ -10,6 +10,8 @@ from app.config import AppConfig, AuthConfig, MeiliSearchConfig, SQSConfig
 from app.main import create_app
 from app.services.meilisearch_client import MeiliSearchService
 
+TEST_SERVICE_TOKEN = "test-service-token"
+
 
 @pytest.fixture()
 def app_config() -> AppConfig:
@@ -26,7 +28,7 @@ def app_config() -> AppConfig:
             files_index="test-otterworks-files",
         ),
         sqs=SQSConfig(enabled=False),
-        auth=AuthConfig(service_token="", require_auth=False),
+        auth=AuthConfig(service_token=TEST_SERVICE_TOKEN, require_auth=False),
     )
 
 
@@ -71,6 +73,14 @@ def app(app_config: AppConfig, mock_meilisearch_client: MagicMock):
 def client(app):
     """Create a Flask test client."""
     return app.test_client()
+
+
+@pytest.fixture()
+def service_client(app):
+    """Create a Flask test client that presents the service token."""
+    test_client = app.test_client()
+    test_client.environ_base["HTTP_AUTHORIZATION"] = f"Bearer {TEST_SERVICE_TOKEN}"
+    return test_client
 
 
 @pytest.fixture()

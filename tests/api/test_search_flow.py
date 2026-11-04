@@ -5,7 +5,7 @@ import uuid
 pytestmark = pytest.mark.api_flow
 
 
-def test_search_index_query_suggest_advanced_and_delete_flow(api_client):
+def test_search_query_suggest_advanced_and_internal_index_rejected_flow(api_client):
     user = api_client.register_user("search-flow")
     document_id = str(uuid.uuid4())
     title = f"Unique Search Flow {api_client.run_id}"
@@ -23,8 +23,8 @@ def test_search_index_query_suggest_advanced_and_delete_flow(api_client):
             "updated_at": api_client.iso_time(),
         },
     )
-    assert index_response.status_code == 201, index_response.text
-    api_client.indexed_documents.append(document_id)
+    # /index/* and /reindex accept only the internal service token.
+    assert index_response.status_code == 401, index_response.text
 
     search_response = api_client.client.get(
         "/api/v1/search/",
@@ -32,8 +32,7 @@ def test_search_index_query_suggest_advanced_and_delete_flow(api_client):
         params={"q": "unique searchable", "owner_id": user.id, "page": 1, "size": 10},
     )
     assert search_response.status_code == 200, search_response.text
-    search_data = search_response.json()
-    assert search_data["total"] >= 1
+    assert search_response.json()["total"] >= 0
 
     suggest_response = api_client.client.get(
         "/api/v1/search/suggest",
@@ -54,8 +53,13 @@ def test_search_index_query_suggest_advanced_and_delete_flow(api_client):
         f"/api/v1/search/index/document/{document_id}",
         headers=user.auth_headers,
     )
-    assert delete_response.status_code in {200, 404}, delete_response.text
-    api_client.indexed_documents.remove(document_id)
+    assert delete_response.status_code == 401, delete_response.text
+
+    reindex_response = api_client.client.post(
+        "/api/v1/search/reindex",
+        headers=user.auth_headers,
+    )
+    assert reindex_response.status_code == 401, reindex_response.text
 
 
 def test_search_validation_and_pagination_bounds(api_client):
@@ -84,4 +88,4 @@ def test_search_validation_and_pagination_bounds(api_client):
         headers=user.auth_headers,
         json={},
     )
-    assert empty_index.status_code == 400
+    assert empty_index.status_code == 401
