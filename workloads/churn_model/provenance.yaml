@@ -1,5 +1,5 @@
 # Provenance for the churn_model workload (weekly refresh).
-# Schema and rules: workloads/attribution/README.md. Validate with `make workloads-provenance`.
+# Schema and rules: workloads/attribution/README.md. Validate with `python workloads/attribution/validate_provenance.py` (see README).
 # Usage figures Snowflake has not reported yet are `pending`; 0 means a reported zero.
 schema_version: 1
 workload: churn_model

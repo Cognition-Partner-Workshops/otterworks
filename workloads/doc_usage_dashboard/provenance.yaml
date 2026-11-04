@@ -1,5 +1,5 @@
 # Provenance for the doc_usage_dashboard workload (daily refresh).
-# Schema and rules: workloads/attribution/README.md. Validate with `make workloads-provenance`.
+# Schema and rules: workloads/attribution/README.md. Validate with `python workloads/attribution/validate_provenance.py` (see README).
 # Usage figures Snowflake has not reported yet are `pending`; 0 means a reported zero.
 schema_version: 1
 workload: doc_usage_dashboard

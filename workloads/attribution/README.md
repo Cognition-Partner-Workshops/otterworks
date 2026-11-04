@@ -12,7 +12,7 @@ Every session that touches a workload follows these rules.
 | `provenance.schema.json` | JSON Schema (draft 2020-12) for `workloads/<id>/provenance.yaml` |
 | `validate_provenance.py` | Validates every provenance file against the schema and cross-checks it with the naming rules and the workload spec |
 | `sql/monthly_attribution.sql` | The monthly report: credits by csid, workload, commit and phase, idle time per warehouse, and labeling gaps |
-| `tests/` | Unit tests (`make workloads-test`) |
+| `tests/` | Unit tests |
 
 ## Rules
 
@@ -49,8 +49,10 @@ Every session that touches a workload follows these rules.
 ## Commands
 
 ```bash
-make workloads-test        # unit tests for the helper and the validator
-make workloads-provenance  # validate every workloads/*/provenance.yaml
+# unit tests for the helper and the validator
+uv run --with pyyaml==6.0.2 --with jsonschema==4.23.0 --with pytest==8.3.5 pytest workloads/attribution/tests -q
+# validate every workloads/*/provenance.yaml
+uv run --with pyyaml==6.0.2 --with jsonschema==4.23.0 python workloads/attribution/validate_provenance.py
 
 # QUERY_TAG for a dev session (commit defaults to HEAD, run_id to now)
 python3 workloads/attribution/sf_attribution.py tag --workload churn_model \
