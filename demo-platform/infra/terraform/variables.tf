@@ -59,6 +59,20 @@ variable "shared_s3_bucket_prefix" {
   default = "otterworks-"
 }
 
+# Service accounts with a shared per-service IRSA role
+# (otterworks-<sa>-<environment>, created by infrastructure/terraform's irsa
+# module). The dashboard may edit the trust policy of exactly these roles; keep
+# in step with module.irsa.service_accounts there.
+variable "tenant_irsa_service_accounts" {
+  description = "Service accounts whose otterworks-<sa>-<environment> IRSA role trust deploy/teardown may edit."
+  type        = set(string)
+  default = [
+    "file-service", "document-service", "notification-service", "search-service",
+    "analytics-service", "audit-service", "auth-service", "admin-service",
+    "api-gateway", "collab-service", "fluent-bit",
+  ]
+}
+
 # S3 bucket holding the application Terraform state; the runner reads it via
 # `terraform output` (load_infra_outputs) to resolve RDS/S3/DynamoDB coordinates.
 variable "terraform_state_bucket" {

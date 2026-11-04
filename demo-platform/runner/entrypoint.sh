@@ -9,7 +9,7 @@
 # It is deliberately thin glue: the real work is done by the EXISTING tenant
 # tooling in ../scripts (deploy-tenant.sh / teardown-tenant.sh / inject-bug.sh)
 # and the reaper in ../reaper/reaper.sh. This entrypoint only:
-#   1. checks out the requested OtterWorks git branch (TENANT_BRANCH),
+#   1. runs only the scripts bundled in the image (never a participant branch),
 #   2. transitions status in the control table (deploying -> active | error),
 #   3. runs the requested op via the existing scripts,
 #   4. records the resolved coordinates (url/api_url/db_name/namespace/expires)
@@ -24,11 +24,10 @@
 #   IMAGE_TAG     optional pinned image tag
 #   HOST_SUFFIX   ingress host suffix              (default demo.otterworks.app)
 #   SCENARIO      bug-catalog scenario (for OP=inject)
-#   TENANT_BRANCH git branch to check out (e.g. workshop-<id>)
+#   TENANT_BRANCH tenant's git branch (e.g. workshop-<id>); selects its CI-built
+#                 `tenant-<id>` images and labels alerts. Never checked out.
 #   CONTROL_TABLE DynamoDB control table         (default otterworks-demo-control)
 #   AWS_REGION    (default us-east-1)   EKS_CLUSTER (default otterworks-dev)
-#   REPO_DIR      checked-out repo path                   (default /workspace)
-#   REPO_REMOTE   git remote name                         (default origin)
 #   ACTOR         audit actor label                       (default runner)
 #
 # Secrets (from Kubernetes Secret refs in the Job spec — env only, NEVER argv):
@@ -39,8 +38,6 @@
 # ------------------------------------------------------------------------------
 set -euo pipefail
 
-REPO_DIR="${REPO_DIR:-/workspace}"
-REPO_REMOTE="${REPO_REMOTE:-origin}"
 CONTROL_TABLE="${CONTROL_TABLE:-otterworks-demo-control}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 EKS_CLUSTER="${EKS_CLUSTER:-otterworks-dev}"
@@ -53,52 +50,35 @@ log()  { echo "[runner] $*"; }
 err()  { echo "[runner] ERROR: $*" >&2; }
 die()  { err "$*"; exit 1; }
 
-# --- git checkout of the requested branch (deploy uses the tenant's branch) ----
-# Fetching a participant branch (workshop-<id>) needs git auth. If GITHUB_TOKEN
-# (from a Secret) and REPO_HTTPS_URL are provided, we fetch over HTTPS via a
-# credential helper that reads the token from the env — never on argv or in logs.
-# Without them we fall back to the tree baked into the image (the golden app);
-# code-level variants then rely on --image-tag rather than a branch checkout.
-#
-# The image carries the repo tree but not its history (.dockerignore drops .git
-# to keep the image small), so the workspace is turned into a repository on
-# first use and the branch is fetched shallowly over the tree in place.
-configure_git_auth() {
-  git config --global --add safe.directory "${REPO_DIR}" >/dev/null 2>&1 || true
-  [ -n "${GITHUB_TOKEN:-}" ] || return 1
-  [ -n "${REPO_HTTPS_URL:-}" ] || return 1
-  local helper="/tmp/git-cred-helper.sh"
-  # The helper echoes the token from the env at call time; the value is never
-  # written to disk or passed on a command line.
-  cat > "${helper}" <<'HELPER'
-#!/bin/sh
-echo "username=x-access-token"
-echo "password=${GITHUB_TOKEN}"
-HELPER
-  chmod 700 "${helper}"
-  git config --global credential.helper "${helper}" >/dev/null 2>&1 || true
-}
+# --- the runner only ever executes the image's bundled tree --------------------
+# This Job runs with the control plane's privileges (cluster-wide RBAC, the
+# dashboard IRSA role, the shared RDS password), so nothing from a participant
+# branch may run here: workshop-<id> / demo-<id> are attendee-writable. Every
+# script and library is taken from the tree baked into the image, resolved from
+# this file's own location rather than the environment. A tenant's branch
+# reaches its tenant only as the images CI built from it (deploy-tenant.sh
+# resolves `tenant-<id>` tags via --branch); TENANT_BRANCH is a label here and
+# is never fetched, checked out, sourced or executed.
+RUNNER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$(cd "${RUNNER_DIR}/../.." && pwd)"
 
-ensure_repo() {
-  git rev-parse --git-dir >/dev/null 2>&1 \
-    || { git init -q && git remote add "${REPO_REMOTE}" "${REPO_HTTPS_URL}"; }
-  git remote set-url "${REPO_REMOTE}" "${REPO_HTTPS_URL}"
-}
-
-checkout_branch() {
-  [ -n "${TENANT_BRANCH:-}" ] || { log "no TENANT_BRANCH set; using image's bundled checkout"; return 0; }
-  if ! configure_git_auth; then
-    err "branch checkout of ${TENANT_BRANCH} skipped; continuing with the image's bundled tree (set GITHUB_TOKEN + REPO_HTTPS_URL to enable participant-branch checkouts)"
-    return 0
+# Git ref-name subset: TENANT_BRANCH ends up in an audit record and a Helm
+# label, so anything outside it is refused rather than passed on.
+validate_branch() {
+  [ -n "${TENANT_BRANCH:-}" ] || return 0
+  if [[ ! "${TENANT_BRANCH}" =~ ^[A-Za-z0-9][A-Za-z0-9._/-]{0,199}$ ]] \
+     || [[ "${TENANT_BRANCH}" == *..* ]]; then
+    die "invalid TENANT_BRANCH '${TENANT_BRANCH}'"
   fi
-  log "checking out branch ${TENANT_BRANCH} in ${REPO_DIR}"
-  ( cd "${REPO_DIR}" \
-    && ensure_repo \
-    && git fetch -q --depth 1 "${REPO_REMOTE}" "refs/heads/${TENANT_BRANCH}" \
-    && git checkout -q -f -B "${TENANT_BRANCH}" FETCH_HEAD \
-    && git clean -qfd ) \
-    && { log "checked out ${TENANT_BRANCH} at $(git -C "${REPO_DIR}" rev-parse --short HEAD)"; return 0; }
-  err "branch checkout of ${TENANT_BRANCH} failed; continuing with the image's bundled tree"
+}
+
+# Branch checkout used to be driven by these; a stale platform release may still
+# set them. Drop them so no script below can fetch with the token.
+drop_branch_checkout_env() {
+  if [ -n "${GITHUB_TOKEN:-}" ] || [ -n "${REPO_HTTPS_URL:-}" ]; then
+    log "ignoring GITHUB_TOKEN/REPO_HTTPS_URL: the runner never checks out participant branches"
+  fi
+  unset GITHUB_TOKEN REPO_HTTPS_URL
 }
 
 # Convert a compact TTL (8h/30m/2d) to an absolute expiry epoch. Pure integer
@@ -207,9 +187,10 @@ main() {
   command -v aws >/dev/null || die "aws CLI not found in image"
   command -v jq  >/dev/null || die "jq not found in image"
 
-  checkout_branch
+  drop_branch_checkout_env
+  validate_branch
 
-  # Shared naming + control-table helpers (from the checked-out repo).
+  # Shared naming + control-table helpers (from the image's bundled tree).
   # shellcheck source=/dev/null
   source "${REPO_DIR}/scripts/lib/tenant-common.sh"
   # shellcheck source=/dev/null

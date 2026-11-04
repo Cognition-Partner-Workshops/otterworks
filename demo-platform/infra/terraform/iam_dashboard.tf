@@ -80,11 +80,21 @@ data "aws_iam_policy_document" "dashboard" {
     actions   = ["s3:ListBucket"]
     resources = ["arn:aws:s3:::${var.shared_s3_bucket_prefix}*"]
   }
+  # `aws s3 rm --recursive` needs List + Delete only; the reaper never reads
+  # tenant object contents, so there is no GetObject here.
   statement {
     sid       = "SharedBucketObjectGC"
     effect    = "Allow"
-    actions   = ["s3:DeleteObject", "s3:GetObject"]
+    actions   = ["s3:DeleteObject"]
     resources = ["arn:aws:s3:::${var.shared_s3_bucket_prefix}*/*"]
+  }
+  # The bucket prefix also matches the Terraform state bucket, which this role
+  # may only read (see TerraformStateRead).
+  statement {
+    sid       = "SharedBucketGCExcludesTerraformState"
+    effect    = "Deny"
+    actions   = ["s3:DeleteObject", "s3:DeleteObjectVersion", "s3:PutObject"]
+    resources = ["arn:aws:s3:::${var.terraform_state_bucket}/*"]
   }
 
   # Read cluster info to build a kubeconfig (k8s authz is via RBAC, see helm/).
@@ -201,13 +211,19 @@ data "aws_iam_policy_document" "dashboard" {
     }
   }
 
-  # Teardown maintains IRSA trust on the shared per-service roles (add/remove the
-  # tenant namespace SA). Scoped to the otterworks-* service roles only.
+  # Deploy/teardown maintain IRSA trust on the shared per-service roles (add/
+  # remove the tenant namespace SA). Pinned to those exact roles: a wildcard on
+  # role/otterworks-* would also match the platform's own roles (EKS cluster and
+  # nodes, Karpenter, the CD role, this role), and rewriting a trust policy is
+  # enough to assume the role.
   statement {
-    sid       = "TenantIrsaTrust"
-    effect    = "Allow"
-    actions   = ["iam:GetRole", "iam:UpdateAssumeRolePolicy"]
-    resources = ["arn:aws:iam::${local.account_id}:role/otterworks-*"]
+    sid     = "TenantIrsaTrust"
+    effect  = "Allow"
+    actions = ["iam:GetRole", "iam:UpdateAssumeRolePolicy"]
+    resources = [
+      for svc in sort(tolist(var.tenant_irsa_service_accounts)) :
+      "arn:aws:iam::${local.account_id}:role/otterworks-${svc}-${var.environment}"
+    ]
   }
 
   # deploy/teardown resolve shared RDS/S3/DynamoDB coordinates by reading the
@@ -252,16 +268,27 @@ data "aws_iam_policy_document" "dashboard" {
     resources = ["*"]
   }
 
-  # Reaper GC of per-tenant Route53 records (host-based routing). Scoped to
-  # hosted-zone record changes; list actions are account-level.
+  # Reaper GC of per-tenant Route53 records (host-based routing). Lookups are
+  # account-level; record changes are limited to the demo zone (same bound as
+  # the external-dns role in dns.tf), so no other zone in the account is
+  # writable from here.
   statement {
-    sid    = "ReaperRoute53"
+    sid    = "ReaperRoute53Read"
     effect = "Allow"
     actions = [
       "route53:ListHostedZonesByName", "route53:ListHostedZones",
-      "route53:ListResourceRecordSets", "route53:ChangeResourceRecordSets",
+      "route53:ListResourceRecordSets",
     ]
     resources = ["*"]
+  }
+  dynamic "statement" {
+    for_each = data.aws_route53_zone.demo
+    content {
+      sid       = "ReaperRoute53ChangeDemoZone"
+      effect    = "Allow"
+      actions   = ["route53:ChangeResourceRecordSets"]
+      resources = ["arn:aws:route53:::hostedzone/${statement.value.zone_id}"]
+    }
   }
 }
 

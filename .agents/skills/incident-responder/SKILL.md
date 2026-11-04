@@ -246,8 +246,8 @@ kubectl -n otterworks-incident get pods,ingress
 ```
 
 If the CD runner Job fails (`kubectl -n otterworks-platform logs job/deploy-incident-<epoch>`;
-it needs `monitoring.coreos.com` RBAC on its ClusterRole and `GITHUB_TOKEN` +
-`REPO_HTTPS_URL` to check out the branch — see `docs/MULTI-TENANT-RUNBOOK.md`),
+it needs `monitoring.coreos.com` RBAC on its ClusterRole, and it deploys only the
+charts bundled in its image, never the branch's — see `docs/MULTI-TENANT-RUNBOOK.md`),
 deploy the same branch from a checkout with the same host suffix CD uses, so
 external-dns (whose domain filter is `demo.otterworks.app`) keeps the records.
 The Actions `build` job has already pushed `otterworks/document-service:tenant-incident`,
