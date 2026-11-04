@@ -7,9 +7,10 @@ spec: workloads/churn_model.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: "093a322802114276a74a54332485709f63f2d625"
+  commit: "6da12e10d1733280ea5e48000e85308e34f48fa9"
+  # Original workload PR; the grant-only deployment is recorded below.
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
-  session: https://partner-workshops.devinenterprise.com/sessions/e69f745063454d4ba5274736ab6a6356
+  session: https://partner-workshops.devinenterprise.com/sessions/42c0ec07b30a40159699239918675f2a
 endpoints:
   - csid: cs_churn_model_account_score
     service_user: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
@@ -29,7 +30,9 @@ deployed_objects:
     state: planned
   - type: schema
     name: SFNFR_20261104_DB_CHURN_MODEL.RAW
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:58:26Z"
+    deployed_commit: "6da12e10d1733280ea5e48000e85308e34f48fa9"
   - type: schema
     name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS
     state: planned
