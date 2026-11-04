@@ -164,12 +164,28 @@ def test_task_carries_its_own_runtime_tag() -> None:
     )
     assert sql.startswith("CREATE OR REPLACE TASK DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD")
     assert "WAREHOUSE = WH_DOC_USAGE_DASHBOARD" in sql
+    assert f"  WITH TAG ({attr.TAG_FQN} = 'cs_doc_usage_dashboard_account_usage')\n" in sql
+    assert sql.index("WITH TAG") < sql.index("WAREHOUSE =")
     literal = sql.split("QUERY_TAG = ", 1)[1].split("\n", 1)[0]
     assert literal.startswith("'") and literal.endswith("'")
     tag = json.loads(literal[1:-1])
     assert tag["phase"] == "runtime" and "session_url" not in tag
     alter = attr.alter_task_query_tag_sql(EP, commit=COMMIT, run_id=RUNTIME_RUN_ID)
     assert alter.startswith("ALTER TASK DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD SET QUERY_TAG = '")
+
+
+def test_task_tag_lists_every_workload_csid() -> None:
+    sql = attr.create_task_sql(
+        EP,
+        schedule="USING CRON 0 1 * * * UTC",
+        body="SELECT 1",
+        commit=COMMIT,
+        run_id=RUNTIME_RUN_ID,
+        csids=["cs_doc_usage_dashboard_z", EP.csid],
+    )
+    assert "= 'cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_z')" in sql
+    with pytest.raises(attr.AttributionError, match="256"):
+        attr.devin_csid_value([f"cs_w_{i:03d}_{'x' * 20}" for i in range(12)])
 
 
 def test_streamlit_sets_tag_on_its_session() -> None:

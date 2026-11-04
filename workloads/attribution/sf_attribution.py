@@ -26,6 +26,7 @@ AUTO_SUSPEND_SECONDS = 60
 MONTHLY_CREDIT_QUOTA = 10
 ANALYTICS_SCHEMA = "ANALYTICS"
 QUERY_TAG_MAX_CHARS = 2000
+TAG_VALUE_MAX_CHARS = 256
 PENDING = "pending"
 
 IDENT_RE = re.compile(r"^[a-z][a-z0-9]*(_[a-z0-9]+)*$")
@@ -91,7 +92,10 @@ def devin_csid_value(csids: list[str] | tuple[str, ...]) -> str:
     for c in csids:
         if not CSID_RE.match(c):
             raise AttributionError(f"not a client-side ID: {c!r}")
-    return ",".join(sorted(set(csids)))
+    value = ",".join(sorted(set(csids)))
+    if len(value) > TAG_VALUE_MAX_CHARS:
+        raise AttributionError(f"DEVIN_CSID value is {len(value)} characters, Snowflake allows {TAG_VALUE_MAX_CHARS}")
+    return value
 
 
 @dataclass(frozen=True)
@@ -244,11 +248,19 @@ def create_task_sql(
     run_id: str,
     phase: str = "runtime",
     session_url: str | None = None,
+    csids: list[str] | tuple[str, ...] | None = None,
 ) -> str:
-    """CREATE TASK with the tag on the task itself: a task run does not inherit the creating session's tag."""
+    """CREATE TASK with QUERY_TAG and DEVIN_CSID on the task itself.
+
+    A task run does not inherit the creating session's tag, and CREATE OR REPLACE drops the
+    object tags of the task it replaces, so both are part of the statement. csids defaults to
+    the endpoint's own; pass every csid of the workload when it has more than one.
+    """
     tag = query_tag_json(endpoint, phase=phase, commit=commit, run_id=run_id, session_url=session_url)
+    devin_csid = devin_csid_value(list(csids) if csids else [endpoint.csid])
     return (
         f"CREATE OR REPLACE TASK {task_name(endpoint.workload)}\n"
+        f"  WITH TAG ({TAG_FQN} = {sql_string(devin_csid)})\n"
         f"  WAREHOUSE = {endpoint.warehouse}\n"
         f"  SCHEDULE = {sql_string(schedule)}\n"
         f"  QUERY_TAG = {sql_string(tag)}\n"
