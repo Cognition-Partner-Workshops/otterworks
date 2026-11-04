@@ -1,0 +1,15 @@
+otterworks:
+  target: runtime
+  outputs:
+    runtime:
+      type: snowflake
+      role: __ROLE__
+      database: __DATABASE__
+      warehouse: __WAREHOUSE__
+      schema: ANALYTICS
+      threads: 2
+      query_tag: __QUERY_TAG__
+      session_parameters:
+        QUERY_TAG: __QUERY_TAG__
+        TIMEZONE: UTC
+        WEEK_START: 1

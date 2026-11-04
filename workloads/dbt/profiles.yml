@@ -1,0 +1,18 @@
+otterworks:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE') }}"
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_FILE') }}"
+      authenticator: snowflake_jwt
+      database: "{{ env_var('DBT_DATABASE') }}"
+      warehouse: "{{ env_var('DBT_WAREHOUSE') }}"
+      schema: ANALYTICS
+      threads: 2
+      query_tag: "{{ env_var('DBT_QUERY_TAG') }}"
+      session_parameters:
+        TIMEZONE: UTC
+        WEEK_START: 1

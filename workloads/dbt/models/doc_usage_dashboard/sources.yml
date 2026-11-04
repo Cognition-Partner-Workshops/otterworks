@@ -1,0 +1,8 @@
+version: 2
+sources:
+  - name: raw_doc_usage_dashboard
+    schema: RAW
+    tables:
+      - name: ADMIN_STORAGE_QUOTAS
+      - name: ADMIN_ADMIN_USERS
+      - name: DOCUMENT_DOCUMENTS
