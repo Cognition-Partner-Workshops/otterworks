@@ -15,6 +15,7 @@ from app.api.index import index_bp
 from app.api.search import search_bp
 from app.config import AppConfig
 from app.middleware.auth import require_auth
+from app.services.analytics_events import AnalyticsEmitter
 from app.services.meilisearch_client import MeiliSearchService
 from app.services.sqs_consumer import SQSConsumer
 
@@ -60,6 +61,7 @@ def create_app(config: AppConfig | None = None) -> Flask:
 
     # Store config on the app
     app.config["APP_CONFIG"] = config
+    app.config["ANALYTICS_EMITTER"] = AnalyticsEmitter(config.analytics)
 
     # Initialize MeiliSearch service
     search_service = MeiliSearchService(config.meilisearch)

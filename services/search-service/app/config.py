@@ -46,6 +46,15 @@ class AuthConfig:
 
 
 @dataclass(frozen=True)
+class AnalyticsConfig:
+    """Analytics service connection configuration."""
+
+    service_url: str = field(default_factory=lambda: os.getenv("ANALYTICS_SERVICE_URL", ""))
+    timeout_seconds: float = 2.0
+    max_pending: int = field(default_factory=lambda: int(os.getenv("ANALYTICS_MAX_PENDING", "100")))
+
+
+@dataclass(frozen=True)
 class AppConfig:
     """Top-level application configuration."""
 
@@ -59,3 +68,4 @@ class AppConfig:
     meilisearch: MeiliSearchConfig = field(default_factory=MeiliSearchConfig)
     sqs: SQSConfig = field(default_factory=SQSConfig)
     auth: AuthConfig = field(default_factory=AuthConfig)
+    analytics: AnalyticsConfig = field(default_factory=AnalyticsConfig)

@@ -1,0 +1,155 @@
+name: churn_model
+description: Weekly churn risk score per account from login recency, document activity trend and account status.
+schedule: weekly, Monday after 00:00 UTC, scoring the ISO week that just ended
+output_table: ANALYTICS.CHURN_MODEL
+grain: [week_start_date, account_id]
+model_version: rules_v1
+baseline: >-
+  rules_v1 is the fixed, hand-checkable baseline. A trained model replaces it
+  only if it beats rules_v1 on the same weeks and accounts, and it must use a
+  new model_version value. rules_v1 stays unchanged so the comparison holds.
+
+inputs:
+  - table: users
+    service: auth-service
+    landing: RAW.AUTH_USERS
+    columns:
+      id: uuid, the account
+      email: string, unique
+      created_at: timestamptz
+      last_login_at: timestamptz, nullable, set by AuthService on each login
+  - table: admin_users
+    service: admin-service
+    landing: RAW.ADMIN_ADMIN_USERS
+    columns:
+      email: string, unique, maps to users.email (index.yaml admin_service_mapping)
+      status: string, one of active, suspended, deleted (AdminUser::STATUSES)
+  - table: document_versions
+    service: document-service
+    landing: RAW.DOCUMENT_DOCUMENT_VERSIONS
+    columns:
+      created_by: uuid, the account
+      created_at: timestamptz
+    notes: >-
+      DocumentService writes one row on create (version 1), on each update and
+      on each restore, so one row counts as one document save.
+
+output_columns:
+  - {name: week_start_date, type: DATE, nullable: false, rule: Monday of the scored week}
+  - {name: account_id, type: VARCHAR(36), nullable: false, rule: users.id}
+  - {name: days_since_last_login, type: "NUMBER(6,0)", nullable: false, rule: "scored week's Sunday minus the UTC date of last_login_at, or of created_at when last_login_at is null"}
+  - {name: activity_this_week, type: "NUMBER(10,0)", nullable: false, rule: document_versions rows by the account in the scored week}
+  - {name: activity_prior_4wk_avg, type: "NUMBER(10,2)", nullable: false, rule: rows in the 4 weeks before the scored week divided by 4}
+  - {name: activity_drop_pct, type: "NUMBER(7,2)", nullable: true, rule: "ROUND((prior_avg - this_week) / prior_avg * 100, 2); null when prior_avg = 0; negative means growth"}
+  - {name: login_points, type: "NUMBER(3,0)", nullable: false, rule: "0, 10, 25 or 40"}
+  - {name: activity_points, type: "NUMBER(3,0)", nullable: false, rule: "0, 10, 25, 30 or 40"}
+  - {name: status_points, type: "NUMBER(3,0)", nullable: false, rule: "0 or 20"}
+  - {name: churn_score, type: "NUMBER(3,0)", nullable: false, rule: "login_points + activity_points + status_points, range 0-100"}
+  - {name: risk_band, type: VARCHAR(8), nullable: false, rule: "high, medium or low"}
+  - {name: model_version, type: VARCHAR(16), nullable: false, rule: rules_v1}
+
+business_rule: >-
+  Score each account once a week for the Monday-to-Sunday UTC week that just
+  ended. Every auth-service user is a candidate. Find the account's
+  admin_users row by email, ignoring case. Skip accounts whose matching
+  admin_users status is deleted, since they have already left, and accounts created on or after the Monday four weeks before
+  the scored week, since they lack a full baseline. The score has three parts.
+  Login recency, counted in days from the date of the last login (or of
+  sign-up if the account never logged in) to the scored Sunday, gives 40
+  points at 30 days or more, 25 at 14 to 29, 10 at 7 to 13 and 0 below 7.
+  Activity is the number of document saves (document_versions rows) the
+  account made in the week. The baseline is the average per week over the four
+  weeks before it. With no saves in either the week or the baseline the
+  account is dormant and gets 30 points. With no baseline but saves this week
+  it gets 0. Otherwise the drop is (baseline minus this week) divided by
+  baseline, giving 40 points at 75% or more, 25 at 50% or more, 10 at 25% or
+  more and 0 below 25%, including growth. Status gives 20 points when the matching admin_users
+  status is suspended, and 0 when it is active or when no admin_users row
+  matches. Add the three parts. A score of
+  60 or more is high risk, 30 to 59 is medium and below 30 is low.
+
+parameters:
+  baseline_weeks: 4
+  login_points: {">=30": 40, "14-29": 25, "7-13": 10, "<7": 0}
+  activity_points: {dormant: 30, ">=0.75": 40, ">=0.50": 25, ">=0.25": 10, "<0.25": 0}
+  status_points: {suspended: 20, active: 0}
+  bands: {high: ">=60", medium: "30-59", low: "<30"}
+
+examples:
+  shared_inputs:
+    week_start_date: 2026-10-26 (scored week 2026-10-26 to 2026-11-01; baseline weeks 2026-09-28 to 2026-10-25)
+    note: every account below was created before 2026-09-28
+  rows:
+    - inputs:
+        users: {id: 00000000-0000-4000-8000-000000000101, email: ada@example.com, last_login_at: "2026-09-25T18:00:00Z"}
+        admin_users: {email: Ada@Example.com, status: active}
+        document_versions: 20 rows in the baseline weeks, 1 row in the scored week
+      expected:
+        week_start_date: 2026-10-26
+        account_id: 00000000-0000-4000-8000-000000000101
+        days_since_last_login: 37
+        activity_this_week: 1
+        activity_prior_4wk_avg: 5.00
+        activity_drop_pct: 80.00
+        login_points: 40
+        activity_points: 40
+        status_points: 0
+        churn_score: 80
+        risk_band: high
+        model_version: rules_v1
+      check: 2026-09-25 to 2026-11-01 is 37 days, giving 40. (5 - 1) / 5 is an 80% drop, giving 40. Total 80.
+    - inputs:
+        users: {id: 00000000-0000-4000-8000-000000000102, email: ben@example.com, last_login_at: "2026-10-17T09:30:00Z"}
+        admin_users: {email: Ben@Example.com, status: active}
+        document_versions: 8 rows in the baseline weeks, 1 row in the scored week
+      expected:
+        week_start_date: 2026-10-26
+        account_id: 00000000-0000-4000-8000-000000000102
+        days_since_last_login: 15
+        activity_this_week: 1
+        activity_prior_4wk_avg: 2.00
+        activity_drop_pct: 50.00
+        login_points: 25
+        activity_points: 25
+        status_points: 0
+        churn_score: 50
+        risk_band: medium
+        model_version: rules_v1
+      check: 15 days gives 25. (2 - 1) / 2 is exactly a 50% drop, giving 25. Total 50.
+    - inputs:
+        users: {id: 00000000-0000-4000-8000-000000000103, email: cy@example.com, last_login_at: "2026-10-31T22:15:00Z"}
+        admin_users: {email: Cy@Example.com, status: suspended}
+        document_versions: 8 rows in the baseline weeks, 3 rows in the scored week
+      expected:
+        week_start_date: 2026-10-26
+        account_id: 00000000-0000-4000-8000-000000000103
+        days_since_last_login: 1
+        activity_this_week: 3
+        activity_prior_4wk_avg: 2.00
+        activity_drop_pct: -50.00
+        login_points: 0
+        activity_points: 0
+        status_points: 20
+        churn_score: 20
+        risk_band: low
+        model_version: rules_v1
+      check: 1 day gives 0. Activity rose 50% (drop -50%), giving 0. Suspended gives 20. Total 20.
+
+endpoint:
+  client_side_id: cs_churn_model_account_score
+  method: GET
+  path: /api/v1/insights/churn/accounts/{account_id}
+  query_params:
+    week_start_date: optional DATE (a Monday), defaults to the latest scored week
+  response_200:
+    fields: [week_start_date, account_id, churn_score, risk_band, login_points, activity_points, status_points, days_since_last_login, activity_this_week, activity_prior_4wk_avg, activity_drop_pct, model_version]
+    source: one row of ANALYTICS.CHURN_MODEL
+  response_400: week_start_date is not a Monday
+  response_404: account not scored for that week (deleted, too new, or unknown)
+  auth: admin role in user_roles
+
+open_questions:
+  - rules_v1 is a fixed points rule. Product has not validated the weights or bands against accounts that actually left. A trained model can replace it only if it keeps these output columns.
+  - billing_svc.subscriptions cancellations would make a better churn label, but nothing links tenants to accounts yet.
+  - The admin_users email link is unverified on production data. In the generated seed no emails match, so every account there gets status_points 0 and none is skipped as deleted.
+  - The synthetic-testdata skill lists admin_users status deactivated, but the AdminUser model uses deleted. This spec follows the model.
