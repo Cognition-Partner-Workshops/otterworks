@@ -7,9 +7,9 @@ spec: workloads/doc_search_api.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: "63afed16fa75e4cea44499e1567c3562543afaa7"
-  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2432
-  session: https://partner-workshops.devinenterprise.com/sessions/7a1d6a2153e4433c8ed8fe2755cc67a0
+  commit: "093a322802114276a74a54332485709f63f2d625"
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
+  session: https://partner-workshops.devinenterprise.com/sessions/e69f745063454d4ba5274736ab6a6356
 endpoints:
   - csid: cs_doc_search_api_top_items
     service_user: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
