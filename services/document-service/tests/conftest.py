@@ -5,6 +5,7 @@ from collections.abc import AsyncGenerator
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import Uuid
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.api import documents as documents_api
@@ -20,6 +21,20 @@ engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
 )
+
+
+@pytest.fixture(autouse=True)
+def store_uuids_hyphenated(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Store uuids the way Postgres renders them as text, so the list filter's raw SQL
+    owner_id comparison matches on SQLite (mirrors the equivalence emitter's fixture)."""
+
+    def bind_processor(self, dialect):  # noqa: ANN001, ANN202 - SQLAlchemy hook
+        def process(value):  # noqa: ANN001, ANN202
+            return None if value is None else str(value)
+
+        return process
+
+    monkeypatch.setattr(Uuid, "bind_processor", bind_processor)
 
 
 @pytest.fixture(autouse=True)

@@ -15,6 +15,10 @@ def _make_jwt(user_id: str) -> str:
     return jwt.encode({"user_id": user_id}, TEST_JWT_SECRET, algorithm="HS256")
 
 
+def _auth(user_id: uuid.UUID) -> dict[str, str]:
+    return {"Authorization": f"Bearer {_make_jwt(str(user_id))}"}
+
+
 @pytest.mark.asyncio
 async def test_create_document(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.post(
@@ -60,7 +64,9 @@ async def test_list_documents(client: AsyncClient, owner_id: uuid.UUID):
             "/api/v1/documents/",
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
-    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    resp = await client.get(
+        "/api/v1/documents/", params={"owner_id": str(owner_id)}, headers=_auth(owner_id)
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 3
@@ -75,7 +81,9 @@ async def test_list_documents_pagination(client: AsyncClient, owner_id: uuid.UUI
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
     resp = await client.get(
-        "/api/v1/documents/", params={"owner_id": str(owner_id), "page": 1, "size": 2}
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "page": 1, "size": 2},
+        headers=_auth(owner_id),
     )
     data = resp.json()
     assert data["total"] == 5
@@ -192,7 +200,9 @@ async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
         json={"title": "Rust Guide", "content": "Learn Rust", "owner_id": str(owner_id)},
     )
 
-    resp = await client.get("/api/v1/documents/search", params={"q": "Python"})
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "Python"}, headers=_auth(owner_id)
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 1
@@ -278,4 +288,109 @@ async def test_create_document_no_auth_returns_401(client: AsyncClient):
         "/api/v1/documents/",
         json={"title": "No Auth Doc"},
     )
+    assert resp.status_code == 401
+
+
+async def _seed_owned(client: AsyncClient, owner: uuid.UUID, title: str) -> dict:
+    resp = await client.post(
+        "/api/v1/documents/",
+        json={"title": title, "content": f"{title} body"},
+        headers=_auth(owner),
+    )
+    assert resp.status_code == 201
+    return resp.json()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("path", ["/api/v1/documents/", "/api/v1/documents"])
+@pytest.mark.parametrize("params", [{}, {"title": "secret"}])
+async def test_list_rejects_other_users_owner_id(
+    client: AsyncClient, path: str, params: dict
+):
+    alice, mallory = uuid.uuid4(), uuid.uuid4()
+    await _seed_owned(client, alice, "Alice secret plan")
+
+    resp = await client.get(
+        path, params={**params, "owner_id": str(alice)}, headers=_auth(mallory)
+    )
+
+    assert resp.status_code == 403
+    assert "Alice secret plan" not in resp.text
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("path", ["/api/v1/documents/", "/api/v1/documents"])
+@pytest.mark.parametrize("params", [{}, {"title": "plan"}])
+async def test_list_without_owner_id_is_scoped_to_caller(
+    client: AsyncClient, path: str, params: dict
+):
+    alice, mallory = uuid.uuid4(), uuid.uuid4()
+    await _seed_owned(client, alice, "Alice plan")
+    await _seed_owned(client, mallory, "Mallory plan")
+
+    resp = await client.get(path, params=params, headers=_auth(mallory))
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 1
+    assert [item["owner_id"] for item in body["items"]] == [str(mallory)]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("path", ["/api/v1/documents/", "/api/v1/documents"])
+@pytest.mark.parametrize(
+    "headers",
+    [
+        {},
+        {"Authorization": "Bearer " + jwt.encode(
+            {"user_id": str(uuid.uuid4())}, "some-other-secret-padded-to-32b", algorithm="HS256"
+        )},
+    ],
+    ids=["no-token", "foreign-secret"],
+)
+async def test_list_requires_verified_token(
+    client: AsyncClient, path: str, headers: dict
+):
+    alice = uuid.uuid4()
+    await _seed_owned(client, alice, "Alice plan")
+
+    for params in ({}, {"owner_id": str(alice)}):
+        resp = await client.get(path, params=params, headers=headers)
+        assert resp.status_code == 401
+        assert "Alice plan" not in resp.text
+
+
+@pytest.mark.asyncio
+async def test_search_only_returns_callers_documents(client: AsyncClient):
+    alice, mallory = uuid.uuid4(), uuid.uuid4()
+    await _seed_owned(client, alice, "Shared keyword Alice")
+    await _seed_owned(client, mallory, "Shared keyword Mallory")
+
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "Shared keyword"}, headers=_auth(mallory)
+    )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 1
+    assert [item["owner_id"] for item in body["items"]] == [str(mallory)]
+
+
+@pytest.mark.asyncio
+async def test_search_cannot_find_other_users_document(client: AsyncClient):
+    alice, mallory = uuid.uuid4(), uuid.uuid4()
+    await _seed_owned(client, alice, "Alice marker zq81")
+
+    resp = await client.get(
+        "/api/v1/documents/search", params={"q": "zq81"}, headers=_auth(mallory)
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+    assert resp.json()["items"] == []
+
+
+@pytest.mark.asyncio
+async def test_search_requires_token(client: AsyncClient):
+    resp = await client.get("/api/v1/documents/search", params={"q": "anything"})
     assert resp.status_code == 401
