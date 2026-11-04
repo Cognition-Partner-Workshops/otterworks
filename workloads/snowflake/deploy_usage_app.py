@@ -79,6 +79,8 @@ def main():
         create = (
             f"CREATE OR REPLACE STREAMLIT {app} FROM '@{stage}/{args.commit}' "
             f"MAIN_FILE = 'streamlit_app.py' QUERY_WAREHOUSE = {endpoint.warehouse} "
+            # Warehouse runtime keeps the app's compute on the workload warehouse, not a shared compute pool.
+            "RUNTIME_NAME = 'SYSTEM$WAREHOUSE_RUNTIME' "
             "TITLE = 'Storage quota by account'"
         )
         print(create, flush=True)
