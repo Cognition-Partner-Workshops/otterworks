@@ -20,7 +20,11 @@ from typing import Any
 RUN_TOKEN = "SFNFR_20261104"
 APPLICATION = "Devin_Demo"
 PHASES = ("dev", "runtime")
-TAG_FQN = "DEVIN_GOVERNANCE.TAGS.DEVIN_CSID"
+GOVERNANCE_DATABASE = f"{RUN_TOKEN}_GOVERNANCE"
+TAG_FQN = f"{GOVERNANCE_DATABASE}.TAGS.DEVIN_CSID"
+EMAIL_MASKING_POLICY = f"{GOVERNANCE_DATABASE}.POLICIES.CUSTOMER_EMAIL_MASK"
+MIGRATIONS_WAREHOUSE = f"{RUN_TOKEN}_WH_MIGRATIONS"
+ACCESS_ROLES = ("reader", "analyst")
 WAREHOUSE_SIZE = "XSMALL"
 AUTO_SUSPEND_SECONDS = 60
 MONTHLY_CREDIT_QUOTA = 10
@@ -59,19 +63,25 @@ def csid(workload: str, endpoint: str) -> str:
 def service_user(client_side_id: str) -> str:
     if not CSID_RE.match(client_side_id):
         raise AttributionError(f"not a client-side ID: {client_side_id!r}")
-    return f"SVC_{client_side_id.upper()}"
+    return f"{RUN_TOKEN}_SVC_{client_side_id.upper()}"
 
 
 def warehouse_name(workload: str) -> str:
-    return f"WH_{_identifier('workload', workload).upper()}"
+    return f"{RUN_TOKEN}_WH_{_identifier('workload', workload).upper()}"
 
 
 def resource_monitor_name(workload: str) -> str:
-    return f"RM_{_identifier('workload', workload).upper()}"
+    return f"{RUN_TOKEN}_RM_{_identifier('workload', workload).upper()}"
+
+
+def role_name(access: str) -> str:
+    if access not in ACCESS_ROLES:
+        raise AttributionError(f"access role must be one of {ACCESS_ROLES}, got {access!r}")
+    return f"{RUN_TOKEN}_{access.upper()}"
 
 
 def database_name(workload: str) -> str:
-    return f"DB_{_identifier('workload', workload).upper()}"
+    return f"{RUN_TOKEN}_DB_{_identifier('workload', workload).upper()}"
 
 
 def output_table_name(workload: str) -> str:
@@ -346,6 +356,24 @@ def current_commit(repo: str = ".") -> str:
     ).stdout.strip()
 
 
+def names(workloads: list[str] | tuple[str, ...]) -> dict[str, str]:
+    """Every object name the foundation migrations use, as schemachange Jinja vars."""
+    out = {
+        "run_token": RUN_TOKEN,
+        "governance_db": GOVERNANCE_DATABASE,
+        "tag_fqn": TAG_FQN,
+        "email_masking_policy": EMAIL_MASKING_POLICY,
+        "migrations_wh": MIGRATIONS_WAREHOUSE,
+        "migrations_rm": f"{RUN_TOKEN}_RM_MIGRATIONS",
+    }
+    out.update({f"{access}_role": role_name(access) for access in ACCESS_ROLES})
+    for workload in workloads:
+        out[f"db_{workload}"] = database_name(workload)
+        out[f"wh_{workload}"] = warehouse_name(workload)
+        out[f"rm_{workload}"] = resource_monitor_name(workload)
+    return out
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -360,6 +388,8 @@ def main(argv: list[str] | None = None) -> int:
     ddl.add_argument("--workload", required=True)
     ddl.add_argument("--csid", action="append", required=True)
     ddl.add_argument("--streamlit", action="store_true")
+    names_cmd = sub.add_parser("names", help="print the foundation object names as JSON (schemachange --vars)")
+    names_cmd.add_argument("--workload", action="append", required=True)
     args = parser.parse_args(argv)
     try:
         if args.cmd == "tag":
@@ -373,6 +403,8 @@ def main(argv: list[str] | None = None) -> int:
                     session_url=args.session_url,
                 )
             )
+        elif args.cmd == "names":
+            print(json.dumps(names(args.workload), separators=(",", ":")))
         else:
             for statement in warehouse_ddl(args.workload) + object_tag_ddl(
                 args.workload, args.csid, streamlit=args.streamlit

@@ -12,42 +12,42 @@ source:
   session: https://partner-workshops.devinenterprise.com/sessions/e69f745063454d4ba5274736ab6a6356
 endpoints:
   - csid: cs_churn_model_account_score
-    service_user: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+    service_user: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
     application: Devin_Demo
 warehouse:
-  name: WH_CHURN_MODEL
+  name: SFNFR_20261104_WH_CHURN_MODEL
   size: XSMALL
   auto_suspend_seconds: 60
   resource_monitor:
-    name: RM_CHURN_MODEL
+    name: SFNFR_20261104_RM_CHURN_MODEL
     frequency: MONTHLY
     credit_quota: 10
 deployed_objects:
   - type: database
-    name: DB_CHURN_MODEL
+    name: SFNFR_20261104_DB_CHURN_MODEL
     devin_csid: cs_churn_model_account_score
     state: planned
   - type: schema
-    name: DB_CHURN_MODEL.RAW
+    name: SFNFR_20261104_DB_CHURN_MODEL.RAW
     state: planned
   - type: schema
-    name: DB_CHURN_MODEL.ANALYTICS
+    name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS
     state: planned
   - type: warehouse
-    name: WH_CHURN_MODEL
+    name: SFNFR_20261104_WH_CHURN_MODEL
     devin_csid: cs_churn_model_account_score
     state: planned
   - type: resource_monitor
-    name: RM_CHURN_MODEL
+    name: SFNFR_20261104_RM_CHURN_MODEL
     state: planned
   - type: user
-    name: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+    name: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
     state: planned
   - type: table
-    name: DB_CHURN_MODEL.ANALYTICS.CHURN_MODEL
+    name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_MODEL
     state: planned
   - type: task
-    name: DB_CHURN_MODEL.ANALYTICS.REFRESH_CHURN_MODEL
+    name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.REFRESH_CHURN_MODEL
     devin_csid: cs_churn_model_account_score
     state: planned
 usage:

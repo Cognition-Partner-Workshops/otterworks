@@ -20,12 +20,12 @@ EP = attr.Endpoint("doc_usage_dashboard", "account_usage")
 
 def test_names_follow_the_rules() -> None:
     assert EP.csid == "cs_doc_usage_dashboard_account_usage"
-    assert EP.service_user == "SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE"
-    assert EP.warehouse == "WH_DOC_USAGE_DASHBOARD"
-    assert EP.database == "DB_DOC_USAGE_DASHBOARD"
-    assert attr.resource_monitor_name("churn_model") == "RM_CHURN_MODEL"
-    assert attr.task_name("churn_model") == "DB_CHURN_MODEL.ANALYTICS.REFRESH_CHURN_MODEL"
-    assert attr.streamlit_name("doc_usage_dashboard") == "DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP"
+    assert EP.service_user == "SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE"
+    assert EP.warehouse == "SFNFR_20261104_WH_DOC_USAGE_DASHBOARD"
+    assert EP.database == "SFNFR_20261104_DB_DOC_USAGE_DASHBOARD"
+    assert attr.resource_monitor_name("churn_model") == "SFNFR_20261104_RM_CHURN_MODEL"
+    assert attr.task_name("churn_model") == "SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.REFRESH_CHURN_MODEL"
+    assert attr.streamlit_name("doc_usage_dashboard") == "SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP"
 
 
 @pytest.mark.parametrize("workload", ["Doc", "doc-usage", "1doc", "doc__usage", "", "doc_"])
@@ -120,11 +120,11 @@ def test_connection_params_label_every_connection() -> None:
         run_id=RUN_ID,
         session_url=SESSION,
     )
-    assert params["user"] == "SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE"
+    assert params["user"] == "SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE"
     assert params["authenticator"] == "SNOWFLAKE_JWT"
     assert params["application"] == "Devin_Demo"
-    assert params["warehouse"] == "WH_DOC_USAGE_DASHBOARD"
-    assert params["database"] == "DB_DOC_USAGE_DASHBOARD"
+    assert params["warehouse"] == "SFNFR_20261104_WH_DOC_USAGE_DASHBOARD"
+    assert params["database"] == "SFNFR_20261104_DB_DOC_USAGE_DASHBOARD"
     assert "password" not in params and "role" not in params
     tag = json.loads(params["session_parameters"]["QUERY_TAG"])
     assert tag["phase"] == "dev" and tag["session_url"] == SESSION
@@ -162,8 +162,8 @@ def test_task_carries_its_own_runtime_tag() -> None:
     sql = attr.create_task_sql(
         EP, schedule="USING CRON 0 1 * * * UTC", body="SELECT 1", commit=COMMIT, run_id=RUNTIME_RUN_ID
     )
-    assert sql.startswith("CREATE OR REPLACE TASK DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD")
-    assert "WAREHOUSE = WH_DOC_USAGE_DASHBOARD" in sql
+    assert sql.startswith("CREATE OR REPLACE TASK SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD")
+    assert "WAREHOUSE = SFNFR_20261104_WH_DOC_USAGE_DASHBOARD" in sql
     assert f"  WITH TAG ({attr.TAG_FQN} = 'cs_doc_usage_dashboard_account_usage')\n" in sql
     assert sql.index("WITH TAG") < sql.index("WAREHOUSE =")
     literal = sql.split("QUERY_TAG = ", 1)[1].split("\n", 1)[0]
@@ -171,7 +171,7 @@ def test_task_carries_its_own_runtime_tag() -> None:
     tag = json.loads(literal[1:-1])
     assert tag["phase"] == "runtime" and "session_url" not in tag
     alter = attr.alter_task_query_tag_sql(EP, commit=COMMIT, run_id=RUNTIME_RUN_ID)
-    assert alter.startswith("ALTER TASK DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD SET QUERY_TAG = '")
+    assert alter.startswith("ALTER TASK SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD SET QUERY_TAG = '")
 
 
 def test_deploy_task_resumes_after_replacing() -> None:
@@ -179,7 +179,7 @@ def test_deploy_task_resumes_after_replacing() -> None:
     create, resume = attr.deploy_task_sql(EP, **kwargs)
     assert create == attr.create_task_sql(EP, **kwargs)
     assert "WITH TAG" in create and "QUERY_TAG = " in create
-    assert resume == "ALTER TASK DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD RESUME"
+    assert resume == "ALTER TASK SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD RESUME"
     assert attr.deploy_task_sql(EP, resume=False, **kwargs) == [create]
 
 
@@ -208,15 +208,15 @@ def test_sql_string_escapes_quotes_and_backslashes() -> None:
 
 def test_warehouse_ddl_is_xsmall_60s_with_own_monitor() -> None:
     monitor, alter_monitor, warehouse, alter_warehouse = attr.warehouse_ddl("churn_model")
-    assert monitor.startswith("CREATE RESOURCE MONITOR IF NOT EXISTS RM_CHURN_MODEL WITH CREDIT_QUOTA = 10")
+    assert monitor.startswith("CREATE RESOURCE MONITOR IF NOT EXISTS SFNFR_20261104_RM_CHURN_MODEL WITH CREDIT_QUOTA = 10")
     assert "FREQUENCY = MONTHLY" in monitor and "ON 100 PERCENT DO SUSPEND" in monitor
-    assert "CREATE WAREHOUSE IF NOT EXISTS WH_CHURN_MODEL" in warehouse
+    assert "CREATE WAREHOUSE IF NOT EXISTS SFNFR_20261104_WH_CHURN_MODEL" in warehouse
     assert "WAREHOUSE_SIZE = 'XSMALL'" in warehouse and "AUTO_SUSPEND = 60" in warehouse
-    assert "RESOURCE_MONITOR = RM_CHURN_MODEL" in warehouse
-    assert alter_monitor == f"ALTER RESOURCE MONITOR RM_CHURN_MODEL SET CREDIT_QUOTA = 10 {attr.MONITOR_TRIGGERS}"
+    assert "RESOURCE_MONITOR = SFNFR_20261104_RM_CHURN_MODEL" in warehouse
+    assert alter_monitor == f"ALTER RESOURCE MONITOR SFNFR_20261104_RM_CHURN_MODEL SET CREDIT_QUOTA = 10 {attr.MONITOR_TRIGGERS}"
     assert alter_warehouse == (
-        "ALTER WAREHOUSE WH_CHURN_MODEL SET WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE "
-        "RESOURCE_MONITOR = RM_CHURN_MODEL"
+        "ALTER WAREHOUSE SFNFR_20261104_WH_CHURN_MODEL SET WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE "
+        "RESOURCE_MONITOR = SFNFR_20261104_RM_CHURN_MODEL"
     )
 
 
@@ -231,9 +231,9 @@ def test_warehouse_ddl_rerun_applies_a_revised_quota() -> None:
 def test_service_user_ddl_strips_pem_armor() -> None:
     pem = "-----BEGIN PUBLIC KEY-----\nMIIBIjAN\nBgkqhkiG\n-----END PUBLIC KEY-----\n"
     sql = attr.service_user_ddl(EP, rsa_public_key=pem)
-    assert "CREATE USER IF NOT EXISTS SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE TYPE = SERVICE" in sql
+    assert "CREATE USER IF NOT EXISTS SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE TYPE = SERVICE" in sql
     assert "RSA_PUBLIC_KEY = 'MIIBIjANBgkqhkiG'" in sql
-    assert "DEFAULT_WAREHOUSE = WH_DOC_USAGE_DASHBOARD" in sql
+    assert "DEFAULT_WAREHOUSE = SFNFR_20261104_WH_DOC_USAGE_DASHBOARD" in sql
     with pytest.raises(attr.AttributionError):
         attr.service_user_ddl(EP, rsa_public_key="-----BEGIN PUBLIC KEY-----\n-----END PUBLIC KEY-----")
 
@@ -245,7 +245,7 @@ def test_service_user_ddl_sets_a_plain_role_only() -> None:
 
 @pytest.mark.parametrize(
     "role",
-    ["R_X COMMENT = 'x'", "R_X; DROP DATABASE DB_CHURN_MODEL", '"R X"', "1ROLE", "R-X", "R_X\n"],
+    ["R_X COMMENT = 'x'", "R_X; DROP DATABASE SFNFR_20261104_DB_CHURN_MODEL", '"R X"', "1ROLE", "R-X", "R_X\n"],
 )
 def test_service_user_ddl_refuses_role_that_is_not_an_identifier(role: str) -> None:
     with pytest.raises(attr.AttributionError, match="role"):
@@ -303,4 +303,4 @@ def test_cli_tag_and_ddl(capsys) -> None:
     )
     assert attr.main(["ddl", "--workload", "churn_model", "--csid", "cs_churn_model_account_score"]) == 0
     out = capsys.readouterr().out
-    assert "CREATE WAREHOUSE IF NOT EXISTS WH_CHURN_MODEL" in out and out.count(";\n") == 7
+    assert "CREATE WAREHOUSE IF NOT EXISTS SFNFR_20261104_WH_CHURN_MODEL" in out and out.count(";\n") == 7

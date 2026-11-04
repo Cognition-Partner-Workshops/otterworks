@@ -12,42 +12,42 @@ source:
   session: https://partner-workshops.devinenterprise.com/sessions/e69f745063454d4ba5274736ab6a6356
 endpoints:
   - csid: cs_doc_search_api_top_items
-    service_user: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    service_user: SFNFR_20261104_SVC_CS_DOC_SEARCH_API_TOP_ITEMS
     application: Devin_Demo
 warehouse:
-  name: WH_DOC_SEARCH_API
+  name: SFNFR_20261104_WH_DOC_SEARCH_API
   size: XSMALL
   auto_suspend_seconds: 60
   resource_monitor:
-    name: RM_DOC_SEARCH_API
+    name: SFNFR_20261104_RM_DOC_SEARCH_API
     frequency: MONTHLY
     credit_quota: 10
 deployed_objects:
   - type: database
-    name: DB_DOC_SEARCH_API
+    name: SFNFR_20261104_DB_DOC_SEARCH_API
     devin_csid: cs_doc_search_api_top_items
     state: planned
   - type: schema
-    name: DB_DOC_SEARCH_API.RAW
+    name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW
     state: planned
   - type: schema
-    name: DB_DOC_SEARCH_API.ANALYTICS
+    name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS
     state: planned
   - type: warehouse
-    name: WH_DOC_SEARCH_API
+    name: SFNFR_20261104_WH_DOC_SEARCH_API
     devin_csid: cs_doc_search_api_top_items
     state: planned
   - type: resource_monitor
-    name: RM_DOC_SEARCH_API
+    name: SFNFR_20261104_RM_DOC_SEARCH_API
     state: planned
   - type: user
-    name: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    name: SFNFR_20261104_SVC_CS_DOC_SEARCH_API_TOP_ITEMS
     state: planned
   - type: table
-    name: DB_DOC_SEARCH_API.ANALYTICS.DOC_SEARCH_API
+    name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.DOC_SEARCH_API
     state: planned
   - type: task
-    name: DB_DOC_SEARCH_API.ANALYTICS.REFRESH_DOC_SEARCH_API
+    name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.REFRESH_DOC_SEARCH_API
     devin_csid: cs_doc_search_api_top_items
     state: planned
 usage:

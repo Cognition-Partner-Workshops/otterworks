@@ -31,7 +31,7 @@
         "required": ["csid", "service_user", "application"],
         "properties": {
           "csid": {"$ref": "#/$defs/csid"},
-          "service_user": {"type": "string", "pattern": "^SVC_CS_[A-Z0-9_]+$"},
+          "service_user": {"type": "string", "pattern": "^SFNFR_[0-9]{8}_SVC_CS_[A-Z0-9_]+$"},
           "application": {"const": "Devin_Demo"}
         }
       }
@@ -41,7 +41,7 @@
       "additionalProperties": false,
       "required": ["name", "size", "auto_suspend_seconds", "resource_monitor"],
       "properties": {
-        "name": {"type": "string", "pattern": "^WH_[A-Z0-9_]+$"},
+        "name": {"type": "string", "pattern": "^SFNFR_[0-9]{8}_WH_[A-Z0-9_]+$"},
         "size": {"const": "XSMALL"},
         "auto_suspend_seconds": {"const": 60},
         "resource_monitor": {
@@ -49,7 +49,7 @@
           "additionalProperties": false,
           "required": ["name", "frequency", "credit_quota"],
           "properties": {
-            "name": {"type": "string", "pattern": "^RM_[A-Z0-9_]+$"},
+            "name": {"type": "string", "pattern": "^SFNFR_[0-9]{8}_RM_[A-Z0-9_]+$"},
             "frequency": {"const": "MONTHLY"},
             "credit_quota": {"type": "integer", "minimum": 1}
           }
