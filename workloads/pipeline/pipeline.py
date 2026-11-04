@@ -44,12 +44,12 @@ def connect(workload):
     phase, commit, session_url, run_id = phase_context(workload)
     params = attr.connection_params(
         attr.Endpoint.from_csid(CONSUMERS[workload][0], workload),
-        account=os.environ['SNOWFLAKE_ACCOUNT'],
+        account=os.environ.get('SFNFR_ACCOUNT') or os.environ['SNOWFLAKE_ACCOUNT'],
         private_key_file=os.environ['SNOWFLAKE_PRIVATE_KEY_FILE'],
         phase=phase, commit=commit, run_id=run_id, session_url=session_url,
-        role=os.environ['SNOWFLAKE_ROLE'], schema='RAW',
+        role=os.environ.get('SFNFR_ROLE') or os.environ['SNOWFLAKE_ROLE'], schema='RAW',
     )
-    params['user'] = os.environ['SNOWFLAKE_USER']
+    params['user'] = os.environ.get('SFNFR_USER') or os.environ['SNOWFLAKE_USER']
     return snowflake.connector.connect(**params)
 
 

@@ -40,12 +40,12 @@ def main():
 
             def attributed_connect(**kwargs):
                 params = attr.connection_params(
-                    endpoint, account=os.environ['SNOWFLAKE_ACCOUNT'],
+                    endpoint, account=os.environ.get('SFNFR_ACCOUNT') or os.environ['SNOWFLAKE_ACCOUNT'],
                     private_key_file=os.environ['SNOWFLAKE_PRIVATE_KEY_FILE'],
                     phase=phase, commit=commit, run_id=run_id, session_url=session_url,
-                    role=os.environ['SNOWFLAKE_ROLE'],
+                    role=os.environ.get('SFNFR_ROLE') or os.environ['SNOWFLAKE_ROLE'],
                 )
-                params['user'] = os.environ['SNOWFLAKE_USER']
+                params['user'] = os.environ.get('SFNFR_USER') or os.environ['SNOWFLAKE_USER']
                 params['session_parameters'].update({'TIMEZONE': 'UTC', 'WEEK_START': 1})
                 for key in ('client_session_keep_alive', 'autocommit', 'client_prefetch_threads'):
                     if key in kwargs:

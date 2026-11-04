@@ -19,9 +19,9 @@ while (($#)); do
   esac
   shift
 done
-export SNOWFLAKE_ACCOUNT="${SNOWFLAKE_ACCOUNT:-${SFNFR_ACCOUNT:-}}"
-export SNOWFLAKE_USER="${SNOWFLAKE_USER:-${SFNFR_USER:-}}"
-export SNOWFLAKE_ROLE="${SNOWFLAKE_ROLE:-${SFNFR_ROLE:-}}"
+export SNOWFLAKE_ACCOUNT="${SFNFR_ACCOUNT:-${SNOWFLAKE_ACCOUNT:-}}"
+export SNOWFLAKE_USER="${SFNFR_USER:-${SNOWFLAKE_USER:-}}"
+export SNOWFLAKE_ROLE="${SFNFR_ROLE:-${SNOWFLAKE_ROLE:-}}"
 unset SNOWFLAKE_HOST
 generated_key_files=()
 cleanup_generated_keys() {
@@ -30,7 +30,7 @@ cleanup_generated_keys() {
   done
 }
 trap cleanup_generated_keys EXIT
-if [[ -z "${SNOWFLAKE_PRIVATE_KEY_FILE:-}" && -n "${SFNFR_PRIVATE_KEY:-}" ]]; then
+if [[ -n "${SFNFR_PRIVATE_KEY:-}" ]]; then
   : "${RUNNER_TEMP:?RUNNER_TEMP is required to create a temporary builder key file}"
   umask 077
   builder_key_file="$RUNNER_TEMP/snowflake-builder-$$.p8"
@@ -38,7 +38,7 @@ if [[ -z "${SNOWFLAKE_PRIVATE_KEY_FILE:-}" && -n "${SFNFR_PRIVATE_KEY:-}" ]]; th
   generated_key_files+=("$builder_key_file")
   export SNOWFLAKE_PRIVATE_KEY_FILE="$builder_key_file"
 fi
-if [[ -z "${SNOWFLAKE_SVC_PRIVATE_KEY_FILE:-}" && -n "${SFNFR_SVC_DOC_USAGE_PRIVATE_KEY:-}" ]]; then
+if [[ -n "${SFNFR_SVC_DOC_USAGE_PRIVATE_KEY:-}" ]]; then
   : "${RUNNER_TEMP:?RUNNER_TEMP is required to create a temporary service key file}"
   umask 077
   service_key_file="$RUNNER_TEMP/snowflake-service-$$.p8"

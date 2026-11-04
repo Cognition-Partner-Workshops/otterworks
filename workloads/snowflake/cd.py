@@ -306,6 +306,10 @@ def prepare_run_environment(commit: str, phase: str = "runtime") -> tuple[dict[s
     if phase != "runtime":
         raise ValueError("Snowflake CD workflows must use SF_PHASE=runtime")
     env = os.environ.copy()
+    for name in ("ACCOUNT", "USER", "ROLE"):
+        value = env.get(f"SFNFR_{name}")
+        if value:
+            env[f"SNOWFLAKE_{name}"] = value
     env.pop("SNOWFLAKE_HOST", None)
     env["SF_PHASE"] = phase
     env["SF_COMMIT"] = commit

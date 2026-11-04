@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -76,6 +77,25 @@ def test_rollback_target_returns_first_different_source_commit(monkeypatch):
     assert cd.rollback_target("b" * 40, repo="/repo") == "a" * 40
 
 
+def test_prepare_run_environment_prefers_sfnfr_credentials(monkeypatch):
+    env = os.environ.copy()
+    env.update(
+        SFNFR_ACCOUNT="target-account",
+        SNOWFLAKE_ACCOUNT="stale-account",
+        SFNFR_USER="target-user",
+        SNOWFLAKE_USER="stale-user",
+        SFNFR_ROLE="target-role",
+        SNOWFLAKE_ROLE="stale-role",
+    )
+    monkeypatch.setattr(cd.os, "environ", env)
+
+    prepared, _ = cd.prepare_run_environment("a" * 40)
+
+    assert prepared["SNOWFLAKE_ACCOUNT"] == "target-account"
+    assert prepared["SNOWFLAKE_USER"] == "target-user"
+    assert prepared["SNOWFLAKE_ROLE"] == "target-role"
+
+
 def test_pushed_commit_guard_accepts_ancestor_of_remote_branch(monkeypatch):
     pushed = "f" * 40
 
@@ -83,6 +103,8 @@ def test_pushed_commit_guard_accepts_ancestor_of_remote_branch(monkeypatch):
         if command[3:5] == ["ls-remote", "--heads"]:
             output = f"{pushed}\trefs/heads/demo-stack-snowflake\n"
             return subprocess.CompletedProcess(command, 0, stdout=output, stderr="")
+        if command[3:5] == ["branch", "--show-current"]:
+            return subprocess.CompletedProcess(command, 0, stdout="demo-stack-snowflake\n", stderr="")
         if "rev-parse" in command:
             return subprocess.CompletedProcess(command, 0, stdout=f"{pushed}\n", stderr="")
         if "merge-base" in command:
@@ -101,6 +123,8 @@ def test_pushed_commit_guard_rejects_unpushed_commit(monkeypatch):
         if command[3:5] == ["ls-remote", "--heads"]:
             output = f"{pushed}\trefs/heads/demo-stack-snowflake\n"
             return subprocess.CompletedProcess(command, 0, stdout=output, stderr="")
+        if command[3:5] == ["branch", "--show-current"]:
+            return subprocess.CompletedProcess(command, 0, stdout="demo-stack-snowflake\n", stderr="")
         if "rev-parse" in command:
             return subprocess.CompletedProcess(command, 0, stdout=f"{pushed}\n", stderr="")
         if "merge-base" in command:
@@ -110,3 +134,29 @@ def test_pushed_commit_guard_rejects_unpushed_commit(monkeypatch):
     monkeypatch.setattr(git_utils.subprocess, "run", fake_run)
     with pytest.raises(ValueError, match="not an ancestor"):
         git_utils.require_pushed_commit("a" * 40, "/repo")
+
+
+def test_pushed_commit_guard_checks_current_origin_ref_first(monkeypatch):
+    pushed = "f" * 40
+    checked = []
+
+    def fake_run(command, **kwargs):
+        if command[3:5] == ["ls-remote", "--heads"]:
+            output = (
+                f"{pushed}\trefs/heads/demo-stack-snowflake\n"
+                f"{pushed}\trefs/heads/devin/feature\n"
+            )
+            return subprocess.CompletedProcess(command, 0, stdout=output, stderr="")
+        if command[3:5] == ["branch", "--show-current"]:
+            return subprocess.CompletedProcess(command, 0, stdout="devin/feature\n", stderr="")
+        if "rev-parse" in command:
+            return subprocess.CompletedProcess(command, 0, stdout=f"{pushed}\n", stderr="")
+        if "merge-base" in command:
+            checked.append(command[-1])
+            return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+        raise AssertionError(command)
+
+    monkeypatch.setattr(git_utils.subprocess, "run", fake_run)
+    ref = git_utils.require_pushed_commit("a" * 40, "/repo")
+    assert ref == "refs/remotes/origin/devin/feature"
+    assert checked == ["refs/remotes/origin/devin/feature"]
