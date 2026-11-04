@@ -108,3 +108,8 @@ output "irsa_role_arns" {
   description = "Map of service account name to IAM role ARN"
   value       = module.irsa.role_arns
 }
+
+output "tenant_irsa_boundary_arn" {
+  description = "Permissions boundary every per-tenant IRSA role is created with"
+  value       = aws_iam_policy.tenant_boundary.arn
+}

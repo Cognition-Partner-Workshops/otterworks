@@ -162,6 +162,10 @@ module "irsa" {
   oidc_provider_arn = local.oidc_provider_arn
   oidc_provider_url = local.oidc_provider_url
 
+  service_account_namespaces = {
+    "fluent-bit" = "${var.namespace}-system"
+  }
+
   service_accounts = {
     "file-service" = jsonencode({
       Version = "2012-10-17"
@@ -403,7 +407,7 @@ module "irsa" {
 
     # Ships api-gateway and ingress-nginx access logs to CloudWatch
     # (infrastructure/helm/aws-for-fluent-bit, scripts/install-log-shipping.sh).
-    # Runs in otterworks-system, which the otterworks-* trust condition covers.
+    # Runs in otterworks-system (service_account_namespaces above).
     "fluent-bit" = jsonencode({
       Version = "2012-10-17"
       Statement = [
@@ -429,4 +433,58 @@ module "irsa" {
       ]
     })
   }
+}
+
+# --- Permissions boundary for per-tenant IRSA roles ---
+# scripts/deploy-tenant.sh mints one role per tenant and service, trusted by
+# exactly system:serviceaccount:otterworks-<id>:<svc> and tagged
+# otterworks-tenant=<id>. This boundary caps every such role at that tenant's
+# own data -- its tenants/<id>/ prefix in the shared buckets and its own
+# otterworks-t-<id>--* DynamoDB tables -- so a mistake in the inline policy, or
+# in the control plane that writes it, cannot reach another tenant.
+resource "aws_iam_policy" "tenant_boundary" {
+  name        = "otterworks-tenant-boundary-${var.environment}"
+  description = "Caps per-tenant IRSA roles at their own tenant's S3 prefix and DynamoDB tables"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "TenantObjects"
+        Effect = "Allow"
+        Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+        Resource = [
+          "${module.storage.file_bucket_arn}/tenants/$${aws:PrincipalTag/otterworks-tenant}/*",
+          "${module.storage.audit_archive_bucket_arn}/tenants/$${aws:PrincipalTag/otterworks-tenant}/*",
+        ]
+      },
+      {
+        Sid      = "TenantPrefixList"
+        Effect   = "Allow"
+        Action   = ["s3:ListBucket"]
+        Resource = [module.storage.file_bucket_arn]
+        Condition = {
+          StringLike = { "s3:prefix" = ["tenants/$${aws:PrincipalTag/otterworks-tenant}/*"] }
+        }
+      },
+      {
+        Sid    = "TenantTables"
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem", "dynamodb:Query", "dynamodb:Scan",
+          "dynamodb:BatchWriteItem",
+        ]
+        Resource = [
+          "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/otterworks-t-$${aws:PrincipalTag/otterworks-tenant}--*",
+        ]
+      },
+      {
+        Sid      = "TenantEmail"
+        Effect   = "Allow"
+        Action   = ["ses:SendEmail", "ses:SendRawEmail"]
+        Resource = ["*"]
+      },
+    ]
+  })
 }

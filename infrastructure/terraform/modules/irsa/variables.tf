@@ -24,6 +24,12 @@ variable "namespace" {
   default     = "decomposition-dev"
 }
 
+variable "service_account_namespaces" {
+  description = "Per-service-account namespace overrides for services that do not run in var.namespace"
+  type        = map(string)
+  default     = {}
+}
+
 variable "oidc_provider_arn" {
   description = "ARN of the EKS OIDC identity provider"
   type        = string

@@ -62,7 +62,9 @@ Deploying tenant `<ID>` (namespace `otterworks-<ID>`) creates, **per tenant**:
   concerns and must **not** be duplicated per tenant.
 - The RDS **instance** (isolated only logically, via the per-tenant database), and the
   physical **S3 buckets** / **DynamoDB tables** (Tier-A logical prefixing/partitioning only —
-  see below). IAM/IRSA service roles are shared across `otterworks-*` via a wildcard trust.
+  see below). The shared IAM/IRSA service roles trust only the golden namespace; each tenant
+  gets its own exact-subject roles scoped to its `tenants/<ID>/` S3 prefix and
+  `otterworks-t-<ID>--*` DynamoDB tables (never an `otterworks-*` trust glob).
 - SNS/SQS eventing is **disabled** for tenants to avoid cross-tenant queue consumers.
 
 ### Isolation tiers
@@ -114,7 +116,7 @@ the above changes `main`. Verify per the "Live verification" section of the runb
 - Tenants are TTL-labeled (`deploy-tenant.sh <ID> --ttl 72h`, the default). The platform reaper
   (`demo-platform/reaper/reaper.sh`, scheduled from the ops dashboard) does the **full**
   teardown of an expired tenant: namespace, the `otterworks_<ID>` database, its S3 prefix
-  and DynamoDB partitions, IRSA trust and DNS records. `scripts/teardown-tenant.sh <ID>`
+  and DynamoDB tables/partitions, tenant IRSA roles and DNS records. `scripts/teardown-tenant.sh <ID>`
   does the same thing on demand for a single tenant.
 - Long-lived demo branches (the `demo-<industry>` skins) are **pinned**: `demo-platform/scripts/tenant.sh pin <ID> true`.
   A pinned tenant is never reaped but still idles to zero like any other, so it costs nothing

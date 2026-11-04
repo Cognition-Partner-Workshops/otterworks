@@ -10,6 +10,16 @@ use crate::errors::ServiceError;
 pub struct S3Client {
     pub client: aws_sdk_s3::Client,
     pub bucket: String,
+    pub key_prefix: String,
+}
+
+/// S3 key for a newly uploaded file: `<prefix>files/<owner>/<file_id>`.
+pub fn file_object_key(
+    prefix: &str,
+    owner: impl std::fmt::Display,
+    file_id: impl std::fmt::Display,
+) -> String {
+    format!("{prefix}files/{owner}/{file_id}")
 }
 
 impl S3Client {
@@ -30,7 +40,16 @@ impl S3Client {
         Self {
             client,
             bucket: config.s3_bucket.clone(),
+            key_prefix: config.s3_key_prefix.clone(),
         }
+    }
+
+    pub fn object_key(
+        &self,
+        owner: impl std::fmt::Display,
+        file_id: impl std::fmt::Display,
+    ) -> String {
+        file_object_key(&self.key_prefix, owner, file_id)
     }
 
     /// Upload file content to S3.
@@ -123,5 +142,23 @@ impl S3Client {
 
         tracing::info!(source = %source_key, dest = %dest_key, "Copied object in S3");
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod object_key_tests {
+    use super::file_object_key;
+
+    #[test]
+    fn unprefixed_key_keeps_legacy_layout() {
+        assert_eq!(file_object_key("", "u1", "f1"), "files/u1/f1");
+    }
+
+    #[test]
+    fn tenant_prefix_scopes_the_key() {
+        assert_eq!(
+            file_object_key("tenants/acme/", "u1", "f1"),
+            "tenants/acme/files/u1/f1"
+        );
     }
 }

@@ -30,6 +30,9 @@ resource "aws_iam_role" "dashboard" {
 }
 
 locals {
+  # Created by infrastructure/terraform (aws_iam_policy.tenant_boundary).
+  tenant_irsa_boundary_arn = "arn:aws:iam::${local.account_id}:policy/otterworks-tenant-boundary-${var.environment}"
+
   # The platform's own cluster is always sweepable; var.sweepable_clusters adds
   # names it used to run under, whose orphans still need reclaiming.
   sweepable_clusters = toset(concat([var.cluster_name], var.sweepable_clusters))
@@ -201,13 +204,52 @@ data "aws_iam_policy_document" "dashboard" {
     }
   }
 
-  # Teardown maintains IRSA trust on the shared per-service roles (add/remove the
-  # tenant namespace SA). Scoped to the otterworks-* service roles only.
+  # deploy/teardown mint and remove the per-tenant IRSA roles under the
+  # /otterworks-tenant/ path (one per tenant and data-bearing service, trusted by
+  # that exact namespace service account). A role can only be created, and its
+  # inline policy only written, with the tenant permissions boundary attached,
+  # so the control plane cannot hand a tenant anything outside its own data.
+  # The shared otterworks-<svc>-<env> roles are deliberately NOT editable from
+  # here: their trust is Terraform-owned and exact-subject only.
   statement {
-    sid       = "TenantIrsaTrust"
+    sid    = "TenantIrsaRolesBounded"
+    effect = "Allow"
+    actions = [
+      "iam:CreateRole", "iam:PutRolePolicy", "iam:DeleteRolePolicy",
+    ]
+    resources = ["arn:aws:iam::${local.account_id}:role/otterworks-tenant/*"]
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PermissionsBoundary"
+      values   = [local.tenant_irsa_boundary_arn]
+    }
+  }
+  statement {
+    sid    = "TenantIrsaRolesManage"
+    effect = "Allow"
+    actions = [
+      "iam:GetRole", "iam:GetRolePolicy", "iam:ListRolePolicies",
+      "iam:UpdateAssumeRolePolicy", "iam:TagRole", "iam:DeleteRole",
+    ]
+    resources = ["arn:aws:iam::${local.account_id}:role/otterworks-tenant/*"]
+  }
+
+  # Per-tenant DynamoDB tables (otterworks-t-<id>--<table>), cloned from the
+  # shared tables' schema at deploy and dropped at teardown.
+  statement {
+    sid    = "TenantTables"
+    effect = "Allow"
+    actions = [
+      "dynamodb:CreateTable", "dynamodb:DescribeTable", "dynamodb:DeleteTable",
+      "dynamodb:TagResource",
+    ]
+    resources = ["arn:aws:dynamodb:${var.aws_region}:${local.account_id}:table/otterworks-t-*"]
+  }
+  statement {
+    sid       = "TenantTablesList"
     effect    = "Allow"
-    actions   = ["iam:GetRole", "iam:UpdateAssumeRolePolicy"]
-    resources = ["arn:aws:iam::${local.account_id}:role/otterworks-*"]
+    actions   = ["dynamodb:ListTables"]
+    resources = ["*"]
   }
 
   # deploy/teardown resolve shared RDS/S3/DynamoDB coordinates by reading the
