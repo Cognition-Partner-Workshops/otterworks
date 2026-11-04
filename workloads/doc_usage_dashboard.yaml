@@ -2,14 +2,14 @@ name: doc_usage_dashboard
 description: Storage used against quota, one row per account per daily snapshot.
 schedule: daily, after the 00:00 UTC export of admin-service
 output_table: ANALYTICS.DOC_USAGE_DASHBOARD
-grain: [snapshot_date, account_id]
+grain: [snapshot_date, admin_user_id]
 
 inputs:
   - table: storage_quotas
     service: admin-service
     landing: RAW.ADMIN_STORAGE_QUOTAS
     columns:
-      user_id: uuid, unique, the account
+      user_id: uuid, unique, references admin_users.id
       quota_bytes: bigint, > 0 (StorageQuota validation)
       used_bytes: bigint, >= 0
       tier: string, one of free, basic, pro, enterprise
@@ -23,21 +23,28 @@ inputs:
     service: admin-service
     landing: RAW.ADMIN_ADMIN_USERS
     columns:
-      id: uuid, equals storage_quotas.user_id
-      email: string, unique
+      id: uuid, equals storage_quotas.user_id; not the same value as users.id
+      email: string, unique, maps to users.email (index.yaml admin_service_mapping)
       status: string, one of active, suspended, deleted (AdminUser::STATUSES)
+  - table: users
+    service: auth-service
+    landing: RAW.AUTH_USERS
+    columns:
+      id: uuid, the account
+      email: string, unique
   - table: documents
     service: document-service
     landing: RAW.DOCUMENT_DOCUMENTS
     columns:
       id: uuid
-      owner_id: uuid, the account
+      owner_id: uuid, the account (users.id)
       is_deleted: boolean
       is_template: boolean
 
 output_columns:
   - {name: snapshot_date, type: DATE, nullable: false, rule: UTC date of the admin-service export}
-  - {name: account_id, type: VARCHAR(36), nullable: false, rule: storage_quotas.user_id}
+  - {name: admin_user_id, type: VARCHAR(36), nullable: false, rule: storage_quotas.user_id}
+  - {name: account_id, type: VARCHAR(36), nullable: true, rule: "users.id where LOWER(users.email) = LOWER(admin_users.email); null when no user matches"}
   - {name: account_email, type: VARCHAR(255), nullable: false, rule: admin_users.email}
   - {name: tier, type: VARCHAR(16), nullable: false, rule: storage_quotas.tier}
   - {name: quota_bytes, type: "NUMBER(19,0)", nullable: false, rule: storage_quotas.quota_bytes}
@@ -45,7 +52,7 @@ output_columns:
   - {name: remaining_bytes, type: "NUMBER(19,0)", nullable: false, rule: "GREATEST(quota_bytes - used_bytes, 0)"}
   - {name: usage_pct, type: "NUMBER(7,2)", nullable: false, rule: "ROUND(used_bytes / quota_bytes * 100, 2)"}
   - {name: usage_band, type: VARCHAR(16), nullable: false, rule: "over_quota, near_limit or ok, see business_rule"}
-  - {name: active_document_count, type: "NUMBER(10,0)", nullable: false, rule: "documents owned by the account with is_deleted = false and is_template = false; 0 if none"}
+  - {name: active_document_count, type: "NUMBER(10,0)", nullable: true, rule: "documents with owner_id = account_id, is_deleted = false and is_template = false; 0 if none; null when account_id is null"}
 
 business_rule: >-
   Take every account that has a storage_quotas row and whose admin_users status
@@ -56,19 +63,24 @@ business_rule: >-
   is at or above the limit (the same test as StorageQuota#over_quota?). It is
   near_limit when it is not over quota and space used is at least 80% of the
   limit, compared on the unrounded ratio. Every other account is ok. Accounts
-  without a storage_quotas row are left out. Document count is shown for
-  context only and does not affect the band.
+  without a storage_quotas row are left out. Quotas live on admin_users, so
+  the row is linked to the auth-service account by email; a quota whose
+  admin_users email matches no user is still shown, with account_id and
+  active_document_count null. Document count is shown for context only and
+  does not affect the band.
 
 parameters:
   near_limit_ratio: 0.80  # confirmed by product
 
 examples:
   - inputs:
-      storage_quotas: {user_id: 00000000-0000-4000-8000-000000000101, tier: free, quota_bytes: 5368709120, used_bytes: 4563402752}
-      admin_users: {id: 00000000-0000-4000-8000-000000000101, email: ada@example.com, status: active}
+      storage_quotas: {user_id: 00000000-0000-4000-8000-000000000901, tier: free, quota_bytes: 5368709120, used_bytes: 4563402752}
+      admin_users: {id: 00000000-0000-4000-8000-000000000901, email: ada@example.com, status: active}
+      users: {id: 00000000-0000-4000-8000-000000000101, email: Ada@Example.com}
       documents: 3 rows with is_deleted false and is_template false, 1 row with is_deleted true
     expected:
       snapshot_date: 2026-11-01
+      admin_user_id: 00000000-0000-4000-8000-000000000901
       account_id: 00000000-0000-4000-8000-000000000101
       account_email: ada@example.com
       tier: free
@@ -78,13 +90,15 @@ examples:
       usage_pct: 85.00
       usage_band: near_limit
       active_document_count: 3
-    check: 4.25 GiB of 5 GiB is 85%, which is at least 80% and below 100%.
+    check: 4.25 GiB of 5 GiB is 85%, which is at least 80% and below 100%. The emails match ignoring case, so the quota of admin user ...0901 belongs to account ...0101.
   - inputs:
-      storage_quotas: {user_id: 00000000-0000-4000-8000-000000000102, tier: pro, quota_bytes: 214748364800, used_bytes: 53687091200}
-      admin_users: {id: 00000000-0000-4000-8000-000000000102, email: ben@example.com, status: active}
+      storage_quotas: {user_id: 00000000-0000-4000-8000-000000000902, tier: pro, quota_bytes: 214748364800, used_bytes: 53687091200}
+      admin_users: {id: 00000000-0000-4000-8000-000000000902, email: ben@example.com, status: active}
+      users: {id: 00000000-0000-4000-8000-000000000102, email: Ben@Example.com}
       documents: 12 rows with is_deleted false and is_template false
     expected:
       snapshot_date: 2026-11-01
+      admin_user_id: 00000000-0000-4000-8000-000000000902
       account_id: 00000000-0000-4000-8000-000000000102
       account_email: ben@example.com
       tier: pro
@@ -96,11 +110,13 @@ examples:
       active_document_count: 12
     check: 50 GiB of 200 GiB is 25%.
   - inputs:
-      storage_quotas: {user_id: 00000000-0000-4000-8000-000000000103, tier: basic, quota_bytes: 53687091200, used_bytes: 53687091200}
-      admin_users: {id: 00000000-0000-4000-8000-000000000103, email: cy@example.com, status: suspended}
+      storage_quotas: {user_id: 00000000-0000-4000-8000-000000000903, tier: basic, quota_bytes: 53687091200, used_bytes: 53687091200}
+      admin_users: {id: 00000000-0000-4000-8000-000000000903, email: cy@example.com, status: suspended}
+      users: {id: 00000000-0000-4000-8000-000000000103, email: Cy@Example.com}
       documents: 40 rows with is_deleted false and is_template false, 2 rows with is_template true
     expected:
       snapshot_date: 2026-11-01
+      admin_user_id: 00000000-0000-4000-8000-000000000903
       account_id: 00000000-0000-4000-8000-000000000103
       account_email: cy@example.com
       tier: basic
@@ -119,13 +135,14 @@ endpoint:
   query_params:
     snapshot_date: optional DATE, defaults to the latest snapshot
   response_200:
-    fields: [snapshot_date, account_id, account_email, tier, quota_bytes, used_bytes, remaining_bytes, usage_pct, usage_band, active_document_count]
+    fields: [snapshot_date, admin_user_id, account_id, account_email, tier, quota_bytes, used_bytes, remaining_bytes, usage_pct, usage_band, active_document_count]
     source: one row of ANALYTICS.DOC_USAGE_DASHBOARD
-  response_404: no row for that account and snapshot_date
+  response_404: no row with that account_id and snapshot_date (quotas whose email matches no user are reachable only in the table)
   auth: >-
     The caller's X-User-ID must equal account_id, or the caller needs the admin
     role in user_roles.
 
 open_questions:
   - storage_quotas has no history, so trends need snapshots to accumulate in Snowflake first.
+  - The email link between admin_users and users is the only one the code supports. It is unverified on production data and matches nothing in the generated seed, where the two tables use disjoint emails.
   - file-service holds per-file size_bytes in DynamoDB rather than Postgres, so used_bytes is not reconciled against file sizes.

@@ -4,11 +4,25 @@ branch: demo-stack-snowflake
 
 account:
   definition: >-
-    One OtterWorks user identity. The same UUID is auth-service users.id, the
-    JWT subject the api-gateway forwards as X-User-ID, documents.owner_id and
-    document_versions.created_by in document-service, admin_users.id and
-    storage_quotas.user_id in admin-service, and analytics_events.user_id.
+    One OtterWorks user identity, keyed by auth-service users.id. The same UUID
+    is the JWT subject the api-gateway forwards as X-User-ID,
+    documents.owner_id and document_versions.created_by in document-service,
+    and analytics_events.user_id.
   key: account_id VARCHAR(36)
+  admin_service_mapping: >-
+    admin-service keeps its own user directory. admin_users.id is generated
+    independently of users.id (nothing in the code copies one to the other)
+    and storage_quotas.user_id references admin_users.id. An admin_users row
+    belongs to the account whose users.email equals admin_users.email,
+    compared with LOWER() on both sides; both columns are unique. An account
+    with no matching admin_users row has no status or storage quota, and an
+    admin_users row with no matching user has no account_id.
+  seed_data_note: >-
+    The generated seed (testdata/generated/seed) draws users and admin_users
+    from separate id pools (stable_id("auth-user", i) and
+    stable_id("admin-user", i)) and separate name draws, so no ids or emails
+    overlap. On that dataset the email mapping matches no rows and every
+    admin-service column reached through it is empty.
   not_used: >-
     billing_svc.tenants (billing-service) has no column linking a tenant to a
     user, so tenant-level grouping is out of scope until such a link exists.
