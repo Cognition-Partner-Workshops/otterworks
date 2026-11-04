@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cognition-Partner-Workshops/otterworks/workloads/attribution/provenance.schema.json",
+  "title": "OtterWorks Snowflake workload provenance",
+  "description": "workloads/<id>/provenance.yaml: where a workload's Snowflake objects came from and what they have cost. A usage figure Snowflake has not reported yet is the string 'pending', never 0 or null.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "workload", "spec", "run_token", "source", "endpoints", "warehouse", "deployed_objects", "usage"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "workload": {"$ref": "#/$defs/identifier"},
+    "spec": {"type": "string", "pattern": "^workloads/[a-z][a-z0-9_]*\\.yaml$"},
+    "run_token": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*_[0-9]{8}$"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "pull_request", "session"],
+      "properties": {
+        "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "commit": {"$ref": "#/$defs/commit"},
+        "pull_request": {"type": "string", "pattern": "^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/pull/[0-9]+$"},
+        "session": {"$ref": "#/$defs/session_url"}
+      }
+    },
+    "endpoints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["csid", "service_user", "application"],
+        "properties": {
+          "csid": {"$ref": "#/$defs/csid"},
+          "service_user": {"type": "string", "pattern": "^SFNFR_[0-9]{8}_SVC_CS_[A-Z0-9_]+$"},
+          "application": {"const": "Devin_Demo"}
+        }
+      }
+    },
+    "warehouse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "size", "auto_suspend_seconds", "resource_monitor"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^SFNFR_[0-9]{8}_WH_[A-Z0-9_]+$"},
+        "size": {"const": "XSMALL"},
+        "auto_suspend_seconds": {"const": 60},
+        "resource_monitor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "frequency", "credit_quota"],
+          "properties": {
+            "name": {"type": "string", "pattern": "^SFNFR_[0-9]{8}_RM_[A-Z0-9_]+$"},
+            "frequency": {"const": "MONTHLY"},
+            "credit_quota": {"type": "integer", "minimum": 1}
+          }
+        }
+      }
+    },
+    "deployed_objects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "name", "state"],
+        "properties": {
+          "type": {"enum": ["database", "schema", "warehouse", "resource_monitor", "user", "table", "view", "stage", "file_format", "procedure", "dbt_project", "task", "streamlit"]},
+          "name": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*(\\.[A-Z][A-Z0-9_]*){0,2}$"},
+          "state": {"enum": ["planned", "deployed", "dropped"]},
+          "devin_csid": {"type": "string", "pattern": "^cs_[a-z0-9_]+(,cs_[a-z0-9_]+)*$"},
+          "deployed_at": {"$ref": "#/$defs/timestamp"},
+          "deployed_commit": {"$ref": "#/$defs/commit"}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"type": {"enum": ["database", "warehouse", "task", "streamlit"]}}},
+            "then": {"required": ["devin_csid"]}
+          },
+          {
+            "if": {"properties": {"state": {"enum": ["deployed", "dropped"]}}},
+            "then": {"required": ["deployed_at", "deployed_commit"]}
+          }
+        ]
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "reported_through", "credits_dev", "credits_runtime", "credits_idle", "query_count_dev", "query_count_runtime"],
+      "properties": {
+        "source": {"const": "SNOWFLAKE.ACCOUNT_USAGE"},
+        "reported_through": {"oneOf": [{"const": "pending"}, {"$ref": "#/$defs/timestamp"}]},
+        "credits_dev": {"$ref": "#/$defs/credits"},
+        "credits_runtime": {"$ref": "#/$defs/credits"},
+        "credits_idle": {"$ref": "#/$defs/credits"},
+        "query_count_dev": {"$ref": "#/$defs/count"},
+        "query_count_runtime": {"$ref": "#/$defs/count"}
+      }
+    },
+    "data_quality": {
+      "description": "Latest result of the 'Snowflake workload data-quality gate' playbook, written by workloads/dbt/dq_gate.py. A failed or errored test always names its cause.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["playbook", "run_id", "phase", "commit", "ran_at", "status", "summary", "tests"],
+      "properties": {
+        "playbook": {"const": "Snowflake workload data-quality gate"},
+        "run_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*_[0-9]{8}-[a-z0-9_]+-(dev|runtime)-[0-9]{8}T[0-9]{6}Z$"},
+        "phase": {"enum": ["dev", "runtime"]},
+        "commit": {"$ref": "#/$defs/commit"},
+        "session": {"$ref": "#/$defs/session_url"},
+        "ran_at": {"$ref": "#/$defs/timestamp"},
+        "status": {"enum": ["pass", "fail"]},
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pass", "fail", "error", "warn", "skipped"],
+          "properties": {
+            "pass": {"type": "integer", "minimum": 0},
+            "fail": {"type": "integer", "minimum": 0},
+            "error": {"type": "integer", "minimum": 0},
+            "warn": {"type": "integer", "minimum": 0},
+            "skipped": {"type": "integer", "minimum": 0}
+          }
+        },
+        "tests": {
+          "type": "array",
+          "minItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "check", "status", "failures"],
+            "properties": {
+              "name": {"type": "string"},
+              "check": {"enum": ["freshness", "row_count", "uniqueness", "accepted_range", "worked_example"]},
+              "status": {"enum": ["pass", "fail", "error", "warn", "skipped"]},
+              "failures": {"type": "integer", "minimum": 0},
+              "cause": {"type": "string", "minLength": 10}
+            },
+            "if": {"properties": {"status": {"enum": ["fail", "error"]}}},
+            "then": {"required": ["cause"]}
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {"type": "string", "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"},
+    "csid": {"type": "string", "pattern": "^cs_[a-z][a-z0-9]*(_[a-z0-9]+)*$"},
+    "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "session_url": {"type": "string", "pattern": "^https://[A-Za-z0-9.-]+/sessions/[0-9a-f]{32}$"},
+    "timestamp": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"},
+    "credits": {"oneOf": [{"const": "pending"}, {"type": "number", "minimum": 0}]},
+    "count": {"oneOf": [{"const": "pending"}, {"type": "integer", "minimum": 0}]}
+  }
+}

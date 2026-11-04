@@ -1,0 +1,160 @@
+name: doc_search_api
+description: Top searched terms and top searched documents per account over a trailing 28-day window, served from an endpoint.
+schedule: daily, window ending on the previous UTC day
+output_table: ANALYTICS.DOC_SEARCH_API
+grain: [window_end_date, account_id, item_type, rank]
+status: blocked_on_source
+
+source_gap:
+  finding: >-
+    search-service owns search, but it records queries only in an in-process
+    list (_search_analytics in app/services/meilisearch_client.py). That list
+    keeps the last 10,000 queries across all users, stores no user id and is
+    lost on restart. It has no Postgres table. The search_executed log line
+    carries the query and result_count but no user.
+  required_change: >-
+    After each successful GET /api/v1/search and POST /api/v1/search/advanced,
+    search-service posts one event to analytics-service
+    POST /api/v1/analytics/events. analytics-service stores it in
+    analytics_events. AnalyticsService.trackEvent does not check event_type
+    against EventType.All, so analytics-service needs no schema change.
+  event_contract:
+    eventType: search.performed
+    userId: X-User-ID of the request
+    resourceId: a new UUID per search
+    resourceType: search
+    metadata:
+      query: raw query string as received ("*" when advanced search has no term)
+      result_count: total hits as a decimal string
+      document_hit_ids: >-
+        comma-separated ids of the documents-index hits on the returned page, in
+        rank order; empty string when none. File hits are excluded.
+
+inputs:
+  - table: analytics_events
+    service: analytics-service
+    landing: RAW.ANALYTICS_ANALYTICS_EVENTS
+    filter: event_type = 'search.performed'
+    columns:
+      user_id: varchar(128), the account
+      metadata: text, JSON object as in event_contract.metadata
+      occurred_at: bigint, epoch nanoseconds UTC
+  - table: documents
+    service: document-service
+    landing: RAW.DOCUMENT_DOCUMENTS
+    columns:
+      id: uuid
+      title: varchar(500)
+      is_deleted: boolean
+
+output_columns:
+  - {name: window_end_date, type: DATE, nullable: false, rule: last UTC day in the window}
+  - {name: window_days, type: "NUMBER(3,0)", nullable: false, rule: "28"}
+  - {name: account_id, type: VARCHAR(36), nullable: false, rule: analytics_events.user_id}
+  - {name: item_type, type: VARCHAR(8), nullable: false, rule: "term or document"}
+  - {name: rank, type: "NUMBER(2,0)", nullable: false, rule: "1 to 10 within account and item_type"}
+  - {name: term, type: VARCHAR(500), nullable: true, rule: "normalized query; null when item_type = document"}
+  - {name: document_id, type: VARCHAR(36), nullable: true, rule: "null when item_type = term"}
+  - {name: document_title, type: VARCHAR(500), nullable: true, rule: "documents.title; null when item_type = term"}
+  - {name: search_count, type: "NUMBER(10,0)", nullable: false, rule: see business_rule}
+  - {name: zero_result_count, type: "NUMBER(10,0)", nullable: true, rule: "searches for the term with result_count = 0; null when item_type = document"}
+  - {name: last_searched_at, type: TIMESTAMP_NTZ, nullable: false, rule: latest occurred_at counted for the item, in UTC}
+
+business_rule: >-
+  Use the search.performed events from the 28 UTC days that end on
+  window_end_date, counting both end days. Normalize each query by trimming it,
+  collapsing runs of whitespace to one space and lower-casing it. Drop events
+  whose normalized query is empty or "*", and events with an empty user_id.
+  For terms, search_count is the number of searches by the account for that
+  normalized query, and zero_result_count is how many of those returned no
+  results. For documents, search_count is the number of searches by the
+  account whose returned page listed the document in document_hit_ids. A
+  document counts at most once per search, and documents marked is_deleted
+  when the job runs are skipped. Within each account and item type, rank by
+  search_count from highest, then last_searched_at from latest, then term or
+  document_id in ascending order. Keep the top 10.
+
+parameters:
+  window_days: 28
+  top_n: 10
+
+examples:
+  shared_inputs:
+    account_id: 00000000-0000-4000-8000-000000000101
+    window_end_date: 2026-11-01 (window 2026-10-05 to 2026-11-01)
+    documents:
+      - {id: 00000000-0000-4000-8000-000000000201, title: Q3 Budget Plan, is_deleted: false}
+      - {id: 00000000-0000-4000-8000-000000000202, title: Onboarding Checklist, is_deleted: false}
+    search_performed_events:
+      - {occurred_at: "2026-09-30T12:00:00Z", query: "q3 budget", result_count: 2, document_hit_ids: "...0201,...0202", note: outside the window}
+      - {occurred_at: "2026-10-20T09:00:00Z", query: "Q3 Budget", result_count: 2, document_hit_ids: "...0201,...0202"}
+      - {occurred_at: "2026-10-22T10:00:00Z", query: "q3 budget", result_count: 2, document_hit_ids: "...0201,...0202"}
+      - {occurred_at: "2026-10-28T11:00:00Z", query: "  Q3   budget ", result_count: 1, document_hit_ids: "...0201"}
+      - {occurred_at: "2026-10-29T08:00:00Z", query: "roadmap", result_count: 0, document_hit_ids: ""}
+      - {occurred_at: "2026-10-30T15:30:00Z", query: "Roadmap", result_count: 0, document_hit_ids: ""}
+      - {occurred_at: "2026-10-31T12:00:00Z", query: "onboarding", result_count: 1, document_hit_ids: "...0202"}
+    id_note: "...0201 and ...0202 stand for the full document ids above"
+  rows:
+    - expected:
+        window_end_date: 2026-11-01
+        window_days: 28
+        account_id: 00000000-0000-4000-8000-000000000101
+        item_type: term
+        rank: 1
+        term: q3 budget
+        document_id: null
+        document_title: null
+        search_count: 3
+        zero_result_count: 0
+        last_searched_at: "2026-10-28 11:00:00"
+      check: The three in-window spellings normalize to "q3 budget". The 2026-09-30 search is outside the window.
+    - expected:
+        window_end_date: 2026-11-01
+        window_days: 28
+        account_id: 00000000-0000-4000-8000-000000000101
+        item_type: term
+        rank: 2
+        term: roadmap
+        document_id: null
+        document_title: null
+        search_count: 2
+        zero_result_count: 2
+        last_searched_at: "2026-10-30 15:30:00"
+      check: '"roadmap" and "Roadmap" are one term, and both searches returned 0 results. "onboarding" is rank 3 with 1 search.'
+    - expected:
+        window_end_date: 2026-11-01
+        window_days: 28
+        account_id: 00000000-0000-4000-8000-000000000101
+        item_type: document
+        rank: 1
+        term: null
+        document_id: 00000000-0000-4000-8000-000000000202
+        document_title: Onboarding Checklist
+        search_count: 3
+        zero_result_count: null
+        last_searched_at: "2026-10-31 12:00:00"
+      check: >-
+        Both documents appear in 3 in-window searches (0201 on 10-20, 10-22 and
+        10-28; 0202 on 10-20, 10-22 and 10-31). The tie goes to the later
+        last_searched_at, so 0202 is rank 1 and 0201 is rank 2.
+
+endpoint:
+  client_side_id: cs_doc_search_api_top_items
+  method: GET
+  path: /api/v1/insights/search/accounts/{account_id}/top
+  query_params:
+    type: required, term or document
+    limit: optional integer 1-10, default 10
+    window_end_date: optional DATE, defaults to the latest window
+  response_200:
+    fields: [window_end_date, window_days, account_id, items]
+    items: rows of ANALYTICS.DOC_SEARCH_API for that account and item_type, ordered by rank; each item has rank, term or document_id and document_title, search_count, zero_result_count, last_searched_at
+  response_400: type missing or invalid, or limit outside 1-10
+  response_404: no window for that account and window_end_date
+  auth: >-
+    The caller's X-User-ID must equal account_id, or the caller needs the admin
+    role in user_roles.
+
+open_questions:
+  - Counting a document when it appears on the results page measures exposure, not interest. A click event (for example search.result_opened) would measure actual interest, but no client emits one today.
+  - The window has no history until search-service starts emitting search.performed.

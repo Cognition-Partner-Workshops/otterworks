@@ -1,0 +1,349 @@
+schema_version: 1
+workload: doc_usage_dashboard
+spec: workloads/doc_usage_dashboard.yaml
+run_token: SFNFR_20261104
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  commit: 4db61064e7a985c834cd2e7ee862c54d0c2bc90b
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2451
+  session: https://partner-workshops.devinenterprise.com/sessions/8adda3d5e3e6461ab8385187f82c6569
+endpoints:
+- csid: cs_doc_usage_dashboard_account_usage
+  service_user: SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
+  application: Devin_Demo
+warehouse:
+  name: SFNFR_20261104_WH_DOC_USAGE_DASHBOARD
+  size: XSMALL
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: SFNFR_20261104_RM_DOC_USAGE_DASHBOARD
+    frequency: MONTHLY
+    credit_quota: 10
+deployed_objects:
+- type: database
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD
+  devin_csid: cs_doc_usage_dashboard_account_usage
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: schema
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: schema
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: warehouse
+  name: SFNFR_20261104_WH_DOC_USAGE_DASHBOARD
+  devin_csid: cs_doc_usage_dashboard_account_usage
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: resource_monitor
+  name: SFNFR_20261104_RM_DOC_USAGE_DASHBOARD
+  state: planned
+- type: user
+  name: SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
+  state: deployed
+  deployed_at: '2026-11-04T21:32:37Z'
+  deployed_commit: 7ee503d32cca3a1990fa05678fc1ced409aeb0a1
+- type: view
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD
+  state: deployed
+  deployed_at: '2026-11-04T21:28:28Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: task
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD
+  devin_csid: cs_doc_usage_dashboard_account_usage
+  state: deployed
+  deployed_at: '2026-11-04T21:24:20Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: streamlit
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP
+  devin_csid: cs_doc_usage_dashboard_account_usage
+  state: deployed
+  deployed_at: '2026-11-04T21:52:51Z'
+  deployed_commit: 4db61064e7a985c834cd2e7ee862c54d0c2bc90b
+- type: stage
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP_STAGE
+  state: deployed
+  deployed_at: '2026-11-04T21:32:39Z'
+  deployed_commit: 7ee503d32cca3a1990fa05678fc1ced409aeb0a1
+- type: table
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.ADMIN_STORAGE_QUOTAS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: table
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.ADMIN_ADMIN_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: table
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.DOCUMENT_DOCUMENTS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: view
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.USAGE_QUOTAS
+  state: deployed
+  deployed_at: '2026-11-04T21:28:28Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: view
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.USAGE_ADMIN_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:28:28Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: view
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.USAGE_DOCUMENTS
+  state: deployed
+  deployed_at: '2026-11-04T21:28:28Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: stage
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.POSTGRES_FILES
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: file_format
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.POSTGRES_CSV
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: procedure
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.LOAD_RAW
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: table
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_SNAPSHOT
+  state: deployed
+  deployed_at: '2026-11-04T21:28:28Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: stage
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DBT_SOURCE_FILES
+  state: deployed
+  deployed_at: '2026-11-04T21:24:20Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: dbt_project
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.OTTERWORKS_DBT
+  state: deployed
+  deployed_at: '2026-11-04T21:24:20Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  credits_dev: pending
+  credits_runtime: pending
+  credits_idle: pending
+  query_count_dev: pending
+  query_count_runtime: pending
+data_quality:
+  playbook: Snowflake workload data-quality gate
+  run_id: SFNFR_20261104-doc_usage_dashboard-dev-20261104T223532Z
+  phase: dev
+  commit: 43b0c706d3cfe88f12b41462a84ef848dd72f72c
+  session: https://partner-workshops.devinenterprise.com/sessions/133d4c4edeb443eb8f101a8c26cdb70a
+  ran_at: '2026-11-04T22:35:47Z'
+  status: fail
+  summary:
+    pass: 43
+    fail: 4
+    error: 0
+    warn: 0
+    skipped: 0
+  tests:
+  - name: dq_freshness__snapshot_covers_latest_export
+    check: freshness
+    status: pass
+    failures: 0
+  - name: dq_freshness__storage_quotas_export_age
+    check: freshness
+    status: pass
+    failures: 0
+  - name: dq_row_count__admin_users_stage_files_vs_raw
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__documents_stage_files_vs_raw
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__output_rows_per_snapshot_date
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__storage_quotas_stage_files_vs_raw
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__usage_admin_users_vs_export_keys
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__usage_documents_vs_export_keys
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__usage_quotas_vs_export_keys
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_uniqueness__admin_users_id_per_file
+    check: uniqueness
+    status: fail
+    failures: 39
+    cause: 'same seeded batch: export 9e79d72d-94b6-4e07-8567-3def91a6ed0b (exported_at 2026-11-03T23:00Z) file admin_users/sfnfr-batch-late/admin_users.csv.gz holds each of 39 admin_users rows twice (78 rows, 39 distinct id), written by pipeline.py export --duplicate-rows; staging usage_admin_users dedups on (_export_id, id)'
+  - name: dq_uniqueness__documents_id_per_file
+    check: uniqueness
+    status: fail
+    failures: 94
+    cause: 'same seeded batch: export 9e79d72d-94b6-4e07-8567-3def91a6ed0b (exported_at 2026-11-03T23:00Z) file documents/sfnfr-batch-late/documents.csv.gz holds each of 94 documents rows twice (188 rows, 94 distinct id), written by pipeline.py export --duplicate-rows; staging usage_documents dedups on (_export_id, id)'
+  - name: dq_uniqueness__storage_quotas_id_per_file
+    check: uniqueness
+    status: fail
+    failures: 39
+    cause: export 9e79d72d-94b6-4e07-8567-3def91a6ed0b (exported_at 2026-11-03T23:00Z) file storage_quotas/sfnfr-batch-late/storage_quotas.csv.gz holds each of 39 quota rows twice (78 rows, 39 distinct id), written by pipeline.py export --duplicate-rows; staging usage_quotas dedups on (_export_id, id) so the output grain still passes
+  - name: dq_uniqueness__storage_quotas_user_id_per_file
+    check: uniqueness
+    status: fail
+    failures: 39
+    cause: export 9e79d72d-94b6-4e07-8567-3def91a6ed0b (exported_at 2026-11-03T23:00Z) file storage_quotas/sfnfr-batch-late/storage_quotas.csv.gz holds each of 39 quota rows twice (78 rows, 39 distinct user_id), written by pipeline.py export --duplicate-rows; staging usage_quotas dedups on (_export_id, id) so the output grain still passes
+  - name: grain_doc_usage_dashboard_snapshot_date__account_id
+    check: uniqueness
+    status: pass
+    failures: 0
+  - name: grain_doc_usage_dashboard_snapshot_snapshot_date__account_id
+    check: uniqueness
+    status: pass
+    failures: 0
+  - name: accepted_values_doc_usage_dashboard_snapshot_tier__True__free__basic__pro__enterprise
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: accepted_values_doc_usage_dashboard_snapshot_usage_band__True__ok__near_limit__over_quota
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: accepted_values_doc_usage_dashboard_tier__True__free__basic__pro__enterprise
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: accepted_values_doc_usage_dashboard_usage_band__True__ok__near_limit__over_quota
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__derived_columns
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__numeric_bounds
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__source_columns
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_account_email
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_account_id
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_active_document_count
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_quota_bytes
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_remaining_bytes
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_account_id
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_active_document_count
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_date
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_quota_bytes
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_remaining_bytes
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_snapshot_date
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_tier
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_usage_band
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_usage_pct
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_snapshot_used_bytes
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_tier
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_usage_band
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_usage_pct
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_usage_dashboard_used_bytes
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: usage_spec_101
+    check: worked_example
+    status: pass
+    failures: 0
+  - name: usage_spec_101_view
+    check: worked_example
+    status: pass
+    failures: 0
+  - name: usage_spec_102
+    check: worked_example
+    status: pass
+    failures: 0
+  - name: usage_spec_102_view
+    check: worked_example
+    status: pass
+    failures: 0
+  - name: usage_spec_103
+    check: worked_example
+    status: pass
+    failures: 0
+  - name: usage_spec_103_view
+    check: worked_example
+    status: pass
+    failures: 0
