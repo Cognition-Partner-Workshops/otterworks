@@ -12,12 +12,34 @@ import requests
 from app.config import AnalyticsConfig, AppConfig
 from app.main import create_app
 from app.models.search_result import SearchResponse
-from app.services.analytics_events import build_search_performed_event
+from app.services.analytics_events import (
+    ANALYTICS_EVENTS_DROPPED,
+    AnalyticsEmitter,
+    build_search_performed_event,
+)
 
 
 class _InlineExecutor:
     def submit(self, fn, *args, **kwargs):
         fn(*args, **kwargs)
+
+
+class _HoldingExecutor:
+    def __init__(self):
+        self.submitted = []
+
+    def submit(self, fn, *args, **kwargs):
+        self.submitted.append((fn, args, kwargs))
+
+    def run_all(self):
+        submitted, self.submitted = self.submitted, []
+        for fn, args, kwargs in submitted:
+            fn(*args, **kwargs)
+
+
+class _FailingExecutor:
+    def submit(self, fn, *args, **kwargs):
+        raise RuntimeError("executor is shut down")
 
 
 @pytest.fixture()
@@ -44,6 +66,70 @@ def test_build_search_performed_event_with_empty_results():
     event = build_search_performed_event("u-1", response)
 
     assert event["metadata"]["document_hit_ids"] == ""
+
+
+def test_emitter_drops_when_backlog_is_full_and_recovers():
+    executor = _HoldingExecutor()
+    emitter = AnalyticsEmitter(
+        AnalyticsConfig(service_url="http://analytics.test", max_pending=2),
+        executor=executor,
+    )
+    response = SearchResponse(results=[], total=0, page=1, page_size=20, query="query")
+    dropped_before = ANALYTICS_EVENTS_DROPPED._value.get()
+
+    with patch("app.services.analytics_events.requests.post"):
+        emitter.emit_search_performed("u-1", response)
+        emitter.emit_search_performed("u-1", response)
+        emitter.emit_search_performed("u-1", response)
+
+        assert len(executor.submitted) == 2
+        assert ANALYTICS_EVENTS_DROPPED._value.get() == dropped_before + 1
+
+        executor.run_all()
+        emitter.emit_search_performed("u-1", response)
+
+    assert len(executor.submitted) == 1
+    executor.run_all()
+
+
+def test_timeouts_release_slots_for_each_event():
+    emitter = AnalyticsEmitter(
+        AnalyticsConfig(service_url="http://analytics.test", max_pending=2),
+        executor=_InlineExecutor(),
+    )
+    response = SearchResponse(results=[], total=0, page=1, page_size=20, query="query")
+    dropped_before = ANALYTICS_EVENTS_DROPPED._value.get()
+
+    with patch(
+        "app.services.analytics_events.requests.post",
+        side_effect=requests.Timeout("analytics timed out"),
+    ) as post:
+        for _ in range(10):
+            emitter.emit_search_performed("u-1", response)
+
+    assert post.call_count == 10
+    assert ANALYTICS_EVENTS_DROPPED._value.get() == dropped_before
+    assert emitter._slots.acquire(blocking=False)
+    assert emitter._slots.acquire(blocking=False)
+    assert not emitter._slots.acquire(blocking=False)
+    emitter._slots.release()
+    emitter._slots.release()
+
+
+def test_submit_error_releases_slot_without_raising():
+    emitter = AnalyticsEmitter(
+        AnalyticsConfig(service_url="http://analytics.test", max_pending=1),
+        executor=_FailingExecutor(),
+    )
+    response = SearchResponse(results=[], total=0, page=1, page_size=20, query="query")
+
+    emitter.emit_search_performed("u-1", response)
+    emitter.executor = _InlineExecutor()
+
+    with patch("app.services.analytics_events.requests.post") as post:
+        emitter.emit_search_performed("u-1", response)
+
+    post.assert_called_once()
 
 
 def test_search_emits_search_performed_event(analytics_client, mock_meilisearch_client):

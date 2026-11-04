@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 
+from prometheus_client import Counter
 import requests
 import structlog
 
@@ -14,6 +16,10 @@ from app.models.search_result import SearchResponse
 logger = structlog.get_logger()
 
 SEARCH_PERFORMED = "search.performed"
+ANALYTICS_EVENTS_DROPPED = Counter(
+    "search_analytics_events_dropped_total",
+    "search.performed events dropped because the send backlog was full",
+)
 
 
 def build_search_performed_event(user_id: str, response: SearchResponse) -> dict:
@@ -43,6 +49,7 @@ class AnalyticsEmitter:
             if executor is not None
             else ThreadPoolExecutor(max_workers=2, thread_name_prefix="analytics-emit")
         )
+        self._slots = threading.BoundedSemaphore(config.max_pending)
 
     @property
     def enabled(self) -> bool:
@@ -53,8 +60,32 @@ class AnalyticsEmitter:
         if not self.enabled or not user_id:
             return
 
+        if not self._slots.acquire(blocking=False):
+            ANALYTICS_EVENTS_DROPPED.inc()
+            logger.warning(
+                "analytics_emit_dropped",
+                event_type=SEARCH_PERFORMED,
+                max_pending=self.config.max_pending,
+            )
+            return
+
         event = build_search_performed_event(user_id, response)
-        self.executor.submit(self._post, event)
+        try:
+            self.executor.submit(self._send, event)
+        except Exception as error:
+            self._slots.release()
+            logger.warning(
+                "analytics_emit_dropped",
+                event_type=SEARCH_PERFORMED,
+                max_pending=self.config.max_pending,
+                error=str(error),
+            )
+
+    def _send(self, event: dict) -> None:
+        try:
+            self._post(event)
+        finally:
+            self._slots.release()
 
     def _post(self, event: dict) -> None:
         try:

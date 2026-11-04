@@ -12,9 +12,13 @@ source:
     GET /api/v1/search and POST /api/v1/search/advanced that carries an
     X-User-ID header. analytics-service stores it in analytics_events.
     Requests without X-User-ID, failed searches and searches made while
-    ANALYTICS_SERVICE_URL is unset emit nothing. Delivery is best effort: a
-    failed post is logged as analytics_emit_failed and the search still
-    returns normally, so a small number of searches can be missing.
+    ANALYTICS_SERVICE_URL is unset emit nothing. Delivery is best effort. At
+    most ANALYTICS_MAX_PENDING events (default 100) wait to be sent; while that
+    many are waiting, new events are dropped, logged as analytics_emit_dropped
+    and counted in search_analytics_events_dropped_total. A failed post is
+    logged as analytics_emit_failed. Either way the search still returns
+    normally, so some searches can be missing, mostly during an
+    analytics-service outage.
   replaces: >-
     The in-process _search_analytics list in app/services/meilisearch_client.py
     still backs GET /api/v1/search/analytics, but it keeps no user id and is
