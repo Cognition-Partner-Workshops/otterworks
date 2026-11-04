@@ -109,8 +109,10 @@ first job run.
 tenant namespace and reaches Azure SQL over its public FQDN. Terraform creates one SQL
 firewall rule per `eks_egress_cidrs` entry (the NAT gateway EIPs), `AllowAzureServices`
 (0.0.0.0) so the Container Apps job/apps can connect, and a temporary rule for the
-deployer while `apply_target_sql` runs. Storage and Key Vault keep public endpoints with
-TLS 1.2 and no anonymous access.
+deployer while `apply_target_sql` runs. Storage keeps a public endpoint with TLS 1.2 and no
+anonymous access. Key Vault keeps its public endpoint but with `default_action=Deny`,
+`bypass=AzureServices` and an IP allow-list of the deployer (`deployer_cidrs`, or the
+auto-discovered apply-machine IP), so only the deployer can reach the data plane.
 
 **Private (`-var private_networking=true`)** — `vnet-otterworks-<ns>` (10.60.0.0/16 by
 default) with a `/23` subnet delegated to `Microsoft.App/environments` and a `/24` for

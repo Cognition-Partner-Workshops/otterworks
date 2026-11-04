@@ -70,9 +70,8 @@ resource "azurerm_role_assignment" "identity_blob_reader" {
 # ---- key vault --------------------------------------------------------------
 
 # Purge protection stays off on purpose: namespaces are throwaway and `make demo-destroy` must be able to
-# purge the vault so a re-run can reuse the name. Network ACLs exist only when private_networking is on:
-# secrets are written by the deployer over the public data plane (see CONTRACTS networking decision).
-resource "azurerm_key_vault" "this" { # nosemgrep: terraform.azure.security.keyvault.keyvault-purge-enabled.keyvault-purge-enabled, terraform.azure.security.keyvault.keyvault-specify-network-acl.keyvault-specify-network-acl
+# purge the vault so a re-run can reuse the name.
+resource "azurerm_key_vault" "this" { # nosemgrep: terraform.azure.security.keyvault.keyvault-purge-enabled.keyvault-purge-enabled
   name                       = local.key_vault_name
   location                   = azurerm_resource_group.this.location
   resource_group_name        = azurerm_resource_group.this.name
@@ -81,18 +80,16 @@ resource "azurerm_key_vault" "this" { # nosemgrep: terraform.azure.security.keyv
   rbac_authorization_enabled = var.manage_rbac
   purge_protection_enabled   = false
   soft_delete_retention_days = 7
-  # Secrets are written over the data plane by the machine running apply, so in private mode the
-  # vault keeps a public endpoint locked to the deployer CIDRs (plus the private endpoint).
+  # Secrets are written over the data plane by the machine running apply, so the vault keeps a
+  # public endpoint, but in both modes it denies everything except the deployer CIDRs (plus the
+  # private endpoint in private mode).
   public_network_access_enabled = true
   tags                          = local.tags
 
-  dynamic "network_acls" {
-    for_each = var.private_networking ? [1] : []
-    content {
-      default_action = "Deny"
-      bypass         = "AzureServices"
-      ip_rules       = local.deployer_cidrs
-    }
+  network_acls {
+    default_action = "Deny"
+    bypass         = "AzureServices"
+    ip_rules       = local.deployer_cidrs
   }
 
   # Access-policy mode (manage_rbac=false): Contributor alone can grant these.

@@ -1,9 +1,9 @@
 data "azurerm_client_config" "current" {}
 
 # Public IP of the machine running Terraform: SQL firewall rule for apply_target_sql (public mode)
-# and the Key Vault data-plane allow-list (private mode). Skipped when deployer_cidrs is set.
+# and the Key Vault data-plane allow-list (both modes). Skipped when deployer_cidrs is set.
 data "http" "deployer_ip" {
-  count = (var.apply_target_sql || var.private_networking) && length(var.deployer_cidrs) == 0 ? 1 : 0
+  count = length(var.deployer_cidrs) == 0 ? 1 : 0
   url   = "https://api.ipify.org?format=text"
 }
 
