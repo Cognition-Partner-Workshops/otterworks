@@ -30,6 +30,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck source=lib/tenant-common.sh
 source "${SCRIPT_DIR}/lib/tenant-common.sh"
+# shellcheck source=lib/tenant-irsa.sh
+source "${SCRIPT_DIR}/lib/tenant-irsa.sh"
 
 # ---------- Args ----------
 ATTENDEE_ID=""
@@ -112,6 +114,10 @@ if [ -z "${KUBERNETES_SERVICE_HOST:-}" ]; then
 fi
 log "Loading shared application-infra Terraform outputs..."
 load_infra_outputs
+# The shared otterworks-<svc>-<env> roles trust only the golden namespace, so a
+# tenant must never be annotated with them. Tenant roles are minted below
+# (ensure_tenant_irsa); eventing.env may still name operator-managed roles.
+IRSA_JSON="{}"
 
 export DDB_NOTIF_PREFS=""
 EVENTING_ENV="${REPO_ROOT}/infrastructure/helm/tenant-values/$(sanitize_id "${ATTENDEE_ID}")/eventing.env"
@@ -243,60 +249,70 @@ spec:
               kubernetes.io/metadata.name: monitoring
 YAML
 
-# ---------- IRSA trust: allow this tenant namespace to assume the shared roles ----------
-ensure_irsa_trust() {
-  local d="${REPO_ROOT}/infrastructure/terraform"
+# ---------- Per-tenant IRSA: exact-subject roles scoped to this tenant's data ----------
+# Mint this tenant's own exact-subject IRSA roles (scripts/lib/tenant-irsa.sh)
+# and point its data-bearing services at their own tables and S3 prefix. A
+# service whose role is pinned in eventing.env keeps that role and its config.
+ensure_tenant_irsa() {
+  local sid; sid="$(sanitize_id "${ATTENDEE_ID}")"
   local oidc_url; oidc_url="$(terraform -chdir="${REPO_ROOT}/platform/terraform" output -raw oidc_provider_url 2>/dev/null || echo "")"
   # In-cluster the platform/terraform state isn't initialized; fall back to the
   # cluster's OIDC issuer via the EKS API (the runner IRSA role has
-  # eks:DescribeCluster). Without this the per-namespace trust is skipped and
-  # tenant pods can't assume the shared roles (AWS ops fail).
+  # eks:DescribeCluster).
   if [ -z "${oidc_url}" ]; then
     oidc_url="$(aws eks describe-cluster --name "${EKS_CLUSTER}" --region "${AWS_REGION}" \
       --query 'cluster.identity.oidc.issuer' --output text 2>/dev/null || echo "")"
   fi
   oidc_url="${oidc_url#https://}"
-  [ -n "${oidc_url}" ] || { warn "OIDC provider URL unavailable; skipping IRSA trust update (IRSA may fail for ${NS})"; return 0; }
-  local svc role sub
-  for svc in $(echo "${IRSA_JSON}" | jq -r 'keys[]'); do
-    role="otterworks-${svc}-dev"
-    sub="system:serviceaccount:${NS}:${svc}"
-    local doc; doc="$(aws iam get-role --role-name "${role}" --query 'Role.AssumeRolePolicyDocument' --output json 2>/dev/null || echo "")"
-    [ -n "${doc}" ] || { warn "role ${role} not found; skipping"; continue; }
-    # Skip if the sub is already trusted — either an exact StringEquals entry or
-    # a StringLike wildcard (e.g. the Terraform-managed "otterworks-*" pattern)
-    # that already matches this namespace. Checking only StringEquals would make
-    # us append a redundant statement on every deploy and bloat the trust policy
-    # (IAM trust docs cap at 2048/4096 chars) until deploys start failing.
-    local trusted already=false pat
-    trusted="$(echo "${doc}" | jq -r --arg url "${oidc_url}" '
-      [ .Statement[]?.Condition
-        | (.StringEquals[$url+":sub"], .StringLike[$url+":sub"])
-        | select(. != null)
-        | if type=="array" then .[] else . end ] | .[]' 2>/dev/null)"
-    while IFS= read -r pat; do
-      [ -n "${pat}" ] || continue
-      # shellcheck disable=SC2254  # glob-match the exact sub against trust patterns
-      case "${sub}" in ${pat}) already=true; break ;; esac
-    done <<EOF
-${trusted}
-EOF
-    [ "${already}" = true ] && continue
-    # Append an AssumeRoleWithWebIdentity statement scoped to this namespace SA.
-    local new; new="$(echo "${doc}" | jq --arg sub "${sub}" --arg url "${oidc_url}" '
-      .Statement += [{
-        Effect: "Allow",
-        Action: "sts:AssumeRoleWithWebIdentity",
-        Principal: (.Statement[0].Principal),
-        Condition: { StringEquals: { ($url+":sub"): $sub, ($url+":aud"): "sts.amazonaws.com" } }
-      }]')"
-    aws iam update-assume-role-policy --role-name "${role}" --policy-document "${new}" >/dev/null \
-      && log "  IRSA trust: ${role} now trusts ${sub}" \
-      || warn "  failed to update trust for ${role}"
+  local oidc_arn="arn:aws:iam::${AWS_ACCOUNT_ID}:oidc-provider/${oidc_url}"
+  local boundary; boundary="$(terraform -chdir="${REPO_ROOT}/infrastructure/terraform" output -raw tenant_irsa_boundary_arn 2>/dev/null || echo "")"
+  [ -n "${boundary}" ] || boundary="arn:aws:iam::${AWS_ACCOUNT_ID}:policy/otterworks-tenant-boundary-dev"
+
+  local svc arn shared
+  for svc in "${TENANT_IRSA_SERVICES[@]}"; do
+    [[ " ${TENANT_SERVICES[*]} " == *" ${svc} "* ]] || continue
+    if [ "$(echo "${IRSA_JSON}" | jq -r --arg s "${svc}" '.[$s] // empty')" != "" ]; then
+      log "  ${svc}: role pinned by eventing.env; leaving its data config unchanged"
+      continue
+    fi
+    # Re-point this service's tables at tenant-owned copies before the role
+    # policy is rendered, so the policy names exactly those tables.
+    case "${svc}" in
+      file-service)
+        for shared in DDB_FILE_META DDB_FOLDERS DDB_VERSIONS DDB_SHARES; do
+          [ -n "${!shared}" ] || continue
+          ensure_tenant_table "${!shared}" "$(tenant_table_name "${sid}" "${!shared}")" "${sid}" || true
+          printf -v "${shared}" '%s' "$(tenant_table_name "${sid}" "${!shared}")"
+        done
+        T_FILE_S3_PREFIX="$(tenant_s3_prefix "${sid}")" ;;
+      notification-service)
+        if [ -n "${DDB_NOTIF}" ]; then
+          ensure_tenant_table "${DDB_NOTIF}" "$(tenant_table_name "${sid}" "${DDB_NOTIF}")" "${sid}" || true
+          DDB_NOTIF="$(tenant_table_name "${sid}" "${DDB_NOTIF}")"
+        fi ;;
+      audit-service)
+        if [ -n "${DDB_AUDIT}" ]; then
+          ensure_tenant_table "${DDB_AUDIT}" "$(tenant_table_name "${sid}" "${DDB_AUDIT}")" "${sid}" || true
+          DDB_AUDIT="$(tenant_table_name "${sid}" "${DDB_AUDIT}")"
+        fi
+        T_AUDIT_S3_PREFIX="$(tenant_s3_prefix "${sid}")" ;;
+    esac
+    if [ -z "${oidc_url}" ]; then
+      warn "  OIDC provider URL unavailable; ${svc} gets no AWS role (its AWS calls will fail closed)"
+      continue
+    fi
+    if arn="$(ensure_tenant_role "${svc}" "${sid}" "${NS}" "${oidc_arn}" "${oidc_url}" "${boundary}" "${AWS_ACCOUNT_ID}")"; then
+      IRSA_JSON="$(echo "${IRSA_JSON}" | jq -c --arg s "${svc}" --arg r "${arn}" '. + {($s): $r}')"
+      log "  ${svc}: IRSA role ${arn##*/} (trusts only ${NS}:${svc})"
+    else
+      warn "  ${svc}: could not create its tenant IRSA role; it gets no AWS role (fails closed)"
+    fi
   done
 }
-log "Ensuring shared IRSA roles trust the tenant namespace service accounts..."
-ensure_irsa_trust
+T_FILE_S3_PREFIX=""
+T_AUDIT_S3_PREFIX=""
+log "Ensuring per-tenant IRSA roles, tables and S3 prefixes for ${NS}..."
+ensure_tenant_irsa
 
 # ---------- Per-tenant RDS database (Postgres data isolation) ----------
 create_tenant_database() {

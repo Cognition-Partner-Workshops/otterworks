@@ -48,7 +48,7 @@ public class S3AuditArchiver : IAuditArchiver
             extension = "json";
         }
 
-        var key = $"audit-exports/{from:yyyy-MM-dd}_{to:yyyy-MM-dd}_{Guid.NewGuid():N}.{extension}";
+        var key = $"{_settings.S3ArchivePrefix}audit-exports/{from:yyyy-MM-dd}_{to:yyyy-MM-dd}_{Guid.NewGuid():N}.{extension}";
 
         var putRequest = new PutObjectRequest
         {
@@ -89,7 +89,7 @@ public class S3AuditArchiver : IAuditArchiver
         }
 
         var content = JsonSerializer.Serialize(events, new JsonSerializerOptions { WriteIndented = true });
-        var key = $"audit-archive/{olderThan:yyyy-MM-dd}/{Guid.NewGuid():N}.json";
+        var key = $"{_settings.S3ArchivePrefix}audit-archive/{olderThan:yyyy-MM-dd}/{Guid.NewGuid():N}.json";
 
         var putRequest = new PutObjectRequest
         {

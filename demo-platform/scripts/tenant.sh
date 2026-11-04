@@ -217,7 +217,7 @@ case "${cmd}" in
     [ -n "${id}" ] || fail "usage: tenant.sh checkin <id>"
 
     login
-    log "checking in '${id}' (namespace, database, DNS and IRSA trust are removed)..."
+    log "checking in '${id}' (namespace, database, DNS and tenant IRSA roles are removed)..."
     out="$(api POST "/api/tenants/${id}/checkin" '{}')"
     log "${id}: $(printf '%s' "${out}" | jq -r '.status // "accepted"')"
 

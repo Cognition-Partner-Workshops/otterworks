@@ -104,7 +104,7 @@ Replaces the current TTL reaper (which deletes namespaces but **leaves orphan DB
   2. RDS database `otterworks_<id>`
   3. S3 objects under the tenant prefix in every shared bucket
   4. DynamoDB items with the tenant partition key in every shared table
-  5. IAM/IRSA trust entries (only legacy exact-match; keep the shared wildcard)
+  5. the tenant's own IRSA roles and `otterworks-t-<id>--*` DynamoDB tables
   6. Route53 records (external-dns handles ingress records automatically)
   7. control-table status → `free`; append audit event
 - **Orphan sweeper:** independently lists live namespaces / DBs / S3 prefixes / Dynamo partitions
@@ -151,7 +151,7 @@ I recommend (A) now and (B) only if you specifically want the consolidation. **N
 ## 9. Security & correctness
 
 - Passcode: server-side, constant-time, rate-limited, session cookie (§3). No secret in argv/URL/logs.
-- Dashboard runs with a **scoped IRSA role** (only: manage `otterworks-*` ns, the control table, tenant DBs, tenant S3 prefixes) — not cluster-admin, not the tenant wildcard.
+- Dashboard runs with a **scoped IRSA role** (only: manage `otterworks-*` ns, the control table, tenant DBs, tenant S3 prefixes, boundary-capped tenant IRSA roles) — not cluster-admin, and unable to edit the shared service roles.
 - **Audit log** of every checkout/checkin/teardown/extend (who, when, what).
 - **Concurrency locking** on checkout (conditional writes, §4).
 - Control table **PITR/backups** so state survives mistakes.

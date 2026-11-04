@@ -178,8 +178,8 @@ charts don't checksum the ConfigMap, config-only changes need a `rollout restart
 
 - **Shared-store blast radius (Tier A).** Logical prefixes rely on app-level enforcement; a bug
   could cross tenants. Tier B removes this at the cost of per-tenant provisioning time.
-- **IRSA granularity.** Dev reuses one role per service across tenants; strict isolation needs
-  per-tenant roles scoped to per-tenant resource ARNs (more IAM objects).
+- **IRSA granularity.** Each tenant gets its own exact-subject role per data-bearing service,
+  scoped to its `tenants/<ID>/` prefix and `otterworks-t-<ID>--*` tables (3 IAM roles per tenant).
 - **Chart config-reload.** Add `checksum/config` annotations so `helm upgrade` auto-rolls pods on
   config change (today a manual `rollout restart` is needed).
 - **DNS/wildcard cert** must exist for host-based routing; otherwise fall back to path routing.
