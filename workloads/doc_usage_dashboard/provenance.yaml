@@ -4,7 +4,7 @@ spec: workloads/doc_usage_dashboard.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+  commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2455
   session: https://partner-workshops.devinenterprise.com/sessions/0bcecbe08fc4428781f5361b2aa68af3
 endpoints:
@@ -57,8 +57,8 @@ deployed_objects:
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD
   devin_csid: cs_doc_usage_dashboard_account_usage
   state: deployed
-  deployed_at: '2026-11-04T21:24:20Z'
-  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+  deployed_at: '2026-11-04T21:56:26Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 - type: streamlit
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP
   devin_csid: cs_doc_usage_dashboard_account_usage
@@ -110,25 +110,39 @@ deployed_objects:
   deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: schema
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:52:51Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 - type: table
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.REFRESH_LOG
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:52:51Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 - type: table
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.REFRESH_TABLES
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:52:51Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 - type: table
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.FAULT_SWITCH
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:52:51Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 - type: view
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.WORKLOAD_FRESHNESS
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:52:51Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 - type: procedure
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.CHECK_FAULT_SWITCH
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:52:51Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 - type: procedure
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.RECORD_REFRESH
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:52:51Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 - type: table
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_SNAPSHOT
   state: deployed
@@ -137,13 +151,13 @@ deployed_objects:
 - type: stage
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DBT_SOURCE_FILES
   state: deployed
-  deployed_at: '2026-11-04T21:24:20Z'
-  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+  deployed_at: '2026-11-04T21:56:26Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 - type: dbt_project
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.OTTERWORKS_DBT
   state: deployed
-  deployed_at: '2026-11-04T21:24:20Z'
-  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+  deployed_at: '2026-11-04T21:56:26Z'
+  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
 usage:
   source: SNOWFLAKE.ACCOUNT_USAGE
   reported_through: pending
