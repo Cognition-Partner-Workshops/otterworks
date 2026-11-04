@@ -14,7 +14,14 @@
             "columns": [
               "snapshot_date",
               "account_id"
-            ]
+            ],
+            "config": {
+              "tags": [
+                "dq",
+                "dq_doc_usage_dashboard",
+                "dq_uniqueness"
+              ]
+            }
           }
         }
       ],
@@ -23,28 +30,68 @@
           "name": "snapshot_date",
           "data_type": "date",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "account_id",
           "data_type": "varchar(36)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "account_email",
           "data_type": "varchar(255)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "tier",
           "data_type": "varchar(16)",
           "data_tests": [
-            "not_null",
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            },
             {
               "accepted_values": {
                 "values": [
@@ -53,7 +100,14 @@
                   "pro",
                   "enterprise"
                 ],
-                "quote": true
+                "quote": true,
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
               }
             }
           ]
@@ -62,35 +116,85 @@
           "name": "quota_bytes",
           "data_type": "number(19,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "used_bytes",
           "data_type": "number(19,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "remaining_bytes",
           "data_type": "number(19,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "usage_pct",
           "data_type": "number(7,2)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "usage_band",
           "data_type": "varchar(16)",
           "data_tests": [
-            "not_null",
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            },
             {
               "accepted_values": {
                 "values": [
@@ -98,7 +202,14 @@
                   "near_limit",
                   "over_quota"
                 ],
-                "quote": true
+                "quote": true,
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
               }
             }
           ]
@@ -107,7 +218,17 @@
           "name": "active_document_count",
           "data_type": "number(10,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         }
       ]
@@ -125,7 +246,14 @@
             "columns": [
               "snapshot_date",
               "account_id"
-            ]
+            ],
+            "config": {
+              "tags": [
+                "dq",
+                "dq_doc_usage_dashboard",
+                "dq_uniqueness"
+              ]
+            }
           }
         }
       ],
@@ -134,21 +262,51 @@
           "name": "snapshot_date",
           "data_type": "date",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "account_id",
           "data_type": "varchar(36)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "tier",
           "data_type": "varchar(16)",
           "data_tests": [
-            "not_null",
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            },
             {
               "accepted_values": {
                 "values": [
@@ -157,7 +315,14 @@
                   "pro",
                   "enterprise"
                 ],
-                "quote": true
+                "quote": true,
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
               }
             }
           ]
@@ -166,35 +331,85 @@
           "name": "quota_bytes",
           "data_type": "number(19,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "used_bytes",
           "data_type": "number(19,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "remaining_bytes",
           "data_type": "number(19,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "usage_pct",
           "data_type": "number(7,2)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "usage_band",
           "data_type": "varchar(16)",
           "data_tests": [
-            "not_null",
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            },
             {
               "accepted_values": {
                 "values": [
@@ -202,7 +417,14 @@
                   "near_limit",
                   "over_quota"
                 ],
-                "quote": true
+                "quote": true,
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
               }
             }
           ]
@@ -211,7 +433,17 @@
           "name": "active_document_count",
           "data_type": "number(10,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_doc_usage_dashboard",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         }
       ]

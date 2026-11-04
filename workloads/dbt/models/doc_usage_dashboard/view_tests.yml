@@ -2,6 +2,7 @@ version: 2
 unit_tests:
 - name: usage_spec_101_view
   model: doc_usage_dashboard
+  config: {tags: ['dq', 'dq_doc_usage_dashboard', 'dq_worked_example']}
   given:
   - input: ref('doc_usage_dashboard_snapshot')
     rows:
@@ -38,6 +39,7 @@ unit_tests:
       active_document_count: 3
 - name: usage_spec_102_view
   model: doc_usage_dashboard
+  config: {tags: ['dq', 'dq_doc_usage_dashboard', 'dq_worked_example']}
   given:
   - input: ref('doc_usage_dashboard_snapshot')
     rows:
@@ -74,6 +76,7 @@ unit_tests:
       active_document_count: 12
 - name: usage_spec_103_view
   model: doc_usage_dashboard
+  config: {tags: ['dq', 'dq_doc_usage_dashboard', 'dq_worked_example']}
   given:
   - input: ref('doc_usage_dashboard_snapshot')
     rows:
