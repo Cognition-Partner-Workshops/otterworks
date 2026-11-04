@@ -62,10 +62,10 @@ workloads:
   - name: doc_search_api
     spec: workloads/doc_search_api.yaml
     question: Which terms and documents does each account search for?
-    status: blocked_on_source
-    blocker: >-
-      search-service keeps searches only in process memory. Nothing writes them
-      to Postgres until it emits the search.performed event defined in the spec.
+    status: ready
+    source_note: >-
+      Reads search.performed rows from analytics_events, which search-service
+      emits from this change onward.
     endpoint: cs_doc_search_api_top_items
   - name: churn_model
     spec: workloads/churn_model.yaml

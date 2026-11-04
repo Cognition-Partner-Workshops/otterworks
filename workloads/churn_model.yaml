@@ -4,6 +4,10 @@ schedule: weekly, Monday after 00:00 UTC, scoring the ISO week that just ended
 output_table: ANALYTICS.CHURN_MODEL
 grain: [week_start_date, account_id]
 model_version: rules_v1
+baseline: >-
+  rules_v1 is the fixed, hand-checkable baseline. A trained model replaces it
+  only if it beats rules_v1 on the same weeks and accounts, and it must use a
+  new model_version value. rules_v1 stays unchanged so the comparison holds.
 
 inputs:
   - table: users

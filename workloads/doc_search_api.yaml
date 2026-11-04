@@ -3,21 +3,22 @@ description: Top searched terms and top searched documents per account over a tr
 schedule: daily, window ending on the previous UTC day
 output_table: ANALYTICS.DOC_SEARCH_API
 grain: [window_end_date, account_id, item_type, rank]
-status: blocked_on_source
+status: ready
 
-source_gap:
-  finding: >-
-    search-service owns search, but it records queries only in an in-process
-    list (_search_analytics in app/services/meilisearch_client.py). That list
-    keeps the last 10,000 queries across all users, stores no user id and is
-    lost on restart. It has no Postgres table. The search_executed log line
-    carries the query and result_count but no user.
-  required_change: >-
-    After each successful GET /api/v1/search and POST /api/v1/search/advanced,
-    search-service posts one event to analytics-service
-    POST /api/v1/analytics/events. analytics-service stores it in
-    analytics_events. AnalyticsService.trackEvent does not check event_type
-    against EventType.All, so analytics-service needs no schema change.
+source:
+  emitter: >-
+    search-service (app/services/analytics_events.py) posts one event to
+    analytics-service POST /api/v1/analytics/events after each successful
+    GET /api/v1/search and POST /api/v1/search/advanced that carries an
+    X-User-ID header. analytics-service stores it in analytics_events.
+    Requests without X-User-ID, failed searches and searches made while
+    ANALYTICS_SERVICE_URL is unset emit nothing. Delivery is best effort: a
+    failed post is logged as analytics_emit_failed and the search still
+    returns normally, so a small number of searches can be missing.
+  replaces: >-
+    The in-process _search_analytics list in app/services/meilisearch_client.py
+    still backs GET /api/v1/search/analytics, but it keeps no user id and is
+    lost on restart, so this workload does not read it.
   event_contract:
     eventType: search.performed
     userId: X-User-ID of the request
@@ -157,4 +158,4 @@ endpoint:
 
 open_questions:
   - Counting a document when it appears on the results page measures exposure, not interest. A click event (for example search.result_opened) would measure actual interest, but no client emits one today.
-  - The window has no history until search-service starts emitting search.performed.
+  - History starts when the search.performed emitter is deployed. Earlier searches cannot be backfilled, so windows that start before that date undercount.

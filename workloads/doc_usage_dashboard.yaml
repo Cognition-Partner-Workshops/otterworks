@@ -60,7 +60,7 @@ business_rule: >-
   context only and does not affect the band.
 
 parameters:
-  near_limit_ratio: 0.80
+  near_limit_ratio: 0.80  # confirmed by product
 
 examples:
   - inputs:
@@ -127,6 +127,5 @@ endpoint:
     role in user_roles.
 
 open_questions:
-  - Product has not confirmed 80% as the near-limit threshold.
   - storage_quotas has no history, so trends need snapshots to accumulate in Snowflake first.
   - file-service holds per-file size_bytes in DynamoDB rather than Postgres, so used_bytes is not reconciled against file sizes.
