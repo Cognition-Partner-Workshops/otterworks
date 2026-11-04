@@ -9,7 +9,8 @@ This Terraform root builds the AWS side of the `aws-cloud-worker` demo. It share
 - DynamoDB table `otterworks-cw-notifications`, with the same keys and index as the main notifications table.
 - DynamoDB table `otterworks-cw-notification-preferences`, keyed on `userId`. The consumer reads it before it writes each notification.
 - IRSA roles `otterworks-cw-notification-service` and `otterworks-cw-file-service`. Each trusts one service account in `otterworks-cloud-worker`.
-- IAM user `devin-cw-reader`. It may assume `devin-cw-observer` for reads and `devin-cw-builder` for the restore and the redrive.
+- IAM user `devin-cw-reader`. It may assume `devin-cw-observer` for reads, `devin-cw-builder` for the restore and the redrive, and `devin-aws-engineer` for the lp-* Terraform runs.
+- Permissions boundary `devin-aws-engineer-boundary`. `devin-aws-engineer` may only create or edit `lp-*` roles that carry it, and `devin-cw-builder` carries it so run policies attached to the builder stay inside it. The boundary allows no IAM writes.
 - Alarm `otterworks-cw-notifications-dlq-depth`. It fires when the DLQ holds one message.
 - Dashboard `otterworks-cloud-worker`.
 - EventBridge rule `otterworks-cw-dlq-alarm-to-devin`. It posts each ALARM transition to the Devin webhook. Failed posts go to `otterworks-cw-events-dlq`.

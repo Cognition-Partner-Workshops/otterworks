@@ -14,8 +14,9 @@ resource "aws_lambda_alias" "live" {
 }
 
 resource "aws_iam_role" "codedeploy" {
-  name        = "${local.name}-codedeploy"
-  description = "CodeDeploy service role for the ${local.name} Lambda canaries"
+  name                 = "${local.name}-codedeploy"
+  permissions_boundary = local.permissions_boundary_arn
+  description          = "CodeDeploy service role for the ${local.name} Lambda canaries"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

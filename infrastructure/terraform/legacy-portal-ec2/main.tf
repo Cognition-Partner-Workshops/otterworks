@@ -12,9 +12,13 @@ locals {
   jar_key         = "legacy-portal.jar"
   artifact_bucket = "${local.name}-artifacts"
   log_group_name  = "/otterworks/legacy-portal-ec2/${var.run_token}/app"
+
+  permissions_boundary_arn = "arn:${data.aws_partition.current.partition}:iam::${data.aws_caller_identity.current.account_id}:policy/${var.permissions_boundary_name}"
 }
 
 data "aws_partition" "current" {}
+
+data "aws_caller_identity" "current" {}
 
 data "aws_vpc" "this" {
   tags = { Name = var.vpc_name }

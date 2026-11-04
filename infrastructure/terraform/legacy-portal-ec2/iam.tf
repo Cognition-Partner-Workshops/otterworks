@@ -14,8 +14,9 @@ data "aws_iam_policy_document" "instance_assume" {
 }
 
 resource "aws_iam_role" "instance" {
-  name               = "${local.name}-instance"
-  assume_role_policy = data.aws_iam_policy_document.instance_assume.json
+  name                 = "${local.name}-instance"
+  permissions_boundary = local.permissions_boundary_arn
+  assume_role_policy   = data.aws_iam_policy_document.instance_assume.json
 }
 
 resource "aws_iam_role_policy_attachment" "ssm" {

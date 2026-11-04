@@ -40,9 +40,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "probe_artifacts" {
 }
 
 resource "aws_iam_role" "probe" {
-  name               = "${local.name}-probe"
-  description        = "Execution role of the ${local.probe_name} Synthetics canary"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
+  name                 = "${local.name}-probe"
+  permissions_boundary = local.permissions_boundary_arn
+  description          = "Execution role of the ${local.probe_name} Synthetics canary"
+  assume_role_policy   = data.aws_iam_policy_document.lambda_assume.json
 }
 
 data "aws_iam_policy_document" "probe" {

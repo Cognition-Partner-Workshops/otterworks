@@ -8,6 +8,8 @@ data "aws_iam_role" "builder" {
 locals {
   account   = data.aws_caller_identity.current.account_id
   arn_scope = "arn:${data.aws_partition.current.partition}"
+
+  permissions_boundary_arn = "${local.arn_scope}:iam::${local.account}:policy/${var.permissions_boundary_name}"
 }
 
 data "aws_iam_policy_document" "builder" {

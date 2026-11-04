@@ -32,9 +32,10 @@ data "archive_file" "consumer" {
 }
 
 resource "aws_iam_role" "consumer" {
-  name               = "${local.name}-consumer"
-  description        = "Execution role of the ${local.name} notifications consumer"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume.json
+  name                 = "${local.name}-consumer"
+  permissions_boundary = local.permissions_boundary_arn
+  description          = "Execution role of the ${local.name} notifications consumer"
+  assume_role_policy   = data.aws_iam_policy_document.lambda_assume.json
 }
 
 data "aws_iam_policy_document" "consumer" {

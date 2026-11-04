@@ -19,9 +19,9 @@ The account runs in `us-east-1`, with the cluster `otterworks-dev`. Everything a
 | --- | --- | --- |
 | `devin-cw-observer` | `source <(cloudworker/assume.sh observer devin-<session id>)` | Every read: metrics, logs, CloudTrail, describe calls |
 | `devin-cw-builder` | `source <(cloudworker/assume.sh builder devin-<session id>)` | Deploying code into a run that already exists (Lambda code and configuration, redrives, alarm state) |
-| `devin-aws-engineer` | `source <(cloudworker/assume.sh engineer devin-<session id>)` | `terraform apply` and `destroy`: PowerUserAccess plus IAM on roles and policies named `lp-*` or `otterworks-*` |
+| `devin-aws-engineer` | `source <(cloudworker/assume.sh engineer devin-<session id>)` | `terraform apply` and `destroy`: PowerUserAccess plus IAM on roles and policies named `lp-*`, bounded by `devin-aws-engineer-boundary` |
 
-The engineer role cannot touch the Devin roles, the console user or any human user. Other AWS variables may be present on the machine; leave them alone and let `assume.sh` set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`.
+The engineer role cannot touch the Devin roles, the console user or any human user. Every role it creates or edits must carry the permissions boundary `devin-aws-engineer-boundary` (the lp-* Terraform roots set it), and it may attach only `lp-*` customer policies and the AWS service policies listed in `infrastructure/terraform/cloud-worker/iam.tf`. Other AWS variables may be present on the machine; leave them alone and let `assume.sh` set `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`.
 
 ```bash
 source <(cloudworker/assume.sh engineer devin-<session id>)

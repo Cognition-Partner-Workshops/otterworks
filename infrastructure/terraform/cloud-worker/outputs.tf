@@ -61,3 +61,7 @@ output "eventbridge_rule_name" {
 output "devin_engineer_role_arn" {
   value = aws_iam_role.devin_engineer.arn
 }
+
+output "devin_engineer_boundary_arn" {
+  value = aws_iam_policy.devin_engineer_boundary.arn
+}
