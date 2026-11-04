@@ -31,6 +31,10 @@ source:
     metadata:
       query: raw query string as received ("*" when advanced search has no term)
       result_count: total hits as a decimal string
+      searched_at: >-
+        UTC time search-service finished the search, ISO-8601 with milliseconds
+        and a Z suffix (for example 2026-10-28T11:00:00.000Z). Taken before the
+        event is queued, so it does not move when delivery is delayed.
       document_hit_ids: >-
         comma-separated ids of the documents-index hits on the returned page, in
         rank order; empty string when none. File hits are excluded.
@@ -43,7 +47,9 @@ inputs:
     columns:
       user_id: varchar(128), the account
       metadata: text, JSON object as in event_contract.metadata
-      occurred_at: bigint, epoch nanoseconds UTC
+      occurred_at: >-
+        bigint, epoch nanoseconds UTC; the time analytics-service received the
+        event, which can be later than the search
   - table: documents
     service: document-service
     landing: RAW.DOCUMENT_DOCUMENTS
@@ -63,11 +69,13 @@ output_columns:
   - {name: document_title, type: VARCHAR(500), nullable: true, rule: "documents.title; null when item_type = term"}
   - {name: search_count, type: "NUMBER(10,0)", nullable: false, rule: see business_rule}
   - {name: zero_result_count, type: "NUMBER(10,0)", nullable: true, rule: "searches for the term with result_count = 0; null when item_type = document"}
-  - {name: last_searched_at, type: TIMESTAMP_NTZ, nullable: false, rule: latest occurred_at counted for the item, in UTC}
+  - {name: last_searched_at, type: TIMESTAMP_NTZ, nullable: false, rule: latest search time counted for the item, in UTC (see business_rule)}
 
 business_rule: >-
-  Use the search.performed events from the 28 UTC days that end on
-  window_end_date, counting both end days. Normalize each query by trimming it,
+  The search time of an event is metadata searched_at, or occurred_at for an
+  event without searched_at. Use the search.performed events whose search time
+  falls in the 28 UTC days that end on window_end_date, counting both end
+  days. Normalize each query by trimming it,
   collapsing runs of whitespace to one space and lower-casing it. Drop events
   whose normalized query is empty or "*", and events with an empty user_id.
   For terms, search_count is the number of searches by the account for that
@@ -91,13 +99,13 @@ examples:
       - {id: 00000000-0000-4000-8000-000000000201, title: Q3 Budget Plan, is_deleted: false}
       - {id: 00000000-0000-4000-8000-000000000202, title: Onboarding Checklist, is_deleted: false}
     search_performed_events:
-      - {occurred_at: "2026-09-30T12:00:00Z", query: "q3 budget", result_count: 2, document_hit_ids: "...0201,...0202", note: outside the window}
-      - {occurred_at: "2026-10-20T09:00:00Z", query: "Q3 Budget", result_count: 2, document_hit_ids: "...0201,...0202"}
-      - {occurred_at: "2026-10-22T10:00:00Z", query: "q3 budget", result_count: 2, document_hit_ids: "...0201,...0202"}
-      - {occurred_at: "2026-10-28T11:00:00Z", query: "  Q3   budget ", result_count: 1, document_hit_ids: "...0201"}
-      - {occurred_at: "2026-10-29T08:00:00Z", query: "roadmap", result_count: 0, document_hit_ids: ""}
-      - {occurred_at: "2026-10-30T15:30:00Z", query: "Roadmap", result_count: 0, document_hit_ids: ""}
-      - {occurred_at: "2026-10-31T12:00:00Z", query: "onboarding", result_count: 1, document_hit_ids: "...0202"}
+      - {searched_at: "2026-09-30T12:00:00Z", query: "q3 budget", result_count: 2, document_hit_ids: "...0201,...0202", note: outside the window}
+      - {searched_at: "2026-10-20T09:00:00Z", query: "Q3 Budget", result_count: 2, document_hit_ids: "...0201,...0202"}
+      - {searched_at: "2026-10-22T10:00:00Z", query: "q3 budget", result_count: 2, document_hit_ids: "...0201,...0202"}
+      - {searched_at: "2026-10-28T11:00:00Z", query: "  Q3   budget ", result_count: 1, document_hit_ids: "...0201"}
+      - {searched_at: "2026-10-29T08:00:00Z", query: "roadmap", result_count: 0, document_hit_ids: ""}
+      - {searched_at: "2026-10-30T15:30:00Z", query: "Roadmap", result_count: 0, document_hit_ids: ""}
+      - {searched_at: "2026-10-31T12:00:00Z", query: "onboarding", result_count: 1, document_hit_ids: "...0202"}
     id_note: "...0201 and ...0202 stand for the full document ids above"
   rows:
     - expected:

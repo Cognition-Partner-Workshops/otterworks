@@ -5,6 +5,7 @@ from __future__ import annotations
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 
 from prometheus_client import Counter
 import requests
@@ -22,7 +23,9 @@ ANALYTICS_EVENTS_DROPPED = Counter(
 )
 
 
-def build_search_performed_event(user_id: str, response: SearchResponse) -> dict:
+def build_search_performed_event(
+    user_id: str, response: SearchResponse, searched_at: datetime
+) -> dict:
     """Build an analytics event for a completed search."""
     return {
         "eventType": SEARCH_PERFORMED,
@@ -32,6 +35,11 @@ def build_search_performed_event(user_id: str, response: SearchResponse) -> dict
         "metadata": {
             "query": response.query,
             "result_count": str(response.total),
+            "searched_at": (
+                searched_at.astimezone(timezone.utc)
+                .isoformat(timespec="milliseconds")
+                .replace("+00:00", "Z")
+            ),
             "document_hit_ids": ",".join(
                 hit.id for hit in response.results if hit.type == "document"
             ),
@@ -60,6 +68,7 @@ class AnalyticsEmitter:
         if not self.enabled or not user_id:
             return
 
+        searched_at = datetime.now(timezone.utc)
         if not self._slots.acquire(blocking=False):
             ANALYTICS_EVENTS_DROPPED.inc()
             logger.warning(
@@ -69,7 +78,7 @@ class AnalyticsEmitter:
             )
             return
 
-        event = build_search_performed_event(user_id, response)
+        event = build_search_performed_event(user_id, response, searched_at)
         try:
             self.executor.submit(self._send, event)
         except Exception as error:

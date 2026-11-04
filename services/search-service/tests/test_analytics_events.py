@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import replace
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 import pytest
@@ -62,10 +63,12 @@ def analytics_client(analytics_app):
 
 def test_build_search_performed_event_with_empty_results():
     response = SearchResponse(results=[], total=0, page=1, page_size=20, query="no hits")
+    searched_at = datetime(2026, 10, 28, 11, 0, tzinfo=timezone.utc)
 
-    event = build_search_performed_event("u-1", response)
+    event = build_search_performed_event("u-1", response, searched_at)
 
     assert event["metadata"]["document_hit_ids"] == ""
+    assert event["metadata"]["searched_at"] == "2026-10-28T11:00:00.000Z"
 
 
 def test_emitter_drops_when_backlog_is_full_and_recovers():
@@ -130,6 +133,30 @@ def test_submit_error_releases_slot_without_raising():
         emitter.emit_search_performed("u-1", response)
 
     post.assert_called_once()
+
+
+def test_event_timestamp_is_captured_before_queued_send():
+    executor = _HoldingExecutor()
+    emitter = AnalyticsEmitter(
+        AnalyticsConfig(service_url="http://analytics.test", max_pending=1),
+        executor=executor,
+    )
+    response = SearchResponse(results=[], total=0, page=1, page_size=20, query="query")
+    searched_at = datetime(2026, 10, 28, 11, 0, tzinfo=timezone.utc)
+    send_time = datetime(2026, 10, 28, 11, 5, tzinfo=timezone.utc)
+
+    with (
+        patch("app.services.analytics_events.datetime") as clock,
+        patch("app.services.analytics_events.requests.post") as post,
+    ):
+        clock.now.return_value = searched_at
+        emitter.emit_search_performed("u-1", response)
+        clock.now.return_value = send_time
+        executor.run_all()
+
+    assert post.call_args.kwargs["json"]["metadata"]["searched_at"] == (
+        "2026-10-28T11:00:00.000Z"
+    )
 
 
 def test_search_emits_search_performed_event(analytics_client, mock_meilisearch_client):
