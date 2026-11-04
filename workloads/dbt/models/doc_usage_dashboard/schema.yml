@@ -16,6 +16,13 @@
               "account_id"
             ]
           }
+        },
+        {
+          "matches_admin_service": {
+            "name": "dashboard_matches_admin_service",
+            "quotas": "ref('usage_quotas')",
+            "admin_users": "ref('usage_admin_users')"
+          }
         }
       ],
       "columns": [
