@@ -241,3 +241,5 @@ def test_pipeline_names_are_workload_scoped():
     assert names['history_churn_model'] == 'SFNFR_20261104_GOVERNANCE.SCHEMACHANGE.PIPELINE_CHURN_MODEL'
     assert names['dbt_project_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.OTTERWORKS_DBT'
     assert names['dbt_stage_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.DBT_SOURCE_FILES'
+    assert names['proof_schema_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.PIPELINE_FRESH_PROOF'
+    assert names['proof_history_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.PIPELINE_FRESH_PROOF.CHANGE_HISTORY'

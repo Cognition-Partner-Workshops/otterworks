@@ -334,6 +334,8 @@ def names(workloads: list[str] | tuple[str, ...]) -> dict[str, str]:
         out[f"history_{workload}"] = f"{GOVERNANCE_DATABASE}.SCHEMACHANGE.PIPELINE_{workload.upper()}"
         out[f"dbt_project_{workload}"] = f"{database_name(workload)}.ANALYTICS.OTTERWORKS_DBT"
         out[f"dbt_stage_{workload}"] = f"{database_name(workload)}.ANALYTICS.DBT_SOURCE_FILES"
+        out[f"proof_schema_{workload}"] = f"{database_name(workload)}.PIPELINE_FRESH_PROOF"
+        out[f"proof_history_{workload}"] = f"{database_name(workload)}.PIPELINE_FRESH_PROOF.CHANGE_HISTORY"
     return out
 
 

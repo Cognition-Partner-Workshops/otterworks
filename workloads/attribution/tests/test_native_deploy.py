@@ -61,3 +61,26 @@ def test_runtime_verification(state, query_tag, error):
             deploy.verify_run(*args)
     else:
         assert deploy.verify_run(*args)['mismatch_count'] == 0
+
+
+@pytest.mark.parametrize('fail', [False, True])
+def test_native_task_fails_closed_on_verification_error(monkeypatch, fail):
+    statements = []
+
+    class Cursor:
+        def execute(self, sql):
+            statements.append(sql)
+
+    def verify(*args):
+        if fail:
+            raise AssertionError('bad attribution')
+        return {'mismatch_count': 0}
+
+    monkeypatch.setattr(deploy, 'verify_run', verify)
+    if fail:
+        with pytest.raises(AssertionError, match='bad attribution'):
+            deploy.verify_or_suspend(Cursor(), {}, 'DB.ANALYTICS.TASK', 'tag', None)
+        assert statements == ['ALTER TASK DB.ANALYTICS.TASK SUSPEND']
+    else:
+        assert deploy.verify_or_suspend(Cursor(), {}, 'DB.ANALYTICS.TASK', 'tag', None) == {'mismatch_count': 0}
+        assert statements == []
