@@ -833,7 +833,8 @@ default now + 72 h) sets the `expires` tag.
 `scripts/demo-reaper.sh [--dry-run]` finds resources tagged `demo=legacy-data-migration` whose
 `expires` < now (AWS tagging API, `az resource list --tag demo=legacy-data-migration`, namespaces
 with `demo/expires-at` annotation) and runs `demo-destroy` for each token. Scheduled by
-`.github/workflows/demo-reaper.yml` (cron hourly, `workflow_dispatch`, OIDC/secrets for AWS + Azure).
+`.github/workflows/demo-reaper.yml` (cron hourly, `workflow_dispatch`, `main` only; OIDC for AWS + Azure,
+remaining values in the main-only `demo-reaper` GitHub environment).
 
 ### 12.3 Evidence
 

@@ -59,8 +59,10 @@ The scripts run `az login --service-principal` themselves and export the `ARM_*`
 equivalents for Terraform. No secret value is ever printed; Kubernetes Secrets are applied
 from stdin, never from argv. The one exception the Azure CLI forces is `az login
 --service-principal -p <secret>` (it accepts a client secret only on argv); it runs once per
-process and is skipped when the CLI is already logged in to the right subscription. Follow-up:
-switch `.github/workflows/demo-reaper.yml` to `azure/login` with OIDC to remove it entirely.
+process and is skipped when the CLI is already logged in to the right subscription. In GitHub
+Actions (`.github/workflows/demo-reaper.yml`) there is no client secret at all: with
+`ARM_USE_OIDC=true` the scripts exchange the job's GitHub OIDC token via `az login
+--federated-token` and Terraform's azurerm provider/backend do the same.
 
 The Db2 chart (`infrastructure/helm/db2-archive`), migration-job chart
 (`infrastructure/helm/migration-job`) and Azure root (`infrastructure/terraform/azure`) are
@@ -198,9 +200,14 @@ Azure (`az resource list` / `az group list`) and cluster namespaces tagged
 `demo-destroy.sh` for every token whose `expires` (+ grace, default 15 m) is in the past.
 Tokens with a malformed `namespace` tag are reported and skipped, never destroyed. A token
 with some expired and some live resources is skipped until everything has expired.
-`.github/workflows/demo-reaper.yml` runs it hourly with `--apply` (AWS OIDC via
-`AWS_ROLE_ARN`, Azure via the `AZURE_*` / `TFSTATE_AZ_*` repository secrets) and uploads the
-transcripts. `make demo-reaper` (report) / `make demo-reaper APPLY=1`.
+`.github/workflows/demo-reaper.yml` runs it hourly with `--apply` from `main` only and uploads
+the transcripts. Its job runs in the `demo-reaper` GitHub environment (deployment branches:
+`main` only), which holds `AWS_ROLE_ARN`, `AZURE_CLIENT_ID` / `AZURE_TENANT_ID` /
+`AZURE_SUBSCRIPTION_ID`, `TFSTATE_AZ_*` and `DB_PASSWORD`; none of them may exist as
+repository or organization secrets, which any pushed branch could read. AWS and Azure both use
+OIDC: the Azure app registration has a federated credential for subject
+`repo:Cognition-Partner-Workshops/otterworks:environment:demo-reaper` and no client secret, and
+the AWS role's trust policy must admit that same `environment:demo-reaper` subject. `make demo-reaper` (report) / `make demo-reaper APPLY=1`.
 
 For the talk, deploy with `TTL=72h`; the reaper removes both tenants afterwards without
 anyone remembering to.

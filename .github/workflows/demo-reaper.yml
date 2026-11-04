@@ -3,6 +3,12 @@ name: Demo reaper (legacy data migration)
 # Destroys expired legacy-data-migration demo namespaces across AWS, Azure and
 # the EKS cluster. Discovery is by tag demo=legacy-data-migration + expires
 # (CONTRACTS.md §3.3); each expired token runs scripts/demo-destroy.sh.
+#
+# Credentials live in the `demo-reaper` GitHub environment, whose deployment-branch
+# policy admits only `main`, so a workflow pushed to any other branch cannot read them.
+# Azure uses workload identity federation (no client secret): the app registration's
+# federated credential trusts subject
+#   repo:<owner>/<repo>:environment:demo-reaper
 
 on:
   schedule:
@@ -32,7 +38,9 @@ env:
 
 jobs:
   reap:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: demo-reaper
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -55,17 +63,20 @@ jobs:
 
       - name: Reap expired demo namespaces
         env:
-          # Azure service principal (Contributor). az login happens inside the
-          # scripts; ARM_* for Terraform are derived from the same values.
+          # Azure workload identity federation: the scripts exchange this job's GitHub
+          # OIDC token (`id-token: write`) via `az login --federated-token`, and
+          # ARM_USE_OIDC makes the azurerm provider and backend do the same. There is
+          # deliberately no AZURE_CLIENT_SECRET.
+          ARM_USE_OIDC: "true"
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           # azurerm backend for infrastructure/terraform/azure (per-token key).
           TFSTATE_AZ_ACCOUNT: ${{ secrets.TFSTATE_AZ_ACCOUNT }}
           TFSTATE_AZ_RESOURCE_GROUP: ${{ secrets.TFSTATE_AZ_RESOURCE_GROUP }}
           TFSTATE_AZ_CONTAINER: ${{ secrets.TFSTATE_AZ_CONTAINER }}
-          # teardown-tenant.sh drops the tenant PostgreSQL database.
+          # teardown-tenant.sh drops the tenant PostgreSQL database (environment secret;
+          # when unset, demo-destroy.sh reads it from Secrets Manager via the AWS role).
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           REAPER_GRACE: ${{ inputs.grace || '15m' }}
           EVENT_NAME: ${{ github.event_name }}
