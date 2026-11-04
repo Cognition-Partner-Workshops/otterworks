@@ -56,6 +56,9 @@ def test_runtime_verification(state, query_tag, bootstrap, first, error):
             assert 'TO_TIMESTAMP_LTZ(%s)' in sql
             if 'TASK_HISTORY(' in sql:
                 assert 'SCHEDULED_TIME_RANGE_END=>CURRENT_TIMESTAMP()' in sql
+            if 'QUERY_HISTORY_BY_WAREHOUSE(' in sql:
+                assert 'AND ROLE_NAME = %s' in sql
+                assert params[-1] == 'SFNFR_20261104_BUILDER'
             self.sql = sql
             return self
 
@@ -68,7 +71,8 @@ def test_runtime_verification(state, query_tag, bootstrap, first, error):
             kind = 'ALTER_SESSION' if bootstrap else 'SELECT'
             return [] if query_tag is None else [('query', now, 'BUILDER', kind, text[:60], query_tag, text, 123)]
 
-    args = (Cursor(), deploy.attr.names([deploy.WORKLOAD]), 'DB.ANALYTICS.TASK', 'runtime-tag', now)
+    args = (Cursor(), deploy.attr.names([deploy.WORKLOAD]), 'DB.ANALYTICS.TASK', 'runtime-tag',
+            'SFNFR_20261104_BUILDER', now)
     if error:
         with pytest.raises(AssertionError if state == 'SUCCEEDED' else RuntimeError, match=error):
             deploy.verify_run(*args)
@@ -118,10 +122,10 @@ def test_native_task_fails_closed_on_verification_error(monkeypatch, fail):
     monkeypatch.setattr(deploy, 'verify_run', verify)
     if fail:
         with pytest.raises(AssertionError, match='bad attribution'):
-            deploy.verify_or_suspend(Cursor(), {}, 'DB.ANALYTICS.TASK', 'tag', None)
+            deploy.verify_or_suspend(Cursor(), {}, 'DB.ANALYTICS.TASK', 'tag', 'BUILDER', None)
         assert statements == ['ALTER TASK DB.ANALYTICS.TASK SUSPEND']
     else:
-        assert deploy.verify_or_suspend(Cursor(), {}, 'DB.ANALYTICS.TASK', 'tag', None) == {'mismatch_count': 0}
+        assert deploy.verify_or_suspend(Cursor(), {}, 'DB.ANALYTICS.TASK', 'tag', 'BUILDER', None) == {'mismatch_count': 0}
         assert statements == []
 
 

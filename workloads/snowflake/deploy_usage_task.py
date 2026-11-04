@@ -71,7 +71,7 @@ def query_is_compliant(query_type, query_text, query_tag, first_in_session, runt
                 and setter and setter[1] == attr.sql_string(runtime_tag))
 
 
-def verify_run(cur, names, task, runtime_tag, started):
+def verify_run(cur, names, task, runtime_tag, role, started):
     history_sql = (
         'SELECT NAME,STATE,SCHEDULED_TIME,QUERY_START_TIME,COMPLETED_TIME,QUERY_ID,ERROR_CODE,ERROR_MESSAGE '
         f"FROM TABLE({names[f'db_{WORKLOAD}']}.INFORMATION_SCHEMA.TASK_HISTORY("
@@ -95,10 +95,10 @@ def verify_run(cur, names, task, runtime_tag, started):
         f"FROM TABLE({names[f'db_{WORKLOAD}']}.INFORMATION_SCHEMA.QUERY_HISTORY_BY_WAREHOUSE("
         f"WAREHOUSE_NAME=>'{names[f'wh_{WORKLOAD}']}',END_TIME_RANGE_START=>TO_TIMESTAMP_LTZ(%s),"
         'END_TIME_RANGE_END=>TO_TIMESTAMP_LTZ(%s),RESULT_LIMIT=>10000)) '
-        'WHERE START_TIME >= %s AND START_TIME <= %s ORDER BY START_TIME'
+        'WHERE START_TIME >= %s AND START_TIME <= %s AND ROLE_NAME = %s ORDER BY START_TIME'
     )
     print('QUERY_HISTORY SQL:', query_sql, '\nPARAMETERS:', row[3], row[4], row[3], row[4], flush=True)
-    queries = cur.execute(query_sql, (row[3], row[4], row[3], row[4])).fetchall()
+    queries = cur.execute(query_sql, (row[3], row[4], row[3], row[4], role)).fetchall()
     if len(queries) >= 10000:
         raise AssertionError('Query history result limit reached')
     first_query_sql = (
@@ -130,9 +130,9 @@ def verify_run(cur, names, task, runtime_tag, started):
             'mismatch_count': len(mismatches)}
 
 
-def verify_or_suspend(cur, names, task, runtime_tag, started):
+def verify_or_suspend(cur, names, task, runtime_tag, role, started):
     try:
-        return verify_run(cur, names, task, runtime_tag, started)
+        return verify_run(cur, names, task, runtime_tag, role, started)
     except Exception:
         cur.execute(f'ALTER TASK {task} SUSPEND')
         raise
@@ -200,7 +200,7 @@ def main():
         started = cur.execute('SELECT CURRENT_TIMESTAMP()').fetchone()[0]
         cur.execute(f'EXECUTE TASK {task}')
         try:
-            evidence.update(verify_or_suspend(cur, names, task, tag, started))
+            evidence.update(verify_or_suspend(cur, names, task, tag, os.environ['SNOWFLAKE_ROLE'], started))
         except Exception as error:
             evidence['verification_error'] = str(error)
             args.output.write_text(json.dumps(evidence, default=str, indent=2))
