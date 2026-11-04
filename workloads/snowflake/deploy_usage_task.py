@@ -93,6 +93,14 @@ def verify_run(cur, names, task, runtime_tag, started):
     return {'task_history': row, 'query_history_sql': query_sql, 'queries': queries, 'mismatch_count': len(mismatches)}
 
 
+def verify_or_suspend(cur, names, task, runtime_tag, started):
+    try:
+        return verify_run(cur, names, task, runtime_tag, started)
+    except Exception:
+        cur.execute(f'ALTER TASK {task} SUSPEND')
+        raise
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--commit', required=True)
@@ -140,7 +148,12 @@ def main():
         cur.execute(f'ALTER SESSION SET QUERY_TAG = {attr.sql_string(tag)}')
         started = cur.execute('SELECT CURRENT_TIMESTAMP()').fetchone()[0]
         cur.execute(f'EXECUTE TASK {task}')
-        evidence.update(verify_run(cur, names, task, tag, started))
+        try:
+            evidence.update(verify_or_suspend(cur, names, task, tag, started))
+        except Exception as error:
+            evidence['verification_error'] = str(error)
+            args.output.write_text(json.dumps(evidence, default=str, indent=2))
+            raise
         args.output.write_text(json.dumps(evidence, default=str, indent=2))
     return 0
 
