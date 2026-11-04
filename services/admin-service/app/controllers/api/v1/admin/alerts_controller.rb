@@ -18,6 +18,8 @@ module Api
       #     ]
       #   }
       class AlertsController < ApplicationController
+        # Excluded from JWT auth; protected by its own shared-secret header instead.
+        skip_before_action :require_admin!
         before_action :verify_alert_secret
 
         SEVERITY_MAP = {

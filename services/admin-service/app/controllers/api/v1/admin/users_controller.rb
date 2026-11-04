@@ -30,8 +30,16 @@ module Api
         # PUT /api/v1/admin/users/:id
         def update
           previous_attributes = @user.attributes.slice('role', 'display_name', 'email')
+          attributes = user_params
+          new_role = role_param
 
-          if @user.update(user_params)
+          if new_role && new_role != @user.role
+            denial = role_change_denial(@user, new_role)
+            return render json: { error: denial }, status: :forbidden if denial
+          end
+          attributes = attributes.merge(role: new_role) if new_role
+
+          if @user.update(attributes)
             AuditLogger.log(
               action: 'user.updated',
               resource_type: 'AdminUser',
@@ -97,7 +105,12 @@ module Api
         end
 
         def user_params
-          params.require(:user).permit(:email, :display_name, :role, :avatar_url) # nosemgrep: ruby.lang.security.model-attr-accessible.model-attr-accessible
+          params.require(:user).permit(:email, :display_name, :avatar_url)
+        end
+
+        def role_param
+          role = params.require(:user).permit(:role)[:role]
+          role&.to_s
         end
       end
     end

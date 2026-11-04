@@ -11,6 +11,11 @@ module Api
             return render json: { error: 'user_ids must be a non-empty array' }, status: :bad_request
           end
 
+          if operation == 'update_role'
+            denial = bulk_role_change_denial(user_ids, bulk_params[:role])
+            return render json: { error: denial }, status: :forbidden if denial
+          end
+
           result = BulkOperationsService.process(
             operation: operation,
             user_ids: user_ids,
@@ -27,6 +32,17 @@ module Api
         end
 
         private
+
+        def bulk_role_change_denial(user_ids, new_role)
+          return 'Only an owner or super_admin may change roles' if caller_role_rank.nil?
+
+          AdminUser.where(id: user_ids).find_each do |user|
+            denial = role_change_denial(user, new_role)
+            return denial if denial
+          end
+
+          nil
+        end
 
         def bulk_status(result)
           if result.errors.any? && result.success_count.zero? && result.failure_count.zero?

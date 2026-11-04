@@ -35,4 +35,37 @@ RSpec.describe Api::V1::Admin::BulkController do
       expect(response).to have_http_status(:bad_request)
     end
   end
+
+  describe 'POST #users update_role authorization' do
+    let!(:users) { create_list(:admin_user, 2) }
+    let(:user_ids) { users.map(&:id) }
+
+    it 'forbids non-admin tokens' do
+      set_jwt_env(request, roles: %w[USER])
+      post :users, params: { operation: 'suspend', user_ids: user_ids }
+      expect(response).to have_http_status(:forbidden)
+      expect(users.map { |u| u.reload.status }.uniq).to eq(['active'])
+    end
+
+    it 'forbids ADMIN tokens from changing roles' do
+      set_jwt_env(request, roles: %w[USER ADMIN])
+      post :users, params: { operation: 'update_role', user_ids: user_ids, role: 'super_admin' }
+      expect(response).to have_http_status(:forbidden)
+      expect(users.map { |u| u.reload.role }.uniq).to eq(['viewer'])
+    end
+
+    it 'allows OWNER tokens to change roles' do
+      post :users, params: { operation: 'update_role', user_ids: user_ids, role: 'editor' }
+      expect(response).to have_http_status(:ok)
+      expect(users.map { |u| u.reload.role }.uniq).to eq(['editor'])
+    end
+
+    it 'forbids changing the caller own role in a batch' do
+      me = create(:admin_user, :admin)
+      set_jwt_env(request, user_id: me.id, roles: %w[USER OWNER])
+      post :users, params: { operation: 'update_role', user_ids: user_ids + [me.id], role: 'viewer' }
+      expect(response).to have_http_status(:forbidden)
+      expect(me.reload.role).to eq('admin')
+    end
+  end
 end
