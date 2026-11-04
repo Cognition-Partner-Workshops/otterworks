@@ -1,0 +1,119 @@
+version: 2
+unit_tests:
+- name: usage_spec_101_view
+  model: doc_usage_dashboard
+  given:
+  - input: ref('doc_usage_dashboard_snapshot')
+    rows:
+    - snapshot_date: '2026-11-01'
+      account_id: 00000000-0000-4000-8000-000000000101
+      tier: free
+      quota_bytes: 5368709120
+      used_bytes: 4563402752
+      remaining_bytes: 805306368
+      usage_pct: 85
+      usage_band: near_limit
+      active_document_count: 3
+  - input: ref('usage_admin_users')
+    rows:
+    - id: 00000000-0000-4000-8000-000000000101
+      email: ada@example.com
+      _export_id: old
+      _exported_at: '2026-11-01T12:00:00Z'
+    - id: 00000000-0000-4000-8000-000000000101
+      email: future@example.com
+      _export_id: future
+      _exported_at: '2026-11-02T00:00:00Z'
+  expect:
+    rows:
+    - snapshot_date: '2026-11-01'
+      account_id: 00000000-0000-4000-8000-000000000101
+      account_email: ada@example.com
+      tier: free
+      quota_bytes: 5368709120
+      used_bytes: 4563402752
+      remaining_bytes: 805306368
+      usage_pct: 85
+      usage_band: near_limit
+      active_document_count: 3
+- name: usage_spec_102_view
+  model: doc_usage_dashboard
+  given:
+  - input: ref('doc_usage_dashboard_snapshot')
+    rows:
+    - snapshot_date: '2026-11-01'
+      account_id: 00000000-0000-4000-8000-000000000102
+      tier: pro
+      quota_bytes: 214748364800
+      used_bytes: 53687091200
+      remaining_bytes: 161061273600
+      usage_pct: 25
+      usage_band: ok
+      active_document_count: 12
+  - input: ref('usage_admin_users')
+    rows:
+    - id: 00000000-0000-4000-8000-000000000102
+      email: ben@example.com
+      _export_id: old
+      _exported_at: '2026-11-01T12:00:00Z'
+    - id: 00000000-0000-4000-8000-000000000102
+      email: future@example.com
+      _export_id: future
+      _exported_at: '2026-11-02T00:00:00Z'
+  expect:
+    rows:
+    - snapshot_date: '2026-11-01'
+      account_id: 00000000-0000-4000-8000-000000000102
+      account_email: ben@example.com
+      tier: pro
+      quota_bytes: 214748364800
+      used_bytes: 53687091200
+      remaining_bytes: 161061273600
+      usage_pct: 25
+      usage_band: ok
+      active_document_count: 12
+- name: usage_spec_103_view
+  model: doc_usage_dashboard
+  given:
+  - input: ref('doc_usage_dashboard_snapshot')
+    rows:
+    - snapshot_date: '2026-11-01'
+      account_id: 00000000-0000-4000-8000-000000000103
+      tier: basic
+      quota_bytes: 53687091200
+      used_bytes: 53687091200
+      remaining_bytes: 0
+      usage_pct: 100
+      usage_band: over_quota
+      active_document_count: 40
+  - input: ref('usage_admin_users')
+    rows:
+    - id: 00000000-0000-4000-8000-000000000103
+      email: cy@example.com
+      _export_id: old
+      _exported_at: '2026-11-01T12:00:00Z'
+    - id: 00000000-0000-4000-8000-000000000103
+      email: future@example.com
+      _export_id: future
+      _exported_at: '2026-11-02T00:00:00Z'
+  expect:
+    rows:
+    - snapshot_date: '2026-11-01'
+      account_id: 00000000-0000-4000-8000-000000000103
+      account_email: cy@example.com
+      tier: basic
+      quota_bytes: 53687091200
+      used_bytes: 53687091200
+      remaining_bytes: 0
+      usage_pct: 100
+      usage_band: over_quota
+      active_document_count: 40
+- name: usage_view_empty
+  model: doc_usage_dashboard
+  given:
+  - input: ref('doc_usage_dashboard_snapshot')
+    rows: []
+  - input: ref('usage_admin_users')
+    rows: []
+  expect:
+    rows: []
