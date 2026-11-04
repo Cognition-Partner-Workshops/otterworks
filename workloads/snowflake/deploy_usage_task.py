@@ -24,9 +24,11 @@ def task_sql(commit, run_id):
     endpoint = attr.Endpoint.from_csid(CONSUMERS[WORKLOAD][0], WORKLOAD)
     names = attr.names([WORKLOAD])
     body = (
-        f"BEGIN\n  CALL {endpoint.database}.RAW.LOAD_RAW();\n"
+        f"BEGIN\n  CALL {names[f'ops_schema_{WORKLOAD}']}.CHECK_FAULT_SWITCH('REFRESH_DOC_USAGE_DASHBOARD');\n"
+        f"  CALL {endpoint.database}.RAW.LOAD_RAW();\n"
         f"  EXECUTE DBT PROJECT {names[f'dbt_project_{WORKLOAD}']} "
-        "ARGS = 'build --target runtime --select path:models/doc_usage_dashboard';\nEND;"
+        "ARGS = 'build --target runtime --select path:models/doc_usage_dashboard';\n"
+        f"  CALL {names[f'ops_schema_{WORKLOAD}']}.RECORD_REFRESH('{attr.task_name(WORKLOAD)}');\nEND;"
     )
     return attr.create_task_sql(
         endpoint, schedule='USING CRON 0 * * * * UTC', body=body,
@@ -136,15 +138,29 @@ def verify_or_suspend(cur, names, task, runtime_tag, started):
         raise
 
 
+def current_branch(repo=ROOT):
+    branch = subprocess.check_output(
+        ['git', '-C', str(repo), 'rev-parse', '--abbrev-ref', 'HEAD'], text=True,
+    ).strip()
+    if branch == 'HEAD':
+        raise ValueError('Deploy requires a named branch; HEAD is detached')
+    return branch
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--commit', required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--directory', type=Path, required=True)
     args = parser.parse_args()
-    pushed = subprocess.check_output([
-        'git', '-C', str(ROOT), 'ls-remote', 'origin', 'refs/heads/devin/1793825355-sf-pipeline',
-    ], text=True).split()[0]
+    branch = current_branch()
+    remote_ref = f'refs/heads/{branch}'
+    remote = subprocess.check_output(
+        ['git', '-C', str(ROOT), 'ls-remote', 'origin', remote_ref], text=True,
+    ).split()
+    if not remote:
+        raise ValueError(f'Current branch is not pushed to origin: {branch}')
+    pushed = remote[0]
     if args.commit != pushed or args.commit != attr.current_commit(str(ROOT)):
         raise ValueError('Deploy only the current, pushed branch HEAD')
     names = attr.names([WORKLOAD])

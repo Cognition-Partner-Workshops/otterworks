@@ -7,6 +7,16 @@ import sf_attribution as attr
 MIGRATIONS = Path(__file__).resolve().parents[2] / 'snowflake/pipeline_migrations'
 
 
+def test_ops_migration_renders_only_known_jinja_variables():
+    names = attr.names(['doc_usage_dashboard'])
+    migration = MIGRATIONS / 'doc_usage_dashboard/V1.9.0__ops_freshness_fault_switch.sql'
+    sql = migration.read_text()
+    variables = set(re.findall(r'{{\s*(\w+)\s*}}', sql))
+    assert variables <= names.keys()
+    rendered = re.sub(r'{{\s*(\w+)\s*}}', lambda match: names[match[1]], sql)
+    assert '{{' not in rendered
+
+
 def test_pipeline_migrations_do_not_change_masking_policies():
     for path in MIGRATIONS.rglob('*.sql'):
         sql = path.read_text().upper()

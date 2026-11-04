@@ -5,8 +5,8 @@ run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
   commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
-  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
-  session: https://partner-workshops.devinenterprise.com/sessions/c7aba848685a48e38d97b1f39435fda5
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2455
+  session: https://partner-workshops.devinenterprise.com/sessions/0bcecbe08fc4428781f5361b2aa68af3
 endpoints:
 - csid: cs_doc_usage_dashboard_account_usage
   service_user: SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
@@ -108,6 +108,27 @@ deployed_objects:
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
   deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: schema
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS
+  state: planned
+- type: table
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.REFRESH_LOG
+  state: planned
+- type: table
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.REFRESH_TABLES
+  state: planned
+- type: table
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.FAULT_SWITCH
+  state: planned
+- type: view
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.WORKLOAD_FRESHNESS
+  state: planned
+- type: procedure
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.CHECK_FAULT_SWITCH
+  state: planned
+- type: procedure
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS.RECORD_REFRESH
+  state: planned
 - type: table
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_SNAPSHOT
   state: deployed

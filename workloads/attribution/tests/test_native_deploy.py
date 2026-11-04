@@ -12,8 +12,15 @@ def test_usage_task_runtime_attribution():
     sql = deploy.task_sql('a' * 40, 'SFNFR_20261104-usage-runtime-test')
     assert 'SFNFR_20261104_WH_DOC_USAGE_DASHBOARD' in sql
     assert 'USING CRON 0 * * * * UTC' in sql
+    assert 'CHECK_FAULT_SWITCH' in sql
     assert 'CALL SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.LOAD_RAW()' in sql
     assert 'EXECUTE DBT PROJECT' in sql
+    assert 'RECORD_REFRESH' in sql
+    assert sql.index('CHECK_FAULT_SWITCH') < sql.index('LOAD_RAW')
+    assert sql.index('LOAD_RAW') < sql.index('EXECUTE DBT PROJECT')
+    assert sql.index('EXECUTE DBT PROJECT') < sql.index('RECORD_REFRESH')
+    assert "'REFRESH_DOC_USAGE_DASHBOARD'" in sql
+    assert 'SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.OPS' in sql
     assert 'path:models/doc_usage_dashboard' in sql
     assert '"phase":"runtime"' in sql
     assert '"commit":"' + 'a' * 40 + '"' in sql
@@ -116,3 +123,18 @@ def test_native_task_fails_closed_on_verification_error(monkeypatch, fail):
     else:
         assert deploy.verify_or_suspend(Cursor(), {}, 'DB.ANALYTICS.TASK', 'tag', None) == {'mismatch_count': 0}
         assert statements == []
+
+
+def test_deploy_uses_current_named_branch(monkeypatch):
+    def branch_output(command, text):
+        assert command[-2:] == ['--abbrev-ref', 'HEAD']
+        return 'devin/refresh-drill\n'
+
+    monkeypatch.setattr(deploy.subprocess, 'check_output', branch_output)
+    assert deploy.current_branch('/repo') == 'devin/refresh-drill'
+
+
+def test_deploy_refuses_detached_head(monkeypatch):
+    monkeypatch.setattr(deploy.subprocess, 'check_output', lambda *args, **kwargs: 'HEAD\n')
+    with pytest.raises(ValueError, match='detached'):
+        deploy.current_branch('/repo')
