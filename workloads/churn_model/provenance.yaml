@@ -5,7 +5,7 @@ run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
   commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
-  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2457
   session: https://partner-workshops.devinenterprise.com/sessions/6eebc1acb0d4426c985e41f45bb0adda
 endpoints:
 - csid: cs_churn_model_account_score
