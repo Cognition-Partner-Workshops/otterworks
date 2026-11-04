@@ -35,14 +35,12 @@ def connection_parameters(environ: Mapping[str, str] | None = None) -> dict[str,
         endpoint,
         account=env['SNOWFLAKE_ACCOUNT'],
         private_key_file=env['SNOWFLAKE_PRIVATE_KEY_FILE'],
-        phase='dev',
+        phase='runtime',
         commit=attr.current_commit(str(ROOT)),
-        run_id=attr.make_run_id(WORKLOAD, 'dev'),
-        session_url=session_url,
-        role=env['SNOWFLAKE_ROLE'],
+        run_id=attr.make_run_id(WORKLOAD, 'runtime'),
+        role=object_names()[f'ops_role_{WORKLOAD}'],
         schema='OPS',
     )
-    params['user'] = env['SNOWFLAKE_USER']
     return params
 
 

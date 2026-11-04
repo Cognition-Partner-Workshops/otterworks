@@ -25,6 +25,7 @@ TAG_FQN = f"{GOVERNANCE_DATABASE}.TAGS.DEVIN_CSID"
 EMAIL_MASKING_POLICY = f"{GOVERNANCE_DATABASE}.POLICIES.CUSTOMER_EMAIL_MASK"
 MIGRATIONS_WAREHOUSE = f"{RUN_TOKEN}_WH_MIGRATIONS"
 ACCESS_ROLES = ("reader", "analyst")
+SERVICE_USER_ENDPOINTS = {"doc_usage_dashboard": "account_usage"}
 WAREHOUSE_SIZE = "XSMALL"
 AUTO_SUSPEND_SECONDS = 60
 MONTHLY_CREDIT_QUOTA = 10
@@ -76,6 +77,10 @@ def role_name(access: str) -> str:
 
 def database_name(workload: str) -> str:
     return f"{RUN_TOKEN}_DB_{_identifier('workload', workload).upper()}"
+
+
+def ops_role(workload: str) -> str:
+    return f"{RUN_TOKEN}_OPS_{_identifier('workload', workload).upper()}"
 
 
 def output_table_name(workload: str) -> str:
@@ -323,12 +328,14 @@ def names(workloads: list[str] | tuple[str, ...]) -> dict[str, str]:
         "email_masking_policy": EMAIL_MASKING_POLICY,
         "migrations_wh": MIGRATIONS_WAREHOUSE,
         "migrations_rm": f"{RUN_TOKEN}_RM_MIGRATIONS",
+        "builder_role": f"{RUN_TOKEN}_BUILDER",
     }
     out.update({f"{access}_role": role_name(access) for access in ACCESS_ROLES})
     for workload in workloads:
         out[f"db_{workload}"] = database_name(workload)
         out[f"wh_{workload}"] = warehouse_name(workload)
         out[f"rm_{workload}"] = resource_monitor_name(workload)
+        out[f"task_{workload}"] = task_name(workload)
         out[f"stage_{workload}"] = f"{database_name(workload)}.RAW.POSTGRES_FILES"
         out[f"format_{workload}"] = f"{database_name(workload)}.RAW.POSTGRES_CSV"
         out[f"history_{workload}"] = f"{GOVERNANCE_DATABASE}.SCHEMACHANGE.PIPELINE_{workload.upper()}"
@@ -337,6 +344,9 @@ def names(workloads: list[str] | tuple[str, ...]) -> dict[str, str]:
         out[f"proof_schema_{workload}"] = f"{database_name(workload)}.PIPELINE_FRESH_PROOF"
         out[f"proof_history_{workload}"] = f"{database_name(workload)}.PIPELINE_FRESH_PROOF.CHANGE_HISTORY"
         out[f"ops_schema_{workload}"] = f"{database_name(workload)}.OPS"
+        out[f"ops_role_{workload}"] = ops_role(workload)
+        if workload in SERVICE_USER_ENDPOINTS:
+            out[f"svc_user_{workload}"] = service_user(csid(workload, SERVICE_USER_ENDPOINTS[workload]))
     return out
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -40,6 +41,25 @@ def test_fault_update_sql_sets_armed_state_and_session_actor():
 def test_ops_requires_session_url_before_connecting():
     with pytest.raises(ValueError, match='SESSION_URL'):
         ops.connection_parameters({})
+
+
+def test_ops_connection_uses_runtime_service_user_and_ops_role(monkeypatch):
+    monkeypatch.setattr(ops.attr, 'current_commit', lambda repo: 'f' * 40)
+    env = {
+        'SESSION_URL': 'https://partner-workshops.devinenterprise.com/sessions/e69f745063454d4ba5274736ab6a6356',
+        'SNOWFLAKE_ACCOUNT': 'xy12345',
+        'SNOWFLAKE_PRIVATE_KEY_FILE': '/keys/service-user.p8',
+        'SNOWFLAKE_USER': 'IGNORED_USER',
+        'SNOWFLAKE_ROLE': 'IGNORED_ROLE',
+    }
+    params = ops.connection_parameters(env)
+    names = ops.attr.names([ops.WORKLOAD])
+    assert params['user'] == 'SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE'
+    assert params['role'] == names['ops_role_doc_usage_dashboard']
+    tag = json.loads(params['session_parameters']['QUERY_TAG'])
+    assert tag['phase'] == 'runtime'
+    assert len(tag['commit']) == 40
+    assert 'session_url' not in tag
 
 
 def test_ops_main_refuses_session_without_session_url(monkeypatch, capsys):

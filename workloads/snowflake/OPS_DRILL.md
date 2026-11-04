@@ -2,6 +2,8 @@
 
 `OPS.WORKLOAD_FRESHNESS` reports each configured source and output table. A refresh is recorded only after the RAW load and dbt build both succeed. The hourly task allows 90 minutes of age before a row is stale; a never-refreshed table is stale.
 
+The CLI connects as the endpoint service user with the workload's runtime OPS role and a `phase=runtime` query tag. Set `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_PRIVATE_KEY_FILE` (the service-user key from `SFNFR_SVC_DOC_USAGE_PRIVATE_KEY`), and `SESSION_URL` (for drill notes and switch changes). `deploy_usage_task.py` deployments continue to use the builder credentials.
+
 ```bash
 python workloads/snowflake/ops.py freshness
 python workloads/snowflake/ops.py task-history [--limit 24]
