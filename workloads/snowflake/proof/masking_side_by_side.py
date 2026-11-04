@@ -1,7 +1,7 @@
-"""Run one query on the churn_model RAW.AUTH_USERS table as the reader and as the analyst role, side by side.
+"""Query churn_model RAW.AUTH_USERS as reader and analyst in both session modes.
 
 Seeds three synthetic example.com rows as the builder, runs the query under each role with
-secondary roles off, prints both results next to each other, then deletes the rows.
+default secondary roles and secondary roles off, prints rows or errors, then deletes the rows.
 
 Env: SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE (the builder), SNOWFLAKE_PRIVATE_KEY_FILE,
 optional SNOWFLAKE_PRIVATE_KEY_FILE_PWD, and SESSION_URL (the Devin session, for the dev QUERY_TAG).
@@ -48,10 +48,33 @@ def _connect():
     return snowflake.connector.connect(**params)
 
 
-def _table(rows: list[tuple], width: int) -> list[str]:
-    lines = [f"{'ID':<36}  {'EMAIL':<16}  NAME", "-" * width]
-    lines += [f"{r[0]:<36}  {r[1]:<16}  {r[2]}" for r in rows]
-    return [line.ljust(width) for line in lines]
+def _run_case(role: str, secondary_none: bool) -> None:
+    from snowflake.connector.errors import ProgrammingError
+
+    con = _connect()
+    cur = con.cursor()
+    try:
+        cur.execute(f"USE ROLE {role}")
+        if secondary_none:
+            cur.execute("USE SECONDARY ROLES NONE")
+        cur.execute("SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES()")
+        active = cur.fetchone()
+        mode = "NONE" if secondary_none else "default (untouched)"
+        print(f"\nas {role}; secondary roles: {mode}")
+        print(f"CURRENT_ROLE: {active[0]}\nCURRENT_SECONDARY_ROLES: {active[1]}")
+        try:
+            cur.execute(QUERY)
+            rows = cur.fetchall()
+            print(f"{'ID':<36}  {'EMAIL':<16}  NAME")
+            for row in rows:
+                print(f"{row[0]:<36}  {row[1]:<16}  {row[2]}")
+            if not rows:
+                print("(no rows)")
+        except ProgrammingError as error:
+            print(f"ERROR: {error}")
+        print(f"query id: {cur.sfqid}")
+    finally:
+        con.close()
 
 
 def main() -> int:
@@ -66,24 +89,10 @@ def main() -> int:
             SEED,
         )
         con.commit()
-        results = {}
-        for role in ROLES:
-            cur.execute(f"USE ROLE {role}")
-            cur.execute("USE SECONDARY ROLES NONE")
-            cur.execute("SELECT CURRENT_ROLE(), CURRENT_SECONDARY_ROLES()")
-            active = cur.fetchone()
-            rows = cur.execute(QUERY).fetchall()
-            results[role] = (active, rows, cur.sfqid)
-        width = 66
-        left, right = (_table(results[r][1], width) for r in ROLES)
-        print(f"query: {QUERY}\n")
-        print(f"{'as ' + ROLES[0]:<{width}}  |  as {ROLES[1]}")
-        for role_info in zip(*(results[r][0] for r in ROLES)):
-            print(f"{str(role_info[0]):<{width}}  |  {role_info[1]}")
-        print()
-        for a, b in zip(left, right):
-            print(f"{a}  |  {b}")
-        print(f"\nquery ids: {ROLES[0]}={results[ROLES[0]][2]}  {ROLES[1]}={results[ROLES[1]][2]}")
+        print(f"query: {QUERY}")
+        for secondary_none in (False, True):
+            for role in ROLES:
+                _run_case(role, secondary_none)
     finally:
         cur.execute(f"USE ROLE {os.environ['SNOWFLAKE_ROLE']}")
         cur.execute(f"DELETE FROM {TABLE} WHERE ID LIKE '00000000-0000-4000-8000-%'")
