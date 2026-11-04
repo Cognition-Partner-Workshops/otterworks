@@ -1,0 +1,13 @@
+name: otterworks
+version: '1.0.0'
+config-version: 2
+profile: otterworks
+model-paths: [models]
+test-paths: [tests]
+macro-paths: [macros]
+models:
+  otterworks:
+    +materialized: view
+    +on_schema_change: fail
+    +pre-hook: 'USE SECONDARY ROLES NONE'
+    +persist_docs: {relation: false, columns: false}

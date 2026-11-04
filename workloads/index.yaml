@@ -1,0 +1,74 @@
+# Analytics workloads on Snowflake, sourced from the OtterWorks Postgres services.
+spec_version: 1
+branch: demo-stack-snowflake
+
+account:
+  definition: >-
+    One OtterWorks user identity. The same UUID is auth-service users.id, the
+    JWT subject the api-gateway forwards as X-User-ID, documents.owner_id and
+    document_versions.created_by in document-service, admin_users.id and
+    storage_quotas.user_id in admin-service, and analytics_events.user_id.
+  key: account_id VARCHAR(36)
+  not_used: >-
+    billing_svc.tenants (billing-service) has no column linking a tenant to a
+    user, so tenant-level grouping is out of scope until such a link exists.
+
+conventions:
+  timezone: UTC for every timestamp, date and week boundary.
+  week: ISO week, Monday 00:00:00 to Sunday 23:59:59.999999 UTC.
+  landing: >-
+    Each Postgres table lands unchanged in Snowflake schema RAW as
+    RAW.<SERVICE>_<TABLE> (for example RAW.ADMIN_STORAGE_QUOTAS). Workload
+    outputs are written to schema ANALYTICS under the workload name in upper
+    case. The database name is set per deployment.
+  uuid: UUIDs are stored as lower-case VARCHAR(36).
+  endpoint_id: cs_<workload>_<endpoint>
+  endpoint_prefix: >-
+    /api/v1/insights is the proposed api-gateway prefix for workload endpoints.
+    The gateway does not route it yet.
+
+source_tables:
+  - service: auth-service
+    table: users
+    landing: RAW.AUTH_USERS
+    schema_file: services/auth-service/src/main/resources/db/migration/V1__create_users_table.sql
+  - service: admin-service
+    table: admin_users
+    landing: RAW.ADMIN_ADMIN_USERS
+    schema_file: services/admin-service/db/schema.rb
+  - service: admin-service
+    table: storage_quotas
+    landing: RAW.ADMIN_STORAGE_QUOTAS
+    schema_file: services/admin-service/db/schema.rb
+  - service: document-service
+    table: documents
+    landing: RAW.DOCUMENT_DOCUMENTS
+    schema_file: services/document-service/alembic/versions/001_initial_schema.py
+  - service: document-service
+    table: document_versions
+    landing: RAW.DOCUMENT_DOCUMENT_VERSIONS
+    schema_file: services/document-service/alembic/versions/001_initial_schema.py
+  - service: analytics-service
+    table: analytics_events
+    landing: RAW.ANALYTICS_ANALYTICS_EVENTS
+    schema_file: services/analytics-service/src/main/resources/db/migration/V1__create_analytics_tables.sql
+
+workloads:
+  - name: doc_usage_dashboard
+    spec: workloads/doc_usage_dashboard.yaml
+    question: Which accounts are close to their storage limit?
+    status: ready
+    endpoint: cs_doc_usage_dashboard_account_usage
+  - name: doc_search_api
+    spec: workloads/doc_search_api.yaml
+    question: Which terms and documents does each account search for?
+    status: blocked_on_source
+    blocker: >-
+      search-service keeps searches only in process memory. Nothing writes them
+      to Postgres until it emits the search.performed event defined in the spec.
+    endpoint: cs_doc_search_api_top_items
+  - name: churn_model
+    spec: workloads/churn_model.yaml
+    question: Which accounts look likely to leave?
+    status: ready
+    endpoint: cs_churn_model_account_score
