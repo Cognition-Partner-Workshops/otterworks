@@ -12,6 +12,7 @@ export interface AuthenticatedUser {
 
 export interface AuthenticatedSocket extends Socket {
   user?: AuthenticatedUser;
+  authToken?: string;
 }
 
 interface JwtPayload {
@@ -24,11 +25,31 @@ interface JwtPayload {
   exp?: number;
 }
 
+export function extractBearerToken(header: string | undefined): string | undefined {
+  if (!header || !header.startsWith('Bearer ')) return undefined;
+  const token = header.slice('Bearer '.length).trim();
+  return token || undefined;
+}
+
+/** Verifies a JWT and maps its claims to the collab user. Throws if invalid. */
+export function verifyUserToken(token: string, jwtSecret: string): AuthenticatedUser {
+  const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+  if (!decoded || typeof decoded.sub !== 'string' || !decoded.sub) {
+    throw new Error('Token has no subject');
+  }
+  return {
+    userId: decoded.sub,
+    email: decoded.email || '',
+    displayName: decoded.name || decoded.display_name || 'Anonymous',
+    roles: decoded.roles || [],
+  };
+}
+
 export function createAuthMiddleware(jwtSecret: string, logger: Logger) {
   return (socket: Socket, next: (err?: ExtendedError) => void): void => {
     const token =
       socket.handshake.auth?.token ||
-      socket.handshake.headers?.authorization?.replace('Bearer ', '');
+      extractBearerToken(socket.handshake.headers?.authorization);
 
     if (!token) {
       logger.warn({ socketId: socket.id }, 'connection_rejected: no token provided');
@@ -37,17 +58,13 @@ export function createAuthMiddleware(jwtSecret: string, logger: Logger) {
     }
 
     try {
-      const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
-
-      (socket as AuthenticatedSocket).user = {
-        userId: decoded.sub,
-        email: decoded.email || '',
-        displayName: decoded.name || decoded.display_name || 'Anonymous',
-        roles: decoded.roles || [],
-      };
+      const user = verifyUserToken(token, jwtSecret);
+      const authSocket = socket as AuthenticatedSocket;
+      authSocket.user = user;
+      authSocket.authToken = token;
 
       logger.debug(
-        { socketId: socket.id, userId: decoded.sub },
+        { socketId: socket.id, userId: user.userId },
         'connection_authenticated',
       );
       next();
@@ -71,4 +88,8 @@ export function extractUserFromSocket(socket: Socket): AuthenticatedUser {
       roles: [],
     }
   );
+}
+
+export function extractTokenFromSocket(socket: Socket): string {
+  return (socket as AuthenticatedSocket).authToken || '';
 }

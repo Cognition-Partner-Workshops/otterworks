@@ -2,18 +2,26 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
-import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import helmet from 'helmet';
 import pino from 'pino';
 import { loadConfig } from './config';
 import { MetricsCollector } from './metrics';
-import { createAuthMiddleware } from './middleware/auth';
+import {
+  createAuthMiddleware,
+  extractBearerToken,
+  verifyUserToken,
+  type AuthenticatedUser,
+} from './middleware/auth';
 import { RedisAdapter } from './services/redis-adapter';
 import { DocumentStore } from './services/document-store';
 import { AwarenessService } from './services/awareness';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
+import {
+  DocumentAccessChecker,
+  type DocumentPrincipal,
+} from './services/document-access';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { setupWSConnection } = require('y-websocket/bin/utils');
@@ -32,6 +40,27 @@ const logger = pino({
 const app = express();
 const httpServer = createServer(app);
 const metrics = new MetricsCollector();
+const accessPolicy = new DocumentAccessChecker(
+  {
+    documentServiceUrl: config.documentService.url,
+    timeoutMs: config.documentService.timeoutMs,
+    cacheTtlMs: config.documentService.accessCacheTtlMs,
+  },
+  logger,
+);
+
+function authenticateHttpRequest(
+  req: express.Request,
+): { user: AuthenticatedUser; principal: DocumentPrincipal } | null {
+  const token = extractBearerToken(req.headers.authorization);
+  if (!token) return null;
+  try {
+    const user = verifyUserToken(token, config.jwt.secret);
+    return { user, principal: { userId: user.userId, token } };
+  } catch {
+    return null;
+  }
+}
 
 // Middleware
 app.use(helmet());
@@ -69,16 +98,33 @@ app.get('/metrics', async (_req, res) => {
 });
 
 // Presence endpoint
-app.get('/api/v1/collab/documents/:id/presence', (req, res) => {
+app.get('/api/v1/collab/documents/:id/presence', async (req, res) => {
+  const auth = authenticateHttpRequest(req);
+  if (!auth) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
   const documentId = req.params.id;
-  const presence = presenceHandler.getDocumentPresence(documentId);
-  res.json(presence);
+  if (!(await accessPolicy.canAccess(documentId, auth.principal))) {
+    res.status(404).json({ error: 'Document not found' });
+    return;
+  }
+  res.json(presenceHandler.getDocumentPresence(documentId));
 });
 
-// Active documents listing
-app.get('/api/v1/collab/documents', (_req, res) => {
+// Active documents listing, limited to documents the caller can access
+app.get('/api/v1/collab/documents', async (req, res) => {
+  const auth = authenticateHttpRequest(req);
+  if (!auth) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
   const activeDocuments = presenceHandler.getActiveDocuments();
-  res.json({ documents: activeDocuments, count: activeDocuments.length });
+  const accessible = await Promise.all(
+    activeDocuments.map((doc) => accessPolicy.canAccess(doc.documentId, auth.principal)),
+  );
+  const documents = activeDocuments.filter((_doc, i) => accessible[i]);
+  res.json({ documents, count: documents.length });
 });
 
 // Socket.IO server
@@ -121,6 +167,7 @@ const collabManager = setupCollaborationHandlers(
   documentStore,
   awareness,
   presenceHandler,
+  accessPolicy,
   metrics,
   logger,
   config.persistence.intervalMs,
@@ -129,13 +176,15 @@ const collabManager = setupCollaborationHandlers(
 
 // y-websocket server for TipTap/Yjs collaborative editing
 const wss = new WebSocketServer({ noServer: true });
-wss.on('connection', (conn, req) => {
-  setupWSConnection(conn, req);
-  logger.info({ url: req.url }, 'y-websocket_client_connected');
-});
+const YWS_ROOM_PREFIX = 'document-';
+
+function rejectUpgrade(socket: import('stream').Duplex, status: string): void {
+  socket.write(`HTTP/1.1 ${status}\r\n\r\n`);
+  socket.destroy();
+}
 
 // Route WebSocket upgrades: Socket.IO paths go to Socket.IO, all others to y-websocket
-httpServer.on('upgrade', (request, socket, head) => {
+httpServer.on('upgrade', async (request, socket, head) => {
   if (request.url?.startsWith('/socket.io')) {
     // Socket.IO handles its own upgrades via its internal listener
     return;
@@ -144,27 +193,46 @@ httpServer.on('upgrade', (request, socket, head) => {
   // JWT authentication for y-websocket connections
   const url = new URL(request.url || '', `http://${request.headers.host}`);
   const token =
-    url.searchParams.get('token') ||
-    request.headers.authorization?.replace('Bearer ', '');
+    url.searchParams.get('token') || extractBearerToken(request.headers.authorization);
 
   if (!token) {
     logger.warn('y-websocket_connection_rejected: no token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
+    rejectUpgrade(socket, '401 Unauthorized');
     return;
   }
 
+  let user: AuthenticatedUser;
   try {
-    jwt.verify(token, config.jwt.secret);
+    user = verifyUserToken(token, config.jwt.secret);
   } catch {
     logger.warn('y-websocket_connection_rejected: invalid token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
+    rejectUpgrade(socket, '401 Unauthorized');
     return;
   }
 
+  // Same room-name derivation y-websocket uses; passed explicitly below so the
+  // authorized room is the one the connection is attached to.
+  const docName = (request.url || '').slice(1).split('?')[0];
+  const documentId = docName.startsWith(YWS_ROOM_PREFIX)
+    ? docName.slice(YWS_ROOM_PREFIX.length)
+    : '';
+  const allowed = await accessPolicy.canAccess(documentId, {
+    userId: user.userId,
+    token,
+  });
+  if (!allowed) {
+    logger.warn(
+      { userId: user.userId, documentId },
+      'y-websocket_connection_rejected: access denied',
+    );
+    rejectUpgrade(socket, '403 Forbidden');
+    return;
+  }
+  if (socket.destroyed) return;
+
   wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
+    setupWSConnection(ws, request, { docName });
+    logger.info({ documentId, userId: user.userId }, 'y-websocket_client_connected');
   });
 });
 
