@@ -372,19 +372,40 @@ demo_aws_tf_vars() {
     -var "host_suffix=${DEMO_HOST_SUFFIX}" -var "ingress_hostname=$(ingress_lb_hostname)")
 }
 
-# az login with the service principal from the environment (no values printed).
-# Also exports the ARM_* variables Terraform's azurerm provider expects.
+# az login from the environment (no values printed). Two modes:
+#  * workload identity federation (GitHub Actions): ARM_USE_OIDC=true and the runner's
+#    ACTIONS_ID_TOKEN_REQUEST_* are set; a fresh GitHub OIDC token is exchanged on every
+#    call (they live minutes) and no client secret exists anywhere.
+#  * service principal secret (operator laptops): AZURE_CLIENT_SECRET.
+# Also exports the ARM_* variables Terraform's azurerm provider and backend expect.
+az_oidc() {
+  [ "${ARM_USE_OIDC:-}" = "true" ] && [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && [ -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]
+}
 az_login() {
-  : "${AZURE_CLIENT_ID:?AZURE_CLIENT_ID unset}" "${AZURE_CLIENT_SECRET:?AZURE_CLIENT_SECRET unset}"
+  : "${AZURE_CLIENT_ID:?AZURE_CLIENT_ID unset}"
   : "${AZURE_TENANT_ID:?AZURE_TENANT_ID unset}" "${AZURE_SUBSCRIPTION_ID:?AZURE_SUBSCRIPTION_ID unset}"
-  export ARM_CLIENT_ID="${AZURE_CLIENT_ID}" ARM_CLIENT_SECRET="${AZURE_CLIENT_SECRET}"
-  export ARM_TENANT_ID="${AZURE_TENANT_ID}" ARM_SUBSCRIPTION_ID="${AZURE_SUBSCRIPTION_ID}"
-  [ "${DRY_RUN}" = "1" ] && { dlog "[dry-run] az login --service-principal (credentials from env)"; return 0; }
-  az account show -o none 2>/dev/null && [ "$(az account show --query id -o tsv)" = "${AZURE_SUBSCRIPTION_ID}" ] && return 0
-  az login --service-principal -u "${AZURE_CLIENT_ID}" -p "${AZURE_CLIENT_SECRET}" --tenant "${AZURE_TENANT_ID}" -o none
+  export ARM_CLIENT_ID="${AZURE_CLIENT_ID}" ARM_TENANT_ID="${AZURE_TENANT_ID}" ARM_SUBSCRIPTION_ID="${AZURE_SUBSCRIPTION_ID}"
+  if az_oidc; then
+    unset ARM_CLIENT_SECRET
+    [ "${DRY_RUN}" = "1" ] && { dlog "[dry-run] az login --federated-token (GitHub OIDC)"; return 0; }
+    local id_token
+    id_token="$(curl -fsS -H "Authorization: bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+      "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" | jq -r '.value // empty')"
+    [ -n "${id_token}" ] || { dwarn "could not obtain a GitHub OIDC token for Azure"; return 1; }
+    az login --service-principal -u "${AZURE_CLIENT_ID}" --tenant "${AZURE_TENANT_ID}" --federated-token "${id_token}" -o none
+  else
+    : "${AZURE_CLIENT_SECRET:?AZURE_CLIENT_SECRET unset (or set ARM_USE_OIDC=true in GitHub Actions)}"
+    export ARM_CLIENT_SECRET="${AZURE_CLIENT_SECRET}"
+    [ "${DRY_RUN}" = "1" ] && { dlog "[dry-run] az login --service-principal (credentials from env)"; return 0; }
+    az account show -o none 2>/dev/null && [ "$(az account show --query id -o tsv)" = "${AZURE_SUBSCRIPTION_ID}" ] && return 0
+    az login --service-principal -u "${AZURE_CLIENT_ID}" -p "${AZURE_CLIENT_SECRET}" --tenant "${AZURE_TENANT_ID}" -o none
+  fi
   az account set --subscription "${AZURE_SUBSCRIPTION_ID}"
 }
-az_available() { [ -n "${AZURE_CLIENT_ID:-}" ] && [ -n "${AZURE_CLIENT_SECRET:-}" ] && [ -n "${AZURE_TENANT_ID:-}" ] && [ -n "${AZURE_SUBSCRIPTION_ID:-}" ]; }
+az_available() {
+  [ -n "${AZURE_CLIENT_ID:-}" ] && [ -n "${AZURE_TENANT_ID:-}" ] && [ -n "${AZURE_SUBSCRIPTION_ID:-}" ] \
+    && { [ -n "${AZURE_CLIENT_SECRET:-}" ] || az_oidc; }
+}
 
 # Azure state backend (§3.2): shared account supplied by the environment.
 azure_backend_args() {

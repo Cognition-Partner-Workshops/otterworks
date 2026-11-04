@@ -37,6 +37,9 @@ it; `az resource list --tag namespace=<ns>` must return nothing afterwards.
 
   `ARM_CLIENT_SECRET` is also what `scripts/apply-sql.sh` uses to log in to the database as
   the Entra admin. Nothing here ever prints or outputs a secret.
+  CI (`.github/workflows/demo-reaper.yml`) uses workload identity federation instead:
+  `ARM_USE_OIDC=true` with no `ARM_CLIENT_SECRET`. The reaper only destroys, so it never runs
+  `apply-sql.sh`.
 * A fresh registry token for the Container Apps image pulls (ECR tokens live 12 h):
   `export TF_VAR_registry_password="$(aws ecr get-login-password --region us-east-1)"`.
 
