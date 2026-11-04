@@ -1,0 +1,229 @@
+schema_version: 1
+workload: doc_search_api
+spec: workloads/doc_search_api.yaml
+run_token: SFNFR_20261104
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
+  session: https://partner-workshops.devinenterprise.com/sessions/c7aba848685a48e38d97b1f39435fda5
+endpoints:
+- csid: cs_doc_search_api_top_items
+  service_user: SFNFR_20261104_SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+  application: Devin_Demo
+warehouse:
+  name: SFNFR_20261104_WH_DOC_SEARCH_API
+  size: XSMALL
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: SFNFR_20261104_RM_DOC_SEARCH_API
+    frequency: MONTHLY
+    credit_quota: 10
+deployed_objects:
+- type: database
+  name: SFNFR_20261104_DB_DOC_SEARCH_API
+  devin_csid: cs_doc_search_api_top_items
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: schema
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: schema
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: warehouse
+  name: SFNFR_20261104_WH_DOC_SEARCH_API
+  devin_csid: cs_doc_search_api_top_items
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: resource_monitor
+  name: SFNFR_20261104_RM_DOC_SEARCH_API
+  state: planned
+- type: user
+  name: SFNFR_20261104_SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+  state: deployed
+  deployed_at: '2026-11-04T21:40:02Z'
+  deployed_commit: 48eff6c18964e78c6964375e2bdaa25e88b77126
+- type: table
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.DOC_SEARCH_API
+  state: deployed
+  deployed_at: '2026-11-04T21:28:49Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: task
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.REFRESH_DOC_SEARCH_API
+  devin_csid: cs_doc_search_api_top_items
+  state: planned
+- type: table
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.ANALYTICS_ANALYTICS_EVENTS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: table
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.DOCUMENT_DOCUMENTS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: view
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.SEARCH_EVENTS
+  state: deployed
+  deployed_at: '2026-11-04T21:28:49Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: view
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.SEARCH_DOCUMENTS
+  state: deployed
+  deployed_at: '2026-11-04T21:28:49Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: stage
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.POSTGRES_FILES
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: file_format
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.POSTGRES_CSV
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: procedure
+  name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.LOAD_RAW
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  credits_dev: pending
+  credits_runtime: pending
+  credits_idle: pending
+  query_count_dev: pending
+  query_count_runtime: pending
+data_quality:
+  playbook: Snowflake workload data-quality gate
+  run_id: SFNFR_20261104-doc_search_api-dev-20261104T223513Z
+  phase: dev
+  commit: 08be864f034af5f5ffe780f504e733e9ef06d5f6
+  session: https://partner-workshops.devinenterprise.com/sessions/af512c0a3d9d45a6a5d0838432b73ebc
+  ran_at: '2026-11-04T22:35:28Z'
+  status: fail
+  summary:
+    pass: 25
+    fail: 2
+    error: 0
+    warn: 0
+    skipped: 0
+  tests:
+  - name: dq_freshness__driving_export
+    check: freshness
+    status: pass
+    failures: 0
+  - name: dq_freshness__output_window
+    check: freshness
+    status: pass
+    failures: 0
+  - name: dq_row_count__analytics_events_stage_files
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__analytics_events_staging_exports
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__documents_stage_files
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__documents_staging_exports
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__output_entities
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_doc_search_api_grain
+    check: uniqueness
+    status: pass
+    failures: 0
+  - name: dq_uniqueness__analytics_events_source_keys
+    check: uniqueness
+    status: fail
+    failures: 39
+    cause: Export 9e79d72d-94b6-4e07-8567-3def91a6ed0b file analytics_events/sfnfr-batch-late/analytics_events.csv.gz contains 78 rows for 39 ids, each id twice (pipeline.py export --duplicate-rows). search_events staging deduplicates per export/id; renamed whole-file replays are out of scope.
+  - name: dq_uniqueness__documents_source_keys
+    check: uniqueness
+    status: fail
+    failures: 94
+    cause: Export 9e79d72d-94b6-4e07-8567-3def91a6ed0b file documents/sfnfr-batch-late/documents.csv.gz contains 188 rows for 94 ids, each id twice (pipeline.py export --duplicate-rows). search_documents staging deduplicates per export/id; renamed whole-file replays are out of scope.
+  - name: dq_accepted_range__column_types
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__conditional_columns
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__counts_and_dates
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__derived_metrics
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_doc_search_api_item_type
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_doc_search_api_rank
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_doc_search_api_window_days
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_search_api_account_id
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_search_api_item_type
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_search_api_last_searched_at
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_search_api_rank
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_search_api_search_count
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_search_api_window_days
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_doc_search_api_window_end_date
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: search_spec_document_tie_break
+    check: worked_example
+    status: pass
+    failures: 0
+  - name: search_spec_normalization
+    check: worked_example
+    status: pass
+    failures: 0
+  - name: search_spec_zero_results
+    check: worked_example
+    status: pass
+    failures: 0

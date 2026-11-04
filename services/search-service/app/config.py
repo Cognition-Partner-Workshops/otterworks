@@ -46,6 +46,39 @@ class AuthConfig:
 
 
 @dataclass(frozen=True)
+class SnowflakeConfig:
+    """Snowflake connection and query settings for search insights."""
+
+    account: str = field(default_factory=lambda: os.getenv("SNOWFLAKE_ACCOUNT", ""))
+    private_key_file: str = field(default_factory=lambda: os.getenv("SNOWFLAKE_PRIVATE_KEY_FILE", ""))
+    private_key_file_pwd: str | None = field(
+        default_factory=lambda: os.getenv("SNOWFLAKE_PRIVATE_KEY_FILE_PWD") or None
+    )
+    role: str = field(default_factory=lambda: os.getenv("SNOWFLAKE_ROLE", "SFNFR_20261104_READER"))
+    deployed_commit: str = field(default_factory=lambda: os.getenv("DEPLOYED_COMMIT", ""))
+    query_phase: str = field(default_factory=lambda: os.getenv("SNOWFLAKE_QUERY_PHASE", "runtime"))
+    session_url: str = field(default_factory=lambda: os.getenv("SESSION_URL", ""))
+    pool_size: int = field(default_factory=lambda: int(os.getenv("SNOWFLAKE_POOL_SIZE", "4")))
+    login_timeout: int = field(default_factory=lambda: int(os.getenv("SNOWFLAKE_LOGIN_TIMEOUT", "10")))
+    network_timeout: int = field(default_factory=lambda: int(os.getenv("SNOWFLAKE_NETWORK_TIMEOUT", "30")))
+    query_timeout: int = field(default_factory=lambda: int(os.getenv("SNOWFLAKE_QUERY_TIMEOUT", "15")))
+    max_retries: int = field(default_factory=lambda: int(os.getenv("SNOWFLAKE_MAX_RETRIES", "3")))
+    backoff_base: float = field(default_factory=lambda: float(os.getenv("SNOWFLAKE_BACKOFF_BASE", "0.2")))
+    backoff_max: float = field(default_factory=lambda: float(os.getenv("SNOWFLAKE_BACKOFF_MAX", "2.0")))
+
+    def validate(self) -> None:
+        if self.account:
+            import re
+
+            if not re.fullmatch(r"[0-9a-f]{40}", self.deployed_commit):
+                raise ValueError("DEPLOYED_COMMIT must be a 40-character lowercase SHA when Snowflake is configured")
+            if self.query_phase not in {"dev", "runtime"}:
+                raise ValueError("SNOWFLAKE_QUERY_PHASE must be dev or runtime")
+            if self.query_phase == "dev" and not self.session_url:
+                raise ValueError("SESSION_URL is required for a dev Snowflake query phase")
+
+
+@dataclass(frozen=True)
 class AppConfig:
     """Top-level application configuration."""
 
@@ -59,3 +92,4 @@ class AppConfig:
     meilisearch: MeiliSearchConfig = field(default_factory=MeiliSearchConfig)
     sqs: SQSConfig = field(default_factory=SQSConfig)
     auth: AuthConfig = field(default_factory=AuthConfig)
+    snowflake: SnowflakeConfig = field(default_factory=SnowflakeConfig)

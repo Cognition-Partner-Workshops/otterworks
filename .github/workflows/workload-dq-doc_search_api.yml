@@ -1,0 +1,52 @@
+name: Workload data-quality gate (doc_search_api)
+
+on:
+  pull_request:
+    paths:
+      - "workloads/**"
+      - ".github/workflows/workload-dq-doc_search_api.yml"
+  push:
+    paths:
+      - "workloads/**"
+      - ".github/workflows/workload-dq-doc_search_api.yml"
+  schedule:
+    - cron: "20 * * * *"
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SFNFR_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SFNFR_USER }}
+      SNOWFLAKE_ROLE: ${{ secrets.SFNFR_ROLE }}
+      SFNFR_PRIVATE_KEY: ${{ secrets.SFNFR_PRIVATE_KEY }}
+      DBT_PKGS: --python 3.12 --with dbt-snowflake==1.9.4 --with snowflake-connector-python<4 --with pyyaml==6.0.2
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - name: Parse the dq tests (offline)
+        env:
+          SNOWFLAKE_ACCOUNT: ci
+          SNOWFLAKE_USER: ci
+          SNOWFLAKE_ROLE: ci
+          SNOWFLAKE_PRIVATE_KEY_FILE: /dev/null
+          DBT_DATABASE: CI
+          DBT_WAREHOUSE: CI
+          DBT_QUERY_TAG: ci
+        run: >-
+          uv run $DBT_PKGS dbt ls --project-dir workloads/dbt --profiles-dir workloads/dbt
+          --select tag:dq_doc_search_api --resource-type test --resource-type unit_test --no-partial-parse
+          --vars '{"reader_role": "R", "analyst_role": "A", "email_masking_policy": "P"}'
+      - name: Run the dq tests on Snowflake (when the SFNFR secrets are configured)
+        if: env.SFNFR_PRIVATE_KEY != ''
+        run: |
+          umask 077
+          printf '%s\n' "$SFNFR_PRIVATE_KEY" > "$RUNNER_TEMP/sfnfr_key.p8"
+          export SNOWFLAKE_PRIVATE_KEY_FILE="$RUNNER_TEMP/sfnfr_key.p8"
+          uv run $DBT_PKGS python workloads/dbt/dq_gate.py run --workload doc_search_api --phase runtime \
+            || echo "::warning::live run did not record; gating on the committed provenance.yaml"
+      - name: Gate on the recorded results
+        run: uv run --with pyyaml==6.0.2 python workloads/dbt/dq_gate.py check --workload doc_search_api

@@ -1,0 +1,138 @@
+{
+  "version": 2,
+  "models": [
+    {
+      "name": "doc_search_api",
+      "config": {
+        "contract": {
+          "enforced": true
+        }
+      },
+      "data_tests": [
+        {
+          "grain": {
+            "columns": [
+              "window_end_date",
+              "account_id",
+              "item_type",
+              "rank"
+            ],
+            "name": "dq_doc_search_api_grain",
+            "config": {"tags": ["dq", "dq_doc_search_api", "dq_uniqueness"]}
+          }
+        }
+      ],
+      "columns": [
+        {
+          "name": "window_end_date",
+          "data_type": "date",
+          "data_tests": [
+            {"not_null": {"config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}}}
+          ]
+        },
+        {
+          "name": "window_days",
+          "data_type": "number(3,0)",
+          "data_tests": [
+            {"not_null": {"config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}}},
+            {
+              "accepted_values": {
+                "values": [
+                  28
+                ],
+                "quote": false,
+                "name": "dq_doc_search_api_window_days",
+                "config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}
+              }
+            }
+          ]
+        },
+        {
+          "name": "account_id",
+          "data_type": "varchar(36)",
+          "data_tests": [
+            {"not_null": {"config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}}}
+          ]
+        },
+        {
+          "name": "item_type",
+          "data_type": "varchar(8)",
+          "data_tests": [
+            {"not_null": {"config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}}},
+            {
+              "accepted_values": {
+                "values": [
+                  "term",
+                  "document"
+                ],
+                "quote": true,
+                "name": "dq_doc_search_api_item_type",
+                "config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}
+              }
+            }
+          ]
+        },
+        {
+          "name": "rank",
+          "data_type": "number(2,0)",
+          "data_tests": [
+            {"not_null": {"config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}}},
+            {
+              "accepted_values": {
+                "values": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6,
+                  7,
+                  8,
+                  9,
+                  10
+                ],
+                "quote": false,
+                "name": "dq_doc_search_api_rank",
+                "config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}
+              }
+            }
+          ]
+        },
+        {
+          "name": "term",
+          "data_type": "varchar(500)",
+          "data_tests": []
+        },
+        {
+          "name": "document_id",
+          "data_type": "varchar(36)",
+          "data_tests": []
+        },
+        {
+          "name": "document_title",
+          "data_type": "varchar(500)",
+          "data_tests": []
+        },
+        {
+          "name": "search_count",
+          "data_type": "number(10,0)",
+          "data_tests": [
+            {"not_null": {"config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}}}
+          ]
+        },
+        {
+          "name": "zero_result_count",
+          "data_type": "number(10,0)",
+          "data_tests": []
+        },
+        {
+          "name": "last_searched_at",
+          "data_type": "timestamp_ntz",
+          "data_tests": [
+            {"not_null": {"config": {"tags": ["dq", "dq_doc_search_api", "dq_accepted_range"]}}}
+          ]
+        }
+      ]
+    }
+  ]
+}

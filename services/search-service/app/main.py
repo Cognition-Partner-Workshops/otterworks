@@ -11,6 +11,7 @@ from flask import Flask, g, request as flask_request
 from flask_cors import CORS
 
 from app.api.health import REQUEST_COUNT, REQUEST_LATENCY, health_bp
+from app.api.insights import insights_bp
 from app.api.index import index_bp
 from app.api.search import search_bp
 from app.config import AppConfig
@@ -76,6 +77,7 @@ def create_app(config: AppConfig | None = None) -> Flask:
     app.register_blueprint(health_bp)
     app.register_blueprint(search_bp, url_prefix="/api/v1/search")
     app.register_blueprint(index_bp, url_prefix="/api/v1/search")
+    app.register_blueprint(insights_bp, url_prefix="/api/v1/insights/search")
 
     # Register authentication middleware
     require_auth(app)
