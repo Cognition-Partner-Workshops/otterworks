@@ -36,6 +36,12 @@ Non-secret (control-plane metadata): `OP`, `TENANT_ID`, `TIER`, `TTL`,
 Secrets (from Kubernetes Secret refs — **env only, never argv**): `DB_PASSWORD`,
 `JWT_SECRET`, `SECRET_KEY_BASE`. AWS creds come from the pod's IRSA role.
 
+The runner only executes the tree bundled in the image. `TENANT_BRANCH` is never
+fetched or checked out: it selects the branch's CI-built `tenant-<id>` images and
+labels alerts. Attendees can push `workshop-*` branches, and this Job holds
+cluster-wide RBAC, the dashboard IRSA role and the shared RDS password, so
+branch code must never run here. `./test-entrypoint.sh` guards this.
+
 ## Example Job (deploy)
 
 ```yaml

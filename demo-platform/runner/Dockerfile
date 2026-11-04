@@ -58,8 +58,8 @@ RUN curl -fsSL -o /tmp/terraform.zip \
   && chmod +x /usr/local/bin/terraform \
   && terraform version
 
-# The repo (scripts/ + demo-platform/) — the runner checks out the requested
-# branch at runtime via entrypoint.sh (TENANT_BRANCH).
+# The repo (scripts/ + demo-platform/). This bundled tree is the only code the
+# runner executes; participant branches are never checked out (entrypoint.sh).
 WORKDIR /workspace
 COPY . /workspace
 
@@ -78,7 +78,6 @@ RUN addgroup -S runner \
 USER runner
 
 ENV HOME=/home/runner \
-    REPO_DIR=/workspace \
     CONTROL_TABLE=otterworks-demo-control \
     AWS_REGION=us-east-1 \
     EKS_CLUSTER=otterworks-dev \

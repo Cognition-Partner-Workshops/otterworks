@@ -171,11 +171,13 @@ namespace, so no extra labelling) plus `ingress-nginx`; Services stay
 `ClusterIP`.
 
 Create or redeploy through CD, falling back to the script when the runner Job
-fails. The runner needs two things from the platform release
-(`demo-platform/helm/demo-platform`): the `monitoring.coreos.com` rules on its
-ClusterRole, and `repoHttpsUrl` + `secret.githubToken` so it can fetch the
-branch (the runner image ships the tree without `.git`; the entrypoint
-initializes a repository and fetches the branch shallowly). Keep the fallback on
+fails. The runner needs the `monitoring.coreos.com` rules on its ClusterRole in
+the platform release (`demo-platform/helm/demo-platform`). It never checks out
+the tenant branch: it runs with control-plane privileges, so it only executes
+the scripts, charts and `tenant-values/` overlays bundled in its image (built
+from `main`). The branch reaches the tenant as the `tenant-<id>` images CI builds
+from it; chart or overlay changes that live only on the branch need the
+script fallback below, run by an operator from a checkout of that branch. Keep the fallback on
 the same host suffix as CD, otherwise external-dns drops the tenant's records:
 
 ```bash
@@ -230,8 +232,8 @@ cluster".
   `demo-platform-ops`) to manage `servicemonitors` and `prometheusrules`;
   `demo-platform/helm/demo-platform/templates/rbac.yaml` grants it, and the
   platform release must be upgraded for the grant to take effect. The runner
-  also needs `GITHUB_TOKEN` + `REPO_HTTPS_URL` to check out a tenant branch;
-  without them it deploys its bundled tree (no per-branch chart or overlay
-  changes). Until both are in place, use the `deploy-tenant.sh` fallback above.
+  never checks out a tenant branch (it runs with control-plane privileges and
+  attendees can write `workshop-*` branches), so it deploys its bundled tree:
+  per-branch chart or overlay changes need the script fallback. Until both are in place, use the `deploy-tenant.sh` fallback above.
 - **Tenant JWT secrets must be at least 32 bytes**: auth-service rejects shorter
   HS256 keys at boot (`openssl rand -hex 32`).

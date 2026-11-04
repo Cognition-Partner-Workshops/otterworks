@@ -423,7 +423,8 @@ jobs:
       # Scoped to the control plane. `scripts/` has a backlog of findings that
       # would make this gate permanently red, and so ignored; widen it once
       # that is cleared.
-      - run: shellcheck demo-platform/reaper/*.sh demo-platform/scripts/*.sh demo-platform/lib/*.sh demo-platform/runner/entrypoint.sh
+      - run: shellcheck demo-platform/reaper/*.sh demo-platform/scripts/*.sh demo-platform/lib/*.sh demo-platform/runner/entrypoint.sh demo-platform/runner/test-entrypoint.sh
+      - run: ./demo-platform/runner/test-entrypoint.sh
       - run: ./demo-platform/reaper/test-reaper.sh
       - run: ./demo-platform/reaper/test-idle-suspend.sh
       - run: ./demo-platform/reaper/test-infra-sweep.sh
@@ -445,6 +446,8 @@ jobs:
       - run: terraform fmt -check -recursive
       - run: terraform init -backend=false
       - run: terraform validate
+      # Mocked AWS provider: asserts the dashboard IRSA policy scope offline.
+      - run: terraform test
 
   # Black-box API flow test validation
   api-flow-tests:

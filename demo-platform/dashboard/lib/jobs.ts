@@ -25,7 +25,6 @@ const RUNNER_SECRET_ENV_KEYS = [
   "DB_PASSWORD",
   "JWT_SECRET",
   "SECRET_KEY_BASE",
-  "GITHUB_TOKEN",
 ] as const;
 
 function jobName(action: RunnerAction, id: string, epoch: number): string {
@@ -40,7 +39,8 @@ export function jobNamePrefixes(id: string): string[] {
 
 function buildEnv(input: RunnerJobInput): k8s.V1EnvVar[] {
   // The runner image ENTRYPOINT (entrypoint.sh) dispatches on OP and does the
-  // branch checkout + control-table status/audit writes. We drive it purely
+  // control-table status/audit writes. It only runs its bundled scripts; the
+  // branch is never checked out, so no git credentials are passed. We drive it purely
   // through env — never by overriding the container command — so that plumbing
   // always runs. Env names must match the entrypoint contract exactly.
   const plain: k8s.V1EnvVar[] = [
@@ -53,7 +53,6 @@ function buildEnv(input: RunnerJobInput): k8s.V1EnvVar[] {
     { name: "ACTOR", value: "dashboard" },
   ];
   if (input.branch) plain.push({ name: "TENANT_BRANCH", value: input.branch });
-  if (env.repoHttpsUrl) plain.push({ name: "REPO_HTTPS_URL", value: env.repoHttpsUrl });
   if (input.tier) plain.push({ name: "TIER", value: input.tier });
   if (input.imageTag) plain.push({ name: "IMAGE_TAG", value: input.imageTag });
   if (input.ttl) plain.push({ name: "TTL", value: input.ttl });
