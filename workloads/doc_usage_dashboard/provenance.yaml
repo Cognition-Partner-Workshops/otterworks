@@ -4,7 +4,7 @@ spec: workloads/doc_usage_dashboard.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: 7ee503d32cca3a1990fa05678fc1ced409aeb0a1
+  commit: 4db61064e7a985c834cd2e7ee862c54d0c2bc90b
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2451
   session: https://partner-workshops.devinenterprise.com/sessions/8adda3d5e3e6461ab8385187f82c6569
 endpoints:
@@ -65,8 +65,8 @@ deployed_objects:
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP
   devin_csid: cs_doc_usage_dashboard_account_usage
   state: deployed
-  deployed_at: '2026-11-04T21:32:40Z'
-  deployed_commit: 7ee503d32cca3a1990fa05678fc1ced409aeb0a1
+  deployed_at: '2026-11-04T21:52:51Z'
+  deployed_commit: 4db61064e7a985c834cd2e7ee862c54d0c2bc90b
 - type: stage
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP_STAGE
   state: deployed
