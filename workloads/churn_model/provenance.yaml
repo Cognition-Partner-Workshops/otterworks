@@ -4,9 +4,9 @@ spec: workloads/churn_model.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+  commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
-  session: https://partner-workshops.devinenterprise.com/sessions/c7aba848685a48e38d97b1f39435fda5
+  session: https://partner-workshops.devinenterprise.com/sessions/6eebc1acb0d4426c985e41f45bb0adda
 endpoints:
 - csid: cs_churn_model_account_score
   service_user: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
@@ -102,11 +102,108 @@ deployed_objects:
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
   deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: schema
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC
+  state: deployed
+  deployed_at: '2026-11-04T21:59:21Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.GENERATOR_RUNS
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.ACCOUNTS
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.DAILY_ACTIVITY
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.QUOTA_SNAPSHOTS
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVENTS
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.SUPPORT_NOTES
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_POPULATION
+  state: deployed
+  deployed_at: '2026-11-04T22:00:27Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_FEATURES
+  state: deployed
+  deployed_at: '2026-11-04T22:00:27Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.LEAKAGE_CHECK
+  state: deployed
+  deployed_at: '2026-11-04T22:00:27Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_MODEL_COEFFICIENTS
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_SCORES
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVALUATION
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVALUATION_GATES
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.FEATURE_AUC_SENTINEL
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVALUATION_HISTORY
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVALUATION_GATES_HISTORY
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_WATCHLIST
+  state: deployed
+  deployed_at: '2026-11-04T22:01:03Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_REASON_CHECK
+  state: deployed
+  deployed_at: '2026-11-04T22:01:03Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
 usage:
   source: SNOWFLAKE.ACCOUNT_USAGE
   reported_through: pending
   credits_dev: pending
   credits_runtime: pending
+  credits_ai_dev: pending
+  credits_ai_runtime: pending
   credits_idle: pending
   query_count_dev: pending
   query_count_runtime: pending
