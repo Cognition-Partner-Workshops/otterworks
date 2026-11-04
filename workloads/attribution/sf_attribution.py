@@ -24,6 +24,7 @@ TAG_FQN = "DEVIN_GOVERNANCE.TAGS.DEVIN_CSID"
 WAREHOUSE_SIZE = "XSMALL"
 AUTO_SUSPEND_SECONDS = 60
 MONTHLY_CREDIT_QUOTA = 10
+MONITOR_TRIGGERS = "TRIGGERS ON 75 PERCENT DO NOTIFY ON 100 PERCENT DO SUSPEND ON 110 PERCENT DO SUSPEND_IMMEDIATE"
 ANALYTICS_SCHEMA = "ANALYTICS"
 QUERY_TAG_MAX_CHARS = 2000
 TAG_VALUE_MAX_CHARS = 256
@@ -295,13 +296,17 @@ def warehouse_ddl(workload: str, *, credit_quota: int = MONTHLY_CREDIT_QUOTA) ->
     if not isinstance(credit_quota, int) or credit_quota <= 0:
         raise AttributionError("credit_quota must be a positive integer")
     monitor, warehouse = resource_monitor_name(workload), warehouse_name(workload)
+    warehouse_settings = (
+        f"WAREHOUSE_SIZE = '{WAREHOUSE_SIZE}' AUTO_SUSPEND = {AUTO_SUSPEND_SECONDS} AUTO_RESUME = TRUE "
+        f"RESOURCE_MONITOR = {monitor}"
+    )
+    # CREATE ... IF NOT EXISTS skips an existing object, so the ALTERs bring a re-run up to date.
     return [
         f"CREATE RESOURCE MONITOR IF NOT EXISTS {monitor} WITH CREDIT_QUOTA = {credit_quota} "
-        "FREQUENCY = MONTHLY START_TIMESTAMP = IMMEDIATELY "
-        "TRIGGERS ON 75 PERCENT DO NOTIFY ON 100 PERCENT DO SUSPEND ON 110 PERCENT DO SUSPEND_IMMEDIATE",
-        f"CREATE WAREHOUSE IF NOT EXISTS {warehouse} WITH WAREHOUSE_SIZE = '{WAREHOUSE_SIZE}' "
-        f"AUTO_SUSPEND = {AUTO_SUSPEND_SECONDS} AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE "
-        f"RESOURCE_MONITOR = {monitor}",
+        f"FREQUENCY = MONTHLY START_TIMESTAMP = IMMEDIATELY {MONITOR_TRIGGERS}",
+        f"ALTER RESOURCE MONITOR {monitor} SET CREDIT_QUOTA = {credit_quota} {MONITOR_TRIGGERS}",
+        f"CREATE WAREHOUSE IF NOT EXISTS {warehouse} WITH {warehouse_settings} INITIALLY_SUSPENDED = TRUE",
+        f"ALTER WAREHOUSE {warehouse} SET {warehouse_settings}",
     ]
 
 

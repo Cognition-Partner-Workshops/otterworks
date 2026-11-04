@@ -207,12 +207,23 @@ def test_sql_string_escapes_quotes_and_backslashes() -> None:
 
 
 def test_warehouse_ddl_is_xsmall_60s_with_own_monitor() -> None:
-    monitor, warehouse = attr.warehouse_ddl("churn_model")
+    monitor, alter_monitor, warehouse, alter_warehouse = attr.warehouse_ddl("churn_model")
     assert monitor.startswith("CREATE RESOURCE MONITOR IF NOT EXISTS RM_CHURN_MODEL WITH CREDIT_QUOTA = 10")
     assert "FREQUENCY = MONTHLY" in monitor and "ON 100 PERCENT DO SUSPEND" in monitor
     assert "CREATE WAREHOUSE IF NOT EXISTS WH_CHURN_MODEL" in warehouse
     assert "WAREHOUSE_SIZE = 'XSMALL'" in warehouse and "AUTO_SUSPEND = 60" in warehouse
     assert "RESOURCE_MONITOR = RM_CHURN_MODEL" in warehouse
+    assert alter_monitor == f"ALTER RESOURCE MONITOR RM_CHURN_MODEL SET CREDIT_QUOTA = 10 {attr.MONITOR_TRIGGERS}"
+    assert alter_warehouse == (
+        "ALTER WAREHOUSE WH_CHURN_MODEL SET WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE "
+        "RESOURCE_MONITOR = RM_CHURN_MODEL"
+    )
+
+
+def test_warehouse_ddl_rerun_applies_a_revised_quota() -> None:
+    stmts = attr.warehouse_ddl("churn_model", credit_quota=20)
+    assert [s.split()[0] for s in stmts] == ["CREATE", "ALTER", "CREATE", "ALTER"]
+    assert "SET CREDIT_QUOTA = 20 TRIGGERS" in stmts[1]
     with pytest.raises(attr.AttributionError):
         attr.warehouse_ddl("churn_model", credit_quota=0)
 
@@ -292,4 +303,4 @@ def test_cli_tag_and_ddl(capsys) -> None:
     )
     assert attr.main(["ddl", "--workload", "churn_model", "--csid", "cs_churn_model_account_score"]) == 0
     out = capsys.readouterr().out
-    assert "CREATE WAREHOUSE IF NOT EXISTS WH_CHURN_MODEL" in out and out.count(";\n") == 5
+    assert "CREATE WAREHOUSE IF NOT EXISTS WH_CHURN_MODEL" in out and out.count(";\n") == 7
