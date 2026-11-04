@@ -154,6 +154,8 @@ if [[ "$mode" == deploy ]]; then
     run_logged related_tests uv run \
       --with pyyaml==6.0.2 --with jsonschema==4.23.0 --with pytest==8.3.5 \
       --with snowflake-connector-python==4.8.1 \
+      --with snowflake-snowpark-python==1.56.0 --with pandas==2.2.3 \
+      --with numpy==2.2.6 --with pyarrow==19.0.1 --with tabulate==0.9.0 \
       pytest "${related_tests[@]}" -q
   fi
   run_logged foundation_migrations env DRY_RUN=0 PIPELINE=0 workloads/snowflake/apply.sh builder
