@@ -15,6 +15,7 @@ endpoints:
     service_user: SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
     application: Devin_Demo
 warehouse:
+  # V1.9.0: AUTO_RESUME=TRUE, ENABLE_QUERY_ACCELERATION=FALSE.
   name: SFNFR_20261104_WH_DOC_USAGE_DASHBOARD
   size: XSMALL
   auto_suspend_seconds: 60
@@ -43,8 +44,8 @@ deployed_objects:
     name: SFNFR_20261104_WH_DOC_USAGE_DASHBOARD
     devin_csid: cs_doc_usage_dashboard_account_usage
     state: deployed
-    deployed_at: "2026-11-04T20:42:58Z"
-    deployed_commit: "4457e5ffa638b52da7067752bc70e0d0b661af45"
+    deployed_at: "2026-11-04T22:23:04Z"
+    deployed_commit: "2b2ebc4356de2cb468138a17ee4d0fe873b71716"
   - type: resource_monitor
     name: SFNFR_20261104_RM_DOC_USAGE_DASHBOARD
     state: deployed
