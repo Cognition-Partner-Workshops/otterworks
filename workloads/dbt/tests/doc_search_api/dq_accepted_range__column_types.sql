@@ -18,8 +18,8 @@ with expected as (
 ), actual as (
     select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale
     from {{ target.database }}.information_schema.columns
-    where table_schema = '{{ ref('doc_search_api').schema }}'
-        and table_name = '{{ ref('doc_search_api').identifier }}'
+    where table_schema = upper('{{ ref('doc_search_api').schema }}')
+        and table_name = upper('{{ ref('doc_search_api').identifier }}')
 )
 select coalesce(e.column_name, a.column_name) as column_name,
     e.data_type as expected_type, a.data_type as actual_type
