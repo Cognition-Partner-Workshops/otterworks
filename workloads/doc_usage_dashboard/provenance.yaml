@@ -47,7 +47,9 @@ deployed_objects:
   state: planned
 - type: user
   name: SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:32:37Z'
+  deployed_commit: 7ee503d32cca3a1990fa05678fc1ced409aeb0a1
 - type: view
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD
   state: deployed
@@ -62,7 +64,14 @@ deployed_objects:
 - type: streamlit
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP
   devin_csid: cs_doc_usage_dashboard_account_usage
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:32:40Z'
+  deployed_commit: 7ee503d32cca3a1990fa05678fc1ced409aeb0a1
+- type: stage
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP_STAGE
+  state: deployed
+  deployed_at: '2026-11-04T21:32:39Z'
+  deployed_commit: 7ee503d32cca3a1990fa05678fc1ced409aeb0a1
 - type: table
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.ADMIN_STORAGE_QUOTAS
   state: deployed
