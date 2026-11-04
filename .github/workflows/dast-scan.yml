@@ -62,6 +62,12 @@ jobs:
       - name: Unit-test the harness
         run: make dast-test
 
+      - name: Generate a throwaway share-link key
+        run: |
+          key="$(openssl rand -hex 32)"
+          echo "::add-mask::${key}"
+          echo "SHARE_LINK_SECRET=${key}" >> "$GITHUB_ENV"
+
       - name: Start the application stack
         run: |
           docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build \

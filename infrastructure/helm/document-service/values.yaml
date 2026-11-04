@@ -96,4 +96,6 @@ config: {}
 
 # Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
 # stringData) and injected via envFrom. Populate at deploy time; never commit values.
+# SHARE_LINK_SECRET (share-link HMAC key) is required: the service will not boot
+# without it. deploy-dev.sh / deploy-tenant.sh generate or carry it over.
 secrets: {}

@@ -2,6 +2,13 @@
 
 SHELL := /bin/bash
 
+# document-service signs share links with SHARE_LINK_SECRET and will not boot
+# without it. Local stacks get a random per-run key unless one is supplied.
+ifeq ($(strip $(SHARE_LINK_SECRET)),)
+SHARE_LINK_SECRET := $(shell openssl rand -hex 32)
+endif
+export SHARE_LINK_SECRET
+
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 

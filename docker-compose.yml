@@ -157,6 +157,10 @@ services:
       DOC_SVC_AWS_ENDPOINT_URL: http://localstack:4566
       DOC_SVC_SNS_ENABLED: 'true'
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
+      # Share-link HMAC key. No default on purpose: the service refuses to boot
+      # without it. `make` generates one per run; set it yourself (or in .env)
+      # when calling docker compose directly.
+      SHARE_LINK_SECRET: ${SHARE_LINK_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy
