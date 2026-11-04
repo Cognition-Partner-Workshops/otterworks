@@ -131,7 +131,7 @@ variable "manage_rbac" {
 }
 
 variable "deployer_cidrs" {
-  description = "CIDRs of the machine that runs terraform apply: allowed through the Key Vault network ACL (both modes) and the SQL firewall (apply_target_sql when not private). Empty: the deployer's public IP is discovered at plan time."
+  description = "Extra CIDRs allowed through the SQL firewall for the machine that runs terraform apply (needed by apply_target_sql when not private). Empty: the deployer's public IP is discovered at plan time."
   type        = list(string)
   default     = []
 }

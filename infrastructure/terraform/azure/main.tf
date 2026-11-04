@@ -71,6 +71,11 @@ resource "azurerm_role_assignment" "identity_blob_reader" {
 
 # Purge protection stays off on purpose: namespaces are throwaway and `make demo-destroy` must be able to
 # purge the vault so a re-run can reuse the name.
+# Network ACLs exist only when private_networking is on. In public mode the Container Apps resolve their
+# key_vault_secret_id references from outside any allow-listable network (Container Apps is not a Key
+# Vault trusted service), so a Deny ACL would break them. Known residual risk: in public mode the vault
+# data plane is reachable from any IP and only Entra ID auth + access policies/RBAC gate reads. The
+# keyvault-specify-network-acl rule is deliberately left unsuppressed so the exposure stays visible.
 resource "azurerm_key_vault" "this" { # nosemgrep: terraform.azure.security.keyvault.keyvault-purge-enabled.keyvault-purge-enabled
   name                       = local.key_vault_name
   location                   = azurerm_resource_group.this.location
@@ -80,16 +85,18 @@ resource "azurerm_key_vault" "this" { # nosemgrep: terraform.azure.security.keyv
   rbac_authorization_enabled = var.manage_rbac
   purge_protection_enabled   = false
   soft_delete_retention_days = 7
-  # Secrets are written over the data plane by the machine running apply, so the vault keeps a
-  # public endpoint, but in both modes it denies everything except the deployer CIDRs (plus the
-  # private endpoint in private mode).
+  # Secrets are written over the data plane by the machine running apply, so in private mode the
+  # vault keeps a public endpoint locked to the deployer CIDRs (plus the private endpoint).
   public_network_access_enabled = true
   tags                          = local.tags
 
-  network_acls {
-    default_action = "Deny"
-    bypass         = "AzureServices"
-    ip_rules       = local.deployer_cidrs
+  dynamic "network_acls" {
+    for_each = var.private_networking ? [1] : []
+    content {
+      default_action = "Deny"
+      bypass         = "AzureServices"
+      ip_rules       = local.deployer_cidrs
+    }
   }
 
   # Access-policy mode (manage_rbac=false): Contributor alone can grant these.
