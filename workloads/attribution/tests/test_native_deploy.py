@@ -33,13 +33,15 @@ def test_deployment_uploads_only_dbt_source(tmp_path):
     assert [file.name for file in deploy.project_files(tmp_path)] == ['dbt_project.yml', 'model.sql']
 
 
-@pytest.mark.parametrize('state,query_tag,error', [
-    ('SUCCEEDED', 'runtime-tag', None),
-    ('FAILED', 'runtime-tag', 'Task failed'),
-    ('SUCCEEDED', '', 'runtime query-tag mismatch'),
-    ('SUCCEEDED', None, 'Missing queries'),
+@pytest.mark.parametrize('state,query_tag,bootstrap,first,error', [
+    ('SUCCEEDED', 'runtime-tag', False, False, None),
+    ('FAILED', 'runtime-tag', False, False, 'Task failed'),
+    ('SUCCEEDED', '', False, True, 'runtime query-tag mismatch'),
+    ('SUCCEEDED', None, False, False, 'Missing queries'),
+    ('SUCCEEDED', '', True, True, None),
+    ('SUCCEEDED', '', True, False, 'runtime query-tag mismatch'),
 ])
-def test_runtime_verification(state, query_tag, error):
+def test_runtime_verification(state, query_tag, bootstrap, first, error):
     now = datetime.now(timezone.utc)
 
     class Cursor:
@@ -53,11 +55,64 @@ def test_runtime_verification(state, query_tag, error):
         def fetchall(self):
             if 'TASK_HISTORY(' in self.sql:
                 return [('TASK', state, now, now, now, 'task-query', None, None)]
-            return [] if query_tag is None else [('query', now, 'BUILDER', 'SELECT', 'select 1', query_tag)]
+            if 'QUERY_HISTORY_BY_SESSION(' in self.sql:
+                return [('query' if first else 'earlier-query', 2)]
+            text = "alter session set query_tag = 'runtime-tag'" if bootstrap else 'select 1'
+            kind = 'ALTER_SESSION' if bootstrap else 'SELECT'
+            return [] if query_tag is None else [('query', now, 'BUILDER', kind, text[:60], query_tag, text, 123)]
 
     args = (Cursor(), deploy.attr.names([deploy.WORKLOAD]), 'DB.ANALYTICS.TASK', 'runtime-tag', now)
     if error:
         with pytest.raises(AssertionError if state == 'SUCCEEDED' else RuntimeError, match=error):
             deploy.verify_run(*args)
     else:
-        assert deploy.verify_run(*args)['mismatch_count'] == 0
+        result = deploy.verify_run(*args)
+        assert result['mismatch_count'] == 0
+        assert result['strict_mismatch_count'] == int(bootstrap)
+
+
+@pytest.mark.parametrize('kind,text,tag,first,expected', [
+    ('SELECT', 'select 1', 'runtime-tag', False, True),
+    ('ALTER_SESSION', "alter session set query_tag = 'runtime-tag'", '', True, True),
+    ('ALTER_SESSION', " ALTER SESSION SET QUERY_TAG='runtime-tag';\n", None, True, True),
+    ('ALTER_SESSION', "alter session set query_tag = 'runtime-tag'", '', False, False),
+    ('SELECT', "alter session set query_tag = 'runtime-tag'", '', True, False),
+    ('ALTER_SESSION', "alter session set query_tag = 'other-tag'", '', True, False),
+    ('ALTER_SESSION', "alter session set query_tag = 'RUNTIME-TAG'", '', True, False),
+    ('ALTER_SESSION', "alter session set query_tag = 'runtime-tag'; select 1", '', True, False),
+    ('ALTER_SESSION', "alter session set query_tag = 'runtime-tag', timezone='UTC'", '', True, False),
+    ('ALTER_SESSION', "alter session unset query_tag", '', True, False),
+    ('ALTER_SESSION', '', '', True, False),
+])
+def test_exact_native_bootstrap_exception(kind, text, tag, first, expected):
+    assert deploy.query_is_compliant(kind, text, tag, first, 'runtime-tag') is expected
+
+
+def test_bootstrap_tag_preserves_exact_json_and_sql_escaping():
+    tag = '{"run_id":"fixture\'s-A"}'
+    sql = 'alter session set query_tag = ' + deploy.attr.sql_string(tag)
+    assert deploy.query_is_compliant('ALTER_SESSION', sql, '', True, tag)
+    assert not deploy.query_is_compliant('ALTER_SESSION', sql, '', True, tag.lower())
+
+
+@pytest.mark.parametrize('fail', [False, True])
+def test_native_task_fails_closed_on_verification_error(monkeypatch, fail):
+    statements = []
+
+    class Cursor:
+        def execute(self, sql):
+            statements.append(sql)
+
+    def verify(*args):
+        if fail:
+            raise AssertionError('bad attribution')
+        return {'mismatch_count': 0}
+
+    monkeypatch.setattr(deploy, 'verify_run', verify)
+    if fail:
+        with pytest.raises(AssertionError, match='bad attribution'):
+            deploy.verify_or_suspend(Cursor(), {}, 'DB.ANALYTICS.TASK', 'tag', None)
+        assert statements == ['ALTER TASK DB.ANALYTICS.TASK SUSPEND']
+    else:
+        assert deploy.verify_or_suspend(Cursor(), {}, 'DB.ANALYTICS.TASK', 'tag', None) == {'mismatch_count': 0}
+        assert statements == []
