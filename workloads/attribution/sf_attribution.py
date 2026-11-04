@@ -268,6 +268,18 @@ def create_task_sql(
     )
 
 
+def deploy_task_sql(endpoint: Endpoint, *, resume: bool = True, **kwargs: Any) -> list[str]:
+    """Statements that (re)deploy a workload task, in order.
+
+    CREATE OR REPLACE leaves the task suspended even if the one it replaced was running, so a
+    runtime deployment resumes it as the last step. resume=False keeps it suspended (dev runs).
+    """
+    statements = [create_task_sql(endpoint, **kwargs)]
+    if resume:
+        statements.append(f"ALTER TASK {task_name(endpoint.workload)} RESUME")
+    return statements
+
+
 def alter_task_query_tag_sql(endpoint: Endpoint, **kwargs: Any) -> str:
     kwargs.setdefault("phase", "runtime")
     return f"ALTER TASK {task_name(endpoint.workload)} SET QUERY_TAG = {sql_string(query_tag_json(endpoint, **kwargs))}"

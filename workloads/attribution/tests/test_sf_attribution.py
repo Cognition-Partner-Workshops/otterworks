@@ -174,6 +174,15 @@ def test_task_carries_its_own_runtime_tag() -> None:
     assert alter.startswith("ALTER TASK DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD SET QUERY_TAG = '")
 
 
+def test_deploy_task_resumes_after_replacing() -> None:
+    kwargs = {"schedule": "USING CRON 0 1 * * * UTC", "body": "SELECT 1", "commit": COMMIT, "run_id": RUNTIME_RUN_ID}
+    create, resume = attr.deploy_task_sql(EP, **kwargs)
+    assert create == attr.create_task_sql(EP, **kwargs)
+    assert "WITH TAG" in create and "QUERY_TAG = " in create
+    assert resume == "ALTER TASK DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD RESUME"
+    assert attr.deploy_task_sql(EP, resume=False, **kwargs) == [create]
+
+
 def test_task_tag_lists_every_workload_csid() -> None:
     sql = attr.create_task_sql(
         EP,
