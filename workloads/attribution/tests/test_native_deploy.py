@@ -45,6 +45,8 @@ def test_runtime_verification(state, query_tag, error):
     class Cursor:
         def execute(self, sql, params):
             assert 'TO_TIMESTAMP_LTZ(%s)' in sql
+            if 'TASK_HISTORY(' in sql:
+                assert 'SCHEDULED_TIME_RANGE_END=>CURRENT_TIMESTAMP()' in sql
             self.sql = sql
             return self
 

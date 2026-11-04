@@ -60,8 +60,8 @@ def verify_run(cur, names, task, runtime_tag, started):
     history_sql = (
         'SELECT NAME,STATE,SCHEDULED_TIME,QUERY_START_TIME,COMPLETED_TIME,QUERY_ID,ERROR_CODE,ERROR_MESSAGE '
         f"FROM TABLE({names[f'db_{WORKLOAD}']}.INFORMATION_SCHEMA.TASK_HISTORY("
-        f"TASK_NAME=>'{task.split('.')[-1]}',SCHEDULED_TIME_RANGE_START=>TO_TIMESTAMP_LTZ(%s),RESULT_LIMIT=>10)) "
-        'ORDER BY SCHEDULED_TIME DESC'
+        f"TASK_NAME=>'{task.split('.')[-1]}',SCHEDULED_TIME_RANGE_START=>TO_TIMESTAMP_LTZ(%s),"
+        'SCHEDULED_TIME_RANGE_END=>CURRENT_TIMESTAMP(),RESULT_LIMIT=>10)) ORDER BY SCHEDULED_TIME'
     )
     deadline = time.monotonic() + 900
     while time.monotonic() < deadline:
