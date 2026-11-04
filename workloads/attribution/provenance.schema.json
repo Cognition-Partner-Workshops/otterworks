@@ -64,7 +64,7 @@
         "additionalProperties": false,
         "required": ["type", "name", "state"],
         "properties": {
-          "type": {"enum": ["database", "schema", "warehouse", "resource_monitor", "user", "table", "task", "streamlit"]},
+          "type": {"enum": ["database", "schema", "warehouse", "resource_monitor", "user", "table", "view", "stage", "file_format", "procedure", "dbt_project", "task", "streamlit"]},
           "name": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*(\\.[A-Z][A-Z0-9_]*){0,2}$"},
           "state": {"enum": ["planned", "deployed", "dropped"]},
           "devin_csid": {"type": "string", "pattern": "^cs_[a-z0-9_]+(,cs_[a-z0-9_]+)*$"},

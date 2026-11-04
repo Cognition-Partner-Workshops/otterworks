@@ -1,19 +1,16 @@
-# Provenance for the churn_model workload (weekly refresh).
-# Schema and rules: workloads/attribution/README.md. Validate with `python workloads/attribution/validate_provenance.py` (see README).
-# Usage figures Snowflake has not reported yet are `pending`; 0 means a reported zero.
 schema_version: 1
 workload: churn_model
 spec: workloads/churn_model.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: "093a322802114276a74a54332485709f63f2d625"
+  commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
-  session: https://partner-workshops.devinenterprise.com/sessions/e69f745063454d4ba5274736ab6a6356
+  session: https://partner-workshops.devinenterprise.com/sessions/c7aba848685a48e38d97b1f39435fda5
 endpoints:
-  - csid: cs_churn_model_account_score
-    service_user: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
-    application: Devin_Demo
+- csid: cs_churn_model_account_score
+  service_user: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+  application: Devin_Demo
 warehouse:
   name: SFNFR_20261104_WH_CHURN_MODEL
   size: XSMALL
@@ -23,33 +20,88 @@ warehouse:
     frequency: MONTHLY
     credit_quota: 10
 deployed_objects:
-  - type: database
-    name: SFNFR_20261104_DB_CHURN_MODEL
-    devin_csid: cs_churn_model_account_score
-    state: planned
-  - type: schema
-    name: SFNFR_20261104_DB_CHURN_MODEL.RAW
-    state: planned
-  - type: schema
-    name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS
-    state: planned
-  - type: warehouse
-    name: SFNFR_20261104_WH_CHURN_MODEL
-    devin_csid: cs_churn_model_account_score
-    state: planned
-  - type: resource_monitor
-    name: SFNFR_20261104_RM_CHURN_MODEL
-    state: planned
-  - type: user
-    name: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
-    state: planned
-  - type: table
-    name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_MODEL
-    state: planned
-  - type: task
-    name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.REFRESH_CHURN_MODEL
-    devin_csid: cs_churn_model_account_score
-    state: planned
+- type: database
+  name: SFNFR_20261104_DB_CHURN_MODEL
+  devin_csid: cs_churn_model_account_score
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: schema
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: schema
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: warehouse
+  name: SFNFR_20261104_WH_CHURN_MODEL
+  devin_csid: cs_churn_model_account_score
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: resource_monitor
+  name: SFNFR_20261104_RM_CHURN_MODEL
+  state: planned
+- type: user
+  name: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+  state: planned
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_MODEL
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: task
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.REFRESH_CHURN_MODEL
+  devin_csid: cs_churn_model_account_score
+  state: planned
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.AUTH_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.ADMIN_ADMIN_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.DOCUMENT_DOCUMENT_VERSIONS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: view
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: view
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_ADMIN_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: view
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_VERSIONS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: stage
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_FILES
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: file_format
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_CSV
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+- type: procedure
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.LOAD_RAW
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
 usage:
   source: SNOWFLAKE.ACCOUNT_USAGE
   reported_through: pending
