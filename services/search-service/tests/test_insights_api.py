@@ -103,7 +103,7 @@ def insights_app(app_config, mock_meilisearch_client):
     config = replace(
         app_config,
         auth=AuthConfig(service_token="insights-service-token", require_auth=True),
-        snowflake=SnowflakeConfig(),
+        snowflake=SnowflakeConfig(account="test-account"),
     )
     with patch("app.services.meilisearch_client.meilisearch.Client") as client_class:
         client_class.return_value = mock_meilisearch_client
