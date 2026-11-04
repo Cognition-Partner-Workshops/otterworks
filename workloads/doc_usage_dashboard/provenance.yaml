@@ -4,9 +4,9 @@ spec: workloads/doc_usage_dashboard.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
-  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
-  session: https://partner-workshops.devinenterprise.com/sessions/c7aba848685a48e38d97b1f39435fda5
+  commit: 7ee503d32cca3a1990fa05678fc1ced409aeb0a1
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2451
+  session: https://partner-workshops.devinenterprise.com/sessions/8adda3d5e3e6461ab8385187f82c6569
 endpoints:
 - csid: cs_doc_usage_dashboard_account_usage
   service_user: SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
