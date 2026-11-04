@@ -290,7 +290,14 @@ resource "aws_eks_addon" "vpc_cni" {
   # prefixes instead raises the per-node ceiling by roughly an order of
   # magnitude and is the difference between this cluster holding 10 tenants and
   # holding 100.
+  #
+  # Network-policy enforcement. Every tenant namespace relies on its
+  # `tenant-isolation` NetworkPolicy (scripts/deploy-tenant.sh) to keep other
+  # tenants' pods away from its unauthenticated-by-default backing services.
+  # Without this flag the VPC CNI accepts NetworkPolicy objects but enforces
+  # none of them, and no other policy engine runs on this cluster.
   configuration_values = jsonencode({
+    enableNetworkPolicy = "true"
     env = {
       ENABLE_PREFIX_DELEGATION = "true"
       WARM_PREFIX_TARGET       = "1"

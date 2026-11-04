@@ -111,7 +111,7 @@ func main() {
 	})
 	// Chaos: mobile-latency (scripts/bug-catalog.yaml). Runs after auth so a
 	// rejected request is never delayed.
-	chaosFlags := chaos.NewRedis(cfg.RedisAddr())
+	chaosFlags := chaos.NewRedis(cfg.RedisAddr(), cfg.RedisPassword)
 	r.Mount("/", middleware.MobileLatency(chaosFlags)(proxyRouter))
 
 	// HTTP server

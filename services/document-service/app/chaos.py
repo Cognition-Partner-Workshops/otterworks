@@ -32,6 +32,7 @@ def get_redis() -> redis_lib.Redis:
         _redis_client = redis_lib.Redis(
             host=host,
             port=port,
+            password=os.getenv("REDIS_PASSWORD") or None,
             decode_responses=True,
             socket_timeout=REDIS_TIMEOUT_SECONDS,
             socket_connect_timeout=REDIS_TIMEOUT_SECONDS,

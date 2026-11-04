@@ -26,8 +26,9 @@ type Config struct {
 	ReportServiceURL       string
 
 	// Tenant Redis holding the chaos flags; empty disables chaos.
-	RedisHost string
-	RedisPort string
+	RedisHost     string
+	RedisPort     string
+	RedisPassword string
 
 	// Rate limiting
 	RateLimitRPS int
@@ -48,10 +49,10 @@ type Config struct {
 	ShutdownTimeout time.Duration
 
 	// Circuit breaker
-	CBMaxRequests   uint32
-	CBInterval      time.Duration
-	CBTimeout       time.Duration
-	CBFailureRatio  float64
+	CBMaxRequests  uint32
+	CBInterval     time.Duration
+	CBTimeout      time.Duration
+	CBFailureRatio float64
 }
 
 // Validate checks that required security-sensitive configuration is present.
@@ -79,8 +80,9 @@ func Load() *Config {
 		AuditServiceURL:        getEnv("AUDIT_SERVICE_URL", "http://audit-service:8090"),
 		ReportServiceURL:       getEnv("REPORT_SERVICE_URL", "http://report-service:8091"),
 
-		RedisHost: getEnv("REDIS_HOST", ""),
-		RedisPort: getEnv("REDIS_PORT", "6379"),
+		RedisHost:     getEnv("REDIS_HOST", ""),
+		RedisPort:     getEnv("REDIS_PORT", "6379"),
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 
 		RateLimitRPS: getEnvInt("RATE_LIMIT_RPS", 100),
 
