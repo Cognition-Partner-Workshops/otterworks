@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'workloads/pipeline'))
+import pipeline  # noqa: E402
 from pipeline import CONSUMERS, attr, connect  # noqa: E402
 
 WORKLOAD = 'doc_usage_dashboard'
@@ -33,7 +34,9 @@ def main():
     parser.add_argument('--public-key-file', type=Path, required=True, help='service user public key')
     parser.add_argument('--directory', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--session-url', required=True, help='Devin session doing this dev-phase deploy')
     args = parser.parse_args()
+    pipeline.SESSION_URL = args.session_url
     head = attr.current_commit(str(ROOT))
     pushed = subprocess.check_output(['git', '-C', str(ROOT), 'branch', '-r', '--contains', args.commit], text=True)
     if args.commit != head or not pushed.strip():
