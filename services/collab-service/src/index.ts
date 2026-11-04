@@ -135,6 +135,9 @@ const io = new SocketIOServer(httpServer, {
   },
   pingInterval: 25000,
   pingTimeout: 20000,
+  // Non-Socket.IO upgrades are owned by the y-websocket handler below, whose
+  // async access check can outlast Engine.IO's default 1s destroy timer.
+  destroyUpgrade: false,
 });
 
 // JWT auth middleware for WebSocket
@@ -185,7 +188,7 @@ function rejectUpgrade(socket: import('stream').Duplex, status: string): void {
 
 // Route WebSocket upgrades: Socket.IO paths go to Socket.IO, all others to y-websocket
 httpServer.on('upgrade', async (request, socket, head) => {
-  if (request.url?.startsWith('/socket.io')) {
+  if (request.url?.startsWith('/socket.io/')) {
     // Socket.IO handles its own upgrades via its internal listener
     return;
   }
