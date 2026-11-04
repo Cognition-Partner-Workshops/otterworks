@@ -47,7 +47,9 @@ deployed_objects:
   state: planned
 - type: user
   name: SFNFR_20261104_SVC_CS_DOC_SEARCH_API_TOP_ITEMS
-  state: planned
+  state: deployed
+  deployed_at: '2026-11-04T21:40:02Z'
+  deployed_commit: 48eff6c18964e78c6964375e2bdaa25e88b77126
 - type: table
   name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.DOC_SEARCH_API
   state: deployed
