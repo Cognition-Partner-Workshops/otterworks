@@ -70,9 +70,13 @@ resource "azurerm_role_assignment" "identity_blob_reader" {
 # ---- key vault --------------------------------------------------------------
 
 # Purge protection stays off on purpose: namespaces are throwaway and `make demo-destroy` must be able to
-# purge the vault so a re-run can reuse the name. Network ACLs exist only when private_networking is on:
-# secrets are written by the deployer over the public data plane (see CONTRACTS networking decision).
-resource "azurerm_key_vault" "this" { # nosemgrep: terraform.azure.security.keyvault.keyvault-purge-enabled.keyvault-purge-enabled, terraform.azure.security.keyvault.keyvault-specify-network-acl.keyvault-specify-network-acl
+# purge the vault so a re-run can reuse the name.
+# Network ACLs exist only when private_networking is on. In public mode the Container Apps resolve their
+# key_vault_secret_id references from outside any allow-listable network (Container Apps is not a Key
+# Vault trusted service), so a Deny ACL would break them. Known residual risk: in public mode the vault
+# data plane is reachable from any IP and only Entra ID auth + access policies/RBAC gate reads. The
+# keyvault-specify-network-acl rule is deliberately left unsuppressed so the exposure stays visible.
+resource "azurerm_key_vault" "this" { # nosemgrep: terraform.azure.security.keyvault.keyvault-purge-enabled.keyvault-purge-enabled
   name                       = local.key_vault_name
   location                   = azurerm_resource_group.this.location
   resource_group_name        = azurerm_resource_group.this.name
