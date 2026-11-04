@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.report.config.AppConfig;
 import com.otterworks.report.model.Report;
+import com.otterworks.report.model.ReportCategory;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportStatus;
 import com.otterworks.report.repository.ReportRepository;
+import com.otterworks.report.security.ReportCaller;
 import com.otterworks.report.util.ReportDateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +19,13 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 import javax.transaction.Transactional;
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Core report orchestration service.
@@ -37,6 +43,10 @@ public class ReportService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReportService.class);
 
+    /** Categories that export platform audit events; only admins may create or read them. */
+    private static final Set<ReportCategory> ADMIN_ONLY_CATEGORIES =
+            Collections.unmodifiableSet(EnumSet.of(ReportCategory.AUDIT_LOG, ReportCategory.COMPLIANCE));
+
     private final ReportRepository reportRepository;
     private final ReportGenerationWorker generationWorker;
     private final AppConfig appConfig;
@@ -53,15 +63,23 @@ public class ReportService {
     }
 
     /**
-     * Create a new report request and start async generation.
+     * Whether the caller may create or read reports of this category.
+     */
+    public static boolean mayUseCategory(ReportCaller caller, ReportCategory category) {
+        return !ADMIN_ONLY_CATEGORIES.contains(category) || caller.isAdmin();
+    }
+
+    /**
+     * Create a new report request for the caller and start async generation.
+     * The requester is always the caller; a requestedBy in the request body is ignored.
      */
     @Transactional
-    public Report createReport(ReportRequest request) {
+    public Report createReport(ReportRequest request, ReportCaller caller) {
         Report report = new Report();
         report.setReportName(request.getReportName());
         report.setCategory(request.getCategory());
         report.setReportType(request.getReportType());
-        report.setRequestedBy(request.getRequestedBy());
+        report.setRequestedBy(caller.getUserId());
         report.setStatus(ReportStatus.PENDING);
         report.setCreatedAt(new Date()); // LEGACY: new Date() instead of Instant.now()
 
@@ -97,33 +115,46 @@ public class ReportService {
     }
 
     /**
-     * Get a report by ID.
+     * Get a report by ID if the caller requested it and may read its category.
+     * Anyone else's report is indistinguishable from a missing one.
      */
-    public Optional<Report> getReport(Long id) {
-        return reportRepository.findById(id);
+    public Optional<Report> getReport(Long id, ReportCaller caller) {
+        return reportRepository.findById(id).filter(report -> isVisibleTo(report, caller));
     }
 
     /**
-     * List all reports for a user.
+     * List the caller's own reports.
+     *
+     * @param userId legacy filter; any user other than the caller has no reports visible to them
+     * @param status optional status filter, ignored when userId is given (legacy behavior)
      */
-    public List<Report> getReportsByUser(String userId) {
-        return reportRepository.findByRequestedByOrderByCreatedAtDesc(userId);
+    public List<Report> listReports(ReportCaller caller, String userId, ReportStatus status) {
+        if (userId != null && !userId.equals(caller.getUserId())) {
+            return Collections.emptyList();
+        }
+        List<Report> reports;
+        if (userId != null) {
+            reports = reportRepository.findByRequestedByOrderByCreatedAtDesc(caller.getUserId());
+        } else {
+            ReportStatus effective = status != null ? status : ReportStatus.COMPLETED;
+            reports = reportRepository.findByRequestedByAndStatusOrderByCreatedAtAsc(caller.getUserId(), effective);
+        }
+        return reports.stream()
+                .filter(report -> isVisibleTo(report, caller))
+                .collect(Collectors.toList());
+    }
+
+    private static boolean isVisibleTo(Report report, ReportCaller caller) {
+        return caller.getUserId().equals(report.getRequestedBy()) && mayUseCategory(caller, report.getCategory());
     }
 
     /**
-     * List reports by status.
-     */
-    public List<Report> getReportsByStatus(ReportStatus status) {
-        return reportRepository.findByStatusOrderByCreatedAtAsc(status);
-    }
-
-    /**
-     * Delete a report and its generated file.
+     * Delete one of the caller's reports and its generated file.
      * File deletion is deferred to afterCommit to avoid inconsistency on rollback.
      */
     @Transactional
-    public boolean deleteReport(Long id) {
-        Optional<Report> optReport = reportRepository.findById(id);
+    public boolean deleteReport(Long id, ReportCaller caller) {
+        Optional<Report> optReport = getReport(id, caller);
         if (!optReport.isPresent()) {
             return false;
         }
