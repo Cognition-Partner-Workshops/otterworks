@@ -1,0 +1,7 @@
+csid,phase,warehouse_name,own_warehouse,queries,execution_seconds
+cs_churn_model_account_score,dev,WH_CHURN_MODEL,SFNFR_20261104_WH_CHURN_MODEL,15,0.7
+cs_churn_model_account_score,dev,SFPLGC_20261104_WH_CHURN_MODEL,SFNFR_20261104_WH_CHURN_MODEL,8,0.5
+cs_churn_model_account_score,dev,DEVIN_WH,SFNFR_20261104_WH_CHURN_MODEL,8,0.5
+cs_doc_search_api_top_items,dev,DEVIN_WH,SFNFR_20261104_WH_DOC_SEARCH_API,3,0.0
+cs_doc_usage_dashboard_account_usage,dev,DEVIN_WH,SFNFR_20261104_WH_DOC_USAGE_DASHBOARD,52,314.4
+cs_doc_usage_dashboard_account_usage,dev,SFNFR_20261104_WH_MIGRATIONS,SFNFR_20261104_WH_DOC_USAGE_DASHBOARD,14,35.2
