@@ -1,4 +1,8 @@
 class ApplicationController < ActionController::API
+  ADMIN_ROLES = %w[ADMIN OWNER].freeze
+  ADMIN_USER_ROLE_RANK = { 'viewer' => 0, 'editor' => 1, 'admin' => 2, 'super_admin' => 3 }.freeze
+
+  before_action :require_admin!
   before_action :set_request_metadata
 
   rescue_from StandardError do |e|
@@ -30,6 +34,41 @@ class ApplicationController < ActionController::API
 
   def current_user_role
     request.env['jwt.user_role']
+  end
+
+  def current_user_roles
+    Array(request.env['jwt.user_roles'])
+  end
+
+  def require_admin!
+    return if current_user_roles.intersect?(ADMIN_ROLES)
+
+    render json: { error: 'Admin role required' }, status: :forbidden
+  end
+
+  def caller_admin_user
+    return @caller_admin_user if defined?(@caller_admin_user)
+
+    @caller_admin_user = current_user_id.present? ? AdminUser.active.find_by(id: current_user_id) : nil
+  end
+
+  # OWNER tokens and active super_admin records may assign any role; nobody else may assign roles.
+  def caller_role_rank
+    return ADMIN_USER_ROLE_RANK['super_admin'] if current_user_roles.include?('OWNER')
+    return ADMIN_USER_ROLE_RANK['super_admin'] if caller_admin_user&.role == 'super_admin'
+
+    nil
+  end
+
+  # Returns an error message when the caller may not set +new_role+ on +target+, nil when allowed.
+  def role_change_denial(target, new_role)
+    rank = caller_role_rank
+    return 'Only an owner or super_admin may change roles' if rank.nil?
+    return 'You may not change your own role' if target.id.to_s == current_user_id.to_s
+    return 'You may not change the role of a user above your own' if ADMIN_USER_ROLE_RANK.fetch(target.role, 0) > rank
+    return 'You may not assign a role above your own' if ADMIN_USER_ROLE_RANK.fetch(new_role.to_s, 0) > rank
+
+    nil
   end
 
   def set_request_metadata

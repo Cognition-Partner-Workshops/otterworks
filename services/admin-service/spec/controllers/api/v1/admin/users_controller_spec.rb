@@ -100,4 +100,72 @@ RSpec.describe Api::V1::Admin::UsersController do
       expect(body['status']).to eq('active')
     end
   end
+
+  describe 'authorization' do
+    let(:target) { create(:admin_user, :editor) }
+
+    it 'forbids non-admin tokens' do
+      set_jwt_env(request, roles: %w[USER])
+      get :index
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    context 'with an ADMIN token' do
+      before { set_jwt_env(request, roles: %w[USER ADMIN]) }
+
+      it 'updates non-role attributes' do
+        put :update, params: { id: target.id, user: { display_name: 'Renamed' } }
+        expect(response).to have_http_status(:ok)
+        expect(target.reload.display_name).to eq('Renamed')
+      end
+
+      it 'accepts an unchanged role' do
+        put :update, params: { id: target.id, user: { role: 'editor', display_name: 'Same Role' } }
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'cannot change roles' do
+        put :update, params: { id: target.id, user: { role: 'super_admin' } }
+        expect(response).to have_http_status(:forbidden)
+        expect(target.reload.role).to eq('editor')
+      end
+    end
+
+    context 'with an OWNER token' do
+      let(:caller_id) { SecureRandom.uuid }
+
+      before { set_jwt_env(request, user_id: caller_id, roles: %w[USER OWNER]) }
+
+      it 'changes another user role' do
+        put :update, params: { id: target.id, user: { role: 'admin' } }
+        expect(response).to have_http_status(:ok)
+        expect(target.reload.role).to eq('admin')
+      end
+
+      it 'cannot change its own role' do
+        me = create(:admin_user, :admin, id: caller_id)
+        put :update, params: { id: me.id, user: { role: 'viewer' } }
+        expect(response).to have_http_status(:forbidden)
+        expect(me.reload.role).to eq('admin')
+      end
+    end
+
+    context 'with an ADMIN token whose admin record is super_admin' do
+      let(:me) { create(:admin_user, :super_admin) }
+
+      before { set_jwt_env(request, user_id: me.id, roles: %w[USER ADMIN]) }
+
+      it 'changes another user role' do
+        put :update, params: { id: target.id, user: { role: 'viewer' } }
+        expect(response).to have_http_status(:ok)
+        expect(target.reload.role).to eq('viewer')
+      end
+
+      it 'cannot use a suspended super_admin record' do
+        me.suspend!
+        put :update, params: { id: target.id, user: { role: 'viewer' } }
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
 end
