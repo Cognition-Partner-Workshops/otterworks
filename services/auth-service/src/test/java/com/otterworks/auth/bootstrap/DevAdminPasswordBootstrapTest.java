@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.otterworks.auth.entity.User;
+import com.otterworks.auth.repository.RefreshTokenRepository;
 import com.otterworks.auth.repository.UserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -20,9 +21,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 class DevAdminPasswordBootstrapTest {
 
-  private static final String LOCKED_HASH = "{disabled}";
+  private static final String LOCKED_HASH = DevAdminPasswordBootstrap.LOCKED_PASSWORD_HASH;
 
   @Mock private UserRepository userRepository;
+  @Mock private RefreshTokenRepository refreshTokenRepository;
 
   private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(4);
 
@@ -42,18 +44,40 @@ class DevAdminPasswordBootstrapTest {
   }
 
   @Test
-  void blankPassword_leavesAccountLocked() {
-    new DevAdminPasswordBootstrap(userRepository, passwordEncoder, "").run(null);
-    new DevAdminPasswordBootstrap(userRepository, passwordEncoder, "   ").run(null);
+  void blankPassword_leavesLockedAccountUntouched() {
+    when(userRepository.findById(DevAdminPasswordBootstrap.SEEDED_ADMIN_ID))
+        .thenReturn(Optional.of(seededAdmin()));
 
-    verify(userRepository, never()).findById(any());
+    new DevAdminPasswordBootstrap(userRepository, refreshTokenRepository, passwordEncoder, "")
+        .run(null);
+    new DevAdminPasswordBootstrap(userRepository, refreshTokenRepository, passwordEncoder, "   ")
+        .run(null);
+
     verify(userRepository, never()).save(any());
+    verify(refreshTokenRepository, never()).revokeAllByUserId(any());
+  }
+
+  @Test
+  void blankPassword_relocksPreviouslyUnlockedAdmin() {
+    User admin = seededAdmin();
+    admin.setPasswordHash(passwordEncoder.encode("previous-dev-password"));
+    when(userRepository.findById(DevAdminPasswordBootstrap.SEEDED_ADMIN_ID))
+        .thenReturn(Optional.of(admin));
+
+    new DevAdminPasswordBootstrap(userRepository, refreshTokenRepository, passwordEncoder, "")
+        .run(null);
+
+    verify(userRepository).save(admin);
+    verify(refreshTokenRepository).revokeAllByUserId(DevAdminPasswordBootstrap.SEEDED_ADMIN_ID);
+    assertThat(admin.getPasswordHash()).isEqualTo(LOCKED_HASH);
+    assertThat(passwordEncoder.matches("previous-dev-password", admin.getPasswordHash())).isFalse();
   }
 
   @Test
   void shortPassword_failsFastWithoutTouchingTheAccount() {
     DevAdminPasswordBootstrap bootstrap =
-        new DevAdminPasswordBootstrap(userRepository, passwordEncoder, "too-short");
+        new DevAdminPasswordBootstrap(
+            userRepository, refreshTokenRepository, passwordEncoder, "too-short");
 
     assertThatThrownBy(() -> bootstrap.run(null)).isInstanceOf(IllegalStateException.class);
     verify(userRepository, never()).save(any());
@@ -65,7 +89,9 @@ class DevAdminPasswordBootstrapTest {
     when(userRepository.findById(DevAdminPasswordBootstrap.SEEDED_ADMIN_ID))
         .thenReturn(Optional.of(admin));
 
-    new DevAdminPasswordBootstrap(userRepository, passwordEncoder, "local-dev-only-pass").run(null);
+    new DevAdminPasswordBootstrap(
+            userRepository, refreshTokenRepository, passwordEncoder, "local-dev-only-pass")
+        .run(null);
 
     verify(userRepository).save(admin);
     assertThat(admin.getPasswordHash()).isNotEqualTo(LOCKED_HASH);
@@ -78,7 +104,9 @@ class DevAdminPasswordBootstrapTest {
     when(userRepository.findById(DevAdminPasswordBootstrap.SEEDED_ADMIN_ID))
         .thenReturn(Optional.empty());
 
-    new DevAdminPasswordBootstrap(userRepository, passwordEncoder, "local-dev-only-pass").run(null);
+    new DevAdminPasswordBootstrap(
+            userRepository, refreshTokenRepository, passwordEncoder, "local-dev-only-pass")
+        .run(null);
 
     verify(userRepository, never()).save(any());
   }
