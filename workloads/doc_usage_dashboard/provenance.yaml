@@ -44,7 +44,9 @@ deployed_objects:
   deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: resource_monitor
   name: SFNFR_20261104_RM_DOC_USAGE_DASHBOARD
-  state: planned
+  state: deployed
+  deployed_at: "2026-11-04T20:47:31Z"
+  deployed_commit: "4457e5ffa638b52da7067752bc70e0d0b661af45"
 - type: user
   name: SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
   state: deployed
@@ -172,6 +174,9 @@ deployed_objects:
   state: deployed
   deployed_at: '2026-11-04T21:56:26Z'
   deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
+- type: table
+  name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD
+  state: planned
 usage:
   source: SNOWFLAKE.ACCOUNT_USAGE
   reported_through: pending

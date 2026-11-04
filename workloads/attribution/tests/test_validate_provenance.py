@@ -131,7 +131,13 @@ def test_unknown_ai_credit_key_is_rejected_by_schema() -> None:
         (lambda d: d["deployed_objects"][1].update(devin_csid=d["endpoints"][0]["csid"]), "does not carry"),
         (lambda d: d["deployed_objects"].pop(0), "database"),
         (lambda d: (d["deployed_objects"][0].update(state="deployed"), d["deployed_objects"][0].pop("deployed_at", None)), "deployed_at"),
-        (lambda d: d["deployed_objects"][8].update(name="SFNFR_20261104_DB_OTHER.ANALYTICS.REFRESH_X"), "outside"),
+        (lambda d: d["deployed_objects"][7].update(name="SFNFR_20261104_DB_OTHER.ANALYTICS.REFRESH_X"), "expected at most one task"),
+        (
+            lambda d: d["deployed_objects"][7].update(name="SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.OTHER_REFRESH"),
+            "named SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD",
+        ),
+        (lambda d: d["deployed_objects"][8].update(name="SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.APP"), "streamlit"),
+        (lambda d: d["deployed_objects"].append(dict(d["deployed_objects"][7])), "expected at most one task"),
         (lambda d: d.update(extra=1), "extra"),
     ],
 )

@@ -103,10 +103,10 @@ def validate(doc: object, path: Path | None = None, root: Path = ROOT) -> list[s
     users = sorted(attr.service_user(c) for c in csids)
     if sorted(by_type.get("user", [])) != users:
         errors.append(f"deployed_objects: expected users {users}, got {sorted(by_type.get('user', []))}")
-    for kind in ("task", "streamlit"):
-        for name in by_type.get(kind, []):
-            if not name.startswith(attr.database_name(workload) + "."):
-                errors.append(f"deployed_objects: {kind} {name} is outside {attr.database_name(workload)}")
+    for kind, expected in (("task", attr.task_name(workload)), ("streamlit", attr.streamlit_name(workload))):
+        names = by_type.get(kind, [])
+        if names not in ([], [expected]):
+            errors.append(f"deployed_objects: expected at most one {kind}, named {expected}, got {names}")
 
     usage = doc["usage"]
     figures = {k: v for k, v in usage.items() if k not in ("source", "reported_through")}

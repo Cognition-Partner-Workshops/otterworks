@@ -44,7 +44,9 @@ deployed_objects:
   deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: resource_monitor
   name: SFNFR_20261104_RM_DOC_SEARCH_API
-  state: planned
+  state: deployed
+  deployed_at: "2026-11-04T20:47:31Z"
+  deployed_commit: "4457e5ffa638b52da7067752bc70e0d0b661af45"
 - type: user
   name: SFNFR_20261104_SVC_CS_DOC_SEARCH_API_TOP_ITEMS
   state: deployed

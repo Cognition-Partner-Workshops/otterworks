@@ -14,6 +14,7 @@ import sf_attribution as attr  # noqa: E402
 COMMIT = "63afed16fa75e4cea44499e1567c3562543afaa7"
 SESSION = "https://partner-workshops.devinenterprise.com/sessions/e69f745063454d4ba5274736ab6a6356"
 RUN_ID = "SFNFR_20261104-doc_usage_dashboard-dev-20261104T201600Z"
+RUNTIME_RUN_ID = "SFNFR_20261104-doc_usage_dashboard-runtime-20261104T201600Z"
 EP = attr.Endpoint("doc_usage_dashboard", "account_usage")
 
 
@@ -58,10 +59,10 @@ def test_dev_tag_has_fixed_keys_and_session_url() -> None:
 
 
 def test_runtime_tag_has_no_session_url() -> None:
-    tag = attr.query_tag(EP, phase="runtime", commit=COMMIT, run_id=RUN_ID)
+    tag = attr.query_tag(EP, phase="runtime", commit=COMMIT, run_id=RUNTIME_RUN_ID)
     assert "session_url" not in tag
     with pytest.raises(attr.AttributionError, match="runtime"):
-        attr.query_tag(EP, phase="runtime", commit=COMMIT, run_id=RUN_ID, session_url=SESSION)
+        attr.query_tag(EP, phase="runtime", commit=COMMIT, run_id=RUNTIME_RUN_ID, session_url=SESSION)
 
 
 @pytest.mark.parametrize(
@@ -74,12 +75,25 @@ def test_runtime_tag_has_no_session_url() -> None:
         {"commit": COMMIT.upper()},
         {"run_id": "doc_usage_dashboard-dev-1"},
         {"run_id": "SFNFR_20261104"},
+        {"run_id": "SFNFR_20261104-doc_usage_dashboard-dev-anything"},
+        {"run_id": "SFNFR_20261104-churn_model-dev-20261104T201600Z"},
+        {"run_id": RUNTIME_RUN_ID},
     ],
 )
 def test_tag_refuses_incomplete_labels(kwargs: dict) -> None:
     base = {"phase": "dev", "commit": COMMIT, "run_id": RUN_ID, "session_url": SESSION}
     with pytest.raises(attr.AttributionError):
         attr.query_tag(EP, **{**base, **kwargs})
+
+
+def test_tag_refuses_run_id_of_another_workload_or_phase() -> None:
+    churn = attr.Endpoint("churn_model", "account_score")
+    with pytest.raises(attr.AttributionError, match="belongs to doc_usage_dashboard/dev"):
+        attr.query_tag(churn, phase="runtime", commit=COMMIT, run_id=attr.make_run_id("doc_usage_dashboard", "dev"))
+    with pytest.raises(attr.AttributionError, match="belongs to churn_model/dev"):
+        attr.query_tag(churn, phase="runtime", commit=COMMIT, run_id=attr.make_run_id("churn_model", "dev"))
+    tag = attr.query_tag(churn, phase="runtime", commit=COMMIT, run_id=attr.make_run_id("churn_model", "runtime"))
+    assert tag["run_id"].startswith("SFNFR_20261104-churn_model-runtime-")
 
 
 def test_tag_json_is_compact_and_parses() -> None:
@@ -120,7 +134,7 @@ def test_connection_params_label_every_connection() -> None:
 def test_connection_params_require_key_pair() -> None:
     with pytest.raises(attr.AttributionError, match="key pair"):
         attr.connection_params(
-            EP, account="xy12345", private_key_file="", phase="runtime", commit=COMMIT, run_id=RUN_ID
+            EP, account="xy12345", private_key_file="", phase="runtime", commit=COMMIT, run_id=RUNTIME_RUN_ID
         )
 
 
@@ -133,26 +147,59 @@ def test_connect_passes_params_to_connector(monkeypatch) -> None:
     monkeypatch.setitem(sys.modules, "snowflake", pkg)
     monkeypatch.setitem(sys.modules, "snowflake.connector", fake)
     conn = attr.connect(
-        EP, account="xy12345", private_key_file="/k.p8", phase="runtime", commit=COMMIT, run_id=RUN_ID, role="R_X"
+        EP,
+        account="xy12345",
+        private_key_file="/k.p8",
+        phase="runtime",
+        commit=COMMIT,
+        run_id=RUNTIME_RUN_ID,
+        role="R_X",
     )
     assert conn == "conn"
     assert calls[0]["role"] == "R_X" and calls[0]["application"] == "Devin_Demo"
 
 
 def test_task_carries_its_own_runtime_tag() -> None:
-    sql = attr.create_task_sql(EP, schedule="USING CRON 0 1 * * * UTC", body="SELECT 1", commit=COMMIT, run_id=RUN_ID)
+    sql = attr.create_task_sql(
+        EP, schedule="USING CRON 0 1 * * * UTC", body="SELECT 1", commit=COMMIT, run_id=RUNTIME_RUN_ID
+    )
     assert sql.startswith("CREATE OR REPLACE TASK SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD")
     assert "WAREHOUSE = SFNFR_20261104_WH_DOC_USAGE_DASHBOARD" in sql
+    assert f"  WITH TAG ({attr.TAG_FQN} = 'cs_doc_usage_dashboard_account_usage')\n" in sql
+    assert sql.index("WITH TAG") < sql.index("WAREHOUSE =")
     literal = sql.split("QUERY_TAG = ", 1)[1].split("\n", 1)[0]
     assert literal.startswith("'") and literal.endswith("'")
     tag = json.loads(literal[1:-1])
     assert tag["phase"] == "runtime" and "session_url" not in tag
-    alter = attr.alter_task_query_tag_sql(EP, commit=COMMIT, run_id=RUN_ID)
+    alter = attr.alter_task_query_tag_sql(EP, commit=COMMIT, run_id=RUNTIME_RUN_ID)
     assert alter.startswith("ALTER TASK SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD SET QUERY_TAG = '")
 
 
+def test_deploy_task_resumes_after_replacing() -> None:
+    kwargs = {"schedule": "USING CRON 0 1 * * * UTC", "body": "SELECT 1", "commit": COMMIT, "run_id": RUNTIME_RUN_ID}
+    create, resume = attr.deploy_task_sql(EP, **kwargs)
+    assert create == attr.create_task_sql(EP, **kwargs)
+    assert "WITH TAG" in create and "QUERY_TAG = " in create
+    assert resume == "ALTER TASK SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD RESUME"
+    assert attr.deploy_task_sql(EP, resume=False, **kwargs) == [create]
+
+
+def test_task_tag_lists_every_workload_csid() -> None:
+    sql = attr.create_task_sql(
+        EP,
+        schedule="USING CRON 0 1 * * * UTC",
+        body="SELECT 1",
+        commit=COMMIT,
+        run_id=RUNTIME_RUN_ID,
+        csids=["cs_doc_usage_dashboard_z", EP.csid],
+    )
+    assert "= 'cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_z')" in sql
+    with pytest.raises(attr.AttributionError, match="256"):
+        attr.devin_csid_value([f"cs_w_{i:03d}_{'x' * 20}" for i in range(12)])
+
+
 def test_streamlit_sets_tag_on_its_session() -> None:
-    sql = attr.streamlit_query_tag_sql(EP, commit=COMMIT, run_id=RUN_ID)
+    sql = attr.streamlit_query_tag_sql(EP, commit=COMMIT, run_id=RUNTIME_RUN_ID)
     assert sql.startswith('ALTER SESSION SET QUERY_TAG = \'{"csid":"cs_doc_usage_dashboard_account_usage"')
 
 
@@ -161,12 +208,23 @@ def test_sql_string_escapes_quotes_and_backslashes() -> None:
 
 
 def test_warehouse_ddl_is_xsmall_60s_with_own_monitor() -> None:
-    monitor, warehouse = attr.warehouse_ddl("churn_model")
+    monitor, alter_monitor, warehouse, alter_warehouse = attr.warehouse_ddl("churn_model")
     assert monitor.startswith("CREATE RESOURCE MONITOR IF NOT EXISTS SFNFR_20261104_RM_CHURN_MODEL WITH CREDIT_QUOTA = 10")
     assert "FREQUENCY = MONTHLY" in monitor and "ON 100 PERCENT DO SUSPEND" in monitor
     assert "CREATE WAREHOUSE IF NOT EXISTS SFNFR_20261104_WH_CHURN_MODEL" in warehouse
     assert "WAREHOUSE_SIZE = 'XSMALL'" in warehouse and "AUTO_SUSPEND = 60" in warehouse
     assert "RESOURCE_MONITOR = SFNFR_20261104_RM_CHURN_MODEL" in warehouse
+    assert alter_monitor == f"ALTER RESOURCE MONITOR SFNFR_20261104_RM_CHURN_MODEL SET CREDIT_QUOTA = 10 {attr.MONITOR_TRIGGERS}"
+    assert alter_warehouse == (
+        "ALTER WAREHOUSE SFNFR_20261104_WH_CHURN_MODEL SET WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE "
+        "RESOURCE_MONITOR = SFNFR_20261104_RM_CHURN_MODEL"
+    )
+
+
+def test_warehouse_ddl_rerun_applies_a_revised_quota() -> None:
+    stmts = attr.warehouse_ddl("churn_model", credit_quota=20)
+    assert [s.split()[0] for s in stmts] == ["CREATE", "ALTER", "CREATE", "ALTER"]
+    assert "SET CREDIT_QUOTA = 20 TRIGGERS" in stmts[1]
     with pytest.raises(attr.AttributionError):
         attr.warehouse_ddl("churn_model", credit_quota=0)
 
@@ -179,6 +237,20 @@ def test_service_user_ddl_strips_pem_armor() -> None:
     assert "DEFAULT_WAREHOUSE = SFNFR_20261104_WH_DOC_USAGE_DASHBOARD" in sql
     with pytest.raises(attr.AttributionError):
         attr.service_user_ddl(EP, rsa_public_key="-----BEGIN PUBLIC KEY-----\n-----END PUBLIC KEY-----")
+
+
+def test_service_user_ddl_sets_a_plain_role_only() -> None:
+    sql = attr.service_user_ddl(EP, rsa_public_key="MIIB", role="R_DOC_USAGE")
+    assert "DEFAULT_ROLE = R_DOC_USAGE " in sql
+
+
+@pytest.mark.parametrize(
+    "role",
+    ["R_X COMMENT = 'x'", "R_X; DROP DATABASE SFNFR_20261104_DB_CHURN_MODEL", '"R X"', "1ROLE", "R-X", "R_X\n"],
+)
+def test_service_user_ddl_refuses_role_that_is_not_an_identifier(role: str) -> None:
+    with pytest.raises(attr.AttributionError, match="role"):
+        attr.service_user_ddl(EP, rsa_public_key="MIIB", role=role)
 
 
 def test_object_tags_cover_warehouse_database_task_streamlit() -> None:
@@ -207,7 +279,7 @@ def test_cli_tag_and_ddl(capsys) -> None:
             "--commit",
             COMMIT,
             "--run-id",
-            RUN_ID,
+            RUNTIME_RUN_ID,
         ]
     )
     assert rc == 0
@@ -232,7 +304,7 @@ def test_cli_tag_and_ddl(capsys) -> None:
     )
     assert attr.main(["ddl", "--workload", "churn_model", "--csid", "cs_churn_model_account_score"]) == 0
     out = capsys.readouterr().out
-    assert "CREATE WAREHOUSE IF NOT EXISTS SFNFR_20261104_WH_CHURN_MODEL" in out and out.count(";\n") == 5
+    assert "CREATE WAREHOUSE IF NOT EXISTS SFNFR_20261104_WH_CHURN_MODEL" in out and out.count(";\n") == 7
 
 
 def test_pipeline_names_are_workload_scoped():
