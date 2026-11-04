@@ -14,7 +14,14 @@
             "columns": [
               "week_start_date",
               "account_id"
-            ]
+            ],
+            "config": {
+              "tags": [
+                "dq",
+                "dq_churn_model",
+                "dq_uniqueness"
+              ]
+            }
           }
         }
       ],
@@ -23,35 +30,85 @@
           "name": "week_start_date",
           "data_type": "date",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "account_id",
           "data_type": "varchar(36)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "days_since_last_login",
           "data_type": "number(6,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "activity_this_week",
           "data_type": "number(10,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "activity_prior_4wk_avg",
           "data_type": "number(10,2)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
@@ -63,7 +120,17 @@
           "name": "login_points",
           "data_type": "number(3,0)",
           "data_tests": [
-            "not_null",
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            },
             {
               "accepted_values": {
                 "values": [
@@ -72,7 +139,14 @@
                   25,
                   40
                 ],
-                "quote": false
+                "quote": false,
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
               }
             }
           ]
@@ -81,7 +155,17 @@
           "name": "activity_points",
           "data_type": "number(3,0)",
           "data_tests": [
-            "not_null",
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            },
             {
               "accepted_values": {
                 "values": [
@@ -91,7 +175,14 @@
                   30,
                   40
                 ],
-                "quote": false
+                "quote": false,
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
               }
             }
           ]
@@ -100,14 +191,31 @@
           "name": "status_points",
           "data_type": "number(3,0)",
           "data_tests": [
-            "not_null",
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            },
             {
               "accepted_values": {
                 "values": [
                   0,
                   20
                 ],
-                "quote": false
+                "quote": false,
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
               }
             }
           ]
@@ -116,14 +224,34 @@
           "name": "churn_score",
           "data_type": "number(3,0)",
           "data_tests": [
-            "not_null"
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            }
           ]
         },
         {
           "name": "risk_band",
           "data_type": "varchar(8)",
           "data_tests": [
-            "not_null",
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            },
             {
               "accepted_values": {
                 "values": [
@@ -131,7 +259,14 @@
                   "medium",
                   "high"
                 ],
-                "quote": true
+                "quote": true,
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
               }
             }
           ]
@@ -140,13 +275,30 @@
           "name": "model_version",
           "data_type": "varchar(16)",
           "data_tests": [
-            "not_null",
+            {
+              "not_null": {
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
+              }
+            },
             {
               "accepted_values": {
                 "values": [
                   "rules_v1"
                 ],
-                "quote": true
+                "quote": true,
+                "config": {
+                  "tags": [
+                    "dq",
+                    "dq_churn_model",
+                    "dq_accepted_range"
+                  ]
+                }
               }
             }
           ]
