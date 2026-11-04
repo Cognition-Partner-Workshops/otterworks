@@ -41,7 +41,7 @@ Every session that touches a workload follows these rules.
    - the endpoints and their service users
    - the warehouse and its monitor
    - every object the workload owns, with its `state` (`planned`, `deployed` or `dropped`). A deployed or dropped object also needs `deployed_at` and `deployed_commit`.
-   - the usage figures
+   - the usage figures, including the optional `credits_ai_dev` and `credits_ai_runtime` figures
 
    A session that deploys or changes objects updates the file in the same pull request.
 10. **`pending` is not zero.** Any usage figure Snowflake has not reported yet is written as the string `pending`. A number, including `0`, means Snowflake reported it. While `reported_through` is `pending`, every figure must be `pending`. `QUERY_ATTRIBUTION_HISTORY` lags by up to 8 hours and the metering views by up to 3, so a recent month can mix reported and pending figures.
@@ -75,3 +75,5 @@ conn = attr.connect(ep, account=ACCOUNT, private_key_file=KEY_PATH, phase="runti
 ## Reading the bill
 
 `sql/monthly_attribution.sql` groups `SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY` by the tag's `csid`, `workload`, `commit` and `phase`. That gives attributed compute, without idle time. It reports idle time per `SFNFR_20261104_WH_*` warehouse as metered credits (`WAREHOUSE_METERING_HISTORY`) minus attributed credits, joined to the `DEVIN_CSID` tag through `TAG_REFERENCES`. It also lists queries on a workload warehouse that carry no csid. That list should always be empty. The role running the report needs `USAGE_VIEWER` or `GOVERNANCE_VIEWER` on the `SNOWFLAKE` database.
+
+AI function credits from `AI_CLASSIFY` and `AI_COMPLETE` are billed per token, separately from warehouse credits. Record them in `credits_ai_dev` or `credits_ai_runtime`; the monthly report sources them from `SNOWFLAKE.ACCOUNT_USAGE.CORTEX_AISQL_USAGE_HISTORY`, grouped by the `QUERY_TAG` csid and other tag fields. They remain `pending` until reported, like the other usage figures. Legacy `SNOWFLAKE.CORTEX.*` functions are blocked on this account; use the `AI_*` functions.
