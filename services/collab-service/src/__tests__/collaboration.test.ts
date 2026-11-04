@@ -10,6 +10,7 @@ import { PresenceHandler } from '../handlers/presence';
 import { MetricsCollector } from '../metrics';
 import { createAuthMiddleware } from '../middleware/auth';
 import { RedisAdapter } from '../services/redis-adapter';
+import type { DocumentAccessPolicy } from '../services/document-access';
 
 const JWT_SECRET = 'test-secret-key-for-unit-tests';
 let PORT: number;
@@ -50,6 +51,21 @@ const mockLogger = {
   level: 'info',
 } as never;
 
+// Documents listed here may only be opened by their owner; any other document is
+// treated as accessible so the existing flow tests keep exercising the happy path.
+const documentOwners = new Map<string, string>([
+  ['alice-private-doc', 'user-alice'],
+  ['alice-private-doc-2', 'user-alice'],
+]);
+
+const accessPolicy: jest.Mocked<DocumentAccessPolicy> = {
+  canAccess: jest.fn(async (documentId, principal) => {
+    if (!principal.token) return false;
+    const owner = documentOwners.get(documentId);
+    return owner === undefined || owner === principal.userId;
+  }),
+};
+
 describe('CollaborationManager', () => {
   let io: SocketIOServer;
   let httpServer: ReturnType<typeof createServer>;
@@ -77,6 +93,7 @@ describe('CollaborationManager', () => {
       documentStore,
       awareness,
       presenceHandler,
+      accessPolicy,
       metrics,
       logger: mockLogger,
       persistIntervalMs: 600000, // long interval so it doesn't fire during tests
@@ -371,6 +388,164 @@ describe('CollaborationManager', () => {
 
       client1.disconnect();
       client2.disconnect();
+    });
+  });
+  describe('Document Authorization', () => {
+    function join(
+      client: ClientSocket,
+      documentId: string,
+    ): Promise<{ success: boolean; error?: string }> {
+      return new Promise((resolve) => {
+        client.emit('join-document', { documentId }, resolve);
+      });
+    }
+
+    function encodeText(value: string): string {
+      const tempDoc = new Y.Doc();
+      tempDoc.getText('content').insert(0, value);
+      return Buffer.from(Y.encodeStateAsUpdate(tempDoc)).toString('base64');
+    }
+
+    it('checks access with the caller identity and token', async () => {
+      const alice = await connectClient('user-alice', 'Alice');
+      const response = await join(alice, 'alice-private-doc');
+
+      expect(response.success).toBe(true);
+      expect(accessPolicy.canAccess).toHaveBeenCalledWith(
+        'alice-private-doc',
+        expect.objectContaining({ userId: 'user-alice', token: expect.any(String) }),
+      );
+      expect(accessPolicy.canAccess.mock.calls[0][1].token).not.toBe('');
+      alice.disconnect();
+    });
+
+    it('rejects join-document for a document the caller cannot access', async () => {
+      const mallory = await connectClient('user-mallory', 'Mallory');
+      const synced = jest.fn();
+      mallory.on('sync-document', synced);
+
+      const response = await join(mallory, 'alice-private-doc');
+      await new Promise((r) => setTimeout(r, 100));
+
+      expect(response).toEqual({ success: false, error: 'Access denied' });
+      expect(synced).not.toHaveBeenCalled();
+      expect(awareness.getDocumentUsers('alice-private-doc')).toHaveLength(0);
+      mallory.disconnect();
+    });
+
+    it('rejects join-document with an invalid document id without an access check', async () => {
+      const client = await connectClient('user-invalid-id', 'Eve');
+      const response = await join(client, '../../etc/passwd');
+
+      expect(response).toEqual({ success: false, error: 'Invalid document id' });
+      expect(accessPolicy.canAccess).not.toHaveBeenCalled();
+      client.disconnect();
+    });
+
+    it('denies join-document when the access check throws', async () => {
+      accessPolicy.canAccess.mockRejectedValueOnce(new Error('document-service down'));
+      const client = await connectClient('user-alice', 'Alice');
+      const response = await join(client, 'alice-private-doc');
+
+      expect(response).toEqual({ success: false, error: 'Access denied' });
+      client.disconnect();
+    });
+
+    it('ignores updates, comments and cursors from sockets that have not joined', async () => {
+      const alice = await connectClient('user-alice', 'Alice');
+      const mallory = await connectClient('user-mallory', 'Mallory');
+      expect((await join(alice, 'alice-private-doc-2')).success).toBe(true);
+      expect((await join(mallory, 'alice-private-doc-2')).success).toBe(false);
+
+      const aliceReceived = jest.fn();
+      alice.on('document-update', aliceReceived);
+      alice.on('comment-added', aliceReceived);
+      alice.on('comment-deleted', aliceReceived);
+      alice.on('cursor-update', aliceReceived);
+      alice.on('typing-indicator', aliceReceived);
+
+      const updateError = new Promise<{ error: string }>((resolve) => {
+        mallory.on('document-update-error', resolve);
+      });
+
+      mallory.emit('document-update', {
+        documentId: 'alice-private-doc-2',
+        update: encodeText('TAMPERED'),
+      });
+      mallory.emit('comment-add', {
+        documentId: 'alice-private-doc-2',
+        comment: {
+          id: 'c1',
+          threadId: 't1',
+          content: 'spam',
+          rangeStart: 0,
+          rangeEnd: 1,
+        },
+      });
+      mallory.emit('comment-delete', {
+        documentId: 'alice-private-doc-2',
+        commentId: 'c1',
+      });
+      mallory.emit('cursor-update', {
+        documentId: 'alice-private-doc-2',
+        cursor: { index: 0, length: 0 },
+        selection: null,
+      });
+      mallory.emit('typing-indicator', {
+        documentId: 'alice-private-doc-2',
+        isTyping: true,
+      });
+
+      expect((await updateError).error).toBe('Not joined to document');
+      await new Promise((r) => setTimeout(r, 150));
+
+      expect(aliceReceived).not.toHaveBeenCalled();
+      const doc = manager.getDocument('alice-private-doc-2');
+      expect(doc?.getText('content').toString()).toBe('');
+
+      alice.disconnect();
+      mallory.disconnect();
+    });
+
+    it('rejects snapshot and history requests from sockets that have not joined', async () => {
+      const mallory = await connectClient('user-mallory', 'Mallory');
+
+      const historyError = new Promise<{ error: string }>((resolve) => {
+        mallory.on('history-error', resolve);
+      });
+      const snapshotError = new Promise<{ error: string }>((resolve) => {
+        mallory.on('snapshot-error', resolve);
+      });
+      const history = jest.fn();
+      mallory.on('document-history', history);
+
+      mallory.emit('request-history', { documentId: 'alice-private-doc' });
+      mallory.emit('request-snapshot', { documentId: 'alice-private-doc' });
+
+      expect((await historyError).error).toBe('Not joined to document');
+      expect((await snapshotError).error).toBe('Not joined to document');
+      expect(history).not.toHaveBeenCalled();
+      expect(mockRedis.lrange).not.toHaveBeenCalled();
+      mallory.disconnect();
+    });
+
+    it('does not expose email addresses in presence', async () => {
+      const alice = await connectClient('user-alice', 'Alice');
+      const presenceUpdate = new Promise<{ users: Array<Record<string, unknown>> }>(
+        (resolve) => {
+          alice.on('presence-update', resolve);
+        },
+      );
+      expect((await join(alice, 'alice-private-doc')).success).toBe(true);
+
+      const broadcast = await presenceUpdate;
+      expect(broadcast.users).toHaveLength(1);
+      expect(broadcast.users[0]).not.toHaveProperty('email');
+
+      const presence = presenceHandler.getDocumentPresence('alice-private-doc');
+      expect(presence.users[0].userId).toBe('user-alice');
+      expect(presence.users[0]).not.toHaveProperty('email');
+      alice.disconnect();
     });
   });
 });
