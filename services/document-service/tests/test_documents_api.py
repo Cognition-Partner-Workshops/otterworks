@@ -46,14 +46,16 @@ async def test_get_document(client: AsyncClient, owner_id: uuid.UUID):
     )
     doc_id = create_resp.json()["id"]
 
-    resp = await client.get(f"/api/v1/documents/{doc_id}")
+    resp = await client.get(f"/api/v1/documents/{doc_id}", headers=_auth(owner_id))
     assert resp.status_code == 200
     assert resp.json()["id"] == doc_id
 
 
 @pytest.mark.asyncio
-async def test_get_document_not_found(client: AsyncClient):
-    resp = await client.get(f"/api/v1/documents/{uuid.uuid4()}")
+async def test_get_document_not_found(client: AsyncClient, owner_id: uuid.UUID):
+    resp = await client.get(
+        f"/api/v1/documents/{uuid.uuid4()}", headers=_auth(owner_id)
+    )
     assert resp.status_code == 404
 
 
@@ -102,6 +104,7 @@ async def test_update_document(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.put(
         f"/api/v1/documents/{doc_id}",
         json={"title": "Updated", "content": "New body"},
+        headers=_auth(owner_id),
     )
     assert resp.status_code == 200
     data = resp.json()
@@ -121,6 +124,7 @@ async def test_patch_document(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.patch(
         f"/api/v1/documents/{doc_id}",
         json={"title": "Patched Title"},
+        headers=_auth(owner_id),
     )
     assert resp.status_code == 200
     data = resp.json()
@@ -137,10 +141,10 @@ async def test_delete_document(client: AsyncClient, owner_id: uuid.UUID):
     )
     doc_id = create_resp.json()["id"]
 
-    resp = await client.delete(f"/api/v1/documents/{doc_id}")
+    resp = await client.delete(f"/api/v1/documents/{doc_id}", headers=_auth(owner_id))
     assert resp.status_code == 204
 
-    resp = await client.get(f"/api/v1/documents/{doc_id}")
+    resp = await client.get(f"/api/v1/documents/{doc_id}", headers=_auth(owner_id))
     assert resp.status_code == 404
 
 
@@ -155,9 +159,12 @@ async def test_document_versions(client: AsyncClient, owner_id: uuid.UUID):
     await client.put(
         f"/api/v1/documents/{doc_id}",
         json={"title": "Versioned", "content": "v2"},
+        headers=_auth(owner_id),
     )
 
-    resp = await client.get(f"/api/v1/documents/{doc_id}/versions")
+    resp = await client.get(
+        f"/api/v1/documents/{doc_id}/versions", headers=_auth(owner_id)
+    )
     assert resp.status_code == 200
     versions = resp.json()
     assert len(versions) == 2
@@ -176,12 +183,17 @@ async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
     await client.put(
         f"/api/v1/documents/{doc_id}",
         json={"title": "Changed", "content": "Changed body"},
+        headers=_auth(owner_id),
     )
 
-    versions_resp = await client.get(f"/api/v1/documents/{doc_id}/versions")
+    versions_resp = await client.get(
+        f"/api/v1/documents/{doc_id}/versions", headers=_auth(owner_id)
+    )
     v1_id = versions_resp.json()[-1]["id"]  # first version
 
-    resp = await client.post(f"/api/v1/documents/{doc_id}/versions/{v1_id}/restore")
+    resp = await client.post(
+        f"/api/v1/documents/{doc_id}/versions/{v1_id}/restore", headers=_auth(owner_id)
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["title"] == "Restore Me"
@@ -218,7 +230,8 @@ async def test_export_document_html(client: AsyncClient, owner_id: uuid.UUID):
     doc_id = create_resp.json()["id"]
 
     resp = await client.get(
-        f"/api/v1/documents/{doc_id}/export", params={"format": "html"}
+        f"/api/v1/documents/{doc_id}/export", params={"format": "html"},
+        headers=_auth(owner_id),
     )
     assert resp.status_code == 200
     assert "<h1>Export</h1>" in resp.text
@@ -233,7 +246,8 @@ async def test_export_document_markdown(client: AsyncClient, owner_id: uuid.UUID
     doc_id = create_resp.json()["id"]
 
     resp = await client.get(
-        f"/api/v1/documents/{doc_id}/export", params={"format": "markdown"}
+        f"/api/v1/documents/{doc_id}/export", params={"format": "markdown"},
+        headers=_auth(owner_id),
     )
     assert resp.status_code == 200
     assert "# Export MD" in resp.text
@@ -394,3 +408,25 @@ async def test_search_cannot_find_other_users_document(client: AsyncClient):
 async def test_search_requires_token(client: AsyncClient):
     resp = await client.get("/api/v1/documents/search", params={"q": "anything"})
     assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "method,suffix,body",
+    [
+        ("GET", "", None),
+        ("PUT", "", {"title": "t", "content": "c"}),
+        ("PATCH", "", {"title": "t"}),
+        ("DELETE", "", None),
+        ("GET", "/versions", None),
+        ("GET", "/export?format=html", None),
+    ],
+)
+async def test_document_routes_require_token(
+    client: AsyncClient, owner_id: uuid.UUID, method: str, suffix: str, body: dict | None
+):
+    doc = await _seed_owned(client, owner_id, "Private")
+    resp = await client.request(method, f"/api/v1/documents/{doc['id']}{suffix}", json=body)
+    assert resp.status_code == 401
+    still_there = await client.get(f"/api/v1/documents/{doc['id']}", headers=_auth(owner_id))
+    assert still_there.json()["title"] == "Private"
