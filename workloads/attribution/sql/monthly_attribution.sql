@@ -1,8 +1,8 @@
 -- Monthly credits by client-side ID, workload, commit and phase.
 -- Needs a role with USAGE_VIEWER (or GOVERNANCE_VIEWER) on the SNOWFLAKE database.
 -- QUERY_ATTRIBUTION_HISTORY lags by up to eight hours and excludes warehouse idle time;
--- the second query reports idle time per workload warehouse. A month that has not been
--- reported yet is written as `pending` in provenance.yaml, never as 0.
+-- AI function credits are reported separately from warehouse credits. A month that has not
+-- been reported yet is written as `pending` in provenance.yaml, never as 0.
 
 -- 1. Attributed compute per label.
 SELECT
@@ -22,7 +22,23 @@ WHERE q.warehouse_name LIKE 'SFNFR\\_20261104\\_WH\\_%'
 GROUP BY ALL
 ORDER BY month, workload, csid, phase, commit;
 
--- 2. Idle time per workload warehouse: metered compute minus attributed compute.
+-- 2. AI function token credits, as a separate ai_credits line.
+SELECT
+    DATE_TRUNC('month', a.usage_time)                 AS month,
+    TRY_PARSE_JSON(a.query_tag):csid::STRING          AS csid,
+    TRY_PARSE_JSON(a.query_tag):workload::STRING      AS workload,
+    TRY_PARSE_JSON(a.query_tag):commit::STRING        AS commit,
+    TRY_PARSE_JSON(a.query_tag):phase::STRING         AS phase,
+    a.function_name,
+    a.model_name,
+    'ai_credits'                                      AS line_item,
+    SUM(a.token_credits)                              AS credits
+FROM SNOWFLAKE.ACCOUNT_USAGE.CORTEX_AISQL_USAGE_HISTORY a
+WHERE a.usage_time >= DATEADD('month', -1, DATE_TRUNC('month', CURRENT_DATE()))
+GROUP BY ALL
+ORDER BY month, workload, csid, phase, commit, function_name, model_name;
+
+-- 3. Idle time per workload warehouse: metered compute minus attributed compute.
 WITH metered AS (
     SELECT DATE_TRUNC('month', start_time) AS month, warehouse_name,
            SUM(credits_used_compute) AS credits_metered
@@ -46,7 +62,7 @@ LEFT JOIN SNOWFLAKE.ACCOUNT_USAGE.TAG_REFERENCES t
       AND t.tag_name = 'DEVIN_CSID' AND t.object_deleted IS NULL
 ORDER BY m.month, m.warehouse_name;
 
--- 3. Labeling gaps: queries on a workload warehouse without a parseable csid tag,
+-- 4. Labeling gaps: queries on a workload warehouse without a parseable csid tag,
 --    or from a client other than Devin_Demo. Both should return no rows.
 SELECT q.query_id, q.user_name, q.warehouse_name, q.query_tag, q.start_time
 FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY q

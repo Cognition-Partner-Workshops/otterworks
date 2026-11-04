@@ -75,6 +75,43 @@ def test_reported_usage_accepts_real_zero() -> None:
     assert _errors(partly) == []
 
 
+def test_pending_ai_credits_are_valid_when_usage_is_unreported() -> None:
+    def pending(d):
+        d["usage"].update(credits_ai_dev="pending", credits_ai_runtime="pending")
+
+    assert _errors(pending) == []
+
+
+def test_unreported_ai_credits_must_be_pending() -> None:
+    def reported_ai(d):
+        d["usage"]["credits_ai_dev"] = 0.25
+
+    assert any("credits_ai_dev" in e for e in _errors(reported_ai))
+
+
+def test_reported_ai_credits_accept_numeric_values() -> None:
+    def reported(d):
+        d["usage"].update(
+            reported_through="2026-11-30T23:59:59Z",
+            credits_dev=0.42,
+            credits_runtime=0.3,
+            credits_ai_dev=0.25,
+            credits_ai_runtime=0.1,
+            credits_idle=0.1,
+            query_count_dev=12,
+            query_count_runtime=3,
+        )
+
+    assert _errors(reported) == []
+
+
+def test_unknown_ai_credit_key_is_rejected_by_schema() -> None:
+    def unknown(d):
+        d["usage"]["credits_cortex"] = 0
+
+    assert any("credits_cortex" in e for e in _errors(unknown))
+
+
 @pytest.mark.parametrize(
     "mutate, needle",
     [

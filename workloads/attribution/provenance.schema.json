@@ -92,6 +92,8 @@
         "reported_through": {"oneOf": [{"const": "pending"}, {"$ref": "#/$defs/timestamp"}]},
         "credits_dev": {"$ref": "#/$defs/credits"},
         "credits_runtime": {"$ref": "#/$defs/credits"},
+        "credits_ai_dev": {"$ref": "#/$defs/credits"},
+        "credits_ai_runtime": {"$ref": "#/$defs/credits"},
         "credits_idle": {"$ref": "#/$defs/credits"},
         "query_count_dev": {"$ref": "#/$defs/count"},
         "query_count_runtime": {"$ref": "#/$defs/count"}
