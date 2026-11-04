@@ -24,6 +24,9 @@ permissions:
 
 env:
   TRIVY_VERSION: "0.71.0"
+  # sha256 of trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz from the release's
+  # published trivy_${TRIVY_VERSION}_checksums.txt. Update both together.
+  TRIVY_SHA256: "30a3d22b23f88c233f1658f562fb477cae3b3e8b4761109d515b7698daf85814"
   MAX_FIX_ATTEMPTS: 2
   SEVERITY_THRESHOLD: "CRITICAL,HIGH"
 
@@ -62,8 +65,15 @@ jobs:
 
       - name: Install Trivy
         run: |
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-            | sh -s -- -b /usr/local/bin v${{ env.TRIVY_VERSION }}
+          set -euo pipefail
+          TARBALL="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          WORKDIR="$(mktemp -d)"
+          curl -sSfL -o "${WORKDIR}/${TARBALL}" \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/${TARBALL}"
+          echo "${TRIVY_SHA256}  ${WORKDIR}/${TARBALL}" | sha256sum --check --strict -
+          tar -xzf "${WORKDIR}/${TARBALL}" -C "${WORKDIR}" trivy
+          sudo install -m 0755 "${WORKDIR}/trivy" /usr/local/bin/trivy
+          trivy --version
 
       - name: Run Trivy filesystem scan
         run: |
