@@ -4,6 +4,7 @@ import argparse
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tarfile
@@ -56,6 +57,18 @@ def project_files(project):
     return sorted(file for file in project.rglob('*') if file.is_file() and file.suffix in ('.sql', '.yml'))
 
 
+def query_is_compliant(query_type, query_text, query_tag, first_in_session, runtime_tag):
+    if query_tag == runtime_tag:
+        return True
+    # Native dbt's first tag setter is recorded before its own tag takes effect.
+    setter = re.fullmatch(
+        r"\s*(?i:alter\s+session\s+set\s+query_tag)\s*=\s*('(?:[^'\\]|\\.|'')*')\s*;?\s*",
+        query_text,
+    )
+    return bool(first_in_session and query_type == 'ALTER_SESSION'
+                and setter and setter[1] == attr.sql_string(runtime_tag))
+
+
 def verify_run(cur, names, task, runtime_tag, started):
     history_sql = (
         'SELECT NAME,STATE,SCHEDULED_TIME,QUERY_START_TIME,COMPLETED_TIME,QUERY_ID,ERROR_CODE,ERROR_MESSAGE '
@@ -76,7 +89,7 @@ def verify_run(cur, names, task, runtime_tag, started):
     if row[1] != 'SUCCEEDED':
         raise RuntimeError(f'Task failed: {row}')
     query_sql = (
-        'SELECT QUERY_ID,START_TIME,ROLE_NAME,QUERY_TYPE,LEFT(QUERY_TEXT,60),QUERY_TAG '
+        'SELECT QUERY_ID,START_TIME,ROLE_NAME,QUERY_TYPE,LEFT(QUERY_TEXT,60),QUERY_TAG,QUERY_TEXT,SESSION_ID '
         f"FROM TABLE({names[f'db_{WORKLOAD}']}.INFORMATION_SCHEMA.QUERY_HISTORY_BY_WAREHOUSE("
         f"WAREHOUSE_NAME=>'{names[f'wh_{WORKLOAD}']}',END_TIME_RANGE_START=>TO_TIMESTAMP_LTZ(%s),"
         'END_TIME_RANGE_END=>TO_TIMESTAMP_LTZ(%s),RESULT_LIMIT=>10000)) '
@@ -84,13 +97,35 @@ def verify_run(cur, names, task, runtime_tag, started):
     )
     print('QUERY_HISTORY SQL:', query_sql, '\nPARAMETERS:', row[3], row[4], row[3], row[4], flush=True)
     queries = cur.execute(query_sql, (row[3], row[4], row[3], row[4])).fetchall()
+    if len(queries) >= 10000:
+        raise AssertionError('Query history result limit reached')
+    first_query_sql = (
+        'SELECT QUERY_ID,COUNT(*) OVER() '
+        f"FROM TABLE({names[f'db_{WORKLOAD}']}.INFORMATION_SCHEMA.QUERY_HISTORY_BY_SESSION("
+        'SESSION_ID=>%s,END_TIME_RANGE_END=>TO_TIMESTAMP_LTZ(%s),RESULT_LIMIT=>10000,'
+        'INCLUDE_CLIENT_GENERATED_STATEMENT=>TRUE)) ORDER BY START_TIME,QUERY_ID LIMIT 1'
+    )
+    print('FIRST SESSION QUERY SQL:', first_query_sql, flush=True)
+    first_queries = {}
+    proof = []
     for query in queries:
-        print(query, flush=True)
-    mismatches = [query for query in queries if query[-1] != runtime_tag]
-    print('QUERY_TAG mismatch count:', len(mismatches), 'of', len(queries), flush=True)
+        if query[5] != runtime_tag and query[7] not in first_queries:
+            first = cur.execute(first_query_sql, (query[7], row[4])).fetchall()
+            if not first or first[0][1] >= 10000:
+                raise AssertionError('Missing or truncated session history')
+            first_queries[query[7]] = first[0][0]
+        first_in_session = first_queries.get(query[7]) == query[0]
+        proof.append((*query, first_in_session))
+        print((*query[:6], query[7], first_in_session), flush=True)
+    strict_mismatches = [query for query in proof if query[5] != runtime_tag]
+    mismatches = [query for query in proof if not query_is_compliant(query[3], query[6], query[5], query[8], runtime_tag)]
+    print('Strict QUERY_TAG mismatch count:', len(strict_mismatches), 'of', len(queries), flush=True)
+    print('QUERY_TAG mismatch count after bootstrap exception:', len(mismatches), 'of', len(queries), flush=True)
     if not queries or mismatches:
         raise AssertionError('Missing queries or runtime query-tag mismatch')
-    return {'task_history': row, 'query_history_sql': query_sql, 'queries': queries, 'mismatch_count': len(mismatches)}
+    return {'task_history': row, 'query_history_sql': query_sql, 'first_query_sql': first_query_sql,
+            'first_queries': first_queries, 'queries': proof, 'strict_mismatch_count': len(strict_mismatches),
+            'mismatch_count': len(mismatches)}
 
 
 def verify_or_suspend(cur, names, task, runtime_tag, started):
