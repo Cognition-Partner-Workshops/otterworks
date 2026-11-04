@@ -201,18 +201,215 @@ data:
 EOF
 }
 
-# Drop a per-tenant database via an in-cluster Job in ${run_ns}. Callers MUST
-# delete the tenant namespace first so no application pods are still connected
-# (otherwise DROP DATABASE races the pods' connection-pool reconnects). Requires
-# load_infra_outputs to have set RDS_HOST/RDS_PORT/DB_USER, and DB_PASSWORD set.
-drop_tenant_db() {
-  local db="$1" run_ns="$2" frag job secret
-  frag="$(k8s_name_fragment "${db}")"
-  job="tenant-db-drop-${frag}"
-  secret="tenant-db-admin-${frag}"
-  apply_db_admin_secret "${run_ns}" "${secret}"
-  kubectl -n "${run_ns}" delete job "${job}" --ignore-not-found >/dev/null 2>&1 || true
-  kubectl apply -n "${run_ns}" -f - >/dev/null <<YAML
+# Tenant pods never get the RDS master login (DB_USER). Each tenant gets its own
+# login role that owns only otterworks_<id>; the master login stays in the
+# short-lived deploy/teardown/reaper Jobs below, which need it to create and
+# drop databases and roles. Identifiers are capped at 63 bytes by Postgres,
+# which would silently truncate a long name, so overlong names are shortened
+# with a hash suffix instead of colliding.
+tenant_db_role() {
+  local r="$1_app" h
+  if [ "${#r}" -gt 63 ]; then
+    h="$(printf '%s' "$1" | sha256sum | cut -c1-8)"
+    r="${1:0:50}_${h}_app"
+  fi
+  printf '%s' "${r}"
+}
+
+# Per-tenant server-side connection ceiling (direct-to-RDS and pooled alike).
+TENANT_DB_CONN_LIMIT="${TENANT_DB_CONN_LIMIT:-30}"
+TENANT_DB_SECRET="tenant-db-app"
+
+# Hex only: it is embedded in PgBouncer's quoted userlist format and in URLs.
+gen_db_password() { od -An -N24 -tx1 /dev/urandom | tr -d ' \n'; }
+
+# Load the tenant's own DB credential from ${ns}/tenant-db-app into
+# T_DB_USER/T_DB_PASSWORD. Returns non-zero if it does not exist yet.
+load_tenant_db_credential() {
+  local ns="$1" json
+  json="$(kubectl -n "${ns}" get secret "${TENANT_DB_SECRET}" -o json 2>/dev/null)" || return 1
+  T_DB_USER="$(printf '%s' "${json}" | jq -r '.data.username // empty | @base64d')"
+  T_DB_PASSWORD="$(printf '%s' "${json}" | jq -r '.data.password // empty | @base64d')"
+  [ -n "${T_DB_USER}" ] && [ -n "${T_DB_PASSWORD}" ]
+}
+
+# Reuse the tenant's existing credential (stable across redeploys, so running
+# pods and the pooler stay in sync) or mint one and store it in the tenant
+# namespace. The password goes to kubectl on stdin, never on an argv.
+ensure_tenant_db_credential() {
+  local ns="$1" db="$2" role
+  role="$(tenant_db_role "${db}")"
+  if load_tenant_db_credential "${ns}" && [ "${T_DB_USER}" = "${role}" ]; then
+    return 0
+  fi
+  T_DB_USER="${role}"
+  T_DB_PASSWORD="$(gen_db_password)"
+  kubectl -n "${ns}" apply -f - >/dev/null <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${TENANT_DB_SECRET}
+type: Opaque
+data:
+  username: $(printf '%s' "${T_DB_USER}" | base64 | tr -d '\n')
+  password: $(printf '%s' "${T_DB_PASSWORD}" | base64 | tr -d '\n')
+EOF
+}
+
+# psql script (run as the RDS master login, connected to the `otterworks`
+# bootstrap database) that provisions tenant database $1 for role $2. The role
+# password is read from $TENANT_DB_PASSWORD inside the Job, so the script itself
+# holds no secret. Idempotent, and also migrates a pre-existing tenant whose
+# database and objects are still owned by the master login.
+tenant_db_provision_sql() {
+  local db="$1" role="$2" limit="${3:-${TENANT_DB_CONN_LIMIT}}"
+  cat <<SQL
+\\set ON_ERROR_STOP on
+\\set db '${db}'
+\\set role '${role}'
+\\set conn_limit ${limit}
+\\getenv app_password TENANT_DB_PASSWORD
+SELECT coalesce(length(:'app_password'), 0) < 16 AS weak_password \\gset
+\\if :weak_password
+DO \$\$BEGIN RAISE EXCEPTION 'TENANT_DB_PASSWORD is missing or too short'; END\$\$;
+\\endif
+
+-- Login role: no CREATEDB/CREATEROLE, bounded fan-out. INHERIT stays on: the
+-- role belongs to nothing but the implicit pg_database_owner, which is how a
+-- database owner gets CREATE on the public schema in PG15+.
+SELECT format('CREATE ROLE %I LOGIN', :'role')
+ WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'role') \\gexec
+SELECT format('ALTER ROLE %I WITH LOGIN NOCREATEDB NOCREATEROLE INHERIT CONNECTION LIMIT %s',
+              :'role', :conn_limit) \\gexec
+SELECT format('ALTER ROLE %I PASSWORD %L', :'role', :'app_password') \\gexec
+-- The master login must be able to act as the role to hand it the database,
+-- and later to drop it.
+SELECT format('GRANT %I TO %I', :'role', current_user)
+ WHERE NOT pg_has_role(current_user, :'role', 'USAGE') \\gexec
+
+SELECT format('CREATE DATABASE %I OWNER %I', :'db', :'role')
+ WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = :'db') \\gexec
+SELECT format('ALTER DATABASE %I OWNER TO %I', :'db', :'role')
+  FROM pg_database WHERE datname = :'db'
+   AND datdba <> (SELECT oid FROM pg_roles WHERE rolname = :'role') \\gexec
+-- CONNECT/TEMP are granted to PUBLIC by default; only the owner keeps them.
+SELECT format('REVOKE ALL ON DATABASE %I FROM PUBLIC', :'db') \\gexec
+-- Same for the bootstrap DB and any tenant DB not yet migrated to its own role,
+-- so a tenant login can't even open a session there.
+SELECT format('REVOKE CONNECT, TEMPORARY ON DATABASE %I FROM PUBLIC', datname)
+  FROM pg_database
+ WHERE datname ~ '^otterworks(_|\$)'
+   AND datdba = (SELECT oid FROM pg_roles WHERE rolname = current_user) \\gexec
+-- analytics-service keeps its tables in an \`analytics\` schema and asks for it
+-- with the JDBC \`currentSchema\` option, which PgBouncer never forwards. A
+-- database-level default is applied by the server itself and so survives
+-- pooling. public stays first: everything else in this app lives there.
+SELECT format('ALTER DATABASE %I SET search_path = public, analytics', :'db') \\gexec
+
+-- Tenants created before per-tenant roles have every table owned by the master
+-- login. Hand those objects to the tenant role so its migrations keep working.
+\\connect :db
+SELECT set_config('otterworks.tenant_role', :'role', false) \\gset
+DO \$\$
+DECLARE
+  r   record;
+  tgt text := current_setting('otterworks.tenant_role');
+  me  oid  := (SELECT oid FROM pg_roles WHERE rolname = current_user);
+BEGIN
+  FOR r IN SELECT n.nspname FROM pg_namespace n
+            WHERE n.nspowner = me AND n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+              AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid = 'pg_namespace'::regclass
+                                AND d.objid = n.oid AND d.deptype = 'e') LOOP
+    EXECUTE format('ALTER SCHEMA %I OWNER TO %I', r.nspname, tgt);
+  END LOOP;
+  -- Sequences owned by a column follow their table and are skipped here.
+  FOR r IN SELECT c.oid::regclass AS obj, c.relkind FROM pg_class c
+             JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relowner = me AND c.relkind IN ('r','p','v','m','f','S')
+              AND n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+              AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid = 'pg_class'::regclass
+                                AND d.objid = c.oid AND d.deptype IN ('e','a','i')) LOOP
+    EXECUTE format('ALTER %s %s OWNER TO %I',
+      CASE r.relkind WHEN 'v' THEN 'VIEW' WHEN 'm' THEN 'MATERIALIZED VIEW'
+                     WHEN 'f' THEN 'FOREIGN TABLE' WHEN 'S' THEN 'SEQUENCE' ELSE 'TABLE' END,
+      r.obj, tgt);
+  END LOOP;
+  FOR r IN SELECT p.oid::regprocedure AS obj, p.prokind FROM pg_proc p
+             JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE p.proowner = me AND n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+              AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid = 'pg_proc'::regclass
+                                AND d.objid = p.oid AND d.deptype = 'e') LOOP
+    EXECUTE format('ALTER %s %s OWNER TO %I',
+      CASE r.prokind WHEN 'p' THEN 'PROCEDURE' WHEN 'a' THEN 'AGGREGATE' ELSE 'FUNCTION' END,
+      r.obj, tgt);
+  END LOOP;
+  FOR r IN SELECT t.oid::regtype AS obj, t.typtype FROM pg_type t
+             JOIN pg_namespace n ON n.oid = t.typnamespace
+            WHERE t.typowner = me AND t.typtype IN ('e','d','r','c')
+              AND (t.typtype <> 'c' OR (SELECT relkind FROM pg_class WHERE oid = t.typrelid) = 'c')
+              AND n.nspname !~ '^pg_' AND n.nspname <> 'information_schema'
+              AND NOT EXISTS (SELECT 1 FROM pg_depend d WHERE d.classid = 'pg_type'::regclass
+                                AND d.objid = t.oid AND d.deptype = 'e') LOOP
+    EXECUTE format('ALTER %s %s OWNER TO %I',
+      CASE r.typtype WHEN 'd' THEN 'DOMAIN' ELSE 'TYPE' END, r.obj, tgt);
+  END LOOP;
+END
+\$\$;
+SQL
+}
+
+# psql script (master login, `otterworks` DB) that drops tenant database $1 and
+# its login role $2. Idempotent; DROP OWNED clears any grants the role still
+# holds so DROP ROLE isn't blocked by them.
+tenant_db_drop_sql() {
+  local db="$1" role="$2"
+  cat <<SQL
+\\set ON_ERROR_STOP on
+\\set db '${db}'
+\\set role '${role}'
+SELECT format('DROP DATABASE IF EXISTS %I WITH (FORCE)', :'db') \\gexec
+SELECT format('DROP OWNED BY %I', :'role') FROM pg_roles WHERE rolname = :'role' \\gexec
+SELECT format('DROP ROLE %I', :'role') FROM pg_roles WHERE rolname = :'role' \\gexec
+SQL
+}
+
+# psql script (master login) that drops per-tenant login roles which no longer
+# own a database: left behind when a drop Job removed the database but not the
+# role, or provisioning died between the two. A role owning nothing is unusable,
+# so no control-table lookup is needed. Only roles the master login was granted
+# (i.e. that tenant provisioning created) are candidates. Errors on one role
+# don't stop the rest.
+tenant_db_orphan_roles_sql() {
+  cat <<'SQL'
+\set ON_ERROR_STOP off
+SELECT format('DROP OWNED BY %I', r.rolname), format('DROP ROLE %I', r.rolname)
+  FROM pg_roles r
+ WHERE r.rolname LIKE 'otterworks\_%\_app'
+   AND r.rolcanlogin
+   AND pg_has_role(current_user, r.oid, 'USAGE')
+   AND NOT EXISTS (SELECT 1 FROM pg_database d WHERE d.datdba = r.oid) \gexec
+SQL
+}
+
+# Run a psql script as the RDS master login from a short-lived Job in ${ns}.
+# The script rides in a ConfigMap, so it must hold no secrets; the master
+# password reaches the pod only via a Secret applied on stdin. Extra env vars can
+# be wired from Secrets in ${ns} as NAME=secret:key. Requires
+# RDS_HOST/RDS_PORT/DB_USER/DB_PASSWORD (load_infra_outputs + caller).
+run_db_admin_job() {
+  local ns="$1" job="$2" timeout="$3" sql="$4"; shift 4
+  local secret="${job}-admin" envs="" spec name ref ok=1
+  for spec in "$@"; do
+    name="${spec%%=*}"; ref="${spec#*=}"
+    envs+=$'\n'"            - name: ${name}"$'\n'"              valueFrom: { secretKeyRef: { name: ${ref%%:*}, key: ${ref#*:} } }"
+  done
+  apply_db_admin_secret "${ns}" "${secret}"
+  kubectl -n "${ns}" delete job "${job}" --ignore-not-found >/dev/null 2>&1 || true
+  SQL_TEXT="${sql}" jq -n --arg n "${job}" \
+      '{apiVersion:"v1",kind:"ConfigMap",metadata:{name:$n},data:{"script.sql":$ENV.SQL_TEXT}}' \
+    | kubectl -n "${ns}" apply -f - >/dev/null
+  # shellcheck disable=SC2153  # RDS_HOST/RDS_PORT/DB_USER come from load_infra_outputs
+  kubectl apply -n "${ns}" -f - >/dev/null <<YAML
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -223,31 +420,97 @@ spec:
   template:
     spec:
       restartPolicy: Never
+      volumes:
+        - name: sql
+          configMap: { name: ${job} }
       containers:
         - name: psql
           image: postgres:16-alpine
           env:
             - name: PGPASSWORD
-              valueFrom: { secretKeyRef: { name: ${secret}, key: PGPASSWORD } }
-          command: ["/bin/sh","-c"]
+              valueFrom: { secretKeyRef: { name: ${secret}, key: PGPASSWORD } }${envs}
+          volumeMounts:
+            - { name: sql, mountPath: /sql, readOnly: true }
+          command: ["psql"]
           args:
-            - |
-              CONN="host=${RDS_HOST} port=${RDS_PORT} dbname=otterworks user=${DB_USER} sslmode=prefer connect_timeout=10"
-              psql "\$CONN" -v ON_ERROR_STOP=1 -c "DROP DATABASE IF EXISTS \"${db}\" WITH (FORCE)"
+            - "host=${RDS_HOST} port=${RDS_PORT} dbname=otterworks user=${DB_USER} sslmode=prefer connect_timeout=10"
+            - "-X"
+            - "-q"
+            - "-f"
+            - "/sql/script.sql"
           resources:
             requests: { cpu: 50m, memory: 64Mi }
             limits: { cpu: 200m, memory: 128Mi }
 YAML
-  local ok=1
-  if kubectl -n "${run_ns}" wait --for=condition=complete "job/${job}" --timeout=90s >/dev/null 2>&1; then
-    log "  database ${db} dropped."; ok=0
+  if kubectl -n "${ns}" wait --for=condition=complete "job/${job}" --timeout="${timeout}" >/dev/null 2>&1; then
+    ok=0
   else
-    warn "  DB drop for ${db} did not confirm; last log lines:"
-    kubectl -n "${run_ns}" logs "job/${job}" 2>/dev/null | tail -5 || true
+    warn "  job ${ns}/${job} did not complete; last log lines:"
+    kubectl -n "${ns}" logs "job/${job}" 2>/dev/null | tail -5 || true
   fi
-  kubectl -n "${run_ns}" delete secret "${secret}" --ignore-not-found >/dev/null 2>&1 || true
-  kubectl -n "${run_ns}" delete job "${job}" --ignore-not-found >/dev/null 2>&1 || true
+  kubectl -n "${ns}" delete secret "${secret}" --ignore-not-found >/dev/null 2>&1 || true
+  kubectl -n "${ns}" delete configmap "${job}" --ignore-not-found >/dev/null 2>&1 || true
+  kubectl -n "${ns}" delete job "${job}" --ignore-not-found >/dev/null 2>&1 || true
   return "${ok}"
+}
+
+# PgBouncer authenticates clients against its own auth_file before opening a
+# server connection, so each tenant login needs a line in the shared
+# pgbouncer-auth Secret. `pgbouncer_userlist_set ROLE [PASSWORD]` upserts (or,
+# without a password, removes) ROLE's line. kubectl replace carries the read
+# resourceVersion, so concurrent deploys retry instead of dropping each other's
+# line. The content travels via stdin/env, never argv.
+# Returns 0 if written, 1 if already up to date, 2 if there is no pooler.
+pgbouncer_userlist_set() {
+  local role="$1" pw="${2:-}" ns="${PGBOUNCER_NAMESPACE:-otterworks-platform}" json cur new i
+  for i in 1 2 3 4 5; do
+    json="$(kubectl -n "${ns}" get secret pgbouncer-auth -o json 2>/dev/null)" || return 2
+    cur="$(printf '%s' "${json}" | jq -r '.data["userlist.txt"] // "" | @base64d' | sed '/^[[:space:]]*$/d')"
+    new="$(printf '%s\n' "${cur}" | awk -v r="\"${role}\"" '$1 != r' | sed '/^[[:space:]]*$/d')"
+    if [ -n "${pw}" ]; then
+      new="$(printf '%s\n"%s" "%s"' "${new}" "${role}" "${pw}" | sed '/^[[:space:]]*$/d')"
+    fi
+    [ "${new}" = "${cur}" ] && return 1
+    if printf '%s' "${json}" \
+         | USERLIST="${new}"$'\n' jq '.data["userlist.txt"] = ($ENV.USERLIST | @base64) | del(.metadata.managedFields)' \
+         | kubectl replace -f - >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep "${i}"
+  done
+  warn "  could not update ${ns}/pgbouncer-auth after ${i} attempts"
+  return 3
+}
+
+# PgBouncer reads auth_file only at start (and on RELOAD); a Secret changing
+# underneath it is not picked up. Roll the pooler so a new login is accepted.
+restart_pgbouncer() {
+  local ns="${PGBOUNCER_NAMESPACE:-otterworks-platform}"
+  log "  restarting pgbouncer so it picks up the new tenant login..."
+  if ! { kubectl -n "${ns}" rollout restart deploy/pgbouncer >/dev/null \
+         && kubectl -n "${ns}" rollout status deploy/pgbouncer --timeout=180s >/dev/null; }; then
+    warn "  pgbouncer restart did not finish; check: kubectl -n ${ns} rollout status deploy/pgbouncer"
+  fi
+}
+
+# Drop a per-tenant database and its login role via an in-cluster Job in
+# ${run_ns}. Callers MUST delete the tenant namespace first so no application
+# pods are still connected (otherwise DROP DATABASE races the pods'
+# connection-pool reconnects). Requires load_infra_outputs to have set
+# RDS_HOST/RDS_PORT/DB_USER, and DB_PASSWORD set.
+drop_tenant_db() {
+  local db="$1" run_ns="$2" role frag
+  role="$(tenant_db_role "${db}")"
+  frag="$(k8s_name_fragment "${db}")"
+  if run_db_admin_job "${run_ns}" "tenant-db-drop-${frag}" 90s "$(tenant_db_drop_sql "${db}" "${role}")"; then
+    log "  database ${db} and role ${role} dropped."
+  else
+    return 1
+  fi
+  # The role no longer exists, so its line is dead weight; it is dropped from
+  # the pooler's file at its next restart, no restart needed now.
+  pgbouncer_userlist_set "${role}" || true
+  return 0
 }
 
 # Secret handling: values are collected into SECRET_KV and later written to a
@@ -258,7 +521,8 @@ urlencode()  { jq -rn --arg s "$1" '$s|@uri'; }
 
 # Build per-service Helm --set flags (EXTRA_ARGS) + secret pairs (SECRET_KV) for
 # a tenant. Requires these tenant-scoped globals to be set by the caller:
-#   T_REDIS_HOST, T_MEILI_URL, T_DB_NAME, T_WIRE_EVENTING (true/false)
+#   T_REDIS_HOST, T_MEILI_URL, T_DB_NAME, T_WIRE_EVENTING (true/false),
+#   T_DB_USER/T_DB_PASSWORD (the tenant's own login; never the RDS master one)
 build_helm_args() {
   local service=$1
   EXTRA_ARGS=()
@@ -308,14 +572,14 @@ build_helm_args() {
     auth-service)
       EXTRA_ARGS+=(--set-string "config.SPRING_PROFILES_ACTIVE=prod")
       EXTRA_ARGS+=(--set-string "config.SPRING_DATASOURCE_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_ENDPOINT_PORT}/${T_DB_NAME}")
-      EXTRA_ARGS+=(--set-string "config.SPRING_DATASOURCE_USERNAME=${DB_USER}")
+      EXTRA_ARGS+=(--set-string "config.SPRING_DATASOURCE_USERNAME=${T_DB_USER}")
       # Flyway runs on boot and holds a session-level advisory lock for the
       # length of the migration, so it gets its own datasource on the pooler's
       # session port; the application's own queries stay on the transaction one.
       EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_SESSION_PORT}/${T_DB_NAME}")
-      EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_USER=${DB_USER}")
-      add_secret SPRING_FLYWAY_PASSWORD "${DB_PASSWORD}"
-      add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}" ;;
+      EXTRA_ARGS+=(--set-string "config.SPRING_FLYWAY_USER=${T_DB_USER}")
+      add_secret SPRING_FLYWAY_PASSWORD "${T_DB_PASSWORD}"
+      add_secret SPRING_DATASOURCE_PASSWORD "${T_DB_PASSWORD}" ;;
     file-service)
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.S3_BUCKET=${S3_FILE_BUCKET}")
@@ -329,7 +593,7 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${T_REDIS_HOST}" --set-string "config.REDIS_PORT=6379")
       EXTRA_ARGS+=(--set-string "config.DOC_SVC_AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.DOC_SVC_SNS_TOPIC_ARN=${sns_topic}")
-      add_secret DOC_SVC_DATABASE_URL "postgresql+asyncpg://$(urlencode "${DB_USER}"):$(urlencode "${DB_PASSWORD}")@${DB_ENDPOINT_HOST}:${DB_ENDPOINT_PORT}/${T_DB_NAME}" ;;
+      add_secret DOC_SVC_DATABASE_URL "postgresql+asyncpg://$(urlencode "${T_DB_USER}"):$(urlencode "${T_DB_PASSWORD}")@${DB_ENDPOINT_HOST}:${DB_ENDPOINT_PORT}/${T_DB_NAME}" ;;
     collab-service)
       EXTRA_ARGS+=(--set-string "config.HTTP_PORT=8084" --set-string "config.NODE_ENV=production")
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${T_REDIS_HOST}" --set-string "config.REDIS_PORT=6379") ;;
@@ -361,16 +625,20 @@ build_helm_args() {
       # opens connections per query rather than holding a pool, so this costs
       # the session pooler far less than the connection count suggests.
       EXTRA_ARGS+=(--set-string "config.DATABASE_URL=jdbc:postgresql://${DB_ENDPOINT_HOST}:${DB_SESSION_PORT}/${T_DB_NAME}")
-      EXTRA_ARGS+=(--set-string "config.DATABASE_USER=${DB_USER}")
-      add_secret DATABASE_PASSWORD "${DB_PASSWORD}" ;;
+      EXTRA_ARGS+=(--set-string "config.DATABASE_USER=${T_DB_USER}")
+      add_secret DATABASE_PASSWORD "${T_DB_PASSWORD}" ;;
     admin-service)
       # Rails takes a session-level advisory lock in `db:migrate`, which runs
       # from the image's CMD on every boot and shares one connection URL with
       # the app -- so the whole service uses the session-mode port.
       EXTRA_ARGS+=(--set-string "config.DATABASE_HOST=${DB_ENDPOINT_HOST}" --set-string "config.DATABASE_PORT=${DB_SESSION_PORT}")
-      EXTRA_ARGS+=(--set-string "config.DATABASE_USER=${DB_USER}")
+      EXTRA_ARGS+=(--set-string "config.DATABASE_USER=${T_DB_USER}")
+      # database.yml names a shared admin_service_production database, which a
+      # tenant login can't (and shouldn't) reach. Rails merges DATABASE_URL over
+      # database.yml, so this only points it at the tenant's own database.
+      EXTRA_ARGS+=(--set-string "config.DATABASE_URL=postgresql://${DB_ENDPOINT_HOST}:${DB_SESSION_PORT}/${T_DB_NAME}")
       EXTRA_ARGS+=(--set-string "config.RAILS_ENV=production" --set-string "config.RAILS_LOG_TO_STDOUT=true")
-      add_secret DATABASE_PASSWORD "${DB_PASSWORD}"
+      add_secret DATABASE_PASSWORD "${T_DB_PASSWORD}"
       add_secret SECRET_KEY_BASE "${SECRET_KEY_BASE}" ;;
     audit-service)
       EXTRA_ARGS+=(--set-string "config.Aws__Region=${AWS_REGION}")
@@ -378,7 +646,7 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.Aws__S3ArchiveBucket=${S3_AUDIT_BUCKET}") ;;
     report-service)
       EXTRA_ARGS+=(--set-string "config.DB_HOST=${DB_ENDPOINT_HOST}" --set-string "config.DB_PORT=${DB_ENDPOINT_PORT}")
-      EXTRA_ARGS+=(--set-string "config.DB_NAME=${T_DB_NAME}" --set-string "config.DB_USER=${DB_USER}")
-      add_secret DB_PASSWORD "${DB_PASSWORD}" ;;
+      EXTRA_ARGS+=(--set-string "config.DB_NAME=${T_DB_NAME}" --set-string "config.DB_USER=${T_DB_USER}")
+      add_secret DB_PASSWORD "${T_DB_PASSWORD}" ;;
   esac
 }

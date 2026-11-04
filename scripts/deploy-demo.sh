@@ -42,7 +42,7 @@ Usage: $0 [up] <token> [--ttl 72h] [--image-tag TAG] [--host-suffix ${DEMO_HOST_
   --host-suffix DNS suffix; hosts are t-<token>.<suffix> and api-t-<token>.<suffix>
   --profile     deploy-tenant.sh profile (default full)
   --dry-run     print mutating commands, touch nothing (same as DRY_RUN=1)
-Env: DB_PASSWORD (RDS master, for deploy-tenant.sh and the PostgreSQL target), AWS creds; only for
+Env: DB_PASSWORD (RDS master, for deploy-tenant.sh; the PostgreSQL target uses the tenant's own login), AWS creds; only for
      azure: true overlays also AZURE_CLIENT_ID/SECRET/TENANT_ID/SUBSCRIPTION_ID and TFSTATE_AZ_*.
 EOF
 }
@@ -276,9 +276,14 @@ if [ "${WANT_MIGRATE}" = "true" ] && [ "${WANT_AZURE}" != "true" ]; then
   load_infra_outputs
   PG_DATABASE="$(tenant_db_name "${TOKEN}")"
   if [ "${DRY_RUN}" = "1" ]; then
-    RDS_HOST="${RDS_HOST:-<rds endpoint>}"; RDS_PORT="${RDS_PORT:-5432}"; DB_PASSWORD="${DB_PASSWORD:-<rds master password>}"
+    RDS_HOST="${RDS_HOST:-<rds endpoint>}"; RDS_PORT="${RDS_PORT:-5432}"
+    T_DB_USER="$(tenant_db_role "${PG_DATABASE}")"; T_DB_PASSWORD="<tenant db password>"
   else
     [ -n "${RDS_HOST:-}" ] || die "shared RDS endpoint unknown (infrastructure/terraform output rds_endpoint); cannot wire the PostgreSQL target"
+    # The migration Job runs in the tenant namespace, so it gets the tenant's own
+    # login (owner of PG_DATABASE), never the RDS master one.
+    load_tenant_db_credential "${NS}" \
+      || die "tenant DB credential ${TENANT_DB_SECRET} missing in ${NS}; deploy-tenant.sh provisions it"
   fi
   ensure_ldm_job_image "${TOKEN}"
   JOB_IMAGE="$(ldm_job_image "${TOKEN}")"
@@ -287,12 +292,12 @@ if [ "${WANT_MIGRATE}" = "true" ] && [ "${WANT_AZURE}" != "true" ]; then
     printf '%s\n' "${SOURCE_ENV}"
     printf 'LDM_S3_BUCKET=%s\nLDM_S3_PREFIX=%s/\n' "${DEMO_BUCKET}" "${TOKEN}"
     printf 'PG_HOST=%s\nPG_PORT=%s\nPG_DATABASE=%s\nPG_USER=%s\nPG_PASSWORD=%s\nPG_SSLMODE=require\n' \
-      "${RDS_HOST}" "${RDS_PORT}" "${PG_DATABASE}" "${DB_USER}" "${DB_PASSWORD}"
+      "${RDS_HOST}" "${RDS_PORT}" "${PG_DATABASE}" "${T_DB_USER}" "${T_DB_PASSWORD}"
     printf 'S3_STAGING_BUCKET=%s\nAWS_REGION=%s\nLDM_JOB_ROLE_ARN=%s\n' "${DEMO_BUCKET}" "${AWS_REGION}" "${JOB_ROLE_ARN}"
     printf 'PEER_APP_URL=https://%s\n' "${BEFORE_HOST}"
   } | apply_secret_from_stdin "${NS}" "${ARCHIVE_STORE_SECRET}" "${TOKEN}"
   # Secret `ldm-postgres` consumed by the migration-job chart (§13.2).
-  printf 'PG_USER=%s\nPG_PASSWORD=%s\n' "${DB_USER}" "${DB_PASSWORD}" \
+  printf 'PG_USER=%s\nPG_PASSWORD=%s\n' "${T_DB_USER}" "${T_DB_PASSWORD}" \
     | apply_secret_from_stdin "${NS}" "${LDM_POSTGRES_SECRET}" "${TOKEN}"
   wire_archive_store "${NS}" || wiring_rc=$?
   trust_peer_tokens "${TOKEN}" || wiring_rc=$?

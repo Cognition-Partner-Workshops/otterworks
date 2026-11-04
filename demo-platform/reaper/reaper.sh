@@ -350,6 +350,15 @@ EOF
   done
 }
 
+# Per-tenant login roles left without a database (see tenant_db_orphan_roles_sql).
+sweep_orphan_db_roles() {
+  [ -n "${RDS_HOST:-}" ] || return 0
+  [ -n "${DB_PASSWORD:-}" ] || return 0
+  kubectl get ns "${SYSTEM_NAMESPACE}" >/dev/null 2>&1 || kubectl create ns "${SYSTEM_NAMESPACE}" >/dev/null 2>&1 || true
+  run_db_admin_job "${SYSTEM_NAMESPACE}" tenant-db-role-sweep 90s "$(tenant_db_orphan_roles_sql)" \
+    || warn "orphan DB-role sweep did not complete (continuing)"
+}
+
 sweep_orphan_s3() {
   local bucket p id
   for bucket in $(list_shared_buckets); do
@@ -392,6 +401,7 @@ sweep_orphans() {
   log "orphan sweep starting..."
   sweep_orphan_namespaces
   sweep_orphan_dbs
+  sweep_orphan_db_roles
   sweep_orphan_s3
   sweep_orphan_ddb
   log "orphan sweep complete."

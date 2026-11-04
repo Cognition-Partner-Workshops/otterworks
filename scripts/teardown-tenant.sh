@@ -13,7 +13,8 @@
 # Usage:
 #   ./scripts/teardown-tenant.sh <ATTENDEE_ID> [--keep-db] [--keep-trust]
 #
-# Required env: AWS creds (exported). DB_PASSWORD needed only to drop the DB.
+# Required env: AWS creds (exported). DB_PASSWORD (RDS master) needed only to
+#   drop the DB and the tenant's own login role.
 # ------------------------------------------------------------------------------
 set -euo pipefail
 
@@ -58,7 +59,7 @@ else
     warn "Namespace deletion timed out; it may still be terminating."
 fi
 
-# --- Step 2: drop the per-tenant database (now that no pods are connected) ---
+# --- Step 2: drop the per-tenant database + login role (no pods are connected now) ---
 # Runs regardless of whether the namespace still existed: the drop Job executes
 # in ${SYSTEM_NAMESPACE}, not the tenant namespace, so it works even after the
 # reaper has removed the tenant namespace (the reaper does NOT drop DBs).
