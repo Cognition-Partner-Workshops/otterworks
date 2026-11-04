@@ -25,19 +25,26 @@ TAG_FQN = f"{GOVERNANCE_DATABASE}.TAGS.DEVIN_CSID"
 EMAIL_MASKING_POLICY = f"{GOVERNANCE_DATABASE}.POLICIES.CUSTOMER_EMAIL_MASK"
 MIGRATIONS_WAREHOUSE = f"{RUN_TOKEN}_WH_MIGRATIONS"
 ACCESS_ROLES = ("reader", "analyst")
+SERVICE_USER_ENDPOINTS = {"doc_usage_dashboard": "account_usage"}
 WAREHOUSE_SIZE = "XSMALL"
 AUTO_SUSPEND_SECONDS = 60
 MONTHLY_CREDIT_QUOTA = 10
+MONITOR_TRIGGERS = "TRIGGERS ON 75 PERCENT DO NOTIFY ON 100 PERCENT DO SUSPEND ON 110 PERCENT DO SUSPEND_IMMEDIATE"
 ANALYTICS_SCHEMA = "ANALYTICS"
 QUERY_TAG_MAX_CHARS = 2000
+TAG_VALUE_MAX_CHARS = 256
 PENDING = "pending"
 
 IDENT_RE = re.compile(r"^[a-z][a-z0-9]*(_[a-z0-9]+)*$")
 CSID_RE = re.compile(r"^cs_[a-z][a-z0-9]*(_[a-z0-9]+)*$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 RUN_TOKEN_RE = re.compile(r"^[A-Z][A-Z0-9]*_[0-9]{8}$")
-RUN_ID_RE = re.compile(r"^(?P<token>[A-Z][A-Z0-9]*_[0-9]{8})-[A-Za-z0-9_.:-]+$")
+RUN_ID_RE = re.compile(
+    r"^(?P<token>[A-Z][A-Z0-9]*_[0-9]{8})-(?P<workload>[a-z][a-z0-9]*(?:_[a-z0-9]+)*)"
+    r"-(?P<phase>dev|runtime)-(?P<stamp>[0-9]{8}T[0-9]{6}Z)$"
+)
 SESSION_URL_RE = re.compile(r"^https://[A-Za-z0-9.-]+/sessions/[0-9a-f]{32}$")
+SF_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]{0,254}$")
 
 
 class AttributionError(ValueError):
@@ -78,6 +85,10 @@ def database_name(workload: str) -> str:
     return f"{RUN_TOKEN}_DB_{_identifier('workload', workload).upper()}"
 
 
+def ops_role(workload: str) -> str:
+    return f"{RUN_TOKEN}_OPS_{_identifier('workload', workload).upper()}"
+
+
 def output_table_name(workload: str) -> str:
     return f"{database_name(workload)}.{ANALYTICS_SCHEMA}.{workload.upper()}"
 
@@ -97,7 +108,10 @@ def devin_csid_value(csids: list[str] | tuple[str, ...]) -> str:
     for c in csids:
         if not CSID_RE.match(c):
             raise AttributionError(f"not a client-side ID: {c!r}")
-    return ",".join(sorted(set(csids)))
+    value = ",".join(sorted(set(csids)))
+    if len(value) > TAG_VALUE_MAX_CHARS:
+        raise AttributionError(f"DEVIN_CSID value is {len(value)} characters, Snowflake allows {TAG_VALUE_MAX_CHARS}")
+    return value
 
 
 @dataclass(frozen=True)
@@ -160,8 +174,15 @@ def query_tag(
     _check_phase(phase)
     if not isinstance(commit, str) or not COMMIT_RE.match(commit):
         raise AttributionError(f"commit must be a full 40-character lower-case SHA, got {commit!r}")
-    if not isinstance(run_id, str) or not RUN_ID_RE.match(run_id):
-        raise AttributionError(f"run_id must start with a run token such as {RUN_TOKEN}-, got {run_id!r}")
+    match = RUN_ID_RE.fullmatch(run_id) if isinstance(run_id, str) else None
+    if not match:
+        raise AttributionError(
+            f"run_id must look like {RUN_TOKEN}-<workload>-<phase>-<yyyymmddThhmmssZ>, got {run_id!r}"
+        )
+    if match["workload"] != endpoint.workload or match["phase"] != phase:
+        raise AttributionError(
+            f"run_id {run_id!r} belongs to {match['workload']}/{match['phase']}, not {endpoint.workload}/{phase}"
+        )
     tag = {
         "csid": endpoint.csid,
         "workload": endpoint.workload,
@@ -243,16 +264,36 @@ def create_task_sql(
     run_id: str,
     phase: str = "runtime",
     session_url: str | None = None,
+    csids: list[str] | tuple[str, ...] | None = None,
 ) -> str:
-    """CREATE TASK with the tag on the task itself: a task run does not inherit the creating session's tag."""
+    """CREATE TASK with QUERY_TAG and DEVIN_CSID on the task itself.
+
+    A task run does not inherit the creating session's tag, and CREATE OR REPLACE drops the
+    object tags of the task it replaces, so both are part of the statement. csids defaults to
+    the endpoint's own; pass every csid of the workload when it has more than one.
+    """
     tag = query_tag_json(endpoint, phase=phase, commit=commit, run_id=run_id, session_url=session_url)
+    devin_csid = devin_csid_value(list(csids) if csids else [endpoint.csid])
     return (
         f"CREATE OR REPLACE TASK {task_name(endpoint.workload)}\n"
+        f"  WITH TAG ({TAG_FQN} = {sql_string(devin_csid)})\n"
         f"  WAREHOUSE = {endpoint.warehouse}\n"
         f"  SCHEDULE = {sql_string(schedule)}\n"
         f"  QUERY_TAG = {sql_string(tag)}\n"
         f"AS\n{body}"
     )
+
+
+def deploy_task_sql(endpoint: Endpoint, *, resume: bool = True, **kwargs: Any) -> list[str]:
+    """Statements that (re)deploy a workload task, in order.
+
+    CREATE OR REPLACE leaves the task suspended even if the one it replaced was running, so a
+    runtime deployment resumes it as the last step. resume=False keeps it suspended (dev runs).
+    """
+    statements = [create_task_sql(endpoint, **kwargs)]
+    if resume:
+        statements.append(f"ALTER TASK {task_name(endpoint.workload)} RESUME")
+    return statements
 
 
 def alter_task_query_tag_sql(endpoint: Endpoint, **kwargs: Any) -> str:
@@ -270,13 +311,17 @@ def warehouse_ddl(workload: str, *, credit_quota: int = MONTHLY_CREDIT_QUOTA) ->
     if not isinstance(credit_quota, int) or credit_quota <= 0:
         raise AttributionError("credit_quota must be a positive integer")
     monitor, warehouse = resource_monitor_name(workload), warehouse_name(workload)
+    warehouse_settings = (
+        f"WAREHOUSE_SIZE = '{WAREHOUSE_SIZE}' AUTO_SUSPEND = {AUTO_SUSPEND_SECONDS} AUTO_RESUME = TRUE "
+        f"RESOURCE_MONITOR = {monitor}"
+    )
+    # CREATE ... IF NOT EXISTS skips an existing object, so the ALTERs bring a re-run up to date.
     return [
         f"CREATE RESOURCE MONITOR IF NOT EXISTS {monitor} WITH CREDIT_QUOTA = {credit_quota} "
-        "FREQUENCY = MONTHLY START_TIMESTAMP = IMMEDIATELY "
-        "TRIGGERS ON 75 PERCENT DO NOTIFY ON 100 PERCENT DO SUSPEND ON 110 PERCENT DO SUSPEND_IMMEDIATE",
-        f"CREATE WAREHOUSE IF NOT EXISTS {warehouse} WITH WAREHOUSE_SIZE = '{WAREHOUSE_SIZE}' "
-        f"AUTO_SUSPEND = {AUTO_SUSPEND_SECONDS} AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE "
-        f"RESOURCE_MONITOR = {monitor}",
+        f"FREQUENCY = MONTHLY START_TIMESTAMP = IMMEDIATELY {MONITOR_TRIGGERS}",
+        f"ALTER RESOURCE MONITOR {monitor} SET CREDIT_QUOTA = {credit_quota} {MONITOR_TRIGGERS}",
+        f"CREATE WAREHOUSE IF NOT EXISTS {warehouse} WITH {warehouse_settings} INITIALLY_SUSPENDED = TRUE",
+        f"ALTER WAREHOUSE {warehouse} SET {warehouse_settings}",
     ]
 
 
@@ -290,6 +335,8 @@ def service_user_ddl(endpoint: Endpoint, *, rsa_public_key: str, role: str | Non
         f"DEFAULT_WAREHOUSE = {endpoint.warehouse}",
     ]
     if role:
+        if not SF_IDENT_RE.fullmatch(role):
+            raise AttributionError(f"role must be an unquoted Snowflake identifier, got {role!r}")
         parts.append(f"DEFAULT_ROLE = {role}")
     parts.append(f"COMMENT = {sql_string(f'Key-pair service user for {endpoint.csid}')}")
     return " ".join(parts)
@@ -323,17 +370,25 @@ def names(workloads: list[str] | tuple[str, ...]) -> dict[str, str]:
         "email_masking_policy": EMAIL_MASKING_POLICY,
         "migrations_wh": MIGRATIONS_WAREHOUSE,
         "migrations_rm": f"{RUN_TOKEN}_RM_MIGRATIONS",
+        "builder_role": f"{RUN_TOKEN}_BUILDER",
     }
     out.update({f"{access}_role": role_name(access) for access in ACCESS_ROLES})
     for workload in workloads:
         out[f"db_{workload}"] = database_name(workload)
         out[f"wh_{workload}"] = warehouse_name(workload)
         out[f"rm_{workload}"] = resource_monitor_name(workload)
+        out[f"task_{workload}"] = task_name(workload)
         out[f"stage_{workload}"] = f"{database_name(workload)}.RAW.POSTGRES_FILES"
         out[f"format_{workload}"] = f"{database_name(workload)}.RAW.POSTGRES_CSV"
         out[f"history_{workload}"] = f"{GOVERNANCE_DATABASE}.SCHEMACHANGE.PIPELINE_{workload.upper()}"
         out[f"dbt_project_{workload}"] = f"{database_name(workload)}.ANALYTICS.OTTERWORKS_DBT"
         out[f"dbt_stage_{workload}"] = f"{database_name(workload)}.ANALYTICS.DBT_SOURCE_FILES"
+        out[f"proof_schema_{workload}"] = f"{database_name(workload)}.PIPELINE_FRESH_PROOF"
+        out[f"proof_history_{workload}"] = f"{database_name(workload)}.PIPELINE_FRESH_PROOF.CHANGE_HISTORY"
+        out[f"ops_schema_{workload}"] = f"{database_name(workload)}.OPS"
+        out[f"ops_role_{workload}"] = ops_role(workload)
+        if workload in SERVICE_USER_ENDPOINTS:
+            out[f"svc_user_{workload}"] = service_user(csid(workload, SERVICE_USER_ENDPOINTS[workload]))
     return out
 
 
