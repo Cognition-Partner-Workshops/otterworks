@@ -3,7 +3,7 @@
 # workflow-side mirror of the dashboard's cdTenantIdForBranch().
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-# shellcheck source=scripts/lib/tenant-common.sh
+# shellcheck source=/dev/null
 source "${ROOT}/scripts/lib/tenant-common.sh"
 
 fails=0
