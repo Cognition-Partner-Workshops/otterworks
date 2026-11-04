@@ -24,6 +24,7 @@ from flask import jsonify, request
 logger = structlog.get_logger()
 
 PUBLIC_PREFIXES = ("/health", "/metrics")
+ROUTE_AUTH_PREFIXES = ("/api/v1/insights/search/",)
 
 
 def require_auth(app):
@@ -43,6 +44,8 @@ def require_auth(app):
 
         path = request.path
         if any(path.startswith(p) for p in PUBLIC_PREFIXES):
+            return None
+        if any(path.startswith(p) for p in ROUTE_AUTH_PREFIXES):
             return None
 
         # Accept a valid service token if one is configured.
