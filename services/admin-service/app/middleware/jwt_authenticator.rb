@@ -1,5 +1,11 @@
 class JwtAuthenticator
-  EXCLUDED_PATHS = %w[/health /metrics /api/v1/admin/alerts/ingest /api/v1/admin/chaos].freeze
+  # Unauthenticated paths. /alerts/ingest is a Grafana webhook that cannot carry a
+  # JWT; AlertsController verifies its shared secret (fail-closed).
+  EXCLUDED_PATHS = %w[/health /metrics /api/v1/admin/alerts/ingest].freeze
+
+  # Paths that accept either a JWT or a controller-verified shared secret
+  # (ChaosController, X-Chaos-Secret). A token, when present, is still validated.
+  OPTIONAL_AUTH_PATHS = %w[/api/v1/admin/chaos].freeze
 
   def initialize(app)
     @app = app
@@ -11,7 +17,11 @@ class JwtAuthenticator
     return @app.call(env) if skip_authentication?(request)
 
     token = extract_token(request)
-    return unauthorized_response('Missing authorization token') if token.nil?
+    if token.nil?
+      return @app.call(env) if optional_authentication?(request)
+
+      return unauthorized_response('Missing authorization token')
+    end
 
     payload = decode_token(token)
     return unauthorized_response('Invalid or expired token') if payload.nil?
@@ -28,6 +38,10 @@ class JwtAuthenticator
 
   def skip_authentication?(request)
     EXCLUDED_PATHS.any? { |path| request.path == path }
+  end
+
+  def optional_authentication?(request)
+    OPTIONAL_AUTH_PATHS.any? { |path| request.path == path }
   end
 
   def extract_token(request)
