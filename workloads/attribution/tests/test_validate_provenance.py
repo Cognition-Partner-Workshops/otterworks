@@ -93,7 +93,7 @@ def test_reported_usage_accepts_real_zero() -> None:
         (lambda d: d["deployed_objects"][3].update(devin_csid="cs_other"), "devin_csid"),
         (lambda d: d["deployed_objects"][1].update(devin_csid=d["endpoints"][0]["csid"]), "does not carry"),
         (lambda d: d["deployed_objects"].pop(0), "database"),
-        (lambda d: d["deployed_objects"][0].update(state="deployed"), "deployed_at"),
+        (lambda d: (d["deployed_objects"][0].update(state="deployed"), d["deployed_objects"][0].pop("deployed_at", None)), "deployed_at"),
         (lambda d: d["deployed_objects"][7].update(name="SFNFR_20261104_DB_OTHER.ANALYTICS.REFRESH_X"), "expected at most one task"),
         (
             lambda d: d["deployed_objects"][7].update(name="SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.OTHER_REFRESH"),

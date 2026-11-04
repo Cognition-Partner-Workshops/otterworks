@@ -26,20 +26,30 @@ deployed_objects:
   - type: database
     name: SFNFR_20261104_DB_CHURN_MODEL
     devin_csid: cs_churn_model_account_score
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:42:54Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: schema
     name: SFNFR_20261104_DB_CHURN_MODEL.RAW
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:42:54Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: schema
     name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:42:54Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: warehouse
     name: SFNFR_20261104_WH_CHURN_MODEL
     devin_csid: cs_churn_model_account_score
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:42:58Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: resource_monitor
     name: SFNFR_20261104_RM_CHURN_MODEL
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:47:31Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: user
     name: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
     state: planned

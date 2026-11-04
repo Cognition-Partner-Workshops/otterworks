@@ -26,20 +26,30 @@ deployed_objects:
   - type: database
     name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD
     devin_csid: cs_doc_usage_dashboard_account_usage
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:42:54Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: schema
     name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:42:54Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: schema
     name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:42:54Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: warehouse
     name: SFNFR_20261104_WH_DOC_USAGE_DASHBOARD
     devin_csid: cs_doc_usage_dashboard_account_usage
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:42:58Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: resource_monitor
     name: SFNFR_20261104_RM_DOC_USAGE_DASHBOARD
-    state: planned
+    state: deployed
+    deployed_at: "2026-11-04T20:47:31Z"
+    deployed_commit: "796a731c97b9497808ac46e1d6f28fc924d8ff72"
   - type: user
     name: SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
     state: planned
