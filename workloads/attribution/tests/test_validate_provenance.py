@@ -94,7 +94,7 @@ def test_reported_usage_accepts_real_zero() -> None:
         (lambda d: d["deployed_objects"][1].update(devin_csid=d["endpoints"][0]["csid"]), "does not carry"),
         (lambda d: d["deployed_objects"].pop(0), "database"),
         (lambda d: (d["deployed_objects"][0].update(state="deployed"), d["deployed_objects"][0].pop("deployed_at", None)), "deployed_at"),
-        (lambda d: d["deployed_objects"][7].update(name="SFNFR_20261104_DB_OTHER.ANALYTICS.REFRESH_X"), "outside"),
+        (lambda d: d["deployed_objects"][8].update(name="SFNFR_20261104_DB_OTHER.ANALYTICS.REFRESH_X"), "outside"),
         (lambda d: d.update(extra=1), "extra"),
     ],
 )

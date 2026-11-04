@@ -73,7 +73,7 @@
         },
         "allOf": [
           {
-            "if": {"properties": {"type": {"enum": ["database", "warehouse", "role", "task", "streamlit"]}}},
+            "if": {"properties": {"type": {"enum": ["database", "warehouse", "task", "streamlit"]}}},
             "then": {"required": ["devin_csid"]}
           },
           {
