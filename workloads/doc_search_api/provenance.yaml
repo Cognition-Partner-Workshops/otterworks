@@ -4,7 +4,7 @@ spec: workloads/doc_search_api.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
   session: https://partner-workshops.devinenterprise.com/sessions/c7aba848685a48e38d97b1f39435fda5
 endpoints:
@@ -25,23 +25,23 @@ deployed_objects:
   devin_csid: cs_doc_search_api_top_items
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: schema
   name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: schema
   name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: warehouse
   name: SFNFR_20261104_WH_DOC_SEARCH_API
   devin_csid: cs_doc_search_api_top_items
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: resource_monitor
   name: SFNFR_20261104_RM_DOC_SEARCH_API
   state: planned
@@ -51,8 +51,8 @@ deployed_objects:
 - type: table
   name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.DOC_SEARCH_API
   state: deployed
-  deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_at: '2026-11-04T21:28:49Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: task
   name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.REFRESH_DOC_SEARCH_API
   devin_csid: cs_doc_search_api_top_items
@@ -61,37 +61,37 @@ deployed_objects:
   name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.ANALYTICS_ANALYTICS_EVENTS
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: table
   name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.DOCUMENT_DOCUMENTS
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: view
   name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.SEARCH_EVENTS
   state: deployed
-  deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_at: '2026-11-04T21:28:49Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: view
   name: SFNFR_20261104_DB_DOC_SEARCH_API.ANALYTICS.SEARCH_DOCUMENTS
   state: deployed
-  deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_at: '2026-11-04T21:28:49Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: stage
   name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.POSTGRES_FILES
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: file_format
   name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.POSTGRES_CSV
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: procedure
   name: SFNFR_20261104_DB_DOC_SEARCH_API.RAW.LOAD_RAW
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 usage:
   source: SNOWFLAKE.ACCOUNT_USAGE
   reported_through: pending

@@ -4,7 +4,7 @@ spec: workloads/churn_model.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2433
   session: https://partner-workshops.devinenterprise.com/sessions/c7aba848685a48e38d97b1f39435fda5
 endpoints:
@@ -25,23 +25,23 @@ deployed_objects:
   devin_csid: cs_churn_model_account_score
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: schema
   name: SFNFR_20261104_DB_CHURN_MODEL.RAW
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: schema
   name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: warehouse
   name: SFNFR_20261104_WH_CHURN_MODEL
   devin_csid: cs_churn_model_account_score
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: resource_monitor
   name: SFNFR_20261104_RM_CHURN_MODEL
   state: planned
@@ -51,8 +51,8 @@ deployed_objects:
 - type: table
   name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_MODEL
   state: deployed
-  deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_at: '2026-11-04T21:29:11Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: task
   name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.REFRESH_CHURN_MODEL
   devin_csid: cs_churn_model_account_score
@@ -61,47 +61,47 @@ deployed_objects:
   name: SFNFR_20261104_DB_CHURN_MODEL.RAW.AUTH_USERS
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: table
   name: SFNFR_20261104_DB_CHURN_MODEL.RAW.ADMIN_ADMIN_USERS
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: table
   name: SFNFR_20261104_DB_CHURN_MODEL.RAW.DOCUMENT_DOCUMENT_VERSIONS
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: view
   name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_USERS
   state: deployed
-  deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_at: '2026-11-04T21:29:11Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: view
   name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_ADMIN_USERS
   state: deployed
-  deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_at: '2026-11-04T21:29:11Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: view
   name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_VERSIONS
   state: deployed
-  deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_at: '2026-11-04T21:29:11Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: stage
   name: SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_FILES
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: file_format
   name: SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_CSV
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 - type: procedure
   name: SFNFR_20261104_DB_CHURN_MODEL.RAW.LOAD_RAW
   state: deployed
   deployed_at: '2026-11-04T21:12:50Z'
-  deployed_commit: 796a731c97b9497808ac46e1d6f28fc924d8ff72
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
 usage:
   source: SNOWFLAKE.ACCOUNT_USAGE
   reported_through: pending
