@@ -27,16 +27,26 @@ CONSUMERS = {
 AUTH_COLUMNS = 'id,email,display_name,avatar_url,email_verified,mfa_enabled,created_at,updated_at,last_login_at'
 
 
+def phase_context(workload):
+    phase = os.environ.get('SF_PHASE', 'dev')
+    if phase not in attr.PHASES:
+        raise ValueError(f"SF_PHASE must be one of {attr.PHASES}, got {phase!r}")
+    commit = os.environ.get('SF_COMMIT') or attr.current_commit(str(ROOT))
+    session_url = (os.environ.get('SESSION_URL') or SESSION_URL) if phase == 'dev' else None
+    run_id = os.environ.get(f"SF_RUN_ID_{workload.upper()}") or attr.make_run_id(workload, phase)
+    return phase, commit, session_url, run_id
+
+
 def connect(workload):
     import snowflake.connector
 
     os.environ.pop('SNOWFLAKE_HOST', None)
+    phase, commit, session_url, run_id = phase_context(workload)
     params = attr.connection_params(
         attr.Endpoint.from_csid(CONSUMERS[workload][0], workload),
         account=os.environ['SNOWFLAKE_ACCOUNT'],
         private_key_file=os.environ['SNOWFLAKE_PRIVATE_KEY_FILE'],
-        phase='dev', commit=attr.current_commit(str(ROOT)),
-        run_id=attr.make_run_id(workload, 'dev'), session_url=SESSION_URL,
+        phase=phase, commit=commit, run_id=run_id, session_url=session_url,
         role=os.environ['SNOWFLAKE_ROLE'], schema='RAW',
     )
     params['user'] = os.environ['SNOWFLAKE_USER']

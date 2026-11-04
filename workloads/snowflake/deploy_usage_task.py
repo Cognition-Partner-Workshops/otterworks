@@ -16,6 +16,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'workloads/pipeline'))
 from pipeline import CONSUMERS, attr, connect  # noqa: E402
+from git_utils import require_pushed_commit  # noqa: E402
+from query_recording import RecordingCursor, update_query_record  # noqa: E402
 
 WORKLOAD = 'doc_usage_dashboard'
 
@@ -152,27 +154,27 @@ def main():
     parser.add_argument('--commit', required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--directory', type=Path, required=True)
+    parser.add_argument('--query-record', type=Path)
     args = parser.parse_args()
-    branch = current_branch()
-    remote_ref = f'refs/heads/{branch}'
-    remote = subprocess.check_output(
-        ['git', '-C', str(ROOT), 'ls-remote', 'origin', remote_ref], text=True,
-    ).split()
-    if not remote:
-        raise ValueError(f'Current branch is not pushed to origin: {branch}')
-    pushed = remote[0]
-    if args.commit != pushed or args.commit != attr.current_commit(str(ROOT)):
-        raise ValueError('Deploy only the current, pushed branch HEAD')
+    require_pushed_commit(args.commit, str(ROOT))
+    os.environ["SF_COMMIT"] = args.commit
+    run_id_key = f"SF_RUN_ID_{WORKLOAD.upper()}"
+    run_id = os.environ.get(run_id_key) or attr.make_run_id(WORKLOAD, "runtime")
+    os.environ[run_id_key] = run_id
     names = attr.names([WORKLOAD])
     endpoint = attr.Endpoint.from_csid(CONSUMERS[WORKLOAD][0], WORKLOAD)
     tag = attr.query_tag_json(endpoint, phase='runtime', commit=args.commit,
-                              run_id=attr.make_run_id(WORKLOAD, 'runtime'))
-    run_id = json.loads(tag)['run_id']
+                              run_id=run_id)
     project = prepare_project(args.commit, args.directory, tag)
     ddl = task_sql(args.commit, run_id)
     evidence = {'commit': args.commit, 'runtime_tag': tag, 'task_ddl': ddl}
     with connect(WORKLOAD) as con:
         cur = con.cursor()
+        if args.query_record:
+            cur = RecordingCursor(
+                cur, args.query_record, commit=args.commit,
+                run_ids={WORKLOAD: run_id}, step='deploy_task',
+            )
         cur.execute('USE SECONDARY ROLES NONE')
         cur.execute(f"CREATE STAGE IF NOT EXISTS {names[f'dbt_stage_{WORKLOAD}']}")
         for file in project_files(project):
@@ -201,6 +203,19 @@ def main():
         cur.execute(f'EXECUTE TASK {task}')
         try:
             evidence.update(verify_or_suspend(cur, names, task, tag, os.environ['SNOWFLAKE_ROLE'], started))
+            if args.query_record:
+                verification = evidence
+                runtime_query_ids = []
+                task_history = verification.get('task_history')
+                if task_history and task_history[5]:
+                    runtime_query_ids.append(task_history[5])
+                runtime_query_ids.extend(
+                    query[0] for query in verification.get('queries', []) if query[0]
+                )
+                update_query_record(
+                    args.query_record, commit=args.commit, run_ids={WORKLOAD: run_id},
+                    step='task_runtime', query_ids=runtime_query_ids,
+                )
         except Exception as error:
             evidence['verification_error'] = str(error)
             args.output.write_text(json.dumps(evidence, default=str, indent=2))

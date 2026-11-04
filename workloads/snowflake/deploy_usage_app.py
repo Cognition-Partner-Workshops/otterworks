@@ -2,14 +2,16 @@
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'workloads/pipeline'))
-import pipeline  # noqa: E402
 from pipeline import CONSUMERS, attr, connect  # noqa: E402
+from git_utils import require_pushed_commit  # noqa: E402
+from query_recording import RecordingCursor  # noqa: E402
 
 WORKLOAD = 'doc_usage_dashboard'
 APP_DIR = 'workloads/doc_usage_dashboard/app'
@@ -26,21 +28,37 @@ def prepare_app(commit, directory, endpoint, run_id):
     return tag_sql
 
 
+def streamlit_ddl(commit, run_id, endpoint=None):
+    endpoint = endpoint or attr.Endpoint.from_csid(CONSUMERS[WORKLOAD][0], WORKLOAD)
+    schema = f'{endpoint.database}.{attr.ANALYTICS_SCHEMA}'
+    stage = f'{schema}.{WORKLOAD.upper()}_APP_STAGE'
+    app = attr.streamlit_name(WORKLOAD)
+    pypi_eai = f'{attr.RUN_TOKEN}_EAI_{WORKLOAD.upper()}_PYPI'
+    return (
+        f"CREATE OR REPLACE STREAMLIT {app} FROM '@{stage}/{commit}' "
+        "MAIN_FILE = 'streamlit_app.py' "
+        f"QUERY_WAREHOUSE = {endpoint.warehouse} "
+        "RUNTIME_NAME = 'SYSTEM$ST_CONTAINER_RUNTIME_PY3_11' COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU "
+        f"EXTERNAL_ACCESS_INTEGRATIONS = ({pypi_eai}) "
+        "TITLE = 'Storage quota by account'"
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--commit', required=True)
     parser.add_argument('--account', required=True)
     parser.add_argument('--private-key-file', required=True, help='service user private key')
-    parser.add_argument('--public-key-file', type=Path, required=True, help='service user public key')
+    parser.add_argument('--public-key-file', type=Path, help='optional service user public key')
     parser.add_argument('--directory', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--session-url', required=True, help='Devin session doing this dev-phase deploy')
+    parser.add_argument('--session-url', help='Devin session doing this dev-phase deploy')
+    parser.add_argument('--query-record', type=Path)
     args = parser.parse_args()
-    pipeline.SESSION_URL = args.session_url
-    head = attr.current_commit(str(ROOT))
-    pushed = subprocess.check_output(['git', '-C', str(ROOT), 'branch', '-r', '--contains', args.commit], text=True)
-    if args.commit != head or not pushed.strip():
-        raise ValueError('Deploy only the current, pushed HEAD')
+    if args.session_url:
+        os.environ['SESSION_URL'] = args.session_url
+    require_pushed_commit(args.commit, str(ROOT))
+    os.environ['SF_COMMIT'] = args.commit
     endpoint = attr.Endpoint.from_csid(CONSUMERS[WORKLOAD][0], WORKLOAD)
     reader = attr.role_name('reader')
     schema = f'{endpoint.database}.{attr.ANALYTICS_SCHEMA}'
@@ -49,15 +67,35 @@ def main():
     # The container runtime installs pyproject.toml dependencies from PyPI; egress is limited to the PyPI hosts.
     pypi_rule = f'{schema}.PYPI_EGRESS'
     pypi_eai = f'{attr.RUN_TOKEN}_EAI_{WORKLOAD.upper()}_PYPI'
-    run_id = attr.make_run_id(WORKLOAD, 'runtime')
+    run_id_key = f"SF_RUN_ID_{WORKLOAD.upper()}"
+    run_id = os.environ.get(run_id_key) or attr.make_run_id(WORKLOAD, 'runtime')
+    os.environ[run_id_key] = run_id
     tag_sql = prepare_app(args.commit, args.directory, endpoint, run_id)
     evidence = {'commit': args.commit, 'run_id': run_id, 'streamlit_query_tag_sql': tag_sql}
+    run_ids = {WORKLOAD: run_id}
 
     with connect(WORKLOAD) as con:
         cur = con.cursor()
+        if args.query_record:
+            cur = RecordingCursor(
+                cur, args.query_record, commit=args.commit,
+                run_ids=run_ids, step='deploy_app',
+            )
         cur.execute('USE SECONDARY ROLES NONE')
+        if args.public_key_file:
+            sql = attr.service_user_ddl(
+                endpoint, rsa_public_key=args.public_key_file.read_text(), role=reader,
+            )
+            print(sql.split(' RSA_PUBLIC_KEY')[0], flush=True)
+            cur.execute(sql)
+        else:
+            cur.execute(f"SHOW USERS LIKE {attr.sql_string(endpoint.service_user)}")
+            users = cur.fetchall()
+            if not any(str(row[0]).upper() == endpoint.service_user for row in users):
+                raise RuntimeError(
+                    f"Service user {endpoint.service_user} is missing; provide --public-key-file to create it"
+                )
         for sql in (
-            attr.service_user_ddl(endpoint, rsa_public_key=args.public_key_file.read_text(), role=reader),
             f'GRANT ROLE {reader} TO USER {endpoint.service_user}',
             f'GRANT USAGE ON WAREHOUSE {endpoint.warehouse} TO ROLE {reader}',
             f'GRANT CREATE STAGE, CREATE STREAMLIT ON SCHEMA {schema} TO ROLE {reader}',
@@ -67,7 +105,6 @@ def main():
             f'ALLOWED_NETWORK_RULES = ({pypi_rule}) ENABLED = TRUE',
             f'GRANT USAGE ON INTEGRATION {pypi_eai} TO ROLE {reader}',
         ):
-            print(sql.split(' RSA_PUBLIC_KEY')[0], flush=True)
             cur.execute(sql)
 
     runtime = attr.connection_params(
@@ -78,27 +115,29 @@ def main():
 
     with snowflake.connector.connect(**runtime) as con:
         cur = con.cursor()
+        if args.query_record:
+            cur = RecordingCursor(
+                cur, args.query_record, commit=args.commit,
+                run_ids=run_ids, step='deploy_app',
+            )
         cur.execute('USE SECONDARY ROLES NONE')
         evidence['deploy_session'] = cur.execute(
             'SELECT CURRENT_USER(), CURRENT_ROLE(), CURRENT_WAREHOUSE(), CURRENT_SESSION()').fetchone()
         cur.execute(f'CREATE STAGE IF NOT EXISTS {stage}')
         for file in sorted(args.directory.iterdir()):
             cur.execute(f"PUT 'file://{file}' @{stage}/{args.commit}/ AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
-        create = (
-            f"CREATE OR REPLACE STREAMLIT {app} FROM '@{stage}/{args.commit}' "
-            f"MAIN_FILE = 'streamlit_app.py' QUERY_WAREHOUSE = {endpoint.warehouse} "
-            # Container runtime: the warehouse runtime runs as an owner's-rights procedure and rejects ALTER SESSION,
-            # so it could not set the runtime QUERY_TAG. Queries still run on QUERY_WAREHOUSE.
-            "RUNTIME_NAME = 'SYSTEM$ST_CONTAINER_RUNTIME_PY3_11' COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU "
-            f"EXTERNAL_ACCESS_INTEGRATIONS = ({pypi_eai}) "
-            "TITLE = 'Storage quota by account'"
-        )
+        create = streamlit_ddl(args.commit, run_id, endpoint)
         print(create, flush=True)
         cur.execute(create)
         evidence['streamlit'] = cur.execute(f"SHOW STREAMLITS LIKE '{app.split('.')[-1]}' IN SCHEMA {schema}").fetchall()
 
     with connect(WORKLOAD) as con:
         cur = con.cursor()
+        if args.query_record:
+            cur = RecordingCursor(
+                cur, args.query_record, commit=args.commit,
+                run_ids=run_ids, step='deploy_app',
+            )
         cur.execute('USE SECONDARY ROLES NONE')
         for sql in attr.object_tag_ddl(WORKLOAD, [endpoint.csid], streamlit=True):
             print(sql, flush=True)

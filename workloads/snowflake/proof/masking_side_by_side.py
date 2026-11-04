@@ -32,15 +32,16 @@ def _connect():
     import snowflake.connector
 
     ep = attr.Endpoint.from_csid("cs_churn_model_account_score", "churn_model")
+    phase = os.environ.get("SF_PHASE", "dev")
     params = attr.connection_params(
         ep,
         account=os.environ["SNOWFLAKE_ACCOUNT"],
         private_key_file=os.environ["SNOWFLAKE_PRIVATE_KEY_FILE"],
         private_key_file_pwd=os.environ.get("SNOWFLAKE_PRIVATE_KEY_FILE_PWD"),
-        phase="dev",
-        commit=attr.current_commit(str(ROOT)),
-        run_id=attr.make_run_id("churn_model", "dev"),
-        session_url=os.environ["SESSION_URL"],
+        phase=phase,
+        commit=os.environ.get("SF_COMMIT") or attr.current_commit(str(ROOT)),
+        run_id=os.environ.get("SF_RUN_ID_CHURN_MODEL") or attr.make_run_id("churn_model", phase),
+        session_url=(os.environ.get("SESSION_URL") if phase == "dev" else None),
         role=os.environ["SNOWFLAKE_ROLE"],
         schema="RAW",
     )
@@ -48,7 +49,7 @@ def _connect():
     return snowflake.connector.connect(**params)
 
 
-def _run_case(role: str, secondary_none: bool) -> None:
+def _run_case(role: str, secondary_none: bool) -> tuple[tuple, list[tuple], str] | str:
     from snowflake.connector.errors import ProgrammingError
 
     con = _connect()
@@ -64,15 +65,16 @@ def _run_case(role: str, secondary_none: bool) -> None:
         print(f"CURRENT_ROLE: {active[0]}\nCURRENT_SECONDARY_ROLES: {active[1]}")
         try:
             cur.execute(QUERY)
+            query_id = cur.sfqid
             rows = cur.fetchall()
-            print(f"{'ID':<36}  {'EMAIL':<16}  NAME")
-            for row in rows:
-                print(f"{row[0]:<36}  {row[1]:<16}  {row[2]}")
-            if not rows:
-                print("(no rows)")
+            print(f"query id: {query_id}")
+            print(rows if rows else "(no rows)")
+            result = (active, rows, query_id)
         except ProgrammingError as error:
+            print(f"query id: {cur.sfqid}")
             print(f"ERROR: {error}")
-        print(f"query id: {cur.sfqid}")
+            result = f"ERROR: {error}"
+        return result
     finally:
         con.close()
 
@@ -91,8 +93,24 @@ def main() -> int:
         con.commit()
         print(f"query: {QUERY}")
         for secondary_none in (False, True):
+            results = {role: _run_case(role, secondary_none) for role in ROLES}
+            label = "NONE" if secondary_none else "default (untouched)"
+            print(f"\n=== Secondary roles: {label} ===")
+            print(f"{'':<66}  |  {ROLES[1]}")
             for role in ROLES:
-                _run_case(role, secondary_none)
+                result = results[role]
+                if isinstance(result, str):
+                    print(f"{role}: {result}")
+                    continue
+                active, rows, query_id = result
+                print(f"{role}: current role={active[0]}, secondary roles={active[1]}, query id={query_id}")
+            left_result, right_result = (results[role] for role in ROLES)
+            if isinstance(left_result, str) or isinstance(right_result, str):
+                continue
+            left = _table(left_result[1], 66)
+            right = _table(right_result[1], 66)
+            for a, b in zip(left, right):
+                print(f"{a}  |  {b}")
     finally:
         cur.execute(f"USE ROLE {os.environ['SNOWFLAKE_ROLE']}")
         cur.execute(f"DELETE FROM {TABLE} WHERE ID LIKE '00000000-0000-4000-8000-%'")

@@ -9,7 +9,10 @@ import deploy_usage_task as deploy  # noqa: E402
 
 
 def test_usage_task_runtime_attribution():
-    sql = deploy.task_sql('a' * 40, 'SFNFR_20261104-usage-runtime-test')
+    sql = deploy.task_sql(
+        'a' * 40,
+        'SFNFR_20261104-doc_usage_dashboard-runtime-20261104T000000Z',
+    )
     assert 'SFNFR_20261104_WH_DOC_USAGE_DASHBOARD' in sql
     assert 'USING CRON 0 * * * * UTC' in sql
     assert 'CHECK_FAULT_SWITCH' in sql

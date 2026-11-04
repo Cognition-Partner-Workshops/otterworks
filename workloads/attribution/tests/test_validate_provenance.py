@@ -41,6 +41,10 @@ def _errors(mutate) -> list[str]:
     return vp.validate(doc, ROOT / "workloads" / "doc_usage_dashboard" / "provenance.yaml")
 
 
+def _object(doc: dict, kind: str) -> dict:
+    return next(item for item in doc["deployed_objects"] if item["type"] == kind)
+
+
 def test_unreported_usage_must_be_pending_not_zero_or_null() -> None:
     def zero(d):
         d["usage"]["credits_runtime"] = 0  # noqa: E704
@@ -126,18 +130,18 @@ def test_unknown_ai_credit_key_is_rejected_by_schema() -> None:
         (lambda d: d["source"].update(session="https://example.com/x"), "session"),
         (lambda d: d.update(run_token="SFNFR_20250101"), "run_token"),
         (lambda d: d.update(workload="churn_model"), "workload"),
-        (lambda d: d["deployed_objects"][3].pop("devin_csid"), "devin_csid"),
-        (lambda d: d["deployed_objects"][3].update(devin_csid="cs_other"), "devin_csid"),
-        (lambda d: d["deployed_objects"][1].update(devin_csid=d["endpoints"][0]["csid"]), "does not carry"),
-        (lambda d: d["deployed_objects"].pop(0), "database"),
-        (lambda d: (d["deployed_objects"][0].update(state="deployed"), d["deployed_objects"][0].pop("deployed_at", None)), "deployed_at"),
-        (lambda d: d["deployed_objects"][7].update(name="SFNFR_20261104_DB_OTHER.ANALYTICS.REFRESH_X"), "expected at most one task"),
+        (lambda d: _object(d, "warehouse").pop("devin_csid"), "devin_csid"),
+        (lambda d: _object(d, "warehouse").update(devin_csid="cs_other"), "devin_csid"),
+        (lambda d: _object(d, "schema").update(devin_csid=d["endpoints"][0]["csid"]), "does not carry"),
+        (lambda d: d["deployed_objects"].remove(_object(d, "database")), "database"),
+        (lambda d: (_object(d, "database").update(state="deployed"), _object(d, "database").pop("deployed_at", None)), "deployed_at"),
+        (lambda d: _object(d, "task").update(name="SFNFR_20261104_DB_OTHER.ANALYTICS.REFRESH_X"), "expected at most one task"),
         (
-            lambda d: d["deployed_objects"][7].update(name="SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.OTHER_REFRESH"),
+            lambda d: _object(d, "task").update(name="SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.RAW.OTHER_REFRESH"),
             "named SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD",
         ),
-        (lambda d: d["deployed_objects"][8].update(name="SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.APP"), "streamlit"),
-        (lambda d: d["deployed_objects"].append(dict(d["deployed_objects"][7])), "expected at most one task"),
+        (lambda d: _object(d, "streamlit").update(name="SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.APP"), "streamlit"),
+        (lambda d: d["deployed_objects"].append(dict(_object(d, "task"))), "expected at most one task"),
         (lambda d: d.update(extra=1), "extra"),
     ],
 )
@@ -149,7 +153,7 @@ def test_validator_rejects_rule_breaks(mutate, needle: str) -> None:
 
 def test_deployed_object_needs_timestamp_and_commit() -> None:
     def deployed(d):
-        d["deployed_objects"][0].update(state="deployed", deployed_at="2026-11-05T10:00:00Z", deployed_commit="a" * 40)
+        _object(d, "database").update(state="deployed", deployed_at="2026-11-05T10:00:00Z", deployed_commit="a" * 40)
 
     assert _errors(deployed) == []
 
