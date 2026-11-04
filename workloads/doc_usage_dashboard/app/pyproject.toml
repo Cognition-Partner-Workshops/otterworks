@@ -1,0 +1,5 @@
+[project]
+name = "doc-usage-dashboard"
+version = "0.1.0"
+requires-python = "==3.11.*"
+dependencies = ["streamlit>=1.35,<2", "snowflake-snowpark-python"]

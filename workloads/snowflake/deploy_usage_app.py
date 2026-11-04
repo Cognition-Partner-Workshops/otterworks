@@ -13,7 +13,7 @@ from pipeline import CONSUMERS, attr, connect  # noqa: E402
 
 WORKLOAD = 'doc_usage_dashboard'
 APP_DIR = 'workloads/doc_usage_dashboard/app'
-APP_FILES = ('streamlit_app.py', 'environment.yml')
+APP_FILES = ('streamlit_app.py', 'pyproject.toml')
 
 
 def prepare_app(commit, directory, endpoint, run_id):
@@ -79,8 +79,9 @@ def main():
         create = (
             f"CREATE OR REPLACE STREAMLIT {app} FROM '@{stage}/{args.commit}' "
             f"MAIN_FILE = 'streamlit_app.py' QUERY_WAREHOUSE = {endpoint.warehouse} "
-            # Warehouse runtime keeps the app's compute on the workload warehouse, not a shared compute pool.
-            "RUNTIME_NAME = 'SYSTEM$WAREHOUSE_RUNTIME' "
+            # Container runtime: the warehouse runtime runs as an owner's-rights procedure and rejects ALTER SESSION,
+            # so it could not set the runtime QUERY_TAG. Queries still run on QUERY_WAREHOUSE.
+            "RUNTIME_NAME = 'SYSTEM$ST_CONTAINER_RUNTIME_PY3_11' COMPUTE_POOL = SYSTEM_COMPUTE_POOL_CPU "
             "TITLE = 'Storage quota by account'"
         )
         print(create, flush=True)

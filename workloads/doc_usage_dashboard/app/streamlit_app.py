@@ -3,9 +3,8 @@
 from pathlib import Path
 
 import streamlit as st
-from snowflake.snowpark.context import get_active_session
 
-session = get_active_session()
+session = st.connection("snowflake").session()
 # Attribution: the runtime QUERY_TAG (rendered at deploy by sf_attribution.streamlit_query_tag_sql) runs first.
 session.sql((Path(__file__).parent / "query_tag.sql").read_text().strip()).collect()
 
