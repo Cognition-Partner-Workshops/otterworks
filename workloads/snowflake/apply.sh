@@ -13,6 +13,11 @@ export SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_ROLE SNOWFLAKE_PRIVATE_KEY_FIL
 # schemachange honours SNOWFLAKE_HOST over the account; a host left over from another account breaks the JWT.
 unset SNOWFLAKE_HOST
 
+if [[ "$target" == builder && "${PIPELINE:-0}" == 1 ]]; then
+  exec uv run --python 3.12 --with schemachange==4.4.0 --with snowflake-connector-python==4.8.1 \
+    python apply_pipeline.py
+fi
+
 # Object names come only from sf_attribution.py; the migrations reference them as Jinja vars.
 vars="$(python3 ../attribution/sf_attribution.py names \
   --workload doc_usage_dashboard --workload doc_search_api --workload churn_model)"

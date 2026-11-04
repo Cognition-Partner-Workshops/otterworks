@@ -329,6 +329,11 @@ def names(workloads: list[str] | tuple[str, ...]) -> dict[str, str]:
         out[f"db_{workload}"] = database_name(workload)
         out[f"wh_{workload}"] = warehouse_name(workload)
         out[f"rm_{workload}"] = resource_monitor_name(workload)
+        out[f"stage_{workload}"] = f"{database_name(workload)}.RAW.POSTGRES_FILES"
+        out[f"format_{workload}"] = f"{database_name(workload)}.RAW.POSTGRES_CSV"
+        out[f"history_{workload}"] = f"{GOVERNANCE_DATABASE}.SCHEMACHANGE.PIPELINE_{workload.upper()}"
+        out[f"dbt_project_{workload}"] = f"{database_name(workload)}.ANALYTICS.OTTERWORKS_DBT"
+        out[f"dbt_stage_{workload}"] = f"{database_name(workload)}.ANALYTICS.DBT_SOURCE_FILES"
     return out
 
 

@@ -232,3 +232,12 @@ def test_cli_tag_and_ddl(capsys) -> None:
     assert attr.main(["ddl", "--workload", "churn_model", "--csid", "cs_churn_model_account_score"]) == 0
     out = capsys.readouterr().out
     assert "CREATE WAREHOUSE IF NOT EXISTS SFNFR_20261104_WH_CHURN_MODEL" in out and out.count(";\n") == 5
+
+
+def test_pipeline_names_are_workload_scoped():
+    names = attr.names(['churn_model'])
+    assert names['stage_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_FILES'
+    assert names['format_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_CSV'
+    assert names['history_churn_model'] == 'SFNFR_20261104_GOVERNANCE.SCHEMACHANGE.PIPELINE_CHURN_MODEL'
+    assert names['dbt_project_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.OTTERWORKS_DBT'
+    assert names['dbt_stage_churn_model'] == 'SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.DBT_SOURCE_FILES'
