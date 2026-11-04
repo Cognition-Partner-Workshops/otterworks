@@ -1,0 +1,364 @@
+schema_version: 1
+workload: churn_model
+spec: workloads/churn_model.yaml
+run_token: SFNFR_20261104
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2457
+  session: https://partner-workshops.devinenterprise.com/sessions/6eebc1acb0d4426c985e41f45bb0adda
+endpoints:
+- csid: cs_churn_model_account_score
+  service_user: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+  application: Devin_Demo
+warehouse:
+  name: SFNFR_20261104_WH_CHURN_MODEL
+  size: XSMALL
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: SFNFR_20261104_RM_CHURN_MODEL
+    frequency: MONTHLY
+    credit_quota: 10
+deployed_objects:
+- type: database
+  name: SFNFR_20261104_DB_CHURN_MODEL
+  devin_csid: cs_churn_model_account_score
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: schema
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: schema
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: warehouse
+  name: SFNFR_20261104_WH_CHURN_MODEL
+  devin_csid: cs_churn_model_account_score
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: resource_monitor
+  name: SFNFR_20261104_RM_CHURN_MODEL
+  state: planned
+- type: user
+  name: SFNFR_20261104_SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+  state: planned
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_MODEL
+  state: deployed
+  deployed_at: '2026-11-04T21:29:11Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: task
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.REFRESH_CHURN_MODEL
+  devin_csid: cs_churn_model_account_score
+  state: planned
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.AUTH_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.ADMIN_ADMIN_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.DOCUMENT_DOCUMENT_VERSIONS
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: view
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:29:11Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: view
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_ADMIN_USERS
+  state: deployed
+  deployed_at: '2026-11-04T21:29:11Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: view
+  name: SFNFR_20261104_DB_CHURN_MODEL.ANALYTICS.CHURN_VERSIONS
+  state: deployed
+  deployed_at: '2026-11-04T21:29:11Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: stage
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_FILES
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: file_format
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.POSTGRES_CSV
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: procedure
+  name: SFNFR_20261104_DB_CHURN_MODEL.RAW.LOAD_RAW
+  state: deployed
+  deployed_at: '2026-11-04T21:12:50Z'
+  deployed_commit: 13ae5a047f9c830cfc03a422edff510cc22dc96e
+- type: schema
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC
+  state: deployed
+  deployed_at: '2026-11-04T21:59:21Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.GENERATOR_RUNS
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.ACCOUNTS
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.DAILY_ACTIVITY
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.QUOTA_SNAPSHOTS
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVENTS
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.SUPPORT_NOTES
+  state: deployed
+  deployed_at: '2026-11-04T21:59:23Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_POPULATION
+  state: deployed
+  deployed_at: '2026-11-04T22:00:27Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_FEATURES
+  state: deployed
+  deployed_at: '2026-11-04T22:00:27Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.LEAKAGE_CHECK
+  state: deployed
+  deployed_at: '2026-11-04T22:00:27Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_MODEL_COEFFICIENTS
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_SCORES
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVALUATION
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVALUATION_GATES
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.FEATURE_AUC_SENTINEL
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVALUATION_HISTORY
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_EVALUATION_GATES_HISTORY
+  state: deployed
+  deployed_at: '2026-11-04T22:00:54Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_WATCHLIST
+  state: deployed
+  deployed_at: '2026-11-04T22:01:03Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+- type: table
+  name: SFNFR_20261104_DB_CHURN_MODEL.SYNTHETIC.CHURN_REASON_CHECK
+  state: deployed
+  deployed_at: '2026-11-04T22:01:03Z'
+  deployed_commit: a0870a45b5eb101269526e2b5a894c6e95e6b8d1
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  credits_dev: pending
+  credits_runtime: pending
+  credits_ai_dev: pending
+  credits_ai_runtime: pending
+  credits_idle: pending
+  query_count_dev: pending
+  query_count_runtime: pending
+data_quality:
+  playbook: Snowflake workload data-quality gate
+  run_id: SFNFR_20261104-churn_model-dev-20261104T223858Z
+  phase: dev
+  commit: 587f65681cdbd4f67c75e882120eaa388e54dc96
+  session: https://partner-workshops.devinenterprise.com/sessions/c53ce4a60ff643b1bc116ecfa5422d94
+  ran_at: '2026-11-04T22:39:09Z'
+  status: fail
+  summary:
+    pass: 30
+    fail: 4
+    error: 0
+    warn: 0
+    skipped: 0
+  tests:
+  - name: dq_freshness__inputs_export_age
+    check: freshness
+    status: pass
+    failures: 0
+  - name: dq_freshness__output_covers_newest_export
+    check: freshness
+    status: pass
+    failures: 0
+  - name: dq_row_count__admin_users_stage_vs_raw_files
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__document_versions_stage_vs_raw_files
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__output_vs_eligible_accounts
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__staging_vs_source_keys
+    check: row_count
+    status: pass
+    failures: 0
+  - name: dq_row_count__users_stage_vs_raw_files
+    check: row_count
+    status: fail
+    failures: 1
+    cause: 'SYNTHETIC file users/sfnfr-batch-dev/users.csv.gz (export 55123be6-29ed-4ec9-aff7-9cf22eb411b6) has 39 rows on @RAW.POSTGRES_FILES but 0 in RAW.AUTH_USERS: COPY loaded all 39 at 2026-11-04T20:57:58Z, then a fixture cleanup from another dev session (query tag session 42c0ec07b30a40159699239918675f2a) ran DELETE FROM RAW.AUTH_USERS WHERE ID LIKE ''00000000-0000-4000-8000-%'' at 20:58:33Z and removed them; COPY load history skips the file so it was never reloaded. The same 39 ids of that export survive via users/sfnfr-batch-dev-replayed/users.csv.gz, so staging and output are unaffected'
+  - name: dq_uniqueness__admin_users_id_per_file
+    check: uniqueness
+    status: fail
+    failures: 39
+    cause: 'SYNTHETIC export 9e79d72d-94b6-4e07-8567-3def91a6ed0b: file admin_users/sfnfr-batch-late/admin_users.csv.gz holds each of its 39 admin_users ids twice (78 rows); written by pipeline.py export --duplicate-rows; staging churn_admin_users dedups it (qualify row_number() over (partition by _export_id, id)), so the output grain and row-count tests still pass'
+  - name: dq_uniqueness__document_versions_id_per_file
+    check: uniqueness
+    status: fail
+    failures: 365
+    cause: 'SYNTHETIC export 9e79d72d-94b6-4e07-8567-3def91a6ed0b: file document_versions/sfnfr-batch-late/document_versions.csv.gz holds each of its 365 version ids twice (730 rows); written by pipeline.py export --duplicate-rows; staging churn_versions dedups it (qualify row_number() over (partition by _export_id, id)), so the output grain and row-count tests still pass'
+  - name: dq_uniqueness__users_id_per_file
+    check: uniqueness
+    status: fail
+    failures: 39
+    cause: 'SYNTHETIC export 9e79d72d-94b6-4e07-8567-3def91a6ed0b: file users/sfnfr-batch-late/users.csv.gz holds each of its 39 user ids twice (78 rows); written by pipeline.py export --duplicate-rows; staging churn_users dedups it (qualify row_number() over (partition by _export_id, id)), so the output grain and row-count tests still pass'
+  - name: grain_churn_model_week_start_date__account_id
+    check: uniqueness
+    status: pass
+    failures: 0
+  - name: accepted_values_churn_model_activity_points__False__0__10__25__30__40
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: accepted_values_churn_model_login_points__False__0__10__25__40
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: accepted_values_churn_model_model_version__True__rules_v1
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: accepted_values_churn_model_risk_band__True__low__medium__high
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: accepted_values_churn_model_status_points__False__0__20
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__activity_counts
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__activity_drop_pct
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__churn_score_and_band
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: dq_accepted_range__points_rules
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_account_id
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_activity_points
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_activity_prior_4wk_avg
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_activity_this_week
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_churn_score
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_days_since_last_login
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_login_points
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_model_version
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_risk_band
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_status_points
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: not_null_churn_model_week_start_date
+    check: accepted_range
+    status: pass
+    failures: 0
+  - name: churn_spec_101
+    check: worked_example
+    status: pass
+    failures: 0
+  - name: churn_spec_102
+    check: worked_example
+    status: pass
+    failures: 0
+  - name: churn_spec_103
+    check: worked_example
+    status: pass
+    failures: 0
