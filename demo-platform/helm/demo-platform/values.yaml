@@ -33,6 +33,15 @@ hostSuffix: demo.otterworks.app
 perpetualTenantIds: main,cloud-worker
 perpetualHostSuffix: otterworks.app
 
+# Branch CD (workshop-*/demo-*) calls POST /api/cd/deploy with a GitHub OIDC
+# token for `oidcAudience` instead of the dashboard passcode. trustedRepos maps
+# each repository allowed to deploy to the TENANT_PREFIX it is held to
+# (`owner/repo=prefix,...`; empty prefix for this repository). Keep in step
+# with github_actions_branch_repos in infra/terraform. Empty audience disables it.
+cd:
+  oidcAudience: otterworks-demo-ops
+  trustedRepos: "Cognition-Partner-Workshops/otterworks="
+
 # Runner image used by dashboard-launched Jobs AND the reaper CronJob (OP=reap).
 # Placeholder — override at deploy: --set runnerImage=<registry>/otterworks/demo-runner:<tag>
 runnerImage: REGISTRY/otterworks/demo-runner:latest

@@ -3,7 +3,7 @@ import { withSession, json, error } from "@/lib/api";
 import { appendAudit, getTenant } from "@/lib/control";
 import { activeRunnerJob, createRunnerJob } from "@/lib/jobs";
 import { env } from "@/lib/env";
-import { secondsToTtl } from "@/lib/util";
+import { hostSuffixOf, secondsToTtl } from "@/lib/util";
 import type { RedeployRequest } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -66,6 +66,7 @@ export const POST = withSession(async (req: NextRequest, { actor, params }) => {
       ttl,
       hostSuffix: hostSuffixOf(tenant.url) ?? env.hostSuffix,
       redeploy: true,
+      serviceImageTags: tenant.serviceImages,
     });
   } catch (err) {
     await appendAudit({
@@ -86,17 +87,3 @@ export const POST = withSession(async (req: NextRequest, { actor, params }) => {
 
   return json({ ok: true, job: jobName, branch: tenant.branch, imageTag, ttl });
 });
-
-// The tenant's own host, not the current default: the perpetual tenant lives on
-// a different suffix, and a redeploy that changed it would move the URL out
-// from under whoever is using it.
-function hostSuffixOf(url?: string): string | undefined {
-  if (!url) return undefined;
-  try {
-    const host = new URL(url).hostname;
-    const dot = host.indexOf(".");
-    return dot === -1 ? undefined : host.slice(dot + 1);
-  } catch {
-    return undefined;
-  }
-}

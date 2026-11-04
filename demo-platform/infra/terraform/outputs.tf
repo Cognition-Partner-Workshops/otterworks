@@ -34,3 +34,8 @@ output "dashboard_passcode_secret_arn" {
 output "github_actions_role_arn" {
   value = var.enable_github_actions_role ? aws_iam_role.github_actions[0].arn : null
 }
+
+# Set this as the AWS_BRANCH_ROLE_ARN repository secret (workshop-*/demo-* builds).
+output "github_actions_branch_role_arn" {
+  value = var.enable_github_actions_role ? aws_iam_role.github_actions_branch[0].arn : null
+}

@@ -57,3 +57,17 @@ export function secondsToTtl(seconds: number): string {
 export function randomIdSuffix(): string {
   return Math.random().toString(36).slice(2, 6);
 }
+
+// The tenant's own host suffix, not the current default: the perpetual tenant
+// lives on a different suffix, and a redeploy that changed it would move the
+// URL out from under whoever is using it.
+export function hostSuffixOf(url?: string): string | undefined {
+  if (!url) return undefined;
+  try {
+    const host = new URL(url).hostname;
+    const dot = host.indexOf(".");
+    return dot === -1 ? undefined : host.slice(dot + 1);
+  } catch {
+    return undefined;
+  }
+}

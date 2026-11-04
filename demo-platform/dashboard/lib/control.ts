@@ -48,6 +48,7 @@ interface TenantItem {
   note?: string;
   persistent?: boolean;
   pinned?: boolean;
+  service_images?: Record<string, string>;
 }
 
 let _doc: DynamoDBDocumentClient | null = null;
@@ -86,6 +87,7 @@ function itemToTenant(item: TenantItem): Tenant {
     note: item.note,
     persistent: item.persistent === true,
     pinned: item.pinned === true,
+    serviceImages: item.service_images,
   };
 }
 
@@ -131,6 +133,7 @@ export interface CheckoutInput {
   hostSuffix: string;
   lockTtlSeconds?: number;
   persistent?: boolean;
+  serviceImages?: Record<string, string>;
 }
 
 /**
@@ -182,6 +185,9 @@ export async function checkout(input: CheckoutInput): Promise<Tenant> {
     expires_at: expiresAt,
     last_seen_at: now,
     persistent: input.persistent === true,
+    ...(input.serviceImages && Object.keys(input.serviceImages).length > 0
+      ? { service_images: input.serviceImages }
+      : {}),
   };
 
   // Guard against re-checking-out a LIVE tenant. The lock above only serialises
@@ -286,6 +292,26 @@ export async function setPinned(
     }),
   );
   return expiresAt;
+}
+
+/**
+ * Record the per-service builds a tenant runs. Conditional on the branch so a
+ * tenant re-checked-out from another branch in the meantime is not touched.
+ */
+export async function setServiceImages(
+  id: string,
+  branch: string,
+  images: Record<string, string>,
+): Promise<void> {
+  await doc().send(
+    new UpdateCommand({
+      TableName: table(),
+      Key: { PK: pkTenant(id), SK: SK_META },
+      UpdateExpression: "SET service_images = :m",
+      ConditionExpression: "attribute_exists(PK) AND branch = :b",
+      ExpressionAttributeValues: { ":m": images, ":b": branch },
+    }),
+  );
 }
 
 export async function extend(id: string, ttlSeconds: number): Promise<number> {

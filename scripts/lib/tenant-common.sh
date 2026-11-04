@@ -109,6 +109,36 @@ branch_tenant_id() {
   id="$(printf '%s' "$1" | sed -E 's#^(workshop|demo)[-/]##')"
   sanitize_id "${TENANT_PREFIX:+${TENANT_PREFIX}-}${id}"
 }
+
+# The tenant a CD push to a workshop-*/demo-* branch owns, or fail. Stricter
+# than branch_tenant_id: the id must be exactly what the branch spells (no
+# lowercasing, folding or truncation), so two branches never collapse onto one
+# tenant, and it may not be perpetual (PERPETUAL_TENANT_IDS, default `main`) --
+# `workshop-main` does not get t-main. Mirrors cdTenantIdForBranch() in
+# demo-platform/dashboard/lib/cd.ts, which is the check that actually counts.
+cd_branch_tenant_id() {
+  local branch="$1" rest id p
+  case "${branch}" in
+    workshop-*) rest="${branch#workshop-}" ;;
+    demo-*)     rest="${branch#demo-}" ;;
+    *) err "branch '${branch}' is not a workshop-* or demo-* branch"; return 1 ;;
+  esac
+  id="${TENANT_PREFIX:+${TENANT_PREFIX}-}${rest}"
+  if ! printf '%s' "${id}" | grep -Eq '^[a-z0-9]([a-z0-9-]{0,38}[a-z0-9])?$' ||
+     [[ "${id}" == *--* ]]; then
+    err "branch '${branch}' does not map to a tenant id unambiguously; use lowercase letters, digits and single hyphens (at most 40 characters)"
+    return 1
+  fi
+  IFS=',' read -ra p <<<"${PERPETUAL_TENANT_IDS-main}"
+  for perpetual in "${p[@]}"; do
+    perpetual="${perpetual// /}"
+    if [ -n "${perpetual}" ] && [ "${perpetual}" = "${id}" ]; then
+      err "tenant '${id}' is perpetual and cannot be deployed from branch '${branch}'"
+      return 1
+    fi
+  done
+  printf '%s' "${id}"
+}
 tenant_db_name()   { printf 'otterworks_%s' "$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/_/g; s/^_*//; s/_*$//')"; }
 
 require_bins() {

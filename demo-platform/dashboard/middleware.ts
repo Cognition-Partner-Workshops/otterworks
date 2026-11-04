@@ -64,6 +64,8 @@ function isPublicPath(pathname: string): boolean {
     pathname === "/login" ||
     pathname === "/api/auth/login" ||
     pathname === "/api/health" ||
+    // Authenticated by a GitHub OIDC token, verified in the route itself.
+    pathname === "/api/cd/deploy" ||
     pathname === "/favicon.ico"
   );
 }

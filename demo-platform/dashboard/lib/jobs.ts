@@ -16,6 +16,9 @@ export interface RunnerJobInput {
   // Deploy into a tenant that is already up (continuous delivery) rather than
   // standing a new one up. Only changes how the runner records the operation.
   redeploy?: boolean;
+  // Per-service image overrides (service -> immutable tag), passed to
+  // deploy-tenant.sh as BUG_IMAGE_TAG_<service>. Services not listed get `main`.
+  serviceImageTags?: Record<string, string>;
 }
 
 // Secret keys the runner needs at runtime. These are referenced via
@@ -59,6 +62,10 @@ function buildEnv(input: RunnerJobInput): k8s.V1EnvVar[] {
   if (input.ttl) plain.push({ name: "TTL", value: input.ttl });
   if (input.scenario) plain.push({ name: "SCENARIO", value: input.scenario });
   if (input.redeploy) plain.push({ name: "REDEPLOY", value: "true" });
+  for (const [service, tag] of Object.entries(input.serviceImageTags ?? {})) {
+    if (!/^[a-z0-9-]+$/.test(service) || !/^[A-Za-z0-9._-]{1,128}$/.test(tag)) continue;
+    plain.push({ name: `BUG_IMAGE_TAG_${service.replace(/-/g, "_")}`, value: tag });
+  }
 
   // Secrets injected by reference — values never appear in the Job manifest.
   const secretEnv: k8s.V1EnvVar[] = RUNNER_SECRET_ENV_KEYS.map((key) => ({

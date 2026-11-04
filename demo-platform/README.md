@@ -70,15 +70,30 @@ zero and wakes on check-out, so it costs a namespace and a database while nobody
 ## Continuous delivery
 A push to `workshop-<id>` or `demo-<id>` builds the services that changed and ships them to
 that branch's tenant (`.github/workflows/cd-tenant.yml`). If the branch has no tenant, CD
-creates one with a **72h TTL**; if it has one, CD redeploys in place and keeps the TTL it had,
-so shipping to an environment never extends its life. `workshop-derek` and `demo-derek` both
-map to tenant `derek`, and the dashboard rejects a redeploy from a branch other than the one
-the tenant was checked out from, so the two cannot quietly overwrite each other.
+creates one with a **72h TTL**; if it has one, CD redeploys in place and pushes its expiry back
+out to 72h (never shortening it). The tenant id is exactly what the branch spells after the
+prefix: a branch whose name would have to be lowercased, folded or truncated to make an id
+(`workshop-Alice`, `workshop-a_b`) is refused, and so is one naming a perpetual tenant
+(`workshop-main`). `workshop-derek` and `demo-derek` both name tenant `derek`; the dashboard
+rejects a deploy from a branch other than the one the tenant was checked out from, so the two
+cannot quietly overwrite each other.
 
-CD holds no cluster credentials. The workflow assumes an OIDC role
-(`infra/terraform/iam_github_actions.tf`) trusted only for `main`, `workshop-*` and `demo-*` on
-this repo, which can push to ECR and read the dashboard passcode — nothing else. Deployment
-itself is `tenant.sh sync <branch>` against the dashboard API, exactly what a human would do.
+CD holds no cluster credentials, and the two kinds of push get different identities
+(`infra/terraform/iam_github_actions.tf`), because a branch's workflow is code its author
+controls:
+
+- **`main`** assumes `otterworks-github-actions` (secret `AWS_ROLE_ARN`), trusted for this
+  repo's `refs/heads/main` only. It publishes the golden `:main` tag, reads the dashboard
+  passcode and redeploys t-main with `tenant.sh sync main`.
+- **`workshop-*` / `demo-*`** assume `otterworks-github-actions-branch` (secret
+  `AWS_BRANCH_ROLE_ARN`), which can push a new immutable `<slug>-<sha>` tag and nothing else:
+  no tag deletes or moves, no passcode. The deploy is a `POST /api/cd/deploy` with a GitHub
+  OIDC token (audience `otterworks-demo-ops`). The dashboard verifies the token, derives the
+  tenant from the signed branch name, checks ownership, and only then starts a runner Job that
+  deploys those tags (`BUG_IMAGE_TAG_<service>`), with `:main` for every other service.
+
+No `tenant-<id>` tag is read or written any more. Tags of that name left in ECR by earlier
+runs are ignored by `deploy-tenant.sh` and can be deleted.
 
 Pushes to `main` deploy the perpetual tenant, and deliberately cannot create it: CD makes
 ephemeral environments only, so a missing `t-main` is an error rather than a surprise
@@ -87,17 +102,19 @@ long-lived one.
 ### Shipping from a fork
 A fork ships to the same registry and the same control plane, so it needs three things:
 
-1. Its `owner/repo` added to `github_actions_trusted_repos` (`infra/terraform/variables.tf`),
-   then `terraform apply`. OIDC subjects name the repository, so the role refuses a fork until
+1. Its `owner/repo` added to `github_actions_branch_repos` (`infra/terraform/variables.tf`),
+   then `terraform apply`, and to the dashboard's `cd.trustedRepos` Helm value as
+   `owner/repo=<TENANT_PREFIX>`. OIDC subjects name the repository, so both refuse a fork until
    it is listed. Forks are trusted for `workshop-*` and `demo-*` only: `main` is the golden app
    and the perpetual environment, which this repo owns.
-2. The same two Actions settings this repo has — the `AWS_ROLE_ARN` secret and the
-   `AWS_ACCOUNT_ID` variable. GitHub also disables Actions on new forks; turn them on.
+2. The `AWS_BRANCH_ROLE_ARN` secret and the `AWS_ACCOUNT_ID` variable. A fork never gets
+   `AWS_ROLE_ARN`. GitHub also disables Actions on new forks; turn them on.
 3. A `TENANT_PREFIX` repository **variable**, e.g. `gtm`. Without it, a `demo-derek` branch in
    either repo means tenant `derek` — the same namespace, database and hostname, redeployed
    out from under whoever is using it, with no branch mismatch for the dashboard to catch.
    With it, the fork's `demo-derek` is tenant `gtm-derek` at `t-gtm-derek.demo.otterworks.app`,
-   and its images are tagged `tenant-gtm-derek` rather than colliding on `tenant-derek`.
+   and its images are tagged `gtm-demo-derek-<sha>`. The dashboard holds the fork to that
+   prefix by its `cd.trustedRepos` entry, so it cannot deploy an upstream tenant.
 
 What a fork changes is service **images**. The runner deploys from the tree in its own image
 and checks out the tenant's branch from this repo, which a fork's branch is not in, so charts

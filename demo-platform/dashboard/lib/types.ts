@@ -45,6 +45,8 @@ export interface Tenant {
   // Pinned tenant: never expires and is not checkin-able until unpinned, but
   // unlike a perpetual one it still idles to zero.
   pinned?: boolean;
+  // Per-service builds a CD branch has shipped (service -> immutable tag).
+  serviceImages?: Record<string, string>;
   live?: TenantLiveState;
 }
 
