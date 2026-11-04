@@ -277,6 +277,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       MEILISEARCH_URL: http://meilisearch:7700
+      ANALYTICS_SERVICE_URL: http://analytics-service:8088
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_SERVICE_NAME: search-service
       SQS_ENABLED: 'true'

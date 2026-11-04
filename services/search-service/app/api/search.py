@@ -71,6 +71,9 @@ def search_documents() -> tuple:
             page_size=page_size,
         )
         SEARCH_COUNT.inc()
+        current_app.config["ANALYTICS_EMITTER"].emit_search_performed(
+            owner_id or "", results
+        )
         logger.info("search_executed", query=query, result_count=results.total)
         return jsonify(results.to_dict()), 200
     except ValueError as e:
@@ -150,6 +153,9 @@ def advanced_search() -> tuple:
             page_size=page_size,
         )
         SEARCH_COUNT.inc()
+        current_app.config["ANALYTICS_EMITTER"].emit_search_performed(
+            owner_id or "", results
+        )
         logger.info("advanced_search_executed", query=query, result_count=results.total)
         return jsonify(results.to_dict()), 200
     except Exception:
