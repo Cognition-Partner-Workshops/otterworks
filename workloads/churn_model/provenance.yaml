@@ -244,7 +244,7 @@ usage:
 
 # Retained-data verification only: no training, scoring, evaluation or Cortex invocation.
 # The model_fixes and original live runs above are unchanged. Both later model fixes
-# remain unit_tests_only; all 215 local tests passed, including the history-only
+# remain unit_tests_only; all 223 local tests passed, including the history-only
 # account and creation-priority regressions. No live execution of either fix.
 # COUNT(*) / HASH_AGG(*) were unchanged before/after for WEEKLY_CHURN_SCORES,
 # CHURN_MODEL_RUNS, CHURN_MODEL_EVALUATION, CHURN_MODEL_SCORES, CHURN_LEAKAGE_CHECK,
@@ -257,10 +257,16 @@ usage:
 # were left untouched; fixture repair belongs to the dashboard refresh work.
 # Both dashboard and churn manifests/landing retain 2000 customers/50000 documents.
 # No Snowflake objects or secrets created. JWT key stayed in process memory.
+# Review corrections: retained-score completeness uses each evaluated run's source
+# export and scoring cohort; the legacy NULL STARTED_AT falls back to the UTC time
+# in its attributed run ID. SELECT-only regressions reject empty, missing and
+# wrong-account predictions, and failed/new-export freshness states for all gates.
+# First-time endpoint role creation ordering is corrected with mocked unit tests
+# only; provisioning was not executed against Snowflake.
 data_quality:
   suite: tag:dq_churn_model
-  ran_at: "2026-11-05T10:19:05.692134+00:00"
-  commit: 530d3a709732bef613c73e11bbcdd3c479cfcd45
+  ran_at: "2026-11-05T10:28:29.645034+00:00"
+  commit: 1b3d12b8416d744315f4e5e320971da04227f4e6
   refresh_task_run:
     query_id: 01c834a2-030c-d4ad-0035-065b000747ea
     graph_run_group_id: f46d0390-0749-4e7b-9973-9d62f39eaaa0
@@ -287,12 +293,12 @@ data_quality:
       check: freshness
       status: pass
       failing_rows: 0
-      cause: Successful 10:10 UTC hourly refresh is under two hours old; latest export maps to output week 2026-10-26.
+      cause: Successful 10:10 UTC hourly refresh is the latest completed attempt, under two hours old and after the latest export; output includes week 2026-10-26.
     - name: churn_model_row_count
       check: row_count
       status: pass
       failing_rows: 0
-      cause: Manifest and landed source history each derive 2000 eligible accounts; output has 2000 rows for the latest completed week. Fixture counts remain 2000 customers and 50000 documents.
+      cause: Manifest and landed source history each derive 2000 eligible weekly accounts; output has 2000 rows. All 1999 retained predictions match the evaluated run's scoring cohort and date. Fixture counts remain 2000 customers and 50000 documents.
     - name: churn_model_uniqueness
       check: uniqueness
       status: pass
