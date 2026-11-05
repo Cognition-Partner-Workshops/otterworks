@@ -1,0 +1,10 @@
+{
+  "trigger_type": "github",
+  "repository": "Cognition-Partner-Workshops/otterworks",
+  "event": "issues",
+  "action": "labeled",
+  "label": "devin",
+  "session_settings": { "devin_mode": "fusion", "max_acu_limit": 10 },
+  "invocation_limit": 1,
+  "prompt": "Read the labeled issue and its acceptance checks. Work from demo-bank, validate the change, and open a pull request against demo-bank that links the issue. Leave the pull request open."
+}
