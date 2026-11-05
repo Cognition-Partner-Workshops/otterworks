@@ -1,10 +1,16 @@
 FROM python:3.12-slim
 
+ARG SF_COMMIT
+RUN python -c "import re; assert re.fullmatch('[0-9a-fA-F]{40}', '${SF_COMMIT}'), 'SF_COMMIT must be a real 40-hex git revision'"
+
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
+COPY --from=attribution sf_attribution.py /app/attribution/sf_attribution.py
+ENV PYTHONPATH=/app/attribution
+ENV SF_COMMIT=${SF_COMMIT}
 
 RUN useradd -r -u 1001 appuser
 USER appuser

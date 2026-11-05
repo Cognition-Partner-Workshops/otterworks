@@ -1,0 +1,243 @@
+# Live provenance for the churn model. Validate: python workloads/attribution/validate_provenance.py
+# Usage values Snowflake has not reported are `pending`; Cortex credits are kept apart from compute.
+schema_version: 1
+workload: churn_model
+run_token: SFEXT_20261105A
+expires: "2026-11-19"
+application:
+  name: Devin_Demo
+  registration: unregistered
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  base_branch: demo-stack-snowflake
+  base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
+  commit: "63f36c8a036a80027ef001dfa20f9e684c6e89a0"
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2534
+  session_url: https://partner-workshops.devinenterprise.com/sessions/22bbda4bc8b843b79118a3ea20cf7854
+# Branch: devin/1793864541-churn-model; inherited pipeline/dashboard/Search API from PR #2508.
+# PR state: open; base: demo-stack-snowflake (verified 2026-11-05T09:23:40Z).
+# source.commit is the current code head before this provenance-only update, not an execution commit.
+# model_fixes:
+#   - commit: 2c09d464f808fc98ddb0cb292a8c89c420939433
+#     change: include history-only accounts
+#     verification: unit_tests_only; not executed live
+#   - commit: 63f36c8a036a80027ef001dfa20f9e684c6e89a0
+#     change: creation-time precedence (current users, auth creation, first history capture)
+#     verification: unit_tests_only; not executed live
+# Run evidence is kept in comments because provenance schema_version 1 has no run extension.
+# Both invocations used application Devin_Demo (unregistered), phase dev, and this session_url.
+# runs:
+#   - run_id: SFEXT_20261105A-churn_model-dev-20261105T080719Z-c65e9ae0
+#     commit: 86a7f7c9601dabd4350bd0014a29d6dd0bf3d095
+#     step: full
+#     status: failed_at_document_labels
+#     evaluation_run_id: SFEXT_20261105A-churn_model-dev-20261105T080719Z-c65e9ae0
+#     gate_passed: false
+#     leakage_passed: true
+#     train_positives: null
+#     train_negatives: null
+#     started_at: null
+#     finished_at: "2026-11-05 08:44:08.064303"
+#     evaluation:
+#       table: DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_MODEL_EVALUATION
+#       recall_gate: 0.50
+#       passed: false
+#       n: 2000
+#       positives: 0
+#       negatives: 2000
+#       tp: 0
+#       fp: 0
+#       fn: 0
+#       tn: 2000
+#       recall: null
+#       precision: null
+#       auc: null
+#       cause: >-
+#         holdout has 0 churn events: source state history has 1 auth / 1 admin
+#         effective timestamps (2026-11-01 00:00:00 to 2026-11-01 00:00:00);
+#         0 deletion rows; first-capture admin rows are not suspension transitions
+#     leakage:
+#       passed: true
+#       checks: 11
+#       rows_checked_per_feature: 72000
+#       violations: 0
+#     scores: {scored: 1999, flagged: 0}
+#     reasons_status: unavailable_no_support_notes_source
+#     failed_legacy_query_id: 01c83444-030c-d1ca-0035-065b000a77fa
+#     error: >-
+#       SNOWFLAKE.CORTEX.CLASSIFY_TEXT is not available on this account.
+#       New accounts are blocked from using legacy SNOWFLAKE.CORTEX functions.
+#       Please migrate to AI Functions and use AI_CLASSIFY instead.
+#     training_status: null
+#     model_kind: null
+#     split_rule: null
+#     threshold: null
+#     threshold_justification: >-
+#       Training status, model kind, split rule and threshold were not persisted
+#       in evaluation/leakage rows; not inferred from holdout metrics.
+#     usage:
+#       tagged_query_count: 2061
+#       warehouse_compute:
+#         credits: pending
+#         query_acceleration_credits: pending
+#       cortex:
+#         credits: pending
+#         tokens: pending
+#   - run_id: SFEXT_20261105A-churn_model-dev-20261105T084340Z-4d584361
+#     commit: 28e3da563c7c7a8eefd697f2b1876b238d2f22e9
+#     step: documents_only
+#     evaluation_run_id: SFEXT_20261105A-churn_model-dev-20261105T080719Z-c65e9ae0
+#     status: completed
+#     training_status: not_requested
+#     model_kind: null
+#     split_rule: null
+#     threshold: null
+#     threshold_justification: null
+#     gate_passed: null
+#     leakage_passed: null
+#     train_positives: null
+#     train_negatives: null
+#     error_message: null
+#     error_query_id: null
+#     started_at: "2026-11-05 08:44:07.327101"
+#     finished_at: "2026-11-05 08:44:11.020394"
+#     reasons_status: unavailable_no_support_notes_source
+#     document_labels:
+#       table: DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_DOCUMENT_LABELS
+#       rows: 10
+#       input_kind: title_only
+#       model: AI_CLASSIFY
+#       cortex_query_id: 01c8344c-030c-dbbd-0035-065b000a2056
+#     usage:
+#       tagged_query_count: 49
+#       warehouse_compute:
+#         credits: pending
+#         query_acceleration_credits: pending
+#       cortex:
+#         credits: pending
+#         tokens: pending
+# Evidence: APP.CHURN_MODEL_RUNS, APP.CHURN_LEAKAGE_CHECK, and the tables above.
+# Usage refreshed read-only at 2026-11-05T09:23:40Z; counts include all tagged history,
+# including verification queries, not just model steps. Credit/token views still lag.
+# RAW.SUPPORT_NOTES and APP.CHURN_RISK_REASONS both have 0 rows; no support-notes source exists.
+# DESC USER confirmed RSA_PUBLIC_KEY unset (null) after the recovery invocation.
+# Evaluation/leakage/scores COUNT(*) and HASH_AGG(*) were identical before/after recovery.
+# object_inventory:
+#   run_token: SFEXT_20261105A
+#   expires: "2026-11-19"
+#   verified_at: "2026-11-05T09:23:40Z"
+#   deployed:
+#     database: DB_CHURN_MODEL_SFEXT_20261105A
+#     warehouse: WH_CHURN_MODEL
+#     role: SFEXT_20261105A_CHURN_MODEL_ENDPOINT
+#     user: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+#     rsa_public_key: unset
+#     rsa_public_key_2: unset
+#     tables_created_by: workloads/churn_model/migrations/V1.0.3__churn_model.sql
+#     tables:
+#       - DB_CHURN_MODEL_SFEXT_20261105A.RAW.SUPPORT_NOTES
+#       - DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_MODEL_RUNS
+#       - DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_MODEL_EVALUATION
+#       - DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_MODEL_SCORES
+#       - DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_RISK_REASONS
+#       - DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_LEAKAGE_CHECK
+#       - DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_DOCUMENT_LABELS
+#     runs_altered_by: workloads/churn_model/migrations/V1.0.4__run_finalisation.sql
+#     runs_columns_verified: [STEP, STATUS, ERROR_MESSAGE, ERROR_QUERY_ID, EVALUATION_RUN_ID]
+#     inherited_runtime:
+#       task: DB_CHURN_MODEL_SFEXT_20261105A.APP.REFRESH_CHURN_MODEL
+#       state: started
+#       schedule: USING CRON 10 * * * * UTC
+#       calls: DB_CHURN_MODEL_SFEXT_20261105A.APP.REFRESH_WEEKLY_CHURN_SCORES()
+#       sql_endpoint: DB_CHURN_MODEL_SFEXT_20261105A.APP.WEEKLY_CHURN_SCORES
+#       purpose: spec.yaml rules_v1 pipeline; not scheduled ML training/evaluation
+#   planned_not_deployed:
+#     streamlit: DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_MODEL_APP
+#     conditional_native_model: DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_<run_id_hash>
+#     native_model_note: SHOW SNOWFLAKE.ML.CLASSIFICATION returned no objects; fallback not deployed
+#   session_only_not_persistently_deployed:
+#     tables: [CHURN_FIT, CHURN_PREDICT, CHURN_LABEL_INPUT]
+#     procedures: Snowpark temporary procedures registered by run.py (no persistent ML endpoint)
+#   evidence_query_ids:
+#     tables: 01c83473-030c-d212-0035-065b000a107a
+#     database: 01c83473-030c-dbc6-0035-065b000a4086
+#     warehouse: 01c83473-030c-d3d5-0035-065b000aaf7e
+#     role: 01c83473-030c-dbbf-0035-065b000a0072
+#     user: 01c83473-030c-d3d5-0035-065b000aaf82
+#     rsa_properties: 01c83473-030c-d20e-0035-065b0009f076
+#     task: 01c83473-030c-dbc6-0035-065b000a4092
+#     streamlits: 01c83473-030c-d214-0035-065b0009a7f2
+#     procedures: 01c83473-030c-dbca-0035-065b000a3092
+#     native_models: 01c83473-030c-dbca-0035-065b000a3096
+#     runs_columns: 01c83473-030c-d2f7-0035-065b0009695e
+endpoints:
+  - csid: cs_churn_model_account_score
+    service_user: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+    auth: key_pair
+query_tag:
+  keys: [csid, workload, phase, commit, run_id]
+  dev_keys: [session_url]
+  task_phase: runtime
+warehouse:
+  name: WH_CHURN_MODEL
+  size: XSMALL
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: RM_SFEXT_20261105A_20261119_CHURN_MODEL
+    frequency: MONTHLY
+    credit_quota: 10
+objects:
+  - type: database
+    name: DB_CHURN_MODEL_SFEXT_20261105A
+    devin_csid: cs_churn_model_account_score
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
+    state: provisioned
+  - type: schema
+    name: DB_CHURN_MODEL_SFEXT_20261105A.APP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
+    state: provisioned
+  - type: schema
+    name: DB_CHURN_MODEL_SFEXT_20261105A.RAW
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
+    state: provisioned
+  - type: warehouse
+    name: WH_CHURN_MODEL
+    devin_csid: cs_churn_model_account_score
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
+    state: provisioned
+  - type: resource_monitor
+    name: RM_SFEXT_20261105A_20261119_CHURN_MODEL
+    comment: 'Attachment applied by ACCOUNTADMIN outside schemachange; query_id=01c83320-030c-d212-0035-065b00095772'
+    state: provisioned
+  - type: user
+    name: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
+    state: provisioned
+  - type: task
+    name: DB_CHURN_MODEL_SFEXT_20261105A.APP.REFRESH_CHURN_MODEL
+    devin_csid: cs_churn_model_account_score
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
+    state: provisioned
+  - type: streamlit
+    name: DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_MODEL_APP
+    devin_csid: cs_churn_model_account_score
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
+    state: planned
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  dev:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  runtime:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  cortex:
+    dev:
+      cortex_credits: pending
+      cortex_tokens: pending
+    runtime:
+      cortex_credits: pending
+      cortex_tokens: pending
