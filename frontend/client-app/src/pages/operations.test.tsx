@@ -29,16 +29,20 @@ describe("Operations Console", () => {
     localStorage.setItem("ow_admin_chaos_state", "invalid json");
     renderPage();
     expect(await screen.findByText("No incidents reported.")).toBeInTheDocument();
-    for (const scenario of ["suggest_500", "upload_s3_error", "consumer_strict_schema", "slow_queries"]) {
+    for (const scenario of ["Break Search Autocomplete", "Break File Uploads", "Break Notification Queue", "Inject Query Latency"]) {
       expect(screen.getByRole("button", { name: scenario })).toBeInTheDocument();
     }
-    fireEvent.click(screen.getByRole("button", { name: "suggest_500" }));
+    expect(screen.getByRole("heading", { name: "Search Service" })).toBeInTheDocument();
+    expect(screen.getByText(/Autocomplete suggest endpoint crashes/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Break Search Autocomplete" }));
     await waitFor(() => expect(apiClient.post).toHaveBeenCalledWith("/admin/chaos", { service: "search-service", scenario: "suggest_500" }));
-    await waitFor(() => expect(screen.getByRole("button", { name: "suggest_500" })).toHaveAttribute("aria-pressed", "true"));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Break Search Autocomplete" })).toHaveAttribute("aria-pressed", "true"));
+    expect(screen.getByText("Chaos active — Grafana alert fires in ~30s")).toBeInTheDocument();
     expect(JSON.parse(localStorage.getItem("ow_admin_chaos_state")!)).toEqual({ "search-service": true });
     fireEvent.click(screen.getByRole("button", { name: "Reset all" }));
     await waitFor(() => expect(apiClient.delete).toHaveBeenCalledWith("/admin/chaos"));
-    await waitFor(() => expect(screen.getByRole("button", { name: "suggest_500" })).toHaveAttribute("aria-pressed", "false"));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Break Search Autocomplete" })).toHaveAttribute("aria-pressed", "false"));
+    expect(screen.queryByText("Chaos active — Grafana alert fires in ~30s")).not.toBeInTheDocument();
   });
 
   it("shows request errors without marking failed chaos active", async () => {
@@ -46,9 +50,9 @@ describe("Operations Console", () => {
     vi.mocked(apiClient.post).mockRejectedValue(new Error("Forbidden"));
     renderPage();
     expect(await screen.findByText("Failed to load incidents.")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "upload_s3_error" }));
+    fireEvent.click(screen.getByRole("button", { name: "Break File Uploads" }));
     expect(await screen.findByText(/Operation failed/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "upload_s3_error" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Break File Uploads" })).toHaveAttribute("aria-pressed", "false");
   });
 
   it("shows session details and launches sessions for active incidents without one", async () => {
@@ -80,6 +84,6 @@ describe("Operations Console", () => {
     useAuthStore.setState({ isAuthenticated: false });
     renderPage();
     expect(apiClient.get).not.toHaveBeenCalled();
-    expect(screen.queryByRole("button", { name: "suggest_500" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Break Search Autocomplete" })).not.toBeInTheDocument();
   });
 });

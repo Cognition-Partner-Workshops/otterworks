@@ -7,10 +7,10 @@ import { useAuthStore } from "@/stores/auth-store";
 
 const chaosStateKey = "ow_admin_chaos_state";
 const scenarios = [
-  { service: "search-service", scenario: "suggest_500" },
-  { service: "file-service", scenario: "upload_s3_error" },
-  { service: "notification-service", scenario: "consumer_strict_schema" },
-  { service: "document-service", scenario: "slow_queries" },
+  { service: "search-service", scenario: "suggest_500", heading: "Search Service", label: "Break Search Autocomplete", description: "Autocomplete suggest endpoint crashes with KeyError on ranking score enrichment → 500s", alertDelay: "~30s" },
+  { service: "file-service", scenario: "upload_s3_error", heading: "File Service", label: "Break File Uploads", description: "Uploads routed to nonexistent S3 bucket → AWS NoSuchBucket errors → 500s", alertDelay: "~30s" },
+  { service: "notification-service", scenario: "consumer_strict_schema", heading: "Notification Service", label: "Break Notification Queue", description: "Strict JSON schema rejects legacy message timestamps → deserialization loop → queue backlog grows", alertDelay: "~2m" },
+  { service: "document-service", scenario: "slow_queries", heading: "Document Service", label: "Inject Query Latency", description: "Injected 3-5s latency before every database query → P95 latency spike → timeout cascade", alertDelay: "~1m" },
 ];
 const services = ["api-gateway", "auth-service", "file-service", "document-service", "collab-service", "notification-service", "search-service", "analytics-service", "admin-service", "audit-service", "report-service"];
 const buttonClass = "rounded bg-[#012169] px-4 py-2 text-sm font-medium text-white hover:bg-[#003b80] disabled:opacity-50";
@@ -102,14 +102,15 @@ function OperationsContent() {
         <h2 id="chaos-heading" className="text-lg font-semibold text-[#012169]">Chaos controls</h2>
         <p className="mt-1 text-sm text-gray-600">Inject failures to exercise incident response. Flags auto-reset after 10 minutes; indicators reflect this browser&apos;s last actions.</p>
         <div className="my-4 grid gap-4 sm:grid-cols-2">
-          {scenarios.map(({ service, scenario }) => (
+          {scenarios.map(({ service, scenario, heading, label, description, alertDelay }) => (
             <div key={service} className="rounded border border-gray-200 p-4">
-              <h3 className="font-medium text-gray-900">{service}</h3>
+              <h3 className="font-medium text-gray-900">{heading}</h3>
+              <p className="mt-1 text-sm text-gray-600">{description}</p>
               <button className={`${buttonClass} mt-3`} disabled={busy} aria-pressed={!!chaosState[service]} onClick={() => void perform(async () => {
                 await apiClient.post("/admin/chaos", { service, scenario });
                 saveChaosState({ ...chaosState, [service]: true });
-              })}>{scenario}</button>
-              {chaosState[service] && <p className="mt-2 text-sm font-semibold text-[#012169]">Active (last triggered here)</p>}
+              })}>{label}</button>
+              {chaosState[service] && <p className="mt-2 text-sm font-semibold text-[#012169]">Chaos active — Grafana alert fires in {alertDelay}</p>}
             </div>
           ))}
         </div>

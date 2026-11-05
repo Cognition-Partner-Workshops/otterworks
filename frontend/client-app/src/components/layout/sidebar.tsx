@@ -7,6 +7,7 @@ import {
   Search,
   Bell,
   Settings,
+  Activity,
   Share2,
   Trash2,
   Star,
@@ -55,7 +56,7 @@ const navGroups: NavGroup[] = [
   {
     label: "System",
     items: [
-      { href: "/operations", label: "Operations Console", icon: Settings },
+      { href: "/operations", label: "Operations Console", icon: Activity },
       { href: "/trash", label: "Trash", icon: Trash2 },
       { href: "/settings", label: "Settings", icon: Settings },
     ],
