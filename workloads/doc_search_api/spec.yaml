@@ -1,0 +1,70 @@
+spec_version: 1
+workload: doc_search_api
+summary: Top 10 searched terms and top 10 surfaced documents per account over a trailing 28-day window.
+cadence: daily
+grain: [window_end_date, account_id, item_type, rank]
+
+inputs:
+  - source: analytics-service Postgres analytics_events
+    landing: DB_DOC_SEARCH_API_SFEXT_20261105A.RAW.ANALYTICS_ANALYTICS_EVENTS
+    columns: [event_id, event_type, user_id, metadata, occurred_at]
+    filter: "event_type = 'search.performed'"
+    contract: >-
+      metadata is JSON text with every value a string, matching analytics TrackEventRequest:
+      {"query": string, "result_count": decimal string (e.g. "0"), "document_hit_ids": comma-separated
+      document ids string}. result_count is parsed to an integer downstream.
+      occurred_at is UTC epoch nanoseconds. search-service does not emit these events
+      today (it keeps query history in process memory only), so it must publish one per search before
+      this workload has real input.
+  - source: document-service Postgres documents
+    landing: DB_DOC_SEARCH_API_SFEXT_20261105A.RAW.DOCUMENT_DOCUMENTS
+    columns: [id, title, owner_id, is_deleted]
+
+output:
+  table: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.TOP_SEARCH_ITEMS
+  columns:
+    - {name: window_end_date, type: DATE, description: last UTC day in the window (day before the export)}
+    - {name: window_days, type: "NUMBER(3,0)", description: always 28}
+    - {name: account_id, type: VARCHAR(36), description: analytics_events.user_id of the searcher}
+    - {name: item_type, type: VARCHAR(8), description: "term | document"}
+    - {name: rank, type: "NUMBER(2,0)", description: 1-10 within (window_end_date, account_id, item_type)}
+    - {name: term, type: VARCHAR(500), description: normalized query; NULL for document rows}
+    - {name: document_id, type: VARCHAR(36), description: NULL for term rows}
+    - {name: document_title, type: VARCHAR(500), description: documents.title; NULL for term rows}
+    - {name: search_count, type: "NUMBER(10,0)", description: searches in the window that used the term / returned the document}
+    - {name: zero_result_count, type: "NUMBER(10,0)", description: term searches with result_count = 0; NULL for document rows}
+    - {name: last_searched_at, type: TIMESTAMP_NTZ, description: latest matching search, UTC}
+
+business_rule: >-
+  Count every search.performed event whose occurred_at falls on a UTC day from window_end_date - 27
+  through window_end_date. A term is the query lower-cased, trimmed, with internal whitespace
+  collapsed to one space; empty terms are dropped. Search interest in a document is the number of
+  searches whose results included it (a result appearance, not a click: no click data is recorded).
+  Deleted documents are dropped. Rank by search_count desc, then last_searched_at desc, then term or
+  document_id asc, and keep ranks 1-10.
+
+examples:
+  fixture: >-
+    Account 00000000-0000-4000-8000-000000000101 from workloads/pipeline/seed.sql plus these events
+    (document 1 = 03ebe472-1e21-9b1c-20c5-18a0d26cbe6f, document 4 = b48e999f-7174-4107-671b-e06d8e9abf30 which is deleted):
+  input_events:
+    - {occurred_at: "2026-10-20T10:00:00Z", query: "Quarterly Report", result_count: "2", document_hit_ids: "03ebe472-1e21-9b1c-20c5-18a0d26cbe6f,b48e999f-7174-4107-671b-e06d8e9abf30"}
+    - {occurred_at: "2026-10-25T09:00:00Z", query: "quarterly  report ", result_count: "1", document_hit_ids: "03ebe472-1e21-9b1c-20c5-18a0d26cbe6f"}
+    - {occurred_at: "2026-10-30T15:00:00Z", query: "budget", result_count: "0", document_hit_ids: ""}
+    - {occurred_at: "2026-09-01T12:00:00Z", query: "budget", result_count: "0", document_hit_ids: ""}
+  rows:
+    - {window_end_date: "2026-11-01", window_days: 28, account_id: 00000000-0000-4000-8000-000000000101, item_type: term, rank: 1, term: quarterly report, document_id: null, document_title: null, search_count: 2, zero_result_count: 0, last_searched_at: "2026-10-25 09:00:00"}
+    - {window_end_date: "2026-11-01", window_days: 28, account_id: 00000000-0000-4000-8000-000000000101, item_type: term, rank: 2, term: budget, document_id: null, document_title: null, search_count: 1, zero_result_count: 1, last_searched_at: "2026-10-30 15:00:00"}
+    - {window_end_date: "2026-11-01", window_days: 28, account_id: 00000000-0000-4000-8000-000000000101, item_type: document, rank: 1, term: null, document_id: 03ebe472-1e21-9b1c-20c5-18a0d26cbe6f, document_title: Synthetic document 1, search_count: 2, zero_result_count: null, last_searched_at: "2026-10-25 09:00:00"}
+  how_to_check: >-
+    The window is 2026-10-05..2026-11-01, so the 2026-09-01 search is out. The two quarterly report
+    queries normalize to one term. Document 4 is deleted, so it never appears. No other rows exist.
+
+endpoint:
+  csid: cs_doc_search_api_top_items
+  service_user: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+  kind: http
+  service: search-service
+  route: GET /api/v1/insights/search/accounts/{account_id}/top
+  request: {account_id: path VARCHAR(36), item_type: "optional term|document", window_end_date: optional DATE (default latest)}
+  response: rows of output.columns ordered by item_type, rank
