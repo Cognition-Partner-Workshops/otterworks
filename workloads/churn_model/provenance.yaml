@@ -1,4 +1,4 @@
-# Starting provenance for the churn model. Validate: python workloads/attribution/validate_provenance.py
+# Live provenance for the churn model. Validate: python workloads/attribution/validate_provenance.py
 # Usage values Snowflake has not reported are `pending`; Cortex credits are kept apart from compute.
 schema_version: 1
 workload: churn_model
@@ -11,9 +11,83 @@ source:
   repository: Cognition-Partner-Workshops/otterworks
   base_branch: demo-stack-snowflake
   base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
-  commit: "ba054aaf0574b39cd9aa9baf68fd51f5d4874c8e"
-  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2498
-  session_url: https://partner-workshops.devinenterprise.com/sessions/6b490330916b45c1a3532b15a809de89
+  commit: "28e3da563c7c7a8eefd697f2b1876b238d2f22e9"
+  pull_request: pending
+  session_url: https://partner-workshops.devinenterprise.com/sessions/22bbda4bc8b843b79118a3ea20cf7854
+# Branch: devin/1793864541-churn-model; inherited pipeline/dashboard/Search API from PR #2508.
+# Run evidence is kept in comments because provenance schema_version 1 has no run extension.
+# Both invocations used application Devin_Demo (unregistered), phase dev, and this session_url.
+# runs:
+#   - run_id: SFEXT_20261105A-churn_model-dev-20261105T080719Z-c65e9ae0
+#     commit: 86a7f7c9601dabd4350bd0014a29d6dd0bf3d095
+#     step: full
+#     status: failed_at_document_labels
+#     evaluation:
+#       table: DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_MODEL_EVALUATION
+#       recall_gate: 0.50
+#       passed: false
+#       n: 2000
+#       positives: 0
+#       negatives: 2000
+#       tp: 0
+#       fp: 0
+#       fn: 0
+#       tn: 2000
+#       recall: null
+#       precision: null
+#       auc: null
+#       cause: >-
+#         holdout has 0 churn events: source state history has 1 auth / 1 admin
+#         effective timestamps (2026-11-01 00:00:00 to 2026-11-01 00:00:00);
+#         0 deletion rows; first-capture admin rows are not suspension transitions
+#     leakage:
+#       passed: true
+#       rows_checked_per_feature: 72000
+#       violations: 0
+#     reasons_status: unavailable_no_support_notes_source
+#     failed_legacy_query_id: 01c83444-030c-d1ca-0035-065b000a77fa
+#     error: >-
+#       SNOWFLAKE.CORTEX.CLASSIFY_TEXT is not available on this account.
+#       New accounts are blocked from using legacy SNOWFLAKE.CORTEX functions.
+#       Please migrate to AI Functions and use AI_CLASSIFY instead.
+#     training_status: null
+#     model_kind: null
+#     split_rule: null
+#     threshold: null
+#     threshold_justification: >-
+#       Training status, model kind, split rule and threshold were not persisted
+#       in evaluation/leakage rows; not inferred from holdout metrics.
+#     usage:
+#       warehouse_compute:
+#         credits: pending
+#         query_acceleration_credits: pending
+#       cortex:
+#         credits: pending
+#         tokens: pending
+#   - run_id: SFEXT_20261105A-churn_model-dev-20261105T084340Z-4d584361
+#     commit: 28e3da563c7c7a8eefd697f2b1876b238d2f22e9
+#     step: documents_only
+#     evaluation_run_id: SFEXT_20261105A-churn_model-dev-20261105T080719Z-c65e9ae0
+#     status: completed
+#     training_status: not_requested
+#     reasons_status: unavailable_no_support_notes_source
+#     document_labels:
+#       table: DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_DOCUMENT_LABELS
+#       rows: 10
+#       input_kind: title_only
+#       model: AI_CLASSIFY
+#       cortex_query_id: 01c8344c-030c-dbbd-0035-065b000a2056
+#     usage:
+#       warehouse_compute:
+#         credits: pending
+#         query_acceleration_credits: pending
+#       cortex:
+#         credits: pending
+#         tokens: pending
+# Evidence: APP.CHURN_MODEL_RUNS, APP.CHURN_LEAKAGE_CHECK, and the tables above.
+# RAW.SUPPORT_NOTES and APP.CHURN_RISK_REASONS both have 0 rows; no support-notes source exists.
+# DESC USER confirmed RSA_PUBLIC_KEY unset (null) after the recovery invocation.
+# Evaluation/leakage/scores COUNT(*) and HASH_AGG(*) were identical before/after recovery.
 endpoints:
   - csid: cs_churn_model_account_score
     service_user: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
@@ -56,7 +130,7 @@ objects:
   - type: user
     name: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
-    state: planned
+    state: provisioned
   - type: task
     name: DB_CHURN_MODEL_SFEXT_20261105A.APP.REFRESH_CHURN_MODEL
     devin_csid: cs_churn_model_account_score
