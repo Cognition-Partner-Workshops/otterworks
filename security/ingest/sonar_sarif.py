@@ -25,6 +25,8 @@ def api(host, token, endpoint, **params):
     req = urllib.request.Request(f"{host}/api/{endpoint}?{urllib.parse.urlencode(params)}",
                                  headers={"Authorization": f"Basic {auth}"})
     try:
+        # Scheme is restricted to HTTP(S) above.
+        # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
         with urllib.request.urlopen(req, timeout=60) as response:
             return json.load(response)
     except urllib.error.HTTPError as error:
