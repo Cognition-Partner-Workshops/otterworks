@@ -1,0 +1,202 @@
+# promtool unit tests for observability/prometheus/kyc_upload_slo.yml.
+#
+#   promtool test rules observability/prometheus/tests/kyc_upload_slo_test.yml
+#
+# incident/tests/test_kyc_upload_rules.py runs this with promtool from PATH or
+# from the Prometheus image. Every series is POST /api/v1/documents/ on
+# document-service, scraped every 15s at one upload per second; the latency of
+# each scenario is fixed by which histogram bucket the uploads land in, so the
+# p99 is exact (bucket lower bound + 0.99 * bucket width).
+
+rule_files:
+  - ../kyc_upload_slo.yml
+
+evaluation_interval: 15s
+
+tests:
+  # ---- every upload takes 2-4 s: p99 = 3.98 s, warning then page -------------
+  - interval: 15s
+    name: slow uploads page after 10 minutes and warn after 15
+    input_series:
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="2.0"}'
+        values: "0+0x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="4.0"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="+Inf"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_count{job="document-service",handler="/api/v1/documents/",method="POST"}'
+        values: "0+15x100"
+    promql_expr_test:
+      - expr: job:kyc_upload_duration_seconds:p99
+        eval_time: 5m
+        exp_samples:
+          - labels: 'job:kyc_upload_duration_seconds:p99{job="document-service"}'
+            value: 3.98
+      # Nothing meets the 2 s objective over the SLO window.
+      - expr: job:kyc_upload_within_2s:ratio_rate30d
+        eval_time: 5m
+        exp_samples:
+          - labels: 'job:kyc_upload_within_2s:ratio_rate30d{job="document-service"}'
+            value: 0
+    alert_rule_test:
+      # Above the threshold since the first evaluation but inside the `for` window.
+      - alertname: KycUploadLatencyP99High
+        eval_time: 9m
+        exp_alerts: []
+      - alertname: KycUploadLatencyP99High
+        eval_time: 12m
+        exp_alerts:
+          - exp_labels:
+              job: document-service
+              severity: critical
+              team: platform
+              service: document-service
+              slo: kyc-upload-latency
+            exp_annotations:
+              summary: "KYC upload p99 latency is 3.98s (objective 2s)"
+              description: >-
+                POST /api/v1/documents/ p99 has been above 2s for 10 minutes. The onboarding
+                desk is watching an upload spinner and customers leave without an account
+                opened. Check first whether the storage backend or the client is slow
+                (runbook).
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/kyc-upload-latency.md"
+              dashboard_url: "http://localhost:3001/d/otterworks-kyc-upload-latency"
+              traces_url: "http://localhost:16686/search?service=document-service&operation=POST%20%2Fapi%2Fv1%2Fdocuments%2F&minDuration=2s"
+      - alertname: KycUploadLatencyP99Elevated
+        eval_time: 14m
+        exp_alerts: []
+      - alertname: KycUploadLatencyP99Elevated
+        eval_time: 17m
+        exp_alerts:
+          - exp_labels:
+              job: document-service
+              severity: warning
+              team: platform
+              service: document-service
+              slo: kyc-upload-latency
+            exp_annotations:
+              summary: "KYC upload p99 latency is 3.98s (warning at 1.5s, objective 2s)"
+              description: >-
+                POST /api/v1/documents/ p99 has been above 1.5s for 15 minutes. Uploads
+                still meet the 2s objective but are trending towards the page.
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/kyc-upload-latency.md"
+              dashboard_url: "http://localhost:3001/d/otterworks-kyc-upload-latency"
+
+  # ---- every upload takes 0.5-1 s: p99 = 0.995 s, nothing fires ---------------
+  - interval: 15s
+    name: fast uploads stay quiet
+    input_series:
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="0.5"}'
+        values: "0+0x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="1.0"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="2.0"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="+Inf"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_count{job="document-service",handler="/api/v1/documents/",method="POST"}'
+        values: "0+15x100"
+    promql_expr_test:
+      - expr: job:kyc_upload_duration_seconds:p99
+        eval_time: 5m
+        exp_samples:
+          - labels: 'job:kyc_upload_duration_seconds:p99{job="document-service"}'
+            value: 0.995
+      - expr: job:kyc_upload_within_2s:ratio_rate30d
+        eval_time: 5m
+        exp_samples:
+          - labels: 'job:kyc_upload_within_2s:ratio_rate30d{job="document-service"}'
+            value: 1
+    alert_rule_test:
+      - alertname: KycUploadLatencyP99High
+        eval_time: 20m
+        exp_alerts: []
+      - alertname: KycUploadLatencyP99Elevated
+        eval_time: 20m
+        exp_alerts: []
+
+  # ---- every upload takes 1.5-2 s: p99 = 1.995 s, warning only ---------------
+  - interval: 15s
+    name: uploads between the warning and the objective warn without paging
+    input_series:
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="1.5"}'
+        values: "0+0x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="2.0"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="+Inf"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_count{job="document-service",handler="/api/v1/documents/",method="POST"}'
+        values: "0+15x100"
+    alert_rule_test:
+      - alertname: KycUploadLatencyP99High
+        eval_time: 20m
+        exp_alerts: []
+      - alertname: KycUploadLatencyP99Elevated
+        eval_time: 20m
+        exp_alerts:
+          - exp_labels:
+              job: document-service
+              severity: warning
+              team: platform
+              service: document-service
+              slo: kyc-upload-latency
+            exp_annotations:
+              summary: "KYC upload p99 latency is 1.995s (warning at 1.5s, objective 2s)"
+              description: >-
+                POST /api/v1/documents/ p99 has been above 1.5s for 15 minutes. Uploads
+                still meet the 2s objective but are trending towards the page.
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/kyc-upload-latency.md"
+              dashboard_url: "http://localhost:3001/d/otterworks-kyc-upload-latency"
+
+  # ---- a 3-minute slow spell: p99 clears the 5m window before `for` elapses --
+  - interval: 15s
+    name: a slow spell shorter than the for window never pages
+    input_series:
+      # Twelve slow samples (3 minutes at 1 upload/s), then every upload is fast.
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="1.0"}'
+        values: "0+0x12 0+15x88"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="2.0"}'
+        values: "0+0x12 0+15x88"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="4.0"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="POST",le="+Inf"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_count{job="document-service",handler="/api/v1/documents/",method="POST"}'
+        values: "0+15x100"
+    promql_expr_test:
+      - expr: job:kyc_upload_duration_seconds:p99 > 2
+        eval_time: 2m
+        exp_samples:
+          - labels: 'job:kyc_upload_duration_seconds:p99{job="document-service"}'
+            value: 3.98
+      - expr: job:kyc_upload_duration_seconds:p99 > 2
+        eval_time: 10m
+        exp_samples: []
+    alert_rule_test:
+      - alertname: KycUploadLatencyP99High
+        eval_time: 12m
+        exp_alerts: []
+      - alertname: KycUploadLatencyP99High
+        eval_time: 25m
+        exp_alerts: []
+
+  # ---- other handlers and methods do not count as uploads --------------------
+  - interval: 15s
+    name: slow document reads are not KYC uploads
+    input_series:
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="GET",le="2.0"}'
+        values: "0+0x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/",method="GET",le="+Inf"}'
+        values: "0+15x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/{document_id}/share",method="POST",le="2.0"}'
+        values: "0+0x100"
+      - series: 'http_request_duration_seconds_bucket{job="document-service",handler="/api/v1/documents/{document_id}/share",method="POST",le="+Inf"}'
+        values: "0+15x100"
+    promql_expr_test:
+      - expr: job:kyc_upload_duration_seconds:p99
+        eval_time: 5m
+        exp_samples: []
+    alert_rule_test:
+      - alertname: KycUploadLatencyP99High
+        eval_time: 20m
+        exp_alerts: []

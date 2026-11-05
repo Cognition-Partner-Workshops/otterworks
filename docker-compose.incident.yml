@@ -58,6 +58,7 @@ services:
       DEVIN_WEBHOOK_URL: ${DEVIN_WEBHOOK_URL:-}
       DEVIN_WEBHOOK_SECRET: ${DEVIN_WEBHOOK_SECRET:-}
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-http://alert-sink:9095/slack}
+      PLATFORM_ONCALL_WEBHOOK_URL: ${PLATFORM_ONCALL_WEBHOOK_URL:-http://alert-sink:9095/platform-oncall}
     ports:
     - 9093:9093
     volumes:

@@ -26,6 +26,12 @@ CHART = REPO / "infrastructure/helm/document-service"
 TENANT_VALUES = REPO / "infrastructure/helm/tenant-values"
 ALERTS_SRC = REPO / "observability/prometheus/incident_alerts.yml"
 DASHBOARD_SRC = REPO / "observability/grafana/dashboards/incident-responder.json"
+KYC_RULES_SRC = REPO / "observability/prometheus/kyc_upload_slo.yml"
+KYC_DASHBOARD_SRC = REPO / "observability/grafana/dashboards/kyc-upload-latency.json"
+KYC_RESOURCES = {
+    ("PrometheusRule", "document-service-kyc-upload"),
+    ("ConfigMap", "document-service-kyc-upload-dashboard"),
+}
 
 pytestmark = pytest.mark.skipif(shutil.which("helm") is None, reason="helm not installed")
 
@@ -129,7 +135,7 @@ def test_bank_renders_exactly_like_the_incident_tenant_but_in_its_namespace():
         keep = {
             f"{k}/{n}": v
             for (k, n), v in docs.items()
-            if k in ("PrometheusRule", "ConfigMap", "Deployment")
+            if k in ("PrometheusRule", "ConfigMap", "Deployment") and (k, n) not in KYC_RESOURCES
         }
         return json.dumps(keep, sort_keys=True).replace(ns, "<ns>").replace(branch, "<branch>")
 
@@ -143,3 +149,71 @@ def test_tenants_without_an_overlay_get_no_incident_resources(branch):
     kinds = set(render(branch))
     assert ("PrometheusRule", "document-service-incident") not in kinds
     assert ("ConfigMap", "document-service-incident-dashboard") not in kinds
+    assert not kinds & KYC_RESOURCES
+
+
+# KYC upload latency SLO (issue #2501): the bank tenant alone gets the upload
+# p99 recording rule, the page / warning and the dashboard, scoped like the
+# incident resources.
+KYC_SOURCE_RULES = [
+    r for g in yaml.safe_load(KYC_RULES_SRC.read_text())["groups"] for r in g["rules"]
+]
+
+
+def test_bank_gets_the_kyc_upload_slo_rules_scoped_to_its_namespace():
+    ns = "otterworks-bank"
+    rendered = [
+        r
+        for g in render("demo-bank")[("PrometheusRule", "document-service-kyc-upload")]["spec"][
+            "groups"
+        ]
+        for r in g["rules"]
+    ]
+    assert [r.get("record") or r["alert"] for r in rendered] == [
+        r.get("record") or r["alert"] for r in KYC_SOURCE_RULES
+    ]
+    for src, r in zip(KYC_SOURCE_RULES, rendered, strict=True):
+        assert r["labels"]["namespace"] == ns
+        assert r["labels"]["branch"] == "demo-bank"
+        assert r.get("for") == src.get("for")
+        assert set(re.findall(r'namespace="([^"]+)"', r["expr"])) == {ns}
+        assert unscope(r["expr"], ns) == src["expr"], "rule expression/threshold changed"
+    alerts = {r["alert"]: r for r in rendered if "alert" in r}
+    assert alerts["KycUploadLatencyP99High"]["labels"]["severity"] == "critical"
+    assert (
+        alerts["KycUploadLatencyP99High"]["expr"]
+        == f'job:kyc_upload_duration_seconds:p99{{namespace="{ns}"}} > 2'
+    )
+    assert alerts["KycUploadLatencyP99Elevated"]["labels"]["severity"] == "warning"
+    for r in alerts.values():
+        assert r["labels"]["team"] == "platform"
+        assert r["annotations"]["runbook_url"].endswith("docs/runbooks/kyc-upload-latency.md")
+        assert (
+            r["annotations"]["dashboard_url"]
+            == "https://grafana.otterworks.app/d/kyc-otterworks-bank"
+        )
+    assert alerts["KycUploadLatencyP99High"]["annotations"]["traces_url"].startswith(
+        "https://jaeger.otterworks.app/"
+    )
+
+
+def test_bank_gets_the_kyc_upload_dashboard():
+    cm = render("demo-bank")[("ConfigMap", "document-service-kyc-upload-dashboard")]
+    d = json.loads(cm["data"]["kyc-upload-latency.json"])
+    src = json.loads(KYC_DASHBOARD_SRC.read_text())
+    assert d["uid"] == "kyc-otterworks-bank"
+    assert d["title"] == f"{src['title']} (otterworks-bank)"
+    exprs = [t["expr"] for p in d["panels"] for t in p.get("targets", []) if "expr" in t]
+    assert 'job:kyc_upload_duration_seconds:p99{namespace="otterworks-bank"}' in exprs
+    for e in exprs:
+        assert set(re.findall(r'namespace="([^"]+)"', e)) == {"otterworks-bank"}
+    latency = next(p for p in d["panels"] if p["title"].startswith("Upload latency p99"))
+    assert {s["value"] for s in latency["fieldConfig"]["defaults"]["thresholds"]["steps"]} >= {
+        1.5,
+        2,
+    }
+
+
+@pytest.mark.parametrize("branch", ["main", "demo-incident"])
+def test_other_tenants_get_no_kyc_upload_resources(branch):
+    assert not set(render(branch)) & KYC_RESOURCES

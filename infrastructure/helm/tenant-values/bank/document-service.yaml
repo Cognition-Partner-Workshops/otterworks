@@ -10,6 +10,9 @@ monitoring:
     enabled: true
   dashboard:
     enabled: true
+  # KYC upload latency SLO page (issue #2501): PrometheusRule + dashboard.
+  kycUploadSlo:
+    enabled: true
   links:
     grafana: https://grafana.otterworks.app
     jaeger: https://jaeger.otterworks.app

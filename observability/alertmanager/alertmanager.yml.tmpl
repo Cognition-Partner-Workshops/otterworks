@@ -2,10 +2,11 @@
 # URLs from the environment and writes /tmp/alertmanager.yml.
 #
 # Routing model: anything labelled `page: devin` goes to the Devin Automation
-# webhook AND to Slack. Everything else lands only in the local sink so it is
-# visible in the demo but never pages. Alerts are grouped per alertname so one
-# incident produces one page, and repeat_interval is long so a slow fix does not
-# re-page mid-demo.
+# webhook AND to Slack; `team: platform` goes to the platform on-call webhook
+# (critical) and the platform channel. Everything else lands only in the local
+# sink so it is visible in the demo but never pages. Alerts are grouped per
+# alertname so one incident produces one page, and repeat_interval is long so a
+# slow fix does not re-page mid-demo.
 #
 # The Devin page is always mirrored into the local sink (`/devin`): that copy is
 # what `make incident-simulate` prints and what the before gate checks, whether
@@ -27,6 +28,14 @@ route:
       continue: true
     - matchers: [page = devin]
       receiver: slack-oncall
+    # KYC upload SLO (observability/prometheus/kyc_upload_slo.yml): the critical
+    # alert pages the platform on-call rotation and is copied to the platform
+    # channel; the warning only reaches the channel.
+    - matchers: [team = platform, severity = critical]
+      receiver: platform-oncall
+      continue: true
+    - matchers: [team = platform]
+      receiver: platform-channel
 
 inhibit_rules:
   # Once requests are failing, the "disk nearly full" warning is noise.
@@ -66,6 +75,24 @@ receivers:
         send_resolved: true
         username: Alertmanager
         icon_emoji: ':rotating_light:'
+        title: '{{ template "otterworks.slack.title" . }}'
+        text: '{{ template "otterworks.slack.text" . }}'
+
+  # Platform on-call rotation's paging webhook (PLATFORM_ONCALL_WEBHOOK_URL;
+  # entrypoint.sh points it at the local sink when unset).
+  - name: platform-oncall
+    webhook_configs:
+      - url: '__PLATFORM_ONCALL_WEBHOOK_URL__'
+        send_resolved: true
+
+  # Platform team channel: warnings and a copy of every platform page.
+  - name: platform-channel
+    slack_configs:
+      - api_url: '__SLACK_WEBHOOK_URL__'
+        channel: '#platform'
+        send_resolved: true
+        username: Alertmanager
+        icon_emoji: ':warning:'
         title: '{{ template "otterworks.slack.title" . }}'
         text: '{{ template "otterworks.slack.text" . }}'
 

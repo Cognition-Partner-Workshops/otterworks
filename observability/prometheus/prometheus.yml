@@ -11,6 +11,7 @@ rule_files:
   - alerts.yml
   - recording_rules.yml
   - incident_alerts.yml
+  - kyc_upload_slo.yml
 
 alerting:
   alertmanagers:

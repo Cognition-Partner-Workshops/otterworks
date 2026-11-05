@@ -1,0 +1,77 @@
+# KYC document upload latency SLO for the bank tenant (demo-bank).
+#
+# Branch staff upload customer KYC documents (passport scans, proof of address)
+# through the kyc-docs flow, which stores them in document-service as
+# POST /api/v1/documents/. document-service already exports
+# http_request_duration_seconds per handler (services/document-service/app/
+# telemetry.py), so nothing new is instrumented here: the rules below record the
+# upload p99 and page on it.
+#
+# Objective: 99% of KYC document uploads finish in under 2 seconds, measured
+# over 30 days. The page fires when the 5m p99 stays above 2 s for 10 minutes;
+# the warning when it stays above 1.5 s for 15 minutes. The page goes to the
+# platform on-call rotation and the warning to the platform channel
+# (observability/alertmanager/alertmanager.yml.tmpl routes on team=platform).
+#
+# Unit tests: observability/prometheus/tests/kyc_upload_slo_test.yml
+# (run by incident/tests/test_kyc_upload_rules.py with promtool).
+
+groups:
+  - name: document-service.kyc_upload.recording
+    interval: 15s
+    rules:
+      # 5m p99 of the upload path; what the alerts and the dashboard read.
+      - record: job:kyc_upload_duration_seconds:p99
+        expr: |
+          histogram_quantile(0.99,
+            sum by (job, namespace, le) (rate(http_request_duration_seconds_bucket{
+              job="document-service", handler=~"/api/v1/documents/?", method="POST"}[5m]))
+          )
+
+      # Share of uploads under the 2 s objective over the 30-day SLO window
+      # (1.0 = every upload was fast; the objective is >= 0.99).
+      - record: job:kyc_upload_within_2s:ratio_rate30d
+        expr: |
+          sum by (job, namespace) (rate(http_request_duration_seconds_bucket{
+            job="document-service", handler=~"/api/v1/documents/?", method="POST", le="2.0"}[30d]))
+          /
+          sum by (job, namespace) (rate(http_request_duration_seconds_count{
+            job="document-service", handler=~"/api/v1/documents/?", method="POST"}[30d]))
+
+  - name: document-service.kyc_upload.alerts
+    interval: 15s
+    rules:
+      - alert: KycUploadLatencyP99High
+        expr: job:kyc_upload_duration_seconds:p99 > 2
+        for: 10m
+        labels:
+          severity: critical
+          team: platform
+          service: document-service
+          slo: kyc-upload-latency
+        annotations:
+          summary: "KYC upload p99 latency is {{ $value | humanizeDuration }} (objective 2s)"
+          description: >-
+            POST /api/v1/documents/ p99 has been above 2s for 10 minutes. The onboarding
+            desk is watching an upload spinner and customers leave without an account
+            opened. Check first whether the storage backend or the client is slow
+            (runbook).
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/kyc-upload-latency.md"
+          dashboard_url: "http://localhost:3001/d/otterworks-kyc-upload-latency"
+          traces_url: "http://localhost:16686/search?service=document-service&operation=POST%20%2Fapi%2Fv1%2Fdocuments%2F&minDuration=2s"
+
+      - alert: KycUploadLatencyP99Elevated
+        expr: job:kyc_upload_duration_seconds:p99 > 1.5
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+          service: document-service
+          slo: kyc-upload-latency
+        annotations:
+          summary: "KYC upload p99 latency is {{ $value | humanizeDuration }} (warning at 1.5s, objective 2s)"
+          description: >-
+            POST /api/v1/documents/ p99 has been above 1.5s for 15 minutes. Uploads
+            still meet the 2s objective but are trending towards the page.
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/kyc-upload-latency.md"
+          dashboard_url: "http://localhost:3001/d/otterworks-kyc-upload-latency"
