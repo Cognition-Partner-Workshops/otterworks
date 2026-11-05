@@ -627,20 +627,30 @@ fi
 # ---------- Optional drive content seed ----------
 seed_drive() {
   local seed_config="${REPO_ROOT}/testdata/generated/retail-drive/tenant-seed.conf"
+  local seed_index_config="${REPO_ROOT}/testdata/generated/retail-drive/tenant-seed-search.conf"
+  local seed_index_documents=false config
   local seed_branch="" seed_profile="" drive_email="" drive_password="" seed_scale=""
   local branch="${TENANT_BRANCH_ARG:-}" src_archive
   local key value
   [ -f "${seed_config}" ] || return 0
 
-  while IFS='=' read -r key value; do
-    case "${key}" in
-      SEED_BRANCH)  seed_branch="${value}" ;;
-      SEED_PROFILE)  seed_profile="${value}" ;;
-      DRIVE_EMAIL)   drive_email="${value}" ;;
-      DRIVE_PASSWORD) drive_password="${value}" ;;
-      SEED_SCALE)    seed_scale="${value}" ;;
-    esac
-  done < "${seed_config}"
+  for config in "${seed_config}" "${seed_index_config}"; do
+    [ -f "${config}" ] || continue
+    while IFS='=' read -r key value; do
+      case "${key}" in
+        SEED_BRANCH)  seed_branch="${value}" ;;
+        SEED_PROFILE)  seed_profile="${value}" ;;
+        DRIVE_EMAIL)   drive_email="${value}" ;;
+        DRIVE_PASSWORD) drive_password="${value}" ;;
+        SEED_SCALE)    seed_scale="${value}" ;;
+        SEED_INDEX_DOCUMENTS) seed_index_documents="${value}" ;;
+      esac
+    done < "${config}"
+  done
+  case "${seed_index_documents}" in
+    true|false) ;;
+    *) warn "SEED_INDEX_DOCUMENTS must be true or false"; return 1 ;;
+  esac
 
   if [ -z "${seed_branch}" ] || [ -z "${seed_profile}" ] || [ -z "${drive_email}" ] ||
      [ -z "${drive_password}" ] || [ -z "${seed_scale}" ]; then
@@ -730,6 +740,8 @@ spec:
               value: "${seed_profile}"
             - name: SEED_SCALE
               value: "${seed_scale}"
+            - name: SEED_INDEX_DOCUMENTS
+              value: "${seed_index_documents}"
             - name: DRIVE_EMAIL
               value: "${drive_email}"
             - name: DRIVE_PASSWORD
@@ -772,11 +784,15 @@ spec:
               PY
               python -m venv /work/venv
               /work/venv/bin/pip install --no-cache-dir -q -r requirements.txt
+              set --
+              if [ "\$SEED_INDEX_DOCUMENTS" = true ]; then
+                set -- --index-documents
+              fi
               /work/venv/bin/python generate_drive.py \
                 --gateway "\$GATEWAY_URL" \
                 --email "\$DRIVE_EMAIL" --password "\$DRIVE_PASSWORD" \
                 --profile "\$SEED_PROFILE" --scale "\$SEED_SCALE" \
-                --departments all --workers 4 --register
+                --departments all --workers 4 --register "\$@"
           volumeMounts:
             - name: src
               mountPath: /seed-src
