@@ -254,7 +254,7 @@ export async function createApp(cfg = config()) {
         for (let page = 0; page < 10; page++) {
           const data = await api(`/${t.sessionId}/messages?first=100${cursor ? `&after=${encodeURIComponent(cursor)}` : ''}`);
           for (const m of data.items || []) {
-            if (m.source === 'devin' && typeof m.message === 'string' && !t.messages.some(x => x.remoteId === m.event_id)) {
+            if (m.source === 'devin' && m.event_id && typeof m.message === 'string' && !t.messages.some(x => x.remoteId === m.event_id)) {
               t.messages.push({ id: randomUUID(), author: 'devin', text: m.message, remoteId: m.event_id, at: m.created_at * 1000, delivered: true });
             }
           }

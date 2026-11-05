@@ -10,7 +10,7 @@ import { createApp, config } from './server.mjs';
 
 const ID = 'devin-0123456789abcdef0123456789abcdef';
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session', alternateIds = false, batch = false, initialState, alertmanagerChannel } = {}) {
+async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session', alternateIds = false, missingReplyId = false, batch = false, initialState, alertmanagerChannel } = {}) {
   const calls = [];
   const upstream = http.createServer(async (req, res) => {
     let body = ''; for await (const b of req) body += b;
@@ -20,7 +20,7 @@ async function fixture(t, { route = 'session', fail = false, noSession = false, 
     if (emptyMessage && req.method === 'POST' && req.url.endsWith('/messages')) { res.writeHead(204); res.end(); return; }
     if (req.method === 'POST') { res.end(JSON.stringify(noSession ? { ok: true } : { session_id: alternateIds && calls.length % 2 === 0 ? ID.replace(/^devin-/, '') : ID })); return; }
     const after = new URL(req.url, 'http://localhost').searchParams.get('after');
-    res.end(JSON.stringify({ items: [{ event_id: 'event-1', source: 'devin', message: 'DBA, I will check the query plan.', created_at: 1 }], has_next_page: !after, end_cursor: after ? null : 'cursor-1' }));
+    res.end(JSON.stringify({ items: [...(missingReplyId ? [{ source: 'devin', message: 'Unidentified reply', created_at: 1 }] : []), { event_id: 'event-1', source: 'devin', message: 'DBA, I will check the query plan.', created_at: 1 }], has_next_page: !after, end_cursor: after ? null : 'cursor-1' }));
   });
   await new Promise(r => upstream.listen(0, '127.0.0.1', r));
   const dir = await mkdtemp(path.join(os.tmpdir(), 'collection-test-'));
@@ -305,6 +305,14 @@ test('named people reach one Fusion session, polling deduplicates replies across
   assert.ok(f.calls.some(c => c.url.includes('after=cursor-1')));
   assert.ok(!JSON.stringify(state).includes('fixture-key'));
   assert.ok(!JSON.stringify(state).includes('fixture-webhook-secret'));
+});
+
+test('API polling skips missing reply IDs without swallowing later identified replies', async t => {
+  const f = await fixture(t, { missingReplyId: true });
+  await f.post('@devin Check latency');
+  await f.app.poll(); await f.app.poll();
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.deepEqual(state.threads[0].messages.filter(m => m.author === 'devin').map(m => m.remoteId), ['event-1']);
 });
 
 test('executive voices share one persona-owned session with the configured run token', async t => {
