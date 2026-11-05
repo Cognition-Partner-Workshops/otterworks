@@ -1,5 +1,7 @@
 """Tests for the export archive reader."""
 
+import errno
+
 import pytest
 
 from app.services import export_archive
@@ -28,6 +30,69 @@ def test_missing_export_raises(archive):
         archive.read_export("absent.md")
 
 
+@pytest.mark.parametrize("absolute", [False, True])
+def test_rejects_paths_outside_archive(archive, tmp_path, absolute):
+    outside = tmp_path.parent / "private.txt"
+    outside.write_text("private data", encoding="utf-8")
+    name = str(outside) if absolute else "../private.txt"
+
+    with pytest.raises(FileNotFoundError):
+        archive.read_export(name)
+
+
+def test_rejects_sibling_with_matching_prefix(archive, tmp_path):
+    sibling = tmp_path.with_name(tmp_path.name + "-private")
+    sibling.mkdir()
+    (sibling / "private.txt").write_text("private data", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError):
+        archive.read_export(f"../{sibling.name}/private.txt")
+
+
+@pytest.mark.parametrize("directory", [False, True])
+def test_rejects_symlink_escape(archive, tmp_path, directory):
+    outside = tmp_path.with_name(tmp_path.name + "-private")
+    outside.mkdir()
+    secret = outside / "private.txt"
+    secret.write_text("private data", encoding="utf-8")
+    link = tmp_path / "link"
+    link.symlink_to(outside if directory else secret)
+
+    with pytest.raises(FileNotFoundError):
+        archive.read_export("link/private.txt" if directory else "link")
+
+
+def test_reads_symlink_within_archive(archive, tmp_path):
+    (tmp_path / "link.md").symlink_to(tmp_path / "report.md")
+
+    assert archive.read_export("link.md") == "# Report\n"
+
+
+def test_reads_export_from_symlinked_archive_root(archive, tmp_path):
+    link = tmp_path.parent / "archive-link"
+    link.symlink_to(tmp_path, target_is_directory=True)
+
+    assert ExportArchive(base_dir=str(link)).read_export("reports/q3.md") == "# Q3\n"
+
+
+@pytest.mark.parametrize("name", ["\x00", "loop"])
+def test_rejects_unresolvable_path(archive, tmp_path, name):
+    (tmp_path / "loop").symlink_to("loop")
+
+    with pytest.raises(FileNotFoundError):
+        archive.read_export(name)
+
+
+def test_rejects_symlink_loop_from_open(archive, monkeypatch):
+    def symlink_loop(*args, **kwargs):
+        raise OSError(errno.ELOOP, "Too many levels of symbolic links")
+
+    monkeypatch.setattr(export_archive, "open", symlink_loop, raising=False)
+
+    with pytest.raises(FileNotFoundError):
+        archive.read_export("report.md")
+
+
 @pytest.mark.asyncio
 async def test_export_endpoint_serves_archived_file(client, monkeypatch, tmp_path):
     (tmp_path / "report.md").write_text("# Report\n", encoding="utf-8")
@@ -37,6 +102,20 @@ async def test_export_endpoint_serves_archived_file(client, monkeypatch, tmp_pat
 
     assert resp.status_code == 200
     assert resp.text == "# Report\n"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("name", ["../private.txt", "%2e%2e%2fprivate.txt", "link", "%00"])
+async def test_export_endpoint_rejects_unsafe_path(client, monkeypatch, tmp_path, name):
+    outside = tmp_path.parent / "private.txt"
+    outside.write_text("private data", encoding="utf-8")
+    (tmp_path / "link").symlink_to(outside)
+    monkeypatch.setenv("EXPORT_ARCHIVE_DIR", str(tmp_path))
+
+    resp = await client.get(f"/api/v1/documents/exports?name={name}")
+
+    assert resp.status_code == 404
+    assert "private data" not in resp.text
 
 
 @pytest.mark.asyncio
