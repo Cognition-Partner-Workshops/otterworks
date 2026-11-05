@@ -147,6 +147,22 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.document-service == 'true'
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: otterworks
+          POSTGRES_PASSWORD: otterworks_dev
+          POSTGRES_DB: rollup_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U otterworks -d rollup_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_ROLLUP_DATABASE_URL: postgresql+asyncpg://otterworks:otterworks_dev@localhost:5432/rollup_test
     defaults:
       run:
         working-directory: services/document-service
