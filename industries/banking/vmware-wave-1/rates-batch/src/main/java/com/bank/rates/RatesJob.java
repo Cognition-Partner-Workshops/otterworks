@@ -80,13 +80,21 @@ public class RatesJob {
         }
         Map<String, Daily> rates = aggregate(lines);
         Files.createDirectories(outDir);
-        Path tmp = outDir.resolve(".rates-" + day + ".tmp");
-        try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-            w.write("pair,open,high,low,close,avg_mid,ticks\n");
-            for (Daily d : rates.values()) w.write(d.csv() + "\n");
+        Path tmp = outDir.resolve(".rates-" + day + "-" + UUID.randomUUID() + ".tmp");
+        boolean stagingCreated = false;
+        try {
+            try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+                stagingCreated = true;
+                w.write("pair,open,high,low,close,avg_mid,ticks\n");
+                for (Daily d : rates.values()) w.write(d.csv() + "\n");
+            }
+            Files.move(tmp, outDir.resolve("rates-" + day + ".csv"), StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING);
+            stagingCreated = false;
+        } finally {
+            if (stagingCreated) Files.deleteIfExists(tmp);
         }
-        Files.move(tmp, outDir.resolve("rates-" + day + ".csv"), StandardCopyOption.ATOMIC_MOVE,
-                StandardCopyOption.REPLACE_EXISTING);
         System.out.println("rates " + day + ": " + rates.size() + " pairs written to " + outDir);
     }
 }
