@@ -8,6 +8,8 @@ from unittest.mock import patch
 
 import run
 
+FX_BODY = b"Business date 2026-10-16<table><tr><th>Pair</th></tr><tr><td>GBPUSD</td><td>1.2</td></tr></table>"
+
 
 class ParityTest(unittest.TestCase):
     def test_accounts_cover_all_seed_accounts(self):
@@ -74,16 +76,46 @@ class ParityTest(unittest.TestCase):
         self.assertNotIn("password", json.dumps(rows))
 
     def test_value_diffs_only_when_hash_differs(self):
-        with patch.object(run, "fetch", return_value=(200, b"same")):
+        with patch.object(run, "fetch", return_value=(200, FX_BODY)):
             rows = run.compare_http("fx-report", "http://vm", "http://kind", None)
         self.assertTrue(run.report("fx-report", rows)["pass"])
         self.assertNotIn("sample_diff", rows[0])
         with patch.object(
-            run, "fetch", side_effect=[(200, b"before"), (200, b"after")]
+            run,
+            "fetch",
+            side_effect=[(200, FX_BODY), (200, FX_BODY.replace(b"1.2", b"1.3"))],
         ):
             rows = run.compare_http("fx-report", "http://vm", "http://kind", None)
         self.assertFalse(run.report("fx-report", rows)["pass"])
         self.assertIn("sample_diff", rows[0])
+
+    def test_fx_request_uses_seeded_date_and_requires_rates(self):
+        spec = run.APPS["fx-report"][0]
+        day = run.APPS["rates-batch"]["business_days"][-1]
+        self.assertEqual(
+            [day],
+            run.urllib.parse.parse_qs(run.urllib.parse.urlsplit(spec["path"]).query)[
+                "day"
+            ],
+        )
+        for body in (
+            b"No rates file for this day yet.",
+            b"Business date 2026-10-16<table><th>Pair</th></table>",
+        ):
+            with (
+                self.subTest(body=body),
+                patch.object(run, "fetch", return_value=(200, body)),
+            ):
+                result = run.report(
+                    "fx-report",
+                    run.compare_http("fx-report", "http://vm", "http://kind", None),
+                )
+                self.assertFalse(result["pass"])
+                self.assertEqual("1/1", result["depth"]["HTTP status"])
+                self.assertEqual(
+                    "1/1", result["depth"]["body hash per endpoint/account"]
+                )
+                self.assertEqual("0/1", result["depth"]["required response content"])
 
     def test_all_business_days_required(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -114,9 +146,11 @@ class ParityTest(unittest.TestCase):
     def test_http_transport_integration(self):
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
-                self.send_response(200 if self.path == "/fx/fx-report.cgi" else 404)
+                self.send_response(
+                    200 if self.path == "/fx/fx-report.cgi?day=2026-10-16" else 404
+                )
                 self.end_headers()
-                self.wfile.write(b"fixture report")
+                self.wfile.write(FX_BODY)
 
             def log_message(self, *args):
                 pass

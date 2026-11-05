@@ -98,7 +98,11 @@ def fetch(base, spec, fields, context):
 def compare_http(app, vm, kind, context):
     rows = []
     for key, spec, fields in requests_for(app):
-        row = {"case": key, "expected_status": spec["status"]}
+        row = {
+            "case": key,
+            "expected_status": spec["status"],
+            "content_checked": bool(spec.get("required_text")),
+        }
         bodies = {}
         for side, base in (("vm", vm), ("kind", kind)):
             try:
@@ -108,6 +112,9 @@ def compare_http(app, vm, kind, context):
                     "status": status,
                     "raw_sha256": digest(body),
                     "body_sha256": digest(bodies[side]),
+                    "content_pass": all(
+                        text.encode() in body for text in spec.get("required_text", [])
+                    ),
                 }
             except (OSError, ValueError, urllib.error.URLError):
                 row[side] = {
@@ -115,6 +122,9 @@ def compare_http(app, vm, kind, context):
                 }
         row["status_pass"] = all(
             row[s].get("status") == spec["status"] for s in ("vm", "kind")
+        )
+        row["content_pass"] = all(
+            row[s].get("content_pass", False) for s in ("vm", "kind")
         )
         row["body_checked"] = not spec.get("status_only", False)
         row["body_pass"] = (
@@ -186,8 +196,16 @@ def report(app, rows):
             "batch file hash per business day": "N/A",
         }
         passed = all(
-            r["status_pass"] and (not r["body_checked"] or r["body_pass"]) for r in rows
+            r["status_pass"]
+            and r["content_pass"]
+            and (not r["body_checked"] or r["body_pass"])
+            for r in rows
         )
+        content_checks = [r for r in rows if r["content_checked"]]
+        if content_checks:
+            depths["required response content"] = (
+                f"{sum(r['content_pass'] for r in content_checks)}/{len(content_checks)}"
+            )
     return {"app": app, "pass": passed and bool(rows), "depth": depths, "rows": rows}
 
 
