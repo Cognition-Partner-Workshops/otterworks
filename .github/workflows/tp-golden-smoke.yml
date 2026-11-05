@@ -28,8 +28,8 @@ jobs:
           python-version: '3.12'
       - uses: astral-sh/setup-uv@v5
       - run: sudo apt-get update && sudo apt-get install -y ksh
-      - run: make legacy-etl-parity-test
-      - run: make legacy-etl-parity CANDIDATE=legacy
+      - run: make -C etl/legacy-extra parity-test
+      - run: make -C etl/legacy-extra parity CANDIDATE=legacy
       - run: uv run --with ruff==0.9.10 ruff check etl/legacy-extra/parity
       - uses: actions/upload-artifact@v4
         if: always()
