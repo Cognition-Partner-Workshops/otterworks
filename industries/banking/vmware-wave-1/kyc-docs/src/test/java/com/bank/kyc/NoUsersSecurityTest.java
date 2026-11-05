@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import static org.mockito.Mockito.verifyNoInteractions;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
@@ -18,6 +20,9 @@ class NoUsersSecurityTest {
     @Autowired
     MockMvc mvc;
 
+    @MockBean
+    DocumentStore store;
+
     @Test
     void sfind22f920c8NoConfiguredUsersFailsClosedEvenWithCredentials() throws Exception {
         for (String path : new String[]{"/documents/TESTCUST0001", "/health", "/"}) {
@@ -29,5 +34,6 @@ class NoUsersSecurityTest {
                 .file(new MockMultipartFile("file", "a.pdf", "application/pdf", new byte[1]))
                 .param("kind", "passport").with(httpBasic("synthetic-uploader", "synthetic-test-password")))
                 .andExpect(status().isUnauthorized());
+        verifyNoInteractions(store);
     }
 }

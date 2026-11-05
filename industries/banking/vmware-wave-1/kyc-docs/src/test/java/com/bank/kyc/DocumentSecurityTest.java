@@ -3,15 +3,18 @@ package com.bank.kyc;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,6 +29,14 @@ class DocumentSecurityTest {
     @Autowired
     MockMvc mvc;
 
+    @SpyBean
+    DocumentStore store;
+
+    @BeforeEach
+    void resetStorageCalls() {
+        clearInvocations(store);
+    }
+
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) throws Exception {
         Path uploads = Files.createTempDirectory("kyc-security-test-");
@@ -35,6 +46,8 @@ class DocumentSecurityTest {
         String hash = new BCryptPasswordEncoder().encode(TEST_PASSWORD);
         registry.add("kyc.auth.uploader.password-hash", () -> hash);
         registry.add("kyc.auth.reviewer.password-hash", () -> hash);
+        registry.add("kyc.auth.uploader.customers", () -> " TESTCUST0001 , TESTEMPTY0001,*,bad-id ");
+        registry.add("kyc.auth.reviewer.customers", () -> " TESTCUST0001 , TESTEMPTY0001,*,bad-id ");
     }
 
     private MockMultipartFile pdf() {
@@ -48,6 +61,7 @@ class DocumentSecurityTest {
         mvc.perform(get("/documents/TESTCUST0001")).andExpect(status().isUnauthorized());
         mvc.perform(get("/documents/TESTCUST0001").with(httpBasic(TEST_REVIEWER, "wrong")))
                 .andExpect(status().isUnauthorized());
+        verifyNoInteractions(store);
     }
 
     @Test
@@ -56,6 +70,7 @@ class DocumentSecurityTest {
                 .with(httpBasic(TEST_REVIEWER, TEST_PASSWORD))).andExpect(status().isForbidden());
         mvc.perform(get("/documents/TESTCUST0001").with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
                 .andExpect(status().isForbidden());
+        verifyNoInteractions(store);
     }
 
     @Test
@@ -76,12 +91,20 @@ class DocumentSecurityTest {
     }
 
     @Test
+    void unlistedAndMalformedCustomersAreDeniedBeforeStorage() throws Exception {
+        for (String customer : new String[]{"TESTCUST0002", "bad-id"}) {
+            mvc.perform(get("/documents/" + customer).with(httpBasic(TEST_REVIEWER, TEST_PASSWORD)))
+                    .andExpect(status().isForbidden()).andExpect(content().string("{\"error\":\"forbidden\"}"));
+            mvc.perform(multipart("/documents/" + customer).file(pdf()).param("kind", "passport")
+                    .header("X-Customer-Id", "TESTCUST0001")
+                    .with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
+                    .andExpect(status().isForbidden()).andExpect(content().string("{\"error\":\"forbidden\"}"));
+        }
+        verifyNoInteractions(store);
+    }
+
+    @Test
     void authorizedValidationKeeps400Bodies() throws Exception {
-        mvc.perform(get("/documents/bad-id").with(httpBasic(TEST_REVIEWER, TEST_PASSWORD)))
-                .andExpect(status().isBadRequest()).andExpect(content().string("{\"error\":\"bad customer id\"}"));
-        mvc.perform(multipart("/documents/bad-id").file(pdf()).param("kind", "passport")
-                .with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
-                .andExpect(status().isBadRequest()).andExpect(content().string("{\"error\":\"bad customer id\"}"));
         mvc.perform(multipart("/documents/TESTCUST0001").file(pdf()).param("kind", "selfie")
                 .with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
                 .andExpect(status().isBadRequest()).andExpect(content().string("{\"error\":\"unknown document kind\"}"));
@@ -93,5 +116,6 @@ class DocumentSecurityTest {
         mvc.perform(get("/").with(httpBasic(TEST_REVIEWER, TEST_PASSWORD))).andExpect(status().isForbidden());
         mvc.perform(delete("/documents/TESTCUST0001").with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
                 .andExpect(status().isForbidden());
+        verifyNoInteractions(store);
     }
 }

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DocumentStore {
 
-    private static final Pattern CUSTOMER = Pattern.compile("[A-Z0-9]{6,20}");
+    static final Pattern CUSTOMER = Pattern.compile("[A-Z0-9]{6,20}");
     private static final Set<String> KINDS = Set.of("passport", "id-card", "proof-of-address", "payslip");
 
     private final Path root;
