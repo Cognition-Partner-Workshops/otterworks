@@ -26,6 +26,13 @@ make vm-smoke      # one request per app
 make reset         # stop and drop the volumes
 ```
 
+Local Make targets export one random reference secret per invocation when
+`BANK_ACCOUNT_REFERENCE_SECRET` is unset or empty. Both containers receive the
+same value during `vm-up`; `vm-smoke` does not recreate them. Starting them
+again without an override rotates these local-only references. Export a stable,
+randomly generated value for persistent demos. Direct Compose runs require the
+variable explicitly and fail before startup when it is missing.
+
 ## Account reference secrets
 
 Statements and notifications require `BANK_ACCOUNT_REFERENCE_SECRET` in the

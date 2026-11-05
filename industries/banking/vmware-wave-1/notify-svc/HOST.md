@@ -9,3 +9,19 @@ Queues customer notifications (statement ready, card payment, low balance) for t
 - API: `POST /notify` with `{"account", "kind", "fields"}`, `GET /outbox/<account>`.
 
 In the wave stand-in, `make vm-up` serves it on http://localhost:8084/.
+
+Before starting or refreshing PM2, load the stable secret from a protected
+environment file outside the checkout (mode 0600, readable only by the service
+operator):
+
+```sh
+set -a
+. /etc/bankwave/reference-secret.env
+set +a
+pm2 startOrRestart ecosystem.config.js --env production --update-env
+pm2 save
+```
+
+The file supplies `BANK_ACCOUNT_REFERENCE_SECRET=<provisioned value>` with at
+least 32 characters. Use the same persistent value on both notification hosts;
+the PM2 production environment explicitly forwards it to every worker.

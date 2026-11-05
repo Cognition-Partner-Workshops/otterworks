@@ -15,7 +15,8 @@ module.exports = {
       error_file: '/var/log/notify/err.log',
       merge_logs: true,
       env_production: {
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
+        BANK_ACCOUNT_REFERENCE_SECRET: process.env.BANK_ACCOUNT_REFERENCE_SECRET
       }
     }
   ]

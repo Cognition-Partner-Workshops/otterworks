@@ -54,6 +54,12 @@ jobs:
         working-directory: industries/banking/vmware-wave-1
     steps:
       - uses: actions/checkout@v4
+      - name: Provision ephemeral reference key
+        run: |
+          reference_secret=$(openssl rand -hex 32)
+          echo "::add-mask::$reference_secret"
+          printf 'BANK_ACCOUNT_REFERENCE_SECRET=%s\n' "$reference_secret" >> "$GITHUB_ENV"
+      - run: python3 vm/test_reference_config.py
       - run: make vm-build
       - run: make vm-up
       - run: make vm-smoke

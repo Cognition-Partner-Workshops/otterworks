@@ -23,6 +23,8 @@ services:
       args:
         MAVEN_MIRROR: ${MAVEN_MIRROR:-}
     image: wave1/statements-web-vm
+    environment:
+      BANK_ACCOUNT_REFERENCE_SECRET: ${BANK_ACCOUNT_REFERENCE_SECRET:?Supply BANK_ACCOUNT_REFERENCE_SECRET (at least 32 characters)}
     depends_on:
       wave1-db:
         condition: service_healthy
@@ -76,6 +78,8 @@ services:
       context: ../notify-svc
       dockerfile: vm/Dockerfile
     image: wave1/notify-svc-vm
+    environment:
+      BANK_ACCOUNT_REFERENCE_SECRET: ${BANK_ACCOUNT_REFERENCE_SECRET:?Supply BANK_ACCOUNT_REFERENCE_SECRET (at least 32 characters)}
     ports:
       - "127.0.0.1:8084:3000"
 

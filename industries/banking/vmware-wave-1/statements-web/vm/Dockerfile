@@ -13,6 +13,7 @@ RUN mvn -q -B package && mvn -q -B org.apache.maven.plugins:maven-dependency-plu
 FROM docker.io/library/tomcat:8.5-jre8@sha256:e3ca75a4b11560bfb30894c3fa5d066ff0105e2e8e1ad183711df97606321e51
 COPY --from=build /src/lib/ /usr/local/tomcat/lib/
 COPY vm/conf/context.xml /usr/local/tomcat/conf/context.xml
+COPY vm/setenv.sh /usr/local/tomcat/bin/setenv.sh
 COPY vm/opt-app-conf/ /opt/app/conf/
 RUN mkdir -p /var/log/statements && rm -rf /usr/local/tomcat/webapps/*
 COPY --from=build /src/target/statements.war /usr/local/tomcat/webapps/statements.war

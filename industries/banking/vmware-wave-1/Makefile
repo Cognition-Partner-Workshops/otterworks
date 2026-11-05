@@ -12,6 +12,11 @@ CLUSTER ?= otterworks-dev
 TTL_HOURS ?= 72
 APPS := statements-web rates-batch branch-locator notify-svc kyc-docs fx-report
 COMPOSE := docker compose -f vm/compose.yaml
+ifeq ($(strip $(BANK_ACCOUNT_REFERENCE_SECRET)),)
+export BANK_ACCOUNT_REFERENCE_SECRET := $(shell openssl rand -hex 32)
+else
+export BANK_ACCOUNT_REFERENCE_SECRET
+endif
 DAYS := 2026-10-14 2026-10-15 2026-10-16
 
 .PHONY: vm-build vm-up vm-rates vm-smoke vm-down reset ecr ns destroy check-run
