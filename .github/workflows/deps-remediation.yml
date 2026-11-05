@@ -9,6 +9,9 @@ on:
       - "services/legacy-portal-lambda/**"
       - "services/notification-service/**"
       - "services/auth-service/**"
+      - "industries/banking/vmware-wave-1/kyc-docs/**"
+      - "industries/banking/vmware-wave-1/rates-batch/**"
+      - "industries/banking/vmware-wave-1/statements-web/**"
       - "Makefile"
   pull_request:
     paths:
@@ -18,6 +21,9 @@ on:
       - "services/legacy-portal-lambda/**"
       - "services/notification-service/**"
       - "services/auth-service/**"
+      - "industries/banking/vmware-wave-1/kyc-docs/**"
+      - "industries/banking/vmware-wave-1/rates-batch/**"
+      - "industries/banking/vmware-wave-1/statements-web/**"
       - "Makefile"
 
 jobs:
