@@ -14,6 +14,27 @@ from psycopg2 import sql
 ROOT = Path(__file__).resolve().parent
 SOURCE_SCHEMA = "otterworks_sfext_20261105a"
 TABLES = {
+    "AUTH_USER_STATE_HISTORY": (
+        "user_state_history",
+        "id",
+        {
+            "id": "NUMBER(38,0)",
+            "user_id": "VARCHAR(36)",
+            "effective_at": "TIMESTAMP_NTZ",
+            "created_at": "TIMESTAMP_NTZ",
+            "last_login_at": "TIMESTAMP_NTZ",
+        },
+    ),
+    "ADMIN_USER_STATE_HISTORY": (
+        "admin_user_state_history",
+        "id",
+        {
+            "id": "NUMBER(38,0)",
+            "user_id": "VARCHAR(36)",
+            "effective_at": "TIMESTAMP_NTZ",
+            "status": "VARCHAR",
+        },
+    ),
     "AUTH_USERS": (
         "users",
         "id",
@@ -87,6 +108,16 @@ def seed(conn):
         cur.execute("SELECT count(*) FROM users")
         if cur.fetchone()[0] == 0:
             cur.execute((ROOT / "seed.sql").read_text())
+        else:
+            cur.execute(
+                "SELECT EXISTS(SELECT 1 FROM user_state_history), "
+                "EXISTS(SELECT 1 FROM admin_user_state_history)"
+            )
+            if cur.fetchone() != (True, True):
+                raise ValueError(
+                    "source history must start before source mutations; "
+                    "current rows cannot reconstruct historical state"
+                )
         cur.execute((ROOT / "generate.sql").read_text())
         cur.execute(
             "SELECT (SELECT count(*) FROM users), (SELECT count(*) FROM documents)"
@@ -99,7 +130,7 @@ def seed(conn):
 def export(conn, output: Path, snapshot_date: date, exported_at: datetime):
     output.mkdir(parents=True, exist_ok=True)
     tables = {}
-    # One repeatable-read transaction makes all six files a consistent source snapshot.
+    # Source state and its history share one consistent snapshot.
     with conn, conn.cursor() as cur:
         cur.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
         cur.execute(
