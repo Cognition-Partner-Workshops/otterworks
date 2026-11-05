@@ -20,15 +20,16 @@ vm-build:
 	DOCKER_BUILDKIT=0 $(COMPOSE) build
 
 notify-tokens:
-	@umask 077; mkdir -p .notify-tokens; \
+	@set -e; umask 077; mkdir -p .notify-tokens; \
 	for role in SEND OUTBOX; do \
 	  file=.notify-tokens/$$role; \
 	  if [ ! -s $$file ]; then openssl rand -hex 32 > $$file; fi; \
-	done
+	done; \
+	send=$$(printf %s "$$(cat .notify-tokens/SEND)" | openssl dgst -sha256 | awk '{print $$NF}'); \
+	outbox=$$(printf %s "$$(cat .notify-tokens/OUTBOX)" | openssl dgst -sha256 | awk '{print $$NF}'); \
+	printf '{"principals":[{"name":"smoke-producer","role":"send","token_sha256":"%s","accounts":["HG611000001"]},{"name":"smoke-reader","role":"outbox","token_sha256":"%s","accounts":["HG611000001"]}]}\n' "$$send" "$$outbox" > .notify-tokens/authz.json
 
 vm-up: notify-tokens
-	@export NOTIFY_SEND_TOKEN=$${NOTIFY_SEND_TOKEN:-$$(cat .notify-tokens/SEND)}; \
-	export NOTIFY_OUTBOX_TOKEN=$${NOTIFY_OUTBOX_TOKEN:-$$(cat .notify-tokens/OUTBOX)}; \
 	$(COMPOSE) up -d
 	$(MAKE) vm-rates
 
@@ -41,7 +42,7 @@ vm-smoke: notify-tokens
 	curl -sf -o /dev/null -w "statements-web %{http_code}\n" http://localhost:8081/statements/accounts
 	curl -sf -o /dev/null -w "branch-locator %{http_code}\n" "http://localhost:8083/api/nearest?q=harbour"
 	@curl -sf -o /dev/null -w "notify-svc     %{http_code}\n" -H 'Content-Type: application/json' \
-	  -H "Authorization: Bearer $${NOTIFY_SEND_TOKEN:-$$(cat .notify-tokens/SEND)}" \
+	  -H "Authorization: Bearer $$(cat .notify-tokens/SEND)" \
 	  -d '{"account":"HG611000001","kind":"statement_ready","fields":{}}' http://localhost:8084/notify
 	curl -skf -o /dev/null -w "kyc-docs       %{http_code}\n" https://localhost:8085/documents/HG611000001
 	curl -sf -o /dev/null -w "fx-report      %{http_code}\n" "http://localhost:8086/fx/fx-report.cgi?day=2026-10-16"

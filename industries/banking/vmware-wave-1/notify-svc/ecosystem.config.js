@@ -16,8 +16,7 @@ module.exports = {
       merge_logs: true,
       env_production: {
         NODE_ENV: 'production',
-        NOTIFY_SEND_TOKEN: process.env.NOTIFY_SEND_TOKEN,
-        NOTIFY_OUTBOX_TOKEN: process.env.NOTIFY_OUTBOX_TOKEN
+        NOTIFY_AUTHZ_FILE: process.env.NOTIFY_AUTHZ_FILE
       }
     }
   ]

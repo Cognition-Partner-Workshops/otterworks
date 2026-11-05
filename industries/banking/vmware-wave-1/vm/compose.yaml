@@ -73,8 +73,9 @@ services:
 
   notify-01:
     environment:
-      NOTIFY_SEND_TOKEN: ${NOTIFY_SEND_TOKEN:-}
-      NOTIFY_OUTBOX_TOKEN: ${NOTIFY_OUTBOX_TOKEN:-}
+      NOTIFY_AUTHZ_FILE: /etc/notify/authz.json
+    volumes:
+      - ../.notify-tokens/authz.json:/etc/notify/authz.json:ro
     build:
       context: ../notify-svc
       dockerfile: vm/Dockerfile
