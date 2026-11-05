@@ -41,6 +41,8 @@ _SECRET_FIELD = re.compile(
 # through and only this much of the body is kept, so one request never holds
 # more than this in memory on the log's account.
 RESPONSE_CAPTURE_BYTES = 1 << 20
+REQUEST_LOG_FILE_BYTES = 2 << 20
+REQUEST_LOG_BACKUPS = 3
 
 
 def redact_headers(headers: dict[str, str]) -> dict[str, str]:
@@ -84,12 +86,30 @@ class RequestLog:
             REQUEST_LOG_CAPACITY_BYTES.labels(SERVICE).set(shutil.disk_usage(self.directory).total)
 
     def append(self, record: dict) -> None:
-        os.makedirs(self.directory, exist_ok=True)
-        line = json.dumps(record, default=str) + "\n"
-        with open(self.path, "a", encoding="utf-8") as fh:
-            fh.write(line)
-        self._bytes += len(line)
-        self._publish(self._bytes)
+        try:
+            os.makedirs(self.directory, exist_ok=True)
+            file_limit = min(
+                REQUEST_LOG_FILE_BYTES,
+                shutil.disk_usage(self.directory).total // (8 * (REQUEST_LOG_BACKUPS + 1)),
+            )
+            paths = [self.path] + [
+                f"{self.path}.{index}" for index in range(1, REQUEST_LOG_BACKUPS + 1)
+            ]
+            for path in paths:
+                if os.path.exists(path) and os.path.getsize(path) > file_limit:
+                    os.unlink(path)
+            line = (json.dumps(record, default=str) + "\n").encode("utf-8")
+            if len(line) > file_limit:
+                return
+            size = os.path.getsize(self.path) if os.path.exists(self.path) else 0
+            if size + len(line) > file_limit:
+                for index in range(REQUEST_LOG_BACKUPS, 0, -1):
+                    if os.path.exists(paths[index - 1]):
+                        os.replace(paths[index - 1], paths[index])
+            with open(self.path, "ab") as fh:
+                fh.write(line)
+        finally:
+            self._bytes = self._scan()
 
     def purge(self) -> None:
         try:
@@ -142,7 +162,10 @@ def install(app: FastAPI) -> None:
             body = b"".join([chunk async for chunk in _chunks(response)])
             record["duration_ms"] = round((time.perf_counter() - started) * 1000, 2)
             record["response"] = redact_body(body.decode("utf-8", errors="replace"))
-            request_log.append(record)
+            try:
+                request_log.append(record)
+            except OSError:
+                logger.exception("request_log_append_failed", path=request.url.path)
             return Response(
                 content=body,
                 status_code=response.status_code,
