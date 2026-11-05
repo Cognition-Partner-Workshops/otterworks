@@ -4,7 +4,9 @@
 import argparse
 import difflib
 import hashlib
+import ipaddress
 import json
+import posixpath
 import re
 import ssl
 import sys
@@ -16,6 +18,26 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 APPS = json.loads((HERE / "requests.json").read_text())
 MAX_BODY = 4 * 1024 * 1024
+
+
+def endpoint_key(base):
+    url = urllib.parse.urlsplit(base)
+    host = (url.hostname or "").lower().rstrip(".")
+    try:
+        address = ipaddress.ip_address(host)
+    except ValueError:
+        loopback = host == "localhost"
+    else:
+        mapped = getattr(address, "ipv4_mapped", None)
+        loopback = address.is_loopback or (mapped is not None and mapped.is_loopback)
+    if loopback:
+        host = "loopback"
+    return (
+        url.scheme,
+        host,
+        url.port or (443 if url.scheme == "https" else 80),
+        posixpath.normpath(url.path or "/"),
+    )
 
 
 def digest(body):
@@ -157,6 +179,9 @@ def compare_batch(vm_dir, kind_dir):
         row = {"case": day}
         bodies = {}
         filename = APPS["rates-batch"]["filename"].format(day=day)
+        vm_file, kind_file = vm_dir / filename, kind_dir / filename
+        if vm_file.is_file() and kind_file.is_file() and vm_file.samefile(kind_file):
+            row["independence_error"] = "both paths refer to the same batch output"
         for side, directory in (("vm", vm_dir), ("kind", kind_dir)):
             path = directory / filename
             if not path.is_file() or not 0 < path.stat().st_size <= MAX_BODY:
@@ -167,7 +192,11 @@ def compare_batch(vm_dir, kind_dir):
                     "file_sha256": digest(bodies[side]),
                     "bytes": len(bodies[side]),
                 }
-        row["file_pass"] = len(bodies) == 2 and bodies["vm"] == bodies["kind"]
+        row["file_pass"] = (
+            "independence_error" not in row
+            and len(bodies) == 2
+            and bodies["vm"] == bodies["kind"]
+        )
         if len(bodies) == 2 and not row["file_pass"]:
             row["sample_diff"] = list(
                 difflib.unified_diff(
@@ -229,11 +258,7 @@ def main():
             parser.error("set two independent --vm-dir and --kind-dir spools")
         rows = compare_batch(args.vm_dir, args.kind_dir)
     else:
-        if (
-            not args.vm_base
-            or not args.kind_base
-            or args.vm_base.rstrip("/") == args.kind_base.rstrip("/")
-        ):
+        if not args.vm_base or not args.kind_base:
             parser.error("set independent --vm-base and --kind-base endpoints")
         for base in (args.vm_base, args.kind_base):
             url = urllib.parse.urlsplit(base)
@@ -254,6 +279,12 @@ def main():
                 "::1",
             ):
                 parser.error("insecure TLS is permitted only for loopback stand-ins")
+        try:
+            same_endpoint = endpoint_key(args.vm_base) == endpoint_key(args.kind_base)
+        except ValueError:
+            parser.error("endpoint must have a valid port")
+        if same_endpoint:
+            parser.error("set independent --vm-base and --kind-base endpoints")
         context = ssl.create_default_context(cafile=args.ca_file)
         if args.insecure_loopback:
             context.check_hostname = False

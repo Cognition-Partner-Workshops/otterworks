@@ -1,9 +1,12 @@
 import csv
+import io
 import json
 import re
+import sys
 import tempfile
 import threading
 import unittest
+from contextlib import redirect_stderr
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
@@ -151,6 +154,62 @@ class ParityTest(unittest.TestCase):
             (root / "rates-2026-10-14.csv").touch()
             rows = run.compare_batch(root, root)
             self.assertFalse(run.report("rates-batch", rows)["pass"])
+
+    def test_shared_batch_files_cannot_pass(self):
+        for alias in ("symlink", "hardlink"):
+            with self.subTest(alias=alias), tempfile.TemporaryDirectory() as temp:
+                vm, kind = Path(temp) / "vm", Path(temp) / "kind"
+                vm.mkdir()
+                kind.mkdir()
+                for day in run.APPS["rates-batch"]["business_days"]:
+                    source = vm / f"rates-{day}.csv"
+                    source.write_text("pair,close\nEURUSD,1.2\n")
+                    target = kind / source.name
+                    if alias == "symlink":
+                        target.symlink_to(source)
+                    else:
+                        target.hardlink_to(source)
+                rows = run.compare_batch(vm, kind)
+                self.assertFalse(run.report("rates-batch", rows)["pass"])
+                self.assertTrue(all("independence_error" in row for row in rows))
+
+    def test_loopback_aliases_cannot_compare_one_endpoint(self):
+        for vm, kind in (
+            ("http://localhost:8086", "http://127.0.0.1:8086/"),
+            ("http://LOCALHOST.:8086", "http://[::1]:8086"),
+            ("http://127.0.0.2:8086", "http://[::ffff:127.0.0.1]:8086"),
+            ("http://localhost", "http://127.0.0.1:80"),
+            ("https://localhost", "https://127.0.0.1:443"),
+            ("http://localhost:8086/app/..", "http://127.0.0.1:8086/"),
+        ):
+            with (
+                self.subTest(vm=vm, kind=kind),
+                patch.object(
+                    sys,
+                    "argv",
+                    [
+                        "run.py",
+                        "--app",
+                        "fx-report",
+                        "--vm-base",
+                        vm,
+                        "--kind-base",
+                        kind,
+                        "--output",
+                        "unused-parity.json",
+                    ],
+                ),
+                patch.object(run, "fetch") as fetch,
+                redirect_stderr(io.StringIO()),
+            ):
+                with self.assertRaises(SystemExit) as raised:
+                    run.main()
+                self.assertEqual(2, raised.exception.code)
+                fetch.assert_not_called()
+        self.assertNotEqual(
+            run.endpoint_key("http://localhost:8086"),
+            run.endpoint_key("http://127.0.0.1:18086"),
+        )
 
     def test_http_transport_integration(self):
         class Handler(BaseHTTPRequestHandler):
