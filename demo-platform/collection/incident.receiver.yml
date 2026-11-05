@@ -1,0 +1,11 @@
+# Layer after docker-compose.incident.yml. Route the existing raw webhook to mock Slack.
+services:
+  alertmanager:
+    networks: [default, collection]
+    environment:
+      DEVIN_WEBHOOK_URL: http://mock-slack:3100/receivers/alertmanager
+      DEVIN_WEBHOOK_SECRET: ${ALERTMANAGER_RECEIVER_SECRET:?Set the same receiver secret as mock Slack}
+networks:
+  collection:
+    external: true
+    name: ${COLLECTION_PROJECT:-collection-workspace}_default
