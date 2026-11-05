@@ -21,6 +21,22 @@ logger = structlog.get_logger()
 
 SERVICE = "document-service"
 
+AUTHZ_EVENTS = Counter(
+    "otterworks_authz_events_total", "Observed authorization events.", ["event", "outcome"]
+)
+SECURITY_EVENTS = Counter(
+    "otterworks_security_events_total", "Observed security events.", ["event"]
+)
+
+for _event, _outcome in (
+    ("cross_owner_object", "denied"),
+    ("cross_owner_object", "allowed"),
+    ("owner_override", "observed"),
+    ("export_path_traversal", "observed"),
+):
+    AUTHZ_EVENTS.labels(_event, _outcome)
+SECURITY_EVENTS.labels("share_token_rejected")
+
 LATENCY_BUCKETS = (
     0.005,
     0.01,
@@ -174,6 +190,13 @@ def instrument_app(app: FastAPI) -> None:
         finally:
             _request_queries.reset(token)
         queries = counter[0]
+        if (
+            request.method == "GET"
+            and request.url.path == "/api/v1/documents/shared"
+            and response.status_code == 422
+            and not request.query_params.get("token")
+        ):
+            SECURITY_EVENTS.labels("share_token_rejected").inc()
         if request.url.path not in ("/health", "/metrics", "/ready"):
             DB_QUERIES_PER_REQUEST.labels(SERVICE, _handler_label(request)).observe(queries)
             response.headers["X-DB-Queries"] = str(queries)

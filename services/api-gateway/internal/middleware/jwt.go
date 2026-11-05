@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -56,6 +57,12 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for name := range r.Header {
+				if strings.HasPrefix(strings.ToLower(name), "x-user-") {
+					securityEvents.WithLabelValues("identity_header_injected", "client_supplied").Inc()
+					break
+				}
+			}
 			// Skip JWT validation for public paths
 			if isPublicPath(r.URL.Path, exactPaths, cfg.PrefixPath) {
 				next.ServeHTTP(w, r)
@@ -68,6 +75,7 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 
 			tokenStr := extractBearerToken(r)
 			if tokenStr == "" {
+				securityEvents.WithLabelValues("jwt_rejected", "missing").Inc()
 				writeJSONError(w, http.StatusUnauthorized, "missing or invalid authorization header")
 				return
 			}
@@ -77,6 +85,7 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 				claims, err = validateToken(tokenStr, cfg.PeerSecret)
 			}
 			if err != nil {
+				securityEvents.WithLabelValues("jwt_rejected", tokenRejectionReason(err)).Inc()
 				writeJSONError(w, http.StatusUnauthorized, fmt.Sprintf("invalid token: %v", err))
 				return
 			}
@@ -85,6 +94,19 @@ func JWTAuth(cfg JWTConfig) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func tokenRejectionReason(err error) string {
+	if strings.Contains(err.Error(), "unexpected signing method") {
+		return "alg_not_allowed"
+	}
+	if errors.Is(err, jwt.ErrTokenSignatureInvalid) {
+		return "bad_signature"
+	}
+	if errors.Is(err, jwt.ErrTokenExpired) {
+		return "expired"
+	}
+	return "malformed"
 }
 
 // GetJWTClaims retrieves JWT claims from the request context.

@@ -1,0 +1,221 @@
+rule_files:
+  - ../security_alerts.yml
+evaluation_interval: 15s
+tests:
+  - name: SecurityJWTRejected attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="jwt_rejected",reason="alg_not_allowed"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityJWTRejected
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: identity-forgery
+            exp_annotations:
+              finding_ids: "DAST-UNSIGNED-JWT"
+              summary: "Forged or malformed JWT rejected"
+              description: "Forged or malformed JWT rejected in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#identity-forgery"
+  - name: SecurityIdentityHeaderInjected attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="identity_header_injected",reason="client_supplied"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityIdentityHeaderInjected
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: identity-forgery
+            exp_annotations:
+              finding_ids: "DAST-IDENTITY-HEADER-SPOOF"
+              summary: "Client supplied a trusted identity header"
+              description: "Client supplied a trusted identity header in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#identity-forgery"
+  - name: SecurityShareTokenRejected attack
+    interval: 15s
+    input_series:
+      - series: 'otterworks_security_events_total{event="share_token_rejected"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityShareTokenRejected
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: identity-forgery
+            exp_annotations:
+              finding_ids: "DAST-SHARE-TOKEN-FORGERY"
+              summary: "Invalid document share token presented"
+              description: "Invalid document share token presented in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#identity-forgery"
+  - name: SecurityCrossOwnerAccess attack
+    interval: 15s
+    input_series:
+      - series: 'otterworks_authz_events_total{event="cross_owner_object",outcome="allowed"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityCrossOwnerAccess
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: cross-customer-access
+            exp_annotations:
+              finding_ids: "DAST-BOLA-DOCUMENTS"
+              summary: "Cross-owner document access observed"
+              description: "Cross-owner document access observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#cross-customer-access"
+  - name: SecurityOwnerOverride attack
+    interval: 15s
+    input_series:
+      - series: 'otterworks_authz_events_total{event="owner_override",outcome="observed"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityOwnerOverride
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: cross-customer-access
+            exp_annotations:
+              finding_ids: "DAST-MASS-ASSIGNMENT-OWNER"
+              summary: "Document body names a different owner"
+              description: "Document body names a different owner in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#cross-customer-access"
+  - name: SecurityExportPathTraversal attack
+    interval: 15s
+    input_series:
+      - series: 'otterworks_authz_events_total{event="export_path_traversal",outcome="observed"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityExportPathTraversal
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: cross-customer-access
+            exp_annotations:
+              finding_ids: "DAST-PATH-TRAVERSAL-EXPORT"
+              summary: "Suspicious export archive path observed"
+              description: "Suspicious export archive path observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#cross-customer-access"
+  - name: SecurityLoginFailureBurst attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_auth_login_total{outcome="failure"}'
+        values: '0 0 12+0x10'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityLoginFailureBurst
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: credential-stuffing
+            exp_annotations:
+              finding_ids: "DAST-CREDENTIAL-BRUTE-FORCE"
+              summary: "Burst of failed logins observed"
+              description: "Burst of failed logins observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+  - name: SecurityLimiterClientChurn attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_rate_limiter_clients_total'
+        values: '0 0 1500+0x10'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityLimiterClientChurn
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: credential-stuffing
+            exp_annotations:
+              finding_ids: "DAST-RATE-LIMIT-BYPASS"
+              summary: "Rate limiter client key churn observed"
+              description: "Rate limiter client key churn observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+  - name: SecurityRateLimitRejections attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_rate_limiter_rejections_total'
+        values: '0 0 500+0x10'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityRateLimitRejections
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: credential-stuffing
+            exp_annotations:
+              finding_ids: "DAST-RATE-LIMIT-BYPASS"
+              summary: "Rate limiter rejection burst observed"
+              description: "Rate limiter rejection burst observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+  - name: benign UI baseline
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="jwt_rejected",reason="alg_not_allowed"}'
+        values: '0+0x12'
+      - series: 'api_gateway_security_events_total{event="identity_header_injected",reason="client_supplied"}'
+        values: '0+0x12'
+      - series: 'otterworks_security_events_total{event="share_token_rejected"}'
+        values: '0+0x12'
+      - series: 'otterworks_authz_events_total{event="cross_owner_object",outcome="allowed"}'
+        values: '0+0x12'
+      - series: 'otterworks_authz_events_total{event="owner_override",outcome="observed"}'
+        values: '0+0x12'
+      - series: 'otterworks_authz_events_total{event="export_path_traversal",outcome="observed"}'
+        values: '0+0x12'
+      - series: 'api_gateway_auth_login_total{outcome="failure"}'
+        values: '0 0 2+0x10'
+      - series: 'api_gateway_rate_limiter_clients_total'
+        values: '0 0 2+0x10'
+      - series: 'api_gateway_rate_limiter_rejections_total'
+        values: '0 0 2+0x10'
+      - series: 'api_gateway_auth_login_total{outcome="success"}'
+        values: '0+10x12'
+      - series: 'api_gateway_security_events_total{event="jwt_rejected",reason="expired"}'
+        values: '0+1x12'
+      - series: 'api_gateway_security_events_total{event="jwt_rejected",reason="missing"}'
+        values: '0+1x12'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityJWTRejected
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityIdentityHeaderInjected
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityShareTokenRejected
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityCrossOwnerAccess
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityOwnerOverride
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityExportPathTraversal
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityLoginFailureBurst
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityLimiterClientChurn
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityRateLimitRejections
+        exp_alerts: []

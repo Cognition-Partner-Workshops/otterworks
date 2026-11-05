@@ -526,6 +526,30 @@ incident-chart-sync: ## Copy incident alert rules + dashboard into the document-
 incident-chart-check: ## Fail if the chart's incident rules/dashboard differ from observability/
 	scripts/sync-incident-chart-files.sh --check
 
+.PHONY: detect-rules-test
+DETECT_PROMETHEUS_IMAGE ?= prom/prometheus:v2.51.0
+detect-rules-test: ## Validate security detection rules and attack/benign rule fixtures
+	docker run --rm --entrypoint promtool -v "$(CURDIR)/observability/prometheus:/rules:ro" -w /rules $(DETECT_PROMETHEUS_IMAGE) check rules security_alerts.yml
+	docker run --rm --entrypoint promtool -v "$(CURDIR)/observability/prometheus:/rules:ro" -w /rules $(DETECT_PROMETHEUS_IMAGE) test rules tests/security_alerts_test.yml
+
+.PHONY: detect-up detect-list detect-status detect-replay detect-test
+DETECT = uv run security/detection/replay.py
+DETECT_BUILD ?= --build
+detect-up: ## Start the minimal local detection stack (DETECT_BUILD=--no-build uses prebuilt images)
+	$(INCIDENT_COMPOSE) up -d $(DETECT_BUILD) --wait --wait-timeout 180 --no-deps postgres redis prometheus alertmanager alert-sink document-service auth-service api-gateway
+
+detect-list: ## List attack classes, probe IDs and expected alerts
+	$(DETECT) list
+
+detect-status: ## Show detection alert states from Prometheus
+	$(DETECT) status
+
+detect-replay: ## Prove quiet -> attack -> firing -> delivered (CLASS=name|all)
+	$(DETECT) replay $(or $(CLASS),all)
+
+detect-test: ## Offline unit tests for the detection replay harness
+	uv run --with pytest --with httpx --with pyyaml python -m pytest security/detection/tests -q
+
 incident-fingerprint: ## Compare fixture/source fingerprints with incident/expected.yaml (exit 2 on drift)
 	$(INCIDENT) fingerprint
 

@@ -1,0 +1,45 @@
+classes:
+  identity-forgery:
+    findings:
+      - DAST-UNSIGNED-JWT
+      - DAST-IDENTITY-HEADER-SPOOF
+      - DAST-SHARE-TOKEN-FORGERY
+    alerts:
+      - SecurityJWTRejected
+      - SecurityIdentityHeaderInjected
+      - SecurityShareTokenRejected
+    counters:
+      - api_gateway_security_events_total
+      - otterworks_security_events_total
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  cross-customer-access:
+    findings:
+      - DAST-BOLA-DOCUMENTS
+      - DAST-MASS-ASSIGNMENT-OWNER
+      - DAST-PATH-TRAVERSAL-EXPORT
+    alerts:
+      - SecurityCrossOwnerAccess
+      - SecurityOwnerOverride
+      - SecurityExportPathTraversal
+    counters:
+      - otterworks_authz_events_total
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  credential-stuffing:
+    findings:
+      - DAST-CREDENTIAL-BRUTE-FORCE
+      - DAST-RATE-LIMIT-BYPASS
+    alerts:
+      - SecurityLoginFailureBurst
+      - SecurityLimiterClientChurn
+      - SecurityRateLimitRejections
+    counters:
+      - api_gateway_auth_login_total
+      - api_gateway_rate_limiter_clients_total
+      - api_gateway_rate_limiter_rejections_total
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300

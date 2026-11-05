@@ -1,0 +1,119 @@
+# Detection only: these observations do not enforce security controls.
+groups:
+  - name: security.identity-forgery
+    interval: 15s
+    rules:
+      - alert: SecurityJWTRejected
+        expr: sum(increase(api_gateway_security_events_total{event="jwt_rejected",reason=~"alg_not_allowed|bad_signature|malformed"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: identity-forgery
+        annotations:
+          finding_ids: "DAST-UNSIGNED-JWT"
+          summary: "Forged or malformed JWT rejected"
+          description: "Forged or malformed JWT rejected in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#identity-forgery"
+      - alert: SecurityIdentityHeaderInjected
+        expr: sum(increase(api_gateway_security_events_total{event="identity_header_injected"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: identity-forgery
+        annotations:
+          finding_ids: "DAST-IDENTITY-HEADER-SPOOF"
+          summary: "Client supplied a trusted identity header"
+          description: "Client supplied a trusted identity header in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#identity-forgery"
+      - alert: SecurityShareTokenRejected
+        expr: sum(increase(otterworks_security_events_total{event="share_token_rejected"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: identity-forgery
+        annotations:
+          finding_ids: "DAST-SHARE-TOKEN-FORGERY"
+          summary: "Invalid document share token presented"
+          description: "Invalid document share token presented in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#identity-forgery"
+  - name: security.cross-customer-access
+    interval: 15s
+    rules:
+      - alert: SecurityCrossOwnerAccess
+        expr: sum(increase(otterworks_authz_events_total{event="cross_owner_object"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: cross-customer-access
+        annotations:
+          finding_ids: "DAST-BOLA-DOCUMENTS"
+          summary: "Cross-owner document access observed"
+          description: "Cross-owner document access observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#cross-customer-access"
+      - alert: SecurityOwnerOverride
+        expr: sum(increase(otterworks_authz_events_total{event="owner_override"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: cross-customer-access
+        annotations:
+          finding_ids: "DAST-MASS-ASSIGNMENT-OWNER"
+          summary: "Document body names a different owner"
+          description: "Document body names a different owner in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#cross-customer-access"
+      - alert: SecurityExportPathTraversal
+        expr: sum(increase(otterworks_authz_events_total{event="export_path_traversal"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: cross-customer-access
+        annotations:
+          finding_ids: "DAST-PATH-TRAVERSAL-EXPORT"
+          summary: "Suspicious export archive path observed"
+          description: "Suspicious export archive path observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#cross-customer-access"
+  - name: security.credential-stuffing
+    interval: 15s
+    rules:
+      - alert: SecurityLoginFailureBurst
+        expr: sum(increase(api_gateway_auth_login_total{outcome="failure"}[2m])) >= 10
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: credential-stuffing
+        annotations:
+          finding_ids: "DAST-CREDENTIAL-BRUTE-FORCE"
+          summary: "Burst of failed logins observed"
+          description: "Burst of failed logins observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+      - alert: SecurityLimiterClientChurn
+        expr: sum(increase(api_gateway_rate_limiter_clients_total[2m])) > 100
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: credential-stuffing
+        annotations:
+          finding_ids: "DAST-RATE-LIMIT-BYPASS"
+          summary: "Rate limiter client key churn observed"
+          description: "Rate limiter client key churn observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+      - alert: SecurityRateLimitRejections
+        expr: sum(increase(api_gateway_rate_limiter_rejections_total[2m])) > 100
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: credential-stuffing
+        annotations:
+          finding_ids: "DAST-RATE-LIMIT-BYPASS"
+          summary: "Rate limiter rejection burst observed"
+          description: "Rate limiter rejection burst observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
