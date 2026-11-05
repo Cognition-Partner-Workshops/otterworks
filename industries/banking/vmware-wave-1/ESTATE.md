@@ -26,7 +26,41 @@ make vm-smoke      # one request per app
 make reset         # stop and drop the volumes
 ```
 
+Local Make targets export one random reference secret per invocation when
+`BANK_ACCOUNT_REFERENCE_SECRET` is unset or empty. Both containers receive the
+same value during `vm-up`; `vm-smoke` does not recreate them. Starting them
+again without an override rotates these local-only references. Export a stable,
+randomly generated value for persistent demos. Direct Compose runs require the
+variable explicitly and fail before startup when it is missing.
+
+## Account reference secrets
+
+Statements and notifications require `BANK_ACCOUNT_REFERENCE_SECRET` in the
+server environment (at least 32 characters). Provision it once per application
+using a cryptographically random value, for example `openssl rand -hex 32`,
+and retain it in the deployment's secret manager across restarts and replicas.
+Never put its value in source control, images, browser configuration or logs.
+Inject it into the Tomcat and PM2 process environments through the deployment's
+protected secret configuration; restart the processes after provisioning.
+Statements also accepts the server-side JVM property
+`bank.account.reference.secret`, which takes precedence over the environment.
+Missing or short secrets reject reference generation; notify-svc rejects startup.
+There is no unkeyed fallback or automatically regenerated ephemeral key.
+
+Links use HMAC-SHA256, not account-number hashes. Statement lookup recomputes the
+HMAC over account candidates; notification lookup uses Redis mappings and verifies
+the HMAC with the current key. Keep the secret stable to keep links resolvable.
+Rotating it, or upgrading from the old unkeyed references, invalidates old links;
+refresh the account list or retrieve the outbox by its original account input to
+obtain new links. Legacy Redis mappings are not accepted as a bypass. References
+are routing identifiers, not substitutes for authentication and authorization.
+
 ## Cloud resources
+
+The rates batch and FX report both default to yesterday in UTC, independently of
+the host time zone. Explicit business-date arguments select the corresponding
+file. Displayed FX figures still use each source row's business date, not the
+host clock or the file-selection date.
 
 A replatforming run uses ECR repositories `otterworks/bank-<app>` and namespaces `bank-w1-<run>-pr<n>` on `otterworks-dev`, deployed only by the pipeline's OIDC role. Every resource carries the run token (`run_token` tag on ECR, `demo/run-token` label on namespaces) and an expiry (`Expires` tag; `demo/expires-at` and `demo/expires-at-epoch` annotations, 72 hours by default).
 

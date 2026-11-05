@@ -8,10 +8,13 @@ const TEMPLATES = {
 
 function render(kind, fields) {
   const t = TEMPLATES[kind];
-  if (!t) throw new Error('unknown notification kind: ' + kind);
+  if (!t) throw new Error('unknown notification kind');
   return t.replace(/\{(\w+)\}/g, (m, k) => {
     if (fields[k] === undefined || fields[k] === null) throw new Error('missing field: ' + k);
-    return String(fields[k]);
+    if (k === 'account') return maskAccount(fields[k]);
+    const value = String(fields[k]);
+    const account = String(fields.account || '');
+    return account.length > 4 ? value.split(account).join(maskAccount(account)) : value;
   });
 }
 

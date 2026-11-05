@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Stream;
@@ -40,6 +41,12 @@ public class RatesJob {
             return String.join(",", pair, open.toPlainString(), high.toPlainString(), low.toPlainString(),
                     close.toPlainString(), avg().toPlainString(), String.valueOf(n));
         }
+
+        String csv(String day) {
+            return String.join(",", pair, open.toPlainString(), day, high.toPlainString(), day,
+                    low.toPlainString(), day, close.toPlainString(), day, avg().toPlainString(), day,
+                    String.valueOf(n), day);
+        }
     }
 
     static Map<String, Daily> aggregate(List<String> lines) {
@@ -57,7 +64,7 @@ public class RatesJob {
 
     static LocalDate businessDate(String[] args) {
         if (args.length > 2) return LocalDate.parse(args[2]);
-        return LocalDate.now().minusDays(1);
+        return LocalDate.now(ZoneOffset.UTC).minusDays(1);
     }
 
     public static void main(String[] args) throws IOException {
@@ -82,8 +89,8 @@ public class RatesJob {
         Files.createDirectories(outDir);
         Path tmp = outDir.resolve(".rates-" + day + ".tmp");
         try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-            w.write("pair,open,high,low,close,avg_mid,ticks\n");
-            for (Daily d : rates.values()) w.write(d.csv() + "\n");
+            w.write("pair,open,open_business_date,high,high_business_date,low,low_business_date,close,close_business_date,avg_mid,avg_mid_business_date,ticks,business_date\n");
+            for (Daily d : rates.values()) w.write(d.csv(day) + "\n");
         }
         Files.move(tmp, outDir.resolve("rates-" + day + ".csv"), StandardCopyOption.ATOMIC_MOVE,
                 StandardCopyOption.REPLACE_EXISTING);

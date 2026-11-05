@@ -20,6 +20,22 @@ public class StatementServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String account = req.getParameter("account");
+        String reference = req.getParameter("reference");
+        if (reference != null) {
+            try {
+                account = null;
+                for (String candidate : dao.accounts().keySet()) {
+                    if (Html.reference(candidate).equals(reference)) {
+                        account = candidate;
+                        break;
+                    }
+                }
+            } catch (SQLException e) {
+                LOG.error("account lookup failed", e);
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to load statement");
+                return;
+            }
+        }
         if (account == null || !account.matches("[A-Z0-9]{8,20}")) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "account is required");
             return;
@@ -31,7 +47,7 @@ public class StatementServlet extends HttpServlet {
             resp.getWriter().write(Html.statement(AppConfig.bankName(), account, dao.lines(account, AppConfig.pageSize())));
         } catch (SQLException e) {
             LOG.error("statement query failed", e);
-            throw new ServletException(e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to load statement");
         }
     }
 }

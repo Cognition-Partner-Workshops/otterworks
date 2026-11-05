@@ -1,8 +1,12 @@
 package com.bank.statements;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 public final class Html {
     private Html() {
@@ -13,6 +17,27 @@ public final class Html {
             return "";
         }
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
+    static String maskAccount(String account) {
+        return "****" + account.substring(Math.max(0, account.length() - 4));
+    }
+
+    static String reference(String account) {
+        String secret = System.getProperty("bank.account.reference.secret", System.getenv("BANK_ACCOUNT_REFERENCE_SECRET"));
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalStateException("BANK_ACCOUNT_REFERENCE_SECRET must contain at least 32 characters");
+        }
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] digest = mac.doFinal(account.getBytes(StandardCharsets.UTF_8));
+            StringBuilder reference = new StringBuilder();
+            for (byte value : digest) reference.append(String.format("%02x", value & 0xff));
+            return reference.toString();
+        } catch (GeneralSecurityException exception) {
+            throw new IllegalStateException("Account reference generation unavailable", exception);
+        }
     }
 
     static String page(String bank, String title, String body) {
@@ -26,12 +51,12 @@ public final class Html {
     public static String accounts(String bank, Map<String, String> accounts, String lastAccount) {
         StringBuilder b = new StringBuilder();
         if (lastAccount != null) {
-            b.append("<p id=\"last\">Last viewed: <a href=\"statement?account=").append(esc(lastAccount)).append("\">")
-                .append(esc(lastAccount)).append("</a></p>");
+            b.append("<p id=\"last\">Last viewed: <a href=\"statement?reference=").append(reference(lastAccount)).append("\">")
+                .append(esc(maskAccount(lastAccount))).append("</a></p>");
         }
         b.append("<table id=\"accounts\"><tr><th>Account</th><th>Holder</th></tr>");
         for (Map.Entry<String, String> e : accounts.entrySet()) {
-            b.append("<tr><td><a href=\"statement?account=").append(esc(e.getKey())).append("\">").append(esc(e.getKey()))
+            b.append("<tr><td><a href=\"statement?reference=").append(reference(e.getKey())).append("\">").append(esc(maskAccount(e.getKey())))
                 .append("</a></td><td>").append(esc(e.getValue())).append("</td></tr>");
         }
         b.append("</table>");
@@ -50,6 +75,6 @@ public final class Html {
         }
         b.append("</table><p id=\"summary\">").append(lines.size()).append(" lines, net movement ")
             .append(total.toPlainString()).append("</p>");
-        return page(bank, "Statement " + account, b.toString());
+        return page(bank, "Statement " + maskAccount(account), b.toString());
     }
 }

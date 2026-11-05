@@ -4,9 +4,53 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.TimeZone;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class RatesJobTest {
+    @Test
+    public void defaultBusinessDateUsesUtcRatherThanHostCalendar() {
+        TimeZone previous = TimeZone.getDefault();
+        try {
+            LocalDate utc = LocalDate.now(ZoneOffset.UTC);
+            TimeZone.setDefault(TimeZone.getTimeZone(LocalTime.now(ZoneOffset.UTC).getHour() < 12
+                    ? "GMT-12:00" : "GMT+14:00"));
+            org.junit.Assert.assertNotEquals("Host must be on another calendar day", utc, LocalDate.now());
+            assertEquals(utc.minusDays(1), RatesJob.businessDate(new String[] {"in", "out"}));
+            assertEquals(LocalDate.of(2026, 11, 1),
+                    RatesJob.businessDate(new String[] {"in", "out", "2026-11-01"}));
+        } finally {
+            TimeZone.setDefault(previous);
+        }
+    }
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
+
+    @Test
+    public void outputCarriesBusinessDateOnEveryRateRow() throws Exception {
+        Path in = tmp.newFolder("in").toPath();
+        Path out = tmp.newFolder("out").toPath();
+        Files.write(in.resolve("ticks-2026-10-14.csv"), Arrays.asList(
+                "timestamp,pair,bid,ask",
+                "2026-10-14T00:00:00Z,EURUSD,1.0800,1.0802",
+                "2026-10-14T00:00:00Z,EURGBP,0.8600,0.8602"), StandardCharsets.UTF_8);
+        RatesJob.main(new String[] { in.toString(), out.toString(), "2026-10-14" });
+        List<String> rows = Files.readAllLines(out.resolve("rates-2026-10-14.csv"));
+        assertEquals("pair,open,open_business_date,high,high_business_date,low,low_business_date,close,close_business_date,avg_mid,avg_mid_business_date,ticks,business_date", rows.get(0));
+        assertEquals(3, rows.size());
+        for (String row : rows.subList(1, rows.size())) assertTrue(row.endsWith(",2026-10-14"));
+    }
 
     @Test
     public void aggregatesMidPerPair() {
