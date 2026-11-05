@@ -13,6 +13,9 @@ Grafana namespace `monitoring`, and a uniquely discovered deployment labelled
 `app.kubernetes.io/name=grafana`. Override `ADMIN_NAMESPACE`, `ADMIN_SECRET`,
 `GRAFANA_NAMESPACE`, `GRAFANA_DEPLOYMENT`, `GRAFANA_CONTAINER`, or `GRAFANA_SECRET`
 for a different installation. A missing source credential fails closed.
+An absent monitoring namespace or an empty Grafana deployment list skips sync
+successfully. Namespace discovery uses `--ignore-not-found`; authorization,
+connectivity, and other Kubernetes API errors still fail the deployment.
 
 Run the helper only for the admin endpoint targeted by that Grafana contact
 point. Per-tenant deploys intentionally do not rewrite shared platform monitoring.

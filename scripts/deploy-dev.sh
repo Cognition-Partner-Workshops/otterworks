@@ -351,6 +351,9 @@ build_helm_args() {
       add_secret SPRING_FLYWAY_PASSWORD "${DB_PASSWORD}"
       add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}" ;;
     file-service)
+      if [ -n "${FILE_REINDEX_OWNER_PREFIX:-}" ]; then
+        EXTRA_ARGS+=(--set-string "config.FILE_REINDEX_OWNER_PREFIX=${FILE_REINDEX_OWNER_PREFIX}")
+      fi
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.S3_BUCKET=${S3_FILE_BUCKET}")
       EXTRA_ARGS+=(--set-string "config.DYNAMODB_TABLE=${DDB_FILE_META}")

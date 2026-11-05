@@ -47,6 +47,7 @@ async fn main() -> std::io::Result<()> {
     let config_data = web::Data::new(app_config);
     let reindex_auth = web::Data::new(config::ReindexAuth {
         token: std::env::var("FILE_REINDEX_TOKEN").unwrap_or_default(),
+        owner_prefix: std::env::var("FILE_REINDEX_OWNER_PREFIX").unwrap_or_default(),
     });
     let s3_data = web::Data::new(s3_client);
     let meta_data = web::Data::new(meta_client);

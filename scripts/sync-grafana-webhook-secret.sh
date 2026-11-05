@@ -6,6 +6,12 @@ GRAFANA_NAMESPACE="${GRAFANA_NAMESPACE:-monitoring}"
 ADMIN_SECRET="${ADMIN_SECRET:-admin-service-secrets}"
 GRAFANA_SECRET="${GRAFANA_SECRET:-admin-alert-webhook}"
 
+namespace="$(kubectl get namespace "${GRAFANA_NAMESPACE}" --ignore-not-found -o name)"
+if [ -z "${namespace}" ]; then
+  echo "No namespace ${GRAFANA_NAMESPACE}; webhook consumer not installed" >&2
+  exit 0
+fi
+
 if [ -z "${GRAFANA_DEPLOYMENT:-}" ]; then
   deployments="$(kubectl -n "${GRAFANA_NAMESPACE}" get deployments -l app.kubernetes.io/name=grafana -o json)"
   count="$(jq '.items | length' <<< "${deployments}")"

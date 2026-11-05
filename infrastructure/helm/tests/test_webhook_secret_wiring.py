@@ -24,6 +24,8 @@ def test_reindex_helm_consumers_receive_the_same_scoped_service_credential():
                 "secrets.FILE_REINDEX_TOKEN=test-install-credential",
                 "--set-string",
                 "image.tag=regression-test",
+                "--set-string",
+                "config.FILE_REINDEX_OWNER_PREFIX=12345678-",
             ],
             text=True,
         )
@@ -31,6 +33,15 @@ def test_reindex_helm_consumers_receive_the_same_scoped_service_credential():
         secret = next(item for item in objects if item["kind"] == "Secret")
         deployment = next(item for item in objects if item["kind"] == "Deployment")
         assert secret["stringData"]["FILE_REINDEX_TOKEN"] == "test-install-credential"
+        if service == "file-service":
+            config = next(item for item in objects if item["kind"] == "ConfigMap")
+            assert config["data"]["FILE_REINDEX_OWNER_PREFIX"] == "12345678-"
+            assert any(
+                entry.get("configMapRef", {}).get("name") == config["metadata"]["name"]
+                for entry in deployment["spec"]["template"]["spec"]["containers"][0][
+                    "envFrom"
+                ]
+            )
         container = deployment["spec"]["template"]["spec"]["containers"][0]
         assert any(
             entry.get("secretRef", {}).get("name") == secret["metadata"]["name"]
@@ -49,7 +60,9 @@ from pathlib import Path
 root=Path(os.environ["TEST_ROOT"])
 args=sys.argv[1:]
 with (root/"calls").open("a") as out: out.write(json.dumps(args)+"\\n")
-if "deployments" in args:
+if "namespace" in args:
+ print("namespace/monitoring")
+elif "deployments" in args:
  print(json.dumps({"items":[{"metadata":{"name":"shared-grafana"}}]}))
 elif "get" in args and "secret" in args:
  print((root/"source").read_text())
@@ -123,3 +136,65 @@ def test_compose_admin_and_grafana_share_the_same_webhook_environment():
     assert (
         "sync-grafana-webhook-secret.sh" in (REPO / "scripts/deploy-dev.sh").read_text()
     )
+
+
+@pytest.mark.parametrize(
+    "scenario,expected",
+    [
+        ("absent", 0),
+        ("absent_explicit", 0),
+        ("empty", 0),
+        ("forbidden", 7),
+        ("unavailable", 7),
+    ],
+)
+def test_optional_grafana_installation_does_not_hide_api_failures(
+    tmp_path, scenario, expected
+):
+    kubectl = tmp_path / "kubectl"
+    kubectl.write_text("""#!/usr/bin/env python3
+import os,sys,json
+from pathlib import Path
+args=sys.argv[1:]
+with (Path(os.environ["TEST_ROOT"])/"calls").open("a") as out:
+ out.write(json.dumps(args)+"\\n")
+scenario=os.environ["SCENARIO"]
+if "namespace" in args:
+ assert "--ignore-not-found" in args
+ if scenario in ("forbidden", "unavailable"):
+  print(scenario,file=sys.stderr)
+  sys.exit(7)
+ if not scenario.startswith("absent"): print("namespace/monitoring")
+elif "deployments" in args:
+ if scenario.startswith("absent"):
+  print('namespaces "monitoring" not found',file=sys.stderr)
+  sys.exit(1)
+ print(json.dumps({"items":[]}))
+else:
+ sys.exit(99)
+""")
+    kubectl.chmod(0o755)
+    env = {
+        **os.environ,
+        "PATH": f"{tmp_path}:/usr/bin:/bin",
+        "TEST_ROOT": str(tmp_path),
+        "SCENARIO": scenario,
+        "GRAFANA_NAMESPACE": "monitoring",
+        "GRAFANA_DEPLOYMENT": "",
+    }
+    if scenario == "absent_explicit":
+        env["GRAFANA_DEPLOYMENT"] = "explicit-grafana"
+    result = subprocess.run(
+        ["bash", str(REPO / "scripts/sync-grafana-webhook-secret.sh")],
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == expected, result.stderr
+    calls = [json.loads(line) for line in (tmp_path / "calls").read_text().splitlines()]
+    assert all(
+        "secret" not in call and "set" not in call and "rollout" not in call
+        for call in calls
+    )
+    if scenario != "empty":
+        assert not any("deployments" in call for call in calls)

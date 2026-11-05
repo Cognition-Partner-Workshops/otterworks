@@ -265,7 +265,12 @@ pub async fn list_files_for_reindex(
             "Service credential required".into(),
         ));
     }
-    let files = meta.list_files(None, None, false).await?;
+    if auth.owner_prefix.trim().is_empty() {
+        return Err(ServiceError::Forbidden(
+            "Tenant owner prefix is not configured".into(),
+        ));
+    }
+    let files = meta.list_files_for_reindex(&auth.owner_prefix).await?;
     Ok(paginate_files(files, &query))
 }
 

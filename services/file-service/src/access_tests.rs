@@ -7,15 +7,27 @@ const OTHER: &str = "00000000-0000-0000-0000-000000000002";
 const FILE: &str = "00000000-0000-0000-0000-000000000003";
 
 #[actix_rt::test]
-async fn service_enumeration_requires_its_own_credential() {
+async fn service_enumeration_enforces_credentials_and_tenant_owner_prefix() {
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let endpoint = format!("http://{}", listener.local_addr().unwrap());
     let server = HttpServer::new(|| App::new().default_service(web::to(|body: web::Bytes| async move {
         let body: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        if body["ExpressionAttributeValues"][":owner_prefix"]["S"].is_string()
+            && body["ExclusiveStartKey"].is_null() {
+            return HttpResponse::Ok().json(serde_json::json!({
+                "Items": [],
+                "LastEvaluatedKey": {"id": {"S": "ffffffff-0000-0000-0000-000000000003"}}
+            }));
+        }
         let mut items = Vec::new();
-        for (id, owner) in [(FILE, OWNER), (OTHER, OTHER)] {
+        for (id, owner) in [(FILE, OWNER), (OTHER, OTHER),
+            ("ffffffff-0000-0000-0000-000000000003", "ffffffff-0000-0000-0000-000000000001")] {
             let filter = body["ExpressionAttributeValues"][":owner_id"]["S"].as_str();
             if filter.is_some() && filter != Some(owner) { continue; }
+            if let Some(prefix) = body["ExpressionAttributeValues"][":owner_prefix"]["S"].as_str() {
+                assert!(body["FilterExpression"].as_str().unwrap().contains("begins_with(owner_id, :owner_prefix)"));
+                if !owner.starts_with(prefix) { continue; }
+            }
             items.push(serde_json::json!({
                 "id": {"S": id}, "owner_id": {"S": owner}, "name": {"S": "private"},
                 "mime_type": {"S": "text/plain"}, "size_bytes": {"N": "1"}, "s3_key": {"S": "private"},
@@ -40,12 +52,18 @@ async fn service_enumeration_requires_its_own_credential() {
         versions_table: "versions".into(),
         shares_table: "shares".into(),
     });
-    for configured in ["test-service-credential", ""] {
+    for (configured, owner_prefix) in [
+        ("test-service-credential", "00000000-"),
+        ("", "00000000-"),
+        ("test-service-credential", ""),
+        ("test-service-credential", " "),
+    ] {
         let app = test::init_service(
             App::new()
                 .app_data(meta.clone())
                 .app_data(web::Data::new(crate::config::ReindexAuth {
                     token: configured.into(),
+                    owner_prefix: owner_prefix.into(),
                 }))
                 .route(
                     "/internal/files/reindex",
@@ -62,16 +80,24 @@ async fn service_enumeration_requires_its_own_credential() {
             "Bearer test-service-credential",
         ] {
             let request = test::TestRequest::get()
-                .uri("/internal/files/reindex?page_size=1&page=2")
+                .uri("/internal/files/reindex?page_size=1&page=2&owner_prefix=ffffffff-&owner_id=ffffffff-0000-0000-0000-000000000001")
                 .insert_header(("Authorization", credential))
                 .insert_header(("X-User-ID", OWNER))
                 .to_request();
             let response = test::call_service(&app, request).await;
             if !configured.is_empty() && credential == "Bearer test-service-credential" {
+                if owner_prefix.trim().is_empty() {
+                    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+                    continue;
+                }
                 assert_eq!(response.status(), StatusCode::OK);
                 let body: serde_json::Value = test::read_body_json(response).await;
                 assert_eq!(body["total"], 2);
                 assert_eq!(body["files"].as_array().unwrap().len(), 1);
+                assert!(body["files"][0]["owner_id"]
+                    .as_str()
+                    .unwrap()
+                    .starts_with(owner_prefix));
             } else {
                 assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
             }
@@ -85,7 +111,7 @@ async fn service_enumeration_requires_its_own_credential() {
         )
         .await;
         assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
-        if !configured.is_empty() {
+        if !configured.is_empty() && !owner_prefix.trim().is_empty() {
             let response = test::call_service(
                 &app,
                 test::TestRequest::get()
@@ -97,6 +123,11 @@ async fn service_enumeration_requires_its_own_credential() {
             assert_eq!(response.status(), StatusCode::OK);
             let body: serde_json::Value = test::read_body_json(response).await;
             assert_eq!(body["total"], 2);
+            assert!(body["files"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|file| file["owner_id"].as_str().unwrap().starts_with(owner_prefix)));
             let response = test::call_service(
                 &app,
                 test::TestRequest::post()
