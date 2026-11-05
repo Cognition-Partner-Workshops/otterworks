@@ -47,6 +47,8 @@ monitoring:
   port: 8080
 
 env:
+  # NetworkPolicy restricts application traffic to ingress-nginx, so in-cluster hops are trusted proxies.
+  TRUSTED_PROXIES: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
   AUTH_SERVICE_URL: "http://auth-service:8081"
   FILE_SERVICE_URL: "http://file-service:8082"
   DOCUMENT_SERVICE_URL: "http://document-service:8083"

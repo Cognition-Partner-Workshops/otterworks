@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -12,6 +13,10 @@ import (
 type Config struct {
 	Port     string
 	LogLevel string
+
+	// TrustedProxies controls which TCP peers may supply forwarding headers.
+	TrustedProxies    []*net.IPNet
+	trustedProxiesErr error
 
 	// Backend service URLs
 	AuthServiceURL         string
@@ -56,6 +61,9 @@ type Config struct {
 
 // Validate checks that required security-sensitive configuration is present.
 func (c *Config) Validate() error {
+	if c.trustedProxiesErr != nil {
+		return fmt.Errorf("TRUSTED_PROXIES: %w", c.trustedProxiesErr)
+	}
 	if c.JWTSecret == "" {
 		return fmt.Errorf("JWT_SECRET environment variable is required but not set")
 	}
@@ -64,9 +72,14 @@ func (c *Config) Validate() error {
 
 // Load reads configuration from environment variables with sensible defaults.
 func Load() *Config {
+	trustedProxies, trustedProxiesErr := ParseTrustedProxies(getEnv("TRUSTED_PROXIES", ""))
+
 	return &Config{
 		Port:     getEnv("PORT", "8080"),
 		LogLevel: getEnv("LOG_LEVEL", "info"),
+
+		TrustedProxies:    trustedProxies,
+		trustedProxiesErr: trustedProxiesErr,
 
 		AuthServiceURL:         getEnv("AUTH_SERVICE_URL", "http://auth-service:8081"),
 		FileServiceURL:         getEnv("FILE_SERVICE_URL", "http://file-service:8082"),
@@ -99,6 +112,38 @@ func Load() *Config {
 		CBTimeout:      time.Duration(getEnvInt("CB_TIMEOUT_SECONDS", 30)) * time.Second,
 		CBFailureRatio: getEnvFloat("CB_FAILURE_RATIO", 0.6),
 	}
+}
+
+// ParseTrustedProxies parses comma-separated CIDRs and IP addresses.
+func ParseTrustedProxies(value string) ([]*net.IPNet, error) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil, nil
+	}
+
+	entries := strings.Split(value, ",")
+	trustedProxies := make([]*net.IPNet, 0, len(entries))
+	for _, entry := range entries {
+		entry = strings.TrimSpace(entry)
+		if entry == "" {
+			return nil, fmt.Errorf("empty proxy entry")
+		}
+
+		if ip := net.ParseIP(entry); ip != nil {
+			if ipv4 := ip.To4(); ipv4 != nil {
+				ip = ipv4
+			}
+			trustedProxies = append(trustedProxies, &net.IPNet{IP: ip, Mask: net.CIDRMask(8*len(ip), 8*len(ip))})
+			continue
+		}
+
+		_, network, err := net.ParseCIDR(entry)
+		if err != nil {
+			return nil, fmt.Errorf("invalid proxy %q", entry)
+		}
+		trustedProxies = append(trustedProxies, network)
+	}
+	return trustedProxies, nil
 }
 
 // RedisAddr returns host:port of the chaos-flag Redis, or "" when unset.
