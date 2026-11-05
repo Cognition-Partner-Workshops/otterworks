@@ -1,5 +1,6 @@
 """Tests for the document list endpoint's metadata filters."""
 
+import random
 import uuid
 
 import pytest
@@ -25,6 +26,35 @@ async def test_filter_by_title_fragment(client: AsyncClient, owner_id: uuid.UUID
     body = resp.json()
     assert body["total"] == 1
     assert [item["title"] for item in body["items"]] == ["Quarterly Report"]
+
+
+# Titles a real workspace is full of, used to bury the document a test is looking for.
+BACKGROUND_TITLES = [
+    "Meeting Notes",
+    "Onboarding checklist",
+    "Q3 budget",
+    "Incident review 0412",
+    "Holiday rota",
+    "Architecture overview",
+    "Vendor contacts",
+    "Capacity plan",
+    "Release notes 2.4",
+    "Team charter",
+]
+
+
+@pytest.mark.asyncio
+async def test_filter_by_title_fragment_in_a_busy_workspace(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    for title in random.sample(BACKGROUND_TITLES, 2):
+        await _create(client, owner_id, title)
+    await _create(client, owner_id, "Migration plan")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "plan"})
+
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["Migration plan"]
 
 
 @pytest.mark.asyncio
