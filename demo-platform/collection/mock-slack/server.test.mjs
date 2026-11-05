@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -43,6 +44,57 @@ const sendBatchAlert = (url, name) => fetch(`${url}/receivers/alertmanager`, {
   method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' },
   body: JSON.stringify({ alerts: [{ status: 'firing', labels: { alertname: name }, startsAt: new Date().toISOString(), fingerprint: crypto.randomUUID() }] }),
 });
+
+for (const discard of ['legacy', 'expiry', 'reset']) {
+  test(`${discard} discard admits an unchanged firing repeat into exactly one fresh batch`, async t => {
+    const before = Date.now();
+    const alert = { status: 'firing', fingerprint: 'stable-A', startsAt: new Date(before - 3600000).toISOString(), labels: { alertname: 'A' } };
+    const key = createHash('sha256').update(JSON.stringify([alert.fingerprint, alert.startsAt])).digest('hex');
+    const f = await fixture(t, { batch: true, initialState: {
+      threads: [{ id: 'root-A', channel: 'alerts', status: 'idle', readOnly: true, messages: [{ author: 'alertmanager', text: 'A', requestId: `alert-${key}` }] }],
+      alerts: { [key]: 'root-A', unrelated: 'delivered-root' },
+      alertBatch: { status: 'pending', alerts: [alert], lastAt: before, ...(discard === 'legacy' ? {} : { firstAt: discard === 'expiry' ? before - 1800001 : before }) },
+    } });
+    f.cfg.batchRequiredAlerts = ['A', 'B'];
+    if (discard === 'reset') {
+      const response = await fetch(`${f.url}/api/alert-batch/reset`, { method: 'POST', headers: { 'X-Webhook-Secret': 'fixture-receiver-secret' } });
+      assert.deepEqual(await response.json(), { reset: true });
+    }
+    let persisted = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
+    assert.equal(persisted.alertBatch, undefined);
+    assert.equal(persisted.alerts[key], undefined);
+    assert.equal(persisted.alerts.unrelated, 'delivered-root');
+    const response = await fetch(`${f.url}/receivers/alertmanager`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' }, body: JSON.stringify({ alerts: [alert] }) });
+    assert.equal(response.status, 200);
+    persisted = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
+    assert.ok(persisted.alertBatch.firstAt >= before);
+    assert.deepEqual(persisted.alertBatch.alerts, [alert]);
+    await sendBatchAlert(f.url, 'B');
+    for (let i = 0; i < 50 && f.calls.length === 0; i++) await pause(20);
+    assert.equal(f.calls.length, 1);
+    assert.deepEqual(f.calls[0].body.alerts.map(a => a.labels.alertname), ['A', 'B']);
+    assert.deepEqual(f.calls[0].body.alerts[0], alert);
+    await pause(160);
+    assert.equal(f.calls.length, 1);
+  });
+}
+
+for (const status of ['delivered', 'sending', 'uncertain']) {
+  test(`${status} recovery and reset retain deduplication and never resend repeats`, async t => {
+    const alert = { status: 'firing', fingerprint: 'stable-A', startsAt: '2020-01-01T00:00:00Z', labels: { alertname: 'A' } };
+    const key = createHash('sha256').update(JSON.stringify([alert.fingerprint, alert.startsAt])).digest('hex');
+    const f = await fixture(t, { batch: true, initialState: { threads: [], alerts: { [key]: 'root-A' }, alertBatch: { status, alerts: [alert] } } });
+    const reset = await fetch(`${f.url}/api/alert-batch/reset`, { method: 'POST', headers: { 'X-Webhook-Secret': 'fixture-receiver-secret' } });
+    assert.deepEqual(await reset.json(), { reset: false });
+    const repeat = await fetch(`${f.url}/receivers/alertmanager`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' }, body: JSON.stringify({ alerts: [alert] }) });
+    assert.deepEqual(await repeat.json(), { threadIds: [] });
+    await pause(160);
+    assert.equal(f.calls.length, 0);
+    const persisted = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
+    assert.equal(persisted.alerts[key], 'root-A');
+    assert.equal(persisted.alertBatch.status, status === 'sending' ? 'uncertain' : status);
+  });
+}
 
 test('batch delivery and reset notes follow the configured Alertmanager channel', async t => {
   const f = await fixture(t, { batch: true, alertmanagerChannel: 'incident-war-room' });

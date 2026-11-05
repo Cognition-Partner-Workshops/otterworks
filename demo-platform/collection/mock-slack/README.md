@@ -101,8 +101,10 @@ curl --fail -X POST http://localhost:3100/api/alert-batch/reset \
 ```
 
 Reset requires the raw receiver secret, clears only a pending batch and its timer,
-and posts a bot note. It does not clear alert deduplication or retry uncertain
-deliveries. An empty reset returns `{"reset":false}`.
+and posts a bot note. Every pending-batch discard also clears that batch's alert
+deduplication keys, so still-firing repeats can enter a fresh batch. Deduplication
+for delivered, sending and uncertain batches is retained; uncertain deliveries
+are not retried. An empty reset returns `{"reset":false}`.
 
 The Alertmanager route groups by `alertname` and `scenario`, with a 10-second
 group wait. Raw receivers send every alert in each group (`max_alerts: 0`),

@@ -16,6 +16,7 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const sessionId = value => typeof value === 'string' && /^(devin-)?[a-f0-9]{32}$/.test(value);
 const sameSession = (a, b) => a.replace(/^devin-/, '') === b.replace(/^devin-/, '');
 const secretEqual = (a, b) => Boolean(a && b) && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b));
+const alertKey = alert => createHash('sha256').update(JSON.stringify([alert.fingerprint || alert.labels, alert.startsAt])).digest('hex');
 
 export function config(env = process.env) {
   const apiBase = env.DEVIN_API_BASE || 'https://api.devin.ai';
@@ -90,10 +91,15 @@ export async function createApp(cfg = config()) {
     add(thread, 'devin', text); state.threads.push(thread);
   };
   const batchFirstAt = batch => batch.firstAt ??= batch.lastAt ?? Date.now();
+  const discardBatch = note => {
+    if (state.alertBatch?.status !== 'pending') return;
+    for (const alert of state.alertBatch.alerts) delete state.alerts[alertKey(alert)];
+    batchNote(note, 'discarded'); delete state.alertBatch;
+  };
   const expireBatch = () => {
     if (state.alertBatch?.status !== 'pending' || Date.now() - batchFirstAt(state.alertBatch) < cfg.batchMaxAgeMs) return false;
-    batchNote(`Discarded expired alert batch (${state.alertBatch.alerts.length} alerts). Start a new storm or reset the batch before retrying.`, 'discarded');
-    delete state.alertBatch; return true;
+    discardBatch(`Discarded expired alert batch (${state.alertBatch.alerts.length} alerts). Start a new storm or reset the batch before retrying.`);
+    return true;
   };
   if (state.alertBatch?.status === 'sending') {
     state.alertBatch.status = 'uncertain';
@@ -101,8 +107,8 @@ export async function createApp(cfg = config()) {
     await save();
   }
   if (state.alertBatch?.status === 'pending' && state.alertBatch.firstAt == null) {
-    batchNote(`Discarded alert batch (${state.alertBatch.alerts.length} alerts): receipt age is unknown. Start a new storm or reset the batch before retrying.`, 'discarded');
-    delete state.alertBatch; await save();
+    discardBatch(`Discarded alert batch (${state.alertBatch.alerts.length} alerts): receipt age is unknown. Start a new storm or reset the batch before retrying.`);
+    await save();
   }
   if (expireBatch()) await save();
   const safeUrl = id => `${cfg.webBase}/sessions/${id.replace(/^devin-/, '')}`;
@@ -265,8 +271,8 @@ export async function createApp(cfg = config()) {
         return json(res, 200, await serial(async () => {
           const reset = state.alertBatch?.status === 'pending';
           if (reset) {
-            batchNote(`Discarded pending alert batch (${state.alertBatch.alerts.length} alerts) by operator reset.`, 'discarded');
-            delete state.alertBatch; clearTimeout(batchTimer); await save();
+            discardBatch(`Discarded pending alert batch (${state.alertBatch.alerts.length} alerts) by operator reset.`);
+            clearTimeout(batchTimer); await save();
           }
           return { reset };
         }));
@@ -281,7 +287,7 @@ export async function createApp(cfg = config()) {
           const ids = [];
           for (const alert of alerts) {
             if (!alert.labels || typeof alert.labels !== 'object') continue;
-            const key = createHash('sha256').update(JSON.stringify([alert.fingerprint || alert.labels, alert.startsAt])).digest('hex');
+            const key = alertKey(alert);
             if (state.alerts[key] || (alert.status || data.status) === 'resolved') continue;
             const t = await post({ channel: cfg.alertmanagerChannel, author: 'alertmanager', text: `${alert.labels.alertname || 'Alert'} (${alert.status || data.status || 'firing'})\n${alert.annotations?.summary || ''}\n${JSON.stringify(alert.labels)}`,
               requestId: `alert-${key}`, localOnly: Boolean(cfg.batchWebhook) });
