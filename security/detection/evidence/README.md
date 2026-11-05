@@ -87,3 +87,39 @@ pre-IB instrumented build scan. All 19 verdicts match: 9 secure, 8 vulnerable,
 2 inconclusive (absent file/search services). It retains scan timestamps,
 baseline SHA and running image IDs. The fresh scan exits 1 because the eight
 planted findings remain, not because detection changed application behavior.
+
+## Fineract edge tripwires
+
+The gateway-only extension was rebuilt and restarted on 2026-11-05; all other
+stack containers stayed running. Prometheus rules were HTTP-reloaded. Docker
+Hub returned HTTP 429, so an external build file used the Google mirror for
+the same base images; no repository Dockerfile was changed.
+
+The three replays ran **serially**. Each exited 0 with inactive BEFORE rules,
+before/after counters, the expected firing AFTER rule and fresh Alertmanager
+delivery to `/security`. Every attack request returned the existing HTTP 404.
+
+| Class | Passing report (JSON and Markdown) | Expected alert | First observed firing |
+|---|---|---|---|
+| fin-makerchecker-repeat | `fin-makerchecker-repeat-20261105T184704040838Z.{json,md}` | SecurityFineractMakerCheckerRepeatApprove | 36.3 seconds |
+| fin-makerchecker-disabled | `fin-makerchecker-disabled-20261105T184853887400Z.{json,md}` | SecurityFineractMakerCheckerDisabled | 36.2 seconds |
+| fin-privileged-endpoint | `fin-privileged-endpoint-20261105T185043680830Z.{json,md}` | SecurityFineractPrivilegedEndpoint | 27.2 seconds |
+
+All three `fin-<class>-alerts.png` screenshots were visually checked on the
+actual Prometheus `/alerts` page: each shows its expected rule firing.
+All three prefixes were exercised: bare paths, `/api/v1` and
+`/fineract-provider/api/v1`. Observed counter deltas were three repeat
+approvals; three `config_put` and six `command_disable`; three datatable
+deregistrations and three credit-report additions.
+
+The alerts carry `source=fineract-edge` and `confirmation=verified-path`.
+That confirms path matching, **not** successful execution or authorization
+bypass. Actor office and permissions are not evaluated. The script verdicts
+are deliberately **inconclusive**: no Fineract is deployed or routed here.
+
+`fin-regression-comparison.{json,md}` compares a fresh post-extension scan
+with the retained actual demo-bank service-build scan and the pre-Fineract
+internet-banking detection scan. All 19 verdicts match: 9 secure, 8 vulnerable,
+2 inconclusive (absent file/search services). It includes baseline SHA,
+timestamps and running image IDs. The fresh scan exits 1 because planted
+findings remain, not because observation changed vulnerable behavior.
