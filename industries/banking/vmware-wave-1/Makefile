@@ -14,7 +14,7 @@ APPS := statements-web rates-batch branch-locator notify-svc kyc-docs fx-report
 COMPOSE := docker compose -f vm/compose.yaml
 DAYS := 2026-10-14 2026-10-15 2026-10-16
 
-.PHONY: vm-build vm-up vm-rates vm-smoke vm-down reset ecr ns destroy check-run
+.PHONY: vm-build vm-up vm-rates vm-smoke vm-notify-test vm-down reset ecr ns destroy check-run
 
 vm-build:
 	DOCKER_BUILDKIT=0 $(COMPOSE) build
@@ -36,6 +36,13 @@ vm-smoke:
 	curl -skf -o /dev/null -w "kyc-docs       %{http_code}\n" https://localhost:8085/documents/HG611000001
 	curl -sf -o /dev/null -w "fx-report      %{http_code}\n" "http://localhost:8086/fx/fx-report.cgi?day=2026-10-16"
 	$(COMPOSE) exec -T rates-01 ls /var/spool/rates/out
+	$(MAKE) vm-notify-test
+
+# notify-svc unit and Redis store tests, inside the stand-in against its own Redis
+vm-notify-test:
+	$(COMPOSE) cp notify-svc/test/. notify-01:/opt/notify-svc/test
+	$(COMPOSE) exec -T -w /opt/notify-svc notify-01 node test/templates.test.js
+	$(COMPOSE) exec -T -w /opt/notify-svc notify-01 node test/store.test.js
 
 vm-down:
 	$(COMPOSE) down
