@@ -116,7 +116,7 @@ def test_copy_and_merge_are_replay_safe_and_have_no_event_watermark(workload):
     assert "FORCE=FALSE" in runtime.copy_sql(workload)
     assert "ON_ERROR=ABORT_STATEMENT" in runtime.copy_sql(workload)
     statements = list(runtime.raw_merge_sql(workload))
-    assert len(statements) == 6
+    assert len(statements) == len(source.TABLES) == 8
     for statement in statements:
         assert "ROW_NUMBER() OVER(PARTITION BY _snapshot_date," in statement
         assert "ORDER BY _exported_at DESC,_row_hash DESC" in statement
@@ -161,3 +161,82 @@ def test_postgres_seed_export_is_deterministic_and_preserves_examples(tmp_path):
         assert (
             quotas["00000000-0000-4000-8000-000000000101"]["used_bytes"] == 4563402752
         )
+
+
+@pytest.mark.skipif(
+    not os.environ.get("POSTGRES_DSN"), reason="requires local Postgres"
+)
+def test_monday_changes_before_first_export_preserve_source_history(
+    tmp_path, monkeypatch
+):
+    schema = source.SOURCE_SCHEMA + "_history_test"
+    monkeypatch.setattr(source, "SOURCE_SCHEMA", schema)
+    with closing(psycopg2.connect(os.environ["POSTGRES_DSN"])) as conn:
+        try:
+            source.seed(conn)
+            with conn, conn.cursor() as cur:
+                cur.execute(
+                    psycopg2.sql.SQL("SET LOCAL search_path TO {}").format(
+                        psycopg2.sql.Identifier(schema)
+                    )
+                )
+                cur.execute(
+                    "UPDATE users SET last_login_at='2026-09-25', "
+                    "updated_at='2026-11-01T01:00:00Z' WHERE id::text LIKE '%104'"
+                )
+                cur.execute(
+                    "UPDATE admin_users SET status='suspended', "
+                    "updated_at='2026-11-01T01:00:00Z' WHERE id::text LIKE '%104'"
+                )
+                cur.execute(
+                    "UPDATE users SET last_login_at='2026-11-02T08:00:00Z', "
+                    "updated_at='2026-11-02T08:00:00Z' WHERE id::text LIKE '%104'"
+                )
+                cur.execute(
+                    "UPDATE admin_users SET status='deleted', "
+                    "updated_at='2026-11-02T09:00:00Z' WHERE id::text LIKE '%104'"
+                )
+            first = source.export(
+                conn,
+                tmp_path,
+                date(2026, 11, 2),
+                datetime(2026, 11, 2, 12, tzinfo=timezone.utc),
+            )
+            tables = runtime.validate_bundle(first)["tables"]
+            user_id = "00000000-0000-4000-8000-000000000104"
+            assert next(u for u in tables["AUTH_USERS"] if u["id"] == user_id)[
+                "last_login_at"
+            ].startswith("2026-11-02")
+            assert (
+                next(u for u in tables["ADMIN_ADMIN_USERS"] if u["id"] == user_id)[
+                    "status"
+                ]
+                == "deleted"
+            )
+            cutoff = datetime(2026, 11, 2, tzinfo=timezone.utc)
+            for table, field, expected in [
+                ("AUTH_USER_STATE_HISTORY", "last_login_at", "2026-09-25"),
+                ("ADMIN_USER_STATE_HISTORY", "status", "suspended"),
+            ]:
+                history = [
+                    h
+                    for h in tables[table]
+                    if h["user_id"] == user_id
+                    and datetime.fromisoformat(h["effective_at"]) < cutoff
+                ]
+                state = max(history, key=lambda h: (h["effective_at"], h["id"]))
+                assert state[field].startswith(expected)
+            with pytest.raises(psycopg2.errors.RaiseException, match="append-only"):
+                with conn, conn.cursor() as cur:
+                    cur.execute(
+                        psycopg2.sql.SQL("DELETE FROM {}.user_state_history").format(
+                            psycopg2.sql.Identifier(schema)
+                        )
+                    )
+        finally:
+            with conn, conn.cursor() as cur:
+                cur.execute(
+                    psycopg2.sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(
+                        psycopg2.sql.Identifier(schema)
+                    )
+                )

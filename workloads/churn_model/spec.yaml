@@ -12,6 +12,12 @@ inputs:
   - source: admin-service Postgres admin_users
     landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.ADMIN_ADMIN_USERS
     columns: [id, status]
+  - source: source-triggered Postgres user_state_history
+    landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.AUTH_USER_STATE_HISTORY
+    columns: [id, user_id, effective_at, created_at, last_login_at]
+  - source: source-triggered Postgres admin_user_state_history
+    landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.ADMIN_USER_STATE_HISTORY
+    columns: [id, user_id, effective_at, status]
   - source: document-service Postgres document_versions
     landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.DOCUMENT_DOCUMENT_VERSIONS
     columns: [id, created_by, created_at]
@@ -33,7 +39,10 @@ output:
     - {name: model_version, type: VARCHAR(16), description: rules_v1}
 
 business_rule: >-
-  Score the last completed week (Monday-Sunday, UTC). Login points: 40 if the last login is 30 or more
+  Score the last completed week (Monday-Sunday, UTC). Reconstruct login and status from the
+  latest authoritative source-history version strictly before the following Monday 00:00 UTC,
+  breaking equal effective timestamps by source history id. Never infer week-end state from
+  the first next-week export. Login points: 40 if the last login is 30 or more
   days before the week end, 25 if 14 or more, 10 if 7 or more, else 0. Activity is the number of
   document versions the account created; compare the week with the average week of the four weeks
   before it. Activity points: 30 if there was no activity in either period, 0 if activity is new this
