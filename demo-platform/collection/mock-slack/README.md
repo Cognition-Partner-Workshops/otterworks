@@ -77,8 +77,26 @@ names. The server holds a partial batch until every required name has arrived,
 then waits for the normal quiet window after the latest alert. For all local
 scenarios, use
 `DocumentListLatencyHigh,RequestLogVolumeNearFull,DocumentServiceMemoryHigh,DocumentStatsRollupDuplicated`.
-If a scenario fails, its partial batch stays pending for operator review.
+If a scenario fails, its partial batch stays pending for operator review until
+`ALERT_BATCH_MAX_AGE_MS` expires (default `1800000`, 30 minutes from the first
+received alert). Expired pending batches are discarded with a bot note, including
+after a restart. New alerts cannot inherit required names from an expired batch.
 Leave this variable empty for independent single-scenario batches.
+
+`GET /api/state` exposes `alertBatch` with `status` and `alertCount`, or `null`.
+Restarting during delivery marks the batch uncertain and posts a bot note in
+`#alerts`. Check the automation's event history; delivery is not retried.
+
+Before starting another storm within the maximum age, discard its pending batch:
+
+```bash
+curl --fail -X POST http://localhost:3100/api/alert-batch/reset \
+  -H "X-Webhook-Secret: ${ALERTMANAGER_RECEIVER_SECRET}"
+```
+
+Reset requires the raw receiver secret, clears only a pending batch and its timer,
+and posts a bot note. It does not clear alert deduplication or retry uncertain
+deliveries. An empty reset returns `{"reset":false}`.
 
 The Alertmanager route groups by `alertname` and `scenario`, with a 10-second
 group wait. Raw receivers send every alert in each group (`max_alerts: 0`),

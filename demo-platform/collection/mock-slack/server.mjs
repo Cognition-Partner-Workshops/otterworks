@@ -38,6 +38,7 @@ export function config(env = process.env) {
     batchWebhook: env.ALERT_BATCH_WEBHOOK_URL || '',
     batchSecret: env.ALERT_BATCH_WEBHOOK_SECRET || '',
     batchQuietMs: Number(env.ALERT_BATCH_QUIET_MS || 90000),
+    batchMaxAgeMs: Number(env.ALERT_BATCH_MAX_AGE_MS || 1800000),
     batchRequiredAlerts: (env.ALERT_BATCH_REQUIRED_ALERTS || '').split(',').map(value => value.trim()).filter(Boolean),
     stateFile: env.STATE_FILE || path.join(root, '.data/state.json'),
     transcriptFile: env.DEVIN_TRANSCRIPT_FILE || '',
@@ -50,12 +51,12 @@ export async function createApp(cfg = config()) {
   if (!Number.isInteger(cfg.maxAcu) || cfg.maxAcu < 1 || cfg.maxAcu > 100) throw new Error('DEVIN_MAX_ACU must be 1 to 100');
   if (!Number.isFinite(cfg.pollMs) || cfg.pollMs < 100) throw new Error('Invalid poll interval');
   if (!Number.isFinite(cfg.batchQuietMs) || cfg.batchQuietMs < 1) throw new Error('Invalid alert batch quiet window');
+  if (!Number.isFinite(cfg.batchMaxAgeMs) || cfg.batchMaxAgeMs < 1) throw new Error('Invalid alert batch maximum age');
   await mkdir(path.dirname(cfg.stateFile), { recursive: true });
   let state;
   try { state = JSON.parse(await readFile(cfg.stateFile, 'utf8')); }
   catch (e) { if (e.code !== 'ENOENT') throw e; state = { threads: [], alerts: {} }; }
   state.webhookBindings ||= {};
-  if (state.alertBatch?.status === 'sending') state.alertBatch.status = 'uncertain';
   const save = async () => {
     await writeFile(`${cfg.stateFile}.tmp`, JSON.stringify(state), { mode: 0o600 });
     await rename(`${cfg.stateFile}.tmp`, cfg.stateFile);
@@ -81,6 +82,23 @@ export async function createApp(cfg = config()) {
     const m = { id: randomUUID(), author, text, requestId, at: Date.now(), delivered: false };
     t.messages.push(m); return m;
   };
+  const batchNote = (text, status) => {
+    const thread = { id: randomUUID(), channel: 'alerts', messages: [], status, readOnly: true };
+    add(thread, 'devin', text); state.threads.push(thread);
+  };
+  const batchFirstAt = batch => batch.firstAt ??= Math.min(batch.lastAt || Date.now(),
+    ...batch.alerts.map(alert => Date.parse(alert.startsAt)).filter(Number.isFinite));
+  const expireBatch = () => {
+    if (state.alertBatch?.status !== 'pending' || Date.now() - batchFirstAt(state.alertBatch) < cfg.batchMaxAgeMs) return false;
+    batchNote(`Discarded expired alert batch (${state.alertBatch.alerts.length} alerts). Start a new storm or reset the batch before retrying.`, 'discarded');
+    delete state.alertBatch; return true;
+  };
+  if (state.alertBatch?.status === 'sending') {
+    state.alertBatch.status = 'uncertain';
+    batchNote('Alert batch delivery is unconfirmed after restart. Check the automation\'s event history before retrying; no automatic retry was sent.', 'uncertain');
+    await save();
+  }
+  if (expireBatch()) await save();
   const safeUrl = id => `${cfg.webBase}/sessions/${id.replace(/^devin-/, '')}`;
   const deliver = async t => {
     if (t.readOnly) return;
@@ -170,8 +188,13 @@ export async function createApp(cfg = config()) {
   };
   const scheduleBatch = () => {
     clearTimeout(batchTimer);
-    if (cfg.batchWebhook && state.alertBatch?.status === 'pending' && batchComplete(state.alertBatch)) {
-      batchTimer = setTimeout(() => serial(flushBatch).catch(() => {}), Math.max(0, state.alertBatch.lastAt + cfg.batchQuietMs - Date.now()));
+    if (state.alertBatch?.status === 'pending') {
+      let delay = batchFirstAt(state.alertBatch) + cfg.batchMaxAgeMs - Date.now();
+      if (cfg.batchWebhook && batchComplete(state.alertBatch)) delay = Math.min(delay, state.alertBatch.lastAt + cfg.batchQuietMs - Date.now());
+      batchTimer = setTimeout(() => serial(async () => {
+        if (expireBatch()) { await save(); return; }
+        await flushBatch(); scheduleBatch();
+      }).catch(() => {}), Math.max(0, delay));
       batchTimer.unref();
     }
   };
@@ -231,12 +254,24 @@ export async function createApp(cfg = config()) {
     try {
       const url = new URL(req.url, 'http://localhost');
       if (req.method === 'GET' && url.pathname === '/healthz') return json(res, 200, { ok: true });
+      if (req.method === 'POST' && url.pathname === '/api/alert-batch/reset') {
+        if (!secretEqual(req.headers['x-webhook-secret'] || '', cfg.receiverSecret)) return json(res, 401, { error: 'Receiver authentication required' });
+        return json(res, 200, await serial(async () => {
+          const reset = state.alertBatch?.status === 'pending';
+          if (reset) {
+            batchNote(`Discarded pending alert batch (${state.alertBatch.alerts.length} alerts) by operator reset.`, 'discarded');
+            delete state.alertBatch; clearTimeout(batchTimer); await save();
+          }
+          return { reset };
+        }));
+      }
       if (req.method === 'POST' && url.pathname === '/receivers/alertmanager') {
         if (!secretEqual(req.headers['x-webhook-secret'] || '', cfg.receiverSecret)) return json(res, 401, { error: 'Receiver authentication required' });
         const data = await body(req);
         const alerts = data.alerts;
         if (!Array.isArray(alerts) || alerts.length > 100) return json(res, 400, { error: 'Expected an Alertmanager webhook with alerts' });
         return json(res, 200, await serial(async () => {
+          expireBatch();
           const ids = [];
           for (const alert of alerts) {
             if (!alert.labels || typeof alert.labels !== 'object') continue;
@@ -246,7 +281,7 @@ export async function createApp(cfg = config()) {
               requestId: `alert-${key}`, localOnly: Boolean(cfg.batchWebhook) });
             state.alerts[key] = t.id; ids.push(t.id);
             if (cfg.batchWebhook) {
-              if (state.alertBatch?.status !== 'pending') state.alertBatch = { alerts: [], status: 'pending' };
+              if (state.alertBatch?.status !== 'pending') state.alertBatch = { alerts: [], status: 'pending', firstAt: Date.now() };
               state.alertBatch.alerts.push(alert); state.alertBatch.lastAt = Date.now();
             }
           }
@@ -255,7 +290,7 @@ export async function createApp(cfg = config()) {
       }
       // The browser sends JSON plus a custom header; cross-origin forms cannot submit chat writes.
       if (req.method === 'POST' && (!req.headers['content-type']?.startsWith('application/json') || req.headers['x-workspace-client'] !== 'mock-slack' || (req.headers.origin && req.headers.origin !== `http://${req.headers.host}` && req.headers.origin !== `https://${req.headers.host}`))) return json(res, 403, { error: 'Same-origin workspace request required' });
-      if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { users, channels, threads: state.threads, mirrorError: cfg.transcriptFile ? state.mirrorError || null : null, configured: cfg.route === 'webhook' ? Boolean(cfg.webhook && cfg.webhookSecret) : Boolean(cfg.key && cfg.org), route: cfg.route });
+      if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { users, channels, threads: state.threads, alertBatch: state.alertBatch ? { status: state.alertBatch.status, alertCount: state.alertBatch.alerts.length } : null, mirrorError: cfg.transcriptFile ? state.mirrorError || null : null, configured: cfg.route === 'webhook' ? Boolean(cfg.webhook && cfg.webhookSecret) : Boolean(cfg.key && cfg.org), route: cfg.route });
       if (req.method === 'POST' && url.pathname === '/api/messages') return json(res, 200, await serial(async () => post(await body(req))));
       const files = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'] };
       if (req.method === 'GET' && files[url.pathname]) {

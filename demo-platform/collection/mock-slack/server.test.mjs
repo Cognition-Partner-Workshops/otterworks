@@ -9,7 +9,7 @@ import { createApp, config } from './server.mjs';
 
 const ID = 'devin-0123456789abcdef0123456789abcdef';
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session', alternateIds = false, batch = false } = {}) {
+async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session', alternateIds = false, batch = false, initialState } = {}) {
   const calls = [];
   const upstream = http.createServer(async (req, res) => {
     let body = ''; for await (const b of req) body += b;
@@ -26,6 +26,7 @@ async function fixture(t, { route = 'session', fail = false, noSession = false, 
   const base = `http://127.0.0.1:${upstream.address().port}`;
   const cfg = config({ DEVIN_API_BASE: base, DEVIN_WEB_BASE: 'http://localhost:4000', MOCK_SLACK_DEVIN_API_KEY: 'fixture-key', DEVIN_ORG_ID: 'org-fixture', DEVIN_CREATE_AS_USER_ID: 'user-persona', STATE_FILE: path.join(dir, 'state.json'), DEVIN_TRIGGER_ROUTE: route, DEVIN_WEBHOOK_ACTION: webhookAction, DEVIN_AUTOMATION_URL: `${base}/hook`, DEVIN_WEBHOOK_SECRET: 'fixture-webhook-secret', ALERTMANAGER_RECEIVER_SECRET: 'fixture-receiver-secret', POLL_INTERVAL_MS: '600000' });
   if (batch) { cfg.batchWebhook = `${base}/batch`; cfg.batchSecret = 'batch-secret'; cfg.batchQuietMs = 80; }
+  if (initialState) await writeFile(cfg.stateFile, JSON.stringify(initialState));
   const app = await createApp(cfg);
   await new Promise(r => app.server.listen(0, '127.0.0.1', r));
   const url = `http://127.0.0.1:${app.server.address().port}`;
@@ -36,6 +37,73 @@ async function fixture(t, { route = 'session', fail = false, noSession = false, 
   };
   return { app, cfg, calls, dir, url, post };
 }
+
+const sendBatchAlert = (url, name) => fetch(`${url}/receivers/alertmanager`, {
+  method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' },
+  body: JSON.stringify({ alerts: [{ status: 'firing', labels: { alertname: name }, startsAt: new Date().toISOString(), fingerprint: crypto.randomUUID() }] }),
+});
+
+test('interrupted batch recovery is visible, persisted and never retried', async t => {
+  const f = await fixture(t, { batch: true, initialState: { threads: [], alerts: {}, alertBatch: { status: 'sending', alerts: [{ labels: { alertname: 'First' } }] } } });
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.deepEqual(state.alertBatch, { status: 'uncertain', alertCount: 1 });
+  assert.match(state.threads[0].messages[0].text, /unconfirmed.*automation's event history.*no automatic retry/);
+  assert.equal(state.threads[0].channel, 'alerts');
+  assert.equal(state.threads[0].readOnly, true);
+  assert.equal(JSON.stringify(state).includes('batch-secret'), false);
+  const second = await createApp(f.cfg);
+  await new Promise(r => second.server.listen(0, '127.0.0.1', r));
+  t.after(() => new Promise(r => second.server.close(r)));
+  await pause(160);
+  assert.equal(f.calls.length, 0);
+  const persisted = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
+  assert.equal(persisted.threads.length, 1);
+  assert.equal(persisted.alertBatch.status, 'uncertain');
+});
+
+test('expired recovered batch cannot satisfy required names in a new storm', async t => {
+  const f = await fixture(t, { batch: true, initialState: { threads: [], alerts: {}, alertBatch: { status: 'pending', firstAt: Date.now() - 1800001, lastAt: Date.now(), alerts: [{ labels: { alertname: 'First' } }] } } });
+  f.cfg.batchRequiredAlerts = ['First', 'Last'];
+  let state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.alertBatch, null);
+  assert.match(state.threads[0].messages[0].text, /Discarded expired alert batch/);
+  await sendBatchAlert(f.url, 'Last');
+  await pause(160);
+  assert.equal(f.calls.length, 0);
+  await sendBatchAlert(f.url, 'First');
+  await pause(160);
+  assert.equal(f.calls.length, 1);
+  assert.deepEqual(f.calls[0].body.alerts.map(a => a.labels.alertname), ['Last', 'First']);
+});
+
+test('incomplete pending batch expires without another incoming alert', async t => {
+  const f = await fixture(t, { batch: true });
+  f.cfg.batchRequiredAlerts = ['First', 'Last']; f.cfg.batchMaxAgeMs = 60;
+  await sendBatchAlert(f.url, 'First');
+  await pause(160);
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.alertBatch, null);
+  assert.match(state.threads.at(-1).messages[0].text, /Discarded expired alert batch/);
+  assert.equal(f.calls.length, 0);
+  assert.equal(config({ ALERT_BATCH_MAX_AGE_MS: '1234' }).batchMaxAgeMs, 1234);
+  await assert.rejects(createApp({ ...f.cfg, batchMaxAgeMs: 0 }), /Invalid alert batch maximum age/);
+});
+
+test('operator reset requires receiver authentication and clears only pending batches', async t => {
+  const f = await fixture(t, { batch: true }); f.cfg.batchRequiredAlerts = ['First', 'Last'];
+  const reset = secret => fetch(`${f.url}/api/alert-batch/reset`, { method: 'POST', headers: { 'X-Webhook-Secret': secret } });
+  assert.equal((await reset('wrong')).status, 401);
+  assert.deepEqual(await (await reset('fixture-receiver-secret')).json(), { reset: false });
+  await sendBatchAlert(f.url, 'First');
+  assert.equal((await reset('wrong')).status, 401);
+  assert.deepEqual((await (await fetch(`${f.url}/api/state`)).json()).alertBatch, { status: 'pending', alertCount: 1 });
+  assert.deepEqual(await (await reset('fixture-receiver-secret')).json(), { reset: true });
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.alertBatch, null);
+  assert.match(state.threads.at(-1).messages[0].text, /operator reset/);
+  await sendBatchAlert(f.url, 'Last'); await pause(160);
+  assert.equal(f.calls.length, 0);
+});
 
 test('alert batches wait for quiet, include every new firing alert and do not bind threads', async t => {
   const f = await fixture(t, { batch: true });

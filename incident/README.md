@@ -137,8 +137,9 @@ the volume is full.
 ## Concurrent local scenarios
 
 `make arm SCENARIO=all` arms every catalog scenario. A comma list such as
-`make arm SCENARIO=n-plus-one,cache-leak` selects a subset, and later arm
-commands can add scenarios. Each load profile runs in a separate process.
+`make arm SCENARIO=n-plus-one,cache-leak` selects a subset. To add scenarios,
+disarm first and arm the full set in one command so the coordinator stages the
+loads safely. Re-arming the same set is allowed. Each load profile runs in a separate process.
 `make disarm` stops every load and reverses every armed scenario. Verification
 gates still require a single armed scenario; concurrent loads change the
 measurements and are intended for the alert-storm demo.

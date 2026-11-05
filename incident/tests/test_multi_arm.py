@@ -25,11 +25,20 @@ def harness(monkeypatch, tmp_path):
     return cat, calls
 
 
-def test_single_then_add_and_disarm(harness, monkeypatch):
+def test_single_then_add_is_refused_and_disarm(harness, monkeypatch, capsys):
     cat, calls = harness
     incident.cmd_arm(argparse.Namespace(scenario="n-plus-one"))
     assert incident.read_state()["scenario"] == "n-plus-one"
-    incident.cmd_arm(argparse.Namespace(scenario="cache-leak,log-flood"))
+    calls.clear()
+    with pytest.raises(SystemExit):
+        incident.cmd_arm(argparse.Namespace(scenario="cache-leak,log-flood"))
+    assert calls == []
+    assert incident.read_state()["scenario"] == "n-plus-one"
+    assert "make arm SCENARIO=n-plus-one,cache-leak,log-flood" in capsys.readouterr().err
+    incident.cmd_arm(argparse.Namespace(scenario="n-plus-one"))
+    assert incident.read_state()["scenario"] == "n-plus-one"
+    incident.write_state({})
+    incident.cmd_arm(argparse.Namespace(scenario="n-plus-one,cache-leak,log-flood"))
     assert set(incident.read_state()["scenarios"]) == {"n-plus-one", "cache-leak", "log-flood"}
     calls.clear()
     monkeypatch.setattr(incident.httpx, "delete", lambda *args, **kwargs: None)
@@ -37,6 +46,20 @@ def test_single_then_add_and_disarm(harness, monkeypatch):
     assert calls == [(name, step) for name in ("n-plus-one", "cache-leak", "log-flood")
                      for step in cat["scenarios"][name]["disarm"]]
     assert incident.read_state() == {}
+
+
+def test_existing_multi_arm_refuses_expansion_but_allows_same_set(harness):
+    _, calls = harness
+    incident.cmd_arm(argparse.Namespace(scenario="n-plus-one,cache-leak"))
+    original = incident.read_state()
+    calls.clear()
+    with pytest.raises(SystemExit):
+        incident.cmd_arm(argparse.Namespace(scenario="all"))
+    assert calls == []
+    assert incident.read_state() == original
+    incident.cmd_arm(argparse.Namespace(scenario="cache-leak,n-plus-one"))
+    assert set(incident.read_state()["scenarios"]) == {"n-plus-one", "cache-leak"}
+    assert calls[-1][0] == "storm"
 
 
 def test_all_and_invalid(harness):

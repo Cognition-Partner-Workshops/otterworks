@@ -981,6 +981,10 @@ def cmd_arm(args: argparse.Namespace) -> None:
     if state.get("scenario"):
         armed[state["scenario"]] = state
     names = list(dict.fromkeys(names))
+    if armed and set(names) - set(armed):
+        full_set = list(dict.fromkeys([*armed, *names]))
+        die("disarm before adding scenarios, then arm the full set in one command: "
+            f"make disarm; make arm SCENARIO={','.join(full_set)}")
     concurrent = len(names) > 1
     memory = [name for name in names if any(
         _step_parts(step)[0] == "memory-limit" for step in cat["scenarios"][name]["arm"]
