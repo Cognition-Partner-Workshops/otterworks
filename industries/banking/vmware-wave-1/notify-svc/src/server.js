@@ -41,6 +41,7 @@ app.get('/outbox/:account', (req, res) => {
     if (err) return res.status(503).json({ error: 'store unavailable' });
     res.json(rows.map((r) => {
       const msg = JSON.parse(r);
+      msg.outboxUrl = '/outbox/' + encodeURIComponent(msg.account);
       msg.account = maskAccount(msg.account);
       return msg;
     }));

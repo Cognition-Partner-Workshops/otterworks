@@ -15,6 +15,7 @@ const fs = require('fs');
 const vm = require('vm');
 const routes = {};
 const stored = [];
+const outboxes = new Map();
 const app = {
   use() {},
   post(path, handler) { routes[path] = handler; },
@@ -27,8 +28,14 @@ const db = {
   on() {},
   incr(key, cb) { cb(null, 1); },
   expire() {},
-  lpush(key, msg, cb) { stored.push(msg); cb(null); },
-  lrange(key, start, stop, cb) { cb(null, stored); }
+  lpush(key, msg, cb) {
+    stored.push(msg);
+    const rows = outboxes.get(key) || [];
+    rows.unshift(msg);
+    outboxes.set(key, rows);
+    cb(null);
+  },
+  lrange(key, start, stop, cb) { cb(null, (outboxes.get(key) || []).slice(start, stop + 1)); }
 };
 vm.runInNewContext(fs.readFileSync(require.resolve('../src/server'), 'utf8'), {
   require(name) {
@@ -46,6 +53,11 @@ assert.strictEqual(JSON.parse(stored[0]).account, 'HG611000001', 'internal queue
 routes['/outbox/:account']({ params: { account: 'HG611000001' } }, res);
 assert.strictEqual(response[0].account, '****0001', 'outbox masks customer-visible account');
 assert.strictEqual(response[0].text, 'Your statement for ****0001 is ready to view.');
+assert.strictEqual(response[0].outboxUrl, '/outbox/HG611000001', 'outbox returns a lookup link, not a display identifier');
+const firstOutbox = JSON.stringify(response);
+const outboxPath = new (require('url').URL)(response[0].outboxUrl, 'http://localhost').pathname;
+routes['/outbox/:account']({ params: { account: decodeURIComponent(outboxPath.slice('/outbox/'.length)) } }, res);
+assert.strictEqual(JSON.stringify(response), firstOutbox, 'following the returned link retrieves the same masked outbox');
 for (const [kind, fields] of [
   ['statement_ready', {}],
   ['card_payment', { amount: '12.40', merchant: 'Corner Cafe' }],
