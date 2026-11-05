@@ -28,6 +28,7 @@ from app.services.document_service import DocumentService
 from app.services.export_archive import ExportArchive
 from app.services.render_cache import render_cache
 from app.services.share_link import ShareLinkService
+from app.telemetry import AUTHZ_EVENTS, SECURITY_EVENTS
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -82,7 +83,23 @@ def _require_user_id(request: Request) -> UUID:
 
 def _ensure_owner(document: object, user_id: UUID) -> None:
     if getattr(document, "owner_id", None) != user_id:
+        AUTHZ_EVENTS.labels("cross_owner_object", "denied").inc()
         raise HTTPException(status_code=403, detail="Access denied")
+
+
+def _observe_owner(owner_id: object, request: Request, event: str, outcome: str) -> None:
+    caller = _extract_user_id(request)
+    if owner_id and caller and str(owner_id) != str(caller):
+        AUTHZ_EVENTS.labels(event, outcome).inc()
+
+
+async def _observe_body_owner(request: Request) -> None:
+    try:
+        body = await request.json()
+    except Exception:
+        return
+    if isinstance(body, dict):
+        _observe_owner(body.get("owner_id"), request, "owner_override", "observed")
 
 
 async def _do_create_document(
@@ -90,6 +107,7 @@ async def _do_create_document(
     request: Request,
     db: AsyncSession,
 ) -> DocumentResponse:
+    _observe_owner(body.owner_id, request, "owner_override", "observed")
     if not body.owner_id:
         extracted_id = _extract_user_id(request)
         if not extracted_id:
@@ -134,6 +152,7 @@ async def create_document_no_slash(
 
 @router.get("/search", response_model=DocumentListResponse)
 async def search_documents(
+    request: Request,
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
@@ -143,6 +162,9 @@ async def search_documents(
     await _maybe_inject_latency()
     service = DocumentService(db)
     items, total = await service.search(q, page=page, size=size)
+    caller = _extract_user_id(request)
+    if caller and any(item.owner_id != caller for item in items):
+        AUTHZ_EVENTS.labels("cross_owner_object", "allowed").inc()
     return DocumentListResponse(
         items=items,
         total=total,
@@ -155,6 +177,8 @@ async def search_documents(
 @router.get("/exports", response_class=PlainTextResponse)
 async def read_export(name: str = Query(..., min_length=1)):
     """Return a previously rendered export from the export archive."""
+    if ".." in name or "/" in name or "\\" in name or os.path.isabs(name):
+        AUTHZ_EVENTS.labels("export_path_traversal", "observed").inc()
     archive = ExportArchive()
     try:
         return archive.read_export(name)
@@ -164,16 +188,19 @@ async def read_export(name: str = Query(..., min_length=1)):
 
 @router.get("/shared", response_model=DocumentResponse)
 async def get_shared_document(
+    request: Request,
     document_id: UUID,
     token: str = Query(..., min_length=1),
     db: AsyncSession = Depends(get_db),
 ):
     """Return a document through its read-only share link."""
     if not ShareLinkService().verify_token(str(document_id), token):
+        SECURITY_EVENTS.labels("share_token_rejected").inc()
         raise HTTPException(status_code=403, detail="Invalid share token")
     document = await DocumentService(db).get(document_id)
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
+    _observe_owner(document.owner_id, request, "cross_owner_object", "allowed")
     return document
 
 
@@ -183,12 +210,14 @@ async def _do_list_documents(
     page: int,
     size: int,
     db: AsyncSession,
+    request: Request,
 ) -> DocumentListResponse:
     await _maybe_inject_latency()
     service = DocumentService(db)
     items, total = await service.list_documents(
         owner_id=owner_id, folder_id=folder_id, page=page, size=size
     )
+    _observe_owner(owner_id, request, "cross_owner_object", "allowed")
     return DocumentListResponse(
         items=items,
         total=total,
@@ -208,6 +237,7 @@ async def _do_filter_documents(
     page: int,
     size: int,
     db: AsyncSession,
+    request: Request,
 ) -> DocumentListResponse:
     await _maybe_inject_latency()
     repo = DocumentQueryRepository(db)
@@ -228,6 +258,7 @@ async def _do_filter_documents(
         )
     except SQLAlchemyError as exc:
         raise HTTPException(status_code=400, detail=f"Invalid filter: {exc}") from exc
+    _observe_owner(owner_id, request, "cross_owner_object", "allowed")
     return DocumentListResponse(
         items=[DocumentResponse.model_validate(row) for row in rows],
         total=total,
@@ -279,8 +310,9 @@ async def list_documents(
             page,
             size,
             db,
+            request,
         )
-    return await _do_list_documents(effective_owner, folder_id, page, size, db)
+    return await _do_list_documents(effective_owner, folder_id, page, size, db, request)
 
 
 @router.get(
@@ -313,8 +345,9 @@ async def list_documents_no_slash(
             page,
             size,
             db,
+            request,
         )
-    return await _do_list_documents(effective_owner, folder_id, page, size, db)
+    return await _do_list_documents(effective_owner, folder_id, page, size, db, request)
 
 
 @router.get("/{document_id}", response_model=DocumentResponse)
@@ -342,6 +375,7 @@ async def update_document(
     db: AsyncSession = Depends(get_db),
 ):
     """Full replace of a document."""
+    await _observe_body_owner(request)
     await _maybe_inject_latency()
     user_id = _require_user_id(request)
     service = DocumentService(db)
@@ -362,6 +396,7 @@ async def patch_document(
     db: AsyncSession = Depends(get_db),
 ):
     """Partial update of a document."""
+    await _observe_body_owner(request)
     await _maybe_inject_latency()
     user_id = _require_user_id(request)
     service = DocumentService(db)
@@ -492,9 +527,11 @@ async def export_document(
 async def create_from_template(
     template_id: UUID,
     body: DocumentFromTemplate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """Create a document from a template."""
+    _observe_owner(body.owner_id, request, "owner_override", "observed")
     service = DocumentService(db)
     document = await service.create_from_template(template_id, body)
     if not document:

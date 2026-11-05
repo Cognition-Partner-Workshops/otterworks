@@ -1,0 +1,156 @@
+{
+  "baseline_commit": "ae25fcdbeb86b4289fc6bc6fd11dfa350fb8a8da",
+  "baseline_source": "Actual demo-bank service-build scan retained from the earlier detection phase; no service swaps during this gateway-only extension.",
+  "baseline_scanned_at": "2026-11-05T13:10:45.440590+00:00",
+  "before_ib_scanned_at": "2026-11-05T13:12:00.898308+00:00",
+  "after_ib_scanned_at": "2026-11-05T14:31:20.367102+00:00",
+  "target": "http://localhost:8080",
+  "previous_gateway_image_id": "sha256:0ca179ab9505c30892777c99f4b46ddcf7b06ca866862bb13e37a55fba1ff84a",
+  "running_image_ids": {
+    "api-gateway": "sha256:56251f453537e9b738cbd15d277baad9bbd99200362fb5fa9d24fb3a63af62ff",
+    "document-service": "sha256:401ec9bb8faeb87880cd908fb63f93b8a5f7b34810fbf24f3e50df750ca3c06c",
+    "auth-service": "sha256:104c23a62d07e21f03f8c8e629809a1a7cc373b0db1b3112ec73785d3d1c8350"
+  },
+  "counts": {
+    "secure": 9,
+    "vulnerable": 8,
+    "inconclusive": 2
+  },
+  "scope_note": "Same minimal running stack and persistent database; only gateway rebuilt/restarted. File/search services remain absent: two matching inconclusive verdicts are not security passes.",
+  "probes": [
+    {
+      "finding_id": "DAST-ANONYMOUS-ROUTE-SWEEP",
+      "demo_bank": "secure",
+      "before_ib": "secure",
+      "after_ib": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-BOLA-DOCUMENTS",
+      "demo_bank": "secure",
+      "before_ib": "secure",
+      "after_ib": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-CORS-ORIGIN-REFLECTION",
+      "demo_bank": "secure",
+      "before_ib": "secure",
+      "after_ib": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-CREDENTIAL-BRUTE-FORCE",
+      "demo_bank": "vulnerable",
+      "before_ib": "vulnerable",
+      "after_ib": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-EXPOSED-TELEMETRY",
+      "demo_bank": "vulnerable",
+      "before_ib": "vulnerable",
+      "after_ib": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-GATEWAY-BYPASS-IDENTITY",
+      "demo_bank": "inconclusive",
+      "before_ib": "inconclusive",
+      "after_ib": "inconclusive",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-IDENTITY-HEADER-SPOOF",
+      "demo_bank": "secure",
+      "before_ib": "secure",
+      "after_ib": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-MASS-ASSIGNMENT-OWNER",
+      "demo_bank": "vulnerable",
+      "before_ib": "vulnerable",
+      "after_ib": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-MISSING-SECURITY-HEADERS",
+      "demo_bank": "vulnerable",
+      "before_ib": "vulnerable",
+      "after_ib": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-PATH-TRAVERSAL-EXPORT",
+      "demo_bank": "vulnerable",
+      "before_ib": "vulnerable",
+      "after_ib": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-RATE-LIMIT-BYPASS",
+      "demo_bank": "vulnerable",
+      "before_ib": "vulnerable",
+      "after_ib": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-SEARCH-TENANT-LEAK",
+      "demo_bank": "inconclusive",
+      "before_ib": "inconclusive",
+      "after_ib": "inconclusive",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-SENSITIVE-DATA-IN-RESPONSE",
+      "demo_bank": "secure",
+      "before_ib": "secure",
+      "after_ib": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-SHARE-TOKEN-FORGERY",
+      "demo_bank": "vulnerable",
+      "before_ib": "vulnerable",
+      "after_ib": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-SQLI-ERROR-BASED",
+      "demo_bank": "vulnerable",
+      "before_ib": "vulnerable",
+      "after_ib": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-STORED-XSS-DOCUMENTS",
+      "demo_bank": "secure",
+      "before_ib": "secure",
+      "after_ib": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-UNAUTHENTICATED-ADMIN",
+      "demo_bank": "secure",
+      "before_ib": "secure",
+      "after_ib": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-UNSIGNED-JWT",
+      "demo_bank": "secure",
+      "before_ib": "secure",
+      "after_ib": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-VERBOSE-ERRORS",
+      "demo_bank": "secure",
+      "before_ib": "secure",
+      "after_ib": "secure",
+      "matches": true
+    }
+  ],
+  "all_match": true
+}

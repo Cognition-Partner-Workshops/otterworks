@@ -1,0 +1,207 @@
+{
+  "attack_class": "ib-payment-anonymous",
+  "alert_attack_class": "ib-payment-anonymous",
+  "started_at": "2026-11-05T14:29:11.348467+00:00",
+  "urls": {
+    "gateway": "http://localhost:8080",
+    "prometheus": "http://localhost:9090",
+    "alertmanager": "http://localhost:9093",
+    "sink": "http://localhost:9095"
+  },
+  "expected_alerts": [
+    "SecurityPaymentRouteAnonymous"
+  ],
+  "budgets": {
+    "quiet_budget_seconds": 360,
+    "time_budget_seconds": 180,
+    "probe_budget_seconds": 300
+  },
+  "firing": {
+    "SecurityPaymentRouteAnonymous": {
+      "activeAt": [
+        "2026-11-05T14:30:27.311342612Z"
+      ],
+      "observed_at": "2026-11-05T14:30:44.830591+00:00",
+      "seconds_to_fire": 33.347
+    }
+  },
+  "probe_verdicts": [
+    {
+      "finding_id": "IB-PAYMENT-ANONYMOUS",
+      "verdict": "inconclusive",
+      "detail": "Tripwire requests sent; no IB account ownership or payment execution is observable here. POST /transaction/fund-transfer -> 404; POST /api/v1/transaction/fund-transfer -> 404; POST /utility-payment -> 404; POST /api/v1/utility-payment -> 404"
+    }
+  ],
+  "sink_payloads": [
+    {
+      "received_at": "2026-11-05T14:30:52Z",
+      "receiver": "security",
+      "headers": {
+        "Host": "alert-sink:9095",
+        "User-Agent": "Alertmanager/0.28.1",
+        "Content-Length": "1792",
+        "Content-Type": "application/json"
+      },
+      "payload": {
+        "receiver": "security-oncall",
+        "status": "firing",
+        "alerts": [
+          {
+            "status": "firing",
+            "labels": {
+              "alertname": "SecurityPaymentRouteAnonymous",
+              "attack_class": "ib-payment-anonymous",
+              "cluster": "otterworks-dev",
+              "environment": "development",
+              "page": "security",
+              "severity": "critical"
+            },
+            "annotations": {
+              "description": "Anonymous payment-path request observed at the gateway. These routes return 404 here; account ownership and payment execution are not observable.",
+              "finding_ids": "IB-PAYMENT-ANONYMOUS",
+              "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-anonymous",
+              "summary": "Anonymous payment route call observed"
+            },
+            "startsAt": "2026-11-05T14:30:42.311Z",
+            "endsAt": "0001-01-01T00:00:00Z",
+            "generatorURL": "http://6123f82cd608:9090/graph?g0.expr=sum%28increase%28api_gateway_security_events_total%7Bevent%3D%22payment_route_call%22%2Creason%3D%22anonymous%22%7D%5B2m%5D%29%29+%3E+0&g0.tab=1",
+            "fingerprint": "59a12610773d61b8"
+          }
+        ],
+        "groupLabels": {
+          "alertname": "SecurityPaymentRouteAnonymous"
+        },
+        "commonLabels": {
+          "alertname": "SecurityPaymentRouteAnonymous",
+          "attack_class": "ib-payment-anonymous",
+          "cluster": "otterworks-dev",
+          "environment": "development",
+          "page": "security",
+          "severity": "critical"
+        },
+        "commonAnnotations": {
+          "description": "Anonymous payment-path request observed at the gateway. These routes return 404 here; account ownership and payment execution are not observable.",
+          "finding_ids": "IB-PAYMENT-ANONYMOUS",
+          "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-anonymous",
+          "summary": "Anonymous payment route call observed"
+        },
+        "externalURL": "http://709abb884f29:9093",
+        "version": "4",
+        "groupKey": "{}/{page=\"security\"}:{alertname=\"SecurityPaymentRouteAnonymous\"}",
+        "truncatedAlerts": 0
+      }
+    }
+  ],
+  "quiet_settle_seconds": 60,
+  "exit_code": 0,
+  "before_alerts": {
+    "SecurityPaymentRouteAnonymous": {
+      "state": "inactive",
+      "instances": []
+    }
+  },
+  "before_alertmanager_alerts": [],
+  "before_counters": {
+    "at": "2026-11-05T14:30:11.481614+00:00",
+    "counters": {
+      "api_gateway_security_events_total{event=\"payment_route_call\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "payment_route_call",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "anonymous",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889011.48,
+            "0"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "payment_route_call",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "authenticated",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889011.48,
+            "0"
+          ]
+        }
+      ]
+    }
+  },
+  "attack_started_at": "2026-11-05T14:30:11.483231+00:00",
+  "probe_exit_code": 0,
+  "probe_finished_at": "2026-11-05T14:30:11.762989+00:00",
+  "after_alerts": {
+    "SecurityPaymentRouteAnonymous": {
+      "state": "firing",
+      "instances": [
+        {
+          "labels": {
+            "alertname": "SecurityPaymentRouteAnonymous",
+            "attack_class": "ib-payment-anonymous",
+            "page": "security",
+            "severity": "critical"
+          },
+          "state": "firing",
+          "activeAt": "2026-11-05T14:30:27.311342612Z",
+          "value": "4.30712380952381e+00"
+        }
+      ]
+    }
+  },
+  "delivered_alerts": [
+    "SecurityPaymentRouteAnonymous"
+  ],
+  "after_counters": {
+    "at": "2026-11-05T14:30:53.850796+00:00",
+    "counters": {
+      "api_gateway_security_events_total{event=\"payment_route_call\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "payment_route_call",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "anonymous",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889053.849,
+            "4"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "payment_route_call",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "authenticated",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889053.849,
+            "3"
+          ]
+        }
+      ]
+    }
+  },
+  "finished_at": "2026-11-05T14:30:53.850851+00:00"
+}

@@ -43,6 +43,7 @@ func (rl *RateLimiter) Allow(ip string) bool {
 	now := rl.now()
 	bucket, exists := rl.buckets[ip]
 	if !exists {
+		limiterClients.Inc()
 		bucket = &TokenBucket{
 			tokens:     float64(rl.rps),
 			maxTokens:  float64(rl.rps),
@@ -71,6 +72,7 @@ func (rl *RateLimiter) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := extractIP(r)
 		if !rl.Allow(ip) {
+			limiterRejections.Inc()
 			w.Header().Set("Content-Type", "application/json")
 			w.Header().Set("Retry-After", "1")
 			w.WriteHeader(http.StatusTooManyRequests)

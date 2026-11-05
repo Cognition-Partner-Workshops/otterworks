@@ -45,6 +45,10 @@ monitoring:
   enabled: true
   path: /metrics
   port: 8080
+  rules:
+    enabled: false
+    labels: {}
+    extraLabels: {}
 
 env:
   AUTH_SERVICE_URL: "http://auth-service:8081"

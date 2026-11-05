@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Keep the document-service chart's copies of the incident alert rules and
+# Keep chart copies of incident/security alert rules and the incident
 # dashboard identical to their sources. Helm's .Files.Get cannot read outside
 # the chart directory, so the chart carries generated copies.
 #
@@ -8,10 +8,10 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CHART_FILES="${REPO_ROOT}/infrastructure/helm/document-service/files"
 PAIRS=(
-  "observability/prometheus/incident_alerts.yml:incident_alerts.yml"
-  "observability/grafana/dashboards/incident-responder.json:incident-responder.json"
+  "observability/prometheus/incident_alerts.yml:infrastructure/helm/document-service/files/incident_alerts.yml"
+  "observability/grafana/dashboards/incident-responder.json:infrastructure/helm/document-service/files/incident-responder.json"
+  "observability/prometheus/security_alerts.yml:infrastructure/helm/api-gateway/files/security_alerts.yml"
 )
 
 check=false
@@ -20,14 +20,14 @@ check=false
 rc=0
 for pair in "${PAIRS[@]}"; do
   src="${REPO_ROOT}/${pair%%:*}"
-  dst="${CHART_FILES}/${pair##*:}"
+  dst="${REPO_ROOT}/${pair##*:}"
   if "${check}"; then
     if ! cmp -s "${src}" "${dst}"; then
       echo "drift: ${dst#"${REPO_ROOT}"/} differs from ${pair%%:*} (run scripts/sync-incident-chart-files.sh)" >&2
       rc=1
     fi
   else
-    mkdir -p "${CHART_FILES}"
+    mkdir -p "$(dirname "${dst}")"
     cp "${src}" "${dst}"
     echo "synced ${pair%%:*} -> ${dst#"${REPO_ROOT}"/}"
   fi

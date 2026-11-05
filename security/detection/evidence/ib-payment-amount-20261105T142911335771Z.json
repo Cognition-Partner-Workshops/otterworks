@@ -1,0 +1,207 @@
+{
+  "attack_class": "ib-payment-amount",
+  "alert_attack_class": "ib-payment-amount",
+  "started_at": "2026-11-05T14:29:11.335806+00:00",
+  "urls": {
+    "gateway": "http://localhost:8080",
+    "prometheus": "http://localhost:9090",
+    "alertmanager": "http://localhost:9093",
+    "sink": "http://localhost:9095"
+  },
+  "expected_alerts": [
+    "SecurityPaymentAmountInvalid"
+  ],
+  "budgets": {
+    "quiet_budget_seconds": 360,
+    "time_budget_seconds": 180,
+    "probe_budget_seconds": 300
+  },
+  "firing": {
+    "SecurityPaymentAmountInvalid": {
+      "activeAt": [
+        "2026-11-05T14:30:29.930793393Z"
+      ],
+      "observed_at": "2026-11-05T14:30:45.250861+00:00",
+      "seconds_to_fire": 33.771
+    }
+  },
+  "probe_verdicts": [
+    {
+      "finding_id": "IB-PAYMENT-AMOUNT",
+      "verdict": "inconclusive",
+      "detail": "Tripwire requests sent; no IB account ownership or payment execution is observable here. POST /api/v1/transaction/fund-transfer -> 404; POST /api/v1/transaction/fund-transfer -> 404; POST /api/v1/transaction/fund-transfer -> 404"
+    }
+  ],
+  "sink_payloads": [
+    {
+      "received_at": "2026-11-05T14:30:54Z",
+      "receiver": "security",
+      "headers": {
+        "Host": "alert-sink:9095",
+        "User-Agent": "Alertmanager/0.28.1",
+        "Content-Length": "1714",
+        "Content-Type": "application/json"
+      },
+      "payload": {
+        "receiver": "security-oncall",
+        "status": "firing",
+        "alerts": [
+          {
+            "status": "firing",
+            "labels": {
+              "alertname": "SecurityPaymentAmountInvalid",
+              "attack_class": "ib-payment-amount",
+              "cluster": "otterworks-dev",
+              "environment": "development",
+              "page": "security",
+              "severity": "critical"
+            },
+            "annotations": {
+              "description": "A payment-path amount is non-positive or has more than two decimal places. This edge tripwire does not validate or execute IB payments.",
+              "finding_ids": "IB-PAYMENT-AMOUNT",
+              "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-amount",
+              "summary": "Invalid payment amount observed"
+            },
+            "startsAt": "2026-11-05T14:30:44.93Z",
+            "endsAt": "0001-01-01T00:00:00Z",
+            "generatorURL": "http://6123f82cd608:9090/graph?g0.expr=sum%28increase%28api_gateway_security_events_total%7Bevent%3D%22payment_amount_invalid%22%7D%5B2m%5D%29%29+%3E+0&g0.tab=1",
+            "fingerprint": "a254ae272eee08e2"
+          }
+        ],
+        "groupLabels": {
+          "alertname": "SecurityPaymentAmountInvalid"
+        },
+        "commonLabels": {
+          "alertname": "SecurityPaymentAmountInvalid",
+          "attack_class": "ib-payment-amount",
+          "cluster": "otterworks-dev",
+          "environment": "development",
+          "page": "security",
+          "severity": "critical"
+        },
+        "commonAnnotations": {
+          "description": "A payment-path amount is non-positive or has more than two decimal places. This edge tripwire does not validate or execute IB payments.",
+          "finding_ids": "IB-PAYMENT-AMOUNT",
+          "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-amount",
+          "summary": "Invalid payment amount observed"
+        },
+        "externalURL": "http://709abb884f29:9093",
+        "version": "4",
+        "groupKey": "{}/{page=\"security\"}:{alertname=\"SecurityPaymentAmountInvalid\"}",
+        "truncatedAlerts": 0
+      }
+    }
+  ],
+  "quiet_settle_seconds": 60,
+  "exit_code": 0,
+  "before_alerts": {
+    "SecurityPaymentAmountInvalid": {
+      "state": "inactive",
+      "instances": []
+    }
+  },
+  "before_alertmanager_alerts": [],
+  "before_counters": {
+    "at": "2026-11-05T14:30:11.477773+00:00",
+    "counters": {
+      "api_gateway_security_events_total{event=\"payment_amount_invalid\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "payment_amount_invalid",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "non_positive",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889011.476,
+            "0"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "payment_amount_invalid",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "precision",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889011.476,
+            "0"
+          ]
+        }
+      ]
+    }
+  },
+  "attack_started_at": "2026-11-05T14:30:11.479752+00:00",
+  "probe_exit_code": 0,
+  "probe_finished_at": "2026-11-05T14:30:12.177773+00:00",
+  "after_alerts": {
+    "SecurityPaymentAmountInvalid": {
+      "state": "firing",
+      "instances": [
+        {
+          "labels": {
+            "alertname": "SecurityPaymentAmountInvalid",
+            "attack_class": "ib-payment-amount",
+            "page": "security",
+            "severity": "critical"
+          },
+          "state": "firing",
+          "activeAt": "2026-11-05T14:30:29.930793393Z",
+          "value": "3.3051714285714286e+00"
+        }
+      ]
+    }
+  },
+  "delivered_alerts": [
+    "SecurityPaymentAmountInvalid"
+  ],
+  "after_counters": {
+    "at": "2026-11-05T14:30:57.276249+00:00",
+    "counters": {
+      "api_gateway_security_events_total{event=\"payment_amount_invalid\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "payment_amount_invalid",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "non_positive",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889057.275,
+            "2"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "payment_amount_invalid",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "precision",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889057.275,
+            "1"
+          ]
+        }
+      ]
+    }
+  },
+  "finished_at": "2026-11-05T14:30:57.276304+00:00"
+}

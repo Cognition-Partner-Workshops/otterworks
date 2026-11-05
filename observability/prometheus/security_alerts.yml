@@ -1,0 +1,230 @@
+# Detection only: these observations do not enforce security controls.
+groups:
+  - name: security.identity-forgery
+    interval: 15s
+    rules:
+      - alert: SecurityJWTRejected
+        expr: sum(increase(api_gateway_security_events_total{event="jwt_rejected",reason=~"alg_not_allowed|bad_signature|malformed"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: identity-forgery
+        annotations:
+          finding_ids: "DAST-UNSIGNED-JWT"
+          summary: "Forged or malformed JWT rejected"
+          description: "Forged or malformed JWT rejected in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#identity-forgery"
+      - alert: SecurityIdentityHeaderInjected
+        expr: sum(increase(api_gateway_security_events_total{event="identity_header_injected"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: identity-forgery
+        annotations:
+          finding_ids: "DAST-IDENTITY-HEADER-SPOOF"
+          summary: "Client supplied a trusted identity header"
+          description: "Client supplied a trusted identity header in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#identity-forgery"
+      - alert: SecurityShareTokenRejected
+        expr: sum(increase(otterworks_security_events_total{event="share_token_rejected"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: identity-forgery
+        annotations:
+          finding_ids: "DAST-SHARE-TOKEN-FORGERY"
+          summary: "Invalid document share token presented"
+          description: "Invalid document share token presented in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#identity-forgery"
+  - name: security.cross-customer-access
+    interval: 15s
+    rules:
+      - alert: SecurityCrossOwnerAccess
+        expr: sum(increase(otterworks_authz_events_total{event="cross_owner_object"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: cross-customer-access
+        annotations:
+          finding_ids: "DAST-BOLA-DOCUMENTS"
+          summary: "Cross-owner document access observed"
+          description: "Cross-owner document access observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#cross-customer-access"
+      - alert: SecurityOwnerOverride
+        expr: sum(increase(otterworks_authz_events_total{event="owner_override"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: cross-customer-access
+        annotations:
+          finding_ids: "DAST-MASS-ASSIGNMENT-OWNER"
+          summary: "Document body names a different owner"
+          description: "Document body names a different owner in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#cross-customer-access"
+      - alert: SecurityExportPathTraversal
+        expr: sum(increase(otterworks_authz_events_total{event="export_path_traversal"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: cross-customer-access
+        annotations:
+          finding_ids: "DAST-PATH-TRAVERSAL-EXPORT"
+          summary: "Suspicious export archive path observed"
+          description: "Suspicious export archive path observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#cross-customer-access"
+  - name: security.credential-stuffing
+    interval: 15s
+    rules:
+      - alert: SecurityLoginFailureBurst
+        expr: sum(increase(api_gateway_auth_login_total{outcome="failure"}[2m])) >= 10
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: credential-stuffing
+        annotations:
+          finding_ids: "DAST-CREDENTIAL-BRUTE-FORCE"
+          summary: "Burst of failed logins observed"
+          description: "Burst of failed logins observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-failed-logins"
+      - alert: SecurityLimiterClientChurn
+        expr: sum(increase(api_gateway_rate_limiter_clients_total[2m])) > 100
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: credential-stuffing
+        annotations:
+          finding_ids: "DAST-RATE-LIMIT-BYPASS"
+          summary: "Rate limiter client key churn observed"
+          description: "Rate limiter client key churn observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+      - alert: SecurityRateLimitRejections
+        expr: sum(increase(api_gateway_rate_limiter_rejections_total[2m])) > 100
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: credential-stuffing
+        annotations:
+          finding_ids: "DAST-RATE-LIMIT-BYPASS"
+          summary: "Rate limiter rejection burst observed"
+          description: "Rate limiter rejection burst observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+  - name: security.ib-payment-anonymous
+    interval: 15s
+    rules:
+      - alert: SecurityPaymentRouteAnonymous
+        expr: sum(increase(api_gateway_security_events_total{event="payment_route_call",reason="anonymous"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: ib-payment-anonymous
+        annotations:
+          finding_ids: "IB-PAYMENT-ANONYMOUS"
+          summary: "Anonymous payment route call observed"
+          description: "Anonymous payment-path request observed at the gateway. These routes return 404 here; account ownership and payment execution are not observable."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-anonymous"
+  - name: security.ib-payment-amount
+    interval: 15s
+    rules:
+      - alert: SecurityPaymentAmountInvalid
+        expr: sum(increase(api_gateway_security_events_total{event="payment_amount_invalid"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: ib-payment-amount
+        annotations:
+          finding_ids: "IB-PAYMENT-AMOUNT"
+          summary: "Invalid payment amount observed"
+          description: "A payment-path amount is non-positive or has more than two decimal places. This edge tripwire does not validate or execute IB payments."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-amount"
+  - name: security.ib-auth-id-mismatch
+    interval: 15s
+    rules:
+      - alert: SecurityAuthIdMismatch
+        expr: sum(increase(api_gateway_security_events_total{event="auth_id_mismatch"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: ib-auth-id-mismatch
+        annotations:
+          finding_ids: "IB-AUTH-ID-MISMATCH"
+          summary: "Untrusted auth identity header observed"
+          description: "X-Auth-Id disagrees with a validated JWT identity or has no validated token. Correlate with IB service authorization; requests are not blocked."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-auth-id-mismatch"
+  - name: security.ib-admin-non-admin
+    interval: 15s
+    rules:
+      - alert: SecurityAdminRouteNonAdmin
+        expr: sum(increase(api_gateway_security_events_total{event="admin_route_non_admin"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: ib-admin-non-admin
+        annotations:
+          finding_ids: "IB-ADMIN-NON-ADMIN"
+          summary: "Non-admin administrative route call observed"
+          description: "An admin or bank-users path was called without a validated ADMIN role. This is an edge tripwire, not an authorization decision."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-admin-non-admin"
+  - name: security.fin-makerchecker-repeat
+    interval: 15s
+    rules:
+      - alert: SecurityFineractMakerCheckerRepeatApprove
+        expr: sum(increase(api_gateway_security_events_total{event="fineract_makerchecker_repeat_approve"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: fin-makerchecker-repeat
+          source: fineract-edge
+          confirmation: verified-path
+        annotations:
+          finding_ids: "FIN-MAKERCHECKER-REPEAT"
+          summary: "Repeated maker-checker approve request observed"
+          description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-makerchecker-repeat"
+  - name: security.fin-makerchecker-disabled
+    interval: 15s
+    rules:
+      - alert: SecurityFineractMakerCheckerDisabled
+        expr: sum(increase(api_gateway_security_events_total{event="fineract_maker_checker_disabled"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: fin-makerchecker-disabled
+          source: fineract-edge
+          confirmation: verified-path
+        annotations:
+          finding_ids: "FIN-MAKERCHECKER-DISABLED"
+          summary: "Maker-checker disabling request observed"
+          description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-makerchecker-disabled"
+  - name: security.fin-privileged-endpoint
+    interval: 15s
+    rules:
+      - alert: SecurityFineractPrivilegedEndpoint
+        expr: sum(increase(api_gateway_security_events_total{event="fineract_privileged_endpoint"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: fin-privileged-endpoint
+          source: fineract-edge
+          confirmation: verified-path
+        annotations:
+          finding_ids: "FIN-PRIVILEGED-ENDPOINT"
+          summary: "Fineract privileged endpoint request observed"
+          description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-privileged-endpoint"

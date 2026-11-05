@@ -1,0 +1,207 @@
+{
+  "attack_class": "ib-auth-id-mismatch",
+  "alert_attack_class": "ib-auth-id-mismatch",
+  "started_at": "2026-11-05T14:29:11.374680+00:00",
+  "urls": {
+    "gateway": "http://localhost:8080",
+    "prometheus": "http://localhost:9090",
+    "alertmanager": "http://localhost:9093",
+    "sink": "http://localhost:9095"
+  },
+  "expected_alerts": [
+    "SecurityAuthIdMismatch"
+  ],
+  "budgets": {
+    "quiet_budget_seconds": 360,
+    "time_budget_seconds": 180,
+    "probe_budget_seconds": 300
+  },
+  "firing": {
+    "SecurityAuthIdMismatch": {
+      "activeAt": [
+        "2026-11-05T14:30:31.853076239Z"
+      ],
+      "observed_at": "2026-11-05T14:30:48.677386+00:00",
+      "seconds_to_fire": 37.172
+    }
+  },
+  "probe_verdicts": [
+    {
+      "finding_id": "IB-AUTH-ID-MISMATCH",
+      "verdict": "inconclusive",
+      "detail": "Tripwire requests sent; no IB account ownership or payment execution is observable here. GET /api/v1/documents -> 200"
+    }
+  ],
+  "sink_payloads": [
+    {
+      "received_at": "2026-11-05T14:30:56Z",
+      "receiver": "security",
+      "headers": {
+        "Host": "alert-sink:9095",
+        "User-Agent": "Alertmanager/0.28.1",
+        "Content-Length": "1729",
+        "Content-Type": "application/json"
+      },
+      "payload": {
+        "receiver": "security-oncall",
+        "status": "firing",
+        "alerts": [
+          {
+            "status": "firing",
+            "labels": {
+              "alertname": "SecurityAuthIdMismatch",
+              "attack_class": "ib-auth-id-mismatch",
+              "cluster": "otterworks-dev",
+              "environment": "development",
+              "page": "security",
+              "severity": "critical"
+            },
+            "annotations": {
+              "description": "X-Auth-Id disagrees with a validated JWT identity or has no validated token. Correlate with IB service authorization; requests are not blocked.",
+              "finding_ids": "IB-AUTH-ID-MISMATCH",
+              "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-auth-id-mismatch",
+              "summary": "Untrusted auth identity header observed"
+            },
+            "startsAt": "2026-11-05T14:30:46.853Z",
+            "endsAt": "0001-01-01T00:00:00Z",
+            "generatorURL": "http://6123f82cd608:9090/graph?g0.expr=sum%28increase%28api_gateway_security_events_total%7Bevent%3D%22auth_id_mismatch%22%7D%5B2m%5D%29%29+%3E+0&g0.tab=1",
+            "fingerprint": "843dd7afce3ed3ea"
+          }
+        ],
+        "groupLabels": {
+          "alertname": "SecurityAuthIdMismatch"
+        },
+        "commonLabels": {
+          "alertname": "SecurityAuthIdMismatch",
+          "attack_class": "ib-auth-id-mismatch",
+          "cluster": "otterworks-dev",
+          "environment": "development",
+          "page": "security",
+          "severity": "critical"
+        },
+        "commonAnnotations": {
+          "description": "X-Auth-Id disagrees with a validated JWT identity or has no validated token. Correlate with IB service authorization; requests are not blocked.",
+          "finding_ids": "IB-AUTH-ID-MISMATCH",
+          "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-auth-id-mismatch",
+          "summary": "Untrusted auth identity header observed"
+        },
+        "externalURL": "http://709abb884f29:9093",
+        "version": "4",
+        "groupKey": "{}/{page=\"security\"}:{alertname=\"SecurityAuthIdMismatch\"}",
+        "truncatedAlerts": 0
+      }
+    }
+  ],
+  "quiet_settle_seconds": 60,
+  "exit_code": 0,
+  "before_alerts": {
+    "SecurityAuthIdMismatch": {
+      "state": "inactive",
+      "instances": []
+    }
+  },
+  "before_alertmanager_alerts": [],
+  "before_counters": {
+    "at": "2026-11-05T14:30:11.503810+00:00",
+    "counters": {
+      "api_gateway_security_events_total{event=\"auth_id_mismatch\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "auth_id_mismatch",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "mismatch",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889011.503,
+            "0"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "auth_id_mismatch",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "unauthenticated",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889011.503,
+            "0"
+          ]
+        }
+      ]
+    }
+  },
+  "attack_started_at": "2026-11-05T14:30:11.505435+00:00",
+  "probe_exit_code": 0,
+  "probe_finished_at": "2026-11-05T14:30:12.611845+00:00",
+  "after_alerts": {
+    "SecurityAuthIdMismatch": {
+      "state": "firing",
+      "instances": [
+        {
+          "labels": {
+            "alertname": "SecurityAuthIdMismatch",
+            "attack_class": "ib-auth-id-mismatch",
+            "page": "security",
+            "severity": "critical"
+          },
+          "state": "firing",
+          "activeAt": "2026-11-05T14:30:31.853076239Z",
+          "value": "1.1200380952380953e+00"
+        }
+      ]
+    }
+  },
+  "delivered_alerts": [
+    "SecurityAuthIdMismatch"
+  ],
+  "after_counters": {
+    "at": "2026-11-05T14:30:57.700446+00:00",
+    "counters": {
+      "api_gateway_security_events_total{event=\"auth_id_mismatch\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "auth_id_mismatch",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "mismatch",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889057.699,
+            "1"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "auth_id_mismatch",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "unauthenticated",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889057.699,
+            "0"
+          ]
+        }
+      ]
+    }
+  },
+  "finished_at": "2026-11-05T14:30:57.700489+00:00"
+}

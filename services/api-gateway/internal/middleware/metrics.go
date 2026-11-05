@@ -11,6 +11,10 @@ import (
 )
 
 var (
+	securityEvents    = promauto.NewCounterVec(prometheus.CounterOpts{Name: "api_gateway_security_events_total", Help: "Observed security events."}, []string{"event", "reason"})
+	authLogin         = promauto.NewCounterVec(prometheus.CounterOpts{Name: "api_gateway_auth_login_total", Help: "Login responses by outcome."}, []string{"outcome"})
+	limiterClients    = promauto.NewCounter(prometheus.CounterOpts{Name: "api_gateway_rate_limiter_clients_total", Help: "New rate limiter client buckets."})
+	limiterRejections = promauto.NewCounter(prometheus.CounterOpts{Name: "api_gateway_rate_limiter_rejections_total", Help: "Rate limiter HTTP rejections."})
 	httpRequestsTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: "api_gateway",
@@ -39,6 +43,29 @@ var (
 	)
 )
 
+func init() {
+	for event, reasons := range map[string][]string{
+		"payment_route_call":                   {"anonymous", "authenticated"},
+		"payment_amount_invalid":               {"non_positive", "precision"},
+		"auth_id_mismatch":                     {"mismatch", "unauthenticated"},
+		"admin_route_non_admin":                {"admin_api", "bank_users"},
+		"fineract_makerchecker_repeat_approve": {"within_window"},
+		"fineract_maker_checker_disabled":      {"config_put", "command_disable"},
+		"fineract_privileged_endpoint":         {"datatable_deregister", "credit_report_add"},
+	} {
+		for _, reason := range reasons {
+			securityEvents.WithLabelValues(event, reason)
+		}
+	}
+	for _, reason := range []string{"alg_not_allowed", "bad_signature", "expired", "malformed", "missing"} {
+		securityEvents.WithLabelValues("jwt_rejected", reason)
+	}
+	securityEvents.WithLabelValues("identity_header_injected", "client_supplied")
+	for _, outcome := range []string{"success", "failure", "throttled", "error"} {
+		authLogin.WithLabelValues(outcome)
+	}
+}
+
 // Metrics returns HTTP middleware that records Prometheus metrics for each request.
 func Metrics(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +76,9 @@ func Metrics(next http.Handler) http.Handler {
 		defer httpActiveConnections.Dec()
 
 		next.ServeHTTP(ww, r)
+		if r.Method == http.MethodPost && r.URL.Path == "/api/v1/auth/login" {
+			authLogin.WithLabelValues(loginOutcome(ww.Status())).Inc()
+		}
 
 		duration := time.Since(start).Seconds()
 		status := strconv.Itoa(ww.Status())
@@ -57,6 +87,19 @@ func Metrics(next http.Handler) http.Handler {
 		httpRequestsTotal.WithLabelValues(r.Method, path, status).Inc()
 		httpRequestDuration.WithLabelValues(r.Method, path).Observe(duration)
 	})
+}
+
+func loginOutcome(status int) string {
+	switch {
+	case status == http.StatusTooManyRequests:
+		return "throttled"
+	case status == 0 || status >= 200 && status < 300:
+		return "success"
+	case status >= 400 && status < 500:
+		return "failure"
+	default:
+		return "error"
+	}
 }
 
 // normalizePath reduces cardinality by collapsing path parameters.

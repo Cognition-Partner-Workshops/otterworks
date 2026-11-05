@@ -1,0 +1,110 @@
+classes:
+  fin-makerchecker-repeat:
+    attack_script: security/detection/attacks/fineract_signals.py
+    findings: [FIN-MAKERCHECKER-REPEAT]
+    alerts: [SecurityFineractMakerCheckerRepeatApprove]
+    counters: ['api_gateway_security_events_total{event="fineract_makerchecker_repeat_approve"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  fin-makerchecker-disabled:
+    attack_script: security/detection/attacks/fineract_signals.py
+    findings: [FIN-MAKERCHECKER-DISABLED]
+    alerts: [SecurityFineractMakerCheckerDisabled]
+    counters: ['api_gateway_security_events_total{event="fineract_maker_checker_disabled"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  fin-privileged-endpoint:
+    attack_script: security/detection/attacks/fineract_signals.py
+    findings: [FIN-PRIVILEGED-ENDPOINT]
+    alerts: [SecurityFineractPrivilegedEndpoint]
+    counters: ['api_gateway_security_events_total{event="fineract_privileged_endpoint"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  identity-forgery:
+    findings:
+      - DAST-UNSIGNED-JWT
+      - DAST-IDENTITY-HEADER-SPOOF
+      - DAST-SHARE-TOKEN-FORGERY
+    alerts:
+      - SecurityJWTRejected
+      - SecurityIdentityHeaderInjected
+      - SecurityShareTokenRejected
+    counters:
+      - api_gateway_security_events_total
+      - otterworks_security_events_total
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  ib-payment-anonymous:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-PAYMENT-ANONYMOUS]
+    alerts: [SecurityPaymentRouteAnonymous]
+    counters: ['api_gateway_security_events_total{event="payment_route_call"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  ib-payment-amount:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-PAYMENT-AMOUNT]
+    alerts: [SecurityPaymentAmountInvalid]
+    counters: ['api_gateway_security_events_total{event="payment_amount_invalid"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  ib-auth-id-mismatch:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-AUTH-ID-MISMATCH]
+    alerts: [SecurityAuthIdMismatch]
+    counters: ['api_gateway_security_events_total{event="auth_id_mismatch"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  ib-admin-non-admin:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-ADMIN-NON-ADMIN]
+    alerts: [SecurityAdminRouteNonAdmin]
+    counters: ['api_gateway_security_events_total{event="admin_route_non_admin"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  ib-failed-logins:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-FAILED-LOGINS]
+    alerts: [SecurityLoginFailureBurst]
+    alert_attack_class: credential-stuffing
+    counters: ['api_gateway_auth_login_total{outcome="failure"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  cross-customer-access:
+    findings:
+      - DAST-BOLA-DOCUMENTS
+      - DAST-MASS-ASSIGNMENT-OWNER
+      - DAST-PATH-TRAVERSAL-EXPORT
+    alerts:
+      - SecurityCrossOwnerAccess
+      - SecurityOwnerOverride
+      - SecurityExportPathTraversal
+    counters:
+      - otterworks_authz_events_total
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  credential-stuffing:
+    findings:
+      - DAST-CREDENTIAL-BRUTE-FORCE
+      - DAST-RATE-LIMIT-BYPASS
+    alerts:
+      - SecurityLoginFailureBurst
+      - SecurityLimiterClientChurn
+      - SecurityRateLimitRejections
+    counters:
+      - api_gateway_auth_login_total
+      - api_gateway_rate_limiter_clients_total
+      - api_gateway_rate_limiter_rejections_total
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300

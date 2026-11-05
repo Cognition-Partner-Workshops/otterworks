@@ -2,7 +2,8 @@
 # URLs from the environment and writes /tmp/alertmanager.yml.
 #
 # Routing model: anything labelled `page: devin` goes to the Devin Automation
-# webhook AND to Slack. Everything else lands only in the local sink so it is
+# webhook AND to Slack. The security page goes to /security and Slack.
+# Everything else lands only in the local sink so it is
 # visible in the demo but never pages. Alerts are grouped per alertname so one
 # incident produces one page, and repeat_interval is long so a slow fix does not
 # re-page mid-demo.
@@ -22,6 +23,11 @@ route:
   group_interval: 1m
   repeat_interval: 4h
   routes:
+    - matchers: [page = security]
+      receiver: security-oncall
+      continue: true
+    - matchers: [page = security]
+      receiver: slack-oncall
     - matchers: [page = devin]
       receiver: devin-oncall
       continue: true
@@ -35,6 +41,12 @@ inhibit_rules:
     equal: [service]
 
 receivers:
+  - name: security-oncall
+    webhook_configs:
+      - url: http://alert-sink:9095/security
+        send_resolved: false
+        max_alerts: 0
+
   - name: sink
     webhook_configs:
       - url: http://alert-sink:9095/sink

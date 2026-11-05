@@ -1,0 +1,156 @@
+{
+  "baseline_commit": "ae25fcdbeb86b4289fc6bc6fd11dfa350fb8a8da",
+  "baseline_source": "Actual demo-bank service-build scan retained from the earlier detection phase; no service swaps during this gateway-only extension.",
+  "baseline_scanned_at": "2026-11-05T13:10:45.440590+00:00",
+  "before_fineract_scanned_at": "2026-11-05T14:31:20.367102+00:00",
+  "after_fineract_scanned_at": "2026-11-05T18:52:48.371206+00:00",
+  "target": "http://localhost:8080",
+  "previous_gateway_image_id": "sha256:56251f453537e9b738cbd15d277baad9bbd99200362fb5fa9d24fb3a63af62ff",
+  "running_image_ids": {
+    "api-gateway": "sha256:30432cb481d2a9e1305695ad367b4328185333f67249c6ca204625bcee802a5b",
+    "document-service": "sha256:401ec9bb8faeb87880cd908fb63f93b8a5f7b34810fbf24f3e50df750ca3c06c",
+    "auth-service": "sha256:104c23a62d07e21f03f8c8e629809a1a7cc373b0db1b3112ec73785d3d1c8350"
+  },
+  "counts": {
+    "secure": 9,
+    "vulnerable": 8,
+    "inconclusive": 2
+  },
+  "scope_note": "Only gateway rebuilt/restarted; same minimal running stack and database. Docker Hub returned 429; local build used identical pinned-digest base images via mirror.gcr.io, with no repository Dockerfile edits. File/search services absent: two matching inconclusive verdicts are not security passes.",
+  "probes": [
+    {
+      "finding_id": "DAST-ANONYMOUS-ROUTE-SWEEP",
+      "demo_bank": "secure",
+      "before_fineract": "secure",
+      "after_fineract": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-BOLA-DOCUMENTS",
+      "demo_bank": "secure",
+      "before_fineract": "secure",
+      "after_fineract": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-CORS-ORIGIN-REFLECTION",
+      "demo_bank": "secure",
+      "before_fineract": "secure",
+      "after_fineract": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-CREDENTIAL-BRUTE-FORCE",
+      "demo_bank": "vulnerable",
+      "before_fineract": "vulnerable",
+      "after_fineract": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-EXPOSED-TELEMETRY",
+      "demo_bank": "vulnerable",
+      "before_fineract": "vulnerable",
+      "after_fineract": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-GATEWAY-BYPASS-IDENTITY",
+      "demo_bank": "inconclusive",
+      "before_fineract": "inconclusive",
+      "after_fineract": "inconclusive",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-IDENTITY-HEADER-SPOOF",
+      "demo_bank": "secure",
+      "before_fineract": "secure",
+      "after_fineract": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-MASS-ASSIGNMENT-OWNER",
+      "demo_bank": "vulnerable",
+      "before_fineract": "vulnerable",
+      "after_fineract": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-MISSING-SECURITY-HEADERS",
+      "demo_bank": "vulnerable",
+      "before_fineract": "vulnerable",
+      "after_fineract": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-PATH-TRAVERSAL-EXPORT",
+      "demo_bank": "vulnerable",
+      "before_fineract": "vulnerable",
+      "after_fineract": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-RATE-LIMIT-BYPASS",
+      "demo_bank": "vulnerable",
+      "before_fineract": "vulnerable",
+      "after_fineract": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-SEARCH-TENANT-LEAK",
+      "demo_bank": "inconclusive",
+      "before_fineract": "inconclusive",
+      "after_fineract": "inconclusive",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-SENSITIVE-DATA-IN-RESPONSE",
+      "demo_bank": "secure",
+      "before_fineract": "secure",
+      "after_fineract": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-SHARE-TOKEN-FORGERY",
+      "demo_bank": "vulnerable",
+      "before_fineract": "vulnerable",
+      "after_fineract": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-SQLI-ERROR-BASED",
+      "demo_bank": "vulnerable",
+      "before_fineract": "vulnerable",
+      "after_fineract": "vulnerable",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-STORED-XSS-DOCUMENTS",
+      "demo_bank": "secure",
+      "before_fineract": "secure",
+      "after_fineract": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-UNAUTHENTICATED-ADMIN",
+      "demo_bank": "secure",
+      "before_fineract": "secure",
+      "after_fineract": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-UNSIGNED-JWT",
+      "demo_bank": "secure",
+      "before_fineract": "secure",
+      "after_fineract": "secure",
+      "matches": true
+    },
+    {
+      "finding_id": "DAST-VERBOSE-ERRORS",
+      "demo_bank": "secure",
+      "before_fineract": "secure",
+      "after_fineract": "secure",
+      "matches": true
+    }
+  ],
+  "all_match": true
+}

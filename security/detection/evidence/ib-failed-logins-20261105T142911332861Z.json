@@ -1,0 +1,173 @@
+{
+  "attack_class": "ib-failed-logins",
+  "alert_attack_class": "credential-stuffing",
+  "started_at": "2026-11-05T14:29:11.332894+00:00",
+  "urls": {
+    "gateway": "http://localhost:8080",
+    "prometheus": "http://localhost:9090",
+    "alertmanager": "http://localhost:9093",
+    "sink": "http://localhost:9095"
+  },
+  "expected_alerts": [
+    "SecurityLoginFailureBurst"
+  ],
+  "budgets": {
+    "quiet_budget_seconds": 360,
+    "time_budget_seconds": 180,
+    "probe_budget_seconds": 300
+  },
+  "firing": {
+    "SecurityLoginFailureBurst": {
+      "activeAt": [
+        "2026-11-05T14:30:33.438992851Z"
+      ],
+      "observed_at": "2026-11-05T14:30:49.180793+00:00",
+      "seconds_to_fire": 37.696
+    }
+  },
+  "probe_verdicts": [
+    {
+      "finding_id": "IB-FAILED-LOGINS",
+      "verdict": "inconclusive",
+      "detail": "Tripwire requests sent; no IB account ownership or payment execution is observable here. POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400; POST /api/v1/auth/login -> 400"
+    }
+  ],
+  "sink_payloads": [
+    {
+      "received_at": "2026-11-05T14:30:58Z",
+      "receiver": "security",
+      "headers": {
+        "Host": "alert-sink:9095",
+        "User-Agent": "Alertmanager/0.28.1",
+        "Content-Length": "1735",
+        "Content-Type": "application/json"
+      },
+      "payload": {
+        "receiver": "security-oncall",
+        "status": "firing",
+        "alerts": [
+          {
+            "status": "firing",
+            "labels": {
+              "alertname": "SecurityLoginFailureBurst",
+              "attack_class": "credential-stuffing",
+              "cluster": "otterworks-dev",
+              "environment": "development",
+              "page": "security",
+              "severity": "critical"
+            },
+            "annotations": {
+              "description": "Burst of failed logins observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs.",
+              "finding_ids": "DAST-CREDENTIAL-BRUTE-FORCE",
+              "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-failed-logins",
+              "summary": "Burst of failed logins observed"
+            },
+            "startsAt": "2026-11-05T14:30:48.438Z",
+            "endsAt": "0001-01-01T00:00:00Z",
+            "generatorURL": "http://6123f82cd608:9090/graph?g0.expr=sum%28increase%28api_gateway_auth_login_total%7Boutcome%3D%22failure%22%7D%5B2m%5D%29%29+%3E%3D+10&g0.tab=1",
+            "fingerprint": "93b96958add6563d"
+          }
+        ],
+        "groupLabels": {
+          "alertname": "SecurityLoginFailureBurst"
+        },
+        "commonLabels": {
+          "alertname": "SecurityLoginFailureBurst",
+          "attack_class": "credential-stuffing",
+          "cluster": "otterworks-dev",
+          "environment": "development",
+          "page": "security",
+          "severity": "critical"
+        },
+        "commonAnnotations": {
+          "description": "Burst of failed logins observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs.",
+          "finding_ids": "DAST-CREDENTIAL-BRUTE-FORCE",
+          "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-failed-logins",
+          "summary": "Burst of failed logins observed"
+        },
+        "externalURL": "http://709abb884f29:9093",
+        "version": "4",
+        "groupKey": "{}/{page=\"security\"}:{alertname=\"SecurityLoginFailureBurst\"}",
+        "truncatedAlerts": 0
+      }
+    }
+  ],
+  "quiet_settle_seconds": 60,
+  "exit_code": 0,
+  "before_alerts": {
+    "SecurityLoginFailureBurst": {
+      "state": "inactive",
+      "instances": []
+    }
+  },
+  "before_alertmanager_alerts": [],
+  "before_counters": {
+    "at": "2026-11-05T14:30:11.483065+00:00",
+    "counters": {
+      "api_gateway_auth_login_total{outcome=\"failure\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_auth_login_total",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "outcome": "failure",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889011.48,
+            "0"
+          ]
+        }
+      ]
+    }
+  },
+  "attack_started_at": "2026-11-05T14:30:11.484858+00:00",
+  "probe_exit_code": 0,
+  "probe_finished_at": "2026-11-05T14:30:16.119453+00:00",
+  "after_alerts": {
+    "SecurityLoginFailureBurst": {
+      "state": "firing",
+      "instances": [
+        {
+          "labels": {
+            "alertname": "SecurityLoginFailureBurst",
+            "attack_class": "credential-stuffing",
+            "page": "security",
+            "severity": "critical"
+          },
+          "state": "firing",
+          "activeAt": "2026-11-05T14:30:33.438992851Z",
+          "value": "1.36216e+01"
+        }
+      ]
+    }
+  },
+  "delivered_alerts": [
+    "SecurityLoginFailureBurst"
+  ],
+  "after_counters": {
+    "at": "2026-11-05T14:31:01.207843+00:00",
+    "counters": {
+      "api_gateway_auth_login_total{outcome=\"failure\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_auth_login_total",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "outcome": "failure",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889061.207,
+            "12"
+          ]
+        }
+      ]
+    }
+  },
+  "finished_at": "2026-11-05T14:31:01.207891+00:00"
+}

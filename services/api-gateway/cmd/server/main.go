@@ -71,7 +71,11 @@ func main() {
 	r.Use(middleware.Metrics)
 	r.Use(middleware.Logger(logger))
 	r.Use(chimw.Recoverer)
+	r.Use(middleware.ObserveBankingSignals(middleware.JWTConfig{
+		Secret: cfg.JWTSecret, PeerSecret: cfg.JWTPeerSecret,
+	}))
 	r.Use(chimw.Compress(5))
+	r.Use(middleware.ObserveFineractSignals())
 
 	// Rate limiting
 	rateLimiter := middleware.NewRateLimiter(cfg.RateLimitRPS)
