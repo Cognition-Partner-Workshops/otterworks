@@ -309,6 +309,7 @@ def run_workload(root, workload, args, commit, attempted_commit):
                      finished_at=now(), status="succeeded", failed_step=None, gate=None, failing_tests=[])
     deployed = None
     objects = []
+    failed_gates = []
     runtime = module(root, "workloads/pipeline/runtime.py", "cd_runtime")
     app = module(root, "workloads/doc_usage_dashboard/deploy.py", "cd_app")
     step = "migrations"
@@ -338,20 +339,43 @@ def run_workload(root, workload, args, commit, attempted_commit):
             with trace_queries(log), closing(snowflake.connector.connect(**params)) as conn:
                 step = "churn_retained_baseline"
                 before = snapshot(conn, log) if workload == "churn_model" else None
-                step = "migrations"
-                if args.mode != "rollback":
-                    versions = migrate(root, workload, params, log)
-                    objects.append(dict(type="migrations", name=workload, detail=json.dumps(versions, default=str)))
-                step = "dbt_run"
-                dbt(runtime, workload, "run", runtime.MODELS[workload], params, log, log.path.parent / run_id)
-                objects.append(dict(type="model", name=runtime.MODELS[workload], detail="built"))
-                step = "dbt_test"
-                count = dbt(runtime, workload, "test", f"{runtime.MODELS[workload]} tag:dq_{workload}",
-                            params, log, log.path.parent / run_id)
-                objects.append(dict(type="tests", name=workload, detail=f"{count} passed"))
-                step = "churn_retained_tables"
-                if before is not None and snapshot(conn, log) != before:
-                    raise GateFailure("churn_retained_tables_changed")
+                primary_error = None
+                try:
+                    step = "migrations"
+                    if args.mode != "rollback":
+                        versions = migrate(root, workload, params, log)
+                        objects.append(dict(type="migrations", name=workload, detail=json.dumps(versions, default=str)))
+                    step = "dbt_run"
+                    dbt(runtime, workload, "run", runtime.MODELS[workload], params, log, log.path.parent / run_id)
+                    objects.append(dict(type="model", name=runtime.MODELS[workload], detail="built"))
+                    step = "dbt_test"
+                    count = dbt(runtime, workload, "test", f"{runtime.MODELS[workload]} tag:dq_{workload}",
+                                params, log, log.path.parent / run_id)
+                    objects.append(dict(type="tests", name=workload, detail=f"{count} passed"))
+                except Exception as exc:
+                    primary_error = exc
+                finally:
+                    if before is not None:
+                        try:
+                            after = snapshot(conn, log)
+                        except Exception as exc:
+                            failed_gates.append({
+                                "gate": "retained_tables_unchanged",
+                                "detail": "after snapshot failed: " + type(exc).__name__,
+                            })
+                        else:
+                            if after != before:
+                                changed = sorted(set(before) | set(after))
+                                changed = [name for name in changed if before.get(name) != after.get(name)]
+                                failed_gates.append({
+                                    "gate": "retained_tables_unchanged",
+                                    "detail": "changed tables: " + ", ".join(changed),
+                                })
+                if failed_gates and primary_error is None:
+                    step = "churn_retained_tables"
+                    primary_error = GateFailure("retained_tables_unchanged")
+                if primary_error is not None:
+                    raise primary_error
                 if workload == "doc_usage_dashboard":
                     step = "streamlit"
                     streamlit(app, params, commit, log)
@@ -361,6 +385,8 @@ def run_workload(root, workload, args, commit, attempted_commit):
         attempted.update(status="failed", failed_step=step,
                          gate=exc.gate if isinstance(exc, GateFailure) else step,
                          failing_tests=exc.tests if isinstance(exc, GateFailure) else [])
+        if failed_gates:
+            attempted["failed_gates"] = failed_gates
         print(f"{workload}: named gate failure {attempted['gate']} ({type(exc).__name__})")
     attempted["finished_at"] = now()
     if log:

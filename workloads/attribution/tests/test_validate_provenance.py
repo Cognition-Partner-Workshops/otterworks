@@ -138,6 +138,15 @@ def test_invalid_deployment_attempt(field, value):
     assert vp.validate(doc)
 
 
+@pytest.mark.parametrize("gates,valid", [([], True), ([{"gate": "retained_tables_unchanged", "detail": "changed tables: SCORES"}], True),
+                                       ([{"gate": "", "detail": "changed"}], False), ([{"gate": "retained_tables_unchanged"}], False)])
+def test_failed_deployment_additional_gates(gates, valid):
+    doc = _doc()
+    doc["deployment"] = _deployment()
+    doc["deployment"]["attempted"].update(status="failed", failed_step="dbt_test", gate="dbt_test", failed_gates=gates)
+    assert (vp.validate(doc) == []) == valid
+
+
 def test_starting_usage_is_pending_and_cortex_is_separate():
     for workload in WORKLOADS:
         usage = _doc(workload)["usage"]

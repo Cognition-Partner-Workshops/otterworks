@@ -24,12 +24,24 @@
             "status": {"enum": ["succeeded", "failed"]},
             "failed_step": {"type": ["string", "null"]},
             "gate": {"type": ["string", "null"]},
-            "failing_tests": {"type": "array", "items": {"type": "string", "minLength": 1}}
+            "failing_tests": {"type": "array", "items": {"type": "string", "minLength": 1}},
+            "failed_gates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["gate", "detail"],
+                "properties": {
+                  "gate": {"type": "string", "minLength": 1},
+                  "detail": {"type": "string", "minLength": 1}
+                }
+              }
+            }
           },
           "allOf": [{
             "if": {"properties": {"status": {"const": "failed"}}},
             "then": {"properties": {"failed_step": {"type": "string", "minLength": 1}, "gate": {"type": "string", "minLength": 1}}},
-            "else": {"properties": {"failed_step": {"type": "null"}, "gate": {"type": "null"}, "failing_tests": {"maxItems": 0}}}
+            "else": {"properties": {"failed_step": {"type": "null"}, "gate": {"type": "null"}, "failing_tests": {"maxItems": 0}, "failed_gates": {"maxItems": 0}}}
           }]
         },
         "deployed": {

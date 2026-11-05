@@ -78,7 +78,7 @@ def test_failed_provenance_preserves_deployed_and_comments(tmp_path):
         cd.provenance(path, attempt(), deployed(), True)
         cd.provenance(path, attempt("failed"), None, True)
     text = path.read_text()
-    assert text.startswith(original.rstrip())
+    assert text.startswith(original.split("\ndeployment:", 1)[0].rstrip())
     doc = yaml.safe_load(text)
     assert doc["deployment"]["deployed"] == deployed() | {"deployed_at": doc["deployment"]["deployed"]["deployed_at"]}
     assert doc["deployment"]["attempted"]["status"] == "failed"
@@ -86,6 +86,8 @@ def test_failed_provenance_preserves_deployed_and_comments(tmp_path):
 
 def test_configuration_query_evidence():
     text = (cd.REPO / "workloads/doc_search_api/provenance.yaml").read_text()
+    text = "\n".join(line for line in text.splitlines() if "applied_query_id:" not in line) + "\n"
+    text = text.replace("status: applied", "status: planned")
     assert cd.mark_configuration(text, []) == text
     updated = cd.mark_configuration(text, [("ALTER WAREHOUSE WH_DOC_SEARCH_API SET AUTO_SUSPEND = 900", "qid")])
     entry = yaml.safe_load(updated)["configuration_changes"][0]
@@ -172,6 +174,33 @@ def test_workload_stops_at_first_failure(tmp_path, failure):
     assert calls == ["migrations", "dbt_run", "dbt_test"][:{"migrations": 1, "dbt_run": 2, "dbt_test": 3, "retained": 3}[failure]]
     assert provenance.call_args.args[1]["status"] == "failed"
     assert provenance.call_args.args[2] is None
+    if failure == "dbt_test":
+        assert provenance.call_args.args[1]["failed_gates"] == [{
+            "gate": "retained_tables_unchanged", "detail": "changed tables: scores"}]
+
+
+@pytest.mark.parametrize("command", ["run", "test"])
+@pytest.mark.parametrize("after", [{"scores": (1, 2)}, {"scores": (2, 3)}, RuntimeError("unavailable")])
+def test_churn_after_snapshot_preserves_dbt_failure(tmp_path, command, after):
+    args = SimpleNamespace(mode="deploy", dry_run=False, write_provenance=False, log_dir=str(tmp_path))
+    runtime = SimpleNamespace(MODELS={"churn_model": "weekly_churn_scores"})
+
+    def dbt(runtime, workload, cmd, *args):
+        if cmd == command:
+            raise cd.GateFailure("dbt_" + cmd, ["test.bad"])
+        return 1
+
+    with patch.object(cd, "module", return_value=runtime), patch.object(cd, "parameters", return_value={}), \
+            patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), \
+            patch.object(cd, "migrate", return_value=[]), patch.object(cd, "dbt", side_effect=dbt), \
+            patch.object(cd, "snapshot", side_effect=[{"scores": (1, 2)}, after]) as snapshot, \
+            patch.object(cd, "provenance") as provenance:
+        assert not cd.run_workload(cd.REPO, "churn_model", args, "a" * 40, "a" * 40)
+    assert snapshot.call_count == 2
+    attempted = provenance.call_args.args[1]
+    assert attempted["gate"] == "dbt_" + command
+    assert attempted["failing_tests"] == ["test.bad"]
+    assert bool(attempted.get("failed_gates")) == (after != {"scores": (1, 2)})
 
 
 def test_rollback_skips_migrations_and_uses_target_root(tmp_path):
