@@ -35,3 +35,10 @@ CLI-only demo estate; no web UI. The estate lives on the `tech-partnerships` bra
 ## Gotchas
 - Intentional legacy quirks (do NOT flag as bugs): /tmp/*.lock files never removed ("lock file present ... continuing anyway" messages are expected), 2>/dev/null||true suppression, hardcoded prod/uat hostname branches, plaintext mvsprod credential, /tmp/cb_body.$$ temp file.
 - mawk (default awk) does not support `{n}` regex intervals — use grep -E for field validation, not awk regexes.
+
+## Spark replacement (etl/custbill-spark/)
+
+- `make -C etl/custbill-spark chain ROOT=<estate>` runs the local Spark rebuild (ingest -> parse -> report), one PySpark job per legacy stage, with flock mutual exclusion, typed validation, trailer reconciliation and JSON ledgers under `<estate>/control/`. `STRICT=1` quarantines bad files.
+- `make -C etl/custbill-spark parity` prints the byte-for-byte parity table of legacy vs Spark on dev, qa, edges, empty; `make -C etl/custbill-spark recon` adds the idempotent rerun and planted-anomaly checks and writes `docs/tech-partnerships/recon/custbill-spark-chain.recon.json`.
+- `make -C etl/custbill-spark test` runs the unit tests, including byte-equivalence of the record/report functions against the real awk and Perl scripts.
+- `.github/workflows/custbill-parity-nightly.yml` reruns the recon nightly and opens a `custbill-parity-drift` issue on failure. The deficiency-by-deficiency status table is in `etl/custbill-spark/README.md`.

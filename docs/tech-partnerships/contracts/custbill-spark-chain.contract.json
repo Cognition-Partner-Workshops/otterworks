@@ -1,0 +1,43 @@
+{
+  "unit": "custbill-spark-chain",
+  "source_artifact_path": "etl/legacy-extra/jobs/ (sftp_ingest_poll.ksh, parse_custbill_fixedwidth.sh, finance_excel_report.pl)",
+  "target_objects": [
+    "etl/custbill-spark/custbill_spark/ingest.py -> incoming/CUSTBILL*.dat, archive/CUSTBILL*.dat.<stamp>",
+    "etl/custbill-spark/custbill_spark/parse.py -> parsed/CUSTBILL*.psv, incoming/*.dat.done",
+    "etl/custbill-spark/custbill_spark/report.py -> reports/finance_billing_YYYYMMDD.csv, reports/finance_billing_YYYYMMDD.xls",
+    "control/{ingest,parse,report}/*.json ledgers and control/locks/*.lock (new, outside the parity surface)"
+  ],
+  "golden_baseline_location": "The legacy scripts themselves, executed by etl/legacy-extra/parity/harness.py on the same fresh estate root as the candidate (cases dev, qa, edges, empty).",
+  "acceptance_checks": [
+    {"id": "parity-ingest", "description": "After the chain runs, the drop directory is empty and incoming/ holds the same .done files byte for byte as the legacy chain leaves."},
+    {"id": "parity-parse", "description": "parsed/*.psv is byte-identical to the sed|cut|paste|awk output, including trailing-space trimming, implied decimals and the awk numeric coercion of non-numeric amounts."},
+    {"id": "parity-report", "description": "finance_billing_*.csv and .xls are byte-identical to the Perl report on every harness case, including UNKNOWN(rt) labels and bytewise key ordering."},
+    {"id": "idempotent-rerun", "description": "Running the chain a second time on the same estate changes no file outside control/."},
+    {"id": "trailer-reconciliation", "description": "The parse ledger records the TRL count against the body record count for every file and flags a mismatch; --strict quarantines the file instead of reporting from it."},
+    {"id": "typed-validation", "description": "Every body record is typed (date, decimal amount, currency, record type) and invalid records are attributed by line number and reason in the ledger."},
+    {"id": "mutual-exclusion", "description": "Overlapping runs of the same stage or the chain are refused via flock (exit 3), never run twice."},
+    {"id": "errors-surface", "description": "Any stage failure exits non-zero with a traceback; no output is redirected to /dev/null."},
+    {"id": "nightly-drift", "description": ".github/workflows/custbill-parity-nightly.yml reruns the parity table every night and opens or updates a drift issue on failure."}
+  ],
+  "encoding_policy": {
+    "input_encoding": "latin-1 (every byte is one character; the legacy chain runs in LC_ALL=C)",
+    "byte_transparency": "Input bytes are copied through to .psv and .csv unchanged; CR is content, a trailing newline does not create an empty record, an unterminated last line still counts.",
+    "invalid_bytes": "There are no invalid bytes under latin-1; nothing is re-encoded."
+  },
+  "malformed_record_policy": {
+    "extra_delimited_fields": "tolerate-and-attribute",
+    "null_attribution": "tolerate-and-attribute",
+    "details": "Default mode reproduces the legacy output exactly (short lines yield empty columns, non-numeric amounts become 0.00) and attributes each problem in control/parse/latest.json. --strict (CUSTBILL_STRICT=1) quarantines the file and fails the run."
+  },
+  "empty_input_semantics": {
+    "action": "write-empty-result",
+    "details": "No drop files: ingest and parse are no-ops and the report stage writes the header-only CSV/XLS, as the legacy chain does. A header-only .dat produces a zero-byte .psv."
+  },
+  "trigger_granularity": "per-batch",
+  "planted_anomalies": [
+    {"id": "trailer-mismatch", "description": "CUSTBILL_EDGES.dat declares TRL count 99 against 4 body records; legacy only logs it.", "status": "must-detect"},
+    {"id": "unknown-record-type", "description": "Record type 99 in CUSTBILL_EDGES.dat; legacy renders it as UNKNOWN(99).", "status": "must-detect"},
+    {"id": "xls-copy", "description": "The .xls artifact is a byte copy of the CSV, not a workbook. Parity pins the bytes, so the Spark job reproduces it.", "status": "coverage_gap", "reason": "Finance accepts the cutover only on byte-identical reports; a real workbook is a post-cutover change recorded in etl/custbill-spark/README.md."},
+    {"id": "awk-numeric-coercion", "description": "Non-numeric amounts silently become 0.00 in the .psv.", "status": "must-detect"}
+  ]
+}

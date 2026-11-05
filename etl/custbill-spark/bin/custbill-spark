@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Run a CUSTBILL Spark stage with the repo's Spark venv (see `make -C etl/legacy-extra spark-venv`).
+set -euo pipefail
+here="$(cd "$(dirname "$0")/.." && pwd)"
+venv="${CUSTBILL_SPARK_VENV:-$here/../legacy-extra/.venv}"
+python="$venv/bin/python"
+[ -x "$python" ] || python="python3"
+if [ -z "${JAVA_HOME:-}" ] && ! command -v java >/dev/null 2>&1 \
+   && [ -d "$HOME/.sdkman/candidates/java/current" ]; then
+  export JAVA_HOME="$HOME/.sdkman/candidates/java/current"
+fi
+export SPARK_LOCAL_IP="${SPARK_LOCAL_IP:-127.0.0.1}"
+export PYTHONPATH="$here${PYTHONPATH:+:$PYTHONPATH}"
+exec "$python" -m custbill_spark "$@"
