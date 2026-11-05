@@ -1,0 +1,141 @@
+# Throwaway spool store for the kind run. It stands in for the storage that
+# replaces the VM's local spool directories and the NFS export: GET and PUT of
+# /in/<file>.csv and /out/<file>.csv, written atomically. Data lives in an
+# emptyDir, so a pod restart is a reset. Seeded with the CI fixture day.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rates-store
+  labels: {app: rates-store}
+data:
+  store.py: |
+    import os, re, sys
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    ROOT = os.environ.get("STORE_ROOT", "/data")
+    NAME = re.compile(r"^/(in|out)/([A-Za-z0-9][A-Za-z0-9._-]*\.csv)$")
+
+    class Store(BaseHTTPRequestHandler):
+        def _target(self):
+            m = NAME.match(self.path)
+            return os.path.join(ROOT, m.group(1), m.group(2)) if m else None
+
+        def _send(self, code, body=b"", ctype="text/plain"):
+            self.send_response(code)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_GET(self):
+            if self.path == "/health":
+                return self._send(200, b"ok\n")
+            if self.path in ("/in/", "/out/"):
+                names = sorted(os.listdir(os.path.join(ROOT, self.path.strip("/"))))
+                return self._send(200, "".join(n + "\n" for n in names if not n.startswith(".")).encode())
+            t = self._target()
+            if not t or not os.path.isfile(t):
+                return self._send(404, b"not found\n")
+            with open(t, "rb") as f:
+                self._send(200, f.read(), "text/csv")
+
+        def do_PUT(self):
+            t = self._target()
+            if not t:
+                return self._send(400, b"bad name\n")
+            body = self.rfile.read(int(self.headers.get("Content-Length", "0")))
+            tmp = os.path.join(os.path.dirname(t), "." + os.path.basename(t) + ".tmp")
+            with open(tmp, "wb") as f:
+                f.write(body)
+            os.replace(tmp, t)
+            self._send(201, b"stored\n")
+
+        def do_DELETE(self):
+            t = self._target()
+            if t and os.path.isfile(t):
+                os.remove(t)
+            self._send(204)
+
+        def log_message(self, fmt, *args):
+            sys.stdout.write("%s %s\n" % (self.address_string(), fmt % args))
+            sys.stdout.flush()
+
+    for d in ("in", "out"):
+        os.makedirs(os.path.join(ROOT, d), exist_ok=True)
+    seed = os.environ.get("STORE_SEED", "/seed")
+    for n in os.listdir(seed) if os.path.isdir(seed) else []:
+        if n.endswith(".csv"):
+            with open(os.path.join(seed, n), "rb") as s, open(os.path.join(ROOT, "in", n), "wb") as d:
+                d.write(s.read())
+    ThreadingHTTPServer(("0.0.0.0", 8080), Store).serve_forever()
+  # CI fixture only (synthetic): one short tick day for the pipeline smoke Job.
+  ticks-2026-01-02.csv: |
+    timestamp,pair,bid,ask
+    2026-01-02T00:15:00,EURUSD,1.03500,1.03540
+    2026-01-02T01:15:00,EURUSD,1.03620,1.03660
+    2026-01-02T00:15:00,EURGBP,0.82710,0.82750
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rates-store
+  labels: {app: rates-store}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: rates-store}
+  template:
+    metadata:
+      labels: {app: rates-store}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: store
+          image: docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+          command: ["python", "-u", "/app/store.py"]
+          ports:
+            - {name: http, containerPort: 8080}
+          readinessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 3
+          livenessProbe:
+            httpGet: {path: /health, port: http}
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 50m, memory: 32Mi}
+            limits: {cpu: 200m, memory: 64Mi}
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+          volumeMounts:
+            - {name: app, mountPath: /app, readOnly: true}
+            - {name: seed, mountPath: /seed, readOnly: true}
+            - {name: data, mountPath: /data}
+      volumes:
+        - name: app
+          configMap:
+            name: rates-store
+            items: [{key: store.py, path: store.py}]
+        - name: seed
+          configMap:
+            name: rates-store
+            items: [{key: ticks-2026-01-02.csv, path: ticks-2026-01-02.csv}]
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rates-store
+  labels: {app: rates-store}
+spec:
+  type: ClusterIP
+  selector: {app: rates-store}
+  ports:
+    - {name: http, port: 80, targetPort: http}

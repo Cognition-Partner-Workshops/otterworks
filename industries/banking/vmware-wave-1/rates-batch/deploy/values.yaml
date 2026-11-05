@@ -1,0 +1,37 @@
+# rates-batch on the shared chart (platform/standards/helm/app at the pinned standards_ref).
+app: rates-batch
+owner: "pending-app-team"     # business input: the team that answers for rates-batch
+costCenter: "pending-finance"  # business input: finance code for the namespace bill
+workload: cronjob
+
+# The VM ran root's crontab at 02:00 on the host clock (vm/crontab). The zone is
+# explicit here and must stay equal to BUSINESS_DATE_ZONE below. Etc/UTC is the
+# zone the rates-01 stand-in uses today; which zone defines the business date is
+# a business decision that is still open (see the pull request).
+cronjob:
+  schedule: "0 2 * * *"
+  timeZone: Etc/UTC
+  command: []
+  concurrencyPolicy: Forbid
+
+env:
+  BUSINESS_DATE_ZONE: Etc/UTC
+  RATES_HTTP_RETRY_SECONDS: "30"
+  # Spools replace /var/spool/rates/{in,out} on local disk and the NFS export.
+  RATES_IN: http://rates-store.deps.svc.cluster.local/in
+  RATES_OUT: http://rates-store.deps.svc.cluster.local/out
+
+# A run-once job: no HTTP endpoint, so no liveness or readiness probe.
+probes:
+  enabled: false
+
+writablePaths:
+  - /tmp
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

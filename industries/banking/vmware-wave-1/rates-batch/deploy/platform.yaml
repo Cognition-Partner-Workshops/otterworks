@@ -1,0 +1,3 @@
+# rates-batch is a CronJob: the pipeline's smoke step runs one Job from it and
+# waits for completion, so there are no HTTP smoke paths.
+smoke: []
