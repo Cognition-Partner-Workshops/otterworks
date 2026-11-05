@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
+
 
 class TestHealthEndpoint:
     """Tests for GET /health (liveness)."""
@@ -43,3 +46,33 @@ class TestMetricsEndpoint:
         response = client.get("/metrics")
         assert response.status_code == 200
         assert b"search_service" in response.data
+
+    def test_metrics_aggregates_worker_counters(self, client, monkeypatch, tmp_path):
+        monkeypatch.setenv("PROMETHEUS_MULTIPROC_DIR", str(tmp_path))
+        for count in (113, 166):
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-c",
+                    (
+                        "from app.api.health import REQUEST_COUNT; "
+                        "REQUEST_COUNT.labels('GET', '/api/v1/search/suggest', '500')"
+                        f".inc({count})"
+                    ),
+                ],
+                check=True,
+            )
+
+        for _ in range(3):
+            response = client.get("/metrics")
+            assert response.status_code == 200
+            assert (
+                b'search_service_requests_total{endpoint="/api/v1/search/suggest",'
+                b'method="GET",status="500"} 279.0'
+            ) in response.data
+
+    def test_metrics_with_no_worker_samples(self, client, monkeypatch, tmp_path):
+        monkeypatch.setenv("PROMETHEUS_MULTIPROC_DIR", str(tmp_path))
+        response = client.get("/metrics")
+        assert response.status_code == 200
+        assert b"search_service_requests_total" not in response.data
