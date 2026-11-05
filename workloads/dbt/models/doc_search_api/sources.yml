@@ -1,0 +1,7 @@
+version: 2
+sources:
+  - name: raw_doc_search_api
+    schema: RAW
+    tables:
+      - name: ANALYTICS_ANALYTICS_EVENTS
+      - name: DOCUMENT_DOCUMENTS
