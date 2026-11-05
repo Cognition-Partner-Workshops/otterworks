@@ -11,9 +11,9 @@ source:
   repository: Cognition-Partner-Workshops/otterworks
   base_branch: demo-stack-snowflake
   base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
-  commit: "98d622deca8d2cf09c81c834d1a9c014914804e2"
-  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2471
-  session_url: https://partner-workshops.devinenterprise.com/sessions/563ff0e055ca499a8ee42b2b4e40d8b6
+  commit: "ecda4243de263fb1974fb1bd69a89a82bab28d83"
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2498
+  session_url: https://partner-workshops.devinenterprise.com/sessions/6b490330916b45c1a3532b15a809de89
 endpoints:
   - csid: cs_doc_search_api_top_items
     service_user: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
@@ -61,7 +61,7 @@ objects:
     name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_DOC_SEARCH_API
     devin_csid: cs_doc_search_api_top_items
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
-    state: planned
+    state: provisioned
   - type: streamlit
     name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.DOC_SEARCH_API_APP
     devin_csid: cs_doc_search_api_top_items
