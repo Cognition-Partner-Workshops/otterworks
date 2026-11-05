@@ -1,5 +1,7 @@
 """Warehouse-runtime Streamlit entry point."""
 
+import json
+
 import streamlit as st
 from snowflake.snowpark.context import get_active_session
 
@@ -28,9 +30,12 @@ mode = st.session_state.doc_usage_attribution
 suffix = statement_comment(config) if mode == "statement comment" else ""
 
 
+runtime_tag = config["query_tag"] if isinstance(config["query_tag"], str) else json.dumps(config["query_tag"])
+
+
 def query(built):
     sql, params = built
-    frame = session.sql(sql + suffix, params=params).to_pandas()
+    frame = session.sql(sql + suffix, params=params).to_pandas(statement_params={"QUERY_TAG": runtime_tag})
     frame.columns = [name.lower() for name in frame.columns]
     return frame
 
