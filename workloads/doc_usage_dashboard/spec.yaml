@@ -6,17 +6,17 @@ grain: [snapshot_date, account_id]
 
 inputs:
   - source: admin-service Postgres storage_quotas
-    landing: DB_DOC_USAGE_DASHBOARD.RAW.ADMIN_STORAGE_QUOTAS
+    landing: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.RAW.ADMIN_STORAGE_QUOTAS
     columns: [user_id, quota_bytes, used_bytes, tier, updated_at]
   - source: admin-service Postgres admin_users
-    landing: DB_DOC_USAGE_DASHBOARD.RAW.ADMIN_ADMIN_USERS
+    landing: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.RAW.ADMIN_ADMIN_USERS
     columns: [id, email, status]
   - source: document-service Postgres documents
-    landing: DB_DOC_USAGE_DASHBOARD.RAW.DOCUMENT_DOCUMENTS
+    landing: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.RAW.DOCUMENT_DOCUMENTS
     columns: [id, owner_id, is_deleted, is_template]
 
 output:
-  table: DB_DOC_USAGE_DASHBOARD.APP.ACCOUNT_STORAGE_USAGE
+  table: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.ACCOUNT_STORAGE_USAGE
   columns:
     - {name: snapshot_date, type: DATE, description: UTC date of the Postgres export}
     - {name: account_id, type: VARCHAR(36), description: storage_quotas.user_id}
@@ -52,6 +52,6 @@ endpoint:
   csid: cs_doc_usage_dashboard_account_usage
   service_user: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
   kind: streamlit
-  object: DB_DOC_USAGE_DASHBOARD.APP.DOC_USAGE_DASHBOARD_APP
+  object: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.DOC_USAGE_DASHBOARD_APP
   request: {account_id: optional VARCHAR(36), usage_band: optional, snapshot_date: optional DATE (default latest)}
   response: rows of output.columns ordered by usage_pct DESC NULLS LAST, account_id

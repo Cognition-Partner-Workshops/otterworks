@@ -24,20 +24,24 @@ query_tag:
   task_phase: runtime
 warehouse:
   name: WH_DOC_SEARCH_API
-  size: XSMALL
+  size: LARGE
   auto_suspend_seconds: 60
   resource_monitor:
     name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
     frequency: MONTHLY
-    credit_quota: 5
+    credit_quota: 10
 objects:
   - type: database
-    name: DB_DOC_SEARCH_API
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A
     devin_csid: cs_doc_search_api_top_items
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
     state: planned
   - type: schema
-    name: DB_DOC_SEARCH_API.APP
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: planned
+  - type: schema
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.RAW
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
     state: planned
   - type: warehouse
@@ -53,12 +57,12 @@ objects:
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
     state: planned
   - type: task
-    name: DB_DOC_SEARCH_API.APP.REFRESH_DOC_SEARCH_API
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_DOC_SEARCH_API
     devin_csid: cs_doc_search_api_top_items
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
     state: planned
   - type: streamlit
-    name: DB_DOC_SEARCH_API.APP.DOC_SEARCH_API_APP
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.DOC_SEARCH_API_APP
     devin_csid: cs_doc_search_api_top_items
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
     state: planned

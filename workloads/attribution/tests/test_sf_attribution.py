@@ -37,10 +37,10 @@ def test_unknown_or_foreign_csid_is_rejected():
 
 
 def test_object_names_carry_the_workload_and_monitor_carries_token_and_expiry():
-    assert sf.database_name("churn_model") == "DB_CHURN_MODEL"
+    assert sf.database_name("churn_model") == "DB_CHURN_MODEL_SFEXT_20261105A"
     assert sf.warehouse_name("churn_model") == "WH_CHURN_MODEL"
-    assert sf.task_name("churn_model") == "DB_CHURN_MODEL.APP.REFRESH_CHURN_MODEL"
-    assert sf.streamlit_name("churn_model") == "DB_CHURN_MODEL.APP.CHURN_MODEL_APP"
+    assert sf.task_name("churn_model") == "DB_CHURN_MODEL_SFEXT_20261105A.APP.REFRESH_CHURN_MODEL"
+    assert sf.streamlit_name("churn_model") == "DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_MODEL_APP"
     assert sf.resource_monitor_name("churn_model") == "RM_SFEXT_20261105A_20261119_CHURN_MODEL"
 
 
@@ -109,7 +109,7 @@ def test_connection_params_use_key_pair_service_user_application_and_tag():
     assert params["private_key_file"] == "/keys/k.p8"
     assert params["application"] == "Devin_Demo"
     assert params["warehouse"] == "WH_DOC_USAGE_DASHBOARD"
-    assert params["database"] == "DB_DOC_USAGE_DASHBOARD"
+    assert params["database"] == "DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A"
     assert "password" not in params
     assert sf.parse_query_tag(params["session_parameters"]["QUERY_TAG"])["session_url"] == SESSION
 

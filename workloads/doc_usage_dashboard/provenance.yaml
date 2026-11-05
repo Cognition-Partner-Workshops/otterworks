@@ -29,15 +29,19 @@ warehouse:
   resource_monitor:
     name: RM_SFEXT_20261105A_20261119_DOC_USAGE_DASHBOARD
     frequency: MONTHLY
-    credit_quota: 5
+    credit_quota: 10
 objects:
   - type: database
-    name: DB_DOC_USAGE_DASHBOARD
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A
     devin_csid: cs_doc_usage_dashboard_account_usage
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_usage_dashboard"}'
     state: planned
   - type: schema
-    name: DB_DOC_USAGE_DASHBOARD.APP
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_usage_dashboard"}'
+    state: planned
+  - type: schema
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.RAW
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_usage_dashboard"}'
     state: planned
   - type: warehouse
@@ -53,12 +57,12 @@ objects:
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
     state: planned
   - type: task
-    name: DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.REFRESH_DOC_USAGE_DASHBOARD
     devin_csid: cs_doc_usage_dashboard_account_usage
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
     state: planned
   - type: streamlit
-    name: DB_DOC_USAGE_DASHBOARD.APP.DOC_USAGE_DASHBOARD_APP
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.DOC_USAGE_DASHBOARD_APP
     devin_csid: cs_doc_usage_dashboard_account_usage
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
     state: planned

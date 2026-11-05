@@ -68,7 +68,7 @@
       "required": ["name", "size", "auto_suspend_seconds", "resource_monitor"],
       "properties": {
         "name": {"$ref": "#/$defs/object_name"},
-        "size": {"const": "XSMALL"},
+        "size": {"enum": ["XSMALL", "LARGE"]},
         "auto_suspend_seconds": {"const": 60},
         "resource_monitor": {
           "type": "object",

@@ -32,7 +32,7 @@ TAG_FQN = f"{TAG_DATABASE}.{TAG_SCHEMA}.DEVIN_CSID"
 TAGGED_OBJECT_TYPES = ("database", "warehouse", "task", "streamlit")
 WAREHOUSE_SIZE = "XSMALL"
 AUTO_SUSPEND_SECONDS = 60
-MONTHLY_CREDIT_QUOTA = 5
+MONTHLY_CREDIT_QUOTA = 10
 APP_SCHEMA = "APP"
 PENDING = "pending"
 QUERY_TAG_MAX_CHARS = 2000
@@ -73,7 +73,7 @@ def service_user(client_side_id: str) -> str:
 
 
 def database_name(workload: str) -> str:
-    return f"DB_{_identifier('workload', workload).upper()}"
+    return f"DB_{_identifier('workload', workload).upper()}_{RUN_TOKEN}"
 
 
 def warehouse_name(workload: str) -> str:
@@ -351,6 +351,7 @@ def database_ddl(workload: str) -> list[str]:
     db = database_name(workload)
     return [
         f"CREATE DATABASE IF NOT EXISTS {db} COMMENT = {sql_string(external_comment(workload=workload))}",
+        f"CREATE SCHEMA IF NOT EXISTS {db}.RAW COMMENT = {sql_string(external_comment(workload=workload))}",
         f"CREATE SCHEMA IF NOT EXISTS {db}.{APP_SCHEMA} COMMENT = {sql_string(external_comment(workload=workload))}",
     ]
 

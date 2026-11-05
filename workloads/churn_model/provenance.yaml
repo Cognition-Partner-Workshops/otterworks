@@ -29,15 +29,19 @@ warehouse:
   resource_monitor:
     name: RM_SFEXT_20261105A_20261119_CHURN_MODEL
     frequency: MONTHLY
-    credit_quota: 5
+    credit_quota: 10
 objects:
   - type: database
-    name: DB_CHURN_MODEL
+    name: DB_CHURN_MODEL_SFEXT_20261105A
     devin_csid: cs_churn_model_account_score
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
     state: planned
   - type: schema
-    name: DB_CHURN_MODEL.APP
+    name: DB_CHURN_MODEL_SFEXT_20261105A.APP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
+    state: planned
+  - type: schema
+    name: DB_CHURN_MODEL_SFEXT_20261105A.RAW
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
     state: planned
   - type: warehouse
@@ -53,12 +57,12 @@ objects:
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
     state: planned
   - type: task
-    name: DB_CHURN_MODEL.APP.REFRESH_CHURN_MODEL
+    name: DB_CHURN_MODEL_SFEXT_20261105A.APP.REFRESH_CHURN_MODEL
     devin_csid: cs_churn_model_account_score
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
     state: planned
   - type: streamlit
-    name: DB_CHURN_MODEL.APP.CHURN_MODEL_APP
+    name: DB_CHURN_MODEL_SFEXT_20261105A.APP.CHURN_MODEL_APP
     devin_csid: cs_churn_model_account_score
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
     state: planned

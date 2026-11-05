@@ -6,7 +6,7 @@ grain: [window_end_date, account_id, item_type, rank]
 
 inputs:
   - source: analytics-service Postgres analytics_events
-    landing: DB_DOC_SEARCH_API.RAW.ANALYTICS_ANALYTICS_EVENTS
+    landing: DB_DOC_SEARCH_API_SFEXT_20261105A.RAW.ANALYTICS_ANALYTICS_EVENTS
     columns: [event_id, event_type, user_id, metadata, occurred_at]
     filter: "event_type = 'search.performed'"
     contract: >-
@@ -15,11 +15,11 @@ inputs:
       today (it keeps query history in process memory only), so it must publish one per search before
       this workload has real input.
   - source: document-service Postgres documents
-    landing: DB_DOC_SEARCH_API.RAW.DOCUMENT_DOCUMENTS
+    landing: DB_DOC_SEARCH_API_SFEXT_20261105A.RAW.DOCUMENT_DOCUMENTS
     columns: [id, title, owner_id, is_deleted]
 
 output:
-  table: DB_DOC_SEARCH_API.APP.TOP_SEARCH_ITEMS
+  table: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.TOP_SEARCH_ITEMS
   columns:
     - {name: window_end_date, type: DATE, description: last UTC day in the window (day before the export)}
     - {name: window_days, type: "NUMBER(3,0)", description: always 28}

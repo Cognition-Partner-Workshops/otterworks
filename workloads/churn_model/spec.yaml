@@ -7,17 +7,17 @@ model_version: rules_v1
 
 inputs:
   - source: auth-service Postgres users
-    landing: DB_CHURN_MODEL.RAW.AUTH_USERS
+    landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.AUTH_USERS
     columns: [id, created_at, last_login_at]
   - source: admin-service Postgres admin_users
-    landing: DB_CHURN_MODEL.RAW.ADMIN_ADMIN_USERS
+    landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.ADMIN_ADMIN_USERS
     columns: [id, status]
   - source: document-service Postgres document_versions
-    landing: DB_CHURN_MODEL.RAW.DOCUMENT_DOCUMENT_VERSIONS
+    landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.DOCUMENT_DOCUMENT_VERSIONS
     columns: [id, created_by, created_at]
 
 output:
-  table: DB_CHURN_MODEL.APP.WEEKLY_CHURN_SCORES
+  table: DB_CHURN_MODEL_SFEXT_20261105A.APP.WEEKLY_CHURN_SCORES
   columns:
     - {name: week_start_date, type: DATE, description: Monday of the scored week (UTC)}
     - {name: account_id, type: VARCHAR(36), description: auth users.id}
@@ -57,6 +57,6 @@ endpoint:
   csid: cs_churn_model_account_score
   service_user: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
   kind: sql
-  object: DB_CHURN_MODEL.APP.WEEKLY_CHURN_SCORES
+  object: DB_CHURN_MODEL_SFEXT_20261105A.APP.WEEKLY_CHURN_SCORES
   request: {account_id: VARCHAR(36), week_start_date: optional DATE (default latest)}
   response: one row of output.columns
