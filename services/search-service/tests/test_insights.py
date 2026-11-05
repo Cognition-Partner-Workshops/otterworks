@@ -201,10 +201,12 @@ def test_provision_sql():
     assert all("ALTER WAREHOUSE" not in s for s in sql)
 
 
-def test_key_path_configuration(monkeypatch):
+@pytest.mark.parametrize("lowercase_user", [False, True])
+def test_key_path_configuration(monkeypatch, lowercase_user):
     monkeypatch.setenv("SNOWFLAKE_ACCOUNT", "configured-account")
     monkeypatch.setenv("SNOWFLAKE_ROLE", provision.ROLE)
-    monkeypatch.setenv("SNOWFLAKE_USER", provision.EP.service_user)
+    user = provision.EP.service_user
+    monkeypatch.setenv("SNOWFLAKE_USER", user.lower() if lowercase_user else user)
     monkeypatch.setenv("SNOWFLAKE_PRIVATE_KEY_PATH_CS_DOC_SEARCH_API_TOP_ITEMS", "/var/run/snowflake/rsa_key.p8")
     conn, _ = fake_connection()
     connector = MagicMock(return_value=conn)

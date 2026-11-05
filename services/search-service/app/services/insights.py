@@ -56,7 +56,7 @@ class InsightsClient:
         atexit.register(self.close)
 
     def _connect(self):
-        if self.config.user is not None and self.config.user != EP.service_user:
+        if self.config.user is not None and self.config.user.upper() != EP.service_user.upper():
             logger.error("insights_identity_misconfigured", expected_user=EP.service_user)
             raise InsightsUnavailable()
         env = dict(os.environ)
