@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
+import pytest
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -76,6 +78,14 @@ class TestSearchEndpoint:
 
 class TestSuggestEndpoint:
     """Tests for GET /api/v1/search/suggest."""
+
+    @pytest.mark.parametrize("hits", [[], [{"title": "Test Doc 1"}]])
+    def test_armed_chaos_still_returns_500(self, app, client, mock_meilisearch_client, hits):
+        app.config["PROPAGATE_EXCEPTIONS"] = False
+        mock_meilisearch_client.index.return_value.search.return_value = {"hits": hits}
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te", headers={"X-User-ID": "user-1"})
+        assert response.status_code == 500
 
     def test_suggest_short_query(self, client):
         """Suggest with query shorter than 2 chars returns empty."""
