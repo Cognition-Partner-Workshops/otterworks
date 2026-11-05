@@ -195,6 +195,32 @@ class AuthServiceTest {
   }
 
   @Test
+  void login_shouldSucceedAfterLockoutExpires() {
+    testUser.setFailedLoginAttempts(3);
+    testUser.setLockedUntil(java.time.Instant.now().minusSeconds(60));
+    LoginRequest request = new LoginRequest();
+    request.setEmail("test@otterworks.dev");
+    request.setPassword("password123");
+
+    when(userRepository.findByEmailForUpdate("test@otterworks.dev"))
+        .thenReturn(Optional.of(testUser));
+    when(passwordEncoder.matches("password123", testUser.getPasswordHash())).thenReturn(true);
+    when(userRepository.save(any(User.class))).thenReturn(testUser);
+    when(jwtTokenProvider.generateAccessToken(testUser)).thenReturn("access-token");
+    when(jwtTokenProvider.generateRefreshToken(testUser)).thenReturn("refresh-token");
+    when(jwtTokenProvider.extractJti("refresh-token")).thenReturn("jti-expired-lockout");
+    when(refreshTokenRepository.save(any(RefreshToken.class)))
+        .thenAnswer(inv -> inv.getArgument(0));
+
+    AuthResponse response = authService.login(request);
+
+    assertThat(response.getAccessToken()).isEqualTo("access-token");
+    assertThat(testUser.getFailedLoginAttempts()).isZero();
+    assertThat(testUser.getLockedUntil()).isNull();
+    verify(userRepository).save(testUser);
+  }
+
+  @Test
   void changePassword_shouldUpdatePasswordAndRevokeTokens() {
     ChangePasswordRequest request = new ChangePasswordRequest();
     request.setCurrentPassword("oldPassword");
