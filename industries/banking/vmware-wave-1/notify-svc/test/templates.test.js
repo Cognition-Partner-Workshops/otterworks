@@ -25,6 +25,8 @@ const app = {
 function express() { return app; }
 express.json = () => () => {};
 const db = {
+  set(key, value, cb) { outboxes.set(key, value); cb(null); },
+  get(key, cb) { cb(null, outboxes.get(key)); },
   on() {},
   incr(key, cb) { cb(null, 1); },
   expire() {},
@@ -41,6 +43,7 @@ vm.runInNewContext(fs.readFileSync(require.resolve('../src/server'), 'utf8'), {
   require(name) {
     if (name === 'express') return express;
     if (name === 'redis') return { createClient: () => db };
+    if (name === 'crypto') return require('crypto');
     return require('../src/templates');
   },
   console: { log() {} }
@@ -53,7 +56,7 @@ assert.strictEqual(JSON.parse(stored[0]).account, 'HG611000001', 'internal queue
 routes['/outbox/:account']({ params: { account: 'HG611000001' } }, res);
 assert.strictEqual(response[0].account, '****0001', 'outbox masks customer-visible account');
 assert.strictEqual(response[0].text, 'Your statement for ****0001 is ready to view.');
-assert.strictEqual(response[0].outboxUrl, '/outbox/HG611000001', 'outbox returns a lookup link, not a display identifier');
+assert.strictEqual(response[0].outboxUrl, '/outbox/' + require('crypto').createHash('sha256').update('HG611000001').digest('hex'), 'outbox returns an opaque lookup link');
 const firstOutbox = JSON.stringify(response);
 const outboxPath = new (require('url').URL)(response[0].outboxUrl, 'http://localhost').pathname;
 routes['/outbox/:account']({ params: { account: decodeURIComponent(outboxPath.slice('/outbox/'.length)) } }, res);

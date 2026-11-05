@@ -13,7 +13,7 @@ public class HtmlTest {
     @Test
     public void masksAccountLinkTextAndLastViewedButKeepsNavigation() {
         String out = Html.accounts("Bank", Collections.singletonMap("HG611000001", "Avery"), "HG611000001");
-        assertTrue(out.contains("href=\"statement?account=HG611000001\">****0001</a>"));
+        assertTrue(out.contains("href=\"statement?reference=" + Html.reference("HG611000001") + "\">****0001</a>"));
         String visible = out.replaceAll("<[^>]+>", "");
         assertTrue(visible.contains("Last viewed: ****0001"));
         assertFalse(visible.contains("HG611000001"));

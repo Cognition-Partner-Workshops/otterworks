@@ -25,7 +25,7 @@ public class DocumentController {
     public ResponseEntity<Map<String, Object>> upload(@PathVariable String customer, @RequestParam String kind,
                                                       @RequestParam("file") MultipartFile file) throws IOException {
         Map<String, Object> saved = store.save(customer, kind, file.getOriginalFilename(), file.getInputStream());
-        saved.put("documentsUrl", "/documents/" + customer);
+        saved.put("documentsUrl", "/documents/" + DocumentStore.reference(customer));
         log.info("stored {} for {} ({} bytes)", kind, customer, saved.get("bytes"));
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
@@ -38,5 +38,10 @@ public class DocumentController {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> bad(IllegalArgumentException e) {
         return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<Map<String, String>> unavailable(IOException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Documents unavailable"));
     }
 }

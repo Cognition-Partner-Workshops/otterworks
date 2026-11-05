@@ -2,6 +2,7 @@ package com.bank.kyc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
@@ -45,12 +46,27 @@ public class DocumentStore {
     }
 
     public List<String> list(String customer) throws IOException {
+        if (customer.matches("[a-f0-9-]{36}")) {
+            final String requestedReference = customer;
+            if (!Files.isDirectory(root)) return List.of();
+            try (Stream<Path> directories = Files.list(root)) {
+                customer = directories.filter(Files::isDirectory)
+                    .map(path -> path.getFileName().toString())
+                    .filter(name -> CUSTOMER.matcher(name).matches() && reference(name).equals(requestedReference))
+                    .findFirst().orElse(null);
+            }
+            if (customer == null) return List.of();
+        }
         if (!CUSTOMER.matcher(customer).matches()) throw new IllegalArgumentException("bad customer id");
         Path dir = root.resolve(customer);
         if (!Files.isDirectory(dir)) return List.of();
         try (Stream<Path> s = Files.list(dir)) {
             return s.map(p -> p.getFileName().toString()).sorted().collect(Collectors.toList());
         }
+    }
+
+    static String reference(String customer) {
+        return UUID.nameUUIDFromBytes(customer.getBytes(StandardCharsets.UTF_8)).toString();
     }
 
     static String extension(String name) {

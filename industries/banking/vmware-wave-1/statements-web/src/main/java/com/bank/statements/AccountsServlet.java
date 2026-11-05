@@ -25,7 +25,7 @@ public class AccountsServlet extends HttpServlet {
             resp.getWriter().write(Html.accounts(AppConfig.bankName(), dao.accounts(), last));
         } catch (SQLException e) {
             LOG.error("accounts query failed", e);
-            throw new ServletException(e);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Unable to load accounts");
         }
     }
 }

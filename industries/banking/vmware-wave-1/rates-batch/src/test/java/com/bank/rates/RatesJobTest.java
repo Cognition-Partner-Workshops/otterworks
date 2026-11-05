@@ -27,7 +27,7 @@ public class RatesJobTest {
                 "2026-10-14T00:00:00Z,EURGBP,0.8600,0.8602"), StandardCharsets.UTF_8);
         RatesJob.main(new String[] { in.toString(), out.toString(), "2026-10-14" });
         List<String> rows = Files.readAllLines(out.resolve("rates-2026-10-14.csv"));
-        assertEquals("pair,open,high,low,close,avg_mid,ticks,business_date", rows.get(0));
+        assertEquals("pair,open,open_business_date,high,high_business_date,low,low_business_date,close,close_business_date,avg_mid,avg_mid_business_date,ticks,business_date", rows.get(0));
         assertEquals(3, rows.size());
         for (String row : rows.subList(1, rows.size())) assertTrue(row.endsWith(",2026-10-14"));
     }

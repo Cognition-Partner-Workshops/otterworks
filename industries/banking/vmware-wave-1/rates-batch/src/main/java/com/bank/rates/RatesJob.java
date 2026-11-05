@@ -40,6 +40,12 @@ public class RatesJob {
             return String.join(",", pair, open.toPlainString(), high.toPlainString(), low.toPlainString(),
                     close.toPlainString(), avg().toPlainString(), String.valueOf(n));
         }
+
+        String csv(String day) {
+            return String.join(",", pair, open.toPlainString(), day, high.toPlainString(), day,
+                    low.toPlainString(), day, close.toPlainString(), day, avg().toPlainString(), day,
+                    String.valueOf(n), day);
+        }
     }
 
     static Map<String, Daily> aggregate(List<String> lines) {
@@ -82,8 +88,8 @@ public class RatesJob {
         Files.createDirectories(outDir);
         Path tmp = outDir.resolve(".rates-" + day + ".tmp");
         try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-            w.write("pair,open,high,low,close,avg_mid,ticks,business_date\n");
-            for (Daily d : rates.values()) w.write(d.csv() + "," + day + "\n");
+            w.write("pair,open,open_business_date,high,high_business_date,low,low_business_date,close,close_business_date,avg_mid,avg_mid_business_date,ticks,business_date\n");
+            for (Daily d : rates.values()) w.write(d.csv(day) + "\n");
         }
         Files.move(tmp, outDir.resolve("rates-" + day + ".csv"), StandardCopyOption.ATOMIC_MOVE,
                 StandardCopyOption.REPLACE_EXISTING);

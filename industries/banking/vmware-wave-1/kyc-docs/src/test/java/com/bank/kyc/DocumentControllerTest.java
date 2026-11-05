@@ -31,7 +31,7 @@ class DocumentControllerTest {
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         JsonNode saved = json.readTree(response);
         assertEquals("****0001", saved.path("customer").asText());
-        assertEquals("/documents/HG611000001", saved.path("documentsUrl").asText());
+        assertEquals("/documents/" + DocumentStore.reference("HG611000001"), saved.path("documentsUrl").asText());
         String listed = mvc.perform(get(saved.path("documentsUrl").asText()))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertEquals(json.createArrayNode().add(saved.path("file").asText()), json.readTree(listed));

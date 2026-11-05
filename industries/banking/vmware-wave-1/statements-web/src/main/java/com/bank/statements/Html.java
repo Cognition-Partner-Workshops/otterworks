@@ -1,8 +1,10 @@
 package com.bank.statements;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public final class Html {
     private Html() {
@@ -19,6 +21,10 @@ public final class Html {
         return "****" + account.substring(Math.max(0, account.length() - 4));
     }
 
+    static String reference(String account) {
+        return UUID.nameUUIDFromBytes(account.getBytes(StandardCharsets.UTF_8)).toString();
+    }
+
     static String page(String bank, String title, String body) {
         return "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>" + esc(title) + " - " + esc(bank)
             + "</title><style>body{font-family:Arial,sans-serif;margin:2em;color:#1b2a3a}"
@@ -30,12 +36,12 @@ public final class Html {
     public static String accounts(String bank, Map<String, String> accounts, String lastAccount) {
         StringBuilder b = new StringBuilder();
         if (lastAccount != null) {
-            b.append("<p id=\"last\">Last viewed: <a href=\"statement?account=").append(esc(lastAccount)).append("\">")
+            b.append("<p id=\"last\">Last viewed: <a href=\"statement?reference=").append(reference(lastAccount)).append("\">")
                 .append(esc(maskAccount(lastAccount))).append("</a></p>");
         }
         b.append("<table id=\"accounts\"><tr><th>Account</th><th>Holder</th></tr>");
         for (Map.Entry<String, String> e : accounts.entrySet()) {
-            b.append("<tr><td><a href=\"statement?account=").append(esc(e.getKey())).append("\">").append(esc(maskAccount(e.getKey())))
+            b.append("<tr><td><a href=\"statement?reference=").append(reference(e.getKey())).append("\">").append(esc(maskAccount(e.getKey())))
                 .append("</a></td><td>").append(esc(e.getValue())).append("</td></tr>");
         }
         b.append("</table>");
