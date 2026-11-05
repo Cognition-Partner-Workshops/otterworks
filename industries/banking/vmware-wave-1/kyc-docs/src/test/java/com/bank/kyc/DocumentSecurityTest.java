@@ -47,7 +47,7 @@ class DocumentSecurityTest {
         String hash = new BCryptPasswordEncoder().encode(TEST_PASSWORD);
         registry.add("kyc.auth.uploader.password-hash", () -> hash);
         registry.add("kyc.auth.reviewer.password-hash", () -> hash);
-        registry.add("kyc.auth.uploader.customers", () -> " TESTCUST0001 , TESTEMPTY0001,*,bad-id ");
+        registry.add("kyc.auth.uploader.customers", () -> " TESTCUST0001 , TESTEMPTY0001, TESTLOWER0001,*,bad-id ");
         registry.add("kyc.auth.reviewer.customers", () -> " TESTCUST0001 , TESTEMPTY0001,*,bad-id ");
     }
 
@@ -118,6 +118,13 @@ class DocumentSecurityTest {
         mvc.perform(delete("/documents/TESTCUST0001").with(bearer(TEST_UPLOADER, TEST_PASSWORD)))
                 .andExpect(status().isForbidden());
         verifyNoInteractions(store);
+    }
+
+    @Test
+    void lowercaseBearerSchemeAuthenticatesBoundUploader() throws Exception {
+        mvc.perform(multipart("/documents/TESTLOWER0001").file(pdf()).param("kind", "passport")
+                .header("Authorization", "bearer " + TEST_UPLOADER + ":" + TEST_PASSWORD))
+                .andExpect(status().isCreated());
     }
 
     @Test

@@ -34,7 +34,7 @@ public class ServiceTokenAuthenticationFilter extends OncePerRequestFilter {
         }
         Authentication authentication;
         try {
-            if (!header.startsWith("Bearer ")) {
+            if (!header.regionMatches(true, 0, "Bearer ", 0, 7)) {
                 throw new BadCredentialsException("Invalid service token");
             }
             String token = header.substring(7);
