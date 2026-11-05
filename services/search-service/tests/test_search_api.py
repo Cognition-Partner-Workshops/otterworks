@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -103,6 +105,25 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    def test_suggest_with_chaos_flag_returns_suggestions(self, client, mock_meilisearch_client):
+        """With chaos:search-service:suggest_500 set, suggest still answers 200 with titles."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {"estimatedTotalHits": 1, "hits": [{"title": "Test Doc 1"}]}
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=te", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Test Doc 1"]
+
+    def test_suggest_with_chaos_flag_and_no_hits(self, client, mock_meilisearch_client):
+        """With chaos:search-service:suggest_500 set and nothing indexed, suggest returns an empty list."""
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=zz", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
