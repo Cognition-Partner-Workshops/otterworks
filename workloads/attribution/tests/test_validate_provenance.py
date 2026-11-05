@@ -58,6 +58,8 @@ def _errors(mutate, workload="doc_usage_dashboard"):
         (lambda d: _obj(d, "task").update(devin_csid="cs_churn_model_account_score"), "should be"),
         (lambda d: d.update(objects=[o for o in d["objects"] if o["type"] != "task"]), "missing the workload task"),
         (lambda d: d.update(objects=[o for o in d["objects"] if o["type"] != "user"]), "missing service user"),
+        (lambda d: _obj(d, "schema").update(name="DB_DOC_USAGE_DASHBOARD.WRONG"), "schema should be named"),
+        (lambda d: d.update(objects=[o for o in d["objects"] if o["type"] != "schema"]), "missing the workload schema"),
         (lambda d: _obj(d, "database").update(comment='{"run_token":"SFEXT_20261105A"}'), "expiry"),
         (lambda d: _obj(d, "user").pop("comment"), "run token"),
         (lambda d: _obj(d, "resource_monitor").update(name="RM_DOC_USAGE_DASHBOARD"), "run token"),

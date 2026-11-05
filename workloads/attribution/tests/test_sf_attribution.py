@@ -95,7 +95,14 @@ def test_parse_query_tag_round_trips_and_rejects_extras():
 
 def test_run_id_format():
     when = datetime(2026, 11, 5, 3, 19, tzinfo=timezone.utc)
-    assert sf.make_run_id("churn_model", "runtime", when) == "SFEXT_20261105A-churn_model-runtime-20261105T031900Z"
+    assert (
+        sf.make_run_id("churn_model", "runtime", when, nonce="0a1b2c3d")
+        == "SFEXT_20261105A-churn_model-runtime-20261105T031900Z-0a1b2c3d"
+    )
+    assert sf.make_run_id("churn_model", "runtime", when) != sf.make_run_id("churn_model", "runtime", when)
+    assert sf.RUN_ID_RE.match(sf.make_run_id("churn_model", "runtime", when))
+    with pytest.raises(sf.AttributionError):
+        sf.make_run_id("churn_model", "runtime", when, nonce="xyz")
     with pytest.raises(sf.AttributionError):
         sf.make_run_id("churn_model", "runtime", when, run_token="lp-20261105-ab")
 
@@ -185,6 +192,17 @@ def test_task_carries_its_own_runtime_tag_and_comment():
     assert sf.streamlit_session_tag_sql(EP, commit=COMMIT, run_id=run_id).startswith("ALTER SESSION SET QUERY_TAG = '{")
 
 
+def test_task_deploy_tags_before_resuming():
+    run_id = "SFEXT_20261105A-doc_usage_dashboard-runtime-20261105T031900Z"
+    create, tag, resume = sf.task_deploy_sql(EP, schedule="60 MINUTE", body="SELECT 1", commit=COMMIT, run_id=run_id)
+    assert create.startswith("CREATE OR REPLACE TASK DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD")
+    assert tag == (
+        "ALTER TASK DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD SET TAG "
+        "DEVIN_GOVERNANCE.TAGS.DEVIN_CSID = 'cs_doc_usage_dashboard_account_usage'"
+    )
+    assert resume == "ALTER TASK DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD RESUME"
+
+
 def test_warehouse_is_xs_with_60s_suspend_and_monitor():
     monitor, warehouse = sf.warehouse_ddl("doc_search_api")
     assert "CREATE RESOURCE MONITOR IF NOT EXISTS RM_SFEXT_20261105A_20261119_DOC_SEARCH_API" in monitor
@@ -249,8 +267,10 @@ def test_missing_usage_reads_pending_and_cortex_stays_separate():
 
 def test_usage_sql_groups_by_tag_and_keeps_cortex_columns_apart():
     sql = sf.USAGE_BY_TAG_SQL
-    for column in ("csid", "workload", "phase", "commit"):
+    for column in ("csid", "workload", "phase", "commit", "run_id"):
         assert f"t.tag:{column}::string AS {column}" in sql
+    assert "r.graph_run_group_id AS task_execution_id" in sql
+    assert "GROUP BY 1, 2, 3, 4, 5, 6" in sql
     assert "CORTEX_FUNCTIONS_QUERY_USAGE_HISTORY" in sql
     assert "SUM(m.compute_credits) AS compute_credits" in sql
     assert "SUM(c.cortex_credits) AS cortex_credits" in sql
