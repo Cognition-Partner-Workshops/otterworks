@@ -25,7 +25,7 @@ def document_input(document):
 
 
 def document_batch(frame):
-    return frame[~frame.is_deleted.fillna(False)].sort_values("id").head(10)
+    return frame.loc[~frame.is_deleted.fillna(False).astype(bool)].sort_values("id").head(10)
 
 
 def monday(value):
