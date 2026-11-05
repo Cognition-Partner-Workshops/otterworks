@@ -496,7 +496,8 @@ WITH parsed AS (
               THEN 'query_tag' ELSE 'query_text' END AS tag_source
   FROM parsed
   WHERE STARTSWITH(session_tag:csid::string, 'cs_')
-     OR (STARTSWITH(comment_tag:csid::string, 'cs_') AND comment_tag:phase::string = 'runtime')
+     OR (STARTSWITH(comment_tag:csid::string, 'cs_') AND comment_tag:phase::string = 'runtime'
+         AND session_tag:StreamlitEngine::string = 'ExecuteStreamlit')
 ), compute AS (
   SELECT a.query_id,
          a.credits_attributed_compute AS compute_credits,

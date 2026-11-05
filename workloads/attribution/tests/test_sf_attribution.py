@@ -338,7 +338,8 @@ def test_usage_sql_falls_back_to_trailing_runtime_comment():
     assert "q.query_text, '/[*] ([{].*[}]) [*]/[[:space:]]*$', 1, 1, 'es', 1" in sql
     assert "THEN session_tag ELSE comment_tag END AS tag" in sql
     assert "THEN 'query_tag' ELSE 'query_text' END AS tag_source" in sql
-    assert "OR (STARTSWITH(comment_tag:csid::string, 'cs_') AND comment_tag:phase::string = 'runtime')" in sql
+    assert "OR (STARTSWITH(comment_tag:csid::string, 'cs_') AND comment_tag:phase::string = 'runtime'" in sql
+    assert "AND session_tag:StreamlitEngine::string = 'ExecuteStreamlit')" in sql
     assert "GROUP BY 1, 2, 3, 4, 5, 6, t.tag_source" in sql
     assert sql.count("%(start)s") == 3
     assert sql.count("%(end)s") == 3
