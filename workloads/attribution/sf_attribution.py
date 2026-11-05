@@ -481,11 +481,22 @@ def usage_summary(row: Mapping[str, object] | None) -> dict[str, dict[str, float
 
 
 USAGE_BY_TAG_SQL = """\
-WITH tagged AS (
-  SELECT q.query_id, TRY_PARSE_JSON(q.query_tag) AS tag
+WITH parsed AS (
+  SELECT q.query_id, TRY_PARSE_JSON(q.query_tag) AS session_tag,
+         TRY_PARSE_JSON(REGEXP_SUBSTR(
+           q.query_text, '/[*] ([{].*[}]) [*]/[[:space:]]*$', 1, 1, 'es', 1
+         )) AS comment_tag
   FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY q
   WHERE q.start_time >= %(start)s AND q.start_time < %(end)s
-    AND STARTSWITH(TRY_PARSE_JSON(q.query_tag):csid::string, 'cs_')
+), tagged AS (
+  SELECT query_id,
+         CASE WHEN STARTSWITH(session_tag:csid::string, 'cs_')
+              THEN session_tag ELSE comment_tag END AS tag,
+         CASE WHEN STARTSWITH(session_tag:csid::string, 'cs_')
+              THEN 'query_tag' ELSE 'query_text' END AS tag_source
+  FROM parsed
+  WHERE STARTSWITH(session_tag:csid::string, 'cs_')
+     OR (STARTSWITH(comment_tag:csid::string, 'cs_') AND comment_tag:phase::string = 'runtime')
 ), compute AS (
   SELECT a.query_id,
          a.credits_attributed_compute AS compute_credits,
@@ -511,11 +522,12 @@ SELECT t.tag:csid::string AS csid,
        SUM(m.query_acceleration_credits) AS query_acceleration_credits,
        COUNT(*) AS query_count,
        SUM(c.cortex_credits) AS cortex_credits,
-       SUM(c.cortex_tokens) AS cortex_tokens
+       SUM(c.cortex_tokens) AS cortex_tokens,
+       t.tag_source
 FROM tagged t
 LEFT JOIN compute m ON m.query_id = t.query_id
 LEFT JOIN cortex c ON c.query_id = t.query_id
 LEFT JOIN task_runs r ON r.query_id = t.query_id
-GROUP BY 1, 2, 3, 4, 5, 6
+GROUP BY 1, 2, 3, 4, 5, 6, t.tag_source
 ORDER BY 1, 3, 4, 5, 6
 """

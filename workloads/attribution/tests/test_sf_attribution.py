@@ -329,3 +329,26 @@ def test_usage_sql_groups_by_tag_and_keeps_cortex_columns_apart():
 def test_application_is_labelled_unregistered():
     assert sf.APPLICATION == "Devin_Demo"
     assert sf.APPLICATION_REGISTRATION == "unregistered"
+
+
+def test_usage_sql_falls_back_to_trailing_runtime_comment():
+    sql = sf.USAGE_BY_TAG_SQL
+    assert "TRY_PARSE_JSON(q.query_tag) AS session_tag" in sql
+    assert "TRY_PARSE_JSON(REGEXP_SUBSTR(" in sql
+    assert "q.query_text, '/[*] ([{].*[}]) [*]/[[:space:]]*$', 1, 1, 'es', 1" in sql
+    assert "THEN session_tag ELSE comment_tag END AS tag" in sql
+    assert "THEN 'query_tag' ELSE 'query_text' END AS tag_source" in sql
+    assert "OR (STARTSWITH(comment_tag:csid::string, 'cs_') AND comment_tag:phase::string = 'runtime')" in sql
+    assert "GROUP BY 1, 2, 3, 4, 5, 6, t.tag_source" in sql
+    assert sql.count("%(start)s") == 3
+    assert sql.count("%(end)s") == 3
+
+
+def test_comment_fallback_keeps_cortex_separate():
+    sql = sf.USAGE_BY_TAG_SQL
+    assert "LEFT JOIN compute m ON m.query_id = t.query_id" in sql
+    assert "LEFT JOIN cortex c ON c.query_id = t.query_id" in sql
+    assert "SUM(m.compute_credits) AS compute_credits" in sql
+    assert "SUM(c.cortex_credits) AS cortex_credits" in sql
+    assert "SUM(c.cortex_tokens) AS cortex_tokens" in sql
+    assert "SUM(m.compute_credits +" not in sql

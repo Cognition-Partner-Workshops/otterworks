@@ -3,7 +3,7 @@ from datetime import date
 
 import pytest
 
-from workloads.doc_usage_dashboard.app import dashboard as d
+import dashboard as d
 
 CONFIG = {"table": "DB.APP.ACCOUNT_STORAGE_USAGE"}
 SELECTED = date(2026, 11, 2)

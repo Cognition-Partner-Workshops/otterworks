@@ -18,6 +18,11 @@ endpoints:
   - csid: cs_doc_usage_dashboard_account_usage
     service_user: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
     auth: key_pair
+# Streamlit runtime attribution is the trailing JSON comment in query_text: SiS
+# overrides QUERY_TAG (ALTER SESSION rejected; statement_params silently ignored,
+# verified 2026-11-05 in QUERY_HISTORY). Dev queries retain their real QUERY_TAG.
+# Cross-check Snowflake's StreamlitName QUERY_TAG against the DEVIN_CSID-tagged
+# streamlit object below; its app FQN maps to cs_doc_usage_dashboard_account_usage.
 query_tag:
   keys: [csid, workload, phase, commit, run_id]
   dev_keys: [session_url]
