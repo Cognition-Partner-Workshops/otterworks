@@ -1,0 +1,9 @@
+smoke:
+  - path: /health
+    expect: 200
+  - path: /accounts
+    expect: 200
+  - path: /statement?account=HG611000001
+    expect: 200
+  - path: /statement
+    expect: 400

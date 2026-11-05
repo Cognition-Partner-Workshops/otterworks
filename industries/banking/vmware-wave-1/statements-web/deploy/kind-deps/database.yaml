@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: statements-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: statements-db
+  template:
+    metadata:
+      labels:
+        app: statements-db
+    spec:
+      containers:
+        - name: postgres
+          image: docker.io/library/postgres:16-alpine
+          env:
+            - name: POSTGRES_DB
+              value: bankwave
+            - name: POSTGRES_USER
+              value: statements_app
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: trust
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: [pg_isready, -U, statements_app, -d, bankwave]
+            periodSeconds: 3
+          volumeMounts:
+            - name: seed
+              mountPath: /docker-entrypoint-initdb.d
+              readOnly: true
+            - name: data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: seed
+          configMap:
+            name: statements-seed
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: statements-db
+spec:
+  selector:
+    app: statements-db
+  ports:
+    - port: 5432
+      targetPort: 5432
