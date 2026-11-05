@@ -3,15 +3,27 @@
 const express = require('express');
 const redis = require('redis');
 const { render, maskAccount } = require('./templates');
+const { readConfig } = require('./config');
 
-const PORT = 3000;
 const LIMIT_PER_HOUR = 20;
 
-const db = redis.createClient();
-db.on('error', (err) => console.error('redis error', err.message));
-
+function createApp(db) {
 const app = express();
 app.use(express.json());
+
+app.get('/health', (req, res) => {
+  const timer = setTimeout(() => finish(false), 1000);
+  function finish(ok) {
+    if (res.headersSent) return;
+    clearTimeout(timer);
+    res.status(ok ? 200 : 503).json({ healthy: ok });
+  }
+  try {
+    db.ping((err, reply) => finish(!err && reply === 'PONG'));
+  } catch (err) {
+    finish(false);
+  }
+});
 
 app.post('/notify', (req, res) => {
   const { account, kind, fields } = req.body || {};
@@ -43,4 +55,14 @@ app.get('/outbox/:account', (req, res) => {
   });
 });
 
-app.listen(PORT, () => console.log('notify-svc listening on', PORT));
+return app;
+}
+
+if (require.main === module) {
+  const config = readConfig(process.env);
+  const db = redis.createClient(config.redisUrl, { password: config.redisPassword });
+  db.on('error', (err) => console.error('redis error', err.message));
+  createApp(db).listen(config.port, () => console.log('notify-svc listening on', config.port));
+}
+
+module.exports = { createApp };

@@ -1,0 +1,22 @@
+app: notify-svc
+owner: banking-platform
+costCenter: bank-wave1
+containerPort: 3000
+env:
+  NODE_ENV: production
+  PORT: "3000"
+  REDIS_URL: redis://notify-redis.deps.svc.cluster.local:6379
+secretEnv:
+  REDIS_PASSWORD:
+    secret: notify-redis
+    key: password
+writablePaths: []
+probes:
+  path: /health
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
