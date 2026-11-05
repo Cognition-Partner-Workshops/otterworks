@@ -1,0 +1,26 @@
+app: statements-web
+owner: retail-platform
+costCenter: banking-wave1
+workload: web
+replicas: 2
+env:
+  STATEMENTS_CONFIG: /etc/app/statements.properties
+  DB_URL: jdbc:postgresql://statements-db:5432/bankwave
+  DB_USER: statements_reader
+  TZ: UTC
+  LANG: C.UTF-8
+  COOKIE_SECURE: "true"
+secretEnv:
+  DB_PASSWORD:
+    secret: statements-db
+    key: password
+configFiles:
+  statements.properties: |
+    bank.name=Halvergate Bank
+    statement.page.size=50
+writablePaths:
+  - /tmp
+  - /usr/local/tomcat/temp
+  - /usr/local/tomcat/work
+ingress:
+  tls: true
