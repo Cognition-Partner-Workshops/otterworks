@@ -11,6 +11,16 @@ env:
   ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/workshop
 
 jobs:
+  # incident.py's PromQL measurements, evaluated by promtool in a container.
+  incident-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - run: >-
+          uv run --with httpx==0.27.2 --with pyyaml==6.0.2 --with PyJWT==2.9.0
+          --with redis==5.2.1 --with pytest==8.3.5 pytest -q incident/tests
+
   # The document-service chart renders generated copies of the incident alert
   # rules and dashboard; they must match observability/.
   incident-chart-sync:

@@ -540,9 +540,13 @@ METRIC_EXPRS = {
         "histogram_quantile(0.95, sum by (le) "
         f"(rate(http_request_duration_seconds_bucket{{{_LIST}}}[2m])))"
     ),
+    # A fresh service has no 5xx series, so the numerator alone is empty; it
+    # counts as zero only while the total shows traffic. No total series, no
+    # traffic or a NaN total leaves the result empty, which the gate fails.
     "error_ratio": (
-        'sum(rate(http_requests_total{job="document-service",status=~"5.."}[2m])) '
-        '/ sum(rate(http_requests_total{job="document-service"}[2m]))'
+        '(sum(rate(http_requests_total{job="document-service",status=~"5.."}[2m])) '
+        'or sum(rate(http_requests_total{job="document-service"}[2m])) * 0) '
+        '/ (sum(rate(http_requests_total{job="document-service"}[2m])) > 0)'
     ),
     "queries_per_request": (
         f"sum(rate(otterworks_db_queries_per_request_sum{{{_LIST_H}}}[2m])) "
