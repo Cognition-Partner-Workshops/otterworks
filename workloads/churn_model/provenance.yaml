@@ -241,3 +241,60 @@ usage:
     runtime:
       cortex_credits: pending
       cortex_tokens: pending
+
+# Retained-data verification only: no training, scoring, evaluation or Cortex invocation.
+# The model_fixes and original live runs above are unchanged. Both later model fixes
+# remain unit_tests_only; all 215 local tests passed, including the history-only
+# account and creation-priority regressions. No live execution of either fix.
+# COUNT(*) / HASH_AGG(*) were unchanged before/after for WEEKLY_CHURN_SCORES,
+# CHURN_MODEL_RUNS, CHURN_MODEL_EVALUATION, CHURN_MODEL_SCORES, CHURN_LEAKAGE_CHECK,
+# CHURN_DOCUMENT_LABELS, CHURN_RISK_REASONS and RAW.SUPPORT_NOTES.
+# The retained 1999 model scores are all NULL (flagged=false), dependent on the
+# insufficient source history; their availability check deliberately stays red.
+# Dashboard fixture verified read-only: five extra quota rows remain for accounts
+# 104..108, but only DUPQUOTA_1 and DUPQUOTA_4 retain their marker and used_bytes+1.
+# The other three duplicate rows match the source hash and used_bytes. All rows
+# were left untouched; fixture repair belongs to the dashboard refresh work.
+# Both dashboard and churn manifests/landing retain 2000 customers/50000 documents.
+# No Snowflake objects or secrets created. JWT key stayed in process memory.
+data_quality:
+  suite: tag:dq_churn_model
+  ran_at: "2026-11-05T10:16:38.298435+00:00"
+  commit: ab478fe539df8fff34d941553b83a06affbfd492
+  refresh_task_run:
+    query_id: 01c834a2-030c-d4ad-0035-065b000747ea
+    graph_run_group_id: f46d0390-0749-4e7b-9973-9d62f39eaaa0
+    scheduled_time: "2026-11-05T10:10:00+00:00"
+  tests:
+    - name: churn_examples
+      check: worked_example
+      status: pass
+      failing_rows: 0
+      cause: All three spec rows match every output column exactly, including numeric values.
+    - name: churn_model_accepted_range
+      check: accepted_range
+      status: fail
+      failing_rows: 2000
+      cause: >-
+        One retained evaluation fails the 0.50 recall gate and metric availability:
+        recall, precision and AUC are NULL; holdout has 0 positives and 2000 negatives.
+        Source history has only one auth/admin effective timestamp (2026-11-01),
+        no deletion events, and first-capture admin rows are not suspension transitions.
+        The other 1999 failures are unavailable NULL model scores, dependent on
+        sufficient source history for training. Weekly rules_v1 ranges all pass.
+        Retained evaluation and scores were not rerun or modified.
+    - name: churn_model_freshness
+      check: freshness
+      status: pass
+      failing_rows: 0
+      cause: Successful 10:10 UTC hourly refresh is under two hours old; latest export maps to output week 2026-10-26.
+    - name: churn_model_row_count
+      check: row_count
+      status: pass
+      failing_rows: 0
+      cause: Manifest and landed source history each derive 2000 eligible accounts; output has 2000 rows for the latest completed week. Fixture counts remain 2000 customers and 50000 documents.
+    - name: churn_model_uniqueness
+      check: uniqueness
+      status: pass
+      failing_rows: 0
+      cause: All five input landing keys are unique per export snapshot; weekly output and retained model table keys are unique.
