@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notify-redis
+  labels:
+    app: notify-redis
+    owner: banking-platform
+    cost-center: bank-wave1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notify-redis
+  template:
+    metadata:
+      labels:
+        app: notify-redis
+    spec:
+      securityContext:
+        fsGroup: 999
+      containers:
+        - name: redis
+          image: docker.io/library/redis:7.4-bookworm@sha256:b6b6e3dc0c0952737748e55d5d885272840c7e42ba41ab1d5489f693419882f5
+          command: [sh, -c]
+          args: ['exec redis-server --requirepass "$REDIS_PASSWORD" --save "" --appendonly no']
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: notify-redis
+                  key: password
+          ports:
+            - containerPort: 6379
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          readinessProbe:
+            exec:
+              command: [sh, -c, 'REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli ping | grep -qx PONG']
+          livenessProbe:
+            exec:
+              command: [sh, -c, 'REDISCLI_AUTH="$REDIS_PASSWORD" redis-cli ping | grep -qx PONG']
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notify-redis
+spec:
+  type: ClusterIP
+  selector:
+    app: notify-redis
+  ports:
+    - port: 6379
+      targetPort: 6379

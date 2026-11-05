@@ -1,0 +1,3 @@
+smoke:
+  - path: /health
+    expect: 200
