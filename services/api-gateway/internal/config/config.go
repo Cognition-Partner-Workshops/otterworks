@@ -10,8 +10,9 @@ import (
 
 // Config holds all configuration for the API Gateway.
 type Config struct {
-	Port     string
-	LogLevel string
+	Port        string
+	MetricsPort string
+	LogLevel    string
 
 	// Backend service URLs
 	AuthServiceURL         string
@@ -48,10 +49,10 @@ type Config struct {
 	ShutdownTimeout time.Duration
 
 	// Circuit breaker
-	CBMaxRequests   uint32
-	CBInterval      time.Duration
-	CBTimeout       time.Duration
-	CBFailureRatio  float64
+	CBMaxRequests  uint32
+	CBInterval     time.Duration
+	CBTimeout      time.Duration
+	CBFailureRatio float64
 }
 
 // Validate checks that required security-sensitive configuration is present.
@@ -65,8 +66,9 @@ func (c *Config) Validate() error {
 // Load reads configuration from environment variables with sensible defaults.
 func Load() *Config {
 	return &Config{
-		Port:     getEnv("PORT", "8080"),
-		LogLevel: getEnv("LOG_LEVEL", "info"),
+		Port:        getEnv("PORT", "8080"),
+		MetricsPort: getEnv("METRICS_PORT", "9091"),
+		LogLevel:    getEnv("LOG_LEVEL", "info"),
 
 		AuthServiceURL:         getEnv("AUTH_SERVICE_URL", "http://auth-service:8081"),
 		FileServiceURL:         getEnv("FILE_SERVICE_URL", "http://file-service:8082"),

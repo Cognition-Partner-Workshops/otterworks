@@ -42,7 +42,6 @@ func DefaultPublicPaths() []string {
 func DefaultPrefixPaths() []string {
 	return []string{
 		"/health",
-		"/metrics",
 		"/socket.io",
 	}
 }
@@ -135,7 +134,7 @@ func isPublicPath(path string, exactPaths map[string]bool, prefixPaths []string)
 	if exactPaths[path] {
 		return true
 	}
-	// Prefix match only for operational paths (e.g. /health, /metrics)
+	// Prefix match only for operational paths (e.g. /health)
 	for _, p := range prefixPaths {
 		if path == p || strings.HasPrefix(path, p+"/") {
 			return true
