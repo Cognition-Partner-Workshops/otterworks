@@ -66,6 +66,18 @@ test('failed batch is visible and is not automatically retried', async t => {
   assert.match(state.threads.at(-1).messages[0].text, /not confirmed/);
   assert.equal(f.calls.length, 1);
 });
+test('required alert names hold a partial batch beyond quiet until every page arrives', async t => {
+  const f = await fixture(t, { batch: true });
+  f.cfg.batchRequiredAlerts = ['First', 'Last'];
+  const send = name => fetch(`${f.url}/receivers/alertmanager`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' }, body: JSON.stringify({ alerts: [{ status: 'firing', labels: { alertname: name }, startsAt: 'now' }] }) });
+  await send('First'); await pause(160);
+  assert.equal(f.calls.length, 0);
+  await send('Last'); await pause(30);
+  assert.equal(f.calls.length, 0);
+  await pause(130);
+  assert.equal(f.calls.length, 1);
+  assert.deepEqual(f.calls[0].body.alerts.map(alert => alert.labels.alertname), ['First', 'Last']);
+});
 test('named people reach one Fusion session, polling deduplicates replies across pages', async t => {
   const f = await fixture(t);
   const first = await f.post('@devin Please check the document list.');

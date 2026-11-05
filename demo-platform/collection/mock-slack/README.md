@@ -72,6 +72,14 @@ ID. Failed or interrupted delivery stays uncertain and requires an operator
 check in automation history; the server does not retry a possibly accepted
 batch. Pending alerts survive restarts in the workspace state file.
 
+For a staged storm, set `ALERT_BATCH_REQUIRED_ALERTS` to comma-separated alert
+names. The server holds a partial batch until every required name has arrived,
+then waits for the normal quiet window after the latest alert. For all local
+scenarios, use
+`DocumentListLatencyHigh,RequestLogVolumeNearFull,DocumentServiceMemoryHigh,DocumentStatsRollupDuplicated`.
+If a scenario fails, its partial batch stays pending for operator review.
+Leave this variable empty for independent single-scenario batches.
+
 The Alertmanager route groups by `alertname` and `scenario`, with a 10-second
 group wait. Raw receivers send every alert in each group (`max_alerts: 0`),
 including multiple instances; Slack-formatted delivery and local gate captures

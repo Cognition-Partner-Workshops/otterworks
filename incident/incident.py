@@ -183,12 +183,16 @@ def compose(
     return sh(*COMPOSE, *args, check=check, capture=capture, env=env)
 
 
-def recreate_document_service(cat: dict[str, Any], memory_limit: str | None) -> None:
+def recreate_document_service(
+    cat: dict[str, Any], memory_limit: str | None, *, log_volume_size: str | None = None
+) -> None:
     """Recreate the document-service container with a scenario-specific memory ceiling.
 
     `None` restores the Compose default (`INCIDENT_MEMORY_LIMIT` or 512m).
     """
-    env = {"INCIDENT_MEMORY_LIMIT": memory_limit} if memory_limit else None
+    env = {"INCIDENT_MEMORY_LIMIT": memory_limit} if memory_limit else {}
+    if log_volume_size:
+        env["INCIDENT_LOG_VOLUME_SIZE"] = log_volume_size
     compose("up", "-d", "--no-build", "--force-recreate", "document-service", env=env)
     wait_healthy(cat)
     log(f"document-service memory limit -> {memory_limit or 'default'}")
@@ -1062,15 +1066,18 @@ def storm_memory_ceiling(rss: int, usage: int) -> int:
 def _start_storm(
     cat: dict[str, Any], names: list[str], memory: list[str], logging: list[str]
 ) -> None:
-    recreate_document_service(cat, "1g")
+    recreate_document_service(cat, "2g", log_volume_size="16m")
     for name in memory:
         start_background_load(name, scale=0.5 * load_scale())
     log("storm: warming render load for 30s before list traffic")
     time.sleep(30)
+    for name in memory:
+        stop_background_load(name)
     for name in names:
         if name not in memory and name not in logging and cat["scenarios"][name].get("load"):
             start_background_load(name)
     _wait_storm_pages(cat, [name for name in names if name not in memory + logging])
+    stop_background_load()
     for name in logging:
         for step in cat["scenarios"][name]["arm"]:
             if _step_parts(step)[0] == "flag":

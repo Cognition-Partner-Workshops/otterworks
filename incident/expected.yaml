@@ -2,13 +2,12 @@
 # re-pin with `make incident-record REASON="..."` -- the reason is kept here
 # so every re-record is auditable in git history.
 recorded:
-  at: '2026-11-05T06:04:22.282984+00:00'
-  git_sha: 6e805731f7ecf9754b4df80e671f613348082329
-  reason: Stage concurrent storm loads and size the paused memory ceiling safely;
-    disable local SNS and share the replica image. Application source and alert thresholds
-    unchanged.
+  at: '2026-11-05T06:39:16.122348+00:00'
+  git_sha: 8d0d35aaf2f1a320537711c497e572dec31cdbd4
+  reason: Isolate storm load phases, bound render warmup, and use a 2 GiB temporary
+    ceiling and 16 MiB log volume; application source and alert rules unchanged.
 fingerprints:
-  fixture: 9033e4c6e439e3e313340ac95f93dff8282b121eb795bfa827c7b45025f39c56
+  fixture: cfc5e5aae8316b0522ddad6d52b7a0224a9c131e94d170fdc34ca18714d3e98b
   source: d55ef66d277619b561204c5ff6e7f8ddedbd6e29ebed0ce4477ad08d2eb1ea40
 scenarios:
   n-plus-one:

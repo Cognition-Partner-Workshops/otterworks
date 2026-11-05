@@ -38,6 +38,7 @@ export function config(env = process.env) {
     batchWebhook: env.ALERT_BATCH_WEBHOOK_URL || '',
     batchSecret: env.ALERT_BATCH_WEBHOOK_SECRET || '',
     batchQuietMs: Number(env.ALERT_BATCH_QUIET_MS || 90000),
+    batchRequiredAlerts: (env.ALERT_BATCH_REQUIRED_ALERTS || '').split(',').map(value => value.trim()).filter(Boolean),
     stateFile: env.STATE_FILE || path.join(root, '.data/state.json'),
     transcriptFile: env.DEVIN_TRANSCRIPT_FILE || '',
     maxAcu: Number(env.DEVIN_MAX_ACU || 5),
@@ -143,9 +144,11 @@ export async function createApp(cfg = config()) {
     add(t, author, text.trim(), requestId); await save(); await deliver(t); return t;
   };
   let batchTimer;
+  const batchComplete = batch => (cfg.batchRequiredAlerts || []).every(name =>
+    batch.alerts.some(alert => alert.labels.alertname === name));
   const flushBatch = async () => {
     const batch = state.alertBatch;
-    if (!batch || batch.status !== 'pending' || !cfg.batchWebhook) return;
+    if (!batch || batch.status !== 'pending' || !cfg.batchWebhook || !batchComplete(batch)) return;
     batch.status = 'sending'; await save();
     const message = `Alert storm (${batch.alerts.length} alerts)\n\n` + batch.alerts.map(a =>
       `${a.labels.alertname || 'Alert'} | scenario: ${a.labels.scenario || '-'} | severity: ${a.labels.severity || '-'}\n${a.annotations?.summary || ''}\nstartsAt: ${a.startsAt || '-'}\nlabels: ${JSON.stringify(a.labels)}`).join('\n\n');
@@ -167,7 +170,7 @@ export async function createApp(cfg = config()) {
   };
   const scheduleBatch = () => {
     clearTimeout(batchTimer);
-    if (cfg.batchWebhook && state.alertBatch?.status === 'pending') {
+    if (cfg.batchWebhook && state.alertBatch?.status === 'pending' && batchComplete(state.alertBatch)) {
       batchTimer = setTimeout(() => serial(flushBatch).catch(() => {}), Math.max(0, state.alertBatch.lastAt + cfg.batchQuietMs - Date.now()));
       batchTimer.unref();
     }

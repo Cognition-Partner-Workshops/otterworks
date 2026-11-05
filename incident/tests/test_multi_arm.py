@@ -125,9 +125,14 @@ def test_storm_stages_logging_after_other_pages_and_freezes_before_lowering(monk
     calls = []
     monkeypatch.setattr(incident, "load_scale", lambda: 1)
     monkeypatch.setattr(incident.time, "sleep", lambda seconds: calls.append(("sleep", seconds)))
-    monkeypatch.setattr(incident, "recreate_document_service", lambda *args: calls.append("warm"))
+    monkeypatch.setattr(
+        incident, "recreate_document_service", lambda cat, limit, **kw: calls.append(
+            ("warm", limit, kw))
+    )
     monkeypatch.setattr(incident, "start_background_load", lambda name, **kw: calls.append(name))
-    monkeypatch.setattr(incident, "stop_background_load", lambda: calls.append("freeze"))
+    monkeypatch.setattr(
+        incident, "stop_background_load", lambda name=None: calls.append(("freeze", name))
+    )
     monkeypatch.setattr(incident, "run_step", lambda cat, name, step: calls.append((name, step)))
     monkeypatch.setattr(incident, "_wait_storm_pages", lambda cat, names, **kw: calls.append(names))
     monkeypatch.setattr(incident, "compose", lambda *args, **kw: argparse.Namespace(
@@ -135,9 +140,10 @@ def test_storm_stages_logging_after_other_pages_and_freezes_before_lowering(monk
     monkeypatch.setattr(incident, "container_id", lambda service: "container")
     monkeypatch.setattr(incident, "sh", lambda *args: calls.append(args))
     incident._start_storm(cat, list(cat["scenarios"]), ["cache-leak"], ["log-flood"])
-    assert calls[:5] == ["warm", "cache-leak", ("sleep", 30), "n-plus-one",
-                         ["n-plus-one", "double-run"]]
-    assert calls[5:10] == [("log-flood", {"flag": "chaos:document-service:request_log"}),
-                          "log-flood", ["log-flood"], "freeze", ("sleep", 10)]
-    assert calls[10][0:3] == ("docker", "update", "--memory")
-    assert calls[11] == ["cache-leak"]
+    assert calls[:7] == [("warm", "2g", {"log_volume_size": "16m"}), "cache-leak",
+                        ("sleep", 30), ("freeze", "cache-leak"),
+                        "n-plus-one", ["n-plus-one", "double-run"], ("freeze", None)]
+    assert calls[7:12] == [("log-flood", {"flag": "chaos:document-service:request_log"}),
+                          "log-flood", ["log-flood"], ("freeze", None), ("sleep", 10)]
+    assert calls[12][0:3] == ("docker", "update", "--memory")
+    assert calls[13] == ["cache-leak"]
