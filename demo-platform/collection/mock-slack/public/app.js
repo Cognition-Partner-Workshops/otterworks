@@ -2,6 +2,7 @@ let snapshot = { users: [], channels: [], threads: [] };
 let channel = 'incident-war-room';
 let threadId = null;
 let sending = false;
+let pending = JSON.parse(sessionStorage.getItem('pending-message') || 'null');
 const $ = id => document.getElementById(id);
 const el = (tag, cls, value) => { const n = document.createElement(tag); if (cls) n.className = cls; if (value) n.textContent = value; return n; };
 function message(m) {
@@ -23,7 +24,7 @@ function render() {
   $('people').replaceChildren(...snapshot.users.map(u => { const row = el('div', 'person'); row.append(el('span', `small-avatar avatar-${u.id}`, u.initials), el('span', '', u.name)); return row; }));
   $('channel-title').textContent = `# ${channel}`;
   $('message').placeholder = `Message #${channel}. Mention @devin to start work.`;
-  $('connection').textContent = snapshot.configured ? `Devin connected · ${snapshot.route === 'webhook' ? 'Automation trigger' : 'Fusion sessions'} · credentials stay on the server` : 'Local workspace · configure a persona-owned API key to connect Devin';
+  $('connection').textContent = snapshot.configured ? `Devin connected · ${snapshot.route === 'webhook' ? 'Automation trigger' : 'Fusion sessions'} · credentials stay on the server` : `Local workspace · configure ${snapshot.route === 'webhook' ? 'an automation webhook' : 'a persona-owned API key'} to connect Devin`;
   const threads = snapshot.threads.filter(t => t.channel === channel);
   $('messages').replaceChildren(...threads.map(t => {
     const row = el('div', 'channel-message'); row.append(message(t.messages[0]));
@@ -47,10 +48,18 @@ async function refresh() {
 }
 async function send(text, id) {
   if (sending) return;
+  const payload = { channel, threadId: id, author: $('author').value, text: text.value };
+  if (pending && JSON.stringify(pending.payload) !== JSON.stringify(payload)) {
+    $('error').textContent = 'An earlier send is unconfirmed. Retry the original message before sending another.';
+    return;
+  }
+  pending ||= { payload, composer: text.id, requestId: crypto.randomUUID() };
+  sessionStorage.setItem('pending-message', JSON.stringify(pending));
   sending = true; $('error').textContent = '';
   try {
-    const r = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Workspace-Client': 'mock-slack' }, body: JSON.stringify({ channel, threadId: id, author: $('author').value, text: text.value, requestId: crypto.randomUUID() }) });
+    const r = await fetch('/api/messages', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Workspace-Client': 'mock-slack' }, body: JSON.stringify({ ...pending.payload, requestId: pending.requestId }) });
     const data = await r.json(); if (!r.ok) throw new Error(data.error);
+    pending = null; sessionStorage.removeItem('pending-message');
     threadId = data.id; text.value = ''; await refresh();
   } catch (e) { $('error').textContent = `${e.message}. Check the thread before sending again.`; }
   finally { sending = false; }
@@ -60,4 +69,8 @@ $('reply').onsubmit = e => { e.preventDefault(); send($('reply-text'), threadId)
 $('close-thread').onclick = () => { threadId = null; render(); };
 $('author').onchange = render;
 await refresh();
+if (pending) {
+  channel = pending.payload.channel; threadId = pending.payload.threadId;
+  $('author').value = pending.payload.author; $(pending.composer).value = pending.payload.text; render();
+}
 setInterval(refresh, 2000);
