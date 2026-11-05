@@ -83,6 +83,8 @@ def validate(doc: object, path: Path | None = None) -> list[str]:
         for i, entry in enumerate(deployment.get("installed", [])):
             times.append((f"installed/{i}/installed_at", entry["installed_at"]))
             key = (entry["type"], entry["name"])
+            if entry["type"] == "runtime_source":
+                key += (entry["revision"],)
             if key in installed_keys:
                 errors.append(f"deployment/installed/{i}: duplicate type+name")
             installed_keys.add(key)

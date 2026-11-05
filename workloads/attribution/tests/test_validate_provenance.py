@@ -205,6 +205,16 @@ def test_install_keys_are_unique_by_type_and_name():
     assert any("duplicate type+name" in error for error in vp.validate(doc))
 
 
+def test_runtime_install_history_allows_distinct_revisions_but_not_duplicates():
+    doc = _doc()
+    doc["deployment"] = _deployment()
+    record = _installed() | {"type": "runtime_source", "name": "workloads/doc_usage_dashboard/responder/freshness.py"}
+    doc["deployment"]["installed"] = [record, record | {"revision": "b" * 40}]
+    assert vp.validate(doc) == []
+    doc["deployment"]["installed"].append(record.copy())
+    assert any("duplicate type+name" in error for error in vp.validate(doc))
+
+
 def test_administrator_quota_evidence_matches_recorded_quota():
     doc = _doc("doc_search_api")
     assert vp.validate(doc) == []

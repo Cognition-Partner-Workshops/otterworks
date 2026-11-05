@@ -24,7 +24,7 @@ endpoints:
     role: ROLE_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
     runtime_source:
       path: workloads/doc_usage_dashboard/responder/freshness.py
-      revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+      revision: 4973f56000a3c132224477eb97ce22808f173f9b
 # Streamlit runtime attribution is the trailing JSON comment in query_text: SiS
 # overrides QUERY_TAG (ALTER SESSION rejected; statement_params silently ignored,
 # verified 2026-11-05 in QUERY_HISTORY). Dev queries retain their real QUERY_TAG.
@@ -310,3 +310,30 @@ deployment:
         2.46 credits. Exit 1 reports task_suspended_or_missing: SRE SHOW TASKS
         returns no rows under the restricted grants; setup independently verifies
         the task suspended and unchanged. This is not a recovery or refresh.
+  - type: runtime_source
+    name: workloads/doc_usage_dashboard/responder/freshness.py
+    revision: 4973f56000a3c132224477eb97ce22808f173f9b
+    run_id: SFEXT_20261105A-doc_usage_dashboard-runtime-20261105T124858Z-2cbf3df7
+    status: installed
+    installed_at: '2026-11-05T12:49:05.171829+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c83541-030c-dbc6-0035-065b000a476e
+    - 01c83541-030c-d2f7-0035-065b000b6012
+    - 01c83541-030c-d3d5-0035-065b000ac686
+    - 01c83541-030c-d212-0035-065b000a167a
+    - 01c83541-030c-d3d5-0035-065b000ac68a
+    - 01c83541-030c-d214-0035-065b0009adc2
+    - 01c83541-030c-d20e-0035-065b0009f812
+    readback:
+      status: verified
+      reason: >-
+        Installed-at is the saved SRE JSON file-write time, an upper bound for
+        check completion. Local source bytes match the installed revision.
+        SRE check uses that revision in its runtime tag without session_url,
+        with the responder user/role and empty secondary roles. Future-window
+        TASK_HISTORY returns no SCHEDULED rows: task state is suspended and
+        next_scheduled_time is null. Actual-run history remains bounded at
+        CURRENT_TIMESTAMP; latest finished run is SUCCEEDED, both freshness
+        rows are fresh, faults are empty, monitor usage is 2.49 credits.
+        Exit 1 reports task_suspended. No privileges, tasks, or migrations changed.
