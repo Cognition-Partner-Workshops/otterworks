@@ -341,6 +341,11 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.SNS_TOPIC_ARN=${sns_topic}")
       EXTRA_ARGS+=(--set-string "config.SQS_QUEUE_URL=${sqs_notif}") ;;
     search-service)
+      if [ "${SNOWFLAKE_ENABLED:-false}" = true ]; then
+        EXTRA_ARGS+=(--set snowflake.enabled=true --set-string "snowflake.account=${SNOWFLAKE_ACCOUNT:?SNOWFLAKE_ACCOUNT required}")
+        EXTRA_ARGS+=(--set-string "snowflake.role=${SNOWFLAKE_ROLE:-SFEXT_20261105A_DOC_SEARCH_API_ENDPOINT}" --set-string "snowflake.user=${SNOWFLAKE_USER:-SVC_CS_DOC_SEARCH_API_TOP_ITEMS}")
+        EXTRA_ARGS+=(--set-string "snowflake.privateKeySecret.name=${SNOWFLAKE_PRIVATE_KEY_SECRET_NAME:?Existing key secret required}" --set-string "snowflake.privateKeySecret.key=${SNOWFLAKE_PRIVATE_KEY_SECRET_KEY:-rsa_key.p8}")
+      fi
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${T_REDIS_HOST}" --set-string "config.REDIS_PORT=6379")
       EXTRA_ARGS+=(--set-string "config.HOST=0.0.0.0" --set-string "config.PORT=8087")
