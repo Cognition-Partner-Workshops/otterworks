@@ -1,0 +1,215 @@
+rule_files:
+- ../recording_rules.yml
+- ../alerts.yml
+evaluation_interval: 15s
+tests:
+- name: high upload p99 pages after 10m and warns after 15m
+  interval: 1m
+  input_series:
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="0.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="1.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="2.0"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="3.0"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="+Inf"}
+    values: 0+100x25
+  alert_rule_test:
+  - eval_time: 9m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts: []
+  - eval_time: 12m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts:
+    - exp_labels:
+        job: kyc-docs
+        severity: critical
+        team: platform
+      exp_annotations:
+        summary: KYC document upload latency above 2s
+        description: Upload p99 over 5m has stayed above 2s for 10 minutes. Page the platform on-call rotation.
+        runbook_url: https://docs.otterworks.dev/runbooks/kyc-upload-latency
+  - eval_time: 12m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts: []
+  - eval_time: 17m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts:
+    - exp_labels:
+        job: kyc-docs
+        severity: critical
+        team: platform
+      exp_annotations:
+        summary: KYC document upload latency above 2s
+        description: Upload p99 over 5m has stayed above 2s for 10 minutes. Page the platform on-call rotation.
+        runbook_url: https://docs.otterworks.dev/runbooks/kyc-upload-latency
+  - eval_time: 17m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts:
+    - exp_labels:
+        job: kyc-docs
+        severity: warning
+        team: platform
+      exp_annotations:
+        summary: KYC document upload latency above 1.5s
+        description: Upload p99 over 5m has stayed above 1.5s for 15 minutes. Notify the platform channel without paging.
+        runbook_url: https://docs.otterworks.dev/runbooks/kyc-upload-latency
+  promql_expr_test:
+  - expr: job:kyc_document_upload_duration_seconds:p99_5m
+    eval_time: 5m
+    exp_samples:
+    - labels: '{__name__="job:kyc_document_upload_duration_seconds:p99_5m",job="kyc-docs"}'
+      value: 2.99
+- name: short high latency burst does not page
+  interval: 1m
+  input_series:
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="0.5"}
+    values: 0+0x4 100+100x20
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="1.5"}
+    values: 0+0x4 100+100x20
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="2.0"}
+    values: 0+0x4 100+100x20
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="3.0"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="+Inf"}
+    values: 0+100x25
+  alert_rule_test:
+  - eval_time: 9m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts: []
+  - eval_time: 9m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts: []
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts: []
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts: []
+- name: p99 1.75s warns but never pages
+  interval: 1m
+  input_series:
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="0.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="1.5"}
+    values: 0+98x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="2.0"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="3.0"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="+Inf"}
+    values: 0+100x25
+  alert_rule_test:
+  - eval_time: 17m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts: []
+  - eval_time: 14m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts: []
+  - eval_time: 17m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts:
+    - exp_labels:
+        job: kyc-docs
+        severity: warning
+        team: platform
+      exp_annotations:
+        summary: KYC document upload latency above 1.5s
+        description: Upload p99 over 5m has stayed above 1.5s for 15 minutes. Notify the platform channel without paging.
+        runbook_url: https://docs.otterworks.dev/runbooks/kyc-upload-latency
+- name: fast uploads do not alert
+  interval: 1m
+  input_series:
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="0.5"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="1.5"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="2.0"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="3.0"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="+Inf"}
+    values: 0+100x25
+  alert_rule_test:
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts: []
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts: []
+- name: slow GET and other URI and other job are excluded
+  interval: 1m
+  input_series:
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="GET",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="0.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="GET",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="1.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="GET",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="2.0"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="GET",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="3.0"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="GET",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="+Inf"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/other",status="201",outcome="SUCCESS",exception="None",le="0.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/other",status="201",outcome="SUCCESS",exception="None",le="1.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/other",status="201",outcome="SUCCESS",exception="None",le="2.0"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/other",status="201",outcome="SUCCESS",exception="None",le="3.0"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/other",status="201",outcome="SUCCESS",exception="None",le="+Inf"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="other-app",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="0.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="other-app",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="1.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="other-app",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="2.0"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="other-app",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="3.0"}
+    values: 0+100x25
+  - series: http_server_requests_seconds_bucket{job="other-app",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="+Inf"}
+    values: 0+100x25
+  alert_rule_test:
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts: []
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts: []
+  promql_expr_test:
+  - expr: job:kyc_document_upload_duration_seconds:p99_5m
+    eval_time: 20m
+    exp_samples: []
+- name: no traffic produces no alerts
+  interval: 1m
+  input_series:
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="0.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="1.5"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="2.0"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="3.0"}
+    values: 0+0x25
+  - series: http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",status="201",outcome="SUCCESS",exception="None",le="+Inf"}
+    values: 0+0x25
+  alert_rule_test:
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts: []
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts: []
+- name: missing upload metrics produce no alerts
+  interval: 1m
+  input_series: []
+  alert_rule_test:
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyPage
+    exp_alerts: []
+  - eval_time: 20m
+    alertname: KycDocumentUploadLatencyWarning
+    exp_alerts: []

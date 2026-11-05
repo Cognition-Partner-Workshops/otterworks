@@ -19,6 +19,25 @@ alerting:
             - alertmanager:9093
 
 scrape_configs:
+  - job_name: kyc-docs
+    scrape_interval: 15s
+    metrics_path: /actuator/prometheus
+    scheme: https
+    tls_config:
+      # The VM stand-in generates a self-signed certificate.
+      insecure_skip_verify: true
+    static_configs:
+      - targets: ["kyc-01:8443"]
+        labels:
+          service: kyc-docs
+          language: java
+          tier: backend
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: "(.+):\\d+"
+        replacement: "${1}"
+
   # -------------------------------------------------------
   # Prometheus self-monitoring
   # -------------------------------------------------------

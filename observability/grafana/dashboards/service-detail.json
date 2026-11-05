@@ -38,6 +38,58 @@
   },
   "panels": [
     {
+      "id": 2501,
+      "title": "KYC document upload latency (p99)",
+      "description": "Standalone kyc-docs multipart upload, all instances and statuses. Independent of the service selector.",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": {
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#FFBF00",
+                "value": 1.5
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "job:kyc_document_upload_duration_seconds:p99_5m{job=\"kyc-docs\"}",
+          "legendFormat": "upload p99"
+        }
+      ]
+    },
+    {
       "title": "Service Status: $service",
       "type": "stat",
       "gridPos": {

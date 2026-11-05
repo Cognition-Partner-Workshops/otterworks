@@ -10,13 +10,19 @@ set -eu
 : "${DEVIN_WEBHOOK_URL:=}"
 : "${DEVIN_WEBHOOK_SECRET:=}"
 : "${SLACK_WEBHOOK_URL:=http://alert-sink:9095/slack}"
+: "${PLATFORM_ONCALL_WEBHOOK_URL:=http://alert-sink:9095/sink}"
+: "${PLATFORM_SLACK_WEBHOOK_URL:=http://alert-sink:9095/slack}"
 if [ -n "${DEVIN_WEBHOOK_URL}" ]; then
   sed -e "s|__DEVIN_WEBHOOK_URL__|${DEVIN_WEBHOOK_URL}|g" \
+      -e "s|__PLATFORM_ONCALL_WEBHOOK_URL__|${PLATFORM_ONCALL_WEBHOOK_URL}|g" \
+      -e "s|__PLATFORM_SLACK_WEBHOOK_URL__|${PLATFORM_SLACK_WEBHOOK_URL}|g" \
       -e "s|__DEVIN_WEBHOOK_SECRET__|${DEVIN_WEBHOOK_SECRET}|g" \
       -e "s|__SLACK_WEBHOOK_URL__|${SLACK_WEBHOOK_URL}|g" \
       /etc/alertmanager/alertmanager.yml.tmpl > /tmp/alertmanager.yml
 else
   sed -e '/# BEGIN devin-external/,/# END devin-external/d' \
+      -e "s|__PLATFORM_ONCALL_WEBHOOK_URL__|${PLATFORM_ONCALL_WEBHOOK_URL}|g" \
+      -e "s|__PLATFORM_SLACK_WEBHOOK_URL__|${PLATFORM_SLACK_WEBHOOK_URL}|g" \
       -e "s|__SLACK_WEBHOOK_URL__|${SLACK_WEBHOOK_URL}|g" \
       /etc/alertmanager/alertmanager.yml.tmpl > /tmp/alertmanager.yml
 fi

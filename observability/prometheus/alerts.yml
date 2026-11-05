@@ -1,4 +1,28 @@
 groups:
+  - name: otterworks.kyc_upload_latency
+    rules:
+      - alert: KycDocumentUploadLatencyPage
+        expr: job:kyc_document_upload_duration_seconds:p99_5m{job="kyc-docs"} > 2
+        for: 10m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "KYC document upload latency above 2s"
+          description: "Upload p99 over 5m has stayed above 2s for 10 minutes. Page the platform on-call rotation."
+          runbook_url: https://docs.otterworks.dev/runbooks/kyc-upload-latency
+
+      - alert: KycDocumentUploadLatencyWarning
+        expr: job:kyc_document_upload_duration_seconds:p99_5m{job="kyc-docs"} > 1.5
+        for: 15m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "KYC document upload latency above 1.5s"
+          description: "Upload p99 over 5m has stayed above 1.5s for 15 minutes. Notify the platform channel without paging."
+          runbook_url: https://docs.otterworks.dev/runbooks/kyc-upload-latency
+
   # -----------------------------------------------------------
   # Service Availability Alerts
   # -----------------------------------------------------------
