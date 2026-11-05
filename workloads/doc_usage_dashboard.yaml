@@ -1,0 +1,132 @@
+name: doc_usage_dashboard
+description: Storage used against quota, one row per account per daily snapshot.
+schedule: daily, after the 00:00 UTC export of admin-service
+output_table: ANALYTICS.DOC_USAGE_DASHBOARD
+grain: [snapshot_date, account_id]
+
+inputs:
+  - table: storage_quotas
+    service: admin-service
+    landing: RAW.ADMIN_STORAGE_QUOTAS
+    columns:
+      user_id: uuid, unique, the account
+      quota_bytes: bigint, > 0 (StorageQuota validation)
+      used_bytes: bigint, >= 0
+      tier: string, one of free, basic, pro, enterprise
+      updated_at: datetime
+    notes: >-
+      Current state only, no history. used_bytes is the counter admin-service
+      maintains. The tier default limits are free 5 GiB, basic 50 GiB, pro
+      200 GiB and enterprise 1 TiB (StorageQuota::TIER_LIMITS), but quota_bytes
+      is per row and is the value used here.
+  - table: admin_users
+    service: admin-service
+    landing: RAW.ADMIN_ADMIN_USERS
+    columns:
+      id: uuid, equals storage_quotas.user_id
+      email: string, unique
+      status: string, one of active, suspended, deleted (AdminUser::STATUSES)
+  - table: documents
+    service: document-service
+    landing: RAW.DOCUMENT_DOCUMENTS
+    columns:
+      id: uuid
+      owner_id: uuid, the account
+      is_deleted: boolean
+      is_template: boolean
+
+output_columns:
+  - {name: snapshot_date, type: DATE, nullable: false, rule: UTC date of the admin-service export}
+  - {name: account_id, type: VARCHAR(36), nullable: false, rule: storage_quotas.user_id}
+  - {name: account_email, type: VARCHAR(255), nullable: false, rule: admin_users.email}
+  - {name: tier, type: VARCHAR(16), nullable: false, rule: storage_quotas.tier}
+  - {name: quota_bytes, type: "NUMBER(19,0)", nullable: false, rule: storage_quotas.quota_bytes}
+  - {name: used_bytes, type: "NUMBER(19,0)", nullable: false, rule: storage_quotas.used_bytes}
+  - {name: remaining_bytes, type: "NUMBER(19,0)", nullable: false, rule: "GREATEST(quota_bytes - used_bytes, 0)"}
+  - {name: usage_pct, type: "NUMBER(7,2)", nullable: false, rule: "ROUND(used_bytes / quota_bytes * 100, 2)"}
+  - {name: usage_band, type: VARCHAR(16), nullable: false, rule: "over_quota, near_limit or ok, see business_rule"}
+  - {name: active_document_count, type: "NUMBER(10,0)", nullable: false, rule: "documents owned by the account with is_deleted = false and is_template = false; 0 if none"}
+
+business_rule: >-
+  Take every account that has a storage_quotas row and whose admin_users status
+  is not deleted. Storage used is used_bytes and the limit is quota_bytes, both
+  exactly as admin-service holds them. Remaining space is the limit minus the
+  space used, never below zero. Usage percent is space used divided by the limit,
+  times 100, rounded to two decimals. An account is over_quota when space used
+  is at or above the limit (the same test as StorageQuota#over_quota?). It is
+  near_limit when it is not over quota and space used is at least 80% of the
+  limit, compared on the unrounded ratio. Every other account is ok. Accounts
+  without a storage_quotas row are left out. Document count is shown for
+  context only and does not affect the band.
+
+parameters:
+  near_limit_ratio: 0.80
+
+examples:
+  - inputs:
+      storage_quotas: {user_id: 00000000-0000-4000-8000-000000000101, tier: free, quota_bytes: 5368709120, used_bytes: 4563402752}
+      admin_users: {id: 00000000-0000-4000-8000-000000000101, email: ada@example.com, status: active}
+      documents: 3 rows with is_deleted false and is_template false, 1 row with is_deleted true
+    expected:
+      snapshot_date: 2026-11-01
+      account_id: 00000000-0000-4000-8000-000000000101
+      account_email: ada@example.com
+      tier: free
+      quota_bytes: 5368709120
+      used_bytes: 4563402752
+      remaining_bytes: 805306368
+      usage_pct: 85.00
+      usage_band: near_limit
+      active_document_count: 3
+    check: 4.25 GiB of 5 GiB is 85%, which is at least 80% and below 100%.
+  - inputs:
+      storage_quotas: {user_id: 00000000-0000-4000-8000-000000000102, tier: pro, quota_bytes: 214748364800, used_bytes: 53687091200}
+      admin_users: {id: 00000000-0000-4000-8000-000000000102, email: ben@example.com, status: active}
+      documents: 12 rows with is_deleted false and is_template false
+    expected:
+      snapshot_date: 2026-11-01
+      account_id: 00000000-0000-4000-8000-000000000102
+      account_email: ben@example.com
+      tier: pro
+      quota_bytes: 214748364800
+      used_bytes: 53687091200
+      remaining_bytes: 161061273600
+      usage_pct: 25.00
+      usage_band: ok
+      active_document_count: 12
+    check: 50 GiB of 200 GiB is 25%.
+  - inputs:
+      storage_quotas: {user_id: 00000000-0000-4000-8000-000000000103, tier: basic, quota_bytes: 53687091200, used_bytes: 53687091200}
+      admin_users: {id: 00000000-0000-4000-8000-000000000103, email: cy@example.com, status: suspended}
+      documents: 40 rows with is_deleted false and is_template false, 2 rows with is_template true
+    expected:
+      snapshot_date: 2026-11-01
+      account_id: 00000000-0000-4000-8000-000000000103
+      account_email: cy@example.com
+      tier: basic
+      quota_bytes: 53687091200
+      used_bytes: 53687091200
+      remaining_bytes: 0
+      usage_pct: 100.00
+      usage_band: over_quota
+      active_document_count: 40
+    check: Space used equals the 50 GiB limit, so the account is over quota. Suspended accounts are still shown and templates are not counted.
+
+endpoint:
+  client_side_id: cs_doc_usage_dashboard_account_usage
+  method: GET
+  path: /api/v1/insights/storage/accounts/{account_id}
+  query_params:
+    snapshot_date: optional DATE, defaults to the latest snapshot
+  response_200:
+    fields: [snapshot_date, account_id, account_email, tier, quota_bytes, used_bytes, remaining_bytes, usage_pct, usage_band, active_document_count]
+    source: one row of ANALYTICS.DOC_USAGE_DASHBOARD
+  response_404: no row for that account and snapshot_date
+  auth: >-
+    The caller's X-User-ID must equal account_id, or the caller needs the admin
+    role in user_roles.
+
+open_questions:
+  - Product has not confirmed 80% as the near-limit threshold.
+  - storage_quotas has no history, so trends need snapshots to accumulate in Snowflake first.
+  - file-service holds per-file size_bytes in DynamoDB rather than Postgres, so used_bytes is not reconciled against file sizes.

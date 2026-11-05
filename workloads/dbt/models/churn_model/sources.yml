@@ -1,0 +1,8 @@
+version: 2
+sources:
+  - name: raw_churn_model
+    schema: RAW
+    tables:
+      - name: AUTH_USERS
+      - name: ADMIN_ADMIN_USERS
+      - name: DOCUMENT_DOCUMENT_VERSIONS
