@@ -1,0 +1,207 @@
+{
+  "attack_class": "ib-admin-non-admin",
+  "alert_attack_class": "ib-admin-non-admin",
+  "started_at": "2026-11-05T14:29:11.442564+00:00",
+  "urls": {
+    "gateway": "http://localhost:8080",
+    "prometheus": "http://localhost:9090",
+    "alertmanager": "http://localhost:9093",
+    "sink": "http://localhost:9095"
+  },
+  "expected_alerts": [
+    "SecurityAdminRouteNonAdmin"
+  ],
+  "budgets": {
+    "quiet_budget_seconds": 360,
+    "time_budget_seconds": 180,
+    "probe_budget_seconds": 300
+  },
+  "firing": {
+    "SecurityAdminRouteNonAdmin": {
+      "activeAt": [
+        "2026-11-05T14:30:26.795196139Z"
+      ],
+      "observed_at": "2026-11-05T14:30:42.282008+00:00",
+      "seconds_to_fire": 30.664
+    }
+  },
+  "probe_verdicts": [
+    {
+      "finding_id": "IB-ADMIN-NON-ADMIN",
+      "verdict": "inconclusive",
+      "detail": "Tripwire requests sent; no IB account ownership or payment execution is observable here. GET /api/v1/admin/users -> 502; GET /bank-users -> 404"
+    }
+  ],
+  "sink_payloads": [
+    {
+      "received_at": "2026-11-05T14:30:51Z",
+      "receiver": "security",
+      "headers": {
+        "Host": "alert-sink:9095",
+        "User-Agent": "Alertmanager/0.28.1",
+        "Content-Length": "1722",
+        "Content-Type": "application/json"
+      },
+      "payload": {
+        "receiver": "security-oncall",
+        "status": "firing",
+        "alerts": [
+          {
+            "status": "firing",
+            "labels": {
+              "alertname": "SecurityAdminRouteNonAdmin",
+              "attack_class": "ib-admin-non-admin",
+              "cluster": "otterworks-dev",
+              "environment": "development",
+              "page": "security",
+              "severity": "critical"
+            },
+            "annotations": {
+              "description": "An admin or bank-users path was called without a validated ADMIN role. This is an edge tripwire, not an authorization decision.",
+              "finding_ids": "IB-ADMIN-NON-ADMIN",
+              "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-admin-non-admin",
+              "summary": "Non-admin administrative route call observed"
+            },
+            "startsAt": "2026-11-05T14:30:41.795Z",
+            "endsAt": "0001-01-01T00:00:00Z",
+            "generatorURL": "http://6123f82cd608:9090/graph?g0.expr=sum%28increase%28api_gateway_security_events_total%7Bevent%3D%22admin_route_non_admin%22%7D%5B2m%5D%29%29+%3E+0&g0.tab=1",
+            "fingerprint": "5080e4908d5fd0c9"
+          }
+        ],
+        "groupLabels": {
+          "alertname": "SecurityAdminRouteNonAdmin"
+        },
+        "commonLabels": {
+          "alertname": "SecurityAdminRouteNonAdmin",
+          "attack_class": "ib-admin-non-admin",
+          "cluster": "otterworks-dev",
+          "environment": "development",
+          "page": "security",
+          "severity": "critical"
+        },
+        "commonAnnotations": {
+          "description": "An admin or bank-users path was called without a validated ADMIN role. This is an edge tripwire, not an authorization decision.",
+          "finding_ids": "IB-ADMIN-NON-ADMIN",
+          "runbook_url": "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-admin-non-admin",
+          "summary": "Non-admin administrative route call observed"
+        },
+        "externalURL": "http://709abb884f29:9093",
+        "version": "4",
+        "groupKey": "{}/{page=\"security\"}:{alertname=\"SecurityAdminRouteNonAdmin\"}",
+        "truncatedAlerts": 0
+      }
+    }
+  ],
+  "quiet_settle_seconds": 60,
+  "exit_code": 0,
+  "before_alerts": {
+    "SecurityAdminRouteNonAdmin": {
+      "state": "inactive",
+      "instances": []
+    }
+  },
+  "before_alertmanager_alerts": [],
+  "before_counters": {
+    "at": "2026-11-05T14:30:11.616471+00:00",
+    "counters": {
+      "api_gateway_security_events_total{event=\"admin_route_non_admin\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "admin_route_non_admin",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "admin_api",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889011.615,
+            "0"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "admin_route_non_admin",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "bank_users",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889011.615,
+            "0"
+          ]
+        }
+      ]
+    }
+  },
+  "attack_started_at": "2026-11-05T14:30:11.617998+00:00",
+  "probe_exit_code": 0,
+  "probe_finished_at": "2026-11-05T14:30:12.224534+00:00",
+  "after_alerts": {
+    "SecurityAdminRouteNonAdmin": {
+      "state": "firing",
+      "instances": [
+        {
+          "labels": {
+            "alertname": "SecurityAdminRouteNonAdmin",
+            "attack_class": "ib-admin-non-admin",
+            "page": "security",
+            "severity": "critical"
+          },
+          "state": "firing",
+          "activeAt": "2026-11-05T14:30:26.795196139Z",
+          "value": "2.1437333333333335e+00"
+        }
+      ]
+    }
+  },
+  "delivered_alerts": [
+    "SecurityAdminRouteNonAdmin"
+  ],
+  "after_counters": {
+    "at": "2026-11-05T14:30:54.305429+00:00",
+    "counters": {
+      "api_gateway_security_events_total{event=\"admin_route_non_admin\"}": [
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "admin_route_non_admin",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "admin_api",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889054.304,
+            "1"
+          ]
+        },
+        {
+          "metric": {
+            "__name__": "api_gateway_security_events_total",
+            "event": "admin_route_non_admin",
+            "instance": "api-gateway",
+            "job": "api-gateway",
+            "language": "go",
+            "reason": "bank_users",
+            "service": "api-gateway",
+            "tier": "gateway"
+          },
+          "value": [
+            1793889054.304,
+            "1"
+          ]
+        }
+      ]
+    }
+  },
+  "finished_at": "2026-11-05T14:30:54.305480+00:00"
+}

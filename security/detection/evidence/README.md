@@ -42,3 +42,48 @@ from the full scan, creating no new buckets (client counter stayed at 1506).
 The passing run followed natural idle expiry and cleanup, without restarting
 the gateway, resetting counters, changing instrumentation or tuning rules.
 See the cooldown note in the parent runbook before repeating this class.
+
+## Internet-banking edge tripwires
+
+The gateway-only extension was built and restarted on 2026-11-05. Other stack
+containers stayed running; Prometheus loaded the new rules via HTTP reload,
+without a restart. The five independent class replays ran concurrently, each
+with its own quiet-state guard, before/after snapshots and fresh-delivery gate.
+The anonymous-payment snapshot also includes the other replay's three
+authenticated payment calls, separately labeled; they do not fire its rule.
+No thresholds or vulnerable handlers changed.
+
+| Class | Passing report (JSON and Markdown) | Expected alert | First observed firing |
+|---|---|---|---|
+| ib-payment-anonymous | `ib-payment-anonymous-20261105T142911348432Z.{json,md}` | SecurityPaymentRouteAnonymous | 33.3 seconds |
+| ib-payment-amount | `ib-payment-amount-20261105T142911335771Z.{json,md}` | SecurityPaymentAmountInvalid | 33.8 seconds |
+| ib-auth-id-mismatch | `ib-auth-id-mismatch-20261105T142911374645Z.{json,md}` | SecurityAuthIdMismatch | 37.2 seconds |
+| ib-admin-non-admin | `ib-admin-non-admin-20261105T142911442526Z.{json,md}` | SecurityAdminRouteNonAdmin | 30.7 seconds |
+| ib-failed-logins | `ib-failed-logins-20261105T142911332861Z.{json,md}` | SecurityLoginFailureBurst (existing rule) | 37.7 seconds |
+
+All five reports exit 0 with inactive BEFORE and firing AFTER states and fresh
+deliveries to `/security`. The five `ib-<class>-alerts.png` screenshots were
+visually checked: each filters the actual Prometheus `/alerts` page to the
+expected firing rule. The reused login alert retains its credential-stuffing
+label/group; no second login alert was introduced.
+
+Observed counter deltas: four anonymous payment calls; three authenticated
+payment calls; two non-positive amounts and one precision violation; one ID
+mismatch; one admin-API and one bank-users non-admin call; twelve login failures.
+The fixed-client failure replay produced twelve HTTP 400 responses (the auth
+service's existing wrong-password behavior), with no XFF rotation or throttling.
+The documents request returned 200, payment and bank-users requests returned
+404, and the unavailable admin upstream returned 502. These statuses were not
+changed to make detection pass.
+
+Script exploitation verdicts are **inconclusive**, not vulnerability claims.
+The payment routes 404 and OtterWorks has no IB account-ownership data;
+non-owner payment access is **NOT observable**. These are edge tripwires;
+authoritative ownership/payment/admin checks belong in the IB services.
+
+`ib-regression-comparison.{json,md}` compares a fresh post-extension 19-probe
+scan against both the previously captured actual demo-bank build scan and the
+pre-IB instrumented build scan. All 19 verdicts match: 9 secure, 8 vulnerable,
+2 inconclusive (absent file/search services). It retains scan timestamps,
+baseline SHA and running image IDs. The fresh scan exits 1 because the eight
+planted findings remain, not because detection changed application behavior.
