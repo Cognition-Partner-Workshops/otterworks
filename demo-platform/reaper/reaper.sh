@@ -260,6 +260,9 @@ sweep_orphan_namespaces() {
   for ns in $(kubectl get ns -l app.kubernetes.io/managed-by=otterworks-tenant \
                 -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
     case "${ns}" in otterworks-platform|otterworks-system|otterworks) continue ;; esac
+    # Only otterworks-<id> namespaces are tenants. Others carry the label so the
+    # tenant-reaper CronJob expires them by annotation, with no tenant GC.
+    case "${ns}" in otterworks-*) ;; *) continue ;; esac
     id="${ns#otterworks-}"
     [ -n "${id}" ] || continue
     if ! ctl_tenant_exists "${id}"; then
