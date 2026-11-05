@@ -95,9 +95,9 @@ func ObserveBankingSignals(cfg JWTConfig) func(http.Handler) http.Handler {
 	}
 }
 
-func observePaymentAmount(r *http.Request) {
+func observedJSONBody(r *http.Request) map[string]json.RawMessage {
 	if r.Body == nil {
-		return
+		return nil
 	}
 	body := r.Body
 	prefix, err := io.ReadAll(io.LimitReader(body, paymentBodyLimit+1))
@@ -108,12 +108,17 @@ func observePaymentAmount(r *http.Request) {
 	readers = append(readers, body)
 	r.Body = &observedBody{Reader: io.MultiReader(readers...), Closer: body}
 	if err != nil || len(prefix) > paymentBodyLimit {
-		return
+		return nil
 	}
 	var object map[string]json.RawMessage
 	if json.Unmarshal(prefix, &object) != nil {
-		return
+		return nil
 	}
+	return object
+}
+
+func observePaymentAmount(r *http.Request) {
+	object := observedJSONBody(r)
 	raw, exists := object["amount"]
 	if !exists {
 		return

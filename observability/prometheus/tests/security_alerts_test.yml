@@ -2,6 +2,144 @@ rule_files:
   - ../security_alerts.yml
 evaluation_interval: 15s
 tests:
+  - name: SecurityFineractMakerCheckerRepeatApprove within_window
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="fineract_makerchecker_repeat_approve",reason="within_window"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityFineractMakerCheckerRepeatApprove
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityFineractMakerCheckerRepeatApprove
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: fin-makerchecker-repeat
+              source: fineract-edge
+              confirmation: verified-path
+            exp_annotations:
+              finding_ids: "FIN-MAKERCHECKER-REPEAT"
+              summary: "Repeated maker-checker approve request observed"
+              description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-makerchecker-repeat"
+  - name: SecurityFineractMakerCheckerDisabled config_put
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="fineract_maker_checker_disabled",reason="config_put"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityFineractMakerCheckerDisabled
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityFineractMakerCheckerDisabled
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: fin-makerchecker-disabled
+              source: fineract-edge
+              confirmation: verified-path
+            exp_annotations:
+              finding_ids: "FIN-MAKERCHECKER-DISABLED"
+              summary: "Maker-checker disabling request observed"
+              description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-makerchecker-disabled"
+  - name: SecurityFineractMakerCheckerDisabled command_disable
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="fineract_maker_checker_disabled",reason="command_disable"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityFineractMakerCheckerDisabled
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityFineractMakerCheckerDisabled
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: fin-makerchecker-disabled
+              source: fineract-edge
+              confirmation: verified-path
+            exp_annotations:
+              finding_ids: "FIN-MAKERCHECKER-DISABLED"
+              summary: "Maker-checker disabling request observed"
+              description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-makerchecker-disabled"
+  - name: SecurityFineractPrivilegedEndpoint datatable_deregister
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="fineract_privileged_endpoint",reason="datatable_deregister"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityFineractPrivilegedEndpoint
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityFineractPrivilegedEndpoint
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: fin-privileged-endpoint
+              source: fineract-edge
+              confirmation: verified-path
+            exp_annotations:
+              finding_ids: "FIN-PRIVILEGED-ENDPOINT"
+              summary: "Fineract privileged endpoint request observed"
+              description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-privileged-endpoint"
+  - name: SecurityFineractPrivilegedEndpoint credit_report_add
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="fineract_privileged_endpoint",reason="credit_report_add"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityFineractPrivilegedEndpoint
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityFineractPrivilegedEndpoint
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: fin-privileged-endpoint
+              source: fineract-edge
+              confirmation: verified-path
+            exp_annotations:
+              finding_ids: "FIN-PRIVILEGED-ENDPOINT"
+              summary: "Fineract privileged endpoint request observed"
+              description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-privileged-endpoint"
+  - name: Fineract benign baseline
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="fineract_makerchecker_repeat_approve",reason="within_window"}'
+        values: '0+0x12'
+      - series: 'api_gateway_security_events_total{event="fineract_maker_checker_disabled",reason="config_put"}'
+        values: '0+0x12'
+      - series: 'api_gateway_security_events_total{event="fineract_maker_checker_disabled",reason="command_disable"}'
+        values: '0+0x12'
+      - series: 'api_gateway_security_events_total{event="fineract_privileged_endpoint",reason="datatable_deregister"}'
+        values: '0+0x12'
+      - series: 'api_gateway_security_events_total{event="fineract_privileged_endpoint",reason="credit_report_add"}'
+        values: '0+0x12'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityFineractMakerCheckerRepeatApprove
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityFineractMakerCheckerDisabled
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityFineractPrivilegedEndpoint
+        exp_alerts: []
   - name: SecurityJWTRejected attack
     interval: 15s
     input_series:

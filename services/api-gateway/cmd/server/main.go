@@ -75,6 +75,7 @@ func main() {
 		Secret: cfg.JWTSecret, PeerSecret: cfg.JWTPeerSecret,
 	}))
 	r.Use(chimw.Compress(5))
+	r.Use(middleware.ObserveFineractSignals())
 
 	// Rate limiting
 	rateLimiter := middleware.NewRateLimiter(cfg.RateLimitRPS)

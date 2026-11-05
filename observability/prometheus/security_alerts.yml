@@ -177,3 +177,54 @@ groups:
           summary: "Non-admin administrative route call observed"
           description: "An admin or bank-users path was called without a validated ADMIN role. This is an edge tripwire, not an authorization decision."
           runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-admin-non-admin"
+  - name: security.fin-makerchecker-repeat
+    interval: 15s
+    rules:
+      - alert: SecurityFineractMakerCheckerRepeatApprove
+        expr: sum(increase(api_gateway_security_events_total{event="fineract_makerchecker_repeat_approve"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: fin-makerchecker-repeat
+          source: fineract-edge
+          confirmation: verified-path
+        annotations:
+          finding_ids: "FIN-MAKERCHECKER-REPEAT"
+          summary: "Repeated maker-checker approve request observed"
+          description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-makerchecker-repeat"
+  - name: security.fin-makerchecker-disabled
+    interval: 15s
+    rules:
+      - alert: SecurityFineractMakerCheckerDisabled
+        expr: sum(increase(api_gateway_security_events_total{event="fineract_maker_checker_disabled"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: fin-makerchecker-disabled
+          source: fineract-edge
+          confirmation: verified-path
+        annotations:
+          finding_ids: "FIN-MAKERCHECKER-DISABLED"
+          summary: "Maker-checker disabling request observed"
+          description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-makerchecker-disabled"
+  - name: security.fin-privileged-endpoint
+    interval: 15s
+    rules:
+      - alert: SecurityFineractPrivilegedEndpoint
+        expr: sum(increase(api_gateway_security_events_total{event="fineract_privileged_endpoint"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: fin-privileged-endpoint
+          source: fineract-edge
+          confirmation: verified-path
+        annotations:
+          finding_ids: "FIN-PRIVILEGED-ENDPOINT"
+          summary: "Fineract privileged endpoint request observed"
+          description: "Verified request path only: the actor's office and permissions are not evaluated. No Fineract is deployed here; responses remain unchanged."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#fin-privileged-endpoint"

@@ -22,7 +22,10 @@ make detect-replay CLASS=ib-payment-amount
 make detect-replay CLASS=ib-auth-id-mismatch
 make detect-replay CLASS=ib-admin-non-admin
 make detect-replay CLASS=ib-failed-logins
-# Or all eight, sequentially:
+make detect-replay CLASS=fin-makerchecker-repeat
+make detect-replay CLASS=fin-makerchecker-disabled
+make detect-replay CLASS=fin-privileged-endpoint
+# Or all eleven, sequentially:
 make detect-replay CLASS=all
 make detect-test
 make detect-rules-test
@@ -340,3 +343,98 @@ attribution. The IB payment/`bank-users` routes **404 here**; these detections
 are **edge tripwires** and OtterWorks has **no account-ownership data** for
 payment paths. Authoritative credential protections, ownership, payment and
 admin checks belong in the internet-banking services.
+
+## Fineract edge visibility
+
+No Fineract service is deployed or routed by this stack. These detections
+observe method, decoded path, query and capped JSON body only, before JWT
+bypass and rate limiting. Paths match at a segment boundary regardless of
+prefix: bare paths, `/api/v1/...`, `/fineract-provider/api/v1/...`, and other
+prefixes are covered. They never authorize, block or reroute a request.
+Run the three Fineract replays **serially** using the commands above.
+
+Every Fineract alert has `source=fineract-edge` and
+`confirmation=verified-path`. **Verified-path means a matching request,
+not verified exploitation or successful execution.** The actor's office and
+permissions are not evaluated. Basic credentials and
+`Fineract-Platform-TenantId` do not provide a validated actor to this gateway.
+The replay script needs no credentials and reports exploitation as
+**inconclusive**. These paths return the existing JSON 404 here.
+Authoritative office, permission, maker/checker segregation and audit checks
+belong in Fineract itself; no Fineract configuration is actually changed.
+
+## Fin makerchecker repeat
+
+**Alert:** `SecurityFineractMakerCheckerRepeatApprove`.
+
+**Signal:** a POST to `.../makercheckers/{id}?command=approve` repeats the
+same ID within 10 seconds of an earlier approve request observed at this
+gateway. Single approves, different IDs, GETs and reject commands do not
+increment the counter. Approval response status is deliberately not consulted:
+here, even both 404 requests are counted as repeated approval *attempts*.
+
+State is process-local, shared across prefixes/callers/tenants, mutex protected
+and bounded to 10,000 SHA-256 ID keys. Expired entries are removed on the next
+approve; at capacity the oldest observation is evicted. Each approve refreshes
+its 10-second sliding expiry. Restarts lose state; replicas do not share it.
+No ID, actor, office or tenant is a metric label.
+
+**Triage:** correlate request IDs/timing with Fineract audit records. Verify
+whether the first request succeeded, whether retries were idempotent, and
+whether the checker is permitted for the actor's office.
+
+**False positives:** browser double-clicks, retries, approved automation, and
+the same numeric ID in different tenants can match.
+
+**Visibility limit:** gateway-local attempts only, not an approval audit.
+Office and permissions are not evaluated; capacity eviction, restarts and
+multi-replica routing can miss repeats. The paths 404 here. Verify actual
+approval and segregation-of-duties rules inside Fineract.
+
+## Fin makerchecker disabled
+
+**Alert:** `SecurityFineractMakerCheckerDisabled`.
+
+**Signal:** PUT `.../configurations/name/maker-checker` with top-level JSON
+`enabled: false` counts `config_put`; POST
+`.../configurations/{id}?command=disable` or
+`.../configurations/name/maker-checker?command=disable` counts
+`command_disable`. JSON `enabled: true`, string `"false"`, absent fields,
+non-JSON and wrong methods do not count. The shared banking body observer
+accepts at most 64 KiB, restores body bytes/read errors/close, and ignores
+oversized or unreadable JSON.
+
+**Triage:** check the configuration ID/name and approved change window in
+Fineract audit logs, then verify the actual resulting configuration and
+actor's office/permissions. Restore controls only through authorized Fineract
+operations, not by modifying the golden demo's detection behavior.
+
+**False positives:** authorized maintenance and negative tests. A numeric
+configuration ID is not resolved here: it may refer to a different setting.
+
+**Visibility limit:** this is a disabling-shaped request, not confirmed loss
+of maker-checker enforcement. Office and permissions are not evaluated.
+These paths 404 here; authoritative configuration and authorization checks
+belong in Fineract. Oversized/unreadable bodies are invisible to body matching.
+
+## Fin privileged endpoint
+
+**Alert:** `SecurityFineractPrivilegedEndpoint`.
+
+**Signal:** POST to `.../datatables/deregister/*` counts
+`datatable_deregister`; POST to
+`.../creditBureauIntegration/addCreditReport` counts `credit_report_add`.
+GET and other methods do not count. These requests are counted regardless of
+caller permissions, authentication or downstream success.
+
+**Triage:** correlate with approved datatable administration and credit-report
+ingestion jobs, then inspect Fineract audit records for actor office, grants,
+target and outcome. Do not copy Basic credentials or sensitive credit data
+into metrics, alerts or replay artifacts.
+
+**False positives:** authorized administrators, scheduled imports and
+intentional negative probes all match.
+
+**Visibility limit:** a privileged-shaped path is not evidence of permission
+bypass. The actor's office and permissions are not evaluated; these paths
+404 here. Authoritative grants and outcomes must be checked inside Fineract.

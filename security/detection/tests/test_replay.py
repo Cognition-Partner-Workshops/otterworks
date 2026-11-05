@@ -42,6 +42,9 @@ def test_manifest_and_command(tmp_path):
         "ib-auth-id-mismatch",
         "ib-admin-non-admin",
         "ib-failed-logins",
+        "fin-makerchecker-repeat",
+        "fin-makerchecker-disabled",
+        "fin-privileged-endpoint",
     }
     for spec in classes.values():
         command = replay.probe_command(spec, "http://localhost:8080", tmp_path)

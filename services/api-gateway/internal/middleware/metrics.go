@@ -45,10 +45,13 @@ var (
 
 func init() {
 	for event, reasons := range map[string][]string{
-		"payment_route_call":     {"anonymous", "authenticated"},
-		"payment_amount_invalid": {"non_positive", "precision"},
-		"auth_id_mismatch":       {"mismatch", "unauthenticated"},
-		"admin_route_non_admin":  {"admin_api", "bank_users"},
+		"payment_route_call":                   {"anonymous", "authenticated"},
+		"payment_amount_invalid":               {"non_positive", "precision"},
+		"auth_id_mismatch":                     {"mismatch", "unauthenticated"},
+		"admin_route_non_admin":                {"admin_api", "bank_users"},
+		"fineract_makerchecker_repeat_approve": {"within_window"},
+		"fineract_maker_checker_disabled":      {"config_put", "command_disable"},
+		"fineract_privileged_endpoint":         {"datatable_deregister", "credit_report_add"},
 	} {
 		for _, reason := range reasons {
 			securityEvents.WithLabelValues(event, reason)

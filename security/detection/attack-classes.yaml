@@ -1,4 +1,28 @@
 classes:
+  fin-makerchecker-repeat:
+    attack_script: security/detection/attacks/fineract_signals.py
+    findings: [FIN-MAKERCHECKER-REPEAT]
+    alerts: [SecurityFineractMakerCheckerRepeatApprove]
+    counters: ['api_gateway_security_events_total{event="fineract_makerchecker_repeat_approve"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  fin-makerchecker-disabled:
+    attack_script: security/detection/attacks/fineract_signals.py
+    findings: [FIN-MAKERCHECKER-DISABLED]
+    alerts: [SecurityFineractMakerCheckerDisabled]
+    counters: ['api_gateway_security_events_total{event="fineract_maker_checker_disabled"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  fin-privileged-endpoint:
+    attack_script: security/detection/attacks/fineract_signals.py
+    findings: [FIN-PRIVILEGED-ENDPOINT]
+    alerts: [SecurityFineractPrivilegedEndpoint]
+    counters: ['api_gateway_security_events_total{event="fineract_privileged_endpoint"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
   identity-forgery:
     findings:
       - DAST-UNSIGNED-JWT
