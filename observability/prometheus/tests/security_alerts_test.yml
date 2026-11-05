@@ -127,7 +127,7 @@ tests:
               finding_ids: "DAST-CREDENTIAL-BRUTE-FORCE"
               summary: "Burst of failed logins observed"
               description: "Burst of failed logins observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
-              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-failed-logins"
   - name: SecurityLimiterClientChurn attack
     interval: 15s
     input_series:
@@ -218,4 +218,177 @@ tests:
         exp_alerts: []
       - eval_time: 1m
         alertname: SecurityRateLimitRejections
+        exp_alerts: []
+  - name: SecurityPaymentRouteAnonymous anonymous attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="payment_route_call",reason="anonymous"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityPaymentRouteAnonymous
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityPaymentRouteAnonymous
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: ib-payment-anonymous
+            exp_annotations:
+              finding_ids: "IB-PAYMENT-ANONYMOUS"
+              summary: "Anonymous payment route call observed"
+              description: "Anonymous payment-path request observed at the gateway. These routes return 404 here; account ownership and payment execution are not observable."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-anonymous"
+  - name: SecurityPaymentAmountInvalid non_positive attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="payment_amount_invalid",reason="non_positive"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityPaymentAmountInvalid
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityPaymentAmountInvalid
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: ib-payment-amount
+            exp_annotations:
+              finding_ids: "IB-PAYMENT-AMOUNT"
+              summary: "Invalid payment amount observed"
+              description: "A payment-path amount is non-positive or has more than two decimal places. This edge tripwire does not validate or execute IB payments."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-amount"
+  - name: SecurityPaymentAmountInvalid precision attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="payment_amount_invalid",reason="precision"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityPaymentAmountInvalid
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityPaymentAmountInvalid
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: ib-payment-amount
+            exp_annotations:
+              finding_ids: "IB-PAYMENT-AMOUNT"
+              summary: "Invalid payment amount observed"
+              description: "A payment-path amount is non-positive or has more than two decimal places. This edge tripwire does not validate or execute IB payments."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-amount"
+  - name: SecurityAuthIdMismatch mismatch attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="auth_id_mismatch",reason="mismatch"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityAuthIdMismatch
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityAuthIdMismatch
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: ib-auth-id-mismatch
+            exp_annotations:
+              finding_ids: "IB-AUTH-ID-MISMATCH"
+              summary: "Untrusted auth identity header observed"
+              description: "X-Auth-Id disagrees with a validated JWT identity or has no validated token. Correlate with IB service authorization; requests are not blocked."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-auth-id-mismatch"
+  - name: SecurityAuthIdMismatch unauthenticated attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="auth_id_mismatch",reason="unauthenticated"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityAuthIdMismatch
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityAuthIdMismatch
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: ib-auth-id-mismatch
+            exp_annotations:
+              finding_ids: "IB-AUTH-ID-MISMATCH"
+              summary: "Untrusted auth identity header observed"
+              description: "X-Auth-Id disagrees with a validated JWT identity or has no validated token. Correlate with IB service authorization; requests are not blocked."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-auth-id-mismatch"
+  - name: SecurityAdminRouteNonAdmin admin_api attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="admin_route_non_admin",reason="admin_api"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityAdminRouteNonAdmin
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityAdminRouteNonAdmin
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: ib-admin-non-admin
+            exp_annotations:
+              finding_ids: "IB-ADMIN-NON-ADMIN"
+              summary: "Non-admin administrative route call observed"
+              description: "An admin or bank-users path was called without a validated ADMIN role. This is an edge tripwire, not an authorization decision."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-admin-non-admin"
+  - name: SecurityAdminRouteNonAdmin bank_users attack
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="admin_route_non_admin",reason="bank_users"}'
+        values: '0 0 1+0x10'
+    alert_rule_test:
+      - eval_time: 15s
+        alertname: SecurityAdminRouteNonAdmin
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityAdminRouteNonAdmin
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              page: security
+              attack_class: ib-admin-non-admin
+            exp_annotations:
+              finding_ids: "IB-ADMIN-NON-ADMIN"
+              summary: "Non-admin administrative route call observed"
+              description: "An admin or bank-users path was called without a validated ADMIN role. This is an edge tripwire, not an authorization decision."
+              runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-admin-non-admin"
+  - name: IB benign baseline
+    interval: 15s
+    input_series:
+      - series: 'api_gateway_security_events_total{event="payment_route_call",reason="authenticated"}'
+        values: '0+10x12'
+      - series: 'api_gateway_security_events_total{event="payment_route_call",reason="anonymous"}'
+        values: '0+0x12'
+      - series: 'api_gateway_security_events_total{event="payment_amount_invalid",reason="precision"}'
+        values: '0+0x12'
+      - series: 'api_gateway_security_events_total{event="auth_id_mismatch",reason="mismatch"}'
+        values: '0+0x12'
+      - series: 'api_gateway_security_events_total{event="admin_route_non_admin",reason="admin_api"}'
+        values: '0+0x12'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: SecurityPaymentRouteAnonymous
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityPaymentAmountInvalid
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityAuthIdMismatch
+        exp_alerts: []
+      - eval_time: 1m
+        alertname: SecurityAdminRouteNonAdmin
         exp_alerts: []

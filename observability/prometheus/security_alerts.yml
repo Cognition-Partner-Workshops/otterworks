@@ -92,7 +92,7 @@ groups:
           finding_ids: "DAST-CREDENTIAL-BRUTE-FORCE"
           summary: "Burst of failed logins observed"
           description: "Burst of failed logins observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
-          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-failed-logins"
       - alert: SecurityLimiterClientChurn
         expr: sum(increase(api_gateway_rate_limiter_clients_total[2m])) > 100
         for: 15s
@@ -117,3 +117,63 @@ groups:
           summary: "Rate limiter rejection burst observed"
           description: "Rate limiter rejection burst observed in the last two minutes. Observation is not proof of exploitation; correlate with the DAST report and request logs."
           runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#credential-stuffing"
+  - name: security.ib-payment-anonymous
+    interval: 15s
+    rules:
+      - alert: SecurityPaymentRouteAnonymous
+        expr: sum(increase(api_gateway_security_events_total{event="payment_route_call",reason="anonymous"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: ib-payment-anonymous
+        annotations:
+          finding_ids: "IB-PAYMENT-ANONYMOUS"
+          summary: "Anonymous payment route call observed"
+          description: "Anonymous payment-path request observed at the gateway. These routes return 404 here; account ownership and payment execution are not observable."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-anonymous"
+  - name: security.ib-payment-amount
+    interval: 15s
+    rules:
+      - alert: SecurityPaymentAmountInvalid
+        expr: sum(increase(api_gateway_security_events_total{event="payment_amount_invalid"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: ib-payment-amount
+        annotations:
+          finding_ids: "IB-PAYMENT-AMOUNT"
+          summary: "Invalid payment amount observed"
+          description: "A payment-path amount is non-positive or has more than two decimal places. This edge tripwire does not validate or execute IB payments."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-payment-amount"
+  - name: security.ib-auth-id-mismatch
+    interval: 15s
+    rules:
+      - alert: SecurityAuthIdMismatch
+        expr: sum(increase(api_gateway_security_events_total{event="auth_id_mismatch"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: ib-auth-id-mismatch
+        annotations:
+          finding_ids: "IB-AUTH-ID-MISMATCH"
+          summary: "Untrusted auth identity header observed"
+          description: "X-Auth-Id disagrees with a validated JWT identity or has no validated token. Correlate with IB service authorization; requests are not blocked."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-auth-id-mismatch"
+  - name: security.ib-admin-non-admin
+    interval: 15s
+    rules:
+      - alert: SecurityAdminRouteNonAdmin
+        expr: sum(increase(api_gateway_security_events_total{event="admin_route_non_admin"}[2m])) > 0
+        for: 15s
+        labels:
+          severity: critical
+          page: security
+          attack_class: ib-admin-non-admin
+        annotations:
+          finding_ids: "IB-ADMIN-NON-ADMIN"
+          summary: "Non-admin administrative route call observed"
+          description: "An admin or bank-users path was called without a validated ADMIN role. This is an edge tripwire, not an authorization decision."
+          runbook_url: "https://github.com/Cognition-Partner-Workshops/otterworks/blob/main/security/detection/README.md#ib-admin-non-admin"

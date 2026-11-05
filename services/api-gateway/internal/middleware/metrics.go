@@ -44,6 +44,16 @@ var (
 )
 
 func init() {
+	for event, reasons := range map[string][]string{
+		"payment_route_call":     {"anonymous", "authenticated"},
+		"payment_amount_invalid": {"non_positive", "precision"},
+		"auth_id_mismatch":       {"mismatch", "unauthenticated"},
+		"admin_route_non_admin":  {"admin_api", "bank_users"},
+	} {
+		for _, reason := range reasons {
+			securityEvents.WithLabelValues(event, reason)
+		}
+	}
 	for _, reason := range []string{"alg_not_allowed", "bad_signature", "expired", "malformed", "missing"} {
 		securityEvents.WithLabelValues("jwt_rejected", reason)
 	}

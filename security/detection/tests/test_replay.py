@@ -37,10 +37,17 @@ def test_manifest_and_command(tmp_path):
         "identity-forgery",
         "cross-customer-access",
         "credential-stuffing",
+        "ib-payment-anonymous",
+        "ib-payment-amount",
+        "ib-auth-id-mismatch",
+        "ib-admin-non-admin",
+        "ib-failed-logins",
     }
     for spec in classes.values():
         command = replay.probe_command(spec, "http://localhost:8080", tmp_path)
-        assert "--no-baseline" in command
+        assert ("--no-baseline" in command) is ("attack_script" not in spec)
+        if "attack_script" in spec:
+            assert command[:3] == ["uv", "run", str(replay.attack_script(spec))]
         assert command.count("--only") == len(spec["findings"])
         assert str(tmp_path) in command
 
@@ -182,6 +189,12 @@ def test_alertmanager_bad_response_fails_closed():
         ("no-delivery", 1),
         ("unreachable", 2),
         ("stale-delivery", 1),
+        ("script-pass", 0),
+        ("script-missing-report", 2),
+        ("script-bad-exit", 2),
+        ("script-bad-exit-three", 2),
+        ("script-timeout", 2),
+        ("script-bad-report", 2),
     ],
 )
 def test_replay_outcomes_offline(tmp_path, monkeypatch, scenario, expected):
@@ -193,6 +206,8 @@ def test_replay_outcomes_offline(tmp_path, monkeypatch, scenario, expected):
         "time_budget_seconds": 1,
         "probe_budget_seconds": 1,
     }
+    if scenario.startswith("script-"):
+        spec["attack_script"] = "security/detection/attacks/ib_signals.py"
     calls = 0
 
     def read_alerts(*args):
@@ -246,6 +261,12 @@ def test_replay_outcomes_offline(tmp_path, monkeypatch, scenario, expected):
     monkeypatch.setattr(replay, "sink_records", records)
 
     def run(command, **kwargs):
+        assert kwargs["timeout"] == spec["probe_budget_seconds"]
+        if scenario == "script-timeout":
+            raise replay.subprocess.TimeoutExpired(command, kwargs["timeout"])
+        if scenario in ("script-missing-report", "script-bad-exit", "script-bad-exit-three"):
+            code = {"script-missing-report": 0, "script-bad-exit": 2, "script-bad-exit-three": 3}[scenario]
+            return SimpleNamespace(returncode=code, stdout="", stderr="")
         out = Path(command[command.index("--report-dir") + 1])
         out.mkdir(parents=True)
         (out / "dast-report.json").write_text(
@@ -261,7 +282,9 @@ def test_replay_outcomes_offline(tmp_path, monkeypatch, scenario, expected):
                 }
             )
         )
-        return SimpleNamespace(returncode=1, stdout="", stderr="")
+        if scenario == "script-bad-report":
+            (out / "dast-report.json").write_text('{"results":[]}')
+        return SimpleNamespace(returncode=0 if scenario.startswith("script-") else 1, stdout="", stderr="")
 
     monkeypatch.setattr(replay.subprocess, "run", run)
     urls = {
@@ -278,3 +301,18 @@ def test_bad_url_rejected(monkeypatch):
     monkeypatch.setenv("DETECT_GATEWAY_URL", "http://user:password@example")
     with pytest.raises(replay.SetupError):
         replay.service_urls()
+
+
+@pytest.mark.parametrize("path", [None, "", "/etc/passwd", "../../etc/passwd", "security/dast/harness/dast_scan.py", "security/detection/attacks/missing.py"])
+def test_attack_script_path_rejected(path):
+    with pytest.raises(replay.SetupError):
+        replay.attack_script({"attack_script": path})
+
+
+def test_shared_login_rule_delivery_label():
+    spec = replay.load_classes()["ib-failed-logins"]
+    assert spec["alerts"] == ["SecurityLoginFailureBurst"]
+    assert replay.delivered_alerts(
+        [delivery(attack_class=spec["alert_attack_class"])],
+        spec["alert_attack_class"], "2026-01-01T00:00:05+00:00"
+    ) == {"Example"}

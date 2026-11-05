@@ -14,6 +14,47 @@ classes:
     quiet_budget_seconds: 360
     time_budget_seconds: 180
     probe_budget_seconds: 300
+  ib-payment-anonymous:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-PAYMENT-ANONYMOUS]
+    alerts: [SecurityPaymentRouteAnonymous]
+    counters: ['api_gateway_security_events_total{event="payment_route_call"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  ib-payment-amount:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-PAYMENT-AMOUNT]
+    alerts: [SecurityPaymentAmountInvalid]
+    counters: ['api_gateway_security_events_total{event="payment_amount_invalid"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  ib-auth-id-mismatch:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-AUTH-ID-MISMATCH]
+    alerts: [SecurityAuthIdMismatch]
+    counters: ['api_gateway_security_events_total{event="auth_id_mismatch"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  ib-admin-non-admin:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-ADMIN-NON-ADMIN]
+    alerts: [SecurityAdminRouteNonAdmin]
+    counters: ['api_gateway_security_events_total{event="admin_route_non_admin"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
+  ib-failed-logins:
+    attack_script: security/detection/attacks/ib_signals.py
+    findings: [IB-FAILED-LOGINS]
+    alerts: [SecurityLoginFailureBurst]
+    alert_attack_class: credential-stuffing
+    counters: ['api_gateway_auth_login_total{outcome="failure"}']
+    quiet_budget_seconds: 360
+    time_budget_seconds: 180
+    probe_budget_seconds: 300
   cross-customer-access:
     findings:
       - DAST-BOLA-DOCUMENTS

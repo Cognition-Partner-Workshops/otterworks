@@ -17,7 +17,12 @@ make detect-status
 make detect-replay CLASS=identity-forgery
 make detect-replay CLASS=cross-customer-access
 make detect-replay CLASS=credential-stuffing
-# Or all three, sequentially:
+make detect-replay CLASS=ib-payment-anonymous
+make detect-replay CLASS=ib-payment-amount
+make detect-replay CLASS=ib-auth-id-mismatch
+make detect-replay CLASS=ib-admin-non-admin
+make detect-replay CLASS=ib-failed-logins
+# Or all eight, sequentially:
 make detect-replay CLASS=all
 make detect-test
 make detect-rules-test
@@ -192,3 +197,146 @@ success, failure (4xx except 429), throttled (429), and error.
 **False positives:** load tests, NAT/proxy changes, many new legitimate clients,
 or a burst of users retrying passwords can match. These counters are bounded
 aggregates and cannot attribute an attack to an individual.
+
+For the single-client failure-only replay and its shared rule, see
+[IB failed logins](#ib-failed-logins).
+
+## Script-backed replay classes
+
+An optional manifest `attack_script` selects a Python script inside
+`security/detection/attacks/`; absolute, missing and escaping paths are rejected.
+It runs as explicit argv: `uv run <script> --target <url> --report-dir <dir>`,
+with one `--only <finding-id>` per declared scenario and the same subprocess
+timeout as DAST. Existing classes still run DAST with `--no-baseline`.
+Scripts must write `dast-report.json` containing `results` with exactly the
+declared `finding_id` values, `verdict` and `detail`. Exit codes 0/1 allow
+result evaluation; other exits, missing/malformed reports and timeouts fail
+closed. The IB script reports **inconclusive** exploitation verdicts: sending
+tripwire requests does not establish an IB vulnerability. Detection success
+still requires every expected alert firing and a fresh security-sink delivery.
+Reports record request paths/statuses, never JWTs, passwords or user identifiers.
+
+The IB script uses one fixed client key (`X-Forwarded-For: 192.0.2.80`) without
+rotation, including all twelve bad-password attempts. It creates ordinary
+`USER` registrations, not privileged fixtures. The admin observation matches
+the auth-service role **ADMIN**, case-insensitively. Nothing here authorizes,
+rejects, routes, or changes response status/body/header behavior.
+
+## IB payment anonymous
+
+**Alert:** `SecurityPaymentRouteAnonymous`.
+
+**Signal:** `payment_route_call{reason="anonymous"}` increases over two minutes
+on paths containing `/fund-transfer` or `/utility-payment`. A valid bearer
+token signed by either gateway or peer secret instead counts `authenticated`,
+even on JWT-bypass paths. Invalid, expired and absent tokens count anonymous.
+
+**Triage:** inspect method/path, gateway and IB request correlation IDs and
+token-validation outcomes without copying credentials. Compare downstream
+access logs and the alert's before/after counters with approved replay timing.
+Escalate unexpected payment-path traffic to the IB owner.
+
+**False positives:** discovery scans, old clients, expired credentials and
+intentional negative tests can match; this is not proof of accepted payment.
+
+**Visibility limit:** these payment routes **404 in OtterWorks**; alerts are
+**edge tripwires**. OtterWorks has **no account-ownership data** for these paths.
+The non-owner payment signal is **NOT observable** here: a valid token is not
+evidence of ownership. Authoritative ownership and payment authorization checks
+belong in the internet-banking services, not this detection middleware.
+
+## IB payment amount
+
+**Alert:** `SecurityPaymentAmountInvalid`.
+
+**Signal:** on POST/PUT/PATCH payment paths only, a top-level JSON `amount`
+(number or numeric string) is non-positive or has more than two decimal places.
+Decimal strings and exponents are parsed exactly, without float rounding.
+Scale includes explicitly supplied trailing decimals (e.g. `10.500` trips
+precision; `10.50` does not). Both reasons may count for the same amount.
+Only bodies up to 64 KiB are inspected; oversized, unreadable and non-JSON bodies
+are ignored, and the body bytes/read error/close are retained downstream.
+
+**Triage:** correlate amounts and paths in access-controlled IB logs;
+distinguish `non_positive` from `precision`. Check currency conventions and
+whether the actual service accepted a payment. The replay sends 0, -100000 and
+0.005 using a valid ordinary user token.
+
+**False positives:** refunds, zero-value checks, currencies with different minor
+units and clients emitting extra trailing zeros can match.
+
+**Visibility limit:** these routes **404 here**; alerts are **edge tripwires**,
+not payment validation. OtterWorks has **no account-ownership data**. Ownership,
+currency-specific amount validation and payment authorization belong in the
+internet-banking services. Nested amounts and bodies over the cap are invisible.
+
+## IB auth id mismatch
+
+**Alert:** `SecurityAuthIdMismatch`.
+
+**Signal:** a supplied `X-Auth-Id` differs from a validated JWT `sub` (falling
+back to `user_id`), or no valid bearer token is present. Matching IDs do not
+count. Observation applies even to public and unmatched paths; it does not
+strip, overwrite or trust the header.
+
+**Triage:** inspect trusted-proxy identity propagation and compare authenticated
+principals with the asserted header in restricted IB logs. Distinguish mismatch
+from unauthenticated events. The replay registers A and B, then sends A's token
+and B's header to the normal `/api/v1/documents` route.
+
+**False positives:** stale sessions, proxy misconfiguration and legitimate
+delegation using a differently defined header can match.
+
+**Visibility limit:** the IB payment/`bank-users` routes **404 here**, so these
+alerts are **edge tripwires**; the documents replay tests header observation,
+not IB access. Authoritative identity binding and ownership checks belong in
+the internet-banking services. OtterWorks has **no account-ownership data** for
+payment routes; header disagreement alone does not prove unauthorized access.
+
+## IB admin non admin
+
+**Alert:** `SecurityAdminRouteNonAdmin`.
+
+**Signal:** paths starting `/api/v1/admin` or containing `/bank-users` are
+called without a valid token carrying the `ADMIN` role (case-insensitive).
+Reasons are fixed `admin_api` and `bank_users`. Observation happens before
+JWT bypass and rate limiting, without imposing a role gate.
+
+**Triage:** separate ordinary-user calls from absent/invalid credentials.
+Check intended role grants in the auth service and actual IB admin audit logs.
+Correlate the replay's calls to `/api/v1/admin/users` and `/bank-users`;
+an upstream admin-service outage is not evidence of successful admin access.
+
+**False positives:** navigation probes, stale role grants, help-desk automation,
+and intentionally denied access checks can match.
+
+**Visibility limit:** `/bank-users` and the payment routes **404 here**;
+`/api/v1/admin` is mapped but its upstream may be absent or unavailable.
+These alerts are **edge tripwires**, not enforcement. Authoritative admin
+authorization belongs in the internet-banking services. OtterWorks has **no
+account-ownership data** for the IB payment paths.
+
+## IB failed logins
+
+**Alert:** the existing `SecurityLoginFailureBurst`; no duplicate rule.
+
+**Signal:** at least 10 failed login responses within two minutes, held for
+15 seconds. Replay sends twelve wrong-password attempts for one registered
+ordinary user from one fixed client key, without XFF rotation. HTTP 429 and 5xx
+remain distinct throttled/error outcomes rather than password failures.
+The existing alert retains `attack_class=credential-stuffing` for compatibility;
+the manifest's `alert_attack_class` maps this replay to that label for fresh
+delivery verification. The existing credential-stuffing replay is unchanged.
+
+**Triage:** inspect success/failure/throttled/error counters and auth health;
+correlate authorized test windows and account-specific audit logs. Investigate
+unexpected concentrations, without adding identity/IP metric labels.
+
+**False positives:** mistyped or stale passwords, password-manager retries,
+and simultaneous legitimate user failures can trip the global aggregate.
+
+**Visibility limit:** this is a global failure burst, not per-account attack
+attribution. The IB payment/`bank-users` routes **404 here**; these detections
+are **edge tripwires** and OtterWorks has **no account-ownership data** for
+payment paths. Authoritative credential protections, ownership, payment and
+admin checks belong in the internet-banking services.

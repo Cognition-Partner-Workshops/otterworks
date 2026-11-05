@@ -37,6 +37,8 @@ def now() -> str:
 def load_classes(path: Path = MANIFEST) -> dict:
     classes = yaml.safe_load(path.read_text())["classes"]
     for name, spec in classes.items():
+        if "attack_script" in spec:
+            attack_script(spec)
         for field in ("findings", "alerts", "counters"):
             if not spec.get(field) or len(set(spec[field])) != len(spec[field]):
                 raise SetupError(f"{name}: invalid {field}")
@@ -181,17 +183,37 @@ def delivered_alerts(
     return names
 
 
+def attack_script(spec: dict) -> Path:
+    value = spec["attack_script"]
+    if not isinstance(value, str) or not value or Path(value).is_absolute():
+        raise SetupError("attack_script must be a repo-relative Python path")
+    path = (ROOT / value).resolve()
+    if (
+        not path.is_relative_to((HERE / "attacks").resolve())
+        or path.suffix != ".py"
+        or not path.is_file()
+    ):
+        raise SetupError("attack_script must exist inside security/detection/attacks")
+    return path
+
+
 def probe_command(class_spec: dict, gateway: str, report_dir: Path) -> list[str]:
+    script = (
+        attack_script(class_spec)
+        if "attack_script" in class_spec
+        else ROOT / "security/dast/harness/dast_scan.py"
+    )
     command = [
         "uv",
         "run",
-        str(ROOT / "security/dast/harness/dast_scan.py"),
+        str(script),
         "--target",
         gateway,
-        "--no-baseline",
         "--report-dir",
         str(report_dir),
     ]
+    if "attack_script" not in class_spec:
+        command.append("--no-baseline")
     for finding in class_spec["findings"]:
         command.extend(["--only", finding])
     return command
@@ -200,7 +222,7 @@ def probe_command(class_spec: dict, gateway: str, report_dir: Path) -> list[str]
 def probe_verdicts(report: dict, expected: list[str]) -> list[dict]:
     results = report.get("results", [])
     if {row["finding_id"] for row in results} != set(expected):
-        raise SetupError("DAST report does not contain exactly the requested probes")
+        raise SetupError("Attack report does not contain exactly the requested probes")
     return [
         {key: row[key] for key in ("finding_id", "verdict", "detail")}
         for row in results
@@ -276,6 +298,7 @@ def replay(class_name: str, spec: dict, urls: dict, report_dir: Path) -> int:
     base = report_dir / f"{class_name}-{stamp}"
     report = {
         "attack_class": class_name,
+        "alert_attack_class": spec.get("alert_attack_class", class_name),
         "started_at": now(),
         "urls": urls,
         "expected_alerts": spec["alerts"],
@@ -335,9 +358,10 @@ def replay(class_name: str, spec: dict, urls: dict, report_dir: Path) -> int:
             probe_dir.mkdir(parents=True, exist_ok=True)
             (probe_dir / "console.log").write_text(process.stdout + process.stderr)
             report["probe_exit_code"] = process.returncode
-            if process.returncode not in (0, 1, 3):
+            allowed_exits = (0, 1) if "attack_script" in spec else (0, 1, 3)
+            if process.returncode not in allowed_exits:
                 raise SetupError(
-                    f"DAST setup failed (exit {process.returncode}); see {probe_dir}/console.log"
+                    f"Attack setup failed (exit {process.returncode}); see {probe_dir}/console.log"
                 )
             report["probe_verdicts"] = probe_verdicts(
                 json.loads((probe_dir / "dast-report.json").read_text()),
@@ -368,10 +392,12 @@ def replay(class_name: str, spec: dict, urls: dict, report_dir: Path) -> int:
                 report["sink_payloads"] = [
                     row
                     for row in fresh
-                    if delivered_alerts([row], class_name, report["attack_started_at"])
+                    if delivered_alerts(
+                        [row], report["alert_attack_class"], report["attack_started_at"]
+                    )
                 ]
                 delivered = delivered_alerts(
-                    fresh, class_name, report["attack_started_at"]
+                    fresh, report["alert_attack_class"], report["attack_started_at"]
                 )
                 report["delivered_alerts"] = sorted(delivered)
                 if all_firing(states) and set(spec["alerts"]) <= delivered:
