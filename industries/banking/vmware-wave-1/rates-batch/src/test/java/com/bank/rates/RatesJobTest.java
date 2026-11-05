@@ -5,7 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
 import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.nio.channels.UnresolvedAddressException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -114,6 +119,98 @@ public class RatesJobTest {
         assertNull(RatesJob.readTicks(in.toString(), "ticks-2026-10-14.csv"));
         assertEquals(1, RatesJob.run(new RatesJob.Config(in.toString(), tmp.getRoot().toString(),
                 LocalDate.parse("2026-10-14"))));
+    }
+
+    @Test
+    public void transientResolutionFailureRecoversAfterNegativeCacheExpires() throws Exception {
+        AtomicLong time = new AtomicLong();
+        AtomicInteger calls = new AtomicInteger();
+        String result = RatesJob.retryHttp(timeout -> {
+            calls.incrementAndGet();
+            if (time.get() < 10_000_000_000L) {
+                ConnectException e = new ConnectException();
+                e.initCause(new UnresolvedAddressException());
+                throw e;
+            }
+            return "ok";
+        }, 30000, millis -> time.addAndGet(millis * 1_000_000), time::get);
+        assertEquals("ok", result);
+        assertEquals(5, calls.get());
+    }
+
+    @Test
+    public void persistentConnectionFailureExhaustsBudget() throws Exception {
+        AtomicLong time = new AtomicLong();
+        AtomicInteger calls = new AtomicInteger();
+        try {
+            RatesJob.retryHttp(timeout -> {
+                calls.incrementAndGet();
+                throw new ConnectException("unavailable");
+            }, 3000, millis -> time.addAndGet(millis * 1_000_000), time::get);
+            org.junit.Assert.fail("must fail when the retry budget is exhausted");
+        } catch (ConnectException expected) {
+            assertEquals(2, calls.get());
+            assertEquals(1_000_000_000L, time.get());
+        }
+    }
+
+    @Test
+    public void disabledRetriesAndOtherIoErrorsFailImmediately() throws Exception {
+        for (long budget : new long[] {0, 30000}) {
+            AtomicInteger calls = new AtomicInteger();
+            try {
+                RatesJob.retryHttp(timeout -> {
+                    calls.incrementAndGet();
+                    if (budget == 0) throw new ConnectException();
+                    throw new IOException("not a connection failure");
+                }, budget, millis -> org.junit.Assert.fail("must not sleep"), System::nanoTime);
+                org.junit.Assert.fail("must propagate");
+            } catch (IOException expected) {
+                assertEquals(1, calls.get());
+            }
+        }
+        assertEquals(30000, RatesJob.retryMillis(env()));
+        assertEquals(0, RatesJob.retryMillis(env("RATES_HTTP_RETRY_SECONDS", "0")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void retryBudgetRejectsInvalidConfiguration() {
+        RatesJob.retryMillis(env("RATES_HTTP_RETRY_SECONDS", "-1"));
+    }
+
+    @Test(expected = InterruptedException.class)
+    public void interruptedBackoffStopsRetries() throws Exception {
+        RatesJob.retryHttp(timeout -> { throw new ConnectException(); }, 30000,
+                millis -> { throw new InterruptedException(); }, System::nanoTime);
+    }
+
+    @Test
+    public void httpErrorStatusesAreNotRetried() throws Exception {
+        AtomicInteger requests = new AtomicInteger();
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/", ex -> {
+            requests.incrementAndGet();
+            ex.sendResponseHeaders(503, -1);
+            ex.close();
+        });
+        server.start();
+        try {
+            String base = "http://127.0.0.1:" + server.getAddress().getPort();
+            try {
+                RatesJob.readTicks(base, "ticks.csv");
+                org.junit.Assert.fail("503 must fail");
+            } catch (IOException expected) {
+                assertEquals(1, requests.get());
+            }
+            try {
+                RatesJob.writeReport(base, "rates.csv", "");
+                org.junit.Assert.fail("503 must fail");
+            } catch (IOException expected) {
+                assertEquals(2, requests.get());
+            }
+        } finally {
+            server.stop(0);
+        }
     }
 
     @Test

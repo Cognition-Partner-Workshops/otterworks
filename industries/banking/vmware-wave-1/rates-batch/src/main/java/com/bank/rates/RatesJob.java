@@ -6,7 +6,10 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
+import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.net.http.HttpClient;
+import java.net.http.HttpConnectTimeoutException;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +20,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.LongSupplier;
 
 /**
  * Nightly reference rates. Reads the day's hourly ticks and writes one line per
@@ -115,6 +119,49 @@ public class RatesJob {
 
     private static final HttpClient HTTP = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
+    interface HttpAttempt<T> {
+        T send(Duration timeout) throws IOException, InterruptedException;
+    }
+
+    interface Sleeper {
+        void sleep(long millis) throws InterruptedException;
+    }
+
+    static long retryMillis(Map<String, String> env) {
+        String value = env.getOrDefault("RATES_HTTP_RETRY_SECONDS", "30");
+        long seconds = Long.parseLong(value);
+        if (seconds < 0 || seconds > 300) throw new IllegalArgumentException("RATES_HTTP_RETRY_SECONDS must be 0..300");
+        return seconds * 1000;
+    }
+
+    static <T> T retryHttp(HttpAttempt<T> attempt, long budgetMillis, Sleeper sleeper, LongSupplier nanoTime)
+            throws IOException, InterruptedException {
+        long start = nanoTime.getAsLong();
+        long delay = 1000;
+        int retries = 0;
+        while (true) {
+            long remaining = budgetMillis - (nanoTime.getAsLong() - start) / 1_000_000;
+            try {
+                return attempt.send(Duration.ofMillis(budgetMillis == 0 ? 30000 : Math.max(1, remaining)));
+            } catch (IOException e) {
+                if (!(e instanceof ConnectException || e instanceof UnknownHostException
+                        || e instanceof HttpConnectTimeoutException)) throw e;
+                remaining = budgetMillis - (nanoTime.getAsLong() - start) / 1_000_000;
+                if (remaining <= delay) throw e;
+                System.err.println("HTTP spool transport retry " + (++retries) + " in " + delay
+                        + "ms: " + e.getClass().getSimpleName());
+                sleeper.sleep(delay);
+                delay = Math.min(delay * 2, 4000);
+            }
+        }
+    }
+
+    private static <T> HttpResponse<T> send(HttpRequest.Builder request, HttpResponse.BodyHandler<T> handler)
+            throws IOException, InterruptedException {
+        return retryHttp(timeout -> HTTP.send(request.timeout(timeout).build(), handler),
+                retryMillis(System.getenv()), Thread::sleep, System::nanoTime);
+    }
+
     private static URI child(String base, String name) {
         return URI.create(base.endsWith("/") ? base + name : base + "/" + name);
     }
@@ -123,7 +170,7 @@ public class RatesJob {
     static List<String> readTicks(String in, String name) throws IOException, InterruptedException {
         String body;
         if (isUrl(in)) {
-            HttpResponse<String> r = HTTP.send(HttpRequest.newBuilder(child(in, name)).timeout(Duration.ofSeconds(30)).GET().build(),
+            HttpResponse<String> r = send(HttpRequest.newBuilder(child(in, name)).GET(),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (r.statusCode() == 404) return null;
             if (r.statusCode() != 200) throw new IOException("GET " + child(in, name) + " returned " + r.statusCode());
@@ -138,9 +185,9 @@ public class RatesJob {
 
     static void writeReport(String out, String name, String content) throws IOException, InterruptedException {
         if (isUrl(out)) {
-            HttpResponse<Void> r = HTTP.send(HttpRequest.newBuilder(child(out, name)).timeout(Duration.ofSeconds(30))
+            HttpResponse<Void> r = send(HttpRequest.newBuilder(child(out, name))
                     .header("Content-Type", "text/csv")
-                    .PUT(HttpRequest.BodyPublishers.ofString(content, StandardCharsets.UTF_8)).build(),
+                    .PUT(HttpRequest.BodyPublishers.ofString(content, StandardCharsets.UTF_8)),
                     HttpResponse.BodyHandlers.discarding());
             if (r.statusCode() / 100 != 2) throw new IOException("PUT " + child(out, name) + " returned " + r.statusCode());
             return;

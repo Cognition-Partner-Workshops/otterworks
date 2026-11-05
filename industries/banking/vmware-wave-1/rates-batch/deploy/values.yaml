@@ -16,6 +16,7 @@ cronjob:
 
 env:
   BUSINESS_DATE_ZONE: Etc/UTC
+  RATES_HTTP_RETRY_SECONDS: "30"
   # Spools replace /var/spool/rates/{in,out} on local disk and the NFS export.
   RATES_IN: http://rates-store.deps.svc.cluster.local/in
   RATES_OUT: http://rates-store.deps.svc.cluster.local/out
