@@ -1,4 +1,4 @@
-.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-usage-demo tp-month-end tp-run-branch tp-demo-reset demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean dbx-showcase dbx-showcase-help tp-legacy-pain deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record
+.PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed seed-legacy seed-legacy-validate dev-backend dev-web dev-admin dev-android dev-electron dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test legacy-etl-list legacy-etl-run legacy-etl-gen-data legacy-etl-gen-history legacy-sftp-up legacy-sftp-down custbill-py-run custbill-py-test custbill-parity custbill-golden custbill-sftp-e2e oracle-billing-up oracle-billing-down oracle-billing-seed oracle-record oracle-parity tp-pain-mongodb tp-break-oracle-mongodb tp-smoke tp-usage-demo tp-month-end tp-run-branch tp-demo-reset demo-incident tp-pain-aws tp-pain-aws-break tp-pain-aws-restore tp-pain-aws-stop tp-preflight tp-preflight-databricks tp-preflight-atlas tp-preflight-aws tp-validate-schemas tp-validate-contracts tp-validate-recon tp-fixture-land tp-fixture-verify tp-fixture-clean dbx-showcase dbx-showcase-help tp-legacy-pain deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record
 
 SHELL := /bin/bash
 
@@ -306,6 +306,7 @@ tp-smoke: ## Golden-path smoke gate for tech-partnerships (mirrors .github/workf
 	@$(MAKE) -n oracle-billing-up > /dev/null
 	@$(MAKE) -n seed-legacy NS=ci > /dev/null
 	@$(MAKE) -n legacy-etl-list > /dev/null
+	@$(MAKE) -n custbill-parity NS=ci > /dev/null
 	@$(MAKE) -n procs-parity NS=ci > /dev/null
 	@$(MAKE) -n tp-up NS=ci > /dev/null
 	@echo "=== Oracle billing compose config lint ==="
@@ -633,6 +634,33 @@ legacy-etl-run: ## Run one legacy batch job (JOB=<name>, see legacy-etl-list)
 	  run_all)                    command -v ksh >/dev/null || { echo "ksh required (sudo apt-get install -y ksh)"; exit 1; }; RUN_ALL_SLEEP=$${RUN_ALL_SLEEP:-0} $(TP_DET) etl/legacy-extra/run_all.sh ;; \
 	  *) echo "unknown JOB '$(JOB)' (see: make legacy-etl-list)"; exit 1 ;; \
 	esac
+
+# --- CUSTBILL Python ports (etl/legacy-extra/pyjobs/), byte-identical to the legacy jobs ---
+CUSTBILL_JOBS := sftp_ingest_poll parse_custbill_fixedwidth finance_excel_report
+CUSTBILL_PY_UV := uv run --python 3.11 --with pytest==8.3.5
+
+custbill-py-run: ## Run one CUSTBILL Python port (JOB=<name>|run_all)
+	@test -n "$(JOB)" || { echo "usage: make custbill-py-run JOB=<name>|run_all"; exit 1; }
+	@case "$(JOB)" in \
+	  run_all) CUSTBILL_IMPL=python RUN_ALL_SLEEP=$${RUN_ALL_SLEEP:-0} $(TP_DET) etl/legacy-extra/run_all.sh ;; \
+	  sftp_ingest_poll|parse_custbill_fixedwidth|finance_excel_report) $(TP_DET) python3 etl/legacy-extra/pyjobs/$(JOB).py ;; \
+	  *) echo "unknown JOB '$(JOB)' (one of: $(CUSTBILL_JOBS) run_all)"; exit 1 ;; \
+	esac
+
+custbill-py-test: ## pytest the CUSTBILL Python ports (unit + committed golden replays)
+	cd etl/legacy-extra && $(CUSTBILL_PY_UV) python -m pytest -q pyjobs/tests
+
+custbill-golden: ## Capture legacy golden fixtures for JOB=<name> NS=<ns> into pyjobs/tests/golden/
+	@test -n "$(JOB)" && test -n "$(NS)" || { echo "usage: make custbill-golden JOB=<name> NS=<ns>"; exit 1; }
+	etl/legacy-extra/tools/parity.sh golden $(JOB) $(NS)
+
+custbill-parity: ## cmp legacy vs Python output (JOB=<name>|chain|all, NS=<ns>, default all + dev)
+	@command -v ksh >/dev/null || { echo "ksh required (sudo apt-get install -y ksh)"; exit 1; }
+	@set -e; jobs="$${JOB:-all}"; [ "$$jobs" = all ] && jobs="$(CUSTBILL_JOBS) chain"; \
+	for j in $$jobs; do etl/legacy-extra/tools/parity.sh check $$j $${NS:-dev}; done
+
+custbill-sftp-e2e: ## SFTP put -> sftp_ingest_poll -> incoming/ check against the running fixture (IMPL=legacy|python, NS=<ns>)
+	etl/legacy-extra/tools/sftp_e2e.sh $${IMPL:-python} $${NS:-dev}
 
 tp-month-end: ## Extract Oracle invoices and run the CUSTBILL month-end batch (NS=<ns>)
 ifndef NS

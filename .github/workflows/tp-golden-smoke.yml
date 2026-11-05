@@ -30,6 +30,7 @@ jobs:
           make -n oracle-billing-up > /dev/null
           make -n seed-legacy NS=ci > /dev/null
           make -n legacy-etl-list > /dev/null
+          make -n custbill-parity NS=ci > /dev/null
           make -n procs-parity NS=ci > /dev/null
           make -n tp-up NS=ci > /dev/null
       - name: Oracle billing compose config lint

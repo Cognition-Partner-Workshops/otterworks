@@ -1,0 +1,3 @@
+sftp_ingest.lock absent
+parse_custbill.lock absent
+finance_report.lock absent

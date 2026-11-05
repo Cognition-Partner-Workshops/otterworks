@@ -1,0 +1,4 @@
+sftp-drop d -
+sftp-drop/upload d -
+sftp-drop/upload/CUSTBILL_QA_001.dat f 3430
+sftp-drop/upload/CUSTBILL_QA_002.dat f 3430
