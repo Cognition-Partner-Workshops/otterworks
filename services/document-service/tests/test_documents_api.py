@@ -15,6 +15,12 @@ def _make_jwt(user_id: str) -> str:
     return jwt.encode({"user_id": user_id}, TEST_JWT_SECRET, algorithm="HS256")
 
 
+@pytest.fixture
+def owner_auth(client: AsyncClient, owner_id: uuid.UUID) -> None:
+    """Sign the shared client in as the test's owner; reads and edits need a caller."""
+    client.headers["Authorization"] = f"Bearer {_make_jwt(str(owner_id))}"
+
+
 @pytest.mark.asyncio
 async def test_create_document(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.post(
@@ -35,7 +41,7 @@ async def test_create_document(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_get_document(client: AsyncClient, owner_id: uuid.UUID):
+async def test_get_document(client: AsyncClient, owner_id: uuid.UUID, owner_auth: None):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "Body", "owner_id": str(owner_id)},
@@ -48,7 +54,7 @@ async def test_get_document(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_get_document_not_found(client: AsyncClient):
+async def test_get_document_not_found(client: AsyncClient, owner_auth: None):
     resp = await client.get(f"/api/v1/documents/{uuid.uuid4()}")
     assert resp.status_code == 404
 
@@ -84,7 +90,7 @@ async def test_list_documents_pagination(client: AsyncClient, owner_id: uuid.UUI
 
 
 @pytest.mark.asyncio
-async def test_update_document(client: AsyncClient, owner_id: uuid.UUID):
+async def test_update_document(client: AsyncClient, owner_id: uuid.UUID, owner_auth: None):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Original", "content": "Old body", "owner_id": str(owner_id)},
@@ -103,7 +109,7 @@ async def test_update_document(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_patch_document(client: AsyncClient, owner_id: uuid.UUID):
+async def test_patch_document(client: AsyncClient, owner_id: uuid.UUID, owner_auth: None):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Original", "content": "Body", "owner_id": str(owner_id)},
@@ -122,7 +128,7 @@ async def test_patch_document(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_delete_document(client: AsyncClient, owner_id: uuid.UUID):
+async def test_delete_document(client: AsyncClient, owner_id: uuid.UUID, owner_auth: None):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "To Delete", "content": "", "owner_id": str(owner_id)},
@@ -137,7 +143,7 @@ async def test_delete_document(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_document_versions(client: AsyncClient, owner_id: uuid.UUID):
+async def test_document_versions(client: AsyncClient, owner_id: uuid.UUID, owner_auth: None):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Versioned", "content": "v1", "owner_id": str(owner_id)},
@@ -153,12 +159,12 @@ async def test_document_versions(client: AsyncClient, owner_id: uuid.UUID):
     assert resp.status_code == 200
     versions = resp.json()
     assert len(versions) == 2
-    assert versions[0]["version_number"] == 2
-    assert versions[1]["version_number"] == 1
+    assert versions[0]["version_number"] == 1
+    assert versions[1]["version_number"] == 2
 
 
 @pytest.mark.asyncio
-async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
+async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID, owner_auth: None):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Restore Me", "content": "Original", "owner_id": str(owner_id)},
@@ -171,7 +177,7 @@ async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
     )
 
     versions_resp = await client.get(f"/api/v1/documents/{doc_id}/versions")
-    v1_id = versions_resp.json()[-1]["id"]  # first version
+    v1_id = versions_resp.json()[0]["id"]  # versions list oldest first
 
     resp = await client.post(f"/api/v1/documents/{doc_id}/versions/{v1_id}/restore")
     assert resp.status_code == 200
@@ -200,7 +206,7 @@ async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_export_document_html(client: AsyncClient, owner_id: uuid.UUID):
+async def test_export_document_html(client: AsyncClient, owner_id: uuid.UUID, owner_auth: None):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Export", "content": "Content here", "owner_id": str(owner_id)},
@@ -215,7 +221,7 @@ async def test_export_document_html(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_export_document_markdown(client: AsyncClient, owner_id: uuid.UUID):
+async def test_export_document_markdown(client: AsyncClient, owner_id: uuid.UUID, owner_auth: None):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Export MD", "content": "MD content", "owner_id": str(owner_id)},

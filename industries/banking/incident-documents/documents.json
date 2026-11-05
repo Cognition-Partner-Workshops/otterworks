@@ -1,0 +1,32 @@
+[
+  {
+    "title": "SYNTHETIC Halvergate Bank Everyday Checking statement - January 2026",
+    "content": "# Halvergate Bank — Everyday Checking\n\nThis is synthetic rehearsal data. All people, accounts and amounts are fictional; not a financial record.\n\nCustomer: Synthetic Customer A\nAccount: ****0001\nPeriod: January 2026\nOpening balance: USD 1000.00\nDeposits: USD 500.00\nWithdrawals: USD 200.00\nClosing balance: USD 1300.00\n",
+    "content_type": "text/markdown"
+  },
+  {
+    "title": "SYNTHETIC Halvergate Bank Everyday Checking statement - February 2026",
+    "content": "# Halvergate Bank — Everyday Checking\n\nThis is synthetic rehearsal data. All people, accounts and amounts are fictional; not a financial record.\n\nCustomer: Synthetic Customer A\nAccount: ****0001\nPeriod: February 2026\nOpening balance: USD 1300.00\nDeposits: USD 500.00\nWithdrawals: USD 300.00\nClosing balance: USD 1500.00\n",
+    "content_type": "text/markdown"
+  },
+  {
+    "title": "SYNTHETIC Halvergate Bank Business Banking statement - January 2026",
+    "content": "# Halvergate Bank — Business Banking\n\nThis is synthetic rehearsal data. All businesses, accounts and amounts are fictional; not a financial record.\n\nBusiness: Synthetic Business B\nAccount: ****0002\nPeriod: January 2026\nOpening balance: USD 5000.00\nReceipts: USD 2000.00\nPayments: USD 1000.00\nClosing balance: USD 6000.00\n",
+    "content_type": "text/markdown"
+  },
+  {
+    "title": "SYNTHETIC Halvergate Bank Home Loan annual statement - 2025",
+    "content": "# Halvergate Bank — Home Loan\n\nThis is synthetic rehearsal data. All people, loans and amounts are fictional; not a financial record.\n\nBorrower: Synthetic Customer A\nLoan: ****0003\nYear: 2025\nOpening principal: USD 100000.00\nPrincipal repaid: USD 5000.00\nClosing principal: USD 95000.00\nInterest paid: USD 4000.00\n",
+    "content_type": "text/markdown"
+  },
+  {
+    "title": "SYNTHETIC Halvergate Bank KYC passport identity verification record",
+    "content": "# Halvergate Bank — KYC Identity Verification\n\nThis is synthetic rehearsal data. Not an identity document or evidence of a real verification.\n\nApplicant: Synthetic Customer A\nLinked account: ****0001\nDocument type: Fictional passport\nDocument reference: SYNTH-PASSPORT-A\nIssuing authority: Imaginary Rehearsal Authority\nReview date: March 2026\nOutcome: Simulated identity check accepted\nNo passport image, biometric data or machine-readable zone is included.\n",
+    "content_type": "text/markdown"
+  },
+  {
+    "title": "SYNTHETIC Halvergate Bank KYC proof-of-address record",
+    "content": "# Halvergate Bank — KYC Proof of Address\n\nThis is synthetic rehearsal data. Not proof of residence or evidence of a real verification.\n\nApplicant: Synthetic Customer A\nLinked account: ****0001\nFictional address: Unit A, Rehearsal House, Imaginary Lane, Example Town\nDocument type: Fictional utility statement\nDocument reference: SYNTH-ADDRESS-A\nReview date: March 2026\nOutcome: Simulated address check accepted\nNo real postal code or utility account identifier is included.\n",
+    "content_type": "text/markdown"
+  }
+]

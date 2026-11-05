@@ -1,0 +1,28 @@
+name: Reliability request
+description: Request an alert, dashboard change or operational fix.
+title: "[Reliability] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User impact
+      description: Describe the affected service, the symptom and the operational cost.
+      placeholder: Document uploads exceed the latency objective during the morning peak.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and scope
+      description: Link the query, dashboard or failing test. Name the starting branch and any excluded services.
+      placeholder: Start from demo-bank. Use the existing document-service metrics; leave unrelated services alone.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance checks
+      description: State the observable result, validation commands and expected PR target.
+      placeholder: Add an alert with a runbook link and a Grafana panel. Validate the rule with promtool and leave a PR open against demo-bank.
+    validations:
+      required: true
