@@ -174,6 +174,47 @@ class Client:
         r.raise_for_status()
         return r.json().get("id")
 
+    def index_documents(self):
+        documents = []
+        seen = set()
+        page = 1
+        total = None
+        while True:
+            r = self.s.get(f"{self.gw}/api/v1/documents", headers=self.h,
+                           params={"owner_id": self.owner_id, "page": page, "size": 100},
+                           timeout=30)
+            r.raise_for_status()
+            data = r.json()
+            if total is None:
+                total = data["total"]
+            if data["total"] != total:
+                raise ValueError("Document total changed during indexing sweep")
+            for document in data["items"]:
+                if not self.owner_id or document["owner_id"] != self.owner_id:
+                    raise ValueError("Document owner does not match the logged-in account")
+                if document["is_deleted"] or document["id"] in seen:
+                    raise ValueError("Deleted or duplicate document in indexing sweep")
+                seen.add(document["id"])
+                documents.append(document)
+            if len(documents) == total:
+                break
+            if not data["items"] or len(documents) > total:
+                raise ValueError("Incomplete document pagination during indexing sweep")
+            page += 1
+
+        for document in documents:
+            payload = {key: document[key] for key in (
+                "id", "title", "content", "owner_id", "created_at", "updated_at")}
+            payload["tags"] = []
+            r = self.s.post(f"{self.gw}/api/v1/search/index/document", headers=self.h,
+                            json=payload, timeout=60)
+            r.raise_for_status()
+            if r.status_code != 201 or r.json() != {
+                "status": "indexed", "id": document["id"], "type": "document"
+            }:
+                raise ValueError("Unexpected document indexing response")
+        return len(documents)
+
 
 class FolderCache:
     """Idempotent, thread-safe folder resolver (reuses existing folders)."""
@@ -315,6 +356,8 @@ def main(argv=None):
     ap.add_argument("--seed", type=int, default=20240117)
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--no-docs", action="store_true")
+    ap.add_argument("--index-documents", action="store_true",
+                    help="index all documents owned by the logged-in account after seeding")
     ap.add_argument("--register", action="store_true",
                     help="create the drive account if it does not exist (seed-loader use)")
     ap.add_argument("--dry-run", action="store_true", help="print file counts, upload nothing")
@@ -362,6 +405,9 @@ def main(argv=None):
     na = upload_assets(client, cache, depts)
     grand_files += na
     print(f"[drive] {'committed assets':28s} files={na:4d}")
+    if args.index_documents:
+        indexed = client.index_documents()
+        print(f"[drive] indexed documents={indexed}")
     print(f"[drive] DONE files={grand_files} docs={grand_docs}")
     return 0
 
