@@ -11,7 +11,7 @@ from typing import Any
 from uuid import UUID
 
 import structlog
-from sqlalchemy import func, select
+from sqlalchemy import column, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
@@ -91,10 +91,11 @@ class DocumentQueryRepository:
         """Return document rows matching the metadata filters, newest first."""
         if sort not in COLUMNS or direction.lower() not in ("asc", "desc"):
             raise ValueError("Invalid ordering")
-        column = getattr(Document, sort)
-        ordering = column.asc() if direction.lower() == "asc" else column.desc()
+        sort_column = getattr(Document, sort)
+        ordering = sort_column.asc() if direction.lower() == "asc" else sort_column.desc()
         query = (
-            select(*(getattr(Document, name) for name in COLUMNS))
+            select(*(column(name) for name in COLUMNS))
+            .select_from(Document)
             .where(*self._where(owner_id, title_contains, content_type, folder_id))
             .order_by(ordering)
             .limit(limit)
