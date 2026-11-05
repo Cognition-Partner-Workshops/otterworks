@@ -31,18 +31,18 @@ def load_runtime_config(app_dir=None):
             raise ValueError(f"runtime config is missing {key}")
     if not isinstance(config["query_tag_sql"], str) or not config["query_tag_sql"].strip():
         raise ValueError("query_tag_sql must be a nonempty string")
-    statement_prefix(config)
+    statement_comment(config)
     return config
 
 
-def statement_prefix(config):
+def statement_comment(config):
     tag = config["query_tag"]
     if isinstance(tag, str):
         tag = json.loads(tag)
     if not isinstance(tag, dict):
         raise ValueError("query_tag must be a JSON object")
     encoded = json.dumps(tag, separators=(",", ":"), ensure_ascii=True)
-    return "/* " + encoded.replace("*/", "*\\u002f").replace("/*", "\\u002f*") + " */ "
+    return " /* " + encoded.replace("*/", "*\\u002f").replace("/*", "\\u002f*") + " */"
 
 
 def account_rows_sql(config, snapshot_date, search=""):

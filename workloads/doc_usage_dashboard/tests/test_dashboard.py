@@ -87,11 +87,11 @@ def test_valid_tables(table):
 
 
 @pytest.mark.parametrize("as_string", [False, True])
-def test_comment_prefix_escapes_delimiters_preserving_json(as_string):
+def test_statement_comment_escapes_delimiters_preserving_json(as_string):
     tag = {"csid": "cs_doc_usage_dashboard_account_usage", "run_id": "*/ SELECT 1 /*"}
-    prefix = d.statement_prefix({"query_tag": json.dumps(tag) if as_string else tag})
-    assert prefix.startswith("/* ") and prefix.endswith(" */ ")
-    body = prefix[3:-4]
+    comment = d.statement_comment({"query_tag": json.dumps(tag) if as_string else tag})
+    assert comment.startswith(" /* ") and comment.endswith(" */")
+    body = comment[4:-3]
     assert "*/" not in body and "/*" not in body
     assert json.loads(body) == tag
 

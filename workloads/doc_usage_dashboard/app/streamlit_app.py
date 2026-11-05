@@ -10,7 +10,7 @@ from dashboard import (
     close_to_limit_sql,
     load_runtime_config,
     snapshot_dates_sql,
-    statement_prefix,
+    statement_comment,
     trend_sql,
 )
 
@@ -25,12 +25,12 @@ if "doc_usage_attribution" not in st.session_state:
         st.session_state.doc_usage_attribution = "session QUERY_TAG"
 
 mode = st.session_state.doc_usage_attribution
-prefix = statement_prefix(config) if mode == "statement comment" else ""
+suffix = statement_comment(config) if mode == "statement comment" else ""
 
 
 def query(built):
     sql, params = built
-    frame = session.sql(prefix + sql, params=params).to_pandas()
+    frame = session.sql(sql + suffix, params=params).to_pandas()
     frame.columns = [name.lower() for name in frame.columns]
     return frame
 
