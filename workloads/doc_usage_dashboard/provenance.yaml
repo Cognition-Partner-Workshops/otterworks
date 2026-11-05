@@ -24,7 +24,7 @@ endpoints:
     role: ROLE_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
     runtime_source:
       path: workloads/doc_usage_dashboard/responder/freshness.py
-      revision: pending
+      revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
 # Streamlit runtime attribution is the trailing JSON comment in query_text: SiS
 # overrides QUERY_TAG (ALTER SESSION rejected; statement_params silently ignored,
 # verified 2026-11-05 in QUERY_HISTORY). Dev queries retain their real QUERY_TAG.
@@ -181,3 +181,132 @@ deployment:
         Refresh CALL succeeded before the unchanged uniqueness gate failed.
         Exact statement timestamp was not saved; installed_at is the run-finished
         upper bound. This is not a claim that the deployment passed its gates.
+  - type: schema
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.426590+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-d20e-0035-065b0009f7fe
+    - 01c8353c-030c-dbbf-0035-065b000a06e6
+    readback:
+      status: verified
+      reason: >-
+        Idempotent schemachange reapplication retained the schema from the partial
+        install; SHOW SCHEMAS verifies DEVIN_EXT_ROLE ownership and external comment.
+  - type: view
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.WORKLOAD_TABLE_FRESHNESS
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.550953+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-dbc6-0035-065b000a473e
+    - 01c8353c-030c-d212-0035-065b000a1666
+    readback:
+      status: verified
+      reason: >-
+        Idempotent reapplication retained the view. SHOW VIEWS returns its SQL,
+        transaction-audit proxy, snapshot date, owner and external comment.
+  - type: table
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.DASHBOARD_FAULT_CONTROL
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.675027+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-d212-0035-065b000a164a
+    - 01c8353c-030c-d2f8-0035-065b000ad516
+    - 01c8353c-030c-dbc6-0035-065b000a475a
+    readback:
+      status: verified
+      reason: >-
+        Idempotent reapplication retained the table. SHOW TABLES verifies owner
+        and external comment; COUNT(*) is zero. No fault has been armed.
+  - type: procedure
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.ARM_DASHBOARD_FAULT
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.797961+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-dbc6-0035-065b000a4742
+    - 01c8353c-030c-dbc6-0035-065b000a4756
+    - 01c8353c-030c-d2f8-0035-065b000ad512
+    - 01c8353d-030c-d2f8-0035-065b000ad51a
+    readback:
+      status: verified
+      reason: >-
+        Idempotent reapplication retained the no-argument procedure. SHOW
+        PROCEDURES verifies its external comment; SHOW GRANTS ON PROCEDURE
+        returns only DEVIN_EXT_ROLE ownership, with no responder grant. DESCRIBE
+        verifies EXECUTE AS OWNER and the exact body from the installed revision.
+  - type: procedure
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.RECOVER_DASHBOARD_TASK
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.892370+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-d20e-0035-065b0009f802
+    - 01c8353c-030c-dbc6-0035-065b000a4756
+    - 01c8353c-030c-dbca-0035-065b000a3716
+    - 01c8353d-030c-dbca-0035-065b000a371a
+    readback:
+      status: verified
+      reason: >-
+        Idempotent reapplication retained the no-argument procedure. SHOW
+        PROCEDURES verifies its external comment; SHOW GRANTS ON PROCEDURE
+        verifies DEVIN_EXT_ROLE ownership and responder USAGE only. DESCRIBE
+        verifies EXECUTE AS OWNER and the exact body from the installed revision.
+        Not called.
+  - type: migration
+    name: DB_SCHEMACHANGE_SFEXT_20261105A.CHANGE_HISTORY.DOC_USAGE_DASHBOARD
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:20.642000+00:00'
+    timestamp_source: schemachange_installed_on
+    query_ids:
+    - 01c8353c-030c-d2f8-0035-065b000ad50e
+    - 01c8353c-030c-d212-0035-065b000a165e
+    readback:
+      status: verified
+      reason: >-
+        CHANGE_HISTORY contains exactly one V1.0.2__freshness_responder.sql row:
+        version 1.0.2, status Success, installed_by DEVIN_EXT_SVC, checksum
+        d3e410d8d33a23086aaa038425fd9b5d5e792356be4c021b838f3b31. A second
+        schemachange invocation skipped the recorded version. No Streamlit
+        statement, fault arm, task resume, or refresh was executed.
+  - type: runtime_source
+    name: workloads/doc_usage_dashboard/responder/freshness.py
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-runtime-20261105T124530Z-0ea4a511
+    status: installed
+    installed_at: '2026-11-05T12:45:34.931376+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c8353d-030c-d212-0035-065b000a166e
+    - 01c8353d-030c-dbbf-0035-065b000a06ea
+    - 01c8353d-030c-d214-0035-065b0009adae
+    - 01c8353d-030c-dbc6-0035-065b000a4766
+    - 01c8353d-030c-d20e-0035-065b0009f806
+    - 01c8353d-030c-d2f7-0035-065b00096ffe
+    - 01c8353d-030c-d214-0035-065b0009adb2
+    readback:
+      status: verified
+      reason: >-
+        Installed-at is the saved SRE JSON file-write time, an upper bound for
+        check completion. Local source bytes match git show at the installed revision. SRE check
+        uses that revision in its runtime tag without session_url, with the
+        responder user/role and empty secondary roles. Both freshness rows are
+        fresh, latest history is SUCCEEDED, faults are empty, monitor usage is
+        2.46 credits. Exit 1 reports task_suspended_or_missing: SRE SHOW TASKS
+        returns no rows under the restricted grants; setup independently verifies
+        the task suspended and unchanged. This is not a recovery or refresh.
