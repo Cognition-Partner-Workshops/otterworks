@@ -39,6 +39,7 @@ class FakeV3:
     webhook_secret: str | None = None
     webhook_posts: list[Recorded] = field(default_factory=list)
     auto_reply: bool = False
+    create_omit_id: bool = False
     _server: ThreadingHTTPServer | None = None
 
     @property
@@ -136,6 +137,8 @@ def _make_handler(fake: FakeV3) -> type[BaseHTTPRequestHandler]:
                     fake.events[new_id] = []
                 if fake.auto_reply:
                     fake.add_event(new_id, "devin", f"FAKE v3 reply: fake session {new_id[-6:]} received the mention.")
+                if fake.create_omit_id:
+                    return self._reply(200, {k: v for k, v in fake.sessions[new_id].items() if k != "session_id"})
                 return self._reply(200, fake.sessions[new_id])
             if sid not in fake.sessions:
                 return self._reply(404, {"detail": "no session"})

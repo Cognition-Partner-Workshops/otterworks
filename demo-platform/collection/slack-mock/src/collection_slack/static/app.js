@@ -38,6 +38,7 @@
   function messageNode(m) {
     const row = el("div", "message " + m.kind);
     row.dataset.id = String(m.id);
+    row.dataset.fs = m.forward_state || "";
     row.appendChild(avatar(m.kind === "system" ? "system" : m.author));
     const body = el("div", "message-body");
     const meta = el("div", "meta");
@@ -113,15 +114,23 @@
   async function refreshThread() {
     if (!state.thread) return;
     const id = state.thread;
-    const data = await api(`/api/threads/${id}?after=${state.lastId}`);
-    if (id !== state.thread) return;
     const box = $("thread-messages");
+    const pending = [...box.querySelectorAll('[data-fs="pending"]')].map((n) => Number(n.dataset.id));
+    const after = pending.length ? Math.min(state.lastId, Math.min(...pending) - 1) : state.lastId;
+    const data = await api(`/api/threads/${id}?after=${after}`);
+    if (id !== state.thread) return;
+    let added = false;
     for (const m of data.messages) {
-      if (box.querySelector(`[data-id="${m.id}"]`)) continue;
+      const old = box.querySelector(`[data-id="${m.id}"]`);
+      if (old) {
+        if (old.dataset.fs !== (m.forward_state || "")) old.replaceWith(messageNode(m));
+        continue;
+      }
       box.appendChild(messageNode(m));
+      added = true;
       state.lastId = Math.max(state.lastId, m.id);
     }
-    if (data.messages.length) box.scrollTop = box.scrollHeight;
+    if (added) box.scrollTop = box.scrollHeight;
     const badge = $("session-badge");
     badge.replaceChildren();
     if (data.session) {
@@ -139,7 +148,12 @@
   function bindComposer(formId, textId, countId, send) {
     const text = $(textId);
     const count = $(countId);
-    const update = () => { count.textContent = `${text.value.length}/${state.max}`; count.classList.toggle("warn", text.value.length > state.max); };
+    const update = () => {
+      const over = text.value.length > state.max;
+      count.textContent = `${text.value.length}/${state.max}` + (over ? " - too long to send" : "");
+      count.classList.toggle("warn", over);
+      $(formId).querySelector("button").disabled = over;
+    };
     text.addEventListener("input", update);
     text.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $(formId).requestSubmit(); } });
     $(formId).addEventListener("submit", async (e) => {
@@ -149,7 +163,7 @@
       const btn = $(formId).querySelector("button");
       btn.disabled = true;
       try { await send(value); text.value = ""; update(); } catch (err) { count.textContent = String(err.message); }
-      finally { btn.disabled = false; }
+      finally { update(); }
     });
     update();
   }

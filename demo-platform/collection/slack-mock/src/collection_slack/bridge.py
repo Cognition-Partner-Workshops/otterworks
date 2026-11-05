@@ -215,8 +215,12 @@ class Bridge:
             )
             return
         except VerificationError as exc:
-            self.store.update_session(thread_id, state="failed", detail=str(exc))
-            self.store.add_system_message(thread_id, f"Devin session was not started ({exc}).")
+            # The create call succeeded, so a remote session may exist; never reclaim (no duplicate sessions).
+            detail = f"{exc}; not retried automatically"
+            self.metrics["verification_failures_total"] += 1
+            self.store.update_session(thread_id, state="rejected", detail=detail)
+            self.store.set_dispatch(initial_message_id, "rejected", detail)
+            self.store.add_system_message(thread_id, f"Devin session could not be confirmed and will not be used ({detail}).")
             return
         self.store.update_session(thread_id, session_id=created.session_id, session_url=created.url, state=VERIFYING)
         self._verify(thread_id, created.session_id, initial_message_id, created.url)

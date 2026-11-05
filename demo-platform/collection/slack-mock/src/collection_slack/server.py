@@ -18,6 +18,7 @@ import secrets
 import signal
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib import resources
 from typing import Any
@@ -31,6 +32,7 @@ log = logging.getLogger("collection_slack.server")
 
 COOKIE = "collection_slack"
 CLIENT_ID_RE = re.compile(r"^[A-Za-z0-9\-]{8,64}$")
+COOKIE_TTL = 12 * 3600
 LOGIN_HINT = b'<p class="muted small" id="login-hint">Mock workspace for local demos.</p>'
 LOGIN_ERROR = b'<p class="small login-error" id="login-hint" role="alert">That access token was not accepted.</p>'
 
@@ -70,22 +72,44 @@ class App:
         self.store = Store(config.db_path)
         self.bridge = bridge or Bridge(config, self.store)
         self.bridge.store = self.store
+        self._revoked: dict[str, int] = {}
+        self._revoked_lock = threading.Lock()
 
-    def make_cookie(self) -> str:
-        nonce = secrets.token_urlsafe(18)
-        sig = hmac.new(self.config.cookie_secret, nonce.encode(), hashlib.sha256).digest()
-        return f"{nonce}.{base64.urlsafe_b64encode(sig).decode().rstrip('=')}"
+    def _sign(self, payload: str) -> str:
+        sig = hmac.new(self.config.cookie_secret, payload.encode(), hashlib.sha256).digest()
+        return base64.urlsafe_b64encode(sig).decode().rstrip("=")
+
+    def make_cookie(self, now: float | None = None) -> str:
+        payload = f"{secrets.token_urlsafe(18)}.{int(time.time() if now is None else now)}"
+        return f"{payload}.{self._sign(payload)}"
+
+    def _cookie_nonce(self, value: str | None) -> tuple[str, int] | None:
+        parts = (value or "").split(".")
+        if len(parts) != 3 or not parts[1].isdigit():
+            return None
+        payload = f"{parts[0]}.{parts[1]}"
+        if not hmac.compare_digest(parts[2], self._sign(payload)):
+            return None
+        issued = int(parts[1])
+        if not 0 <= time.time() - issued <= COOKIE_TTL:
+            return None
+        return parts[0], issued
 
     def cookie_ok(self, value: str | None) -> bool:
-        if not value or "." not in value:
+        found = self._cookie_nonce(value)
+        if found is None:
             return False
-        nonce, _, sig = value.partition(".")
-        want = (
-            base64.urlsafe_b64encode(hmac.new(self.config.cookie_secret, nonce.encode(), hashlib.sha256).digest())
-            .decode()
-            .rstrip("=")
-        )
-        return hmac.compare_digest(sig, want)
+        with self._revoked_lock:
+            return found[0] not in self._revoked
+
+    def revoke_cookie(self, value: str | None) -> None:
+        found = self._cookie_nonce(value)
+        if found is None:
+            return
+        cutoff = time.time() - COOKIE_TTL
+        with self._revoked_lock:
+            self._revoked = {n: t for n, t in self._revoked.items() if t >= cutoff}
+            self._revoked[found[0]] = found[1]
 
     def token_ok(self, candidate: str) -> bool:
         return hmac.compare_digest(candidate.encode(), self.config.access_token.encode())
@@ -174,7 +198,8 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
             path = urlsplit(self.path).path
             try:
                 if path == "/healthz":
-                    return self._json(200, health(app))
+                    state = health(app)
+                    return self._json(200 if state["status"] == "ok" else 503, state)
                 if path == "/metrics":
                     return self._send(200, metrics(app).encode(), "text/plain; version=0.0.4")
                 if path == "/login":
@@ -207,9 +232,10 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
                     token = (form.get("token") or [""])[0]
                     if not app.token_ok(token):
                         return self._send(303, b"", "text/plain", {"Location": "/login?error=1"})
-                    cookie = f"{COOKIE}={app.make_cookie()}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200"
+                    cookie = f"{COOKIE}={app.make_cookie()}; HttpOnly; SameSite=Strict; Path=/; Max-Age={COOKIE_TTL}"
                     return self._send(303, b"", "text/plain", {"Location": "/", "Set-Cookie": cookie})
                 if path == "/logout":
+                    app.revoke_cookie(self._cookie())
                     cookie = f"{COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0"
                     return self._send(303, b"", "text/plain", {"Location": "/login", "Set-Cookie": cookie})
                 if not self._authed():

@@ -4,6 +4,7 @@ APP := slack-mock
 FAKE_PORT ?= 8781
 APP_PORT ?= 8780
 LIB := . scripts/lib.sh
+ENV_TOKEN = COLLECTION_ACCESS_TOKEN=$${COLLECTION_ACCESS_TOKEN:-$$(sed -n 's/^COLLECTION_ACCESS_TOKEN=//p' .env 2>/dev/null)}
 
 .PHONY: help env config up ps logs down reset test-reset test lint typecheck check fake-v3 app-fake app-stub mcp-grafana mcp-postgres label governance
 
@@ -17,7 +18,7 @@ config: ## validate the Compose file (example env; secrets not printed)
 	docker compose --env-file .env.example -f compose.yaml --profile mcp config --quiet && echo "compose config OK"
 
 up: env ## start postgres, prometheus, grafana, slack-mock and the grafana viewer-token init
-	@$(LIB); load_env; compose up -d --build --wait postgres slack-mock prometheus grafana && compose up grafana-init
+	@$(LIB); load_env; compose up -d --build --wait postgres slack-mock prometheus grafana && compose run --rm -T --no-deps grafana-init </dev/null
 
 ps: ## list this run's containers
 	@$(LIB); load_env; compose --profile mcp ps -a
@@ -51,13 +52,13 @@ fake-v3: ## run the FAKE v3 API on loopback (auto-replies; never the real Devin 
 	  python3 -m tests.fake_v3 --port $(FAKE_PORT)
 
 app-fake: ## run the app on 127.0.0.1 in live mode against the loopback FAKE v3 API
-	cd $(APP) && COLLECTION_MODE=live DEVIN_API_KEY=$${FAKE_V3_API_KEY:?} COLLECTION_DEVIN_ORG_ID=org-fake-local \
+	export $(ENV_TOKEN); cd $(APP) && COLLECTION_MODE=live DEVIN_API_KEY=$${FAKE_V3_API_KEY:?} COLLECTION_DEVIN_ORG_ID=org-fake-local \
 	  COLLECTION_CREATE_AS_USER_ID=user-fake-persona COLLECTION_DEVIN_API_BASE=http://127.0.0.1:$(FAKE_PORT) \
 	  COLLECTION_POLL_INTERVAL=2 COLLECTION_PORT=$(APP_PORT) COLLECTION_DB_PATH=$${COLLECTION_DB_PATH:-fake-demo.sqlite3} \
 	  PYTHONPATH=src python3 -m collection_slack
 
 app-stub: ## run the app on 127.0.0.1 in labelled stub mode
-	cd $(APP) && COLLECTION_PORT=$(APP_PORT) PYTHONPATH=src python3 -m collection_slack
+	export $(ENV_TOKEN); cd $(APP) && COLLECTION_PORT=$(APP_PORT) PYTHONPATH=src python3 -m collection_slack
 
 mcp-grafana: ## stdio Grafana MCP (read-only) against this machine's stack
 	@mcp/grafana-stdio.sh

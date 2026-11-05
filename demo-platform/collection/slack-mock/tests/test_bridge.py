@@ -132,6 +132,18 @@ class Failures(AppCase):
         self.app.bridge.drain()
         self.assertEqual(self.thread(t["thread_id"])["session"]["state"], "active")
 
+    def test_create_without_session_id_is_rejected_and_never_recreated(self) -> None:
+        self.fake.create_omit_id = True
+        t = self.post_thread("@devin first")
+        self.app.bridge.drain()
+        view = self.thread(t["thread_id"])
+        self.assertEqual(view["session"]["state"], "rejected")
+        self.fake.create_omit_id = False
+        self.reply(t["thread_id"], "@devin again")
+        self.app.bridge.drain()
+        self.assertEqual(len(self.fake.calls("POST", "/sessions")), 1)
+        self.assertEqual(self.thread(t["thread_id"])["session"]["state"], "rejected")
+
     def test_create_timeout_is_interrupted(self) -> None:
         self.fake.delay["create"] = 1.5
         t = self.post_thread("@devin slow")
@@ -386,6 +398,20 @@ class HttpBoundary(AppCase):
         with sqlite3.connect(self.db_path) as conn:
             tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         self.assertTrue({"messages", "threads", "thread_sessions"} <= tables)
+
+    def test_cookie_expires_and_is_revoked_on_logout(self) -> None:
+        stale = Client(self.client.port)
+        stale.cookie = "collection_slack=" + self.app.make_cookie(now=time.time() - 12 * 3600 - 5)
+        self.assertEqual(stale.json("GET", "/api/bootstrap")[0], 401)
+        forged = Client(self.client.port)
+        forged.cookie = self.client.cookie.rsplit(".", 1)[0] + ".AAAA" if self.client.cookie else None
+        self.assertEqual(forged.json("GET", "/api/bootstrap")[0], 401)
+        self.assertEqual(self.client.json("GET", "/api/bootstrap")[0], 200)
+        copied = Client(self.client.port)
+        copied.cookie = self.client.cookie
+        status, _, _ = self.client.request("POST", "/logout", raw=b"")
+        self.assertEqual(status, 303)
+        self.assertEqual(copied.json("GET", "/api/bootstrap")[0], 401)
 
     def test_cookie_flags(self) -> None:
         from urllib.parse import urlencode

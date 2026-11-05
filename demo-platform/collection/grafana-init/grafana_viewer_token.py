@@ -1,6 +1,8 @@
 """Create (or reuse) a Viewer-role service account and write its token for the Grafana MCP server.
 
 Runs once per `up` inside the run-scoped Compose network. Never prints the token or admin password.
+Tokens live 24h by design (bounded local fixture). mcp-grafana reads GRAFANA_SERVICE_ACCOUNT_TOKEN_FILE on
+every request, so re-running `make up` (or the stdio launcher) after expiry refreshes it without an MCP restart.
 """
 
 import base64
@@ -30,6 +32,10 @@ def call(method, path, body=None, auth=None):
         return exc.code, None
 
 
+def write_probe(token):
+    return call("POST", "/api/folders", {"title": "write-probe"}, auth=f"Bearer {token}")[0]
+
+
 def main():
     for _ in range(60):
         try:
@@ -40,13 +46,6 @@ def main():
         time.sleep(1)
     else:
         sys.exit("grafana not reachable")
-
-    if os.path.exists(TOKEN_PATH):
-        with open(TOKEN_PATH, encoding="utf-8") as fh:
-            existing = fh.read().strip()
-        if existing and call("GET", "/api/search?limit=1", auth=f"Bearer {existing}")[0] == 200:
-            print("grafana viewer token: reused")
-            return
 
     status, found = call("GET", f"/api/serviceaccounts/search?query={SA_NAME}")
     if status != 200:
@@ -59,12 +58,22 @@ def main():
         if status not in (200, 201):
             sys.exit(f"service account create failed: HTTP {status}")
     if sa["role"] != "Viewer":
-        sys.exit("service account role is not Viewer; refusing to issue a token")
+        sys.exit("service account role is not Viewer; refusing to issue or reuse a token")
+
+    if os.path.exists(TOKEN_PATH):
+        with open(TOKEN_PATH, encoding="utf-8") as fh:
+            existing = fh.read().strip()
+        if existing and call("GET", "/api/search?limit=1", auth=f"Bearer {existing}")[0] == 200:
+            probe = write_probe(existing)
+            if probe not in (401, 403):
+                sys.exit(f"existing token was able to write (HTTP {probe}); refusing")
+            print(f"grafana viewer token: reused (role=Viewer, write probe HTTP {probe})")
+            return
     status, tok = call("POST", f"/api/serviceaccounts/{sa['id']}/tokens", {"name": f"mcp-{int(time.time())}", "secondsToLive": 86400})
     if status != 200:
         sys.exit(f"token create failed: HTTP {status}")
     key = tok["key"]
-    probe, _ = call("POST", "/api/folders", {"title": "write-probe"}, auth=f"Bearer {key}")
+    probe = write_probe(key)
     if probe not in (401, 403):
         sys.exit(f"viewer token was able to write (HTTP {probe}); refusing")
     tmp = TOKEN_PATH + ".tmp"
