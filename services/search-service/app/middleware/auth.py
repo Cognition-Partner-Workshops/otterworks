@@ -1,22 +1,20 @@
 """Authentication middleware for the search service.
 
-Public endpoints (health, metrics) are exempt. All other endpoints accept
-either of two authentication modes:
+Public endpoints (health, metrics) are exempt.
 
-* A valid service-to-service token via ``Authorization: Bearer <token>``
-  (used by trusted internal callers such as the SQS indexer or admin
-  reindex jobs).
-* The ``X-User-ID`` header injected by the API gateway after it has
-  validated the caller's JWT (used by user-facing requests proxied
-  through the gateway).
+Internal endpoints (indexing, delete-from-index and reindex) mutate the index
+every tenant user searches, so they only accept the service-to-service token
+(``Authorization: Bearer <SEARCH_SERVICE_TOKEN>``). A gateway-forwarded
+``X-User-ID`` never satisfies them, and they stay closed when no token is
+configured or when ``REQUIRE_AUTH`` is off.
 
-If a service token is configured the middleware will accept it on any
-endpoint; if it is not configured (e.g. local dev), only the gateway
-identity path is available and internal endpoints become reachable only
-via the gateway.
+All other endpoints accept either the service token or the ``X-User-ID``
+header injected by the API gateway after it has validated the caller's JWT.
 """
 
 from __future__ import annotations
+
+import hmac
 
 import structlog
 from flask import jsonify, request
@@ -24,34 +22,34 @@ from flask import jsonify, request
 logger = structlog.get_logger()
 
 PUBLIC_PREFIXES = ("/health", "/metrics")
+INTERNAL_PREFIXES = ("/api/v1/search/index", "/api/v1/search/reindex")
+
+
+def is_internal_path(path: str) -> bool:
+    return any(path == p or path.startswith(p + "/") for p in INTERNAL_PREFIXES)
 
 
 def require_auth(app):
-    """Register a ``before_request`` hook that enforces authentication.
-
-    * Requests to health/metrics paths are always allowed.
-    * All other requests must present either a valid service token in
-      the ``Authorization`` header or an ``X-User-ID`` header set by
-      the API gateway after JWT validation.
-    """
+    """Register a ``before_request`` hook that enforces authentication."""
     auth_config = app.config["APP_CONFIG"].auth
 
     @app.before_request
     def _check_auth():
-        if not auth_config.require_auth:
-            return None
-
         path = request.path
         if any(path.startswith(p) for p in PUBLIC_PREFIXES):
             return None
 
-        # Accept a valid service token if one is configured.
-        if auth_config.service_token:
-            token = _extract_bearer_token()
-            if token and token == auth_config.service_token:
-                return None
+        has_service_token = _service_token_valid(auth_config.service_token)
 
-        # Otherwise require gateway-injected user identity.
+        if is_internal_path(path):
+            if has_service_token:
+                return None
+            logger.warning("internal_route_rejected", path=path)
+            return jsonify({"error": "forbidden"}), 403
+
+        if not auth_config.require_auth or has_service_token:
+            return None
+
         user_id = request.headers.get("X-User-ID", "").strip()
         if user_id:
             return None
@@ -59,6 +57,15 @@ def require_auth(app):
         endpoint = request.endpoint or ""
         logger.warning("auth_rejected", endpoint=endpoint, path=path)
         return jsonify({"error": "unauthorized"}), 401
+
+
+def _service_token_valid(configured: str) -> bool:
+    if not configured:
+        return False
+    presented = _extract_bearer_token()
+    if not presented:
+        return False
+    return hmac.compare_digest(presented.encode(), configured.encode())
 
 
 def _extract_bearer_token() -> str:

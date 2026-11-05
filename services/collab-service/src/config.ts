@@ -7,6 +7,9 @@ export interface Config {
     db: number;
     keyPrefix: string;
   };
+  documentService: {
+    url: string;
+  };
   jwt: {
     secret: string;
     issuer: string;
@@ -38,6 +41,9 @@ export function loadConfig(): Config {
       password: process.env.REDIS_PASSWORD || undefined,
       db: parseInt(process.env.REDIS_DB || '0', 10),
       keyPrefix: process.env.REDIS_KEY_PREFIX || 'collab:',
+    },
+    documentService: {
+      url: process.env.DOCUMENT_SERVICE_URL || 'http://document-service:8083',
     },
     jwt: {
       secret: process.env.JWT_SECRET || 'otterworks-dev-secret',

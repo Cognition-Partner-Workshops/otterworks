@@ -11,7 +11,7 @@ DOC_ID = "11111111-1111-4111-8111-111111111111"
 
 @pytest.fixture
 def service():
-    return ShareLinkService(salt="test-salt")
+    return ShareLinkService(secret="test-secret")
 
 
 def test_minted_token_verifies(service):
@@ -58,3 +58,26 @@ async def test_share_endpoint_round_trip(client, owner_id: uuid.UUID, monkeypatc
         "/api/v1/documents/shared", params={"document_id": doc_id, "token": "wrong"}
     )
     assert denied.status_code == 403
+
+
+def test_legacy_md5_token_is_rejected(service):
+    import hashlib
+
+    legacy = hashlib.md5(  # noqa: S324
+        f"{DOC_ID}:otterworks-share".encode(), usedforsecurity=False
+    ).hexdigest()[:16]
+    assert service.verify_token(DOC_ID, legacy) is False
+
+
+def test_tokens_depend_on_the_secret():
+    a = ShareLinkService(secret="secret-a").mint_token(DOC_ID)
+    b = ShareLinkService(secret="secret-b").mint_token(DOC_ID)
+    assert a != b
+
+
+def test_missing_secret_fails_closed(monkeypatch):
+    from app.services.share_link import ShareLinkSecretMissingError
+
+    monkeypatch.delenv("SHARE_LINK_SECRET", raising=False)
+    with pytest.raises(ShareLinkSecretMissingError):
+        ShareLinkService()

@@ -97,9 +97,8 @@ remove_irsa_trust() {
     # StringEquals (added by older deploys). Statements without a
     # StringEquals[:sub] — notably the shared Terraform-managed StringLike
     # wildcard statement that grants every otterworks-* namespace — MUST be left
-    # untouched; stripping it would break AWS access for the golden app and all
-    # other tenants. The current deploy relies on that wildcard and adds no
-    # per-tenant StringEquals statement, so this is normally a no-op.
+    # untouched. Current deploys mint per-tenant roles instead of editing the
+    # shared trust, so this only cleans up after older deploys.
     local new; new="$(echo "${doc}" | jq --arg sub "${sub}" --arg url "${oidc_url}" '
       .Statement |= map(
         if (.Condition.StringEquals[$url+":sub"] // null) != null then
@@ -114,9 +113,27 @@ remove_irsa_trust() {
     fi
   done
 }
+# --- Step 3b: delete the per-tenant IRSA roles deploy-tenant.sh created ---
+delete_tenant_irsa_roles() {
+  local d="${REPO_ROOT}/infrastructure/terraform"
+  local irsa_json; irsa_json="$(terraform -chdir="$d" output -json irsa_role_arns 2>/dev/null || echo "{}")"
+  local svc role pol
+  for svc in $(echo "${irsa_json}" | jq -r 'keys[]'); do
+    role="$(tenant_irsa_role_name "${svc}")"
+    aws iam get-role --role-name "${role}" >/dev/null 2>&1 || continue
+    for pol in $(aws iam list-role-policies --role-name "${role}" --query 'PolicyNames[]' --output text 2>/dev/null); do
+      aws iam delete-role-policy --role-name "${role}" --policy-name "${pol}" >/dev/null 2>&1 || true
+    done
+    aws iam delete-role --role-name "${role}" >/dev/null \
+      && log "  IRSA: deleted ${role}" \
+      || warn "  failed to delete ${role}"
+  done
+}
 if [ "${KEEP_TRUST}" = false ]; then
   log "Cleaning tenant service-account subs from shared IRSA role trust policies..."
   remove_irsa_trust
+  log "Deleting per-tenant IRSA roles..."
+  delete_tenant_irsa_roles
 fi
 
 log "Teardown complete for tenant ${ATTENDEE_ID} (namespace ${NS})."

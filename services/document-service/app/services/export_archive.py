@@ -23,13 +23,26 @@ class ExportArchive:
             "EXPORT_ARCHIVE_DIR", DEFAULT_ARCHIVE_DIR
         )
 
+    def _resolve(self, name: str) -> str:
+        """Join ``name`` onto the archive root, refusing anything that escapes it."""
+        if "\x00" in name or os.path.isabs(name):
+            raise FileNotFoundError(f"Export not found: {name!r}")
+        path = os.path.join(self.base_dir, name)
+        root = os.path.realpath(self.base_dir)
+        resolved = os.path.realpath(path)
+        if os.path.commonpath([resolved, root]) != root:
+            logger.warning("export_read_outside_archive", name=name)
+            raise FileNotFoundError(f"Export not found: {name!r}")
+        return path
+
     def read_export(self, name: str) -> str:
         """Return the contents of the named export.
 
         ``name`` may include a subdirectory (``"reports/q3.md"``). Raises
-        ``FileNotFoundError`` when the export does not exist.
+        ``FileNotFoundError`` when the export does not exist or would resolve
+        outside the archive directory.
         """
-        path = os.path.join(self.base_dir, name)
+        path = self._resolve(name)
         logger.debug("export_read", name=name)
         with open(path, encoding="utf-8") as handle:
             return handle.read()

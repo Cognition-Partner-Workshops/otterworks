@@ -157,6 +157,7 @@ services:
       DOC_SVC_AWS_ENDPOINT_URL: http://localstack:4566
       DOC_SVC_SNS_ENABLED: 'true'
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
+      SHARE_LINK_SECRET: ${SHARE_LINK_SECRET:-otterworks-local-dev-share-link-secret-change-me}
     depends_on:
       postgres:
         condition: service_healthy
@@ -265,6 +266,7 @@ services:
     ports:
     - 8087:8087
     environment:
+      SEARCH_SERVICE_TOKEN: ${SEARCH_SERVICE_TOKEN:-otterworks-local-dev-search-token-change-me}
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
@@ -400,6 +402,7 @@ services:
     ports:
     - 8091:8091
     environment:
+      AUDIT_SERVICE_TOKEN: ${AUDIT_SERVICE_TOKEN:-otterworks-local-dev-audit-token-change-me}
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
@@ -448,6 +451,7 @@ services:
     ports:
     - 8090:8090
     environment:
+      AUDIT_SERVICE_TOKEN: ${AUDIT_SERVICE_TOKEN:-otterworks-local-dev-audit-token-change-me}
       AWS_REGION: us-east-1
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test

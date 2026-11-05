@@ -23,17 +23,17 @@ data "aws_iam_policy_document" "assume_role" {
       identifiers = [var.oidc_provider_arn]
     }
 
-    # Trust the golden namespace AND every per-tenant demo namespace
-    # (otterworks-<ATTENDEE_ID>) so multi-tenant demos can reuse the shared
-    # per-service role in dev. StringLike is required for the wildcard; the
-    # exact golden value is matched literally. See docs/MULTI-TENANT-DEMO-PLAN.md
-    # §2 (IRSA: shared per-service role in dev) and scripts/deploy-tenant.sh.
+    # Exact service-account match only. Tenant namespaces (otterworks-<id>) never
+    # assume these shared roles: deploy-tenant.sh mints a per-tenant role whose
+    # trust names that namespace alone and whose S3 access is limited to the
+    # tenant's prefix. A wildcard here would let any tenant's code act on every
+    # tenant's data.
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       variable = "${replace(var.oidc_provider_url, "https://", "")}:sub"
       values = [
-        "system:serviceaccount:${var.namespace}:${each.key}",
-        "system:serviceaccount:${var.namespace}-*:${each.key}",
+        for ns in concat([var.namespace], var.additional_namespaces) :
+        "system:serviceaccount:${ns}:${each.key}"
       ]
     }
 

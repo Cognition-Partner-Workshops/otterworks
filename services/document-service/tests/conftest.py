@@ -1,8 +1,10 @@
 """Shared test fixtures."""
 
+import os
 import uuid
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable
 
+import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -15,6 +17,8 @@ from app.middleware import request_log
 from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: F401
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+os.environ.setdefault("SHARE_LINK_SECRET", "test-share-link-secret")  # noqa: S105
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(
@@ -64,3 +68,17 @@ def owner_id() -> uuid.UUID:
 @pytest.fixture
 def folder_id() -> uuid.UUID:
     return uuid.uuid4()
+
+
+def make_auth_headers(user_id: uuid.UUID | str) -> dict[str, str]:
+    """Headers that authenticate as ``user_id`` under whichever identity mode is active."""
+    secret = os.environ.get("JWT_SECRET")
+    if secret:
+        token = jwt.encode({"sub": str(user_id)}, secret, algorithm="HS256")
+        return {"Authorization": f"Bearer {token}"}
+    return {"Authorization": "Bearer test", "X-User-ID": str(user_id)}
+
+
+@pytest.fixture
+def auth_headers() -> Callable[[uuid.UUID | str], dict[str, str]]:
+    return make_auth_headers

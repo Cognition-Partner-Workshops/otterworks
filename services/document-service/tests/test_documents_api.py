@@ -60,7 +60,11 @@ async def test_list_documents(client: AsyncClient, owner_id: uuid.UUID):
             "/api/v1/documents/",
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
-    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id)},
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 3
@@ -75,7 +79,9 @@ async def test_list_documents_pagination(client: AsyncClient, owner_id: uuid.UUI
             json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
         )
     resp = await client.get(
-        "/api/v1/documents/", params={"owner_id": str(owner_id), "page": 1, "size": 2}
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "page": 1, "size": 2},
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
     )
     data = resp.json()
     assert data["total"] == 5
@@ -192,7 +198,11 @@ async def test_search_documents(client: AsyncClient, owner_id: uuid.UUID):
         json={"title": "Rust Guide", "content": "Learn Rust", "owner_id": str(owner_id)},
     )
 
-    resp = await client.get("/api/v1/documents/search", params={"q": "Python"})
+    resp = await client.get(
+        "/api/v1/documents/search",
+        params={"q": "Python"},
+        headers={"Authorization": f"Bearer {_make_jwt(str(owner_id))}"},
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert data["total"] == 1
@@ -278,4 +288,26 @@ async def test_create_document_no_auth_returns_401(client: AsyncClient):
         "/api/v1/documents/",
         json={"title": "No Auth Doc"},
     )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_search_excludes_other_users_documents(client: AsyncClient, owner_id: uuid.UUID):
+    await client.post(
+        "/api/v1/documents/",
+        json={"title": "Secret Plan", "content": "confidential", "owner_id": str(owner_id)},
+    )
+    other = uuid.uuid4()
+    resp = await client.get(
+        "/api/v1/documents/search",
+        params={"q": "Secret"},
+        headers={"Authorization": f"Bearer {_make_jwt(str(other))}"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_search_requires_identity(client: AsyncClient):
+    resp = await client.get("/api/v1/documents/search", params={"q": "anything"})
     assert resp.status_code == 401

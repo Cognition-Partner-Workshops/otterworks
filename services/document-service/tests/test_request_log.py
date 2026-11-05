@@ -59,11 +59,16 @@ async def test_logged_request_keeps_body_but_not_bearer_token(
 ) -> None:
     monkeypatch.setattr(request_log_module, "flag_active", lambda key: key == FLAG_REQUEST_LOG)
     monkeypatch.setattr(request_log_module, "request_log", RequestLog(str(tmp_path)))
+    monkeypatch.delenv("JWT_SECRET", raising=False)
 
     resp = await client.get(
         "/api/v1/documents/",
         params={"owner_id": str(owner_id)},
-        headers={"Authorization": "Bearer top-secret", "Cookie": "sid=1"},
+        headers={
+            "Authorization": "Bearer top-secret",
+            "X-User-ID": str(owner_id),
+            "Cookie": "sid=1",
+        },
     )
     assert resp.status_code == 200
 

@@ -31,6 +31,11 @@ GOLDEN_HOST_SUFFIX="${GOLDEN_HOST_SUFFIX:-otterworks.app}"
 JWT_SECRET="${JWT_SECRET:-$(openssl rand -hex 32)}"
 # Rails (admin-service) session key. Stable value recommended across redeploys.
 SECRET_KEY_BASE="${SECRET_KEY_BASE:-$(openssl rand -hex 64)}"
+# Share-link signing key and service-to-service tokens. Pass stable values
+# across redeploys (a new SHARE_LINK_SECRET invalidates issued share links).
+SHARE_LINK_SECRET="${SHARE_LINK_SECRET:-$(openssl rand -hex 32)}"
+SEARCH_SERVICE_TOKEN="${SEARCH_SERVICE_TOKEN:-$(openssl rand -hex 32)}"
+AUDIT_SERVICE_TOKEN="${AUDIT_SERVICE_TOKEN:-$(openssl rand -hex 32)}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -337,6 +342,13 @@ build_helm_args() {
         add_secret JWT_SECRET "${JWT_SECRET}" ;;
     esac
   fi
+  if [ "$service" = "document-service" ]; then
+    add_secret SHARE_LINK_SECRET "${SHARE_LINK_SECRET:?SHARE_LINK_SECRET must be set for document-service}"
+  fi
+  case "$service" in
+    search-service) add_secret SEARCH_SERVICE_TOKEN "${SEARCH_SERVICE_TOKEN:?SEARCH_SERVICE_TOKEN must be set}" ;;
+    audit-service|report-service) add_secret AUDIT_SERVICE_TOKEN "${AUDIT_SERVICE_TOKEN:?AUDIT_SERVICE_TOKEN must be set}" ;;
+  esac
 
   case "$service" in
     api-gateway) : ;; # backend service URLs default to the correct in-cluster DNS
@@ -378,7 +390,7 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${REDIS_HOST}" --set-string "config.REDIS_PORT=6379")
       EXTRA_ARGS+=(--set-string "config.HOST=0.0.0.0" --set-string "config.PORT=8087")
       EXTRA_ARGS+=(--set-string "config.MEILISEARCH_URL=${MEILISEARCH_URL}")
-      EXTRA_ARGS+=(--set-string "config.REQUIRE_AUTH=false" --set-string "config.SQS_ENABLED=false") ;;
+      EXTRA_ARGS+=(--set-string "config.REQUIRE_AUTH=true" --set-string "config.SQS_ENABLED=false") ;;
     analytics-service)
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.ANALYTICS_HOST=0.0.0.0" --set-string "config.PORT=8088")
