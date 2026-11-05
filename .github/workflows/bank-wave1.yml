@@ -69,10 +69,11 @@ jobs:
 
   platform:
     needs: detect
+    if: needs.detect.outputs.apps != '[]'
     strategy:
       fail-fast: false
       matrix:
-        app_dir: [industries/banking/vmware-wave-1/branch-locator]
+        app_dir: ${{ fromJson(needs.detect.outputs.apps) }}
     uses: Cognition-Partner-Workshops/otterworks/.github/workflows/platform-app-pipeline.yml@18e3d4d3f2cec15ddff9261d3f1c6a5878085f1c
     with:
       app_dir: ${{ matrix.app_dir }}
