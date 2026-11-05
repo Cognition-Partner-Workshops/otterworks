@@ -1,0 +1,470 @@
+[
+  {
+    "name": "statement_ready-valid",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJZb3VyIHN0YXRlbWVudCBmb3IgKioqKjAwMDIgaXMgcmVhZHkgdG8gdmlldy4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "statement_ready-missing-field",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6ImFjY291bnQgYW5kIGtpbmQgYXJlIHJlcXVpcmVkIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "card_payment-valid",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIuNCBvbiAqKioqMDAwMyBhdCBDYWbDqSBaw7xyaWNoLiJ9",
+    "normalization_count": 0
+  },
+  {
+    "name": "card_payment-missing-field",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6Im1pc3NpbmcgZmllbGQ6IGFtb3VudCJ9",
+    "normalization_count": 0
+  },
+  {
+    "name": "low_balance-valid",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJUaGUgYmFsYW5jZSBvbiAqKioqMDAwNCBpcyBiZWxvdyAxMDAuMDAuIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "low_balance-missing-field",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6Im1pc3NpbmcgZmllbGQ6IHRocmVzaG9sZCJ9",
+    "normalization_count": 0
+  },
+  {
+    "name": "card-missing-merchant",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6Im1pc3NpbmcgZmllbGQ6IG1lcmNoYW50In0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "missing-account",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6ImFjY291bnQgYW5kIGtpbmQgYXJlIHJlcXVpcmVkIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "missing-kind",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6ImFjY291bnQgYW5kIGtpbmQgYXJlIHJlcXVpcmVkIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "unknown-kind",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6InVua25vd24gbm90aWZpY2F0aW9uIGtpbmQ6IG5vcGUifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "empty-object",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6ImFjY291bnQgYW5kIGtpbmQgYXJlIHJlcXVpcmVkIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "malformed-json",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "text/html; charset=utf-8",
+    "body_base64": "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9InV0Zi04Ij4KPHRpdGxlPkVycm9yPC90aXRsZT4KPC9oZWFkPgo8Ym9keT4KPHByZT5CYWQgUmVxdWVzdDwvcHJlPgo8L2JvZHk+CjwvaHRtbD4K",
+    "normalization_count": 0
+  },
+  {
+    "name": "non-json",
+    "method": "POST",
+    "path": "/notify",
+    "status": 400,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6ImFjY291bnQgYW5kIGtpbmQgYXJlIHJlcXVpcmVkIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "additional-account-3",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIuNDAgb24gKioqKjAwMDUgYXQgU2hvcCAzLiJ9",
+    "normalization_count": 0
+  },
+  {
+    "name": "additional-account-4",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIuNDAgb24gKioqKjAwMDYgYXQgU2hvcCA0LiJ9",
+    "normalization_count": 0
+  },
+  {
+    "name": "additional-account-5",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIuNDAgb24gKioqKjAwMDcgYXQgU2hvcCA1LiJ9",
+    "normalization_count": 0
+  },
+  {
+    "name": "same-account-newest",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJUaGUgYmFsYW5jZSBvbiAqKioqMDAwMiBpcyBiZWxvdyA0Mi4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "short-account",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJZb3VyIHN0YXRlbWVudCBmb3IgMTIzNCBpcyByZWFkeSB0byB2aWV3LiJ9",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-01",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMSBvbiAqKioqMDAwOCBhdCBSYXRlIDEuIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-02",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMiBvbiAqKioqMDAwOCBhdCBSYXRlIDIuIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-03",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMyBvbiAqKioqMDAwOCBhdCBSYXRlIDMuIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-04",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgNCBvbiAqKioqMDAwOCBhdCBSYXRlIDQuIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-05",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgNSBvbiAqKioqMDAwOCBhdCBSYXRlIDUuIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-06",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgNiBvbiAqKioqMDAwOCBhdCBSYXRlIDYuIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-07",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgNyBvbiAqKioqMDAwOCBhdCBSYXRlIDcuIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-08",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgOCBvbiAqKioqMDAwOCBhdCBSYXRlIDguIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-09",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgOSBvbiAqKioqMDAwOCBhdCBSYXRlIDkuIn0=",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-10",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTAgb24gKioqKjAwMDggYXQgUmF0ZSAxMC4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-11",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTEgb24gKioqKjAwMDggYXQgUmF0ZSAxMS4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-12",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIgb24gKioqKjAwMDggYXQgUmF0ZSAxMi4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-13",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTMgb24gKioqKjAwMDggYXQgUmF0ZSAxMy4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-14",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTQgb24gKioqKjAwMDggYXQgUmF0ZSAxNC4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-15",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTUgb24gKioqKjAwMDggYXQgUmF0ZSAxNS4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-16",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTYgb24gKioqKjAwMDggYXQgUmF0ZSAxNi4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-17",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTcgb24gKioqKjAwMDggYXQgUmF0ZSAxNy4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-18",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTggb24gKioqKjAwMDggYXQgUmF0ZSAxOC4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-19",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTkgb24gKioqKjAwMDggYXQgUmF0ZSAxOS4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-20",
+    "method": "POST",
+    "path": "/notify",
+    "status": 202,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJxdWV1ZWQiOnRydWUsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMjAgb24gKioqKjAwMDggYXQgUmF0ZSAyMC4ifQ==",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-21",
+    "method": "POST",
+    "path": "/notify",
+    "status": 429,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6InJhdGUgbGltaXRlZCJ9",
+    "normalization_count": 0
+  },
+  {
+    "name": "rate-22",
+    "method": "POST",
+    "path": "/notify",
+    "status": 429,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "eyJlcnJvciI6InJhdGUgbGltaXRlZCJ9",
+    "normalization_count": 0
+  },
+  {
+    "name": "outbox-HG621000002",
+    "method": "GET",
+    "path": "/outbox/HG621000002",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "W3siYWNjb3VudCI6IkhHNjIxMDAwMDAyIiwia2luZCI6Imxvd19iYWxhbmNlIiwidGV4dCI6IlRoZSBiYWxhbmNlIG9uICoqKiowMDAyIGlzIGJlbG93IDQyLiIsImF0IjoiMjAyNi0xMS0wNVQxMzowNjoxOC43MzJaIn0seyJhY2NvdW50IjoiSEc2MjEwMDAwMDIiLCJraW5kIjoic3RhdGVtZW50X3JlYWR5IiwidGV4dCI6IllvdXIgc3RhdGVtZW50IGZvciAqKioqMDAwMiBpcyByZWFkeSB0byB2aWV3LiIsImF0IjoiMjAyNi0xMS0wNVQxMzowNjoxOC43MDhaIn1d",
+    "normalization_count": 2
+  },
+  {
+    "name": "outbox-HG631000003",
+    "method": "GET",
+    "path": "/outbox/HG631000003",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "W3siYWNjb3VudCI6IkhHNjMxMDAwMDAzIiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIuNCBvbiAqKioqMDAwMyBhdCBDYWbDqSBaw7xyaWNoLiIsImF0IjoiMjAyNi0xMS0wNVQxMzowNjoxOC43MTZaIn1d",
+    "normalization_count": 1
+  },
+  {
+    "name": "outbox-HG641000004",
+    "method": "GET",
+    "path": "/outbox/HG641000004",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "W3siYWNjb3VudCI6IkhHNjQxMDAwMDA0Iiwia2luZCI6Imxvd19iYWxhbmNlIiwidGV4dCI6IlRoZSBiYWxhbmNlIG9uICoqKiowMDA0IGlzIGJlbG93IDEwMC4wMC4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzE4WiJ9XQ==",
+    "normalization_count": 1
+  },
+  {
+    "name": "outbox-HG651000005",
+    "method": "GET",
+    "path": "/outbox/HG651000005",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "W3siYWNjb3VudCI6IkhHNjUxMDAwMDA1Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIuNDAgb24gKioqKjAwMDUgYXQgU2hvcCAzLiIsImF0IjoiMjAyNi0xMS0wNVQxMzowNjoxOC43MjhaIn1d",
+    "normalization_count": 1
+  },
+  {
+    "name": "outbox-HG661000006",
+    "method": "GET",
+    "path": "/outbox/HG661000006",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "W3siYWNjb3VudCI6IkhHNjYxMDAwMDA2Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIuNDAgb24gKioqKjAwMDYgYXQgU2hvcCA0LiIsImF0IjoiMjAyNi0xMS0wNVQxMzowNjoxOC43MzBaIn1d",
+    "normalization_count": 1
+  },
+  {
+    "name": "outbox-HG671000007",
+    "method": "GET",
+    "path": "/outbox/HG671000007",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "W3siYWNjb3VudCI6IkhHNjcxMDAwMDA3Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIuNDAgb24gKioqKjAwMDcgYXQgU2hvcCA1LiIsImF0IjoiMjAyNi0xMS0wNVQxMzowNjoxOC43MzFaIn1d",
+    "normalization_count": 1
+  },
+  {
+    "name": "outbox-HG681000008",
+    "method": "GET",
+    "path": "/outbox/HG681000008",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "W3siYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMjAgb24gKioqKjAwMDggYXQgUmF0ZSAyMC4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzYwWiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTkgb24gKioqKjAwMDggYXQgUmF0ZSAxOS4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzU5WiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTggb24gKioqKjAwMDggYXQgUmF0ZSAxOC4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzU4WiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTcgb24gKioqKjAwMDggYXQgUmF0ZSAxNy4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzU2WiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTYgb24gKioqKjAwMDggYXQgUmF0ZSAxNi4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzU1WiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTUgb24gKioqKjAwMDggYXQgUmF0ZSAxNS4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzU0WiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTQgb24gKioqKjAwMDggYXQgUmF0ZSAxNC4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzUzWiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTMgb24gKioqKjAwMDggYXQgUmF0ZSAxMy4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzUwWiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTIgb24gKioqKjAwMDggYXQgUmF0ZSAxMi4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzQ5WiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTEgb24gKioqKjAwMDggYXQgUmF0ZSAxMS4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzQ4WiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMTAgb24gKioqKjAwMDggYXQgUmF0ZSAxMC4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzQ3WiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgOSBvbiAqKioqMDAwOCBhdCBSYXRlIDkuIiwiYXQiOiIyMDI2LTExLTA1VDEzOjA2OjE4Ljc0NVoifSx7ImFjY291bnQiOiJIRzY4MTAwMDAwOCIsImtpbmQiOiJjYXJkX3BheW1lbnQiLCJ0ZXh0IjoiQ2FyZCBwYXltZW50IG9mIDggb24gKioqKjAwMDggYXQgUmF0ZSA4LiIsImF0IjoiMjAyNi0xMS0wNVQxMzowNjoxOC43NDRaIn0seyJhY2NvdW50IjoiSEc2ODEwMDAwMDgiLCJraW5kIjoiY2FyZF9wYXltZW50IiwidGV4dCI6IkNhcmQgcGF5bWVudCBvZiA3IG9uICoqKiowMDA4IGF0IFJhdGUgNy4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzQzWiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgNiBvbiAqKioqMDAwOCBhdCBSYXRlIDYuIiwiYXQiOiIyMDI2LTExLTA1VDEzOjA2OjE4Ljc0MloifSx7ImFjY291bnQiOiJIRzY4MTAwMDAwOCIsImtpbmQiOiJjYXJkX3BheW1lbnQiLCJ0ZXh0IjoiQ2FyZCBwYXltZW50IG9mIDUgb24gKioqKjAwMDggYXQgUmF0ZSA1LiIsImF0IjoiMjAyNi0xMS0wNVQxMzowNjoxOC43NDBaIn0seyJhY2NvdW50IjoiSEc2ODEwMDAwMDgiLCJraW5kIjoiY2FyZF9wYXltZW50IiwidGV4dCI6IkNhcmQgcGF5bWVudCBvZiA0IG9uICoqKiowMDA4IGF0IFJhdGUgNC4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzM5WiJ9LHsiYWNjb3VudCI6IkhHNjgxMDAwMDA4Iiwia2luZCI6ImNhcmRfcGF5bWVudCIsInRleHQiOiJDYXJkIHBheW1lbnQgb2YgMyBvbiAqKioqMDAwOCBhdCBSYXRlIDMuIiwiYXQiOiIyMDI2LTExLTA1VDEzOjA2OjE4LjczOFoifSx7ImFjY291bnQiOiJIRzY4MTAwMDAwOCIsImtpbmQiOiJjYXJkX3BheW1lbnQiLCJ0ZXh0IjoiQ2FyZCBwYXltZW50IG9mIDIgb24gKioqKjAwMDggYXQgUmF0ZSAyLiIsImF0IjoiMjAyNi0xMS0wNVQxMzowNjoxOC43MzZaIn0seyJhY2NvdW50IjoiSEc2ODEwMDAwMDgiLCJraW5kIjoiY2FyZF9wYXltZW50IiwidGV4dCI6IkNhcmQgcGF5bWVudCBvZiAxIG9uICoqKiowMDA4IGF0IFJhdGUgMS4iLCJhdCI6IjIwMjYtMTEtMDVUMTM6MDY6MTguNzM1WiJ9XQ==",
+    "normalization_count": 20
+  },
+  {
+    "name": "outbox-1234",
+    "method": "GET",
+    "path": "/outbox/1234",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "W3siYWNjb3VudCI6IjEyMzQiLCJraW5kIjoic3RhdGVtZW50X3JlYWR5IiwidGV4dCI6IllvdXIgc3RhdGVtZW50IGZvciAxMjM0IGlzIHJlYWR5IHRvIHZpZXcuIiwiYXQiOiIyMDI2LTExLTA1VDEzOjA2OjE4LjczNFoifV0=",
+    "normalization_count": 1
+  },
+  {
+    "name": "outbox-HG000000000",
+    "method": "GET",
+    "path": "/outbox/HG000000000",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "body_base64": "W10=",
+    "normalization_count": 0
+  },
+  {
+    "name": "missing-outbox-account",
+    "method": "GET",
+    "path": "/outbox/",
+    "status": 404,
+    "content_type": "text/html; charset=utf-8",
+    "body_base64": "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9InV0Zi04Ij4KPHRpdGxlPkVycm9yPC90aXRsZT4KPC9oZWFkPgo8Ym9keT4KPHByZT5DYW5ub3QgR0VUIC9vdXRib3gvPC9wcmU+CjwvYm9keT4KPC9odG1sPgo=",
+    "normalization_count": 0
+  },
+  {
+    "name": "get-notify",
+    "method": "GET",
+    "path": "/notify",
+    "status": 404,
+    "content_type": "text/html; charset=utf-8",
+    "body_base64": "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9InV0Zi04Ij4KPHRpdGxlPkVycm9yPC90aXRsZT4KPC9oZWFkPgo8Ym9keT4KPHByZT5DYW5ub3QgR0VUIC9ub3RpZnk8L3ByZT4KPC9ib2R5Pgo8L2h0bWw+Cg==",
+    "normalization_count": 0
+  },
+  {
+    "name": "post-outbox",
+    "method": "POST",
+    "path": "/outbox/x",
+    "status": 404,
+    "content_type": "text/html; charset=utf-8",
+    "body_base64": "PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9InV0Zi04Ij4KPHRpdGxlPkVycm9yPC90aXRsZT4KPC9oZWFkPgo8Ym9keT4KPHByZT5DYW5ub3QgUE9TVCAvb3V0Ym94L3g8L3ByZT4KPC9ib2R5Pgo8L2h0bWw+Cg==",
+    "normalization_count": 0
+  }
+]

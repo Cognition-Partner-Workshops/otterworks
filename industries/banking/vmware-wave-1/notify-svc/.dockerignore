@@ -1,0 +1,6 @@
+vm/
+parity/
+deploy/
+**/node_modules/
+**/__pycache__/
+.git/

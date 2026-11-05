@@ -1,0 +1,2 @@
+env:
+  REDIS_URL: redis://redis.deps.svc.cluster.local:6379

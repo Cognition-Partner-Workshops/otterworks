@@ -1,0 +1,34 @@
+notify-svc listening on 8080
+redis error Socket closed unexpectedly
+redis error connect ECONNREFUSED 10.96.28.79:6379
+redis error Connection timeout
+queued card_payment for ****0003
+queued low_balance for ****0004
+SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at parse (/app/node_modules/body-parser/lib/types/json.js:96:19)
+    at /app/node_modules/body-parser/lib/read.js:146:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (/app/node_modules/raw-body/index.js:238:16)
+    at done (/app/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/app/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:524:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+queued card_payment for ****0005
+queued card_payment for ****0006
+queued low_balance for ****0002
+queued statement_ready for 1234
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008

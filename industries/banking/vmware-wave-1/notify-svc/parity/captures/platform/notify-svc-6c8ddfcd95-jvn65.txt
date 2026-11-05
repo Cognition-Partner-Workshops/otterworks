@@ -1,0 +1,13 @@
+notify-svc listening on 8080
+redis error Socket closed unexpectedly
+redis error connect ECONNREFUSED 10.96.28.79:6379
+redis error Connection timeout
+queued statement_ready for ****0002
+queued card_payment for ****0007
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008
+queued card_payment for ****0008

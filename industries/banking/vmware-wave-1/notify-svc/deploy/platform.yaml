@@ -1,0 +1,6 @@
+app: notify-svc
+smoke:
+  - path: /health
+    expect: 200
+  - path: /outbox/HG000000000
+    expect: 200
