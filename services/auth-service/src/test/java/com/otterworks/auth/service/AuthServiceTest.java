@@ -100,7 +100,8 @@ class AuthServiceTest {
     request.setEmail("test@otterworks.dev");
     request.setPassword("password123");
 
-    when(userRepository.findByEmail("test@otterworks.dev")).thenReturn(Optional.of(testUser));
+    when(userRepository.findByEmailForUpdate("test@otterworks.dev"))
+        .thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches("password123", testUser.getPasswordHash())).thenReturn(true);
     when(userRepository.save(any(User.class))).thenReturn(testUser);
     when(jwtTokenProvider.generateAccessToken(testUser)).thenReturn("access-token");
@@ -115,6 +116,8 @@ class AuthServiceTest {
 
     assertThat(response.getAccessToken()).isEqualTo("access-token");
     assertThat(response.getUser().getEmail()).isEqualTo("test@otterworks.dev");
+    verify(userRepository).findByEmailForUpdate("test@otterworks.dev");
+    verify(userRepository, never()).findByEmail(any());
   }
 
   @Test
@@ -123,7 +126,8 @@ class AuthServiceTest {
     request.setEmail("nonexistent@otterworks.dev");
     request.setPassword("password123");
 
-    when(userRepository.findByEmail("nonexistent@otterworks.dev")).thenReturn(Optional.empty());
+    when(userRepository.findByEmailForUpdate("nonexistent@otterworks.dev"))
+        .thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> authService.login(request))
         .isInstanceOf(IllegalArgumentException.class)
@@ -136,7 +140,8 @@ class AuthServiceTest {
     request.setEmail("test@otterworks.dev");
     request.setPassword("wrongpassword");
 
-    when(userRepository.findByEmail("test@otterworks.dev")).thenReturn(Optional.of(testUser));
+    when(userRepository.findByEmailForUpdate("test@otterworks.dev"))
+        .thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches("wrongpassword", testUser.getPasswordHash())).thenReturn(false);
 
     assertThatThrownBy(() -> authService.login(request))
@@ -150,7 +155,8 @@ class AuthServiceTest {
     request.setEmail("test@otterworks.dev");
     request.setPassword("wrongpassword");
 
-    when(userRepository.findByEmail("test@otterworks.dev")).thenReturn(Optional.of(testUser));
+    when(userRepository.findByEmailForUpdate("test@otterworks.dev"))
+        .thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches("wrongpassword", testUser.getPasswordHash())).thenReturn(false);
 
     for (int i = 0; i < 5; i++) {
@@ -173,7 +179,8 @@ class AuthServiceTest {
     request.setEmail("test@otterworks.dev");
     request.setPassword("password123");
 
-    when(userRepository.findByEmail("test@otterworks.dev")).thenReturn(Optional.of(testUser));
+    when(userRepository.findByEmailForUpdate("test@otterworks.dev"))
+        .thenReturn(Optional.of(testUser));
     when(passwordEncoder.matches("password123", testUser.getPasswordHash())).thenReturn(true);
     when(userRepository.save(any(User.class))).thenReturn(testUser);
     when(jwtTokenProvider.generateRefreshToken(testUser)).thenReturn("refresh-token");
