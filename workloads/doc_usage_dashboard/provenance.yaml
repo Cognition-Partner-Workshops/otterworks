@@ -4,9 +4,9 @@ spec: workloads/doc_usage_dashboard.yaml
 run_token: SFNFR_20261104
 source:
   repository: Cognition-Partner-Workshops/otterworks
-  commit: 2ccc8cdfb5688ba1e2fa38fe2b7a693687b540ae
-  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2458
-  session: https://partner-workshops.devinenterprise.com/sessions/0bcecbe08fc4428781f5361b2aa68af3
+  commit: '6e2cb1c485b5a022013c58b1b92b6900e6308e79'
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2467
+  session: https://partner-workshops.devinenterprise.com/sessions/5beba71f290941998e5dbb208ca7ed3b
 endpoints:
 - csid: cs_doc_usage_dashboard_account_usage
   service_user: SFNFR_20261104_SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
@@ -64,8 +64,8 @@ deployed_objects:
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD
   devin_csid: cs_doc_usage_dashboard_account_usage
   state: deployed
-  deployed_at: '2026-11-04T21:56:26Z'
-  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
+  deployed_at: '2026-11-05T00:22:06Z'
+  deployed_commit: '6e2cb1c485b5a022013c58b1b92b6900e6308e79'
 - type: streamlit
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DOC_USAGE_DASHBOARD_APP
   devin_csid: cs_doc_usage_dashboard_account_usage
@@ -158,13 +158,13 @@ deployed_objects:
 - type: stage
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.DBT_SOURCE_FILES
   state: deployed
-  deployed_at: '2026-11-04T21:56:26Z'
-  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
+  deployed_at: '2026-11-05T00:22:06Z'
+  deployed_commit: '6e2cb1c485b5a022013c58b1b92b6900e6308e79'
 - type: dbt_project
   name: SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.OTTERWORKS_DBT
   state: deployed
-  deployed_at: '2026-11-04T21:56:26Z'
-  deployed_commit: f898c67e211861d6af7f7ef1c0159aee751f2b74
+  deployed_at: '2026-11-05T00:22:06Z'
+  deployed_commit: '6e2cb1c485b5a022013c58b1b92b6900e6308e79'
 usage:
   source: SNOWFLAKE.ACCOUNT_USAGE
   reported_through: pending
