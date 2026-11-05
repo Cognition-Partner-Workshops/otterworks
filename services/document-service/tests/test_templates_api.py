@@ -6,6 +6,14 @@ import pytest
 from httpx import AsyncClient
 
 
+async def _create_template(client: AsyncClient) -> str:
+    resp = await client.post(
+        "/api/v1/templates/",
+        json={"name": "Blank Doc", "content": "Start here", "created_by": str(uuid.uuid4())},
+    )
+    return resp.json()["id"]
+
+
 @pytest.mark.asyncio
 async def test_create_template(client: AsyncClient):
     resp = await client.post(
@@ -40,8 +48,8 @@ async def test_list_templates(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_document_from_template(client: AsyncClient, owner_id: uuid.UUID):
-    template_resp = await client.post(
+async def test_create_document_from_template(authed_client: AsyncClient, owner_id: uuid.UUID):
+    template_resp = await authed_client.post(
         "/api/v1/templates/",
         json={
             "name": "Blank Doc",
@@ -52,7 +60,7 @@ async def test_create_document_from_template(client: AsyncClient, owner_id: uuid
     )
     template_id = template_resp.json()["id"]
 
-    resp = await client.post(
+    resp = await authed_client.post(
         f"/api/v1/documents/from-template/{template_id}",
         json={"title": "My New Doc", "owner_id": str(owner_id)},
     )
@@ -61,12 +69,47 @@ async def test_create_document_from_template(client: AsyncClient, owner_id: uuid
     assert data["title"] == "My New Doc"
     assert data["content"] == "Start typing here..."
     assert data["content_type"] == "text/plain"
+    assert data["owner_id"] == str(owner_id)
 
 
 @pytest.mark.asyncio
-async def test_create_from_template_not_found(client: AsyncClient, owner_id: uuid.UUID):
-    resp = await client.post(
+async def test_create_from_template_not_found(authed_client: AsyncClient, owner_id: uuid.UUID):
+    resp = await authed_client.post(
         f"/api/v1/documents/from-template/{uuid.uuid4()}",
         json={"title": "Orphan", "owner_id": str(owner_id)},
     )
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_owner_comes_from_token(
+    authed_client: AsyncClient, owner_id: uuid.UUID
+):
+    template_id = await _create_template(authed_client)
+    resp = await authed_client.post(
+        f"/api/v1/documents/from-template/{template_id}", json={"title": "No owner in body"}
+    )
+    assert resp.status_code == 201
+    assert resp.json()["owner_id"] == str(owner_id)
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_with_another_users_owner_id_is_rejected(
+    authed_client: AsyncClient,
+):
+    template_id = await _create_template(authed_client)
+    resp = await authed_client.post(
+        f"/api/v1/documents/from-template/{template_id}",
+        json={"title": "Action required", "owner_id": str(uuid.uuid4())},
+    )
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_requires_auth(client: AsyncClient):
+    template_id = await _create_template(client)
+    resp = await client.post(
+        f"/api/v1/documents/from-template/{template_id}",
+        json={"title": "Anonymous", "owner_id": str(uuid.uuid4())},
+    )
+    assert resp.status_code == 401

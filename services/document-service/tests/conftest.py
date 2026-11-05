@@ -1,8 +1,10 @@
 """Shared test fixtures."""
 
+import os
 import uuid
 from collections.abc import AsyncGenerator
 
+import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -13,6 +15,9 @@ from app.db.session import get_db
 from app.main import app
 from app.middleware import request_log
 from app.models.document import Comment, Document, DocumentVersion, Template  # noqa: F401
+
+TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
+os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -64,3 +69,14 @@ def owner_id() -> uuid.UUID:
 @pytest.fixture
 def folder_id() -> uuid.UUID:
     return uuid.uuid4()
+
+
+def make_jwt(user_id: uuid.UUID | str) -> str:
+    return jwt.encode({"user_id": str(user_id)}, os.environ["JWT_SECRET"], algorithm="HS256")
+
+
+@pytest.fixture
+def authed_client(client: AsyncClient, owner_id: uuid.UUID) -> AsyncClient:
+    """The test client, authenticated as ``owner_id``."""
+    client.headers["Authorization"] = f"Bearer {make_jwt(owner_id)}"
+    return client
