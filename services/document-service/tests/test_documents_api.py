@@ -48,8 +48,8 @@ async def test_get_document(authed_client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_get_document_not_found(client: AsyncClient):
-    resp = await client.get(f"/api/v1/documents/{uuid.uuid4()}")
+async def test_get_document_not_found(authed_client: AsyncClient):
+    resp = await authed_client.get(f"/api/v1/documents/{uuid.uuid4()}")
     assert resp.status_code == 404
 
 
@@ -153,8 +153,8 @@ async def test_document_versions(authed_client: AsyncClient, owner_id: uuid.UUID
     assert resp.status_code == 200
     versions = resp.json()
     assert len(versions) == 2
-    assert versions[0]["version_number"] == 2
-    assert versions[1]["version_number"] == 1
+    assert versions[0]["version_number"] == 1
+    assert versions[1]["version_number"] == 2
 
 
 @pytest.mark.asyncio
@@ -171,7 +171,7 @@ async def test_restore_version(authed_client: AsyncClient, owner_id: uuid.UUID):
     )
 
     versions_resp = await authed_client.get(f"/api/v1/documents/{doc_id}/versions")
-    v1_id = versions_resp.json()[-1]["id"]  # first version
+    v1_id = versions_resp.json()[0]["id"]  # first version (oldest first)
 
     resp = await authed_client.post(f"/api/v1/documents/{doc_id}/versions/{v1_id}/restore")
     assert resp.status_code == 200
