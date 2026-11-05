@@ -28,10 +28,18 @@ make reset         # stop and drop the volumes
 
 ## Cloud resources
 
-A replatforming run uses ECR repositories `otterworks/bank-<app>` and namespaces `bank-w1-<run>-pr<n>` on `otterworks-dev`, deployed only by the pipeline's OIDC role. Every resource carries the run token (`run_token` tag on ECR, `demo/run-token` label on namespaces) and an expiry (`Expires` tag; `demo/expires-at` and `demo/expires-at-epoch` annotations, 72 hours by default).
+A replatforming run uses shared ECR repositories `otterworks/bank-<app>` and run-owned namespaces `bank-w1-<run>-pr<n>` on `otterworks-dev`, deployed only by the pipeline's OIDC role. Namespaces carry the `demo/run-token` label and the `demo/expires-at` and `demo/expires-at-epoch` annotations (72 hours by default). ECR repositories belong to the platform, not the creating run: new repositories carry only the project tag, with no run token or expiry. Existing repositories may still have legacy run tags; those tags never authorize run teardown to delete a shared repository.
 
 ```
 make ecr RUN=<token>
 make ns RUN=<token> PR=<n>
-make destroy RUN=<token>   # removes both and exits non-zero if anything tagged with the token is left
+make destroy RUN=<token>   # removes run namespaces, retaining all shared ECR repositories
+```
+
+`destroy` still exits non-zero if run namespaces or non-ECR resources tagged with the run token remain. Shared repository deletion and legacy tag maintenance require a separate platform-owner procedure after checking all consumers; neither is part of run teardown.
+
+The command-mock regression suite runs without cloud access or inherited credentials:
+
+```
+python3 -m unittest discover -s industries/banking/vmware-wave-1 -p test_resource_ownership.py -v
 ```
