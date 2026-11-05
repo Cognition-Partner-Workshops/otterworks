@@ -1,0 +1,227 @@
+# Dependabot config (PES-3). One entry per package ecosystem present in the
+# repo; minor/patch bumps are grouped per ecosystem to keep PR volume down,
+# and new releases wait 7 days (cooldown) before Dependabot proposes them.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  - package-ecosystem: gomod
+    directory: /services/api-gateway
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      gomod-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: cargo
+    directory: /services/file-service
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      cargo-minor-patch:
+        update-types: [minor, patch]
+
+  # commons-text is pinned to a vulnerable version on purpose for the
+  # dependency-remediation lab (security/deps/advisory.yaml).
+  - package-ecosystem: gradle
+    directories:
+      - /services/auth-service
+      - /services/notification-service
+      - /frontend/client-app/mobile/android
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: org.apache.commons:commons-text
+    groups:
+      gradle-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: maven
+    directories:
+      - /services/legacy-portal
+      - /services/report-service
+      - /services/legacy-portal-lambda/announcements
+      - /services/legacy-portal-lambda/feedback
+      - /services/legacy-portal-lambda/preferences
+      - /tests/legacy-suites/selenium
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: org.apache.commons:commons-text
+    groups:
+      maven-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directories:
+      - /frontend/client-app
+      - /frontend/client-app/desktop
+      - /frontend/admin-dashboard
+      - /frontend/workbench
+      - /services/collab-service
+      - /demo-platform/dashboard
+      - /demo-platform/otter-projects
+      - /tests/legacy-suites/cypress
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: pip
+    directories:
+      - /services/document-service
+      - /services/search-service
+      - /services/legacy-billing/app
+      - /migration/job
+      - /etl
+      - /testdata/harness
+      - /testdata/generated/retail-drive
+      - /tests/api
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      pip-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: uv
+    directory: /services/billing-service
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      uv-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: sbt
+    directory: /services/analytics-service
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      sbt-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: bundler
+    directory: /services/admin-service
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      bundler-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: nuget
+    directories:
+      - /services/audit-service
+      - /clients/windows-desktop
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      nuget-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directories:
+      - /services/admin-service
+      - /services/analytics-service
+      - /services/api-gateway
+      - /services/audit-service
+      - /services/auth-service
+      - /services/billing-service
+      - /services/collab-service
+      - /services/document-service
+      - /services/file-service
+      - /services/legacy-billing
+      - /services/legacy-portal
+      - /services/notification-service
+      - /services/report-service
+      - /services/search-service
+      - /frontend/admin-dashboard
+      - /frontend/client-app
+      - /frontend/workbench
+      - /demo-platform/dashboard
+      - /demo-platform/otter-projects
+      - /demo-platform/runner
+      - /migration/job
+      - /platform/standards/examples/sample-service
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      docker-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker-compose
+    directories:
+      - /
+      - /security/ingest
+      - /services/legacy-portal
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      docker-compose-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: terraform
+    directories:
+      - /infrastructure/terraform
+      - /infrastructure/terraform/azure
+      - /infrastructure/terraform/cloud-worker
+      - /infrastructure/terraform/demo-aws
+      - /infrastructure/terraform/legacy-portal-ec2
+      - /infrastructure/terraform/legacy-portal-serverless
+      - /infrastructure/terraform/modules/*
+      - /platform/terraform
+      - /platform/terraform/modules/*
+      - /demo-platform/infra/terraform
+      - /demo-platform/otter-projects/infra/terraform
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      terraform-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: helm
+    directories:
+      - /infrastructure/helm/*
+      - /demo-platform/helm/demo-platform
+      - /demo-platform/otter-projects/helm/otter-projects
+      - /platform/standards/helm/app
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      helm-minor-patch:
+        update-types: [minor, patch]
