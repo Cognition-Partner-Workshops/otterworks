@@ -6,6 +6,7 @@ Exports are rendered to disk by the export worker under ``EXPORT_ARCHIVE_DIR``
 
 from __future__ import annotations
 
+import errno
 import os
 from pathlib import Path
 
@@ -38,5 +39,10 @@ class ExportArchive:
         if not path.is_relative_to(root):
             raise FileNotFoundError(name)
         logger.debug("export_read", name=name)
-        with open(path, encoding="utf-8") as handle:
-            return handle.read()
+        try:
+            with open(path, encoding="utf-8") as handle:
+                return handle.read()
+        except OSError as exc:
+            if exc.errno == errno.ELOOP:
+                raise FileNotFoundError(name) from exc
+            raise

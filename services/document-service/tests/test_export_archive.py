@@ -1,5 +1,7 @@
 """Tests for the export archive reader."""
 
+from pathlib import Path
+
 import pytest
 
 from app.services import export_archive
@@ -79,6 +81,14 @@ def test_rejects_unresolvable_path(archive, tmp_path, name):
 
     with pytest.raises(FileNotFoundError):
         archive.read_export(name)
+
+
+def test_rejects_symlink_loop_when_resolve_returns_path(archive, tmp_path, monkeypatch):
+    (tmp_path / "loop").symlink_to("loop")
+    monkeypatch.setattr(Path, "resolve", lambda path: path)
+
+    with pytest.raises(FileNotFoundError):
+        archive.read_export("loop")
 
 
 @pytest.mark.asyncio
