@@ -25,6 +25,13 @@ endpoints:
     runtime_source:
       path: workloads/doc_usage_dashboard/responder/freshness.py
       revision: 4973f56000a3c132224477eb97ce22808f173f9b
+  - csid: cs_doc_usage_dashboard_support_lookup
+    service_user: SVC_CS_DOC_USAGE_DASHBOARD_SUPPORT_LOOKUP
+    auth: key_pair
+    role: ROLE_CS_DOC_USAGE_DASHBOARD_SUPPORT_LOOKUP
+    runtime_source:
+      path: workloads/doc_usage_dashboard/responder/support_lookup.py
+      revision: pending
 # Streamlit runtime attribution is the trailing JSON comment in query_text: SiS
 # overrides QUERY_TAG (ALTER SESSION rejected; statement_params silently ignored,
 # verified 2026-11-05 in QUERY_HISTORY). Dev queries retain their real QUERY_TAG.
@@ -72,6 +79,10 @@ objects:
   - type: user
     name: SVC_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_freshness_responder"}'
+    state: provisioned
+  - type: user
+    name: SVC_CS_DOC_USAGE_DASHBOARD_SUPPORT_LOOKUP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_support_lookup"}'
     state: provisioned
   - type: task
     name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.REFRESH_DOC_USAGE_DASHBOARD

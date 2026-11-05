@@ -89,10 +89,20 @@ def test_streamlit_scoped_tag_rejects_empty_foreign_duplicate_or_unsorted_ids(va
     assert vp.validate(doc)
 
 
-def test_database_still_requires_all_workload_endpoints():
+@pytest.mark.parametrize("kind", ["database", "warehouse", "task", "streamlit"])
+def test_objects_can_retain_their_registered_endpoint_scope(kind):
     doc = _doc()
-    _obj(doc, "database")["devin_csid"] = "cs_doc_usage_dashboard_account_usage"
-    assert any("DEVIN_CSID" in error for error in vp.validate(doc))
+    _obj(doc, kind)["devin_csid"] = "cs_doc_usage_dashboard_account_usage"
+    assert vp.validate(doc) == []
+
+
+@pytest.mark.parametrize("kind", ["database", "warehouse", "task"])
+@pytest.mark.parametrize("value", ["", "cs_churn_model_account_score",
+                                    "cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_account_usage"])
+def test_object_endpoint_scope_rejects_empty_foreign_or_duplicate_ids(kind, value):
+    doc = _doc()
+    _obj(doc, kind)["devin_csid"] = value
+    assert vp.validate(doc)
 
 
 @pytest.mark.parametrize("size,seconds,valid", [

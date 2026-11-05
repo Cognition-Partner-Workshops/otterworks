@@ -16,6 +16,7 @@ def test_endpoint_ids_and_service_users_are_stable():
         "cs_doc_search_api_top_items",
         "cs_doc_usage_dashboard_account_usage",
         "cs_doc_usage_dashboard_freshness_responder",
+        "cs_doc_usage_dashboard_support_lookup",
     ]
     assert EP.csid == sf.csid("doc_usage_dashboard", "account_usage")
     assert EP.service_user == "SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE"
@@ -248,7 +249,7 @@ def test_task_deploy_tags_before_resuming():
     assert create.startswith(f"CREATE OR REPLACE TASK {sf.task_name(EP.workload)}")
     assert tag == (
         f"ALTER TASK {sf.task_name(EP.workload)} SET TAG "
-        "DEVIN_GOVERNANCE.TAGS.DEVIN_CSID = 'cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder'"
+        "DEVIN_GOVERNANCE.TAGS.DEVIN_CSID = 'cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder,cs_doc_usage_dashboard_support_lookup'"
     )
     assert resume == f"ALTER TASK {sf.task_name(EP.workload)} RESUME"
 

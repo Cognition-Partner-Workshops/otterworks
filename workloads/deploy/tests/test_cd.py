@@ -51,16 +51,17 @@ def test_runtime_source_history_is_append_only(tmp_path, append):
     path = tmp_path / "doc_usage_dashboard/provenance.yaml"
     path.parent.mkdir()
     doc = yaml.safe_load((cd.REPO / "workloads/doc_usage_dashboard/provenance.yaml").read_text())
-    records = [e for e in doc["deployment"]["installed"] if e["type"] == "runtime_source"]
+    source = "workloads/doc_usage_dashboard/responder/freshness.py"
+    records = [e for e in doc["deployment"]["installed"] if e["type"] == "runtime_source" and e["name"] == source]
     assert len(records) == 2
     first, second = records
     incoming = dict(second, revision="c" * 40) if append else second
     if append:
-        doc["endpoints"][-1]["runtime_source"]["revision"] = incoming["revision"]
+        next(e for e in doc["endpoints"] if e["csid"] == "cs_doc_usage_dashboard_freshness_responder")["runtime_source"]["revision"] = incoming["revision"]
     path.write_text(yaml.safe_dump(doc, sort_keys=False))
     cd.provenance(path, attempt(), deployed(), True, installed=[incoming, incoming])
     written = yaml.safe_load(path.read_text())
-    history = [e for e in written["deployment"]["installed"] if e["type"] == "runtime_source"]
+    history = [e for e in written["deployment"]["installed"] if e["type"] == "runtime_source" and e["name"] == source]
     assert history == [first, second] + ([incoming] if append else [])
     responder = cd.module(cd.REPO, "workloads/doc_usage_dashboard/responder/freshness.py", "history_responder")
     assert responder.deployed_revision(path) == incoming["revision"]

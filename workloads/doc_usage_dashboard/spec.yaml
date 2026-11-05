@@ -65,3 +65,11 @@ operational_endpoints:
     cadence: hourly
     runtime_source: workloads/doc_usage_dashboard/responder/freshness.py
     freshness_source: transaction-audit proxy for ACCOUNT_STORAGE_USAGE; own REFRESHED_AT for PIPELINE_REFRESH_RUNS
+  - csid: cs_doc_usage_dashboard_support_lookup
+    service_user: SVC_CS_DOC_USAGE_DASHBOARD_SUPPORT_LOOKUP
+    role: ROLE_CS_DOC_USAGE_DASHBOARD_SUPPORT_LOOKUP
+    warehouse: WH_DOC_USAGE_DASHBOARD
+    database: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A
+    runtime_source: workloads/doc_usage_dashboard/responder/support_lookup.py
+    request: {account_id: required UUID, start_date: optional inclusive DATE, end_date: optional inclusive DATE}
+    response: rows of output.columns for one account ordered by snapshot_date

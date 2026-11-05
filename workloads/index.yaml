@@ -11,7 +11,7 @@ workloads:
     output: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.ACCOUNT_STORAGE_USAGE
     cadence: daily
     endpoint: cs_doc_usage_dashboard_account_usage
-    operational_endpoints: [cs_doc_usage_dashboard_freshness_responder]
+    operational_endpoints: [cs_doc_usage_dashboard_freshness_responder, cs_doc_usage_dashboard_support_lookup]
   - id: doc_search_api
     spec: doc_search_api/spec.yaml
     question: Which terms and documents does each account search for?
