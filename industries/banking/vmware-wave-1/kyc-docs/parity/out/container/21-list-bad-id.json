@@ -1,0 +1,8 @@
+{
+  "case": "list-bad-id",
+  "method": "GET",
+  "path": "/documents/hg611000001",
+  "status": 400,
+  "content_type": "application/json",
+  "body": "{\"error\":\"bad customer id\"}"
+}

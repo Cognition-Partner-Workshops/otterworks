@@ -1,0 +1,27 @@
+app: kyc-docs
+owner: kyc-onboarding
+costCenter: BANK-KYC-01
+workload: web
+containerPort: 8080
+env:
+  TZ: Etc/UTC
+  KYC_S3_BUCKET: otterworks-bank-kyc-docs
+  KYC_S3_REGION: us-east-1
+secretEnv:
+  AWS_ACCESS_KEY_ID:
+    secret: kyc-docs-s3
+    key: AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY:
+    secret: kyc-docs-s3
+    key: AWS_SECRET_ACCESS_KEY
+writablePaths:
+  - /tmp
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+ingress:
+  enabled: false

@@ -1,0 +1,26 @@
+{
+  "passport.pdf": {
+    "size": 38,
+    "sha256": "cefdaf4ca297dbb141aab7d67e39b56b199535290e176531cf3c0b03835fac4c"
+  },
+  "id-card.jpg": {
+    "size": 26,
+    "sha256": "7b1a42da65cb5c3721455c362e407a3016a079cc6d1c734f04274f7d07213aa0"
+  },
+  "address.png": {
+    "size": 39,
+    "sha256": "aa98665a47616f170d4a617803767a5f600ba91df02336855533784bbd1a47b6"
+  },
+  "payslip.JPEG": {
+    "size": 46,
+    "sha256": "6f4ed866e1aafbe56917e695ae337f92d2b23c5d24804cfb8a119a0ddbcc286e"
+  },
+  "notes.exe": {
+    "size": 38,
+    "sha256": "a0afb165cfda703b0e20b90d9e44e5fca2c296f94992b386760a6c23e552842f"
+  },
+  "no-extension": {
+    "size": 29,
+    "sha256": "3199a8cbab59e34521ac9d11b1d55dcb07ba031ac7019d142cb63380be753584"
+  }
+}

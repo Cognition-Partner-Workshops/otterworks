@@ -24,7 +24,10 @@ public class DocumentController {
     @PostMapping("/{customer}")
     public ResponseEntity<Map<String, Object>> upload(@PathVariable String customer, @RequestParam String kind,
                                                       @RequestParam("file") MultipartFile file) throws IOException {
-        Map<String, Object> saved = store.save(customer, kind, file.getOriginalFilename(), file.getInputStream());
+        Map<String, Object> saved;
+        try (java.io.InputStream body = file.getInputStream()) {
+            saved = store.save(customer, kind, file.getOriginalFilename(), body, file.getSize());
+        }
         log.info("stored {} for {} ({} bytes)", kind, customer, saved.get("bytes"));
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }

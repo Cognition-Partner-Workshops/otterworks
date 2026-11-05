@@ -1,0 +1,8 @@
+{
+  "case": "lowercase-id",
+  "method": "POST",
+  "path": "/documents/hg611000001?kind=passport",
+  "status": 400,
+  "content_type": "application/json",
+  "body": "{\"error\":\"bad customer id\"}"
+}

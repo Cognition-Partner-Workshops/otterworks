@@ -1,0 +1,8 @@
+{
+  "case": "HG611000001-proof-of-address",
+  "method": "POST",
+  "path": "/documents/HG611000001?kind=proof-of-address",
+  "status": 201,
+  "content_type": "application/json",
+  "body": "{\"customer\":\"HG611000001\",\"kind\":\"proof-of-address\",\"file\":\"proof-of-address-1793884619871.png\",\"bytes\":39}"
+}

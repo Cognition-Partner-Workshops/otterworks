@@ -1,0 +1,8 @@
+{
+  "case": "trailing-slash",
+  "method": "GET",
+  "path": "/documents/HG611000001/",
+  "status": 200,
+  "content_type": "application/json",
+  "body": "[\"id-card-1793884998884.jpg\",\"id-card-1793884999253.bin\",\"passport-1793884998681.pdf\",\"passport-1793884999244.bin\",\"payslip-1793884999071.jpeg\",\"proof-of-address-1793884999060.png\"]"
+}

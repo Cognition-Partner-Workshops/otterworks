@@ -1,0 +1,8 @@
+{
+  "case": "non-multipart",
+  "method": "POST",
+  "path": "/documents/HG611000001?kind=passport",
+  "status": 500,
+  "content_type": "application/json",
+  "body": "{\"timestamp\":\"2026-11-05T13:23:19.355+00:00\",\"status\":500,\"error\":\"Internal Server Error\",\"message\":\"\",\"path\":\"/documents/HG611000001\"}"
+}

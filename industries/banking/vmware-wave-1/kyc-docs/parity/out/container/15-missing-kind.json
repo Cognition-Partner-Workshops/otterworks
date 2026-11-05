@@ -1,0 +1,8 @@
+{
+  "case": "missing-kind",
+  "method": "POST",
+  "path": "/documents/HG611000001",
+  "status": 400,
+  "content_type": "application/json",
+  "body": "{\"timestamp\":\"2026-11-05T13:23:19.272+00:00\",\"status\":400,\"error\":\"Bad Request\",\"message\":\"\",\"path\":\"/documents/HG611000001\"}"
+}
