@@ -225,17 +225,25 @@ def test_configuration_query_evidence():
     assert "query_id: 01c8331c" in updated
 
 
-def test_right_size_configuration_query_evidence():
+def planned_search_provenance():
     text = (cd.REPO / "workloads/doc_search_api/provenance.yaml").read_text()
+    node = yaml.safe_load(text)
+    for entry in node["configuration_changes"]:
+        if entry["migration"].endswith("V1.0.2__right_size_warehouse.sql"):
+            entry.update(status="planned", environment="Snowflake external account", evidence=[])
+            entry.pop("applied_query_id", None)
+    return yaml.safe_dump(node, sort_keys=False)
+
+
+def test_right_size_configuration_query_evidence():
+    text = planned_search_provenance()
     sql = "alter warehouse WH_DOC_SEARCH_API set WAREHOUSE_SIZE='XSMALL' AUTO_SUSPEND=60;"
     updated = cd.mark_configuration(text, [(sql, "right-size-id")])
-    expected = text.replace("    status: planned\n    environment: Snowflake external account\n",
-                            "    status: applied\n    applied_query_id: right-size-id\n"
-                            "    environment: Snowflake external account\n")
-    assert updated == expected
     entries = yaml.safe_load(updated)["configuration_changes"]
     assert len(entries) == 3
-    assert all(entry["applied_query_id"] == "right-size-id" for entry in entries[1:])
+    assert all(entry["status"] == "applied" and entry["applied_query_id"] == "right-size-id"
+               for entry in entries[1:])
+    assert yaml.safe_load(text)["configuration_changes"][0] == entries[0]
     assert cd.mark_configuration(updated, [(sql, "right-size-id")]) == updated
 
 
@@ -246,12 +254,12 @@ def test_right_size_configuration_query_evidence():
     ("ALTER WAREHOUSE WH_DOC_SEARCH_API SET WAREHOUSE_SIZE='XSMALL' AUTO_SUSPEND=60", None),
 ])
 def test_right_size_configuration_requires_matching_statement(sql, qid):
-    text = (cd.REPO / "workloads/doc_search_api/provenance.yaml").read_text()
+    text = planned_search_provenance()
     assert cd.mark_configuration(text, [(sql, qid)]) == text
 
 
 def test_right_size_configuration_requires_matching_migration():
-    text = (cd.REPO / "workloads/doc_search_api/provenance.yaml").read_text()
+    text = planned_search_provenance()
     text = text.replace("V1.0.2__right_size_warehouse.sql", "V1.0.1__restore_auto_suspend.sql")
     sql = "ALTER WAREHOUSE WH_DOC_SEARCH_API SET WAREHOUSE_SIZE='XSMALL' AUTO_SUSPEND=60"
     assert cd.mark_configuration(text, [(sql, "qid")]) == text
@@ -261,7 +269,7 @@ def test_failed_right_size_ddl_does_not_mark_configuration_applied(tmp_path):
     log = cd.Log(tmp_path / "log.jsonl")
     log.record("ALTER WAREHOUSE WH_DOC_SEARCH_API SET WAREHOUSE_SIZE='XSMALL' AUTO_SUSPEND=60",
                "failed-id", False)
-    text = (cd.REPO / "workloads/doc_search_api/provenance.yaml").read_text()
+    text = planned_search_provenance()
     assert cd.mark_configuration(text, log.queries) == text
 
 
