@@ -32,18 +32,20 @@ def normalise(issue: dict, project: str) -> dict:
     return row
 
 
-def fetch(host: str, token: str, project: str) -> list[dict]:
+def fetch(host: str, token: str, project: str, **filters) -> list[dict]:
     if urllib.parse.urlparse(host).scheme not in ("http", "https"):
         raise ValueError(f"SONAR_HOST_URL must be http or https: {host}")
     auth = base64.b64encode(f"{token}:".encode()).decode()
     rows, page = [], 1
     while True:
-        q = urllib.parse.urlencode({"componentKeys": project, "ps": PAGE, "p": page, "resolved": "false"})
+        q = urllib.parse.urlencode({"componentKeys": project, "ps": PAGE, "p": page, "resolved": "false", **filters})
         req = urllib.request.Request(f"{host}/api/issues/search?{q}", headers={"Authorization": f"Basic {auth}"})
         # Scheme is checked above, so a file:// URL cannot reach urlopen.
         # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
         with urllib.request.urlopen(req, timeout=60) as r:
             data = json.load(r)
+        if data.get("total", 0) > 10000:
+            raise ValueError(f"SonarQube issue search exceeds 10000 results for {project}; narrow the filters")
         rows += [normalise(i, project) for i in data.get("issues", [])]
         if page * PAGE >= min(data.get("total", 0), 10000):
             return rows
