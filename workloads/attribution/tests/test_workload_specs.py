@@ -92,13 +92,15 @@ def test_search_examples_are_recomputed_from_input_events():
     deleted = {"b48e999f-7174-4107-671b-e06d8e9abf30"}
     groups = defaultdict(list)
     for event in examples["input_events"]:
+        assert isinstance(event["result_count"], str)
+        result_count = int(event["result_count"])
         instant = datetime.fromisoformat(event["occurred_at"].replace("Z", "+00:00"))
         term = " ".join(event["query"].lower().split())
         if not start <= instant.date() <= end or not term:
             continue
-        groups[("term", term)].append((instant, event["result_count"]))
+        groups[("term", term)].append((instant, result_count))
         for doc_id in {hit.strip() for hit in event["document_hit_ids"].split(",") if hit.strip()} - deleted:
-            groups[("document", doc_id)].append((instant, event["result_count"]))
+            groups[("document", doc_id)].append((instant, result_count))
 
     rows = []
     for item_type in ("term", "document"):
