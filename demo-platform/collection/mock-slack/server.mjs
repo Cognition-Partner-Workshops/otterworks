@@ -14,6 +14,7 @@ export const users = [
 const channels = ['alerts', 'incident-war-room', 'platform'];
 const root = path.dirname(fileURLToPath(import.meta.url));
 const sessionId = value => typeof value === 'string' && /^(devin-)?[a-f0-9]{32}$/.test(value);
+const sameSession = (a, b) => a.replace(/^devin-/, '') === b.replace(/^devin-/, '');
 const secretEqual = (a, b) => Boolean(a && b) && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 
 export function config(env = process.env) {
@@ -83,15 +84,17 @@ export async function createApp(cfg = config()) {
     const pending = t.messages.filter(m => m.author !== 'devin' && !m.delivered);
     if (!pending.length) return;
     if (!t.sessionId && !(threadWebhook && t.route) && !pending.some(m => m.author === 'alertmanager' || /@devin\b/i.test(m.text))) return;
-    if (threadWebhook && cfg.webhook && cfg.webhookSecret) {
+    if ((threadWebhook || (!t.sessionId && cfg.route === 'webhook')) && cfg.webhook && cfg.webhookSecret) {
       const key = createHash('sha256').update(cfg.webhook).digest('hex');
       if ((t.webhookKey && t.webhookKey !== key) || (state.webhookBindings[key] && state.webhookBindings[key] !== t.id)) {
         t.status = 'blocked';
         t.error = 'This automation is bound to another thread or the configured automation changed. Use a dedicated automation and persistent state for each thread.';
         await save(); return;
       }
-      state.webhookBindings[key] = t.id;
-      t.webhookKey = key; t.route = 'webhook'; t.webhookAction = 'message_session';
+      if (threadWebhook) {
+        state.webhookBindings[key] = t.id;
+        t.webhookKey = key; t.route = 'webhook'; t.webhookAction = 'message_session';
+      }
     }
     t.status = 'sending'; t.error = null; await save();
     try {
@@ -105,7 +108,7 @@ export async function createApp(cfg = config()) {
         if (!response.ok) throw new Error(`Automation returned ${response.status}`);
         const result = await response.json().catch(() => ({}));
         const id = result.session_id || result.devin_id;
-        if (sessionId(id) && t.sessionId && t.sessionId !== id) throw new Error('Automation destination changed');
+        if (sessionId(id) && t.sessionId && !sameSession(t.sessionId, id)) throw new Error('Automation destination changed');
         if (sessionId(id)) { t.sessionId = id; t.sessionUrl = safeUrl(id); }
         t.route = 'webhook'; t.webhookAction ||= cfg.webhookAction;
       } else {
@@ -135,6 +138,8 @@ export async function createApp(cfg = config()) {
     add(t, author, text.trim(), requestId); await save(); await deliver(t); return t;
   };
   const poll = () => serial(async () => {
+    const mirrored = new Set();
+    for (const t of state.threads) t.replyMirror = false;
     if (cfg.transcriptFile) {
       try {
         const mirror = JSON.parse(await readFile(cfg.transcriptFile, 'utf8'));
@@ -142,8 +147,9 @@ export async function createApp(cfg = config()) {
         for (const item of mirror.items) {
           if (!item || !Array.isArray(item.messages)) continue;
           const t = state.threads.find(t => t.id === item.thread_id && t.route === 'webhook');
-          if (!t || !sessionId(item.session_id) || (t.sessionId && t.sessionId !== item.session_id)) continue;
+          if (!t || !sessionId(item.session_id) || (t.sessionId && !sameSession(t.sessionId, item.session_id))) continue;
           t.sessionId = item.session_id; t.sessionUrl = safeUrl(t.sessionId); t.replyMirror = true;
+          mirrored.add(t.id);
           t.readOnly = t.webhookAction !== 'message_session';
           if (!['uncertain', 'failed', 'blocked'].includes(t.status)) t.status = t.readOnly ? 'Read mirror · follow-up messages stay local' : 'Read mirror · replies sent through webhook';
           for (const m of item.messages) {
@@ -155,7 +161,7 @@ export async function createApp(cfg = config()) {
         state.mirrorError = null;
       } catch { state.mirrorError = 'Could not read the local transcript mirror; API-backed polling continues.'; }
     }
-    for (const t of state.threads.filter(t => t.sessionId && !t.readOnly && !t.replyMirror)) {
+    for (const t of state.threads.filter(t => t.sessionId && !mirrored.has(t.id) && cfg.key && cfg.org)) {
       try {
         let cursor = t.cursor;
         // A bounded page loop prevents a long transcript from starving chat writes.
@@ -170,6 +176,7 @@ export async function createApp(cfg = config()) {
           if (!data.has_next_page) break;
         }
         t.pollError = null;
+        if (t.status.startsWith('Read mirror')) t.status = t.readOnly ? 'API replies · follow-up messages stay local' : 'connected';
       } catch { t.pollError = 'Could not refresh Devin replies; polling will retry.'; }
     }
     await save();

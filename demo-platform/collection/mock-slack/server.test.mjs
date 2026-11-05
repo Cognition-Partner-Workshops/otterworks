@@ -8,7 +8,7 @@ import vm from 'node:vm';
 import { createApp, config } from './server.mjs';
 
 const ID = 'devin-0123456789abcdef0123456789abcdef';
-async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session' } = {}) {
+async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session', alternateIds = false } = {}) {
   const calls = [];
   const upstream = http.createServer(async (req, res) => {
     let body = ''; for await (const b of req) body += b;
@@ -16,7 +16,7 @@ async function fixture(t, { route = 'session', fail = false, noSession = false, 
     res.setHeader('Content-Type', 'application/json');
     if (fail) { res.writeHead(503); res.end('{}'); return; }
     if (emptyMessage && req.method === 'POST' && req.url.endsWith('/messages')) { res.writeHead(204); res.end(); return; }
-    if (req.method === 'POST') { res.end(JSON.stringify(noSession ? { ok: true } : { session_id: ID })); return; }
+    if (req.method === 'POST') { res.end(JSON.stringify(noSession ? { ok: true } : { session_id: alternateIds && calls.length % 2 === 0 ? ID.replace(/^devin-/, '') : ID })); return; }
     const after = new URL(req.url, 'http://localhost').searchParams.get('after');
     res.end(JSON.stringify({ items: [{ event_id: 'event-1', source: 'devin', message: 'DBA, I will check the query plan.', created_at: 1 }], has_next_page: !after, end_cursor: after ? null : 'cursor-1' }));
   });
@@ -134,6 +134,37 @@ test('message_session cannot silently switch its automation URL', async t => {
   const first = await f.post('@devin Check latency'); f.cfg.webhook += '-replacement';
   const blocked = await f.post('Continue in the original session.', first.id);
   assert.equal(blocked.status, 'blocked'); assert.equal(f.calls.length, 1);
+});
+test('changing webhook action after restart never bypasses a claimed destination', async t => {
+  const f = await fixture(t, { route: 'webhook', webhookAction: 'message_session', noSession: true });
+  await f.post('@devin Check latency'); f.cfg.webhookAction = 'start_session';
+  const second = await createApp(f.cfg); await new Promise(r => second.server.listen(0, '127.0.0.1', r));
+  t.after(() => new Promise(r => second.server.close(r)));
+  const response = await fetch(`http://127.0.0.1:${second.server.address().port}/api/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Workspace-Client': 'mock-slack' }, body: JSON.stringify({ channel: 'platform', author: 'sre', text: '@devin Separate incident', requestId: 'other-incident' }) });
+  assert.equal((await response.json()).status, 'blocked'); assert.equal(f.calls.length, 1);
+});
+test('equivalent prefixed and bare destination IDs allow webhook and mirror updates', async t => {
+  const f = await fixture(t, { route: 'webhook', webhookAction: 'message_session', alternateIds: true });
+  const first = await f.post('@devin Check latency'); f.cfg.transcriptFile = path.join(f.dir, 'mirror.json');
+  await writeFile(f.cfg.transcriptFile, JSON.stringify({ items: [{ thread_id: first.id, session_id: ID.replace(/^devin-/, ''), messages: [] }] }));
+  await f.app.poll();
+  const updated = await f.post('Same destination.', first.id);
+  assert.equal(updated.replyMirror, true); assert.equal(updated.status, 'connected'); assert.equal(updated.messages.at(-1).delivered, true);
+  assert.equal(f.calls.length, 2);
+});
+for (const webhookAction of ['start_session', 'message_session']) test(`${webhookAction} falls back to API reads when mirror coverage disappears`, async t => {
+  const f = await fixture(t, { route: 'webhook', webhookAction }); const first = await f.post('@devin Check latency');
+  f.cfg.transcriptFile = path.join(f.dir, 'mirror.json');
+  await writeFile(f.cfg.transcriptFile, JSON.stringify({ items: [{ thread_id: first.id, session_id: ID, messages: [] }] }));
+  await f.app.poll(); assert.equal(f.calls.length, 1);
+  await rm(f.cfg.transcriptFile); await f.app.poll();
+  assert.ok(f.calls.some(c => c.method === 'GET'));
+  let state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.threads[0].replyMirror, false);
+  assert.equal(state.threads[0].messages.filter(m => m.author === 'devin').length, 1); assert.ok(state.mirrorError);
+  await writeFile(f.cfg.transcriptFile, '{"items":[]}'); await f.app.poll();
+  state = await (await fetch(`${f.url}/api/state`)).json(); assert.equal(state.mirrorError, null);
+  assert.equal(state.threads[0].replyMirror, false);
 });
 test('message_session reply mirror remains readable while follow-ups use the webhook', async t => {
   const f = await fixture(t, { route: 'webhook', webhookAction: 'message_session', noSession: true }); f.cfg.key = '';
