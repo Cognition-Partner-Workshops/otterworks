@@ -91,10 +91,18 @@ public class RatesJob {
             }
             Files.move(tmp, outDir.resolve("rates-" + day + ".csv"), StandardCopyOption.ATOMIC_MOVE,
                     StandardCopyOption.REPLACE_EXISTING);
-            stagingCreated = false;
-        } finally {
-            if (stagingCreated) Files.deleteIfExists(tmp);
+        } catch (IOException | RuntimeException | Error failure) {
+            if (stagingCreated) deleteStagingAfterFailure(tmp, failure);
+            throw failure;
         }
         System.out.println("rates " + day + ": " + rates.size() + " pairs written to " + outDir);
+    }
+
+    static void deleteStagingAfterFailure(Path tmp, Throwable failure) {
+        try {
+            Files.deleteIfExists(tmp);
+        } catch (IOException | RuntimeException | Error cleanupFailure) {
+            failure.addSuppressed(cleanupFailure);
+        }
     }
 }

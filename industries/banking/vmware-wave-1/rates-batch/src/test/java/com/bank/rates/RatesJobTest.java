@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -105,6 +106,20 @@ public class RatesJobTest {
 
         assertEquals("synthetic sentinel\n", Files.readString(published(out).resolve("keep")));
         assertEquals(Arrays.asList("rates-" + DAY + ".csv"), entries(out));
+    }
+
+    @Test
+    public void suppressesCleanupFailureWithoutReplacingOriginalFailure() throws IOException {
+        Path staging = folder.newFolder("staging").toPath();
+        Files.writeString(staging.resolve("keep"), "synthetic sentinel\n");
+        IOException publicationFailure = new IOException("synthetic publication failure");
+
+        RatesJob.deleteStagingAfterFailure(staging, publicationFailure);
+
+        assertEquals("synthetic publication failure", publicationFailure.getMessage());
+        assertEquals(1, publicationFailure.getSuppressed().length);
+        assertTrue(publicationFailure.getSuppressed()[0] instanceof DirectoryNotEmptyException);
+        assertEquals("synthetic sentinel\n", Files.readString(staging.resolve("keep")));
     }
 
     @Test
