@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static com.bank.kyc.ServiceTokenTestSupport.bearer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -59,7 +60,7 @@ class DocumentSecurityTest {
         mvc.perform(multipart("/documents/TESTCUST0001").file(pdf()).param("kind", "passport"))
                 .andExpect(status().isUnauthorized());
         mvc.perform(get("/documents/TESTCUST0001")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/documents/TESTCUST0001").with(httpBasic(TEST_REVIEWER, "wrong")))
+        mvc.perform(get("/documents/TESTCUST0001").with(bearer(TEST_REVIEWER, "wrong")))
                 .andExpect(status().isUnauthorized());
         verifyNoInteractions(store);
     }
@@ -67,25 +68,25 @@ class DocumentSecurityTest {
     @Test
     void sfindEfb96812WrongRolesCannotUploadOrList() throws Exception {
         mvc.perform(multipart("/documents/TESTCUST0001").file(pdf()).param("kind", "passport")
-                .with(httpBasic(TEST_REVIEWER, TEST_PASSWORD))).andExpect(status().isForbidden());
-        mvc.perform(get("/documents/TESTCUST0001").with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
+                .with(bearer(TEST_REVIEWER, TEST_PASSWORD))).andExpect(status().isForbidden());
+        mvc.perform(get("/documents/TESTCUST0001").with(bearer(TEST_UPLOADER, TEST_PASSWORD)))
                 .andExpect(status().isForbidden());
         verifyNoInteractions(store);
     }
 
     @Test
     void authorizedUploadAndListingKeepTheirContract() throws Exception {
-        mvc.perform(get("/documents/TESTEMPTY0001").with(httpBasic(TEST_REVIEWER, TEST_PASSWORD)))
+        mvc.perform(get("/documents/TESTEMPTY0001").with(bearer(TEST_REVIEWER, TEST_PASSWORD)))
                 .andExpect(status().isOk()).andExpect(content().json("[]"));
         mvc.perform(multipart("/documents/TESTCUST0001").file(pdf()).param("kind", "passport")
-                .with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
+                .with(bearer(TEST_UPLOADER, TEST_PASSWORD)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$", aMapWithSize(4)))
                 .andExpect(jsonPath("$.customer").value("TESTCUST0001"))
                 .andExpect(jsonPath("$.kind").value("passport"))
                 .andExpect(jsonPath("$.file", matchesPattern("passport-[0-9]+\\.pdf")))
                 .andExpect(jsonPath("$.bytes").value(49));
-        mvc.perform(get("/documents/TESTCUST0001").with(httpBasic(TEST_REVIEWER, TEST_PASSWORD)))
+        mvc.perform(get("/documents/TESTCUST0001").with(bearer(TEST_REVIEWER, TEST_PASSWORD)))
                 .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0]", matchesPattern("passport-[0-9]+\\.pdf")));
     }
@@ -93,11 +94,11 @@ class DocumentSecurityTest {
     @Test
     void unlistedAndMalformedCustomersAreDeniedBeforeStorage() throws Exception {
         for (String customer : new String[]{"TESTCUST0002", "bad-id"}) {
-            mvc.perform(get("/documents/" + customer).with(httpBasic(TEST_REVIEWER, TEST_PASSWORD)))
+            mvc.perform(get("/documents/" + customer).with(bearer(TEST_REVIEWER, TEST_PASSWORD)))
                     .andExpect(status().isForbidden()).andExpect(content().string("{\"error\":\"forbidden\"}"));
             mvc.perform(multipart("/documents/" + customer).file(pdf()).param("kind", "passport")
                     .header("X-Customer-Id", "TESTCUST0001")
-                    .with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
+                    .with(bearer(TEST_UPLOADER, TEST_PASSWORD)))
                     .andExpect(status().isForbidden()).andExpect(content().string("{\"error\":\"forbidden\"}"));
         }
         verifyNoInteractions(store);
@@ -106,16 +107,53 @@ class DocumentSecurityTest {
     @Test
     void authorizedValidationKeeps400Bodies() throws Exception {
         mvc.perform(multipart("/documents/TESTCUST0001").file(pdf()).param("kind", "selfie")
-                .with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
+                .with(bearer(TEST_UPLOADER, TEST_PASSWORD)))
                 .andExpect(status().isBadRequest()).andExpect(content().string("{\"error\":\"unknown document kind\"}"));
     }
 
     @Test
     void otherRoutesAndMethodsAreDenied() throws Exception {
         mvc.perform(get("/health")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/").with(httpBasic(TEST_REVIEWER, TEST_PASSWORD))).andExpect(status().isForbidden());
-        mvc.perform(delete("/documents/TESTCUST0001").with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
+        mvc.perform(get("/").with(bearer(TEST_REVIEWER, TEST_PASSWORD))).andExpect(status().isForbidden());
+        mvc.perform(delete("/documents/TESTCUST0001").with(bearer(TEST_UPLOADER, TEST_PASSWORD)))
                 .andExpect(status().isForbidden());
+        verifyNoInteractions(store);
+    }
+
+    @Test
+    void crossSiteMultipartCannotUseAmbientBasicCredentials() throws Exception {
+        mvc.perform(multipart("/documents/TESTCUST0001").file(pdf()).param("kind", "passport")
+                .header("Origin", "https://evil.example").with(httpBasic(TEST_UPLOADER, TEST_PASSWORD)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("WWW-Authenticate", "Bearer"))
+                .andExpect(content().string("{\"error\":\"unauthorized\"}"))
+                .andExpect(header().doesNotExist("Set-Cookie"));
+        mvc.perform(multipart("/documents/TESTCUST0001").file(pdf()).param("kind", "passport")
+                .header("Origin", "https://evil.example"))
+                .andExpect(status().isUnauthorized()).andExpect(header().string("WWW-Authenticate", "Bearer"));
+        verifyNoInteractions(store);
+    }
+
+    @Test
+    void malformedAndUnknownServiceTokensAreRejectedWithoutStorage() throws Exception {
+        for (String token : new String[]{"Bearer", "Bearer ", "Bearer missing-separator",
+                "Bearer :secret", "Bearer synthetic-uploader:", "Bearer unknown:synthetic-test-password"}) {
+            mvc.perform(get("/documents/TESTCUST0001").header("Authorization", token))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(header().string("WWW-Authenticate", "Bearer"))
+                    .andExpect(content().string("{\"error\":\"unauthorized\"}"))
+                    .andExpect(header().doesNotExist("Set-Cookie"));
+        }
+        verifyNoInteractions(store);
+    }
+
+    @Test
+    void bearerAuthenticationDoesNotPersistToTheNextRequest() throws Exception {
+        mvc.perform(get("/documents/TESTEMPTY0001").with(bearer(TEST_REVIEWER, TEST_PASSWORD)))
+                .andExpect(status().isOk()).andExpect(header().doesNotExist("Set-Cookie"));
+        clearInvocations(store);
+        mvc.perform(get("/documents/TESTEMPTY0001"))
+                .andExpect(status().isUnauthorized()).andExpect(header().string("WWW-Authenticate", "Bearer"));
         verifyNoInteractions(store);
     }
 }

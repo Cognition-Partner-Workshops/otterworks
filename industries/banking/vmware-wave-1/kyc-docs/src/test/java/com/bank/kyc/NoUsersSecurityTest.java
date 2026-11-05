@@ -8,7 +8,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import static org.mockito.Mockito.verifyNoInteractions;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static com.bank.kyc.ServiceTokenTestSupport.bearer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,12 +27,12 @@ class NoUsersSecurityTest {
     void sfind22f920c8NoConfiguredUsersFailsClosedEvenWithCredentials() throws Exception {
         for (String path : new String[]{"/documents/TESTCUST0001", "/health", "/"}) {
             mvc.perform(get(path)).andExpect(status().isUnauthorized());
-            mvc.perform(get(path).with(httpBasic("synthetic-uploader", "synthetic-test-password")))
+            mvc.perform(get(path).with(bearer("synthetic-uploader", "synthetic-test-password")))
                     .andExpect(status().isUnauthorized());
         }
         mvc.perform(multipart("/documents/TESTCUST0001")
                 .file(new MockMultipartFile("file", "a.pdf", "application/pdf", new byte[1]))
-                .param("kind", "passport").with(httpBasic("synthetic-uploader", "synthetic-test-password")))
+                .param("kind", "passport").with(bearer("synthetic-uploader", "synthetic-test-password")))
                 .andExpect(status().isUnauthorized());
         verifyNoInteractions(store);
     }

@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -44,7 +46,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // No cookies or sessions: callers authenticate each request with HTTP Basic.
+        AuthenticationEntryPoint unauthorized = (request, response, exception) -> {
+            response.setStatus(401);
+            response.setHeader("WWW-Authenticate", "Bearer");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"unauthorized\"}");
+        };
+        // The credential is a non-ambient Authorization header; cross-site forms cannot set it.
         http.csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().requestCache().disable()
@@ -52,6 +60,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/documents/*").hasRole("UPLOADER")
                 .antMatchers(HttpMethod.GET, "/documents/*").hasRole("REVIEWER")
                 .anyRequest().denyAll()
-                .and().httpBasic();
+                .and().exceptionHandling().authenticationEntryPoint(unauthorized)
+                .and().addFilterBefore(new ServiceTokenAuthenticationFilter(authenticationManager(), unauthorized),
+                        UsernamePasswordAuthenticationFilter.class);
     }
 }
