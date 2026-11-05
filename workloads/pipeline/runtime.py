@@ -334,25 +334,21 @@ def deploy():
             target / "compiled" / "otterworks_pipeline" / "models" / f"{name}.sql"
         ).read_text()
         deploy_procedure(workload, node, model_sql)
-    body = (
-        "BEGIN\n"
-        + ";\n".join(f"CALL {procedure_name(w)}()" for w in WORKLOADS)
-        + ";\nEND"
-    )
-    ep = sf.endpoint(sf.workload_csids("doc_usage_dashboard")[0])
-    with (
-        closing(snowflake.connector.connect(**parameters(ep.workload))) as conn,
-        conn.cursor() as cur,
-    ):
-        for statement in sf.task_deploy_sql(
-            ep,
-            schedule="USING CRON 10 * * * * UTC",
-            body=body,
-            commit=sf.resolve_commit(repo=str(ROOT.parent.parent)),
-            run_id=sf.make_run_id(ep.workload, "runtime"),
+    for workload in WORKLOADS:
+        ep = sf.endpoint(sf.workload_csids(workload)[0])
+        with (
+            closing(snowflake.connector.connect(**parameters(workload))) as conn,
+            conn.cursor() as cur,
         ):
-            cur.execute(statement)
-        print(f"Scheduled {sf.task_name(ep.workload)} hourly at minute 10 UTC")
+            for statement in sf.task_deploy_sql(
+                ep,
+                schedule="USING CRON 10 * * * * UTC",
+                body=f"CALL {procedure_name(workload)}()",
+                commit=sf.resolve_commit(repo=str(ROOT.parent.parent)),
+                run_id=sf.make_run_id(workload, "runtime"),
+            ):
+                cur.execute(statement)
+            print(f"Scheduled {sf.task_name(workload)} hourly at minute 10 UTC")
 
 
 def main():
@@ -394,12 +390,10 @@ def main():
         deploy()
     else:
         with (
-            closing(
-                snowflake.connector.connect(**parameters("doc_usage_dashboard"))
-            ) as conn,
+            closing(snowflake.connector.connect(**parameters(args.workload))) as conn,
             conn.cursor() as cur,
         ):
-            cur.execute(f"EXECUTE TASK {sf.task_name('doc_usage_dashboard')}")
+            cur.execute(f"EXECUTE TASK {sf.task_name(args.workload)}")
             print(
                 json.dumps(
                     {

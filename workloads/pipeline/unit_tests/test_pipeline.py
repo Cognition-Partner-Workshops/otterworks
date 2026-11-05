@@ -37,6 +37,31 @@ def test_hourly_export_uses_runtime_attribution_and_does_not_reseed(monkeypatch)
     conn.close.assert_called_once()
 
 
+def test_deployment_uses_a_separately_attributed_task_for_each_workload(
+    tmp_path, monkeypatch
+):
+    nodes = {}
+    compiled = tmp_path / "compiled" / "otterworks_pipeline" / "models"
+    compiled.mkdir(parents=True)
+    for model in runtime.MODELS.values():
+        nodes[f"model.otterworks_pipeline.{model}"] = {"config": {}}
+        (compiled / f"{model}.sql").write_text("select 1")
+    (tmp_path / "manifest.json").write_text(json.dumps({"nodes": nodes}))
+    monkeypatch.setenv("PIPELINE_DBT_TARGET", str(tmp_path))
+    monkeypatch.setattr(runtime, "dbt", MagicMock())
+    monkeypatch.setattr(runtime, "deploy_procedure", MagicMock())
+    monkeypatch.setattr(runtime, "parameters", MagicMock(return_value={}))
+    monkeypatch.setattr(runtime.snowflake.connector, "connect", MagicMock())
+    deploy_sql = MagicMock(wraps=runtime.sf.task_deploy_sql)
+    monkeypatch.setattr(runtime.sf, "task_deploy_sql", deploy_sql)
+    runtime.deploy()
+    assert deploy_sql.call_count == 3
+    for call, workload in zip(deploy_sql.call_args_list, runtime.WORKLOADS):
+        assert call.args[0].workload == workload
+        assert call.kwargs["body"] == f"CALL {runtime.procedure_name(workload)}()"
+        assert call.kwargs["schedule"] == "USING CRON 10 * * * * UTC"
+
+
 def test_attributed_jwt_connection_keeps_key_only_in_memory(monkeypatch):
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     monkeypatch.setenv(
