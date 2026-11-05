@@ -44,7 +44,7 @@ healthCheck:
 monitoring:
   enabled: true
   path: /metrics
-  port: 8080
+  port: 9091
 
 env:
   AUTH_SERVICE_URL: "http://auth-service:8081"

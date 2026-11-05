@@ -19,7 +19,7 @@ def _get_indexer() -> Indexer:
     from flask import current_app
 
     search_service: MeiliSearchService = current_app.config["SEARCH_SERVICE"]
-    return Indexer(search_service)
+    return Indexer(search_service, current_app.config["APP_CONFIG"].auth.jwt_secret)
 
 
 @index_bp.route("/index/document", methods=["POST"])

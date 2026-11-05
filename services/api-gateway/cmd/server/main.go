@@ -66,6 +66,7 @@ func main() {
 	r := chi.NewRouter()
 
 	// Global middleware stack
+	r.Use(middleware.SecurityHeaders)
 	r.Use(middleware.RequestID)
 	r.Use(chimw.RealIP)
 	r.Use(middleware.Metrics)
@@ -99,9 +100,6 @@ func main() {
 	// Health check
 	r.Get("/health", health.Handler())
 
-	// Prometheus metrics
-	r.Handle("/metrics", promhttp.Handler())
-
 	// Mount reverse proxy routes
 	proxyRouter := proxy.NewRouter(proxy.RouterConfig{
 		Routes:        routes,
@@ -123,6 +121,22 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
+	// Monitoring is reachable only on the cluster-internal, unpublished listener.
+	metricsRouter := http.NewServeMux()
+	metricsRouter.Handle("/metrics", promhttp.Handler())
+	metricsSrv := &http.Server{
+		Addr:              ":" + cfg.MetricsPort,
+		Handler:           metricsRouter,
+		ReadHeaderTimeout: 5 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+	go func() {
+		if err := metricsSrv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Fatal().Err(err).Msg("monitoring server failed")
+		}
+	}()
+
 	// Start server in background
 	go func() {
 		logger.Info().Str("port", cfg.Port).Msg("API Gateway starting")
@@ -139,6 +153,9 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
+	if err := metricsSrv.Shutdown(ctx); err != nil {
+		logger.Error().Err(err).Msg("monitoring server forced to shutdown")
+	}
 
 	if err := srv.Shutdown(ctx); err != nil {
 		logger.Fatal().Err(err).Msg("server forced to shutdown")
