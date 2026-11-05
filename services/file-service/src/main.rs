@@ -3,6 +3,8 @@
 use actix_web::{middleware as actix_middleware, web, App, HttpServer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+#[cfg(test)]
+mod access_tests;
 mod config;
 mod errors;
 mod events;
@@ -11,8 +13,6 @@ mod metadata;
 mod middleware;
 mod models;
 mod storage;
-#[cfg(test)]
-mod access_tests;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
