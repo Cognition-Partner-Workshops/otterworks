@@ -92,6 +92,26 @@ test('expired recovered batch cannot satisfy required names in a new storm', asy
   assert.deepEqual(f.calls[0].body.alerts.map(a => a.labels.alertname), ['Last', 'First']);
 });
 
+for (const hasLastAt of [true, false]) {
+  test(`old-format pending batch survives restart with ${hasLastAt ? 'recent lastAt' : 'no lastAt'} despite old startsAt`, async t => {
+    const before = Date.now();
+    const lastAt = hasLastAt ? before - 1000 : undefined;
+    const f = await fixture(t, { batch: true, initialState: { threads: [], alerts: {}, alertBatch: {
+      status: 'pending', lastAt, alerts: [{ labels: { alertname: 'First' }, startsAt: new Date(before - 3600000).toISOString() }],
+    } } });
+    f.cfg.batchRequiredAlerts = ['First', 'Last'];
+    await pause(160);
+    const state = await (await fetch(`${f.url}/api/state`)).json();
+    assert.deepEqual(state.alertBatch, { status: 'pending', alertCount: 1 });
+    assert.equal(state.threads.length, 0);
+    assert.equal(f.calls.length, 0);
+    await f.app.poll();
+    const persisted = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
+    if (hasLastAt) assert.equal(persisted.alertBatch.firstAt, lastAt);
+    else assert.ok(persisted.alertBatch.firstAt >= before && persisted.alertBatch.firstAt <= Date.now());
+  });
+}
+
 test('incomplete pending batch expires without another incoming alert', async t => {
   const f = await fixture(t, { batch: true });
   f.cfg.batchRequiredAlerts = ['First', 'Last']; f.cfg.batchMaxAgeMs = 60;

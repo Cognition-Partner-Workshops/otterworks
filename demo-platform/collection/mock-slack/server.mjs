@@ -89,8 +89,7 @@ export async function createApp(cfg = config()) {
     const thread = { id: randomUUID(), channel: cfg.alertmanagerChannel, messages: [], status, readOnly: true };
     add(thread, 'devin', text); state.threads.push(thread);
   };
-  const batchFirstAt = batch => batch.firstAt ??= Math.min(batch.lastAt || Date.now(),
-    ...batch.alerts.map(alert => Date.parse(alert.startsAt)).filter(Number.isFinite));
+  const batchFirstAt = batch => batch.firstAt ??= batch.lastAt ?? Date.now();
   const expireBatch = () => {
     if (state.alertBatch?.status !== 'pending' || Date.now() - batchFirstAt(state.alertBatch) < cfg.batchMaxAgeMs) return false;
     batchNote(`Discarded expired alert batch (${state.alertBatch.alerts.length} alerts). Start a new storm or reset the batch before retrying.`, 'discarded');
@@ -193,7 +192,7 @@ export async function createApp(cfg = config()) {
     clearTimeout(batchTimer);
     if (state.alertBatch?.status === 'pending') {
       let delay = batchFirstAt(state.alertBatch) + cfg.batchMaxAgeMs - Date.now();
-      if (cfg.batchWebhook && batchComplete(state.alertBatch)) delay = Math.min(delay, state.alertBatch.lastAt + cfg.batchQuietMs - Date.now());
+      if (cfg.batchWebhook && batchComplete(state.alertBatch)) delay = Math.min(delay, (state.alertBatch.lastAt ?? batchFirstAt(state.alertBatch)) + cfg.batchQuietMs - Date.now());
       batchTimer = setTimeout(() => serial(async () => {
         if (expireBatch()) { await save(); return; }
         await flushBatch(); scheduleBatch();
