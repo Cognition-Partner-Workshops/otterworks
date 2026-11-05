@@ -70,12 +70,22 @@ def validate(doc: object, path: Path | None = None) -> list[str]:
     if errors:
         return errors
     assert isinstance(doc, dict)
+    monitor = doc["warehouse"]["resource_monitor"]
+    if "administrative_change" in monitor and monitor["administrative_change"]["to"] != monitor["credit_quota"]:
+        errors.append("warehouse/resource_monitor/administrative_change/to: must match recorded credit_quota")
     deployment = doc.get("deployment")
     if deployment:
         times = [("attempted/started_at", deployment["attempted"]["started_at"]),
                  ("attempted/finished_at", deployment["attempted"]["finished_at"])]
         if deployment["deployed"]:
             times.append(("deployed/deployed_at", deployment["deployed"]["deployed_at"]))
+        installed_keys = set()
+        for i, entry in enumerate(deployment.get("installed", [])):
+            times.append((f"installed/{i}/installed_at", entry["installed_at"]))
+            key = (entry["type"], entry["name"])
+            if key in installed_keys:
+                errors.append(f"deployment/installed/{i}: duplicate type+name")
+            installed_keys.add(key)
         for field, value in times:
             try:
                 timestamp = datetime.fromisoformat(value.replace("Z", "+00:00"))

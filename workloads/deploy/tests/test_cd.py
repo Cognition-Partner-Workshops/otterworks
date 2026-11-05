@@ -24,6 +24,78 @@ def deployed():
     return dict(commit="b" * 40, mode="deploy", run_id="old-run", deployed_at=cd.now(), objects=[])
 
 
+def installed(name="DB.APP.REFRESH_MODEL", revision="b" * 40):
+    return dict(type="procedure", name=name, revision=revision, run_id="install-run", status="installed",
+                installed_at=cd.now(), query_ids=["install-query"], readback=dict(status="not_checked", reason="No readback"))
+
+
+def test_install_writer_replaces_same_object_and_preserves_others(tmp_path):
+    path = tmp_path / "churn_model/provenance.yaml"
+    path.parent.mkdir()
+    path.write_text((cd.REPO / "workloads/churn_model/provenance.yaml").read_text())
+    previous_entries = yaml.safe_load(path.read_text())["deployment"]["installed"]
+    first, other = installed(), installed("DB.APP.OTHER")
+    cd.provenance(path, attempt(), deployed(), True, installed=[first, other])
+    replacement = installed(revision="c" * 40)
+    cd.provenance(path, attempt("failed"), None, True, installed=[replacement])
+    entries = yaml.safe_load(path.read_text())["deployment"]["installed"]
+    assert [e for e in entries if e["name"] == first["name"]] == [replacement]
+    assert other in entries
+    assert all(entry in entries for entry in previous_entries)
+    assert yaml.safe_load(path.read_text())["deployment"]["deployed"] is not None
+
+
+@pytest.mark.parametrize("failure", [None, "dbt_test", "install_runtime"])
+def test_partial_installs_are_written_on_every_outcome(tmp_path, failure):
+    root = tmp_path / "repo"
+    path = root / "workloads/doc_search_api/provenance.yaml"
+    path.parent.mkdir(parents=True)
+    doc = yaml.safe_load((cd.REPO / "workloads/doc_search_api/provenance.yaml").read_text())
+    doc["deployment"]["deployed"] = None
+    doc["deployment"]["installed"] = []
+    path.write_text(yaml.safe_dump(doc))
+    log = cd.Log(tmp_path / "run.jsonl", "a" * 40, "run")
+    runtime = SimpleNamespace(MODELS={"doc_search_api": "top_search_items"}, procedure_name=lambda w: "DB.APP.P")
+    args = SimpleNamespace(mode="deploy", dry_run=False, write_provenance=True, log_dir=str(tmp_path))
+
+    def install(*args):
+        log.record("CREATE OR REPLACE PROCEDURE DB.APP.P() RETURNS VARCHAR LANGUAGE SQL AS $$ BEGIN RETURN 'ok'; END $$", "query-1")
+        if failure == "install_runtime":
+            raise RuntimeError("later installation failed")
+
+    def dbt(runtime, workload, command, *args):
+        if command == "test" and failure == "dbt_test":
+            raise cd.GateFailure("dbt_test", ["test.bad"])
+        return 1
+
+    with patch.object(cd, "REPO", root), patch.object(cd, "module", return_value=runtime), \
+            patch.object(cd, "Log", return_value=log), patch.object(cd, "parameters", return_value={}), \
+            patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), \
+            patch.object(cd, "migrate", return_value=[]), patch.object(cd, "install", side_effect=install), \
+            patch.object(cd, "dbt", side_effect=dbt):
+        assert cd.run_workload(root, "doc_search_api", args, "a" * 40, "a" * 40) == (failure is None)
+    deployment = yaml.safe_load(path.read_text())["deployment"]
+    assert deployment["installed"][0]["query_ids"] == ["query-1"]
+    assert deployment["installed"][0]["revision"] == "a" * 40
+    assert (deployment["deployed"] is None) == (failure is not None)
+
+
+def test_statement_evidence_groups_ids_and_records_failure(tmp_path):
+    log = cd.Log(tmp_path / "run.jsonl", "b" * 40, "rollback-run")
+    log.record("CREATE OR REPLACE TASK DB.APP.T AS SELECT 1", "create-id")
+    log.record("ALTER TASK DB.APP.T RESUME", "resume-id", False)
+    log.record("ALTER TASK DB.APP.T RESUME", "resume-id", False)
+    entry = log.installed[("task", "DB.APP.T")]
+    assert entry["status"] == "failed"
+    assert entry["query_ids"] == ["create-id", "resume-id"]
+    assert entry["revision"] == "b" * 40 and entry["run_id"] == "rollback-run"
+    log.phase = "migration"
+    log.record("ALTER WAREHOUSE WH_DOC_SEARCH_API SET AUTO_SUSPEND=900", "migration-id")
+    assert ("migration", "WH_DOC_SEARCH_API") in log.installed
+    log.record("CREATE TABLE DB.APP.MISSING_ID (X INT)")
+    assert all(e["name"] != "DB.APP.MISSING_ID" for e in log.installed.values())
+
+
 @pytest.mark.parametrize("sha", ["", "main", "a" * 39, "g" * 40])
 def test_bad_sha(sha):
     with pytest.raises(ValueError, match="40-hex"):
@@ -146,6 +218,8 @@ def test_install_reuses_selected_runtime_installer(tmp_path, capsys, dry_run):
         sql = "\n".join(c.args[0] for c in connection.cursor.return_value.__enter__.return_value.execute.call_args_list)
     assert "CREATE OR REPLACE PROCEDURE DB_DOC_SEARCH_API" in sql
     assert "SELECT 'selected commit model'" in sql
+    if dry_run:
+        assert 'planned_install {"type": "procedure"' in sql
     assert "CREATE OR REPLACE TASK" in sql and "b" * 40 in sql
     assert "DB_CHURN_MODEL" not in sql
 
@@ -187,6 +261,7 @@ def test_dry_run_no_connection_no_provenance_write(tmp_path):
     connect.assert_not_called()
     offline.assert_called_once()
     assert provenance.call_args.args[3] is False
+    assert not provenance.call_args.kwargs["installed"]
     assert not list(tmp_path.iterdir())
 
 
@@ -253,12 +328,13 @@ def test_rollback_skips_migrations_and_uses_target_root(tmp_path):
             patch.object(cd, "parameters", return_value={}), patch.object(cd, "install") as install, \
             patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), \
             patch.object(cd, "migrate") as migrate, patch.object(cd, "dbt", return_value=3) as dbt, \
-            patch.object(cd, "provenance") as provenance:
+            patch.object(cd, "provenance") as provenance, patch.object(cd, "Log", wraps=cd.Log) as log:
         assert cd.run_workload(tmp_path, "doc_search_api", args, "b" * 40, "a" * 40)
     migrate.assert_not_called()
     assert load.call_args_list[0].args[0] == tmp_path
     assert dbt.call_args_list[0].args[3] == "old_model"
     assert install.call_args.args[:4] == (runtime, "doc_search_api", {}, "b" * 40)
+    assert log.call_args.args[1] == "b" * 40
     assert provenance.call_args.args[1]["commit"] == "a" * 40
     assert provenance.call_args.args[2]["commit"] == "b" * 40
 

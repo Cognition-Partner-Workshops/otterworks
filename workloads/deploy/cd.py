@@ -90,17 +90,55 @@ class GateFailure(RuntimeError):
         self.gate, self.tests = gate, list(tests)
 
 
+def installation_object(statement, phase="installer"):
+    sql = re.sub(r"/\*.*?\*/|--[^\n]*", "", statement, flags=re.S).strip()
+    name = r'([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)'
+    ddl = re.match(r"(?:CREATE\s+(?:OR\s+REPLACE\s+)?|ALTER\s+|COMMENT\s+ON\s+|GRANT\s+.+?\s+ON\s+)"
+                   r"(PROCEDURE|TASK|STREAMLIT|TABLE|STAGE|WAREHOUSE|DATABASE|SCHEMA|USER|RESOURCE\s+MONITOR)\s+"
+                   r"(?:IF\s+NOT\s+EXISTS\s+)?" + name, sql, re.I | re.S)
+    if ddl:
+        kind = "migration" if phase == "migration" else re.sub(r"\s+", "_", ddl[1].lower())
+        return kind, ddl[2].upper()
+    call = re.match(r"CALL\s+" + name + r"\s*\(", sql, re.I)
+    if call and ".REFRESH_" in call[1].upper():
+        return "model_refresh", call[1].upper().replace(".REFRESH_", ".")
+    put = re.match(r"PUT\s+.+?\s+@" + name, sql, re.I | re.S)
+    if put:
+        return "stage", put[1].upper()
+    return None
+
+
 class Log:
-    def __init__(self, path):
+    def __init__(self, path, revision=None, run_id=None):
         path.parent.mkdir(parents=True, exist_ok=True)
         self.path = path
         self.queries = []
+        self.revision, self.run_id = revision, run_id
+        self.installed = {}
+        self.phase = "installer"
 
     def record(self, statement, query_id=None, success=True):
+        recorded_at = now()
+        obj = installation_object(statement, self.phase) if self.revision else None
+        if obj and query_id:
+            entry = self.installed.get(obj)
+            if entry is None:
+                entry = dict(type=obj[0], name=obj[1], revision=self.revision, run_id=self.run_id,
+                             status="installed", installed_at=recorded_at, query_ids=[],
+                             timestamp_source="statement_completed_at", readback={
+                                 "status": "not_checked", "reason": "Statement execution recorded; independent readback not performed."})
+                self.installed[obj] = entry
+            if query_id not in entry["query_ids"]:
+                entry["query_ids"].append(query_id)
+                entry["installed_at"] = recorded_at
+                if not success:
+                    entry["status"] = "failed"
         if success:
             self.queries.append((statement, query_id))
         with self.path.open("a") as handle:
-            handle.write(json.dumps({"statement": statement, "query_id": query_id, "success": success}) + "\n")
+            handle.write(json.dumps({"statement": statement, "query_id": query_id, "success": success,
+                                     "recorded_at": recorded_at,
+                                     "installation_query_id_unavailable": bool(obj and not query_id)}) + "\n")
 
 
 @contextmanager
@@ -271,11 +309,15 @@ def mark_configuration(text, queries):
     return text
 
 
-def provenance(path, attempted, deployed, write=False, queries=()):
+def provenance(path, attempted, deployed, write=False, queries=(), installed=()):
     text = path.read_text()
     doc = vp.load(path)
     previous = doc.get("deployment", {}).get("deployed")
     block = {"attempted": attempted, "deployed": deployed if deployed is not None else previous}
+    entries = {(e["type"], e["name"]): e for e in doc.get("deployment", {}).get("installed", [])}
+    entries.update({(e["type"], e["name"]): e for e in installed})
+    if entries or "installed" in doc.get("deployment", {}):
+        block["installed"] = list(entries.values())
     updated = replace_block(mark_configuration(text, queries), "deployment", block)
     errors = vp.validate(yaml.safe_load(updated), path)
     if errors:
@@ -318,6 +360,9 @@ def install(runtime, workload, params, commit, artifacts, dry_run=False):
 
         def execute(self, sql):
             print(sql)
+            obj = installation_object(sql)
+            if obj:
+                print("planned_install " + json.dumps(dict(type=obj[0], name=obj[1], revision=commit)))
 
         def fetchall(self):
             return []
@@ -389,7 +434,7 @@ def run_workload(root, workload, args, commit, attempted_commit):
                     print("\n".join(app.deploy_sql(folder)))
                     objects.append(dict(type="streamlit", name=app.APP, detail="planned live version"))
         else:
-            log = Log(Path(args.log_dir) / f"{workload}-{args.mode}-{run_id}.jsonl")
+            log = Log(Path(args.log_dir) / f"{workload}-{args.mode}-{run_id}.jsonl", commit, run_id)
             params = parameters(workload, commit, run_id, phase)
             with trace_queries(log), closing(snowflake.connector.connect(**params)) as conn:
                 step = "churn_retained_baseline"
@@ -403,7 +448,11 @@ def run_workload(root, workload, args, commit, attempted_commit):
                 try:
                     step = "migrations"
                     if args.mode != "rollback":
-                        versions = migrate(root, workload, params, log)
+                        log.phase = "migration"
+                        try:
+                            versions = migrate(root, workload, params, log)
+                        finally:
+                            log.phase = "installer"
                         objects.append(dict(type="migrations", name=workload, detail=json.dumps(versions, default=str)))
                     step = "install_runtime"
                     install(runtime, workload, params, commit, log.path.parent / run_id)
@@ -453,11 +502,13 @@ def run_workload(root, workload, args, commit, attempted_commit):
         if failed_gates:
             attempted["failed_gates"] = failed_gates
         print(f"{workload}: named gate failure {attempted['gate']} ({type(exc).__name__})")
-    attempted["finished_at"] = now()
-    if log:
-        log.record("deployment_attempt " + json.dumps(attempted))
-    provenance(REPO / "workloads" / workload / "provenance.yaml", attempted, deployed,
-               args.write_provenance and not args.dry_run, log.queries if log else ())
+    finally:
+        attempted["finished_at"] = now()
+        if log:
+            log.record("deployment_attempt " + json.dumps(attempted))
+        provenance(REPO / "workloads" / workload / "provenance.yaml", attempted, deployed,
+                   args.write_provenance and not args.dry_run, log.queries if log else (),
+                   installed=list(log.installed.values()) if log else ())
     return attempted["status"] == "succeeded"
 
 

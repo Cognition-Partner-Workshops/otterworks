@@ -322,3 +322,52 @@ deployment:
       every other retained table'
     retained_table_result: passed
   deployed: null
+  installed:
+  - type: procedure
+    name: DB_CHURN_MODEL_SFEXT_20261105A.APP.REFRESH_WEEKLY_CHURN_SCORES
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-churn_model-dev-20261105T112942Z-26980c3f
+    status: installed
+    installed_at: '2026-11-05T11:30:13.152Z'
+    timestamp_source: metadata_last_altered
+    query_ids:
+    - 01c834f2-030c-d214-0035-065b0009a9e2
+    - 01c834f2-030c-dbbf-0035-065b000a02b6
+    readback:
+      status: unavailable
+      reason: >-
+        Saved query 01c834f3-030c-d214-0035-065b0009a9f6 returned an empty
+        PROCEDURE_DEFINITION under DEVIN_EXT_ROLE. LAST_ALTERED supplies the UTC
+        timestamp; accepted CREATE SQL contains the selected compiled model SQL.
+  - type: task
+    name: DB_CHURN_MODEL_SFEXT_20261105A.APP.REFRESH_CHURN_MODEL
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-churn_model-dev-20261105T112942Z-26980c3f
+    status: installed
+    installed_at: '2026-11-05T11:30:53.969121+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834f2-030c-dbbf-0035-065b000a02c2
+    - 01c834f2-030c-d2f8-0035-065b000ad11e
+    - 01c834f2-030c-dbca-0035-065b000a32e6
+    readback:
+      status: not_checked
+      reason: >-
+        Successful task statements are captured in the run JSONL. No independent
+        task readback or exact statement timestamp was saved; installed_at is the
+        run-finished upper bound, not an invented statement time.
+  - type: model_refresh
+    name: DB_CHURN_MODEL_SFEXT_20261105A.APP.WEEKLY_CHURN_SCORES
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-churn_model-dev-20261105T112942Z-26980c3f
+    status: installed
+    installed_at: '2026-11-05T11:30:53.969121+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834f2-030c-d3d5-0035-065b000ac23e
+    readback:
+      status: not_checked
+      reason: >-
+        Refresh CALL succeeded before the unchanged accepted-range gate failed.
+        Exact statement timestamp was not saved; installed_at is the run-finished
+        upper bound. This did not train, score, or evaluate the retained model.

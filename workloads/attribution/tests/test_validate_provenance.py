@@ -147,6 +147,48 @@ def test_failed_deployment_additional_gates(gates, valid):
     assert (vp.validate(doc) == []) == valid
 
 
+def _installed():
+    return dict(type="procedure", name="DB.APP.REFRESH_MODEL", revision="a" * 40, run_id="run",
+                status="installed", installed_at="2026-11-05T12:00:00Z", query_ids=["captured-query"],
+                readback=dict(status="unavailable", reason="Role returned empty procedure definition"))
+
+
+def test_installed_is_independent_of_successful_deployment():
+    doc = _doc()
+    doc["deployment"] = _deployment()
+    doc["deployment"]["attempted"].update(status="failed", failed_step="dbt_test", gate="dbt_test")
+    doc["deployment"]["installed"] = [_installed()]
+    assert doc["deployment"]["deployed"] is None
+    assert vp.validate(doc) == []
+    doc["deployment"]["installed"] = []
+    assert vp.validate(doc) == []
+
+
+@pytest.mark.parametrize("change", [dict(revision="main"), dict(query_ids=[]), dict(query_ids=[""]),
+                                   dict(query_ids=["same", "same"]), dict(status="planned"), dict(name="UNQUALIFIED"),
+                                   dict(installed_at="2026-02-30T12:00:00Z"),
+                                   dict(installed_at="2026-11-05T12:00:00+01:00"), dict(readback={})])
+def test_invalid_install_evidence(change):
+    doc = _doc()
+    doc["deployment"] = _deployment()
+    doc["deployment"]["installed"] = [_installed() | change]
+    assert vp.validate(doc)
+
+
+def test_install_keys_are_unique_by_type_and_name():
+    doc = _doc()
+    doc["deployment"] = _deployment()
+    doc["deployment"]["installed"] = [_installed(), _installed()]
+    assert any("duplicate type+name" in error for error in vp.validate(doc))
+
+
+def test_administrator_quota_evidence_matches_recorded_quota():
+    doc = _doc("doc_search_api")
+    assert vp.validate(doc) == []
+    doc["warehouse"]["resource_monitor"]["administrative_change"]["to"] = 24
+    assert any("must match recorded credit_quota" in error for error in vp.validate(doc))
+
+
 def test_starting_usage_is_pending_and_cortex_is_separate():
     for workload in WORKLOADS:
         usage = _doc(workload)["usage"]

@@ -11,6 +11,37 @@
       "additionalProperties": false,
       "required": ["attempted", "deployed"],
       "properties": {
+        "installed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "name", "revision", "run_id", "status", "installed_at", "query_ids", "readback"],
+            "allOf": [{
+              "if": {"properties": {"type": {"enum": ["procedure", "task", "streamlit", "model_refresh", "table", "stage"]}}},
+              "then": {"properties": {"name": {"pattern": "^[A-Z][A-Z0-9_]*\\.[A-Z][A-Z0-9_]*\\.[A-Z][A-Z0-9_]*$"}}}
+            }],
+            "properties": {
+              "type": {"enum": ["procedure", "task", "migration", "streamlit", "model_refresh", "table", "stage", "warehouse", "database", "schema", "user", "resource_monitor"]},
+              "name": {"$ref": "#/$defs/object_name"},
+              "revision": {"$ref": "#/$defs/commit"},
+              "run_id": {"type": "string", "minLength": 1},
+              "status": {"enum": ["installed", "failed"]},
+              "installed_at": {"$ref": "#/$defs/utc_timestamp"},
+              "timestamp_source": {"enum": ["statement_completed_at", "metadata_last_altered", "run_finished_at_upper_bound", "schemachange_installed_on"]},
+              "query_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+              "readback": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["status", "reason"],
+                "properties": {
+                  "status": {"enum": ["verified", "unavailable", "not_checked"]},
+                  "reason": {"type": "string", "minLength": 1}
+                }
+              }
+            }
+          }
+        },
         "attempted": {
           "type": "object",
           "additionalProperties": false,
@@ -224,7 +255,31 @@
           "properties": {
             "name": {"$ref": "#/$defs/object_name"},
             "frequency": {"const": "MONTHLY"},
-            "credit_quota": {"type": "integer", "minimum": 1}
+            "credit_quota": {"type": "integer", "minimum": 1},
+            "administrative_change": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["actor", "reason", "from", "to", "evidence_query_ids", "observed_used_credits", "unchanged"],
+              "properties": {
+                "actor": {"const": "administrator"},
+                "reason": {"type": "string", "minLength": 1},
+                "from": {"type": "integer", "minimum": 1},
+                "to": {"type": "integer", "minimum": 1},
+                "evidence_query_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+                "observed_used_credits": {"type": "number", "minimum": 0},
+                "unchanged": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["notify_percent", "suspend_percent", "suspend_immediate_percent", "end_date"],
+                  "properties": {
+                    "notify_percent": {"const": 80},
+                    "suspend_percent": {"const": 90},
+                    "suspend_immediate_percent": {"const": 100},
+                    "end_date": {"type": "string", "format": "date"}
+                  }
+                }
+              }
+            }
           }
         }
       },

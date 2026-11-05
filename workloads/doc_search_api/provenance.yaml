@@ -33,7 +33,22 @@ warehouse:
   resource_monitor:
     name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
     frequency: MONTHLY
-    credit_quota: 10
+    credit_quota: 25
+    administrative_change:
+      actor: administrator
+      reason: Administrator increased the Search budget; not a change made by this work.
+      from: 10
+      to: 25
+      evidence_query_ids:
+      - 01c834dc-030c-d212-0035-065b000a11c2
+      - 01c834dc-030c-d214-0035-065b0009a8ca
+      - 01c834f3-030c-d214-0035-065b0009a9f2
+      observed_used_credits: 11.23
+      unchanged:
+        notify_percent: 80
+        suspend_percent: 90
+        suspend_immediate_percent: 100
+        end_date: '2026-11-19'
 configuration_changes:
   - object: WH_DOC_SEARCH_API
     setting: AUTO_SUSPEND
@@ -164,3 +179,66 @@ deployment:
     - type: tests
       name: doc_search_api
       detail: 7 passed
+  installed:
+  - type: procedure
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_TOP_SEARCH_ITEMS
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    status: installed
+    installed_at: '2026-11-05T11:28:43.910Z'
+    timestamp_source: metadata_last_altered
+    query_ids:
+    - 01c834f0-030c-dbbf-0035-065b000a025e
+    - 01c834f0-030c-dbbf-0035-065b000a0262
+    readback:
+      status: unavailable
+      reason: >-
+        Saved query 01c834f3-030c-dbbf-0035-065b000a02d2 returned an empty
+        PROCEDURE_DEFINITION under DEVIN_EXT_ROLE. LAST_ALTERED supplies the UTC
+        timestamp; accepted CREATE SQL contains the selected compiled model SQL.
+  - type: task
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_DOC_SEARCH_API
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    status: installed
+    installed_at: '2026-11-05T11:29:17.550425+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834f0-030c-d2f7-0035-065b00096ba6
+    - 01c834f0-030c-dbca-0035-065b000a3282
+    - 01c834f0-030c-d212-0035-065b000a126a
+    readback:
+      status: not_checked
+      reason: >-
+        Successful task statements are captured in the run JSONL. No independent
+        task readback or exact statement timestamp was saved; installed_at is the
+        run-finished upper bound, not an invented statement time.
+  - type: model_refresh
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.TOP_SEARCH_ITEMS
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    status: installed
+    installed_at: '2026-11-05T11:29:17.550425+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834f0-030c-d3d5-0035-065b000ac1b6
+    readback:
+      status: not_checked
+      reason: >-
+        Refresh CALL succeeded. Exact statement timestamp was not saved;
+        installed_at is the run-finished upper bound, not an invented statement time.
+  - type: migration
+    name: WH_DOC_SEARCH_API
+    revision: 863d66c3894d1095a94dfd4ab1db90d7bb094695
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T111118Z-ec8d3d99
+    status: installed
+    installed_at: '2026-11-05T11:11:28.950Z'
+    timestamp_source: schemachange_installed_on
+    query_ids:
+    - 01c834df-030c-dbca-0035-065b000a31ea
+    readback:
+      status: verified
+      reason: >-
+        V1.0.1__restore_auto_suspend.sql has a saved schemachange Success row with
+        this INSTALLED_ON time converted from UTC-08:00. Saved SHOW WAREHOUSES query
+        01c834f3-030c-d2f8-0035-065b000ad12e confirms LARGE/AUTO_SUSPEND=900.

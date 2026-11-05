@@ -121,3 +121,52 @@ deployment:
     failing_tests:
     - test.otterworks_pipeline.uniqueness
   deployed: null
+  installed:
+  - type: procedure
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.REFRESH_ACCOUNT_STORAGE_USAGE
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T112637Z-82dfb2ca
+    status: installed
+    installed_at: '2026-11-05T11:27:07.096Z'
+    timestamp_source: metadata_last_altered
+    query_ids:
+    - 01c834ef-030c-dbca-0035-065b000a3236
+    - 01c834ef-030c-d214-0035-065b0009a93e
+    readback:
+      status: unavailable
+      reason: >-
+        Saved query 01c834f3-030c-d3d5-0035-065b000ac286 returned an empty
+        PROCEDURE_DEFINITION under DEVIN_EXT_ROLE. LAST_ALTERED supplies the UTC
+        timestamp; accepted CREATE SQL contains the selected compiled model SQL.
+  - type: task
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.REFRESH_DOC_USAGE_DASHBOARD
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T112637Z-82dfb2ca
+    status: installed
+    installed_at: '2026-11-05T11:27:42.775018+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834ef-030c-d3d5-0035-065b000ac13a
+    - 01c834ef-030c-d20e-0035-065b0009f2a2
+    - 01c834ef-030c-d20e-0035-065b0009f2a6
+    readback:
+      status: not_checked
+      reason: >-
+        Successful task statements are captured in the run JSONL. No independent
+        task readback or exact statement timestamp was saved; installed_at is the
+        run-finished upper bound, not an invented statement time.
+  - type: model_refresh
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.ACCOUNT_STORAGE_USAGE
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T112637Z-82dfb2ca
+    status: installed
+    installed_at: '2026-11-05T11:27:42.775018+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834ef-030c-d3d5-0035-065b000ac13e
+    readback:
+      status: not_checked
+      reason: >-
+        Refresh CALL succeeded before the unchanged uniqueness gate failed.
+        Exact statement timestamp was not saved; installed_at is the run-finished
+        upper bound. This is not a claim that the deployment passed its gates.
