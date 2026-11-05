@@ -16,8 +16,10 @@ where week_start_date is null or dayofweekiso(week_start_date)<>1 or account_id 
     when days_since_last_login>=14 then 25 when days_since_last_login>=7 then 10 else 0 end
   or activity_points is null or activity_points not in (0,10,25,30,40)
   or activity_points is distinct from case when activity_prior_4wk_avg=0 and activity_this_week=0 then 30
-    when activity_prior_4wk_avg=0 then 0 when activity_drop_pct>=75 then 40
-    when activity_drop_pct>=50 then 25 when activity_drop_pct>=25 then 10 else 0 end
+    when activity_prior_4wk_avg=0 then 0
+    when 100*(activity_prior_4wk_avg-activity_this_week)/nullif(activity_prior_4wk_avg,0)>=75 then 40
+    when 100*(activity_prior_4wk_avg-activity_this_week)/nullif(activity_prior_4wk_avg,0)>=50 then 25
+    when 100*(activity_prior_4wk_avg-activity_this_week)/nullif(activity_prior_4wk_avg,0)>=25 then 10 else 0 end
   or status_points is null or status_points not in (0,20)
   or churn_score is null or churn_score not between 0 and 100
   or churn_score is distinct from login_points+activity_points+status_points

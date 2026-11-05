@@ -74,6 +74,9 @@ def test_churn_ranges_reject_null_metrics_and_preserve_the_recall_gate():
     assert "risk_band not in ('low','medium','high')" in ranges
     assert 's.score is null or s.score not between 0 and 1' in ranges
     assert 'training depends on sufficient source history' in ranges
+    for threshold in [25, 50, 75]:
+        assert f'100*(activity_prior_4wk_avg-activity_this_week)/nullif(activity_prior_4wk_avg,0)>={threshold}' in ranges
+        assert f'when activity_drop_pct>={threshold}' not in ranges
 
 
 def test_churn_row_counts_use_both_sources_and_strict_history_cutoff():
