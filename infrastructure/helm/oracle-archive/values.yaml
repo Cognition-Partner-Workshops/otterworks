@@ -44,13 +44,17 @@ pv:
   zone: ""         # availability zone of the volume (demo-aws output db2_volume_az)
 
 # Oracle Free needs ~2 GiB to open; 4 GiB limit leaves headroom for the seed's bulk inserts.
+# Datafiles live on the PV and the SGA in the /dev/shm emptyDir; ephemeral-storage bounds only the
+# container's writable layer (diag/trace, audit, listener logs).
 resources:
   requests:
     cpu: 500m
     memory: 2Gi
+    ephemeral-storage: 1Gi
   limits:
     cpu: "2"
     memory: 4Gi
+    ephemeral-storage: 4Gi
 
 # The image's own /opt/oracle/healthcheck.sh: 0 iff the container finished initialising (incl. the
 # /container-entrypoint-initdb.d DDL) and FREEPDB1 is OPEN READ WRITE. First start unpacks the database

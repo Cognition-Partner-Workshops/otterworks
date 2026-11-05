@@ -73,6 +73,10 @@ spec:
               value: {{ .Values.health.port | quote }}
             - name: HEALTH_CACHE_SECONDS
               value: {{ .Values.health.cacheSeconds | quote }}
+            - name: HEALTH_TLS_CERT
+              value: /opt/health-tls/tls.crt
+            - name: HEALTH_TLS_KEY
+              value: /opt/health-tls/tls.key
           ports:
             - name: db2
               containerPort: {{ .Values.service.port }}
@@ -86,6 +90,7 @@ spec:
             httpGet:
               path: /health
               port: {{ .Values.health.port }}
+              scheme: HTTPS
             periodSeconds: {{ .Values.probes.startup.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}
             failureThreshold: {{ .Values.probes.startup.failureThreshold }}
@@ -93,6 +98,7 @@ spec:
             httpGet:
               path: /health
               port: {{ .Values.health.port }}
+              scheme: HTTPS
             periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
             failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
@@ -100,6 +106,7 @@ spec:
             httpGet:
               path: /health
               port: {{ .Values.health.port }}
+              scheme: HTTPS
             periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
             timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
             failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
@@ -113,11 +120,18 @@ spec:
             - name: health-script
               mountPath: /opt/health
               readOnly: true
+            - name: health-tls
+              mountPath: /opt/health-tls
+              readOnly: true
       volumes:
         - name: health-script
           configMap:
             name: db2-archive-health
             defaultMode: 0555
+        - name: health-tls
+          secret:
+            secretName: db2-archive-health-tls
+            defaultMode: 0400
         - name: seed-work
           emptyDir:
             sizeLimit: {{ .Values.initJob.workVolumeSize }}

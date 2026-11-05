@@ -9,9 +9,10 @@ namespace - the legacy `ARCHIVE` store that the migration extracts from and purg
 | Object | Name | Notes |
 |---|---|---|
 | StatefulSet | `db2-archive` | 1 replica, privileged (Db2 CE requirement), `LICENSE=accept`, `DBNAME` derived from the token |
-| Service | `db2-archive` | ClusterIP, 50000 (Db2) + 8080 (health) |
+| Service | `db2-archive` | ClusterIP, 50000 (Db2) + 8080 (health, HTTPS) |
 | PVC | `db2-archive-data` | `storageClassName: ""` + `volumeName` -> binds the static gp3 PV created by ops Terraform; never dynamic |
 | NetworkPolicy | `db2-archive` | 50000 only from same-namespace pods labelled `ldm/db2-client: "true"`; 8080 only from the monitoring namespace (+ optional node CIDRs) |
+| Secret | `db2-archive-health-tls` | self-signed serving cert for the HTTPS `/health` server (generated once, reused on upgrade) |
 | ConfigMaps | `db2-archive-health`, `-ddl`, `-seed` | health server script, DDL from `migration/source/db2/ddl`, seed generator + `load.sh` |
 | Hook Job | `db2-archive-init` | post-install/upgrade: generates SEED-SPEC data, ships it into `db2-archive-0`, runs `load.sh` (no-op once the `ldm-seed:<sha>` marker is on `ARCHIVE.DOCARCH`, so upgrades after a purge leave the archive alone) |
 
