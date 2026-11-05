@@ -6,6 +6,47 @@
   "additionalProperties": false,
   "required": ["schema_version", "workload", "run_token", "expires", "application", "source", "endpoints", "query_tag", "warehouse", "objects", "usage"],
   "properties": {
+    "data_quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["suite", "ran_at", "commit", "refresh_task_run", "tests"],
+      "properties": {
+        "suite": {"type": "string", "pattern": "^tag:dq_[a-z0-9_]+$"},
+        "ran_at": {"$ref": "#/$defs/utc_timestamp"},
+        "commit": {"$ref": "#/$defs/commit"},
+        "refresh_task_run": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["query_id", "graph_run_group_id", "scheduled_time"],
+          "properties": {
+            "query_id": {"type": "string", "minLength": 1},
+            "graph_run_group_id": {"type": "string", "minLength": 1},
+            "scheduled_time": {"$ref": "#/$defs/utc_timestamp"}
+          }
+        },
+        "tests": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "check", "status", "failing_rows", "cause"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1},
+              "check": {"enum": ["freshness", "row_count", "uniqueness", "accepted_range", "worked_example"]},
+              "status": {"enum": ["pass", "fail"]},
+              "failing_rows": {"type": "integer", "minimum": 0},
+              "cause": {"type": "string"}
+            },
+            "allOf": [{
+              "if": {"properties": {"status": {"const": "fail"}}},
+              "then": {"properties": {"failing_rows": {"minimum": 1}, "cause": {"pattern": "\\S"}}},
+              "else": {"properties": {"failing_rows": {"const": 0}}}
+            }]
+          }
+        }
+      }
+    },
     "schema_version": {"const": 1},
     "workload": {"$ref": "#/$defs/identifier"},
     "run_token": {"type": "string", "pattern": "^SF[A-Z]+_[0-9]{8}[A-Z]?$"},
@@ -120,6 +161,7 @@
     }
   },
   "$defs": {
+    "utc_timestamp": {"type": "string", "format": "date-time", "pattern": "(Z|\\+00:00)$"},
     "identifier": {"type": "string", "pattern": "^[a-z][a-z0-9]*(_[a-z0-9]+)*$"},
     "csid": {"type": "string", "pattern": "^cs_[a-z][a-z0-9]*(_[a-z0-9]+)+$"},
     "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},

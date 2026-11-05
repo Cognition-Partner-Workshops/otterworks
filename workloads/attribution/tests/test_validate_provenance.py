@@ -7,6 +7,54 @@ import validate_provenance as vp
 WORKLOADS = ("doc_usage_dashboard", "doc_search_api", "churn_model")
 
 
+def _quality():
+    return {
+        "suite": "tag:dq_any_workload",
+        "ran_at": "2026-11-05T12:00:00Z",
+        "commit": "a" * 40,
+        "refresh_task_run": {
+            "query_id": "query-id",
+            "graph_run_group_id": "group-id",
+            "scheduled_time": "2026-11-05T11:00:00+00:00",
+        },
+        "tests": [{"name": "freshness", "check": "freshness", "status": "pass", "failing_rows": 0, "cause": ""}],
+    }
+
+
+@pytest.mark.parametrize("workload", WORKLOADS)
+@pytest.mark.parametrize("status,rows,cause", [("pass", 0, ""), ("fail", 1, "missing export")])
+def test_optional_quality_is_reusable(workload, status, rows, cause):
+    doc = _doc(workload)
+    doc["data_quality"] = _quality()
+    doc["data_quality"]["tests"][0].update(status=status, failing_rows=rows, cause=cause)
+    assert vp.validate(doc) == []
+
+
+@pytest.mark.parametrize("field,value", [
+    ("suite", "dq_bad"), ("commit", "pending"), ("ran_at", "2026-11-05"),
+    ("ran_at", "2026-11-05T12:00:00+01:00"), ("ran_at", "2026-02-30T12:00:00Z"),
+    ("refresh_task_run", {}), ("tests", []),
+])
+def test_quality_rejects_invalid_metadata(field, value):
+    doc = _doc()
+    doc["data_quality"] = _quality()
+    doc["data_quality"][field] = value
+    assert vp.validate(doc)
+
+
+@pytest.mark.parametrize("change", [
+    {"status": "fail"}, {"status": "fail", "failing_rows": 1},
+    {"status": "fail", "failing_rows": 1, "cause": "   "},
+    {"failing_rows": 1}, {"failing_rows": -1}, {"failing_rows": 0.5},
+    {"status": "unknown"}, {"check": "other"}, {"name": ""},
+])
+def test_quality_rejects_invalid_test_result(change):
+    doc = _doc()
+    doc["data_quality"] = _quality()
+    doc["data_quality"]["tests"][0].update(change)
+    assert vp.validate(doc)
+
+
 def _path(workload):
     return vp.ROOT / "workloads" / workload / "provenance.yaml"
 
