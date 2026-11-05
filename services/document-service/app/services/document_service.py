@@ -7,7 +7,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import aliased, defer, selectinload
+from sqlalchemy.orm import defer, noload
 
 from app.models.document import Comment, Document, DocumentVersion, Template
 from app.schemas.document import (
@@ -103,9 +103,7 @@ class DocumentService:
         count_q = select(func.count()).select_from(base.subquery())
         total = (await self.db.execute(count_q)).scalar_one()
 
-        query = base.options(
-            selectinload(Document.versions).defer(DocumentVersion.content)
-        )
+        query = base.options(noload(Document.versions))
         query = query.order_by(Document.updated_at.desc())
         query = query.offset((page - 1) * size).limit(size)
         result = await self.db.execute(query)
@@ -126,25 +124,27 @@ class DocumentService:
         if not document_ids:
             return {}
 
-        rank = (
-            func.row_number()
-            .over(
-                partition_by=DocumentVersion.document_id,
-                order_by=DocumentVersion.version_number.desc(),
-            )
-            .label("rank")
-        )
         ranked = (
-            select(DocumentVersion, rank)
+            select(
+                DocumentVersion.id.label("id"),
+                func.row_number()
+                .over(
+                    partition_by=DocumentVersion.document_id,
+                    order_by=DocumentVersion.version_number.desc(),
+                )
+                .label("rank"),
+            )
             .where(DocumentVersion.document_id.in_(document_ids))
             .subquery()
         )
-        ranked_version = aliased(DocumentVersion, ranked)
         result = await self.db.execute(
-            select(ranked_version)
-            .options(defer(ranked_version.content))
+            select(DocumentVersion)
+            .join(ranked, ranked.c.id == DocumentVersion.id)
             .where(ranked.c.rank <= RECENT_VERSIONS_PER_DOCUMENT)
-            .order_by(ranked.c.document_id, ranked.c.version_number.desc())
+            .options(defer(DocumentVersion.content))
+            .order_by(
+                DocumentVersion.document_id, DocumentVersion.version_number.desc()
+            )
         )
 
         recent: dict[UUID, list[DocumentVersion]] = {}

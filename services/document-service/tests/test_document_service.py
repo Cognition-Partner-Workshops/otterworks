@@ -284,7 +284,8 @@ async def test_list_documents_statement_count_is_constant(
 
     assert total == 12
     assert len(items) == page_size
-    assert len(statements) <= 5, statements
+    # count, page, comments load, one batched recent-versions query
+    assert len(statements) == 4, statements
     for doc in items:
         assert [v.version_number for v in doc.recent_versions] == [8, 7, 6, 5, 4]
 
