@@ -1,0 +1,57 @@
+spec_version: 1
+workload: doc_usage_dashboard
+summary: Storage used against quota, one row per account per snapshot day.
+cadence: daily
+grain: [snapshot_date, account_id]
+
+inputs:
+  - source: admin-service Postgres storage_quotas
+    landing: DB_DOC_USAGE_DASHBOARD.RAW.ADMIN_STORAGE_QUOTAS
+    columns: [user_id, quota_bytes, used_bytes, tier, updated_at]
+  - source: admin-service Postgres admin_users
+    landing: DB_DOC_USAGE_DASHBOARD.RAW.ADMIN_ADMIN_USERS
+    columns: [id, email, status]
+  - source: document-service Postgres documents
+    landing: DB_DOC_USAGE_DASHBOARD.RAW.DOCUMENT_DOCUMENTS
+    columns: [id, owner_id, is_deleted, is_template]
+
+output:
+  table: DB_DOC_USAGE_DASHBOARD.APP.ACCOUNT_STORAGE_USAGE
+  columns:
+    - {name: snapshot_date, type: DATE, description: UTC date of the Postgres export}
+    - {name: account_id, type: VARCHAR(36), description: storage_quotas.user_id}
+    - {name: account_email, type: VARCHAR(255), description: admin_users.email}
+    - {name: tier, type: VARCHAR(16), description: "storage_quotas.tier (free, basic, pro, enterprise)"}
+    - {name: quota_bytes, type: "NUMBER(19,0)", description: storage_quotas.quota_bytes}
+    - {name: used_bytes, type: "NUMBER(19,0)", description: storage_quotas.used_bytes}
+    - {name: remaining_bytes, type: "NUMBER(19,0)", description: "max(quota_bytes - used_bytes, 0)"}
+    - {name: usage_pct, type: "NUMBER(7,2)", description: "used_bytes / quota_bytes * 100, rounded half-up to 2 places; NULL when quota_bytes = 0"}
+    - {name: usage_band, type: VARCHAR(16), description: "over_quota | near_limit | ok | no_quota"}
+    - {name: active_document_count, type: "NUMBER(10,0)", description: owned documents that are neither deleted nor templates}
+
+business_rule: >-
+  Storage used is the used_bytes figure admin-service already stores for the account; it is not
+  recomputed from documents (documents carry no byte size, and file sizes live in DynamoDB).
+  The quota is quota_bytes. Both are bytes (1 GiB = 1073741824). usage_pct is used over quota as a
+  percentage. The band is over_quota when used_bytes >= quota_bytes, near_limit when usage_pct >= 80,
+  ok otherwise, and no_quota when quota_bytes is 0. This matches admin-service StorageQuota
+  (over_quota?, usage_percentage, remaining_bytes). Accounts whose admin_users.status is deleted are
+  left out; suspended accounts stay in. "Close to the limit" means near_limit or over_quota.
+
+examples:
+  fixture: workloads/pipeline/seed.sql
+  rows:
+    - {snapshot_date: "2026-11-02", account_id: 00000000-0000-4000-8000-000000000101, account_email: ada@example.com, tier: free, quota_bytes: 5368709120, used_bytes: 4563402752, remaining_bytes: 805306368, usage_pct: 85.00, usage_band: near_limit, active_document_count: 3}
+    - {snapshot_date: "2026-11-02", account_id: 00000000-0000-4000-8000-000000000102, account_email: ben@example.com, tier: pro, quota_bytes: 214748364800, used_bytes: 53687091200, remaining_bytes: 161061273600, usage_pct: 25.00, usage_band: ok, active_document_count: 12}
+    - {snapshot_date: "2026-11-02", account_id: 00000000-0000-4000-8000-000000000103, account_email: cy@example.com, tier: basic, quota_bytes: 53687091200, used_bytes: 53687091200, remaining_bytes: 0, usage_pct: 100.00, usage_band: over_quota, active_document_count: 40}
+  how_to_check: >-
+    101 has 4 documents with document 4 deleted (3 active); 102 has 12; 103 has 42 with documents
+    41-42 templates (40 active). 4563402752 / 5368709120 = 0.85.
+
+endpoint:
+  csid: cs_doc_usage_dashboard_account_usage
+  service_user: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
+  kind: streamlit
+  object: DB_DOC_USAGE_DASHBOARD.APP.DOC_USAGE_DASHBOARD_APP
+  request: {account_id: optional VARCHAR(36), usage_band: optional, snapshot_date: optional DATE (default latest)}
+  response: rows of output.columns ordered by usage_pct DESC NULLS LAST, account_id
