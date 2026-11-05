@@ -4,7 +4,7 @@ with periods as (
 ), user_history as (
  select column1::number as id,column2::varchar as user_id,
   column3::timestamp_ntz as effective_at,column4::timestamp_ntz as created_at,
-  column5::timestamp_ntz as last_login_at,(column1=11) as is_deleted
+  column5::timestamp_ntz as last_login_at,(column1 in (11,13)) as is_deleted
  from values
  (1,'login','2026-11-01','2026-01-01','2026-09-25'),
  (2,'login','2026-11-02T08:00:00','2026-01-01','2026-11-02T08:00:00'),
@@ -16,7 +16,10 @@ with periods as (
  (8,'never','2026-11-01','2026-01-01',null),
  (9,'unknown','2026-11-02','2026-01-01','2026-09-25'),
  (10,'physical_delete','2026-11-01','2026-01-01','2026-09-25'),
- (11,'physical_delete','2026-11-02','2026-01-01','2026-09-25')
+ (11,'physical_delete','2026-11-02','2026-01-01','2026-09-25'),
+ (12,'physical_restore','2026-11-01','2026-01-01','2026-09-25'),
+ (13,'physical_restore','2026-11-02','2026-01-01','2026-09-25'),
+ (14,'physical_restore','2026-11-03','2026-01-01','2026-09-25')
 ), status_history as (
  select column1::number as id,column2::varchar as user_id,
   column3::timestamp_ntz as effective_at,column4::varchar as status
@@ -49,11 +52,13 @@ expected as (
  ('2026-10-26','boundary',0,0,0,30),
  ('2026-10-26','never',304,40,0,70),
  ('2026-10-26','physical_delete',37,40,0,70),
+ ('2026-10-26','physical_restore',37,40,0,70),
  ('2026-11-02','login',6,0,0,30),
  ('2026-11-02','activate',44,40,0,70),
  ('2026-11-02','undelete',44,40,0,70),
  ('2026-11-02','never',311,40,0,70),
  ('2026-11-02','unknown',44,40,0,70)
+ ,('2026-11-02','physical_restore',44,40,0,70)
 ), actual as (
  select week_start_date,account_id,days_since_last_login,login_points,status_points,churn_score from report
 )

@@ -325,6 +325,12 @@ def deploy_procedure(workload, node, model_sql):
 
 def deploy():
     for workload in WORKLOADS:
+        with (
+            closing(snowflake.connector.connect(**parameters(workload))) as conn,
+            conn.cursor() as cur,
+        ):
+            for statement in bootstrap_sql(workload):
+                cur.execute(statement)
         dbt(workload, "compile", MODELS[workload])
     target = Path(os.environ["PIPELINE_DBT_TARGET"])
     manifest = json.loads((target / "manifest.json").read_text())

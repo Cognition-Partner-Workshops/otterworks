@@ -54,7 +54,13 @@ def test_deployment_uses_a_separately_attributed_task_for_each_workload(
     monkeypatch.setattr(runtime.snowflake.connector, "connect", MagicMock())
     deploy_sql = MagicMock(wraps=runtime.sf.task_deploy_sql)
     monkeypatch.setattr(runtime.sf, "task_deploy_sql", deploy_sql)
+    events = []
+    monkeypatch.setattr(
+        runtime, "bootstrap_sql", lambda workload: events.append("schema") or []
+    )
+    runtime.dbt.side_effect = lambda *args: events.append("compile")
     runtime.deploy()
+    assert events == ["schema", "compile"] * 3
     assert deploy_sql.call_count == 3
     for call, workload in zip(deploy_sql.call_args_list, runtime.WORKLOADS):
         assert call.args[0].workload == workload
@@ -255,6 +261,39 @@ def test_monday_changes_before_first_export_preserve_source_history(
                     (user_id,),
                 )
                 assert cur.fetchone() == ("deleted",)
+                cur.execute(
+                    psycopg2.sql.SQL(
+                        "INSERT INTO {}.users(id,created_at,updated_at,last_login_at) "
+                        "VALUES (%s,'2026-01-01','2026-11-01','2026-11-02T08:00:00Z')"
+                    ).format(psycopg2.sql.Identifier(schema)),
+                    (user_id,),
+                )
+                cur.execute(
+                    psycopg2.sql.SQL(
+                        "SELECT is_deleted,effective_at > (SELECT max(effective_at) FROM {}.user_state_history "
+                        "WHERE user_id=%s AND is_deleted) FROM {}.user_state_history "
+                        "WHERE user_id=%s ORDER BY effective_at DESC,id DESC LIMIT 1"
+                    ).format(
+                        psycopg2.sql.Identifier(schema), psycopg2.sql.Identifier(schema)
+                    ),
+                    (user_id, user_id),
+                )
+                assert cur.fetchone() == (False, True)
+                cur.execute(
+                    psycopg2.sql.SQL(
+                        "INSERT INTO {}.admin_users(id,status,created_at,updated_at) "
+                        "VALUES (%s,'active','2026-01-01','2026-11-01')"
+                    ).format(psycopg2.sql.Identifier(schema)),
+                    (user_id,),
+                )
+                cur.execute(
+                    psycopg2.sql.SQL(
+                        "SELECT status FROM {}.admin_user_state_history WHERE user_id=%s "
+                        "ORDER BY effective_at DESC,id DESC LIMIT 1"
+                    ).format(psycopg2.sql.Identifier(schema)),
+                    (user_id,),
+                )
+                assert cur.fetchone() == ("active",)
             with pytest.raises(psycopg2.errors.RaiseException, match="append-only"):
                 with conn, conn.cursor() as cur:
                     cur.execute(
