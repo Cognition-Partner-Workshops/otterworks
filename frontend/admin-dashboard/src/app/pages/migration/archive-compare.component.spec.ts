@@ -40,7 +40,7 @@ describe('ArchiveCompareComponent', () => {
     component.docId = 'DOC-42';
     component.autoLoad = true;
     fixture.detectChanges();
-    http.expectOne('/config/peer.json').flush({ peer_app_url: 'https://peer.example' });
+    http.expectOne('config/peer.json').flush({ peer_app_url: 'https://peer.example' });
 
     http.expectOne('/api/v1/reports/archive/documents/DOC-42').flush(doc('db2', 'LOPEZ, M.', '2015-07-02-08.00.00.000000000001'));
     http.expectOne('/api/v1/reports/archive/documents/DOC-42/hash').flush({ document_hash: 'h1' });
@@ -58,7 +58,7 @@ describe('ArchiveCompareComponent', () => {
     component.docId = 'DOC-42';
     component.autoLoad = true;
     fixture.detectChanges();
-    http.expectOne('/config/peer.json').flush({ peer_app_url: 'https://peer.example', peer_proxy_url: '/peer' });
+    http.expectOne('config/peer.json').flush({ peer_app_url: 'https://peer.example', peer_proxy_url: '/peer' });
 
     http.expectOne('/api/v1/reports/archive/documents/DOC-42').flush(doc('azuresql', 'LOPEZ, M.', '2015-07-02-08.00.00.000000000001'));
     http.expectOne('/api/v1/reports/archive/documents/DOC-42/hash').flush({ document_hash: 'h1' });
@@ -75,7 +75,7 @@ describe('ArchiveCompareComponent', () => {
     component.docId = 'DOC-42';
     component.peerUrl = 'https://peer.example/';
     fixture.detectChanges();
-    http.expectOne('/config/peer.json').flush({ peer_app_url: '' });
+    http.expectOne('config/peer.json').flush({ peer_app_url: '' });
 
     component.load();
     http.expectOne('/api/v1/reports/archive/documents/DOC-42').flush(doc('db2', 'LOPEZ, M.', '2015-07-02-08.00.00.000000000001'));
@@ -97,7 +97,7 @@ describe('ArchiveCompareComponent', () => {
     component.docId = 'DOC-42';
     component.peerUrl = 'https://peer.example';
     fixture.detectChanges();
-    http.expectOne('/config/peer.json').flush({ peer_app_url: '' });
+    http.expectOne('config/peer.json').flush({ peer_app_url: '' });
 
     component.load();
     const two = doc('db2', 'LOPEZ, M.', '2015-07-02-08.00.00.000000000001');
@@ -135,7 +135,7 @@ describe('ArchiveCompareComponent', () => {
     component.docId = 'DOC-42';
     component.peerUrl = 'https://peer.example';
     fixture.detectChanges();
-    http.expectOne('/config/peer.json').flush({ peer_app_url: '' });
+    http.expectOne('config/peer.json').flush({ peer_app_url: '' });
 
     component.load();
     const same = doc('db2', 'LOPEZ, M.', '2015-07-02-08.00.00.000000000001');
@@ -155,7 +155,7 @@ describe('ArchiveCompareComponent', () => {
   it('shows the feature-off hint from a 404 and no verdict without a peer', () => {
     component.docId = 'DOC-42';
     fixture.detectChanges();
-    http.expectOne('/config/peer.json').flush({ peer_app_url: '' });
+    http.expectOne('config/peer.json').flush({ peer_app_url: '' });
 
     component.load();
     http.expectOne('/api/v1/reports/archive/documents/DOC-42').flush(

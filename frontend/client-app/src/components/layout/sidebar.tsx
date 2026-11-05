@@ -27,6 +27,7 @@ interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  external?: boolean;
 }
 
 interface NavGroup {
@@ -56,7 +57,7 @@ const navGroups: NavGroup[] = [
   {
     label: "System",
     items: [
-      { href: "/operations", label: "Operations Console", icon: Activity },
+      { href: "/admin/", label: "Operations Console", icon: Activity, external: true },
       { href: "/trash", label: "Trash", icon: Trash2 },
       { href: "/settings", label: "Settings", icon: Settings },
     ],
@@ -142,20 +143,16 @@ export function Sidebar() {
                 {group.items.map((item) => {
                   const isActive =
                     pathname === item.href || pathname.startsWith(item.href + "/");
+                  const className = cn(
+                    "flex items-center gap-3 border-l-[3px] px-3 py-1.5 text-sm transition",
+                    isActive
+                      ? "border-accent-500 bg-[#f5f5f5] font-semibold text-[#012169]"
+                      : "border-transparent font-medium text-[#012169] hover:bg-[#f5f5f5]"
+                  );
+                  const content = <><item.icon size={18} />{sidebarOpen && <span>{item.label}</span>}</>;
                   return (
                     <li key={item.href}>
-                      <Link
-                        to={item.href}
-                        className={cn(
-                          "flex items-center gap-3 border-l-[3px] px-3 py-1.5 text-sm transition",
-                          isActive
-                            ? "border-accent-500 bg-[#f5f5f5] font-semibold text-[#012169]"
-                            : "border-transparent font-medium text-[#012169] hover:bg-[#f5f5f5]"
-                        )}
-                      >
-                        <item.icon size={18} />
-                        {sidebarOpen && <span>{item.label}</span>}
-                      </Link>
+                      {item.external ? <a href={item.href} className={className}>{content}</a> : <Link to={item.href} className={className}>{content}</Link>}
                     </li>
                   );
                 })}

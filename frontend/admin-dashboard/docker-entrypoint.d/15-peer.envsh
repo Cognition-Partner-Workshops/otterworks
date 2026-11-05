@@ -3,7 +3,7 @@
 # Derives the /peer proxy settings from PEER_APP_URL (see nginx.conf.template).
 PEER_APP_URL="$(printf '%s' "${PEER_APP_URL:-}" | sed 's:/*$::')"
 if [ -n "${PEER_APP_URL}" ]; then
-  PEER_PROXY_URL="/peer"
+  PEER_PROXY_URL="/admin/peer"
   PEER_UPSTREAM="${PEER_APP_URL}"
 else
   PEER_PROXY_URL=""

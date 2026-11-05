@@ -53,7 +53,7 @@ describe('MigrationComponent', () => {
 
   function flushCommon(): void {
     http.expectOne('/api/v1/reports/reconciliation').flush([{ run_id: REPORT.run_id, status: 'SUCCEEDED', started_at: null, finished_at: null, closes: false }]);
-    http.match('/config/peer.json').forEach(r => r.flush({ peer_app_url: '' }));
+    http.match('config/peer.json').forEach(r => r.flush({ peer_app_url: '' }));
   }
 
   it('defaults to the latest run and renders summary + failures', async () => {
