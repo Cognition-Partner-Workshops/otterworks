@@ -5,7 +5,7 @@ FAKE_PORT ?= 8781
 APP_PORT ?= 8780
 LIB := . scripts/lib.sh
 
-.PHONY: help env config up ps logs down reset test lint typecheck check fake-v3 app-fake app-stub mcp-grafana mcp-postgres label governance
+.PHONY: help env config up ps logs down reset test-reset test lint typecheck check fake-v3 app-fake app-stub mcp-grafana mcp-postgres label governance
 
 help:
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | sed 's/:.*##/ -/'
@@ -30,6 +30,9 @@ down: ## stop containers, keep volumes
 
 reset: ## remove ONLY this run's containers/volumes/networks/images and verify none remain
 	@scripts/reset.sh
+
+test-reset: ## regression: resetting a run never touches an overlapping "<run>-other" project
+	@scripts/test-reset-isolation.sh
 
 lint: ## ruff + shellcheck-equivalent bash -n
 	cd $(APP) && uv run --frozen ruff check src tests && uv run --frozen ruff format --check src tests

@@ -27,7 +27,10 @@ services:
       retries: 30
 
   slack-mock:
-    build: ./slack-mock
+    image: ${COMPOSE_PROJECT_NAME}-slack-mock:local
+    build:
+      context: ./slack-mock
+      labels: *labels
     labels: *labels
     environment:
       COLLECTION_BIND: 0.0.0.0
