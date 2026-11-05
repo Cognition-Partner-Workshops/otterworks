@@ -1,0 +1,28 @@
+name: bankir-1105-mcp
+services:
+  grafana-mcp:
+    image: grafana/mcp-grafana:0.9.0
+    network_mode: host
+    command: ["-t", "sse", "--address", "127.0.0.1:8000", "--disable-write", "--enabled-tools", "search,datasource,prometheus,dashboard"]
+    environment:
+      GRAFANA_URL: ${GRAFANA_URL:-http://127.0.0.1:3001}
+      GRAFANA_SERVICE_ACCOUNT_TOKEN: ${GRAFANA_SERVICE_ACCOUNT_TOKEN:-}
+      GRAFANA_USERNAME: ${GRAFANA_USERNAME:-}
+      GRAFANA_PASSWORD: ${GRAFANA_PASSWORD:-}
+    labels: {run-token: bankir-1105, ttl: 72h}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+  postgres-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    network_mode: host
+    command: ["--access-mode=restricted", "--transport=sse", "--sse-host=127.0.0.1", "--sse-port=8001"]
+    environment:
+      DATABASE_URI: ${DATABASE_URI:?Set DATABASE_URI to the local document-service database}
+    labels: {run-token: bankir-1105, ttl: 72h}
+    read_only: true
+    tmpfs: ["/tmp"]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]

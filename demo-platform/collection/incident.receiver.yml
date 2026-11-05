@@ -1,0 +1,7 @@
+# Layer after docker-compose.incident.yml. Route the existing raw webhook to mock Slack.
+services:
+  alertmanager:
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    environment:
+      DEVIN_WEBHOOK_URL: http://host.docker.internal:3100/receivers/alertmanager
+      DEVIN_WEBHOOK_SECRET: ${ALERTMANAGER_RECEIVER_SECRET:?Set the same receiver secret as mock Slack}
