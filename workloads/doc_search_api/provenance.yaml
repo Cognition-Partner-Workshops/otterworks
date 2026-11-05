@@ -11,9 +11,13 @@ source:
   repository: Cognition-Partner-Workshops/otterworks
   base_branch: demo-stack-snowflake
   base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
-  commit: "ba054aaf0574b39cd9aa9baf68fd51f5d4874c8e"
+  commit: pending
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2498
-  session_url: https://partner-workshops.devinenterprise.com/sessions/6b490330916b45c1a3532b15a809de89
+  session_url: https://partner-workshops.devinenterprise.com/sessions/af3d96ed64d14c498b8342d7bd370231
+# Branch: devin/1793859874-doc-search-api-endpoint
+# GET /api/v1/insights/search/accounts/<account_id>/top
+# Role SFEXT_20261105A_DOC_SEARCH_API_ENDPOINT provisioned: warehouse/database/schema
+# USAGE and SELECT on APP.TOP_SEARCH_ITEMS only; run_token SFEXT_20261105A, expires 2026-11-19.
 endpoints:
   - csid: cs_doc_search_api_top_items
     service_user: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
@@ -56,7 +60,7 @@ objects:
   - type: user
     name: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
-    state: planned
+    state: provisioned
   - type: task
     name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_DOC_SEARCH_API
     devin_csid: cs_doc_search_api_top_items

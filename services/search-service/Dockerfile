@@ -5,6 +5,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
+COPY --from=attribution sf_attribution.py /app/attribution/sf_attribution.py
+ENV PYTHONPATH=/app/attribution
+ARG SF_COMMIT
+ENV SF_COMMIT=${SF_COMMIT}
 
 RUN useradd -r -u 1001 appuser
 USER appuser
