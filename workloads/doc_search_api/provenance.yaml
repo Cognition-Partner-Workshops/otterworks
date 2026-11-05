@@ -84,18 +84,32 @@ configuration_changes:
     to: XSMALL
     migration: workloads/doc_search_api/migrations/V1.0.2__right_size_warehouse.sql
     reason: "same pipeline refresh measured ~20s on LARGE vs ~22-23s on the XSMALL dashboard/churn warehouses; load avg 0.13 running, no queuing"
-    status: planned
-    environment: Snowflake external account
-    evidence: []
+    status: applied
+    applied_query_id: 01c8362f-030c-d3d5-0035-065b000ac7ba
+    environment: Snowflake external account; applied by this session under DEVIN_EXT_ROLE; SHOW WAREHOUSES 01c8362f-030c-d214-0035-065b0009aeee confirms X-Small/60
+    evidence:
+      - query_id: 01c8362f-030c-d3d5-0035-065b000ac7ba
+        time: "2026-11-05T16:47:08.125Z"
+        user: DEVIN_EXT_SVC
+        role: DEVIN_EXT_ROLE
+        query_tag: '{"csid":"cs_doc_search_api_top_items","workload":"doc_search_api","phase":"dev","commit":"c14bcc6a78a34f0956e3bec47dfcaa38c30a1486","run_id":"SFEXT_20261105A-doc_search_api-dev-20261105T164701Z-8da76d8d","session_url":"https://partner-workshops.devinenterprise.com/sessions/9d040ab212f944b59f006f77af7fb004"}'
+        statement: ALTER WAREHOUSE WH_DOC_SEARCH_API SET WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60
   - object: WH_DOC_SEARCH_API
     setting: AUTO_SUSPEND
     from: 900
     to: 60
     migration: workloads/doc_search_api/migrations/V1.0.2__right_size_warehouse.sql
     reason: "same pipeline refresh measured ~20s on LARGE vs ~22-23s on the XSMALL dashboard/churn warehouses; load avg 0.13 running, no queuing"
-    status: planned
-    environment: Snowflake external account
-    evidence: []
+    status: applied
+    applied_query_id: 01c8362f-030c-d3d5-0035-065b000ac7ba
+    environment: Snowflake external account; applied by this session under DEVIN_EXT_ROLE; SHOW WAREHOUSES 01c8362f-030c-d214-0035-065b0009aeee confirms X-Small/60
+    evidence:
+      - query_id: 01c8362f-030c-d3d5-0035-065b000ac7ba
+        time: "2026-11-05T16:47:08.125Z"
+        user: DEVIN_EXT_SVC
+        role: DEVIN_EXT_ROLE
+        query_tag: '{"csid":"cs_doc_search_api_top_items","workload":"doc_search_api","phase":"dev","commit":"c14bcc6a78a34f0956e3bec47dfcaa38c30a1486","run_id":"SFEXT_20261105A-doc_search_api-dev-20261105T164701Z-8da76d8d","session_url":"https://partner-workshops.devinenterprise.com/sessions/9d040ab212f944b59f006f77af7fb004"}'
+        statement: ALTER WAREHOUSE WH_DOC_SEARCH_API SET WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60
 objects:
   - type: database
     name: DB_DOC_SEARCH_API_SFEXT_20261105A
