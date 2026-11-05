@@ -17,6 +17,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+  public ResponseEntity<Map<String, Object>> handleStatus(
+      org.springframework.web.server.ResponseStatusException ex) {
+    return buildErrorResponse(HttpStatus.valueOf(ex.getStatusCode().value()), ex.getReason());
+  }
+
   private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   @ExceptionHandler(IllegalArgumentException.class)

@@ -452,6 +452,8 @@ export class CollaborationManager {
   }
 
   private async canAccessDocument(socket: Socket, documentId: string): Promise<boolean> {
+    const expiresAt = extractUserFromSocket(socket).expiresAt;
+    if (!expiresAt || expiresAt <= Date.now()) return false;
     try {
       return await (this.deps.authorizeDocument || authorizeDocument)(socket, documentId);
     } catch {
@@ -463,6 +465,16 @@ export class CollaborationManager {
     socket: Socket,
     documentId: string,
   ): Promise<boolean> {
+    await Promise.all(
+      [...this.deps.io.sockets.sockets.values()]
+        .filter((member) => member.rooms.has(`doc:${documentId}`))
+        .map(async (member) => {
+          if (!(await this.canAccessDocument(member, documentId))) {
+            member.emit('access-denied', { documentId });
+            member.disconnect(true);
+          }
+        }),
+    );
     if (
       socket.rooms.has(`doc:${documentId}`) &&
       (await this.canAccessDocument(socket, documentId))

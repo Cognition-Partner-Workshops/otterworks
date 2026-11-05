@@ -11,3 +11,5 @@ statements-web serves the statement pages that retail customers open from online
 - Pages: `/statements/accounts` and `/statements/statement?account=<id>`.
 
 Run the VM stand-in with `make vm-up` from the wave folder; it answers on http://localhost:8081/statements/accounts.
+
+Configure a Tomcat authentication realm and serve the application over HTTPS. Grant each retail identity `BANK_CUSTOMER` and only its owned `ACCOUNT_<account-id>` roles in that server-side realm. The statement servlet never accepts ownership from request headers or parameters. `/accounts` requires `BANK_ADMIN`; administrators still need an account grant to open a statement. With no realm configured, access fails closed.

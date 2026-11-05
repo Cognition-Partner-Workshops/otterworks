@@ -13,7 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Full-context test: the whole modular monolith boots and every module's routes are wired. */
-@SpringBootTest
+@SpringBootTest(properties = "JWT_SECRET=preference-test-secret-at-least-32-bytes")
 @AutoConfigureMockMvc
 class LegacyPortalApplicationTest {
 
@@ -49,7 +49,10 @@ class LegacyPortalApplicationTest {
 
     @Test
     void preferencesModuleReturnsDefaults() throws Exception {
-        mockMvc.perform(get("/api/preferences/newuser"))
+        String token = io.jsonwebtoken.Jwts.builder().subject("newuser").claim("type", "access")
+            .expiration(new java.util.Date(System.currentTimeMillis() + 60000))
+            .signWith(io.jsonwebtoken.security.Keys.hmacShaKeyFor("preference-test-secret-at-least-32-bytes".getBytes(java.nio.charset.StandardCharsets.UTF_8))).compact();
+        mockMvc.perform(get("/api/preferences/newuser").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.theme").value("light"));
     }

@@ -1,6 +1,8 @@
 import crypto from "node:crypto";
 import dns from "node:dns/promises";
 import net from "node:net";
+import ipaddr from "ipaddr.js";
+import { Agent, fetch as pinnedFetch } from "undici";
 import { env } from "@/lib/env";
 import { signBody } from "@/lib/hmac";
 import { DevinClient, REQUEST_TIMEOUT_MS, summarizeStatus, type FetchLike } from "@/lib/devin";
@@ -85,32 +87,30 @@ function newDelivery(ticket: Ticket, dispatcher: Project["dispatcher"], target: 
 }
 
 function isPrivateIp(ip: string): boolean {
-  if (net.isIPv4(ip)) {
-    const [a, b] = ip.split(".").map(Number) as [number, number];
-    return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
+  try {
+    return ipaddr.process(ip).range() !== "unicast";
+  } catch {
+    return true;
   }
-  const v6 = ip.toLowerCase();
-  if (v6 === "::" || v6 === "::1" || v6.startsWith("fe80:") || v6.startsWith("fc") || v6.startsWith("fd")) return true;
-  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(v6);
-  return mapped ? isPrivateIp(mapped[1]!) : false;
 }
 
 /** Resolve the webhook host right before sending; error string when any address is private. */
-async function resolvesToPrivateAddress(target: string): Promise<string | null> {
+async function webhookAddresses(target: string): Promise<{ address: string; family: number }[]> {
   let host: string;
   try {
     host = new URL(target).hostname.replace(/^\[|\]$/g, "");
   } catch {
-    return "webhook URL is not a valid absolute URL";
+    throw new Error("webhook URL is not a valid absolute URL");
   }
-  const addrs = net.isIP(host) ? [host] : (await dns.lookup(host, { all: true }).catch(() => [])).map((a) => a.address);
-  if (addrs.length === 0) return `webhook host ${host} did not resolve`;
-  return addrs.some(isPrivateIp) ? `webhook host ${host} resolves to a private address` : null;
+  const addrs = net.isIP(host) ? [{ address: host, family: net.isIP(host) }] : await dns.lookup(host, { all: true }).catch(() => []);
+  if (addrs.length === 0) throw new Error(`webhook host ${host} did not resolve`);
+  if (addrs.some((entry) => isPrivateIp(entry.address))) throw new Error(`webhook host ${host} resolves to a private address`);
+  return addrs;
 }
 
 /** POST the signed payload to the project's webhook URL, retrying 3x with backoff. */
 export async function dispatchWebhook(project: Project, ticket: Ticket, opts: DispatchOptions = {}): Promise<DispatchResult> {
-  const f: FetchLike = opts.fetch ?? ((i, init) => fetch(i, init));
+  const f: FetchLike = opts.fetch ?? (pinnedFetch as unknown as FetchLike);
   const now = opts.now ?? Date.now;
   const backoff = opts.backoffMs ?? 500;
   const target = project.webhookUrl || env.devinWebhookUrl || "";
@@ -122,10 +122,17 @@ export async function dispatchWebhook(project: Project, ticket: Ticket, opts: Di
     return { ok: false, delivery, prompt };
   }
 
+  let dispatcher: Agent | undefined;
   if (!env.localMode && !opts.fetch) {
-    const blocked = await resolvesToPrivateAddress(target);
-    if (blocked) {
-      delivery.error = blocked;
+    try {
+      const addresses = await webhookAddresses(target);
+      const address = addresses.find((entry) => entry.family === 4) || addresses[0]!;
+      dispatcher = new Agent({ connect: {
+        autoSelectFamily: false,
+        lookup: (_host, _options, callback) => callback(null, address.address, address.family),
+      } });
+    } catch (error) {
+      delivery.error = error instanceof Error ? error.message : String(error);
       return { ok: false, delivery, prompt };
     }
   }
@@ -141,24 +148,30 @@ export async function dispatchWebhook(project: Project, ticket: Ticket, opts: Di
   if (env.webhookSecret) headers["X-OtterProjects-Signature"] = signBody(body, env.webhookSecret);
   if (env.devinWebhookSecret) headers["X-Webhook-Secret"] = env.devinWebhookSecret;
 
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    delivery.attempts = attempt;
-    try {
-      const res = await f(target, { method: "POST", headers, body, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
-      delivery.responseStatus = res.status;
-      if (res.ok) {
-        delivery.status = "ok";
-        delivery.error = undefined;
-        return { ok: true, delivery, prompt };
+  try {
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+      delivery.attempts = attempt;
+      try {
+        const init: RequestInit & { dispatcher?: Agent } = { method: "POST", headers, body, redirect: "error", dispatcher, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) };
+        const res = await f(target, init);
+        await res.body?.cancel().catch(() => {});
+        delivery.responseStatus = res.status;
+        if (res.ok) {
+          delivery.status = "ok";
+          delivery.error = undefined;
+          return { ok: true, delivery, prompt };
+        }
+        delivery.error = `HTTP ${res.status}`;
+        if (res.status >= 400 && res.status < 500 && res.status !== 429) break;
+      } catch (err) {
+        delivery.error = err instanceof Error ? err.message : String(err);
       }
-      delivery.error = `HTTP ${res.status}`;
-      if (res.status >= 400 && res.status < 500 && res.status !== 429) break;
-    } catch (err) {
-      delivery.error = err instanceof Error ? err.message : String(err);
+      if (attempt < MAX_ATTEMPTS) await sleep(backoff * 2 ** (attempt - 1));
     }
-    if (attempt < MAX_ATTEMPTS) await sleep(backoff * 2 ** (attempt - 1));
+    return { ok: false, delivery, prompt };
+  } finally {
+    await dispatcher?.close();
   }
-  return { ok: false, delivery, prompt };
 }
 
 /** Create a Devin session directly through the v3 API. */

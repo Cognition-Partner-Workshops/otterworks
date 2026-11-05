@@ -17,6 +17,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -36,6 +37,35 @@ class AuthControllerIntegrationTest {
   void setUp() {
     refreshTokenRepository.deleteAll();
     userRepository.deleteAll();
+  }
+
+  @Test
+  @WithMockUser(username = "11111111-1111-1111-1111-111111111111")
+  void lookup_shouldLimitDisclosureAndThrottleEnumeration() throws Exception {
+    User target = createTestUser("share@otterworks.dev", "password123", "Private Name");
+    mockMvc
+        .perform(get("/api/v1/auth/users/lookup").param("email", target.getEmail()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(target.getId().toString()))
+        .andExpect(jsonPath("$.email").doesNotExist())
+        .andExpect(jsonPath("$.displayName").doesNotExist());
+    for (int i = 1; i < 10; i++) {
+      mockMvc
+          .perform(get("/api/v1/auth/users/lookup").param("email", target.getEmail()))
+          .andExpect(status().isOk());
+    }
+    mockMvc
+        .perform(get("/api/v1/auth/users/lookup").param("email", target.getEmail()))
+        .andExpect(status().isTooManyRequests());
+  }
+
+  @Test
+  @WithMockUser(username = "22222222-2222-2222-2222-222222222222")
+  void lookupById_shouldRejectAnotherUsersIdentity() throws Exception {
+    User target = createTestUser("other@otterworks.dev", "password123", "Other");
+    mockMvc
+        .perform(get("/api/v1/auth/users/by-id/" + target.getId()))
+        .andExpect(status().isForbidden());
   }
 
   @Test
@@ -264,13 +294,13 @@ class AuthControllerIntegrationTest {
         .andExpect(jsonPath("$.content").isArray());
   }
 
-  private void createTestUser(String email, String password, String displayName) {
+  private User createTestUser(String email, String password, String displayName) {
     User user = new User();
     user.setEmail(email);
     user.setPasswordHash(passwordEncoder.encode(password));
     user.setDisplayName(displayName);
     user.setRoles(Set.of(User.Role.USER));
-    userRepository.save(user);
+    return userRepository.save(user);
   }
 
   private String registerAndGetAccessToken(String email, String password, String displayName)

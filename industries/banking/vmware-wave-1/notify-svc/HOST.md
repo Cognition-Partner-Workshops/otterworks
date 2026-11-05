@@ -9,3 +9,5 @@ Queues customer notifications (statement ready, card payment, low balance) for t
 - API: `POST /notify` with `{"account", "kind", "fields"}`, `GET /outbox/<account>`.
 
 In the wave stand-in, `make vm-up` serves it on http://localhost:8084/.
+
+Provision distinct `NOTIFY_SERVICE_TOKEN` (enqueue callers) and `NOTIFY_OUTBOX_TOKEN` (gateway consumer only) secrets in the PM2 environment. Send each as `Authorization: Bearer <token>` over HTTPS. Both routes fail closed when their credential is unset. Outbox message account fields are masked.

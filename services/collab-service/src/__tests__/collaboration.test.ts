@@ -160,6 +160,56 @@ describe('CollaborationManager', () => {
   });
 
   describe('Document Joining', () => {
+    it('evicts revoked subscribers before broadcasting document content', async () => {
+      const owner = await connectClient('owner', 'Owner');
+      const revoked = await connectClient('revoked', 'Revoked');
+      try {
+        for (const client of [owner, revoked]) {
+          await new Promise<void>((resolve) =>
+            client.emit('join-document', { documentId: 'revocation' }, () => resolve()),
+          );
+        }
+        const received = jest.fn();
+        revoked.on('comment-added', received);
+        authorizeDocument.mockImplementation(async (socket) => socket.id !== revoked.id);
+        const delivered = new Promise((resolve) => owner.once('comment-added', resolve));
+        owner.emit('comment-add', {
+          documentId: 'revocation',
+          comment: { content: 'private' },
+        });
+        await delivered;
+        expect(
+          io.sockets.sockets.get(revoked.id!)?.rooms.has('doc:revocation') || false,
+        ).toBe(false);
+        expect(received).not.toHaveBeenCalled();
+      } finally {
+        owner.disconnect();
+        revoked.disconnect();
+      }
+    });
+
+    it('disconnects an idle subscriber when its access token expires', async () => {
+      const token = jwt.sign(
+        { sub: 'expiring', name: 'Expiring', email: 'expiry@test.com' },
+        JWT_SECRET,
+        { expiresIn: 2 },
+      );
+      const client = clientIO(`http://localhost:${PORT}`, {
+        auth: { token },
+        transports: ['websocket'],
+      });
+      try {
+        await new Promise<void>((resolve) => client.once('connect', resolve));
+        await new Promise<void>((resolve) =>
+          client.emit('join-document', { documentId: 'expiry' }, () => resolve()),
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2100));
+        expect(client.connected).toBe(false);
+      } finally {
+        client.disconnect();
+      }
+    });
+
     it("rejects user B joining user A's document", async () => {
       authorizeDocument.mockResolvedValue(false);
       const client = await connectClient('user-b', 'User B');

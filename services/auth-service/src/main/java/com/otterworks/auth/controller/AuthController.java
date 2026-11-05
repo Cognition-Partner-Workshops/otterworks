@@ -4,6 +4,8 @@ import com.otterworks.auth.dto.*;
 import com.otterworks.auth.service.AuthService;
 import com.otterworks.auth.service.UserService;
 import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -19,6 +22,20 @@ public class AuthController {
 
   private final AuthService authService;
   private final UserService userService;
+  private final Map<String, LookupWindow> lookupWindows = new HashMap<>();
+
+  private record LookupWindow(long startedAt, int count) {}
+
+  private synchronized void limitLookups(Authentication authentication) {
+    long now = System.currentTimeMillis();
+    lookupWindows.entrySet().removeIf(entry -> now - entry.getValue().startedAt() >= 60000);
+    String caller = authentication.getName();
+    LookupWindow window = lookupWindows.getOrDefault(caller, new LookupWindow(now, 0));
+    if (window.count() >= 10 || (window.count() == 0 && lookupWindows.size() >= 10000)) {
+      throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Lookup limit reached");
+    }
+    lookupWindows.put(caller, new LookupWindow(window.startedAt(), window.count() + 1));
+  }
 
   public AuthController(AuthService authService, UserService userService) {
     this.authService = authService;
@@ -68,13 +85,26 @@ public class AuthController {
   }
 
   @GetMapping("/users/lookup")
-  public ResponseEntity<UserLookupResponse> lookupUser(@RequestParam String email) {
+  public ResponseEntity<UserLookupResponse> lookupUser(
+      @RequestParam String email, Authentication authentication) {
+    limitLookups(authentication);
+    if (email.length() > 254 || !email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Exact email required");
+    }
     UserDTO user = userService.findByEmail(email);
-    return ResponseEntity.ok(UserLookupResponse.fromUserDTO(user));
+    return ResponseEntity.ok(new UserLookupResponse(user.getId(), null, null));
   }
 
   @GetMapping("/users/by-id/{id}")
-  public ResponseEntity<UserLookupResponse> lookupUserById(@PathVariable UUID id) {
+  public ResponseEntity<UserLookupResponse> lookupUserById(
+      @PathVariable UUID id, Authentication authentication) {
+    limitLookups(authentication);
+    boolean admin =
+        authentication.getAuthorities().stream()
+            .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+    if (!id.toString().equals(authentication.getName()) && !admin) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Own profile only");
+    }
     UserDTO user = userService.getProfile(id);
     return ResponseEntity.ok(UserLookupResponse.fromUserDTO(user));
   }
