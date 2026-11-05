@@ -3,7 +3,9 @@
 import argparse
 import os
 from pathlib import Path
+from unittest.mock import patch
 
+import snowflake.connector
 from cryptography.hazmat.primitives import serialization
 from schemachange.config.ChangeHistoryTable import ChangeHistoryTable
 from schemachange.config.DeployConfig import DeployConfig
@@ -31,7 +33,14 @@ def main():
     with admin_connection() as conn:
         with conn.cursor() as cursor:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {HISTORY_DATABASE} COMMENT = {variables['shared_comment']}")
-    session = new_session(parameters, history)
+    connector = snowflake.connector.connect
+
+    def connect(**kwargs):
+        kwargs["private_key"] = parameters["private_key"]
+        return connector(**kwargs)
+
+    with patch("snowflake.connector.connect", side_effect=connect):
+        session = new_session(parameters, history)
     try:
         deploy(config=DeployConfig(root_folder=folder, change_history_table=history,
                                    create_change_history_table=True, config_vars=variables), session=session)
