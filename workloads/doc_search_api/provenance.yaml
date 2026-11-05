@@ -11,7 +11,7 @@ source:
   repository: Cognition-Partner-Workshops/otterworks
   base_branch: demo-stack-snowflake
   base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
-  commit: "9878541029bff6eef591741321e3f3e9b802917c"
+  commit: "0c6a16be65ab4b904df8984b37c363a693ad336b"
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2508
   session_url: https://partner-workshops.devinenterprise.com/sessions/4b0c1386769e4812a8adfefa70ac438d
 # Branch: devin/1793871982-dq-doc_search_api
@@ -73,8 +73,8 @@ objects:
     state: planned
 data_quality:
   suite: tag:dq_doc_search_api
-  ran_at: "2026-11-05T09:51:07.179864Z"
-  commit: "9878541029bff6eef591741321e3f3e9b802917c"
+  ran_at: "2026-11-05T09:59:27.014656Z"
+  commit: "0c6a16be65ab4b904df8984b37c363a693ad336b"
   refresh_task_run:
     query_id: 01c83466-030c-d2f8-0035-065b00094efe
     graph_run_group_id: df40cd82-5080-4928-8844-cde704f1a691
