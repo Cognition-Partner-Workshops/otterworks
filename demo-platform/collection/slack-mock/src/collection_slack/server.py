@@ -74,9 +74,11 @@ class App:
         self.bridge.store = self.store
         self._revoked: dict[str, int] = {}
         self._revoked_lock = threading.Lock()
+        # Per-start key: a restart forgets revocations, so it also invalidates every earlier cookie.
+        self._cookie_key = hmac.new(config.cookie_secret, secrets.token_bytes(32), hashlib.sha256).digest()
 
     def _sign(self, payload: str) -> str:
-        sig = hmac.new(self.config.cookie_secret, payload.encode(), hashlib.sha256).digest()
+        sig = hmac.new(self._cookie_key, payload.encode(), hashlib.sha256).digest()
         return base64.urlsafe_b64encode(sig).decode().rstrip("=")
 
     def make_cookie(self, now: float | None = None) -> str:

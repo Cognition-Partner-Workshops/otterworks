@@ -148,22 +148,33 @@
   function bindComposer(formId, textId, countId, send) {
     const text = $(textId);
     const count = $(countId);
+    const btn = $(formId).querySelector("button");
+    let inflight = false;
+    let error = "";
     const update = () => {
       const over = text.value.length > state.max;
-      count.textContent = `${text.value.length}/${state.max}` + (over ? " - too long to send" : "");
-      count.classList.toggle("warn", over);
-      $(formId).querySelector("button").disabled = over;
+      count.textContent = error || `${text.value.length}/${state.max}` + (over ? " - too long to send" : "");
+      count.classList.toggle("warn", over || Boolean(error));
+      btn.disabled = over || inflight;
     };
-    text.addEventListener("input", update);
+    text.addEventListener("input", () => { error = ""; update(); });
     text.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $(formId).requestSubmit(); } });
     $(formId).addEventListener("submit", async (e) => {
       e.preventDefault();
       const value = text.value.trim();
-      if (!value || value.length > state.max) return;
-      const btn = $(formId).querySelector("button");
-      btn.disabled = true;
-      try { await send(value); text.value = ""; update(); } catch (err) { count.textContent = String(err.message); }
-      finally { update(); }
+      if (inflight || !value || value.length > state.max) return;
+      inflight = true;
+      error = "";
+      update();
+      try {
+        await send(value);
+        if (text.value.trim() === value) text.value = "";
+      } catch (err) {
+        error = `Not sent: ${err.message}`;
+      } finally {
+        inflight = false;
+        update();
+      }
     });
     update();
   }

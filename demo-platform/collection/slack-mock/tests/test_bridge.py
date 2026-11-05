@@ -413,6 +413,20 @@ class HttpBoundary(AppCase):
         self.assertEqual(status, 303)
         self.assertEqual(copied.json("GET", "/api/bootstrap")[0], 401)
 
+    def test_restart_invalidates_old_and_logged_out_cookies(self) -> None:
+        kept = Client(self.client.port)
+        kept.cookie = self.client.cookie
+        logged_out = Client(self.client.port)
+        logged_out.cookie = self.client.cookie
+        self.assertEqual(self.client.request("POST", "/logout", raw=b"")[0], 303)
+        self.assertEqual(logged_out.json("GET", "/api/bootstrap")[0], 401)
+        self.stop_app()
+        self.start_app()
+        for old in (kept, logged_out):
+            old.port = self.client.port
+            self.assertEqual(old.json("GET", "/api/bootstrap")[0], 401)
+        self.assertEqual(self.client.json("GET", "/api/bootstrap")[0], 200)
+
     def test_cookie_flags(self) -> None:
         from urllib.parse import urlencode
 
