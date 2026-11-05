@@ -36,6 +36,8 @@ public class RatesJobTest {
                 "2026-10-14T00:30:00Z,EURUSD,1.0805",
                 "2026-10-14T00:45:00Z,EURUSD,N/A,1.0810",
                 "2026-10-14T00:50:00Z,EUR\uFFFD\uFFFDUSD,1.0801,1.0803",
+                "2026-10-14T00:55:00\uFFFD,EURUSD,1.0801,1.0803",
+                "2026-10-14T00:58:00Z,EUR-USD,1.0801,1.0803",
                 "",
                 "2026-10-14T01:00:00Z,EURUSD,1.0810,1.0812",
                 "2026-10-14T02:00:00Z,EURUSD,1.0790,1.0792",
@@ -46,7 +48,9 @@ public class RatesJobTest {
         assertEquals(Arrays.asList(
                 "line 3: expected 4 fields, found 3",
                 "line 4: bid or ask is not a number",
-                "line 5: pair is not six letters A-Z"), rejected);
+                "line 5: contains bytes that are not UTF-8",
+                "line 6: contains bytes that are not UTF-8",
+                "line 7: pair is not six letters A-Z"), rejected);
     }
 
     @Test

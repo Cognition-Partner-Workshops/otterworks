@@ -56,6 +56,10 @@ public class RatesJob {
         for (String line : lines) {
             lineNo++;
             if (line.isBlank() || line.startsWith("timestamp,")) continue;
+            if (line.indexOf('\uFFFD') >= 0) {
+                rejected.add("line " + lineNo + ": contains bytes that are not UTF-8");
+                continue;
+            }
             String[] f = line.split(",");
             if (f.length < 4) {
                 rejected.add("line " + lineNo + ": expected 4 fields, found " + f.length);
@@ -100,7 +104,7 @@ public class RatesJob {
             System.exit(1);
         }
         List<String> lines;
-        // A reader (unlike Files.lines) replaces undecodable bytes, so one bad row is skipped below
+        // A reader (unlike Files.lines) replaces undecodable bytes, so a row with bad bytes is skipped below
         // instead of ending the run.
         try (BufferedReader r = new BufferedReader(new InputStreamReader(Files.newInputStream(ticks),
                 StandardCharsets.UTF_8))) {
