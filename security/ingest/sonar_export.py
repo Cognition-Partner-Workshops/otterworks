@@ -4,7 +4,9 @@ Usage (see docker-compose.sonarqube.yml for bringing SonarQube up and scanning):
   python3 security/ingest/sonar_export.py --out export.json [--noise security/ingest/fixtures/inert-noise.json]
 
 Reads SONAR_HOST_URL (default http://localhost:9000) and SONAR_TOKEN from the
-environment. With --noise, the fixture's rows are merged in with the same shape
+environment. Remote servers require HTTPS; HTTP is allowed only for localhost,
+127.0.0.1 and the Compose service sonarqube.
+With --noise, the fixture's rows are merged in with the same shape
 as real rows; the fixture file itself is the record of which rows were seeded.
 """
 
@@ -33,8 +35,11 @@ def normalise(issue: dict, project: str) -> dict:
 
 
 def fetch(host: str, token: str, project: str) -> list[dict]:
-    if urllib.parse.urlparse(host).scheme not in ("http", "https"):
+    parsed = urllib.parse.urlparse(host)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
         raise ValueError(f"SONAR_HOST_URL must be http or https: {host}")
+    if parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "sonarqube"):
+        raise ValueError("SONAR_HOST_URL requires HTTPS for remote hosts; HTTP is allowed only for localhost, 127.0.0.1 or sonarqube")
     auth = base64.b64encode(f"{token}:".encode()).decode()
     rows, page = [], 1
     while True:

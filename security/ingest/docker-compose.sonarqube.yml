@@ -1,4 +1,5 @@
 # SonarQube Community for producing a third-party scanner export locally.
+# Scans Helm, Terraform, platform and document-service; tests and generated dependencies are excluded.
 #   docker compose -f security/ingest/docker-compose.sonarqube.yml -p "$RUN_TOKEN" up -d sonarqube
 #   docker compose -f security/ingest/docker-compose.sonarqube.yml -p "$RUN_TOKEN" run --rm scanner
 #   docker compose -f security/ingest/docker-compose.sonarqube.yml -p "$RUN_TOKEN" down -v
@@ -32,8 +33,10 @@ services:
       - scanner
     command:
       - -Dsonar.projectKey=otterworks
-      - -Dsonar.sources=.
+      - -Dsonar.sources=infrastructure/helm,infrastructure/terraform,platform,services/document-service
+      - -Dsonar.tests=
+      - -Dsonar.test.inclusions=
       - -Dsonar.working.directory=/tmp/scannerwork
-      - -Dsonar.exclusions=**/node_modules/**,**/*.min.js,**/vendor/**
+      - -Dsonar.exclusions=**/node_modules/**,**/*.min.js,**/vendor/**,**/*.lock,**/package-lock.json,**/.terraform/**,**/__pycache__/**,**/tests/**,**/test/**,**/spec/**,**/test_*.py,**/*_test.go,**/*.test.*,**/*.spec.*
       - -Dsonar.java.binaries=/tmp
       - -Dsonar.scm.disabled=true
