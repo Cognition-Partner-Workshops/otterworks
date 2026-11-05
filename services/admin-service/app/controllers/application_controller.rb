@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::API
   before_action :set_request_metadata
+  before_action :require_admin!
 
   rescue_from StandardError do |e|
     Rails.logger.error("Unhandled error: #{e.message}")
@@ -19,6 +20,13 @@ class ApplicationController < ActionController::API
   end
 
   private
+
+  def require_admin!
+    roles = request.env.dig('jwt.payload', 'roles')
+    return if roles.is_a?(Array) && roles.include?('ADMIN')
+
+    render json: { error: 'Administrator access required' }, status: :forbidden
+  end
 
   def current_user_id
     request.env['jwt.user_id']

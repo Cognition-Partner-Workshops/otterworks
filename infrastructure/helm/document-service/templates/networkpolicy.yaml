@@ -15,6 +15,9 @@ spec:
     - Ingress
   ingress:
     - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: collab-service
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: {{ .Values.networkPolicy.ingressNamespace }}

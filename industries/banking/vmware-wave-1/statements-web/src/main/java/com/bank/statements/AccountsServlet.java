@@ -19,6 +19,14 @@ public class AccountsServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (req.getUserPrincipal() == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required");
+            return;
+        }
+        if (!req.isUserInRole("BANK_ADMIN")) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Administrator access required");
+            return;
+        }
         try {
             String last = (String) req.getSession(true).getAttribute("lastAccount");
             resp.setContentType("text/html;charset=UTF-8");

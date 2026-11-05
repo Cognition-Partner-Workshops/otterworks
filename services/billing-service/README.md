@@ -29,9 +29,23 @@ The reset endpoint is disabled by default. Disposable local/CI Compose stacks
 enable it with `BILLING_SVC_ALLOW_INTERNAL_RESET=true`; published deployments
 should leave the setting disabled.
 
-The HTTP endpoints are intentionally unauthenticated in this parity fixture.
-Authentication and tenant scoping are out of scope here; an extraction that
-ships for real must add both at the edge before exposing these endpoints.
+Tenant entitlement and plan-change requests require the existing auth-service
+access JWT (`JWT_SECRET` must match auth-service). The billing frontend forwards
+`otter_access_token`; customers do not need new tenant claims. Membership is read
+from `billing_svc.tenant_memberships`, while signed ADMIN tokens retain access.
+Only trusted provisioning/database operators may assign membership, for example:
+
+```sql
+INSERT INTO billing_svc.tenant_memberships (tenant_id, user_id)
+VALUES ('<billing tenant UUID>', '<existing auth-service user UUID>')
+ON CONFLICT DO NOTHING;
+```
+
+Provision existing customer assignments before rollout; they cannot safely be
+inferred from a URL, email, or a tenant UUID supplied by the browser. Revoking the
+membership row denies the next request from a normal token with no tenant claims.
+No customer-facing endpoint can grant membership. Fixture reset removes these
+assignments along with its other disposable test data.
 
 For the extracted target, a plan change with an already-scheduled later
 subscription preserves that later row. The response's `latest_*` fields always

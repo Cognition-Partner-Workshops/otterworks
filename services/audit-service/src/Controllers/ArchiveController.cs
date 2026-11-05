@@ -11,9 +11,9 @@ public static class ArchiveController
 {
     public static void MapArchiveEndpoints(this WebApplication app)
     {
-        app.MapGet("/api/audit/archive/{docId}/events", GetEvents).WithName("GetArchiveEvents");
-        app.MapGet("/api/v1/audit/archive/{docId}", GetDocument).WithName("GetArchiveDocumentV1");
-        app.MapGet("/api/v1/audit/archive/{docId}/events", GetEvents).WithName("GetArchiveEventsV1Events");
+        app.MapGet("/api/audit/archive/{docId}/events", GetEvents).RequireAuthorization("AuditRead").WithName("GetArchiveEvents");
+        app.MapGet("/api/v1/audit/archive/{docId}", GetDocument).RequireAuthorization("AuditRead").WithName("GetArchiveDocumentV1");
+        app.MapGet("/api/v1/audit/archive/{docId}/events", GetEvents).RequireAuthorization("AuditRead").WithName("GetArchiveEventsV1Events");
         app.MapGet("/health/archive", ArchiveHealth).WithName("ArchiveHealth");
     }
 

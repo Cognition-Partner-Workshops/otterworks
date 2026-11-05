@@ -10,3 +10,5 @@ Takes identity documents (passport, ID card, proof of address, payslip) from the
 - API: `POST /documents/<customer>?kind=<kind>` (multipart `file`), `GET /documents/<customer>`.
 
 In the wave stand-in, `make vm-up` serves it on https://localhost:8085/ (accept the certificate).
+
+Provision `JWT_SECRET` in the service environment from the trusted token issuer. Tokens must be signed, expiring access tokens: uploads require subject `onboarding-service` and role `SERVICE`; listing requires `COMPLIANCE` or `ADMIN`. Missing or invalid credentials return 401, and other authenticated identities return 403. No shared default credential is provided.

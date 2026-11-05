@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.otterworks.report.model.ReportCategory;
 import com.otterworks.report.model.ReportRequest;
 import com.otterworks.report.model.ReportType;
+import com.otterworks.report.controller.ReportAccessTest;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +13,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.security.web.FilterChainProxy;
 
 import java.util.Date;
 
@@ -45,6 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@TestPropertySource(properties = "JWT_SECRET=report-access-test-secret-at-least-32-bytes-long")
 public class ReportServiceTest {
 
     @Autowired
@@ -52,6 +59,20 @@ public class ReportServiceTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private WebApplicationContext context;
+
+    @Autowired
+    private FilterChainProxy springSecurityFilterChain;
+
+    @Before
+    public void authenticateRequests() throws Exception {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .addFilters(springSecurityFilterChain)
+                .defaultRequest(get("/").header("Authorization", ReportAccessTest.token("test-user-001", "ADMIN")))
+                .build();
+    }
 
     @Test
     public void healthEndpointShouldReturnOk() throws Exception {
@@ -123,6 +144,7 @@ public class ReportServiceTest {
     @Test
     public void listReportsShouldReturnEmptyList() throws Exception {
         mockMvc.perform(get("/api/v1/reports")
+                        .header("Authorization", ReportAccessTest.token("nonexistent-user", "USER"))
                         .param("userId", "nonexistent-user"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reports").isArray())

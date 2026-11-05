@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 import requests
@@ -77,11 +78,15 @@ class Indexer:
     def remove(self, doc_type: str, doc_id: str) -> dict[str, Any]:
         """Remove a document or file from the index."""
         if doc_type not in ("document", "file"):
-            raise ValueError(f"Invalid type '{doc_type}'. Must be 'document' or 'file'.")
+            raise ValueError(
+                f"Invalid type '{doc_type}'. Must be 'document' or 'file'."
+            )
 
         deleted = self.search.delete_document(doc_type, doc_id)
         status = "deleted" if deleted else "not_found"
-        logger.info("indexer_document_removed", doc_id=doc_id, doc_type=doc_type, status=status)
+        logger.info(
+            "indexer_document_removed", doc_id=doc_id, doc_type=doc_type, status=status
+        )
         return {"status": status, "id": doc_id, "type": doc_type}
 
     def reindex(self) -> dict[str, Any]:
@@ -89,8 +94,7 @@ class Indexer:
 
         Fetches all documents from the document-service and all files
         from the file-service, then passes them to MeiliSearch for
-        bulk re-indexing.  If a source service is unreachable the
-        corresponding index is still cleared and recreated empty.
+        bulk re-indexing only after both source snapshots complete successfully.
         """
         documents = self._fetch_all_documents()
         files = self._fetch_all_files()
@@ -115,65 +119,105 @@ class Indexer:
                     timeout=FETCH_TIMEOUT,
                 )
                 if resp.status_code != 200:
-                    logger.warning("reindex_document_fetch_failed", status=resp.status_code)
-                    break
+                    logger.warning(
+                        "reindex_document_fetch_failed", status=resp.status_code
+                    )
+                    resp.raise_for_status()
+                    raise ValueError("Unexpected document-service response")
                 data = resp.json()
-                items = data.get("documents") or data.get("items") or data.get("data") or []
+                items = next(
+                    (
+                        data[key]
+                        for key in ("documents", "items", "data")
+                        if key in data
+                    ),
+                    None,
+                )
+                if not isinstance(items, list):
+                    raise ValueError("Invalid document-service snapshot")
+                if any(
+                    not isinstance(item, dict) or not item.get("id") for item in items
+                ):
+                    raise ValueError("Invalid document in source snapshot")
                 if not items:
                     break
                 for item in items:
-                    docs.append({
-                        "id": item.get("id", ""),
-                        "title": item.get("title", ""),
-                        "content": item.get("content", ""),
-                        "owner_id": item.get("owner_id", ""),
-                        "tags": item.get("tags", []),
-                        "created_at": item.get("created_at"),
-                        "updated_at": item.get("updated_at"),
-                        "type": "document",
-                    })
+                    docs.append(
+                        {
+                            "id": item.get("id", ""),
+                            "title": item.get("title", ""),
+                            "content": item.get("content", ""),
+                            "owner_id": item.get("owner_id", ""),
+                            "tags": item.get("tags", []),
+                            "created_at": item.get("created_at"),
+                            "updated_at": item.get("updated_at"),
+                            "type": "document",
+                        }
+                    )
                 page += 1
             except requests.RequestException:
                 logger.exception("reindex_document_fetch_error")
-                break
+                raise
         return docs
 
     @staticmethod
     def _fetch_all_files() -> list[dict[str, Any]]:
         """Paginate through the file-service to collect all file metadata."""
         files: list[dict[str, Any]] = []
+        token = os.environ.get("FILE_REINDEX_TOKEN", "")
+        if not token:
+            raise ValueError("File reindex credential is not configured")
         page = 1
         while True:
             try:
                 resp = requests.get(
-                    f"{FILE_SERVICE_URL}/api/v1/files",
+                    f"{FILE_SERVICE_URL}/internal/files/reindex",
+                    headers={"Authorization": f"Bearer {token}"},
                     params={"page": page, "page_size": 100},
                     timeout=FETCH_TIMEOUT,
                 )
                 if resp.status_code != 200:
                     logger.warning("reindex_file_fetch_failed", status=resp.status_code)
-                    break
+                    resp.raise_for_status()
+                    raise ValueError("Unexpected file-service response")
                 data = resp.json()
-                items = data.get("files") or data.get("items") or data.get("data") or []
+                items = next(
+                    (data[key] for key in ("files", "items", "data") if key in data),
+                    None,
+                )
+                if not isinstance(items, list):
+                    raise ValueError("Invalid file-service snapshot")
+                if any(
+                    not isinstance(item, dict) or not item.get("id") for item in items
+                ):
+                    raise ValueError("Invalid file in source snapshot")
                 if not items:
                     break
                 for item in items:
-                    files.append({
-                        "id": item.get("id", ""),
-                        "name": item.get("name", ""),
-                        "mime_type": item.get("mime_type", item.get("mimeType", "")),
-                        "owner_id": item.get("owner_id", item.get("ownerId", "")),
-                        "folder_id": item.get("folder_id", item.get("folderId", "")),
-                        "tags": item.get("tags", []),
-                        "size": item.get("size", item.get("size_bytes", item.get("sizeBytes", 0))),
-                        "created_at": item.get("created_at", item.get("createdAt")),
-                        "updated_at": item.get("updated_at", item.get("updatedAt")),
-                        "type": "file",
-                    })
+                    files.append(
+                        {
+                            "id": item.get("id", ""),
+                            "name": item.get("name", ""),
+                            "mime_type": item.get(
+                                "mime_type", item.get("mimeType", "")
+                            ),
+                            "owner_id": item.get("owner_id", item.get("ownerId", "")),
+                            "folder_id": item.get(
+                                "folder_id", item.get("folderId", "")
+                            ),
+                            "tags": item.get("tags", []),
+                            "size": item.get(
+                                "size", item.get("size_bytes", item.get("sizeBytes", 0))
+                            ),
+                            "created_at": item.get("created_at", item.get("createdAt")),
+                            "updated_at": item.get("updated_at", item.get("updatedAt")),
+                            "type": "file",
+                        }
+                    )
                 page += 1
             except requests.RequestException:
                 logger.exception("reindex_file_fetch_error")
-                break
+                raise
         return files
 
     def process_event(self, event: dict[str, Any]) -> dict[str, Any] | None:

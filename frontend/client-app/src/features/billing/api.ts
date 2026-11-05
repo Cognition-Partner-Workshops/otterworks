@@ -44,7 +44,10 @@ export type PlanChangeResult = {
 };
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${BILLING_BASE_URL}${path}`, options);
+  const headers = new Headers(options?.headers);
+  const token = localStorage.getItem("otter_access_token");
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const response = await fetch(`${BILLING_BASE_URL}${path}`, { ...options, headers });
   if (!response.ok) {
     throw new BillingApiError(
       `Billing service returned ${response.status}`,

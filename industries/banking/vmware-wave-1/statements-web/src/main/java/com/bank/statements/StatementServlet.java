@@ -19,9 +19,17 @@ public class StatementServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (req.getUserPrincipal() == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication required");
+            return;
+        }
         String account = req.getParameter("account");
         if (account == null || !account.matches("[A-Z0-9]{8,20}")) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "account is required");
+            return;
+        }
+        if (!req.isUserInRole("ACCOUNT_" + account)) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Account access denied");
             return;
         }
         try {

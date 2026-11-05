@@ -11,11 +11,31 @@
 
 import configparser
 import json
+import os
 import sys
 import time
 from datetime import datetime
 
 import requests
+
+
+def fetch_snapshot(url, headers=None):
+    items = []
+    page = 1
+    while True:
+        response = requests.get(url, params={"page": page, "page_size": 100},
+                                headers=headers, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        batch = next((data[key] for key in ("documents", "files", "items") if key in data), None)
+        if not isinstance(batch, list):
+            raise ValueError("Invalid source snapshot")
+        if any(not isinstance(item, dict) or not item.get("id") for item in batch):
+            raise ValueError("Invalid item in source snapshot")
+        if not batch:
+            return items
+        items.extend(batch)
+        page += 1
 
 
 def main():
@@ -34,6 +54,13 @@ def main():
     files_index = "files"
     bulk_batch_size = 500
     api_page_size = 100
+
+    token = os.environ.get("FILE_REINDEX_TOKEN", "")
+    if not token:
+        raise ValueError("FILE_REINDEX_TOKEN is required")
+    all_documents = fetch_snapshot("%s/api/v1/documents" % document_service_url)
+    all_files = fetch_snapshot("%s/internal/files/reindex" % file_service_url,
+                               {"Authorization": "Bearer %s" % token})
 
     meili_headers = {"Content-Type": "application/json"}
     if meilisearch_api_key:
@@ -154,14 +181,7 @@ def main():
     page = 1
 
     while True:
-        # No session reuse, no timeout, no retry -- just raw requests
-        resp = requests.get(
-            "%s/api/v1/documents" % document_service_url,
-            params={"page": page, "size": api_page_size},
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        documents = data.get("documents", data.get("items", []))
+        documents = all_documents[(page - 1) * api_page_size:page * api_page_size]
 
         if not documents:
             break
@@ -217,13 +237,7 @@ def main():
     page = 1
 
     while True:
-        resp = requests.get(
-            "%s/api/v1/files" % file_service_url,
-            params={"page": page, "page_size": api_page_size},
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        files = data.get("files", data.get("items", []))
+        files = all_files[(page - 1) * api_page_size:page * api_page_size]
 
         if not files:
             break

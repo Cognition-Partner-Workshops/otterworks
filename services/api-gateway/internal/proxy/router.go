@@ -21,10 +21,10 @@ type Route struct {
 
 // RouterConfig holds configuration for the reverse proxy router.
 type RouterConfig struct {
-	Routes         []Route
-	CBManager      *CircuitBreakerManager
-	Logger         zerolog.Logger
-	EnableTracing  bool
+	Routes        []Route
+	CBManager     *CircuitBreakerManager
+	Logger        zerolog.Logger
+	EnableTracing bool
 }
 
 // NewRouter creates a chi router with all service routes mounted.
@@ -66,6 +66,7 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
 	defaultDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
+		req.Header.Del("X-User-ID")
 		defaultDirector(req)
 		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
 			userID := claims.Subject

@@ -37,6 +37,7 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: postgres
+      JWT_SECRET: ${JWT_SECRET:-}
       SPRING_DATASOURCE_URL: jdbc:postgresql://legacy-portal-db:5432/legacyportal
       SPRING_DATASOURCE_USERNAME: legacyportal
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-legacyportal}

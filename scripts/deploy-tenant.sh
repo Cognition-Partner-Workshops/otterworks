@@ -165,6 +165,12 @@ if [ -z "${SECRET_KEY_BASE:-}" ]; then
 fi
 
 # ---------- Namespace + isolation guardrails ----------
+if [ -z "${FILE_REINDEX_TOKEN:-}" ]; then
+  FILE_REINDEX_TOKEN="$(existing_tenant_secret file-service-secrets FILE_REINDEX_TOKEN)" ||
+    { err "Unable to read the file reindex credential"; exit 1; }
+  [ -n "${FILE_REINDEX_TOKEN}" ] || FILE_REINDEX_TOKEN="$(openssl rand -hex 32)"
+fi
+
 log "Creating namespace ${NS} with quota / limits / network policy..."
 kubectl apply -f - <<YAML
 apiVersion: v1
@@ -493,6 +499,9 @@ deploy_service() {
   tag="${tag}@${digest}"
 
   build_helm_args "${service}"
+  case "${service}" in
+    file-service|search-service) add_secret FILE_REINDEX_TOKEN "${FILE_REINDEX_TOKEN}" ;;
+  esac
   # Optional per-tenant values overlay (e.g. monitoring/tracing opt-in).
   local overlay
   overlay="${REPO_ROOT}/infrastructure/helm/tenant-values/$(sanitize_id "${ATTENDEE_ID}")/${service}.yaml"

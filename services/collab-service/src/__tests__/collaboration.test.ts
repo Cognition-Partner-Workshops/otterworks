@@ -12,6 +12,7 @@ import { createAuthMiddleware } from '../middleware/auth';
 import { RedisAdapter } from '../services/redis-adapter';
 
 const JWT_SECRET = 'test-secret-key-for-unit-tests';
+const authorizeDocument = jest.fn().mockResolvedValue(true);
 let PORT: number;
 
 function createToken(payload: Record<string, unknown>): string {
@@ -81,6 +82,7 @@ describe('CollaborationManager', () => {
       logger: mockLogger,
       persistIntervalMs: 600000, // long interval so it doesn't fire during tests
       snapshotIntervalMs: 600000,
+      authorizeDocument,
     });
     manager.start();
 
@@ -99,6 +101,7 @@ describe('CollaborationManager', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    authorizeDocument.mockResolvedValue(true);
   });
 
   function connectClient(userId: string, displayName: string): Promise<ClientSocket> {
@@ -157,6 +160,105 @@ describe('CollaborationManager', () => {
   });
 
   describe('Document Joining', () => {
+    it('evicts revoked subscribers before broadcasting document content', async () => {
+      const owner = await connectClient('owner', 'Owner');
+      const revoked = await connectClient('revoked', 'Revoked');
+      try {
+        for (const client of [owner, revoked]) {
+          await new Promise<void>((resolve) =>
+            client.emit('join-document', { documentId: 'revocation' }, () => resolve()),
+          );
+        }
+        const received = jest.fn();
+        revoked.on('comment-added', received);
+        authorizeDocument.mockImplementation(async (socket) => socket.id !== revoked.id);
+        const delivered = new Promise((resolve) => owner.once('comment-added', resolve));
+        owner.emit('comment-add', {
+          documentId: 'revocation',
+          comment: { content: 'private' },
+        });
+        await delivered;
+        expect(
+          io.sockets.sockets.get(revoked.id!)?.rooms.has('doc:revocation') || false,
+        ).toBe(false);
+        expect(received).not.toHaveBeenCalled();
+      } finally {
+        owner.disconnect();
+        revoked.disconnect();
+      }
+    });
+
+    it('disconnects an idle subscriber when its access token expires', async () => {
+      const token = jwt.sign(
+        { sub: 'expiring', name: 'Expiring', email: 'expiry@test.com' },
+        JWT_SECRET,
+        { expiresIn: 2 },
+      );
+      const client = clientIO(`http://localhost:${PORT}`, {
+        auth: { token },
+        transports: ['websocket'],
+      });
+      try {
+        await new Promise<void>((resolve) => client.once('connect', resolve));
+        await new Promise<void>((resolve) =>
+          client.emit('join-document', { documentId: 'expiry' }, () => resolve()),
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2100));
+        expect(client.connected).toBe(false);
+      } finally {
+        client.disconnect();
+      }
+    });
+
+    it("rejects user B joining user A's document", async () => {
+      authorizeDocument.mockResolvedValue(false);
+      const client = await connectClient('user-b', 'User B');
+      try {
+        const result = await new Promise<{ success: boolean }>((resolve) => {
+          client.emit('join-document', { documentId: 'owned-by-a' }, resolve);
+        });
+        expect(result.success).toBe(false);
+        expect(manager.getDocument('owned-by-a')).toBeUndefined();
+      } finally {
+        client.disconnect();
+      }
+    });
+
+    it('rejects mutations and history without joining the document', async () => {
+      const client = await connectClient('user-b', 'User B');
+      try {
+        for (const event of [
+          'document-update',
+          'comment-add',
+          'comment-update',
+          'comment-delete',
+          'request-snapshot',
+          'request-history',
+        ]) {
+          const denied = new Promise((resolve) => client.once('access-denied', resolve));
+          client.emit(event, { documentId: 'owned-by-a', update: {}, comment: {} });
+          await expect(denied).resolves.toEqual({ documentId: 'owned-by-a' });
+        }
+      } finally {
+        client.disconnect();
+      }
+    });
+
+    it('rejects edits after document access is revoked', async () => {
+      const client = await connectClient('user-a', 'User A');
+      try {
+        await new Promise<void>((resolve) => {
+          client.emit('join-document', { documentId: 'revoked' }, () => resolve());
+        });
+        authorizeDocument.mockResolvedValue(false);
+        const denied = new Promise((resolve) => client.once('access-denied', resolve));
+        client.emit('document-update', { documentId: 'revoked', update: {} });
+        await expect(denied).resolves.toEqual({ documentId: 'revoked' });
+      } finally {
+        client.disconnect();
+      }
+    });
+
     it('should allow a user to join a document room', async () => {
       const client = await connectClient('user-join-1', 'Alice');
 

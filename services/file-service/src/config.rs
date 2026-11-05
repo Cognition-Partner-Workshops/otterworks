@@ -1,5 +1,10 @@
 use std::env;
 
+pub struct ReindexAuth {
+    pub token: String,
+    pub owner_prefix: String,
+}
+
 #[derive(Clone, Debug)]
 pub struct AppConfig {
     pub server: ServerConfig,

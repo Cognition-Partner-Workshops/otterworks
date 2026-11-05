@@ -8,6 +8,7 @@ export interface AuthenticatedUser {
   email: string;
   displayName: string;
   roles: string[];
+  expiresAt?: number;
 }
 
 export interface AuthenticatedSocket extends Socket {
@@ -38,13 +39,22 @@ export function createAuthMiddleware(jwtSecret: string, logger: Logger) {
 
     try {
       const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+      if (!decoded.sub || !decoded.exp) throw new Error('Invalid access token');
 
       (socket as AuthenticatedSocket).user = {
         userId: decoded.sub,
         email: decoded.email || '',
         displayName: decoded.name || decoded.display_name || 'Anonymous',
         roles: decoded.roles || [],
+        expiresAt: decoded.exp * 1000,
       };
+
+      const expiryTimer = setTimeout(
+        () => socket.disconnect(true),
+        Math.min(decoded.exp * 1000 - Date.now(), 2147483647),
+      );
+      expiryTimer.unref();
+      socket.once('disconnect', () => clearTimeout(expiryTimer));
 
       logger.debug(
         { socketId: socket.id, userId: decoded.sub },

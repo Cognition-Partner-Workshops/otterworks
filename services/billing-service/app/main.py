@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 from datetime import date
 from typing import Annotated
 from uuid import UUID
 
+import jwt
 import psycopg
-from fastapi import FastAPI, HTTPException, Path, Query, Response
+from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -35,6 +37,40 @@ app.add_middleware(
 class PlanChange(BaseModel):
     plan_id: UUID
     effective_on: date
+
+
+def require_tenant(
+    tenant_id: UUID,
+    authorization: Annotated[str | None, Header()] = None,
+) -> None:
+    try:
+        secret = os.environ.get("JWT_SECRET", "")
+        if not secret or not authorization or not authorization.startswith("Bearer "):
+            raise jwt.InvalidTokenError()
+        claims = jwt.decode(
+            authorization[7:],
+            secret,
+            algorithms=["HS256", "HS384"],
+            options={"require": ["sub", "exp"]},
+        )
+        if not claims["sub"] or claims.get("type") != "access":
+            raise jwt.InvalidTokenError()
+    except jwt.InvalidTokenError as error:
+        raise HTTPException(status_code=401, detail="Authentication required") from error
+    roles = claims.get("roles", [])
+    tenants = claims.get("tenant_ids", [])
+    if (isinstance(roles, list) and "ADMIN" in roles) or claims.get("tenant_id") == str(tenant_id):
+        return
+    if isinstance(tenants, list) and str(tenant_id) in tenants:
+        return
+    try:
+        user_id = UUID(claims["sub"])
+    except (ValueError, TypeError, AttributeError) as error:
+        raise HTTPException(status_code=403, detail="Tenant access denied") from error
+    with connect() as connection:
+        if PostgresPlansRepository(connection).is_tenant_member(tenant_id, user_id):
+            return
+    raise HTTPException(status_code=403, detail="Tenant access denied")
 
 
 @app.get("/health")
@@ -72,7 +108,7 @@ def list_plans() -> list[dict]:
     ]
 
 
-@app.get("/api/tenants/{tenant_id}/entitlement")
+@app.get("/api/tenants/{tenant_id}/entitlement", dependencies=[Depends(require_tenant)])
 def get_entitlement(
     tenant_id: Annotated[UUID, Path()],
     on: Annotated[date, Query()],
@@ -96,7 +132,7 @@ def get_entitlement(
     }
 
 
-@app.post("/api/tenants/{tenant_id}/plan-change")
+@app.post("/api/tenants/{tenant_id}/plan-change", dependencies=[Depends(require_tenant)])
 def change_tenant_plan(tenant_id: Annotated[UUID, Path()], request: PlanChange) -> dict:
     try:
         with connect() as connection:

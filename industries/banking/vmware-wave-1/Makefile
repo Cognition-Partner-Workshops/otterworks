@@ -28,12 +28,8 @@ vm-rates:
 	@$(COMPOSE) exec -T rates-01 tail -n 3 /var/log/rates/rates.log
 
 vm-smoke:
-	@for i in $$(seq 1 40); do curl -sf -o /dev/null http://localhost:8081/statements/accounts && break; sleep 3; done
-	curl -sf -o /dev/null -w "statements-web %{http_code}\n" http://localhost:8081/statements/accounts
+	python3 vm/check_access.py
 	curl -sf -o /dev/null -w "branch-locator %{http_code}\n" "http://localhost:8083/api/nearest?q=harbour"
-	curl -sf -o /dev/null -w "notify-svc     %{http_code}\n" -H 'Content-Type: application/json' \
-	  -d '{"account":"HG611000001","kind":"statement_ready","fields":{}}' http://localhost:8084/notify
-	curl -skf -o /dev/null -w "kyc-docs       %{http_code}\n" https://localhost:8085/documents/HG611000001
 	curl -sf -o /dev/null -w "fx-report      %{http_code}\n" "http://localhost:8086/fx/fx-report.cgi?day=2026-10-16"
 	$(COMPOSE) exec -T rates-01 ls /var/spool/rates/out
 

@@ -31,6 +31,9 @@ class FakeConnection:
 
 
 def test_repeated_plan_change_returns_conflict(monkeypatch) -> None:
+    from test_access import SECRET, token
+
+    monkeypatch.setenv("JWT_SECRET", SECRET)
     calls = 0
 
     def fake_change_plan(*_args: object) -> tuple[list[SubscriptionRow], SubscriptionRow]:
@@ -44,6 +47,7 @@ def test_repeated_plan_change_returns_conflict(monkeypatch) -> None:
     monkeypatch.setattr(main, "connect", FakeConnection)
     monkeypatch.setattr(main, "change_plan", fake_change_plan)
     with TestClient(main.app) as client:
+        client.headers["Authorization"] = "Bearer " + token()
         payload = {"plan_id": str(PLAN), "effective_on": "2026-03-01"}
         first = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload)
         second = client.post(f"/api/tenants/{TENANT}/plan-change", json=payload)

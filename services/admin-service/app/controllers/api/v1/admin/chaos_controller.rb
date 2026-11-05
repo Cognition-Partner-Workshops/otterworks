@@ -2,6 +2,7 @@ module Api
   module V1
     module Admin
       class ChaosController < ApplicationController
+        skip_before_action :require_admin!, only: %i[trigger reset]
         CHAOS_TTL_SECONDS = 600 # 10-minute auto-expiry so demo resets itself
 
         VALID_SCENARIOS = {
@@ -78,10 +79,10 @@ module Api
 
         def verify_chaos_secret
           expected = ENV.fetch('CHAOS_SECRET', nil)
-          return if expected.nil? || expected.empty? # secret not configured → allow (dev mode)
+          return if expected.blank? && Rails.env.development?
 
           provided = request.headers['X-Chaos-Secret']
-          return if ActiveSupport::SecurityUtils.secure_compare(provided.to_s, expected)
+          return if expected.present? && ActiveSupport::SecurityUtils.secure_compare(provided.to_s, expected)
 
           render json: { error: 'Unauthorized' }, status: :unauthorized
         end

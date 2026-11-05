@@ -3,6 +3,8 @@
 use actix_web::{middleware as actix_middleware, web, App, HttpServer};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+#[cfg(test)]
+mod access_tests;
 mod config;
 mod errors;
 mod events;
@@ -43,6 +45,10 @@ async fn main() -> std::io::Result<()> {
     tracing::info!(port = %port, "File Service starting");
 
     let config_data = web::Data::new(app_config);
+    let reindex_auth = web::Data::new(config::ReindexAuth {
+        token: std::env::var("FILE_REINDEX_TOKEN").unwrap_or_default(),
+        owner_prefix: std::env::var("FILE_REINDEX_OWNER_PREFIX").unwrap_or_default(),
+    });
     let s3_data = web::Data::new(s3_client);
     let meta_data = web::Data::new(meta_client);
     let events_data = web::Data::new(event_publisher);
@@ -54,12 +60,17 @@ async fn main() -> std::io::Result<()> {
             .wrap(actix_middleware::Compress::default())
             .wrap(middleware::RequestId)
             .app_data(config_data.clone())
+            .app_data(reindex_auth.clone())
             .app_data(s3_data.clone())
             .app_data(meta_data.clone())
             .app_data(events_data.clone())
             .app_data(redis_data.clone())
             .route("/health", web::get().to(handlers::health))
             .route("/metrics", web::get().to(handlers::metrics))
+            .route(
+                "/internal/files/reindex",
+                web::get().to(handlers::list_files_for_reindex),
+            )
             .service(
                 web::scope("/api/v1/files")
                     .route("/upload", web::post().to(handlers::upload_file))

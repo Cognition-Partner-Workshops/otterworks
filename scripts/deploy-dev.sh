@@ -333,7 +333,7 @@ build_helm_args() {
 
   if [ -n "${JWT_SECRET}" ]; then
     case "$service" in
-      api-gateway|auth-service|document-service|collab-service|admin-service)
+      api-gateway|auth-service|document-service|collab-service|admin-service|audit-service|report-service)
         add_secret JWT_SECRET "${JWT_SECRET}" ;;
     esac
   fi
@@ -351,6 +351,9 @@ build_helm_args() {
       add_secret SPRING_FLYWAY_PASSWORD "${DB_PASSWORD}"
       add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}" ;;
     file-service)
+      if [ -n "${FILE_REINDEX_OWNER_PREFIX:-}" ]; then
+        EXTRA_ARGS+=(--set-string "config.FILE_REINDEX_OWNER_PREFIX=${FILE_REINDEX_OWNER_PREFIX}")
+      fi
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.S3_BUCKET=${S3_FILE_BUCKET}")
       EXTRA_ARGS+=(--set-string "config.DYNAMODB_TABLE=${DDB_FILE_META}")
@@ -419,6 +422,9 @@ deploy_service() {
 
   local image="${ECR_REGISTRY}/${ECR_PREFIX}${service}"
   build_helm_args "${service}"
+  case "${service}" in
+    file-service|search-service) add_secret FILE_REINDEX_TOKEN "${FILE_REINDEX_TOKEN}" ;;
+  esac
 
   # Write secrets to a locked-down temp values file passed via -f, so the values
   # are never exposed in the process argument list (ps / /proc/*/cmdline).
@@ -560,6 +566,12 @@ deploy_redis
 deploy_meilisearch
 
 log "Deploying services to EKS..."
+if [ -z "${FILE_REINDEX_TOKEN:-}" ]; then
+  existing="$(kubectl -n "${NAMESPACE}" get secret file-service-secrets --ignore-not-found -o json)" || exit 1
+  [ -n "${existing}" ] || existing='{}'
+  FILE_REINDEX_TOKEN="$(jq -r '.data.FILE_REINDEX_TOKEN // empty' <<< "${existing}" | base64 -d)"
+  [ -n "${FILE_REINDEX_TOKEN}" ] || FILE_REINDEX_TOKEN="$(openssl rand -hex 32)"
+fi
 FAILED=()
 for service in "${ALL_SERVICES[@]}"; do
   deploy_service "${service}" || FAILED+=("${service}")
@@ -576,6 +588,8 @@ if [ ${#FAILED[@]} -gt 0 ]; then
 fi
 
 assert_no_loadbalancer_services || exit 1
+
+ADMIN_NAMESPACE="${NAMESPACE}" bash "${SCRIPT_DIR}/sync-grafana-webhook-secret.sh"
 
 log "Deployment complete! All services deployed to ${EKS_CLUSTER}/${NAMESPACE}"
 echo ""

@@ -265,9 +265,36 @@ impl MetadataClient {
         owner_id: Option<Uuid>,
         include_trashed: bool,
     ) -> Result<Vec<FileMetadata>, ServiceError> {
+        self.list_files_scoped(folder_id, owner_id, include_trashed, None)
+            .await
+    }
+
+    pub async fn list_files_for_reindex(
+        &self,
+        owner_prefix: &str,
+    ) -> Result<Vec<FileMetadata>, ServiceError> {
+        self.list_files_scoped(None, None, false, Some(owner_prefix))
+            .await
+    }
+
+    async fn list_files_scoped(
+        &self,
+        folder_id: Option<Uuid>,
+        owner_id: Option<Uuid>,
+        include_trashed: bool,
+        owner_prefix: Option<&str>,
+    ) -> Result<Vec<FileMetadata>, ServiceError> {
         let mut scan_builder = self.client.scan().table_name(&self.files_table);
 
         let mut filter_parts: Vec<String> = Vec::new();
+
+        if let Some(prefix) = owner_prefix {
+            filter_parts.push("begins_with(owner_id, :owner_prefix)".to_string());
+            scan_builder = scan_builder.expression_attribute_values(
+                ":owner_prefix",
+                AttributeValue::S(prefix.to_string()),
+            );
+        }
 
         if let Some(fid) = &folder_id {
             filter_parts.push("folder_id = :folder_id".to_string());
