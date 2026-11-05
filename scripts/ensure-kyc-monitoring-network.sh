@@ -3,17 +3,36 @@ set -euo pipefail
 
 name=kyc-monitoring
 subnet=172.30.250.0/24
+repo=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+project=$(docker compose -f "$repo/docker-compose.infra.yml" config --format json |
+  python3 -c 'import json, sys; print(json.load(sys.stdin)["name"])')
 
-if ! docker network inspect "$name" >/dev/null 2>&1; then
-  docker network create --driver bridge --internal --subnet "$subnet" \
-    --label com.docker.compose.project=otterworks \
-    --label com.docker.compose.network=kyc-monitoring \
-    --opt com.docker.network.bridge.inhibit_ipv4=true "$name" >/dev/null ||
-    docker network inspect "$name" >/dev/null
+if docker network inspect "$name" >/dev/null 2>&1; then
+  if docker network inspect "$name" | python3 -c '
+import json, sys
+network = json.load(sys.stdin)[0]
+labels = network.get("Labels") or {}
+valid = (network["Driver"] == "bridge" and network["Internal"]
+         and not network["EnableIPv6"]
+         and network.get("Options", {}).get("com.docker.network.bridge.inhibit_ipv4") == "true"
+         and network["IPAM"]["Config"] == [{"Subnet": sys.argv[2]}]
+         and labels.get("com.docker.compose.project") == sys.argv[1]
+         and labels.get("com.docker.compose.network") == sys.argv[3])
+sys.exit(0 if valid else 1)
+' "$project" "$subnet" "$name"; then
+    exit 0
+  fi
+  containers=$(docker network inspect --format '{{range .Containers}}{{.Name}} {{end}}' "$name")
+  if [[ -n "$containers" ]]; then
+    echo "Network $name has incompatible ownership or settings and is in use by: $containers" >&2
+    echo "Stop and remove those stacks' containers (docker compose down), then rerun $0. No network was removed." >&2
+    exit 1
+  fi
+  echo "Recreating unused network $name with infra project $project ownership."
+  docker network rm "$name" >/dev/null
 fi
 
-actual=$(docker network inspect --format '{{.Driver}} {{.Internal}} {{index .Options "com.docker.network.bridge.inhibit_ipv4"}} {{range .IPAM.Config}}{{.Subnet}} {{end}}' "$name")
-if [[ "$actual" != "bridge true true $subnet " ]]; then
-  echo "Network $name must be an internal bridge with inhibit_ipv4=true and subnet $subnet; found: $actual" >&2
-  exit 1
-fi
+docker network create --driver bridge --internal --subnet "$subnet" \
+  --label "com.docker.compose.project=$project" \
+  --label "com.docker.compose.network=$name" \
+  --opt com.docker.network.bridge.inhibit_ipv4=true "$name" >/dev/null
