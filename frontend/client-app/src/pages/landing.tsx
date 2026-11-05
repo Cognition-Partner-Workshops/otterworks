@@ -23,9 +23,9 @@ export default function Home() {
             <span aria-current="page" className="flex shrink-0 items-center border-b-2 border-[#012169] font-medium text-[#012169]">
               Document Center
             </span>
-            <span className="flex shrink-0 items-center text-gray-600">
+            <Link to="/operations" className="flex shrink-0 items-center text-gray-600 hover:text-[#012169]">
               Operations Console
-            </span>
+            </Link>
             <span className="flex shrink-0 items-center text-gray-600">Help</span>
           </div>
         </nav>

@@ -4,6 +4,7 @@ import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import Home from "@/pages/landing";
 import DashboardPage from "@/pages/dashboard";
+import OperationsPage from "@/pages/operations";
 import DocumentsPage from "@/pages/documents";
 import DocumentEditorPage from "@/pages/document-editor";
 import FilesPage from "@/pages/files";
@@ -46,6 +47,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/operations" element={<OperationsPage />} />
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/documents/:id" element={<DocumentEditorPage />} />
           <Route path="/files" element={<FilesPage />} />
