@@ -128,6 +128,23 @@ def test_admin_history_and_monitor_statements():
         assert f"ALTER WAREHOUSE {sf.warehouse_name(name)} SET RESOURCE_MONITOR = {sf.resource_monitor_name(name)}" in sql
 
 
+def test_migrations_leave_no_proof_roles_granted_to_build_user():
+    grants = set()
+    seen_roles = set()
+    for workload, folder, _ in foundation.migration_jobs(False):
+        for _, sql in foundation.render(folder, foundation.template_vars(workload)):
+            for action, role in re.findall(
+                r"(GRANT|REVOKE) ROLE (\w+) (?:TO|FROM) USER DEVIN_EXT_SVC", sql
+            ):
+                seen_roles.add(role)
+                if action == "GRANT":
+                    grants.add(role)
+                else:
+                    grants.discard(role)
+    assert seen_roles == {f"{sf.RUN_TOKEN}_READER", f"{sf.RUN_TOKEN}_ANALYST"}
+    assert not grants
+
+
 def test_dry_run_never_connects(capsys):
     with patch.object(foundation.snowflake.connector, "connect", side_effect=AssertionError("network")):
         assert foundation.main(["--dry-run"]) == 0
