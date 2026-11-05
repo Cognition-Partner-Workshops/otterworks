@@ -50,6 +50,11 @@ are routing identifiers, not substitutes for authentication and authorization.
 
 ## Cloud resources
 
+The rates batch and FX report both default to yesterday in UTC, independently of
+the host time zone. Explicit business-date arguments select the corresponding
+file. Displayed FX figures still use each source row's business date, not the
+host clock or the file-selection date.
+
 A replatforming run uses ECR repositories `otterworks/bank-<app>` and namespaces `bank-w1-<run>-pr<n>` on `otterworks-dev`, deployed only by the pipeline's OIDC role. Every resource carries the run token (`run_token` tag on ECR, `demo/run-token` label on namespaces) and an expiry (`Expires` tag; `demo/expires-at` and `demo/expires-at-epoch` annotations, 72 hours by default).
 
 ```

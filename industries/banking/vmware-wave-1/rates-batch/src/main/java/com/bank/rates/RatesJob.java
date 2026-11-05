@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Stream;
@@ -63,7 +64,7 @@ public class RatesJob {
 
     static LocalDate businessDate(String[] args) {
         if (args.length > 2) return LocalDate.parse(args[2]);
-        return LocalDate.now().minusDays(1);
+        return LocalDate.now(ZoneOffset.UTC).minusDays(1);
     }
 
     public static void main(String[] args) throws IOException {

@@ -8,12 +8,32 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.TimeZone;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class RatesJobTest {
+    @Test
+    public void defaultBusinessDateUsesUtcRatherThanHostCalendar() {
+        TimeZone previous = TimeZone.getDefault();
+        try {
+            LocalDate utc = LocalDate.now(ZoneOffset.UTC);
+            TimeZone.setDefault(TimeZone.getTimeZone(LocalTime.now(ZoneOffset.UTC).getHour() < 12
+                    ? "GMT-12:00" : "GMT+14:00"));
+            org.junit.Assert.assertNotEquals("Host must be on another calendar day", utc, LocalDate.now());
+            assertEquals(utc.minusDays(1), RatesJob.businessDate(new String[] {"in", "out"}));
+            assertEquals(LocalDate.of(2026, 11, 1),
+                    RatesJob.businessDate(new String[] {"in", "out", "2026-11-01"}));
+        } finally {
+            TimeZone.setDefault(previous);
+        }
+    }
+
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
