@@ -69,7 +69,17 @@ def test_model_bootstrap_shares_installer_ddl(tmp_path):
         execute.assert_not_called()
 
 
-def test_deploy_setup_order(tmp_path):
+@pytest.mark.parametrize("ci", [False, True])
+def test_deploy_setup_order(tmp_path, monkeypatch, ci):
+    monkeypatch.setenv("GITHUB_ACTIONS", "true" if ci else "false")
+    monkeypatch.setenv("SNOWFLAKE_EXT_ACCOUNT", "test-account")
+    monkeypatch.setenv("SNOWFLAKE_EXT_USER", "TEST_SETUP_USER")
+    monkeypatch.setenv("SNOWFLAKE_EXT_PRIVATE_KEY", "test-key")
+    monkeypatch.delenv("SNOWFLAKE_EXT_SUPPORT_PUBLIC_KEY", raising=False)
+    if ci:
+        monkeypatch.delenv("DEVIN_SESSION_URL", raising=False)
+    else:
+        monkeypatch.setenv("DEVIN_SESSION_URL", "https://app.devin.ai/sessions/" + "a" * 32)
     args = SimpleNamespace(mode="deploy", dry_run=False, write_provenance=False, log_dir=str(tmp_path))
     runtime = SimpleNamespace(APP="DB.APP.STREAMLIT", MODELS={"doc_usage_dashboard": "account_storage_usage"},
                               procedure_name=lambda w: "DB.APP.P")
@@ -79,8 +89,10 @@ def test_deploy_setup_order(tmp_path):
             events.append(name)
             return value
         return record
-    with patch.object(cd, "module", return_value=runtime), patch.object(cd, "parameters", return_value={}) as params, \
-            patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), patch.object(cd, "execute", return_value=[]), \
+    with patch.object(cd, "module", return_value=runtime), patch.object(cd, "parameters", wraps=cd.parameters) as params, \
+            patch.object(cd.serialization, "load_pem_private_key"), patch.object(cd, "der", return_value=b"test-key"), \
+            patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()) as connect, \
+            patch.object(cd, "execute", return_value=[]), \
             patch.object(cd, "provision_support", side_effect=event("provision")), \
             patch.object(cd, "bootstrap_models", side_effect=event("bootstrap")), \
             patch.object(cd, "migrate", side_effect=event("migrate", [])), \
@@ -88,7 +100,16 @@ def test_deploy_setup_order(tmp_path):
             patch.object(cd, "dbt", return_value=1), patch.object(cd, "streamlit"), patch.object(cd, "provenance"):
         assert cd.run_workload(cd.REPO, "doc_usage_dashboard", args, "a" * 40, "a" * 40)
     assert events == ["provision", "bootstrap", "migrate", "install"]
-    assert params.call_args.args[-1] == "dev"
+    phase = "runtime" if ci else "dev"
+    assert params.call_args.args[-1] == phase
+    assert params.call_args_list[0].args[2] != params.call_args_list[1].args[2]
+    setup = connect.call_args_list[1].kwargs
+    tag = json.loads(setup["session_parameters"]["QUERY_TAG"])
+    assert tag["phase"] == phase
+    assert cd.sf.parse_run_id(tag["run_id"])["phase"] == phase
+    assert ("session_url" in tag) == (not ci)
+    assert setup["user"] == "TEST_SETUP_USER"
+    assert setup["role"] == "DEVIN_EXT_ROLE"
 
 
 def test_applied_migrations_unchanged():

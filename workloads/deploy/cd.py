@@ -498,7 +498,8 @@ def run_workload(root, workload, args, commit, attempted_commit):
                 try:
                     if workload == "doc_usage_dashboard" and args.mode != "rollback":
                         step = "provision_support"
-                        setup = dict(parameters(workload, commit, run_id, "dev"))
+                        setup_run_id = sf.make_run_id(workload, phase)
+                        setup = dict(parameters(workload, commit, setup_run_id, phase))
                         setup.update(database=None, schema=None, warehouse=None)
                         with closing(snowflake.connector.connect(**setup)) as setup_conn:
                             for statement in sf.database_ddl(workload):
