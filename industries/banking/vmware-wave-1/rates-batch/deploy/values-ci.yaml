@@ -1,0 +1,4 @@
+cronjob:
+  command: ["java", "-XX:MaxRAMPercentage=70", "-jar", "/app/rates-batch.jar", "s3://bank-rates/in", "s3://bank-rates/out", "2026-10-16"]
+env:
+  S3_ENDPOINT: http://s3.deps.svc.cluster.local:8333

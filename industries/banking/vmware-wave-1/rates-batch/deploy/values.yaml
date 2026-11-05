@@ -1,0 +1,18 @@
+app: rates-batch
+owner: treasury-it
+costCenter: FX-0042
+workload: cronjob
+cronjob:
+  schedule: "0 2 * * *"
+  timeZone: Etc/UTC
+  concurrencyPolicy: Forbid
+  command: ["java", "-XX:MaxRAMPercentage=70", "-jar", "/app/rates-batch.jar", "s3://bank-rates/in", "s3://bank-rates/out"]
+env:
+  BUSINESS_TZ: Etc/UTC
+  TZ: Etc/UTC
+  AWS_REGION: us-east-1
+  S3_ENDPOINT: http://s3.deps.svc.cluster.local:8333
+secretEnv:
+  AWS_ACCESS_KEY_ID: {secret: rates-batch-s3, key: AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: {secret: rates-batch-s3, key: AWS_SECRET_ACCESS_KEY}
+writablePaths: [/tmp]

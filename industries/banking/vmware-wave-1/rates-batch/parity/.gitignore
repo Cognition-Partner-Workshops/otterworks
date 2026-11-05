@@ -1,0 +1,9 @@
+out/*
+!out/vm/
+!out/container/
+out/vm/*
+out/container/*
+!out/vm/*.csv
+!out/container/*.csv
+!out/vm/*.html
+!out/container/*.html

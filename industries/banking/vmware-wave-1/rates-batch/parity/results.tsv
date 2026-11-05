@@ -1,0 +1,13 @@
+case	vm value	container value	result
+1-csv-2026-10-14	58c7b41354bdee7810fd80521cc5ebd2b92828a85aa21fec088b2574c093690d	58c7b41354bdee7810fd80521cc5ebd2b92828a85aa21fec088b2574c093690d	PASS
+2-csv-2026-10-15	e2746bf958143e87a41d126866b583d1d97d7365282d6ca17d190c2579262861	e2746bf958143e87a41d126866b583d1d97d7365282d6ca17d190c2579262861	PASS
+3-csv-2026-10-16	0bcf20da1ebabfc06420cc0688a9eaa23d149d31e2b06f55f01291beabd4bc2b	0bcf20da1ebabfc06420cc0688a9eaa23d149d31e2b06f55f01291beabd4bc2b	PASS
+4-stdout-2026-10-14	rates 2026-10-14: 5 pairs written to <OUT>	rates 2026-10-14: 5 pairs written to <OUT>	PASS
+5-stdout-2026-10-15	rates 2026-10-15: 5 pairs written to <OUT>	rates 2026-10-15: 5 pairs written to <OUT>	PASS
+6-stdout-2026-10-16	rates 2026-10-16: 5 pairs written to <OUT>	rates 2026-10-16: 5 pairs written to <OUT>	PASS
+7-unknown-day	1: no ticks for 2026-10-17 in <IN>	1: no ticks for 2026-10-17 in <IN>	PASS
+8-invalid-day	1: Exception in thread "main" java.time.format.DateTimeParseException: Text '2026-13-01' could not be parsed: Invalid value for MonthOfYear (valid values 1 - 12): 13	1: Exception in thread "main" java.time.format.DateTimeParseException: Text '2026-13-01' could not be parsed: Invalid value for MonthOfYear (valid values 1 - 12): 13	PASS
+9-missing-argument	2: usage: RatesJob <in-dir> <out-dir> [yyyy-MM-dd]	2: usage: RatesJob <in-dir> <out-dir> [yyyy-MM-dd]	PASS
+10-report-2026-10-14	200;text/html; charset=utf-8;9d0060355c52c01282c3e16113cf44743122defa65c91ab01ed3ad77cce40a6a	200;text/html; charset=utf-8;9d0060355c52c01282c3e16113cf44743122defa65c91ab01ed3ad77cce40a6a	PASS
+11-report-2026-10-15	200;text/html; charset=utf-8;7327597a4538a5fda05a806ac8cdab493dda878fa636124cabbf6b6e06de973a	200;text/html; charset=utf-8;7327597a4538a5fda05a806ac8cdab493dda878fa636124cabbf6b6e06de973a	PASS
+12-report-2026-10-16	200;text/html; charset=utf-8;2b047e1623d86683deadb9ad072ed0e646639a1acd84b2b6da9923910e5539d3	200;text/html; charset=utf-8;2b047e1623d86683deadb9ad072ed0e646639a1acd84b2b6da9923910e5539d3	PASS

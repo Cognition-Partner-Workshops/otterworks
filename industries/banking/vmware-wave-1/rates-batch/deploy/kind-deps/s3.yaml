@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: s3-identity
+type: Opaque
+stringData:
+  s3.json: |
+    {"identities":[{"name":"rates-kind-fixture","credentials":[{"accessKey":"synthetic-rates-user","secretKey":"synthetic-rates-key-not-for-production"}],"actions":["Admin","Read","Write","List","Tagging"]}]}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3
+spec:
+  selector:
+    app: rates-s3
+  ports:
+    - name: s3
+      port: 8333
+      targetPort: 8333
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rates-s3
+  template:
+    metadata:
+      labels:
+        app: rates-s3
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: seaweed
+          image: docker.io/chrislusf/seaweedfs:4.17@sha256:186de7ef977a20343ee9a5544073f081976a29e2d29ecf8379891e7bf177fbe9
+          args: ["server", "-ip=127.0.0.1", "-ip.bind=0.0.0.0", "-dir=/data", "-volume.max=1", "-master.volumeSizeLimitMB=100", "-s3", "-s3.config=/etc/seaweed/s3.json"]
+          ports:
+            - containerPort: 8333
+          readinessProbe:
+            tcpSocket:
+              port: 8333
+            periodSeconds: 2
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: identity
+              mountPath: /etc/seaweed
+              readOnly: true
+        - name: seed
+          image: docker.io/chrislusf/seaweedfs:4.17@sha256:186de7ef977a20343ee9a5544073f081976a29e2d29ecf8379891e7bf177fbe9
+          command: ["/bin/sh", "-ec"]
+          args:
+            - |
+              until curl -fsS http://127.0.0.1:8888/ >/dev/null; do sleep 2; done
+              for file in /ticks/*.csv; do
+                until curl -fsS -F "file=@$file" http://127.0.0.1:8888/buckets/bank-rates/in/; do sleep 2; done
+                curl -fsS "http://127.0.0.1:8888/buckets/bank-rates/in/$(basename "$file")" -o /tmp/uploaded
+                test "$(sha256sum "$file" | cut -d' ' -f1)" = "$(sha256sum /tmp/uploaded | cut -d' ' -f1)"
+              done
+              touch /tmp/seeded
+              echo 'bank-rates/in seeded and byte-verified'
+              while true; do sleep 3600; done
+          readinessProbe:
+            exec:
+              command: ["test", "-f", "/tmp/seeded"]
+            periodSeconds: 2
+          volumeMounts:
+            - name: ticks
+              mountPath: /ticks
+              readOnly: true
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: identity
+          secret:
+            secretName: s3-identity
+        - name: ticks
+          configMap:
+            name: rates-ticks
