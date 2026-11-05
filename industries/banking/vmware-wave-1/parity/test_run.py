@@ -23,7 +23,9 @@ class ParityTest(unittest.TestCase):
                 self.assertGreater(len(list(run.requests_for(app))), 0)
 
     def test_json_key_order_is_not_a_value_diff(self):
-        self.assertEqual(run.comparable(b'{"a":1,"b":2}', {}), run.comparable(b'{"b":2,"a":1}', {}))
+        self.assertEqual(
+            run.comparable(b'{"a":1,"b":2}', {}), run.comparable(b'{"b":2,"a":1}', {})
+        )
 
     def test_only_declared_timestamp_is_omitted(self):
         spec = {"omit_json_keys": ["at"]}
@@ -31,14 +33,18 @@ class ParityTest(unittest.TestCase):
         b = b'[{"account":"X","at":"today","text":"ready"}]'
         self.assertNotEqual(run.digest(a), run.digest(b))
         self.assertEqual(run.comparable(a, spec), run.comparable(b, spec))
-        self.assertNotEqual(run.comparable(a, spec), run.comparable(b.replace(b"ready", b"wrong"), spec))
+        self.assertNotEqual(
+            run.comparable(a, spec), run.comparable(b.replace(b"ready", b"wrong"), spec)
+        )
 
     def test_document_name_normalization_keeps_size_and_kind(self):
         spec = {"generated_document_names": True}
         a = b'{"file":"passport-1793800000000.pdf","bytes":42}'
         b = b'{"file":"passport-1793900000000.pdf","bytes":42}'
         self.assertEqual(run.comparable(a, spec), run.comparable(b, spec))
-        self.assertNotEqual(run.comparable(a, spec), run.comparable(b.replace(b"42", b"41"), spec))
+        self.assertNotEqual(
+            run.comparable(a, spec), run.comparable(b.replace(b"42", b"41"), spec)
+        )
 
     def test_matching_errors_cannot_pass(self):
         with patch.object(run, "fetch", return_value=(500, b"same error")):
@@ -58,7 +64,9 @@ class ParityTest(unittest.TestCase):
             rows = run.compare_http("fx-report", "http://vm", "http://kind", None)
         self.assertTrue(run.report("fx-report", rows)["pass"])
         self.assertNotIn("sample_diff", rows[0])
-        with patch.object(run, "fetch", side_effect=[(200, b"before"), (200, b"after")]):
+        with patch.object(
+            run, "fetch", side_effect=[(200, b"before"), (200, b"after")]
+        ):
             rows = run.compare_http("fx-report", "http://vm", "http://kind", None)
         self.assertFalse(run.report("fx-report", rows)["pass"])
         self.assertIn("sample_diff", rows[0])
@@ -68,7 +76,9 @@ class ParityTest(unittest.TestCase):
             vm, kind = Path(temp) / "vm", Path(temp) / "kind"
             vm.mkdir()
             kind.mkdir()
-            self.assertFalse(run.report("rates-batch", run.compare_batch(vm, kind))["pass"])
+            self.assertFalse(
+                run.report("rates-batch", run.compare_batch(vm, kind))["pass"]
+            )
             for day in run.APPS["rates-batch"]["business_days"]:
                 for folder in (vm, kind):
                     (folder / f"rates-{day}.csv").write_text("pair,close\nUSDGBP,0.7\n")
@@ -98,7 +108,9 @@ class ParityTest(unittest.TestCase):
                 pass
 
         servers = [ThreadingHTTPServer(("127.0.0.1", 0), Handler) for _ in range(2)]
-        threads = [threading.Thread(target=s.serve_forever, daemon=True) for s in servers]
+        threads = [
+            threading.Thread(target=s.serve_forever, daemon=True) for s in servers
+        ]
         try:
             for thread in threads:
                 thread.start()
