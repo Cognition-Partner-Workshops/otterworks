@@ -70,6 +70,20 @@ def validate(doc: object, path: Path | None = None) -> list[str]:
     if errors:
         return errors
     assert isinstance(doc, dict)
+    deployment = doc.get("deployment")
+    if deployment:
+        times = [("attempted/started_at", deployment["attempted"]["started_at"]),
+                 ("attempted/finished_at", deployment["attempted"]["finished_at"])]
+        if deployment["deployed"]:
+            times.append(("deployed/deployed_at", deployment["deployed"]["deployed_at"]))
+        for field, value in times:
+            try:
+                timestamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                valid = timestamp.utcoffset() == timedelta(0) and "T" in value
+            except ValueError:
+                valid = False
+            if not valid:
+                errors.append(f"deployment/{field}: expected a valid UTC ISO timestamp")
     if "data_quality" in doc:
         quality = doc["data_quality"]
         for field, value in (
@@ -108,6 +122,20 @@ def validate(doc: object, path: Path | None = None) -> list[str]:
         errors.append(f"endpoints: {sorted(csids)} differ from the registered endpoints {registered}")
 
     expected = _expected_names(workload)
+    for i, change in enumerate(doc.get("configuration_changes", [])):
+        migration = Path(change["migration"])
+        if migration.parent != Path("workloads") / workload / "migrations" or not (ROOT / migration).is_file():
+            errors.append(f"configuration_changes/{i}/migration: expected an existing workload migration")
+        if change["object"] not in {obj["name"] for obj in doc["objects"]}:
+            errors.append(f"configuration_changes/{i}/object: not a recorded workload object")
+        for j, evidence in enumerate(change["evidence"]):
+            try:
+                timestamp = datetime.fromisoformat(evidence["time"].replace("Z", "+00:00"))
+                valid = timestamp.utcoffset() == timedelta(0) and "T" in evidence["time"]
+            except ValueError:
+                valid = False
+            if not valid:
+                errors.append(f"configuration_changes/{i}/evidence/{j}/time: expected a valid UTC ISO timestamp")
     wh = doc["warehouse"]
     if wh["name"] != expected["warehouse"]:
         errors.append(f"warehouse/name: expected {expected['warehouse']}, got {wh['name']}")

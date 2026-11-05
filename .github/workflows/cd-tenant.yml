@@ -71,14 +71,14 @@ jobs:
             document-service: ['services/document-service/**']
             collab-service: ['services/collab-service/**']
             notification-service: ['services/notification-service/**']
-            search-service: ['services/search-service/**']
+            search-service: ['services/search-service/**', 'workloads/attribution/**']
             analytics-service: ['services/analytics-service/**']
             admin-service: ['services/admin-service/**']
             audit-service: ['services/audit-service/**']
             report-service: ['services/report-service/**']
             web-app: ['frontend/client-app/**']
             admin-dashboard: ['frontend/admin-dashboard/**']
-            deployable: ['services/**', 'frontend/**', 'infrastructure/helm/**', 'scripts/**']
+            deployable: ['services/**', 'frontend/**', 'infrastructure/helm/**', 'scripts/**', 'workloads/attribution/**']
 
       # The document-service chart ships copies of the incident alert rules
       # and dashboard; refuse to deploy a tenant whose copies have drifted.

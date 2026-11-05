@@ -29,11 +29,36 @@ query_tag:
 warehouse:
   name: WH_DOC_SEARCH_API
   size: LARGE
-  auto_suspend_seconds: 60
+  auto_suspend_seconds: 900
   resource_monitor:
     name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
     frequency: MONTHLY
     credit_quota: 10
+configuration_changes:
+  - object: WH_DOC_SEARCH_API
+    setting: AUTO_SUSPEND
+    from: 60
+    to: 900
+    migration: workloads/doc_search_api/migrations/V1.0.1__restore_auto_suspend.sql
+    reason: >-
+      Restore the requested 900-second search API idle window while retaining LARGE.
+      SHOW WAREHOUSES reports LARGE/60 live; warehouse above records the planned target.
+      ACCOUNT_USAGE.QUERY_HISTORY and INFORMATION_SCHEMA.QUERY_HISTORY both show the
+      current warehouse was created with LARGE/60, not altered from 900 in the visible
+      history. Its creation time matches SHOW WAREHOUSES (2026-11-05T03:40:46.393Z).
+      The earlier 2026-11-04 creation and SFNFR-prefixed warehouse are not this incarnation.
+    status: planned
+    environment: Snowflake external account; pending application by operator
+    evidence:
+      - query_id: 01c8331c-030c-d1ca-0035-065b00085f8a
+        time: "2026-11-05T03:40:46.335Z"
+        user: DEVIN_EXT_SVC
+        role: DEVIN_EXT_ROLE
+        query_tag: '{"csid":"cs_doc_search_api_top_items","workload":"doc_search_api","phase":"dev","commit":"98d622deca8d2cf09c81c834d1a9c014914804e2","run_id":"SFEXT_20261105A-doc_search_api-dev-20261105T034040Z","session_url":"https://partner-workshops.devinenterprise.com/sessions/6f05f95b4d0f47b5bda7614bd35e4776"}'
+        statement: >-
+          CREATE WAREHOUSE IF NOT EXISTS WH_DOC_SEARCH_API WITH WAREHOUSE_SIZE = 'LARGE'
+          AUTO_SUSPEND = 60 AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE
+          COMMENT = '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}';
 objects:
   - type: database
     name: DB_DOC_SEARCH_API_SFEXT_20261105A

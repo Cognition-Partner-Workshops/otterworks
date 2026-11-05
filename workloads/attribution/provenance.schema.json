@@ -6,6 +6,98 @@
   "additionalProperties": false,
   "required": ["schema_version", "workload", "run_token", "expires", "application", "source", "endpoints", "query_tag", "warehouse", "objects", "usage"],
   "properties": {
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attempted", "deployed"],
+      "properties": {
+        "attempted": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["commit", "mode", "run_id", "started_at", "finished_at", "status", "failed_step", "gate", "failing_tests"],
+          "properties": {
+            "commit": {"$ref": "#/$defs/commit"},
+            "mode": {"enum": ["deploy", "rollback", "dry-run"]},
+            "run_id": {"type": "string", "minLength": 1},
+            "started_at": {"$ref": "#/$defs/utc_timestamp"},
+            "finished_at": {"$ref": "#/$defs/utc_timestamp"},
+            "status": {"enum": ["succeeded", "failed"]},
+            "failed_step": {"type": ["string", "null"]},
+            "gate": {"type": ["string", "null"]},
+            "failing_tests": {"type": "array", "items": {"type": "string", "minLength": 1}}
+          },
+          "allOf": [{
+            "if": {"properties": {"status": {"const": "failed"}}},
+            "then": {"properties": {"failed_step": {"type": "string", "minLength": 1}, "gate": {"type": "string", "minLength": 1}}},
+            "else": {"properties": {"failed_step": {"type": "null"}, "gate": {"type": "null"}, "failing_tests": {"maxItems": 0}}}
+          }]
+        },
+        "deployed": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["commit", "mode", "run_id", "deployed_at", "objects"],
+              "properties": {
+                "commit": {"$ref": "#/$defs/commit"},
+                "mode": {"enum": ["deploy", "rollback", "dry-run"]},
+                "run_id": {"type": "string", "minLength": 1},
+                "deployed_at": {"$ref": "#/$defs/utc_timestamp"},
+                "objects": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["type", "name", "detail"],
+                    "properties": {
+                      "type": {"enum": ["migrations", "model", "tests", "streamlit"]},
+                      "name": {"type": "string", "minLength": 1},
+                      "detail": {"type": "string", "minLength": 1}
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "configuration_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["object", "setting", "from", "to", "migration", "reason", "status", "environment", "evidence"],
+        "properties": {
+          "object": {"$ref": "#/$defs/object_name"},
+          "setting": {"type": "string", "minLength": 1},
+          "from": {"type": ["string", "number", "boolean"]},
+          "to": {"type": ["string", "number", "boolean"]},
+          "migration": {"type": "string", "pattern": "^workloads/[a-z0-9_]+/migrations/V[0-9.]+__[a-z0-9_]+\\.sql$"},
+          "reason": {"type": "string", "pattern": "\\S"},
+          "status": {"enum": ["planned", "applied"]},
+          "environment": {"type": "string", "minLength": 1},
+          "applied_query_id": {"type": "string", "minLength": 1},
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["query_id", "time", "user", "role", "query_tag", "statement"],
+              "properties": {
+                "query_id": {"type": "string", "minLength": 1},
+                "time": {"$ref": "#/$defs/utc_timestamp"},
+                "user": {"type": "string", "minLength": 1},
+                "role": {"type": "string", "minLength": 1},
+                "query_tag": {"type": "string"},
+                "statement": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        }
+      }
+    },
     "data_quality": {
       "type": "object",
       "additionalProperties": false,
@@ -110,7 +202,7 @@
       "properties": {
         "name": {"$ref": "#/$defs/object_name"},
         "size": {"enum": ["XSMALL", "LARGE"]},
-        "auto_suspend_seconds": {"const": 60},
+        "auto_suspend_seconds": {"enum": [60, 900]},
         "resource_monitor": {
           "type": "object",
           "additionalProperties": false,
@@ -121,7 +213,11 @@
             "credit_quota": {"type": "integer", "minimum": 1}
           }
         }
-      }
+      },
+      "allOf": [{
+        "if": {"properties": {"size": {"const": "XSMALL"}}},
+        "then": {"properties": {"auto_suspend_seconds": {"const": 60}}}
+      }]
     },
     "objects": {
       "type": "array",

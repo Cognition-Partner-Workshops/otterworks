@@ -72,6 +72,72 @@ def test_starting_provenance_is_valid(workload):
     assert vp.validate(_doc(workload), _path(workload)) == []
 
 
+@pytest.mark.parametrize("size,seconds,valid", [
+    ("LARGE", 900, True), ("LARGE", 60, True), ("XSMALL", 60, True),
+    ("XSMALL", 900, False), ("LARGE", 300, False),
+])
+def test_warehouse_suspend_policy(size, seconds, valid):
+    doc = _doc()
+    doc["warehouse"].update(size=size, auto_suspend_seconds=seconds)
+    assert (vp.validate(doc) == []) is valid
+
+
+def test_configuration_changes_can_be_empty_or_absent():
+    doc = _doc("doc_search_api")
+    doc["configuration_changes"] = []
+    assert vp.validate(doc) == []
+    doc.pop("configuration_changes")
+    assert vp.validate(doc) == []
+
+
+@pytest.mark.parametrize("field,value", [
+    ("status", "pending"), ("reason", " "), ("environment", ""),
+    ("migration", "workloads/doc_search_api/migrations/V9.0.0__missing.sql"),
+    ("migration", "workloads/churn_model/migrations/V1.0.0__foundation.sql"),
+    ("object", "WH_UNKNOWN"), ("evidence", [{}]), ("from", None),
+])
+def test_invalid_configuration_changes(field, value):
+    doc = _doc("doc_search_api")
+    doc["configuration_changes"][0][field] = value
+    assert vp.validate(doc)
+
+
+def test_configuration_evidence_requires_valid_utc_time():
+    doc = _doc("doc_search_api")
+    doc["configuration_changes"][0]["evidence"][0]["time"] = "2026-02-30T12:00:00Z"
+    assert vp.validate(doc)
+
+
+def _deployment():
+    return {
+        "attempted": {"commit": "a" * 40, "mode": "deploy", "run_id": "run", "started_at": "2026-11-05T12:00:00Z",
+                      "finished_at": "2026-11-05T12:01:00Z", "status": "succeeded", "failed_step": None,
+                      "gate": None, "failing_tests": []},
+        "deployed": None,
+    }
+
+
+def test_optional_deployment_valid():
+    doc = _doc()
+    doc["deployment"] = _deployment()
+    assert vp.validate(doc) == []
+    doc["deployment"]["deployed"] = dict(commit="a" * 40, mode="rollback", run_id="run",
+                                         deployed_at="2026-11-05T12:01:00Z", objects=[
+                                             dict(type="model", name="old_model", detail="built")])
+    assert vp.validate(doc) == []
+
+
+@pytest.mark.parametrize("field,value", [("commit", "main"), ("status", "pending"),
+                                        ("mode", "train"), ("run_id", ""), ("started_at", "yesterday"),
+                                        ("status", "failed"), ("failing_tests", [""]),
+                                        ("finished_at", "2026-02-30T12:00:00Z")])
+def test_invalid_deployment_attempt(field, value):
+    doc = _doc()
+    doc["deployment"] = _deployment()
+    doc["deployment"]["attempted"][field] = value
+    assert vp.validate(doc)
+
+
 def test_starting_usage_is_pending_and_cortex_is_separate():
     for workload in WORKLOADS:
         usage = _doc(workload)["usage"]

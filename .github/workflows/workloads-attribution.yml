@@ -38,9 +38,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r workloads/pipeline/requirements.txt -r workloads/churn_model/requirements.txt ruff==0.9.10 mypy==1.15.0
-      - run: ruff check workloads/attribution workloads/foundation workloads/pipeline workloads/doc_usage_dashboard workloads/churn_model
+      - run: ruff check workloads/attribution workloads/foundation workloads/pipeline workloads/doc_usage_dashboard workloads/churn_model workloads/deploy
       - run: mypy --ignore-missing-imports --follow-imports=silent workloads/pipeline/runtime.py workloads/pipeline/source.py
-      - run: pytest workloads/attribution/tests workloads/pipeline/unit_tests workloads/doc_usage_dashboard/tests workloads/churn_model/tests -v
+      - run: pytest workloads/attribution/tests workloads/pipeline/unit_tests workloads/doc_usage_dashboard/tests workloads/churn_model/tests workloads/deploy/tests -v
       - run: dbt parse --project-dir workloads/pipeline --profiles-dir workloads/pipeline
       - name: dq
         run: |

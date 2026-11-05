@@ -1,7 +1,7 @@
 FROM python:3.12-slim
 
 ARG SF_COMMIT
-RUN python -c "import re; assert re.fullmatch('[0-9a-fA-F]{40}', '${SF_COMMIT}'), 'SF_COMMIT must be a real 40-hex git revision'"
+RUN python -c "import re; assert re.fullmatch('[0-9a-fA-F]{40}', '${SF_COMMIT}'), 'SF_COMMIT must be a real 40-hex git revision; run SF_COMMIT=\$(git rev-parse HEAD) docker compose up --build search-service, or use make'"
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
