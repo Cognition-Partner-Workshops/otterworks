@@ -4,7 +4,7 @@ with periods as (
 ), user_history as (
  select column1::number as id,column2::varchar as user_id,
   column3::timestamp_ntz as effective_at,column4::timestamp_ntz as created_at,
-  column5::timestamp_ntz as last_login_at
+  column5::timestamp_ntz as last_login_at,(column1=11) as is_deleted
  from values
  (1,'login','2026-11-01','2026-01-01','2026-09-25'),
  (2,'login','2026-11-02T08:00:00','2026-01-01','2026-11-02T08:00:00'),
@@ -14,7 +14,9 @@ with periods as (
  (6,'boundary','2026-11-01T23:59:59.999999','2026-01-01','2026-11-01T23:59:59.999999'),
  (7,'boundary','2026-11-02T00:00:00','2026-01-01','2026-11-02T00:00:00'),
  (8,'never','2026-11-01','2026-01-01',null),
- (9,'unknown','2026-11-02','2026-01-01','2026-09-25')
+ (9,'unknown','2026-11-02','2026-01-01','2026-09-25'),
+ (10,'physical_delete','2026-11-01','2026-01-01','2026-09-25'),
+ (11,'physical_delete','2026-11-02','2026-01-01','2026-09-25')
 ), status_history as (
  select column1::number as id,column2::varchar as user_id,
   column3::timestamp_ntz as effective_at,column4::varchar as status
@@ -32,7 +34,7 @@ with periods as (
  (11,'unknown','2026-11-02','active')
 ), user_state as ({{ weekly_state('periods','user_history') }}),
 status_state as ({{ weekly_state('periods','status_history') }}),
-users as (select week_start_date,user_id as id,created_at,last_login_at from user_state),
+users as (select week_start_date,user_id as id,created_at,last_login_at from user_state where not is_deleted),
 accounts as (select week_start_date,user_id as id,status from status_state),
 versions as (select null::varchar as created_by,null::timestamp_ntz as created_at where false),
 report as ({{ churn_scores('users','accounts','versions','periods',true) }}),
@@ -46,6 +48,7 @@ expected as (
  ('2026-10-26','delete',37,40,0,70),
  ('2026-10-26','boundary',0,0,0,30),
  ('2026-10-26','never',304,40,0,70),
+ ('2026-10-26','physical_delete',37,40,0,70),
  ('2026-11-02','login',6,0,0,30),
  ('2026-11-02','activate',44,40,0,70),
  ('2026-11-02','undelete',44,40,0,70),

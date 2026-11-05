@@ -11,6 +11,7 @@ with periods as (
   {{ weekly_state("periods", "status_history") }}
 ), users as (
   select week_start_date,user_id as id,created_at,last_login_at from user_state
+  where not coalesce(is_deleted,false)
 ), accounts as (
   select week_start_date,user_id as id,status from status_state
 ), versions as (

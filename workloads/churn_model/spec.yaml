@@ -14,7 +14,7 @@ inputs:
     columns: [id, status]
   - source: source-triggered Postgres user_state_history
     landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.AUTH_USER_STATE_HISTORY
-    columns: [id, user_id, effective_at, created_at, last_login_at]
+    columns: [id, user_id, effective_at, created_at, last_login_at, is_deleted]
   - source: source-triggered Postgres admin_user_state_history
     landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.ADMIN_USER_STATE_HISTORY
     columns: [id, user_id, effective_at, status]
