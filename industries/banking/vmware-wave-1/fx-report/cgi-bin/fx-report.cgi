@@ -9,7 +9,7 @@ use CGI qw(:standard escapeHTML);
 use POSIX qw(strftime);
 use FxReport::Rates;
 
-my $SPOOL = '/mnt/rates-out';
+my $SPOOL = $ENV{RATES_OUT_DIR} || '/mnt/rates-out';
 my $day = param('day') || strftime('%Y-%m-%d', localtime(time - 86400));
 $day = '' unless $day =~ /^\d{4}-\d\d-\d\d$/;
 my ($y, $m, $d) = split /-/, $day;
@@ -27,8 +27,9 @@ if (!$today) {
     print '<table><tr><th>Pair</th><th>Close</th><th>Average mid</th><th>Range</th><th>Change</th></tr>';
     for my $r (@{ FxReport::Rates::moves($today, $prev) }) {
         my $chg = defined $r->{chg_pct} ? sprintf('%+.3f%%', $r->{chg_pct}) : 'n/a';
-        printf "<tr><td>%s</td><td>%s</td><td>%s</td><td>%.5f</td><td>%s</td></tr>\n",
-            escapeHTML($r->{pair}), $r->{close}, $r->{avg}, $r->{range}, $chg;
+        my $date = escapeHTML($r->{business_date} || $day);
+        printf "<tr><td>%s</td><td>%s (%s)</td><td>%s (%s)</td><td>%.5f (%s)</td><td>%s</td></tr>\n",
+            escapeHTML($r->{pair}), $r->{close}, $date, $r->{avg}, $date, $r->{range}, $date, $chg;
     }
     print '</table>';
 }

@@ -82,8 +82,8 @@ public class RatesJob {
         Files.createDirectories(outDir);
         Path tmp = outDir.resolve(".rates-" + day + ".tmp");
         try (Writer w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-            w.write("pair,open,high,low,close,avg_mid,ticks\n");
-            for (Daily d : rates.values()) w.write(d.csv() + "\n");
+            w.write("pair,open,high,low,close,avg_mid,ticks,business_date\n");
+            for (Daily d : rates.values()) w.write(d.csv() + "," + day + "\n");
         }
         Files.move(tmp, outDir.resolve("rates-" + day + ".csv"), StandardCopyOption.ATOMIC_MOVE,
                 StandardCopyOption.REPLACE_EXISTING);

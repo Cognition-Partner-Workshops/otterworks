@@ -1,6 +1,7 @@
 package com.bank.statements;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -9,6 +10,23 @@ import java.util.Collections;
 import org.junit.Test;
 
 public class HtmlTest {
+    @Test
+    public void masksAccountLinkTextAndLastViewedButKeepsNavigation() {
+        String out = Html.accounts("Bank", Collections.singletonMap("HG611000001", "Avery"), "HG611000001");
+        assertTrue(out.contains("href=\"statement?account=HG611000001\">****0001</a>"));
+        String visible = out.replaceAll("<[^>]+>", "");
+        assertTrue(visible.contains("Last viewed: ****0001"));
+        assertFalse(visible.contains("HG611000001"));
+    }
+
+    @Test
+    public void masksStatementHeadingAndBrowserTitle() {
+        String out = Html.statement("Bank", "HG611000001", Collections.emptyList());
+        assertTrue(out.contains("<title>Statement ****0001 - Bank</title>"));
+        assertTrue(out.contains("<h2>Statement ****0001</h2>"));
+        assertFalse(out.contains("HG611000001"));
+    }
+
     @Test
     public void escapesHolderNames() {
         String out = Html.accounts("Bank", Collections.singletonMap("IT01W1000001", "<b>x</b>"), null);
