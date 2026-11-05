@@ -1,4 +1,2 @@
-FROM python:3.12-slim
-RUN pip install --no-cache-dir postgres-mcp==0.3.0
+FROM crystaldba/postgres-mcp:0.3.0@sha256:dbbd346860d29f1543e991f30f3284bf4ab5f096d049ecc3426528f20b1b6e6b
 USER 1001:1001
-ENTRYPOINT ["postgres-mcp"]
