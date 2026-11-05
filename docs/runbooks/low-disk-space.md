@@ -39,8 +39,8 @@ evictions start. 5 % means evictions have already started or are about to.
 
 1. **Which node, and how fast is it filling?**
    ```bash
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[1h], 4*3600) < 0' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[1h], 4*3600) < 0' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
    ```
    Grafana **OtterWorks Infrastructure** → *Node Disk Usage*. A node that
    `predict_linear` says hits zero within 4 hours is urgent even at 14 % free.
@@ -96,5 +96,6 @@ evictions start. 5 % means evictions have already started or are about to.
 | Workloads | `docker compose -f docker-compose.yml -f docker-compose.infra.yml ps` | `kubectl -n otterworks-<tenant> get pods` (`otterworks-main` for t-main) |
 
 Pods carry `app.kubernetes.io/name=<service>`. Compose containers are named
-`otterworks-<service>`. In the commands below, `$PROM` is whichever Prometheus
-URL applies (`export PROM=http://localhost:9090`).
+`otterworks-<service>`. In the commands below, `$PROM`, `$AM` and `$JAEGER` are the URLs from
+the table: on Compose `export PROM=http://localhost:9090 AM=http://localhost:9093 JAEGER=http://localhost:16686`;
+on the cluster, with the port-forwards above, `export PROM=http://localhost:19090 AM=http://localhost:19093 JAEGER=https://jaeger.otterworks.app`.

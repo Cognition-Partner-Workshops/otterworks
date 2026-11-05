@@ -53,8 +53,8 @@ users notice.
    Queue Depth*.
 2. **Is the consumer up and erroring?**
    ```bash
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=up{job=~"notification-service|search-service|audit-service"}' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=rate(notifications_processing_errors_total[5m])' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=up{job=~"notification-service|search-service|audit-service"}' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=rate(notifications_processing_errors_total[5m])' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
    docker logs --since 10m otterworks-notification-service 2>&1 | grep -Ei 'deseriali|error|exception' | tail -20
    ```
    The Grafana alert `NotificationConsumerProcessingErrors` covers the same
@@ -106,5 +106,6 @@ before you redrive them, so you know which bad payload you would be replaying.
 | Workloads | `docker compose -f docker-compose.yml -f docker-compose.infra.yml ps` | `kubectl -n otterworks-<tenant> get pods` (`otterworks-main` for t-main) |
 
 Pods carry `app.kubernetes.io/name=<service>`. Compose containers are named
-`otterworks-<service>`. In the commands below, `$PROM` is whichever Prometheus
-URL applies (`export PROM=http://localhost:9090`).
+`otterworks-<service>`. In the commands below, `$PROM`, `$AM` and `$JAEGER` are the URLs from
+the table: on Compose `export PROM=http://localhost:9090 AM=http://localhost:9093 JAEGER=http://localhost:16686`;
+on the cluster, with the port-forwards above, `export PROM=http://localhost:19090 AM=http://localhost:19093 JAEGER=https://jaeger.otterworks.app`.

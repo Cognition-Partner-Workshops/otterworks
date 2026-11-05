@@ -41,8 +41,8 @@ the node itself is under memory pressure. The critical level gets the shorter
 
 1. **Which process, and is it growing or flat?**
    ```bash
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=process_resident_memory_bytes / on (instance) group_left machine_memory_bytes' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=deriv(process_resident_memory_bytes{job="<service>"}[30m])' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=process_resident_memory_bytes / on (instance) group_left machine_memory_bytes' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=deriv(process_resident_memory_bytes{job="<service>"}[30m])' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
    ```
    If the result is empty, cAdvisor is not scraped here (see above), so fall
    back to `process_resident_memory_bytes{job="<service>"}` alone. A steady
@@ -101,5 +101,6 @@ the node itself is under memory pressure. The critical level gets the shorter
 | Workloads | `docker compose -f docker-compose.yml -f docker-compose.infra.yml ps` | `kubectl -n otterworks-<tenant> get pods` (`otterworks-main` for t-main) |
 
 Pods carry `app.kubernetes.io/name=<service>`. Compose containers are named
-`otterworks-<service>`. In the commands below, `$PROM` is whichever Prometheus
-URL applies (`export PROM=http://localhost:9090`).
+`otterworks-<service>`. In the commands below, `$PROM`, `$AM` and `$JAEGER` are the URLs from
+the table: on Compose `export PROM=http://localhost:9090 AM=http://localhost:9093 JAEGER=http://localhost:16686`;
+on the cluster, with the port-forwards above, `export PROM=http://localhost:19090 AM=http://localhost:19093 JAEGER=https://jaeger.otterworks.app`.

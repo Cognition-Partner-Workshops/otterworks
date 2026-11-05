@@ -34,8 +34,8 @@ before treating it as an outage.
 
 1. **Which service, how many requests, which endpoint and which status code?**
    ```bash
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=sum by (job) (rate(http_requests_total{status=~"5.."}[5m])) / sum by (job) (rate(http_requests_total[5m]))' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=sum by (handler, status) (rate(http_requests_total{job="<service>", status=~"5.."}[5m]))' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=sum by (job) (rate(http_requests_total{status=~"5.."}[5m])) / sum by (job) (rate(http_requests_total[5m]))' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=sum by (handler, status) (rate(http_requests_total{job="<service>", status=~"5.."}[5m]))' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
    ```
    Grafana **OtterWorks Overview** → *Error Rate by Service*. Then
    **OtterWorks Service Detail** (`/d/otterworks-service-detail`) with
@@ -93,5 +93,6 @@ before treating it as an outage.
 | Workloads | `docker compose -f docker-compose.yml -f docker-compose.infra.yml ps` | `kubectl -n otterworks-<tenant> get pods` (`otterworks-main` for t-main) |
 
 Pods carry `app.kubernetes.io/name=<service>`. Compose containers are named
-`otterworks-<service>`. In the commands below, `$PROM` is whichever Prometheus
-URL applies (`export PROM=http://localhost:9090`).
+`otterworks-<service>`. In the commands below, `$PROM`, `$AM` and `$JAEGER` are the URLs from
+the table: on Compose `export PROM=http://localhost:9090 AM=http://localhost:9093 JAEGER=http://localhost:16686`;
+on the cluster, with the port-forwards above, `export PROM=http://localhost:19090 AM=http://localhost:19093 JAEGER=https://jaeger.otterworks.app`.

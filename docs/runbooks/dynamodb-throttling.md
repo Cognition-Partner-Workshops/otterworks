@@ -40,7 +40,7 @@ system errors are on AWS's side, not ours.
 
 1. **Which table and which operation, and is it reads or writes?**
    ```bash
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=sum by (table_name, operation) (rate(aws_dynamodb_throttled_requests_total[5m]))' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=sum by (table_name, operation) (rate(aws_dynamodb_throttled_requests_total[5m]))' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
    aws cloudwatch get-metric-statistics --namespace AWS/DynamoDB --metric-name ThrottledRequests \
      --dimensions Name=TableName,Value=<table> Name=Operation,Value=<op> \
      --start-time $(date -u -d '-30 min' +%FT%TZ) --end-time $(date -u +%FT%TZ) --period 60 --statistics Sum
@@ -56,7 +56,7 @@ system errors are on AWS's side, not ours.
    traffic) or a throttled GSI.
 3. **Which caller is generating the load?**
    ```bash
-   curl -s "$PROM/api/v1/query" --data-urlencode 'query=topk(5, sum by (job, handler) (rate(http_requests_total{job=~"file-service|notification-service|audit-service"}[5m])))' | jq -r '.data.result[] | "\(.metric.job // .metric.instance // .metric.queue_name // .metric.table_name) \(.value[1])"'
+   curl -s "$PROM/api/v1/query" --data-urlencode 'query=topk(5, sum by (job, handler) (rate(http_requests_total{job=~"file-service|notification-service|audit-service"}[5m])))' | jq -r '.data.result[] | "\(.metric | to_entries | map("\(.key)=\(.value)") | join(" ")) \(.value[1])"'
    docker logs --since 10m otterworks-file-service 2>&1 | grep -Ei 'throttl|ProvisionedThroughput' | tail -20
    ```
    One handler with a sudden jump in rate, such as a bulk import, a retry
@@ -100,5 +100,6 @@ system errors are on AWS's side, not ours.
 | Workloads | `docker compose -f docker-compose.yml -f docker-compose.infra.yml ps` | `kubectl -n otterworks-<tenant> get pods` (`otterworks-main` for t-main) |
 
 Pods carry `app.kubernetes.io/name=<service>`. Compose containers are named
-`otterworks-<service>`. In the commands below, `$PROM` is whichever Prometheus
-URL applies (`export PROM=http://localhost:9090`).
+`otterworks-<service>`. In the commands below, `$PROM`, `$AM` and `$JAEGER` are the URLs from
+the table: on Compose `export PROM=http://localhost:9090 AM=http://localhost:9093 JAEGER=http://localhost:16686`;
+on the cluster, with the port-forwards above, `export PROM=http://localhost:19090 AM=http://localhost:19093 JAEGER=https://jaeger.otterworks.app`.
