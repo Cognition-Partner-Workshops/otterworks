@@ -88,11 +88,23 @@ def features(account, prediction, auth, documents, events, quotas):
     return result
 
 
+def accounts(tables):
+    created = dict(zip(tables["AUTH_USERS"].id, tables["AUTH_USERS"].created_at))
+    history = pd.concat([tables["AUTH_USER_STATE_HISTORY"], tables["ADMIN_USER_STATE_HISTORY"]])
+    for row in history.sort_values(["effective_at", "id"]).itertuples(index=False):
+        if pd.isna(created.get(row.user_id)):
+            timestamp = getattr(row, "created_at", pd.NaT)
+            # Without a creation timestamp, first capture is a conservative account-age bound.
+            created[row.user_id] = timestamp if pd.notna(timestamp) else row.effective_at
+    return pd.DataFrame(created.items(), columns=["id", "created_at"])
+
+
 def dataset(tables, predictions, observation_end):
+    users = accounts(tables)
     output = []
     for prediction in predictions:
-        for user in tables["AUTH_USERS"].itertuples(index=False):
-            if user.created_at >= prediction - pd.Timedelta(days=28):
+        for user in users.itertuples(index=False):
+            if pd.isna(user.created_at) or user.created_at >= prediction - pd.Timedelta(days=28):
                 continue
             auth = latest(tables["AUTH_USER_STATE_HISTORY"], user.id, prediction)
             admin = latest(tables["ADMIN_USER_STATE_HISTORY"], user.id, prediction)

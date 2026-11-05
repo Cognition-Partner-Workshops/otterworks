@@ -135,3 +135,47 @@ def test_insert_uses_sql_null_and_explicit_timestamp_conversion():
     sql, params = insert_statement("CHURN_LEAKAGE_CHECK", "run", dict(source=pd.NaT, cutoff=None, prediction=P, passed=True))
     assert "VALUES (?,NULL,NULL,TO_TIMESTAMP_NTZ(?),?)" in sql
     assert params == ["run", P.isoformat(), True]
+
+
+@pytest.mark.parametrize("has_created_at", [True, False])
+def test_history_only_deleted_account_is_labelled(has_created_at):
+    _, docs, events, quotas = inputs()
+    auth = history([(2, "deleted", P + pd.Timedelta(days=7), P, True),
+                    (1, "deleted", P - pd.Timedelta(days=35), P - pd.Timedelta(days=36), False)])
+    if has_created_at:
+        auth["created_at"] = P - pd.Timedelta(days=100)
+    tables = {"AUTH_USERS": pd.DataFrame(columns=["id", "created_at"]),
+              "AUTH_USER_STATE_HISTORY": auth, "ADMIN_USER_STATE_HISTORY": history([], True),
+              "DOCUMENT_DOCUMENT_VERSIONS": docs, "ANALYTICS_ANALYTICS_EVENTS": events,
+              "ADMIN_STORAGE_QUOTAS": quotas}
+    users = m.accounts(tables)
+    expected_age = 100 if has_created_at else 35
+    assert users.created_at.tolist() == [P - pd.Timedelta(days=expected_age)]
+    rows = m.dataset(tables, [P, P + pd.Timedelta(days=14)], P + pd.Timedelta(days=42))
+    assert rows.account_id.tolist() == ["deleted"]
+    assert rows.prediction_date.tolist() == [P]
+    assert rows.churned.tolist() == [1]
+    assert all(check["passed"] for check in m.leakage(rows))
+
+
+def test_history_account_universe_preserves_point_in_time_eligibility():
+    auth, docs, events, quotas = inputs()
+    auth["created_at"] = P - pd.Timedelta(days=100)
+    admin = history([(5, "admin_only", P + pd.Timedelta(days=1), "suspended"),
+                     (1, "admin_only", P - pd.Timedelta(days=40), "active"),
+                     (2, "young", P - pd.Timedelta(days=28), "active"),
+                     (3, "already_churned", P - pd.Timedelta(days=40), "suspended"),
+                     (4, "future", P + pd.Timedelta(days=1), "active")], True)
+    tables = {"AUTH_USERS": pd.DataFrame(dict(id=["a"], created_at=[P - pd.Timedelta(days=28)])),
+              "AUTH_USER_STATE_HISTORY": auth, "ADMIN_USER_STATE_HISTORY": admin,
+              "DOCUMENT_DOCUMENT_VERSIONS": docs, "ANALYTICS_ANALYTICS_EVENTS": events,
+              "ADMIN_STORAGE_QUOTAS": quotas}
+    assert m.accounts(tables).set_index("id").loc["a", "created_at"] == P - pd.Timedelta(days=28)
+    rows = m.dataset(tables, [P], P + pd.Timedelta(days=28))
+    assert rows.account_id.tolist() == ["admin_only"]
+    assert rows.churned.tolist() == [1]
+    tables["AUTH_USERS"] = tables["AUTH_USERS"].head(0)
+    tables["AUTH_USER_STATE_HISTORY"] = auth.head(0)
+    tables["ADMIN_USER_STATE_HISTORY"] = admin.head(0)
+    assert m.accounts(tables).empty
+    assert m.dataset(tables, [P], P + pd.Timedelta(days=28)).empty

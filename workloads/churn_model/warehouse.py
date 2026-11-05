@@ -106,7 +106,7 @@ def run_model(session, run_id, commit, fallback, record):
         tables[table] = frame
     end = model.monday(session.sql("SELECT MAX(payload:exported_at::timestamp_ntz) FROM RAW.PIPELINE_EXPORTS").collect()[0][0])
     current = model.monday(started)
-    first = model.monday(tables["AUTH_USERS"].created_at.min() + pd.Timedelta(days=28))
+    first = model.monday(model.accounts(tables).created_at.min() + pd.Timedelta(days=28))
     dates = list(pd.date_range(first, end - pd.Timedelta(days=28), freq="W-MON"))
     rows = model.dataset(tables, sorted(set([*dates, current])), end)
     labelled = rows[rows.churned.notna()]
