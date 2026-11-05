@@ -29,12 +29,15 @@ export function config(env = process.env) {
   if (!['session', 'webhook'].includes(route)) throw new Error('Invalid trigger route');
   const webhookAction = env.DEVIN_WEBHOOK_ACTION || 'start_session';
   if (!['start_session', 'message_session'].includes(webhookAction)) throw new Error('Invalid webhook action');
+  const alertmanagerChannel = env.ALERTMANAGER_CHANNEL || 'alerts';
+  if (!channels.includes(alertmanagerChannel)) throw new Error('Invalid Alertmanager channel');
   return {
     apiBase: apiBase.replace(/\/$/, ''), webBase: webBase.replace(/\/$/, ''),
     key: env.MOCK_SLACK_DEVIN_API_KEY || '', org: env.DEVIN_ORG_ID || '',
     owner: env.DEVIN_CREATE_AS_USER_ID || '', route, webhookAction,
     webhook: env.DEVIN_AUTOMATION_URL || '', webhookSecret: env.DEVIN_WEBHOOK_SECRET || '',
     receiverSecret: env.ALERTMANAGER_RECEIVER_SECRET || '',
+    alertmanagerChannel,
     stateFile: env.STATE_FILE || path.join(root, '.data/state.json'),
     transcriptFile: env.DEVIN_TRANSCRIPT_FILE || '',
     maxAcu: Number(env.DEVIN_MAX_ACU || 5),
@@ -203,7 +206,7 @@ export async function createApp(cfg = config()) {
             if (!alert.labels || typeof alert.labels !== 'object') continue;
             const key = createHash('sha256').update(JSON.stringify([alert.fingerprint || alert.labels, alert.startsAt])).digest('hex');
             if (state.alerts[key] || alert.status === 'resolved') continue;
-            const t = await post({ channel: 'alerts', author: 'alertmanager', text: `${alert.labels.alertname || 'Alert'} (${alert.status || data.status || 'firing'})\n${alert.annotations?.summary || ''}\n${JSON.stringify(alert.labels)}`,
+            const t = await post({ channel: cfg.alertmanagerChannel, author: 'alertmanager', text: `${alert.labels.alertname || 'Alert'} (${alert.status || data.status || 'firing'})\n${alert.annotations?.summary || ''}\n${JSON.stringify(alert.labels)}`,
               requestId: `alert-${key}` });
             state.alerts[key] = t.id; ids.push(t.id);
           }
