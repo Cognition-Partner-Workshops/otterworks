@@ -391,7 +391,9 @@ def main(argv=None):
             deployed_commit = target if args.mode == "rollback" else commit
             if args.dry_run:
                 tree.mkdir()
-                archive = subprocess.check_output(["git", "-C", str(REPO), "archive", deployed_commit])
+                archive = subprocess.check_output(
+                    ["git", "-C", str(REPO), "archive", deployed_commit, "--", "workloads"]
+                )
                 with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
                     tar.extractall(tree, filter="data")
             else:

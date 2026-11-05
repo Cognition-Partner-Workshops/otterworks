@@ -259,8 +259,9 @@ def test_rollback_dry_run_uses_archive_without_git_worktree():
     with tarfile.open(fileobj=archive, mode="w"):
         pass
     with patch.object(cd, "git", side_effect=git), patch.object(cd, "checked_commit", side_effect=lambda s: s), \
-            patch.object(cd.subprocess, "check_output", return_value=archive.getvalue()), \
+            patch.object(cd.subprocess, "check_output", return_value=archive.getvalue()) as archive_cmd, \
             patch.object(cd, "run_workload", return_value=True) as run:
         assert cd.main(["rollback", "--dry-run", "--to", "b" * 40, "--workload", "doc_search_api"]) == 0
     assert not any(c[0] == "worktree" for c in calls)
+    assert archive_cmd.call_args.args[0][-2:] == ["--", "workloads"]
     assert run.call_args.args[3] == "b" * 40

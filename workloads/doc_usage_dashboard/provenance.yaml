@@ -108,3 +108,16 @@ usage:
     runtime:
       cortex_credits: pending
       cortex_tokens: pending
+deployment:
+  attempted:
+    commit: 56ef2d33e8c81f723bf893a5bc1583ae2a6b64d7
+    mode: deploy
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T110537Z-870709f7
+    started_at: '2026-11-05T11:05:37.950474+00:00'
+    finished_at: '2026-11-05T11:06:29.388052+00:00'
+    status: failed
+    failed_step: dbt_test
+    gate: dbt_test
+    failing_tests:
+    - test.otterworks_pipeline.uniqueness
+  deployed: null
