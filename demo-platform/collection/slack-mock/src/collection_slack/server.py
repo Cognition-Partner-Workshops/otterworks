@@ -31,6 +31,9 @@ log = logging.getLogger("collection_slack.server")
 
 COOKIE = "collection_slack"
 CLIENT_ID_RE = re.compile(r"^[A-Za-z0-9\-]{8,64}$")
+LOGIN_HINT = b'<p class="muted small" id="login-hint">Mock workspace for local demos.</p>'
+LOGIN_ERROR = b'<p class="small login-error" id="login-hint" role="alert">That access token was not accepted.</p>'
+
 SECURITY_HEADERS = {
     "Content-Security-Policy": (
         "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
@@ -38,7 +41,7 @@ SECURITY_HEADERS = {
     ),
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
-    "Referrer-Policy": "no-referrer",
+    "Referrer-Policy": "same-origin",
     "Cache-Control": "no-store",
 }
 STATIC = {"app.js": "text/javascript", "app.css": "text/css"}
@@ -175,7 +178,10 @@ def make_handler(app: App) -> type[BaseHTTPRequestHandler]:
                 if path == "/metrics":
                     return self._send(200, metrics(app).encode(), "text/plain; version=0.0.4")
                 if path == "/login":
-                    return self._send(200, _static("login.html"), "text/html; charset=utf-8")
+                    page = _static("login.html")
+                    if "error=1" in urlsplit(self.path).query.split("&"):
+                        page = page.replace(LOGIN_HINT, LOGIN_ERROR)
+                    return self._send(200, page, "text/html; charset=utf-8")
                 if path.startswith("/static/"):
                     name = path.removeprefix("/static/")
                     if name not in STATIC:

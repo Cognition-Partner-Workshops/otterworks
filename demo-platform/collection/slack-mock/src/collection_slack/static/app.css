@@ -47,3 +47,4 @@ body.login { display: flex; align-items: center; justify-content: center; min-he
 .login-card { background: #fff; padding: 32px; border-radius: 12px; width: 360px; display: flex; flex-direction: column; gap: 10px; }
 .login-card h1 { margin: 0; font-size: 22px; } .login-card input { padding: 9px; border: 1px solid #c9c9cf; border-radius: 6px; font: inherit; }
 .brand-mark { width: 44px; height: 44px; border-radius: 10px; background: var(--side); color: #fff; font-size: 26px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.login-error { color: #b42318; margin: 0; }

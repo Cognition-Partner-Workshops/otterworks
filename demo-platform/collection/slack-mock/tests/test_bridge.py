@@ -14,7 +14,7 @@ from typing import Any
 
 from collection_slack.bridge import STUB_NOTE
 
-from .helpers import ACCESS_TOKEN, API_KEY, PERSONA, WEBHOOK_SECRET, AppCase
+from .helpers import ACCESS_TOKEN, API_KEY, PERSONA, WEBHOOK_SECRET, AppCase, Client
 
 
 def wait_for(pred: Any, timeout: float = 5.0) -> None:
@@ -344,6 +344,28 @@ class HttpBoundary(AppCase):
             headers={"Origin": "https://evil.example"},
         )
         self.assertEqual(status, 403)
+
+    def test_browser_form_login_origin_and_error_feedback(self) -> None:
+        form = {"Content-Type": "application/x-www-form-urlencoded"}
+        same = {**form, "Origin": f"http://127.0.0.1:{self.client.port}"}
+        status, headers, _ = self.client.request("GET", "/login")
+        self.assertEqual(headers["referrer-policy"], "same-origin")
+        fresh = Client(self.client.port)
+        status, headers, _ = fresh.request("POST", "/login", raw=b"token=wrong-token", headers=same)
+        self.assertEqual((status, headers["location"]), (303, "/login?error=1"))
+        _, _, page = fresh.request("GET", "/login?error=1")
+        self.assertIn(b"not accepted", page)
+        _, _, page = fresh.request("GET", "/login")
+        self.assertNotIn(b"not accepted", page)
+        status, headers, _ = fresh.request("POST", "/login", raw=f"token={ACCESS_TOKEN}".encode(), headers=same)
+        self.assertEqual((status, headers["location"]), (303, "/"))
+        self.assertIn("set-cookie", headers)
+        for origin in ("null", "https://evil.example"):
+            status, headers, _ = fresh.request(
+                "POST", "/login", raw=f"token={ACCESS_TOKEN}".encode(), headers={**form, "Origin": origin}
+            )
+            self.assertEqual(status, 403)
+            self.assertNotIn("set-cookie", headers)
 
     def test_text_is_stored_verbatim_and_served_as_json_with_csp(self) -> None:
         t = self.post_thread("<img src=x onerror=alert(1)>")
