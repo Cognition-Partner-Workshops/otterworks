@@ -261,6 +261,10 @@ services:
     build:
       context: ./services/search-service
       dockerfile: Dockerfile
+      additional_contexts:
+        attribution: ./workloads/attribution
+      args:
+        SF_COMMIT: ${SF_COMMIT:-}
     container_name: otterworks-search-service
     ports:
     - 8087:8087
