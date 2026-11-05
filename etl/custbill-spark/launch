@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -z "${JAVA_HOME:-}" ] && [ -d "$HOME/.sdkman/candidates/java/current" ]; then
+    export JAVA_HOME="$HOME/.sdkman/candidates/java/current"
+fi
+export SPARK_LOCAL_IP=127.0.0.1
+export PYSPARK_PYTHON="$HERE/.venv/bin/python"
+exec "$HERE/.venv/bin/python" "$HERE/custbill.py" "$@"

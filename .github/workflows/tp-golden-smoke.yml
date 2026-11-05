@@ -20,16 +20,22 @@ concurrency:
 jobs:
   custbill-parity:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
       - run: sudo apt-get update && sudo apt-get install -y ksh
       - run: make -C etl/legacy-extra parity-test
       - run: make -C etl/legacy-extra parity CANDIDATE=legacy
+      - run: make -C etl/custbill-spark setup test lint
+      - run: make -C etl/legacy-extra parity CANDIDATE="etl/custbill-spark/launch chain"
       - run: uv run --with ruff==0.9.10 ruff check etl/legacy-extra/parity
       - uses: actions/upload-artifact@v4
         if: always()
