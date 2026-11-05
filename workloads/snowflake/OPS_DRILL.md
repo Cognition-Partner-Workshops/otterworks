@@ -15,7 +15,3 @@ python workloads/snowflake/ops.py run-task --wait
 ```
 
 To reset a drill, disarm `REFRESH_DOC_USAGE_DASHBOARD` and make sure the task is resumed. The fault switch is sticky: every run fails before `LOAD_RAW` until it is disarmed.
-
-## Responder runbook
-
-Check `freshness`, inspect `task-history`, and capture the failed run and error. Fix the cause on a branch, deploy and rerun the task, then check `freshness` again. Do not leave the fault switch armed after a drill.
