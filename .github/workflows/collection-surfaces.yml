@@ -1,0 +1,25 @@
+name: Collection surfaces
+on:
+  pull_request:
+    paths:
+      - demo-platform/collection/**
+      - .github/ISSUE_TEMPLATE/reliability-request.yml
+      - .github/workflows/collection-surfaces.yml
+permissions:
+  contents: read
+jobs:
+  workspace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: make -C demo-platform/collection check test
+      - run: docker compose -f demo-platform/collection/mock-slack/compose.yml config --quiet
+      - run: docker compose -f demo-platform/collection/mcp/compose.yml config --quiet
+        env:
+          DATABASE_URI: postgresql://fixture@127.0.0.1/otterworks
