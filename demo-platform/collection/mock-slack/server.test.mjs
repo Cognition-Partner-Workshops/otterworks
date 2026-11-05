@@ -64,11 +64,13 @@ for (const discard of ['legacy', 'expiry', 'reset']) {
     assert.equal(persisted.alertBatch, undefined);
     assert.equal(persisted.alerts[key], undefined);
     assert.equal(persisted.alerts.unrelated, 'delivered-root');
+    assert.equal(persisted.threads.find(thread => thread.id === 'root-A').status, 'discarded');
     const response = await fetch(`${f.url}/receivers/alertmanager`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' }, body: JSON.stringify({ alerts: [alert] }) });
     assert.equal(response.status, 200);
     persisted = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
     assert.ok(persisted.alertBatch.firstAt >= before);
     assert.deepEqual(persisted.alertBatch.alerts, [alert]);
+    assert.notEqual(persisted.alerts[key], 'root-A');
     await sendBatchAlert(f.url, 'B');
     for (let i = 0; i < 50 && f.calls.length === 0; i++) await pause(20);
     assert.equal(f.calls.length, 1);
@@ -77,6 +79,41 @@ for (const discard of ['legacy', 'expiry', 'reset']) {
     await pause(160);
     assert.equal(f.calls.length, 1);
   });
+}
+
+for (const discard of ['legacy', 'expiry', 'reset']) {
+  for (const route of ['session', 'webhook']) {
+    test(`${discard} discard preserves history but routes unchanged repeats through current ${route} delivery without batching`, async t => {
+      const before = Date.now();
+      const alert = { status: 'firing', fingerprint: 'stable-A', startsAt: new Date(before - 3600000).toISOString(), labels: { alertname: 'A' } };
+      const key = createHash('sha256').update(JSON.stringify([alert.fingerprint, alert.startsAt])).digest('hex');
+      const f = await fixture(t, { route, initialState: {
+        threads: [{ id: 'root-A', channel: 'alerts', status: 'idle', readOnly: true, messages: [{ author: 'alertmanager', text: 'Original A', requestId: `alert-${key}` }] }],
+        alerts: { [key]: 'root-A' },
+        alertBatch: { status: 'pending', alerts: [alert], lastAt: before, ...(discard === 'legacy' ? {} : { firstAt: discard === 'expiry' ? before - 1800001 : before }) },
+      } });
+      if (discard === 'reset') {
+        const reset = await fetch(`${f.url}/api/alert-batch/reset`, { method: 'POST', headers: { 'X-Webhook-Secret': 'fixture-receiver-secret' } });
+        assert.deepEqual(await reset.json(), { reset: true });
+      }
+      const repeat = () => fetch(`${f.url}/receivers/alertmanager`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' }, body: JSON.stringify({ alerts: [alert] }) });
+      const response = await repeat();
+      const { threadIds } = await response.json();
+      assert.equal(threadIds.length, 1);
+      assert.notEqual(threadIds[0], 'root-A');
+      assert.deepEqual(await (await repeat()).json(), { threadIds: [] });
+      assert.equal(f.calls.length, 1);
+      assert.equal(f.calls[0].url, route === 'session' ? '/v3/organizations/org-fixture/sessions' : '/hook');
+      const state = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
+      const old = state.threads.find(thread => thread.id === 'root-A');
+      assert.equal(old.status, 'discarded');
+      assert.equal(old.readOnly, true);
+      assert.equal(old.messages[0].text, 'Original A');
+      assert.equal(old.messages[0].requestId, `alert-${key}`);
+      assert.equal(state.alerts[key], threadIds[0]);
+      assert.equal(state.alertBatch, undefined);
+    });
+  }
 }
 
 for (const status of ['delivered', 'sending', 'uncertain']) {

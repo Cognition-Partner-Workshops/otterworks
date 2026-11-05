@@ -102,7 +102,9 @@ curl --fail -X POST http://localhost:3100/api/alert-batch/reset \
 
 Reset requires the raw receiver secret, clears only a pending batch and its timer,
 and posts a bot note. Every pending-batch discard also clears that batch's alert
-deduplication keys, so still-firing repeats can enter a fresh batch. Deduplication
+deduplication keys and retires its read-only alert threads as discarded, retaining
+their history. Still-firing repeats follow the current route: a fresh batch when
+batching is enabled, or normal Devin delivery otherwise. Deduplication
 for delivered, sending and uncertain batches is retained; uncertain deliveries
 are not retried. An empty reset returns `{"reset":false}`.
 
