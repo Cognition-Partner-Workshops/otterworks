@@ -1,4 +1,5 @@
 import { apiClient } from "./api-client";
+import type { DocumentListOrder } from "./document-sort";
 import type {
   User,
   AuthTokens,
@@ -328,9 +329,13 @@ export const filesApi = {
 
 // ── Documents ─────────────────────────────────────────────────
 export const documentsApi = {
-  list: async (page = 1, pageSize = 50): Promise<PaginatedResponse<Document>> => {
+  list: async (
+    page = 1,
+    pageSize = 50,
+    order?: DocumentListOrder
+  ): Promise<PaginatedResponse<Document>> => {
     const { data } = await apiClient.get<PaginatedResponse<Document>>("/documents", {
-      params: { page, pageSize },
+      params: { page, pageSize, size: pageSize, ...order },
     });
     return data;
   },
