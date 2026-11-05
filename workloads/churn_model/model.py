@@ -89,14 +89,14 @@ def features(account, prediction, auth, documents, events, quotas):
 
 
 def accounts(tables):
-    created = dict(zip(tables["AUTH_USERS"].id, tables["AUTH_USERS"].created_at))
-    history = pd.concat([tables["AUTH_USER_STATE_HISTORY"], tables["ADMIN_USER_STATE_HISTORY"]])
-    for row in history.sort_values(["effective_at", "id"]).itertuples(index=False):
-        if pd.isna(created.get(row.user_id)):
-            timestamp = getattr(row, "created_at", pd.NaT)
-            # Without a creation timestamp, first capture is a conservative account-age bound.
-            created[row.user_id] = timestamp if pd.notna(timestamp) else row.effective_at
-    return pd.DataFrame(created.items(), columns=["id", "created_at"])
+    current = pd.to_datetime(tables["AUTH_USERS"].set_index("id").created_at)
+    auth = tables["AUTH_USER_STATE_HISTORY"]
+    auth_created = pd.to_datetime(auth.reindex(columns=["user_id", "created_at"]).groupby("user_id").created_at.min())
+    history = pd.concat([auth, tables["ADMIN_USER_STATE_HISTORY"]])
+    # First capture is only a conservative account-age bound when creation timestamps are absent.
+    captured = history.groupby("user_id").effective_at.min()
+    created = current.combine_first(auth_created).combine_first(captured)
+    return created.rename_axis("id").rename("created_at").reset_index()
 
 
 def dataset(tables, predictions, observation_end):

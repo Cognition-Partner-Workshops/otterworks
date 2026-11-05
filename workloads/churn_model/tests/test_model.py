@@ -179,3 +179,27 @@ def test_history_account_universe_preserves_point_in_time_eligibility():
     tables["ADMIN_USER_STATE_HISTORY"] = admin.head(0)
     assert m.accounts(tables).empty
     assert m.dataset(tables, [P], P + pd.Timedelta(days=28)).empty
+
+
+def test_account_creation_priority_ignores_history_capture_order():
+    _, docs, events, quotas = inputs()
+    auth = history([(2, "deleted", P - pd.Timedelta(days=1), P, False),
+                    (3, "deleted", P + pd.Timedelta(days=7), P, True),
+                    (4, "current", P - pd.Timedelta(days=1), P, False),
+                    (5, "missing", P - pd.Timedelta(days=2), P, False),
+                    (6, "fallback", P - pd.Timedelta(days=35), P, False)])
+    auth["created_at"] = pd.to_datetime([P - pd.Timedelta(days=60), P - pd.Timedelta(days=100),
+                                         P - pd.Timedelta(days=100), P - pd.Timedelta(days=90), pd.NaT])
+    admin = history([(1, "deleted", P - pd.Timedelta(days=5), "active"),
+                     (2, "fallback", P - pd.Timedelta(days=40), "active")], True)
+    tables = {"AUTH_USERS": pd.DataFrame(dict(id=["current", "missing"],
+                                              created_at=[P - pd.Timedelta(days=28), pd.NaT])),
+              "AUTH_USER_STATE_HISTORY": auth, "ADMIN_USER_STATE_HISTORY": admin,
+              "DOCUMENT_DOCUMENT_VERSIONS": docs, "ANALYTICS_ANALYTICS_EVENTS": events,
+              "ADMIN_STORAGE_QUOTAS": quotas}
+    created = m.accounts(tables).set_index("id").created_at.to_dict()
+    assert created == {"current": P - pd.Timedelta(days=28), "deleted": P - pd.Timedelta(days=100),
+                       "missing": P - pd.Timedelta(days=90), "fallback": P - pd.Timedelta(days=40)}
+    rows = m.dataset(tables, [P], P + pd.Timedelta(days=28)).set_index("account_id")
+    assert "current" not in rows.index
+    assert rows.loc["deleted", "churned"] == 1
