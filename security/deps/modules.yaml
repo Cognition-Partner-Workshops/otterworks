@@ -103,6 +103,38 @@ modules:
     test: -B test
     cases: null
 
+  # The VM wave's three Maven applications, all on JDK 11: kyc-docs sets
+  # java.version 11, rates-batch compiles with release 11, and statements-web's
+  # 1.8 source/target builds on it too. No wrappers, so the `mvn` on PATH. No
+  # interpolation call path in their own code: measured for the dependency tree
+  # and their suites only.
+  - id: wave-kyc-docs
+    path: industries/banking/vmware-wave-1/kyc-docs
+    build: maven
+    java_home:
+      - $JAVA_HOME_11_X64
+      - /usr/lib/jvm/java-11-openjdk-amd64
+    test: -B test
+    cases: null
+
+  - id: wave-rates-batch
+    path: industries/banking/vmware-wave-1/rates-batch
+    build: maven
+    java_home:
+      - $JAVA_HOME_11_X64
+      - /usr/lib/jvm/java-11-openjdk-amd64
+    test: -B test
+    cases: null
+
+  - id: wave-statements-web
+    path: industries/banking/vmware-wave-1/statements-web
+    build: maven
+    java_home:
+      - $JAVA_HOME_11_X64
+      - /usr/lib/jvm/java-11-openjdk-amd64
+    test: -B test
+    cases: null
+
 exempt:
   - path: frontend/client-app/mobile/android
     reason: >

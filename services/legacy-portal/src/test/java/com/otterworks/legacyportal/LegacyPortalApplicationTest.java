@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Full-context test: the whole modular monolith boots and every module's routes are wired. */
@@ -18,6 +20,19 @@ import org.springframework.test.web.servlet.MockMvc;
 class LegacyPortalApplicationTest {
 
     @Autowired private MockMvc mockMvc;
+
+    // This class commits through the full context, so it gets its own in-memory database
+    // instead of the shared `legacyportal` one the @DataJpaTest classes read.
+    @DynamicPropertySource
+    static void isolatedDatabase(DynamicPropertyRegistry registry) {
+        registry.add(
+                "spring.datasource.url",
+                () ->
+                        "jdbc:h2:mem:legacyportal-fullcontext;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;"
+                                + "INIT=CREATE SCHEMA IF NOT EXISTS ANNOUNCEMENTS\\;"
+                                + "CREATE SCHEMA IF NOT EXISTS USER_PREFERENCES\\;"
+                                + "CREATE SCHEMA IF NOT EXISTS FEEDBACK");
+    }
 
     @Test
     void healthEndpointReportsUp() throws Exception {
