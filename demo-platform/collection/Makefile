@@ -6,7 +6,7 @@ APP_PORT ?= 8780
 LIB := . scripts/lib.sh
 ENV_TOKEN = COLLECTION_ACCESS_TOKEN=$${COLLECTION_ACCESS_TOKEN:-$$(sed -n 's/^COLLECTION_ACCESS_TOKEN=//p' .env 2>/dev/null)}
 
-.PHONY: help env config up ps logs down reset test-reset test lint typecheck check fake-v3 app-fake app-stub mcp-grafana mcp-postgres label governance
+.PHONY: help env config up ps logs down reset test-reset test lint typecheck check fake-v3 app-fake app-stub mcp-grafana mcp-postgres label governance mock-up mock-down mcp-up mcp-down mcp-smoke
 
 help:
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | sed 's/:.*##/ -/'
@@ -44,8 +44,11 @@ typecheck:
 
 test: ## unit + integration tests against the FAKE v3 server
 	cd $(APP) && PYTHONPATH=src uv run --frozen python -m unittest discover -s tests -t . -v
+	npm --prefix mock-slack test
 
 check: lint typecheck test config
+	npm --prefix mock-slack run check
+	python -m py_compile mcp/smoke.py
 
 fake-v3: ## run the FAKE v3 API on loopback (auto-replies; never the real Devin API)
 	cd $(APP) && FAKE_V3_API_KEY=$${FAKE_V3_API_KEY:?} FAKE_V3_ORG_ID=org-fake-local PYTHONPATH=src:. \
@@ -71,3 +74,14 @@ label: ## check (DRY_RUN=1) or ensure (DRY_RUN=0) the GitHub Issues label `devin
 
 governance: ## print user_id/devin_mode/acus_consumed for COLLECTION_GOVERNANCE_SESSION_IDS or IDS_FILE only
 	cd $(APP) && PYTHONPATH=src python3 -m collection_slack.governance $${IDS_FILE:+--ids-file $$IDS_FILE}
+
+mock-up:
+	docker compose -f mock-slack/compose.yml up -d --build --wait
+mock-down:
+	docker compose -f mock-slack/compose.yml down
+mcp-up:
+	docker compose -f mcp/compose.yml up -d --build
+mcp-down:
+	docker compose -f mcp/compose.yml down
+mcp-smoke:
+	docker compose -f mcp/compose.yml exec -T postgres-mcp python - < mcp/smoke.py
