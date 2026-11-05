@@ -82,6 +82,7 @@ def build_run(repository, revision, rows, rules):
             "id": rule_id, "shortDescription": {"text": rule.get("name") or rule_id},
             "fullDescription": {"text": html.unescape(re.sub("<[^>]+>", " ", rule.get("htmlDesc") or rule.get("name") or rule_id))},
             "properties": {"tags": tags, "security-severity": score}})
+        descriptor["properties"]["tags"] = sorted(set(descriptor["properties"]["tags"]) | set(tags))
         descriptor["properties"]["security-severity"] = str(max(float(score), float(descriptor["properties"]["security-severity"])))
         path = row.get("component") or ""
         physical = {"artifactLocation": {"uri": urllib.parse.quote(path, safe="/"), "uriBaseId": "REPOSITORY"}}

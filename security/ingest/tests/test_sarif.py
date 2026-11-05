@@ -11,6 +11,7 @@ import pytest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import cluster_sarif as cs
 import devin_ingestion as di
+import scan_repositories as sr
 import sonar_sarif as ss
 
 
@@ -27,6 +28,8 @@ def test_export(fixture):
     assert result["properties"]["security-severity"] == "8.0"
     assert result["properties"]["repository"] == "owner/one"
     assert "cwe-89" in result["properties"]["tags"]
+    descriptor = run["tool"]["driver"]["rules"][0]
+    assert "security" in descriptor["properties"]["tags"]
     assert result["locations"][0]["physicalLocation"]["region"]["startLine"] == 4
     assert run["tool"]["driver"]["rules"][0]["shortDescription"]["text"] == "Avoid unsafe queries"
     assert "& validation" in run["tool"]["driver"]["rules"][0]["fullDescription"]["text"]
@@ -142,3 +145,12 @@ def test_cluster_separates_cwe_and_escapes(fixture):
 
 def test_security_standards_list():
     assert ss.tags_for({}, {"securityStandards": ["cwe:89", "owaspTop10:a1"]}) == ["cwe:89", "owaspTop10:a1"]
+
+
+def test_repository_keys_are_unambiguous_and_duplicates_rejected():
+    first = sr.project_key("team/a_b")
+    second = sr.project_key("team_a/b")
+    assert first != second
+    assert first.startswith("team_a_b_") and second.startswith("team_a_b_")
+    with pytest.raises(ValueError, match="duplicate"):
+        sr.validate_repositories(["team/a_b", "team/a_b"])

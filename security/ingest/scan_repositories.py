@@ -1,6 +1,7 @@
 """Scan public repositories on main: --repos JSON_ARRAY --out report.sarif --work DIR."""
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -17,6 +18,17 @@ def run(*args, **kwargs):
     return subprocess.check_output(args, text=True, **kwargs).strip()
 
 
+def project_key(repo):
+    readable = re.sub(r"[^A-Za-z0-9_.-]+", "_", repo).strip("_")
+    digest = hashlib.sha256(repo.encode()).hexdigest()[:10]
+    return f"{readable}_{digest}"
+
+
+def validate_repositories(repos):
+    if len(repos) != len(set(repos)):
+        raise ValueError("repos must not contain duplicate entries")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repos", required=True, help="JSON array of owner/repository names")
@@ -26,6 +38,10 @@ def main():
     repos = json.loads(args.repos)
     if not isinstance(repos, list) or not repos or any(not isinstance(r, str) or not re.fullmatch(r"[\w.-]+/[\w.-]+", r) for r in repos):
         parser.error("repos must be a nonempty JSON array of owner/repository names")
+    try:
+        validate_repositories(repos)
+    except ValueError as error:
+        parser.error(str(error))
     host = os.environ.get("SONAR_HOST_URL", "http://localhost:9000")
     for _ in range(120):
         try:
@@ -48,7 +64,7 @@ def main():
     args.work.mkdir(parents=True, exist_ok=True)
     runs = []
     for repo in repos:
-        key = repo.replace("/", "_")
+        key = project_key(repo)
         path = args.work.resolve() / key
         run("git", "clone", "--depth", "1", "--branch", "main", f"https://github.com/{repo}.git", str(path))
         sha = run("git", "rev-parse", "HEAD", cwd=path)
