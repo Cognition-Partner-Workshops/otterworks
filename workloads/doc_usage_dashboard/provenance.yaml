@@ -18,6 +18,13 @@ endpoints:
   - csid: cs_doc_usage_dashboard_account_usage
     service_user: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
     auth: key_pair
+  - csid: cs_doc_usage_dashboard_freshness_responder
+    service_user: SVC_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
+    auth: key_pair
+    role: ROLE_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
+    runtime_source:
+      path: workloads/doc_usage_dashboard/responder/freshness.py
+      revision: pending
 # Streamlit runtime attribution is the trailing JSON comment in query_text: SiS
 # overrides QUERY_TAG (ALTER SESSION rejected; statement_params silently ignored,
 # verified 2026-11-05 in QUERY_HISTORY). Dev queries retain their real QUERY_TAG.
@@ -38,7 +45,7 @@ warehouse:
 objects:
   - type: database
     name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A
-    devin_csid: cs_doc_usage_dashboard_account_usage
+    devin_csid: cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_usage_dashboard"}'
     state: provisioned
   - type: schema
@@ -51,7 +58,7 @@ objects:
     state: provisioned
   - type: warehouse
     name: WH_DOC_USAGE_DASHBOARD
-    devin_csid: cs_doc_usage_dashboard_account_usage
+    devin_csid: cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_usage_dashboard"}'
     state: provisioned
   - type: resource_monitor
@@ -62,14 +69,18 @@ objects:
     name: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
     state: provisioned
+  - type: user
+    name: SVC_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_freshness_responder"}'
+    state: provisioned
   - type: task
     name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.REFRESH_DOC_USAGE_DASHBOARD
-    devin_csid: cs_doc_usage_dashboard_account_usage
+    devin_csid: cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
     state: provisioned
   - type: streamlit
     name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.DOC_USAGE_DASHBOARD_APP
-    devin_csid: cs_doc_usage_dashboard_account_usage
+    devin_csid: cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
     state: provisioned
 data_quality:

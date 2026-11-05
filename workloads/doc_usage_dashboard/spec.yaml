@@ -55,3 +55,13 @@ endpoint:
   object: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.DOC_USAGE_DASHBOARD_APP
   request: {account_id: optional VARCHAR(36), usage_band: optional, snapshot_date: optional DATE (default latest)}
   response: rows of output.columns ordered by usage_pct DESC NULLS LAST, account_id
+
+operational_endpoints:
+  - csid: cs_doc_usage_dashboard_freshness_responder
+    service_user: SVC_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
+    role: ROLE_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
+    warehouse: WH_DOC_USAGE_DASHBOARD
+    database: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A
+    cadence: hourly
+    runtime_source: workloads/doc_usage_dashboard/responder/freshness.py
+    freshness_source: transaction-audit proxy for ACCOUNT_STORAGE_USAGE; own REFRESHED_AT for PIPELINE_REFRESH_RUNS

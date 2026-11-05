@@ -26,7 +26,7 @@ def test_index_covers_endpoints_and_links_matching_specs():
     entries = _load(WORKLOADS / "index.yaml")["workloads"]
     assert len(entries) == len({entry["id"] for entry in entries})
     assert {entry["id"] for entry in entries} == {ep.workload for ep in sf.ENDPOINTS.values()}
-    assert {entry["endpoint"] for entry in entries} == set(sf.ENDPOINTS)
+    assert {csid for entry in entries for csid in [entry["endpoint"], *entry.get("operational_endpoints", [])]} == set(sf.ENDPOINTS)
     for entry in entries:
         path = WORKLOADS / entry["spec"]
         assert path.is_file(), path
@@ -35,6 +35,14 @@ def test_index_covers_endpoints_and_links_matching_specs():
         assert spec["workload"] == entry["id"] == ep.workload
         assert spec["endpoint"]["csid"] == entry["endpoint"] == sf.csid(ep.workload, ep.endpoint)
         assert spec["endpoint"]["service_user"] == ep.service_user == sf.service_user(ep.csid)
+        operational = spec.get("operational_endpoints", [])
+        assert [e["csid"] for e in operational] == entry.get("operational_endpoints", [])
+        for extra in operational:
+            endpoint = sf.endpoint(extra["csid"])
+            assert endpoint.workload == entry["id"]
+            assert endpoint.service_user == extra["service_user"]
+            assert endpoint.database == extra["database"]
+            assert endpoint.warehouse == extra["warehouse"]
 
 
 @pytest.mark.parametrize("workload", sorted({ep.workload for ep in sf.ENDPOINTS.values()}))

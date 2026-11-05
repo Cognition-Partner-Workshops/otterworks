@@ -147,6 +147,7 @@ ENDPOINTS: dict[str, Endpoint] = {
     e.csid: e
     for e in (
         Endpoint("doc_usage_dashboard", "account_usage"),
+        Endpoint("doc_usage_dashboard", "freshness_responder"),
         Endpoint("doc_search_api", "top_items"),
         Endpoint("churn_model", "account_score"),
     )

@@ -22,8 +22,8 @@
               "then": {"properties": {"name": {"pattern": "^[A-Z][A-Z0-9_]*\\.[A-Z][A-Z0-9_]*\\.[A-Z][A-Z0-9_]*$"}}}
             }],
             "properties": {
-              "type": {"enum": ["procedure", "task", "migration", "streamlit", "model_refresh", "table", "stage", "warehouse", "database", "schema", "user", "resource_monitor"]},
-              "name": {"$ref": "#/$defs/object_name"},
+              "type": {"enum": ["procedure", "task", "migration", "streamlit", "model_refresh", "table", "view", "stage", "warehouse", "database", "schema", "user", "resource_monitor", "runtime_source"]},
+              "name": {"oneOf": [{"$ref": "#/$defs/object_name"}, {"type": "string", "pattern": "^workloads/[a-z0-9_]+/responder/[a-z0-9_]+\\.py$"}]},
               "revision": {"$ref": "#/$defs/commit"},
               "run_id": {"type": "string", "minLength": 1},
               "status": {"enum": ["installed", "failed"]},
@@ -226,7 +226,17 @@
         "properties": {
           "csid": {"$ref": "#/$defs/csid"},
           "service_user": {"type": "string", "pattern": "^SVC_CS_[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$"},
-          "auth": {"const": "key_pair"}
+          "auth": {"const": "key_pair"},
+          "role": {"$ref": "#/$defs/object_name"},
+          "runtime_source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "revision"],
+            "properties": {
+              "path": {"type": "string", "pattern": "^workloads/[a-z0-9_]+/responder/[a-z0-9_]+\\.py$"},
+              "revision": {"oneOf": [{"$ref": "#/$defs/commit"}, {"const": "pending"}]}
+            }
+          }
         }
       }
     },
