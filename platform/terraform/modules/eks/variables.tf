@@ -34,6 +34,12 @@ variable "node_subnet_ids" {
   type        = list(string)
 }
 
+variable "node_associate_public_ip_address" {
+  description = "Assign public IPs to node ENIs; only needed when nodes run in public subnets without a NAT gateway"
+  type        = bool
+  default     = false
+}
+
 variable "node_instance_types" {
   description = "Instance types for the managed node group"
   type        = list(string)

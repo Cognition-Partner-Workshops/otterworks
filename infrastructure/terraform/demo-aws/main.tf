@@ -32,6 +32,7 @@ locals {
   db2_volume_az   = var.db2_volume_az != "" ? var.db2_volume_az : data.aws_subnet.node_first.availability_zone
   db2_volume_name = "otterworks-ldm-${var.namespace}-db2"
   bucket_name     = "otterworks-ldm-${var.namespace}-${local.account_id}"
+  logs_bucket     = "otterworks-ldm-${var.namespace}-logs-${local.account_id}"
   ecr_repo_name   = "otterworks-demo/${var.namespace}/ldm-job"
   tenant_hosts    = var.ingress_hostname != "" ? ["t-${var.namespace}", "api-t-${var.namespace}", "admin-t-${var.namespace}"] : []
 }
@@ -68,6 +69,128 @@ resource "aws_s3_bucket_public_access_block" "demo" {
   restrict_public_buckets = true
 }
 
+data "aws_iam_policy_document" "demo_bucket" {
+  statement {
+    sid       = "DenyInsecureTransport"
+    effect    = "Deny"
+    actions   = ["s3:*"]
+    resources = [aws_s3_bucket.demo.arn, "${aws_s3_bucket.demo.arn}/*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "demo" {
+  bucket = aws_s3_bucket.demo.id
+  policy = data.aws_iam_policy_document.demo_bucket.json
+
+  depends_on = [aws_s3_bucket_public_access_block.demo]
+}
+
+resource "aws_s3_bucket_logging" "demo" {
+  bucket        = aws_s3_bucket.demo.id
+  target_bucket = aws_s3_bucket.access_logs.id
+  target_prefix = "s3/demo/"
+
+  depends_on = [aws_s3_bucket_policy.access_logs]
+}
+
+# Target of S3 server access logging; log delivery only supports SSE-S3 here.
+resource "aws_s3_bucket" "access_logs" {
+  bucket        = local.logs_bucket
+  force_destroy = true
+  tags          = { Name = local.logs_bucket }
+}
+
+resource "aws_s3_bucket_public_access_block" "access_logs" {
+  bucket                  = aws_s3_bucket.access_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_ownership_controls" "access_logs" {
+  bucket = aws_s3_bucket.access_logs.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "access_logs" {
+  bucket = aws_s3_bucket.access_logs.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "access_logs" {
+  bucket = aws_s3_bucket.access_logs.id
+  rule {
+    id     = "expire-access-logs"
+    status = "Enabled"
+    filter {}
+    expiration {
+      days = 7
+    }
+  }
+}
+
+data "aws_iam_policy_document" "access_logs" {
+  statement {
+    sid       = "S3ServerAccessLogsDelivery"
+    actions   = ["s3:PutObject"]
+    resources = ["${aws_s3_bucket.access_logs.arn}/*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["logging.s3.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [local.account_id]
+    }
+  }
+
+  statement {
+    sid       = "DenyInsecureTransport"
+    effect    = "Deny"
+    actions   = ["s3:*"]
+    resources = [aws_s3_bucket.access_logs.arn, "${aws_s3_bucket.access_logs.arn}/*"]
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "access_logs" {
+  bucket = aws_s3_bucket.access_logs.id
+  policy = data.aws_iam_policy_document.access_logs.json
+
+  depends_on = [aws_s3_bucket_public_access_block.access_logs]
+}
+
 resource "aws_s3_bucket_server_side_encryption_configuration" "demo" {
   bucket = aws_s3_bucket.demo.id
   rule {
@@ -80,7 +203,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "demo" {
 resource "aws_s3_bucket_versioning" "demo" {
   bucket = aws_s3_bucket.demo.id
   versioning_configuration {
-    status = "Disabled"
+    status = "Enabled"
   }
 }
 
@@ -94,6 +217,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "demo" {
     }
     expiration {
       days = 7
+    }
+    noncurrent_version_expiration {
+      noncurrent_days = 1
     }
     abort_incomplete_multipart_upload {
       days_after_initiation = 1

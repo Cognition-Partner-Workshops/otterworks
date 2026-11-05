@@ -1,5 +1,6 @@
 resource "aws_sns_topic" "events" {
-  name = local.topic_name
+  name              = local.topic_name
+  kms_master_key_id = "alias/aws/sns"
 }
 
 resource "aws_sqs_queue" "notifications_dlq" {

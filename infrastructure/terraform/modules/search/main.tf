@@ -110,7 +110,7 @@ resource "aws_ecs_cluster" "meilisearch" {
 
 resource "aws_cloudwatch_log_group" "meilisearch" { # nosemgrep: terraform.aws.security.aws-cloudwatch-log-group-unencrypted.aws-cloudwatch-log-group-unencrypted
   name              = "/ecs/${var.project}-meilisearch-${var.environment}"
-  retention_in_days = 7
+  retention_in_days = 30
 
   tags = local.common_tags
 }

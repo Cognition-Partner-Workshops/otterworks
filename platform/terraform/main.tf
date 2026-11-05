@@ -65,7 +65,8 @@ module "eks" {
   public_subnet_ids  = module.vpc.public_subnet_ids
   private_subnet_ids = module.vpc.private_subnet_ids
   # Use public subnets for nodes in dev (no NAT gateway needed, cost-optimized)
-  node_subnet_ids = var.enable_nat_gateway ? module.vpc.private_subnet_ids : module.vpc.public_subnet_ids
+  node_subnet_ids                  = var.enable_nat_gateway ? module.vpc.private_subnet_ids : module.vpc.public_subnet_ids
+  node_associate_public_ip_address = !var.enable_nat_gateway
 
   node_instance_types = var.node_instance_types
   node_capacity_type  = var.node_capacity_type
