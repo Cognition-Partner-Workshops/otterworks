@@ -12,19 +12,17 @@ image list; its official digest in kind-deps needs a platform-owned decision
 before any shared-platform deployment. Owner banking-platform and cost center
 bank-wave1 are local labels, not an assertion of an approved ownership mapping.
 
-The pinned kind verifier installs dependencies before creating application
-Secrets, and Secrets cannot cross namespaces. Before running it, create the
-deps namespace in the isolated kind cluster and populate notify-redis there
-from the same fixture file used for the application Secret:
+The pinned verifier applies all kind-deps manifests into deps and waits for
+its Deployments before importing kind-secrets.env into app-notify-svc only.
+It supports no dependency secret source or ordering hook. The kind-only
+fixture-secret.yaml therefore supplies the deps Secret with the same synthetic
+password as kind-secrets.env. No manual secret bootstrap is required.
 
-```sh
-kubectl create namespace deps
-sed 's/^notify-redis\.//' deploy/kind-secrets.env |
-  kubectl create secret generic notify-redis -n deps --from-env-file=/dev/stdin
-```
-
-Only deploy/kind-secrets.env contains the synthetic local password. Never use
-this fixture outside local kind. The verifier imports it into app-notify-svc.
+The fixture Secret is labelled synthetic/kind-only. Never use these fixtures
+outside local kind. The pinned conftest gate renders only the application
+chart; kind-deps is not part of that render. Its SECRET-02 rule prohibits
+literal Secrets in platform manifests; this fixture is only for the local
+dependency namespace, which is not labelled for platform admission enforcement.
 The kind override disables ingress NetworkPolicy for local port-forward smoke.
 
 The pinned smoke runner only supports GET, so platform.yaml checks /health.
