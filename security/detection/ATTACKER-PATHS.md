@@ -110,3 +110,22 @@ Takeaways:
   "authenticated but role or client not allowed", plus detection inside the
   backends, would close the gap.
 - No class covers negative amounts.
+
+## Internet-banking fix signals (ts-java-spring-boot-internet-banking #53)
+
+The internet-banking fix flagged five signals. Each one has a gateway
+detection and a replay class (`make detect-replay CLASS=ib-*`), with before
+and after evidence in `security/detection/evidence/`. Otterworks has no
+payment, account or bank-user services: those routes return 404 here. So
+these alerts are **edge tripwires**. The checks that decide whether an attack
+worked belong in the internet-banking services. Every replay records the
+exploitation verdict as `inconclusive`.
+
+| Signal | Detection (`api_gateway_security_events_total`) | Alert | What otterworks can see |
+|---|---|---|---|
+| Anonymous call to `/transaction/fund-transfer`, `/utility-payment` | `payment_route_call{reason=anonymous}` | `SecurityPaymentRouteAnonymous` | **Visible.** The gateway sees the path and that no valid token was sent. |
+| **Non-owner** call to the same routes | none | none | **Not visible.** The gateway has no account-ownership data, and the routes don't exist here. Authenticated calls are counted (`reason=authenticated`) but do not alert. This check has to live in internet banking's fund-transfer and utility-payment services. |
+| Amount ≤ 0 or more than 2 decimal places | `payment_amount_invalid{reason=non_positive\|precision}`, top-level JSON `amount` on payment routes only | `SecurityPaymentAmountInvalid` | **Visible at the edge.** The body is inspected even though the route 404s. A body nested differently or not sent as JSON is not seen. Billing (6-decimal `overage_rate`) and statement entries (negative amounts) are deliberately excluded. |
+| `X-Auth-Id` that doesn't match the JWT `sub` | `auth_id_mismatch{reason=mismatch\|unauthenticated}` | `SecurityAuthIdMismatch` | **Visible.** Checked on every route. No otterworks service reads `X-Auth-Id`, so here it is attempted spoofing only. |
+| Non-admin calling `/bank-users` | `admin_route_non_admin{reason=bank_users\|admin_api}`; roles[] lacks `ADMIN` | `SecurityAdminRouteNonAdmin` | **Visible.** Also covers the otterworks equivalent, `/api/v1/admin/*`. |
+| Repeated failed logins | `api_gateway_auth_login_total{outcome=failure}` (existing) | `SecurityLoginFailureBurst` (existing) | **Visible** for otterworks logins. Failed logins against internet banking's Keycloak never pass through this gateway. |
