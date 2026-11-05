@@ -1,11 +1,13 @@
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'snowflake'))
 import deploy_usage_task as deploy  # noqa: E402
+import pipeline  # noqa: E402
 
 
 def test_usage_task_runtime_attribution():
@@ -31,6 +33,40 @@ def test_usage_task_runtime_attribution():
 def test_usage_task_rejects_missing_attribution(commit, run_id):
     with pytest.raises(deploy.attr.AttributionError):
         deploy.task_sql(commit, run_id)
+
+
+def test_task_replacement_restores_runtime_ops_privileges():
+    statements = []
+
+    class Cursor:
+        def execute(self, sql):
+            statements.append(sql)
+            return self
+
+    ddl = deploy.task_sql('a' * 40, 'SFNFR_20261104-usage-runtime-test')
+    grant = (
+        'GRANT OPERATE, MONITOR ON TASK '
+        'SFNFR_20261104_DB_DOC_USAGE_DASHBOARD.ANALYTICS.REFRESH_DOC_USAGE_DASHBOARD '
+        'TO ROLE SFNFR_20261104_OPS_DOC_USAGE_DASHBOARD'
+    )
+    for _ in range(2):
+        deploy.deploy_task(Cursor(), ddl)
+    assert statements == [ddl, grant, ddl, grant]
+
+
+def test_deployment_connection_uses_current_session(monkeypatch):
+    connector = SimpleNamespace(connect=lambda **params: params)
+    monkeypatch.setitem(sys.modules, 'snowflake', SimpleNamespace(connector=connector))
+    monkeypatch.setitem(sys.modules, 'snowflake.connector', connector)
+    monkeypatch.setattr(pipeline.attr, 'connection_params', lambda *args, **params: params)
+    session_url = 'https://partner-workshops.devinenterprise.com/sessions/' + 'a' * 32
+    for name, value in {
+        'SESSION_URL': session_url, 'SNOWFLAKE_ACCOUNT': 'test',
+        'SNOWFLAKE_PRIVATE_KEY_FILE': '/dev/shm/test.p8', 'SNOWFLAKE_ROLE': 'BUILDER',
+        'SNOWFLAKE_USER': 'BUILDER_USER',
+    }.items():
+        monkeypatch.setenv(name, value)
+    assert pipeline.connect(deploy.WORKLOAD)['session_url'] == session_url
 
 
 def test_deployment_uploads_only_dbt_source(tmp_path):

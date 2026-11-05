@@ -36,7 +36,7 @@ def connect(workload):
         account=os.environ['SNOWFLAKE_ACCOUNT'],
         private_key_file=os.environ['SNOWFLAKE_PRIVATE_KEY_FILE'],
         phase='dev', commit=attr.current_commit(str(ROOT)),
-        run_id=attr.make_run_id(workload, 'dev'), session_url=SESSION_URL,
+        run_id=attr.make_run_id(workload, 'dev'), session_url=os.environ.get('SESSION_URL', SESSION_URL),
         role=os.environ['SNOWFLAKE_ROLE'], schema='RAW',
     )
     params['user'] = os.environ['SNOWFLAKE_USER']

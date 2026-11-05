@@ -55,6 +55,15 @@ def prepare_project(commit, directory, runtime_tag):
     return project
 
 
+def deploy_task(cur, ddl):
+    cur.execute(ddl)
+    names = attr.names([WORKLOAD])
+    cur.execute(
+        f'GRANT OPERATE, MONITOR ON TASK {attr.task_name(WORKLOAD)} '
+        f'TO ROLE {names[f"ops_role_{WORKLOAD}"]}'
+    )
+
+
 def project_files(project):
     return sorted(file for file in project.rglob('*') if file.is_file() and file.suffix in ('.sql', '.yml'))
 
@@ -187,7 +196,7 @@ def main():
         print(create, flush=True)
         print(cur.execute(create).fetchall(), flush=True)
         print(ddl, flush=True)
-        print(cur.execute(ddl).fetchall(), flush=True)
+        deploy_task(cur, ddl)
         for sql in attr.object_tag_ddl(WORKLOAD, [endpoint.csid]):
             print(sql, flush=True)
             cur.execute(sql)
