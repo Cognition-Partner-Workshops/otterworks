@@ -12,10 +12,12 @@ from flask_cors import CORS
 
 from app.api.health import REQUEST_COUNT, REQUEST_LATENCY, health_bp
 from app.api.index import index_bp
+from app.api.insights import insights_bp
 from app.api.search import search_bp
 from app.config import AppConfig
 from app.middleware.auth import require_auth
 from app.services.meilisearch_client import MeiliSearchService
+from app.services.insights import InsightsClient
 from app.services.sqs_consumer import SQSConsumer
 
 logger = structlog.get_logger()
@@ -56,6 +58,7 @@ def create_app(config: AppConfig | None = None) -> Flask:
     configure_logging(config.log_level)
 
     app = Flask(__name__)
+    app.json.sort_keys = False
     CORS(app, origins=["http://localhost:3000", "http://localhost:4200"])
 
     # Store config on the app
@@ -64,6 +67,7 @@ def create_app(config: AppConfig | None = None) -> Flask:
     # Initialize MeiliSearch service
     search_service = MeiliSearchService(config.meilisearch)
     app.config["SEARCH_SERVICE"] = search_service
+    app.config["INSIGHTS_CLIENT"] = InsightsClient(config.insights)
 
     # Try to create indices on startup (non-fatal if MeiliSearch is not available)
     try:
@@ -76,6 +80,7 @@ def create_app(config: AppConfig | None = None) -> Flask:
     app.register_blueprint(health_bp)
     app.register_blueprint(search_bp, url_prefix="/api/v1/search")
     app.register_blueprint(index_bp, url_prefix="/api/v1/search")
+    app.register_blueprint(insights_bp, url_prefix="/api/v1/insights/search")
 
     # Register authentication middleware
     require_auth(app)

@@ -76,6 +76,8 @@ jobs:
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: ${{ matrix.service.context }}
+          build-contexts: ${{ matrix.service.name == 'search-service' && 'attribution=workloads/attribution' || '' }}
+          build-args: ${{ matrix.service.name == 'search-service' && format('SF_COMMIT={0}', github.sha) || '' }}
           push: true
           platforms: linux/amd64
           # otterworks/<service>: the repository layout every deploy script

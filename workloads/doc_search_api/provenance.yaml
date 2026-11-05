@@ -1,0 +1,276 @@
+# Starting provenance for the document-search API. Validate: python workloads/attribution/validate_provenance.py
+# Usage values Snowflake has not reported are `pending`; Cortex credits are kept apart from compute.
+schema_version: 1
+workload: doc_search_api
+run_token: SFEXT_20261105A
+expires: "2026-11-19"
+application:
+  name: Devin_Demo
+  registration: unregistered
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  base_branch: demo-stack-snowflake
+  base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
+  commit: "0c6a16be65ab4b904df8984b37c363a693ad336b"
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2508
+  session_url: https://partner-workshops.devinenterprise.com/sessions/4b0c1386769e4812a8adfefa70ac438d
+# Branch: devin/1793871982-dq-doc_search_api
+# GET /api/v1/insights/search/accounts/<account_id>/top
+# Role SFEXT_20261105A_DOC_SEARCH_API_ENDPOINT provisioned: warehouse/database/schema
+# USAGE and SELECT on APP.TOP_SEARCH_ITEMS only; run_token SFEXT_20261105A, expires 2026-11-19.
+endpoints:
+  - csid: cs_doc_search_api_top_items
+    service_user: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    auth: key_pair
+query_tag:
+  keys: [csid, workload, phase, commit, run_id]
+  dev_keys: [session_url]
+  task_phase: runtime
+warehouse:
+  name: WH_DOC_SEARCH_API
+  size: XSMALL
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
+    frequency: MONTHLY
+    credit_quota: 25
+    administrative_change:
+      actor: administrator
+      reason: Administrator increased the Search budget; not a change made by this work.
+      from: 10
+      to: 25
+      evidence_query_ids:
+      - 01c834dc-030c-d212-0035-065b000a11c2
+      - 01c834dc-030c-d214-0035-065b0009a8ca
+      - 01c834f3-030c-d214-0035-065b0009a9f2
+      observed_used_credits: 11.23
+      unchanged:
+        notify_percent: 80
+        suspend_percent: 90
+        suspend_immediate_percent: 100
+        end_date: '2026-11-19'
+configuration_changes:
+  - object: WH_DOC_SEARCH_API
+    setting: AUTO_SUSPEND
+    from: 60
+    to: 900
+    migration: workloads/doc_search_api/migrations/V1.0.1__restore_auto_suspend.sql
+    reason: >-
+      Restore the requested 900-second search API idle window while retaining LARGE.
+      SHOW WAREHOUSES reports LARGE/60 live; warehouse above records the planned target.
+      ACCOUNT_USAGE.QUERY_HISTORY and INFORMATION_SCHEMA.QUERY_HISTORY both show the
+      current warehouse was created with LARGE/60, not altered from 900 in the visible
+      history. Its creation time matches SHOW WAREHOUSES (2026-11-05T03:40:46.393Z).
+      The earlier 2026-11-04 creation and SFNFR-prefixed warehouse are not this incarnation.
+      An administrator later reported before/after SHOW observations under query IDs
+      01c834dc-030c-d212-0035-065b000a11c2 and 01c834dc-030c-d214-0035-065b0009a8ca;
+      no additional statement details are inferred from those IDs here.
+    status: applied
+    applied_query_id: 01c834df-030c-dbca-0035-065b000a31ea
+    environment: Snowflake external account; applied by this session under DEVIN_EXT_ROLE
+    evidence:
+      - query_id: 01c8331c-030c-d1ca-0035-065b00085f8a
+        time: "2026-11-05T03:40:46.335Z"
+        user: DEVIN_EXT_SVC
+        role: DEVIN_EXT_ROLE
+        query_tag: '{"csid":"cs_doc_search_api_top_items","workload":"doc_search_api","phase":"dev","commit":"98d622deca8d2cf09c81c834d1a9c014914804e2","run_id":"SFEXT_20261105A-doc_search_api-dev-20261105T034040Z","session_url":"https://partner-workshops.devinenterprise.com/sessions/6f05f95b4d0f47b5bda7614bd35e4776"}'
+        statement: >-
+          CREATE WAREHOUSE IF NOT EXISTS WH_DOC_SEARCH_API WITH WAREHOUSE_SIZE = 'LARGE'
+          AUTO_SUSPEND = 60 AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE
+          COMMENT = '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}';
+  - object: WH_DOC_SEARCH_API
+    setting: WAREHOUSE_SIZE
+    from: LARGE
+    to: XSMALL
+    migration: workloads/doc_search_api/migrations/V1.0.2__right_size_warehouse.sql
+    reason: "same pipeline refresh measured ~20s on LARGE vs ~22-23s on the XSMALL dashboard/churn warehouses; load avg 0.13 running, no queuing"
+    status: applied
+    applied_query_id: 01c8362f-030c-d3d5-0035-065b000ac7ba
+    environment: Snowflake external account; applied by this session under DEVIN_EXT_ROLE; SHOW WAREHOUSES 01c8362f-030c-d214-0035-065b0009aeee confirms X-Small/60
+    evidence:
+      - query_id: 01c8362f-030c-d3d5-0035-065b000ac7ba
+        time: "2026-11-05T16:47:08.125Z"
+        user: DEVIN_EXT_SVC
+        role: DEVIN_EXT_ROLE
+        query_tag: '{"csid":"cs_doc_search_api_top_items","workload":"doc_search_api","phase":"dev","commit":"c14bcc6a78a34f0956e3bec47dfcaa38c30a1486","run_id":"SFEXT_20261105A-doc_search_api-dev-20261105T164701Z-8da76d8d","session_url":"https://partner-workshops.devinenterprise.com/sessions/9d040ab212f944b59f006f77af7fb004"}'
+        statement: ALTER WAREHOUSE WH_DOC_SEARCH_API SET WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60
+  - object: WH_DOC_SEARCH_API
+    setting: AUTO_SUSPEND
+    from: 900
+    to: 60
+    migration: workloads/doc_search_api/migrations/V1.0.2__right_size_warehouse.sql
+    reason: "same pipeline refresh measured ~20s on LARGE vs ~22-23s on the XSMALL dashboard/churn warehouses; load avg 0.13 running, no queuing"
+    status: applied
+    applied_query_id: 01c8362f-030c-d3d5-0035-065b000ac7ba
+    environment: Snowflake external account; applied by this session under DEVIN_EXT_ROLE; SHOW WAREHOUSES 01c8362f-030c-d214-0035-065b0009aeee confirms X-Small/60
+    evidence:
+      - query_id: 01c8362f-030c-d3d5-0035-065b000ac7ba
+        time: "2026-11-05T16:47:08.125Z"
+        user: DEVIN_EXT_SVC
+        role: DEVIN_EXT_ROLE
+        query_tag: '{"csid":"cs_doc_search_api_top_items","workload":"doc_search_api","phase":"dev","commit":"c14bcc6a78a34f0956e3bec47dfcaa38c30a1486","run_id":"SFEXT_20261105A-doc_search_api-dev-20261105T164701Z-8da76d8d","session_url":"https://partner-workshops.devinenterprise.com/sessions/9d040ab212f944b59f006f77af7fb004"}'
+        statement: ALTER WAREHOUSE WH_DOC_SEARCH_API SET WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60
+objects:
+  - type: database
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: provisioned
+  - type: schema
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: provisioned
+  - type: schema
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.RAW
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: provisioned
+  - type: warehouse
+    name: WH_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: provisioned
+  - type: resource_monitor
+    name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
+    comment: 'Attachment applied by ACCOUNTADMIN outside schemachange; query_id=01c83320-030c-d2f8-0035-065b0009466e'
+    state: provisioned
+  - type: user
+    name: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
+    state: provisioned
+  - type: task
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
+    state: provisioned
+  - type: streamlit
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.DOC_SEARCH_API_APP
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
+    state: planned
+data_quality:
+  suite: tag:dq_doc_search_api
+  ran_at: "2026-11-05T09:59:27.014656Z"
+  commit: "0c6a16be65ab4b904df8984b37c363a693ad336b"
+  refresh_task_run:
+    query_id: 01c83466-030c-d2f8-0035-065b00094efe
+    graph_run_group_id: df40cd82-5080-4928-8844-cde704f1a691
+    scheduled_time: "2026-11-05T09:10:00Z"
+  tests:
+    - {name: doc_search_api_accepted_range, check: accepted_range, status: pass, failing_rows: 0, cause: ""}
+    - {name: doc_search_api_freshness, check: freshness, status: pass, failing_rows: 0, cause: ""}
+    - {name: doc_search_api_row_count, check: row_count, status: pass, failing_rows: 0, cause: ""}
+    - {name: doc_search_api_uniqueness, check: uniqueness, status: pass, failing_rows: 0, cause: ""}
+    - {name: search_examples, check: worked_example, status: pass, failing_rows: 0, cause: ""}
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  dev:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  runtime:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  cortex:
+    dev:
+      cortex_credits: pending
+      cortex_tokens: pending
+    runtime:
+      cortex_credits: pending
+      cortex_tokens: pending
+deployment:
+  attempted:
+    commit: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    mode: deploy
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    started_at: '2026-11-05T11:28:14.917261+00:00'
+    finished_at: '2026-11-05T11:29:17.550425+00:00'
+    status: succeeded
+    failed_step: null
+    gate: null
+    failing_tests: []
+  deployed:
+    commit: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    mode: deploy
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    deployed_at: '2026-11-05T11:29:17.550415+00:00'
+    objects:
+    - type: migrations
+      name: doc_search_api
+      detail: '[]'
+    - type: procedure
+      name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_TOP_SEARCH_ITEMS
+      detail: installed from selected commit
+    - type: task
+      name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_DOC_SEARCH_API
+      detail: installed from selected commit
+    - type: model
+      name: top_search_items
+      detail: built
+    - type: tests
+      name: doc_search_api
+      detail: 7 passed
+  installed:
+  - type: procedure
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_TOP_SEARCH_ITEMS
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    status: installed
+    installed_at: '2026-11-05T11:28:43.910Z'
+    timestamp_source: metadata_last_altered
+    query_ids:
+    - 01c834f0-030c-dbbf-0035-065b000a025e
+    - 01c834f0-030c-dbbf-0035-065b000a0262
+    readback:
+      status: unavailable
+      reason: >-
+        Saved query 01c834f3-030c-dbbf-0035-065b000a02d2 returned an empty
+        PROCEDURE_DEFINITION under DEVIN_EXT_ROLE. LAST_ALTERED supplies the UTC
+        timestamp; accepted CREATE SQL contains the selected compiled model SQL.
+  - type: task
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_DOC_SEARCH_API
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    status: installed
+    installed_at: '2026-11-05T11:29:17.550425+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834f0-030c-d2f7-0035-065b00096ba6
+    - 01c834f0-030c-dbca-0035-065b000a3282
+    - 01c834f0-030c-d212-0035-065b000a126a
+    readback:
+      status: not_checked
+      reason: >-
+        Successful task statements are captured in the run JSONL. No independent
+        task readback or exact statement timestamp was saved; installed_at is the
+        run-finished upper bound, not an invented statement time.
+  - type: model_refresh
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.TOP_SEARCH_ITEMS
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    status: installed
+    installed_at: '2026-11-05T11:29:17.550425+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834f0-030c-d3d5-0035-065b000ac1b6
+    readback:
+      status: not_checked
+      reason: >-
+        Refresh CALL succeeded. Exact statement timestamp was not saved;
+        installed_at is the run-finished upper bound, not an invented statement time.
+  - type: migration
+    name: WH_DOC_SEARCH_API
+    revision: 863d66c3894d1095a94dfd4ab1db90d7bb094695
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T111118Z-ec8d3d99
+    status: installed
+    installed_at: '2026-11-05T11:11:28.950Z'
+    timestamp_source: schemachange_installed_on
+    query_ids:
+    - 01c834df-030c-dbca-0035-065b000a31ea
+    readback:
+      status: verified
+      reason: >-
+        V1.0.1__restore_auto_suspend.sql has a saved schemachange Success row with
+        this INSTALLED_ON time converted from UTC-08:00. Saved SHOW WAREHOUSES query
+        01c834f3-030c-d2f8-0035-065b000ad12e confirms LARGE/AUTO_SUSPEND=900.

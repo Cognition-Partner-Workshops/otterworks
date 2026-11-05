@@ -1,0 +1,26 @@
+# Workload specs for the Snowflake analytics on OtterWorks data. One spec.yaml per workload.
+# An account is an OtterWorks user id (auth-service users.id = admin-service admin_users.id =
+# storage_quotas.user_id = documents.owner_id); no separate account/organization table exists.
+spec_version: 1
+run_token: SFEXT_20261105A
+expires: "2026-11-19"
+workloads:
+  - id: doc_usage_dashboard
+    spec: doc_usage_dashboard/spec.yaml
+    question: Which accounts are close to their storage limit?
+    output: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.ACCOUNT_STORAGE_USAGE
+    cadence: daily
+    endpoint: cs_doc_usage_dashboard_account_usage
+    operational_endpoints: [cs_doc_usage_dashboard_freshness_responder, cs_doc_usage_dashboard_support_lookup]
+  - id: doc_search_api
+    spec: doc_search_api/spec.yaml
+    question: Which terms and documents does each account search for?
+    output: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.TOP_SEARCH_ITEMS
+    cadence: daily
+    endpoint: cs_doc_search_api_top_items
+  - id: churn_model
+    spec: churn_model/spec.yaml
+    question: Which accounts look likely to leave?
+    output: DB_CHURN_MODEL_SFEXT_20261105A.APP.WEEKLY_CHURN_SCORES
+    cadence: weekly
+    endpoint: cs_churn_model_account_score

@@ -1,0 +1,391 @@
+# Provenance for the storage-usage dashboard (refresh task + Streamlit app). Validate: python workloads/attribution/validate_provenance.py
+# Usage values Snowflake has not reported are `pending`; Cortex credits are kept apart from compute.
+schema_version: 1
+workload: doc_usage_dashboard
+run_token: SFEXT_20261105A
+expires: "2026-11-19"
+application:
+  name: Devin_Demo
+  registration: unregistered
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  base_branch: demo-stack-snowflake
+  base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
+  commit: "ba054aaf0574b39cd9aa9baf68fd51f5d4874c8e"
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2498
+  session_url: https://partner-workshops.devinenterprise.com/sessions/6b490330916b45c1a3532b15a809de89
+endpoints:
+  - csid: cs_doc_usage_dashboard_account_usage
+    service_user: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
+    auth: key_pair
+  - csid: cs_doc_usage_dashboard_freshness_responder
+    service_user: SVC_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
+    auth: key_pair
+    role: ROLE_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
+    runtime_source:
+      path: workloads/doc_usage_dashboard/responder/freshness.py
+      revision: 4973f56000a3c132224477eb97ce22808f173f9b
+  - csid: cs_doc_usage_dashboard_support_lookup
+    service_user: SVC_CS_DOC_USAGE_DASHBOARD_SUPPORT_LOOKUP
+    auth: key_pair
+    role: ROLE_CS_DOC_USAGE_DASHBOARD_SUPPORT_LOOKUP
+    runtime_source:
+      path: workloads/doc_usage_dashboard/responder/support_lookup.py
+      revision: 86cfefa9551f3f0e71c82defa067b1240e156624
+# Streamlit runtime attribution is the trailing JSON comment in query_text: SiS
+# overrides QUERY_TAG (ALTER SESSION rejected; statement_params silently ignored,
+# verified 2026-11-05 in QUERY_HISTORY). Dev queries retain their real QUERY_TAG.
+# Cross-check Snowflake's StreamlitName QUERY_TAG against the DEVIN_CSID-tagged
+# streamlit object below; its app FQN maps to cs_doc_usage_dashboard_account_usage.
+query_tag:
+  keys: [csid, workload, phase, commit, run_id]
+  dev_keys: [session_url]
+  task_phase: runtime
+warehouse:
+  name: WH_DOC_USAGE_DASHBOARD
+  size: XSMALL
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: RM_SFEXT_20261105A_20261119_DOC_USAGE_DASHBOARD
+    frequency: MONTHLY
+    credit_quota: 10
+objects:
+  - type: database
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A
+    devin_csid: cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_usage_dashboard"}'
+    state: provisioned
+  - type: schema
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_usage_dashboard"}'
+    state: provisioned
+  - type: schema
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.RAW
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_usage_dashboard"}'
+    state: provisioned
+  - type: warehouse
+    name: WH_DOC_USAGE_DASHBOARD
+    devin_csid: cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_usage_dashboard"}'
+    state: provisioned
+  - type: resource_monitor
+    name: RM_SFEXT_20261105A_20261119_DOC_USAGE_DASHBOARD
+    comment: 'Attachment applied by ACCOUNTADMIN outside schemachange; query_id=01c83320-030c-d214-0035-065b00088f8a'
+    state: provisioned
+  - type: user
+    name: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
+    state: provisioned
+  - type: user
+    name: SVC_CS_DOC_USAGE_DASHBOARD_FRESHNESS_RESPONDER
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_freshness_responder"}'
+    state: provisioned
+  - type: user
+    name: SVC_CS_DOC_USAGE_DASHBOARD_SUPPORT_LOOKUP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_support_lookup"}'
+    state: provisioned
+  - type: task
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.REFRESH_DOC_USAGE_DASHBOARD
+    devin_csid: cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
+    state: provisioned
+  - type: streamlit
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.DOC_USAGE_DASHBOARD_APP
+    devin_csid: cs_doc_usage_dashboard_account_usage
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
+    state: provisioned
+data_quality:
+  suite: tag:dq_doc_usage_dashboard
+  ran_at: "2026-11-05T09:37:23.600062Z"
+  commit: "9aed72d06d8b546fae8a7a4c0baef2c0caeb3bee"
+  refresh_task_run:
+    query_id: 01c8347e-030c-d20e-0035-065b0009f08e
+    graph_run_group_id: a7b66fa3-1133-40ed-9cb4-d964d7724f60
+    scheduled_time: "2026-11-05T09:34:34.606000Z"
+  tests:
+    - {name: accepted_range, check: accepted_range, status: pass, failing_rows: 0, cause: ""}
+    - {name: freshness, check: freshness, status: pass, failing_rows: 0, cause: ""}
+    - {name: row_count, check: row_count, status: pass, failing_rows: 0, cause: ""}
+    - {name: storage_examples, check: worked_example, status: pass, failing_rows: 0, cause: ""}
+    - name: uniqueness
+      check: uniqueness
+      status: fail
+      failing_rows: 5
+      cause: "5 duplicate (snapshot, user_id) keys in RAW.ADMIN_STORAGE_QUOTAS from the SFEXT_20261105A_DUPQUOTA fixture; DUPQUOTA_1 and DUPQUOTA_4 still carry their marker hash; the quota MERGE's _row_hash tie-break in APP.REFRESH_ACCOUNT_STORAGE_USAGE rewrote DUPQUOTA_2, 3 and 5 into copies of the originals (finding, not fixed here); output-grain uniqueness passes"
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  dev:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  runtime:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  cortex:
+    dev:
+      cortex_credits: pending
+      cortex_tokens: pending
+    runtime:
+      cortex_credits: pending
+      cortex_tokens: pending
+deployment:
+  attempted:
+    commit: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    mode: deploy
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T112637Z-82dfb2ca
+    started_at: '2026-11-05T11:26:37.599862+00:00'
+    finished_at: '2026-11-05T11:27:42.775018+00:00'
+    status: failed
+    failed_step: dbt_test
+    gate: dbt_test
+    failing_tests:
+    - test.otterworks_pipeline.uniqueness
+  deployed: null
+  installed:
+  - type: procedure
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.REFRESH_ACCOUNT_STORAGE_USAGE
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T112637Z-82dfb2ca
+    status: installed
+    installed_at: '2026-11-05T11:27:07.096Z'
+    timestamp_source: metadata_last_altered
+    query_ids:
+    - 01c834ef-030c-dbca-0035-065b000a3236
+    - 01c834ef-030c-d214-0035-065b0009a93e
+    readback:
+      status: unavailable
+      reason: >-
+        Saved query 01c834f3-030c-d3d5-0035-065b000ac286 returned an empty
+        PROCEDURE_DEFINITION under DEVIN_EXT_ROLE. LAST_ALTERED supplies the UTC
+        timestamp; accepted CREATE SQL contains the selected compiled model SQL.
+  - type: task
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.REFRESH_DOC_USAGE_DASHBOARD
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T112637Z-82dfb2ca
+    status: installed
+    installed_at: '2026-11-05T11:27:42.775018+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834ef-030c-d3d5-0035-065b000ac13a
+    - 01c834ef-030c-d20e-0035-065b0009f2a2
+    - 01c834ef-030c-d20e-0035-065b0009f2a6
+    readback:
+      status: not_checked
+      reason: >-
+        Successful task statements are captured in the run JSONL. No independent
+        task readback or exact statement timestamp was saved; installed_at is the
+        run-finished upper bound, not an invented statement time.
+  - type: model_refresh
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.ACCOUNT_STORAGE_USAGE
+    revision: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T112637Z-82dfb2ca
+    status: installed
+    installed_at: '2026-11-05T11:27:42.775018+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c834ef-030c-d3d5-0035-065b000ac13e
+    readback:
+      status: not_checked
+      reason: >-
+        Refresh CALL succeeded before the unchanged uniqueness gate failed.
+        Exact statement timestamp was not saved; installed_at is the run-finished
+        upper bound. This is not a claim that the deployment passed its gates.
+  - type: schema
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.426590+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-d20e-0035-065b0009f7fe
+    - 01c8353c-030c-dbbf-0035-065b000a06e6
+    readback:
+      status: verified
+      reason: >-
+        Idempotent schemachange reapplication retained the schema from the partial
+        install; SHOW SCHEMAS verifies DEVIN_EXT_ROLE ownership and external comment.
+  - type: view
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.WORKLOAD_TABLE_FRESHNESS
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.550953+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-dbc6-0035-065b000a473e
+    - 01c8353c-030c-d212-0035-065b000a1666
+    readback:
+      status: verified
+      reason: >-
+        Idempotent reapplication retained the view. SHOW VIEWS returns its SQL,
+        transaction-audit proxy, snapshot date, owner and external comment.
+  - type: table
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.DASHBOARD_FAULT_CONTROL
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.675027+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-d212-0035-065b000a164a
+    - 01c8353c-030c-d2f8-0035-065b000ad516
+    - 01c8353c-030c-dbc6-0035-065b000a475a
+    readback:
+      status: verified
+      reason: >-
+        Idempotent reapplication retained the table. SHOW TABLES verifies owner
+        and external comment; COUNT(*) is zero. No fault has been armed.
+  - type: procedure
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.ARM_DASHBOARD_FAULT
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.797961+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-dbc6-0035-065b000a4742
+    - 01c8353c-030c-dbc6-0035-065b000a4756
+    - 01c8353c-030c-d2f8-0035-065b000ad512
+    - 01c8353d-030c-d2f8-0035-065b000ad51a
+    readback:
+      status: verified
+      reason: >-
+        Idempotent reapplication retained the no-argument procedure. SHOW
+        PROCEDURES verifies its external comment; SHOW GRANTS ON PROCEDURE
+        returns only DEVIN_EXT_ROLE ownership, with no responder grant. DESCRIBE
+        verifies EXECUTE AS OWNER and the exact body from the installed revision.
+  - type: procedure
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.RECOVER_DASHBOARD_TASK
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:18.892370+00:00'
+    timestamp_source: statement_completed_at
+    query_ids:
+    - 01c8353c-030c-d20e-0035-065b0009f802
+    - 01c8353c-030c-dbc6-0035-065b000a4756
+    - 01c8353c-030c-dbca-0035-065b000a3716
+    - 01c8353d-030c-dbca-0035-065b000a371a
+    readback:
+      status: verified
+      reason: >-
+        Idempotent reapplication retained the no-argument procedure. SHOW
+        PROCEDURES verifies its external comment; SHOW GRANTS ON PROCEDURE
+        verifies DEVIN_EXT_ROLE ownership and responder USAGE only. DESCRIBE
+        verifies EXECUTE AS OWNER and the exact body from the installed revision.
+        Not called.
+  - type: migration
+    name: DB_SCHEMACHANGE_SFEXT_20261105A.CHANGE_HISTORY.DOC_USAGE_DASHBOARD
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T124411Z-2a23b494
+    status: installed
+    installed_at: '2026-11-05T12:44:20.642000+00:00'
+    timestamp_source: schemachange_installed_on
+    query_ids:
+    - 01c8353c-030c-d2f8-0035-065b000ad50e
+    - 01c8353c-030c-d212-0035-065b000a165e
+    readback:
+      status: verified
+      reason: >-
+        CHANGE_HISTORY contains exactly one V1.0.2__freshness_responder.sql row:
+        version 1.0.2, status Success, installed_by DEVIN_EXT_SVC, checksum
+        d3e410d8d33a23086aaa038425fd9b5d5e792356be4c021b838f3b31. A second
+        schemachange invocation skipped the recorded version. No Streamlit
+        statement, fault arm, task resume, or refresh was executed.
+  - type: runtime_source
+    name: workloads/doc_usage_dashboard/responder/freshness.py
+    revision: 2a7cd53956ddfdde2b9a2ea434f288856b9b2e26
+    run_id: SFEXT_20261105A-doc_usage_dashboard-runtime-20261105T124530Z-0ea4a511
+    status: installed
+    installed_at: '2026-11-05T12:45:34.931376+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c8353d-030c-d212-0035-065b000a166e
+    - 01c8353d-030c-dbbf-0035-065b000a06ea
+    - 01c8353d-030c-d214-0035-065b0009adae
+    - 01c8353d-030c-dbc6-0035-065b000a4766
+    - 01c8353d-030c-d20e-0035-065b0009f806
+    - 01c8353d-030c-d2f7-0035-065b00096ffe
+    - 01c8353d-030c-d214-0035-065b0009adb2
+    readback:
+      status: verified
+      reason: >-
+        Installed-at is the saved SRE JSON file-write time, an upper bound for
+        check completion. Local source bytes match git show at the installed revision. SRE check
+        uses that revision in its runtime tag without session_url, with the
+        responder user/role and empty secondary roles. Both freshness rows are
+        fresh, latest history is SUCCEEDED, faults are empty, monitor usage is
+        2.46 credits. Exit 1 reports task_suspended_or_missing: SRE SHOW TASKS
+        returns no rows under the restricted grants; setup independently verifies
+        the task suspended and unchanged. This is not a recovery or refresh.
+  - type: runtime_source
+    name: workloads/doc_usage_dashboard/responder/freshness.py
+    revision: 4973f56000a3c132224477eb97ce22808f173f9b
+    run_id: SFEXT_20261105A-doc_usage_dashboard-runtime-20261105T124858Z-2cbf3df7
+    status: installed
+    installed_at: '2026-11-05T12:49:05.171829+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c83541-030c-dbc6-0035-065b000a476e
+    - 01c83541-030c-d2f7-0035-065b000b6012
+    - 01c83541-030c-d3d5-0035-065b000ac686
+    - 01c83541-030c-d212-0035-065b000a167a
+    - 01c83541-030c-d3d5-0035-065b000ac68a
+    - 01c83541-030c-d214-0035-065b0009adc2
+    - 01c83541-030c-d20e-0035-065b0009f812
+    readback:
+      status: verified
+      reason: >-
+        Installed-at is the saved SRE JSON file-write time, an upper bound for
+        check completion. Local source bytes match the installed revision.
+        SRE check uses that revision in its runtime tag without session_url,
+        with the responder user/role and empty secondary roles. Future-window
+        TASK_HISTORY returns no SCHEDULED rows: task state is suspended and
+        next_scheduled_time is null. Actual-run history remains bounded at
+        CURRENT_TIMESTAMP; latest finished run is SUCCEEDED, both freshness
+        rows are fresh, faults are empty, monitor usage is 2.49 credits.
+        Exit 1 reports task_suspended. No privileges, tasks, or migrations changed.
+  - type: view
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.ACCOUNT_STORAGE_LOOKUP
+    revision: 86cfefa9551f3f0e71c82defa067b1240e156624
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T155137Z-976bd7f8
+    status: installed
+    installed_at: '2026-11-05T15:51:43.850000+00:00'
+    timestamp_source: metadata_last_altered
+    query_ids:
+    - 01c835f7-030c-d20e-0035-065b0009f8e2
+    - 01c835f7-030c-d3d5-0035-065b000ac756
+    readback:
+      status: verified
+      reason: SHOW VIEWS verifies the projected APP source, columns, creation timestamp and run-token/expiry comment; no masking or row-access policy was changed.
+  - type: migration
+    name: V1_0_3_SUPPORT_LOOKUP
+    revision: 86cfefa9551f3f0e71c82defa067b1240e156624
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T155137Z-976bd7f8
+    status: installed
+    installed_at: '2026-11-05T15:51:45.222000+00:00'
+    timestamp_source: schemachange_installed_on
+    query_ids:
+    - 01c835f7-030c-d2f8-0035-065b000ad606
+    - 01c835f7-030c-dbc6-0035-065b000a4826
+    - 01c835f7-030c-d214-0035-065b0009ae62
+    - 01c835f7-030c-d212-0035-065b000a176e
+    - 01c835f7-030c-d212-0035-065b000a1772
+    readback:
+      status: verified
+      reason: History records V1.0.3 Success; SHOW GRANTS verifies only OPS schema USAGE and lookup-view SELECT were added to the existing database/warehouse USAGE. All three tasks remain suspended.
+  - type: runtime_source
+    name: workloads/doc_usage_dashboard/responder/support_lookup.py
+    revision: 86cfefa9551f3f0e71c82defa067b1240e156624
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T155137Z-976bd7f8
+    status: installed
+    installed_at: '2026-11-05T15:51:45.222000+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c835f7-030c-d212-0035-065b000a1772
+    readback:
+      status: not_checked
+      reason: Source-only client is present in the pushed setup checkout at this revision, with the migration installed; timestamp is an upper bound for source availability. Runtime identity, masking and query-tag verification follow separately after this provenance record is pushed.
