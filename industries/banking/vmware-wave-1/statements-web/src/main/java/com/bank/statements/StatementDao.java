@@ -11,11 +11,22 @@ import java.util.Map;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import org.postgresql.ds.PGSimpleDataSource;
 
 public class StatementDao {
     private final DataSource ds;
 
     public StatementDao() {
+        if (System.getenv("DB_URL") != null) {
+            PGSimpleDataSource configured = new PGSimpleDataSource();
+            configured.setURL(System.getenv("DB_URL"));
+            configured.setUser(System.getenv("DB_USER"));
+            configured.setPassword(System.getenv("DB_PASSWORD"));
+            configured.setConnectTimeout(3);
+            configured.setSocketTimeout(5);
+            ds = configured;
+            return;
+        }
         try {
             ds = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/StatementsDB");
         } catch (NamingException e) {
@@ -25,6 +36,12 @@ public class StatementDao {
 
     public StatementDao(DataSource ds) {
         this.ds = ds;
+    }
+
+    public boolean healthy() throws SQLException {
+        try (Connection c = ds.getConnection()) {
+            return c.isValid(2);
+        }
     }
 
     public Map<String, String> accounts() throws SQLException {

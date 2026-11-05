@@ -6,7 +6,8 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public final class AppConfig {
-    private static final String CONF_FILE = "/opt/app/conf/statements.properties";
+    private static final String CONF_FILE = System.getenv("STATEMENTS_CONFIG") == null
+        ? "/opt/app/conf/statements.properties" : System.getenv("STATEMENTS_CONFIG");
     private static Properties props;
 
     private AppConfig() {

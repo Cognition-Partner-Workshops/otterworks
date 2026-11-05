@@ -20,7 +20,7 @@ public class AccountsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            String last = (String) req.getSession(true).getAttribute("lastAccount");
+            String last = LastViewed.read(req);
             resp.setContentType("text/html;charset=UTF-8");
             resp.getWriter().write(Html.accounts(AppConfig.bankName(), dao.accounts(), last));
         } catch (SQLException e) {

@@ -1,0 +1,3 @@
+env:
+  DB_URL: jdbc:postgresql://statements-db.deps.svc.cluster.local:5432/bankwave
+  COOKIE_SECURE: "false"

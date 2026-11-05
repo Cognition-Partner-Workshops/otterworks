@@ -1,0 +1,31 @@
+{
+  "healthy_before": 200,
+  "dependency_down": 503,
+  "healthy_after": 200,
+  "app_deployment": {
+    "availableReplicas": 2,
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-11-05T13:00:21Z",
+        "lastUpdateTime": "2026-11-05T13:00:21Z",
+        "message": "Deployment has minimum availability.",
+        "reason": "MinimumReplicasAvailable",
+        "status": "True",
+        "type": "Available"
+      },
+      {
+        "lastTransitionTime": "2026-11-05T12:59:41Z",
+        "lastUpdateTime": "2026-11-05T13:02:02Z",
+        "message": "ReplicaSet \"statements-web-5c74848769\" has successfully progressed.",
+        "reason": "NewReplicaSetAvailable",
+        "status": "True",
+        "type": "Progressing"
+      }
+    ],
+    "observedGeneration": 2,
+    "readyReplicas": 2,
+    "replicas": 2,
+    "updatedReplicas": 2
+  },
+  "database_role": "statements_reader|f|f|f|t|f|f|f"
+}
