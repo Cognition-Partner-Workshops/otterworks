@@ -6,7 +6,8 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "test": "node test/templates.test.js"
+    "test": "node test/templates.test.js",
+    "test:redis": "node test/store.test.js"
   },
   "engines": {
     "node": "12.x"
