@@ -9,11 +9,13 @@ from contextlib import contextmanager
 
 import sf_attribution as sf
 import snowflake.connector
+import structlog
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from cryptography.hazmat.primitives import serialization
 from snowflake.connector.errors import InterfaceError, OperationalError, ProgrammingError
 
 EP = sf.endpoint("cs_doc_search_api_top_items")
+logger = structlog.get_logger()
 COLUMNS = (
     "window_end_date", "window_days", "account_id", "item_type", "rank", "term",
     "document_id", "document_title", "search_count", "zero_result_count", "last_searched_at",
@@ -54,6 +56,9 @@ class InsightsClient:
         atexit.register(self.close)
 
     def _connect(self):
+        if self.config.user is not None and self.config.user != EP.service_user:
+            logger.error("insights_identity_misconfigured", expected_user=EP.service_user)
+            raise InsightsUnavailable()
         env = dict(os.environ)
         env["SNOWFLAKE_ROLE"] = self.config.role
         if self.private_key:

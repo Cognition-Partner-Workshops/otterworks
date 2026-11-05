@@ -199,3 +199,37 @@ def test_provision_sql():
     assert all("SELECT" in s or "USAGE" in s or "GRANT ROLE" in s for s in grants)
     assert "TYPE = SERVICE" in sql[5] and "SVC_CS_DOC_SEARCH_API_TOP_ITEMS" in sql[5]
     assert all("ALTER WAREHOUSE" not in s for s in sql)
+
+
+def test_key_path_configuration(monkeypatch):
+    monkeypatch.setenv("SNOWFLAKE_ACCOUNT", "configured-account")
+    monkeypatch.setenv("SNOWFLAKE_ROLE", provision.ROLE)
+    monkeypatch.setenv("SNOWFLAKE_USER", provision.EP.service_user)
+    monkeypatch.setenv("SNOWFLAKE_PRIVATE_KEY_PATH_CS_DOC_SEARCH_API_TOP_ITEMS", "/var/run/snowflake/rsa_key.p8")
+    conn, _ = fake_connection()
+    connector = MagicMock(return_value=conn)
+    backend = InsightsClient(InsightsConfig(commit="a" * 40), connector=connector)
+    try:
+        backend.fetch(ACCOUNT)
+        params = connector.call_args.kwargs
+        assert params["private_key_file"] == "/var/run/snowflake/rsa_key.p8"
+        assert params["role"] == provision.ROLE
+        assert params["user"] == provision.EP.service_user
+        assert "private_key" not in params
+    finally:
+        backend.close()
+
+
+def test_mismatched_user_is_unavailable(app, client, monkeypatch, caplog):
+    monkeypatch.setenv("SNOWFLAKE_USER", "WRONG_USER")
+    connector = MagicMock()
+    backend = InsightsClient(InsightsConfig(commit="a" * 40), connector=connector)
+    app.config["INSIGHTS_CLIENT"] = backend
+    try:
+        response = client.get(URL)
+        assert response.status_code == 503
+        assert response.json["error"] == "insights_unavailable"
+        connector.assert_not_called()
+        assert "insights_identity_misconfigured" in caplog.text
+    finally:
+        backend.close()

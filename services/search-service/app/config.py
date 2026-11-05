@@ -47,7 +47,8 @@ class AuthConfig:
 
 @dataclass(frozen=True)
 class InsightsConfig:
-    role: str = "SFEXT_20261105A_DOC_SEARCH_API_ENDPOINT"
+    role: str = field(default_factory=lambda: os.getenv("SNOWFLAKE_ROLE", "SFEXT_20261105A_DOC_SEARCH_API_ENDPOINT"))
+    user: str | None = field(default_factory=lambda: os.getenv("SNOWFLAKE_USER"))
     commit: str | None = field(default_factory=lambda: os.getenv("SF_COMMIT"))
     pool_size: int = field(default_factory=lambda: max(1, int(os.getenv("INSIGHTS_POOL_SIZE", "4"))))
     pool_timeout: float = field(default_factory=lambda: float(os.getenv("INSIGHTS_POOL_TIMEOUT", "5")))
