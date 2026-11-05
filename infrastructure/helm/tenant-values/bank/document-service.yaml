@@ -1,0 +1,24 @@
+# Helm values overlay for tenant `bank` (branch demo-bank, namespace
+# otterworks-bank), applied by scripts/deploy-tenant.sh. The base chart ships
+# metrics only; this turns on the incident PrometheusRule, the Grafana
+# dashboard and OTLP tracing so the bank tenant pages on its own alerts.
+# The tenant both pages and takes the fix on demo-bank, so no `fix_branch`:
+# the `branch` label deploy-tenant.sh stamps already names the PR base.
+monitoring:
+  enabled: true
+  rules:
+    enabled: true
+  dashboard:
+    enabled: true
+  links:
+    grafana: https://grafana.otterworks.app
+    jaeger: https://jaeger.otterworks.app
+tracing:
+  enabled: true
+# A rolling update briefly runs two replicas, which is exactly the double-run
+# flaw's trigger; recreate instead so a fix deploy never pages the wrong alert.
+strategy:
+  type: Recreate
+resources:
+  limits:
+    memory: 512Mi
