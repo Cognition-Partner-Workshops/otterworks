@@ -47,8 +47,12 @@ configuration_changes:
       current warehouse was created with LARGE/60, not altered from 900 in the visible
       history. Its creation time matches SHOW WAREHOUSES (2026-11-05T03:40:46.393Z).
       The earlier 2026-11-04 creation and SFNFR-prefixed warehouse are not this incarnation.
-    status: planned
-    environment: Snowflake external account; pending application by operator
+      An administrator later reported before/after SHOW observations under query IDs
+      01c834dc-030c-d212-0035-065b000a11c2 and 01c834dc-030c-d214-0035-065b0009a8ca;
+      no additional statement details are inferred from those IDs here.
+    status: applied
+    applied_query_id: 01c834df-030c-dbca-0035-065b000a31ea
+    environment: Snowflake external account; applied by this session under DEVIN_EXT_ROLE
     evidence:
       - query_id: 01c8331c-030c-d1ca-0035-065b00085f8a
         time: "2026-11-05T03:40:46.335Z"
@@ -128,3 +132,29 @@ usage:
     runtime:
       cortex_credits: pending
       cortex_tokens: pending
+deployment:
+  attempted:
+    commit: 863d66c3894d1095a94dfd4ab1db90d7bb094695
+    mode: deploy
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T111118Z-ec8d3d99
+    started_at: '2026-11-05T11:11:18.912156+00:00'
+    finished_at: '2026-11-05T11:12:02.677826+00:00'
+    status: succeeded
+    failed_step: null
+    gate: null
+    failing_tests: []
+  deployed:
+    commit: 863d66c3894d1095a94dfd4ab1db90d7bb094695
+    mode: deploy
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T111118Z-ec8d3d99
+    deployed_at: '2026-11-05T11:12:02.677814+00:00'
+    objects:
+    - type: migrations
+      name: doc_search_api
+      detail: '[{"version": "1.0.1", "script": "V1.0.1__restore_auto_suspend.sql"}]'
+    - type: model
+      name: top_search_items
+      detail: built
+    - type: tests
+      name: doc_search_api
+      detail: 7 passed
