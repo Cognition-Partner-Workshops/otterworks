@@ -21,6 +21,7 @@ Set environment variables in the launching shell or inject secrets from the secr
 | `DEVIN_AUTOMATION_URL` | Incoming automation webhook URL; required in webhook mode |
 | `DEVIN_WEBHOOK_SECRET` | Automation `X-Webhook-Secret`, required in webhook mode |
 | `ALERTMANAGER_RECEIVER_SECRET` | Independent shared secret required by the raw Alertmanager receiver |
+| `ALERTMANAGER_CHANNEL` | Channel for Alertmanager bot threads, default `alerts`; must be `alerts`, `incident-war-room` or `platform` |
 | `MOCK_SLACK_PORT` | Published loopback port, default 3100 |
 | `STATE_FILE` | Native Node state location; Compose fixes the location at `/data/state.json` |
 | `DEVIN_TRANSCRIPT_FILE` | Optional local read-mirror JSON path for a webhook session without a read API credential |
@@ -41,7 +42,7 @@ An operator who can read the resulting session in an authenticated browser can s
 
 ## Alertmanager input
 
-The authenticated receiver accepts the standard raw Alertmanager body at `/receivers/alertmanager`, creates an Alertmanager bot thread in `#alerts` for each firing fingerprint and start time, and ignores repeated deliveries and resolved alerts. Set the receiver secret in the app's environment and the incident overlay's environment to the same value. Layer the receiver overlay after the existing incident files when starting the incident stack:
+The authenticated receiver accepts the standard raw Alertmanager body at `/receivers/alertmanager`, creates an Alertmanager bot thread in `ALERTMANAGER_CHANNEL` (default `alerts`) for each firing fingerprint and start time, and ignores repeated deliveries and resolved alerts. Set the receiver secret in the app's environment and the incident overlay's environment to the same value. Layer the receiver overlay after the existing incident files when starting the incident stack:
 
 ```sh
 docker compose -p bankir-1105-incident \
@@ -52,6 +53,65 @@ docker compose -p bankir-1105-incident \
 ```
 
 Start the workspace first: the overlay attaches Alertmanager to the workspace's private Compose network and addresses `mock-slack:3100` directly. The host listener stays on loopback. The local alert sink and the Slack sink remain unchanged. Do not point `SLACK_WEBHOOK_URL` at the raw receiver: Slack-formatted messages are a different payload.
+
+## Alert storm forwarding
+
+Set `ALERT_BATCH_WEBHOOK_URL` to a Devin incoming automation URL to collect new
+firing alerts into a single webhook after a quiet window. Set
+`ALERT_BATCH_WEBHOOK_SECRET` for the outgoing `Authorization: Bearer` header.
+`ALERT_BATCH_QUIET_MS` defaults to 90000; choose a longer window when scenarios
+take different amounts of time to fire. Start mock Slack with these variables
+before starting the incident stack with the receiver overlay, then run
+`make arm SCENARIO=all` (or a comma list) with the same Compose project and files.
+
+Each alert still gets a root post in `ALERTMANAGER_CHANNEL` (default `alerts`).
+Batch payloads and bot notes use that same channel. Batch mode sends raw alerts
+only through the batch webhook, independently of the per-thread automation
+binding. The JSON body contains `message`, `channel` and `alerts`; the message
+lists alert names, scenarios, severities, summaries, start times and labels.
+A bot note records delivery and a session link when the automation returns an
+ID. Failed or interrupted delivery stays uncertain and requires an operator
+check in automation history; the server does not retry a possibly accepted
+batch. Pending alerts survive restarts in the workspace state file.
+
+For a staged storm, set `ALERT_BATCH_REQUIRED_ALERTS` to comma-separated alert
+names. The server holds a partial batch until every required name has arrived,
+then waits for the normal quiet window after the latest alert. For all local
+scenarios, use
+`DocumentListLatencyHigh,RequestLogVolumeNearFull,DocumentServiceMemoryHigh,DocumentStatsRollupDuplicated`.
+If a scenario fails, its partial batch stays pending for operator review until
+`ALERT_BATCH_MAX_AGE_MS` expires (default `1800000`, 30 minutes from the first
+received alert). Expired pending batches are discarded with a bot note, including
+after a restart. Legacy pending batches without a persisted first-receipt time
+(`firstAt`) are also discarded on restart with a receipt-age-unknown note; neither
+alert start times nor the latest receipt time establishes their age. Start a new
+storm or reset before retrying. New alerts cannot inherit required names from a
+discarded batch.
+Leave this variable empty for independent single-scenario batches.
+
+`GET /api/state` exposes `alertBatch` with `status` and `alertCount`, or `null`.
+Restarting during delivery marks the batch uncertain and posts a bot note in
+`#alerts`. Check the automation's event history; delivery is not retried.
+
+Before starting another storm within the maximum age, discard its pending batch:
+
+```bash
+curl --fail -X POST http://localhost:3100/api/alert-batch/reset \
+  -H "X-Webhook-Secret: ${ALERTMANAGER_RECEIVER_SECRET}"
+```
+
+Reset requires the raw receiver secret, clears only a pending batch and its timer,
+and posts a bot note. Every pending-batch discard also clears that batch's alert
+deduplication keys and retires its read-only alert threads as discarded, retaining
+their history. Still-firing repeats follow the current route: a fresh batch when
+batching is enabled, or normal Devin delivery otherwise. Deduplication
+for delivered, sending and uncertain batches is retained; uncertain deliveries
+are not retried. An empty reset returns `{"reset":false}`.
+
+The Alertmanager route groups by `alertname` and `scenario`, with a 10-second
+group wait. Raw receivers send every alert in each group (`max_alerts: 0`),
+including multiple instances; Slack-formatted delivery and local gate captures
+keep their existing routes.
 
 ## Recovery and cleanup
 

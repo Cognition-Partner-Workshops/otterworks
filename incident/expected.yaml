@@ -2,14 +2,14 @@
 # re-pin with `make incident-record REASON="..."` -- the reason is kept here
 # so every re-record is auditable in git history.
 recorded:
-  at: '2026-11-05T06:00:26.502269+00:00'
-  git_sha: e4e390e717b7e4dc83dc7600d525f9f482d253ef
-  reason: 'KYC upload SLO (issue #2501): fixture fingerprint moves only because prometheus.yml
-    loads kyc_upload_slo.yml, alertmanager.yml.tmpl routes team=platform and docker-compose.incident.yml
-    passes PLATFORM_ONCALL_WEBHOOK_URL; incident scenarios, alerts and application
-    source untouched'
+  at: '2026-11-05T09:38:32.940144+00:00'
+  git_sha: 0484afcd3dc2d26d60ab6e8bdb25997f2dbd325f
+  reason: 'KYC upload SLO (issue #2501) merged onto demo-bank: fixture fingerprint
+    moves only because prometheus.yml loads kyc_upload_slo.yml, alertmanager.yml.tmpl
+    routes team=platform and docker-compose.incident.yml passes PLATFORM_ONCALL_WEBHOOK_URL;
+    incident scenarios, alerts and application source untouched'
 fingerprints:
-  fixture: 6db13d1b2b7416b1d58b2573b3ca6a09dda0b5437a60e2cb5b479b32ac7819ba
+  fixture: 5c46c8dd4bebd8e3ade990dfef8586f57ce04b9c34baa16de708a25493fe70a6
   source: d55ef66d277619b561204c5ff6e7f8ddedbd6e29ebed0ce4477ad08d2eb1ea40
 scenarios:
   n-plus-one:
