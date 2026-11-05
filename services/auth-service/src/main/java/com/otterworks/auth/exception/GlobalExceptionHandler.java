@@ -1,14 +1,17 @@
 package com.otterworks.auth.exception;
 
 import io.jsonwebtoken.JwtException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,6 +34,23 @@ public class GlobalExceptionHandler {
             .map(err -> err.getField() + ": " + err.getDefaultMessage())
             .collect(Collectors.joining(", "));
     return buildErrorResponse(HttpStatus.BAD_REQUEST, errors);
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<Map<String, Object>> handleUnreadableBody(
+      HttpMessageNotReadableException ex) {
+    return buildErrorResponse(HttpStatus.BAD_REQUEST, "Malformed or missing request body");
+  }
+
+  @ExceptionHandler(AccountLockedException.class)
+  public ResponseEntity<Map<String, Object>> handleAccountLocked(AccountLockedException ex) {
+    long retryAfter =
+        Math.max(1, Duration.between(Instant.now(), ex.getLockedUntil()).getSeconds());
+    ResponseEntity<Map<String, Object>> base =
+        buildErrorResponse(HttpStatus.LOCKED, ex.getMessage());
+    return ResponseEntity.status(HttpStatus.LOCKED)
+        .header(HttpHeaders.RETRY_AFTER, Long.toString(retryAfter))
+        .body(base.getBody());
   }
 
   @ExceptionHandler(JwtException.class)

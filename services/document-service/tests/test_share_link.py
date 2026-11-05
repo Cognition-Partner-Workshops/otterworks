@@ -58,3 +58,17 @@ async def test_share_endpoint_round_trip(client, owner_id: uuid.UUID, monkeypatc
         "/api/v1/documents/shared", params={"document_id": doc_id, "token": "wrong"}
     )
     assert denied.status_code == 403
+
+
+def test_token_is_not_derivable_from_the_salt_alone(service):
+    import hashlib
+
+    forged = hashlib.md5(f"{DOC_ID}:test-salt".encode(), usedforsecurity=False).hexdigest()[:16]
+    assert service.verify_token(DOC_ID, forged) is False
+
+
+def test_token_depends_on_the_server_secret():
+    a = ShareLinkService(salt="s", secret="secret-a")
+    b = ShareLinkService(salt="s", secret="secret-b")
+    assert a.mint_token(DOC_ID) != b.mint_token(DOC_ID)
+    assert b.verify_token(DOC_ID, a.mint_token(DOC_ID)) is False
