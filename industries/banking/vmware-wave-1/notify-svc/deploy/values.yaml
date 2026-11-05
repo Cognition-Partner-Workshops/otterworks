@@ -1,0 +1,16 @@
+app: notify-svc
+owner: bank-digital-channels
+costCenter: BANK-W1-NOTIFY
+workload: web
+replicas: 2
+env:
+  PORT: "8080"
+  NODE_ENV: production
+  NODE_OPTIONS: --max-old-space-size=160
+  REDIS_URL: redis://notify-redis.bank.internal:6379
+secretEnv:
+  REDIS_PASSWORD:
+    secret: notify-svc-redis
+    key: password
+ingress:
+  tls: true

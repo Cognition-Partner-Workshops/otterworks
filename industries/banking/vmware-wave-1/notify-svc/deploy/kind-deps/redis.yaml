@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-auth
+# Kind-only synthetic fixture; never use this credential outside the local test cluster.
+stringData:
+  password: synthetic-notify-ci-only
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: redis}
+  template:
+    metadata:
+      labels: {app: redis}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: redis
+          image: public.ecr.aws/docker/library/redis:7-alpine
+          command: [sh, -c]
+          args:
+            - exec redis-server --save "" --appendonly no --requirepass "$REDIS_PASSWORD"
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef: {name: redis-auth, key: password}
+            - name: REDISCLI_AUTH
+              valueFrom:
+                secretKeyRef: {name: redis-auth, key: password}
+          ports:
+            - containerPort: 6379
+          readinessProbe:
+            exec:
+              command: [redis-cli, ping]
+          livenessProbe:
+            exec:
+              command: [redis-cli, ping]
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests: {cpu: 50m, memory: 32Mi}
+            limits: {cpu: 100m, memory: 64Mi}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector: {app: redis}
+  ports:
+    - port: 6379
+      targetPort: 6379
