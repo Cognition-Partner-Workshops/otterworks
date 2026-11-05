@@ -604,6 +604,22 @@ batch-usage-rollup-seed: ## Regenerate the deterministic usage-rollup seed event
 
 # --- Legacy polyglot batch estate (etl/legacy-extra/, tech-partnerships demo) ---
 
+.PHONY: legacy-etl-parity legacy-etl-parity-test legacy-etl-spark-venv legacy-etl-spark-smoke
+export CANDIDATE
+legacy-etl-parity: ## Compare legacy with CANDIDATE shell command (or legacy)
+	python3 etl/legacy-extra/parity/harness.py
+
+legacy-etl-parity-test: ## Run parity harness tests, including the red proof
+	python3 -m unittest discover -s etl/legacy-extra/parity -p 'test_*.py' -v
+
+LEGACY_SPARK_VENV ?= etl/legacy-extra/.venv
+legacy-etl-spark-venv: ## Install the pinned local Spark runtime
+	python3 -m venv $(LEGACY_SPARK_VENV)
+	$(LEGACY_SPARK_VENV)/bin/python -m pip install -r etl/legacy-extra/requirements-spark.txt
+
+legacy-etl-spark-smoke: legacy-etl-spark-venv ## Count generated .dat rows using local[*]
+	JAVA_HOME="$${JAVA_HOME:-$$HOME/.sdkman/candidates/java/current}" SPARK_LOCAL_IP=127.0.0.1 $(LEGACY_SPARK_VENV)/bin/python etl/legacy-extra/parity/spark_smoke.py
+
 legacy-etl-list: ## List the legacy polyglot batch jobs (etl/legacy-extra/)
 	@echo "Legacy batch jobs (run with: make legacy-etl-run JOB=<name>):"
 	@echo "  sftp_ingest_poll          ksh   poll SFTP drop dir, stage CUSTBILL files"

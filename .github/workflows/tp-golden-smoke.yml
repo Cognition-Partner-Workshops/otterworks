@@ -18,6 +18,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  custbill-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v5
+      - run: sudo apt-get update && sudo apt-get install -y ksh
+      - run: make legacy-etl-parity-test
+      - run: make legacy-etl-parity CANDIDATE=legacy
+      - run: uv run --with ruff==0.9.10 ruff check etl/legacy-extra/parity
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: custbill-parity
+          path: etl/legacy-extra/reports/parity
+
   # Verify the legacy-estate Make targets parse and the Oracle billing compose
   # file is valid, without booting anything.
   estate-targets:
