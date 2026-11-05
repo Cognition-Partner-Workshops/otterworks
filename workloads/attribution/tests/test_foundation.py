@@ -104,6 +104,9 @@ def test_migration_contracts():
             match = re.search(rf"CREATE TABLE IF NOT EXISTS {re.escape(source['landing'])} \((.*?)\);", sql, re.S)
             assert match, source["landing"]
             columns = [column.strip().split()[0].lower() for column in re.split(r",(?!\d)", match[1])]
+            columns += [column.lower() for column in re.findall(
+                rf"ALTER TABLE {re.escape(source['landing'])} ADD COLUMN IF NOT EXISTS (\w+)", sql
+            )]
             assert columns == source["columns"]
         assert "CREATE RESOURCE MONITOR" not in sql
         assert "ON FUTURE TABLES" not in sql

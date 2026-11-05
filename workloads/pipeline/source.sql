@@ -46,7 +46,8 @@ BEGIN
   effective := CASE WHEN NEW.updated_at IS DISTINCT FROM OLD.updated_at
    THEN NEW.updated_at ELSE clock_timestamp() END;
  ELSE
-  effective := coalesce(NEW.updated_at, NEW.created_at);
+  effective := CASE WHEN EXISTS(SELECT 1 FROM user_state_history WHERE user_id=NEW.id)
+   THEN clock_timestamp() ELSE coalesce(NEW.updated_at, NEW.created_at) END;
  END IF;
  INSERT INTO user_state_history(user_id,effective_at,created_at,last_login_at)
  VALUES(NEW.id,effective,NEW.created_at,NEW.last_login_at);
@@ -68,7 +69,8 @@ BEGIN
   effective := CASE WHEN NEW.updated_at IS DISTINCT FROM OLD.updated_at
    THEN NEW.updated_at ELSE clock_timestamp() END;
  ELSE
-  effective := coalesce(NEW.updated_at, NEW.created_at);
+  effective := CASE WHEN EXISTS(SELECT 1 FROM admin_user_state_history WHERE user_id=NEW.id)
+   THEN clock_timestamp() ELSE coalesce(NEW.updated_at, NEW.created_at) END;
  END IF;
  INSERT INTO admin_user_state_history(user_id,effective_at,status)
  VALUES(NEW.id,effective,NEW.status);
