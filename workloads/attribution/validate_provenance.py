@@ -52,6 +52,7 @@ def _carries_run_token(obj: dict) -> bool:
 def _expected_names(workload: str) -> dict[str, str]:
     return {
         "database": sf.database_name(workload),
+        "schema": f"{sf.database_name(workload)}.{sf.APP_SCHEMA}",
         "warehouse": sf.warehouse_name(workload),
         "resource_monitor": sf.resource_monitor_name(workload),
         "task": sf.task_name(workload),
@@ -118,7 +119,7 @@ def validate(doc: object, path: Path | None = None) -> list[str]:
             errors.append(f"objects/{i}: user {obj['name']} is not the service user of an endpoint")
         if obj["state"] == "provisioned" and doc["source"]["commit"] == sf.PENDING:
             errors.append(f"objects/{i} ({obj['name']}): provisioned objects need source/commit, not pending")
-    for kind in sf.TAGGED_OBJECT_TYPES + ("resource_monitor",):
+    for kind in sf.TAGGED_OBJECT_TYPES + ("schema", "resource_monitor"):
         if kind not in by_type:
             errors.append(f"objects: missing the workload {kind}")
     users = {o["name"] for o in by_type.get("user", [])}

@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import secrets
 import subprocess
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
@@ -160,14 +161,26 @@ def workload_csids(workload: str) -> list[str]:
     return sorted(c for c, e in ENDPOINTS.items() if e.workload == workload)
 
 
-def make_run_id(workload: str, phase: str, when: datetime | None = None, run_token: str = RUN_TOKEN) -> str:
-    """``<run token>-<workload>-<phase>-<UTC yyyymmddThhmmssZ>``."""
+def make_run_id(
+    workload: str,
+    phase: str,
+    when: datetime | None = None,
+    run_token: str = RUN_TOKEN,
+    nonce: str | None = None,
+) -> str:
+    """``<run token>-<workload>-<phase>-<UTC yyyymmddThhmmssZ>-<nonce>``, unique per invocation.
+
+    Callers that want several connections grouped as one run share a single ID (``SF_RUN_ID``).
+    """
     _identifier("workload", workload)
     _check_phase(phase)
     if not RUN_TOKEN_RE.match(run_token):
         raise AttributionError(f"run token must look like {RUN_TOKEN}, got {run_token!r}")
     stamp = (when or datetime.now(timezone.utc)).astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    return f"{run_token}-{workload}-{phase}-{stamp}"
+    nonce = secrets.token_hex(4) if nonce is None else nonce
+    if not re.fullmatch(r"[0-9a-f]{8}", nonce):
+        raise AttributionError(f"nonce must be 8 lower-case hex characters, got {nonce!r}")
+    return f"{run_token}-{workload}-{phase}-{stamp}-{nonce}"
 
 
 def resolve_commit(commit: str | None = None, env: Mapping[str, str] | None = None, repo: str = ".") -> str:
@@ -371,7 +384,12 @@ def service_user_ddl(ep: Endpoint, *, rsa_public_key: str, role: str | None = No
 
 
 def create_task_sql(ep: Endpoint, *, schedule: str, body: str, commit: str, run_id: str) -> str:
-    """CREATE TASK with its own runtime QUERY_TAG; a task never inherits the creating session's tag."""
+    """CREATE TASK with its own runtime QUERY_TAG; a task never inherits the creating session's tag.
+
+    The tag is stored on the task, so ``run_id`` identifies this task deployment, not one execution;
+    ``USAGE_BY_TAG_SQL`` reports each execution separately as ``task_execution_id``. Snowflake creates
+    the task suspended: use ``task_deploy_sql`` to create, tag and then resume it.
+    """
     tag = query_tag_json(ep, phase="runtime", commit=commit, run_id=run_id)
     return (
         f"CREATE OR REPLACE TASK {task_name(ep.workload)}\n"
@@ -381,6 +399,19 @@ def create_task_sql(ep: Endpoint, *, schedule: str, body: str, commit: str, run_
         f"  COMMENT = {sql_string(external_comment(csid=ep.csid))}\n"
         f"AS\n{body}"
     )
+
+
+def resume_task_sql(workload: str) -> str:
+    return f"ALTER TASK {task_name(workload)} RESUME"
+
+
+def task_deploy_sql(ep: Endpoint, *, schedule: str, body: str, commit: str, run_id: str) -> list[str]:
+    """Create, tag with DEVIN_CSID, then resume, so the task never runs untagged."""
+    return [
+        create_task_sql(ep, schedule=schedule, body=body, commit=commit, run_id=run_id),
+        f"ALTER TASK {task_name(ep.workload)} SET TAG {TAG_FQN} = {sql_string(devin_csid_value(workload_csids(ep.workload)))}",
+        resume_task_sql(ep.workload),
+    ]
 
 
 def streamlit_session_tag_sql(ep: Endpoint, *, commit: str, run_id: str) -> str:
@@ -438,6 +469,10 @@ WITH tagged AS (
          a.credits_used_query_acceleration AS query_acceleration_credits
   FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_ATTRIBUTION_HISTORY a
   WHERE a.start_time >= %(start)s AND a.start_time < %(end)s
+), task_runs AS (
+  SELECT h.query_id, h.graph_run_group_id
+  FROM SNOWFLAKE.ACCOUNT_USAGE.TASK_HISTORY h
+  WHERE h.scheduled_time >= DATEADD(day, -1, %(start)s) AND h.scheduled_time < %(end)s
 ), cortex AS (
   SELECT c.query_id, SUM(c.token_credits) AS cortex_credits, SUM(c.tokens) AS cortex_tokens
   FROM SNOWFLAKE.ACCOUNT_USAGE.CORTEX_FUNCTIONS_QUERY_USAGE_HISTORY c
@@ -447,6 +482,8 @@ SELECT t.tag:csid::string AS csid,
        t.tag:workload::string AS workload,
        t.tag:phase::string AS phase,
        t.tag:commit::string AS commit,
+       t.tag:run_id::string AS run_id,
+       r.graph_run_group_id AS task_execution_id,
        SUM(m.compute_credits) AS compute_credits,
        SUM(m.query_acceleration_credits) AS query_acceleration_credits,
        COUNT(*) AS query_count,
@@ -455,6 +492,7 @@ SELECT t.tag:csid::string AS csid,
 FROM tagged t
 LEFT JOIN compute m ON m.query_id = t.query_id
 LEFT JOIN cortex c ON c.query_id = t.query_id
-GROUP BY 1, 2, 3, 4
-ORDER BY 1, 3, 4
+LEFT JOIN task_runs r ON r.query_id = t.query_id
+GROUP BY 1, 2, 3, 4, 5, 6
+ORDER BY 1, 3, 4, 5, 6
 """
