@@ -40,11 +40,11 @@ def perl_number(value):
 
 
 def awk_amount(value):
-    """Use the fixed Ubuntu CI awk rendering, independent of host tools."""
+    """Use fixed gawk 5.1 LC_ALL=C rendering, independent of host tools."""
     token = value.lstrip(' \t\r\v\f')
-    special = re.match(r'^([+-](?:inf|nan))(?:$|[^A-Za-z])', token, re.IGNORECASE)
+    special = re.match(r'^([+-](?:inf(?:inity)?|nan))(?:$|[^A-Za-z])', token, re.IGNORECASE)
     if special:
-        return special[1].lower()
+        return special[1].lower().replace('infinity', 'inf')
     amount = number(token) / 100
     if math.isinf(amount):
         return '-inf' if amount < 0 else '+inf'

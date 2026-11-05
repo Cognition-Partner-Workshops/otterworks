@@ -17,10 +17,10 @@ SPECIAL_AMOUNTS = ('inf', 'Inf', 'nan', 'infinity', ' +Inf', ' -Inf',
 SIGNED_INFINITY = ('+inf', '-inf', '+Inf', '-INF', '+infinity', '-infinity')
 FIXED_AMOUNTS = tuple(zip(SPECIAL_AMOUNTS,
                           ('0.00', '0.00', '0.00', '0.00', '+inf', '-inf',
-                           '+nan', '-nan', '0.00', '0.00', '+inf', '-inf'), strict=True))
+                           '+nan', '-nan', '+inf', '-inf', '+inf', '-inf'), strict=True))
 FIXED_AMOUNTS += tuple((char + '123', '1.23') for char in ' \t\r\v\f')
 FIXED_AMOUNTS += tuple(zip(SIGNED_INFINITY,
-                           ('+inf', '-inf', '+inf', '-inf', '0.00', '0.00'), strict=True))
+                           ('+inf', '-inf', '+inf', '-inf', '+inf', '-inf'), strict=True))
 
 
 @pytest.fixture(scope='session')
@@ -129,6 +129,7 @@ def test_signed_infinity_real_tools(tmp_path):
     actual = (tmp_path / 'parsed/CUSTBILL_SIGNED.psv').read_bytes()
     print('\nDefault awk legacy parse:\n' + actual.decode(), end='')
     print('Spark parse_bytes:\n' + cb.parse_bytes(data).decode(), end='')
+    assert actual == cb.parse_bytes(data)
     errors = cb.validate(data)
     assert errors == [{'row': index + 1, 'reason': 'invalid schema/date/attribution'}
                       for index in range(len(SIGNED_INFINITY))]

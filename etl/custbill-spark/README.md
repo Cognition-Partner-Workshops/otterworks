@@ -17,15 +17,14 @@ the configured package index/cache. Run Spark parity with
 
 Parsing is pure Python: no awk executable, runtime probe, or host-specific override
 is used. Malformed amounts had dialect-dependent output in the legacy chain.
-The replacement uses the fixed compatibility rendering below, rather than
-following the local machine's gawk/mawk version. This is a deterministic policy,
-not a verified description of the GitHub runner's awk: CI logs record passing
-tests but do not record its awk implementation/version or signed-infinity output.
+The fixed compatibility policy matches gawk 5.1 (the box default awk) under
+`LC_ALL=C`, rather than following the local machine's gawk/mawk version.
+This is not a claim about the GitHub runner's awk implementation or version.
 
 | Amount token (case-insensitive) | Fixed rendering |
 |---|---|
-| Bare `inf`, `nan`, `infinity`; signed `infinity` | `0.00` |
-| Signed `+inf` / `-inf` | `+inf` / `-inf` |
+| Bare `inf`, `nan`, `infinity` | `0.00` |
+| Signed `+inf` / `-inf`, `+infinity` / `-infinity` | `+inf` / `-inf` |
 | Signed `+nan` / `-nan` | `+nan` / `-nan` |
 | Overflow `1e400` / `-1e400` | `+inf` / `-inf` |
 | Leading space, tab, CR, vertical tab, form feed | Ignored before numeric-prefix conversion |
@@ -40,9 +39,9 @@ Signed infinity is verified against the real legacy scripts: the 12-byte parse
 fields `+inf`, `-inf`, `+Inf`, `-INF`, `+infinity`, and `-infinity` are all
 flagged in the ledger and quarantined (strict mode rejects them). Their parse
 rendering follows the fixed dialect rule above, not the local awk dialect.
-On the development box, the real legacy parse script rendered `+infinity` and
-`-infinity` as `+inf` and `-inf`; the replacement deliberately emits `0.00` for
-those two tokens. No captured CI output establishes the runner's rendering.
+On the development box, the real legacy parse script and replacement agree
+byte-for-byte for all six signed-infinity tokens, including `+infinity` and
+`-infinity` rendering as `+inf` and `-inf`.
 The real Perl report and `report_bytes` agree byte-for-byte: these tokens render
 as `Inf` or `-Inf`, mixed positive and negative infinity totals render as `NaN`,
 and positive infinity plus a finite amount remains `Inf`.
