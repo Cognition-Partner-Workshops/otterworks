@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.actuate.autoconfigure.web.server.LocalManagementPort;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -15,7 +16,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"server.ssl.enabled=false", "logging.file.name="})
+        properties = {"server.ssl.enabled=false", "logging.file.name=",
+                "management.server.port=0", "management.server.address=127.0.0.1"})
 class UploadMetricsTest {
 
     @org.junit.jupiter.api.io.TempDir
@@ -28,6 +30,9 @@ class UploadMetricsTest {
 
     @Autowired
     TestRestTemplate client;
+
+    @LocalManagementPort
+    int managementPort;
 
     @Test
     void multipartUploadExportsHistogramWithRouteAndTwoSecondBucket() {
@@ -45,7 +50,10 @@ class UploadMetricsTest {
                 new HttpEntity<>(body, headers), String.class);
         assertEquals(HttpStatus.CREATED, upload.getStatusCode());
 
-        ResponseEntity<String> scrape = client.getForEntity("/actuator/prometheus", String.class);
+        assertEquals(HttpStatus.NOT_FOUND,
+                client.getForEntity("/actuator/prometheus", String.class).getStatusCode());
+        ResponseEntity<String> scrape = client.getForEntity(
+                "http://127.0.0.1:" + managementPort + "/actuator/prometheus", String.class);
         assertEquals(HttpStatus.OK, scrape.getStatusCode());
         assertNotNull(scrape.getBody());
         assertTrue(scrape.getBody().lines().anyMatch(line ->

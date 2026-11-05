@@ -16,8 +16,8 @@ Onboarding identity documents are taking too long to arrive. Clients may time ou
 
 ## What to Check First
 
-1. Check `up{job="kyc-docs"}` and the **KYC document upload latency (p99)** panel in Service Detail. No samples or no traffic is not proof of healthy latency. Prometheus must share the stand-in's `wave1-vm_default` network to reach `kyc-01:8443`. The self-signed stand-in scrape uses HTTPS with verification disabled; do not copy this TLS exception to production.
-2. Compare `rate(http_server_requests_seconds_count{job="kyc-docs",method="POST",uri="/documents/{customer}"}[5m])` by `status`, `outcome`, and `instance`. Check traffic changes, errors, and recent releases. GET the health endpoint at `https://kyc-01:8443/actuator/health` from the same network.
+1. Check `up{job="kyc-docs"}` and the **KYC document upload latency (p99)** panel in Service Detail. No samples or no traffic is not proof of healthy latency. Prometheus and kyc-01 share only the dedicated internal `kyc-monitoring` network for scraping, at `http://kyc-01:8081/actuator/prometheus`. Management binds to `172.30.250.10`, not the upload listener's wave1 interface. Port 8081 is not published; `/actuator/prometheus` on HTTPS 8443 should return 404.
+2. Compare `rate(http_server_requests_seconds_count{job="kyc-docs",method="POST",uri="/documents/{customer}"}[5m])` by `status`, `outcome`, and `instance`. Check traffic changes, errors, and recent releases. GET the health endpoint at `http://kyc-01:8081/actuator/health` from the monitoring network.
 3. Review `/var/log/kyc/kyc-docs.log` for I/O errors and the `stored ... (... bytes)` completion messages. They include customer identifiers: use restricted access, redact evidence, and do not copy identities or document bodies into incident channels.
 4. Check free space/inodes, disk latency, and I/O wait on the filesystem backing `/var/kyc/uploads` (for example `df -h /var/kyc/uploads`, `df -i /var/kyc/uploads`, `iostat -xz 1`). Include the JVM multipart temporary filesystem. Node disk metrics are not currently scraped by this stand-in; use host tools rather than assuming a storage histogram exists.
 
@@ -35,6 +35,12 @@ Onboarding identity documents are taking too long to arrive. Clients may time ou
 - Roll back a correlated application/configuration change through the normal release process if safe. Keep existing alert thresholds intact. Verify p99 and error rates recover under representative traffic; no-traffic NaN is not recovery.
 
 ## SLO and Escalation
+
+### Local monitoring network
+
+`make infra-up` at the repo root and `make vm-up` in `industries/banking/vmware-wave-1` each run the idempotent network bootstrap, so either stack can start first or run alone. For direct `docker compose ... up` commands, first run `bash scripts/ensure-kyc-monitoring-network.sh` from the repo root. Reserve subnet `172.30.250.0/24`; an overlapping network is an error, not a reason to bind management to all interfaces.
+
+Both Compose files declare `kyc-monitoring` external. Sharing a Compose-owned network with the same fixed name was tested but produces a cross-project ownership warning and asymmetric cleanup, so the bootstrap owns its lifecycle instead. It creates an internal bridge with `com.docker.network.bridge.inhibit_ipv4=true` (no host IPv4 bridge gateway). Only Prometheus and kyc-01 join it. Ordinary host/default-network clients cannot reach management; a Docker administrator can always attach a container or change routing and is outside this isolation boundary. After both stacks are down, `docker network rm kyc-monitoring` removes the otherwise persistent network. Do not delete it while either stack is using it.
 
 For the 30-day latency fraction, divide `sum(increase(http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}",le="2.0"}[30d]))` by the same sum with `le="+Inf"`. Target >= 0.99; retain at least 30 days of data and interpret low/zero traffic explicitly. Histogram buckets include the boundary (<=2s), approximating the stated under-2s objective. Track failures separately.
 

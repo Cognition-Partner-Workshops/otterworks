@@ -19,7 +19,11 @@ DAYS := 2026-10-14 2026-10-15 2026-10-16
 vm-build:
 	DOCKER_BUILDKIT=0 $(COMPOSE) build
 
-vm-up:
+.PHONY: kyc-monitoring-network
+kyc-monitoring-network:
+	bash ../../../scripts/ensure-kyc-monitoring-network.sh
+
+vm-up: kyc-monitoring-network
 	$(COMPOSE) up -d
 	$(MAKE) vm-rates
 

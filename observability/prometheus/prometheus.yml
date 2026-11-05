@@ -22,12 +22,9 @@ scrape_configs:
   - job_name: kyc-docs
     scrape_interval: 15s
     metrics_path: /actuator/prometheus
-    scheme: https
-    tls_config:
-      # The VM stand-in generates a self-signed certificate.
-      insecure_skip_verify: true
+    scheme: http
     static_configs:
-      - targets: ["kyc-01:8443"]
+      - targets: ["kyc-01:8081"]
         labels:
           service: kyc-docs
           language: java
