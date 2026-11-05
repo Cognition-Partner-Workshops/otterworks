@@ -1,12 +1,15 @@
-"""A replica that restarts inside a rollup window does not double that window."""
+"""Rollups coordinate across replicas and restarts without rewriting existing rows."""
 
 import asyncio
+import os
+import uuid
 from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.db.base import Base
 from app.jobs import stats_rollup
 from app.models.document import DocumentStatsRollup
 
@@ -21,19 +24,56 @@ async def _rows(db: AsyncSession) -> int:
 async def test_same_host_rerun_reuses_its_row(db_session: AsyncSession) -> None:
     first = await stats_rollup.compute_rollup(db_session, WINDOW)
     again = await stats_rollup.compute_rollup(db_session, WINDOW)
-    assert again.id == first.id
+    assert first is not None
+    assert again is None
     assert await _rows(db_session) == 1
 
 
 @pytest.mark.asyncio
-async def test_other_host_still_writes_its_own_row(
+async def test_other_host_skips_existing_window(
     db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     await stats_rollup.compute_rollup(db_session, WINDOW)
     monkeypatch.setattr(stats_rollup.socket, "gethostname", lambda: "replica-b")
-    await stats_rollup.compute_rollup(db_session, WINDOW)
-    assert await _rows(db_session) == 2
-    assert await stats_rollup.duplicate_windows(db_session, WINDOW) == 1
+    assert await stats_rollup.compute_rollup(db_session, WINDOW) is None
+    assert await _rows(db_session) == 1
+    assert await stats_rollup.duplicate_windows(db_session, WINDOW) == 0
+
+
+@pytest.mark.asyncio
+async def test_concurrent_replicas_share_one_window(monkeypatch: pytest.MonkeyPatch) -> None:
+    url = os.environ.get("ROLLUP_TEST_DATABASE_URL")
+    if not url:
+        pytest.skip("Set ROLLUP_TEST_DATABASE_URL to run the PostgreSQL concurrency regression")
+    schema = f"rollup_test_{uuid.uuid4().hex}"
+    engine = create_async_engine(url, connect_args={"server_settings": {"search_path": schema}})
+    sessions = async_sessionmaker(engine, expire_on_commit=False)
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text(f'CREATE SCHEMA "{schema}"'))
+            await conn.run_sync(Base.metadata.create_all)
+
+        monkeypatch.setattr(
+            stats_rollup.socket, "gethostname", lambda: asyncio.current_task().get_name()
+        )
+        async with sessions() as first, sessions() as second:
+            # Force both independent sessions to begin before either can insert.
+            await first.execute(select(func.pg_advisory_xact_lock(0x4F57524F4C4C5550)))
+            task_a = asyncio.create_task(
+                stats_rollup.compute_rollup(first, WINDOW), name="replica-a"
+            )
+            task_b = asyncio.create_task(
+                stats_rollup.compute_rollup(second, WINDOW), name="replica-b"
+            )
+            results = await asyncio.wait_for(asyncio.gather(task_a, task_b), timeout=10)
+            assert sum(row is not None for row in results) == 1
+            assert await _rows(first) == 1
+            assert await stats_rollup.duplicate_windows(first, WINDOW) == 0
+            assert await stats_rollup.compute_rollup(second, WINDOW) is None
+    finally:
+        async with engine.begin() as conn:
+            await conn.execute(text(f'DROP SCHEMA IF EXISTS "{schema}" CASCADE'))
+        await engine.dispose()
 
 
 @pytest.mark.asyncio
