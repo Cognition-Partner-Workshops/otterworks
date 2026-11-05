@@ -1,0 +1,13 @@
+{
+  "rows": [
+    {"key":"issue-1","rule":"java:S1","type":"VULNERABILITY","severity":"CRITICAL","component":"src/A.java","line":4,"message":"Unsafe query","tags":[]},
+    {"key":"issue-2","rule":"java:S1","type":"CODE_SMELL","severity":"MAJOR","component":"src/B.java","message":"Unsafe query","tags":["security"]},
+    {"key":"issue-3","rule":"java:S2","type":"CODE_SMELL","severity":"MINOR","component":"src/B.java","message":"Style","tags":[]},
+    {"key":"issue-4","rule":"java:S2","type":"BUG","severity":"MAJOR","component":"src/B.java","line":8,"message":"Null access","tags":[]},
+    {"key":"hotspot-1","rule":"java:S1","type":"SECURITY_HOTSPOT","severity":"MAJOR","component":"src/A.java","line":9,"message":"Review query","tags":[]}
+  ],
+  "rules": {
+    "java:S1":{"name":"Avoid unsafe queries","htmlDesc":"<p>Use parameters &amp; validation.</p>","sysTags":["owasp-a1"],"securityStandards":{"cwe":["89"]}},
+    "java:S2":{"name":"Check null","htmlDesc":"Check values."}
+  }
+}
