@@ -255,7 +255,12 @@ services:
 networks:
   kyc-monitoring:
     name: kyc-monitoring
-    external: true
+    internal: true
+    driver_opts:
+      com.docker.network.bridge.inhibit_ipv4: "true"
+    ipam:
+      config:
+        - subnet: 172.30.250.0/24
   default:
     name: otterworks-network
 volumes:

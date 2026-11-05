@@ -6,6 +6,8 @@ subnet=172.30.250.0/24
 
 if ! docker network inspect "$name" >/dev/null 2>&1; then
   docker network create --driver bridge --internal --subnet "$subnet" \
+    --label com.docker.compose.project=otterworks \
+    --label com.docker.compose.network=kyc-monitoring \
     --opt com.docker.network.bridge.inhibit_ipv4=true "$name" >/dev/null ||
     docker network inspect "$name" >/dev/null
 fi
