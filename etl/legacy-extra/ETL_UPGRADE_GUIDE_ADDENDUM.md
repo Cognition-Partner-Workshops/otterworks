@@ -81,3 +81,10 @@ logging, no tests, no idempotency — see the main guide) applies here too, plus
 Nothing here is wired into `make up` / `make test` / CI. The estate is host-run via the
 `legacy-etl-*` Make targets only; the SFTP fixture has its own compose file and is
 localhost-bound.
+
+## Spark replacement
+
+The local Spark rebuild of this chain lives in `etl/custbill-spark/`. Its README
+maps every deficiency above to a fix or a documented reason, and
+`make -C etl/custbill-spark parity` prints the byte-for-byte parity table against the
+scripts in `jobs/`, which stay here unchanged as the reference.
