@@ -7,6 +7,7 @@
 #   make ns RUN=<token> PR=<n>   create the PR namespace on otterworks-dev
 #   make destroy RUN=<token>     delete everything tagged with the token and prove it
 SHELL := /bin/bash
+.DEFAULT_GOAL := vm-build
 REGION ?= us-east-1
 CLUSTER ?= otterworks-dev
 TTL_HOURS ?= 72
@@ -14,20 +15,23 @@ APPS := statements-web rates-batch branch-locator notify-svc kyc-docs fx-report
 COMPOSE := docker compose -f vm/compose.yaml
 DAYS := 2026-10-14 2026-10-15 2026-10-16
 
-.PHONY: vm-build vm-up vm-rates vm-smoke vm-down reset ecr ns destroy check-run
+.PHONY: vm-build vm-up vm-rates vm-smoke vm-down reset vm-config ecr ns destroy check-run
 
-vm-build:
+vm-config:
+	@test -f vm/.env || (umask 077; password=$$(openssl rand -hex 32) && printf 'BRANCH_LOCATOR_DB_PASSWORD=%s\n' "$$password" > vm/.env)
+
+vm-build: vm-config
 	DOCKER_BUILDKIT=0 $(COMPOSE) build
 
-vm-up:
+vm-up: vm-config
 	$(COMPOSE) up -d
 	$(MAKE) vm-rates
 
-vm-rates:
+vm-rates: vm-config
 	@for d in $(DAYS); do $(COMPOSE) exec -T rates-01 /opt/rates/bin/run-rates.sh $$d || exit $$?; done
 	@$(COMPOSE) exec -T rates-01 tail -n 3 /var/log/rates/rates.log
 
-vm-smoke:
+vm-smoke: vm-config
 	@for i in $$(seq 1 40); do curl -sf -o /dev/null http://localhost:8081/statements/accounts && break; sleep 3; done
 	curl -sf -o /dev/null -w "statements-web %{http_code}\n" http://localhost:8081/statements/accounts
 	curl -sf -o /dev/null -w "branch-locator %{http_code}\n" "http://localhost:8083/api/nearest?q=harbour"
@@ -37,11 +41,12 @@ vm-smoke:
 	curl -sf -o /dev/null -w "fx-report      %{http_code}\n" "http://localhost:8086/fx/fx-report.cgi?day=2026-10-16"
 	$(COMPOSE) exec -T rates-01 ls /var/spool/rates/out
 
-vm-down:
+vm-down: vm-config
 	$(COMPOSE) down
 
-reset:
+reset: vm-config
 	$(COMPOSE) down -v --remove-orphans
+	rm -f vm/.env
 
 check-run:
 	@[[ "$(RUN)" =~ ^[a-z0-9]{3,12}$$ ]] || { echo "RUN=<token> is required (lowercase letters and digits)"; exit 2; }
