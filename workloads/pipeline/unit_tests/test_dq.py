@@ -26,3 +26,14 @@ def test_landing_checks_use_export_snapshots_and_logical_counts(workload):
     assert 'listagg(distinct _row_hash' in uniqueness
     row_count = (tests / f'{prefix}row_count.sql').read_text()
     assert 'count(distinct t.{{ key }})' in row_count
+
+
+def test_search_row_counts_compare_each_account_in_both_sources():
+    tests = Path(__file__).resolve().parents[1] / 'tests/dq/doc_search_api'
+    sql = (tests / 'doc_search_api_row_count.sql').read_text()
+    assert "{% for source in ['manifest','landed'] %}" in sql
+    assert 'select account_id, sum(n) as n' in sql
+    assert 'select account_id, count(*) as n' in sql
+    assert 'full outer join actual a on e.account_id is not distinct from a.account_id' in sql
+    assert 'where coalesce(e.n,0)<>coalesce(a.n,0)' in sql
+    assert "' expected='" in sql and "' actual='" in sql

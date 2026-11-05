@@ -45,20 +45,24 @@ with latest_export as (
   {% endif %}
   group by w.account_id
 ), {{ source }}_expected as (
-  select coalesce(sum(n),0) as n from (
-    select n from {{ source }}_term_counts union all select n from {{ source }}_document_counts
-  )
+  select account_id, sum(n) as n from (
+    select account_id,n from {{ source }}_term_counts
+    union all select account_id,n from {{ source }}_document_counts
+  ) group by account_id
 )
 {% endfor %}
 , actual as (
-  select count(*) as n from {{ ref('top_search_items') }}
+  select account_id, count(*) as n from {{ ref('top_search_items') }}
   where window_end_date=(select dateadd(day,-1,snapshot_date) from latest_export)
+  group by account_id
 )
 select 'row_count: no export manifest' as failure where not exists (select 1 from latest_export)
 {% for source in ['manifest','landed'] %}
 union all
-select 'row_count: output count differs from {{ source }} spec-derived top terms and documents' as failure
-from {{ source }}_expected e cross join actual a where e.n<>a.n
+select 'row_count: {{ source }} account=' || coalesce(e.account_id,a.account_id,'NULL')
+  || ' expected=' || coalesce(e.n,0)::varchar || ' actual=' || coalesce(a.n,0)::varchar as failure
+from {{ source }}_expected e full outer join actual a on e.account_id is not distinct from a.account_id
+where coalesce(e.n,0)<>coalesce(a.n,0)
 {% endfor %}
 {% for table,key in [('ANALYTICS_ANALYTICS_EVENTS','event_id'),('DOCUMENT_DOCUMENTS','id')] %}
 union all
