@@ -44,13 +44,13 @@ vm-smoke:
 	curl -sf -o /dev/null -w "fx-report      %{http_code}\n" "http://localhost:8086/fx/fx-report.cgi?day=2026-10-16"
 	$(COMPOSE) exec -T rates-01 ls /var/spool/rates/out
 
-vm-down:
+vm-down: vm-env
 	$(COMPOSE) down
 
 vm-db-boundary:
 	@COMPOSE='$(COMPOSE)' bash vm/tests/db-boundary-check.sh
 
-reset:
+reset: vm-env
 	$(COMPOSE) down -v --remove-orphans
 	rm -f vm/.env
 
