@@ -7,6 +7,17 @@ import java.util.Map;
 import org.junit.Test;
 
 public class RatesJobTest {
+    @Test public void yesterdayUsesExplicitClockZone() {
+        java.time.Instant instant = java.time.Instant.parse("2026-10-16T23:30:00Z");
+        assertEquals(java.time.LocalDate.parse("2026-10-15"), RatesJob.businessDate(new String[0],
+                java.time.Clock.fixed(instant, java.time.ZoneId.of("Etc/UTC"))));
+        assertEquals(java.time.LocalDate.parse("2026-10-16"), RatesJob.businessDate(new String[0],
+                java.time.Clock.fixed(instant, java.time.ZoneId.of("Asia/Tokyo"))));
+        assertEquals(java.time.LocalDate.parse("2026-10-14"), RatesJob.businessDate(new String[]{"in", "out", "2026-10-14"},
+                java.time.Clock.fixed(instant, java.time.ZoneId.of("Asia/Tokyo"))));
+    }
+
+    @Test public void emptyTicksHaveNoPairs() { assertEquals(0, RatesJob.aggregate(Arrays.asList("timestamp,pair,bid,ask", "")).size()); }
 
     @Test
     public void aggregatesMidPerPair() {
