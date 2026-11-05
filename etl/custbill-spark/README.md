@@ -6,6 +6,13 @@ ingest → parse → report chain. It uses Spark `binaryFiles` for byte-preservi
 handshake. `OTTERWORKS_LEGACY_ROOT` selects the root; `CUSTBILL_DISTRIBUTION` and
 `CUSTBILL_DELIVERY_DIR` configure delivery without embedding recipients.
 
+Run `make -C etl/custbill-spark setup test lint` from the repository root.
+Setup requires an existing system or uv-managed Python 3.12 (the repository
+blueprint provides one). It never downloads a managed Python and fails clearly
+if no Python 3.12 is installed. Package installation still requires access to
+the configured package index/cache. Run Spark parity with
+`make -C etl/custbill-spark parity`.
+
 ## Legacy awk dialect anomaly
 
 Parsing is pure Python: no awk executable, runtime probe, or host-specific override
