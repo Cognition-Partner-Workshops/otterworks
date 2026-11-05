@@ -17,9 +17,10 @@ the configured package index/cache. Run Spark parity with
 
 Parsing is pure Python: no awk executable, runtime probe, or host-specific override
 is used. Malformed amounts had dialect-dependent output in the legacy chain.
-The replacement pins the rendering observed for the default `awk` on GitHub's
-`ubuntu-latest` (Ubuntu 26.04) runner under `LC_ALL=C`, rather than following the
-local machine's gawk/mawk version:
+The replacement uses the fixed compatibility rendering below, rather than
+following the local machine's gawk/mawk version. This is a deterministic policy,
+not a verified description of the GitHub runner's awk: CI logs record passing
+tests but do not record its awk implementation/version or signed-infinity output.
 
 | Amount token (case-insensitive) | Fixed rendering |
 |---|---|
@@ -39,6 +40,9 @@ Signed infinity is verified against the real legacy scripts: the 12-byte parse
 fields `+inf`, `-inf`, `+Inf`, `-INF`, `+infinity`, and `-infinity` are all
 flagged in the ledger and quarantined (strict mode rejects them). Their parse
 rendering follows the fixed dialect rule above, not the local awk dialect.
+On the development box, the real legacy parse script rendered `+infinity` and
+`-infinity` as `+inf` and `-inf`; the replacement deliberately emits `0.00` for
+those two tokens. No captured CI output establishes the runner's rendering.
 The real Perl report and `report_bytes` agree byte-for-byte: these tokens render
 as `Inf` or `-Inf`, mixed positive and negative infinity totals render as `NaN`,
 and positive infinity plus a finite amount remains `Inf`.
