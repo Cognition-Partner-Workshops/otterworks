@@ -1,6 +1,6 @@
 """Tests for the export archive reader."""
 
-from pathlib import Path
+import errno
 
 import pytest
 
@@ -83,12 +83,14 @@ def test_rejects_unresolvable_path(archive, tmp_path, name):
         archive.read_export(name)
 
 
-def test_rejects_symlink_loop_when_resolve_returns_path(archive, tmp_path, monkeypatch):
-    (tmp_path / "loop").symlink_to("loop")
-    monkeypatch.setattr(Path, "resolve", lambda path: path)
+def test_rejects_symlink_loop_from_open(archive, monkeypatch):
+    def symlink_loop(*args, **kwargs):
+        raise OSError(errno.ELOOP, "Too many levels of symbolic links")
+
+    monkeypatch.setattr(export_archive, "open", symlink_loop, raising=False)
 
     with pytest.raises(FileNotFoundError):
-        archive.read_export("loop")
+        archive.read_export("report.md")
 
 
 @pytest.mark.asyncio

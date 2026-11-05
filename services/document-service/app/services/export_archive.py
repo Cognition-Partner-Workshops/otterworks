@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import errno
 import os
-from pathlib import Path
 
 import structlog
 
@@ -32,11 +31,11 @@ class ExportArchive:
         ``FileNotFoundError`` when the export does not exist.
         """
         try:
-            root = Path(self.base_dir).resolve()
-            path = (root / name).resolve()
+            root = os.path.realpath(self.base_dir)
+            path = os.path.realpath(os.path.join(root, name))
         except (ValueError, RuntimeError) as exc:
             raise FileNotFoundError(name) from exc
-        if not path.is_relative_to(root):
+        if not path.startswith(root.rstrip(os.sep) + os.sep):
             raise FileNotFoundError(name)
         logger.debug("export_read", name=name)
         try:
