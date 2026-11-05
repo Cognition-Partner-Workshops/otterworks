@@ -41,7 +41,7 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return localStorage.getItem(this.TOKEN_KEY) || localStorage.getItem('otter_access_token');
   }
 
   /**
@@ -60,6 +60,10 @@ export class AuthService {
   }
 
   logout(): void {
+    if (!localStorage.getItem(this.TOKEN_KEY)) {
+      localStorage.removeItem('otter_access_token');
+      localStorage.removeItem('otter_refresh_token');
+    }
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     this.currentUserSubject.next(null);

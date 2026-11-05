@@ -107,6 +107,27 @@ describe('AuthService', () => {
     expect(service.getToken()!.startsWith('mock-jwt-token-')).toBeTrue();
   }));
 
+  it('uses the client token when no admin token is stored', () => {
+    localStorage.setItem('otter_access_token', 'shared-token');
+    expect(service.getToken()).toBe('shared-token');
+    expect(service.isAuthenticated).toBeTrue();
+  });
+
+  it('prefers an explicit admin login over the client token', () => {
+    localStorage.setItem('otter_access_token', 'shared-token');
+    localStorage.setItem('ow_admin_token', 'admin-token');
+    expect(service.getToken()).toBe('admin-token');
+  });
+
+  it('clears shared credentials on shared-session logout', () => {
+    localStorage.setItem('otter_access_token', 'shared-token');
+    localStorage.setItem('otter_refresh_token', 'shared-refresh');
+    spyOn(router, 'navigate');
+    service.logout();
+    expect(service.isAuthenticated).toBeFalse();
+    expect(localStorage.getItem('otter_refresh_token')).toBeNull();
+  });
+
   it('should reject login with empty password', fakeAsync(() => {
     let error: Error | undefined;
     service.login('admin@documentcenter.example', '').subscribe({

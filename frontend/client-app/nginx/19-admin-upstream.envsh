@@ -1,0 +1,21 @@
+#!/bin/sh
+
+case "${ADMIN_DASHBOARD_URL:-}" in
+  http://*|https://*)
+    adminScheme="${ADMIN_DASHBOARD_URL%%://*}"
+    adminAddress="${ADMIN_DASHBOARD_URL#*://}"
+    adminAuthority="${adminAddress%%/*}"
+    adminHost="${adminAuthority%%:*}"
+    case "$adminHost" in
+      ''|*.*|*\[*) ;;
+      *)
+        adminSearchDomain="$(awk '$1 == "search" { print $2; exit }' /etc/resolv.conf)"
+        if [ -n "$adminSearchDomain" ] && [ "$adminSearchDomain" != "." ]; then
+          ADMIN_DASHBOARD_URL="${adminScheme}://${adminHost}.${adminSearchDomain}${adminAuthority#"$adminHost"}${adminAddress#"$adminAuthority"}"
+        fi
+        ;;
+    esac
+    ;;
+esac
+
+export ADMIN_DASHBOARD_URL

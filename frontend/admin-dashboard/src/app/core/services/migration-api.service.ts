@@ -13,7 +13,7 @@ export const PEER_REQUEST = new HttpContextToken<boolean>(() => false);
 export class MigrationApiService {
   private readonly baseUrl = '/api/v1';
   /** Written by nginx from PEER_APP_URL at container start; absent in local dev. */
-  private readonly peerConfigUrl = '/config/peer.json';
+  private readonly peerConfigUrl = 'config/peer.json';
   private peerConfig$?: Observable<PeerConfig>;
 
   constructor(private http: HttpClient) {}

@@ -43,6 +43,7 @@ healthCheck:
 
 env:
   API_GATEWAY_URL: "http://api-gateway:8080"
+  ADMIN_DASHBOARD_URL: "http://admin-dashboard:80"
 
 monitoring:
   enabled: true

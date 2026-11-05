@@ -12,6 +12,7 @@ RUN npm run build
 FROM nginxinc/nginx-unprivileged:1.27-alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY nginx/19-admin-upstream.envsh /docker-entrypoint.d/19-admin-upstream.envsh
 
 EXPOSE 3000
 HEALTHCHECK --interval=10s --timeout=3s CMD wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1
@@ -19,3 +20,6 @@ HEALTHCHECK --interval=10s --timeout=3s CMD wget -q -O /dev/null http://127.0.0.
 # API_GATEWAY_URL default for runtime (can be overridden by Helm/docker-compose env);
 # substituted into the nginx config template at container start.
 ENV API_GATEWAY_URL=http://api-gateway:8080
+ENV ADMIN_DASHBOARD_URL=http://admin-dashboard:80 \
+    NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1 \
+    NGINX_ENVSUBST_FILTER="^(API_GATEWAY_URL|ADMIN_DASHBOARD_URL|NGINX_LOCAL_RESOLVERS)$"

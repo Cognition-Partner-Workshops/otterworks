@@ -30,14 +30,14 @@ describe('MigrationApiService', () => {
   it('reads PEER_APP_URL from /config/peer.json and strips trailing slashes', () => {
     let peer = '';
     service.peerAppUrl().subscribe(p => (peer = p));
-    http.expectOne('/config/peer.json').flush({ peer_app_url: 'https://api-t-peer.example/' });
+    http.expectOne('config/peer.json').flush({ peer_app_url: 'https://api-t-peer.example/' });
     expect(peer).toBe('https://api-t-peer.example');
   });
 
   it('treats a missing peer config as no peer', () => {
     let peer = 'unset';
     service.peerAppUrl().subscribe(p => (peer = p));
-    http.expectOne('/config/peer.json').flush('nope', { status: 404, statusText: 'Not Found' });
+    http.expectOne('config/peer.json').flush('nope', { status: 404, statusText: 'Not Found' });
     expect(peer).toBe('');
   });
 });
