@@ -1,4 +1,5 @@
 import math
+from decimal import Decimal, ROUND_HALF_UP
 
 
 def distance_km(lat1, lon1, lat2, lon2):
@@ -20,7 +21,7 @@ def nearest(branches, lat, lon, hhmm, limit=3):
         d = distance_km(lat, lon, float(b["lat"]), float(b["lon"]))
         row = dict(b)
         row["lat"], row["lon"] = float(b["lat"]), float(b["lon"])
-        row["km"] = round(d, 2)
+        row["km"] = float(Decimal.from_float(d).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
         row["open_now"] = is_open(b["opens"], b["closes"], hhmm)
         rows.append(row)
     rows.sort(key=lambda r: r["km"])

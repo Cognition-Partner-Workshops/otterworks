@@ -1,0 +1,5 @@
+env:
+  DB_HOST: branch-db.deps.svc.cluster.local.
+  GEO_URL: http://branch-geo.deps.svc.cluster.local.:8090/geocode
+  RES_OPTIONS: single-request-reopen timeout:1 attempts:2
+  BRANCH_TZ: Etc/UTC

@@ -1,12 +1,10 @@
-# Settings for branch-locator on web-02.
-DB_HOST = "wave1-db"
-DB_NAME = "bankwave"
-DB_USER = "branch_app"
-DB_PASSWORD = "Br4nch-Pg-2018"
+import os
+from zoneinfo import ZoneInfo
 
-GEO_URL = "http://geo.bank.internal:8090/geocode"
-
-TEMPLATE_DIR = "/opt/branch-locator/app/templates"
-LOG_FILE = "/var/log/branch-locator/app.log"
-
-PORT = 5000
+DB_HOST = os.environ["DB_HOST"]
+DB_NAME = os.environ["DB_NAME"]
+DB_USER = os.environ["DB_USER"]
+DB_PASSWORD = os.environ["DB_PASSWORD"]
+DB_PORT = int(os.environ.get("DB_PORT", "5432"))
+GEO_URL = os.environ["GEO_URL"]
+BRANCH_TZ = ZoneInfo(os.environ["BRANCH_TZ"])

@@ -1,0 +1,20 @@
+app: branch-locator
+owner: branch-services
+costCenter: BANK-W1
+containerPort: 8080
+env:
+  DB_HOST: branch-db
+  DB_NAME: bankwave
+  DB_USER: branch_app
+  DB_PORT: "5432"
+  GEO_URL: http://branch-geo:8090/geocode
+  BRANCH_TZ: Etc/UTC
+secretEnv:
+  DB_PASSWORD:
+    secret: branch-db
+    key: DB_PASSWORD
+probes:
+  enabled: true
+  path: /health
+writablePaths:
+  - /tmp
