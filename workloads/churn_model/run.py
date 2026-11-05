@@ -24,12 +24,12 @@ def main():
                            comment=sf.external_comment(workload=EP.workload, csid=EP.csid),
                            imports=[str(Path(__file__).with_name(name)) for name in ("model.py", "warehouse.py")])
             try:
-                procedure = session.sproc.register(handler, packages=["snowflake-snowpark-python", "pandas", "scikit-learn"], **options)
+                procedure = session.sproc.register(handler, packages=["snowflake-snowpark-python", "pandas", "pyarrow", "scikit-learn"], **options)
                 fallback = ""
             except Exception as error:
                 if not any(word in str(error).lower() for word in ("anaconda", "package", "scikit-learn")):
                     raise
-                procedure = session.sproc.register(handler, packages=["snowflake-snowpark-python", "pandas"], **options)
+                procedure = session.sproc.register(handler, packages=["snowflake-snowpark-python", "pandas", "pyarrow"], **options)
                 fallback = "native"
             print(procedure(run_id, commit, fallback))
         finally:
