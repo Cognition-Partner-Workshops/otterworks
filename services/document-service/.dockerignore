@@ -6,3 +6,12 @@ __pycache__
 *.pyc
 .coverage
 htmlcov
+.git
+.env
+.env.*
+*.pem
+*.key
+tests
+.coveragerc
+Dockerfile
+.dockerignore

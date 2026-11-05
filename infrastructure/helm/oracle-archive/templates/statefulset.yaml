@@ -25,6 +25,8 @@ spec:
         checksum/ddl: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
     spec:
       terminationGracePeriodSeconds: 120
+      # Oracle never calls the Kubernetes API; no token in the pod.
+      automountServiceAccountToken: false
       # The image runs as oracle (54321:54321); fsGroup hands it the fresh ext4 volume.
       securityContext:
         runAsUser: 54321

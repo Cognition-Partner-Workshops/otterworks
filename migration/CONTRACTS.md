@@ -859,7 +859,7 @@ StatefulSet `db2-archive` (1 replica), image `icr.io/db2_community/db2` pinned b
 security context as required by Db2 Community Edition, `LICENSE=accept`, `DBNAME` from values;
 PVC bound to the static PV (`storageClassName: ""`, `volumeName` from values - no dynamic
 provisioning); resources requests `500m`/`2Gi`, limits `2`/`4Gi` (fits the tenant ResourceQuota);
-ClusterIP Service `db2-archive` port 50000 (no ingress); `/health` on port 8080 (sidecar) returning
+ClusterIP Service `db2-archive` port 50000 (no ingress); `/health` on port 8080 (sidecar, HTTPS) returning
 200 iff `CONNECT TO <DBNAME>` succeeds, used for liveness+readiness; NetworkPolicy: ingress to 50000
 only from pods in the same namespace with label `ldm/db2-client: "true"`, to 8080 only from the
 monitoring namespace and kubelet. Values: `dbName`, `pv.volumeName`, `pv.size`, `credentialsSecret`
