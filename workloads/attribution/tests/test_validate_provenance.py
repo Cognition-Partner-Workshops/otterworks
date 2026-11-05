@@ -68,7 +68,7 @@ def _errors(mutate, workload="doc_usage_dashboard"):
         (lambda d: d["usage"]["dev"].update(compute_credits=None), "compute_credits"),
         (lambda d: d["usage"]["runtime"].update(cortex_credits=1.0), "cortex_credits"),
         (lambda d: d["usage"].pop("cortex"), "cortex"),
-        (lambda d: _obj(d, "database").update(state="provisioned"), "source/commit"),
+        (lambda d: (d["source"].update(commit="pending"), _obj(d, "database").update(state="provisioned")), "source/commit"),
         (lambda d: d.update(run_token="SFNFR_20261104"), "run_token"),
         (lambda d: d.update(expires="2026-12-01"), "expires"),
         (lambda d: d["query_tag"].update(task_phase="dev"), "runtime"),
