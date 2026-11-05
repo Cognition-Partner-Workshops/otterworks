@@ -4,6 +4,7 @@ import argparse
 import fcntl
 import hashlib
 import json
+import math
 import os
 import re
 import tempfile
@@ -21,8 +22,37 @@ def lines(data):
 
 
 def number(value):
+    """Match mawk's numeric-prefix coercion for the fixed-width parser."""
+    token = value.lstrip(' \t\r\v\f')
+    if re.match(r'^[+-]inf(?:inity)?(?:$|[^A-Za-z])', token, re.IGNORECASE):
+        return math.inf if token[0] != '-' else -math.inf
+    if re.match(r'^[+-]nan(?:$|[^A-Za-z])', token, re.IGNORECASE):
+        return math.nan
     match = re.match(r'^[ \t\r\v\f]*([+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)', value)
     return float(match[1]) if match else 0.0
+
+
+def perl_number(value):
+    """Match Perl's case-insensitive Inf/NaN/infinity numeric conversion."""
+    token = value.lstrip(' \t\r\v\f')
+    match = re.match(r'^([+-]?)(inf(?:inity)?|nan)(?:$|[^A-Za-z])', token, re.IGNORECASE)
+    if match:
+        if match[2].lower() == 'nan':
+            return math.nan
+        return -math.inf if match[1] == '-' else math.inf
+    match = re.match(r'^[ \t\r\v\f]*([+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)', value)
+    return float(match[1]) if match else 0.0
+
+
+def awk_amount(value):
+    """Render awk's special printf spellings after fixed-width numification."""
+    amount = number(value) / 100
+    token = value.lstrip(' \t\r\v\f')
+    if math.isnan(amount):
+        return '-nan' if token.lower().startswith('-nan') else '+nan' if token.lower().startswith('+nan') else 'nan'
+    if math.isinf(amount):
+        return '-inf' if amount < 0 else '+inf'
+    return f'{amount:.2f}'
 
 
 def parse_bytes(data):
@@ -34,7 +64,7 @@ def parse_bytes(data):
                           ((0, 10), (10, 40), (40, 48), (48, 60), (60, 63), (63, 65))).split('|')
         for index in (0, 1, 4):
             fields[index] = fields[index].rstrip(' ')
-        fields[3] = '%.2f' % (number(fields[3]) / 100)
+        fields[3] = awk_amount(fields[3])
         date = fields[2]
         fields[2] = date[:4] + '-' + date[4:6] + '-' + date[6:8]
         result.append('|'.join(fields) + '\n')
@@ -74,7 +104,7 @@ def report_inputs(item):
             fields.pop()
         fields += [''] * max(0, 6 - len(fields))
         if fields[0]:
-            yield Path(name).name, index, fields[4] + '|' + fields[5], number(fields[3])
+            yield Path(name).name, index, fields[4] + '|' + fields[5], perl_number(fields[3])
 
 
 def report_bytes(rows):
@@ -86,7 +116,13 @@ def report_bytes(rows):
     for key, (count, amount) in sorted(totals.items()):
         ccy, rt = key.split('|')[:2]
         label = {'01': 'INVOICE', '02': 'CREDIT'}.get(rt, f'UNKNOWN({rt})')
-        output += f'{ccy},{label},{count},{amount:.2f}\n'
+        if math.isnan(amount):
+            rendered = 'NaN'
+        elif math.isinf(amount):
+            rendered = '-Inf' if amount < 0 else 'Inf'
+        else:
+            rendered = f'{amount:.2f}'
+        output += f'{ccy},{label},{count},{rendered}\n'
     return output.encode('latin-1')
 
 

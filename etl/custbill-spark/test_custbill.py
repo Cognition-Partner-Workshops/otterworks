@@ -12,6 +12,8 @@ from pyspark.sql import SparkSession
 import custbill as cb
 
 LEGACY = Path(__file__).resolve().parents[1] / 'legacy-extra'
+SPECIAL_AMOUNTS = ('inf', 'Inf', 'nan', 'infinity', ' +Inf', ' -Inf',
+                   ' +nan', ' -nan', ' +infinity', ' -INFINITY', '1e400', '-1e400')
 
 
 @pytest.fixture(scope='session')
@@ -35,8 +37,10 @@ def snapshot(root):
 def test_real_awk_pipeline(tmp_path):
     randomizer = random.Random(2542)
     bodies = [b'', b'a', b'x' * 80, b'\r', record(), record(b'12bad'.decode().ljust(12)),
-              record('-00000000050'), record()[:5] + b'|' + record()[6:],
+              record('-00000000050'),
+              record()[:5] + b'|' + record()[6:],
               record().replace(b'CUSTOMER', b'\xffUSTOME\x00'), record() + b'\r']
+    bodies += [record(amount.ljust(12)) for amount in SPECIAL_AMOUNTS]
     bodies += [bytes(randomizer.choice([32, 65, 124, 13, 255, 49]) for _ in range(randomizer.randrange(90)))
                for _ in range(100)]
     data = b'HDR header\n' + b'\n'.join(bodies) + b'\nTRL0000000110'
@@ -58,6 +62,8 @@ def test_real_perl_order_and_empty(spark, tmp_path):
     for name in ('CUSTBILL_Z.psv', 'CUSTBILL_A.psv'):
         amounts = ['1e16', '1', '-1e16'] + [str(randomizer.uniform(-1e10, 1e10)) for _ in range(300)]
         rows = [f'C|N|D|{amount}|USD|01\n'.encode() for amount in amounts]
+        rows += [f'C|N|D|{amount}|N{index:02d}|01\n'.encode()
+                 for index, amount in enumerate(SPECIAL_AMOUNTS)]
         rows += [b'C|N|D|12garbage|EUR|99\r\n', b'|skip|D|999|USD|01\n', b'C|N|D||GBP|\n', b'C|N|D|-.5|USD|02']
         (parsed / name).write_bytes(b''.join(rows))
     env = dict(os.environ, OTTERWORKS_LEGACY_ROOT=str(tmp_path), LC_ALL='C', TZ='UTC')
