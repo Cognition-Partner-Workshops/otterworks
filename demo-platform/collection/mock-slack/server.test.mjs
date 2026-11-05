@@ -45,6 +45,24 @@ const sendBatchAlert = (url, name) => fetch(`${url}/receivers/alertmanager`, {
   body: JSON.stringify({ alerts: [{ status: 'firing', labels: { alertname: name }, startsAt: new Date().toISOString(), fingerprint: crypto.randomUUID() }] }),
 });
 
+test('user reply retries remain idempotent after the pending alert thread is discarded', async t => {
+  const f = await fixture(t, { batch: true, alertmanagerChannel: 'incident-war-room' });
+  f.cfg.batchRequiredAlerts = ['A', 'B'];
+  const response = await sendBatchAlert(f.url, 'A');
+  const { threadIds: [threadId] } = await response.json();
+  const first = await f.post('Investigating A', threadId, 'user-reply');
+  assert.equal(first.messages.filter(message => message.requestId === 'user-reply').length, 1);
+  const reset = await fetch(`${f.url}/api/alert-batch/reset`, { method: 'POST', headers: { 'X-Webhook-Secret': 'fixture-receiver-secret' } });
+  assert.deepEqual(await reset.json(), { reset: true });
+  const retry = await f.post('Investigating A', threadId, 'user-reply');
+  assert.equal(retry.id, first.id);
+  assert.equal(retry.status, 'discarded');
+  assert.deepEqual(retry.messages, first.messages);
+  const state = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
+  assert.equal(state.threads.flatMap(thread => thread.messages).filter(message => message.requestId === 'user-reply').length, 1);
+  assert.equal(f.calls.length, 0);
+});
+
 for (const discard of ['legacy', 'expiry', 'reset']) {
   test(`${discard} discard admits an unchanged firing repeat into exactly one fresh batch`, async t => {
     const before = Date.now();

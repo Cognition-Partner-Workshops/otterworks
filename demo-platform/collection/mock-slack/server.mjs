@@ -172,7 +172,7 @@ export async function createApp(cfg = config()) {
     if (!channels.includes(channel) || !users.some(u => u.id === author && u.id !== 'devin') || typeof text !== 'string' || !text.trim() || text.length > 12000 || typeof requestId !== 'string' || requestId.length > 100 || !requestId) {
       throw Object.assign(new Error('Choose a channel, author and message (up to 12000 characters).'), { status: 400 });
     }
-    const existing = state.threads.find(t => t.status !== 'discarded' && t.messages.some(m => m.requestId === requestId));
+    const existing = state.threads.find(t => (t.status !== 'discarded' || author !== 'alertmanager') && t.messages.some(m => m.requestId === requestId));
     if (existing) return existing;
     let t = threadId ? state.threads.find(t => t.id === threadId && t.channel === channel) : null;
     if (threadId && !t) throw Object.assign(new Error('Thread not found'), { status: 404 });
