@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.file.*;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,6 +19,7 @@ public class DocumentStore {
     private static final Set<String> KINDS = Set.of("passport", "id-card", "proof-of-address", "payslip");
 
     private final Path root;
+    private final AtomicLong lastUploadMillis = new AtomicLong();
 
     public DocumentStore(@Value("${kyc.upload-dir}") String uploadDir) {
         this.root = Paths.get(uploadDir);
@@ -31,7 +33,8 @@ public class DocumentStore {
         Path dir = root.resolve(customer);
         Files.createDirectories(dir);
         // Retain each upload indefinitely; no relationship-end date or deletion path exists.
-        String name = kind + "-" + UUID.randomUUID() + ext;
+        long timestamp = lastUploadMillis.updateAndGet(last -> Math.max(Instant.now().toEpochMilli(), last + 1));
+        String name = kind + "-" + timestamp + "-" + UUID.randomUUID() + ext;
         long size = Files.copy(body, dir.resolve(name));
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("customer", "****" + customer.substring(customer.length() - 4));

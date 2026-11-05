@@ -42,6 +42,17 @@ class DocumentStoreTest {
     }
 
     @Test
+    void listsSameKindUploadsInUploadOrder() throws Exception {
+        DocumentStore s = new DocumentStore(tmp.toString());
+        List<String> names = new ArrayList<>();
+        for (int i = 0; i < 32; i++) {
+            names.add((String) s.save("HG611000001", "passport", "scan.pdf",
+                    new ByteArrayInputStream(new byte[] { (byte) i })).get("file"));
+        }
+        assertEquals(names, s.list("HG611000001"));
+    }
+
+    @Test
     void savesUnderCustomerAndLists() throws Exception {
         DocumentStore s = new DocumentStore(tmp.toString());
         Map<String, Object> r = s.save("HG611000001", "passport", "Scan.PDF", new ByteArrayInputStream(new byte[42]));
