@@ -28,8 +28,8 @@ query_tag:
   task_phase: runtime
 warehouse:
   name: WH_DOC_SEARCH_API
-  size: LARGE
-  auto_suspend_seconds: 900
+  size: XSMALL
+  auto_suspend_seconds: 60
   resource_monitor:
     name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
     frequency: MONTHLY
@@ -78,6 +78,24 @@ configuration_changes:
           CREATE WAREHOUSE IF NOT EXISTS WH_DOC_SEARCH_API WITH WAREHOUSE_SIZE = 'LARGE'
           AUTO_SUSPEND = 60 AUTO_RESUME = TRUE INITIALLY_SUSPENDED = TRUE
           COMMENT = '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}';
+  - object: WH_DOC_SEARCH_API
+    setting: WAREHOUSE_SIZE
+    from: LARGE
+    to: XSMALL
+    migration: workloads/doc_search_api/migrations/V1.0.2__right_size_warehouse.sql
+    reason: "same pipeline refresh measured ~20s on LARGE vs ~22-23s on the XSMALL dashboard/churn warehouses; load avg 0.13 running, no queuing"
+    status: planned
+    environment: Snowflake external account
+    evidence: []
+  - object: WH_DOC_SEARCH_API
+    setting: AUTO_SUSPEND
+    from: 900
+    to: 60
+    migration: workloads/doc_search_api/migrations/V1.0.2__right_size_warehouse.sql
+    reason: "same pipeline refresh measured ~20s on LARGE vs ~22-23s on the XSMALL dashboard/churn warehouses; load avg 0.13 running, no queuing"
+    status: planned
+    environment: Snowflake external account
+    evidence: []
 objects:
   - type: database
     name: DB_DOC_SEARCH_API_SFEXT_20261105A

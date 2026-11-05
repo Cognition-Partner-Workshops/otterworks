@@ -319,23 +319,51 @@ def replace_block(text, key, value):
 
 
 def mark_configuration(text, queries):
-    query_id = next((qid for sql, qid in queries if qid and
-                     re.search(r"ALTER\s+WAREHOUSE\s+WH_DOC_SEARCH_API\s+SET\s+AUTO_SUSPEND\s*=\s*900", sql, re.I)), None)
-    if not query_id:
+    def tokens(sql):
+        return re.findall(r"'(?:''|[^'])*'|\w+|[^\s;]", sql.upper())
+
+    successful = {tuple(tokens(sql)): qid for sql, qid in queries if qid}
+    if not successful:
         return text
+    rendered = {}
+    edits = []
     node = yaml.compose(text)
     for key, entries in node.value:
         if key.value != "configuration_changes":
             continue
-        for entry in reversed(entries.value):
+        for entry in entries.value:
             fields = {k.value: v for k, v in entry.value}
-            if fields["migration"].value.endswith("V1.0.1__restore_auto_suspend.sql"):
+            migration = REPO / fields["migration"].value
+            if not migration.is_file():
+                continue
+            if migration.parent not in rendered:
+                rendered[migration.parent] = dict(foundation.render(
+                    migration.parent, foundation.template_vars(migration.parent.parent.name)))
+            sql = rendered[migration.parent].get(migration.name, "")
+            for statement in sql.split(";"):
+                statement_tokens = tokens(statement)
+                prefix = tokens(f"ALTER WAREHOUSE {fields['object'].value} SET")
+                assignment = [fields["setting"].value.upper(), "="]
+                target = fields["to"].value.upper()
+                matches = any(statement_tokens[i:i + 2] == assignment and
+                              statement_tokens[i + 2].strip("'") == target
+                              for i in range(len(statement_tokens) - 2))
+                query_id = successful.get(tuple(statement_tokens))
+                if not query_id or statement_tokens[:len(prefix)] != prefix or not matches:
+                    continue
                 status = fields["status"]
-                text = text[:status.start_mark.index] + "applied" + text[status.end_mark.index:]
-                # The query id is new metadata, never rewrite the existing entry/comments.
-                end = text.index("\n", status.start_mark.index)
-                if "applied_query_id" not in fields:
-                    text = text[:end] + f"\n    applied_query_id: {query_id}" + text[end:]
+                edits.append((status.start_mark.index, status.end_mark.index, "applied"))
+                if "applied_query_id" in fields:
+                    qid = fields["applied_query_id"]
+                    edits.append((qid.start_mark.index, qid.end_mark.index, query_id))
+                else:
+                    end = text.find("\n", status.end_mark.index)
+                    end = len(text) if end == -1 else end
+                    indent = " " * entry.start_mark.column
+                    edits.append((end, end, f"\n{indent}applied_query_id: {query_id}"))
+                break
+    for start, end, value in sorted(edits, reverse=True):
+        text = text[:start] + value + text[end:]
     return text
 
 
