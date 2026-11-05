@@ -40,7 +40,9 @@ async def test_share_endpoint_round_trip(client, owner_id: uuid.UUID, monkeypatc
     created = await client.post(
         "/api/v1/documents/",
         json={"title": "Shared", "content": "body", "owner_id": str(owner_id)},
+        headers={"X-User-ID": str(owner_id)},
     )
+    assert created.status_code == 201
     doc_id = created.json()["id"]
     headers = {"Authorization": "Bearer token", "X-User-ID": str(owner_id)}
 

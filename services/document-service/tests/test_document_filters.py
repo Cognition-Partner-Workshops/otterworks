@@ -86,3 +86,69 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("path", ["/api/v1/documents/", "/api/v1/documents"])
+@pytest.mark.parametrize("field", ["title", "content_type"])
+@pytest.mark.parametrize("payload", ["'", "' OR 1=1 --", "'; SELECT 1 --"])
+async def test_filter_binds_injected_values(
+    client: AsyncClient, owner_id: uuid.UUID, path: str, field: str, payload: str
+):
+    await _create(client, owner_id, "Unrelated document")
+    values = {field: payload}
+    if field == "title":
+        await _create(client, owner_id, payload)
+    else:
+        await _create(client, owner_id, "Matching document", **values)
+
+    resp = await client.get(path, params=values)
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 1
+    assert resp.json()["items"][0][field] == payload
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("path", ["/api/v1/documents/", "/api/v1/documents"])
+@pytest.mark.parametrize(
+    "ordering",
+    [
+        {"sort": "title; SELECT 1 --"},
+        {"sort": "not_a_column"},
+        {"direction": "desc; SELECT 1 --"},
+        {"direction": "invalid"},
+    ],
+)
+async def test_filter_rejects_invalid_ordering(client: AsyncClient, path: str, ordering: dict):
+    resp = await client.get(path, params=ordering)
+    assert resp.status_code == 400
+    assert resp.json() == {"detail": "Invalid filter"}
+
+
+@pytest.mark.asyncio
+async def test_filter_preserves_folder_scope(client: AsyncClient, owner_id: uuid.UUID):
+    folder = uuid.uuid4()
+    await _create(client, owner_id, "Plan in folder", folder_id=str(folder))
+    await _create(client, owner_id, "Plan outside folder")
+
+    resp = await client.get(
+        "/api/v1/documents/", params={"title": "Plan", "folder_id": str(folder)}
+    )
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["Plan in folder"]
+
+
+@pytest.mark.asyncio
+async def test_filter_does_not_expose_database_errors(client: AsyncClient, monkeypatch):
+    from sqlalchemy.exc import SQLAlchemyError
+
+    from app.services.document_query_repository import DocumentQueryRepository
+
+    async def fail(*args, **kwargs):
+        raise SQLAlchemyError("private database connection detail")
+
+    monkeypatch.setattr(DocumentQueryRepository, "count_documents", fail)
+    resp = await client.get("/api/v1/documents/", params={"title": "Plan"})
+    assert resp.status_code == 400
+    assert resp.json() == {"detail": "Invalid filter"}

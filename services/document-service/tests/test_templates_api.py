@@ -70,3 +70,28 @@ async def test_create_from_template_not_found(client: AsyncClient, owner_id: uui
         json={"title": "Orphan", "owner_id": str(owner_id)},
     )
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_rejects_other_owner(client: AsyncClient):
+    template = await client.post(
+        "/api/v1/templates/",
+        json={"name": "Blank", "content": "body", "created_by": str(uuid.uuid4())},
+    )
+    resp = await client.post(
+        f"/api/v1/documents/from-template/{template.json()['id']}",
+        json={"title": "Planted", "owner_id": str(uuid.uuid4())},
+    )
+    assert resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_create_from_template_requires_authentication(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    resp = await client.post(
+        f"/api/v1/documents/from-template/{uuid.uuid4()}",
+        json={"title": "No Auth", "owner_id": str(owner_id)},
+        headers={"Authorization": ""},
+    )
+    assert resp.status_code == 401

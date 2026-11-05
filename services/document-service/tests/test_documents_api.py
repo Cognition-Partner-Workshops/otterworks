@@ -153,8 +153,8 @@ async def test_document_versions(client: AsyncClient, owner_id: uuid.UUID):
     assert resp.status_code == 200
     versions = resp.json()
     assert len(versions) == 2
-    assert versions[0]["version_number"] == 2
-    assert versions[1]["version_number"] == 1
+    assert versions[0]["version_number"] == 1
+    assert versions[1]["version_number"] == 2
 
 
 @pytest.mark.asyncio
@@ -171,7 +171,7 @@ async def test_restore_version(client: AsyncClient, owner_id: uuid.UUID):
     )
 
     versions_resp = await client.get(f"/api/v1/documents/{doc_id}/versions")
-    v1_id = versions_resp.json()[-1]["id"]  # first version
+    v1_id = next(v["id"] for v in versions_resp.json() if v["version_number"] == 1)
 
     resp = await client.post(f"/api/v1/documents/{doc_id}/versions/{v1_id}/restore")
     assert resp.status_code == 200
@@ -266,16 +266,41 @@ async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
     resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Header Doc"},
-        headers={"X-User-Id": str(user_id)},
+        headers={"Authorization": "", "X-User-Id": str(user_id)},
     )
     assert resp.status_code == 401
 
 
 @pytest.mark.asyncio
 async def test_create_document_no_auth_returns_401(client: AsyncClient):
-    """Creating a document without owner_id and without auth returns 401."""
+    """Creating a document without auth returns 401."""
     resp = await client.post(
         "/api/v1/documents/",
         json={"title": "No Auth Doc"},
+        headers={"Authorization": ""},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("path", ["/api/v1/documents/", "/api/v1/documents"])
+async def test_create_document_rejects_other_owner(client: AsyncClient, path: str):
+    victim = str(uuid.uuid4())
+    resp = await client.post(path, json={"title": "Planted", "owner_id": victim})
+    assert resp.status_code == 403
+    listing = await client.get(path, params={"owner_id": victim})
+    assert listing.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("path", ["/api/v1/documents/", "/api/v1/documents"])
+@pytest.mark.parametrize("authorization", ["", "Bearer invalid"])
+async def test_owner_id_does_not_replace_authentication(
+    client: AsyncClient, owner_id: uuid.UUID, path: str, authorization: str
+):
+    resp = await client.post(
+        path,
+        json={"title": "No Auth", "owner_id": str(owner_id)},
+        headers={"Authorization": authorization},
     )
     assert resp.status_code == 401

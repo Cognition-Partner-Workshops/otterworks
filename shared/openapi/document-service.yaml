@@ -62,8 +62,9 @@ paths:
       operationId: createDocument
       summary: Create a new document
       description: |
-        Creates a new document. If owner_id is not provided in the body,
-        it is extracted from the JWT token.
+        Creates a document owned by the authenticated caller. Authentication is
+        required even when owner_id is supplied. If owner_id is omitted or null,
+        it is derived from the caller; a different owner_id is rejected with 403.
       security:
         - bearerAuth: []
       requestBody:
@@ -85,13 +86,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/DocumentResponse"
         "401":
-          description: Authentication required (no owner_id and no valid JWT)
+          description: Authentication required, regardless of a supplied owner_id
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
               example:
-                detail: "owner_id is required: provide it in the body or authenticate via JWT"
+                detail: "Authentication required"
+        "403":
+          description: Supplied owner_id does not match the authenticated caller
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "Access denied"
         "422":
           description: Validation error
           content:
@@ -551,6 +560,11 @@ paths:
     post:
       operationId: createFromTemplate
       summary: Create a document from a template
+      description: |
+        Requires authentication. The body must include owner_id matching the
+        authenticated caller; a different owner_id is rejected with 403.
+      security:
+        - bearerAuth: []
       parameters:
         - name: template_id
           in: path
@@ -574,6 +588,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DocumentResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "Authentication required"
+        "403":
+          description: Supplied owner_id does not match the authenticated caller
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "Access denied"
         "404":
           description: Template not found
           content:
@@ -721,6 +751,7 @@ components:
           type: string
           format: uuid
           nullable: true
+          description: Must match the authenticated caller; omitted or null uses the caller
         folder_id:
           type: string
           format: uuid
@@ -918,6 +949,7 @@ components:
         owner_id:
           type: string
           format: uuid
+          description: Required and must match the authenticated caller
         folder_id:
           type: string
           format: uuid
