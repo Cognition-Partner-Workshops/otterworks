@@ -12,20 +12,29 @@ public class StatementServlet extends HttpServlet {
     private static final Logger LOG = Logger.getLogger(StatementServlet.class);
     private transient StatementDao dao;
 
+    public StatementServlet() {
+    }
+
+    StatementServlet(StatementDao dao) {
+        this.dao = dao;
+    }
+
     @Override
     public void init() {
-        dao = new StatementDao();
+        if (dao == null) {
+            dao = new StatementDao();
+        }
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String account = req.getParameter("account");
-        if (account == null || !account.matches("[A-Z0-9]{8,20}")) {
+        if (!LastViewed.isAccount(account)) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "account is required");
             return;
         }
         try {
-            req.getSession(true).setAttribute("lastAccount", account);
+            LastViewed.remember(req, resp, account);
             LOG.info("statement viewed account=" + account);
             resp.setContentType("text/html;charset=UTF-8");
             resp.getWriter().write(Html.statement(AppConfig.bankName(), account, dao.lines(account, AppConfig.pageSize())));
