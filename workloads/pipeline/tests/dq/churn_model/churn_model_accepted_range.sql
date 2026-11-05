@@ -38,9 +38,13 @@ union all
 select 'accepted_range: retained evaluation is missing' as failure
 where not exists (select 1 from {{ db }}.APP.CHURN_MODEL_EVALUATION)
 union all
-select 'accepted_range: retained model score invalid run=' || coalesce(run_id,'NULL') as failure
-from {{ db }}.APP.CHURN_MODEL_SCORES
-where account_id is null or prediction_date is null or score is null or score not between 0 and 1 or flagged is null
+select 'accepted_range: retained model score invalid run=' || coalesce(s.run_id,'NULL')
+  || ' account=' || coalesce(s.account_id,'NULL')
+  || case when s.score is null then '; score unavailable: training depends on sufficient source history; '
+    || coalesce(e.cause,'no evaluation cause recorded') else '; score must be in [0,1] with account/date/flag present' end as failure
+from {{ db }}.APP.CHURN_MODEL_SCORES s
+left join {{ db }}.APP.CHURN_MODEL_EVALUATION e on e.run_id=s.run_id
+where s.account_id is null or s.prediction_date is null or s.score is null or s.score not between 0 and 1 or s.flagged is null
 union all
 select 'accepted_range: retained leakage check failed run=' || coalesce(run_id,'NULL') as failure
 from {{ db }}.APP.CHURN_LEAKAGE_CHECK

@@ -72,6 +72,8 @@ def test_churn_ranges_reject_null_metrics_and_preserve_the_recall_gate():
     assert 'activity_drop_pct is distinct from round(' in ranges
     assert 'churn_score is distinct from login_points+activity_points+status_points' in ranges
     assert "risk_band not in ('low','medium','high')" in ranges
+    assert 's.score is null or s.score not between 0 and 1' in ranges
+    assert 'training depends on sufficient source history' in ranges
 
 
 def test_churn_row_counts_use_both_sources_and_strict_history_cutoff():
