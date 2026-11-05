@@ -5,6 +5,6 @@
   <Resource name="jdbc/StatementsDB" auth="Container" type="javax.sql.DataSource"
             driverClassName="org.postgresql.Driver"
             url="jdbc:postgresql://wave1-db:5432/bankwave"
-            username="statements_app" password="St4tements-Ro!2019"
+            username="statements_app" password="${STATEMENTS_DB_PASSWORD}"
             maxTotal="20" maxIdle="5" maxWaitMillis="10000"/>
 </Context>

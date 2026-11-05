@@ -14,14 +14,21 @@ APPS := statements-web rates-batch branch-locator notify-svc kyc-docs fx-report
 COMPOSE := docker compose -f vm/compose.yaml
 DAYS := 2026-10-14 2026-10-15 2026-10-16
 
-.PHONY: vm-build vm-up vm-rates vm-smoke vm-down reset ecr ns destroy check-run
+.PHONY: vm-env vm-build vm-up vm-rates vm-smoke vm-db-boundary vm-down reset ecr ns destroy check-run
 
-vm-build:
+vm-build: vm-env
 	DOCKER_BUILDKIT=0 $(COMPOSE) build
 
-vm-up:
+vm-up: vm-env
 	$(COMPOSE) up -d
 	$(MAKE) vm-rates
+
+vm-env: vm/.env
+
+vm/.env:
+	@umask 077; set -e; \
+	admin=$$(openssl rand -hex 24); statements=$$(openssl rand -hex 24); \
+	printf 'WAVE1_DB_ADMIN_PASSWORD=%s\nSTATEMENTS_DB_PASSWORD=%s\n' "$$admin" "$$statements" > $@
 
 vm-rates:
 	@for d in $(DAYS); do $(COMPOSE) exec -T rates-01 /opt/rates/bin/run-rates.sh $$d || exit $$?; done
@@ -37,11 +44,15 @@ vm-smoke:
 	curl -sf -o /dev/null -w "fx-report      %{http_code}\n" "http://localhost:8086/fx/fx-report.cgi?day=2026-10-16"
 	$(COMPOSE) exec -T rates-01 ls /var/spool/rates/out
 
-vm-down:
+vm-down: vm-env
 	$(COMPOSE) down
 
-reset:
+vm-db-boundary:
+	@COMPOSE='$(COMPOSE)' bash vm/tests/db-boundary-check.sh
+
+reset: vm-env
 	$(COMPOSE) down -v --remove-orphans
+	rm -f vm/.env
 
 check-run:
 	@[[ "$(RUN)" =~ ^[a-z0-9]{3,12}$$ ]] || { echo "RUN=<token> is required (lowercase letters and digits)"; exit 2; }
