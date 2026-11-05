@@ -3,7 +3,7 @@ require_relative '../../app/services/chaos_probe_service'
 
 RSpec.describe ChaosProbeService do
   it 'signs the file and search probes with short-lived access identities' do
-    secret = 'unit-test-chaos-signing-key-not-a-deployment-secret'
+    secret = SecureRandom.hex(32)
     allow(ENV).to receive(:fetch).with('JWT_SECRET').and_return(secret)
     http = instance_double(Net::HTTP, open_timeout: nil, read_timeout: nil)
     allow(http).to receive(:open_timeout=)
