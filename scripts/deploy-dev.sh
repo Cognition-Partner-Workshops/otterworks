@@ -29,6 +29,9 @@ GOLDEN_HOST_SUFFIX="${GOLDEN_HOST_SUFFIX:-otterworks.app}"
 # service that validates tokens. Generated once if not supplied; pass a stable
 # value (JWT_SECRET=...) across redeploys so previously issued tokens stay valid.
 JWT_SECRET="${JWT_SECRET:-$(openssl rand -hex 32)}"
+# Key for document-service share-link tokens (HMAC). Stable value recommended
+# across redeploys so previously minted share links stay valid.
+SHARE_LINK_SECRET="${SHARE_LINK_SECRET:-$(openssl rand -hex 32)}"
 # Rails (admin-service) session key. Stable value recommended across redeploys.
 SECRET_KEY_BASE="${SECRET_KEY_BASE:-$(openssl rand -hex 64)}"
 
@@ -336,6 +339,9 @@ build_helm_args() {
       api-gateway|auth-service|document-service|collab-service|admin-service)
         add_secret JWT_SECRET "${JWT_SECRET}" ;;
     esac
+  fi
+  if [ "$service" = "document-service" ] && [ -n "${SHARE_LINK_SECRET}" ]; then
+    add_secret SHARE_LINK_SECRET "${SHARE_LINK_SECRET}"
   fi
 
   case "$service" in
