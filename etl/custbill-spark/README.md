@@ -6,6 +6,28 @@ ingest → parse → report chain. It uses Spark `binaryFiles` for byte-preservi
 handshake. `OTTERWORKS_LEGACY_ROOT` selects the root; `CUSTBILL_DISTRIBUTION` and
 `CUSTBILL_DELIVERY_DIR` configure delivery without embedding recipients.
 
+## Legacy awk dialect anomaly
+
+Parsing is pure Python: no awk executable, runtime probe, or host-specific override
+is used. Malformed amounts had dialect-dependent output in the legacy chain.
+The replacement pins the rendering observed for the default `awk` on GitHub's
+`ubuntu-latest` (Ubuntu 26.04) runner under `LC_ALL=C`, rather than following the
+local machine's gawk/mawk version:
+
+| Amount token (case-insensitive) | Fixed rendering |
+|---|---|
+| Bare `inf`, `nan`, `infinity`; signed `infinity` | `0.00` |
+| Signed `+inf` / `-inf` | `+inf` / `-inf` |
+| Signed `+nan` / `-nan` | `+nan` / `-nan` |
+| Overflow `1e400` / `-1e400` | `+inf` / `-inf` |
+| Leading space, tab, CR, vertical tab, form feed | Ignored before numeric-prefix conversion |
+
+These are invalid fixed-width amount fields: every such row is recorded in the
+parse ledger and the source is quarantined; `CUSTBILL_STRICT=1` rejects the stage.
+Compatibility mode emits the fixed bytes on every host. Tests compare portable
+rows against the default `awk` on PATH, and test dialect-dependent rows against
+the fixed rendering and ledger errors instead of a host-dependent oracle.
+
 | Addendum deficiency | Replacement | Deliberate parity limitation / reason |
 |---|---|---|
 | hostname paths | env root | none |

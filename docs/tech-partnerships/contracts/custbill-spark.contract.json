@@ -12,5 +12,8 @@
   "malformed_record_policy": {"extra_delimited_fields": "fail", "null_attribution": "fail", "details": "Schema and trailer errors are quarantined and recorded; CUSTBILL_STRICT=1 fails the stage."},
   "empty_input_semantics": {"action": "write-empty-result", "details": "A header-only CSV and byte-identical XLS are written."},
   "trigger_granularity": "per-batch",
-  "planted_anomalies": [{"id": "xls-copy", "description": "The finance-compatible XLS remains a byte-identical CSV copy.", "status": "must-detect"}]
+  "planted_anomalies": [
+    {"id": "xls-copy", "description": "The finance-compatible XLS remains a byte-identical CSV copy.", "status": "must-detect"},
+    {"id": "legacy-awk-dialect", "description": "Non-finite, overflow and whitespace-prefixed amount rows vary by legacy awk dialect. Pure Python parsing fixes the Ubuntu 26.04 GitHub ubuntu-latest default awk rendering under LC_ALL=C: bare inf/nan/infinity and signed infinity become 0.00; signed inf/nan retain lowercase signs; +/-1e400 become +/-inf; leading space/tab/CR/VT/FF are ignored. These invalid rows must be ledgered and quarantined, and rejected in strict mode, independent of host tools.", "status": "must-detect"}
+  ]
 }

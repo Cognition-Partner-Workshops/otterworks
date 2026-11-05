@@ -7,7 +7,6 @@ import json
 import math
 import os
 import re
-import subprocess
 import tempfile
 import time
 from contextlib import contextmanager
@@ -15,8 +14,6 @@ from datetime import datetime
 from pathlib import Path
 
 from pyspark.sql import SparkSession
-
-_AWK_FORMATS = {}
 
 
 def lines(data):
@@ -42,32 +39,15 @@ def perl_number(value):
     return float(match[1]) if match else 0.0
 
 
-def awk_formats(executable):
-    """Probe host awk's numeric coercion/printf dialect once per worker."""
-    if executable in _AWK_FORMATS:
-        return _AWK_FORMATS[executable]
-    tokens = [sign + word for sign in ('', '+', '-') for word in ('inf', 'infinity', 'nan')]
-    tokens += ['1e400', '-1e400']
-    tokens += [char + '1' for char in ' \t\r\v\f']
-    result = subprocess.run([executable, '{printf "%.2f\\n", ($0+0)/100}'],
-                            input='\n'.join(tokens) + '\n', text=True, capture_output=True,
-                            env=dict(os.environ, LC_ALL='C'), check=True)
-    _AWK_FORMATS[executable] = dict(zip(tokens, result.stdout.splitlines(), strict=True))
-    return _AWK_FORMATS[executable]
-
-
 def awk_amount(value):
-    """Render awk's special printf spellings after fixed-width numification."""
-    executable = os.environ.get('CUSTBILL_AWK', 'awk')
-    formats = awk_formats(executable)
-    whitespace = ''.join(char for char in ' \t\r\v\f' if formats[char + '1'] == '0.01')
-    token = value.lstrip(whitespace)
-    special = re.match(r'^([+-]?(?:inf(?:inity)?|nan))(?:$|[^A-Za-z])', token, re.IGNORECASE)
+    """Use the fixed Ubuntu CI awk rendering, independent of host tools."""
+    token = value.lstrip(' \t\r\v\f')
+    special = re.match(r'^([+-](?:inf|nan))(?:$|[^A-Za-z])', token, re.IGNORECASE)
     if special:
-        return formats[special[1].lower()]
+        return special[1].lower()
     amount = number(token) / 100
     if math.isinf(amount):
-        return formats['-1e400' if amount < 0 else '1e400']
+        return '-inf' if amount < 0 else '+inf'
     return f'{amount:.2f}'
 
 
