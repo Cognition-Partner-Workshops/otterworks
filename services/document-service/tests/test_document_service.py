@@ -3,6 +3,7 @@
 import uuid
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.document import (
@@ -53,6 +54,51 @@ async def test_list_documents_with_filters(
 
     items, total = await service.list_documents(folder_id=folder_id)
     assert total == 1
+
+
+async def _count_list_queries(
+    service: DocumentService, db_session: AsyncSession, owner_id: uuid.UUID, size: int
+) -> tuple[list, int]:
+    statements: list[str] = []
+
+    def _count(conn, cursor, statement, parameters, context, executemany):  # noqa: ANN001
+        statements.append(statement)
+
+    sync_engine = db_session.bind.sync_engine
+    event.listen(sync_engine, "before_cursor_execute", _count)
+    try:
+        items, _ = await service.list_documents(owner_id=owner_id, size=size)
+    finally:
+        event.remove(sync_engine, "before_cursor_execute", _count)
+    return items, len(statements)
+
+
+@pytest.mark.asyncio
+async def test_list_documents_query_count_does_not_grow_with_page_size(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    service = DocumentService(db_session)
+    for i in range(12):
+        doc = await service.create(
+            DocumentCreate(title=f"Doc {i}", content="v1", owner_id=owner_id)
+        )
+        for n in range(2, 8):
+            await service.update(doc.id, DocumentUpdate(title=f"Doc {i}", content=f"v{n}"))
+    db_session.expunge_all()
+
+    small_items, small_queries = await _count_list_queries(service, db_session, owner_id, 2)
+    db_session.expunge_all()
+    large_items, large_queries = await _count_list_queries(service, db_session, owner_id, 12)
+
+    assert len(small_items) == 2
+    assert len(large_items) == 12
+    assert large_queries == small_queries
+    assert large_queries <= 5
+    for doc in large_items:
+        numbers = [v.version_number for v in doc.recent_versions]
+        assert numbers == sorted(numbers, reverse=True)
+        assert len(numbers) == 5
+        assert numbers[0] == doc.version
 
 
 @pytest.mark.asyncio
