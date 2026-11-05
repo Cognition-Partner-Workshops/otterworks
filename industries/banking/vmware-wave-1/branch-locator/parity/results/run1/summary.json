@@ -1,0 +1,379 @@
+{
+  "vm": "http://localhost:8083",
+  "platform": "http://127.0.0.1:18083",
+  "cases": 19,
+  "passed": 19,
+  "results": [
+    {
+      "case": "index",
+      "path": "/",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "sha256": "0b55918225458a7ba9846e48c8f44e4f5e0debe6c17d0aa182a7387c0d75324d"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "sha256": "0b55918225458a7ba9846e48c8f44e4f5e0debe6c17d0aa182a7387c0d75324d"
+      },
+      "open_now": null
+    },
+    {
+      "case": "nearest-harbour",
+      "path": "/api/nearest?q=harbour",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "cd2cc6b5c54db717d14b2edfbe8e313e357b8d564f8ca8b889ba5e3866dc1a58"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "cd2cc6b5c54db717d14b2edfbe8e313e357b8d564f8ca8b889ba5e3866dc1a58"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-market",
+      "path": "/api/nearest?q=market",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "70c4bab40c7618c4a8b7422f7a62df0278d79907e48e9386a5de636259e175c9"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "70c4bab40c7618c4a8b7422f7a62df0278d79907e48e9386a5de636259e175c9"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-old-town",
+      "path": "/api/nearest?q=old%20town",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "3e9bace6da6c85d75a329fff1af947347d0fd4eaa6df4c4c5e40998d1f558727"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "3e9bace6da6c85d75a329fff1af947347d0fd4eaa6df4c4c5e40998d1f558727"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-river",
+      "path": "/api/nearest?q=river",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "c1a58507a0946e2af0ce79b495cf834e11c7996e44ca1a025a281f21eee4e4b6"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "c1a58507a0946e2af0ce79b495cf834e11c7996e44ca1a025a281f21eee4e4b6"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-hill",
+      "path": "/api/nearest?q=hill",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "6eef25386b8eebdceddc213c4d7b8b9dbccc2686c63e347d7690965e696b2153"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "6eef25386b8eebdceddc213c4d7b8b9dbccc2686c63e347d7690965e696b2153"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-lake",
+      "path": "/api/nearest?q=lake",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "08164f4fcac4e40d1dfe8b317f5b90112ec6c3efc3c202f6699bf54d2674ac59"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "08164f4fcac4e40d1dfe8b317f5b90112ec6c3efc3c202f6699bf54d2674ac59"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-upper-case",
+      "path": "/api/nearest?q=HARBOUR",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "76fb4b8b365ef6856f428eb83750e257be5d42f62af94143191ab7de522a0baa"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "76fb4b8b365ef6856f428eb83750e257be5d42f62af94143191ab7de522a0baa"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-postcode-text",
+      "path": "/api/nearest?q=HG1%20Old%20Town",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "bc1afc40dd64da250723efc8bad57628cf2d11bcf65d5c9d67388118269d9335"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "bc1afc40dd64da250723efc8bad57628cf2d11bcf65d5c9d67388118269d9335"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-padded",
+      "path": "/api/nearest?q=%20%20lake%20%20",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "08164f4fcac4e40d1dfe8b317f5b90112ec6c3efc3c202f6699bf54d2674ac59"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "08164f4fcac4e40d1dfe8b317f5b90112ec6c3efc3c202f6699bf54d2674ac59"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-two-places",
+      "path": "/api/nearest?q=river%20market",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "d42b54ce06579f76f9936c7854bca7d673605f66591dc5afad5cbdbf0a2f70ec"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "d42b54ce06579f76f9936c7854bca7d673605f66591dc5afad5cbdbf0a2f70ec"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-unknown-place",
+      "path": "/api/nearest?q=nowhere",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "39ec9f7b862ef01c38dc22ee2ab94910965a5931f4372ffba1e2d5d372bd25dc"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "39ec9f7b862ef01c38dc22ee2ab94910965a5931f4372ffba1e2d5d372bd25dc"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-unicode",
+      "path": "/api/nearest?q=%C3%9Cn%C3%AFcode%20%E2%82%AC",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "35c9dd7f58afbcfe9e926bcb6b5c91def1d90c3878b152fb92dc43e3b4c16774"
+      },
+      "platform": {
+        "status": 200,
+        "content_type": "application/json",
+        "sha256": "35c9dd7f58afbcfe9e926bcb6b5c91def1d90c3878b152fb92dc43e3b4c16774"
+      },
+      "open_now": [
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "case": "nearest-empty-q",
+      "path": "/api/nearest?q=",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 400,
+        "content_type": "application/json",
+        "sha256": "8353a1b6bdc280f50ac687ca38b79d9a2592c5506bb53a26fce3f559d158dded"
+      },
+      "platform": {
+        "status": 400,
+        "content_type": "application/json",
+        "sha256": "8353a1b6bdc280f50ac687ca38b79d9a2592c5506bb53a26fce3f559d158dded"
+      },
+      "open_now": null
+    },
+    {
+      "case": "nearest-blank-q",
+      "path": "/api/nearest?q=%20%20",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 400,
+        "content_type": "application/json",
+        "sha256": "8353a1b6bdc280f50ac687ca38b79d9a2592c5506bb53a26fce3f559d158dded"
+      },
+      "platform": {
+        "status": 400,
+        "content_type": "application/json",
+        "sha256": "8353a1b6bdc280f50ac687ca38b79d9a2592c5506bb53a26fce3f559d158dded"
+      },
+      "open_now": null
+    },
+    {
+      "case": "nearest-missing-q",
+      "path": "/api/nearest",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 400,
+        "content_type": "application/json",
+        "sha256": "8353a1b6bdc280f50ac687ca38b79d9a2592c5506bb53a26fce3f559d158dded"
+      },
+      "platform": {
+        "status": 400,
+        "content_type": "application/json",
+        "sha256": "8353a1b6bdc280f50ac687ca38b79d9a2592c5506bb53a26fce3f559d158dded"
+      },
+      "open_now": null
+    },
+    {
+      "case": "nearest-other-param-only",
+      "path": "/api/nearest?query=harbour",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 400,
+        "content_type": "application/json",
+        "sha256": "8353a1b6bdc280f50ac687ca38b79d9a2592c5506bb53a26fce3f559d158dded"
+      },
+      "platform": {
+        "status": 400,
+        "content_type": "application/json",
+        "sha256": "8353a1b6bdc280f50ac687ca38b79d9a2592c5506bb53a26fce3f559d158dded"
+      },
+      "open_now": null
+    },
+    {
+      "case": "unknown-path",
+      "path": "/nope",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 404,
+        "content_type": "text/html; charset=utf-8",
+        "sha256": "9177a352dcbf8875ebb2e22e682760d47faa4d77398add153dd7084e7568c5bc"
+      },
+      "platform": {
+        "status": 404,
+        "content_type": "text/html; charset=utf-8",
+        "sha256": "9177a352dcbf8875ebb2e22e682760d47faa4d77398add153dd7084e7568c5bc"
+      },
+      "open_now": null
+    },
+    {
+      "case": "nearest-trailing-slash",
+      "path": "/api/nearest/",
+      "minute": "2026-11-05T13:21Z",
+      "equal": true,
+      "vm": {
+        "status": 404,
+        "content_type": "text/html; charset=utf-8",
+        "sha256": "9177a352dcbf8875ebb2e22e682760d47faa4d77398add153dd7084e7568c5bc"
+      },
+      "platform": {
+        "status": 404,
+        "content_type": "text/html; charset=utf-8",
+        "sha256": "9177a352dcbf8875ebb2e22e682760d47faa4d77398add153dd7084e7568c5bc"
+      },
+      "open_now": null
+    }
+  ]
+}

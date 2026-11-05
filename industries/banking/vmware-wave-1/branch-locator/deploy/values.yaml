@@ -1,0 +1,28 @@
+app: branch-locator
+owner: banking-platform
+costCenter: bank-wave1
+workload: web
+# Stateless: every answer is derived from the request, the database and the clock.
+replicas: 2
+containerPort: 8080
+env:
+  PORT: "8080"
+  WEB_CONCURRENCY: "2"
+  # web-02 had no zone set, so "open now" was computed in UTC; keep that explicit.
+  BUSINESS_TZ: Etc/UTC
+  TZ: Etc/UTC
+  DB_HOST: wave1-db.database
+  DB_PORT: "5432"
+  DB_NAME: bankwave
+  DB_USER: branch_app
+  GEO_URL: http://geo.bank.internal:8090/geocode
+secretEnv:
+  DB_PASSWORD:
+    secret: branch-locator-db
+    key: password
+writablePaths:
+  - /tmp
+ingress:
+  enabled: false
+  path: /
+  tls: true

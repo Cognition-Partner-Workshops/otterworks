@@ -1,0 +1,57 @@
+# kind only: throwaway stand-in for wave1-db, seeded from data/seed.sql.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: postgres}
+  template:
+    metadata:
+      labels: {app: postgres}
+    spec:
+      containers:
+        - name: postgres
+          image: docker.io/library/postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - {name: POSTGRES_DB, value: bankwave}
+            - {name: POSTGRES_USER, value: statements_app}
+            - {name: POSTGRES_HOST_AUTH_METHOD, value: scram-sha-256}
+            - {name: POSTGRES_INITDB_ARGS, value: --auth-local=trust}
+            - name: POSTGRES_PASSWORD
+              valueFrom: {secretKeyRef: {name: postgres-superuser, key: password}}
+          ports:
+            - {containerPort: 5432}
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - >-
+                  pg_isready -h 127.0.0.1 -U statements_app -d bankwave &&
+                  psql -U statements_app -d bankwave -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'branch_app'" | grep -q 1
+            periodSeconds: 3
+            failureThreshold: 40
+          volumeMounts:
+            - {name: seed, mountPath: /docker-entrypoint-initdb.d, readOnly: true}
+      volumes:
+        - name: seed
+          configMap: {name: postgres-seed}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-superuser
+stringData:
+  password: kind-only-superuser
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector: {app: postgres}
+  ports:
+    - {port: 5432, targetPort: 5432}
