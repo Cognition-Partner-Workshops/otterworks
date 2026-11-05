@@ -48,29 +48,33 @@ def _get_jwt_secret() -> str:
     return os.environ.get("JWT_SECRET", "")
 
 
+def _jwt_claims(request: Request) -> dict:
+    """Verified claims of the Authorization JWT, or ``{}``.
+
+    Identity comes only from a verified token: without ``JWT_SECRET`` nothing
+    verifies, so every request is unauthenticated (fail closed).
+    """
+    auth_header = request.headers.get("Authorization")
+    secret = _get_jwt_secret()
+    if not secret or not auth_header or not auth_header.startswith("Bearer "):
+        return {}
+    token = auth_header[len("Bearer "):]
+    try:
+        return jwt.decode(token, secret, algorithms=["HS256", "HS384"])
+    except jwt.PyJWTError:
+        return {}
+
+
 def _extract_user_id(request: Request) -> UUID | None:
     """Extract user ID from the Authorization JWT."""
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header[len("Bearer "):]
-        secret = _get_jwt_secret()
-        if secret:
-            try:
-                payload = jwt.decode(token, secret, algorithms=["HS256", "HS384"])
-                user_id_str = payload.get("user_id") or payload.get("sub")
-                if user_id_str:
-                    return UUID(str(user_id_str))
-            except (jwt.PyJWTError, ValueError):
-                pass
-        else:
-            forwarded_user_id = request.headers.get("X-User-ID")
-            if forwarded_user_id:
-                try:
-                    return UUID(str(forwarded_user_id))
-                except ValueError:
-                    pass
-
-    return None
+    claims = _jwt_claims(request)
+    user_id_str = claims.get("user_id") or claims.get("sub")
+    if not user_id_str:
+        return None
+    try:
+        return UUID(str(user_id_str))
+    except ValueError:
+        return None
 
 
 def _require_user_id(request: Request) -> UUID:
@@ -78,6 +82,21 @@ def _require_user_id(request: Request) -> UUID:
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     return user_id
+
+
+def _is_admin(request: Request) -> bool:
+    roles = _jwt_claims(request).get("roles") or []
+    return isinstance(roles, list) and "admin" in roles
+
+
+def _resolve_owner(request: Request, owner_id: UUID | None) -> UUID:
+    """The owner a list request may read: the caller, or anyone for an admin."""
+    user_id = _require_user_id(request)
+    if owner_id is None or owner_id == user_id:
+        return user_id
+    if not _is_admin(request):
+        raise HTTPException(status_code=403, detail="Access denied")
+    return owner_id
 
 
 def _ensure_owner(document: object, user_id: UUID) -> None:
@@ -90,14 +109,10 @@ async def _do_create_document(
     request: Request,
     db: AsyncSession,
 ) -> DocumentResponse:
-    if not body.owner_id:
-        extracted_id = _extract_user_id(request)
-        if not extracted_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="owner_id is required: provide it in the body or authenticate via JWT",
-            )
-        body.owner_id = extracted_id
+    user_id = _require_user_id(request)
+    if body.owner_id and body.owner_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    body.owner_id = user_id
 
     service = DocumentService(db)
     document = await service.create(body)
@@ -134,15 +149,17 @@ async def create_document_no_slash(
 
 @router.get("/search", response_model=DocumentListResponse)
 async def search_documents(
+    request: Request,
     q: str = Query(..., min_length=1),
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    """Search documents by title or content."""
+    """Search the caller's documents by title or content."""
+    user_id = _require_user_id(request)
     await _maybe_inject_latency()
     service = DocumentService(db)
-    items, total = await service.search(q, page=page, size=size)
+    items, total = await service.search(q, owner_id=user_id, page=page, size=size)
     return DocumentListResponse(
         items=items,
         total=total,
@@ -226,8 +243,11 @@ async def _do_filter_documents(
             limit=size,
             offset=(page - 1) * size,
         )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid sort or direction") from exc
     except SQLAlchemyError as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid filter: {exc}") from exc
+        logger.exception("document_filter_query_failed")
+        raise HTTPException(status_code=400, detail="Invalid filter") from exc
     return DocumentListResponse(
         items=[DocumentResponse.model_validate(row) for row in rows],
         total=total,
@@ -267,7 +287,7 @@ async def list_documents(
     db: AsyncSession = Depends(get_db),
 ):
     """List documents with optional filtering and pagination."""
-    effective_owner = owner_id or _extract_user_id(request)
+    effective_owner = _resolve_owner(request, owner_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,
@@ -301,7 +321,7 @@ async def list_documents_no_slash(
     db: AsyncSession = Depends(get_db),
 ):
     """List documents (no trailing slash)."""
-    effective_owner = owner_id or _extract_user_id(request)
+    effective_owner = _resolve_owner(request, owner_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,

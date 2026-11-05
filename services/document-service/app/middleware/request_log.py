@@ -1,9 +1,10 @@
 """Per-request debug log.
 
 When the ``request_log`` flag is on, every API request is appended to a JSONL
-file under ``settings.request_log_dir`` together with the response body (up to
-``RESPONSE_CAPTURE_BYTES``), so support can replay what a customer actually
-received.
+file under ``settings.request_log_dir`` as metadata only: method, path,
+redacted query and headers, status, duration and response size. Response
+bodies are never recorded, because on this service they are customer
+document content.
 """
 
 from __future__ import annotations
@@ -11,7 +12,6 @@ from __future__ import annotations
 import contextlib
 import json
 import os
-import re
 import shutil
 import socket
 import time
@@ -29,38 +29,25 @@ from app.telemetry import REQUEST_LOG_BYTES, REQUEST_LOG_CAPACITY_BYTES, SERVICE
 logger = structlog.get_logger()
 
 SKIP_PATHS = ("/health", "/metrics", "/ready")
-REDACTED_HEADERS = frozenset({"authorization", "cookie", "proxy-authorization", "x-api-key"})
-REDACTED_QUERY_PARAMS = frozenset({"token", "access_token", "api_key", "signature"})
-REDACTED = "[redacted]"
-_SECRET_FIELD = re.compile(
-    r'"(' + "|".join(sorted(REDACTED_QUERY_PARAMS)) + r')"(\s*:\s*)"(?:[^"\\]|\\.)*"',
-    re.IGNORECASE,
+REDACTED_HEADERS = frozenset(
+    {"authorization", "cookie", "proxy-authorization", "x-api-key", "x-user-id"}
 )
-# Responses that declare at most this many bytes are recorded whole before they
-# are delivered. Larger or unknown-length responses (exports) stream straight
-# through and only this much of the body is kept, so one request never holds
-# more than this in memory on the log's account.
-RESPONSE_CAPTURE_BYTES = 1 << 20
+REDACTED_QUERY_PARAMS = frozenset({"token", "access_token", "api_key", "signature", "owner_id"})
+REDACTED = "[redacted]"
 
 
 def redact_headers(headers: dict[str, str]) -> dict[str, str]:
-    """Copy of the request headers with credential-bearing values masked."""
+    """Copy of the request headers with credential and identity values masked."""
     return {k: (REDACTED if k.lower() in REDACTED_HEADERS else v) for k, v in headers.items()}
 
 
 def redact_query(query: str) -> str:
-    """The query string with bearer-like parameters (share-link tokens) masked."""
+    """The query string with bearer-like (share-link tokens) and identity parameters masked."""
     pairs = parse_qsl(query, keep_blank_values=True)
     return urlencode(
         [(k, REDACTED if k.lower() in REDACTED_QUERY_PARAMS else v) for k, v in pairs],
         safe="[]",
     )
-
-
-def redact_body(text: str) -> str:
-    """The recorded response with credential-valued JSON fields (minted share
-    tokens) masked; everything else is kept verbatim."""
-    return _SECRET_FIELD.sub(rf'"\1"\2"{REDACTED}"', text)
 
 
 class RequestLog:
@@ -138,29 +125,19 @@ def install(app: FastAPI) -> None:
         }
         length = declared_length(response)
 
-        if length is not None and length <= RESPONSE_CAPTURE_BYTES:
-            body = b"".join([chunk async for chunk in _chunks(response)])
+        if length is not None:
             record["duration_ms"] = round((time.perf_counter() - started) * 1000, 2)
-            record["response"] = redact_body(body.decode("utf-8", errors="replace"))
+            record["response_bytes"] = length
             request_log.append(record)
-            return Response(
-                content=body,
-                status_code=response.status_code,
-                headers=dict(response.headers),
-                media_type=response.media_type,
-            )
+            return response
 
-        async def tee() -> AsyncIterator[bytes]:
-            kept = bytearray()
-            truncated = False
+        async def counted() -> AsyncIterator[bytes]:
+            size = 0
             async for chunk in _chunks(response):
-                room = RESPONSE_CAPTURE_BYTES - len(kept)
-                kept += chunk[:room]
-                truncated = truncated or len(chunk) > room
+                size += len(chunk)
                 yield chunk
             record["duration_ms"] = round((time.perf_counter() - started) * 1000, 2)
-            record["response"] = redact_body(kept.decode("utf-8", errors="replace"))
-            record["response_truncated"] = truncated
+            record["response_bytes"] = size
             # The body is already with the client; a failed write cannot fail it.
             try:
                 request_log.append(record)
@@ -168,7 +145,7 @@ def install(app: FastAPI) -> None:
                 logger.exception("request_log_append_failed", path=request.url.path)
 
         return StreamingResponse(
-            tee(),
+            counted(),
             status_code=response.status_code,
             headers=dict(response.headers),
             media_type=response.media_type,
