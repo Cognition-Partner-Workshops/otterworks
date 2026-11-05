@@ -51,7 +51,8 @@ objects:
     state: provisioned
   - type: resource_monitor
     name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
-    state: planned
+    comment: 'Attachment applied by ACCOUNTADMIN outside schemachange; query_id=01c83320-030c-d2f8-0035-065b0009466e'
+    state: provisioned
   - type: user
     name: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'

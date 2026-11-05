@@ -51,7 +51,8 @@ objects:
     state: provisioned
   - type: resource_monitor
     name: RM_SFEXT_20261105A_20261119_CHURN_MODEL
-    state: planned
+    comment: 'Attachment applied by ACCOUNTADMIN outside schemachange; query_id=01c83320-030c-d212-0035-065b00095772'
+    state: provisioned
   - type: user
     name: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
