@@ -1,0 +1,25 @@
+{
+  "statements-web": [
+    {"name": "accounts", "path": "/accounts", "status": 200},
+    {"name": "statement", "path": "/statement?account={account}", "per_account": true, "status": 200},
+    {"name": "invalid-account", "path": "/statement?account=bad!", "status": 400, "status_only": true}
+  ],
+  "branch-locator": [
+    {"name": "home", "path": "/", "status": 200},
+    {"name": "nearest", "path": "/api/nearest?q={query}", "queries": ["harbour", "market", "old town", "river", "hill", "lake"], "status": 200},
+    {"name": "missing-query", "path": "/api/nearest", "status": 400}
+  ],
+  "notify-svc": [
+    {"name": "enqueue", "path": "/notify", "method": "POST", "per_account": true, "json": {"account": "{account}", "kind": "statement_ready"}, "status": 202},
+    {"name": "outbox", "path": "/outbox/{account}", "per_account": true, "status": 200, "omit_json_keys": ["at"]},
+    {"name": "invalid-kind", "path": "/notify", "method": "POST", "json": {"account": "PARITY0001", "kind": "unknown"}, "status": 400}
+  ],
+  "kyc-docs": [
+    {"name": "upload", "path": "/documents/{account}?kind=passport", "method": "POST", "multipart": true, "per_account": true, "status": 200, "generated_document_names": true},
+    {"name": "list", "path": "/documents/{account}", "per_account": true, "status": 200, "generated_document_names": true}
+  ],
+  "rates-batch": {"business_days": ["2026-10-14", "2026-10-15", "2026-10-16"], "filename": "rates-{day}.csv"},
+  "fx-report": [
+    {"name": "report", "path": "/fx/fx-report.cgi", "status": 200}
+  ]
+}
