@@ -1,12 +1,12 @@
-{% macro churn_scores(users, accounts, versions, periods) %}
+{% macro churn_scores(users, accounts, versions, periods, per_week=false) %}
 with counts as (
  select p.week_start_date,u.id as account_id,
   datediff(day,coalesce(u.last_login_at,u.created_at)::date,dateadd(day,6,p.week_start_date)) as days_since_last_login,
   coalesce(count_if(v.created_at>=p.week_start_date and v.created_at<dateadd(day,7,p.week_start_date)),0) as activity_this_week,
   coalesce(count_if(v.created_at>=dateadd(day,-28,p.week_start_date) and v.created_at<p.week_start_date),0)/4.0 as activity_prior_4wk_avg,
   coalesce(a.status,'active') as status
- from {{ periods }} p cross join {{ users }} u
- left join {{ accounts }} a on a.id=u.id
+ from {{ periods }} p join {{ users }} u on {% if per_week %}u.week_start_date=p.week_start_date{% else %}true{% endif %}
+ left join {{ accounts }} a on a.id=u.id {% if per_week %}and a.week_start_date=p.week_start_date{% endif %}
  left join {{ versions }} v on v.created_by=u.id
    and v.created_at>=dateadd(day,-28,p.week_start_date) and v.created_at<dateadd(day,7,p.week_start_date)
  where u.created_at<=dateadd(day,-28,p.week_start_date) and coalesce(a.status,'active')<>'deleted'
