@@ -115,7 +115,8 @@ def validate(doc: object, path: Path | None = None) -> list[str]:
                 errors.append(f"objects/{i} ({obj['name']}): {obj['type']} must carry DEVIN_CSID")
             elif tag_value and obj["devin_csid"] != tag_value:
                 errors.append(f"objects/{i} ({obj['name']}): DEVIN_CSID {obj['devin_csid']!r} should be {tag_value!r}")
-        if obj["type"] in expected and obj["name"] != expected[obj["type"]]:
+        raw_schema = obj["type"] == "schema" and obj["name"] == f"{sf.database_name(workload)}.RAW"
+        if obj["type"] in expected and obj["name"] != expected[obj["type"]] and not raw_schema:
             errors.append(f"objects/{i}: {obj['type']} should be named {expected[obj['type']]}, got {obj['name']}")
         if obj["type"] == "user" and obj["name"] not in {sf.service_user(c) for c in csids if sf.CSID_RE.match(c)}:
             errors.append(f"objects/{i}: user {obj['name']} is not the service user of an endpoint")

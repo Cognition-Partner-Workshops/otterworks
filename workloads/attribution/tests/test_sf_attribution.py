@@ -244,12 +244,12 @@ def test_task_carries_its_own_runtime_tag_and_comment():
 def test_task_deploy_tags_before_resuming():
     run_id = RUN_ID.replace("-dev-", "-runtime-")
     create, tag, resume = sf.task_deploy_sql(EP, schedule="60 MINUTE", body="SELECT 1", commit=COMMIT, run_id=run_id)
-    assert create.startswith("CREATE OR REPLACE TASK DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD")
+    assert create.startswith(f"CREATE OR REPLACE TASK {sf.task_name(EP.workload)}")
     assert tag == (
-        "ALTER TASK DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD SET TAG "
+        f"ALTER TASK {sf.task_name(EP.workload)} SET TAG "
         "DEVIN_GOVERNANCE.TAGS.DEVIN_CSID = 'cs_doc_usage_dashboard_account_usage'"
     )
-    assert resume == "ALTER TASK DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD RESUME"
+    assert resume == f"ALTER TASK {sf.task_name(EP.workload)} RESUME"
 
 
 def test_warehouse_is_xs_with_60s_suspend_and_monitor():

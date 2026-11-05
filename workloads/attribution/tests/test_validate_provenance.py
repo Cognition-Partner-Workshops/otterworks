@@ -110,6 +110,14 @@ def test_self_consistent_unregistered_workload_is_rejected(tmp_path):
     ]
 
 
+def test_raw_schema_allowed_but_wrong_database_rejected():
+    doc = _doc()
+    raw = next(obj for obj in doc["objects"] if obj["type"] == "schema" and obj["name"].endswith(".RAW"))
+    assert vp.validate(doc) == []
+    raw["name"] = "DB_OTHER_SFEXT_20261105A.RAW"
+    assert any("schema should be named" in error for error in vp.validate(doc))
+
+
 def test_main_reports_failures(tmp_path, capsys):
     bad = tmp_path / "doc_usage_dashboard" / "provenance.yaml"
     bad.parent.mkdir()
