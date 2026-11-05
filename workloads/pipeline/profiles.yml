@@ -1,0 +1,15 @@
+otterworks_pipeline:
+  target: external
+  outputs:
+    external:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_EXT_ACCOUNT', 'compile-only') }}"
+      user: attribution_wrapper
+      password: attribution_wrapper_only
+      role: DEVIN_EXT_ROLE
+      database: "{{ env_var('PIPELINE_DATABASE', 'DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A') }}"
+      warehouse: WH_DOC_USAGE_DASHBOARD
+      schema: APP
+      threads: 1
+      query_tag: "{{ env_var('PIPELINE_QUERY_TAG', '') }}"
+      client_session_keep_alive: false
