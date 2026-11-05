@@ -20,6 +20,6 @@
   ],
   "rates-batch": {"business_days": ["2026-10-14", "2026-10-15", "2026-10-16"], "filename": "rates-{day}.csv"},
   "fx-report": [
-    {"name": "report", "path": "/fx/fx-report.cgi", "status": 200}
+    {"name": "report", "path": "/fx/fx-report.cgi?day=2026-10-16", "status": 200, "required_text": ["Business date 2026-10-16", "<th>Pair</th>", "<td>GBPUSD</td>"]}
   ]
 }

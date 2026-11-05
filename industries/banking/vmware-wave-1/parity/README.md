@@ -13,6 +13,8 @@ python3 parity/run.py --app fx-report --vm-base http://127.0.0.1:8086 --kind-bas
 
 The kind URLs are local port-forwards to that deployment's Services. Pass `--ca-file` to trust a private CA; `--insecure-loopback` accepts self-signed certificates only on loopback URLs. Export the three completed batch files from each deployment into distinct directories before comparing. The harness does not run a batch job, copy outputs between deployments or create a cluster.
 
+The FX request selects the seeded business day `2026-10-16`. Its response contract requires that date, the rates table header and a seeded currency pair. Identical HTTP 200 missing-rate pages fail that content check; the JSON report retains the status and body-hash matches separately.
+
 | Depth | Check | Coverage |
 | --- | --- | --- |
 | Status code | Both responses must match the expected status | Every request, including invalid inputs |
