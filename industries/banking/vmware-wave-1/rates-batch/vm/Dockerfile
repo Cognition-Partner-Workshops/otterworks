@@ -6,7 +6,7 @@ WORKDIR /src
 RUN if [ -n "$MAVEN_MIRROR" ]; then mkdir -p /root/.m2 && printf '<settings><mirrors><mirror><id>m</id><mirrorOf>central</mirrorOf><url>%s</url></mirror></mirrors></settings>' "$MAVEN_MIRROR" > /root/.m2/settings.xml; fi
 COPY pom.xml .
 COPY src src
-RUN mvn -q -B package
+RUN mvn -q -B -Dmaven.compiler.release=11 package
 
 FROM docker.io/library/eclipse-temurin:11-jre
 RUN apt-get update && apt-get install -y --no-install-recommends cron && rm -rf /var/lib/apt/lists/* \
