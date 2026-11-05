@@ -3,8 +3,10 @@
 import uuid
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.document import DocumentVersion
 from app.schemas.document import (
     CommentCreate,
     DocumentCreate,
@@ -53,6 +55,52 @@ async def test_list_documents_with_filters(
 
     items, total = await service.list_documents(folder_id=folder_id)
     assert total == 1
+
+
+@pytest.mark.asyncio
+async def test_list_documents_statement_count_is_constant(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    service = DocumentService(db_session)
+    for i in range(6):
+        doc = await service.create(
+            DocumentCreate(title=f"Doc {i}", content="", owner_id=owner_id)
+        )
+        for number in range(2, i + 2):
+            db_session.add(
+                DocumentVersion(
+                    document_id=doc.id,
+                    version_number=number,
+                    title=f"Doc {i} v{number}",
+                    content="",
+                    created_by=owner_id,
+                )
+            )
+    await db_session.commit()
+
+    statements: list[str] = []
+    engine = db_session.bind.sync_engine
+
+    def _count(conn, cursor, statement, parameters, context, executemany):  # noqa: ANN001
+        statements.append(statement)
+
+    event.listen(engine, "before_cursor_execute", _count)
+    try:
+        counts = {}
+        for size in (1, 6):
+            db_session.expunge_all()
+            statements.clear()
+            items, total = await service.list_documents(owner_id=owner_id, size=size)
+            counts[size] = len(statements)
+            assert total == 6
+            assert len(items) == size
+            for item in items:
+                expected = list(range(int(item.title.split()[1]) + 1, 0, -1))[:5]
+                assert [v.version_number for v in item.recent_versions] == expected
+    finally:
+        event.remove(engine, "before_cursor_execute", _count)
+
+    assert counts[1] == counts[6] <= 5
 
 
 @pytest.mark.asyncio
