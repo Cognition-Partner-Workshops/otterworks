@@ -1,11 +1,13 @@
 package com.bank.rates;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.time.LocalDate;
@@ -49,17 +51,20 @@ public class RatesJob {
         return aggregate(lines, new ArrayList<>());
     }
 
-    /** Skips rows that cannot be read as a tick and adds one note per skipped row to {@code rejected}. */
+    /**
+     * Skips rows that cannot be read as a tick and adds one note per skipped row to {@code rejected}.
+     * A {@code null} entry is a row that was not valid UTF-8 (see {@link #readLines}).
+     */
     static Map<String, Daily> aggregate(List<String> lines, List<String> rejected) {
         Map<String, Daily> out = new TreeMap<>();
         int lineNo = 0;
         for (String line : lines) {
             lineNo++;
-            if (line.isBlank() || line.startsWith("timestamp,")) continue;
-            if (line.indexOf('\uFFFD') >= 0) {
+            if (line == null) {
                 rejected.add("line " + lineNo + ": contains bytes that are not UTF-8");
                 continue;
             }
+            if (line.isBlank() || line.startsWith("timestamp,")) continue;
             String[] f = line.split(",");
             if (f.length < 4) {
                 rejected.add("line " + lineNo + ": expected 4 fields, found " + f.length);
@@ -85,6 +90,39 @@ public class RatesJob {
         return out;
     }
 
+    /**
+     * Splits on \n, \r or \r\n like {@link java.io.BufferedReader#readLine} and decodes each row as strict
+     * UTF-8. A row with an invalid byte sequence becomes {@code null} so only that row is lost.
+     */
+    static List<String> readLines(byte[] bytes) {
+        CharsetDecoder utf8 = StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT);
+        List<String> lines = new ArrayList<>();
+        int start = 0;
+        int i = 0;
+        while (i < bytes.length) {
+            byte b = bytes[i];
+            if (b == '\n' || b == '\r') {
+                lines.add(decode(utf8, bytes, start, i));
+                i += (b == '\r' && i + 1 < bytes.length && bytes[i + 1] == '\n') ? 2 : 1;
+                start = i;
+            } else {
+                i++;
+            }
+        }
+        if (start < bytes.length) lines.add(decode(utf8, bytes, start, bytes.length));
+        return lines;
+    }
+
+    private static String decode(CharsetDecoder utf8, byte[] bytes, int from, int to) {
+        try {
+            return utf8.reset().decode(ByteBuffer.wrap(bytes, from, to - from)).toString();
+        } catch (CharacterCodingException e) {
+            return null;
+        }
+    }
+
     static LocalDate businessDate(String[] args) {
         if (args.length > 2) return LocalDate.parse(args[2]);
         return LocalDate.now().minusDays(1);
@@ -103,14 +141,7 @@ public class RatesJob {
             System.err.println("no ticks for " + day + " in " + in);
             System.exit(1);
         }
-        List<String> lines;
-        // A reader (unlike Files.lines) replaces undecodable bytes, so a row with bad bytes is skipped below
-        // instead of ending the run.
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(Files.newInputStream(ticks),
-                StandardCharsets.UTF_8))) {
-            lines = new ArrayList<>();
-            r.lines().forEach(lines::add);
-        }
+        List<String> lines = readLines(Files.readAllBytes(ticks));
         List<String> rejected = new ArrayList<>();
         Map<String, Daily> rates = aggregate(lines, rejected);
         for (String note : rejected) System.err.println("rates " + day + ": skipped " + note);
