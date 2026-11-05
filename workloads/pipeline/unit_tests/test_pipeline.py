@@ -294,6 +294,26 @@ def test_monday_changes_before_first_export_preserve_source_history(
                     (user_id,),
                 )
                 assert cur.fetchone() == ("active",)
+                cur.execute(
+                    psycopg2.sql.SQL(
+                        "UPDATE {}.admin_users SET status=NULL,updated_at=NULL WHERE id=%s"
+                    ).format(psycopg2.sql.Identifier(schema)),
+                    (user_id,),
+                )
+                cur.execute(
+                    psycopg2.sql.SQL(
+                        "SELECT status FROM {}.admin_user_state_history WHERE user_id=%s "
+                        "ORDER BY effective_at DESC,id DESC LIMIT 1"
+                    ).format(psycopg2.sql.Identifier(schema)),
+                    (user_id,),
+                )
+                assert cur.fetchone() == (None,)
+                cur.execute(
+                    psycopg2.sql.SQL(
+                        "UPDATE {}.users SET created_at=NULL,updated_at=NULL WHERE id=%s"
+                    ).format(psycopg2.sql.Identifier(schema)),
+                    (user_id,),
+                )
             with pytest.raises(psycopg2.errors.RaiseException, match="append-only"):
                 with conn, conn.cursor() as cur:
                     cur.execute(

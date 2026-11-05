@@ -19,7 +19,8 @@ with periods as (
  (11,'physical_delete','2026-11-02','2026-01-01','2026-09-25'),
  (12,'physical_restore','2026-11-01','2026-01-01','2026-09-25'),
  (13,'physical_restore','2026-11-02','2026-01-01','2026-09-25'),
- (14,'physical_restore','2026-11-03','2026-01-01','2026-09-25')
+ (14,'physical_restore','2026-11-03','2026-01-01','2026-09-25'),
+ (15,'null_status','2026-11-01','2026-01-01','2026-09-25')
 ), status_history as (
  select column1::number as id,column2::varchar as user_id,
   column3::timestamp_ntz as effective_at,column4::varchar as status
@@ -34,7 +35,8 @@ with periods as (
  (8,'boundary','2026-11-01T23:59:59.999999','active'),
  (9,'boundary','2026-11-02T00:00:00','deleted'),
  (10,'never','2026-11-01','active'),
- (11,'unknown','2026-11-02','active')
+ (11,'unknown','2026-11-02','active'),
+ (12,'null_status','2026-11-01',null)
 ), user_state as ({{ weekly_state('periods','user_history') }}),
 status_state as ({{ weekly_state('periods','status_history') }}),
 users as (select week_start_date,user_id as id,created_at,last_login_at from user_state where not is_deleted),
@@ -53,12 +55,14 @@ expected as (
  ('2026-10-26','never',304,40,0,70),
  ('2026-10-26','physical_delete',37,40,0,70),
  ('2026-10-26','physical_restore',37,40,0,70),
+ ('2026-10-26','null_status',37,40,0,70),
  ('2026-11-02','login',6,0,0,30),
  ('2026-11-02','activate',44,40,0,70),
  ('2026-11-02','undelete',44,40,0,70),
  ('2026-11-02','never',311,40,0,70),
- ('2026-11-02','unknown',44,40,0,70)
- ,('2026-11-02','physical_restore',44,40,0,70)
+ ('2026-11-02','unknown',44,40,0,70),
+ ('2026-11-02','physical_restore',44,40,0,70),
+ ('2026-11-02','null_status',44,40,0,70)
 ), actual as (
  select week_start_date,account_id,days_since_last_login,login_points,status_points,churn_score from report
 )
