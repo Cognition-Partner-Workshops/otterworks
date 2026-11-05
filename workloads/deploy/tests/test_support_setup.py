@@ -93,18 +93,23 @@ def test_deploy_setup_order(tmp_path, monkeypatch, ci):
             patch.object(cd.serialization, "load_pem_private_key"), patch.object(cd, "der", return_value=b"test-key"), \
             patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()) as connect, \
             patch.object(cd, "execute", return_value=[]), \
-            patch.object(cd, "provision_support", side_effect=event("provision")), \
+            patch.object(cd, "provision_support", side_effect=event("provision")) as provision, \
             patch.object(cd, "bootstrap_models", side_effect=event("bootstrap")), \
             patch.object(cd, "migrate", side_effect=event("migrate", [])), \
             patch.object(cd, "install", side_effect=event("install")), \
-            patch.object(cd, "dbt", return_value=1), patch.object(cd, "streamlit"), patch.object(cd, "provenance"):
+            patch.object(cd, "dbt", return_value=1), patch.object(cd, "streamlit"), patch.object(cd, "provenance") as provenance:
         assert cd.run_workload(cd.REPO, "doc_usage_dashboard", args, "a" * 40, "a" * 40)
     assert events == ["provision", "bootstrap", "migrate", "install"]
     phase = "runtime" if ci else "dev"
     assert params.call_args.args[-1] == phase
-    assert params.call_args_list[0].args[2] != params.call_args_list[1].args[2]
+    params.assert_called_once()
     setup = connect.call_args_list[1].kwargs
     tag = json.loads(setup["session_parameters"]["QUERY_TAG"])
+    log = provision.call_args.args[2]
+    assert tag["run_id"] == log.run_id
+    assert tag["run_id"] == provenance.call_args.args[1]["run_id"]
+    assert tag["run_id"] == provenance.call_args.args[2]["run_id"]
+    assert setup["session_parameters"]["QUERY_TAG"] == connect.call_args_list[0].kwargs["session_parameters"]["QUERY_TAG"]
     assert tag["phase"] == phase
     assert cd.sf.parse_run_id(tag["run_id"])["phase"] == phase
     assert ("session_url" in tag) == (not ci)
