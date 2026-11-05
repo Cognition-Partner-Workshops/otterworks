@@ -55,9 +55,9 @@ app = FastAPI(
 )
 
 telemetry.instrument_sql()
+request_log.install(app)
 telemetry.instrument_app(app)
 telemetry.setup_tracing(app, engine)
-request_log.install(app)
 
 app.add_middleware(
     CORSMiddleware,
