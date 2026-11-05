@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestSearchEndpoint:
     """Tests for GET /api/v1/search/."""
@@ -103,6 +105,29 @@ class TestSuggestEndpoint:
         assert response.status_code == 200
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
+
+    def test_suggest_ranked_by_score_does_not_500(self, client, mock_meilisearch_client):
+        """With the ranking flag set, suggestions are ordered by _rankingScore instead of crashing."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = [
+            {"hits": [{"title": "Quarterly Risk Review", "_rankingScore": 0.4}]},
+            {"hits": [{"name": "Quarterly Treasury Report.pdf", "_rankingScore": 0.9}]},
+        ]
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=qu", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Quarterly Treasury Report.pdf", "Quarterly Risk Review"]
+        assert mock_index.search.call_args.args[1]["showRankingScore"] is True
+
+    def test_suggest_ranked_by_score_empty_index(self, client):
+        """With the ranking flag set and no matches, suggest returns an empty list, not a 500."""
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=qu", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
 
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
