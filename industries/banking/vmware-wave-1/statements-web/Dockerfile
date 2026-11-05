@@ -6,7 +6,7 @@ COPY vm/opt-app-conf vm/opt-app-conf
 RUN mvn -B test package && mkdir expanded && cd expanded && jar xf ../target/statements.war
 
 FROM docker.io/library/tomcat:9.0-jre17-temurin-jammy@sha256:729c7e1c48be985cdfc1fac9f50f1bcb0391ae911479a5b21574f2820e805845 AS runtime
-RUN rm -rf /usr/local/tomcat/webapps/*
+RUN rm -rf /usr/local/tomcat/webapps/* && mkdir -p /usr/local/tomcat/conf/Catalina/localhost
 COPY --from=test /src/expanded/ /usr/local/tomcat/webapps/ROOT/
 COPY deploy/server.xml /usr/local/tomcat/conf/server.xml
 COPY deploy/context.xml /usr/local/tomcat/conf/context.xml

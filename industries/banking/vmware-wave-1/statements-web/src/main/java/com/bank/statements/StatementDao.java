@@ -23,6 +23,8 @@ public class StatementDao {
             configured.setURL(url);
             configured.setUser(requiredEnv("DB_USER"));
             configured.setPassword(requiredEnv("DB_PASSWORD"));
+            configured.setConnectTimeout(5);
+            configured.setSocketTimeout(5);
             ds = configured;
             return;
         }
