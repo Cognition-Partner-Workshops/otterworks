@@ -13,7 +13,7 @@ with parsed_events as (
 ), terms as (
  select window_end_date, account_id,'term' as item_type,term,
   null::varchar(36) as document_id, null::varchar(500) as document_title,
-  count(*) as search_count,count_if(result_count=0) as zero_result_count,max(searched_at) as last_searched_at
+  count(*) as search_count,coalesce(count_if(result_count=0),0) as zero_result_count,max(searched_at) as last_searched_at
  from windowed where term<>'' group by 1,2,3,4
 ), appearances as (
  select distinct w.window_end_date,w.account_id,w.event_id,w.searched_at,trim(f.value::string) as document_id
