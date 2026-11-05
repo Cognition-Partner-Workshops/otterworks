@@ -23,14 +23,16 @@ CREATE TABLE IF NOT EXISTS analytics_events (
 );
 CREATE TABLE IF NOT EXISTS user_state_history (
  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, user_id uuid NOT NULL,
- effective_at timestamptz NOT NULL, created_at timestamptz NOT NULL,
+ effective_at timestamptz NOT NULL, created_at timestamptz,
  last_login_at timestamptz, is_deleted boolean NOT NULL DEFAULT false
 );
 ALTER TABLE user_state_history ADD COLUMN IF NOT EXISTS is_deleted boolean NOT NULL DEFAULT false;
+ALTER TABLE user_state_history ALTER COLUMN created_at DROP NOT NULL;
 CREATE TABLE IF NOT EXISTS admin_user_state_history (
  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, user_id uuid NOT NULL,
- effective_at timestamptz NOT NULL, status text NOT NULL
+ effective_at timestamptz NOT NULL, status text
 );
+ALTER TABLE admin_user_state_history ALTER COLUMN status DROP NOT NULL;
 
 CREATE OR REPLACE FUNCTION capture_user_state() RETURNS trigger LANGUAGE plpgsql SET search_path FROM CURRENT AS $$
 DECLARE effective timestamptz;
@@ -49,6 +51,7 @@ BEGIN
   effective := CASE WHEN EXISTS(SELECT 1 FROM user_state_history WHERE user_id=NEW.id)
    THEN clock_timestamp() ELSE coalesce(NEW.updated_at, NEW.created_at) END;
  END IF;
+ effective := coalesce(effective,clock_timestamp());
  INSERT INTO user_state_history(user_id,effective_at,created_at,last_login_at)
  VALUES(NEW.id,effective,NEW.created_at,NEW.last_login_at);
  RETURN NEW;
@@ -72,6 +75,7 @@ BEGIN
   effective := CASE WHEN EXISTS(SELECT 1 FROM admin_user_state_history WHERE user_id=NEW.id)
    THEN clock_timestamp() ELSE coalesce(NEW.updated_at, NEW.created_at) END;
  END IF;
+ effective := coalesce(effective,clock_timestamp());
  INSERT INTO admin_user_state_history(user_id,effective_at,status)
  VALUES(NEW.id,effective,NEW.status);
  RETURN NEW;
