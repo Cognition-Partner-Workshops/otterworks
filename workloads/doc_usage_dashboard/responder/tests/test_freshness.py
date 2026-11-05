@@ -53,6 +53,15 @@ def test_missing_or_mismatched_installed_revision_aborts(tmp_path):
             {"type": "runtime_source", "name": f.SOURCE, "revision": "b" * 40, "status": "installed"}]))
 
 
+def test_latest_appended_successful_runtime_revision_preserves_history(tmp_path):
+    path = provenance(tmp_path, [
+        {"type": "runtime_source", "name": f.SOURCE, "revision": "b" * 40, "status": "installed"},
+        {"type": "runtime_source", "name": f.SOURCE, "revision": COMMIT, "status": "installed"},
+        {"type": "runtime_source", "name": f.SOURCE, "revision": "c" * 40, "status": "failed"},
+    ])
+    assert f.deployed_revision(path) == COMMIT
+
+
 @pytest.mark.parametrize("secondary,valid", [
     ('{"roles":"","value":""}', True), ('{"roles":[],"value":[]}', True),
     ('{"roles":"OTHER","value":"ALL"}', False), ('{}', False),
@@ -95,20 +104,73 @@ def fresh_rows(stale=False):
 
 
 @pytest.mark.parametrize("fresh,history,state,healthy,problem", [
-    (fresh_rows(), [{"state": "SUCCEEDED"}], "started", True, None),
-    (fresh_rows(True), [{"state": "SUCCEEDED"}], "started", False, "stale"),
-    ([], [], "started", False, "missing_freshness_rows"),
-    (fresh_rows(), [{"state": "FAILED"}], "started", False, "latest_task_run_not_succeeded"),
-    (fresh_rows(), [{"state": "SUCCEEDED"}], "suspended", False, "task_suspended_or_missing"),
+    (fresh_rows(), [{"state": "SUCCEEDED"}], "resumed", True, None),
+    (fresh_rows(True), [{"state": "SUCCEEDED"}], "resumed", False, "stale"),
+    ([], [], "resumed", False, "missing_freshness_rows"),
+    (fresh_rows(), [{"state": "SUCCEEDED"}], "suspended", False, "task_suspended"),
 ])
 def test_check_normal_empty_stale_failed_and_suspended(fresh, history, state, healthy, problem):
     r = f.Responder(None)
+    scheduled = [{"state": "SCHEDULED", "scheduled_time": "2026-11-05T13:10:00Z"}] if state == "resumed" else []
     r.query = MagicMock(side_effect=[[{"name": f.MONITOR, "used_credits": "2.31"}], fresh, history, [],
-                                    [{"name": "REFRESH_DOC_USAGE_DASHBOARD", "schema_name": "APP", "state": state}]])
+                                    scheduled])
     assert r.check() is healthy
     if problem:
         assert problem in r.output["problems"]
+    assert r.output["task"] == {"name": f.TASK, "state": state,
+                                "next_scheduled_time": scheduled[0]["scheduled_time"] if scheduled else None}
     assert "SCHEDULED_TIME_RANGE_END=>CURRENT_TIMESTAMP()" in r.query.call_args_list[2].args[0]
+    future_sql = r.query.call_args_list[4].args[0]
+    assert "SCHEDULED_TIME_RANGE_END=>DATEADD('hour',2,CURRENT_TIMESTAMP())" in future_sql
+    assert "WHERE STATE = 'SCHEDULED' ORDER BY SCHEDULED_TIME" in future_sql
+    assert not any("SHOW TASKS" in call.args[0] for call in r.query.call_args_list)
+
+
+def test_check_reports_latest_finished_failure_and_armed_fault():
+    r = f.Responder(None)
+    failed = {"state": "FAILED", "error_code": "000630", "error_message": "Statement timeout"}
+    armed = {"fault_id": "fault-1", "target_task": f.TASK, "mode": "user_task_timeout_ms", "cleared_at": None}
+    cleared = {"fault_id": "fault-0", "cleared_at": "2026-11-05T12:00:00Z"}
+    r.query = MagicMock(side_effect=[
+        [{"name": f.MONITOR, "used_credits": "2"}], fresh_rows(),
+        [{"state": "EXECUTING"}, failed, {"state": "SUCCEEDED"}], [armed, cleared],
+        [{"state": "SCHEDULED", "scheduled_time": "2026-11-05T13:10:00Z"}],
+    ])
+    assert not r.check()
+    assert r.output["latest_finished_run"] == failed
+    assert r.output["problems"] == [
+        {"problem": "latest_task_run_not_succeeded", **failed}, {"problem": "armed_fault", "fault": armed}]
+
+
+def test_check_uses_finished_success_despite_executing_run_and_cleared_fault():
+    r = f.Responder(None)
+    r.query = MagicMock(side_effect=[
+        [{"name": f.MONITOR, "used_credits": "2"}], fresh_rows(),
+        [{"state": "EXECUTING"}, {"state": "SUCCEEDED"}], [{"cleared_at": "2026-11-05T12:00:00Z"}],
+        [{"state": "SCHEDULED", "scheduled_time": "2026-11-05T13:10:00Z"}],
+    ])
+    assert r.check()
+    assert r.output["problems"] == []
+
+
+def test_check_with_no_finished_runs_reports_missing_run():
+    r = f.Responder(None)
+    r.query = MagicMock(side_effect=[
+        [{"name": f.MONITOR, "used_credits": "2"}], fresh_rows(), [{"state": "EXECUTING"}], [], []])
+    assert not r.check()
+    assert r.output["latest_finished_run"] is None
+    assert r.output["problems"] == ["latest_task_run_not_succeeded", "task_suspended"]
+
+
+def test_scheduling_query_error_does_not_report_suspended():
+    r = f.Responder(None)
+    r.query = MagicMock(side_effect=[
+        [{"name": f.MONITOR, "used_credits": "2"}], fresh_rows(), [{"state": "SUCCEEDED"}], [],
+        RuntimeError("Scheduling query denied"),
+    ])
+    with pytest.raises(RuntimeError, match="Scheduling query denied"):
+        r.check()
+    assert "task" not in r.output
 
 
 @pytest.mark.parametrize("faults", [[], [dict(target_task="OTHER.APP.TASK", mode="user_task_timeout_ms", cleared_at=None)]])

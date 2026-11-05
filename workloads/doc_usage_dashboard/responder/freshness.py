@@ -38,9 +38,9 @@ def deployed_revision(path=PROVENANCE):
     doc = yaml.safe_load(Path(path).read_text())
     records = [r for r in doc.get("deployment", {}).get("installed", [])
                if r["type"] == "runtime_source" and r["name"] == SOURCE and r["status"] == "installed"]
-    if len(records) != 1 or not sf.COMMIT_RE.fullmatch(records[0]["revision"]):
-        raise ResponderError("Exactly one installed responder source revision is required")
-    revision = records[0]["revision"]
+    if not records or not sf.COMMIT_RE.fullmatch(records[-1]["revision"]):
+        raise ResponderError("An installed responder source revision is required")
+    revision = records[-1]["revision"]
     endpoint = next(e for e in doc["endpoints"] if e["csid"] == EP.csid)
     if endpoint.get("runtime_source") != {"path": SOURCE, "revision": revision}:
         raise ResponderError("Endpoint runtime source must match the installed revision")
@@ -76,6 +76,16 @@ def history_sql():
         "ERROR_CODE, ERROR_MESSAGE, GRAPH_RUN_GROUP_ID FROM TABLE("
         f"{EP.database}.INFORMATION_SCHEMA.TASK_HISTORY(TASK_NAME=>'REFRESH_DOC_USAGE_DASHBOARD', "
         "SCHEDULED_TIME_RANGE_END=>CURRENT_TIMESTAMP(), RESULT_LIMIT=>10)) ORDER BY SCHEDULED_TIME DESC"
+    )
+
+
+def scheduled_history_sql():
+    return (
+        "SELECT STATE, SCHEDULED_TIME FROM TABLE("
+        f"{EP.database}.INFORMATION_SCHEMA.TASK_HISTORY(TASK_NAME=>'REFRESH_DOC_USAGE_DASHBOARD', "
+        "SCHEDULED_TIME_RANGE_START=>CURRENT_TIMESTAMP(), "
+        "SCHEDULED_TIME_RANGE_END=>DATEADD('hour',2,CURRENT_TIMESTAMP()), RESULT_LIMIT=>100)) "
+        "WHERE STATE = 'SCHEDULED' ORDER BY SCHEDULED_TIME"
     )
 
 
@@ -127,18 +137,25 @@ class Responder:
         fresh = self.query(f"SELECT * FROM {OPS}.WORKLOAD_TABLE_FRESHNESS ORDER BY TABLE_NAME")
         history = self.query(history_sql())
         faults = self.query(f"SELECT * FROM {OPS}.DASHBOARD_FAULT_CONTROL ORDER BY ARMED_AT DESC")
-        tasks = self.query(f"SHOW TASKS IN DATABASE {EP.database}")
-        tasks = [r for r in tasks if r["name"] == "REFRESH_DOC_USAGE_DASHBOARD" and r["schema_name"] == "APP"]
-        self.output.update(freshness=fresh, task_history=history, faults=faults, task=tasks)
+        scheduled = self.query(scheduled_history_sql())
+        task = {"name": TASK, "state": "resumed" if scheduled else "suspended",
+                "next_scheduled_time": scheduled[0]["scheduled_time"] if scheduled else None}
+        finished = next((r for r in history if r["state"] in ("SUCCEEDED", "FAILED", "CANCELLED", "SKIPPED")), None)
+        self.output.update(freshness=fresh, task_history=history, faults=faults, task=task,
+                           scheduled_task_history=scheduled, latest_finished_run=finished)
         problems = []
         if len(fresh) != len(TABLES) or {r["table_name"] for r in fresh} != TABLES:
             problems.append("missing_freshness_rows")
         if any(r["stale"] is not False for r in fresh):
             problems.append("stale")
-        if not history or history[0]["state"] != "SUCCEEDED":
+        if finished is None:
             problems.append("latest_task_run_not_succeeded")
-        if len(tasks) != 1 or tasks[0]["state"] != "started":
-            problems.append("task_suspended_or_missing")
+        elif finished["state"] != "SUCCEEDED":
+            problems.append({"problem": "latest_task_run_not_succeeded", "state": finished["state"],
+                             "error_code": finished.get("error_code"), "error_message": finished.get("error_message")})
+        problems.extend({"problem": "armed_fault", "fault": row} for row in faults if row["cleared_at"] is None)
+        if not scheduled:
+            problems.append("task_suspended")
         self.output.update(problems=problems, healthy=not problems)
         return not problems
 
