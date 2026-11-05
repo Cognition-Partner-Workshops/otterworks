@@ -8,7 +8,7 @@ import os
 import sys
 import time
 from contextlib import closing
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
@@ -95,6 +95,13 @@ def validate_faults(rows):
         raise ResponderError("Recovery requires exactly one active dashboard user_task_timeout_ms fault")
 
 
+def parse_recovery_timestamp(value):
+    parsed = datetime.fromisoformat(value.replace(" Z", "+00:00").replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 class Responder:
     def __init__(self, connection):
         self.connection = connection
@@ -170,7 +177,7 @@ class Responder:
         self.output["query_ids"].extend(result.get("query_ids", []))
         if result["target_task"] != TASK:
             raise ResponderError("Recovery returned a non-dashboard target")
-        started = datetime.fromisoformat(result["recovery_started_at"].replace("Z", "+00:00"))
+        started = parse_recovery_timestamp(result["recovery_started_at"])
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             self.credit_guard()

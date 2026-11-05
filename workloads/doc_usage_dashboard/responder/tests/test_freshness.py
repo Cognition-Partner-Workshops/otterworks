@@ -182,18 +182,38 @@ def test_recovery_refuses_missing_or_non_dashboard_targets(faults):
     assert not any("CALL" in c.args[0] for c in r.query.call_args_list)
 
 
-def test_recovery_polls_new_run_then_rechecks():
+@pytest.mark.parametrize("started", [
+    "2026-11-05 14:32:22.926 Z", "2026-11-05T14:32:22.926+00:00",
+])
+def test_recovery_polls_new_run_then_rechecks(started):
     r = f.Responder(None)
-    now = datetime.now(timezone.utc)
+    now = datetime(2026, 11, 5, 14, 32, 22, 926000, tzinfo=timezone.utc)
     r.credit_guard = MagicMock()
     r.check = MagicMock(return_value=True)
     r.query = MagicMock(side_effect=[
         [{"target_task": f.TASK, "mode": "user_task_timeout_ms", "cleared_at": None}],
-        [{"result": {"target_task": f.TASK, "recovery_started_at": now.isoformat()}}],
+        [{"result": {"target_task": f.TASK, "recovery_started_at": started}}],
         [{"scheduled_time": now, "state": "SUCCEEDED"}],
     ])
     assert r.recover(interval=0)
     r.check.assert_called_once()
+
+
+@pytest.mark.parametrize("value", [
+    "2026-11-05 14:32:22.926 Z", "2026-11-05T14:32:22.926Z",
+    "2026-11-05T14:32:22.926+00:00", "2026-11-05T16:32:22.926+02:00",
+    "2026-11-05 14:32:22.926",
+])
+def test_parse_recovery_timestamp_returns_utc(value):
+    parsed = f.parse_recovery_timestamp(value)
+    assert parsed == datetime(2026, 11, 5, 14, 32, 22, 926000, tzinfo=timezone.utc)
+    assert parsed.tzinfo is timezone.utc
+
+
+@pytest.mark.parametrize("value", ["", "not-a-timestamp"])
+def test_parse_recovery_timestamp_rejects_invalid_values(value):
+    with pytest.raises(ValueError):
+        f.parse_recovery_timestamp(value)
 
 
 def test_query_error_still_records_id():
