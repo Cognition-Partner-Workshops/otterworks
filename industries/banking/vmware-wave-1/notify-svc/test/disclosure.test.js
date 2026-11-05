@@ -18,9 +18,9 @@ function test(name, check) {
 }
 process.on('exit', () => console.log('Disclosure tests: ' + passed + ' passed, ' + failed + ' failed'));
 
-function service(rows = []) {
+const referenceSecret = require('crypto').randomBytes(32).toString('hex');
+function service(rows = [], secret = referenceSecret, values = new Map()) {
   const routes = {};
-  const values = new Map();
   const app = { use() {}, post: (path, handler) => { routes[path] = handler; },
     get: (path, handler) => { routes[path] = handler; }, listen() {} };
   const express = () => app;
@@ -33,7 +33,8 @@ function service(rows = []) {
   vm.runInNewContext(fs.readFileSync(require.resolve('../src/server'), 'utf8'), {
     require: name => name === 'express' ? express : name === 'redis' ? { createClient: () => db }
       : name === 'crypto' ? require('crypto') : require('../src/templates'),
-    console: { log() {}, error() {} }
+    console: { log() {}, error() {} },
+    process: { env: secret === null ? {} : { BANK_ACCOUNT_REFERENCE_SECRET: secret } }
   });
   const res = { code: 200, status(code) { this.code = code; return this; }, json(body) { this.body = body; } };
   return { routes, res, db, values };
@@ -50,6 +51,31 @@ test('unknown and empty outbox lookups create no Redis reference keys', () => {
   routes['/outbox/:account']({ params: { account: 'missing-error' } }, res);
   assert.equal(res.code, 503);
   assert.equal(values.size, 0);
+});
+
+test('references are keyed, survive restart, and reject legacy dictionary hashes', () => {
+  const account = 'HG611000001';
+  const rows = [JSON.stringify({ account, text: 'Statement for ' + account })];
+  const first = service(rows);
+  first.routes['/outbox/:account']({ params: { account } }, first.res);
+  const reference = first.res.body[0].outboxUrl.split('/').pop();
+  const crypto = require('crypto');
+  assert.equal(reference, crypto.createHmac('sha256', referenceSecret).update(account).digest('hex'));
+  const restarted = service(rows, referenceSecret, first.values);
+  restarted.routes['/outbox/:account']({ params: { account: reference } }, restarted.res);
+  assert.equal(JSON.stringify(restarted.res.body), JSON.stringify(first.res.body));
+  const rotated = service(rows, crypto.randomBytes(32).toString('hex'));
+  rotated.routes['/outbox/:account']({ params: { account } }, rotated.res);
+  assert.notEqual(rotated.res.body[0].outboxUrl, first.res.body[0].outboxUrl);
+  const legacy = crypto.createHash('sha256').update(account).digest('hex');
+  first.values.set('notify:reference:' + legacy, account);
+  first.routes['/outbox/:account']({ params: { account: legacy } }, first.res);
+  assert.equal(first.res.code, 404);
+});
+
+test('missing or short reference secrets fail closed', () => {
+  assert.throws(() => service([], null), /BANK_ACCOUNT_REFERENCE_SECRET/);
+  assert.throws(() => service([], 'short'), /BANK_ACCOUNT_REFERENCE_SECRET/);
 });
 
 test('outbox links and legacy text disclose no complete account, and links still work', () => {

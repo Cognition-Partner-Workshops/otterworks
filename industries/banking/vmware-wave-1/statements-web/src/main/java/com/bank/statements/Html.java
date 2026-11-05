@@ -2,9 +2,11 @@ package com.bank.statements;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 public final class Html {
     private Html() {
@@ -22,7 +24,20 @@ public final class Html {
     }
 
     static String reference(String account) {
-        return UUID.nameUUIDFromBytes(account.getBytes(StandardCharsets.UTF_8)).toString();
+        String secret = System.getProperty("bank.account.reference.secret", System.getenv("BANK_ACCOUNT_REFERENCE_SECRET"));
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalStateException("BANK_ACCOUNT_REFERENCE_SECRET must contain at least 32 characters");
+        }
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] digest = mac.doFinal(account.getBytes(StandardCharsets.UTF_8));
+            StringBuilder reference = new StringBuilder();
+            for (byte value : digest) reference.append(String.format("%02x", value & 0xff));
+            return reference.toString();
+        } catch (GeneralSecurityException exception) {
+            throw new IllegalStateException("Account reference generation unavailable", exception);
+        }
     }
 
     static String page(String bank, String title, String body) {

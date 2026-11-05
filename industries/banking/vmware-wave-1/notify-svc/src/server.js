@@ -2,11 +2,19 @@
 
 const express = require('express');
 const redis = require('redis');
-const { createHash } = require('crypto');
+const { createHmac } = require('crypto');
 const { render, maskAccount } = require('./templates');
 
 const PORT = 3000;
 const LIMIT_PER_HOUR = 20;
+const referenceSecret = process.env.BANK_ACCOUNT_REFERENCE_SECRET;
+if (!referenceSecret || referenceSecret.length < 32) {
+  throw new Error('BANK_ACCOUNT_REFERENCE_SECRET must contain at least 32 characters');
+}
+
+function referenceFor(account) {
+  return createHmac('sha256', referenceSecret).update(String(account)).digest('hex');
+}
 
 const db = redis.createClient();
 db.on('error', (err) => console.error('redis error', err.message));
@@ -42,7 +50,7 @@ app.get('/outbox/:account', (req, res) => {
     db.lrange('notify:outbox:' + account, 0, 49, (err, rows) => {
       if (err) return res.status(503).json({ error: 'store unavailable' });
       if (!rows.length) return res.json([]);
-      const reference = createHash('sha256').update(String(account)).digest('hex');
+      const reference = referenceFor(account);
       db.set('notify:reference:' + reference, account, (mappingError) => {
         if (mappingError) return res.status(503).json({ error: 'store unavailable' });
         try {
@@ -63,7 +71,7 @@ app.get('/outbox/:account', (req, res) => {
   if (/^[a-f0-9]{64}$/.test(req.params.account)) {
     db.get('notify:reference:' + req.params.account, (err, account) => {
       if (err) return res.status(503).json({ error: 'store unavailable' });
-      if (!account) return res.status(404).json({ error: 'outbox not found' });
+      if (!account || referenceFor(account) !== req.params.account) return res.status(404).json({ error: 'outbox not found' });
       read(account);
     });
   } else {

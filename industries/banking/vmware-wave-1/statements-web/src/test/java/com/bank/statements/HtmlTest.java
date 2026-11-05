@@ -10,6 +10,16 @@ import java.util.Collections;
 import org.junit.Test;
 
 public class HtmlTest {
+    @org.junit.Before
+    public void configureReferenceSecret() {
+        System.setProperty("bank.account.reference.secret", java.util.UUID.randomUUID().toString());
+    }
+
+    @org.junit.After
+    public void clearReferenceSecret() {
+        System.clearProperty("bank.account.reference.secret");
+    }
+
     @Test
     public void masksAccountLinkTextAndLastViewedButKeepsNavigation() {
         String out = Html.accounts("Bank", Collections.singletonMap("HG611000001", "Avery"), "HG611000001");

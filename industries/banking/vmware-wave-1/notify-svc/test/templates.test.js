@@ -13,6 +13,7 @@ assert.throws(() => render('nope', {}), /unknown notification kind/);
 
 const fs = require('fs');
 const vm = require('vm');
+const referenceSecret = require('crypto').randomBytes(32).toString('hex');
 const routes = {};
 const stored = [];
 const outboxes = new Map();
@@ -46,7 +47,8 @@ vm.runInNewContext(fs.readFileSync(require.resolve('../src/server'), 'utf8'), {
     if (name === 'crypto') return require('crypto');
     return require('../src/templates');
   },
-  console: { log() {} }
+  console: { log() {} },
+  process: { env: { BANK_ACCOUNT_REFERENCE_SECRET: referenceSecret } }
 });
 let response;
 const res = { status() { return this; }, json(value) { response = value; } };
@@ -56,7 +58,7 @@ assert.strictEqual(JSON.parse(stored[0]).account, 'HG611000001', 'internal queue
 routes['/outbox/:account']({ params: { account: 'HG611000001' } }, res);
 assert.strictEqual(response[0].account, '****0001', 'outbox masks customer-visible account');
 assert.strictEqual(response[0].text, 'Your statement for ****0001 is ready to view.');
-assert.strictEqual(response[0].outboxUrl, '/outbox/' + require('crypto').createHash('sha256').update('HG611000001').digest('hex'), 'outbox returns an opaque lookup link');
+assert.strictEqual(response[0].outboxUrl, '/outbox/' + require('crypto').createHmac('sha256', referenceSecret).update('HG611000001').digest('hex'), 'outbox returns a keyed opaque lookup link');
 const firstOutbox = JSON.stringify(response);
 const outboxPath = new (require('url').URL)(response[0].outboxUrl, 'http://localhost').pathname;
 routes['/outbox/:account']({ params: { account: decodeURIComponent(outboxPath.slice('/outbox/'.length)) } }, res);

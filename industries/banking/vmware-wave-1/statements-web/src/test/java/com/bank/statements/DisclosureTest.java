@@ -13,6 +13,16 @@ import javax.sql.DataSource;
 import org.junit.Test;
 
 public class DisclosureTest {
+    @org.junit.Before
+    public void configureReferenceSecret() {
+        System.setProperty("bank.account.reference.secret", java.util.UUID.randomUUID().toString());
+    }
+
+    @org.junit.After
+    public void clearReferenceSecret() {
+        System.clearProperty("bank.account.reference.secret");
+    }
+
     private final String account = "HG611000001";
 
     @Test
