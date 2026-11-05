@@ -44,7 +44,7 @@ jobs:
       - run: dbt parse --project-dir workloads/pipeline --profiles-dir workloads/pipeline
       - name: dq
         run: |
-          for workload in doc_usage_dashboard doc_search_api; do
+          for workload in doc_usage_dashboard doc_search_api churn_model; do
             tests=$(dbt --quiet ls --project-dir workloads/pipeline --profiles-dir workloads/pipeline --select "tag:dq_$workload" --resource-type test)
             printf '%s\n' "$tests"
             test -n "$tests"

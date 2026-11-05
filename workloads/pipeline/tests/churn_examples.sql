@@ -1,4 +1,4 @@
-{{ config(tags=['churn_model']) }}
+{{ config(tags=['churn_model', 'dq_churn_model']) }}
 with expected as (
  select '2026-10-26'::date as week_start_date,column1::varchar(36) as account_id,column2::number(6,0) as days_since_last_login,
  column3::number(10,0) as activity_this_week,column4::number(10,2) as activity_prior_4wk_avg,
@@ -11,5 +11,8 @@ with expected as (
 ), actual as (
  select * from {{ ref('weekly_churn_scores') }} where week_start_date='2026-10-26' and account_id in (select account_id from expected)
 )
-(select * from actual minus select * from expected) union all
-(select * from expected minus select * from actual)
+select 'worked_example: unexpected or mismatched row; verify authoritative history before week end' as failure, diff.*
+from (select * from actual minus select * from expected) diff
+union all
+select 'worked_example: missing or mismatched row; requires authoritative history before week end' as failure, diff.*
+from (select * from expected minus select * from actual) diff
