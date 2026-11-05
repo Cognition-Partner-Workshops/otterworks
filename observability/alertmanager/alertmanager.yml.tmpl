@@ -46,11 +46,11 @@ receivers:
     webhook_configs:
       - url: http://alert-sink:9095/devin
         send_resolved: false
-        max_alerts: 1
+        max_alerts: 0
       # BEGIN devin-external
       - url: '__DEVIN_WEBHOOK_URL__'
         send_resolved: false
-        max_alerts: 1
+        max_alerts: 0
         http_config:
           http_headers:
             X-Webhook-Secret:

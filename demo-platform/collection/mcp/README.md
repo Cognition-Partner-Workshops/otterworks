@@ -2,6 +2,10 @@
 
 The local adapters query the existing incident stack. Grafana MCP uses Grafana's provisioned Prometheus datasource (`Prometheus`), and Postgres MCP reads the same `otterworks` database as document-service. Start the incident stack first; the workspace README includes the Compose command.
 
+For a local alert storm, the same adapters can inspect concurrently armed
+scenarios (`make arm SCENARIO=all`). Batch webhook configuration belongs to
+mock Slack; adapter credentials and query endpoints stay unchanged.
+
 ## Start the adapters
 
 Set `GRAFANA_SERVICE_ACCOUNT_TOKEN` to a Viewer token and `DATABASE_URI` to the local database connection string. For a disposable local stack, the existing Grafana login can instead come from `GRAFANA_USERNAME` and `GRAFANA_PASSWORD`. Prefer the Viewer token. The local stack's development database URL is `postgresql://otterworks:otterworks_dev@127.0.0.1:5432/otterworks`; a restricted login is preferable even though the MCP server also enforces restricted access mode.

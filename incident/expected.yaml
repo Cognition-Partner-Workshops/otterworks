@@ -2,15 +2,13 @@
 # re-pin with `make incident-record REASON="..."` -- the reason is kept here
 # so every re-record is auditable in git history.
 recorded:
-  at: '2026-11-05T03:53:02.302696+00:00'
-  git_sha: a0d97a13f3cbdc018d47737da1d30f7bfb690dba
-  reason: 'harness prerequisite: METRIC_EXPRS.error_ratio reads an absent 5xx series
-    as 0 only while sum(rate(http_requests_total{job=''document-service''}[2m])) >
-    0; no total series, no traffic or a NaN total still yields no samples and fails.
-    Fixture fingerprint moves only because incident/incident.py changed; application
-    source untouched'
+  at: '2026-11-05T05:47:21.036659+00:00'
+  git_sha: e4e390e717b7e4dc83dc7600d525f9f482d253ef
+  reason: Support concurrent local scenario loads and untruncated raw Alertmanager
+    delivery; refresh the harness fixture fingerprint only, with application source
+    and scenario thresholds unchanged.
 fingerprints:
-  fixture: 56e0c484736239f52d703aca0e2a9c76ef6af821de164000077725376c5902cc
+  fixture: a782ebecd49ee01ecacbf6538ba521c21f65ba6233c698810f273c50e0d1a19c
   source: d55ef66d277619b561204c5ff6e7f8ddedbd6e29ebed0ce4477ad08d2eb1ea40
 scenarios:
   n-plus-one:

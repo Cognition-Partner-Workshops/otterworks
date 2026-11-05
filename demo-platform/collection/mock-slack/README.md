@@ -53,6 +53,30 @@ docker compose -p bankir-1105-incident \
 
 Start the workspace first: the overlay attaches Alertmanager to the workspace's private Compose network and addresses `mock-slack:3100` directly. The host listener stays on loopback. The local alert sink and the Slack sink remain unchanged. Do not point `SLACK_WEBHOOK_URL` at the raw receiver: Slack-formatted messages are a different payload.
 
+## Alert storm forwarding
+
+Set `ALERT_BATCH_WEBHOOK_URL` to a Devin incoming automation URL to collect new
+firing alerts into a single webhook after a quiet window. Set
+`ALERT_BATCH_WEBHOOK_SECRET` for the outgoing `X-Webhook-Secret` header.
+`ALERT_BATCH_QUIET_MS` defaults to 90000; choose a longer window when scenarios
+take different amounts of time to fire. Start mock Slack with these variables
+before starting the incident stack with the receiver overlay, then run
+`make arm SCENARIO=all` (or a comma list) with the same Compose project and files.
+
+Each alert still gets a root post in `#alerts`. Batch mode sends raw alerts
+only through the batch webhook, independently of the per-thread automation
+binding. The JSON body contains `message`, `channel` and `alerts`; the message
+lists alert names, scenarios, severities, summaries, start times and labels.
+A bot note records delivery and a session link when the automation returns an
+ID. Failed or interrupted delivery stays uncertain and requires an operator
+check in automation history; the server does not retry a possibly accepted
+batch. Pending alerts survive restarts in the workspace state file.
+
+The Alertmanager route groups by `alertname` and `scenario`, with a 10-second
+group wait. Raw receivers send every alert in each group (`max_alerts: 0`),
+including multiple instances; Slack-formatted delivery and local gate captures
+keep their existing routes.
+
 ## Recovery and cleanup
 
 The server serializes concurrent replies and persists request IDs, so duplicate client submissions keep the original thread. Mappings survive process restarts. A remote timeout leaves an uncertain delivery visible; the server requires an operator check before any replacement work. Check the upstream history before starting a replacement thread.

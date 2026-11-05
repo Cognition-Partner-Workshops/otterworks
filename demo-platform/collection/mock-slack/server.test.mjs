@@ -8,7 +8,8 @@ import vm from 'node:vm';
 import { createApp, config } from './server.mjs';
 
 const ID = 'devin-0123456789abcdef0123456789abcdef';
-async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session', alternateIds = false } = {}) {
+const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session', alternateIds = false, batch = false } = {}) {
   const calls = [];
   const upstream = http.createServer(async (req, res) => {
     let body = ''; for await (const b of req) body += b;
@@ -24,6 +25,7 @@ async function fixture(t, { route = 'session', fail = false, noSession = false, 
   const dir = await mkdtemp(path.join(os.tmpdir(), 'collection-test-'));
   const base = `http://127.0.0.1:${upstream.address().port}`;
   const cfg = config({ DEVIN_API_BASE: base, DEVIN_WEB_BASE: 'http://localhost:4000', MOCK_SLACK_DEVIN_API_KEY: 'fixture-key', DEVIN_ORG_ID: 'org-fixture', DEVIN_CREATE_AS_USER_ID: 'user-persona', STATE_FILE: path.join(dir, 'state.json'), DEVIN_TRIGGER_ROUTE: route, DEVIN_WEBHOOK_ACTION: webhookAction, DEVIN_AUTOMATION_URL: `${base}/hook`, DEVIN_WEBHOOK_SECRET: 'fixture-webhook-secret', ALERTMANAGER_RECEIVER_SECRET: 'fixture-receiver-secret', POLL_INTERVAL_MS: '600000' });
+  if (batch) { cfg.batchWebhook = `${base}/batch`; cfg.batchSecret = 'batch-secret'; cfg.batchQuietMs = 80; }
   const app = await createApp(cfg);
   await new Promise(r => app.server.listen(0, '127.0.0.1', r));
   const url = `http://127.0.0.1:${app.server.address().port}`;
@@ -35,6 +37,34 @@ async function fixture(t, { route = 'session', fail = false, noSession = false, 
   return { app, cfg, calls, dir, url, post };
 }
 
+test('alert batches wait for quiet, include every new firing alert and do not bind threads', async t => {
+  const f = await fixture(t, { batch: true });
+  const alerts = ['n-plus-one', 'cache-leak', 'log-flood', 'double-run'].map(scenario => ({
+    status: 'firing', fingerprint: scenario, startsAt: '2026-11-05T00:00:00Z',
+    labels: { alertname: `Alert-${scenario}`, scenario, severity: 'critical' }, annotations: { summary: `Summary ${scenario}` },
+  }));
+  const send = items => fetch(`${f.url}/receivers/alertmanager`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' }, body: JSON.stringify({ alerts: items }) });
+  await send([]); await pause(100); assert.equal(f.calls.length, 0);
+  await send(alerts.slice(0, 2)); await pause(40); assert.equal(f.calls.length, 0);
+  await send(alerts); await send([{ ...alerts[0], fingerprint: 'resolved', status: 'resolved' }]);
+  await pause(160);
+  assert.equal(f.calls.length, 1); assert.equal(f.calls[0].url, '/batch');
+  assert.equal(f.calls[0].secret, 'batch-secret');
+  assert.deepEqual(f.calls[0].body.alerts, alerts);
+  for (const a of alerts) for (const text of [a.labels.alertname, a.labels.scenario, a.labels.severity, a.annotations.summary, a.startsAt, JSON.stringify(a.labels)]) assert.ok(f.calls[0].body.message.includes(text));
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.threads.length, 5); assert.match(state.threads[4].messages[0].text, /Handed 4 alerts to Devin.*sessions\//);
+  assert.ok(!JSON.stringify(state).includes('batch-secret'));
+  await send(alerts); await pause(120); assert.equal(f.calls.length, 1);
+});
+test('failed batch is visible and is not automatically retried', async t => {
+  const f = await fixture(t, { batch: true, fail: true });
+  await fetch(`${f.url}/receivers/alertmanager`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' }, body: JSON.stringify({ alerts: [{ labels: { alertname: 'Failure' }, startsAt: 'now' }] }) });
+  await pause(180);
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.match(state.threads.at(-1).messages[0].text, /not confirmed/);
+  assert.equal(f.calls.length, 1);
+});
 test('named people reach one Fusion session, polling deduplicates replies across pages', async t => {
   const f = await fixture(t);
   const first = await f.post('@devin Please check the document list.');

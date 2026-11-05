@@ -818,7 +818,8 @@ def _pid_alive(pid: int) -> bool:
 
 def background_load_pid() -> int | None:
     """PID of the running background load generator, or None when none is alive."""
-    p = state_path("load.pid")
+    paths = list(state_path("load.pid").parent.glob("load*.pid"))
+    p = paths[0] if paths else state_path("load.pid")
     if not p.exists():
         return None
     pid = int(p.read_text().strip() or 0)
@@ -826,8 +827,7 @@ def background_load_pid() -> int | None:
 
 
 def start_background_load(scenario: str) -> int:
-    # Re-arming must never strand the previous generator: one load process at a time.
-    stop_background_load()
+    stop_background_load(scenario)
     logf = state_path(f"load-{scenario}.log").open("ab")
     proc = subprocess.Popen(
         [sys.executable, str(HERE / "incident.py"), "load", scenario],
@@ -836,13 +836,17 @@ def start_background_load(scenario: str) -> int:
         stderr=subprocess.STDOUT,
         start_new_session=True,
     )
-    state_path("load.pid").write_text(str(proc.pid))
+    state_path(f"load-{scenario}.pid").write_text(str(proc.pid))
     log(f"load: started pid {proc.pid} (log: {logf.name})")
     return proc.pid
 
 
-def stop_background_load() -> None:
-    p = state_path("load.pid")
+def stop_background_load(scenario: str | None = None) -> None:
+    if scenario is None:
+        for path in state_path("load.pid").parent.glob("load*.pid"):
+            stop_background_load(path.stem.removeprefix("load-"))
+        return
+    p = state_path("load.pid" if scenario == "load" else f"load-{scenario}.pid")
     if not p.exists():
         return
     pid = int(p.read_text().strip() or 0)
@@ -892,7 +896,7 @@ def run_step(cat: dict[str, Any], scenario: str, step: Any) -> None:
         case "load":
             start_background_load(scenario)
         case "stop-load":
-            stop_background_load()
+            stop_background_load(scenario)
         case "flag":
             set_flag(cat, arg, True)
         case "unflag":
@@ -940,27 +944,50 @@ def run_step(cat: dict[str, Any], scenario: str, step: Any) -> None:
 
 def cmd_arm(args: argparse.Namespace) -> None:
     cat = load_catalog()
-    if args.scenario not in cat["scenarios"]:
+    names = list(cat["scenarios"]) if args.scenario == "all" else args.scenario.split(",")
+    if not names or any(name not in cat["scenarios"] for name in names):
         die(f"unknown scenario {args.scenario}; choose from {', '.join(cat['scenarios'])}")
     state = read_state()
-    if state.get("scenario") and state["scenario"] != args.scenario:
-        die(f"{state['scenario']} is already armed; run `incident.py disarm` first")
-    sc = cat["scenarios"][args.scenario]
+    armed = state.get("scenarios", {})
+    if state.get("scenario"):
+        armed[state["scenario"]] = state
+    names = list(dict.fromkeys(names))
+    concurrent = len(names) > 1
+    if concurrent and any("seed" in cat["scenarios"][name]["arm"] for name in names):
+        wait_healthy(cat)
+        asyncio.run(seed(cat))
+    for name in names:
+        _arm_one(cat, name, armed, prepare_only=concurrent)
+    if concurrent:
+        for name in names:
+            for step in cat["scenarios"][name]["arm"]:
+                if _step_parts(step)[0] == "load":
+                    run_step(cat, name, step)
+
+
+def _arm_one(
+    cat: dict[str, Any], name: str, armed: dict[str, Any], *, prepare_only: bool = False
+) -> None:
+    sc = cat["scenarios"][name]
     scale = load_scale()
-    log(f"arming {args.scenario}: {sc['title']}")
+    log(f"arming {name}: {sc['title']}")
     wait_healthy(cat)
     wait_alert_inactive(cat, sc["alert"]["name"], float(sc["alert"]["resolves_within_seconds"]))
+    entry = {
+        "scenario": name,
+        "armed_at": datetime.now(UTC).isoformat(),
+        "git_sha": git_sha(),
+        "load_scale": scale,
+        "fingerprints": fingerprints(),
+    }
+    armed[name] = entry
+    write_state(entry if len(armed) == 1 else {"scenarios": armed})
     for step in sc["arm"]:
-        run_step(cat, args.scenario, step)
-    write_state(
-        {
-            "scenario": args.scenario,
-            "armed_at": datetime.now(UTC).isoformat(),
-            "git_sha": git_sha(),
-            "load_scale": scale,
-            "fingerprints": fingerprints(),
-        }
-    )
+        if prepare_only and _step_parts(step)[0] in {"seed", "load"}:
+            continue
+        run_step(cat, name, step)
+    entry["armed_at"] = datetime.now(UTC).isoformat()
+    write_state(entry if len(armed) == 1 else {"scenarios": armed})
     alert = sc["alert"]
     log(
         f"armed. expect alert {alert['name']} to fire within {alert['fires_within_seconds']}s; "
@@ -971,7 +998,9 @@ def cmd_arm(args: argparse.Namespace) -> None:
 def cmd_disarm(_: argparse.Namespace) -> None:
     cat = load_catalog()
     state = read_state()
-    scenarios = [state["scenario"]] if state.get("scenario") else list(cat["scenarios"])
+    scenarios = state.get("scenarios") or (
+        [state["scenario"]] if state.get("scenario") else list(cat["scenarios"])
+    )
     stop_background_load()
     for name in scenarios:
         for step in cat["scenarios"][name]["disarm"]:
@@ -993,7 +1022,8 @@ def cmd_disarm(_: argparse.Namespace) -> None:
 def cmd_status(_: argparse.Namespace) -> None:
     cat = load_catalog()
     state = read_state()
-    print(f"armed: {state.get('scenario') or '-'}  (since {state.get('armed_at', '-')})")
+    print(f"armed: {state.get('scenario') or ','.join(state.get('scenarios', {})) or '-'}"
+          f"  (since {state.get('armed_at', '-')})")
     try:
         alerts = prom_alerts(cat)
     except httpx.HTTPError as exc:

@@ -134,6 +134,15 @@ the volume is full.
   replicas running for 200 s: ≥ 2 new windows landed, 0 new duplicates, gauge
   at 0, alert inactive.
 
+## Concurrent local scenarios
+
+`make arm SCENARIO=all` arms every catalog scenario. A comma list such as
+`make arm SCENARIO=n-plus-one,cache-leak` selects a subset, and later arm
+commands can add scenarios. Each load profile runs in a separate process.
+`make disarm` stops every load and reverses every armed scenario. Verification
+gates still require a single armed scenario; concurrent loads change the
+measurements and are intended for the alert-storm demo.
+
 ## Where the page goes
 
 Alertmanager routes every `page: devin` alert to two receivers: the Devin
