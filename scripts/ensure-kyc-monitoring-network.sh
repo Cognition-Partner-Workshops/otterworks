@@ -12,10 +12,8 @@ if docker network inspect "$name" >/dev/null 2>&1; then
 import json, sys
 network = json.load(sys.stdin)[0]
 labels = network.get("Labels") or {}
-valid = (network["Driver"] == "bridge" and network["Internal"]
-         and not network["EnableIPv6"]
-         and network.get("Options", {}).get("com.docker.network.bridge.inhibit_ipv4") == "true"
-         and network["IPAM"]["Config"] == [{"Subnet": sys.argv[2]}]
+valid = (network["Internal"]
+         and any(config.get("Subnet") == sys.argv[2] for config in network["IPAM"]["Config"])
          and labels.get("com.docker.compose.project") == sys.argv[1]
          and labels.get("com.docker.compose.network") == sys.argv[3])
 sys.exit(0 if valid else 1)
