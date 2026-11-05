@@ -33,7 +33,7 @@ vm-smoke:
 	curl -sf -o /dev/null -w "branch-locator %{http_code}\n" "http://localhost:8083/api/nearest?q=harbour"
 	curl -sf -o /dev/null -w "notify-svc     %{http_code}\n" -H 'Content-Type: application/json' \
 	  -d '{"account":"HG611000001","kind":"statement_ready","fields":{}}' http://localhost:8084/notify
-	curl -skf -o /dev/null -w "kyc-docs       %{http_code}\n" https://localhost:8085/documents/HG611000001
+	@test "$$(curl -sk -o /dev/null -w '%{http_code}' https://localhost:8085/documents/HG611000001)" = 401 && echo "kyc-docs       401 (unauthenticated)"
 	curl -sf -o /dev/null -w "fx-report      %{http_code}\n" "http://localhost:8086/fx/fx-report.cgi?day=2026-10-16"
 	$(COMPOSE) exec -T rates-01 ls /var/spool/rates/out
 
