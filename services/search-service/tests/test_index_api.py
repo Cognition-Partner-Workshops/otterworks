@@ -104,7 +104,14 @@ class TestReindexEndpoint:
 
     def test_reindex_success(self, client, mock_meilisearch_client):
         """Reindex returns 200."""
-        response = client.post("/api/v1/search/reindex")
+        from unittest.mock import patch
+        from app.services.indexer import Indexer
+
+        with (
+            patch.object(Indexer, "_fetch_all_documents", return_value=[]),
+            patch.object(Indexer, "_fetch_all_files", return_value=[]),
+        ):
+            response = client.post("/api/v1/search/reindex")
         assert response.status_code == 200
         data = response.get_json()
         assert data["status"] == "reindexed"

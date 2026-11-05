@@ -63,6 +63,13 @@ def require_tenant(
         return
     if isinstance(tenants, list) and str(tenant_id) in tenants:
         return
+    try:
+        user_id = UUID(claims["sub"])
+    except (ValueError, TypeError, AttributeError) as error:
+        raise HTTPException(status_code=403, detail="Tenant access denied") from error
+    with connect() as connection:
+        if PostgresPlansRepository(connection).is_tenant_member(tenant_id, user_id):
+            return
     raise HTTPException(status_code=403, detail="Tenant access denied")
 
 

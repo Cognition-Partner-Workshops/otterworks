@@ -6,6 +6,122 @@ const OWNER: &str = "00000000-0000-0000-0000-000000000001";
 const OTHER: &str = "00000000-0000-0000-0000-000000000002";
 const FILE: &str = "00000000-0000-0000-0000-000000000003";
 
+#[actix_rt::test]
+async fn service_enumeration_requires_its_own_credential() {
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let endpoint = format!("http://{}", listener.local_addr().unwrap());
+    let server = HttpServer::new(|| App::new().default_service(web::to(|body: web::Bytes| async move {
+        let body: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        let mut items = Vec::new();
+        for (id, owner) in [(FILE, OWNER), (OTHER, OTHER)] {
+            let filter = body["ExpressionAttributeValues"][":owner_id"]["S"].as_str();
+            if filter.is_some() && filter != Some(owner) { continue; }
+            items.push(serde_json::json!({
+                "id": {"S": id}, "owner_id": {"S": owner}, "name": {"S": "private"},
+                "mime_type": {"S": "text/plain"}, "size_bytes": {"N": "1"}, "s3_key": {"S": "private"},
+                "version": {"N": "1"}, "is_trashed": {"BOOL": false},
+                "created_at": {"S": "2026-01-01T00:00:00Z"}, "updated_at": {"S": "2026-01-01T00:00:00Z"}
+            }));
+        }
+        HttpResponse::Ok().json(serde_json::json!({"Items": items}))
+    }))).listen(listener).unwrap().run();
+    let handle = server.handle();
+    actix_rt::spawn(server);
+    let config = aws_sdk_dynamodb::config::Builder::new()
+        .behavior_version_latest()
+        .region(Region::new("us-east-1"))
+        .credentials_provider(Credentials::new("test", "test", None, None, "test"))
+        .endpoint_url(endpoint)
+        .build();
+    let meta = web::Data::new(MetadataClient {
+        client: aws_sdk_dynamodb::Client::from_conf(config),
+        files_table: "files".into(),
+        folders_table: "folders".into(),
+        versions_table: "versions".into(),
+        shares_table: "shares".into(),
+    });
+    for configured in ["test-service-credential", ""] {
+        let app = test::init_service(
+            App::new()
+                .app_data(meta.clone())
+                .app_data(web::Data::new(crate::config::ReindexAuth {
+                    token: configured.into(),
+                }))
+                .route(
+                    "/internal/files/reindex",
+                    web::get().to(handlers::list_files_for_reindex),
+                )
+                .route("/files", web::get().to(handlers::list_files))
+                .route("/files/{id}", web::delete().to(handlers::delete_file)),
+        )
+        .await;
+        for credential in [
+            "",
+            "Bearer user-jwt",
+            "Bearer wrong-service",
+            "Bearer test-service-credential",
+        ] {
+            let request = test::TestRequest::get()
+                .uri("/internal/files/reindex?page_size=1&page=2")
+                .insert_header(("Authorization", credential))
+                .insert_header(("X-User-ID", OWNER))
+                .to_request();
+            let response = test::call_service(&app, request).await;
+            if !configured.is_empty() && credential == "Bearer test-service-credential" {
+                assert_eq!(response.status(), StatusCode::OK);
+                let body: serde_json::Value = test::read_body_json(response).await;
+                assert_eq!(body["total"], 2);
+                assert_eq!(body["files"].as_array().unwrap().len(), 1);
+            } else {
+                assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+            }
+        }
+        let response = test::call_service(
+            &app,
+            test::TestRequest::get()
+                .uri("/files")
+                .insert_header(("Authorization", "Bearer test-service-credential"))
+                .to_request(),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+        if !configured.is_empty() {
+            let response = test::call_service(
+                &app,
+                test::TestRequest::get()
+                    .uri("/internal/files/reindex")
+                    .insert_header(("Authorization", "Bearer test-service-credential"))
+                    .to_request(),
+            )
+            .await;
+            assert_eq!(response.status(), StatusCode::OK);
+            let body: serde_json::Value = test::read_body_json(response).await;
+            assert_eq!(body["total"], 2);
+            let response = test::call_service(
+                &app,
+                test::TestRequest::post()
+                    .uri("/internal/files/reindex")
+                    .insert_header(("Authorization", "Bearer test-service-credential"))
+                    .to_request(),
+            )
+            .await;
+            assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        }
+        let response = test::call_service(
+            &app,
+            test::TestRequest::get()
+                .uri(&format!("/files?owner_id={OTHER}"))
+                .insert_header(("X-User-ID", OWNER))
+                .to_request(),
+        )
+        .await;
+        let body: serde_json::Value = test::read_body_json(response).await;
+        assert_eq!(body["total"], 1);
+        assert_eq!(body["files"][0]["owner_id"], OWNER);
+    }
+    handle.stop(true).await;
+}
+
 async fn check_access(user: Option<&str>, expected: StatusCode, shared: bool) {
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let endpoint = format!("http://{}", listener.local_addr().unwrap());

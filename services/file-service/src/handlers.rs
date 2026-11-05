@@ -3,6 +3,7 @@ use actix_web::{web, HttpRequest, HttpResponse};
 use bytes::BytesMut;
 use chrono::Utc;
 use futures_util::StreamExt;
+use subtle::ConstantTimeEq;
 use uuid::Uuid;
 
 async fn chaos_active(cm: &mut redis::aio::ConnectionManager, flag: &str) -> bool {
@@ -244,8 +245,35 @@ pub async fn list_files(
         .list_files(query.folder_id, owner_id, include_trashed)
         .await?;
 
+    Ok(paginate_files(files, &query))
+}
+
+pub async fn list_files_for_reindex(
+    req: HttpRequest,
+    auth: web::Data<crate::config::ReindexAuth>,
+    meta: web::Data<MetadataClient>,
+    query: web::Query<ListFilesQuery>,
+) -> Result<HttpResponse, ServiceError> {
+    let token = req
+        .headers()
+        .get("Authorization")
+        .and_then(|value| value.to_str().ok())
+        .and_then(|value| value.strip_prefix("Bearer "))
+        .unwrap_or_default();
+    if auth.token.is_empty() || !bool::from(token.as_bytes().ct_eq(auth.token.as_bytes())) {
+        return Err(ServiceError::Unauthorized(
+            "Service credential required".into(),
+        ));
+    }
+    let files = meta.list_files(None, None, false).await?;
+    Ok(paginate_files(files, &query))
+}
+
+fn paginate_files(mut files: Vec<FileMetadata>, query: &ListFilesQuery) -> HttpResponse {
+    files.sort_by_key(|file| file.id);
+
     let page = query.page.unwrap_or(1).max(1);
-    let page_size = query.page_size.unwrap_or(50).min(100);
+    let page_size = query.page_size.unwrap_or(50).clamp(1, 100);
     let total = files.len();
     let start = (page - 1).saturating_mul(page_size) as usize;
     let paged: Vec<FileMetadata> = files
@@ -254,12 +282,12 @@ pub async fn list_files(
         .take(page_size as usize)
         .collect();
 
-    Ok(HttpResponse::Ok().json(ListFilesResponse {
+    HttpResponse::Ok().json(ListFilesResponse {
         files: paged,
         total,
         page,
         page_size,
-    }))
+    })
 }
 
 pub async fn list_shared_files(

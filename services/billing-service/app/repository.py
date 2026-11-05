@@ -33,6 +33,16 @@ class PostgresPlansRepository:
             for row in rows
         ]
 
+    def is_tenant_member(self, tenant_id: UUID, user_id: UUID) -> bool:
+        return (
+            self.connection.execute(
+                "SELECT 1 FROM billing_svc.tenant_memberships "
+                "WHERE tenant_id = %s AND user_id = %s",
+                (tenant_id, user_id),
+            ).fetchone()
+            is not None
+        )
+
     def find_entitlements(self, tenant_id: UUID) -> list[EntitlementRow]:
         rows = self.connection.execute(
             """

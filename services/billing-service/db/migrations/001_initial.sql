@@ -17,6 +17,12 @@ CREATE TABLE IF NOT EXISTS billing_svc.plans (
     active boolean NOT NULL DEFAULT true
 );
 
+CREATE TABLE IF NOT EXISTS billing_svc.tenant_memberships (
+    tenant_id uuid NOT NULL REFERENCES billing_svc.tenants(id),
+    user_id uuid NOT NULL,
+    PRIMARY KEY (tenant_id, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS billing_svc.subscriptions (
     id uuid PRIMARY KEY,
     tenant_id uuid NOT NULL REFERENCES billing_svc.tenants(id),
