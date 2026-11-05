@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collection workspace</title>
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<div id="mode-banner" class="banner" hidden></div>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="workspace">Collection workspace</div>
+    <div class="section-label">Channels</div>
+    <nav id="channels"></nav>
+    <div class="section-label">Posting as</div>
+    <select id="persona" aria-label="Posting as"></select>
+    <div id="persona-preview" class="persona-preview"></div>
+    <form method="post" action="/logout"><button class="link" type="submit">Sign out</button></form>
+  </aside>
+  <main class="channel">
+    <header class="channel-header"><h2 id="channel-name"></h2><span id="channel-topic" class="muted"></span></header>
+    <section id="threads" class="threads" aria-live="polite"></section>
+    <form id="new-thread" class="composer">
+      <textarea id="new-thread-text" rows="2" placeholder="Start a thread (mention @devin to bring in Devin)"></textarea>
+      <div class="composer-row"><span id="new-thread-count" class="muted small"></span><button type="submit">Post</button></div>
+    </form>
+  </main>
+  <section class="thread-pane" id="thread-pane" hidden>
+    <header class="channel-header"><h2>Thread</h2><span id="session-badge" class="badge"></span>
+      <button class="link" id="close-thread" type="button">Close</button></header>
+    <div id="thread-messages" class="messages" aria-live="polite"></div>
+    <form id="reply" class="composer">
+      <textarea id="reply-text" rows="2" placeholder="Reply in thread"></textarea>
+      <div class="composer-row"><span id="reply-count" class="muted small"></span><button type="submit">Reply</button></div>
+    </form>
+  </section>
+</div>
+</body>
+</html>
