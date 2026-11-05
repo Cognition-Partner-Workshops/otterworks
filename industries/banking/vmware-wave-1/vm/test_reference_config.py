@@ -56,6 +56,27 @@ class ReferenceConfigTest(unittest.TestCase):
         self.assertIn("BANK_ACCOUNT_REFERENCE_SECRET=%s", workflow)
         self.assertIn('"$GITHUB_ENV"', workflow)
 
+    def test_make_accepts_empty_command_line_secrets_and_preserves_nonempty_ones(self):
+        for value in ("", "   ", secrets.token_hex(32)):
+            env = dict(os.environ, EXPECTED=value.strip())
+            env.pop(KEY, None)
+            check = (
+                "import os,json,subprocess; "
+                "v=os.environ.get('" + KEY + "', ''); assert len(v)>=32; "
+                "assert not os.environ['EXPECTED'] or v==os.environ['EXPECTED']; "
+                "r=subprocess.run(['docker','compose','-p','fs09-otterworks',"
+                "'-f','vm/compose.yaml','config','--format','json'],"
+                "check=True,capture_output=True,text=True); "
+                "s=json.loads(r.stdout)['services']; "
+                "assert all(s[n]['environment']['" + KEY + "']==v "
+                "for n in ['stmt-web-01','notify-01'])"
+            )
+            result = subprocess.run(
+                ["make", "--no-print-directory", "-s", KEY + "=" + value,
+                 "--eval=check-secret:\n\t@python3 -c \"" + check + "\"", "check-secret"],
+                cwd=WAVE, env=env, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

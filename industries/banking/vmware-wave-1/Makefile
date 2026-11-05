@@ -13,7 +13,7 @@ TTL_HOURS ?= 72
 APPS := statements-web rates-batch branch-locator notify-svc kyc-docs fx-report
 COMPOSE := docker compose -f vm/compose.yaml
 ifeq ($(strip $(BANK_ACCOUNT_REFERENCE_SECRET)),)
-export BANK_ACCOUNT_REFERENCE_SECRET := $(shell openssl rand -hex 32)
+override export BANK_ACCOUNT_REFERENCE_SECRET := $(shell openssl rand -hex 32)
 else
 export BANK_ACCOUNT_REFERENCE_SECRET
 endif
