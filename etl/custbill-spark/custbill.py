@@ -26,7 +26,7 @@ def lines(data):
 
 def number(value):
     """Convert a decimal numeric prefix for the fixed-width parser."""
-    match = re.match(r'^[ \t\r\v\f]*([+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)', value)
+    match = re.match(r'^([+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)', value)
     return float(match[1]) if match else 0.0
 
 
@@ -43,11 +43,12 @@ def perl_number(value):
 
 
 def awk_formats(executable):
-    """Probe host awk's non-finite coercion/printf dialect once per worker."""
+    """Probe host awk's numeric coercion/printf dialect once per worker."""
     if executable in _AWK_FORMATS:
         return _AWK_FORMATS[executable]
     tokens = [sign + word for sign in ('', '+', '-') for word in ('inf', 'infinity', 'nan')]
     tokens += ['1e400', '-1e400']
+    tokens += [char + '1' for char in ' \t\r\v\f']
     result = subprocess.run([executable, '{printf "%.2f\\n", ($0+0)/100}'],
                             input='\n'.join(tokens) + '\n', text=True, capture_output=True,
                             env=dict(os.environ, LC_ALL='C'), check=True)
@@ -57,13 +58,16 @@ def awk_formats(executable):
 
 def awk_amount(value):
     """Render awk's special printf spellings after fixed-width numification."""
-    special = re.match(r'^[ \t\r\v\f]*([+-]?(?:inf(?:inity)?|nan))(?:$|[^A-Za-z])', value, re.IGNORECASE)
     executable = os.environ.get('CUSTBILL_AWK', 'awk')
+    formats = awk_formats(executable)
+    whitespace = ''.join(char for char in ' \t\r\v\f' if formats[char + '1'] == '0.01')
+    token = value.lstrip(whitespace)
+    special = re.match(r'^([+-]?(?:inf(?:inity)?|nan))(?:$|[^A-Za-z])', token, re.IGNORECASE)
     if special:
-        return awk_formats(executable)[special[1].lower()]
-    amount = number(value) / 100
+        return formats[special[1].lower()]
+    amount = number(token) / 100
     if math.isinf(amount):
-        return awk_formats(executable)['-1e400' if amount < 0 else '1e400']
+        return formats['-1e400' if amount < 0 else '1e400']
     return f'{amount:.2f}'
 
 
