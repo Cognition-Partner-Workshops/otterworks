@@ -23,6 +23,9 @@ services:
       args:
         MAVEN_MIRROR: ${MAVEN_MIRROR:-}
     image: wave1/statements-web-vm
+    environment:
+      BANK_VM_PASSWORD: ${BANK_VM_PASSWORD:-}
+      JAVA_OPTS: -Dorg.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource
     depends_on:
       wave1-db:
         condition: service_healthy
@@ -76,6 +79,9 @@ services:
       context: ../notify-svc
       dockerfile: vm/Dockerfile
     image: wave1/notify-svc-vm
+    environment:
+      NOTIFY_SERVICE_TOKEN: ${NOTIFY_SERVICE_TOKEN:-}
+      NOTIFY_OUTBOX_TOKEN: ${NOTIFY_OUTBOX_TOKEN:-}
     ports:
       - "127.0.0.1:8084:3000"
 
@@ -86,6 +92,8 @@ services:
       args:
         MAVEN_MIRROR: ${MAVEN_MIRROR:-}
     image: wave1/kyc-docs-vm
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-}
     ports:
       - "127.0.0.1:8085:8443"
 

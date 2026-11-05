@@ -13,7 +13,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Full-context test: the whole modular monolith boots and every module's routes are wired. */
-@SpringBootTest(properties = "JWT_SECRET=preference-test-secret-at-least-32-bytes")
+@SpringBootTest(properties = {
+    "JWT_SECRET=preference-test-secret-at-least-32-bytes",
+    "spring.datasource.url=jdbc:h2:mem:preference-access;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;"
+        + "INIT=CREATE SCHEMA IF NOT EXISTS ANNOUNCEMENTS\\\\;CREATE SCHEMA IF NOT EXISTS USER_PREFERENCES\\\\;CREATE SCHEMA IF NOT EXISTS FEEDBACK"
+})
 @AutoConfigureMockMvc
 class LegacyPortalApplicationTest {
 

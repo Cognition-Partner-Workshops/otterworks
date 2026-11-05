@@ -9,7 +9,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest(properties = "JWT_SECRET=preference-test-secret-at-least-32-bytes")
+@SpringBootTest(properties = {
+    "JWT_SECRET=preference-test-secret-at-least-32-bytes",
+    "spring.datasource.url=jdbc:h2:mem:preference-access;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;"
+        + "INIT=CREATE SCHEMA IF NOT EXISTS ANNOUNCEMENTS\\\\;CREATE SCHEMA IF NOT EXISTS USER_PREFERENCES\\\\;CREATE SCHEMA IF NOT EXISTS FEEDBACK"
+})
 @AutoConfigureMockMvc
 class PreferenceAccessTest {
     @Autowired private MockMvc mvc;

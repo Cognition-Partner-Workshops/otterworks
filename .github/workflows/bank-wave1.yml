@@ -54,6 +54,13 @@ jobs:
         working-directory: industries/banking/vmware-wave-1
     steps:
       - uses: actions/checkout@v4
+      - name: Generate ephemeral stand-in credentials
+        run: |
+          for key in BANK_VM_PASSWORD NOTIFY_SERVICE_TOKEN NOTIFY_OUTBOX_TOKEN JWT_SECRET; do
+            value="$(openssl rand -hex 32)"
+            echo "::add-mask::$value"
+            echo "$key=$value" >> "$GITHUB_ENV"
+          done
       - run: make vm-build
       - run: make vm-up
       - run: make vm-smoke

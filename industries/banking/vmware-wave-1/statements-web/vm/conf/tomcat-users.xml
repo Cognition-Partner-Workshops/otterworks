@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tomcat-users xmlns="http://tomcat.apache.org/xml" version="1.0">
+  <role rolename="BANK_CUSTOMER"/>
+  <role rolename="BANK_ADMIN"/>
+  <role rolename="ACCOUNT_HG611000001"/>
+  <role rolename="ACCOUNT_HG621000002"/>
+  <user username="smoke-owner" password="${BANK_VM_PASSWORD}" roles="BANK_CUSTOMER,BANK_ADMIN,ACCOUNT_HG611000001"/>
+  <user username="smoke-customer" password="${BANK_VM_PASSWORD}" roles="BANK_CUSTOMER,ACCOUNT_HG621000002"/>
+</tomcat-users>
