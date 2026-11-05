@@ -1,4 +1,5 @@
 deploy/
-vm/
+vm/*
+!vm/legacy/
 __pycache__/
 **/__pycache__/

@@ -27,16 +27,8 @@ spec:
           env:
             - name: POSTGRES_DB
               value: bankwave
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: branch-db
-                  key: POSTGRES_PASSWORD
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: branch-db
-                  key: DB_PASSWORD
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: trust
           ports:
             - containerPort: 5432
           readinessProbe:
@@ -67,8 +59,8 @@ metadata:
   name: branch-role
 data:
   02-role.sh: |
-    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set=role_password="$DB_PASSWORD" <<'SQL'
-    CREATE ROLE branch_app LOGIN PASSWORD :'role_password';
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<'SQL'
+    CREATE ROLE branch_app LOGIN;
     GRANT SELECT ON branches TO branch_app;
     SQL
 ---
