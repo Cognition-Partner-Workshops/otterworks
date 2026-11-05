@@ -247,11 +247,19 @@ class MeiliSearchService:
             query=search_term or "*",
         )
 
-    def suggest(self, prefix: str, size: int = 10, owner_id: str | None = None) -> list[str]:
-        """Autocomplete suggestions using MeiliSearch prefix matching, scoped to owner_id."""
+    def suggest(
+        self, prefix: str, size: int = 10, owner_id: str | None = None, ranked: bool = False
+    ) -> list[str]:
+        """Autocomplete suggestions using MeiliSearch prefix matching, scoped to owner_id.
+
+        With ``ranked``, hits from both indexes are merged by ``_rankingScore``.
+        """
         suggestions: list[str] = []
+        scored: list[tuple[float, str]] = []
         seen: set[str] = set()
         params: dict = {"limit": size, "attributesToRetrieve": ["title", "name"]}
+        if ranked:
+            params["showRankingScore"] = True
         if owner_id:
             params["filter"] = f'owner_id = "{self._escape(owner_id)}"'
 
@@ -261,13 +269,19 @@ class MeiliSearchService:
             for hit in result["hits"]:
                 text = hit.get("title") or hit.get("name", "")
                 if text and text not in seen:
-                    suggestions.append(text)
                     seen.add(text)
+                    if ranked:
+                        scored.append((hit.get("_rankingScore", 0.0), text))
+                        continue
+                    suggestions.append(text)
                     if len(suggestions) >= size:
                         break
             if len(suggestions) >= size:
                 break
 
+        if ranked:
+            scored.sort(key=lambda item: item[0], reverse=True)
+            return [text for _, text in scored[:size]]
         return suggestions
 
     def _wait_and_check(self, task_uid: int, timeout_in_ms: int = 10000) -> None:

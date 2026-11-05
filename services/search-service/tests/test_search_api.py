@@ -116,6 +116,22 @@ class TestSuggestEndpoint:
         data = response.get_json()
         assert len(data["suggestions"]) >= 1
 
+    def test_suggest_ranked_returns_titles_by_ranking_score(self, client, mock_meilisearch_client):
+        """With ranking on, suggest asks MeiliSearch for _rankingScore and returns 200, best first."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.side_effect = [
+            {"hits": [{"title": "Quarterly report", "_rankingScore": 0.4}]},
+            {"hits": [{"name": "quarterly.pdf", "_rankingScore": 0.9}]},
+        ]
+
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=qu", headers={"X-User-ID": "user-1"})
+
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["quarterly.pdf", "Quarterly report"]
+        for call in mock_index.search.call_args_list:
+            assert call.args[1]["showRankingScore"] is True
+
     def test_suggest_empty_query(self, client):
         """Suggest with empty query returns empty list."""
         response = client.get("/api/v1/search/suggest?q=")
