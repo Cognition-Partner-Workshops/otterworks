@@ -4,7 +4,7 @@ The "find a branch" page on the public site. Takes a postcode or district, asks 
 
 - OS: CentOS 7, system Python 2.7, packages from `requirements.txt` installed globally with pip.
 - Install: `/opt/branch-locator/app`, started by systemd (`vm/branch-locator.service`).
-- Settings: `app/settings.py`; required `BRANCH_LOCATOR_DB_PASSWORD` environment variable (stand-ins generate a local, ignored `.vm.env` via make).
+- Settings: `app/settings.py`; required `BRANCH_LOCATOR_DB_PASSWORD` environment variable (stand-ins generate a local, ignored `vm/.env` via make).
 - Geocoder: `geo.bank.internal`, resolved through `/etc/hosts` on web-02 (`vm/etc-hosts`).
 - Database: the `branches` table in `bankwave` on `wave1-db`.
 - Logs: `/var/log/branch-locator/app.log`.

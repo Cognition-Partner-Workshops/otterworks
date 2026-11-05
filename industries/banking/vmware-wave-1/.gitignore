@@ -1,6 +1,6 @@
 target/
 node_modules/
 vm-logs.txt
-.vm.env
+vm/.env
 __pycache__/
 *.pyc

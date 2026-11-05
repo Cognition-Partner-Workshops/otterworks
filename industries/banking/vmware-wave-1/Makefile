@@ -12,13 +12,13 @@ REGION ?= us-east-1
 CLUSTER ?= otterworks-dev
 TTL_HOURS ?= 72
 APPS := statements-web rates-batch branch-locator notify-svc kyc-docs fx-report
-COMPOSE := docker compose --env-file .vm.env -f vm/compose.yaml
+COMPOSE := docker compose -f vm/compose.yaml
 DAYS := 2026-10-14 2026-10-15 2026-10-16
 
 .PHONY: vm-build vm-up vm-rates vm-smoke vm-down reset vm-config ecr ns destroy check-run
 
 vm-config:
-	@test -f .vm.env || (umask 077; password=$$(openssl rand -hex 32) && printf 'BRANCH_LOCATOR_DB_PASSWORD=%s\n' "$$password" > .vm.env)
+	@test -f vm/.env || (umask 077; password=$$(openssl rand -hex 32) && printf 'BRANCH_LOCATOR_DB_PASSWORD=%s\n' "$$password" > vm/.env)
 
 vm-build: vm-config
 	DOCKER_BUILDKIT=0 $(COMPOSE) build
@@ -46,7 +46,7 @@ vm-down: vm-config
 
 reset: vm-config
 	$(COMPOSE) down -v --remove-orphans
-	rm -f .vm.env
+	rm -f vm/.env
 
 check-run:
 	@[[ "$(RUN)" =~ ^[a-z0-9]{3,12}$$ ]] || { echo "RUN=<token> is required (lowercase letters and digits)"; exit 2; }
