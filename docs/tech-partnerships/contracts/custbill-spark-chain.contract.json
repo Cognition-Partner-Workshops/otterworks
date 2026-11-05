@@ -17,7 +17,7 @@
     {"id": "typed-validation", "description": "Every body record is typed (date, decimal amount, currency, record type) and invalid records are attributed by line number and reason in the ledger."},
     {"id": "mutual-exclusion", "description": "Overlapping runs of the same stage or the chain are refused via flock (exit 3), never run twice."},
     {"id": "errors-surface", "description": "Any stage failure exits non-zero with a traceback; no output is redirected to /dev/null."},
-    {"id": "nightly-drift", "description": ".github/workflows/custbill-parity-nightly.yml reruns the parity table every night and opens or updates a drift issue on failure."}
+    {"id": "nightly-drift", "description": "A scheduled Devin automation runs make -C etl/custbill-spark parity and make -C etl/custbill-spark recon nightly against tech-partnerships and reports drift on failure."}
   ],
   "encoding_policy": {
     "input_encoding": "latin-1 (every byte is one character; the legacy chain runs in LC_ALL=C)",

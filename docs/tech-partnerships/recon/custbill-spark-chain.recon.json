@@ -2,7 +2,7 @@
   "kind": "recon-report",
   "unit": "custbill-spark-chain",
   "namespace": "parity-harness(dev,qa,edges,empty)",
-  "generated_at": "2026-11-05T11:54:47Z",
+  "generated_at": "2026-11-05T12:24:59Z",
   "run_mode": "fixture",
   "checks": [
     {

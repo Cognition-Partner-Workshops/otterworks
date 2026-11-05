@@ -12,7 +12,7 @@ for byte. The legacy scripts stay untouched: they are the reference that
 | `sftp_ingest_poll.ksh` | `custbill_spark/ingest.py` | `incoming/CUSTBILL*.dat`, `archive/` |
 | `parse_custbill_fixedwidth.sh` | `custbill_spark/parse.py` | `parsed/CUSTBILL*.psv`, `incoming/*.dat.done` |
 | `finance_excel_report.pl` | `custbill_spark/report.py` | `reports/finance_billing_YYYYMMDD.{csv,xls}` |
-| `run_all.sh` + `crontab` | `custbill_spark/__main__.py chain` + `.github/workflows/custbill-parity-nightly.yml` | explicit stage order, one run at a time |
+| `run_all.sh` + `crontab` | `custbill_spark/__main__.py chain` + scheduled Devin automation | explicit stage order, one run at a time |
 
 ## Run
 
@@ -55,14 +55,27 @@ and validated by `make tp-validate-recon`. The contract is
 
 ## Nightly drift check
 
-`.github/workflows/custbill-parity-nightly.yml` runs the same recon every night
-at 05:15 UTC (and on pull requests touching either chain). A failure uploads the
-parity table and logs, and opens an issue labelled `custbill-parity-drift` (or
-comments on the open one); the next green run closes it. GitHub only runs
-`schedule` triggers from the default branch, so the schedule becomes active once
-this workflow file is on the default branch; until then run it with
-`workflow_dispatch` (input `ref`, default `tech-partnerships`) or set the
-repository variable `CUSTBILL_PARITY_REF`.
+The nightly rerun is a scheduled Devin automation against `tech-partnerships`,
+not a GitHub schedule. From a fresh clone on an Ubuntu host, run:
+
+```sh
+git checkout tech-partnerships
+sudo apt-get update
+sudo apt-get install -y ksh perl make python3-venv openjdk-17-jdk-headless
+export JAVA_HOME="$(dirname "$(dirname "$(readlink -f /usr/bin/java)")")"
+export PATH="$JAVA_HOME/bin:$PATH"
+export SPARK_LOCAL_IP=127.0.0.1
+make -C etl/legacy-extra spark-venv
+etl/legacy-extra/.venv/bin/python -m pip install uv
+export PATH="$PWD/etl/legacy-extra/.venv/bin:$PATH"
+make -C etl/custbill-spark parity
+make -C etl/custbill-spark recon
+make tp-validate-recon FILE=docs/tech-partnerships/recon/custbill-spark-chain.recon.json
+```
+
+Retain `etl/legacy-extra/reports/parity/` (tables, roots and logs) and the recon
+JSON as evidence; report any nonzero exit as drift. PR CI runs the Spark tests
+and candidate parity in `.github/workflows/tp-golden-smoke.yml`.
 
 ## Addendum deficiencies
 
@@ -73,7 +86,7 @@ Status of every item in `etl/legacy-extra/ETL_UPGRADE_GUIDE_ADDENDUM.md`:
 | Hard-coded `/data/otterworks` paths, hostname branching | fixed | `config.py`: `CUSTBILL_ROOT`/`--root` only |
 | Stale `/tmp/sftp_ingest.lock`, "running anyway" | fixed | `fcntl.flock` per stage and for the chain; a second run exits 3 instead of running twice |
 | Size-settle polling to detect complete uploads | fixed | `ingest.completeness`: a file is staged when it ends with its `TRL` record or matches its `.sha256` manifest; partial-suffix or incomplete files stay in the drop for the next run |
-| Overlapping cron schedules | fixed | one `chain` entry point, serialized by the chain lock; the nightly workflow uses a non-cancelling concurrency group |
+| Overlapping cron schedules | fixed | one `chain` entry point, serialized by the chain lock; nightly reruns use fresh harness roots |
 | `sleep 600` as dependency management | fixed | `run_chain` starts each stage when the previous one returns; a stage failure stops the chain |
 | Errors to `/dev/null`, exit 0 on failure | fixed | every stage logs to stderr and raises; the CLI exits 1 with a traceback, 3 on lock contention |
 | No schema validation, no trailer reconciliation | fixed | `parse.typed_frame`/`parse.quality`: width, customer, name, date, amount, currency, record type checked per record; `TRL` count reconciled against body records; results in the parse ledger; `--strict` quarantines |

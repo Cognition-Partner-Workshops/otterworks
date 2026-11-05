@@ -8,7 +8,6 @@ naming the configured distribution list, not a hard-coded sendmail.
 
 from decimal import Decimal
 import logging
-import shutil
 import time
 
 from .parse import NUMERIC_PREFIX
@@ -81,7 +80,7 @@ def _run(settings, spark):
     if settings.delivery_dir:
         settings.delivery_dir.mkdir(parents=True, exist_ok=True)
         target = settings.delivery_dir / csv.name
-        shutil.copyfile(csv, target)
+        write_atomic(target, body)
         if sha256(target.read_bytes()) != digest:
             raise RuntimeError(f"report: delivery to {target} did not verify")
         delivered = str(target)

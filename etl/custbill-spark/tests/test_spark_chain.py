@@ -7,9 +7,10 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from custbill_spark import __main__ as cli
-from custbill_spark import ingest, parse, report
+from custbill_spark import ingest, parse, report, support
 from custbill_spark.config import Settings
 from custbill_spark.support import LockBusy, build_session
 
@@ -111,6 +112,31 @@ class SparkChain(unittest.TestCase):
         settings = self.estate("empty")
         settings.incoming.mkdir()
         self.assertEqual(parse.run(settings, self.spark), {"files": {}})
+
+    def test_delivery_to_report_directory(self):
+        settings = self.estate("deliver-self")
+        settings.delivery_dir = settings.reports
+        ledger = report.run(settings, self.spark)
+        self.assertEqual(Path(ledger["delivered_to"]).read_bytes(),
+                         b"Currency,RecordType,RecordCount,TotalAmount\n")
+
+    def test_failed_delivery_preserves_previous_copy(self):
+        settings = self.estate("deliver-fail", delivery_dir=Path(self.tmp) / "outbox-fail")
+        ledger = report.run(settings, self.spark)
+        target = Path(ledger["delivered_to"])
+        target.write_bytes(b"previous delivery")
+        original = support.os.replace
+
+        def fail_delivery(source, dest):
+            if dest == target:
+                raise OSError("delivery unavailable")
+            return original(source, dest)
+
+        with patch.object(support.os, "replace", side_effect=fail_delivery):
+            with self.assertRaisesRegex(OSError, "delivery unavailable"):
+                report.run(settings, self.spark)
+        self.assertEqual(target.read_bytes(), b"previous delivery")
+        self.assertEqual(list(target.parent.glob(".*.tmp-*")), [])
 
 
 if __name__ == "__main__":
