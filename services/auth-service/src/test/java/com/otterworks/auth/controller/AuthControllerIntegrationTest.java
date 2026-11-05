@@ -119,6 +119,38 @@ class AuthControllerIntegrationTest {
   }
 
   @Test
+  void login_shouldLockAccountAfterRepeatedFailures() throws Exception {
+    createTestUser("locked@otterworks.dev", "password123", "Locked User");
+    String wrong =
+        """
+        {"email": "locked@otterworks.dev", "password": "wrongpassword"}
+        """;
+    for (int i = 0; i < 5; i++) {
+      mockMvc
+          .perform(
+              post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(wrong))
+          .andExpect(status().isBadRequest());
+    }
+
+    String correct =
+        """
+        {"email": "locked@otterworks.dev", "password": "password123"}
+        """;
+    mockMvc
+        .perform(
+            post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(correct))
+        .andExpect(status().isLocked())
+        .andExpect(header().exists("Retry-After"));
+  }
+
+  @Test
+  void login_shouldRejectMissingBodyAsBadRequest() throws Exception {
+    mockMvc
+        .perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void profile_shouldReturnUserProfile() throws Exception {
     String accessToken =
         registerAndGetAccessToken("profile@otterworks.dev", "password123", "Profile User");

@@ -6,6 +6,7 @@ import com.otterworks.auth.dto.LoginRequest;
 import com.otterworks.auth.dto.RegisterRequest;
 import com.otterworks.auth.entity.RefreshToken;
 import com.otterworks.auth.entity.User;
+import com.otterworks.auth.exception.AccountLockedException;
 import com.otterworks.auth.repository.RefreshTokenRepository;
 import com.otterworks.auth.repository.UserRepository;
 import com.otterworks.auth.security.JwtTokenProvider;
@@ -15,6 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,12 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtTokenProvider jwtTokenProvider;
   private final RefreshTokenRepository refreshTokenRepository;
+
+  @Value("${auth.lockout.max-failed-attempts:5}")
+  private int maxFailedAttempts = 5;
+
+  @Value("${auth.lockout.duration-seconds:900}")
+  private long lockoutDurationSeconds = 900;
 
   public AuthService(
       UserRepository userRepository,
@@ -57,22 +65,43 @@ public class AuthService {
     return buildAuthResponse(user);
   }
 
-  @Transactional
+  @Transactional(noRollbackFor = {IllegalArgumentException.class, AccountLockedException.class})
   public AuthResponse login(LoginRequest request) {
     User user =
         userRepository
             .findByEmail(request.getEmail())
             .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
+    Instant now = Instant.now();
+    if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(now)) {
+      log.warn("Login rejected for locked account: userId={}", user.getId());
+      throw new AccountLockedException(user.getLockedUntil());
+    }
+
     if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+      recordFailedLogin(user, now);
       throw new IllegalArgumentException("Invalid credentials");
     }
 
-    user.setLastLoginAt(Instant.now());
+    user.setFailedLoginAttempts(0);
+    user.setLockedUntil(null);
+    user.setLastLoginAt(now);
     userRepository.save(user);
 
     log.info("User logged in: email={}", user.getEmail());
     return buildAuthResponse(user);
+  }
+
+  private void recordFailedLogin(User user, Instant now) {
+    int attempts = user.getFailedLoginAttempts() + 1;
+    if (attempts >= maxFailedAttempts) {
+      user.setFailedLoginAttempts(0);
+      user.setLockedUntil(now.plusSeconds(lockoutDurationSeconds));
+      log.warn("Account locked after {} failed login attempts: userId={}", attempts, user.getId());
+    } else {
+      user.setFailedLoginAttempts(attempts);
+    }
+    userRepository.save(user);
   }
 
   @Transactional
