@@ -15,7 +15,8 @@ module.exports = {
       error_file: '/var/log/notify/err.log',
       merge_logs: true,
       env_production: {
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
+        NOTIFY_AUTHZ_FILE: process.env.NOTIFY_AUTHZ_FILE
       }
     }
   ]

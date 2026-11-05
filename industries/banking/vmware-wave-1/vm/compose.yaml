@@ -72,6 +72,10 @@ services:
       - "127.0.0.1:8083:5000"
 
   notify-01:
+    environment:
+      NOTIFY_AUTHZ_FILE: /etc/notify/authz.json
+    volumes:
+      - ../.notify-tokens/authz.json:/etc/notify/authz.json:ro
     build:
       context: ../notify-svc
       dockerfile: vm/Dockerfile

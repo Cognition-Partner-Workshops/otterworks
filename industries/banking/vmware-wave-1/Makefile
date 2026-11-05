@@ -14,12 +14,22 @@ APPS := statements-web rates-batch branch-locator notify-svc kyc-docs fx-report
 COMPOSE := docker compose -f vm/compose.yaml
 DAYS := 2026-10-14 2026-10-15 2026-10-16
 
-.PHONY: vm-build vm-up vm-rates vm-smoke vm-down reset ecr ns destroy check-run
+.PHONY: vm-build vm-up vm-rates vm-smoke vm-down reset ecr ns destroy check-run notify-tokens
 
 vm-build:
 	DOCKER_BUILDKIT=0 $(COMPOSE) build
 
-vm-up:
+notify-tokens:
+	@set -e; umask 077; mkdir -p .notify-tokens; \
+	for role in SEND OUTBOX; do \
+	  file=.notify-tokens/$$role; \
+	  if [ ! -s $$file ]; then openssl rand -hex 32 > $$file; fi; \
+	done; \
+	send=$$(printf %s "$$(cat .notify-tokens/SEND)" | openssl dgst -sha256 | awk '{print $$NF}'); \
+	outbox=$$(printf %s "$$(cat .notify-tokens/OUTBOX)" | openssl dgst -sha256 | awk '{print $$NF}'); \
+	printf '{"principals":[{"name":"smoke-producer","role":"send","token_sha256":"%s","accounts":["HG611000001"]},{"name":"smoke-reader","role":"outbox","token_sha256":"%s","accounts":["HG611000001"]}]}\n' "$$send" "$$outbox" > .notify-tokens/authz.json
+
+vm-up: notify-tokens
 	$(COMPOSE) up -d
 	$(MAKE) vm-rates
 
@@ -27,11 +37,12 @@ vm-rates:
 	@for d in $(DAYS); do $(COMPOSE) exec -T rates-01 /opt/rates/bin/run-rates.sh $$d || exit $$?; done
 	@$(COMPOSE) exec -T rates-01 tail -n 3 /var/log/rates/rates.log
 
-vm-smoke:
+vm-smoke: notify-tokens
 	@for i in $$(seq 1 40); do curl -sf -o /dev/null http://localhost:8081/statements/accounts && break; sleep 3; done
 	curl -sf -o /dev/null -w "statements-web %{http_code}\n" http://localhost:8081/statements/accounts
 	curl -sf -o /dev/null -w "branch-locator %{http_code}\n" "http://localhost:8083/api/nearest?q=harbour"
-	curl -sf -o /dev/null -w "notify-svc     %{http_code}\n" -H 'Content-Type: application/json' \
+	@curl -sf -o /dev/null -w "notify-svc     %{http_code}\n" -H 'Content-Type: application/json' \
+	  -H "Authorization: Bearer $$(cat .notify-tokens/SEND)" \
 	  -d '{"account":"HG611000001","kind":"statement_ready","fields":{}}' http://localhost:8084/notify
 	curl -skf -o /dev/null -w "kyc-docs       %{http_code}\n" https://localhost:8085/documents/HG611000001
 	curl -sf -o /dev/null -w "fx-report      %{http_code}\n" "http://localhost:8086/fx/fx-report.cgi?day=2026-10-16"
