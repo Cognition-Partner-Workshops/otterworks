@@ -16,11 +16,12 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const sessionId = value => typeof value === 'string' && /^(devin-)?[a-f0-9]{32}$/.test(value);
 const sameSession = (a, b) => a.replace(/^devin-/, '') === b.replace(/^devin-/, '');
 const secretEqual = (a, b) => Boolean(a && b) && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b));
+const alertKey = alert => createHash('sha256').update(JSON.stringify([alert.fingerprint || alert.labels, alert.startsAt])).digest('hex');
 
 export function config(env = process.env) {
   const apiBase = env.DEVIN_API_BASE || 'https://api.devin.ai';
   const webBase = env.DEVIN_WEB_BASE || 'https://app.devin.ai';
-  for (const value of [apiBase, webBase, env.DEVIN_AUTOMATION_URL].filter(Boolean)) {
+  for (const value of [apiBase, webBase, env.DEVIN_AUTOMATION_URL, env.ALERT_BATCH_WEBHOOK_URL].filter(Boolean)) {
     const url = new URL(value);
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new Error('Invalid upstream URL');
     if (url.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(url.hostname)) throw new Error('Upstream URLs require HTTPS except on loopback');
@@ -37,6 +38,11 @@ export function config(env = process.env) {
     owner: env.DEVIN_CREATE_AS_USER_ID || '', route, webhookAction,
     webhook: env.DEVIN_AUTOMATION_URL || '', webhookSecret: env.DEVIN_WEBHOOK_SECRET || '',
     receiverSecret: env.ALERTMANAGER_RECEIVER_SECRET || '',
+    batchWebhook: env.ALERT_BATCH_WEBHOOK_URL || '',
+    batchSecret: env.ALERT_BATCH_WEBHOOK_SECRET || '',
+    batchQuietMs: Number(env.ALERT_BATCH_QUIET_MS || 90000),
+    batchMaxAgeMs: Number(env.ALERT_BATCH_MAX_AGE_MS || 1800000),
+    batchRequiredAlerts: (env.ALERT_BATCH_REQUIRED_ALERTS || '').split(',').map(value => value.trim()).filter(Boolean),
     alertmanagerChannel,
     stateFile: env.STATE_FILE || path.join(root, '.data/state.json'),
     transcriptFile: env.DEVIN_TRANSCRIPT_FILE || '',
@@ -48,6 +54,8 @@ export function config(env = process.env) {
 export async function createApp(cfg = config()) {
   if (!Number.isInteger(cfg.maxAcu) || cfg.maxAcu < 1 || cfg.maxAcu > 100) throw new Error('DEVIN_MAX_ACU must be 1 to 100');
   if (!Number.isFinite(cfg.pollMs) || cfg.pollMs < 100) throw new Error('Invalid poll interval');
+  if (!Number.isFinite(cfg.batchQuietMs) || cfg.batchQuietMs < 1) throw new Error('Invalid alert batch quiet window');
+  if (!Number.isFinite(cfg.batchMaxAgeMs) || cfg.batchMaxAgeMs < 1) throw new Error('Invalid alert batch maximum age');
   await mkdir(path.dirname(cfg.stateFile), { recursive: true });
   let state;
   try { state = JSON.parse(await readFile(cfg.stateFile, 'utf8')); }
@@ -78,6 +86,37 @@ export async function createApp(cfg = config()) {
     const m = { id: randomUUID(), author, text, requestId, at: Date.now(), delivered: false };
     t.messages.push(m); return m;
   };
+  const batchNote = (text, status) => {
+    const thread = { id: randomUUID(), channel: cfg.alertmanagerChannel, messages: [], status, readOnly: true };
+    add(thread, 'devin', text); state.threads.push(thread);
+  };
+  const batchFirstAt = batch => batch.firstAt ??= batch.lastAt ?? Date.now();
+  const discardBatch = note => {
+    if (state.alertBatch?.status !== 'pending') return;
+    for (const alert of state.alertBatch.alerts) {
+      const key = alertKey(alert);
+      for (const thread of state.threads) {
+        if (thread.readOnly && thread.messages.some(message => message.requestId === `alert-${key}`)) thread.status = 'discarded';
+      }
+      delete state.alerts[key];
+    }
+    batchNote(note, 'discarded'); delete state.alertBatch;
+  };
+  const expireBatch = () => {
+    if (state.alertBatch?.status !== 'pending' || Date.now() - batchFirstAt(state.alertBatch) < cfg.batchMaxAgeMs) return false;
+    discardBatch(`Discarded expired alert batch (${state.alertBatch.alerts.length} alerts). Start a new storm or reset the batch before retrying.`);
+    return true;
+  };
+  if (state.alertBatch?.status === 'sending') {
+    state.alertBatch.status = 'uncertain';
+    batchNote('Alert batch delivery is unconfirmed after restart. Check the automation\'s event history before retrying; no automatic retry was sent.', 'uncertain');
+    await save();
+  }
+  if (state.alertBatch?.status === 'pending' && state.alertBatch.firstAt == null) {
+    discardBatch(`Discarded alert batch (${state.alertBatch.alerts.length} alerts): receipt age is unknown. Start a new storm or reset the batch before retrying.`);
+    await save();
+  }
+  if (expireBatch()) await save();
   const safeUrl = id => `${cfg.webBase}/sessions/${id.replace(/^devin-/, '')}`;
   const deliver = async t => {
     if (t.readOnly) return;
@@ -129,17 +168,55 @@ export async function createApp(cfg = config()) {
     }
     await save();
   };
-  const post = async ({ channel, threadId, author, text, requestId }) => {
+  const post = async ({ channel, threadId, author, text, requestId, localOnly = false }) => {
     if (!channels.includes(channel) || !users.some(u => u.id === author && u.id !== 'devin') || typeof text !== 'string' || !text.trim() || text.length > 12000 || typeof requestId !== 'string' || requestId.length > 100 || !requestId) {
       throw Object.assign(new Error('Choose a channel, author and message (up to 12000 characters).'), { status: 400 });
     }
-    const existing = state.threads.find(t => t.messages.some(m => m.requestId === requestId));
+    const existing = state.threads.find(t => (t.status !== 'discarded' || author !== 'alertmanager') && t.messages.some(m => m.requestId === requestId));
     if (existing) return existing;
     let t = threadId ? state.threads.find(t => t.id === threadId && t.channel === channel) : null;
     if (threadId && !t) throw Object.assign(new Error('Thread not found'), { status: 404 });
-    if (!t) { t = { id: randomUUID(), channel, messages: [], status: 'idle' }; state.threads.push(t); }
+    if (!t) { t = { id: randomUUID(), channel, messages: [], status: 'idle', ...(localOnly ? { readOnly: true } : {}) }; state.threads.push(t); }
     add(t, author, text.trim(), requestId); await save(); await deliver(t); return t;
   };
+  let batchTimer;
+  const batchComplete = batch => (cfg.batchRequiredAlerts || []).every(name =>
+    batch.alerts.some(alert => alert.labels.alertname === name));
+  const flushBatch = async () => {
+    const batch = state.alertBatch;
+    if (!batch || batch.status !== 'pending' || !cfg.batchWebhook || !batchComplete(batch)) return;
+    batch.status = 'sending'; await save();
+    const message = `Alert storm (${batch.alerts.length} alerts)\n\n` + batch.alerts.map(a =>
+      `${a.labels.alertname || 'Alert'} | scenario: ${a.labels.scenario || '-'} | severity: ${a.labels.severity || '-'}\n${a.annotations?.summary || ''}\nstartsAt: ${a.startsAt || '-'}\nlabels: ${JSON.stringify(a.labels)}`).join('\n\n');
+    let note;
+    try {
+      const response = await fetch(cfg.batchWebhook, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cfg.batchSecret ? { Authorization: `Bearer ${cfg.batchSecret}` } : {}) },
+        body: JSON.stringify({ message, channel: cfg.alertmanagerChannel, alerts: batch.alerts }), redirect: 'error', signal: AbortSignal.timeout(20000) });
+      if (!response.ok) throw new Error('Batch delivery failed');
+      const result = await response.json().catch(() => ({}));
+      const id = result.session_id || result.devin_id;
+      batch.status = 'delivered';
+      note = `Handed ${batch.alerts.length} alerts to Devin.${sessionId(id) ? ` ${safeUrl(id)}` : ''}`;
+    } catch {
+      batch.status = 'uncertain';
+      note = 'Alert batch delivery was not confirmed. Check the automation history before retrying.';
+    }
+    const thread = { id: randomUUID(), channel: cfg.alertmanagerChannel, messages: [], status: batch.status, readOnly: true };
+    add(thread, 'devin', note); state.threads.push(thread); await save();
+  };
+  const scheduleBatch = () => {
+    clearTimeout(batchTimer);
+    if (state.alertBatch?.status === 'pending') {
+      let delay = batchFirstAt(state.alertBatch) + cfg.batchMaxAgeMs - Date.now();
+      if (cfg.batchWebhook && batchComplete(state.alertBatch)) delay = Math.min(delay, (state.alertBatch.lastAt ?? batchFirstAt(state.alertBatch)) + cfg.batchQuietMs - Date.now());
+      batchTimer = setTimeout(() => serial(async () => {
+        if (expireBatch()) { await save(); return; }
+        await flushBatch(); scheduleBatch();
+      }).catch(() => {}), Math.max(0, delay));
+      batchTimer.unref();
+    }
+  };
+  scheduleBatch();
   const poll = () => serial(async () => {
     const mirrored = new Set();
     for (const t of state.threads) t.replyMirror = false;
@@ -195,27 +272,43 @@ export async function createApp(cfg = config()) {
     try {
       const url = new URL(req.url, 'http://localhost');
       if (req.method === 'GET' && url.pathname === '/healthz') return json(res, 200, { ok: true });
+      if (req.method === 'POST' && url.pathname === '/api/alert-batch/reset') {
+        if (!secretEqual(req.headers['x-webhook-secret'] || '', cfg.receiverSecret)) return json(res, 401, { error: 'Receiver authentication required' });
+        return json(res, 200, await serial(async () => {
+          const reset = state.alertBatch?.status === 'pending';
+          if (reset) {
+            discardBatch(`Discarded pending alert batch (${state.alertBatch.alerts.length} alerts) by operator reset.`);
+            clearTimeout(batchTimer); await save();
+          }
+          return { reset };
+        }));
+      }
       if (req.method === 'POST' && url.pathname === '/receivers/alertmanager') {
         if (!secretEqual(req.headers['x-webhook-secret'] || '', cfg.receiverSecret)) return json(res, 401, { error: 'Receiver authentication required' });
         const data = await body(req);
         const alerts = data.alerts;
         if (!Array.isArray(alerts) || alerts.length > 100) return json(res, 400, { error: 'Expected an Alertmanager webhook with alerts' });
         return json(res, 200, await serial(async () => {
+          expireBatch();
           const ids = [];
           for (const alert of alerts) {
             if (!alert.labels || typeof alert.labels !== 'object') continue;
-            const key = createHash('sha256').update(JSON.stringify([alert.fingerprint || alert.labels, alert.startsAt])).digest('hex');
-            if (state.alerts[key] || alert.status === 'resolved') continue;
+            const key = alertKey(alert);
+            if (state.alerts[key] || (alert.status || data.status) === 'resolved') continue;
             const t = await post({ channel: cfg.alertmanagerChannel, author: 'alertmanager', text: `${alert.labels.alertname || 'Alert'} (${alert.status || data.status || 'firing'})\n${alert.annotations?.summary || ''}\n${JSON.stringify(alert.labels)}`,
-              requestId: `alert-${key}` });
+              requestId: `alert-${key}`, localOnly: Boolean(cfg.batchWebhook) });
             state.alerts[key] = t.id; ids.push(t.id);
+            if (cfg.batchWebhook) {
+              if (state.alertBatch?.status !== 'pending') state.alertBatch = { alerts: [], status: 'pending', firstAt: Date.now() };
+              state.alertBatch.alerts.push(alert); state.alertBatch.lastAt = Date.now();
+            }
           }
-          await save(); return { threadIds: ids };
+          await save(); if (ids.length) scheduleBatch(); return { threadIds: ids };
         }));
       }
       // The browser sends JSON plus a custom header; cross-origin forms cannot submit chat writes.
       if (req.method === 'POST' && (!req.headers['content-type']?.startsWith('application/json') || req.headers['x-workspace-client'] !== 'mock-slack' || (req.headers.origin && req.headers.origin !== `http://${req.headers.host}` && req.headers.origin !== `https://${req.headers.host}`))) return json(res, 403, { error: 'Same-origin workspace request required' });
-      if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { users, channels, threads: state.threads, mirrorError: cfg.transcriptFile ? state.mirrorError || null : null, configured: cfg.route === 'webhook' ? Boolean(cfg.webhook && cfg.webhookSecret) : Boolean(cfg.key && cfg.org), route: cfg.route });
+      if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { users, channels, threads: state.threads, alertBatch: state.alertBatch ? { status: state.alertBatch.status, alertCount: state.alertBatch.alerts.length } : null, mirrorError: cfg.transcriptFile ? state.mirrorError || null : null, configured: cfg.route === 'webhook' ? Boolean(cfg.webhook && cfg.webhookSecret) : Boolean(cfg.key && cfg.org), route: cfg.route });
       if (req.method === 'POST' && url.pathname === '/api/messages') return json(res, 200, await serial(async () => post(await body(req))));
       const files = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'] };
       if (req.method === 'GET' && files[url.pathname]) {
@@ -227,7 +320,7 @@ export async function createApp(cfg = config()) {
   let polling = false;
   const timer = setInterval(() => { if (!polling) { polling = true; poll().catch(() => {}).finally(() => { polling = false; }); } }, cfg.pollMs);
   timer.unref();
-  server.on('close', () => clearInterval(timer));
+  server.on('close', () => { clearInterval(timer); clearTimeout(batchTimer); });
   return { server, poll };
 }
 

@@ -134,6 +134,39 @@ the volume is full.
   replicas running for 200 s: ≥ 2 new windows landed, 0 new duplicates, gauge
   at 0, alert inactive.
 
+## Concurrent local scenarios
+
+`make arm SCENARIO=all` arms every catalog scenario. A comma list such as
+`make arm SCENARIO=n-plus-one,cache-leak` selects a subset. To add scenarios,
+disarm first and arm the full set in one command so the coordinator stages the
+loads safely. Re-arming the same set is allowed. Each load profile runs in a separate process.
+`make disarm` stops every load and reverses every armed scenario. Verification
+gates still require a single armed scenario; concurrent loads change the
+measurements and are intended for the alert-storm demo.
+
+When a multi-arm command includes cache-leak, the coordinator starts with a
+2 GiB ceiling, a 16 MiB log volume and half-rate render load. After 30 seconds
+it stops render traffic, retaining the cache entries. It runs list traffic
+until the list and rollup pages fire, then stops that traffic before enabling
+request logging. After the volume page fires, it stops logging traffic and
+lowers the ceiling around retained RSS, with room
+above measured cgroup usage, so the memory page can complete its hold period.
+The arm command waits for these pages and leaves the generators paused until
+disarm. Single-scenario loads, limits and verification gates stay unchanged.
+Disarm before retrying a timed-out storm.
+
+For one batch even when a stage takes longer than the quiet window, set
+`ALERT_BATCH_REQUIRED_ALERTS` on mock Slack to the comma-separated paging names
+in the table above (excluding the diagnostic fan-out and optional error-rate
+alerts). A partial batch stays pending until all required names arrive.
+
+The incident overlay disables SNS for both document-service replicas, so the
+fixture doesn't need LocalStack. Both replicas use the same image
+tag, built by `make incident-up`; double-run can start its replica with
+`--no-build`. For mock Slack delivery, use the
+[receiver overlay](../demo-platform/collection/mock-slack/README.md) in
+`INCIDENT_COMPOSE` for startup, arm and disarm.
+
 ## Where the page goes
 
 Alertmanager routes every `page: devin` alert to two receivers: the Devin

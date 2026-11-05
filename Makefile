@@ -470,7 +470,7 @@ demo-reaper: ## Report (default) or destroy (APPLY=1) expired demo namespaces ac
 
 # --- Incident responder (see incident/README.md and .agents/skills/incident-responder) ---
 INCIDENT = uv run incident/incident.py
-INCIDENT_COMPOSE = docker compose -f docker-compose.yml -f docker-compose.infra.yml -f docker-compose.incident.yml
+export INCIDENT_COMPOSE ?= docker compose -f docker-compose.yml -f docker-compose.infra.yml -f docker-compose.incident.yml
 
 INCIDENT_SERVICES = postgres redis localstack otel-collector jaeger prometheus grafana alertmanager alert-sink document-service
 # UI=1 also builds the gateway + web front end so the slowness can be shown in the browser.
@@ -484,7 +484,7 @@ incident-up: ## Start document-service + observability + Alertmanager for the in
 incident-down: ## Stop the incident demo stack (keeps volumes)
 	$(INCIDENT_COMPOSE) --profile double-run down
 
-incident-arm: ## Plant one scenario and start deterministic load (SCENARIO=n-plus-one|log-flood|cache-leak|double-run)
+incident-arm: ## Arm scenarios and start load (SCENARIO=all, a name, or comma-separated names)
 ifndef SCENARIO
 	$(error SCENARIO is required, e.g. make incident-arm SCENARIO=n-plus-one)
 endif
