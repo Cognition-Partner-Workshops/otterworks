@@ -11,15 +11,39 @@ import java.util.Map;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import org.postgresql.ds.PGSimpleDataSource;
 
 public class StatementDao {
     private final DataSource ds;
 
     public StatementDao() {
+        String url = System.getenv("JDBC_URL");
+        if (url != null) {
+            PGSimpleDataSource configured = new PGSimpleDataSource();
+            configured.setURL(url);
+            configured.setUser(requiredEnv("DB_USER"));
+            configured.setPassword(requiredEnv("DB_PASSWORD"));
+            ds = configured;
+            return;
+        }
         try {
             ds = (DataSource) new InitialContext().lookup("java:comp/env/jdbc/StatementsDB");
         } catch (NamingException e) {
             throw new IllegalStateException("datasource jdbc/StatementsDB not bound", e);
+        }
+    }
+
+    private static String requiredEnv(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isEmpty()) {
+            throw new IllegalStateException(name + " is required");
+        }
+        return value;
+    }
+
+    public boolean healthy() throws SQLException {
+        try (Connection c = ds.getConnection()) {
+            return c.isValid(2);
         }
     }
 

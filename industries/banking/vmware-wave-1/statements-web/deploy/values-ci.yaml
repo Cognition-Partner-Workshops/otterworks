@@ -1,0 +1,2 @@
+env:
+  JDBC_URL: jdbc:postgresql://statements-db.deps:5432/bankwave

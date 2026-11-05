@@ -6,10 +6,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.log4j.Logger;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class AccountsServlet extends HttpServlet {
-    private static final Logger LOG = Logger.getLogger(AccountsServlet.class);
+    private static final Logger LOG = Logger.getLogger(AccountsServlet.class.getName());
     private transient StatementDao dao;
 
     @Override
@@ -24,7 +25,7 @@ public class AccountsServlet extends HttpServlet {
             resp.setContentType("text/html;charset=UTF-8");
             resp.getWriter().write(Html.accounts(AppConfig.bankName(), dao.accounts(), last));
         } catch (SQLException e) {
-            LOG.error("accounts query failed", e);
+            LOG.log(Level.SEVERE, "accounts query failed", e);
             throw new ServletException(e);
         }
     }
