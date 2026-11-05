@@ -27,6 +27,7 @@ logger = structlog.get_logger()
 # committed by another replica after this process's own rollup is still reported
 # from this process's /metrics.
 DUPLICATE_RECHECK_DELAY_SECONDS = 10
+ROLLUP_LOCK_ID = 0x4F57524F4C4C5550
 
 
 def current_window(now: datetime | None = None) -> datetime:
@@ -36,23 +37,18 @@ def current_window(now: datetime | None = None) -> datetime:
     return datetime.fromtimestamp(epoch - epoch % interval, tz=UTC)
 
 
-async def own_rollup(db: AsyncSession, window_start: datetime) -> DocumentStatsRollup | None:
-    """The row this host already wrote for `window_start`, if any."""
-    return (
-        await db.execute(
-            select(DocumentStatsRollup).where(
-                DocumentStatsRollup.window_start == window_start,
-                DocumentStatsRollup.computed_by == socket.gethostname(),
-            )
-        )
-    ).scalar_one_or_none()
-
-
-async def compute_rollup(db: AsyncSession, window_start: datetime) -> DocumentStatsRollup:
-    # A restart inside the window must not double the window: this host's own
-    # earlier row wins. Rows other hosts wrote are not consulted here.
-    if (done := await own_rollup(db, window_start)) is not None:
-        return done
+async def compute_rollup(db: AsyncSession, window_start: datetime) -> DocumentStatsRollup | None:
+    # Hold coordination through the commit; a waiting replica must check again
+    # after the winner's row becomes visible (PostgreSQL READ COMMITTED).
+    await db.execute(select(func.pg_advisory_xact_lock(ROLLUP_LOCK_ID)))
+    existing = await db.execute(
+        select(DocumentStatsRollup.id)
+        .where(DocumentStatsRollup.window_start == window_start)
+        .limit(1)
+    )
+    if existing.scalar_one_or_none() is not None:
+        await db.commit()
+        return None
 
     live = Document.is_deleted.is_(False)
     documents_total = (
@@ -105,13 +101,17 @@ async def run_once(session_factory: async_sessionmaker[AsyncSession]) -> None:
             ROLLUP_RUNS_TOTAL.labels(SERVICE, "error").inc()
             logger.exception("stats_rollup_failed", window_start=window.isoformat())
             return
-        ROLLUP_RUNS_TOTAL.labels(SERVICE, "success").inc()
-        logger.info(
-            "stats_rollup_completed",
-            window_start=window.isoformat(),
-            documents_total=row.documents_total,
-            versions_total=row.versions_total,
-        )
+        if row is None:
+            ROLLUP_RUNS_TOTAL.labels(SERVICE, "skipped").inc()
+            logger.info("stats_rollup_skipped", window_start=window.isoformat())
+        else:
+            ROLLUP_RUNS_TOTAL.labels(SERVICE, "success").inc()
+            logger.info(
+                "stats_rollup_completed",
+                window_start=window.isoformat(),
+                documents_total=row.documents_total,
+                versions_total=row.versions_total,
+            )
     await refresh_duplicate_gauge(session_factory, window)
 
 
