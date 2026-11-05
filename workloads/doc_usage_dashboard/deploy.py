@@ -31,7 +31,6 @@ APP = sf.streamlit_name(WORKLOAD)
 STAGE = f"{SCHEMA}.{WORKLOAD.upper()}_APP_STAGE"
 APP_ROLE = f"{sf.RUN_TOKEN}_{WORKLOAD.upper()}_APP"
 VIEWER_ROLE = f"{sf.RUN_TOKEN}_{WORKLOAD.upper()}_VIEWER"
-READER_ROLE = f"{sf.RUN_TOKEN}_READER"
 ADMIN_ROLE = "DEVIN_EXT_ROLE"
 APP_FILES = ("streamlit_app.py", "dashboard.py", "environment.yml")
 
@@ -41,7 +40,6 @@ def provision_sql(rsa_public_key: str) -> list[str]:
     return [
         f"CREATE ROLE IF NOT EXISTS {APP_ROLE} COMMENT = {role_comment}",
         f"CREATE ROLE IF NOT EXISTS {VIEWER_ROLE} COMMENT = {role_comment}",
-        f"GRANT ROLE {READER_ROLE} TO ROLE {APP_ROLE}",
         f"GRANT USAGE ON DATABASE {DB} TO ROLE {APP_ROLE}",
         f"GRANT USAGE ON SCHEMA {SCHEMA} TO ROLE {APP_ROLE}",
         f"GRANT SELECT ON TABLE {TABLE} TO ROLE {APP_ROLE}",

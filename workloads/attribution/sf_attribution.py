@@ -401,6 +401,7 @@ def service_user_ddl(ep: Endpoint, *, rsa_public_key: str, role: str | None = No
         f"CREATE USER IF NOT EXISTS {ep.service_user} TYPE = SERVICE",
         f"RSA_PUBLIC_KEY = {sql_string(key)}",
         f"DEFAULT_WAREHOUSE = {ep.warehouse}",
+        "DEFAULT_SECONDARY_ROLES = ()",
     ]
     if role:
         parts.append(f"DEFAULT_ROLE = {role}")

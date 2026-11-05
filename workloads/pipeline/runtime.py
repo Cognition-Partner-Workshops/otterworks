@@ -77,6 +77,26 @@ def bootstrap_sql(workload):
         }.items():
             yield f"ALTER TABLE {target} ADD COLUMN IF NOT EXISTS {column} {datatype}"
         yield f"COMMENT ON TABLE {target} IS {comment}"
+        if "email" in columns:
+            yield raw_email_mask_sql(workload, name)
+
+
+def raw_email_mask_sql(workload, table):
+    db = sf.database_name(workload)
+    policy = f"{sf.database_name('doc_usage_dashboard')}.APP.EMAIL_MASK"
+    return f"""EXECUTE IMMEDIATE $$
+DECLARE
+    policy_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO :policy_count
+    FROM TABLE({db}.INFORMATION_SCHEMA.POLICY_REFERENCES(
+        REF_ENTITY_NAME => '{db}.RAW.{table}', REF_ENTITY_DOMAIN => 'TABLE'))
+    WHERE REF_COLUMN_NAME = 'EMAIL' AND POLICY_KIND = 'MASKING_POLICY';
+    IF (policy_count = 0) THEN
+        ALTER TABLE {db}.RAW.{table} MODIFY COLUMN EMAIL SET MASKING POLICY {policy};
+    END IF;
+END;
+$$"""
 
 
 def copy_sql(workload, force=False):

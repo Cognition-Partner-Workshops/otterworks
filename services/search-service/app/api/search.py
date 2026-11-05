@@ -6,7 +6,7 @@ import os
 
 import redis as redis_lib
 import structlog
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, request
 
 from app.api.health import SEARCH_COUNT
 from app.services.meilisearch_client import MeiliSearchService, get_search_analytics
@@ -46,8 +46,7 @@ def search_documents() -> tuple:
     """Full-text search across documents and files.
 
     Query params: q (required), type, page, size
-    Results are automatically scoped to the authenticated user via the
-    ``X-User-ID`` header set by the API gateway.
+    Results are automatically scoped to the verified JWT identity.
     """
     query = request.args.get("q", "")
     try:
@@ -56,7 +55,7 @@ def search_documents() -> tuple:
     except (ValueError, TypeError):
         return jsonify({"error": "Invalid page or size parameter"}), 400
     doc_type = request.args.get("type")
-    owner_id = request.headers.get("X-User-ID", "").strip() or None
+    owner_id = g.user_id
 
     if not query:
         return jsonify({"error": "Query parameter 'q' is required"}), 400
@@ -121,13 +120,13 @@ def advanced_search() -> tuple:
     """Advanced search with filters: date range, owner, type, tags.
 
     JSON body: {q, type, tags, date_from, date_to, page, size}
-    owner_id is always derived from X-User-ID for tenant isolation.
+    owner_id is always derived from the verified JWT for tenant isolation.
     """
     data = request.get_json() or {}
 
     query = data.get("q")
     doc_type = data.get("type")
-    owner_id = request.headers.get("X-User-ID", "").strip() or None
+    owner_id = g.user_id
     tags = data.get("tags")
     date_from = data.get("date_from")
     date_to = data.get("date_to")

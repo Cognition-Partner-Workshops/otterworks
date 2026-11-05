@@ -286,6 +286,7 @@ def test_service_user_is_key_pair_only():
     sql = sf.service_user_ddl(EP, rsa_public_key="-----BEGIN PUBLIC KEY-----\nMIIB\nAQAB\n-----END PUBLIC KEY-----")
     assert sql.startswith("CREATE USER IF NOT EXISTS SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE TYPE = SERVICE")
     assert "RSA_PUBLIC_KEY = 'MIIBAQAB'" in sql and "PASSWORD" not in sql
+    assert "DEFAULT_SECONDARY_ROLES = ()" in sql
     with pytest.raises(sf.AttributionError):
         sf.service_user_ddl(EP, rsa_public_key="-----BEGIN PUBLIC KEY-----\n-----END PUBLIC KEY-----")
 

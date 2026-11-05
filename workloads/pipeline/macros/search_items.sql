@@ -22,7 +22,7 @@ with parsed_events as (
  select a.window_end_date,a.account_id,'document' as item_type,null::varchar(500) as term,
   d.id::varchar(36) as document_id,d.title::varchar(500) as document_title,
   count(*) as search_count,null::number(10,0) as zero_result_count,max(a.searched_at) as last_searched_at
- from appearances a join {{ documents }} d on a.document_id=d.id
+ from appearances a join {{ documents }} d on a.document_id=d.id and d.owner_id=a.account_id
  where not d.is_deleted group by 1,2,3,4,5,6
 ), combined as (select * from terms union all select * from docs), ranked as (
  select *,row_number() over(partition by window_end_date,account_id,item_type

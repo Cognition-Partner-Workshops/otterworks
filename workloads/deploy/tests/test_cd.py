@@ -331,15 +331,66 @@ def test_install_reuses_selected_runtime_installer(tmp_path, capsys, dry_run):
 
 
 def test_ephemeral_slot_cleanup_on_deploy_failure():
-    app = SimpleNamespace(EP=SimpleNamespace(service_user="SVC_TEST"), APP_ROLE="APP_ROLE",
+    ep = cd.sf.endpoint("cs_doc_usage_dashboard_account_usage")
+    app = SimpleNamespace(EP=ep, APP_ROLE="APP_ROLE",
                           _key_body=lambda pem: "public-only", build_stage_dir=MagicMock(side_effect=RuntimeError("broken")))
     with patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), \
             patch.object(cd, "execute") as execute, pytest.raises(RuntimeError):
         cd.streamlit(app, {}, "a" * 40, MagicMock())
     statements = [c.args[1] for c in execute.call_args_list]
-    assert "SET RSA_PUBLIC_KEY_2" in statements[0]
-    assert statements[-1] == "ALTER USER SVC_TEST UNSET RSA_PUBLIC_KEY_2"
+    assert statements[0].startswith(f"CREATE USER IF NOT EXISTS {ep.service_user} TYPE = SERVICE")
+    assert "DEFAULT_ROLE = APP_ROLE" in statements[0]
+    assert "DEFAULT_SECONDARY_ROLES = ()" in statements[0]
+    assert statements[1] == f"GRANT ROLE APP_ROLE TO USER {ep.service_user}"
+    assert "SET RSA_PUBLIC_KEY_2" in statements[2]
+    assert statements[-1] == f"ALTER USER {ep.service_user} UNSET RSA_PUBLIC_KEY_2"
     assert all("SET RSA_PUBLIC_KEY =" not in sql for sql in statements)
+
+
+def test_streamlit_fresh_user_is_created_before_key_alter():
+    ep = cd.sf.endpoint("cs_doc_usage_dashboard_account_usage")
+    role = f"{cd.sf.RUN_TOKEN}_DOC_USAGE_DASHBOARD_APP"
+    app = SimpleNamespace(EP=ep, APP_ROLE=role, _key_body=lambda pem: "public-only",
+                          build_stage_dir=MagicMock(), deploy_sql=lambda stage: [])
+    exists = False
+
+    def execute(conn, sql, log):
+        nonlocal exists
+        if sql.startswith("CREATE USER IF NOT EXISTS"):
+            exists = True
+        if sql.startswith("ALTER USER"):
+            assert exists
+
+    with patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), \
+            patch.object(cd, "execute", side_effect=execute) as run:
+        cd.streamlit(app, {}, "a" * 40, MagicMock())
+    statements = [call.args[1] for call in run.call_args_list]
+    assert exists
+    assert "DEFAULT_SECONDARY_ROLES = ()" in statements[0]
+    assert f"DEFAULT_ROLE = {role}" in statements[0]
+    assert statements[1] == f"GRANT ROLE {role} TO USER {ep.service_user}"
+    assert "SET RSA_PUBLIC_KEY_2" in statements[2]
+
+
+def test_streamlit_does_not_unset_a_key_when_install_fails():
+    ep = cd.sf.endpoint("cs_doc_usage_dashboard_account_usage")
+    app = SimpleNamespace(EP=ep, APP_ROLE="APP_ROLE", _key_body=lambda pem: "public-only")
+    with patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), \
+            patch.object(cd, "execute", side_effect=[None, None, RuntimeError("denied")]) as execute:
+        with pytest.raises(RuntimeError, match="denied"):
+            cd.streamlit(app, {}, "a" * 40, MagicMock())
+    assert execute.call_count == 3
+
+
+def test_dashboard_provision_uses_direct_app_select_without_reader_role():
+    app = cd.module(cd.REPO, "workloads/doc_usage_dashboard/deploy.py", "dashboard_grants_test")
+    statements = app.provision_sql("test-public-key")
+    assert not any(f"GRANT ROLE {cd.sf.RUN_TOKEN}_READER" in sql for sql in statements)
+    assert [sql for sql in statements if sql.startswith("GRANT SELECT")] == [
+        f"GRANT SELECT ON TABLE {app.EP.database}.APP.ACCOUNT_STORAGE_USAGE TO ROLE {app.APP_ROLE}",
+    ]
+    create = next(sql for sql in statements if sql.startswith("CREATE USER"))
+    assert "TYPE = SERVICE" in create and "DEFAULT_SECONDARY_ROLES = ()" in create
 
 
 def test_dbt_failure_names_failing_tests(tmp_path):

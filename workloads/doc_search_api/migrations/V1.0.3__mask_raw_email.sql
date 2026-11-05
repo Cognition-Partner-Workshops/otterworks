@@ -1,0 +1,19 @@
+EXECUTE IMMEDIATE $$
+DECLARE
+    column_count INTEGER;
+    policy_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO :column_count FROM {{ database }}.INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = 'RAW' AND TABLE_NAME = 'ADMIN_ADMIN_USERS' AND COLUMN_NAME = 'EMAIL';
+    IF (column_count > 0) THEN
+        SELECT COUNT(*) INTO :policy_count
+        FROM TABLE({{ database }}.INFORMATION_SCHEMA.POLICY_REFERENCES(
+            REF_ENTITY_NAME => '{{ database }}.RAW.ADMIN_ADMIN_USERS', REF_ENTITY_DOMAIN => 'TABLE'))
+        WHERE REF_COLUMN_NAME = 'EMAIL' AND POLICY_KIND = 'MASKING_POLICY';
+        IF (policy_count = 0) THEN
+            ALTER TABLE {{ database }}.RAW.ADMIN_ADMIN_USERS MODIFY COLUMN EMAIL
+                SET MASKING POLICY {{ database | replace('DB_DOC_SEARCH_API_', 'DB_DOC_USAGE_DASHBOARD_') }}.APP.EMAIL_MASK;
+        END IF;
+    END IF;
+END;
+$$;

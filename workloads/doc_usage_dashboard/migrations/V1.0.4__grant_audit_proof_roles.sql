@@ -1,0 +1,2 @@
+GRANT ROLE {{ reader }} TO USER DEVIN_EXT_SVC;
+GRANT ROLE {{ analyst }} TO USER DEVIN_EXT_SVC;

@@ -37,6 +37,8 @@ class SQSConfig:
 class AuthConfig:
     """Authentication configuration for the search service."""
 
+    jwt_secret: str = field(default_factory=lambda: os.getenv("JWT_SECRET", ""))
+    jwt_peer_secret: str = field(default_factory=lambda: os.getenv("JWT_PEER_SECRET", ""))
     service_token: str = field(
         default_factory=lambda: os.getenv("SEARCH_SERVICE_TOKEN", "")
     )

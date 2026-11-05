@@ -4,7 +4,7 @@ import re
 from datetime import date
 from uuid import UUID
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, g, jsonify, request
 
 from app.services.insights import InsightsTimeout, InsightsUnavailable
 
@@ -34,11 +34,8 @@ def top_items(account_id):
             date.fromisoformat(window)
         except ValueError:
             return error("invalid_window_end_date", "window_end_date must be YYYY-MM-DD", 400)
-    auth = current_app.config["APP_CONFIG"].auth
-    token = request.headers.get("Authorization", "")
-    service = bool(auth.service_token) and token[:7].lower() == "bearer " and token[7:].strip() == auth.service_token
-    user = request.headers.get("X-User-ID", "").strip()
-    if user and not service:
+    user = g.user_id
+    if user and not g.service_authenticated:
         try:
             same_account = UUID(user) == UUID(account_id)
         except ValueError:

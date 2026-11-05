@@ -6,20 +6,18 @@ either of two authentication modes:
 * A valid service-to-service token via ``Authorization: Bearer <token>``
   (used by trusted internal callers such as the SQS indexer or admin
   reindex jobs).
-* The ``X-User-ID`` header injected by the API gateway after it has
-  validated the caller's JWT (used by user-facing requests proxied
-  through the gateway).
+* A JWT verified with the same HMAC keys as the API gateway.
 
 If a service token is configured the middleware will accept it on any
 endpoint; if it is not configured (e.g. local dev), only the gateway
-identity path is available and internal endpoints become reachable only
-via the gateway.
+JWT identity path is available.
 """
 
 from __future__ import annotations
 
+import jwt
 import structlog
-from flask import jsonify, request
+from flask import g, jsonify, request
 
 logger = structlog.get_logger()
 
@@ -31,15 +29,14 @@ def require_auth(app):
 
     * Requests to health/metrics paths are always allowed.
     * All other requests must present either a valid service token in
-      the ``Authorization`` header or an ``X-User-ID`` header set by
-      the API gateway after JWT validation.
+      the ``Authorization`` header or a verified user JWT.
     """
     auth_config = app.config["APP_CONFIG"].auth
 
     @app.before_request
     def _check_auth():
-        if not auth_config.require_auth:
-            return None
+        g.user_id = None
+        g.service_authenticated = False
 
         path = request.path
         if any(path.startswith(p) for p in PUBLIC_PREFIXES):
@@ -49,11 +46,30 @@ def require_auth(app):
         if auth_config.service_token:
             token = _extract_bearer_token()
             if token and token == auth_config.service_token:
+                g.service_authenticated = True
                 return None
 
-        # Otherwise require gateway-injected user identity.
-        user_id = request.headers.get("X-User-ID", "").strip()
-        if user_id:
+        token = _extract_bearer_token()
+        if token:
+            for secret in (auth_config.jwt_secret, auth_config.jwt_peer_secret):
+                if not secret:
+                    continue
+                try:
+                    claims = jwt.decode(
+                        token, secret, algorithms=["HS256", "HS384", "HS512"],
+                        options={"verify_aud": False, "verify_iat": False},
+                    )
+                except jwt.InvalidTokenError:
+                    continue
+                user_id = claims.get("sub") or claims.get("user_id")
+                if not isinstance(user_id, str) or not user_id.strip():
+                    break
+                forwarded = request.headers.get("X-User-ID", "").strip()
+                if forwarded and forwarded != user_id:
+                    return jsonify({"error": "forbidden"}), 403
+                g.user_id = user_id
+                return None
+        elif not auth_config.require_auth:
             return None
 
         endpoint = request.endpoint or ""

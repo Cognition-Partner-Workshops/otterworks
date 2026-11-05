@@ -131,6 +131,46 @@ def test_admin_history_and_monitor_statements():
         assert f"ALTER WAREHOUSE {sf.warehouse_name(name)} SET RESOURCE_MONITOR = {sf.resource_monitor_name(name)}" in sql
 
 
+def test_audit_proof_migrations_surround_runtime_grant_fix():
+    rendered = dict(foundation.render(
+        foundation.ROOT / "doc_usage_dashboard" / "migrations",
+        foundation.template_vars("doc_usage_dashboard"),
+    ))
+    names = list(rendered)
+    proof = "V1.0.4__grant_audit_proof_roles.sql"
+    fix = "V1.0.5__narrow_runtime_grants.sql"
+    cleanup = "V1.0.6__revoke_audit_proof_roles.sql"
+    assert names.index(proof) < names.index(fix) < names.index(cleanup)
+    for role in ("READER", "ANALYST"):
+        assert f"GRANT ROLE {sf.RUN_TOKEN}_{role} TO USER DEVIN_EXT_SVC" in rendered[proof]
+        assert f"REVOKE ROLE {sf.RUN_TOKEN}_{role} FROM USER DEVIN_EXT_SVC" in rendered[cleanup]
+    app_role = f"{sf.RUN_TOKEN}_DOC_USAGE_DASHBOARD_APP"
+    assert f"REVOKE ROLE {sf.RUN_TOKEN}_READER FROM ROLE {app_role};" in rendered[fix]
+    selects = re.findall(r"GRANT SELECT ON TABLE ([\w.]+) TO ROLE (\w+);", rendered[fix])
+    assert selects == [(f"{sf.database_name('doc_usage_dashboard')}.APP.ACCOUNT_STORAGE_USAGE", app_role)]
+    for user in ("DOC_USAGE_DASHBOARD_ACCOUNT_USAGE", "DOC_SEARCH_API_TOP_ITEMS", "CHURN_MODEL_ACCOUNT_SCORE"):
+        assert f"ALTER USER IF EXISTS SVC_CS_{user} SET DEFAULT_SECONDARY_ROLES = ()" in rendered[fix]
+    assert "DEVIN_EXT_ROLE" not in rendered[fix]
+
+
+def test_raw_email_migrations_are_guarded_and_follow_dashboard_policy_creation():
+    jobs = foundation.migration_jobs(False)
+    workloads = [workload for workload, _, _ in jobs]
+    for workload, version in (("doc_search_api", "V1.0.3"), ("churn_model", "V1.0.5")):
+        assert workloads.index("doc_usage_dashboard") < workloads.index(workload)
+        rendered = dict(foundation.render(
+            foundation.ROOT / workload / "migrations", foundation.template_vars(workload),
+        ))
+        sql = rendered[f"{version}__mask_raw_email.sql"]
+        assert "IF (column_count > 0) THEN" in sql
+        assert "IF (policy_count = 0) THEN" in sql
+        assert "POLICY_REFERENCES(" in sql
+        assert "REF_COLUMN_NAME = 'EMAIL' AND POLICY_KIND = 'MASKING_POLICY'" in sql
+        assert f"ALTER TABLE {sf.database_name(workload)}.RAW.ADMIN_ADMIN_USERS MODIFY COLUMN EMAIL" in sql
+        assert f"SET MASKING POLICY {sf.database_name('doc_usage_dashboard')}.APP.EMAIL_MASK;" in sql
+        assert " FORCE" not in sql and "DEVIN_EXT_ROLE" not in sql
+
+
 def test_migrations_leave_no_proof_roles_granted_to_build_user():
     grants = set()
     seen_roles = set()

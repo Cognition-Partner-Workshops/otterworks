@@ -18,7 +18,6 @@ def provision_sql(public_key=None, *, user_exists=False):
         f"GRANT USAGE ON WAREHOUSE {EP.warehouse} TO ROLE {ROLE}",
     ]
     if not user_exists:
-        statements.append(sf.service_user_ddl(EP, rsa_public_key=public_key, role=ROLE)
-                          + " DEFAULT_SECONDARY_ROLES = ()")
+        statements.append(sf.service_user_ddl(EP, rsa_public_key=public_key, role=ROLE))
     statements.append(f"GRANT ROLE {ROLE} TO USER {EP.service_user}")
     return statements

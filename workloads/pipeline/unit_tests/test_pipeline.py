@@ -135,6 +135,25 @@ def test_copy_and_merge_are_replay_safe_and_have_no_event_watermark(workload):
     assert "SFEXT_20261105A" in ddl and "2026-11-19" in ddl
 
 
+@pytest.mark.parametrize("workload", runtime.WORKLOADS)
+def test_bootstrap_masks_raw_email_after_create_and_add_column(workload):
+    statements = list(runtime.bootstrap_sql(workload))
+    target = f"{runtime.sf.database_name(workload)}.RAW.ADMIN_ADMIN_USERS"
+    mask = runtime.raw_email_mask_sql(workload, "ADMIN_ADMIN_USERS")
+    create = next(i for i, sql in enumerate(statements) if sql.startswith(f"CREATE TABLE IF NOT EXISTS {target} "))
+    add = next(i for i, sql in enumerate(statements) if sql.startswith(f"ALTER TABLE {target} ADD COLUMN IF NOT EXISTS email "))
+    assert create < add < statements.index(mask)
+    assert "IF (policy_count = 0) THEN" in mask
+    assert "REF_COLUMN_NAME = 'EMAIL' AND POLICY_KIND = 'MASKING_POLICY'" in mask
+    assert f"SET MASKING POLICY {runtime.sf.database_name('doc_usage_dashboard')}.APP.EMAIL_MASK" in mask
+    assert len([sql for sql in statements if "SET MASKING POLICY" in sql]) == 1
+
+
+def test_bootstrap_without_email_columns_does_not_attach_policy(monkeypatch):
+    monkeypatch.setattr(runtime, "TABLES", {"AUTH_USERS": ("auth", "users", {"id": "VARCHAR(36)"})})
+    assert not any("MASKING POLICY" in sql for sql in runtime.bootstrap_sql("doc_search_api"))
+
+
 @pytest.mark.skipif(
     not os.environ.get("POSTGRES_DSN"), reason="requires isolated local Postgres"
 )

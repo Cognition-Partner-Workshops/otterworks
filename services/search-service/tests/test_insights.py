@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+import jwt
 from snowflake.connector.errors import OperationalError, ProgrammingError
 
 from app.config import AuthConfig, InsightsConfig
@@ -93,7 +94,7 @@ def test_bad_account(client, account):
 
 
 def test_auth(app, client):
-    app.config["APP_CONFIG"] = replace(app.config["APP_CONFIG"], auth=AuthConfig(service_token="secret", require_auth=True))
+    app.config["APP_CONFIG"] = replace(app.config["APP_CONFIG"], auth=AuthConfig(service_token="secret", jwt_secret="jwt-test-secret", require_auth=True))
     from app.main import create_app
     from unittest.mock import patch
 
@@ -103,8 +104,13 @@ def test_auth(app, client):
     c = secured.test_client()
     assert c.get(URL).status_code == 401
     response = c.get(URL, headers={"X-User-ID": "00000000-0000-4000-8000-000000000102"})
-    assert response.status_code == 403 and response.json["error"] == "forbidden"
-    assert c.get(URL, headers={"X-User-ID": ACCOUNT}).status_code == 200
+    assert response.status_code == 401
+    assert c.get(URL, headers={"X-User-ID": ACCOUNT}).status_code == 401
+    own = jwt.encode({"sub": ACCOUNT}, "jwt-test-secret", algorithm="HS256")
+    other = jwt.encode({"sub": "00000000-0000-4000-8000-000000000102"}, "jwt-test-secret", algorithm="HS256")
+    assert c.get(URL, headers={"Authorization": f"Bearer {own}"}).status_code == 200
+    assert c.get(URL, headers={"Authorization": f"Bearer {other}"}).status_code == 403
+    assert c.get(URL, headers={"Authorization": f"Bearer {other}", "X-User-ID": ACCOUNT}).status_code == 403
     assert c.get(URL, headers={"Authorization": "Bearer secret", "X-User-ID": "other"}).status_code == 200
 
 

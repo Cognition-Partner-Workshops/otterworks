@@ -292,16 +292,21 @@ def streamlit(app, params, commit, log):
     public = key.public_key().public_bytes(serialization.Encoding.PEM,
                                           serialization.PublicFormat.SubjectPublicKeyInfo).decode()
     with closing(snowflake.connector.connect(**params)) as admin:
+        execute(admin, sf.service_user_ddl(app.EP, rsa_public_key=public, role=app.APP_ROLE), log)
+        execute(admin, f"GRANT ROLE {app.APP_ROLE} TO USER {app.EP.service_user}", log)
+        key_installed = False
         try:
             execute(admin, f"ALTER USER {app.EP.service_user} SET RSA_PUBLIC_KEY_2 = "
                     f"{sf.sql_string(app._key_body(public))}", log)
+            key_installed = True
             service = {**params, "user": app.EP.service_user, "role": app.APP_ROLE, "private_key": der(key)}
             with tempfile.TemporaryDirectory() as stage, closing(snowflake.connector.connect(**service)) as conn:
                 app.build_stage_dir(stage, commit, sf.make_run_id("doc_usage_dashboard", "runtime"))
                 for sql in app.deploy_sql(stage):
                     execute(conn, sql, log)
         finally:
-            execute(admin, f"ALTER USER {app.EP.service_user} UNSET RSA_PUBLIC_KEY_2", log)
+            if key_installed:
+                execute(admin, f"ALTER USER {app.EP.service_user} UNSET RSA_PUBLIC_KEY_2", log)
 
 
 def replace_block(text, key, value):
