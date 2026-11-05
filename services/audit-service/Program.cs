@@ -29,6 +29,7 @@ builder.Host.UseSerilog();
 var awsSection = builder.Configuration.GetSection("Aws");
 builder.Services.Configure<AwsSettings>(awsSection);
 var awsSettings = awsSection.Get<AwsSettings>() ?? new AwsSettings();
+builder.Services.AddAuditAuthorization(builder.Configuration);
 
 // AWS SDK clients
 builder.Services.AddSingleton<IAmazonDynamoDB>(_ =>
@@ -100,6 +101,8 @@ var app = builder.Build();
 // Middleware pipeline
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Prometheus metrics endpoint
 app.UseHttpMetrics();

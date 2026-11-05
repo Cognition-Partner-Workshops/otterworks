@@ -18,6 +18,7 @@ module Api
       #     ]
       #   }
       class AlertsController < ApplicationController
+        skip_before_action :require_admin!, only: :ingest
         before_action :verify_alert_secret
 
         SEVERITY_MAP = {
@@ -128,13 +129,13 @@ module Api
 
         def verify_alert_secret
           expected = ENV.fetch('ALERT_WEBHOOK_SECRET', nil)
-          return if expected.nil? # not configured → allow (dev/test)
+          return if expected.blank? && Rails.env.development?
 
           # Accept either X-Alert-Secret header or Authorization: Bearer <secret>
           # (Grafana webhook contact points send the token as a Bearer header)
           provided = request.headers['X-Alert-Secret'].presence ||
                      request.headers['Authorization'].to_s.delete_prefix('Bearer ').presence
-          return if provided == expected
+          return if expected.present? && ActiveSupport::SecurityUtils.secure_compare(provided.to_s, expected)
 
           render json: { error: 'Unauthorized' }, status: :unauthorized
         end

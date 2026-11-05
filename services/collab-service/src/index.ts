@@ -14,6 +14,7 @@ import { DocumentStore } from './services/document-store';
 import { AwarenessService } from './services/awareness';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
+import { canEditDocument } from './services/document-access';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { setupWSConnection } = require('y-websocket/bin/utils');
@@ -135,7 +136,7 @@ wss.on('connection', (conn, req) => {
 });
 
 // Route WebSocket upgrades: Socket.IO paths go to Socket.IO, all others to y-websocket
-httpServer.on('upgrade', (request, socket, head) => {
+httpServer.on('upgrade', async (request, socket, head) => {
   if (request.url?.startsWith('/socket.io')) {
     // Socket.IO handles its own upgrades via its internal listener
     return;
@@ -155,7 +156,16 @@ httpServer.on('upgrade', (request, socket, head) => {
   }
 
   try {
-    jwt.verify(token, config.jwt.secret);
+    const claims = jwt.verify(token, config.jwt.secret) as jwt.JwtPayload;
+    const documentId = decodeURIComponent(url.pathname.slice(1));
+    if (
+      typeof claims.sub !== 'string' ||
+      !(await canEditDocument(documentId, token, claims.sub))
+    ) {
+      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+      socket.destroy();
+      return;
+    }
   } catch {
     logger.warn('y-websocket_connection_rejected: invalid token');
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');

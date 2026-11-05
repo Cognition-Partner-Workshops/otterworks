@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 import javax.validation.Valid;
 import java.io.File;
@@ -69,7 +70,11 @@ public class ReportController {
             @ApiResponse(code = 400, message = "Invalid request")
     })
     public ResponseEntity<ReportResponse> createReport(
-            @Valid @RequestBody ReportRequest request) {
+            @Valid @RequestBody ReportRequest request, Authentication authentication) {
+        if (!canAccessCategory(request.getCategory(), authentication)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        request.setRequestedBy(authentication.getName());
 
         logger.info("Report request: name={}, category={}, type={}, by={}",
                 request.getReportName(), request.getCategory(),
@@ -88,10 +93,10 @@ public class ReportController {
     })
     public ResponseEntity<ReportResponse> getReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id, Authentication authentication) {
 
         Optional<Report> report = reportService.getReport(id);
-        if (!report.isPresent()) { // LEGACY: !isPresent() instead of isEmpty()
+        if (!report.isPresent() || !canAccessReport(report.get(), authentication)) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(ReportResponse.fromEntity(report.get()));
@@ -103,16 +108,12 @@ public class ReportController {
             @ApiParam(value = "Filter by user ID")
             @RequestParam(required = false) String userId,
             @ApiParam(value = "Filter by status")
-            @RequestParam(required = false) ReportStatus status) {
+            @RequestParam(required = false) ReportStatus status, Authentication authentication) {
 
         List<Report> reports;
-        if (userId != null) {
-            reports = reportService.getReportsByUser(userId);
-        } else if (status != null) {
-            reports = reportService.getReportsByStatus(status);
-        } else {
-            reports = reportService.getReportsByStatus(ReportStatus.COMPLETED);
-        }
+        reports = reportService.getReportsByUser(authentication.getName()).stream()
+                .filter(report -> canAccessReport(report, authentication))
+                .filter(report -> status == null || status == report.getStatus()).collect(Collectors.toList());
 
         List<ReportResponse> responses = reports.stream()
                 .map(ReportResponse::fromEntity)
@@ -135,10 +136,10 @@ public class ReportController {
     })
     public ResponseEntity<Resource> downloadReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id, Authentication authentication) {
 
         Optional<Report> optReport = reportService.getReport(id);
-        if (!optReport.isPresent()) {
+        if (!optReport.isPresent() || !canAccessReport(optReport.get(), authentication)) {
             return ResponseEntity.notFound().build();
         }
 
@@ -187,7 +188,12 @@ public class ReportController {
     })
     public ResponseEntity<Void> deleteReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id, Authentication authentication) {
+
+        Optional<Report> report = reportService.getReport(id);
+        if (!report.isPresent() || !canAccessReport(report.get(), authentication)) {
+            return ResponseEntity.notFound().build();
+        }
 
         boolean deleted = reportService.deleteReport(id);
         if (!deleted) {
@@ -197,6 +203,24 @@ public class ReportController {
     }
 
     // ----- Private helpers -----
+
+    private boolean canAccessReport(Report report, Authentication authentication) {
+        return authentication.getName().equals(report.getRequestedBy())
+                && canAccessCategory(report.getCategory(), authentication);
+    }
+
+    private boolean canAccessCategory(com.otterworks.report.model.ReportCategory category,
+                                     Authentication authentication) {
+        switch (category) {
+            case AUDIT_LOG:
+            case COMPLIANCE:
+            case USER_ACTIVITY:
+                return authentication.getAuthorities().stream().anyMatch(authority ->
+                        "ROLE_ADMIN".equals(authority.getAuthority()) || "ROLE_AUDITOR".equals(authority.getAuthority()));
+            default:
+                return true;
+        }
+    }
 
     private String getContentType(com.otterworks.report.model.ReportType reportType) {
         // LEGACY: switch without enhanced syntax

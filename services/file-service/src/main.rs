@@ -11,6 +11,8 @@ mod metadata;
 mod middleware;
 mod models;
 mod storage;
+#[cfg(test)]
+mod access_tests;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

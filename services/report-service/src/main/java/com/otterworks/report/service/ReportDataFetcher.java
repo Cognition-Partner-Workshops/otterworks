@@ -5,10 +5,17 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.otterworks.report.config.AppConfig;
 import com.otterworks.report.util.ReportDateUtils;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -40,6 +47,8 @@ public class ReportDataFetcher {
 
     private final RestTemplate restTemplate;
     private final AppConfig appConfig;
+    @Value("${JWT_SECRET:}")
+    private String jwtSecret = "";
 
     // LEGACY: Guava 28 LoadingCache. Upgrade target: Caffeine (Spring Boot default) or Spring @Cacheable
     private final LoadingCache<String, List<Map<String, Object>>> dataCache;
@@ -114,7 +123,16 @@ public class ReportDataFetcher {
                 logger.info("Fetching audit data from: {}", url);
 
                 // Let RestClientException propagate so fallback data is NOT cached.
-                ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+                HttpHeaders headers = new HttpHeaders();
+                if (!jwtSecret.isEmpty()) {
+                    String token = Jwts.builder().subject("report-service")
+                            .claim("roles", Collections.singletonList("AUDITOR")).claim("type", "access")
+                            .expiration(new Date(System.currentTimeMillis() + 60000))
+                            .signWith(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8))).compact();
+                    headers.setBearerAuth(token);
+                }
+                ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET,
+                        new HttpEntity<Void>(headers), Map.class);
                 if (response.getBody() != null && response.getBody().containsKey("events")) {
                     return (List<Map<String, Object>>) response.getBody().get("events");
                 }

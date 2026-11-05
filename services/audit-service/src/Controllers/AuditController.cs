@@ -10,36 +10,44 @@ public static class AuditController
         var group = app.MapGroup("/api/v1/audit");
 
         group.MapPost("/events", RecordEvent)
+            .RequireAuthorization("AuditWrite")
             .WithName("RecordAuditEvent")
             .Produces<AuditEventResponse>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest);
 
         group.MapGet("/events", QueryEvents)
+            .RequireAuthorization("AuditRead")
             .WithName("QueryAuditEvents")
             .Produces<AuditEventPage>(StatusCodes.Status200OK);
 
         group.MapGet("/events/{id}", GetEvent)
+            .RequireAuthorization("AuditRead")
             .WithName("GetAuditEvent")
             .Produces<AuditEventResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet("/reports/user/{userId}", GetUserActivityReport)
+            .RequireAuthorization("AuditUserReport")
             .WithName("GetUserActivityReport")
             .Produces<UserActivityReport>(StatusCodes.Status200OK);
 
         group.MapGet("/resources/{resourceId}/history", GetResourceHistory)
+            .RequireAuthorization("AuditRead")
             .WithName("GetResourceHistory")
             .Produces<ResourceHistory>(StatusCodes.Status200OK);
 
         group.MapGet("/reports/compliance", GetComplianceReport)
+            .RequireAuthorization("AuditRead")
             .WithName("GetComplianceReport")
             .Produces<ComplianceReport>(StatusCodes.Status200OK);
 
         group.MapGet("/export", ExportAuditLog)
+            .RequireAuthorization("AuditRead")
             .WithName("ExportAuditLog")
             .Produces<ExportResult>(StatusCodes.Status200OK);
 
         group.MapPost("/archive", ArchiveOldEvents)
+            .RequireAuthorization("AuditRead")
             .WithName("ArchiveOldEvents")
             .Produces<ArchiveResult>(StatusCodes.Status200OK);
     }
