@@ -15,7 +15,9 @@ module.exports = {
       error_file: '/var/log/notify/err.log',
       merge_logs: true,
       env_production: {
-        NODE_ENV: 'production'
+        NODE_ENV: 'production',
+        NOTIFY_SEND_TOKEN: process.env.NOTIFY_SEND_TOKEN,
+        NOTIFY_OUTBOX_TOKEN: process.env.NOTIFY_OUTBOX_TOKEN
       }
     }
   ]

@@ -9,3 +9,5 @@ Queues customer notifications (statement ready, card payment, low balance) for t
 - API: `POST /notify` with `{"account", "kind", "fields"}`, `GET /outbox/<account>`.
 
 In the wave stand-in, `make vm-up` serves it on http://localhost:8084/.
+
+Producers must send a bearer matching `NOTIFY_SEND_TOKEN`; gateway outbox readers use the separate `NOTIFY_OUTBOX_TOKEN` bearer. Unset or empty tokens fail closed with 503 (and a startup warning); missing or incorrect bearers return 401.

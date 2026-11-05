@@ -3,3 +3,4 @@ node_modules/
 vm-logs.txt
 __pycache__/
 *.pyc
+.notify-tokens/

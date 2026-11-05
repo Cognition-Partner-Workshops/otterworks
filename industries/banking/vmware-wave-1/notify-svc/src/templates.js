@@ -11,6 +11,12 @@ function render(kind, fields) {
   if (!t) throw new Error('unknown notification kind: ' + kind);
   return t.replace(/\{(\w+)\}/g, (m, k) => {
     if (fields[k] === undefined || fields[k] === null) throw new Error('missing field: ' + k);
+    const value = fields[k];
+    if ((typeof value !== 'string' && typeof value !== 'number') ||
+        (typeof value === 'number' && !Number.isFinite(value)) ||
+        String(value).length > 64 || /[\x00-\x1f\x7f-\x9f]|:\/\/|www\./i.test(String(value))) {
+      throw new Error('invalid field: ' + k);
+    }
     return String(fields[k]);
   });
 }

@@ -72,6 +72,9 @@ services:
       - "127.0.0.1:8083:5000"
 
   notify-01:
+    environment:
+      NOTIFY_SEND_TOKEN: ${NOTIFY_SEND_TOKEN:-}
+      NOTIFY_OUTBOX_TOKEN: ${NOTIFY_OUTBOX_TOKEN:-}
     build:
       context: ../notify-svc
       dockerfile: vm/Dockerfile
