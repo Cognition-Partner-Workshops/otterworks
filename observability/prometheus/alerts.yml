@@ -14,7 +14,7 @@ groups:
           description: >-
             {{ $labels.job }} on instance {{ $labels.instance }} has been
             unreachable for more than 1 minute.
-          runbook_url: https://docs.otterworks.dev/runbooks/service-down
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/service-down.md
 
       - alert: ServiceHighRestartRate
         expr: changes(process_start_time_seconds[15m]) > 2
@@ -47,7 +47,7 @@ groups:
           description: >-
             {{ $labels.job }} is returning more than 5% server errors
             (current value: {{ $value | humanizePercentage }}).
-          runbook_url: https://docs.otterworks.dev/runbooks/high-error-rate
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/high-error-rate.md
 
       - alert: HighClientErrorRate
         expr: >-
@@ -84,7 +84,7 @@ groups:
             The 99th percentile latency for {{ $labels.job }} has exceeded
             2 seconds for the last 5 minutes
             (current value: {{ $value | humanizeDuration }}).
-          runbook_url: https://docs.otterworks.dev/runbooks/high-latency
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/high-latency.md
 
       - alert: HighLatencyP95
         expr: >-
@@ -121,7 +121,7 @@ groups:
             {{ $labels.job }} on {{ $labels.instance }} is using more than
             80% of available memory
             (current: {{ $value | humanizePercentage }}).
-          runbook_url: https://docs.otterworks.dev/runbooks/high-memory
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/high-memory.md
 
       - alert: HighMemoryUsageCritical
         expr: >-
@@ -168,7 +168,7 @@ groups:
             Less than 15% disk space remaining on {{ $labels.instance }}
             mountpoint {{ $labels.mountpoint }}
             (available: {{ $value | humanizePercentage }}).
-          runbook_url: https://docs.otterworks.dev/runbooks/low-disk-space
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/low-disk-space.md
 
       - alert: CriticalDiskSpace
         expr: >-
@@ -201,7 +201,7 @@ groups:
             The SQS queue {{ $labels.queue_name }} has more than 1000
             messages visible (current: {{ $value }}). Messages may not be
             processing fast enough.
-          runbook_url: https://docs.otterworks.dev/runbooks/sqs-queue-depth
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/sqs-queue-depth.md
 
       - alert: SQSQueueDepthCritical
         expr: aws_sqs_approximate_number_of_messages_visible > 5000
@@ -245,7 +245,7 @@ groups:
             DynamoDB table {{ $labels.table_name }} is experiencing throttled
             requests. Consider increasing provisioned capacity or switching
             to on-demand mode.
-          runbook_url: https://docs.otterworks.dev/runbooks/dynamodb-throttling
+          runbook_url: https://github.com/Cognition-Partner-Workshops/otterworks/blob/demo-bank/docs/runbooks/dynamodb-throttling.md
 
       - alert: DynamoDBHighLatency
         expr: >-
