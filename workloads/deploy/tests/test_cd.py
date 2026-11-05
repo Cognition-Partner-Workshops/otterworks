@@ -45,6 +45,22 @@ def test_install_writer_replaces_same_object_and_preserves_others(tmp_path):
     assert yaml.safe_load(path.read_text())["deployment"]["deployed"] is not None
 
 
+@pytest.mark.parametrize("add_install", [False, True])
+def test_provenance_writer_preserves_existing_responder_revisions(tmp_path, add_install):
+    path = tmp_path / "doc_usage_dashboard/provenance.yaml"
+    path.parent.mkdir()
+    path.write_text((cd.REPO / "workloads/doc_usage_dashboard/provenance.yaml").read_text())
+    previous = cd.vp.load(path)["deployment"]
+    runtime_entries = [entry for entry in previous["installed"] if entry["type"] == "runtime_source"]
+    assert len({entry["revision"] for entry in runtime_entries}) > 1
+    additions = [installed()] if add_install else []
+    cd.provenance(path, previous["attempted"], previous["deployed"], True, installed=additions)
+    written = cd.vp.load(path)["deployment"]
+    assert written["installed"] == previous["installed"] + additions
+    assert written["attempted"] == previous["attempted"]
+    assert written["deployed"] == previous["deployed"]
+
+
 @pytest.mark.parametrize("failure", [None, "dbt_test", "install_runtime"])
 def test_partial_installs_are_written_on_every_outcome(tmp_path, failure):
     root = tmp_path / "repo"

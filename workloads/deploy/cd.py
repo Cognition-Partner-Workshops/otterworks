@@ -314,8 +314,11 @@ def provenance(path, attempted, deployed, write=False, queries=(), installed=())
     doc = vp.load(path)
     previous = doc.get("deployment", {}).get("deployed")
     block = {"attempted": attempted, "deployed": deployed if deployed is not None else previous}
-    entries = {(e["type"], e["name"]): e for e in doc.get("deployment", {}).get("installed", [])}
-    entries.update({(e["type"], e["name"]): e for e in installed})
+    def installation_key(entry):
+        return entry["type"], entry["name"], entry["revision"] if entry["type"] == "runtime_source" else None
+
+    entries = {installation_key(e): e for e in doc.get("deployment", {}).get("installed", [])}
+    entries.update({installation_key(e): e for e in installed})
     if entries or "installed" in doc.get("deployment", {}):
         block["installed"] = list(entries.values())
     updated = replace_block(mark_configuration(text, queries), "deployment", block)
