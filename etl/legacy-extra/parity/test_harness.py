@@ -4,12 +4,23 @@ import json
 from pathlib import Path
 import shlex
 import tempfile
+import time
 import unittest
 
 import harness
 
 
 class HarnessTests(unittest.TestCase):
+    def test_timeout_kills_candidate_children(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            marker = root / "child-survived"
+            command = f'(sleep 1; printf survived > {shlex.quote(str(marker))}) & wait'
+            error = harness.execute(root, command, root / "timeout.log", timeout=0.2)
+            self.assertIn("timed out", error)
+            time.sleep(1.2)
+            self.assertFalse(marker.exists())
+
     def test_first_difference_including_newline(self):
         self.assertIsNone(harness.difference(b"same\n", b"same\n"))
         self.assertEqual(harness.difference(b"a\nb\n", b"a\nc\n")["line"], 2)

@@ -618,7 +618,8 @@ legacy-etl-spark-venv: ## Install the pinned local Spark runtime
 	$(LEGACY_SPARK_VENV)/bin/python -m pip install -r etl/legacy-extra/requirements-spark.txt
 
 legacy-etl-spark-smoke: legacy-etl-spark-venv ## Count generated .dat rows using local[*]
-	JAVA_HOME="$${JAVA_HOME:-$$HOME/.sdkman/candidates/java/current}" SPARK_LOCAL_IP=127.0.0.1 $(LEGACY_SPARK_VENV)/bin/python etl/legacy-extra/parity/spark_smoke.py
+	@if [ -z "$${JAVA_HOME:-}" ] && [ -d "$$HOME/.sdkman/candidates/java/current" ]; then export JAVA_HOME="$$HOME/.sdkman/candidates/java/current"; fi; \
+	SPARK_LOCAL_IP=127.0.0.1 $(LEGACY_SPARK_VENV)/bin/python etl/legacy-extra/parity/spark_smoke.py
 
 legacy-etl-list: ## List the legacy polyglot batch jobs (etl/legacy-extra/)
 	@echo "Legacy batch jobs (run with: make legacy-etl-run JOB=<name>):"

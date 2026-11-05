@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import tempfile
 
@@ -39,10 +40,20 @@ def execute(root, candidate, log, timeout):
     try:
         with log.open("wb") as stream:
             for command in commands:
-                result = subprocess.run(command, cwd=REPO, env=environment(root),
-                                        stdout=stream, stderr=subprocess.STDOUT, timeout=timeout)
-                if result.returncode:
-                    return f"exit {result.returncode} (see {log.name})"
+                with subprocess.Popen(command, cwd=REPO, env=environment(root),
+                                      stdout=stream, stderr=subprocess.STDOUT,
+                                      start_new_session=True) as process:
+                    try:
+                        returncode = process.wait(timeout=timeout)
+                    except subprocess.TimeoutExpired:
+                        try:
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        process.wait()
+                        raise
+                    if returncode:
+                        return f"exit {returncode} (see {log.name})"
     except (OSError, subprocess.TimeoutExpired) as exc:
         return str(exc)
     return None
