@@ -1,4 +1,4 @@
-{{ config(tags=['doc_search_api']) }}
+{{ config(tags=['doc_search_api', 'dq_doc_search_api']) }}
 with expected as (
  select column1::date as window_end_date,28::number(3,0) as window_days,
  '00000000-0000-4000-8000-000000000101'::varchar(36) as account_id,
@@ -11,5 +11,8 @@ with expected as (
 ), actual as (
  select * from {{ ref('top_search_items') }} where window_end_date='2026-11-01' and account_id='00000000-0000-4000-8000-000000000101'
 )
-(select * from actual minus select * from expected) union all
-(select * from expected minus select * from actual)
+select 'worked_example: unexpected or mismatched row' as failure, diff.*
+from (select * from actual minus select * from expected) diff
+union all
+select 'worked_example: missing or mismatched row' as failure, diff.*
+from (select * from expected minus select * from actual) diff
