@@ -259,8 +259,8 @@ usage:
 # No Snowflake objects or secrets created. JWT key stayed in process memory.
 data_quality:
   suite: tag:dq_churn_model
-  ran_at: "2026-11-05T10:16:38.298435+00:00"
-  commit: ab478fe539df8fff34d941553b83a06affbfd492
+  ran_at: "2026-11-05T10:19:05.692134+00:00"
+  commit: 530d3a709732bef613c73e11bbcdd3c479cfcd45
   refresh_task_run:
     query_id: 01c834a2-030c-d4ad-0035-065b000747ea
     graph_run_group_id: f46d0390-0749-4e7b-9973-9d62f39eaaa0
