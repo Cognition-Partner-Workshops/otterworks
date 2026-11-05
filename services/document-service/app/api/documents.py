@@ -86,7 +86,9 @@ def _require_user_id(request: Request) -> UUID:
 
 def _is_admin(request: Request) -> bool:
     roles = _jwt_claims(request).get("roles") or []
-    return isinstance(roles, list) and "admin" in roles
+    return isinstance(roles, list) and any(
+        isinstance(role, str) and role.lower() == "admin" for role in roles
+    )
 
 
 def _resolve_owner(request: Request, owner_id: UUID | None) -> UUID:

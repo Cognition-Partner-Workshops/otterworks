@@ -82,12 +82,13 @@ async def test_list_defaults_to_callers_documents(anon_client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_admin_may_list_another_users_documents(anon_client: AsyncClient):
+@pytest.mark.parametrize("role", ["admin", "ADMIN"])
+async def test_admin_may_list_another_users_documents(anon_client: AsyncClient, role: str):
     alice, admin = uuid.uuid4(), uuid.uuid4()
     await _create(anon_client, alice, "Alice doc")
 
     resp = await anon_client.get(
-        DOCS, params={"owner_id": str(alice)}, headers=auth_headers(admin, roles=["admin"])
+        DOCS, params={"owner_id": str(alice)}, headers=auth_headers(admin, roles=[role])
     )
 
     assert resp.status_code == 200

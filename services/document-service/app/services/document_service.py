@@ -258,9 +258,9 @@ class DocumentService:
     async def search(
         self,
         query: str,
-        owner_id: UUID | None = None,
         page: int = 1,
         size: int = 20,
+        owner_id: UUID | None = None,
     ) -> tuple[list[Document], int]:
         escaped = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         pattern = f"%{escaped}%"
