@@ -6,7 +6,7 @@ import sf_attribution as sf
 
 COMMIT = "a271367cd476545f60e8982458d616c5dc7151bb"
 SESSION = "https://partner-workshops.devinenterprise.com/sessions/563ff0e055ca499a8ee42b2b4e40d8b6"
-RUN_ID = "SFEXT_20261105A-doc_usage_dashboard-dev-20261105T031900Z"
+RUN_ID = "SFEXT_20261105A-doc_usage_dashboard-dev-20261105T031900Z-0a1b2c3d"
 EP = sf.endpoint("cs_doc_usage_dashboard_account_usage")
 
 
@@ -95,9 +95,61 @@ def test_parse_query_tag_round_trips_and_rejects_extras():
 
 def test_run_id_format():
     when = datetime(2026, 11, 5, 3, 19, tzinfo=timezone.utc)
-    assert sf.make_run_id("churn_model", "runtime", when) == "SFEXT_20261105A-churn_model-runtime-20261105T031900Z"
+    assert (
+        sf.make_run_id("churn_model", "runtime", when, nonce="0a1b2c3d")
+        == "SFEXT_20261105A-churn_model-runtime-20261105T031900Z-0a1b2c3d"
+    )
+    assert sf.make_run_id("churn_model", "runtime", when) != sf.make_run_id("churn_model", "runtime", when)
+    assert sf.RUN_ID_RE.match(sf.make_run_id("churn_model", "runtime", when))
+    with pytest.raises(sf.AttributionError):
+        sf.make_run_id("churn_model", "runtime", when, nonce="xyz")
     with pytest.raises(sf.AttributionError):
         sf.make_run_id("churn_model", "runtime", when, run_token="lp-20261105-ab")
+
+
+@pytest.mark.parametrize("run_id", [
+    RUN_ID,
+    RUN_ID.replace("doc_usage_dashboard", "churn_model"),
+    RUN_ID.replace("-dev-", "-runtime-"),
+])
+def test_run_id_must_match_tag_workload_and_phase_on_every_entry_point(run_id):
+    ep = sf.endpoint("cs_churn_model_account_score")
+    tag = {"csid": ep.csid, "workload": ep.workload, "phase": "runtime", "commit": COMMIT, "run_id": run_id}
+    env = {"SNOWFLAKE_ACCOUNT": "a", "SNOWFLAKE_PRIVATE_KEY_PATH": "/k.p8",
+           "GITHUB_SHA": COMMIT, "SF_RUN_ID": run_id}
+    calls = [
+        lambda: sf.query_tag(ep, phase="runtime", commit=COMMIT, run_id=run_id),
+        lambda: sf.parse_query_tag(json.dumps(tag)),
+        lambda: sf.params_from_env(ep, "runtime", env=env),
+        lambda: sf.create_task_sql(ep, schedule="60 MINUTE", body="SELECT 1", commit=COMMIT, run_id=run_id),
+        lambda: sf.streamlit_session_tag_sql(ep, commit=COMMIT, run_id=run_id),
+    ]
+    for call in calls:
+        with pytest.raises(sf.AttributionError, match="run_id workload=.*phase=.*tag workload=.*phase="):
+            call()
+
+
+def test_matching_churn_runtime_run_id_is_accepted():
+    ep = sf.endpoint("cs_churn_model_account_score")
+    run_id = RUN_ID.replace("doc_usage_dashboard-dev", "churn_model-runtime")
+    tag = sf.query_tag(ep, phase="runtime", commit=COMMIT, run_id=run_id)
+    assert sf.parse_query_tag(json.dumps(tag)) == tag
+    env = {"SNOWFLAKE_ACCOUNT": "a", "SNOWFLAKE_PRIVATE_KEY_PATH": "/k.p8",
+           "GITHUB_SHA": COMMIT, "SF_RUN_ID": run_id}
+    assert sf.parse_query_tag(sf.params_from_env(ep, "runtime", env=env)["session_parameters"]["QUERY_TAG"]) == tag
+    assert run_id in sf.create_task_sql(ep, schedule="60 MINUTE", body="SELECT 1", commit=COMMIT, run_id=run_id)
+    assert run_id in sf.streamlit_session_tag_sql(ep, commit=COMMIT, run_id=run_id)
+
+
+@pytest.mark.parametrize("run_id", [
+    None, "", RUN_ID.rsplit("-", 1)[0], RUN_ID + "\n",
+    RUN_ID.replace("0a1b2c3d", "0A1B2C3D"),
+    RUN_ID.replace("20261105", "20261305"),
+    RUN_ID.replace("-dev-", "-prod-"),
+])
+def test_incomplete_or_malformed_run_ids_are_rejected(run_id):
+    with pytest.raises(sf.AttributionError, match="run_id"):
+        sf.query_tag(EP, phase="dev", commit=COMMIT, run_id=run_id, session_url=SESSION)
 
 
 def test_connection_params_use_key_pair_service_user_application_and_tag():
@@ -134,6 +186,7 @@ def test_params_from_env_prefers_per_endpoint_key_and_only_dev_reads_session_url
     dev = sf.params_from_env(EP, "dev", env=env)
     assert dev["private_key_file"] == "/keys/usage.p8"
     assert json.loads(dev["session_parameters"]["QUERY_TAG"])["session_url"] == SESSION
+    env["SF_RUN_ID"] = RUN_ID.replace("doc_usage_dashboard-dev", "churn_model-runtime")
     runtime = sf.params_from_env(sf.endpoint("cs_churn_model_account_score"), "runtime", env=env)
     assert runtime["private_key_file"] == "/keys/default.p8"
     assert "session_url" not in json.loads(runtime["session_parameters"]["QUERY_TAG"])
@@ -146,7 +199,10 @@ def test_connect_passes_params_to_connector():
         seen.update(kwargs)
         return "conn"
 
-    conn = sf.connect(EP, "runtime", connector=fake_connect, account="a", private_key_file="/k.p8", commit=COMMIT, run_id=RUN_ID)
+    conn = sf.connect(
+        EP, "runtime", connector=fake_connect, account="a", private_key_file="/k.p8",
+        commit=COMMIT, run_id=RUN_ID.replace("-dev-", "-runtime-"),
+    )
     assert conn == "conn"
     assert seen["application"] == "Devin_Demo"
     assert json.loads(seen["session_parameters"]["QUERY_TAG"])["phase"] == "runtime"
@@ -162,7 +218,7 @@ def test_real_connector_accepts_every_parameter():
         private_key_file_pwd="x",
         role="R",
         commit=COMMIT,
-        run_id=RUN_ID,
+        run_id=RUN_ID.replace("-dev-", "-runtime-"),
     )
     assert set(params) <= set(connection.DEFAULT_CONFIGURATION)
 
@@ -176,13 +232,24 @@ def test_resolve_commit_order():
 
 
 def test_task_carries_its_own_runtime_tag_and_comment():
-    run_id = "SFEXT_20261105A-doc_usage_dashboard-runtime-20261105T031900Z"
+    run_id = RUN_ID.replace("-dev-", "-runtime-")
     sql = sf.create_task_sql(EP, schedule="USING CRON 0 * * * * UTC", body="SELECT 1", commit=COMMIT, run_id=run_id)
     assert "WAREHOUSE = WH_DOC_USAGE_DASHBOARD" in sql
     tag_line = next(line for line in sql.splitlines() if "QUERY_TAG" in line)
     assert '"phase":"runtime"' in tag_line and "session_url" not in tag_line
     assert '"run_token":"SFEXT_20261105A"' in sql and '"expires":"2026-11-19"' in sql
     assert sf.streamlit_session_tag_sql(EP, commit=COMMIT, run_id=run_id).startswith("ALTER SESSION SET QUERY_TAG = '{")
+
+
+def test_task_deploy_tags_before_resuming():
+    run_id = RUN_ID.replace("-dev-", "-runtime-")
+    create, tag, resume = sf.task_deploy_sql(EP, schedule="60 MINUTE", body="SELECT 1", commit=COMMIT, run_id=run_id)
+    assert create.startswith("CREATE OR REPLACE TASK DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD")
+    assert tag == (
+        "ALTER TASK DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD SET TAG "
+        "DEVIN_GOVERNANCE.TAGS.DEVIN_CSID = 'cs_doc_usage_dashboard_account_usage'"
+    )
+    assert resume == "ALTER TASK DB_DOC_USAGE_DASHBOARD.APP.REFRESH_DOC_USAGE_DASHBOARD RESUME"
 
 
 def test_warehouse_is_xs_with_60s_suspend_and_monitor():
@@ -249,8 +316,10 @@ def test_missing_usage_reads_pending_and_cortex_stays_separate():
 
 def test_usage_sql_groups_by_tag_and_keeps_cortex_columns_apart():
     sql = sf.USAGE_BY_TAG_SQL
-    for column in ("csid", "workload", "phase", "commit"):
+    for column in ("csid", "workload", "phase", "commit", "run_id"):
         assert f"t.tag:{column}::string AS {column}" in sql
+    assert "r.graph_run_group_id AS task_execution_id" in sql
+    assert "GROUP BY 1, 2, 3, 4, 5, 6" in sql
     assert "CORTEX_FUNCTIONS_QUERY_USAGE_HISTORY" in sql
     assert "SUM(m.compute_credits) AS compute_credits" in sql
     assert "SUM(c.cortex_credits) AS cortex_credits" in sql

@@ -10,8 +10,10 @@ inputs:
     columns: [event_id, event_type, user_id, metadata, occurred_at]
     filter: "event_type = 'search.performed'"
     contract: >-
-      metadata is JSON text {"query": string, "result_count": integer, "document_hit_ids": comma-separated
-      document ids}; occurred_at is UTC epoch nanoseconds. search-service does not emit these events
+      metadata is JSON text with every value a string, matching analytics TrackEventRequest:
+      {"query": string, "result_count": decimal string (e.g. "0"), "document_hit_ids": comma-separated
+      document ids string}. result_count is parsed to an integer downstream.
+      occurred_at is UTC epoch nanoseconds. search-service does not emit these events
       today (it keeps query history in process memory only), so it must publish one per search before
       this workload has real input.
   - source: document-service Postgres documents
@@ -46,10 +48,10 @@ examples:
     Account 00000000-0000-4000-8000-000000000101 from workloads/pipeline/seed.sql plus these events
     (document 1 = 03ebe472-1e21-9b1c-20c5-18a0d26cbe6f, document 4 = b48e999f-7174-4107-671b-e06d8e9abf30 which is deleted):
   input_events:
-    - {occurred_at: "2026-10-20T10:00:00Z", query: "Quarterly Report", result_count: 2, document_hit_ids: "03ebe472-1e21-9b1c-20c5-18a0d26cbe6f,b48e999f-7174-4107-671b-e06d8e9abf30"}
-    - {occurred_at: "2026-10-25T09:00:00Z", query: "quarterly  report ", result_count: 1, document_hit_ids: "03ebe472-1e21-9b1c-20c5-18a0d26cbe6f"}
-    - {occurred_at: "2026-10-30T15:00:00Z", query: "budget", result_count: 0, document_hit_ids: ""}
-    - {occurred_at: "2026-09-01T12:00:00Z", query: "budget", result_count: 0, document_hit_ids: ""}
+    - {occurred_at: "2026-10-20T10:00:00Z", query: "Quarterly Report", result_count: "2", document_hit_ids: "03ebe472-1e21-9b1c-20c5-18a0d26cbe6f,b48e999f-7174-4107-671b-e06d8e9abf30"}
+    - {occurred_at: "2026-10-25T09:00:00Z", query: "quarterly  report ", result_count: "1", document_hit_ids: "03ebe472-1e21-9b1c-20c5-18a0d26cbe6f"}
+    - {occurred_at: "2026-10-30T15:00:00Z", query: "budget", result_count: "0", document_hit_ids: ""}
+    - {occurred_at: "2026-09-01T12:00:00Z", query: "budget", result_count: "0", document_hit_ids: ""}
   rows:
     - {window_end_date: "2026-11-01", window_days: 28, account_id: 00000000-0000-4000-8000-000000000101, item_type: term, rank: 1, term: quarterly report, document_id: null, document_title: null, search_count: 2, zero_result_count: 0, last_searched_at: "2026-10-25 09:00:00"}
     - {window_end_date: "2026-11-01", window_days: 28, account_id: 00000000-0000-4000-8000-000000000101, item_type: term, rank: 2, term: budget, document_id: null, document_title: null, search_count: 1, zero_result_count: 1, last_searched_at: "2026-10-30 15:00:00"}
