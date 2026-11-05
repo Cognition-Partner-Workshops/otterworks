@@ -3,7 +3,7 @@ so slow or idle clients cannot hold an unbounded number of threads."""
 
 SERVE_OPTIONS = {
     "threads": 4,
-    "connection_limit": 100,
+    "connection_limit": 1000,
     "channel_timeout": 30,
     "cleanup_interval": 10,
     "asyncore_use_poll": True,

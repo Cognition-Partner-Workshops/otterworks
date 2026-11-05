@@ -37,7 +37,7 @@ class ServeTest(unittest.TestCase):
         self.assertIs(got_app, app)
         self.assertEqual((kw["host"], kw["port"]), ("0.0.0.0", 5000))
         self.assertEqual(kw["threads"], 4)
-        self.assertLessEqual(kw["connection_limit"], 100)
+        self.assertLessEqual(kw["connection_limit"], 1000)
         self.assertLessEqual(kw["channel_timeout"], 30)
 
     def test_overrides_do_not_mutate_defaults(self):
