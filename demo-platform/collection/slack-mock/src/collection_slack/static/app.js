@@ -145,7 +145,7 @@
     } else { badge.className = "badge"; }
   }
 
-  function bindComposer(formId, textId, countId, send) {
+  function bindComposer(formId, textId, countId, post, after) {
     const text = $(textId);
     const count = $(countId);
     const btn = $(formId).querySelector("button");
@@ -166,15 +166,19 @@
       inflight = true;
       error = "";
       update();
+      let result;
       try {
-        await send(value);
-        if (text.value.trim() === value) text.value = "";
+        result = await post(value);
       } catch (err) {
         error = `Not sent: ${err.message}`;
+        return;
       } finally {
         inflight = false;
         update();
       }
+      // Committed: never offer a repost. A failed refresh is recovered by the periodic poll.
+      if (text.value.trim() === value) { text.value = ""; update(); }
+      try { await after(result); } catch (err) { console.warn("refresh after send failed", err); }
     });
     update();
   }
@@ -206,14 +210,14 @@
     preview();
     $("close-thread").addEventListener("click", () => { closeThread(); refreshThreads(); });
     bindComposer("new-thread", "new-thread-text", "new-thread-count", async (value) => {
-      const r = await api(`/api/channels/${state.channel.id}/threads`, { author: persona(), text: value, client_msg_id: uuid() });
+      return api(`/api/channels/${state.channel.id}/threads`, { author: persona(), text: value, client_msg_id: uuid() });
+    }, async (r) => {
       await refreshThreads();
       await openThread(r.thread_id);
     });
     bindComposer("reply", "reply-text", "reply-count", async (value) => {
-      await api(`/api/threads/${state.thread}/messages`, { author: persona(), text: value, client_msg_id: uuid() });
-      await refreshThread();
-    });
+      return api(`/api/threads/${state.thread}/messages`, { author: persona(), text: value, client_msg_id: uuid() });
+    }, refreshThread);
     await selectChannel(state.channels[0]);
     setInterval(() => { refreshThread().catch(() => {}); }, 1500);
     setInterval(() => { refreshThreads().catch(() => {}); }, 4000);
