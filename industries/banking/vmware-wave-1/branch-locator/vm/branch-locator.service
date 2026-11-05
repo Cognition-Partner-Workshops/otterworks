@@ -7,7 +7,7 @@ After=network.target
 User=branch-locator
 Group=branch-locator
 WorkingDirectory=/opt/branch-locator/app
-ExecStart=/usr/bin/python2.7 /opt/branch-locator/app/locator.py
+ExecStart=/opt/branch-locator/venv/bin/python /opt/branch-locator/app/locator.py
 Restart=always
 
 [Install]
