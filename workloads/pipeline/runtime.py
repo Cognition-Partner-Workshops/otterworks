@@ -235,6 +235,15 @@ def report_dml(workload, node, model_sql):
     ]
 
 
+def model_table_sql(workload, node):
+    db = sf.database_name(workload)
+    comment = sf.sql_string(sf.external_comment(workload=workload, purpose="fixed owner-rights refresh"))
+    return [
+        f"CREATE TABLE IF NOT EXISTS {db}.APP.{MODELS[workload].upper()} ({node['config']['column_ddl']}) COMMENT={comment}",
+        f"CREATE TABLE IF NOT EXISTS {db}.APP.PIPELINE_REFRESH_RUNS (EXECUTION_ROLE VARCHAR, REFRESHED_AT TIMESTAMP_LTZ, REPORT_QUERY_ID VARCHAR) COMMENT={comment}",
+    ]
+
+
 def deploy_procedure(workload, node, model_sql):
     db = sf.database_name(workload)
     relation = f"{db}.APP.{MODELS[workload].upper()}"
@@ -260,16 +269,12 @@ def deploy_procedure(workload, node, model_sql):
         closing(snowflake.connector.connect(**parameters(workload))) as conn,
         conn.cursor() as cur,
     ):
-        cur.execute(
-            f"CREATE TABLE IF NOT EXISTS {relation} ({node['config']['column_ddl']}) COMMENT={comment}"
-        )
+        cur.execute(model_table_sql(workload, node)[0])
         if workload == "doc_usage_dashboard":
             cur.execute(
                 f"ALTER TABLE {relation} MODIFY COLUMN ACCOUNT_EMAIL SET MASKING POLICY {db}.APP.EMAIL_MASK FORCE"
             )
-        cur.execute(
-            f"CREATE TABLE IF NOT EXISTS {db}.APP.PIPELINE_REFRESH_RUNS (EXECUTION_ROLE VARCHAR, REFRESHED_AT TIMESTAMP_LTZ, REPORT_QUERY_ID VARCHAR) COMMENT={comment}"
-        )
+        cur.execute(model_table_sql(workload, node)[1])
         for schema in ("RAW", "APP"):
             cur.execute(f"GRANT USAGE ON SCHEMA {db}.{schema} TO ROLE {analyst}")
         cur.execute(f"GRANT USAGE ON DATABASE {db} TO ROLE {analyst}")

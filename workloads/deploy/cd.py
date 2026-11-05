@@ -197,6 +197,30 @@ def snapshot(conn, log, audit_cutoff=None):
     return result
 
 
+def provision_support(root, conn, log):
+    support = module(root, "workloads/doc_usage_dashboard/responder/provision_support.py", "cd_support")
+    rows = execute(conn, f"SHOW USERS LIKE {sf.sql_string(support.EP.service_user)}", log)
+    exists = any(str(row[1]).upper() == support.EP.service_user for row in rows)
+    for statement in support.provision_sql(os.environ.get("SNOWFLAKE_EXT_SUPPORT_PUBLIC_KEY"), user_exists=exists):
+        execute(conn, statement, log)
+
+
+def bootstrap_models(runtime, workload, conn, log, artifacts):
+    target = artifacts / "bootstrap"
+    with patch.dict(os.environ, {"PIPELINE_DATABASE": sf.database_name(workload)}):
+        result = runtime.dbtRunner().invoke([
+            "parse", "--no-partial-parse", "--project-dir", str(runtime.ROOT),
+            "--profiles-dir", str(runtime.ROOT), "--target-path", str(target),
+            "--log-path", str(artifacts / "bootstrap-logs"),
+        ])
+    if not result.success:
+        raise GateFailure("bootstrap_parse")
+    manifest = json.loads((target / "manifest.json").read_text())
+    node = manifest["nodes"][f"model.otterworks_pipeline.{runtime.MODELS[workload]}"]
+    for statement in runtime.model_table_sql(workload, node):
+        execute(conn, statement, log)
+
+
 def migrate(root, workload, params, log):
     history = ChangeHistoryTable(table_name=workload.upper(), schema_name="CHANGE_HISTORY",
                                  database_name=foundation.HISTORY_DATABASE)
@@ -459,7 +483,10 @@ def run_workload(root, workload, args, commit, attempted_commit):
         else:
             log = Log(Path(args.log_dir) / f"{workload}-{args.mode}-{run_id}.jsonl", commit, run_id)
             params = parameters(workload, commit, run_id, phase)
-            with trace_queries(log), closing(snowflake.connector.connect(**params)) as conn:
+            connection_params = params
+            if workload == "doc_usage_dashboard" and args.mode != "rollback":
+                connection_params = {**params, "database": None, "schema": None, "warehouse": None}
+            with trace_queries(log), closing(snowflake.connector.connect(**connection_params)) as conn:
                 step = "churn_retained_baseline"
                 cutoff = attempted["started_at"]
                 if workload == "churn_model":
@@ -469,6 +496,20 @@ def run_workload(root, workload, args, commit, attempted_commit):
                 before = snapshot(conn, log, cutoff) if workload == "churn_model" else None
                 primary_error = None
                 try:
+                    if workload == "doc_usage_dashboard" and args.mode != "rollback":
+                        step = "provision_support"
+                        setup = dict(parameters(workload, commit, run_id, "dev"))
+                        setup.update(database=None, schema=None, warehouse=None)
+                        with closing(snowflake.connector.connect(**setup)) as setup_conn:
+                            for statement in sf.database_ddl(workload):
+                                execute(setup_conn, statement, log)
+                            comment = sf.sql_string(sf.external_comment(workload=workload))
+                            execute(setup_conn, f"CREATE WAREHOUSE IF NOT EXISTS {sf.warehouse_name(workload)} "
+                                    "WITH WAREHOUSE_SIZE='XSMALL' AUTO_SUSPEND=60 AUTO_RESUME=TRUE "
+                                    f"INITIALLY_SUSPENDED=TRUE COMMENT={comment}", log)
+                            provision_support(root, setup_conn, log)
+                            step = "bootstrap_models"
+                            bootstrap_models(runtime, workload, setup_conn, log, log.path.parent / run_id)
                     step = "migrations"
                     if args.mode != "rollback":
                         log.phase = "migration"
