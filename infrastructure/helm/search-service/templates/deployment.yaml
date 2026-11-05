@@ -21,6 +21,19 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       serviceAccountName: {{ .Release.Name }}
+      {{- if .Values.snowflake.enabled }}
+      securityContext:
+        runAsUser: 1001
+        fsGroup: 1001
+      volumes:
+        - name: snowflake-key
+          secret:
+            secretName: {{ required "snowflake.privateKeySecret.name must reference an existing Secret" .Values.snowflake.privateKeySecret.name | quote }}
+            defaultMode: 0400
+            items:
+              - key: {{ .Values.snowflake.privateKeySecret.key | quote }}
+                path: rsa_key.p8
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ required "image.tag must be set (ECR uses IMMUTABLE tags)" .Values.image.tag }}"
@@ -54,3 +67,18 @@ spec:
             - secretRef:
                 name: {{ .Release.Name }}-secrets
                 optional: true
+          {{- if .Values.snowflake.enabled }}
+          env:
+            - name: SNOWFLAKE_ACCOUNT
+              value: {{ required "snowflake.account is required when enabled" .Values.snowflake.account | quote }}
+            - name: SNOWFLAKE_ROLE
+              value: {{ .Values.snowflake.role | quote }}
+            - name: SNOWFLAKE_USER
+              value: {{ .Values.snowflake.user | quote }}
+            - name: SNOWFLAKE_PRIVATE_KEY_PATH_CS_DOC_SEARCH_API_TOP_ITEMS
+              value: /var/run/snowflake/rsa_key.p8
+          volumeMounts:
+            - name: snowflake-key
+              mountPath: /var/run/snowflake
+              readOnly: true
+          {{- end }}
