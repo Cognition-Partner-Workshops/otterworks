@@ -15,6 +15,10 @@ public final class Html {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 
+    static String maskAccount(String account) {
+        return "****" + account.substring(Math.max(0, account.length() - 4));
+    }
+
     static String page(String bank, String title, String body) {
         return "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>" + esc(title) + " - " + esc(bank)
             + "</title><style>body{font-family:Arial,sans-serif;margin:2em;color:#1b2a3a}"
@@ -27,11 +31,11 @@ public final class Html {
         StringBuilder b = new StringBuilder();
         if (lastAccount != null) {
             b.append("<p id=\"last\">Last viewed: <a href=\"statement?account=").append(esc(lastAccount)).append("\">")
-                .append(esc(lastAccount)).append("</a></p>");
+                .append(esc(maskAccount(lastAccount))).append("</a></p>");
         }
         b.append("<table id=\"accounts\"><tr><th>Account</th><th>Holder</th></tr>");
         for (Map.Entry<String, String> e : accounts.entrySet()) {
-            b.append("<tr><td><a href=\"statement?account=").append(esc(e.getKey())).append("\">").append(esc(e.getKey()))
+            b.append("<tr><td><a href=\"statement?account=").append(esc(e.getKey())).append("\">").append(esc(maskAccount(e.getKey())))
                 .append("</a></td><td>").append(esc(e.getValue())).append("</td></tr>");
         }
         b.append("</table>");
@@ -50,6 +54,6 @@ public final class Html {
         }
         b.append("</table><p id=\"summary\">").append(lines.size()).append(" lines, net movement ")
             .append(total.toPlainString()).append("</p>");
-        return page(bank, "Statement " + account, b.toString());
+        return page(bank, "Statement " + maskAccount(account), b.toString());
     }
 }

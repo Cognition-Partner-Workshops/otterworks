@@ -30,10 +30,11 @@ public class DocumentStore {
         String ext = extension(originalName);
         Path dir = root.resolve(customer);
         Files.createDirectories(dir);
-        String name = kind + "-" + Instant.now().toEpochMilli() + ext;
-        long size = Files.copy(body, dir.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+        // Retain each upload indefinitely; no relationship-end date or deletion path exists.
+        String name = kind + "-" + UUID.randomUUID() + ext;
+        long size = Files.copy(body, dir.resolve(name));
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("customer", customer);
+        out.put("customer", "****" + customer.substring(customer.length() - 4));
         out.put("kind", kind);
         out.put("file", name);
         out.put("bytes", size);

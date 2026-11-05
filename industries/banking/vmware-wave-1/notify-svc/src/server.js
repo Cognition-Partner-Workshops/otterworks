@@ -39,7 +39,11 @@ app.post('/notify', (req, res) => {
 app.get('/outbox/:account', (req, res) => {
   db.lrange('notify:outbox:' + req.params.account, 0, 49, (err, rows) => {
     if (err) return res.status(503).json({ error: 'store unavailable' });
-    res.json(rows.map((r) => JSON.parse(r)));
+    res.json(rows.map((r) => {
+      const msg = JSON.parse(r);
+      msg.account = maskAccount(msg.account);
+      return msg;
+    }));
   });
 });
 

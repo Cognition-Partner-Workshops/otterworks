@@ -11,7 +11,7 @@ function render(kind, fields) {
   if (!t) throw new Error('unknown notification kind: ' + kind);
   return t.replace(/\{(\w+)\}/g, (m, k) => {
     if (fields[k] === undefined || fields[k] === null) throw new Error('missing field: ' + k);
-    return String(fields[k]);
+    return k === 'account' ? maskAccount(fields[k]) : String(fields[k]);
   });
 }
 
