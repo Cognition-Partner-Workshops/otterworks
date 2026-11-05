@@ -88,6 +88,9 @@ services:
     image: wave1/kyc-docs-vm
     ports:
       - "127.0.0.1:8085:8443"
+    volumes:
+      - kyc-tls:/etc/kyc
 
 volumes:
   rates-out:
+  kyc-tls:
