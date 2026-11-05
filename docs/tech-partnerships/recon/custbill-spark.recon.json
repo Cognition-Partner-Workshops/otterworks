@@ -7,7 +7,7 @@
   "checks": [
     {"id": "legacy-characterization", "expected": "legacy parity PASS", "actual": "legacy parity PASS", "source_of_truth": "make -C etl/legacy-extra parity CANDIDATE=legacy", "result": "pass"},
     {"id": "spark-byte-parity", "expected": "all reported rows yes", "actual": "all reported rows yes", "source_of_truth": "make -C etl/legacy-extra parity CANDIDATE=etl/custbill-spark/launch chain", "result": "pass"},
-    {"id": "pytest", "expected": "8 passed", "actual": "8 passed", "source_of_truth": "make -C etl/custbill-spark test", "result": "pass"},
+    {"id": "pytest", "expected": "9 passed", "actual": "9 passed", "source_of_truth": "make -C etl/custbill-spark test", "result": "pass"},
     {"id": "installed-python", "expected": "Python 3.12 without managed Python downloads", "actual": "Using CPython 3.12.16", "source_of_truth": "Fresh .venv: UV_PYTHON_DOWNLOADS=never make -C etl/custbill-spark setup test lint", "result": "pass"},
     {"id": "ruff", "expected": "clean", "actual": "clean", "source_of_truth": "make -C etl/custbill-spark lint", "result": "pass"}
   ],

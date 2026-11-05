@@ -14,10 +14,13 @@ import custbill as cb
 LEGACY = Path(__file__).resolve().parents[1] / 'legacy-extra'
 SPECIAL_AMOUNTS = ('inf', 'Inf', 'nan', 'infinity', ' +Inf', ' -Inf',
                    ' +nan', ' -nan', ' +infinity', ' -INFINITY', '1e400', '-1e400')
+SIGNED_INFINITY = ('+inf', '-inf', '+Inf', '-INF', '+infinity', '-infinity')
 FIXED_AMOUNTS = tuple(zip(SPECIAL_AMOUNTS,
                           ('0.00', '0.00', '0.00', '0.00', '+inf', '-inf',
                            '+nan', '-nan', '0.00', '0.00', '+inf', '-inf'), strict=True))
 FIXED_AMOUNTS += tuple((char + '123', '1.23') for char in ' \t\r\v\f')
+FIXED_AMOUNTS += tuple(zip(SIGNED_INFINITY,
+                           ('+inf', '-inf', '+inf', '-inf', '0.00', '0.00'), strict=True))
 
 
 @pytest.fixture(scope='session')
@@ -114,6 +117,36 @@ def test_real_perl_order_and_empty(spark, tmp_path):
         path.unlink()
     cb.report(spark, tmp_path)
     assert next((tmp_path / 'reports').glob('*.csv')).read_bytes() == b'Currency,RecordType,RecordCount,TotalAmount\n'
+
+
+def test_signed_infinity_real_tools(tmp_path):
+    data = (b'HDR\n' + b'\n'.join(record(amount.ljust(12)) for amount in SIGNED_INFINITY)
+            + b'\nTRL0000000006\n')
+    cb.atomic(tmp_path / 'incoming/CUSTBILL_SIGNED.dat', data)
+    env = dict(os.environ, OTTERWORKS_LEGACY_ROOT=str(tmp_path), LC_ALL='C', TZ='UTC')
+    subprocess.run(['bash', str(LEGACY / 'jobs/parse_custbill_fixedwidth.sh')],
+                   env=env, check=True, capture_output=True)
+    actual = (tmp_path / 'parsed/CUSTBILL_SIGNED.psv').read_bytes()
+    print('\nDefault awk legacy parse:\n' + actual.decode(), end='')
+    print('Spark parse_bytes:\n' + cb.parse_bytes(data).decode(), end='')
+    errors = cb.validate(data)
+    assert errors == [{'row': index + 1, 'reason': 'invalid schema/date/attribution'}
+                      for index in range(len(SIGNED_INFINITY))]
+    print('Parse validation errors:', errors)
+    groups = [(f'S{index}', [amount]) for index, amount in enumerate(SIGNED_INFINITY)]
+    groups += [('MIX', ['+inf', '-inf']), ('FINITE', ['+inf', '12.5'])]
+    rows = b''.join(f'C|N|D|{amount}|{key}|01\n'.encode()
+                    for key, amounts in groups for amount in amounts)
+    (tmp_path / 'parsed/CUSTBILL_SIGNED.psv').write_bytes(rows)
+    subprocess.run(['perl', str(LEGACY / 'jobs/finance_excel_report.pl')],
+                   env=env, check=True, capture_output=True)
+    expected = next((tmp_path / 'reports').glob('*.csv')).read_bytes()
+    actual = cb.report_bytes(cb.report_inputs(('CUSTBILL_SIGNED.psv', rows)))
+    print('Legacy Perl report:\n' + expected.decode(), end='')
+    print('Spark report_bytes:\n' + actual.decode(), end='')
+    assert actual == expected
+    assert b'MIX,INVOICE,2,NaN\n' in actual
+    assert b'FINITE,INVOICE,2,Inf\n' in actual
 
 
 def test_chain_rerun_and_validation(spark, tmp_path, monkeypatch):

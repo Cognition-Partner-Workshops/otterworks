@@ -35,6 +35,14 @@ Compatibility mode emits the fixed bytes on every host. Tests compare portable
 rows against the default `awk` on PATH, and test dialect-dependent rows against
 the fixed rendering and ledger errors instead of a host-dependent oracle.
 
+Signed infinity is verified against the real legacy scripts: the 12-byte parse
+fields `+inf`, `-inf`, `+Inf`, `-INF`, `+infinity`, and `-infinity` are all
+flagged in the ledger and quarantined (strict mode rejects them). Their parse
+rendering follows the fixed dialect rule above, not the local awk dialect.
+The real Perl report and `report_bytes` agree byte-for-byte: these tokens render
+as `Inf` or `-Inf`, mixed positive and negative infinity totals render as `NaN`,
+and positive infinity plus a finite amount remains `Inf`.
+
 | Addendum deficiency | Replacement | Deliberate parity limitation / reason |
 |---|---|---|
 | hostname paths | env root | none |
