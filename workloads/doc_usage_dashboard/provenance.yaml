@@ -11,9 +11,9 @@ source:
   repository: Cognition-Partner-Workshops/otterworks
   base_branch: demo-stack-snowflake
   base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
-  commit: "fadf756348ed6c62e87f0fdb07e2d4c00226e4df"
-  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2499
-  session_url: https://partner-workshops.devinenterprise.com/sessions/9ee4083296094a97af3bf12f4674c68f
+  commit: "ba054aaf0574b39cd9aa9baf68fd51f5d4874c8e"
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2498
+  session_url: https://partner-workshops.devinenterprise.com/sessions/6b490330916b45c1a3532b15a809de89
 endpoints:
   - csid: cs_doc_usage_dashboard_account_usage
     service_user: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
