@@ -1,4 +1,4 @@
-# Starting provenance for the storage-usage dashboard. Validate: python workloads/attribution/validate_provenance.py
+# Provenance for the storage-usage dashboard (refresh task + Streamlit app). Validate: python workloads/attribution/validate_provenance.py
 # Usage values Snowflake has not reported are `pending`; Cortex credits are kept apart from compute.
 schema_version: 1
 workload: doc_usage_dashboard
@@ -11,9 +11,9 @@ source:
   repository: Cognition-Partner-Workshops/otterworks
   base_branch: demo-stack-snowflake
   base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
-  commit: "ecda4243de263fb1974fb1bd69a89a82bab28d83"
-  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2498
-  session_url: https://partner-workshops.devinenterprise.com/sessions/6b490330916b45c1a3532b15a809de89
+  commit: "4284df83d08b69362cfc32fa0c4a63ce271a4912"
+  pull_request: pending
+  session_url: https://partner-workshops.devinenterprise.com/sessions/9ee4083296094a97af3bf12f4674c68f
 endpoints:
   - csid: cs_doc_usage_dashboard_account_usage
     service_user: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
@@ -56,7 +56,7 @@ objects:
   - type: user
     name: SVC_CS_DOC_USAGE_DASHBOARD_ACCOUNT_USAGE
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
-    state: planned
+    state: provisioned
   - type: task
     name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.REFRESH_DOC_USAGE_DASHBOARD
     devin_csid: cs_doc_usage_dashboard_account_usage
@@ -66,7 +66,7 @@ objects:
     name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.DOC_USAGE_DASHBOARD_APP
     devin_csid: cs_doc_usage_dashboard_account_usage
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
-    state: planned
+    state: provisioned
 usage:
   source: SNOWFLAKE.ACCOUNT_USAGE
   reported_through: pending
