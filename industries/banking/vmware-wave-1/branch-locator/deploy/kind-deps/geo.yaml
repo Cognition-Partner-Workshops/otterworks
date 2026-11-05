@@ -1,0 +1,38 @@
+# kind only: the geocoder stub from vm/geo-stub, reached as geo.deps.svc.cluster.local
+# instead of the /etc/hosts entry on web-02.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: geo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: geo}
+  template:
+    metadata:
+      labels: {app: geo}
+    spec:
+      containers:
+        - name: geo
+          image: docker.io/library/python:3.12-slim
+          imagePullPolicy: IfNotPresent
+          command: ["python", "/geo/geo_stub.py"]
+          ports:
+            - {containerPort: 8090}
+          readinessProbe:
+            tcpSocket: {port: 8090}
+            periodSeconds: 2
+          volumeMounts:
+            - {name: stub, mountPath: /geo, readOnly: true}
+      volumes:
+        - name: stub
+          configMap: {name: geo-stub}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: geo
+spec:
+  selector: {app: geo}
+  ports:
+    - {port: 8090, targetPort: 8090}

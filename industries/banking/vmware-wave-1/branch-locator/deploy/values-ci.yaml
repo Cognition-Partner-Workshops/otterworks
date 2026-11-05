@@ -1,0 +1,5 @@
+# kind only: Postgres and the geocoder stub run in namespace deps (deploy/kind-deps).
+# Trailing dots make the names absolute, skipping the ndots:5 search-list lookups.
+env:
+  DB_HOST: postgres.deps.svc.cluster.local.
+  GEO_URL: http://geo.deps.svc.cluster.local.:8090/geocode
