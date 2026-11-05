@@ -826,7 +826,7 @@ def background_load_pid() -> int | None:
     return pid if _pid_alive(pid) else None
 
 
-def start_background_load(scenario: str) -> int:
+def start_background_load(scenario: str, scale: float | None = None) -> int:
     stop_background_load(scenario)
     logf = state_path(f"load-{scenario}.log").open("ab")
     proc = subprocess.Popen(
@@ -835,6 +835,7 @@ def start_background_load(scenario: str) -> int:
         stdout=logf,
         stderr=subprocess.STDOUT,
         start_new_session=True,
+        env={**os.environ, "INCIDENT_LOAD_SCALE": str(scale)} if scale is not None else None,
     )
     state_path(f"load-{scenario}.pid").write_text(str(proc.pid))
     log(f"load: started pid {proc.pid} (log: {logf.name})")
@@ -843,8 +844,32 @@ def start_background_load(scenario: str) -> int:
 
 def stop_background_load(scenario: str | None = None) -> None:
     if scenario is None:
-        for path in state_path("load.pid").parent.glob("load*.pid"):
-            stop_background_load(path.stem.removeprefix("load-"))
+        paths = list(state_path("load.pid").parent.glob("load*.pid"))
+        active: list[tuple[Path, int]] = []
+        for path in paths:
+            pid = int(path.read_text().strip() or 0)
+            try:
+                os.killpg(pid, signal.SIGTERM)
+                active.append((path, pid))
+                log(f"load: stopped pid {pid}")
+            except ProcessLookupError:
+                log(f"load: pid {pid} already gone")
+                path.unlink(missing_ok=True)
+        deadline = time.monotonic() + 10
+        remaining = active
+        while remaining and time.monotonic() < deadline:
+            remaining = [(path, pid) for path, pid in remaining if _pid_alive(pid)]
+            if remaining:
+                time.sleep(0.2)
+        for path, pid in remaining:
+            try:
+                os.killpg(pid, signal.SIGKILL)
+                log(f"load: pid {pid} did not exit on SIGTERM; killed")
+            except ProcessLookupError:
+                pass
+            path.unlink(missing_ok=True)
+        for path, _ in active:
+            path.unlink(missing_ok=True)
         return
     p = state_path("load.pid" if scenario == "load" else f"load-{scenario}.pid")
     if not p.exists():
@@ -953,12 +978,22 @@ def cmd_arm(args: argparse.Namespace) -> None:
         armed[state["scenario"]] = state
     names = list(dict.fromkeys(names))
     concurrent = len(names) > 1
+    memory = [name for name in names if any(
+        _step_parts(step)[0] == "memory-limit" for step in cat["scenarios"][name]["arm"]
+    )]
+    logging = [name for name in names if "purge-request-log" in cat["scenarios"][name]["disarm"]]
+    storm = concurrent and bool(memory)
     if concurrent and any("seed" in cat["scenarios"][name]["arm"] for name in names):
         wait_healthy(cat)
         asyncio.run(seed(cat))
     for name in names:
-        _arm_one(cat, name, armed, prepare_only=concurrent)
-    if concurrent:
+        defer = {"memory-limit"} if storm else set()
+        if storm and name in logging:
+            defer.add("flag")
+        _arm_one(cat, name, armed, prepare_only=concurrent, defer=defer)
+    if storm:
+        _start_storm(cat, names, memory, logging)
+    elif concurrent:
         for name in names:
             for step in cat["scenarios"][name]["arm"]:
                 if _step_parts(step)[0] == "load":
@@ -966,7 +1001,8 @@ def cmd_arm(args: argparse.Namespace) -> None:
 
 
 def _arm_one(
-    cat: dict[str, Any], name: str, armed: dict[str, Any], *, prepare_only: bool = False
+    cat: dict[str, Any], name: str, armed: dict[str, Any], *, prepare_only: bool = False,
+    defer: set[str] | None = None,
 ) -> None:
     sc = cat["scenarios"][name]
     scale = load_scale()
@@ -983,6 +1019,8 @@ def _arm_one(
     armed[name] = entry
     write_state(entry if len(armed) == 1 else {"scenarios": armed})
     for step in sc["arm"]:
+        if _step_parts(step)[0] in (defer or set()):
+            continue
         if prepare_only and _step_parts(step)[0] in {"seed", "load"}:
             continue
         run_step(cat, name, step)
@@ -993,6 +1031,69 @@ def _arm_one(
         f"armed. expect alert {alert['name']} to fire within {alert['fires_within_seconds']}s; "
         f"watch with `incident.py status`"
     )
+
+
+def _wait_storm_pages(cat: dict[str, Any], names: list[str], timeout: float = 240) -> None:
+    pending = {cat["scenarios"][name]["alert"]["name"] for name in names}
+    deadline = time.monotonic() + timeout
+    while pending:
+        firing = {a["labels"]["alertname"] for a in prom_alerts(cat) if a["state"] == "firing"}
+        for name in sorted(pending & firing):
+            log(f"storm: {name} firing")
+        pending -= firing
+        if not pending:
+            break
+        if time.monotonic() >= deadline:
+            die(f"storm timed out waiting for {', '.join(sorted(pending))}; disarm before retrying")
+        time.sleep(5)
+    # Alertmanager's group_wait is 10s; keep the condition until delivery.
+    if names:
+        time.sleep(15)
+
+
+def storm_memory_ceiling(rss: int, usage: int) -> int:
+    mib = 1024**2
+    ceiling = math.ceil(max(rss / 0.78, usage + 16 * mib) / mib) * mib
+    if rss <= 0 or rss / ceiling <= 0.75:
+        die("storm: insufficient RSS headroom for a safe memory page; disarm before retrying")
+    return ceiling
+
+
+def _start_storm(
+    cat: dict[str, Any], names: list[str], memory: list[str], logging: list[str]
+) -> None:
+    recreate_document_service(cat, "1g")
+    for name in memory:
+        start_background_load(name, scale=0.5 * load_scale())
+    log("storm: warming render load for 30s before list traffic")
+    time.sleep(30)
+    for name in names:
+        if name not in memory and name not in logging and cat["scenarios"][name].get("load"):
+            start_background_load(name)
+    _wait_storm_pages(cat, [name for name in names if name not in memory + logging])
+    for name in logging:
+        for step in cat["scenarios"][name]["arm"]:
+            if _step_parts(step)[0] == "flag":
+                run_step(cat, name, step)
+        start_background_load(name)
+    _wait_storm_pages(cat, logging)
+    stop_background_load()
+    time.sleep(10)
+    rss = int(compose("exec", "-T", "document-service", "sh", "-c",
+                      "awk '/VmRSS/ {printf \"%.0f\\n\", $2 * 1024}' /proc/1/status",
+                      capture=True).stdout.strip())
+    usage = int(compose("exec", "-T", "document-service", "sh", "-c",
+                        "cat /sys/fs/cgroup/memory.current 2>/dev/null || "
+                        "cat /sys/fs/cgroup/memory/memory.usage_in_bytes",
+                        capture=True).stdout.strip())
+    ceiling = storm_memory_ceiling(rss, usage)
+    cid = container_id("document-service")
+    if not cid:
+        die("storm: document-service is not running")
+    sh("docker", "update", "--memory", str(ceiling), "--memory-swap", str(ceiling), cid)
+    log(f"storm: retained RSS={rss}, cgroup usage={usage}, memory ceiling={ceiling}; loads paused")
+    _wait_storm_pages(cat, memory, timeout=120)
+    log("storm: all requested pages fired; generators remain paused until disarm")
 
 
 def cmd_disarm(_: argparse.Namespace) -> None:

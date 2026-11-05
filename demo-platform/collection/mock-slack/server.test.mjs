@@ -49,7 +49,8 @@ test('alert batches wait for quiet, include every new firing alert and do not bi
   await send(alerts); await send([{ ...alerts[0], fingerprint: 'resolved', status: 'resolved' }]);
   await pause(160);
   assert.equal(f.calls.length, 1); assert.equal(f.calls[0].url, '/batch');
-  assert.equal(f.calls[0].secret, 'batch-secret');
+  assert.equal(f.calls[0].auth, 'Bearer batch-secret');
+  assert.equal(f.calls[0].secret, undefined);
   assert.deepEqual(f.calls[0].body.alerts, alerts);
   for (const a of alerts) for (const text of [a.labels.alertname, a.labels.scenario, a.labels.severity, a.annotations.summary, a.startsAt, JSON.stringify(a.labels)]) assert.ok(f.calls[0].body.message.includes(text));
   const state = await (await fetch(`${f.url}/api/state`)).json();

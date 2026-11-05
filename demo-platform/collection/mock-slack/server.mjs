@@ -151,7 +151,7 @@ export async function createApp(cfg = config()) {
       `${a.labels.alertname || 'Alert'} | scenario: ${a.labels.scenario || '-'} | severity: ${a.labels.severity || '-'}\n${a.annotations?.summary || ''}\nstartsAt: ${a.startsAt || '-'}\nlabels: ${JSON.stringify(a.labels)}`).join('\n\n');
     let note;
     try {
-      const response = await fetch(cfg.batchWebhook, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cfg.batchSecret ? { 'X-Webhook-Secret': cfg.batchSecret } : {}) },
+      const response = await fetch(cfg.batchWebhook, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cfg.batchSecret ? { Authorization: `Bearer ${cfg.batchSecret}` } : {}) },
         body: JSON.stringify({ message, channel: 'alerts', alerts: batch.alerts }), redirect: 'error', signal: AbortSignal.timeout(20000) });
       if (!response.ok) throw new Error('Batch delivery failed');
       const result = await response.json().catch(() => ({}));

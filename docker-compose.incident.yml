@@ -16,7 +16,9 @@
 
 services:
   document-service:
+    image: otterworks-document-service:latest
     environment:
+      DOC_SVC_SNS_ENABLED: 'false'
       DOC_SVC_OTEL_ENABLED: 'true'
       DOC_SVC_REQUEST_LOG_DIR: /var/log/otterworks/document-service
       DOC_SVC_ROLLUP_ENABLED: 'true'
@@ -44,6 +46,7 @@ services:
     ports: !reset []
     profiles: [double-run]
     environment:
+      DOC_SVC_SNS_ENABLED: 'false'
       DOC_SVC_ROLLUP_ENABLED: 'true'
       DOC_SVC_ROLLUP_INTERVAL_SECONDS: '60'
     depends_on:

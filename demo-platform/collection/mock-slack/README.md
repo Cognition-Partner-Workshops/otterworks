@@ -57,7 +57,7 @@ Start the workspace first: the overlay attaches Alertmanager to the workspace's 
 
 Set `ALERT_BATCH_WEBHOOK_URL` to a Devin incoming automation URL to collect new
 firing alerts into a single webhook after a quiet window. Set
-`ALERT_BATCH_WEBHOOK_SECRET` for the outgoing `X-Webhook-Secret` header.
+`ALERT_BATCH_WEBHOOK_SECRET` for the outgoing `Authorization: Bearer` header.
 `ALERT_BATCH_QUIET_MS` defaults to 90000; choose a longer window when scenarios
 take different amounts of time to fire. Start mock Slack with these variables
 before starting the incident stack with the receiver overlay, then run

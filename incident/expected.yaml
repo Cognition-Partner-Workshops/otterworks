@@ -2,13 +2,13 @@
 # re-pin with `make incident-record REASON="..."` -- the reason is kept here
 # so every re-record is auditable in git history.
 recorded:
-  at: '2026-11-05T05:47:21.036659+00:00'
-  git_sha: e4e390e717b7e4dc83dc7600d525f9f482d253ef
-  reason: Support concurrent local scenario loads and untruncated raw Alertmanager
-    delivery; refresh the harness fixture fingerprint only, with application source
-    and scenario thresholds unchanged.
+  at: '2026-11-05T06:04:22.282984+00:00'
+  git_sha: 6e805731f7ecf9754b4df80e671f613348082329
+  reason: Stage concurrent storm loads and size the paused memory ceiling safely;
+    disable local SNS and share the replica image. Application source and alert thresholds
+    unchanged.
 fingerprints:
-  fixture: a782ebecd49ee01ecacbf6538ba521c21f65ba6233c698810f273c50e0d1a19c
+  fixture: 9033e4c6e439e3e313340ac95f93dff8282b121eb795bfa827c7b45025f39c56
   source: d55ef66d277619b561204c5ff6e7f8ddedbd6e29ebed0ce4477ad08d2eb1ea40
 scenarios:
   n-plus-one:

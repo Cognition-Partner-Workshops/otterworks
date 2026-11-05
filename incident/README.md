@@ -143,6 +143,22 @@ commands can add scenarios. Each load profile runs in a separate process.
 gates still require a single armed scenario; concurrent loads change the
 measurements and are intended for the alert-storm demo.
 
+When a multi-arm command includes cache-leak, the coordinator starts with a
+1 GiB ceiling and half-rate render load. It waits for the list and rollup
+pages before enabling request logging, then waits for the volume page. It
+pauses the generators and lowers the ceiling around retained RSS, with room
+above measured cgroup usage, so the memory page can complete its hold period.
+The arm command waits for these pages and leaves the generators paused until
+disarm. Single-scenario loads, limits and verification gates stay unchanged.
+Disarm before retrying a timed-out storm.
+
+The incident overlay disables SNS for both document-service replicas, so the
+fixture doesn't need LocalStack. Both replicas use the same image
+tag, built by `make incident-up`; double-run can start its replica with
+`--no-build`. For mock Slack delivery, use the
+[receiver overlay](../demo-platform/collection/mock-slack/README.md) in
+`INCIDENT_COMPOSE` for startup, arm and disarm.
+
 ## Where the page goes
 
 Alertmanager routes every `page: devin` alert to two receivers: the Devin
