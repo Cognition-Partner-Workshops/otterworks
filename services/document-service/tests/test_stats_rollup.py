@@ -72,3 +72,22 @@ async def test_loop_survives_duplicate_check_failure_after_commit(
     with pytest.raises(asyncio.CancelledError):
         await task
     assert rollups > 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "double-run evidence: compute_rollup only dedupes on (window_start, own hostname) "
+        "and loop() runs in every replica with no lock or unique window_start, so a "
+        "second replica inserts a second row and the window's totals are counted twice"
+    ),
+)
+async def test_two_replicas_produce_one_row_per_window(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    for host in ("document-service", "document-service-replica"):
+        monkeypatch.setattr(stats_rollup.socket, "gethostname", lambda h=host: h)
+        await stats_rollup.compute_rollup(db_session, WINDOW)
+    assert await _rows(db_session) == 1
+    assert await stats_rollup.duplicate_windows(db_session, WINDOW) == 0
