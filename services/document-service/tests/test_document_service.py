@@ -3,6 +3,7 @@
 import uuid
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.document import (
@@ -13,6 +14,7 @@ from app.schemas.document import (
     TemplateCreate,
 )
 from app.services.document_service import DocumentService
+from tests.conftest import engine
 
 
 @pytest.mark.asyncio
@@ -237,3 +239,75 @@ async def test_paginate_helper():
     assert DocumentService.paginate(11, 1, 5) == 3
     assert DocumentService.paginate(0, 1, 5) == 1
     assert DocumentService.paginate(10, 1, 0) == 1
+
+
+async def _seed_versioned_documents(
+    service: DocumentService, owner_id: uuid.UUID, count: int, versions: int
+) -> None:
+    for i in range(count):
+        doc = await service.create(
+            DocumentCreate(title=f"Doc {i}", content="v1", owner_id=owner_id)
+        )
+        for v in range(2, versions + 1):
+            await service.update(
+                doc.id, DocumentUpdate(title=f"Doc {i}", content=f"v{v}")
+            )
+
+
+async def _count_statements(coro):
+    statements: list[str] = []
+
+    def _record(conn, cursor, statement, parameters, context, executemany):
+        statements.append(statement)
+
+    event.listen(engine.sync_engine, "before_cursor_execute", _record)
+    try:
+        result = await coro
+    finally:
+        event.remove(engine.sync_engine, "before_cursor_execute", _record)
+    return result, statements
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("page_size", [1, 4, 12])
+async def test_list_documents_statement_count_is_constant(
+    db_session: AsyncSession, owner_id: uuid.UUID, page_size: int
+):
+    """Listing a page costs the same number of SQL statements whatever its size."""
+    service = DocumentService(db_session)
+    await _seed_versioned_documents(service, owner_id, count=12, versions=8)
+    db_session.expunge_all()
+
+    (items, total), statements = await _count_statements(
+        service.list_documents(owner_id=owner_id, page=1, size=page_size)
+    )
+
+    assert total == 12
+    assert len(items) == page_size
+    # count, page, comments load, one batched recent-versions query
+    assert len(statements) == 4, statements
+    for doc in items:
+        assert [v.version_number for v in doc.recent_versions] == [8, 7, 6, 5, 4]
+
+
+@pytest.mark.asyncio
+async def test_list_documents_recent_versions_per_document(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    """Each document gets only its own newest versions; short histories stay short."""
+    service = DocumentService(db_session)
+    short = await service.create(
+        DocumentCreate(title="Short", content="only", owner_id=owner_id)
+    )
+    await _seed_versioned_documents(service, owner_id, count=2, versions=7)
+    db_session.expunge_all()
+
+    items, total = await service.list_documents(owner_id=owner_id)
+    assert total == 3
+    by_id = {doc.id: doc for doc in items}
+    assert [v.version_number for v in by_id[short.id].recent_versions] == [1]
+    for doc in items:
+        if doc.id == short.id:
+            continue
+        assert [v.version_number for v in doc.recent_versions] == [7, 6, 5, 4, 3]
+        assert all(v.document_id == doc.id for v in doc.recent_versions)
