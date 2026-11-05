@@ -100,6 +100,10 @@ export async function createApp(cfg = config()) {
     batchNote('Alert batch delivery is unconfirmed after restart. Check the automation\'s event history before retrying; no automatic retry was sent.', 'uncertain');
     await save();
   }
+  if (state.alertBatch?.status === 'pending' && state.alertBatch.firstAt == null) {
+    batchNote(`Discarded alert batch (${state.alertBatch.alerts.length} alerts): receipt age is unknown. Start a new storm or reset the batch before retrying.`, 'discarded');
+    delete state.alertBatch; await save();
+  }
   if (expireBatch()) await save();
   const safeUrl = id => `${cfg.webBase}/sessions/${id.replace(/^devin-/, '')}`;
   const deliver = async t => {

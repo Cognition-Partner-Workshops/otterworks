@@ -92,25 +92,27 @@ test('expired recovered batch cannot satisfy required names in a new storm', asy
   assert.deepEqual(f.calls[0].body.alerts.map(a => a.labels.alertname), ['Last', 'First']);
 });
 
-for (const hasLastAt of [true, false]) {
-  test(`old-format pending batch survives restart with ${hasLastAt ? 'recent lastAt' : 'no lastAt'} despite old startsAt`, async t => {
-    const before = Date.now();
-    const lastAt = hasLastAt ? before - 1000 : undefined;
-    const f = await fixture(t, { batch: true, initialState: { threads: [], alerts: {}, alertBatch: {
-      status: 'pending', lastAt, alerts: [{ labels: { alertname: 'First' }, startsAt: new Date(before - 3600000).toISOString() }],
-    } } });
-    f.cfg.batchRequiredAlerts = ['First', 'Last'];
-    await pause(160);
-    const state = await (await fetch(`${f.url}/api/state`)).json();
-    assert.deepEqual(state.alertBatch, { status: 'pending', alertCount: 1 });
-    assert.equal(state.threads.length, 0);
-    assert.equal(f.calls.length, 0);
-    await f.app.poll();
-    const persisted = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
-    if (hasLastAt) assert.equal(persisted.alertBatch.firstAt, lastAt);
-    else assert.ok(persisted.alertBatch.firstAt >= before && persisted.alertBatch.firstAt <= Date.now());
-  });
-}
+test('legacy pending batch is discarded on restart and cannot satisfy new storm requirements', async t => {
+  const before = Date.now();
+  const f = await fixture(t, { batch: true, initialState: { threads: [], alerts: {}, alertBatch: {
+    status: 'pending', lastAt: before - 1000, alerts: [{ labels: { alertname: 'First' }, startsAt: new Date(before - 3600000).toISOString() }],
+  } } });
+  f.cfg.batchRequiredAlerts = ['First', 'Last'];
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.alertBatch, null);
+  assert.equal(state.threads[0].channel, 'alerts');
+  assert.equal(state.threads[0].status, 'discarded');
+  assert.equal(state.threads[0].readOnly, true);
+  assert.match(state.threads[0].messages[0].text, /receipt age is unknown.*Start a new storm or reset/);
+  assert.equal(JSON.parse(await readFile(f.cfg.stateFile, 'utf8')).alertBatch, undefined);
+  await sendBatchAlert(f.url, 'Last');
+  await pause(160);
+  assert.equal(f.calls.length, 0);
+  const persisted = JSON.parse(await readFile(f.cfg.stateFile, 'utf8'));
+  assert.equal(persisted.alertBatch.status, 'pending');
+  assert.deepEqual(persisted.alertBatch.alerts.map(a => a.labels.alertname), ['Last']);
+  assert.ok(persisted.alertBatch.firstAt >= before);
+});
 
 test('incomplete pending batch expires without another incoming alert', async t => {
   const f = await fixture(t, { batch: true });

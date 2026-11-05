@@ -82,7 +82,11 @@ scenarios, use
 If a scenario fails, its partial batch stays pending for operator review until
 `ALERT_BATCH_MAX_AGE_MS` expires (default `1800000`, 30 minutes from the first
 received alert). Expired pending batches are discarded with a bot note, including
-after a restart. New alerts cannot inherit required names from an expired batch.
+after a restart. Legacy pending batches without a persisted first-receipt time
+(`firstAt`) are also discarded on restart with a receipt-age-unknown note; neither
+alert start times nor the latest receipt time establishes their age. Start a new
+storm or reset before retrying. New alerts cannot inherit required names from a
+discarded batch.
 Leave this variable empty for independent single-scenario batches.
 
 `GET /api/state` exposes `alertBatch` with `status` and `alertCount`, or `null`.
