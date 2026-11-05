@@ -1,0 +1,62 @@
+spec_version: 1
+workload: churn_model
+summary: Rule-based churn score (0-100) per account for each completed Monday-Sunday week.
+cadence: weekly
+grain: [week_start_date, account_id]
+model_version: rules_v1
+
+inputs:
+  - source: auth-service Postgres users
+    landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.AUTH_USERS
+    columns: [id, created_at, last_login_at]
+  - source: admin-service Postgres admin_users
+    landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.ADMIN_ADMIN_USERS
+    columns: [id, status]
+  - source: document-service Postgres document_versions
+    landing: DB_CHURN_MODEL_SFEXT_20261105A.RAW.DOCUMENT_DOCUMENT_VERSIONS
+    columns: [id, created_by, created_at]
+
+output:
+  table: DB_CHURN_MODEL_SFEXT_20261105A.APP.WEEKLY_CHURN_SCORES
+  columns:
+    - {name: week_start_date, type: DATE, description: Monday of the scored week (UTC)}
+    - {name: account_id, type: VARCHAR(36), description: auth users.id}
+    - {name: days_since_last_login, type: "NUMBER(6,0)", description: "days from last_login_at (or created_at if never) to week end (Sunday)"}
+    - {name: activity_this_week, type: "NUMBER(10,0)", description: document versions created by the account in the week}
+    - {name: activity_prior_4wk_avg, type: "NUMBER(10,2)", description: versions in the 4 weeks before / 4}
+    - {name: activity_drop_pct, type: "NUMBER(7,2)", description: "(prior avg - this week) / prior avg * 100; NULL when prior avg = 0"}
+    - {name: login_points, type: "NUMBER(3,0)", description: 0/10/25/40}
+    - {name: activity_points, type: "NUMBER(3,0)", description: 0/10/25/30/40}
+    - {name: status_points, type: "NUMBER(3,0)", description: 0/20}
+    - {name: churn_score, type: "NUMBER(3,0)", description: login_points + activity_points + status_points}
+    - {name: risk_band, type: VARCHAR(8), description: "high (>= 60) | medium (>= 30) | low"}
+    - {name: model_version, type: VARCHAR(16), description: rules_v1}
+
+business_rule: >-
+  Score the last completed week (Monday-Sunday, UTC). Login points: 40 if the last login is 30 or more
+  days before the week end, 25 if 14 or more, 10 if 7 or more, else 0. Activity is the number of
+  document versions the account created; compare the week with the average week of the four weeks
+  before it. Activity points: 30 if there was no activity in either period, 0 if activity is new this
+  week, otherwise 40 for a drop of 75% or more, 25 for 50% or more, 10 for 25% or more, else 0.
+  A suspended account (admin_users.status) adds 20. The score is the sum (0-100). Accounts created
+  after the start of the four-week comparison period, and deleted accounts, are not scored. Billing
+  subscriptions are not used: billing tenants have no defined link to user ids.
+
+examples:
+  fixture: workloads/pipeline/seed.sql
+  week: 2026-10-26..2026-11-01, comparison 2026-09-28..2026-10-25
+  rows:
+    - {week_start_date: "2026-10-26", account_id: 00000000-0000-4000-8000-000000000101, days_since_last_login: 37, activity_this_week: 1, activity_prior_4wk_avg: 5.00, activity_drop_pct: 80.00, login_points: 40, activity_points: 40, status_points: 0, churn_score: 80, risk_band: high, model_version: rules_v1}
+    - {week_start_date: "2026-10-26", account_id: 00000000-0000-4000-8000-000000000102, days_since_last_login: 15, activity_this_week: 1, activity_prior_4wk_avg: 2.00, activity_drop_pct: 50.00, login_points: 25, activity_points: 25, status_points: 0, churn_score: 50, risk_band: medium, model_version: rules_v1}
+    - {week_start_date: "2026-10-26", account_id: 00000000-0000-4000-8000-000000000103, days_since_last_login: 1, activity_this_week: 3, activity_prior_4wk_avg: 2.00, activity_drop_pct: -50.00, login_points: 0, activity_points: 0, status_points: 20, churn_score: 20, risk_band: low, model_version: rules_v1}
+  how_to_check: >-
+    Last logins: 101 2026-09-25, 102 2026-10-17, 103 2026-10-31. Versions: 101 has 20 on 2026-10-10
+    and 1 on 2026-10-28; 102 has 8 and 1; 103 has 8 and 3. 103 is suspended.
+
+endpoint:
+  csid: cs_churn_model_account_score
+  service_user: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+  kind: sql
+  object: DB_CHURN_MODEL_SFEXT_20261105A.APP.WEEKLY_CHURN_SCORES
+  request: {account_id: VARCHAR(36), week_start_date: optional DATE (default latest)}
+  response: one row of output.columns
