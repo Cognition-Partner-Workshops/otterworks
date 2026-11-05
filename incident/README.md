@@ -23,6 +23,27 @@ isolated tenant.
 | `DocumentServiceMemoryHigh` (pages) | [`cache-leak`](#cache-leak) | 1 m | 420 s | RSS > 75 % of the memory limit |
 | `DocumentStatsRollupDuplicated` (pages) | [`double-run`](#double-run) | 30 s | 240 s | a rollup window computed twice |
 
+## On-call quick card
+
+Each page that links to this README, with the first three checks to run, how
+to tell it is fixed, and when to escalate. The commands are for the local stack
+(`make incident-up`, Prometheus `localhost:9090`, Grafana `localhost:3001`,
+dashboard **Incident responder** at `/d/otterworks-incident-responder`, Jaeger
+`localhost:16686`). On the shared cluster, use the `dashboard_url` and
+`traces_url` from the page. `make incident-status` prints every firing alert
+and the numbers behind it, so run it first for any of them. Thresholds and
+`for` durations are in the table above. Do not change them.
+`DocumentServiceErrorRateHigh` links to the top of this page. Its section is
+[`log-flood`](#log-flood).
+
+| Page | First three checks | Fixed when | Escalate when |
+|---|---|---|---|
+| `DocumentListLatencyHigh` | 1. Grafana *p95 latency* and *Request rate*: latency up while the rate stays flat. 2. Grafana *SQL statements/request*, or `sum(rate(otterworks_db_queries_per_request_sum{handler="/api/v1/documents/"}[2m])) / sum(rate(otterworks_db_queries_per_request_count{handler="/api/v1/documents/"}[2m]))`. 3. Jaeger: `service=document-service`, `operation=GET /api/v1/documents/`, `minDuration=1s`. Count the identical `SELECT`s on `document_versions`. | p95 ≤ 0.5 s and ≤ 5 statements/request under the same load, alert inactive. | p95 above 3 s, other endpoints slow too (shared Postgres), or no fix on a branch within 1 h. |
+| `RequestLogVolumeNearFull` | 1. `otterworks_request_log_bytes / otterworks_request_log_capacity_bytes` in Prometheus. 2. Whether the debug flag is on: `docker exec otterworks-redis redis-cli GET chaos:document-service:request_log`. 3. Whether 5xx has already started: `DocumentServiceErrorRateHigh` in Alertmanager (`localhost:9093`). | Volume ≤ 25 % after the same load, error ratio ≤ 1 %, alert inactive. | The volume reaches 100 % (users get 500s), or whoever owns the flag cannot be reached to agree to turning it off. |
+| `DocumentServiceErrorRateHigh` | 1. `sum(rate(http_requests_total{job="document-service",status=~"5.."}[2m])) / sum(rate(http_requests_total{job="document-service"}[2m]))` by `handler`. 2. Request-log volume (row above). If it is full, this is `log-flood`. 3. `docker logs --since 10m otterworks-document-service \| grep -Ei 'error\|Traceback' \| tail`. | Error ratio ≤ 1 % for 10 minutes at normal traffic, alert resolved. | Ratio above 50 %, or the cause is not the log volume (then also use [`docs/runbooks/high-error-rate.md`](../docs/runbooks/high-error-rate.md)). |
+| `DocumentServiceMemoryHigh` | 1. `otterworks_process_resident_memory_bytes / otterworks_process_memory_limit_bytes`. 2. `otterworks_render_cache_entries`: does it climb with RSS? 3. Whether the cache flag is on (`chaos:document-service:render_cache`), and the restart count from `docker ps -a --filter name=otterworks-document-service`. | ≤ 1000 entries and RSS ≤ 70 % of the limit under the same load, alert inactive. | The container has already restarted (OOM), or RSS keeps growing with the flag off. |
+| `DocumentStatsRollupDuplicated` | 1. `otterworks_rollup_duplicate_windows` and `sum by (instance) (increase(otterworks_rollup_runs_total[15m]))`: two instances means two schedulers. 2. Replica count: `docker ps --filter name=document-service`. 3. `SELECT window_start, count(*) FROM document_stats_rollups GROUP BY 1 HAVING count(*) > 1;` in `docker exec -it otterworks-postgres psql -U otterworks otterworks`. | 0 new duplicate windows with both replicas running for 200 s, gauge at 0. | Customers have already received doubled usage reports. That is a data correction, so the service owner must approve it. |
+
 ## Triage order
 
 1. Read the page: `alertname`, `scenario`, `service`, `severity`, `summary`
