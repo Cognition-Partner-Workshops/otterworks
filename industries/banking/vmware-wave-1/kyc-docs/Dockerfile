@@ -1,4 +1,4 @@
-# kyc-docs on the shared platform: Java 17, Spring Boot 3, plain HTTP on 8080
+# kyc-docs on the shared platform: Java 17, Spring Boot 4, plain HTTP on 8080
 # (TLS at the ingress), uploads under KYC_UPLOAD_DIR, logs on stdout.
 FROM docker.io/library/maven:3.9-eclipse-temurin-17@sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584 AS test
 ARG MAVEN_MIRROR=""
