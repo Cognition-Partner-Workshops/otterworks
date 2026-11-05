@@ -86,7 +86,10 @@ def build_ledger(
     queries: dict[str, dict[str, Any]] = {}
     for name in ("query_history", "recent_queries"):
         for query in rows(exports.get(name, [])):
-            queries.setdefault(query["query_id"], query)
+            merged = queries.setdefault(query["query_id"], {})
+            for key, value in query.items():
+                if merged.get(key) in (None, "", PENDING):
+                    merged[key] = value
     attributed = {r["query_id"]: r for r in rows(exports.get("attribution", []))}
     tasks = {r["query_id"]: r for r in rows(exports.get("tasks", [])) if r.get("query_id")}
     cortex: dict[str, list[dict[str, Any]]] = defaultdict(list)

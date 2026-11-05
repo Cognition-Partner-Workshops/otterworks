@@ -35,6 +35,17 @@ def test_deduplicate_queries_include_system_preserve_run_ids():
     assert entry(result)["run_ids"] == [json.loads(q["QUERY_TAG"])["run_id"]]
 
 
+@pytest.mark.parametrize("older,newer,expected", [(None, "0.03", "0.03"), (None, 0, "0"),
+                                                (0, "0.03", "0"), ("pending", "0.03", "0.03")])
+def test_overlapping_exports_fill_missing_values_without_overwriting_reported_zero(older, newer, expected):
+    result = ledger.build_ledger({
+        "query_history": [query(CREDITS_USED_CLOUD_SERVICES=older)],
+        "recent_queries": [query(CREDITS_USED_CLOUD_SERVICES=newer)],
+    })
+    assert entry(result)["query_count"] == 1
+    assert result["timeline"][0]["cloud_services_credits"] == expected
+
+
 @pytest.mark.parametrize("value,expected", [(None, "pending"), (0, "0"), ("0.125", "0.125")])
 def test_zero_is_distinct_from_missing(value, expected):
     result = ledger.build_ledger({"query_history": [query()], "attribution": [
