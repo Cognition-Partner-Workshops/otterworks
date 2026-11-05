@@ -13,7 +13,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-from contextlib import closing, contextmanager
+from contextlib import closing, contextmanager, nullcontext
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -35,6 +35,7 @@ import validate_provenance as vp  # noqa: E402
 from workloads.foundation import apply as foundation  # noqa: E402
 
 WORKLOADS = ("doc_usage_dashboard", "doc_search_api", "churn_model")
+APPEND_ONLY_AUDIT_TABLES = {"PIPELINE_REFRESH_RUNS": "REFRESHED_AT"}
 
 
 def now():
@@ -132,7 +133,7 @@ def execute(conn, sql, log):
             log.record(sql, cur.sfqid, success)
 
 
-def snapshot(conn, log):
+def snapshot(conn, log, audit_cutoff=None):
     db = sf.database_name("churn_model")
     tables = execute(conn, f"SELECT TABLE_NAME FROM {db}.INFORMATION_SCHEMA.TABLES "
                      "WHERE TABLE_SCHEMA='APP' AND TABLE_TYPE='BASE TABLE' "
@@ -140,7 +141,12 @@ def snapshot(conn, log):
     result = {}
     for (table,) in tables:
         quoted = '"' + table.replace('"', '""') + '"'
-        result[table] = execute(conn, f"SELECT COUNT(*), HASH_AGG(*) FROM {db}.APP.{quoted}", log)[0]
+        predicate = ""
+        if table in APPEND_ONLY_AUDIT_TABLES:
+            if audit_cutoff is None:
+                raise GateFailure("audit_snapshot_cutoff_missing")
+            predicate = f" WHERE {APPEND_ONLY_AUDIT_TABLES[table]} < {sf.sql_string(audit_cutoff)}::TIMESTAMP_LTZ"
+        result[table] = execute(conn, f"SELECT COUNT(*), HASH_AGG(*) FROM {db}.APP.{quoted}{predicate}", log)[0]
     if not result:
         raise GateFailure("churn_retained_tables_missing")
     log.record("retained_table_snapshot " + json.dumps(result, default=str))
@@ -302,6 +308,54 @@ def offline(root, runtime, workload, artifacts):
             return len(tests)
 
 
+def install(runtime, workload, params, commit, artifacts, dry_run=False):
+    class RenderCursor:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def execute(self, sql):
+            print(sql)
+
+        def fetchall(self):
+            return []
+
+    class RenderConnection:
+        def cursor(self):
+            return RenderCursor()
+
+        def close(self):
+            pass
+
+    original_dbt = runtime.dbt
+
+    def compile_model(workload, command, selector):
+        if not dry_run:
+            return original_dbt(workload, command, selector)
+        arguments = ["compile", "--no-introspect", "--no-populate-cache", "--project-dir", str(runtime.ROOT),
+                     "--profiles-dir", str(runtime.ROOT), "--target-path", str(artifacts / "target"),
+                     "--log-path", str(artifacts / "logs"), "--select", selector]
+        with patch("snowflake.connector.connect", side_effect=AssertionError("offline connection forbidden")):
+            result = runtime.dbtRunner().invoke(arguments)
+        if not result.success:
+            raise GateFailure("offline_compile")
+        return result
+
+    with patch.object(runtime, "WORKLOADS", (workload,)), \
+            patch.object(runtime, "MODELS", {workload: runtime.MODELS[workload]}), \
+            patch.object(runtime, "parameters", return_value=params), \
+            patch.object(runtime, "dbt", side_effect=compile_model), \
+            patch.object(runtime.sf, "resolve_commit", return_value=commit), \
+            patch.dict(os.environ, {"PIPELINE_DBT_TARGET": str(artifacts / "target"),
+                                    "PIPELINE_DBT_LOG": str(artifacts / "logs"),
+                                    "PIPELINE_DATABASE": sf.database_name(workload),
+                                    "SNOWFLAKE_EXT_USER": os.environ.get("SNOWFLAKE_EXT_USER", "offline")}), \
+            (patch("snowflake.connector.connect", return_value=RenderConnection()) if dry_run else nullcontext()):
+        runtime.deploy()
+
+
 def run_workload(root, workload, args, commit, attempted_commit):
     phase = "runtime" if os.environ.get("GITHUB_ACTIONS") == "true" else "dev"
     run_id = sf.make_run_id(workload, phase)
@@ -327,6 +381,7 @@ def run_workload(root, workload, args, commit, attempted_commit):
             with tempfile.TemporaryDirectory() as folder:
                 step = "offline_dbt"
                 count = offline(root, runtime, workload, Path(folder))
+                install(runtime, workload, {}, commit, Path(folder), dry_run=True)
                 objects.append(dict(type="model", name=runtime.MODELS[workload], detail="planned build"))
                 objects.append(dict(type="tests", name=workload, detail=f"{count} selected; planned gate"))
                 if workload == "doc_usage_dashboard":
@@ -338,13 +393,22 @@ def run_workload(root, workload, args, commit, attempted_commit):
             params = parameters(workload, commit, run_id, phase)
             with trace_queries(log), closing(snowflake.connector.connect(**params)) as conn:
                 step = "churn_retained_baseline"
-                before = snapshot(conn, log) if workload == "churn_model" else None
+                cutoff = attempted["started_at"]
+                if workload == "churn_model":
+                    attempted["retained_table_policy"] = (
+                        "PIPELINE_REFRESH_RUNS append-only audit: preserve rows with REFRESHED_AT < " + cutoff
+                        + "; full-table equality for every other retained table")
+                before = snapshot(conn, log, cutoff) if workload == "churn_model" else None
                 primary_error = None
                 try:
                     step = "migrations"
                     if args.mode != "rollback":
                         versions = migrate(root, workload, params, log)
                         objects.append(dict(type="migrations", name=workload, detail=json.dumps(versions, default=str)))
+                    step = "install_runtime"
+                    install(runtime, workload, params, commit, log.path.parent / run_id)
+                    objects.append(dict(type="procedure", name=runtime.procedure_name(workload), detail="installed from selected commit"))
+                    objects.append(dict(type="task", name=sf.task_name(workload), detail="installed from selected commit"))
                     step = "dbt_run"
                     dbt(runtime, workload, "run", runtime.MODELS[workload], params, log, log.path.parent / run_id)
                     objects.append(dict(type="model", name=runtime.MODELS[workload], detail="built"))
@@ -357,7 +421,7 @@ def run_workload(root, workload, args, commit, attempted_commit):
                 finally:
                     if before is not None:
                         try:
-                            after = snapshot(conn, log)
+                            after = snapshot(conn, log, cutoff)
                         except Exception as exc:
                             failed_gates.append({
                                 "gate": "retained_tables_unchanged",
@@ -371,6 +435,7 @@ def run_workload(root, workload, args, commit, attempted_commit):
                                     "gate": "retained_tables_unchanged",
                                     "detail": "changed tables: " + ", ".join(changed),
                                 })
+                        attempted["retained_table_result"] = "failed" if failed_gates else "passed"
                 if failed_gates and primary_error is None:
                     step = "churn_retained_tables"
                     primary_error = GateFailure("retained_tables_unchanged")

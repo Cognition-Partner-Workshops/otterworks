@@ -87,6 +87,15 @@ def run(session, run_id, commit, fallback):
         append(session, "CHURN_MODEL_RUNS", run_id, [record])
 
 
+def prediction_scores(session, classifier_name, train, holdout, scoring, predict):
+    try:
+        cutoff = model.threshold(train.churned, predict(train))
+        return cutoff, predict(holdout), predict(scoring)
+    finally:
+        if classifier_name is not None:
+            session.sql(f"DROP SNOWFLAKE.ML.CLASSIFICATION {classifier_name}").collect()
+
+
 def run_model(session, run_id, commit, fallback, record):
     started = record["started_at"]
     record["status"] = "dataset"
@@ -156,10 +165,8 @@ def run_model(session, run_id, commit, fallback, record):
                 return [float(row[0]) for row in session.sql(f"SELECT {classifier_name}!PREDICT(INPUT_DATA => OBJECT_DELETE(OBJECT_CONSTRUCT(*),'ROW_ID')):probability:\"1\"::float FROM CHURN_PREDICT ORDER BY ROW_ID").collect()]
 
             kind = "snowflake_ml_classification"
-        cutoff = model.threshold(train.churned, predict(train))
-        holdout_scores, scores = predict(holdout), predict(scoring)
-        if fallback:
-            session.sql(f"DROP SNOWFLAKE.ML.CLASSIFICATION {classifier_name}").collect()
+        cutoff, holdout_scores, scores = prediction_scores(
+            session, classifier_name if fallback else None, train, holdout, scoring, predict)
         status = "trained"
     auth, admin = tables["AUTH_USER_STATE_HISTORY"], tables["ADMIN_USER_STATE_HISTORY"]
     cause = (f"source state history has {auth.effective_at.nunique()} auth / {admin.effective_at.nunique()} admin effective timestamps "

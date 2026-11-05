@@ -107,6 +107,49 @@ def test_snapshot_empty_fails_closed():
         cd.snapshot(MagicMock(), MagicMock())
 
 
+def test_only_explicit_audit_table_uses_frozen_cutoff():
+    with patch.object(cd, "execute", side_effect=[[("CHURN_MODEL_EVALUATION",), ("PIPELINE_REFRESH_RUNS",)],
+                                                [(1, 42)], [(18, 99)]]) as execute:
+        cd.snapshot(MagicMock(), MagicMock(), "2026-11-05T12:00:00Z")
+    assert " WHERE " not in execute.call_args_list[1].args[1]
+    assert "WHERE REFRESHED_AT < '2026-11-05T12:00:00Z'::TIMESTAMP_LTZ" in execute.call_args_list[2].args[1]
+
+
+def test_audit_snapshot_requires_cutoff():
+    with patch.object(cd, "execute", return_value=[("PIPELINE_REFRESH_RUNS",)]), \
+            pytest.raises(cd.GateFailure, match="audit_snapshot_cutoff_missing"):
+        cd.snapshot(MagicMock(), MagicMock())
+
+
+@pytest.mark.parametrize("dry_run", [False, True])
+def test_install_reuses_selected_runtime_installer(tmp_path, capsys, dry_run):
+    runtime = cd.module(cd.REPO, "workloads/pipeline/runtime.py", "test_installer_runtime")
+    name = runtime.MODELS["doc_search_api"]
+
+    def compile(*args):
+        target = tmp_path / "target"
+        compiled = target / "compiled/otterworks_pipeline/models"
+        compiled.mkdir(parents=True, exist_ok=True)
+        node = {"config": {"period": "window_end_date", "column_ddl": "x NUMBER", "columns_order": ["x"]}}
+        (target / "manifest.json").write_text(json.dumps({"nodes": {f"model.otterworks_pipeline.{name}": node}}))
+        (compiled / f"{name}.sql").write_text("SELECT 'selected commit model'")
+        return SimpleNamespace(success=True)
+
+    connection = MagicMock()
+    with patch.object(runtime, "dbt", side_effect=compile), \
+            patch.object(runtime, "dbtRunner", return_value=SimpleNamespace(invoke=compile)), \
+            patch.object(cd.snowflake.connector, "connect", return_value=connection):
+        cd.install(runtime, "doc_search_api", {"private_key": b"memory"}, "b" * 40, tmp_path, dry_run)
+    if dry_run:
+        sql = capsys.readouterr().out
+    else:
+        sql = "\n".join(c.args[0] for c in connection.cursor.return_value.__enter__.return_value.execute.call_args_list)
+    assert "CREATE OR REPLACE PROCEDURE DB_DOC_SEARCH_API" in sql
+    assert "SELECT 'selected commit model'" in sql
+    assert "CREATE OR REPLACE TASK" in sql and "b" * 40 in sql
+    assert "DB_CHURN_MODEL" not in sql
+
+
 def test_ephemeral_slot_cleanup_on_deploy_failure():
     app = SimpleNamespace(EP=SimpleNamespace(service_user="SVC_TEST"), APP_ROLE="APP_ROLE",
                           _key_body=lambda pem: "public-only", build_stage_dir=MagicMock(side_effect=RuntimeError("broken")))
@@ -138,7 +181,7 @@ def test_dbt_empty_fails(tmp_path):
 def test_dry_run_no_connection_no_provenance_write(tmp_path):
     args = SimpleNamespace(mode="dry-run", dry_run=True, write_provenance=True, log_dir=str(tmp_path))
     runtime = SimpleNamespace(MODELS={"doc_search_api": "top_search_items"})
-    with patch.object(cd, "module", return_value=runtime), patch.object(cd, "offline") as offline, \
+    with patch.object(cd, "module", return_value=runtime), patch.object(cd, "offline") as offline, patch.object(cd, "install"), \
             patch.object(cd.snowflake.connector, "connect") as connect, patch.object(cd, "provenance") as provenance:
         assert cd.run_workload(cd.REPO, "doc_search_api", args, "a" * 40, "a" * 40)
     connect.assert_not_called()
@@ -150,7 +193,7 @@ def test_dry_run_no_connection_no_provenance_write(tmp_path):
 @pytest.mark.parametrize("failure", ["migrations", "dbt_run", "dbt_test", "retained"])
 def test_workload_stops_at_first_failure(tmp_path, failure):
     args = SimpleNamespace(mode="deploy", dry_run=False, write_provenance=False, log_dir=str(tmp_path))
-    runtime = SimpleNamespace(MODELS={"churn_model": "weekly_churn_scores"})
+    runtime = SimpleNamespace(MODELS={"churn_model": "weekly_churn_scores"}, procedure_name=lambda w: "proc")
     calls = []
 
     def migrate(*a):
@@ -165,7 +208,7 @@ def test_workload_stops_at_first_failure(tmp_path, failure):
             raise cd.GateFailure("named_test", ["test.bad"])
         return 5
 
-    with patch.object(cd, "module", return_value=runtime), patch.object(cd, "parameters", return_value={}), \
+    with patch.object(cd, "module", return_value=runtime), patch.object(cd, "parameters", return_value={}), patch.object(cd, "install"), \
             patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), \
             patch.object(cd, "migrate", side_effect=migrate), patch.object(cd, "dbt", side_effect=dbt), \
             patch.object(cd, "snapshot", side_effect=[{"scores": (1, 2)}, {"scores": (2, 3)}]), \
@@ -183,14 +226,14 @@ def test_workload_stops_at_first_failure(tmp_path, failure):
 @pytest.mark.parametrize("after", [{"scores": (1, 2)}, {"scores": (2, 3)}, RuntimeError("unavailable")])
 def test_churn_after_snapshot_preserves_dbt_failure(tmp_path, command, after):
     args = SimpleNamespace(mode="deploy", dry_run=False, write_provenance=False, log_dir=str(tmp_path))
-    runtime = SimpleNamespace(MODELS={"churn_model": "weekly_churn_scores"})
+    runtime = SimpleNamespace(MODELS={"churn_model": "weekly_churn_scores"}, procedure_name=lambda w: "proc")
 
     def dbt(runtime, workload, cmd, *args):
         if cmd == command:
             raise cd.GateFailure("dbt_" + cmd, ["test.bad"])
         return 1
 
-    with patch.object(cd, "module", return_value=runtime), patch.object(cd, "parameters", return_value={}), \
+    with patch.object(cd, "module", return_value=runtime), patch.object(cd, "parameters", return_value={}), patch.object(cd, "install"), \
             patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), \
             patch.object(cd, "migrate", return_value=[]), patch.object(cd, "dbt", side_effect=dbt), \
             patch.object(cd, "snapshot", side_effect=[{"scores": (1, 2)}, after]) as snapshot, \
@@ -205,9 +248,9 @@ def test_churn_after_snapshot_preserves_dbt_failure(tmp_path, command, after):
 
 def test_rollback_skips_migrations_and_uses_target_root(tmp_path):
     args = SimpleNamespace(mode="rollback", dry_run=False, write_provenance=False, log_dir=str(tmp_path))
-    runtime = SimpleNamespace(MODELS={"doc_search_api": "old_model"})
+    runtime = SimpleNamespace(MODELS={"doc_search_api": "old_model"}, procedure_name=lambda w: "proc")
     with patch.object(cd, "module", return_value=runtime) as load, \
-            patch.object(cd, "parameters", return_value={}), \
+            patch.object(cd, "parameters", return_value={}), patch.object(cd, "install") as install, \
             patch.object(cd.snowflake.connector, "connect", return_value=MagicMock()), \
             patch.object(cd, "migrate") as migrate, patch.object(cd, "dbt", return_value=3) as dbt, \
             patch.object(cd, "provenance") as provenance:
@@ -215,6 +258,7 @@ def test_rollback_skips_migrations_and_uses_target_root(tmp_path):
     migrate.assert_not_called()
     assert load.call_args_list[0].args[0] == tmp_path
     assert dbt.call_args_list[0].args[3] == "old_model"
+    assert install.call_args.args[:4] == (runtime, "doc_search_api", {}, "b" * 40)
     assert provenance.call_args.args[1]["commit"] == "a" * 40
     assert provenance.call_args.args[2]["commit"] == "b" * 40
 

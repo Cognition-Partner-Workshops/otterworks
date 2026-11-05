@@ -25,6 +25,8 @@
             "failed_step": {"type": ["string", "null"]},
             "gate": {"type": ["string", "null"]},
             "failing_tests": {"type": "array", "items": {"type": "string", "minLength": 1}},
+            "retained_table_policy": {"type": "string", "minLength": 1},
+            "retained_table_result": {"enum": ["passed", "failed"]},
             "failed_gates": {
               "type": "array",
               "items": {
@@ -63,7 +65,7 @@
                     "additionalProperties": false,
                     "required": ["type", "name", "detail"],
                     "properties": {
-                      "type": {"enum": ["migrations", "model", "tests", "streamlit"]},
+                      "type": {"enum": ["migrations", "procedure", "task", "model", "tests", "streamlit"]},
                       "name": {"type": "string", "minLength": 1},
                       "detail": {"type": "string", "minLength": 1}
                     }

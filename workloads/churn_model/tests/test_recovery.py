@@ -1,12 +1,33 @@
 import json
 from types import SimpleNamespace
-from unittest.mock import Mock
+from unittest.mock import Mock, MagicMock
 
 import pandas as pd
 import pytest
 
 from workloads.churn_model import warehouse as w
 from workloads.churn_model.usage import cortex_detection
+
+
+@pytest.mark.parametrize("failure", [None, 0, 1, 2])
+def test_fallback_model_is_dropped_after_every_prediction_outcome(monkeypatch, failure):
+    session = MagicMock()
+    monkeypatch.setattr(w.model, "threshold", lambda *args: 0.5)
+    calls = []
+
+    def predict(frame):
+        calls.append(frame)
+        if len(calls) - 1 == failure:
+            raise RuntimeError("prediction failed")
+        return []
+
+    train = SimpleNamespace(churned=[])
+    if failure is None:
+        assert w.prediction_scores(session, "CHURN_TEST", train, [], [], predict) == (0.5, [], [])
+    else:
+        with pytest.raises(RuntimeError, match="prediction failed"):
+            w.prediction_scores(session, "CHURN_TEST", train, [], [], predict)
+    session.sql.assert_called_once_with("DROP SNOWFLAKE.ML.CLASSIFICATION CHURN_TEST")
 
 
 def test_main_run_finalises_after_later_failure(monkeypatch):
