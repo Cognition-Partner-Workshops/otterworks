@@ -3,8 +3,10 @@
 import uuid
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.document import DocumentVersion
 from app.schemas.document import (
     CommentCreate,
     DocumentCreate,
@@ -237,3 +239,52 @@ async def test_paginate_helper():
     assert DocumentService.paginate(11, 1, 5) == 3
     assert DocumentService.paginate(0, 1, 5) == 1
     assert DocumentService.paginate(10, 1, 0) == 1
+
+
+@pytest.mark.asyncio
+async def test_list_documents_query_count_constant_in_page_size(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    service = DocumentService(db_session)
+    for i in range(12):
+        doc = await service.create(
+            DocumentCreate(title=f"Doc {i}", content="", owner_id=owner_id)
+        )
+        for n in range(2, 9):
+            db_session.add(
+                DocumentVersion(
+                    document_id=doc.id,
+                    version_number=n,
+                    title=doc.title,
+                    content="",
+                    created_by=owner_id,
+                )
+            )
+    await db_session.commit()
+    db_session.expunge_all()
+
+    statements: list[str] = []
+
+    def _count(conn, cursor, statement, parameters, context, executemany):  # noqa: ANN001
+        statements.append(statement)
+
+    sync_engine = db_session.bind.sync_engine
+    event.listen(sync_engine, "before_cursor_execute", _count)
+    try:
+        small, _ = await service.list_documents(owner_id=owner_id, size=2)
+        small_count = len(statements)
+        db_session.expunge_all()
+        statements.clear()
+        large, total = await service.list_documents(owner_id=owner_id, size=12)
+        large_count = len(statements)
+    finally:
+        event.remove(sync_engine, "before_cursor_execute", _count)
+
+    assert len(small) == 2
+    assert len(large) == total == 12
+    assert large_count == small_count
+    for doc in large:
+        numbers = [v.version_number for v in doc.recent_versions]
+        assert numbers == sorted(numbers, reverse=True)
+        assert len(numbers) == 5
+        assert numbers[0] == 8
