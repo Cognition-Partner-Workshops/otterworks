@@ -87,9 +87,15 @@ class RequestLog:
 
     def append(self, record: dict) -> None:
         os.makedirs(self.directory, exist_ok=True)
+        for index in range(REQUEST_LOG_BACKUPS + 1):
+            path = self.path if index == 0 else f"{self.path}.{index}"
+            with contextlib.suppress(FileNotFoundError):
+                if os.path.getsize(path) > REQUEST_LOG_MAX_BYTES:
+                    os.unlink(path)
         line = json.dumps(record, default=str) + "\n"
         size = len(line.encode("utf-8"))
         if size > REQUEST_LOG_MAX_BYTES:
+            self._bytes = self._scan()
             return
         if os.path.exists(self.path) and os.path.getsize(self.path) + size > REQUEST_LOG_MAX_BYTES:
             for index in range(REQUEST_LOG_BACKUPS, 0, -1):
