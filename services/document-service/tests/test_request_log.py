@@ -50,6 +50,24 @@ def test_redact_body_masks_minted_tokens_only() -> None:
     assert redact_body('{"items": [], "total": 0}') == '{"items": [], "total": 0}'
 
 
+def test_request_log_rotation_bounds_disk_usage(tmp_path) -> None:
+    log = RequestLog(str(tmp_path))
+    max_bytes = 2 << 20
+    backups = 2
+    record = {"response": "x" * (max_bytes // 2)}
+    for _ in range(20):
+        log.append(record)
+        files = list(tmp_path.iterdir())
+        total = sum(path.stat().st_size for path in files)
+        assert len(files) <= backups + 1
+        assert all(path.stat().st_size <= max_bytes for path in files)
+        assert total <= (backups + 1) * max_bytes
+        assert log._bytes == total
+    assert {path.name for path in files} == {
+        log.path.rsplit("/", 1)[-1] + suffix for suffix in ("", ".1", ".2")
+    }
+
+
 @pytest.mark.asyncio
 async def test_logged_request_keeps_body_but_not_bearer_token(
     client: AsyncClient,
