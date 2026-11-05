@@ -1,0 +1,101 @@
+name: custbill-parity-nightly
+
+# Reruns the CUSTBILL parity table (legacy ksh/bash/awk/Perl chain vs the local
+# Spark chain) every night so a drift shows up the next morning as a failed run
+# plus an open issue. Also runs on pull requests that touch either side.
+#
+# GitHub only fires `schedule` from the default branch; the Spark chain lives on
+# the tech-partnerships line, so the job checks out CUSTBILL_PARITY_REF
+# (repository variable, default tech-partnerships) rather than the workflow's own ref.
+
+on:
+  schedule:
+    - cron: '15 5 * * *'   # 05:15 UTC, before the finance morning in US time zones
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch to run parity on
+        default: tech-partnerships
+  pull_request:
+    branches: [tech-partnerships, 'tp-run/**']
+    paths:
+      - 'etl/custbill-spark/**'
+      - 'etl/legacy-extra/jobs/**'
+      - 'etl/legacy-extra/parity/**'
+      - 'etl/legacy-extra/requirements-spark.txt'
+      - '.github/workflows/custbill-parity-nightly.yml'
+
+concurrency:
+  group: custbill-parity-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      TZ: UTC
+      LC_ALL: C
+      SPARK_LOCAL_IP: 127.0.0.1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.sha || (inputs.ref || vars.CUSTBILL_PARITY_REF || 'tech-partnerships') }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: astral-sh/setup-uv@v5
+      - run: sudo apt-get update && sudo apt-get install -y ksh
+      - uses: actions/cache@v4
+        with:
+          path: etl/legacy-extra/.venv
+          key: custbill-spark-venv-${{ runner.os }}-py3.12-${{ hashFiles('etl/legacy-extra/requirements-spark.txt') }}
+      - run: make -C etl/legacy-extra spark-venv
+      - run: make -C etl/custbill-spark test
+      - run: uv run --with ruff==0.9.10 ruff check etl/custbill-spark etl/legacy-extra/parity
+      - name: Parity table (legacy vs Spark) + idempotent rerun + planted anomalies
+        run: make -C etl/custbill-spark recon OUT=/tmp/custbill-spark-chain.recon.json
+      - name: Validate recon report against the TP schema
+        run: make tp-validate-recon FILE=/tmp/custbill-spark-chain.recon.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: custbill-parity-${{ github.run_id }}
+          path: |
+            etl/legacy-extra/reports/parity/parity.md
+            etl/legacy-extra/reports/parity/parity.json
+            etl/legacy-extra/reports/parity/run-*/*.log
+            /tmp/custbill-spark-chain.recon.json
+          if-no-files-found: ignore
+      - name: Open or update the drift issue
+        if: failure() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="CUSTBILL parity drift: Spark chain no longer byte-identical to legacy"
+          body="Nightly parity failed on $(date -u +%Y-%m-%d). Run: $RUN_URL"$'\n\n'"$(cat etl/legacy-extra/reports/parity/parity.md 2>/dev/null || echo 'no parity table produced (see run log)')"
+          existing=$(gh issue list --state open --label custbill-parity-drift --search "$title" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh label create custbill-parity-drift --description "Nightly CUSTBILL legacy/Spark parity failed" --color B60205 --force
+            gh issue create --title "$title" --label custbill-parity-drift --body "$body"
+          fi
+      - name: Close the drift issue when parity is back
+        if: success() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          for n in $(gh issue list --state open --label custbill-parity-drift --json number --jq '.[].number'); do
+            gh issue close "$n" --comment "Parity is byte-identical again: $RUN_URL"
+          done
