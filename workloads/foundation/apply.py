@@ -36,16 +36,16 @@ class AttributedSession(SnowflakeSession):
         pass
 
 
-def connection_parameters(workload: str, *, admin: bool = False) -> dict:
+def connection_parameters(workload: str, *, admin: bool = False, admin_role: str = "ACCOUNTADMIN") -> dict:
     ep = sf.endpoint(sf.workload_csids(workload)[0])
     params = sf.connection_params(
         ep, phase="dev", account=os.environ["SNOWFLAKE_EXT_ACCOUNT"],
         private_key_file=os.environ["SNOWFLAKE_EXT_PRIVATE_KEY_FILE"],
         commit=sf.resolve_commit(repo=str(ROOT.parent)), run_id=sf.make_run_id(workload, "dev"),
-        session_url=SESSION_URL, role="ACCOUNTADMIN" if admin else "DEVIN_EXT_ROLE",
+        session_url=SESSION_URL, role=admin_role if admin else "DEVIN_EXT_ROLE",
     )
     params.update(user=os.environ["SNOWFLAKE_EXT_USER"], database=None, schema=None,
-                  warehouse=os.environ["SNOWFLAKE_EXT_WAREHOUSE"])
+                  warehouse=os.environ.get("SNOWFLAKE_EXT_WAREHOUSE", sf.warehouse_name("doc_usage_dashboard")))
     return params
 
 
@@ -78,7 +78,19 @@ def template_vars(workload: str) -> dict:
 
 def bootstrap_sql() -> str:
     return (f"CREATE DATABASE IF NOT EXISTS {HISTORY_DATABASE} COMMENT = "
-            f"{sf.sql_string(sf.external_comment(purpose='migration history'))};")
+            f"{sf.sql_string(sf.external_comment(purpose='migration history'))};\n"
+            f"CREATE WAREHOUSE IF NOT EXISTS {sf.warehouse_name('doc_usage_dashboard')} "
+            "WITH WAREHOUSE_SIZE = 'XSMALL' AUTO_SUSPEND = 60 AUTO_RESUME = TRUE "
+            "INITIALLY_SUSPENDED = TRUE COMMENT = "
+            f"{sf.sql_string(sf.external_comment(workload='doc_usage_dashboard'))};")
+
+
+def bootstrap(params: dict) -> None:
+    connection = snowflake.connector.connect(**{**params, "warehouse": None})
+    try:
+        connection.execute_string(bootstrap_sql())
+    finally:
+        connection.close()
 
 
 def migration_jobs(admin: bool):
@@ -99,6 +111,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--admin", action="store_true", help="Apply monitor approvals as ACCOUNTADMIN")
+    parser.add_argument("--admin-role", default="ACCOUNTADMIN", help="Role for --admin")
     args = parser.parse_args(argv)
     if version("schemachange") != "4.4.0":
         raise RuntimeError("schemachange==4.4.0 is required")
@@ -114,11 +127,12 @@ def main(argv=None) -> int:
             for name, sql in render(folder, variables):
                 print(f"-- {name}\n{sql}")
             continue
-        session = new_session(connection_parameters(workload, admin=args.admin), history)
+        params = connection_parameters(workload, admin=args.admin, admin_role=args.admin_role)
+        if not bootstrapped:
+            bootstrap(params)
+            bootstrapped = True
+        session = new_session(params, history)
         try:
-            if not bootstrapped:
-                session.execute_snowflake_query(bootstrap_sql(), logger=LOGGER)
-                bootstrapped = True
             config = DeployConfig(root_folder=folder, change_history_table=history,
                                   create_change_history_table=True, config_vars=variables)
             deploy(config=config, session=session)

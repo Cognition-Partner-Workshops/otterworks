@@ -45,6 +45,36 @@ def test_connection_and_resets_preserve_attribution(monkeypatch):
     assert session.session_parameters == {"QUERY_TAG": tag}
     assert con.mock_calls == before
     assert foundation.connection_parameters("doc_usage_dashboard", admin=True)["role"] == "ACCOUNTADMIN"
+    assert foundation.connection_parameters(
+        "doc_usage_dashboard", admin=True, admin_role="DEVIN_EXT_ROLE"
+    )["role"] == "DEVIN_EXT_ROLE"
+    monkeypatch.delenv("SNOWFLAKE_EXT_WAREHOUSE")
+    assert foundation.connection_parameters("doc_usage_dashboard")["warehouse"] == "WH_DOC_USAGE_DASHBOARD"
+
+
+def test_bootstrap_without_execution_warehouse():
+    params = {"session_parameters": {"QUERY_TAG": "exact"}, "application": sf.APPLICATION,
+              "authenticator": "SNOWFLAKE_JWT", "warehouse": "WH_DOC_USAGE_DASHBOARD"}
+    con = MagicMock()
+    with patch.object(foundation.snowflake.connector, "connect", return_value=con) as connect:
+        foundation.bootstrap(params)
+    assert connect.call_args.kwargs == {**params, "warehouse": None}
+    con.execute_string.assert_called_once_with(foundation.bootstrap_sql())
+    con.close.assert_called_once()
+    migration = next(foundation.render(
+        foundation.ROOT / "doc_usage_dashboard" / "migrations", foundation.template_vars("doc_usage_dashboard")
+    ))[1]
+    statement = re.search(r"CREATE WAREHOUSE.*?;", migration, re.S)[0]
+    assert " ".join(statement.split()) in " ".join(foundation.bootstrap_sql().split())
+
+
+def test_bootstrap_closes_on_error():
+    con = MagicMock()
+    con.execute_string.side_effect = RuntimeError("denied")
+    with patch.object(foundation.snowflake.connector, "connect", return_value=con):
+        with pytest.raises(RuntimeError, match="denied"):
+            foundation.bootstrap({})
+    con.close.assert_called_once()
 
 
 def test_constructor_failure_restores_connector():
