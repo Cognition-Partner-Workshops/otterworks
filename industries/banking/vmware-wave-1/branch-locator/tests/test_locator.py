@@ -1,73 +1,105 @@
-import io
 import logging
 import os
 import sys
-from unittest.mock import patch
+import unittest
 
-import pytest
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "app"))
-with patch("logging.basicConfig"):
+basic_config = logging.basicConfig
+try:
+    logging.basicConfig = lambda **kwargs: None
     import locator
+finally:
+    logging.basicConfig = basic_config
 
 
-@pytest.fixture
-def client():
-    with patch.object(locator, "locate", return_value=(10.0, -30.0)), \
-            patch.object(locator, "branches", return_value=[]):
-        yield locator.app.test_client()
+class LocatorTest(unittest.TestCase):
+    def setUp(self):
+        self.original_locate = locator.locate
+        self.original_branches = locator.branches
+        self.locate_calls = []
+        self.branches_calls = []
+        locator.locate = self.locate
+        locator.branches = self.branches
+        self.client = locator.app.test_client()
+        self.logs = StringIO()
+        self.handler = logging.StreamHandler(self.logs)
+        self.level = locator.log.level
+        locator.log.addHandler(self.handler)
+        locator.log.setLevel(logging.INFO)
+
+    def tearDown(self):
+        locator.locate = self.original_locate
+        locator.branches = self.original_branches
+        locator.log.removeHandler(self.handler)
+        locator.log.setLevel(self.level)
+        self.handler.close()
+        self.logs.close()
+
+    def locate(self, query):
+        self.locate_calls.append(query)
+        return 10.0, -30.0
+
+    def branches(self):
+        self.branches_calls.append(True)
+        return []
+
+    def assert_query_logged_safely(self, query):
+        response = self.client.get("/api/nearest", query_string={"q": query})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json(), {
+            "query": query, "lat": 10.0, "lon": -30.0, "branches": [],
+        })
+        self.assertEqual(self.locate_calls, [query])
+        self.assertEqual(self.branches_calls, [True])
+        message = self.logs.getvalue()
+        self.assertEqual(message, "nearest q=%r -> []\n" % query)
+        self.assertEqual(len(message.splitlines()), 1)
+        for control in u"\r\n\t\x00\x1b\x85\u2028\u2029":
+            self.assertNotIn(control, message[:-1])
+
+    def test_normal_query(self):
+        self.assert_query_logged_safely(u"Central")
+
+    def test_lf_query(self):
+        self.assert_query_logged_safely(
+            u"foo\n2026-01-01 00:00:00,000 INFO forged")
+
+    def test_cr_query(self):
+        self.assert_query_logged_safely(u"foo\rforged")
+
+    def test_crlf_query(self):
+        self.assert_query_logged_safely(u"foo\r\nforged")
+
+    def test_other_control_characters(self):
+        self.assert_query_logged_safely(
+            u"foo\t\x00\x1b\x85\u2028\u2029forged")
+
+    def test_empty_queries(self):
+        for query in (u"", u" \r\n "):
+            response = self.client.get("/api/nearest",
+                                       query_string={"q": query})
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.get_json(), {"error": "q is required"})
+        self.assertEqual(self.locate_calls, [])
+        self.assertEqual(self.branches_calls, [])
+        self.assertEqual(self.logs.getvalue(), "")
+
+    def test_geocoder_error_does_not_log_success(self):
+        def unavailable(query):
+            raise RuntimeError("geocoder unavailable")
+
+        locator.locate = unavailable
+        response = self.client.get("/api/nearest",
+                                   query_string={"q": u"Central"})
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(self.branches_calls, [])
+        self.assertEqual(self.logs.getvalue(), "")
 
 
-@pytest.fixture
-def logs():
-    stream = io.StringIO()
-    handler = logging.StreamHandler(stream)
-    level = locator.log.level
-    locator.log.addHandler(handler)
-    locator.log.setLevel(logging.INFO)
-    try:
-        yield stream
-    finally:
-        locator.log.removeHandler(handler)
-        locator.log.setLevel(level)
-        handler.close()
-
-
-@pytest.mark.parametrize("query", [
-    "Central",
-    "foo\n2026-01-01 00:00:00,000 INFO forged",
-    "foo\rforged",
-    "foo\r\nforged",
-    "foo\t\x00\x1b\x85\u2028\u2029forged",
-])
-def test_nearest_logs_one_line_and_preserves_response(client, logs, query):
-    response = client.get("/api/nearest", query_string={"q": query})
-
-    assert response.status_code == 200
-    assert response.get_json() == {
-        "query": query, "lat": 10.0, "lon": -30.0, "branches": [],
-    }
-    locator.locate.assert_called_once_with(query)
-    assert logs.getvalue() == "nearest q=%r -> []\n" % query
-    assert len(logs.getvalue().splitlines()) == 1
-
-
-@pytest.mark.parametrize("query", ["", " \r\n "])
-def test_empty_query_does_not_log_or_call_dependencies(client, logs, query):
-    response = client.get("/api/nearest", query_string={"q": query})
-
-    assert response.status_code == 400
-    assert response.get_json() == {"error": "q is required"}
-    locator.locate.assert_not_called()
-    locator.branches.assert_not_called()
-    assert logs.getvalue() == ""
-
-
-def test_geocoder_error_does_not_log_success(client, logs):
-    locator.locate.side_effect = RuntimeError("geocoder unavailable")
-
-    response = client.get("/api/nearest", query_string={"q": "Central"})
-
-    assert response.status_code == 500
-    locator.branches.assert_not_called()
-    assert logs.getvalue() == ""
+if __name__ == "__main__":
+    unittest.main()
