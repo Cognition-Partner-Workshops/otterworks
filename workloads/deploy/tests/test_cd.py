@@ -1,6 +1,7 @@
 import importlib.util
 import io
 import json
+import subprocess
 import tarfile
 from pathlib import Path
 from types import SimpleNamespace
@@ -43,6 +44,62 @@ def test_install_writer_replaces_same_object_and_preserves_others(tmp_path):
     assert other in entries
     assert all(entry in entries for entry in previous_entries)
     assert yaml.safe_load(path.read_text())["deployment"]["deployed"] is not None
+
+
+@pytest.mark.parametrize("append", [False, True])
+def test_runtime_source_history_is_append_only(tmp_path, append):
+    path = tmp_path / "doc_usage_dashboard/provenance.yaml"
+    path.parent.mkdir()
+    doc = yaml.safe_load((cd.REPO / "workloads/doc_usage_dashboard/provenance.yaml").read_text())
+    records = [e for e in doc["deployment"]["installed"] if e["type"] == "runtime_source"]
+    assert len(records) == 2
+    first, second = records
+    incoming = dict(second, revision="c" * 40) if append else second
+    if append:
+        doc["endpoints"][-1]["runtime_source"]["revision"] = incoming["revision"]
+    path.write_text(yaml.safe_dump(doc, sort_keys=False))
+    cd.provenance(path, attempt(), deployed(), True, installed=[incoming, incoming])
+    written = yaml.safe_load(path.read_text())
+    history = [e for e in written["deployment"]["installed"] if e["type"] == "runtime_source"]
+    assert history == [first, second] + ([incoming] if append else [])
+    responder = cd.module(cd.REPO, "workloads/doc_usage_dashboard/responder/freshness.py", "history_responder")
+    assert responder.deployed_revision(path) == incoming["revision"]
+    assert cd.vp.validate(written, path) == []
+
+
+@pytest.fixture
+def fork_repo(tmp_path, monkeypatch):
+    def git(*args):
+        return subprocess.check_output(["git", "-C", str(tmp_path), *args], text=True).strip()
+
+    git("init")
+    git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "--allow-empty", "-m", "base")
+    base = git("rev-parse", "HEAD")
+    git("update-ref", "refs/remotes/origin/main", base)
+    git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "--allow-empty", "-m", "fork")
+    head = git("rev-parse", "HEAD")
+    git("checkout", "--detach", head)
+    monkeypatch.setattr(cd, "REPO", tmp_path)
+    return base, head
+
+
+def test_fork_head_dry_run(fork_repo):
+    with patch.object(cd, "run_workload", return_value=True) as run:
+        assert cd.main(["dry-run", "--workload", "doc_search_api"]) == 0
+    assert run.call_args.args[3] == fork_repo[1]
+
+
+@pytest.mark.parametrize("mode", ["deploy", "rollback"])
+def test_fork_head_untrusted_for_deployment(fork_repo, mode):
+    with pytest.raises(ValueError, match="pushed"):
+        cd.main([mode])
+
+
+@pytest.mark.parametrize("revision", ["base", "missing"])
+def test_dry_run_requires_existing_head(fork_repo, revision):
+    value = fork_repo[0] if revision == "base" else "f" * 40
+    with pytest.raises(ValueError):
+        cd.main(["dry-run", "--commit", value])
 
 
 @pytest.mark.parametrize("failure", [None, "dbt_test", "install_runtime"])

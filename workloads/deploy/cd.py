@@ -46,9 +46,15 @@ def git(*args):
     return subprocess.check_output(["git", "-C", str(REPO), *args], text=True).strip()
 
 
-def checked_commit(value):
+def checked_commit(value, dry_run=False):
     if not re.fullmatch(r"[0-9a-fA-F]{40}", value):
         raise ValueError("commit must be a real 40-hex git revision")
+    if dry_run:
+        exists = subprocess.run(["git", "-C", str(REPO), "cat-file", "-t", value],
+                                capture_output=True, text=True)
+        if exists.returncode or exists.stdout.strip() != "commit" or value.lower() != git("rev-parse", "HEAD"):
+            raise ValueError("dry-run commit must exist locally and equal HEAD")
+        return value.lower()
     refs = git("for-each-ref", "--format=%(refname)", "refs/remotes/origin").splitlines()
     if not any(subprocess.run(["git", "-C", str(REPO), "merge-base", "--is-ancestor", value, ref],
                               capture_output=True).returncode == 0 for ref in refs):
@@ -314,10 +320,27 @@ def provenance(path, attempted, deployed, write=False, queries=(), installed=())
     doc = vp.load(path)
     previous = doc.get("deployment", {}).get("deployed")
     block = {"attempted": attempted, "deployed": deployed if deployed is not None else previous}
-    entries = {(e["type"], e["name"]): e for e in doc.get("deployment", {}).get("installed", [])}
-    entries.update({(e["type"], e["name"]): e for e in installed})
+    entries = []
+    positions = {}
+    for entry in doc.get("deployment", {}).get("installed", []):
+        key = (entry["type"], entry["name"])
+        if entry["type"] != "runtime_source" and key in positions:
+            entries[positions[key]] = entry
+        else:
+            positions[key] = len(entries)
+            entries.append(entry)
+    for entry in installed:
+        key = (entry["type"], entry["name"])
+        if entry["type"] == "runtime_source":
+            if entry not in entries:
+                entries.append(entry)
+        elif key in positions:
+            entries[positions[key]] = entry
+        else:
+            positions[key] = len(entries)
+            entries.append(entry)
     if entries or "installed" in doc.get("deployment", {}):
-        block["installed"] = list(entries.values())
+        block["installed"] = entries
     updated = replace_block(mark_configuration(text, queries), "deployment", block)
     errors = vp.validate(yaml.safe_load(updated), path)
     if errors:
@@ -523,9 +546,12 @@ def main(argv=None):
     parser.add_argument("--log-dir", default=str(Path.home() / ".local/share/otterworks-cd"))
     args = parser.parse_args(argv)
     args.dry_run = args.dry_run or args.mode == "dry-run"
-    commit = checked_commit(args.commit or git("rev-parse", "HEAD"))
-    target = checked_commit(args.to or git("rev-parse", f"{commit}^1"))
-    print(f"Rollback target: {target}; migrations are forward-only")
+    value = args.commit or git("rev-parse", "HEAD")
+    commit = checked_commit(value, dry_run=True) if args.mode == "dry-run" else checked_commit(value)
+    target = None
+    if args.mode != "dry-run":
+        target = checked_commit(args.to or git("rev-parse", f"{commit}^1"))
+        print(f"Rollback target: {target}; migrations are forward-only")
     selected = WORKLOADS if args.workload == "all" else (args.workload,)
     if not args.dry_run or args.mode == "rollback" or commit != git("rev-parse", "HEAD"):
         with tempfile.TemporaryDirectory(prefix="otterworks-cd-") as folder:
