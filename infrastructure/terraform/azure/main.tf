@@ -46,6 +46,11 @@ resource "azurerm_storage_account" "staging" { # nosemgrep: terraform.azure.secu
   public_network_access_enabled   = !var.private_networking
   tags                            = local.tags
 
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.this.id]
+  }
+
   blob_properties {
     delete_retention_policy {
       days = 7

@@ -150,6 +150,13 @@ resource "aws_launch_template" "node_group" {
     http_put_response_hop_limit = 2
   }
 
+  # Nodes get a public IP only when they run in public subnets (no NAT gateway).
+  network_interfaces {
+    device_index                = 0
+    associate_public_ip_address = var.node_associate_public_ip_address
+    delete_on_termination       = true
+  }
+
   dynamic "tag_specifications" {
     for_each = toset(["instance", "volume", "network-interface"])
     content {
