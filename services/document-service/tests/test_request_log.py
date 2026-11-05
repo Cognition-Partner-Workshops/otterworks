@@ -107,3 +107,49 @@ async def test_large_stream_is_delivered_whole_but_only_a_prefix_is_logged(
     record = json.loads(log_file.read_text())
     assert len(record["response"]) == RESPONSE_CAPTURE_BYTES
     assert record["response_truncated"] is True
+
+
+def test_request_log_rotation_bounds_files_and_publishes_real_bytes(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(request_log_module, "REQUEST_LOG_MAX_BYTES", 1024, raising=False)
+    monkeypatch.setattr(request_log_module, "REQUEST_LOG_BACKUPS", 2, raising=False)
+    log = RequestLog(str(tmp_path))
+    assert log._bytes == 0
+    for index in range(100):
+        log.append({"response": "é" * 100, "index": index})
+        files = list(tmp_path.iterdir())
+        total = sum(path.stat().st_size for path in files)
+        assert len(files) <= 3
+        assert all(path.stat().st_size <= 1024 for path in files)
+        assert total <= 3072
+        assert log._bytes == total
+        gauge = request_log_module.REQUEST_LOG_BYTES.labels(request_log_module.SERVICE)
+        assert gauge._value.get() == total
+    assert len(files) == 3
+    with open(log.path) as fh:
+        assert json.loads(fh.read().splitlines()[-1])["index"] == 99
+    with pytest.raises(OSError, match="exceeds"):
+        log.append({"response": "x" * 2048})
+    assert sum(path.stat().st_size for path in tmp_path.iterdir()) == total
+
+
+@pytest.mark.asyncio
+async def test_request_log_write_failure_does_not_fail_response(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(request_log_module, "flag_active", lambda key: True)
+    log = RequestLog(str(tmp_path))
+    monkeypatch.setattr(request_log_module, "request_log", log)
+
+    def fail(record):
+        raise OSError(28, "No space left on device")
+
+    monkeypatch.setattr(log, "append", fail)
+    app = FastAPI()
+    request_log_module.install(app)
+
+    @app.get("/document")
+    async def document():
+        return {"title": "example"}
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        response = await ac.get("/document")
+    assert response.status_code == 200
+    assert response.json() == {"title": "example"}
