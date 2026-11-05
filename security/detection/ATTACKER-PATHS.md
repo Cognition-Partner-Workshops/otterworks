@@ -129,3 +129,35 @@ exploitation verdict as `inconclusive`.
 | `X-Auth-Id` that doesn't match the JWT `sub` | `auth_id_mismatch{reason=mismatch\|unauthenticated}` | `SecurityAuthIdMismatch` | **Visible.** Checked on every route. No otterworks service reads `X-Auth-Id`, so here it is attempted spoofing only. |
 | Non-admin calling `/bank-users` | `admin_route_non_admin{reason=bank_users\|admin_api}`; roles[] lacks `ADMIN` | `SecurityAdminRouteNonAdmin` | **Visible.** Also covers the otterworks equivalent, `/api/v1/admin/*`. |
 | Repeated failed logins | `api_gateway_auth_login_total{outcome=failure}` (existing) | `SecurityLoginFailureBurst` (existing) | **Visible** for otterworks logins. Failed logins against internet banking's Keycloak never pass through this gateway. |
+
+## Fineract verified signals (fs-03 part 2, fineract#30)
+
+There is no Fineract in the otterworks stack. Nothing deploys it, no gateway
+route points to it, and no audit or metrics exporter ships its data. Fineract
+callers authenticate with HTTP Basic auth plus a tenant header. The gateway
+never validates those, so **it cannot identify the Fineract actor, the
+actor's office or the actor's permissions**. Anything that depends on that
+data can't be detected here. The rules below are **edge tripwires**: they
+match only on path, method, query string and body. They fire on any matching
+request, including the gateway's own 404 for that route, and each replay
+records the attack's outcome as `inconclusive`. Rules carry `source:
+fineract-edge` and `confirmation: verified-path`.
+
+| # | Verified signal | Covered? | Rule / replay | What's missing |
+|---|---|---|---|---|
+| 1 | Loan or savings/deposit command on an account whose office is outside the actor's hierarchy (`GET /loans/{id}`, `POST /savingsaccounts/{id}?command=close`, `/savingsaccounts/{id}/transactions`, `/recurringdepositaccounts/{id}/transactions`) | **Not covered** | none | Needs the actor's office and the account's office. The gateway has neither. |
+| 2a | Two approvals of the same `/makercheckers/{id}` within seconds | **Covered** | `SecurityFineractMakerCheckerRepeatApprove` / `fin-makerchecker-repeat` (same id approved twice within 10s; in-memory and bounded) | Only counts approvals that pass through this gateway instance. |
+| 2b | Checker outside the command's office | **Not covered** | none | Needs office data. |
+| 3 | `PUT /users/{id}` where id is the actor, changing roles, office or self-service status | **Not covered** | none | The gateway can't map the Basic-auth username to Fineract's numeric user id. Flagging every `PUT /users` would page on routine admin work. |
+| 4 | `PUT /configurations/name/maker-checker` disabling maker-checker | **Covered** | `SecurityFineractMakerCheckerDisabled` / `fin-makerchecker-disabled` (`enabled:false` body, or `?command=disable`) | none |
+| 5 | Any write by a user holding only `ALL_FUNCTIONS_READ` | **Not covered** | none | Needs the actor's permissions. |
+| 6 | FD/RD `close` or `prematureClose` transferring to a savings account with a different owner | **Not covered** | none | Needs the owners of both accounts. |
+| 7 | `POST /datatables/deregister/*` or `/creditBureauIntegration/addCreditReport` without the matching permission | **Partially covered** | `SecurityFineractPrivilegedEndpoint` / `fin-privileged-endpoint` | Fires on **every** call, because the permission can't be checked. Triage has to confirm the caller's permission in Fineract. |
+
+**The 31 unverified Fineract paths** (transfers, standing instructions,
+self-service, roles/users) have **no rules** in this change. Any rule
+written for them later must be labelled `confirmation: unconfirmed`.
+
+**To cover the rest:** signals 1, 2b, 3, 5 and 6 need detection inside
+Fineract itself. Its command audit trail (`m_portfolio_command_source`) and
+the authenticated user's office and permissions are available there.
