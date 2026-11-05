@@ -1,0 +1,1 @@
+ALTER WAREHOUSE {{ warehouse }} SET AUTO_SUSPEND = 900;

@@ -63,6 +63,8 @@ jobs:
         run: make dast-test
 
       - name: Start the application stack
+        env:
+          SF_COMMIT: ${{ github.sha }}
         run: |
           docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build \
             postgres redis localstack meilisearch \

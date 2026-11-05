@@ -1,0 +1,53 @@
+name: Workload attribution
+
+on:
+  pull_request:
+    paths:
+      - "workloads/**"
+      - ".github/workflows/workloads-attribution.yml"
+  push:
+    branches: [demo-stack-snowflake]
+    paths:
+      - "workloads/**"
+      - ".github/workflows/workloads-attribution.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  attribution:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.6
+        env:
+          POSTGRES_USER: otterworks
+          POSTGRES_PASSWORD: otterworks_dev
+          POSTGRES_DB: otterworks
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s
+          --health-timeout 5s --health-retries 10
+    env:
+      POSTGRES_DSN: postgresql://otterworks:otterworks_dev@127.0.0.1:5432/otterworks
+      DBT_TARGET_PATH: /tmp/otterworks-dbt-target
+      DBT_LOG_PATH: /tmp/otterworks-dbt-logs
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r workloads/pipeline/requirements.txt -r workloads/churn_model/requirements.txt ruff==0.9.10 mypy==1.15.0
+      - run: ruff check workloads/attribution workloads/foundation workloads/pipeline workloads/doc_usage_dashboard workloads/churn_model workloads/deploy
+      - run: mypy --ignore-missing-imports --follow-imports=silent workloads/pipeline/runtime.py workloads/pipeline/source.py
+      - run: pytest workloads/attribution/tests workloads/pipeline/unit_tests workloads/doc_usage_dashboard/tests workloads/doc_usage_dashboard/responder/tests workloads/churn_model/tests workloads/deploy/tests -v
+      - run: dbt parse --project-dir workloads/pipeline --profiles-dir workloads/pipeline
+      - name: dq
+        run: |
+          for workload in doc_usage_dashboard doc_search_api churn_model; do
+            tests=$(dbt --quiet ls --project-dir workloads/pipeline --profiles-dir workloads/pipeline --select "tag:dq_$workload" --resource-type test)
+            printf '%s\n' "$tests"
+            test -n "$tests"
+          done
+      - run: python workloads/attribution/validate_provenance.py
+      - run: python workloads/foundation/apply.py --dry-run

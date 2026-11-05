@@ -202,6 +202,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.search-service == 'true'
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: ${{ github.workspace }}/workloads/attribution
     defaults:
       run:
         working-directory: services/search-service
