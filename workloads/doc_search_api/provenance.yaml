@@ -1,0 +1,82 @@
+# Starting provenance for the document-search API. Validate: python workloads/attribution/validate_provenance.py
+# Usage values Snowflake has not reported are `pending`; Cortex credits are kept apart from compute.
+schema_version: 1
+workload: doc_search_api
+run_token: SFEXT_20261105A
+expires: "2026-11-19"
+application:
+  name: Devin_Demo
+  registration: unregistered
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  base_branch: demo-stack-snowflake
+  base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
+  commit: pending
+  pull_request: pending
+  session_url: https://partner-workshops.devinenterprise.com/sessions/563ff0e055ca499a8ee42b2b4e40d8b6
+endpoints:
+  - csid: cs_doc_search_api_top_items
+    service_user: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    auth: key_pair
+query_tag:
+  keys: [csid, workload, phase, commit, run_id]
+  dev_keys: [session_url]
+  task_phase: runtime
+warehouse:
+  name: WH_DOC_SEARCH_API
+  size: XSMALL
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
+    frequency: MONTHLY
+    credit_quota: 5
+objects:
+  - type: database
+    name: DB_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: planned
+  - type: schema
+    name: DB_DOC_SEARCH_API.APP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: planned
+  - type: warehouse
+    name: WH_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: planned
+  - type: resource_monitor
+    name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
+    state: planned
+  - type: user
+    name: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
+    state: planned
+  - type: task
+    name: DB_DOC_SEARCH_API.APP.REFRESH_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
+    state: planned
+  - type: streamlit
+    name: DB_DOC_SEARCH_API.APP.DOC_SEARCH_API_APP
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
+    state: planned
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  dev:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  runtime:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  cortex:
+    dev:
+      cortex_credits: pending
+      cortex_tokens: pending
+    runtime:
+      cortex_credits: pending
+      cortex_tokens: pending
