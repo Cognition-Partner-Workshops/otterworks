@@ -3,8 +3,10 @@
 import uuid
 
 import pytest
+from sqlalchemy import inspect
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.document import Comment, Document, DocumentVersion
 from app.schemas.document import (
     CommentCreate,
     DocumentCreate,
@@ -13,6 +15,35 @@ from app.schemas.document import (
     TemplateCreate,
 )
 from app.services.document_service import DocumentService
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("version_count", [0, 3, 8])
+async def test_list_recent_versions_without_relationship_loads(
+    db_session: AsyncSession, owner_id: uuid.UUID, version_count: int
+):
+    doc = Document(id=uuid.uuid4(), title="History", content="", owner_id=owner_id)
+    db_session.add(doc)
+    for number in reversed(range(1, version_count + 1)):
+        db_session.add(DocumentVersion(
+            document_id=doc.id, version_number=number, title=f"V{number}",
+            content=f"Body {number}", created_by=owner_id,
+        ))
+    db_session.add(Comment(document_id=doc.id, author_id=owner_id, content="Comment"))
+    await db_session.commit()
+    db_session.expunge_all()
+
+    items, total = await DocumentService(db_session).list_documents(owner_id=owner_id)
+    assert total == 1
+    assert [v.version_number for v in items[0].recent_versions] == list(
+        range(version_count, max(0, version_count - 5), -1)
+    )
+    assert all(v.content == f"Body {v.version_number}" for v in items[0].recent_versions)
+    assert {"versions", "comments"} <= inspect(items[0]).unloaded
+
+    items, total = await DocumentService(db_session).list_documents(owner_id=uuid.uuid4())
+    assert items == []
+    assert total == 0
 
 
 @pytest.mark.asyncio

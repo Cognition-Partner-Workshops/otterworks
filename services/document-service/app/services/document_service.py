@@ -7,6 +7,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased, raiseload
 
 from app.models.document import Comment, Document, DocumentVersion, Template
 from app.schemas.document import (
@@ -100,20 +101,31 @@ class DocumentService:
         count_q = select(func.count()).select_from(base.subquery())
         total = (await self.db.execute(count_q)).scalar_one()
 
-        query = base.order_by(Document.updated_at.desc())
+        query = base.options(
+            raiseload(Document.versions), raiseload(Document.comments)
+        ).order_by(Document.updated_at.desc())
         query = query.offset((page - 1) * size).limit(size)
         result = await self.db.execute(query)
         documents = list(result.scalars().all())
 
-        # TODO: This is slow for large result sets (ETL-445, deferred Q2 2024)
-        for doc in documents:
-            ver_result = await self.db.execute(
-                select(DocumentVersion)
-                .where(DocumentVersion.document_id == doc.id)
-                .order_by(DocumentVersion.version_number.desc())
-                .limit(5)
+        recent_versions: dict[UUID, list[DocumentVersion]] = {doc.id: [] for doc in documents}
+        if documents:
+            ranked = select(
+                DocumentVersion,
+                func.row_number().over(
+                    partition_by=DocumentVersion.document_id,
+                    order_by=DocumentVersion.version_number.desc(),
+                ).label("rank"),
+            ).where(DocumentVersion.document_id.in_(recent_versions)).subquery()
+            version = aliased(DocumentVersion, ranked)
+            versions = await self.db.execute(
+                select(version).where(ranked.c.rank <= 5)
+                .order_by(version.document_id, version.version_number.desc())
             )
-            doc.recent_versions = list(ver_result.scalars().all())
+            for item in versions.scalars():
+                recent_versions[item.document_id].append(item)
+        for doc in documents:
+            doc.recent_versions = recent_versions[doc.id]
 
         return documents, total
 
