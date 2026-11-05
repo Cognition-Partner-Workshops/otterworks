@@ -8,7 +8,7 @@ import vm from 'node:vm';
 import { createApp, config } from './server.mjs';
 
 const ID = 'devin-0123456789abcdef0123456789abcdef';
-async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false } = {}) {
+async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session' } = {}) {
   const calls = [];
   const upstream = http.createServer(async (req, res) => {
     let body = ''; for await (const b of req) body += b;
@@ -23,7 +23,7 @@ async function fixture(t, { route = 'session', fail = false, noSession = false, 
   await new Promise(r => upstream.listen(0, '127.0.0.1', r));
   const dir = await mkdtemp(path.join(os.tmpdir(), 'collection-test-'));
   const base = `http://127.0.0.1:${upstream.address().port}`;
-  const cfg = config({ DEVIN_API_BASE: base, DEVIN_WEB_BASE: 'http://localhost:4000', MOCK_SLACK_DEVIN_API_KEY: 'fixture-key', DEVIN_ORG_ID: 'org-fixture', DEVIN_CREATE_AS_USER_ID: 'user-persona', STATE_FILE: path.join(dir, 'state.json'), DEVIN_TRIGGER_ROUTE: route, DEVIN_AUTOMATION_URL: `${base}/hook`, DEVIN_WEBHOOK_SECRET: 'fixture-webhook-secret', ALERTMANAGER_RECEIVER_SECRET: 'fixture-receiver-secret', POLL_INTERVAL_MS: '600000' });
+  const cfg = config({ DEVIN_API_BASE: base, DEVIN_WEB_BASE: 'http://localhost:4000', MOCK_SLACK_DEVIN_API_KEY: 'fixture-key', DEVIN_ORG_ID: 'org-fixture', DEVIN_CREATE_AS_USER_ID: 'user-persona', STATE_FILE: path.join(dir, 'state.json'), DEVIN_TRIGGER_ROUTE: route, DEVIN_WEBHOOK_ACTION: webhookAction, DEVIN_AUTOMATION_URL: `${base}/hook`, DEVIN_WEBHOOK_SECRET: 'fixture-webhook-secret', ALERTMANAGER_RECEIVER_SECRET: 'fixture-receiver-secret', POLL_INTERVAL_MS: '600000' });
   const app = await createApp(cfg);
   await new Promise(r => app.server.listen(0, '127.0.0.1', r));
   const url = `http://127.0.0.1:${app.server.address().port}`;
@@ -101,6 +101,50 @@ test('webhook configuration works without a session API credential', async t => 
   const state = await (await fetch(`${f.url}/api/state`)).json();
   assert.equal(state.configured, true);
   assert.equal((await f.post('@devin Check latency')).status, 'webhook-delivered');
+});
+test('message_session webhook forwards three named authors without a write key or returned ID', async t => {
+  const f = await fixture(t, { route: 'webhook', webhookAction: 'message_session', noSession: true }); f.cfg.key = '';
+  const first = await f.post('@devin Check latency');
+  await f.post('Check query fan-out.', first.id, 'dba-turn', 'dba');
+  await f.post('Traffic is unchanged.', first.id, 'sre-turn', 'sre');
+  await f.post('Traffic is unchanged.', first.id, 'sre-turn', 'sre');
+  assert.equal(f.calls.length, 3);
+  assert.ok(f.calls.every(c => c.url === '/hook' && c.body.thread_id === first.id && !c.auth));
+  assert.deepEqual(f.calls.map(c => c.body.message), ['Incident Commander: @devin Check latency', 'DBA: Check query fan-out.', 'SRE: Traffic is unchanged.']);
+});
+test('message_session stays on its webhook even after a destination ID is known', async t => {
+  const f = await fixture(t, { route: 'webhook', webhookAction: 'message_session' });
+  const first = await f.post('@devin Check latency');
+  await f.post('Keep the same destination.', first.id);
+  assert.equal(f.calls.length, 2); assert.ok(f.calls.every(c => c.url === '/hook'));
+});
+test('message_session binding survives restart and blocks a second thread', async t => {
+  const f = await fixture(t, { route: 'webhook', webhookAction: 'message_session', noSession: true });
+  const first = await f.post('@devin Check latency');
+  const second = await createApp(f.cfg); await new Promise(r => second.server.listen(0, '127.0.0.1', r));
+  t.after(() => new Promise(r => second.server.close(r)));
+  const post = async (text, threadId) => (await fetch(`http://127.0.0.1:${second.server.address().port}/api/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Workspace-Client': 'mock-slack' }, body: JSON.stringify({ channel: 'incident-war-room', author: 'dba', text, threadId, requestId: crypto.randomUUID() }) })).json();
+  const blocked = await post('@devin Another incident');
+  assert.equal(blocked.status, 'blocked'); assert.match(blocked.error, /bound to another thread/); assert.equal(f.calls.length, 1);
+  await post('Resume after restart.', first.id);
+  assert.equal(f.calls.length, 2); assert.equal(f.calls[1].body.thread_id, first.id);
+});
+test('message_session cannot silently switch its automation URL', async t => {
+  const f = await fixture(t, { route: 'webhook', webhookAction: 'message_session', noSession: true });
+  const first = await f.post('@devin Check latency'); f.cfg.webhook += '-replacement';
+  const blocked = await f.post('Continue in the original session.', first.id);
+  assert.equal(blocked.status, 'blocked'); assert.equal(f.calls.length, 1);
+});
+test('message_session reply mirror remains readable while follow-ups use the webhook', async t => {
+  const f = await fixture(t, { route: 'webhook', webhookAction: 'message_session', noSession: true }); f.cfg.key = '';
+  const first = await f.post('@devin Check latency'); f.cfg.transcriptFile = path.join(f.dir, 'mirror.json');
+  await writeFile(f.cfg.transcriptFile, JSON.stringify({ items: [{ thread_id: first.id, session_id: ID, messages: [{ event_id: 'first-reply', source: 'devin', message: 'Actual read-backed reply', created_at: 1 }] }] }));
+  await f.app.poll(); await f.app.poll();
+  const next = await f.post('Check the index next.', first.id, 'sre-turn', 'sre');
+  assert.equal(next.readOnly, false); assert.equal(next.replyMirror, true);
+  assert.equal(next.messages.filter(m => m.author === 'devin').length, 1);
+  assert.equal(f.calls.length, 2); assert.ok(f.calls.every(c => c.url === '/hook'));
+  assert.equal(next.messages.at(-1).delivered, true);
 });
 test('empty successful message response confirms delivery', async t => {
   const f = await fixture(t, { emptyMessage: true }); const first = await f.post('@devin Check latency');

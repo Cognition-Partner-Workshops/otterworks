@@ -26,10 +26,12 @@ export function config(env = process.env) {
   }
   const route = env.DEVIN_TRIGGER_ROUTE || 'session';
   if (!['session', 'webhook'].includes(route)) throw new Error('Invalid trigger route');
+  const webhookAction = env.DEVIN_WEBHOOK_ACTION || 'start_session';
+  if (!['start_session', 'message_session'].includes(webhookAction)) throw new Error('Invalid webhook action');
   return {
     apiBase: apiBase.replace(/\/$/, ''), webBase: webBase.replace(/\/$/, ''),
     key: env.MOCK_SLACK_DEVIN_API_KEY || '', org: env.DEVIN_ORG_ID || '',
-    owner: env.DEVIN_CREATE_AS_USER_ID || '', route,
+    owner: env.DEVIN_CREATE_AS_USER_ID || '', route, webhookAction,
     webhook: env.DEVIN_AUTOMATION_URL || '', webhookSecret: env.DEVIN_WEBHOOK_SECRET || '',
     receiverSecret: env.ALERTMANAGER_RECEIVER_SECRET || '',
     stateFile: env.STATE_FILE || path.join(root, '.data/state.json'),
@@ -46,6 +48,7 @@ export async function createApp(cfg = config()) {
   let state;
   try { state = JSON.parse(await readFile(cfg.stateFile, 'utf8')); }
   catch (e) { if (e.code !== 'ENOENT') throw e; state = { threads: [], alerts: {} }; }
+  state.webhookBindings ||= {};
   const save = async () => {
     await writeFile(`${cfg.stateFile}.tmp`, JSON.stringify(state), { mode: 0o600 });
     await rename(`${cfg.stateFile}.tmp`, cfg.stateFile);
@@ -75,24 +78,36 @@ export async function createApp(cfg = config()) {
   const deliver = async t => {
     if (t.readOnly) return;
     if (['uncertain', 'failed'].includes(t.status)) return;
-    if (t.status === 'webhook-delivered' && !t.sessionId) return;
+    const threadWebhook = t.route ? t.route === 'webhook' && t.webhookAction === 'message_session' : cfg.route === 'webhook' && cfg.webhookAction === 'message_session';
+    if (t.status === 'webhook-delivered' && !t.sessionId && !threadWebhook) return;
     const pending = t.messages.filter(m => m.author !== 'devin' && !m.delivered);
     if (!pending.length) return;
-    if (!t.sessionId && !pending.some(m => m.author === 'alertmanager' || /@devin\b/i.test(m.text))) return;
+    if (!t.sessionId && !(threadWebhook && t.route) && !pending.some(m => m.author === 'alertmanager' || /@devin\b/i.test(m.text))) return;
+    if (threadWebhook && cfg.webhook && cfg.webhookSecret) {
+      const key = createHash('sha256').update(cfg.webhook).digest('hex');
+      if ((t.webhookKey && t.webhookKey !== key) || (state.webhookBindings[key] && state.webhookBindings[key] !== t.id)) {
+        t.status = 'blocked';
+        t.error = 'This automation is bound to another thread or the configured automation changed. Use a dedicated automation and persistent state for each thread.';
+        await save(); return;
+      }
+      state.webhookBindings[key] = t.id;
+      t.webhookKey = key; t.route = 'webhook'; t.webhookAction = 'message_session';
+    }
     t.status = 'sending'; t.error = null; await save();
     try {
       const message = pending.map(m => `${users.find(u => u.id === m.author).name}: ${m.text}`).join('\n\n');
-      if (t.sessionId) {
+      if (t.sessionId && !threadWebhook) {
         await api(`/${t.sessionId}/messages`, 'POST', { message });
-      } else if (cfg.route === 'webhook') {
+      } else if (threadWebhook || cfg.route === 'webhook') {
         if (!cfg.webhook || !cfg.webhookSecret) throw new Error('Automation webhook is not configured');
         const response = await fetch(cfg.webhook, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': cfg.webhookSecret },
           body: JSON.stringify({ message, channel: t.channel, thread_id: t.id }), redirect: 'error', signal: AbortSignal.timeout(20000) });
         if (!response.ok) throw new Error(`Automation returned ${response.status}`);
         const result = await response.json().catch(() => ({}));
         const id = result.session_id || result.devin_id;
+        if (sessionId(id) && t.sessionId && t.sessionId !== id) throw new Error('Automation destination changed');
         if (sessionId(id)) { t.sessionId = id; t.sessionUrl = safeUrl(id); }
-        t.route = 'webhook';
+        t.route = 'webhook'; t.webhookAction ||= cfg.webhookAction;
       } else {
         const result = await api('', 'POST', { prompt: message, devin_mode: 'fusion', max_acu_limit: cfg.maxAcu,
           tags: ['bankir-1105', 'mock-slack'], ...(cfg.owner ? { create_as_user_id: cfg.owner } : {}) });
@@ -128,8 +143,9 @@ export async function createApp(cfg = config()) {
           if (!item || !Array.isArray(item.messages)) continue;
           const t = state.threads.find(t => t.id === item.thread_id && t.route === 'webhook');
           if (!t || !sessionId(item.session_id) || (t.sessionId && t.sessionId !== item.session_id)) continue;
-          t.sessionId = item.session_id; t.sessionUrl = safeUrl(t.sessionId); t.readOnly = true;
-          t.status = 'Read mirror · follow-up messages stay local';
+          t.sessionId = item.session_id; t.sessionUrl = safeUrl(t.sessionId); t.replyMirror = true;
+          t.readOnly = t.webhookAction !== 'message_session';
+          if (!['uncertain', 'failed', 'blocked'].includes(t.status)) t.status = t.readOnly ? 'Read mirror · follow-up messages stay local' : 'Read mirror · replies sent through webhook';
           for (const m of item.messages) {
             if (m && m.source === 'devin' && m.event_id && typeof m.message === 'string' && !t.messages.some(x => x.remoteId === m.event_id)) {
               t.messages.push({ id: randomUUID(), author: 'devin', text: m.message, remoteId: m.event_id, at: m.created_at * 1000, delivered: true });
@@ -139,7 +155,7 @@ export async function createApp(cfg = config()) {
         state.mirrorError = null;
       } catch { state.mirrorError = 'Could not read the local transcript mirror; API-backed polling continues.'; }
     }
-    for (const t of state.threads.filter(t => t.sessionId && !t.readOnly)) {
+    for (const t of state.threads.filter(t => t.sessionId && !t.readOnly && !t.replyMirror)) {
       try {
         let cursor = t.cursor;
         // A bounded page loop prevents a long transcript from starving chat writes.
