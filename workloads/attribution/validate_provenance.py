@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import jsonschema
@@ -69,6 +70,19 @@ def validate(doc: object, path: Path | None = None) -> list[str]:
     if errors:
         return errors
     assert isinstance(doc, dict)
+    if "data_quality" in doc:
+        quality = doc["data_quality"]
+        for field, value in (
+            ("ran_at", quality["ran_at"]),
+            ("refresh_task_run/scheduled_time", quality["refresh_task_run"]["scheduled_time"]),
+        ):
+            try:
+                timestamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                valid = timestamp.utcoffset() == timedelta(0) and "T" in value
+            except ValueError:
+                valid = False
+            if not valid:
+                errors.append(f"data_quality/{field}: expected a valid UTC ISO timestamp")
     workload = doc["workload"]
 
     if path is not None and path.parent.name != workload:

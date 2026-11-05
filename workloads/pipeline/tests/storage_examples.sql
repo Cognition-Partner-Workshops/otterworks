@@ -1,4 +1,4 @@
-{{ config(tags=['doc_usage_dashboard']) }}
+{{ config(tags=['doc_usage_dashboard', 'dq_doc_usage_dashboard']) }}
 with expected as (
  select column1::date as snapshot_date, column2::varchar(36) as account_id,
  case when is_role_in_session('{{ var("run_token") }}_ANALYST') then column3 else '***MASKED***' end::varchar(255) as account_email,
@@ -11,5 +11,8 @@ with expected as (
 ), actual as (
  select * from {{ ref('account_storage_usage') }} where snapshot_date='2026-11-02' and account_id in (select account_id from expected)
 )
-(select * from actual minus select * from expected) union all
-(select * from expected minus select * from actual)
+select 'worked_example: unexpected or mismatched row' as failure, diff.*
+from (select * from actual minus select * from expected) diff
+union all
+select 'worked_example: missing or mismatched row' as failure, diff.*
+from (select * from expected minus select * from actual) diff
