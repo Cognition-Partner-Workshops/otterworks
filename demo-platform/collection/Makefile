@@ -4,9 +4,11 @@ APP := slack-mock
 FAKE_PORT ?= 8781
 APP_PORT ?= 8780
 LIB := . scripts/lib.sh
+UV_VERSION := 0.13.6
+UV = $(shell command -v uv >/dev/null 2>&1 && echo uv || echo python3 -m uv)
 ENV_TOKEN = COLLECTION_ACCESS_TOKEN=$${COLLECTION_ACCESS_TOKEN:-$$(sed -n 's/^COLLECTION_ACCESS_TOKEN=//p' .env 2>/dev/null)}
 
-.PHONY: help env config up ps logs down reset test-reset test lint typecheck check fake-v3 app-fake app-stub mcp-grafana mcp-postgres label governance mock-up mock-down mcp-up mcp-down mcp-smoke
+.PHONY: uv help env config up ps logs down reset test-reset test lint typecheck check fake-v3 app-fake app-stub mcp-grafana mcp-postgres label governance mock-up mock-down mcp-up mcp-down mcp-smoke
 
 help:
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | sed 's/:.*##/ -/'
@@ -35,15 +37,18 @@ reset: ## remove ONLY this run's containers/volumes/networks/images and verify n
 test-reset: ## regression: resetting a run never touches an overlapping "<run>-other" project
 	@scripts/test-reset-isolation.sh
 
-lint: ## ruff + shellcheck-equivalent bash -n
-	cd $(APP) && uv run --frozen ruff check src tests && uv run --frozen ruff format --check src tests
+uv: ## ensure uv (pinned) is available; CI runners only have python/node
+	@command -v uv >/dev/null 2>&1 || python3 -m uv --version >/dev/null 2>&1 || python3 -m pip install --quiet uv==$(UV_VERSION)
+
+lint: uv ## ruff + shellcheck-equivalent bash -n
+	cd $(APP) && $(UV) run --frozen ruff check src tests && $(UV) run --frozen ruff format --check src tests
 	bash -n scripts/*.sh mcp/*.sh postgres/init/*.sh
 
-typecheck:
-	cd $(APP) && uv run --frozen mypy
+typecheck: uv
+	cd $(APP) && $(UV) run --frozen mypy
 
-test: ## unit + integration tests against the FAKE v3 server
-	cd $(APP) && PYTHONPATH=src uv run --frozen python -m unittest discover -s tests -t . -v
+test: uv ## unit + integration tests against the FAKE v3 server
+	cd $(APP) && PYTHONPATH=src $(UV) run --frozen python -m unittest discover -s tests -t . -v
 	npm --prefix mock-slack test
 
 check: lint typecheck test config
