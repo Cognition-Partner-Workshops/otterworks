@@ -31,7 +31,7 @@ endpoints:
     role: ROLE_CS_DOC_USAGE_DASHBOARD_SUPPORT_LOOKUP
     runtime_source:
       path: workloads/doc_usage_dashboard/responder/support_lookup.py
-      revision: pending
+      revision: 86cfefa9551f3f0e71c82defa067b1240e156624
 # Streamlit runtime attribution is the trailing JSON comment in query_text: SiS
 # overrides QUERY_TAG (ALTER SESSION rejected; statement_params silently ignored,
 # verified 2026-11-05 in QUERY_HISTORY). Dev queries retain their real QUERY_TAG.
@@ -348,3 +348,44 @@ deployment:
         CURRENT_TIMESTAMP; latest finished run is SUCCEEDED, both freshness
         rows are fresh, faults are empty, monitor usage is 2.49 credits.
         Exit 1 reports task_suspended. No privileges, tasks, or migrations changed.
+  - type: view
+    name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.OPS.ACCOUNT_STORAGE_LOOKUP
+    revision: 86cfefa9551f3f0e71c82defa067b1240e156624
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T155137Z-976bd7f8
+    status: installed
+    installed_at: '2026-11-05T15:51:43.850000+00:00'
+    timestamp_source: metadata_last_altered
+    query_ids:
+    - 01c835f7-030c-d20e-0035-065b0009f8e2
+    - 01c835f7-030c-d3d5-0035-065b000ac756
+    readback:
+      status: verified
+      reason: SHOW VIEWS verifies the projected APP source, columns, creation timestamp and run-token/expiry comment; no masking or row-access policy was changed.
+  - type: migration
+    name: V1_0_3_SUPPORT_LOOKUP
+    revision: 86cfefa9551f3f0e71c82defa067b1240e156624
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T155137Z-976bd7f8
+    status: installed
+    installed_at: '2026-11-05T15:51:45.222000+00:00'
+    timestamp_source: schemachange_installed_on
+    query_ids:
+    - 01c835f7-030c-d2f8-0035-065b000ad606
+    - 01c835f7-030c-dbc6-0035-065b000a4826
+    - 01c835f7-030c-d214-0035-065b0009ae62
+    - 01c835f7-030c-d212-0035-065b000a176e
+    - 01c835f7-030c-d212-0035-065b000a1772
+    readback:
+      status: verified
+      reason: History records V1.0.3 Success; SHOW GRANTS verifies only OPS schema USAGE and lookup-view SELECT were added to the existing database/warehouse USAGE. All three tasks remain suspended.
+  - type: runtime_source
+    name: workloads/doc_usage_dashboard/responder/support_lookup.py
+    revision: 86cfefa9551f3f0e71c82defa067b1240e156624
+    run_id: SFEXT_20261105A-doc_usage_dashboard-dev-20261105T155137Z-976bd7f8
+    status: installed
+    installed_at: '2026-11-05T15:51:45.222000+00:00'
+    timestamp_source: run_finished_at_upper_bound
+    query_ids:
+    - 01c835f7-030c-d212-0035-065b000a1772
+    readback:
+      status: not_checked
+      reason: Source-only client is present in the pushed setup checkout at this revision, with the migration installed; timestamp is an upper bound for source availability. Runtime identity, masking and query-tag verification follow separately after this provenance record is pushed.
