@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 from app.services.insights import InsightsClient
-from test_insights import ACCOUNT, URL, expected_rows, provision
+from tests.test_insights import ACCOUNT, URL, expected_rows, provision
 
 
 @pytest.mark.skipif(not all(os.getenv(n) for n in (
