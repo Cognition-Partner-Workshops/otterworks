@@ -7,6 +7,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased, defer, raiseload
 
 from app.models.document import Comment, Document, DocumentVersion, Template
 from app.schemas.document import (
@@ -102,18 +103,36 @@ class DocumentService:
 
         query = base.order_by(Document.updated_at.desc())
         query = query.offset((page - 1) * size).limit(size)
+        query = query.options(raiseload(Document.versions))
         result = await self.db.execute(query)
         documents = list(result.scalars().all())
 
-        # TODO: This is slow for large result sets (ETL-445, deferred Q2 2024)
-        for doc in documents:
-            ver_result = await self.db.execute(
-                select(DocumentVersion)
-                .where(DocumentVersion.document_id == doc.id)
-                .order_by(DocumentVersion.version_number.desc())
-                .limit(5)
+        recent_by_doc: dict[UUID, list[DocumentVersion]] = {doc.id: [] for doc in documents}
+        if documents:
+            ranked = (
+                select(
+                    DocumentVersion,
+                    func.row_number()
+                    .over(
+                        partition_by=DocumentVersion.document_id,
+                        order_by=DocumentVersion.version_number.desc(),
+                    )
+                    .label("rn"),
+                )
+                .where(DocumentVersion.document_id.in_(list(recent_by_doc)))
+                .subquery()
             )
-            doc.recent_versions = list(ver_result.scalars().all())
+            recent = aliased(DocumentVersion, ranked)
+            ver_result = await self.db.execute(
+                select(recent)
+                .options(defer(recent.content))
+                .where(ranked.c.rn <= 5)
+                .order_by(recent.document_id, recent.version_number.desc())
+            )
+            for version in ver_result.scalars().all():
+                recent_by_doc[version.document_id].append(version)
+        for doc in documents:
+            doc.recent_versions = recent_by_doc[doc.id]
 
         return documents, total
 
