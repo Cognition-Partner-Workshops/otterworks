@@ -81,6 +81,7 @@ describe('CollaborationManager', () => {
       logger: mockLogger,
       persistIntervalMs: 600000, // long interval so it doesn't fire during tests
       snapshotIntervalMs: 600000,
+      documentAccess: async (documentId: string) => !documentId.startsWith('forbidden-'),
     });
     manager.start();
 
@@ -215,6 +216,36 @@ describe('CollaborationManager', () => {
 
       client1.disconnect();
       client2.disconnect();
+    });
+  });
+
+  describe('Document Authorization', () => {
+    it('should reject joining a document the caller may not access', async () => {
+      const client = await connectClient('user-deny-1', 'Mallory');
+      const response = await new Promise<{ success: boolean; error?: string }>(
+        (resolve) => {
+          client.emit('join-document', { documentId: 'forbidden-doc' }, resolve);
+        },
+      );
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Access denied');
+      client.disconnect();
+    });
+
+    it('should drop history and update requests for a document the socket has not joined', async () => {
+      const client = await connectClient('user-deny-2', 'Mallory');
+      const denied = new Promise<{ event: string }>((resolve) => {
+        client.on('access-denied', resolve);
+      });
+      let historyReceived = false;
+      client.on('document-history', () => {
+        historyReceived = true;
+      });
+      client.emit('request-history', { documentId: 'forbidden-doc' });
+      const evt = await denied;
+      expect(evt.event).toBe('request-history');
+      expect(historyReceived).toBe(false);
+      client.disconnect();
     });
   });
 

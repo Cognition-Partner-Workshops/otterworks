@@ -14,6 +14,7 @@ import { DocumentStore } from './services/document-store';
 import { AwarenessService } from './services/awareness';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
+import { createDocumentServiceAccessChecker } from './services/document-access';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { setupWSConnection } = require('y-websocket/bin/utils');
@@ -32,6 +33,21 @@ const logger = pino({
 const app = express();
 const httpServer = createServer(app);
 const metrics = new MetricsCollector();
+const documentAccess = createDocumentServiceAccessChecker(
+  config.documentService.url,
+  logger,
+);
+
+function bearerToken(header: string | undefined): string | undefined {
+  return header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : undefined;
+}
+
+/** y-websocket rooms are named `document-<id>` and addressed by the last URL path segment. */
+export function documentIdFromRoom(pathname: string): string | undefined {
+  const room = decodeURIComponent(pathname.split('/').filter(Boolean).pop() || '');
+  const id = room.startsWith('document-') ? room.slice('document-'.length) : room;
+  return id || undefined;
+}
 
 // Middleware
 app.use(helmet());
@@ -69,14 +85,35 @@ app.get('/metrics', async (_req, res) => {
 });
 
 // Presence endpoint
-app.get('/api/v1/collab/documents/:id/presence', (req, res) => {
+app.get('/api/v1/collab/documents/:id/presence', async (req, res) => {
   const documentId = req.params.id;
+  const token = bearerToken(req.headers.authorization);
+  if (!token) {
+    res.status(401).json({ error: 'Authentication required' });
+    return;
+  }
+  if (!(await documentAccess(documentId, token))) {
+    res.status(404).json({ error: 'Document not found' });
+    return;
+  }
   const presence = presenceHandler.getDocumentPresence(documentId);
   res.json(presence);
 });
 
 // Active documents listing
-app.get('/api/v1/collab/documents', (_req, res) => {
+app.get('/api/v1/collab/documents', (req, res) => {
+  const roles = String(req.headers['x-user-roles'] || '')
+    .split(',')
+    .map((r) =>
+      r
+        .trim()
+        .toLowerCase()
+        .replace(/^role_/, ''),
+    );
+  if (!req.headers['x-user-id'] || !roles.includes('admin')) {
+    res.status(403).json({ error: 'Forbidden' });
+    return;
+  }
   const activeDocuments = presenceHandler.getActiveDocuments();
   res.json({ documents: activeDocuments, count: activeDocuments.length });
 });
@@ -123,6 +160,7 @@ const collabManager = setupCollaborationHandlers(
   presenceHandler,
   metrics,
   logger,
+  documentAccess,
   config.persistence.intervalMs,
   config.persistence.snapshotIntervalMs,
 );
@@ -163,8 +201,20 @@ httpServer.on('upgrade', (request, socket, head) => {
     return;
   }
 
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
+  const documentId = documentIdFromRoom(url.pathname);
+  void documentAccess(documentId || '', token).then((allowed) => {
+    if (!allowed) {
+      logger.warn(
+        { documentId },
+        'y-websocket_connection_rejected: document access denied',
+      );
+      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
   });
 });
 

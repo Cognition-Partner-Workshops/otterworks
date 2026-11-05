@@ -159,7 +159,9 @@ module "irsa" {
   environment       = var.environment
   project           = "otterworks"
   namespace         = var.namespace
-  oidc_provider_arn = local.oidc_provider_arn
+  # fluent-bit runs in the platform's otterworks-system namespace.
+  additional_namespaces = ["otterworks-system"]
+  oidc_provider_arn     = local.oidc_provider_arn
   oidc_provider_url = local.oidc_provider_url
 
   service_accounts = {
@@ -403,7 +405,7 @@ module "irsa" {
 
     # Ships api-gateway and ingress-nginx access logs to CloudWatch
     # (infrastructure/helm/aws-for-fluent-bit, scripts/install-log-shipping.sh).
-    # Runs in otterworks-system, which the otterworks-* trust condition covers.
+    # Runs in otterworks-system, trusted explicitly via additional_namespaces.
     "fluent-bit" = jsonencode({
       Version = "2012-10-17"
       Statement = [

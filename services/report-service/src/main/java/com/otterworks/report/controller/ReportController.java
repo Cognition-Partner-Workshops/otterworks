@@ -19,6 +19,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,7 +71,11 @@ public class ReportController {
             @ApiResponse(code = 400, message = "Invalid request")
     })
     public ResponseEntity<ReportResponse> createReport(
-            @Valid @RequestBody ReportRequest request) {
+            @Valid @RequestBody ReportRequest request,
+            Authentication caller) {
+
+        // The requester is always the authenticated caller, never the request body.
+        request.setRequestedBy(callerId(caller));
 
         logger.info("Report request: name={}, category={}, type={}, by={}",
                 request.getReportName(), request.getCategory(),
@@ -88,9 +94,10 @@ public class ReportController {
     })
     public ResponseEntity<ReportResponse> getReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication caller) {
 
-        Optional<Report> report = reportService.getReport(id);
+        Optional<Report> report = visibleReport(id, caller);
         if (!report.isPresent()) { // LEGACY: !isPresent() instead of isEmpty()
             return ResponseEntity.notFound().build();
         }
@@ -103,15 +110,26 @@ public class ReportController {
             @ApiParam(value = "Filter by user ID")
             @RequestParam(required = false) String userId,
             @ApiParam(value = "Filter by status")
-            @RequestParam(required = false) ReportStatus status) {
+            @RequestParam(required = false) ReportStatus status,
+            Authentication caller) {
 
         List<Report> reports;
-        if (userId != null) {
-            reports = reportService.getReportsByUser(userId);
-        } else if (status != null) {
-            reports = reportService.getReportsByStatus(status);
+        if (isAdmin(caller)) {
+            if (userId != null) {
+                reports = reportService.getReportsByUser(userId);
+            } else if (status != null) {
+                reports = reportService.getReportsByStatus(status);
+            } else {
+                reports = reportService.getReportsByStatus(ReportStatus.COMPLETED);
+            }
         } else {
-            reports = reportService.getReportsByStatus(ReportStatus.COMPLETED);
+            // Non-admin callers only ever see their own reports; userId is ignored.
+            reports = reportService.getReportsByUser(callerId(caller));
+            if (status != null) {
+                reports = reports.stream()
+                        .filter(r -> r.getStatus() == status)
+                        .collect(Collectors.toList());
+            }
         }
 
         List<ReportResponse> responses = reports.stream()
@@ -135,9 +153,10 @@ public class ReportController {
     })
     public ResponseEntity<Resource> downloadReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication caller) {
 
-        Optional<Report> optReport = reportService.getReport(id);
+        Optional<Report> optReport = visibleReport(id, caller);
         if (!optReport.isPresent()) {
             return ResponseEntity.notFound().build();
         }
@@ -187,8 +206,12 @@ public class ReportController {
     })
     public ResponseEntity<Void> deleteReport(
             @ApiParam(value = "Report ID", required = true)
-            @PathVariable Long id) {
+            @PathVariable Long id,
+            Authentication caller) {
 
+        if (!visibleReport(id, caller).isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
         boolean deleted = reportService.deleteReport(id);
         if (!deleted) {
             return ResponseEntity.notFound().build();
@@ -197,6 +220,31 @@ public class ReportController {
     }
 
     // ----- Private helpers -----
+
+    /**
+     * The report, if it exists and the caller owns it (or is an admin). Reports
+     * owned by someone else are reported as missing so ids cannot be probed.
+     */
+    private Optional<Report> visibleReport(Long id, Authentication caller) {
+        return reportService.getReport(id)
+                .filter(r -> isAdmin(caller) || callerId(caller).equals(r.getRequestedBy()));
+    }
+
+    private static String callerId(Authentication caller) {
+        return caller == null ? "" : String.valueOf(caller.getPrincipal());
+    }
+
+    private static boolean isAdmin(Authentication caller) {
+        if (caller == null) {
+            return false;
+        }
+        for (GrantedAuthority authority : caller.getAuthorities()) {
+            if ("ROLE_ADMIN".equals(authority.getAuthority())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private String getContentType(com.otterworks.report.model.ReportType reportType) {
         // LEGACY: switch without enhanced syntax

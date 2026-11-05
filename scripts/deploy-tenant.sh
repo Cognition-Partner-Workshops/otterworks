@@ -163,6 +163,19 @@ if [ -z "${SECRET_KEY_BASE:-}" ]; then
     { err "Refusing to rotate SECRET_KEY_BASE; set it explicitly or retry"; exit 1; }
   [ -n "${SECRET_KEY_BASE}" ] || SECRET_KEY_BASE="$(openssl rand -hex 64)"
 fi
+# Service-to-service tokens and the share-link key: reused like JWT_SECRET so a
+# redeploy never splits a tenant across two values.
+reuse_or_mint() { # <VAR> <secret-name>
+  local cur="${!1:-}"
+  if [ -z "${cur}" ]; then
+    cur="$(existing_tenant_secret "$2" "$1")" || { err "Refusing to rotate $1; set it explicitly or retry"; exit 1; }
+    [ -n "${cur}" ] || cur="$(openssl rand -hex 32)"
+  fi
+  printf -v "$1" '%s' "${cur}"
+}
+reuse_or_mint SHARE_LINK_SECRET document-service-secrets
+reuse_or_mint SEARCH_SERVICE_TOKEN search-service-secrets
+reuse_or_mint AUDIT_SERVICE_TOKEN audit-service-secrets
 
 # ---------- Namespace + isolation guardrails ----------
 log "Creating namespace ${NS} with quota / limits / network policy..."
@@ -243,60 +256,64 @@ spec:
               kubernetes.io/metadata.name: monitoring
 YAML
 
-# ---------- IRSA trust: allow this tenant namespace to assume the shared roles ----------
-ensure_irsa_trust() {
-  local d="${REPO_ROOT}/infrastructure/terraform"
+# ---------- IRSA: per-tenant roles scoped to this tenant ----------
+# Tenants never assume the shared per-service roles. Each tenant service account
+# gets its own role, trusted by exactly system:serviceaccount:<ns>:<svc>, whose
+# policy is the shared role's policy with S3 narrowed to the tenant's prefix
+# (tenants/<id>/). IRSA_JSON is rewritten to those roles for the Helm releases.
+ensure_tenant_irsa_roles() {
   local oidc_url; oidc_url="$(terraform -chdir="${REPO_ROOT}/platform/terraform" output -raw oidc_provider_url 2>/dev/null || echo "")"
-  # In-cluster the platform/terraform state isn't initialized; fall back to the
-  # cluster's OIDC issuer via the EKS API (the runner IRSA role has
-  # eks:DescribeCluster). Without this the per-namespace trust is skipped and
-  # tenant pods can't assume the shared roles (AWS ops fail).
   if [ -z "${oidc_url}" ]; then
     oidc_url="$(aws eks describe-cluster --name "${EKS_CLUSTER}" --region "${AWS_REGION}" \
       --query 'cluster.identity.oidc.issuer' --output text 2>/dev/null || echo "")"
   fi
   oidc_url="${oidc_url#https://}"
-  [ -n "${oidc_url}" ] || { warn "OIDC provider URL unavailable; skipping IRSA trust update (IRSA may fail for ${NS})"; return 0; }
-  local svc role sub
+  [ -n "${oidc_url}" ] || { warn "OIDC provider URL unavailable; tenant pods get no AWS role"; IRSA_JSON="{}"; return 0; }
+  local sid prefix svc shared role trust policy scoped arn tenant_json="{}"
+  sid="$(tenant_irsa_sid)"; prefix="tenants/${sid}/"
   for svc in $(echo "${IRSA_JSON}" | jq -r 'keys[]'); do
-    role="otterworks-${svc}-dev"
-    sub="system:serviceaccount:${NS}:${svc}"
-    local doc; doc="$(aws iam get-role --role-name "${role}" --query 'Role.AssumeRolePolicyDocument' --output json 2>/dev/null || echo "")"
-    [ -n "${doc}" ] || { warn "role ${role} not found; skipping"; continue; }
-    # Skip if the sub is already trusted — either an exact StringEquals entry or
-    # a StringLike wildcard (e.g. the Terraform-managed "otterworks-*" pattern)
-    # that already matches this namespace. Checking only StringEquals would make
-    # us append a redundant statement on every deploy and bloat the trust policy
-    # (IAM trust docs cap at 2048/4096 chars) until deploys start failing.
-    local trusted already=false pat
-    trusted="$(echo "${doc}" | jq -r --arg url "${oidc_url}" '
-      [ .Statement[]?.Condition
-        | (.StringEquals[$url+":sub"], .StringLike[$url+":sub"])
-        | select(. != null)
-        | if type=="array" then .[] else . end ] | .[]' 2>/dev/null)"
-    while IFS= read -r pat; do
-      [ -n "${pat}" ] || continue
-      # shellcheck disable=SC2254  # glob-match the exact sub against trust patterns
-      case "${sub}" in ${pat}) already=true; break ;; esac
-    done <<EOF
-${trusted}
-EOF
-    [ "${already}" = true ] && continue
-    # Append an AssumeRoleWithWebIdentity statement scoped to this namespace SA.
-    local new; new="$(echo "${doc}" | jq --arg sub "${sub}" --arg url "${oidc_url}" '
-      .Statement += [{
+    shared="otterworks-${svc}-dev"
+    role="$(tenant_irsa_role_name "${svc}")"
+    trust="$(aws iam get-role --role-name "${shared}" --query 'Role.AssumeRolePolicyDocument' --output json 2>/dev/null || echo "")"
+    policy="$(aws iam get-role-policy --role-name "${shared}" --policy-name "otterworks-${svc}-policy" --query 'PolicyDocument' --output json 2>/dev/null || echo "")"
+    [ -n "${trust}" ] && [ -n "${policy}" ] || { warn "shared role ${shared} unreadable; ${svc} gets no AWS role"; continue; }
+    trust="$(echo "${trust}" | jq -c --arg url "${oidc_url}" --arg sub "system:serviceaccount:${NS}:${svc}" '{
+      Version: "2012-10-17",
+      Statement: [{
         Effect: "Allow",
         Action: "sts:AssumeRoleWithWebIdentity",
         Principal: (.Statement[0].Principal),
         Condition: { StringEquals: { ($url+":sub"): $sub, ($url+":aud"): "sts.amazonaws.com" } }
-      }]')"
-    aws iam update-assume-role-policy --role-name "${role}" --policy-document "${new}" >/dev/null \
-      && log "  IRSA trust: ${role} now trusts ${sub}" \
-      || warn "  failed to update trust for ${role}"
+      }]}')"
+    scoped="$(echo "${policy}" | jq -c --arg p "${prefix}" '
+      def arr: if type=="array" then . else [.] end;
+      def s3: (.Action | arr | any(startswith("s3:")));
+      .Statement |= [ .[] | if s3 then
+          ({Effect, Action: (.Action|arr|map(select(. != "s3:ListBucket"))),
+            Resource: [ .Resource|arr|.[]|select(endswith("/*"))|sub("/\\*$"; "/" + $p + "*") ]}
+            | select((.Action|length) > 0 and (.Resource|length) > 0)),
+          (select(.Action|arr|index("s3:ListBucket")) |
+            {Effect, Action: ["s3:ListBucket"],
+             Resource: [ .Resource|arr|.[]|select(endswith("/*")|not) ],
+             Condition: { StringLike: { "s3:prefix": [$p, ($p + "*")] } } })
+        else . end ]')"
+    if aws iam get-role --role-name "${role}" >/dev/null 2>&1; then
+      aws iam update-assume-role-policy --role-name "${role}" --policy-document "${trust}" >/dev/null
+    else
+      aws iam create-role --role-name "${role}" --assume-role-policy-document "${trust}" \
+        --tags "Key=Project,Value=otterworks" "Key=Tenant,Value=${sid}" "Key=Service,Value=${svc}" >/dev/null \
+        || { warn "could not create ${role}; ${svc} gets no AWS role"; continue; }
+    fi
+    aws iam put-role-policy --role-name "${role}" --policy-name "otterworks-${svc}-tenant" --policy-document "${scoped}" >/dev/null \
+      || { warn "could not scope ${role}; ${svc} gets no AWS role"; continue; }
+    arn="$(aws iam get-role --role-name "${role}" --query 'Role.Arn' --output text)"
+    tenant_json="$(echo "${tenant_json}" | jq -c --arg s "${svc}" --arg r "${arn}" '. + {($s): $r}')"
+    log "  IRSA: ${svc} -> ${role} (S3 limited to ${prefix})"
   done
+  IRSA_JSON="${tenant_json}"
 }
-log "Ensuring shared IRSA roles trust the tenant namespace service accounts..."
-ensure_irsa_trust
+log "Creating per-tenant IRSA roles for the tenant service accounts..."
+ensure_tenant_irsa_roles
 
 # ---------- Per-tenant RDS database (Postgres data isolation) ----------
 create_tenant_database() {

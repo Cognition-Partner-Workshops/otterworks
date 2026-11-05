@@ -6,6 +6,7 @@ import { AwarenessService, type CursorPosition } from '../services/awareness';
 import { extractUserFromSocket } from '../middleware/auth';
 import { MetricsCollector } from '../metrics';
 import { PresenceHandler } from './presence';
+import type { DocumentAccessChecker } from '../services/document-access';
 
 export interface CommentAnnotation {
   id: string;
@@ -28,6 +29,22 @@ export interface CollaborationDeps {
   logger: Logger;
   persistIntervalMs: number;
   snapshotIntervalMs: number;
+  documentAccess: DocumentAccessChecker;
+}
+
+/** The bearer token the socket authenticated with, for access checks on the caller's behalf. */
+export function socketToken(socket: Socket): string | undefined {
+  const raw =
+    (socket.handshake.auth?.token as string | undefined) ||
+    socket.handshake.headers?.authorization?.replace('Bearer ', '');
+  return raw || undefined;
+}
+
+function authorizedDocuments(socket: Socket): Set<string> {
+  if (!(socket.data.authorizedDocuments instanceof Set)) {
+    socket.data.authorizedDocuments = new Set<string>();
+  }
+  return socket.data.authorizedDocuments as Set<string>;
 }
 
 export class CollaborationManager {
@@ -101,6 +118,25 @@ export class CollaborationManager {
     socket.on('request-history', (data) => this.handleRequestHistory(socket, data));
   }
 
+  /**
+   * Whether the socket completed an authorized join for the document. Every
+   * per-document event is dropped unless it did.
+   */
+  private isJoined(socket: Socket, documentId: unknown, event: string): boolean {
+    const ok =
+      typeof documentId === 'string' &&
+      authorizedDocuments(socket).has(documentId) &&
+      socket.rooms.has(`doc:${documentId}`);
+    if (!ok) {
+      this.deps.logger.warn(
+        { documentId, socketId: socket.id, event },
+        'event_rejected_not_joined',
+      );
+      socket.emit('access-denied', { documentId, event });
+    }
+    return ok;
+  }
+
   private async handleJoinDocument(
     socket: Socket,
     data: { documentId: string },
@@ -111,12 +147,33 @@ export class CollaborationManager {
     const user = extractUserFromSocket(socket);
     const room = `doc:${documentId}`;
 
+    if (typeof documentId !== 'string' || !documentId) {
+      if (ack) ack({ success: false, error: 'documentId is required' });
+      return;
+    }
+    let allowed = false;
+    try {
+      allowed = await this.deps.documentAccess(documentId, socketToken(socket));
+    } catch {
+      allowed = false;
+    }
+    if (!allowed) {
+      logger.warn(
+        { documentId, userId: user.userId, socketId: socket.id },
+        'join_document_forbidden',
+      );
+      metrics.connectionErrors.inc({ reason: 'join_forbidden' });
+      if (ack) ack({ success: false, error: 'Access denied' });
+      return;
+    }
+
     try {
       // If socket is already in another document, leave it first
       const oldDocId = awareness.getUserDocument(socket.id);
       if (oldDocId && oldDocId !== documentId) {
         const oldRoom = `doc:${oldDocId}`;
         socket.leave(oldRoom);
+        authorizedDocuments(socket).delete(oldDocId);
         awareness.removeUser(socket.id);
         socket.to(oldRoom).emit('user-left', {
           socketId: socket.id,
@@ -132,6 +189,7 @@ export class CollaborationManager {
         );
       }
 
+      authorizedDocuments(socket).add(documentId);
       await socket.join(room);
       logger.info(
         { documentId, userId: user.userId, socketId: socket.id },
@@ -175,6 +233,7 @@ export class CollaborationManager {
     } catch (err) {
       logger.error({ err, documentId, socketId: socket.id }, 'join_document_failed');
       socket.leave(room);
+      authorizedDocuments(socket).delete(documentId);
       metrics.connectionErrors.inc({ reason: 'join_failed' });
       if (ack) ack({ success: false, error: 'Failed to join document' });
     }
@@ -189,6 +248,7 @@ export class CollaborationManager {
     const room = `doc:${trackedDocId}`;
 
     socket.leave(room);
+    authorizedDocuments(socket).delete(trackedDocId);
 
     if (mapping) {
       socket.to(room).emit('user-left', { socketId: socket.id, userId: mapping.userId });
@@ -209,6 +269,7 @@ export class CollaborationManager {
     socket: Socket,
     data: { documentId: string; update: unknown },
   ): Promise<void> {
+    if (!this.isJoined(socket, data?.documentId, 'document-update')) return;
     const { documentStore, metrics, logger } = this.deps;
     const { documentId, update } = data;
     const room = `doc:${documentId}`;
@@ -277,6 +338,7 @@ export class CollaborationManager {
       selection: CursorPosition | null;
     },
   ): void {
+    if (!this.isJoined(socket, data?.documentId, 'cursor-update')) return;
     const { awareness, metrics } = this.deps;
     const updatedAwareness = awareness.updateCursor(
       socket.id,
@@ -302,6 +364,7 @@ export class CollaborationManager {
     socket: Socket,
     data: { documentId: string; isTyping: boolean },
   ): void {
+    if (!this.isJoined(socket, data?.documentId, 'typing-indicator')) return;
     const { awareness } = this.deps;
     const updated = awareness.setTyping(socket.id, data.isTyping);
 
@@ -323,6 +386,7 @@ export class CollaborationManager {
       comment: Omit<CommentAnnotation, 'author' | 'createdAt'>;
     },
   ): void {
+    if (!this.isJoined(socket, data?.documentId, 'comment-add')) return;
     const { metrics } = this.deps;
     const user = extractUserFromSocket(socket);
     const room = `doc:${data.documentId}`;
@@ -348,6 +412,7 @@ export class CollaborationManager {
       content: string;
     },
   ): void {
+    if (!this.isJoined(socket, data?.documentId, 'comment-update')) return;
     const { metrics } = this.deps;
     const user = extractUserFromSocket(socket);
     const room = `doc:${data.documentId}`;
@@ -368,6 +433,7 @@ export class CollaborationManager {
     socket: Socket,
     data: { documentId: string; commentId: string },
   ): void {
+    if (!this.isJoined(socket, data?.documentId, 'comment-delete')) return;
     const { metrics } = this.deps;
     const user = extractUserFromSocket(socket);
     const room = `doc:${data.documentId}`;
@@ -384,6 +450,7 @@ export class CollaborationManager {
     socket: Socket,
     data: { documentId: string; label?: string },
   ): Promise<void> {
+    if (!this.isJoined(socket, data?.documentId, 'request-snapshot')) return;
     const { documentStore, logger } = this.deps;
     const user = extractUserFromSocket(socket);
     const { documentId, label } = data;
@@ -422,6 +489,7 @@ export class CollaborationManager {
     socket: Socket,
     data: { documentId: string; limit?: number },
   ): Promise<void> {
+    if (!this.isJoined(socket, data?.documentId, 'request-history')) return;
     const { documentStore, logger } = this.deps;
     const { documentId, limit } = data;
 
@@ -574,6 +642,7 @@ export function setupCollaborationHandlers(
   presenceHandler: PresenceHandler,
   metrics: MetricsCollector,
   logger: Logger,
+  documentAccess: DocumentAccessChecker,
   persistIntervalMs = 30000,
   snapshotIntervalMs = 300000,
 ): CollaborationManager {
@@ -586,6 +655,7 @@ export function setupCollaborationHandlers(
     logger,
     persistIntervalMs,
     snapshotIntervalMs,
+    documentAccess,
   });
   manager.start();
   return manager;

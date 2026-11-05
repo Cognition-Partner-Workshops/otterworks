@@ -176,6 +176,15 @@ resolve_db_endpoint() {
 
 irsa_arn() { echo "${IRSA_JSON:-{}}" | jq -r --arg s "$1" '.[$s] // empty' 2>/dev/null; }
 
+# Per-tenant IRSA naming (deploy-tenant.sh creates, teardown-tenant.sh deletes).
+# The id is the namespace without its otterworks- prefix; it also names the
+# tenant's S3 prefix (tenants/<id>/), which reaper.sh already garbage-collects.
+tenant_irsa_sid() { echo "${NS#otterworks-}"; }
+tenant_irsa_role_name() {
+  local hash; hash="$(printf '%s' "${NS}" | sha1sum | cut -c1-10)"
+  echo "otterworks-${1}-t-${hash}"
+}
+
 # Turn a per-tenant DB name (otterworks_a01) into an RFC-1123 fragment usable in
 # Kubernetes resource names (otterworks-a01) so per-tenant Jobs/Secrets are named
 # uniquely and concurrent teardowns don't collide on a shared resource name.
@@ -296,6 +305,13 @@ build_helm_args() {
         add_secret JWT_SECRET "${JWT_SECRET}" ;;
     esac
   fi
+  if [ "$service" = "document-service" ]; then
+    add_secret SHARE_LINK_SECRET "${SHARE_LINK_SECRET:?SHARE_LINK_SECRET must be set for document-service}"
+  fi
+  case "$service" in
+    search-service) add_secret SEARCH_SERVICE_TOKEN "${SEARCH_SERVICE_TOKEN:?SEARCH_SERVICE_TOKEN must be set}" ;;
+    audit-service|report-service) add_secret AUDIT_SERVICE_TOKEN "${AUDIT_SERVICE_TOKEN:?AUDIT_SERVICE_TOKEN must be set}" ;;
+  esac
 
   local sns_topic=""; local sqs_notif=""
   if [ "${T_WIRE_EVENTING}" = "true" ]; then
@@ -319,6 +335,7 @@ build_helm_args() {
     file-service)
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.S3_BUCKET=${S3_FILE_BUCKET}")
+      EXTRA_ARGS+=(--set-string "config.S3_KEY_PREFIX=tenants/$(tenant_irsa_sid)/")
       EXTRA_ARGS+=(--set-string "config.DYNAMODB_TABLE=${DDB_FILE_META}")
       EXTRA_ARGS+=(--set-string "config.DYNAMODB_FOLDERS_TABLE=${DDB_FOLDERS}")
       EXTRA_ARGS+=(--set-string "config.DYNAMODB_VERSIONS_TABLE=${DDB_VERSIONS}")
@@ -345,7 +362,7 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${T_REDIS_HOST}" --set-string "config.REDIS_PORT=6379")
       EXTRA_ARGS+=(--set-string "config.HOST=0.0.0.0" --set-string "config.PORT=8087")
       EXTRA_ARGS+=(--set-string "config.MEILISEARCH_URL=${T_MEILI_URL}")
-      EXTRA_ARGS+=(--set-string "config.REQUIRE_AUTH=false" --set-string "config.SQS_ENABLED=false") ;;
+      EXTRA_ARGS+=(--set-string "config.REQUIRE_AUTH=true" --set-string "config.SQS_ENABLED=false") ;;
     analytics-service)
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       # Drop the nightly usage-rollup CronJob for ephemeral tenants: it is the

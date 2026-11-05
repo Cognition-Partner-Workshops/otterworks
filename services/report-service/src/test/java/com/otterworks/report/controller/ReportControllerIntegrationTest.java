@@ -23,6 +23,8 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -61,9 +63,9 @@ public class ReportControllerIntegrationTest {
         ReportRequest request = buildRequest("Integration PDF Report",
                 ReportCategory.USAGE_ANALYTICS, ReportType.PDF, "integration-user-1");
 
-        mockMvc.perform(post("/api/v1/reports")
+        mockMvc.perform(as("integration-user-1", post("/api/v1/reports")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))))
                 .andExpect(status().isAccepted())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", notNullValue()))
@@ -80,9 +82,9 @@ public class ReportControllerIntegrationTest {
         ReportRequest request = buildRequest("Integration CSV Report",
                 ReportCategory.AUDIT_LOG, ReportType.CSV, "integration-user-2");
 
-        mockMvc.perform(post("/api/v1/reports")
+        mockMvc.perform(as("integration-user-2", post("/api/v1/reports")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.reportType", is("CSV")))
                 .andExpect(jsonPath("$.category", is("AUDIT_LOG")));
@@ -93,9 +95,9 @@ public class ReportControllerIntegrationTest {
         ReportRequest request = buildRequest("Integration Excel Report",
                 ReportCategory.STORAGE_SUMMARY, ReportType.EXCEL, "integration-user-3");
 
-        mockMvc.perform(post("/api/v1/reports")
+        mockMvc.perform(as("integration-user-3", post("/api/v1/reports")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.reportType", is("EXCEL")))
                 .andExpect(jsonPath("$.category", is("STORAGE_SUMMARY")));
@@ -108,9 +110,9 @@ public class ReportControllerIntegrationTest {
         request.setReportType(ReportType.PDF);
         request.setRequestedBy("integration-user-4");
 
-        mockMvc.perform(post("/api/v1/reports")
+        mockMvc.perform(as("integration-user-4", post("/api/v1/reports")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -121,9 +123,9 @@ public class ReportControllerIntegrationTest {
         request.setReportType(ReportType.CSV);
         request.setRequestedBy("integration-user-5");
 
-        mockMvc.perform(post("/api/v1/reports")
+        mockMvc.perform(as("integration-user-5", post("/api/v1/reports")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -134,9 +136,9 @@ public class ReportControllerIntegrationTest {
         request.setCategory(ReportCategory.USER_ACTIVITY);
         request.setRequestedBy("integration-user-6");
 
-        mockMvc.perform(post("/api/v1/reports")
+        mockMvc.perform(as("integration-user-6", post("/api/v1/reports")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -147,7 +149,7 @@ public class ReportControllerIntegrationTest {
         Long id = createReportAndReturnId("Fetch By Id Report",
                 ReportCategory.SYSTEM_HEALTH, ReportType.PDF, "integration-user-7");
 
-        mockMvc.perform(get("/api/v1/reports/" + id))
+        mockMvc.perform(as("integration-user-7", get("/api/v1/reports/" + id)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(id.intValue())))
                 .andExpect(jsonPath("$.reportName", is("Fetch By Id Report")))
@@ -156,7 +158,7 @@ public class ReportControllerIntegrationTest {
 
     @Test
     public void getNonExistentReportReturns404() throws Exception {
-        mockMvc.perform(get("/api/v1/reports/999999"))
+        mockMvc.perform(as("integration-user-x", get("/api/v1/reports/999999")))
                 .andExpect(status().isNotFound());
     }
 
@@ -170,7 +172,7 @@ public class ReportControllerIntegrationTest {
         createReportAndReturnId("List Test 2", ReportCategory.AUDIT_LOG,
                 ReportType.PDF, userId);
 
-        mockMvc.perform(get("/api/v1/reports").param("userId", userId))
+        mockMvc.perform(as(userId, get("/api/v1/reports").param("userId", userId)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reports").isArray())
                 .andExpect(jsonPath("$.total").isNumber());
@@ -178,8 +180,8 @@ public class ReportControllerIntegrationTest {
 
     @Test
     public void listReportsForUnknownUserReturnsEmptyArray() throws Exception {
-        mockMvc.perform(get("/api/v1/reports")
-                        .param("userId", "nonexistent-user-xyz"))
+        mockMvc.perform(as("integration-user-x", get("/api/v1/reports")
+                        .param("userId", "nonexistent-user-xyz")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reports").isArray())
                 .andExpect(jsonPath("$.total", is(0)));
@@ -187,7 +189,7 @@ public class ReportControllerIntegrationTest {
 
     @Test
     public void listReportsByStatusReturnsArray() throws Exception {
-        mockMvc.perform(get("/api/v1/reports").param("status", "COMPLETED"))
+        mockMvc.perform(as("integration-user-x", get("/api/v1/reports").param("status", "COMPLETED")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reports").isArray());
     }
@@ -196,7 +198,7 @@ public class ReportControllerIntegrationTest {
 
     @Test
     public void downloadNonExistentReportReturns404() throws Exception {
-        mockMvc.perform(get("/api/v1/reports/999999/download"))
+        mockMvc.perform(as("integration-user-x", get("/api/v1/reports/999999/download")))
                 .andExpect(status().isNotFound());
     }
 
@@ -205,13 +207,13 @@ public class ReportControllerIntegrationTest {
         Long id = createReportAndReturnId("Download Pending Report",
                 ReportCategory.USAGE_ANALYTICS, ReportType.PDF, "integration-user-8");
 
-        MvcResult download = mockMvc.perform(get("/api/v1/reports/" + id + "/download"))
+        MvcResult download = mockMvc.perform(as("integration-user-8", get("/api/v1/reports/" + id + "/download")))
                 .andReturn();
 
         // Status is read after the download so it cannot go stale in the wrong direction:
         // generation only moves forward, so a report still pending here was pending during
         // the download too.
-        MvcResult result = mockMvc.perform(get("/api/v1/reports/" + id))
+        MvcResult result = mockMvc.perform(as("integration-user-8", get("/api/v1/reports/" + id)))
                 .andReturn();
         String statusVal = objectMapper.readTree(
                 result.getResponse().getContentAsString()).get("status").asText();
@@ -228,16 +230,16 @@ public class ReportControllerIntegrationTest {
         Long id = createReportAndReturnId("Delete Me Report",
                 ReportCategory.COLLABORATION_METRICS, ReportType.CSV, "integration-user-9");
 
-        mockMvc.perform(delete("/api/v1/reports/" + id))
+        mockMvc.perform(as("integration-user-9", delete("/api/v1/reports/" + id)))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/reports/" + id))
+        mockMvc.perform(as("integration-user-9", get("/api/v1/reports/" + id)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void deleteNonExistentReportReturns404() throws Exception {
-        mockMvc.perform(delete("/api/v1/reports/999999"))
+        mockMvc.perform(as("integration-user-x", delete("/api/v1/reports/999999")))
                 .andExpect(status().isNotFound());
     }
 
@@ -269,13 +271,66 @@ public class ReportControllerIntegrationTest {
     private Long createReportAndReturnId(String name, ReportCategory category,
                                          ReportType type, String requestedBy) throws Exception {
         ReportRequest request = buildRequest(name, category, type, requestedBy);
-        MvcResult result = mockMvc.perform(post("/api/v1/reports")
+        MvcResult result = mockMvc.perform(as(requestedBy, post("/api/v1/reports")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(request))))
                 .andExpect(status().isAccepted())
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
         return objectMapper.readTree(body).get("id").asLong();
+    }
+
+    private static MockHttpServletRequestBuilder as(String userId, MockHttpServletRequestBuilder builder) {
+        return builder.header("X-User-ID", userId);
+    }
+
+    // ---- Ownership ----
+
+    @Test
+    public void reportsAreHiddenFromOtherUsers() throws Exception {
+        Long id = createReportAndReturnId("Owner Only Report",
+                ReportCategory.AUDIT_LOG, ReportType.CSV, "owner-user-1");
+
+        mockMvc.perform(as("intruder-user-1", get("/api/v1/reports/" + id)))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(as("intruder-user-1", get("/api/v1/reports/" + id + "/download")))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(as("intruder-user-1", delete("/api/v1/reports/" + id)))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(as("owner-user-1", get("/api/v1/reports/" + id)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void listIgnoresUserIdOfAnotherUser() throws Exception {
+        createReportAndReturnId("Someone Else Report",
+                ReportCategory.AUDIT_LOG, ReportType.CSV, "owner-user-2");
+
+        mockMvc.perform(as("intruder-user-2", get("/api/v1/reports").param("userId", "owner-user-2")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total", is(0)));
+    }
+
+    @Test
+    public void requesterIsTheCallerNotTheBody() throws Exception {
+        ReportRequest request = buildRequest("Forged Requester Report",
+                ReportCategory.AUDIT_LOG, ReportType.CSV, "victim-user");
+
+        mockMvc.perform(as("actual-caller", post("/api/v1/reports")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.requestedBy", is("actual-caller")));
+    }
+
+    @Test
+    public void reportRoutesRequireIdentity() throws Exception {
+        mockMvc.perform(get("/api/v1/reports"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/reports/1"))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(delete("/api/v1/reports/1"))
+                .andExpect(status().isUnauthorized());
     }
 }

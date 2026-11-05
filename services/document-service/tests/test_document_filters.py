@@ -5,6 +5,8 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import make_auth_headers
+
 
 async def _create(client: AsyncClient, owner_id: uuid.UUID, title: str, **kwargs):
     payload = {"title": title, "content": "body", "owner_id": str(owner_id)}
@@ -19,7 +21,11 @@ async def test_filter_by_title_fragment(client: AsyncClient, owner_id: uuid.UUID
     await _create(client, owner_id, "Quarterly Report")
     await _create(client, owner_id, "Meeting Notes")
 
-    resp = await client.get("/api/v1/documents/", params={"title": "report"})
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"title": "report"},
+        headers=make_auth_headers(owner_id),
+    )
 
     assert resp.status_code == 200
     body = resp.json()
@@ -32,7 +38,11 @@ async def test_filter_by_content_type(client: AsyncClient, owner_id: uuid.UUID):
     await _create(client, owner_id, "Plan", content_type="text/markdown")
     await _create(client, owner_id, "Page", content_type="text/html")
 
-    resp = await client.get("/api/v1/documents/", params={"content_type": "text/html"})
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"content_type": "text/html"},
+        headers=make_auth_headers(owner_id),
+    )
 
     assert resp.status_code == 200
     assert [item["title"] for item in resp.json()["items"]] == ["Page"]
@@ -46,6 +56,7 @@ async def test_filter_orders_by_title_ascending(client: AsyncClient, owner_id: u
     resp = await client.get(
         "/api/v1/documents/",
         params={"title": "plan", "sort": "title", "direction": "asc"},
+        headers=make_auth_headers(owner_id),
     )
 
     assert resp.status_code == 200
@@ -58,7 +69,9 @@ async def test_filter_paginates(client: AsyncClient, owner_id: uuid.UUID):
         await _create(client, owner_id, f"Plan {index}")
 
     resp = await client.get(
-        "/api/v1/documents/", params={"title": "plan", "size": 2, "page": 2}
+        "/api/v1/documents/",
+        params={"title": "plan", "size": 2, "page": 2},
+        headers=make_auth_headers(owner_id),
     )
 
     assert resp.status_code == 200
@@ -72,7 +85,11 @@ async def test_filter_paginates(client: AsyncClient, owner_id: uuid.UUID):
 async def test_filter_no_match_returns_empty(client: AsyncClient, owner_id: uuid.UUID):
     await _create(client, owner_id, "Quarterly Report")
 
-    resp = await client.get("/api/v1/documents/", params={"title": "nothing"})
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"title": "nothing"},
+        headers=make_auth_headers(owner_id),
+    )
 
     assert resp.status_code == 200
     assert resp.json() == {"items": [], "total": 0, "page": 1, "size": 20, "pages": 1}
@@ -82,7 +99,80 @@ async def test_filter_no_match_returns_empty(client: AsyncClient, owner_id: uuid
 async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.UUID):
     await _create(client, owner_id, "Quarterly Report")
 
-    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id)},
+        headers=make_auth_headers(owner_id),
+    )
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_filter_ignores_owner_id_of_another_user(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "Owner Report")
+    intruder = uuid.uuid4()
+    await _create(client, intruder, "Intruder Report")
+
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "title": "report"},
+        headers=make_auth_headers(intruder),
+    )
+
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["Intruder Report"]
+
+
+@pytest.mark.asyncio
+async def test_unfiltered_list_ignores_owner_id_of_another_user(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    await _create(client, owner_id, "Owner Doc")
+    intruder = uuid.uuid4()
+
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id)},
+        headers=make_auth_headers(intruder),
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_list_without_identity_is_401(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "Owner Doc")
+
+    resp = await client.get("/api/v1/documents/", params={"owner_id": str(owner_id)})
+
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_title_injection_stays_in_callers_rows(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "Owner Report")
+    intruder = uuid.uuid4()
+
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"title": "x') OR 1=1 --"},
+        headers=make_auth_headers(intruder),
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_sort_outside_allow_list_is_422(client: AsyncClient, owner_id: uuid.UUID):
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"sort": "id;--"},
+        headers=make_auth_headers(owner_id),
+    )
+
+    assert resp.status_code == 422
+    assert "select" not in resp.text.lower()

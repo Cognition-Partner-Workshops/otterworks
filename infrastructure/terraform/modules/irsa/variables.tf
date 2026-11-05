@@ -24,6 +24,17 @@ variable "namespace" {
   default     = "decomposition-dev"
 }
 
+variable "additional_namespaces" {
+  description = "Extra namespaces (exact names, no wildcards) whose same-named service accounts may assume the roles"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = alltrue([for ns in var.additional_namespaces : !can(regex("[*?]", ns))])
+    error_message = "additional_namespaces must be exact namespace names; wildcards are not allowed."
+  }
+}
+
 variable "oidc_provider_arn" {
   description = "ARN of the EKS OIDC identity provider"
   type        = string
