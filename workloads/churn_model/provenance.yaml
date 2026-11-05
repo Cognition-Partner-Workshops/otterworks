@@ -1,0 +1,82 @@
+# Starting provenance for the churn model. Validate: python workloads/attribution/validate_provenance.py
+# Usage values Snowflake has not reported are `pending`; Cortex credits are kept apart from compute.
+schema_version: 1
+workload: churn_model
+run_token: SFEXT_20261105A
+expires: "2026-11-19"
+application:
+  name: Devin_Demo
+  registration: unregistered
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  base_branch: demo-stack-snowflake
+  base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
+  commit: pending
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2471
+  session_url: https://partner-workshops.devinenterprise.com/sessions/563ff0e055ca499a8ee42b2b4e40d8b6
+endpoints:
+  - csid: cs_churn_model_account_score
+    service_user: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+    auth: key_pair
+query_tag:
+  keys: [csid, workload, phase, commit, run_id]
+  dev_keys: [session_url]
+  task_phase: runtime
+warehouse:
+  name: WH_CHURN_MODEL
+  size: XSMALL
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: RM_SFEXT_20261105A_20261119_CHURN_MODEL
+    frequency: MONTHLY
+    credit_quota: 5
+objects:
+  - type: database
+    name: DB_CHURN_MODEL
+    devin_csid: cs_churn_model_account_score
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
+    state: planned
+  - type: schema
+    name: DB_CHURN_MODEL.APP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
+    state: planned
+  - type: warehouse
+    name: WH_CHURN_MODEL
+    devin_csid: cs_churn_model_account_score
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"churn_model"}'
+    state: planned
+  - type: resource_monitor
+    name: RM_SFEXT_20261105A_20261119_CHURN_MODEL
+    state: planned
+  - type: user
+    name: SVC_CS_CHURN_MODEL_ACCOUNT_SCORE
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
+    state: planned
+  - type: task
+    name: DB_CHURN_MODEL.APP.REFRESH_CHURN_MODEL
+    devin_csid: cs_churn_model_account_score
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
+    state: planned
+  - type: streamlit
+    name: DB_CHURN_MODEL.APP.CHURN_MODEL_APP
+    devin_csid: cs_churn_model_account_score
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_churn_model_account_score"}'
+    state: planned
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  dev:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  runtime:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  cortex:
+    dev:
+      cortex_credits: pending
+      cortex_tokens: pending
+    runtime:
+      cortex_credits: pending
+      cortex_tokens: pending
