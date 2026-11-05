@@ -72,6 +72,29 @@ def test_starting_provenance_is_valid(workload):
     assert vp.validate(_doc(workload), _path(workload)) == []
 
 
+def test_streamlit_can_be_scoped_to_one_registered_endpoint():
+    doc = _doc()
+    _obj(doc, "streamlit")["devin_csid"] = "cs_doc_usage_dashboard_account_usage"
+    assert vp.validate(doc) == []
+
+
+@pytest.mark.parametrize("value", [
+    "", "cs_churn_model_account_score", "cs_unregistered_endpoint",
+    "cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_account_usage",
+    "cs_doc_usage_dashboard_freshness_responder,cs_doc_usage_dashboard_account_usage",
+])
+def test_streamlit_scoped_tag_rejects_empty_foreign_duplicate_or_unsorted_ids(value):
+    doc = _doc()
+    _obj(doc, "streamlit")["devin_csid"] = value
+    assert vp.validate(doc)
+
+
+def test_database_still_requires_all_workload_endpoints():
+    doc = _doc()
+    _obj(doc, "database")["devin_csid"] = "cs_doc_usage_dashboard_account_usage"
+    assert any("DEVIN_CSID" in error for error in vp.validate(doc))
+
+
 @pytest.mark.parametrize("size,seconds,valid", [
     ("LARGE", 900, True), ("LARGE", 60, True), ("XSMALL", 60, True),
     ("XSMALL", 900, False), ("LARGE", 300, False),

@@ -165,8 +165,14 @@ def validate(doc: object, path: Path | None = None) -> list[str]:
         if obj["type"] in sf.TAGGED_OBJECT_TYPES:
             if "devin_csid" not in obj:
                 errors.append(f"objects/{i} ({obj['name']}): {obj['type']} must carry DEVIN_CSID")
-            elif tag_value and obj["devin_csid"] != tag_value:
-                errors.append(f"objects/{i} ({obj['name']}): DEVIN_CSID {obj['devin_csid']!r} should be {tag_value!r}")
+            elif tag_value:
+                object_csids = obj["devin_csid"].split(",")
+                scoped_streamlit = (
+                    obj["type"] == "streamlit" and set(object_csids) <= set(csids)
+                    and object_csids == sorted(set(object_csids))
+                )
+                if obj["devin_csid"] != tag_value and not scoped_streamlit:
+                    errors.append(f"objects/{i} ({obj['name']}): DEVIN_CSID {obj['devin_csid']!r} should be {tag_value!r}")
         raw_schema = obj["type"] == "schema" and obj["name"] == f"{sf.database_name(workload)}.RAW"
         if obj["type"] in expected and obj["name"] != expected[obj["type"]] and not raw_schema:
             errors.append(f"objects/{i}: {obj['type']} should be named {expected[obj['type']]}, got {obj['name']}")

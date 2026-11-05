@@ -80,7 +80,7 @@ objects:
     state: provisioned
   - type: streamlit
     name: DB_DOC_USAGE_DASHBOARD_SFEXT_20261105A.APP.DOC_USAGE_DASHBOARD_APP
-    devin_csid: cs_doc_usage_dashboard_account_usage,cs_doc_usage_dashboard_freshness_responder
+    devin_csid: cs_doc_usage_dashboard_account_usage
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
     state: provisioned
 data_quality:

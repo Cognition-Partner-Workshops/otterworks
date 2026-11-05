@@ -161,6 +161,11 @@ def test_migration_is_narrow_and_uses_data_timestamps():
     assert "UNSET USER_TASK_TIMEOUT_MS" in sql
     assert "STATEMENT_TIMEOUT_IN_SECONDS" not in sql
     assert "CREATE OR REPLACE TASK" not in sql and "CREATE OR REPLACE PROCEDURE" not in sql
+    assert "ALTER STREAMLIT" not in sql
+    assert sql.count("CREATE SCHEMA IF NOT EXISTS") == 1
+    assert sql.count("CREATE VIEW IF NOT EXISTS") == 1
+    assert sql.count("CREATE TABLE IF NOT EXISTS") == 1
+    assert sql.count("CREATE PROCEDURE IF NOT EXISTS") == 2
     assert "CHURN" not in sql and "SEARCH" not in sql
     assert "LAST_ALTERED" not in sql and "MAX(REFRESHED_AT)" in sql
     assert "MAX(SNAPSHOT_DATE)" in sql and "transaction-audit proxy" in sql

@@ -126,4 +126,3 @@ GRANT MONITOR ON TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD TO ROLE ROL
 ALTER DATABASE {{ database }} SET TAG {{ tag }} = {{ tag_value }};
 ALTER WAREHOUSE {{ warehouse }} SET TAG {{ tag }} = {{ tag_value }};
 ALTER TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD SET TAG {{ tag }} = {{ tag_value }};
-ALTER STREAMLIT {{ database }}.APP.DOC_USAGE_DASHBOARD_APP SET TAG {{ tag }} = {{ tag_value }};
