@@ -3,6 +3,7 @@
 import uuid
 from collections.abc import AsyncGenerator
 
+import jwt
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -45,13 +46,22 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture
-async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+async def client(
+    db_session: AsyncSession, owner_id: uuid.UUID, monkeypatch: pytest.MonkeyPatch
+) -> AsyncGenerator[AsyncClient, None]:
     async def _override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db] = _override_get_db
+    secret = "test-jwt-secret-for-unit-tests-pad32"
+    monkeypatch.setenv("JWT_SECRET", secret)
+    token = jwt.encode({"user_id": str(owner_id)}, secret, algorithm="HS256")
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://test",
+        headers={"Authorization": f"Bearer {token}"},
+    ) as ac:
         yield ac
     app.dependency_overrides.clear()
 

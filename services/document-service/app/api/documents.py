@@ -90,19 +90,19 @@ async def _do_create_document(
     request: Request,
     db: AsyncSession,
 ) -> DocumentResponse:
-    if not body.owner_id:
-        extracted_id = _extract_user_id(request)
-        if not extracted_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="owner_id is required: provide it in the body or authenticate via JWT",
-            )
-        body.owner_id = extracted_id
+    body.owner_id = _create_owner_id(request, body.owner_id)
 
     service = DocumentService(db)
     document = await service.create(body)
     logger.info("document_created", document_id=str(document.id))
     return document
+
+
+def _create_owner_id(request: Request, owner_id: UUID | None) -> UUID:
+    user_id = _require_user_id(request)
+    if owner_id is not None and owner_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    return user_id
 
 
 @router.post("/", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
@@ -226,8 +226,9 @@ async def _do_filter_documents(
             limit=size,
             offset=(page - 1) * size,
         )
-    except SQLAlchemyError as exc:
-        raise HTTPException(status_code=400, detail=f"Invalid filter: {exc}") from exc
+    except (SQLAlchemyError, ValueError) as exc:
+        logger.warning("invalid_document_filter", sort=sort, direction=direction)
+        raise HTTPException(status_code=400, detail="Invalid filter") from exc
     return DocumentListResponse(
         items=[DocumentResponse.model_validate(row) for row in rows],
         total=total,
@@ -492,9 +493,11 @@ async def export_document(
 async def create_from_template(
     template_id: UUID,
     body: DocumentFromTemplate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """Create a document from a template."""
+    body.owner_id = _create_owner_id(request, body.owner_id)
     service = DocumentService(db)
     document = await service.create_from_template(template_id, body)
     if not document:

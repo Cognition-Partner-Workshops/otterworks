@@ -8,10 +8,14 @@ those filters and reads the ``documents`` table directly.
 from __future__ import annotations
 
 from typing import Any
+from uuid import UUID
 
 import structlog
-from sqlalchemy import text
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.elements import ColumnElement
+
+from app.models.document import Document
 
 logger = structlog.get_logger()
 
@@ -43,17 +47,19 @@ class DocumentQueryRepository:
         title_contains: str | None,
         content_type: str | None,
         folder_id: str | None = None,
-    ) -> str:
-        clauses = ["is_deleted = false", "is_template = false"]
+    ) -> list[ColumnElement[bool]]:
+        clauses: list[ColumnElement[bool]] = [
+            Document.is_deleted.is_(False), Document.is_template.is_(False)
+        ]
         if owner_id:
-            clauses.append(f"owner_id = '{owner_id}'")
+            clauses.append(Document.owner_id == UUID(owner_id))
         if folder_id:
-            clauses.append(f"folder_id = '{folder_id}'")
+            clauses.append(Document.folder_id == UUID(folder_id))
         if title_contains:
-            clauses.append(f"lower(title) LIKE lower('%{title_contains}%')")
+            clauses.append(Document.title.ilike(f"%{title_contains}%"))
         if content_type:
-            clauses.append(f"content_type = '{content_type}'")
-        return " AND ".join(clauses)
+            clauses.append(Document.content_type == content_type)
+        return clauses
 
     async def count_documents(
         self,
@@ -64,15 +70,10 @@ class DocumentQueryRepository:
         folder_id: str | None = None,
     ) -> int:
         """Count documents matching the metadata filters."""
-        sql = (
-            "SELECT count(*) FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
+        query = select(func.count()).select_from(Document).where(
+            *self._where(owner_id, title_contains, content_type, folder_id)
         )
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
+        result = await self.db.execute(query)
         return int(result.scalar_one())
 
     async def search_documents(
@@ -88,15 +89,17 @@ class DocumentQueryRepository:
         offset: int = 0,
     ) -> list[dict[str, Any]]:
         """Return document rows matching the metadata filters, newest first."""
-        sql = (
-            f"SELECT {', '.join(COLUMNS)} FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
-            + f" ORDER BY {sort} {direction} LIMIT {limit} OFFSET {offset}"
+        if sort not in COLUMNS or direction.lower() not in ("asc", "desc"):
+            raise ValueError("Invalid ordering")
+        column = getattr(Document, sort)
+        ordering = column.asc() if direction.lower() == "asc" else column.desc()
+        query = (
+            select(*(getattr(Document, name) for name in COLUMNS))
+            .where(*self._where(owner_id, title_contains, content_type, folder_id))
+            .order_by(ordering)
+            .limit(limit)
+            .offset(offset)
         )
         logger.debug("document_filter_query", sort=sort, direction=direction)
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
+        result = await self.db.execute(query)
         return [dict(row._mapping) for row in result]
