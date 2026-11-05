@@ -193,6 +193,8 @@ jobs:
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: ${{ steps.ctx.outputs.path }}
+          build-contexts: ${{ matrix.service == 'search-service' && 'attribution=workloads/attribution' || '' }}
+          build-args: ${{ matrix.service == 'search-service' && format('SF_COMMIT={0}', github.sha) || '' }}
           push: true
           platforms: linux/amd64
           cache-from: type=gha,scope=${{ matrix.service }}

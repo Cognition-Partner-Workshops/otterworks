@@ -169,7 +169,11 @@ build_and_push() {
 
   local image="${ECR_REGISTRY}/${ECR_PREFIX}${service}:${IMAGE_TAG}"
   log "Building ${service}..."
-  docker build -t "${image}" "${service_dir}" --platform linux/amd64
+  local build_args=()
+  if [ "${service}" = "search-service" ]; then
+    build_args+=(--build-context "attribution=${REPO_ROOT}/workloads/attribution" --build-arg "SF_COMMIT=$(git -C "${REPO_ROOT}" rev-parse HEAD)")
+  fi
+  docker build -t "${image}" "${service_dir}" --platform linux/amd64 "${build_args[@]}"
   log "Pushing ${service}..."
   docker push "${image}"
 }
@@ -374,6 +378,11 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.SNS_TOPIC_ARN=${SNS_TOPIC}")
       EXTRA_ARGS+=(--set-string "config.SQS_QUEUE_URL=${SQS_NOTIF}") ;;
     search-service)
+      if [ "${SNOWFLAKE_ENABLED:-false}" = true ]; then
+        EXTRA_ARGS+=(--set snowflake.enabled=true --set-string "snowflake.account=${SNOWFLAKE_ACCOUNT:?SNOWFLAKE_ACCOUNT required}")
+        EXTRA_ARGS+=(--set-string "snowflake.role=${SNOWFLAKE_ROLE:-SFEXT_20261105A_DOC_SEARCH_API_ENDPOINT}" --set-string "snowflake.user=${SNOWFLAKE_USER:-SVC_CS_DOC_SEARCH_API_TOP_ITEMS}")
+        EXTRA_ARGS+=(--set-string "snowflake.privateKeySecret.name=${SNOWFLAKE_PRIVATE_KEY_SECRET_NAME:?Existing key secret required}" --set-string "snowflake.privateKeySecret.key=${SNOWFLAKE_PRIVATE_KEY_SECRET_KEY:-rsa_key.p8}")
+      fi
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${REDIS_HOST}" --set-string "config.REDIS_PORT=6379")
       EXTRA_ARGS+=(--set-string "config.HOST=0.0.0.0" --set-string "config.PORT=8087")
