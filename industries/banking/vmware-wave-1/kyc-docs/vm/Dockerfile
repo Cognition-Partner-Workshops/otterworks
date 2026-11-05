@@ -1,11 +1,12 @@
 # Stand-in for kyc-01: JRE 11, a self-signed certificate in a local keystore
 # made the way the VM's was (keytool, ten years), uploads on local disk.
+# Builds the VM-era source kept in vm/app (Spring Boot 2.3, Java 11), independent of the replatformed app.
 FROM docker.io/library/maven:3.9-eclipse-temurin-11 AS build
 ARG MAVEN_MIRROR=""
 WORKDIR /src
 RUN if [ -n "$MAVEN_MIRROR" ]; then mkdir -p /root/.m2 && printf '<settings><mirrors><mirror><id>m</id><mirrorOf>central</mirrorOf><url>%s</url></mirror></mirrors></settings>' "$MAVEN_MIRROR" > /root/.m2/settings.xml; fi
-COPY pom.xml .
-COPY src src
+COPY vm/app/pom.xml .
+COPY vm/app/src src
 RUN mvn -q -B package -DskipTests
 
 FROM docker.io/library/eclipse-temurin:11-jre

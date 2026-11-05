@@ -1,0 +1,36 @@
+app: kyc-docs
+owner: kyc-onboarding
+costCenter: bank-w1-kyc-docs
+workload: web
+
+# One replica: uploads live on a local volume (see writablePaths).
+replicas: 1
+containerPort: 8080
+
+env:
+  KYC_UPLOAD_DIR: /var/kyc/uploads
+  # Heap follows the container memory limit instead of a fixed -Xmx512m.
+  JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=50 -XX:MaxMetaspaceSize=96m -Xss512k -XX:+UseSerialGC -XX:TieredStopAtLevel=1"
+
+writablePaths:
+  - /tmp
+  - /var/kyc/uploads
+
+probes:
+  enabled: true
+  path: /health
+  port: http
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  failureThreshold: 12
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+ingress:
+  tls: true

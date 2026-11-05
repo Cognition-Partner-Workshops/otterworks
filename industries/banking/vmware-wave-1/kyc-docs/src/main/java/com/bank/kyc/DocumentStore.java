@@ -49,6 +49,15 @@ public class DocumentStore {
         }
     }
 
+    public boolean writable() {
+        try {
+            Files.createDirectories(root);
+            return Files.isWritable(root);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     static String extension(String name) {
         if (name == null) return ".bin";
         String lower = name.toLowerCase(Locale.ROOT);
