@@ -36,22 +36,23 @@ def current_window(now: datetime | None = None) -> datetime:
     return datetime.fromtimestamp(epoch - epoch % interval, tz=UTC)
 
 
-async def own_rollup(db: AsyncSession, window_start: datetime) -> DocumentStatsRollup | None:
-    """The row this host already wrote for `window_start`, if any."""
+async def existing_rollup(db: AsyncSession, window_start: datetime) -> DocumentStatsRollup | None:
+    """An existing row for `window_start`, from any host."""
     return (
         await db.execute(
             select(DocumentStatsRollup).where(
                 DocumentStatsRollup.window_start == window_start,
-                DocumentStatsRollup.computed_by == socket.gethostname(),
             )
+            .limit(1)
         )
     ).scalar_one_or_none()
 
 
 async def compute_rollup(db: AsyncSession, window_start: datetime) -> DocumentStatsRollup:
-    # A restart inside the window must not double the window: this host's own
-    # earlier row wins. Rows other hosts wrote are not consulted here.
-    if (done := await own_rollup(db, window_start)) is not None:
+    if db.get_bind().dialect.name == "postgresql":
+        await db.execute(select(func.pg_advisory_xact_lock(int(window_start.timestamp()))))
+    if (done := await existing_rollup(db, window_start)) is not None:
+        await db.commit()
         return done
 
     live = Document.is_deleted.is_(False)
