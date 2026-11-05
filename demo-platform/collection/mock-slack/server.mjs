@@ -29,6 +29,8 @@ export function config(env = process.env) {
   if (!['session', 'webhook'].includes(route)) throw new Error('Invalid trigger route');
   const webhookAction = env.DEVIN_WEBHOOK_ACTION || 'start_session';
   if (!['start_session', 'message_session'].includes(webhookAction)) throw new Error('Invalid webhook action');
+  const alertmanagerChannel = env.ALERTMANAGER_CHANNEL || 'alerts';
+  if (!channels.includes(alertmanagerChannel)) throw new Error('Invalid Alertmanager channel');
   return {
     apiBase: apiBase.replace(/\/$/, ''), webBase: webBase.replace(/\/$/, ''),
     key: env.MOCK_SLACK_DEVIN_API_KEY || '', org: env.DEVIN_ORG_ID || '',
@@ -40,6 +42,7 @@ export function config(env = process.env) {
     batchQuietMs: Number(env.ALERT_BATCH_QUIET_MS || 90000),
     batchMaxAgeMs: Number(env.ALERT_BATCH_MAX_AGE_MS || 1800000),
     batchRequiredAlerts: (env.ALERT_BATCH_REQUIRED_ALERTS || '').split(',').map(value => value.trim()).filter(Boolean),
+    alertmanagerChannel,
     stateFile: env.STATE_FILE || path.join(root, '.data/state.json'),
     transcriptFile: env.DEVIN_TRANSCRIPT_FILE || '',
     maxAcu: Number(env.DEVIN_MAX_ACU || 5),
@@ -83,7 +86,7 @@ export async function createApp(cfg = config()) {
     t.messages.push(m); return m;
   };
   const batchNote = (text, status) => {
-    const thread = { id: randomUUID(), channel: 'alerts', messages: [], status, readOnly: true };
+    const thread = { id: randomUUID(), channel: cfg.alertmanagerChannel, messages: [], status, readOnly: true };
     add(thread, 'devin', text); state.threads.push(thread);
   };
   const batchFirstAt = batch => batch.firstAt ??= Math.min(batch.lastAt || Date.now(),
@@ -173,7 +176,7 @@ export async function createApp(cfg = config()) {
     let note;
     try {
       const response = await fetch(cfg.batchWebhook, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cfg.batchSecret ? { Authorization: `Bearer ${cfg.batchSecret}` } : {}) },
-        body: JSON.stringify({ message, channel: 'alerts', alerts: batch.alerts }), redirect: 'error', signal: AbortSignal.timeout(20000) });
+        body: JSON.stringify({ message, channel: cfg.alertmanagerChannel, alerts: batch.alerts }), redirect: 'error', signal: AbortSignal.timeout(20000) });
       if (!response.ok) throw new Error('Batch delivery failed');
       const result = await response.json().catch(() => ({}));
       const id = result.session_id || result.devin_id;
@@ -183,7 +186,7 @@ export async function createApp(cfg = config()) {
       batch.status = 'uncertain';
       note = 'Alert batch delivery was not confirmed. Check the automation history before retrying.';
     }
-    const thread = { id: randomUUID(), channel: 'alerts', messages: [], status: batch.status, readOnly: true };
+    const thread = { id: randomUUID(), channel: cfg.alertmanagerChannel, messages: [], status: batch.status, readOnly: true };
     add(thread, 'devin', note); state.threads.push(thread); await save();
   };
   const scheduleBatch = () => {
@@ -277,7 +280,7 @@ export async function createApp(cfg = config()) {
             if (!alert.labels || typeof alert.labels !== 'object') continue;
             const key = createHash('sha256').update(JSON.stringify([alert.fingerprint || alert.labels, alert.startsAt])).digest('hex');
             if (state.alerts[key] || (alert.status || data.status) === 'resolved') continue;
-            const t = await post({ channel: 'alerts', author: 'alertmanager', text: `${alert.labels.alertname || 'Alert'} (${alert.status || data.status || 'firing'})\n${alert.annotations?.summary || ''}\n${JSON.stringify(alert.labels)}`,
+            const t = await post({ channel: cfg.alertmanagerChannel, author: 'alertmanager', text: `${alert.labels.alertname || 'Alert'} (${alert.status || data.status || 'firing'})\n${alert.annotations?.summary || ''}\n${JSON.stringify(alert.labels)}`,
               requestId: `alert-${key}`, localOnly: Boolean(cfg.batchWebhook) });
             state.alerts[key] = t.id; ids.push(t.id);
             if (cfg.batchWebhook) {

@@ -21,6 +21,7 @@ Set environment variables in the launching shell or inject secrets from the secr
 | `DEVIN_AUTOMATION_URL` | Incoming automation webhook URL; required in webhook mode |
 | `DEVIN_WEBHOOK_SECRET` | Automation `X-Webhook-Secret`, required in webhook mode |
 | `ALERTMANAGER_RECEIVER_SECRET` | Independent shared secret required by the raw Alertmanager receiver |
+| `ALERTMANAGER_CHANNEL` | Channel for Alertmanager bot threads, default `alerts`; must be `alerts`, `incident-war-room` or `platform` |
 | `MOCK_SLACK_PORT` | Published loopback port, default 3100 |
 | `STATE_FILE` | Native Node state location; Compose fixes the location at `/data/state.json` |
 | `DEVIN_TRANSCRIPT_FILE` | Optional local read-mirror JSON path for a webhook session without a read API credential |
@@ -41,7 +42,7 @@ An operator who can read the resulting session in an authenticated browser can s
 
 ## Alertmanager input
 
-The authenticated receiver accepts the standard raw Alertmanager body at `/receivers/alertmanager`, creates an Alertmanager bot thread in `#alerts` for each firing fingerprint and start time, and ignores repeated deliveries and resolved alerts. Set the receiver secret in the app's environment and the incident overlay's environment to the same value. Layer the receiver overlay after the existing incident files when starting the incident stack:
+The authenticated receiver accepts the standard raw Alertmanager body at `/receivers/alertmanager`, creates an Alertmanager bot thread in `ALERTMANAGER_CHANNEL` (default `alerts`) for each firing fingerprint and start time, and ignores repeated deliveries and resolved alerts. Set the receiver secret in the app's environment and the incident overlay's environment to the same value. Layer the receiver overlay after the existing incident files when starting the incident stack:
 
 ```sh
 docker compose -p bankir-1105-incident \
@@ -63,7 +64,8 @@ take different amounts of time to fire. Start mock Slack with these variables
 before starting the incident stack with the receiver overlay, then run
 `make arm SCENARIO=all` (or a comma list) with the same Compose project and files.
 
-Each alert still gets a root post in `#alerts`. Batch mode sends raw alerts
+Each alert still gets a root post in `ALERTMANAGER_CHANNEL` (default `alerts`).
+Batch payloads and bot notes use that same channel. Batch mode sends raw alerts
 only through the batch webhook, independently of the per-thread automation
 binding. The JSON body contains `message`, `channel` and `alerts`; the message
 lists alert names, scenarios, severities, summaries, start times and labels.

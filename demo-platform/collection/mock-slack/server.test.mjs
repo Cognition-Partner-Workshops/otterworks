@@ -9,7 +9,7 @@ import { createApp, config } from './server.mjs';
 
 const ID = 'devin-0123456789abcdef0123456789abcdef';
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
-async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session', alternateIds = false, batch = false, initialState } = {}) {
+async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false, webhookAction = 'start_session', alternateIds = false, batch = false, initialState, alertmanagerChannel } = {}) {
   const calls = [];
   const upstream = http.createServer(async (req, res) => {
     let body = ''; for await (const b of req) body += b;
@@ -27,6 +27,7 @@ async function fixture(t, { route = 'session', fail = false, noSession = false, 
   const cfg = config({ DEVIN_API_BASE: base, DEVIN_WEB_BASE: 'http://localhost:4000', MOCK_SLACK_DEVIN_API_KEY: 'fixture-key', DEVIN_ORG_ID: 'org-fixture', DEVIN_CREATE_AS_USER_ID: 'user-persona', STATE_FILE: path.join(dir, 'state.json'), DEVIN_TRIGGER_ROUTE: route, DEVIN_WEBHOOK_ACTION: webhookAction, DEVIN_AUTOMATION_URL: `${base}/hook`, DEVIN_WEBHOOK_SECRET: 'fixture-webhook-secret', ALERTMANAGER_RECEIVER_SECRET: 'fixture-receiver-secret', POLL_INTERVAL_MS: '600000' });
   if (batch) { cfg.batchWebhook = `${base}/batch`; cfg.batchSecret = 'batch-secret'; cfg.batchQuietMs = 80; }
   if (initialState) await writeFile(cfg.stateFile, JSON.stringify(initialState));
+  cfg.alertmanagerChannel = config({ ALERTMANAGER_CHANNEL: alertmanagerChannel }).alertmanagerChannel;
   const app = await createApp(cfg);
   await new Promise(r => app.server.listen(0, '127.0.0.1', r));
   const url = `http://127.0.0.1:${app.server.address().port}`;
@@ -41,6 +42,21 @@ async function fixture(t, { route = 'session', fail = false, noSession = false, 
 const sendBatchAlert = (url, name) => fetch(`${url}/receivers/alertmanager`, {
   method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' },
   body: JSON.stringify({ alerts: [{ status: 'firing', labels: { alertname: name }, startsAt: new Date().toISOString(), fingerprint: crypto.randomUUID() }] }),
+});
+
+test('batch delivery and reset notes follow the configured Alertmanager channel', async t => {
+  const f = await fixture(t, { batch: true, alertmanagerChannel: 'incident-war-room' });
+  await sendBatchAlert(f.url, 'First');
+  await pause(160);
+  assert.equal(f.calls.length, 1);
+  assert.equal(f.calls[0].body.channel, 'incident-war-room');
+  f.cfg.batchRequiredAlerts = ['First', 'Last'];
+  await sendBatchAlert(f.url, 'Last');
+  const response = await fetch(`${f.url}/api/alert-batch/reset`, { method: 'POST', headers: { 'X-Webhook-Secret': 'fixture-receiver-secret' } });
+  assert.deepEqual(await response.json(), { reset: true });
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.threads.length, 4);
+  assert.ok(state.threads.every(thread => thread.channel === 'incident-war-room'));
 });
 
 test('interrupted batch recovery is visible, persisted and never retried', async t => {
@@ -348,6 +364,22 @@ test('Alertmanager receiver authenticates, deduplicates repeats, ignores resolve
   await receiver('fixture-receiver-secret');
   payload.alerts[0].status = 'resolved'; await receiver('fixture-receiver-secret');
   assert.equal(f.calls.length, 1); assert.match(f.calls[0].body.prompt, /^Alertmanager:/);
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.threads[0].channel, 'alerts');
+});
+test('Alertmanager receiver opens bot threads in the configured channel', async t => {
+  const f = await fixture(t, { alertmanagerChannel: 'incident-war-room' });
+  const r = await fetch(`${f.url}/receivers/alertmanager`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': 'fixture-receiver-secret' }, body: JSON.stringify({ alerts: [{ labels: { alertname: 'DocumentListLatencyHigh' } }] }) });
+  assert.equal(r.status, 200);
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.threads[0].channel, 'incident-war-room');
+  assert.equal(state.threads[0].messages[0].author, 'alertmanager');
+});
+test('Alertmanager channel configuration defaults to alerts and rejects unknown channels', () => {
+  assert.equal(config({}).alertmanagerChannel, 'alerts');
+  assert.equal(config({ ALERTMANAGER_CHANNEL: '' }).alertmanagerChannel, 'alerts');
+  assert.equal(config({ ALERTMANAGER_CHANNEL: 'platform' }).alertmanagerChannel, 'platform');
+  assert.throws(() => config({ ALERTMANAGER_CHANNEL: 'unknown' }), /Invalid Alertmanager channel/);
 });
 test('browser writes reject cross origin and invalid authors, paths cannot escape public files', async t => {
   const f = await fixture(t);

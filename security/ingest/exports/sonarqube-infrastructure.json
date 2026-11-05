@@ -1,0 +1,532 @@
+{
+ "tool": "SonarQube Community",
+ "project": "otterworks",
+ "exported_at": "2026-11-05T03:27:47+00:00",
+ "total": 37,
+ "issues": [
+  {
+   "key": "c65cb6e5-2678-4d31-92ac-cc0fd098fb6f",
+   "rule": "python:S5332",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/helm/db2-archive/files/health.py",
+   "line": 72,
+   "message": "Using HTTP protocol is insecure. Use HTTPS instead.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "77ad525b-bc0f-412f-90a4-5ed8f1a31bf1",
+   "rule": "python:S3516",
+   "severity": "BLOCKER",
+   "type": "CODE_SMELL",
+   "component": "infrastructure/helm/db2-archive/files/seed/__main__.py",
+   "line": 16,
+   "message": "Refactor this method to not always return the same value.",
+   "tags": [
+    "design",
+    "confusing"
+   ]
+  },
+  {
+   "key": "4b179225-783d-4acd-a7ec-4f3546e20574",
+   "rule": "python:S2077",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/helm/db2-archive/files/seed/oracle.py",
+   "line": 247,
+   "message": "Make sure that formatting this SQL query is safe here.",
+   "tags": [
+    "cwe",
+    "bad-practice",
+    "former-hotspot",
+    "sql"
+   ]
+  },
+  {
+   "key": "c5436778-6a54-44bb-a8a5-4141ed4d7435",
+   "rule": "python:S2077",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/helm/db2-archive/files/seed/oracle.py",
+   "line": 260,
+   "message": "Make sure that formatting this SQL query is safe here.",
+   "tags": [
+    "cwe",
+    "bad-practice",
+    "former-hotspot",
+    "sql"
+   ]
+  },
+  {
+   "key": "7248cf33-5d4e-4c75-85ca-a8af77175817",
+   "rule": "python:S1244",
+   "severity": "MAJOR",
+   "type": "BUG",
+   "component": "infrastructure/helm/db2-archive/files/seed/spec.py",
+   "line": 193,
+   "message": "Do not perform equality checks with floating point values.",
+   "tags": [
+    "pytorch",
+    "data-science",
+    "numpy",
+    "suspicious"
+   ]
+  },
+  {
+   "key": "681cb392-8523-4db2-9849-7b0452bcf25f",
+   "rule": "python:S5863",
+   "severity": "MAJOR",
+   "type": "BUG",
+   "component": "infrastructure/helm/db2-archive/files/seed/test_seed.py",
+   "line": 20,
+   "message": "Replace this assertion to not have the same actual and expected expression.",
+   "tags": [
+    "tests"
+   ]
+  },
+  {
+   "key": "30eb0cef-ba33-4108-83a7-c3566f3a5a14",
+   "rule": "kubernetes:S6865",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/helm/oracle-archive/templates/statefulset.yaml",
+   "line": 42,
+   "message": "Bind this resource's automounted service account to RBAC or disable automounting.",
+   "tags": []
+  },
+  {
+   "key": "1bf0db90-7ee9-472c-bec7-f148225cdc90",
+   "rule": "kubernetes:S6870",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/helm/oracle-archive/templates/statefulset.yaml",
+   "line": 43,
+   "message": "Specify a storage limit for this container.",
+   "tags": []
+  },
+  {
+   "key": "a01ba9eb-3ff9-4136-87ad-68f0ac1536d4",
+   "rule": "kubernetes:S6897",
+   "severity": "MAJOR",
+   "type": "CODE_SMELL",
+   "component": "infrastructure/helm/oracle-archive/templates/statefulset.yaml",
+   "line": 43,
+   "message": "Specify a storage request for this container.",
+   "tags": []
+  },
+  {
+   "key": "1636f6a0-7d64-4137-ac0b-1325b6bf62f7",
+   "rule": "terraform:S6378",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/azure/main.tf",
+   "line": 36,
+   "message": "Omitting the \"identity\" block disables Azure Managed Identities. Make sure it is safe here.",
+   "tags": [
+    "azure",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "15c5a528-8c3a-42e5-b51e-92c684816926",
+   "rule": "terraform:S8847",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/azure/main.tf",
+   "line": 82,
+   "message": "Make sure that disabling purge protection is safe here.",
+   "tags": [
+    "cwe",
+    "azure"
+   ]
+  },
+  {
+   "key": "4331913a-30e4-45d7-836e-711771da2937",
+   "rule": "terraform:S6304",
+   "severity": "BLOCKER",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/cloud-worker/iam.tf",
+   "line": 76,
+   "message": "Make sure granting access to all resources is safe here.",
+   "tags": [
+    "cwe",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "719be80d-20c6-4c82-bb04-3fa0ad588421",
+   "rule": "terraform:S6304",
+   "severity": "BLOCKER",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/cloud-worker/iam.tf",
+   "line": 236,
+   "message": "Make sure granting access to all resources is safe here.",
+   "tags": [
+    "cwe",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "8402074f-0ef9-4800-8bd1-041dfe64b507",
+   "rule": "terraform:S6327",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/cloud-worker/messaging.tf",
+   "line": 1,
+   "message": "Omitting \"kms_master_key_id\" disables SNS topics encryption. Make sure it is safe here.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "37ae7b1d-21fd-4a27-b9a5-0470e77f7fff",
+   "rule": "terraform:S6249",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/demo-aws/main.tf",
+   "line": 57,
+   "message": "No bucket policy enforces HTTPS-only access to this bucket.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "f1dda87d-e797-4ffa-86a2-a727c517ee35",
+   "rule": "terraform:S6258",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/demo-aws/main.tf",
+   "line": 57,
+   "message": "Make sure that disabling logging is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "99ba432e-c45d-44bc-bdbc-64b9e32071cd",
+   "rule": "terraform:S6252",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/demo-aws/main.tf",
+   "line": 83,
+   "message": "Make sure using unversioned S3 bucket is safe here.",
+   "tags": [
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "587525c8-121e-4fc8-b5dd-fab014363ac2",
+   "rule": "terraform:S6258",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/legacy-portal-ec2/alb.tf",
+   "line": 5,
+   "message": "Omitting \"access_logs\" makes logs incomplete. Make sure it is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "cfc01b6d-260f-49e6-ae53-42849c52729c",
+   "rule": "terraform:S5332",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/legacy-portal-ec2/alb.tf",
+   "line": 39,
+   "message": "Make sure allowing clear-text traffic is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "cryptography",
+    "aws",
+    "azure",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "dd8c63b1-b02a-4396-95f6-bc062c37058d",
+   "rule": "terraform:S6329",
+   "severity": "BLOCKER",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/legacy-portal-ec2/ec2.tf",
+   "line": 50,
+   "message": "Omitting \"associate_public_ip_address\" allows network access from the Internet. Make sure it is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "aws",
+    "azure",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "4b533cc6-9312-4718-98cc-c9661b541a58",
+   "rule": "terraform:S6258",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/legacy-portal-ec2/main.tf",
+   "line": 45,
+   "message": "Make sure that disabling logging is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "83f1b613-dece-49ee-b725-554c25689e6d",
+   "rule": "terraform:S6249",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/legacy-portal-ec2/main.tf",
+   "line": 45,
+   "message": "No bucket policy enforces HTTPS-only access to this bucket.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "f3571b86-2d00-47bf-bbd0-577fd817a710",
+   "rule": "terraform:S6364",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/legacy-portal-serverless/aurora.tf",
+   "line": 49,
+   "message": "Make sure that defining a short backup retention duration is safe here.",
+   "tags": [
+    "aws",
+    "azure",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "293fc22e-83fa-4456-a460-13415d69587b",
+   "rule": "terraform:S6249",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/legacy-portal-serverless/probe.tf",
+   "line": 8,
+   "message": "No bucket policy enforces HTTPS-only access to this bucket.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "3a1755da-f479-48d7-9289-ff3b6d9781c9",
+   "rule": "terraform:S6258",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/legacy-portal-serverless/probe.tf",
+   "line": 8,
+   "message": "Make sure that disabling logging is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "08d87f0e-d7c9-4881-9655-d4664240a31b",
+   "rule": "terraform:S6327",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/modules/messaging/main.tf",
+   "line": 15,
+   "message": "Omitting \"kms_master_key_id\" disables SNS topics encryption. Make sure it is safe here.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "4b5b9472-428c-48e1-a87b-81b5e2bf7555",
+   "rule": "terraform:S6413",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/modules/search/main.tf",
+   "line": 113,
+   "message": "Make sure that defining a short log retention duration is safe here.",
+   "tags": [
+    "gcp",
+    "azure",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "22602292-c67a-470e-9828-b2d8b6c15010",
+   "rule": "terraform:S6249",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/modules/storage/main.tf",
+   "line": 15,
+   "message": "No bucket policy enforces HTTPS-only access to this bucket.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "cba2569f-527d-4941-a00d-ba7ed63c0d55",
+   "rule": "terraform:S6258",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/modules/storage/main.tf",
+   "line": 15,
+   "message": "Make sure that disabling logging is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "0bbb4bb6-e1d5-4b1b-a6b7-c4913317dcba",
+   "rule": "terraform:S6249",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/modules/storage/main.tf",
+   "line": 68,
+   "message": "No bucket policy enforces HTTPS-only access to this bucket.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "9c1cf472-5b3a-42ef-a35e-f4d088f522ae",
+   "rule": "terraform:S6258",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/modules/storage/main.tf",
+   "line": 68,
+   "message": "Make sure that disabling logging is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "9c0339ba-b049-4563-b9bc-1d5ba3f29007",
+   "rule": "terraform:S6249",
+   "severity": "MINOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/modules/storage/main.tf",
+   "line": 98,
+   "message": "No bucket policy enforces HTTPS-only access to this bucket.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "a0366a4c-5427-497b-bd34-e9cff111df5c",
+   "rule": "terraform:S6258",
+   "severity": "MAJOR",
+   "type": "VULNERABILITY",
+   "component": "infrastructure/terraform/modules/storage/main.tf",
+   "line": 98,
+   "message": "Make sure that disabling logging is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "aws",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "84157364-c536-4244-8972-fd4ffda4f7f3",
+   "rule": "terraform:S6329",
+   "severity": "BLOCKER",
+   "type": "VULNERABILITY",
+   "component": "platform/terraform/modules/eks/main.tf",
+   "line": 144,
+   "message": "Omitting \"network_interfaces.associate_public_ip_address\" allows network access from the Internet. Make sure it is safe here.",
+   "tags": [
+    "cwe",
+    "gcp",
+    "aws",
+    "azure",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "b068f3b9-58f5-4b68-87cb-d6ab39a89da0",
+   "rule": "docker:S6470",
+   "severity": "CRITICAL",
+   "type": "VULNERABILITY",
+   "component": "services/document-service/Dockerfile",
+   "line": 12,
+   "message": "Copying recursively might inadvertently add sensitive data to the container. Make sure it is safe here.",
+   "tags": [
+    "cwe",
+    "dockerfile",
+    "former-hotspot"
+   ]
+  },
+  {
+   "key": "9bd5ba17-28a6-437c-8b74-004f2be8ea6c",
+   "rule": "secrets:S6698",
+   "severity": "BLOCKER",
+   "type": "VULNERABILITY",
+   "component": "services/document-service/app/config.py",
+   "line": 12,
+   "message": "Make sure this PostgreSQL password gets changed and removed from the code.",
+   "tags": [
+    "cwe",
+    "secret"
+   ]
+  },
+  {
+   "key": "77a85015-e26e-4252-b52f-0bcaa6db1ced",
+   "rule": "python:S4790",
+   "severity": "CRITICAL",
+   "type": "VULNERABILITY",
+   "component": "services/document-service/app/services/share_link.py",
+   "line": 31,
+   "message": "Make sure that hashing data is safe here.",
+   "tags": [
+    "cwe",
+    "cryptography",
+    "former-hotspot"
+   ]
+  }
+ ]
+}
