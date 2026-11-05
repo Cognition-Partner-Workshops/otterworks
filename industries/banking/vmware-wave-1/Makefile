@@ -1,7 +1,8 @@
 # Wave 1: six VM-hosted applications, their VM stand-ins and the run-scoped
 # cloud resources the pipeline uses.
 #   make vm-up            start the stand-ins on the shared seed data
-#   make vm-smoke         hit every stand-in once
+#   make vm-smoke         hit every stand-in once, then run the fx-report tests
+#   make fx-report-test   fx-report's t/ suite in the report-01 stand-in image, offline
 #   make vm-down          stop them; make reset also drops their volumes
 #   make ecr RUN=<token>  create the ECR repositories for a run
 #   make ns RUN=<token> PR=<n>   create the PR namespace on otterworks-dev
@@ -14,7 +15,7 @@ APPS := statements-web rates-batch branch-locator notify-svc kyc-docs fx-report
 COMPOSE := docker compose -f vm/compose.yaml
 DAYS := 2026-10-14 2026-10-15 2026-10-16
 
-.PHONY: vm-build vm-up vm-rates vm-smoke vm-down reset ecr ns destroy check-run
+.PHONY: vm-build vm-up vm-rates vm-smoke fx-report-test vm-down reset ecr ns destroy check-run
 
 vm-build:
 	DOCKER_BUILDKIT=0 $(COMPOSE) build
@@ -36,6 +37,10 @@ vm-smoke:
 	curl -skf -o /dev/null -w "kyc-docs       %{http_code}\n" https://localhost:8085/documents/HG611000001
 	curl -sf -o /dev/null -w "fx-report      %{http_code}\n" "http://localhost:8086/fx/fx-report.cgi?day=2026-10-16"
 	$(COMPOSE) exec -T rates-01 ls /var/spool/rates/out
+	$(MAKE) fx-report-test
+
+fx-report-test:
+	docker run --rm --network none -v "$(CURDIR)/fx-report:/src:ro" -w /src --entrypoint prove wave1/fx-report-vm -lv t
 
 vm-down:
 	$(COMPOSE) down
