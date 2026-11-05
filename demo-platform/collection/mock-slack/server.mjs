@@ -189,7 +189,7 @@ export async function createApp(cfg = config()) {
       }
       // The browser sends JSON plus a custom header; cross-origin forms cannot submit chat writes.
       if (req.method === 'POST' && (!req.headers['content-type']?.startsWith('application/json') || req.headers['x-workspace-client'] !== 'mock-slack' || (req.headers.origin && req.headers.origin !== `http://${req.headers.host}` && req.headers.origin !== `https://${req.headers.host}`))) return json(res, 403, { error: 'Same-origin workspace request required' });
-      if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { users, channels, threads: state.threads, mirrorError: state.mirrorError || null, configured: cfg.route === 'webhook' ? Boolean(cfg.webhook && cfg.webhookSecret) : Boolean(cfg.key && cfg.org), route: cfg.route });
+      if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { users, channels, threads: state.threads, mirrorError: cfg.transcriptFile ? state.mirrorError || null : null, configured: cfg.route === 'webhook' ? Boolean(cfg.webhook && cfg.webhookSecret) : Boolean(cfg.key && cfg.org), route: cfg.route });
       if (req.method === 'POST' && url.pathname === '/api/messages') return json(res, 200, await serial(async () => post(await body(req))));
       const files = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'] };
       if (req.method === 'GET' && files[url.pathname]) {

@@ -127,6 +127,9 @@ test('missing or invalid optional mirror never blocks API-backed replies', async
   assert.match(state.mirrorError, /API-backed polling continues/);
   await writeFile(f.cfg.transcriptFile, '{invalid'); await f.app.poll();
   state = await (await fetch(`${f.url}/api/state`)).json(); assert.ok(state.mirrorError);
+  f.cfg.transcriptFile = '';
+  state = await (await fetch(`${f.url}/api/state`)).json(); assert.equal(state.mirrorError, null);
+  f.cfg.transcriptFile = path.join(f.dir, 'mirror.json');
   await writeFile(f.cfg.transcriptFile, '{"items":[]}'); await f.app.poll();
   state = await (await fetch(`${f.url}/api/state`)).json(); assert.equal(state.mirrorError, null);
 });
