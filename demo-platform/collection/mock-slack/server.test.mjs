@@ -1,19 +1,21 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import vm from 'node:vm';
 import { createApp, config } from './server.mjs';
 
 const ID = 'devin-0123456789abcdef0123456789abcdef';
-async function fixture(t, { route = 'session', fail = false, noSession = false } = {}) {
+async function fixture(t, { route = 'session', fail = false, noSession = false, emptyMessage = false } = {}) {
   const calls = [];
   const upstream = http.createServer(async (req, res) => {
     let body = ''; for await (const b of req) body += b;
     calls.push({ url: req.url, method: req.method, body: body ? JSON.parse(body) : null, auth: req.headers.authorization, secret: req.headers['x-webhook-secret'] });
     res.setHeader('Content-Type', 'application/json');
     if (fail) { res.writeHead(503); res.end('{}'); return; }
+    if (emptyMessage && req.method === 'POST' && req.url.endsWith('/messages')) { res.writeHead(204); res.end(); return; }
     if (req.method === 'POST') { res.end(JSON.stringify(noSession ? { ok: true } : { session_id: ID })); return; }
     const after = new URL(req.url, 'http://localhost').searchParams.get('after');
     res.end(JSON.stringify({ items: [{ event_id: 'event-1', source: 'devin', message: 'DBA, I will check the query plan.', created_at: 1 }], has_next_page: !after, end_cursor: after ? null : 'cursor-1' }));
@@ -93,6 +95,48 @@ test('webhook route sends the shared secret server-side instead of creating a se
 test('webhook without a returned session ID never starts duplicate work', async t => {
   const f = await fixture(t, { route: 'webhook', noSession: true }); const first = await f.post('@devin Check latency');
   await f.post('More context', first.id); assert.equal(f.calls.length, 1);
+});
+test('webhook configuration works without a session API credential', async t => {
+  const f = await fixture(t, { route: 'webhook', noSession: true }); f.cfg.key = '';
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.configured, true);
+  assert.equal((await f.post('@devin Check latency')).status, 'webhook-delivered');
+});
+test('empty successful message response confirms delivery', async t => {
+  const f = await fixture(t, { emptyMessage: true }); const first = await f.post('@devin Check latency');
+  const updated = await f.post('Database is healthy', first.id);
+  assert.equal(updated.status, 'connected'); assert.equal(updated.messages.at(-1).delivered, true);
+});
+test('read mirror attaches one verified webhook session without API writes', async t => {
+  const f = await fixture(t, { route: 'webhook', noSession: true }); f.cfg.key = '';
+  const first = await f.post('@devin Check latency');
+  f.cfg.transcriptFile = path.join(f.dir, 'mirror.json');
+  await writeFile(f.cfg.transcriptFile, JSON.stringify({ items: [{ thread_id: first.id, session_id: ID, messages: [{ event_id: 'read-event', source: 'devin', message: 'Actual read-only transcript', created_at: 1 }] }] }));
+  await f.app.poll(); await f.app.poll(); await f.post('Follow-up stays local', first.id);
+  const state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.threads[0].readOnly, true);
+  assert.equal(state.threads[0].messages.filter(m => m.author === 'devin').length, 1);
+  assert.equal(f.calls.length, 1);
+});
+test('browser retains one request ID after a lost response and page reload', async () => {
+  const source = await readFile(new URL('./public/app.js', import.meta.url), 'utf8');
+  const storage = new Map(); const sent = [];
+  let fail = true;
+  const boot = () => {
+    const nodes = { author: { value: 'commander' }, error: {}, message: { id: 'message', value: '@devin Check latency' } };
+    const context = { document: { getElementById: id => nodes[id] }, crypto,
+      sessionStorage: { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key) },
+      fetch: async (_url, options) => { sent.push(JSON.parse(options.body)); if (fail) throw new Error('Response lost'); return { ok: true, json: async () => ({ id: 'thread-original' }) }; }
+    };
+    vm.runInNewContext(source.slice(0, source.indexOf("$('compose').onsubmit")) + '\nglobalThis.send = send; refresh = async () => {};', context);
+    return { context, nodes };
+  };
+  const first = boot(); await first.context.send(first.nodes.message, null);
+  assert.ok(storage.has('pending-message'));
+  const second = boot(); second.nodes.message.value = 'Different message'; await second.context.send(second.nodes.message, null);
+  assert.equal(sent.length, 1);
+  second.nodes.message.value = '@devin Check latency'; fail = false; await second.context.send(second.nodes.message, null);
+  assert.equal(sent.length, 2); assert.equal(sent[0].requestId, sent[1].requestId); assert.equal(storage.has('pending-message'), false);
 });
 test('Alertmanager receiver authenticates, deduplicates repeats, ignores resolved', async t => {
   const f = await fixture(t);

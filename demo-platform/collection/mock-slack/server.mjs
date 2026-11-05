@@ -33,6 +33,7 @@ export function config(env = process.env) {
     webhook: env.DEVIN_AUTOMATION_URL || '', webhookSecret: env.DEVIN_WEBHOOK_SECRET || '',
     receiverSecret: env.ALERTMANAGER_RECEIVER_SECRET || '',
     stateFile: env.STATE_FILE || path.join(root, '.data/state.json'),
+    transcriptFile: env.DEVIN_TRANSCRIPT_FILE || '',
     maxAcu: Number(env.DEVIN_MAX_ACU || 5),
     pollMs: Number(env.POLL_INTERVAL_MS || 5000),
   };
@@ -63,6 +64,7 @@ export async function createApp(cfg = config()) {
       ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(20000), redirect: 'error',
     });
     if (!response.ok) throw new Error(`Devin API returned ${response.status}`);
+    if (method === 'POST' && suffix.endsWith('/messages')) return;
     return response.json();
   };
   const add = (t, author, text, requestId) => {
@@ -71,6 +73,7 @@ export async function createApp(cfg = config()) {
   };
   const safeUrl = id => `${cfg.webBase}/sessions/${id.replace(/^devin-/, '')}`;
   const deliver = async t => {
+    if (t.readOnly) return;
     if (['uncertain', 'failed'].includes(t.status)) return;
     if (t.status === 'webhook-delivered' && !t.sessionId) return;
     const pending = t.messages.filter(m => m.author !== 'devin' && !m.delivered);
@@ -117,7 +120,21 @@ export async function createApp(cfg = config()) {
     add(t, author, text.trim(), requestId); await save(); await deliver(t); return t;
   };
   const poll = () => serial(async () => {
-    for (const t of state.threads.filter(t => t.sessionId)) {
+    if (cfg.transcriptFile) {
+      const mirror = JSON.parse(await readFile(cfg.transcriptFile, 'utf8'));
+      for (const item of mirror.items || []) {
+        const t = state.threads.find(t => t.id === item.thread_id && t.route === 'webhook');
+        if (!t || !sessionId(item.session_id) || (t.sessionId && t.sessionId !== item.session_id)) continue;
+        t.sessionId = item.session_id; t.sessionUrl = safeUrl(t.sessionId); t.readOnly = true;
+        t.status = 'Read mirror · follow-up messages stay local';
+        for (const m of item.messages || []) {
+          if (m.source === 'devin' && m.event_id && typeof m.message === 'string' && !t.messages.some(x => x.remoteId === m.event_id)) {
+            t.messages.push({ id: randomUUID(), author: 'devin', text: m.message, remoteId: m.event_id, at: m.created_at * 1000, delivered: true });
+          }
+        }
+      }
+    }
+    for (const t of state.threads.filter(t => t.sessionId && !t.readOnly)) {
       try {
         let cursor = t.cursor;
         // A bounded page loop prevents a long transcript from starving chat writes.
@@ -167,7 +184,7 @@ export async function createApp(cfg = config()) {
       }
       // The browser sends JSON plus a custom header; cross-origin forms cannot submit chat writes.
       if (req.method === 'POST' && (!req.headers['content-type']?.startsWith('application/json') || req.headers['x-workspace-client'] !== 'mock-slack' || (req.headers.origin && req.headers.origin !== `http://${req.headers.host}` && req.headers.origin !== `https://${req.headers.host}`))) return json(res, 403, { error: 'Same-origin workspace request required' });
-      if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { users, channels, threads: state.threads, configured: Boolean(cfg.key && cfg.org), route: cfg.route });
+      if (req.method === 'GET' && url.pathname === '/api/state') return json(res, 200, { users, channels, threads: state.threads, configured: cfg.route === 'webhook' ? Boolean(cfg.webhook && cfg.webhookSecret) : Boolean(cfg.key && cfg.org), route: cfg.route });
       if (req.method === 'POST' && url.pathname === '/api/messages') return json(res, 200, await serial(async () => post(await body(req))));
       const files = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'] };
       if (req.method === 'GET' && files[url.pathname]) {

@@ -14,6 +14,7 @@ services:
       DEVIN_AUTOMATION_URL: ${DEVIN_AUTOMATION_URL:-}
       DEVIN_WEBHOOK_SECRET: ${DEVIN_WEBHOOK_SECRET:-}
       ALERTMANAGER_RECEIVER_SECRET: ${ALERTMANAGER_RECEIVER_SECRET:-}
+      DEVIN_TRANSCRIPT_FILE: ${DEVIN_TRANSCRIPT_FILE:-}
     volumes: ["workspace-data:/data"]
     labels:
       run-token: bankir-1105
