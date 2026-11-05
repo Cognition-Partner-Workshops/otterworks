@@ -1,6 +1,3 @@
-app/
-vm/
 parity/
 deploy/
-requirements.txt
 **/__pycache__
