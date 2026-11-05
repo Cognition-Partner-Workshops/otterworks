@@ -1,0 +1,15 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.rules.enabled .Values.monitoring.kycUploadSlo.enabled (.Capabilities.APIVersions.Has "monitoring.coreos.com/v1") -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-kyc-upload
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- with .Values.monitoring.rules.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    {{- include "document-service.scopedRuleGroups" (dict "root" . "file" "files/kyc_upload_slo.yml" "dashboardUid" (include "document-service.kycDashboardUid" .)) | nindent 4 }}
+{{- end }}

@@ -110,6 +110,7 @@ services:
     - ./observability/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
     - ./observability/prometheus/recording_rules.yml:/etc/prometheus/recording_rules.yml:ro
     - ./observability/prometheus/incident_alerts.yml:/etc/prometheus/incident_alerts.yml:ro
+    - ./observability/prometheus/kyc_upload_slo.yml:/etc/prometheus/kyc_upload_slo.yml:ro
     - prometheus_data:/prometheus
     healthcheck:
       test:

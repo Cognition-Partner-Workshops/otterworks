@@ -1,0 +1,19 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.dashboard.enabled .Values.monitoring.kycUploadSlo.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-kyc-upload-dashboard
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- with .Values.monitoring.dashboard.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .Values.monitoring.dashboard.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  kyc-upload-latency.json: |-
+    {{- include "document-service.scopedDashboard" (dict "root" . "file" "files/kyc-upload-latency.json" "uid" (include "document-service.kycDashboardUid" .)) | nindent 4 }}
+{{- end }}

@@ -23,7 +23,7 @@ import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 DATA_DIR = os.environ.get("SINK_DATA_DIR", "/data")
-RECEIVERS = ("devin", "slack", "sink")
+RECEIVERS = ("devin", "slack", "sink", "platform-oncall")
 # Alertmanager pages are a few KiB; the Devin receiver is capped at one alert.
 MAX_BODY_BYTES = int(os.environ.get("SINK_MAX_BODY_BYTES", str(1 << 20)))
 SECRET_HEADERS = frozenset({"authorization", "x-webhook-secret", "cookie"})

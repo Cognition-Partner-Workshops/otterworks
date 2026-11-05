@@ -69,6 +69,13 @@ monitoring:
     labels:
       grafana_dashboard: "1"
     annotations: {}
+  # KYC upload latency SLO: a second PrometheusRule (files/kyc_upload_slo.yml,
+  # synced from observability/prometheus/kyc_upload_slo.yml) and dashboard
+  # ConfigMap (files/kyc-upload-latency.json), scoped like the incident ones.
+  # Needs rules.enabled / dashboard.enabled; on by the bank tenant overlay only.
+  kycUploadSlo:
+    enabled: false
+    dashboardUid: ""  # default: kyc-<release namespace>
   # Base URLs written into alert annotations and dashboard text; empty keeps
   # the local Compose URLs from the source files.
   links:

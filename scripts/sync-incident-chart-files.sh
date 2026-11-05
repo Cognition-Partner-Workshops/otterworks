@@ -12,6 +12,8 @@ CHART_FILES="${REPO_ROOT}/infrastructure/helm/document-service/files"
 PAIRS=(
   "observability/prometheus/incident_alerts.yml:incident_alerts.yml"
   "observability/grafana/dashboards/incident-responder.json:incident-responder.json"
+  "observability/prometheus/kyc_upload_slo.yml:kyc_upload_slo.yml"
+  "observability/grafana/dashboards/kyc-upload-latency.json:kyc-upload-latency.json"
 )
 
 check=false
