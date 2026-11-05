@@ -118,6 +118,18 @@ test('read mirror attaches one verified webhook session without API writes', asy
   assert.equal(state.threads[0].messages.filter(m => m.author === 'devin').length, 1);
   assert.equal(f.calls.length, 1);
 });
+test('missing or invalid optional mirror never blocks API-backed replies', async t => {
+  const f = await fixture(t); await f.post('@devin Check latency');
+  f.cfg.transcriptFile = path.join(f.dir, 'mirror.json');
+  await f.app.poll();
+  let state = await (await fetch(`${f.url}/api/state`)).json();
+  assert.equal(state.threads[0].messages.filter(m => m.author === 'devin').length, 1);
+  assert.match(state.mirrorError, /API-backed polling continues/);
+  await writeFile(f.cfg.transcriptFile, '{invalid'); await f.app.poll();
+  state = await (await fetch(`${f.url}/api/state`)).json(); assert.ok(state.mirrorError);
+  await writeFile(f.cfg.transcriptFile, '{"items":[]}'); await f.app.poll();
+  state = await (await fetch(`${f.url}/api/state`)).json(); assert.equal(state.mirrorError, null);
+});
 test('browser retains one request ID after a lost response and page reload', async () => {
   const source = await readFile(new URL('./public/app.js', import.meta.url), 'utf8');
   const storage = new Map(); const sent = [];

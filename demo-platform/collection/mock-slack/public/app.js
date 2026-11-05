@@ -25,6 +25,7 @@ function render() {
   $('channel-title').textContent = `# ${channel}`;
   $('message').placeholder = `Message #${channel}. Mention @devin to start work.`;
   $('connection').textContent = snapshot.configured ? `Devin connected · ${snapshot.route === 'webhook' ? 'Automation trigger' : 'Fusion sessions'} · credentials stay on the server` : `Local workspace · configure ${snapshot.route === 'webhook' ? 'an automation webhook' : 'a persona-owned API key'} to connect Devin`;
+  if (snapshot.mirrorError) $('connection').textContent += ` · ${snapshot.mirrorError}`;
   const threads = snapshot.threads.filter(t => t.channel === channel);
   $('messages').replaceChildren(...threads.map(t => {
     const row = el('div', 'channel-message'); row.append(message(t.messages[0]));
