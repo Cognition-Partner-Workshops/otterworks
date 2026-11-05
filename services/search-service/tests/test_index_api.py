@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import patch
+
 
 class TestIndexDocumentEndpoint:
     """Tests for POST /api/v1/search/index/document."""
@@ -102,7 +104,9 @@ class TestDeleteFromIndexEndpoint:
 class TestReindexEndpoint:
     """Tests for POST /api/v1/search/reindex."""
 
-    def test_reindex_success(self, client, mock_meilisearch_client):
+    @patch("app.services.indexer.Indexer._fetch_all_files", return_value=[])
+    @patch("app.services.indexer.Indexer._fetch_all_documents", return_value=[])
+    def test_reindex_success(self, mock_documents, mock_files, client, mock_meilisearch_client):
         """Reindex returns 200."""
         response = client.post("/api/v1/search/reindex")
         assert response.status_code == 200

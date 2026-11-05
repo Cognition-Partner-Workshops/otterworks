@@ -2,6 +2,7 @@ use actix_web::{
     body::{EitherBody, MessageBody},
     dev::{ServiceRequest, ServiceResponse},
     http::header::{HeaderName, HeaderValue},
+    http::Method,
     middleware::Next,
     web, Error, HttpResponse,
 };
@@ -21,9 +22,16 @@ struct Claims {
     exp: u64,
     #[serde(rename = "type")]
     token_type: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    aud: Option<String>,
 }
 
-fn subject(token: &str, config: &AuthConfig) -> Option<Uuid> {
+enum Identity {
+    User(Uuid),
+    Reindex,
+}
+
+fn identity(token: &str, config: &AuthConfig) -> Option<Identity> {
     let header = decode_header(token).ok()?;
     if !matches!(
         header.alg,
@@ -34,6 +42,7 @@ fn subject(token: &str, config: &AuthConfig) -> Option<Uuid> {
     let mut validation = Validation::new(header.alg);
     validation.set_required_spec_claims(&["exp", "sub"]);
     validation.leeway = 0;
+    validation.set_audience(&["file-service:reindex"]);
     for secret in [&config.secret, &config.peer_secret] {
         if secret.is_empty() {
             continue;
@@ -44,7 +53,12 @@ fn subject(token: &str, config: &AuthConfig) -> Option<Uuid> {
             &validation,
         ) {
             if data.claims.token_type == "access" {
-                return Some(data.claims.sub);
+                return Some(Identity::User(data.claims.sub));
+            }
+            if data.claims.token_type == "service"
+                && data.claims.aud.as_deref() == Some("file-service:reindex")
+            {
+                return Some(Identity::Reindex);
             }
         }
     }
@@ -58,25 +72,32 @@ pub async fn authenticate(
     if matches!(req.path(), "/health" | "/metrics") {
         return Ok(next.call(req).await?.map_into_left_body());
     }
-    let user_id = req.app_data::<web::Data<AuthConfig>>().and_then(|config| {
+    let identity = req.app_data::<web::Data<AuthConfig>>().and_then(|config| {
         let header = req.headers().get("Authorization")?.to_str().ok()?;
         let (scheme, token) = header.split_once(' ')?;
         if !scheme.eq_ignore_ascii_case("Bearer") {
             return None;
         }
-        subject(token, config)
+        identity(token, config)
     });
-    let Some(user_id) = user_id else {
-        return Ok(req
-            .into_response(
-                HttpResponse::Unauthorized().json(serde_json::json!({"error": "unauthorized"})),
-            )
-            .map_into_right_body());
-    };
-    req.headers_mut().insert(
-        HeaderName::from_static("x-user-id"),
-        HeaderValue::from_str(&user_id.to_string()).expect("UUID is a valid header value"),
-    );
+    match identity {
+        Some(Identity::User(user_id)) => {
+            req.headers_mut().insert(
+                HeaderName::from_static("x-user-id"),
+                HeaderValue::from_str(&user_id.to_string()).expect("UUID is a valid header value"),
+            );
+        }
+        Some(Identity::Reindex) if req.method() == Method::GET && req.path() == "/api/v1/files" => {
+            req.headers_mut().remove("x-user-id");
+        }
+        _ => {
+            return Ok(req
+                .into_response(
+                    HttpResponse::Unauthorized().json(serde_json::json!({"error": "unauthorized"})),
+                )
+                .map_into_right_body())
+        }
+    }
     Ok(next.call(req).await?.map_into_left_body())
 }
 
@@ -95,6 +116,7 @@ mod tests {
                 sub,
                 exp,
                 token_type: token_type.into(),
+                aud: None,
             },
             &EncodingKey::from_secret(secret.as_bytes()),
         )
@@ -105,11 +127,76 @@ mod tests {
         HttpResponse::Ok().body(
             req.headers()
                 .get("X-User-ID")
-                .unwrap()
-                .to_str()
-                .unwrap()
+                .map(|h| h.to_str().unwrap())
+                .unwrap_or("all")
                 .to_owned(),
         )
+    }
+
+    #[actix_web::test]
+    async fn limits_reindex_credentials_to_read_only_catalog() {
+        let app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(AuthConfig {
+                    secret: SECRET.into(),
+                    peer_secret: String::new(),
+                }))
+                .wrap(from_fn(authenticate))
+                .route("/api/v1/files", web::get().to(identity)),
+        )
+        .await;
+        let service_token = encode(
+            &Header::new(Algorithm::HS256),
+            &Claims {
+                sub: Uuid::nil(),
+                exp: 4102444800,
+                token_type: "service".into(),
+                aud: Some("file-service:reindex".into()),
+            },
+            &EncodingKey::from_secret(SECRET.as_bytes()),
+        )
+        .unwrap();
+        let response = test::call_service(
+            &app,
+            test::TestRequest::get()
+                .uri("/api/v1/files")
+                .insert_header(("Authorization", format!("Bearer {service_token}")))
+                .insert_header(("X-User-ID", Uuid::new_v4().to_string()))
+                .to_request(),
+        )
+        .await;
+        assert_eq!(response.status(), 200);
+        assert_eq!(test::read_body(response).await, "all");
+        for (method, path) in [
+            (Method::POST, "/api/v1/files"),
+            (Method::GET, "/api/v1/files/shared"),
+        ] {
+            let response = test::call_service(
+                &app,
+                test::TestRequest::default()
+                    .method(method)
+                    .uri(path)
+                    .insert_header(("Authorization", format!("Bearer {service_token}")))
+                    .to_request(),
+            )
+            .await;
+            assert_eq!(response.status(), 401);
+        }
+        let response = test::call_service(
+            &app,
+            test::TestRequest::get()
+                .uri("/api/v1/files")
+                .insert_header((
+                    "Authorization",
+                    format!(
+                        "Bearer {}",
+                        token(Uuid::nil(), "service", 4102444800, SECRET)
+                    ),
+                ))
+                .to_request(),
+        )
+        .await;
+        assert_eq!(response.status(), 401);
     }
 
     #[actix_web::test]
