@@ -2,6 +2,7 @@
 
 import json
 import uuid
+from pathlib import Path
 
 import pytest
 from fastapi import FastAPI
@@ -48,6 +49,44 @@ def test_redact_body_masks_minted_tokens_only() -> None:
     redacted = json.loads(redact_body(body))
     assert redacted == {"document_id": "d1", "token": REDACTED, "title": "token"}
     assert redact_body('{"items": [], "total": 0}') == '{"items": [], "total": 0}'
+
+
+def test_request_log_rotation_bounds_disk_usage(tmp_path) -> None:
+    log = RequestLog(str(tmp_path))
+    max_bytes = 2 << 20
+    backups = 2
+    record = {"response": "x" * (max_bytes // 2)}
+    for _ in range(20):
+        log.append(record)
+        files = list(tmp_path.iterdir())
+        total = sum(path.stat().st_size for path in files)
+        assert len(files) <= backups + 1
+        assert all(path.stat().st_size <= max_bytes for path in files)
+        assert total <= (backups + 1) * max_bytes
+        assert log._bytes == total
+    assert {path.name for path in files} == {
+        log.path.rsplit("/", 1)[-1] + suffix for suffix in ("", ".1", ".2")
+    }
+
+
+@pytest.mark.parametrize("suffix", ["", ".1", ".2"])
+def test_request_log_reclaims_oversized_legacy_files(tmp_path, suffix: str) -> None:
+    log = RequestLog(str(tmp_path))
+    legacy = Path(log.path + suffix)
+    legacy.write_bytes(b"x" * (request_log_module.REQUEST_LOG_MAX_BYTES + 1))
+    record = {"response": "recovered"}
+
+    log.append(record)
+
+    files = list(tmp_path.iterdir())
+    assert files == [Path(log.path)]
+    assert json.loads(Path(log.path).read_text()) == record
+    total = sum(path.stat().st_size for path in files)
+    assert (
+        total
+        <= (request_log_module.REQUEST_LOG_BACKUPS + 1) * request_log_module.REQUEST_LOG_MAX_BYTES
+    )
+    assert log._bytes == total
 
 
 @pytest.mark.asyncio

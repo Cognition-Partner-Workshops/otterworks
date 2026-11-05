@@ -41,6 +41,8 @@ _SECRET_FIELD = re.compile(
 # through and only this much of the body is kept, so one request never holds
 # more than this in memory on the log's account.
 RESPONSE_CAPTURE_BYTES = 1 << 20
+REQUEST_LOG_MAX_BYTES = 2 << 20
+REQUEST_LOG_BACKUPS = 2
 
 
 def redact_headers(headers: dict[str, str]) -> dict[str, str]:
@@ -85,11 +87,24 @@ class RequestLog:
 
     def append(self, record: dict) -> None:
         os.makedirs(self.directory, exist_ok=True)
+        for index in range(REQUEST_LOG_BACKUPS + 1):
+            path = self.path if index == 0 else f"{self.path}.{index}"
+            with contextlib.suppress(FileNotFoundError):
+                if os.path.getsize(path) > REQUEST_LOG_MAX_BYTES:
+                    os.unlink(path)
         line = json.dumps(record, default=str) + "\n"
+        size = len(line.encode("utf-8"))
+        if size > REQUEST_LOG_MAX_BYTES:
+            self._bytes = self._scan()
+            return
+        if os.path.exists(self.path) and os.path.getsize(self.path) + size > REQUEST_LOG_MAX_BYTES:
+            for index in range(REQUEST_LOG_BACKUPS, 0, -1):
+                source = self.path if index == 1 else f"{self.path}.{index - 1}"
+                with contextlib.suppress(FileNotFoundError):
+                    os.replace(source, f"{self.path}.{index}")
         with open(self.path, "a", encoding="utf-8") as fh:
             fh.write(line)
-        self._bytes += len(line)
-        self._publish(self._bytes)
+        self._bytes = self._scan()
 
     def purge(self) -> None:
         try:
@@ -142,7 +157,10 @@ def install(app: FastAPI) -> None:
             body = b"".join([chunk async for chunk in _chunks(response)])
             record["duration_ms"] = round((time.perf_counter() - started) * 1000, 2)
             record["response"] = redact_body(body.decode("utf-8", errors="replace"))
-            request_log.append(record)
+            try:
+                request_log.append(record)
+            except OSError:
+                logger.exception("request_log_append_failed", path=request.url.path)
             return Response(
                 content=body,
                 status_code=response.status_code,
