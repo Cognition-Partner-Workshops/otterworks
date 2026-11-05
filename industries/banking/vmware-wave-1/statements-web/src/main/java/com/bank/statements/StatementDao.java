@@ -5,9 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -27,13 +29,23 @@ public class StatementDao {
         this.ds = ds;
     }
 
-    public Map<String, String> accounts() throws SQLException {
+    public Map<String, String> accounts(Set<String> allowed) throws SQLException {
         Map<String, String> out = new LinkedHashMap<>();
+        if (allowed.isEmpty()) {
+            return out;
+        }
+        String placeholders = String.join(",", Collections.nCopies(allowed.size(), "?"));
         try (Connection c = ds.getConnection();
-             PreparedStatement ps = c.prepareStatement("SELECT account_id, holder FROM accounts ORDER BY account_id");
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                out.put(rs.getString(1), rs.getString(2));
+             PreparedStatement ps = c.prepareStatement(
+                 "SELECT account_id, holder FROM accounts WHERE account_id IN (" + placeholders + ") ORDER BY account_id")) {
+            int index = 1;
+            for (String account : allowed) {
+                ps.setString(index++, account);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    out.put(rs.getString(1), rs.getString(2));
+                }
             }
         }
         return out;
