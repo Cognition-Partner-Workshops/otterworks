@@ -1,7 +1,6 @@
 # Dependabot config (PES-3). One entry per package ecosystem present in the
 # repo; minor/patch bumps are grouped per ecosystem to keep PR volume down,
 # and new releases wait 7 days (cooldown) before Dependabot proposes them.
-# sbt (services/analytics-service) is not supported by Dependabot.
 version: 2
 updates:
   - package-ecosystem: github-actions
@@ -115,6 +114,16 @@ updates:
       uv-minor-patch:
         update-types: [minor, patch]
 
+  - package-ecosystem: sbt
+    directory: /services/analytics-service
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      sbt-minor-patch:
+        update-types: [minor, patch]
+
   - package-ecosystem: bundler
     directory: /services/admin-service
     schedule:
@@ -201,4 +210,18 @@ updates:
       default-days: 7
     groups:
       terraform-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: helm
+    directories:
+      - /infrastructure/helm/*
+      - /demo-platform/helm/demo-platform
+      - /demo-platform/otter-projects/helm/otter-projects
+      - /platform/standards/helm/app
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      helm-minor-patch:
         update-types: [minor, patch]
