@@ -5,6 +5,7 @@ import sys
 from contextlib import closing
 from datetime import date, datetime, timezone
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import psycopg2
 import pytest
@@ -14,6 +15,26 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import runtime
 import source
+
+
+def test_next_source_export_is_on_the_hour_before_the_task():
+    now = datetime(2026, 11, 5, 23, 59, tzinfo=timezone.utc)
+    assert runtime.next_export_at(now) == datetime(2026, 11, 6, tzinfo=timezone.utc)
+    assert runtime.next_export_at(now.replace(minute=0)).hour == 0
+
+
+def test_hourly_export_uses_runtime_attribution_and_does_not_reseed(monkeypatch):
+    conn = MagicMock()
+    exporter = MagicMock(return_value=Path("snapshot.json"))
+    publisher = MagicMock()
+    monkeypatch.setenv("POSTGRES_DSN", "local-test")
+    monkeypatch.setattr(runtime.psycopg2, "connect", MagicMock(return_value=conn))
+    monkeypatch.setattr(runtime, "source_export", exporter)
+    monkeypatch.setattr(runtime, "publish", publisher)
+    runtime.export_source()
+    exporter.assert_called_once()
+    publisher.assert_called_once_with(Path("snapshot.json"), phase="runtime")
+    conn.close.assert_called_once()
 
 
 def test_attributed_jwt_connection_keeps_key_only_in_memory(monkeypatch):

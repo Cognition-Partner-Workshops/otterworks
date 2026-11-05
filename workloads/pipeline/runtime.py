@@ -5,16 +5,18 @@ import hashlib
 import json
 import os
 import sys
+import time
 from contextlib import closing
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
 import snowflake.connector
+import psycopg2
 from cryptography.hazmat.primitives import serialization
 from dbt.cli.main import dbtRunner
 
-from source import TABLES
+from source import TABLES, export as source_export
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT.parent / "attribution"))
@@ -179,6 +181,29 @@ def publish(bundle, phase="dev"):
             print(f"{workload}: published complete snapshot {payload['snapshot_date']}")
 
 
+def export_source():
+    now = datetime.now(timezone.utc)
+    with closing(psycopg2.connect(os.environ["POSTGRES_DSN"])) as conn:
+        bundle = source_export(conn, ARTIFACTS / "exports", now.date(), now)
+    publish(bundle, phase="runtime")
+
+
+def next_export_at(now):
+    return now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+
+
+def hourly_export():
+    while datetime.now(timezone.utc).date() <= date.fromisoformat(sf.EXPIRES):
+        try:
+            export_source()
+            print("Hourly source snapshot published", flush=True)
+        except Exception as exc:
+            print(f"Hourly source export failed: {type(exc).__name__}", flush=True)
+        due = next_export_at(datetime.now(timezone.utc))
+        print(f"Next source export: {due.isoformat()}", flush=True)
+        time.sleep(max(1, (due - datetime.now(timezone.utc)).total_seconds()))
+
+
 def load(force=False):
     for workload in WORKLOADS:
         with (
@@ -333,7 +358,16 @@ def deploy():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "command", choices=["publish", "load", "dbt", "deploy", "execute"]
+        "command",
+        choices=[
+            "publish",
+            "export",
+            "hourly-export",
+            "load",
+            "dbt",
+            "deploy",
+            "execute",
+        ],
     )
     parser.add_argument("--bundle", type=Path)
     parser.add_argument("--force", action="store_true")
@@ -348,6 +382,10 @@ def main():
         if not args.bundle:
             parser.error("publish requires --bundle")
         publish(args.bundle, args.phase)
+    elif args.command == "export":
+        export_source()
+    elif args.command == "hourly-export":
+        hourly_export()
     elif args.command == "load":
         load(args.force)
     elif args.command == "dbt":
