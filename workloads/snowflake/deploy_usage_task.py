@@ -61,6 +61,13 @@ def project_files(project):
     return sorted(file for file in project.rglob('*') if file.is_file() and file.suffix in ('.sql', '.yml'))
 
 
+def put_sql(file, stage, commit, folder) -> str:
+    return (
+        f"PUT 'file://{file}' @{stage}/{commit}/{folder} "
+        "AUTO_COMPRESS=FALSE OVERWRITE=TRUE"
+    )
+
+
 def query_is_compliant(query_type, query_text, query_tag, first_in_session, runtime_tag):
     if query_tag == runtime_tag:
         return True
@@ -180,7 +187,7 @@ def main():
         for file in project_files(project):
             folder = file.relative_to(project).parent.as_posix()
             folder = '' if folder == '.' else folder + '/'
-            cur.execute(f"PUT 'file://{file}' @{names[f'dbt_stage_{WORKLOAD}']}/{args.commit}/{folder} AUTO_COMPRESS=FALSE OVERWRITE=FALSE")
+            cur.execute(put_sql(file, names[f'dbt_stage_{WORKLOAD}'], args.commit, folder))
         create = (
             f"CREATE OR REPLACE DBT PROJECT {names[f'dbt_project_{WORKLOAD}']} "
             f"FROM '@{names[f'dbt_stage_{WORKLOAD}']}/{args.commit}' "

@@ -43,6 +43,16 @@ def test_deployment_uploads_only_dbt_source(tmp_path):
     assert [file.name for file in deploy.project_files(tmp_path)] == ['dbt_project.yml', 'model.sql']
 
 
+def test_project_upload_sql_overwrites_commit_path():
+    commit = 'a' * 40
+    sql = deploy.put_sql('dbt/models/example.sql', 'DB.DBT_STAGE', commit, 'models/')
+
+    assert f'@DB.DBT_STAGE/{commit}/models/' in sql
+    assert 'AUTO_COMPRESS=FALSE' in sql
+    assert 'OVERWRITE=TRUE' in sql
+    assert 'OVERWRITE=FALSE' not in sql
+
+
 @pytest.mark.parametrize('state,query_tag,bootstrap,first,error', [
     ('SUCCEEDED', 'runtime-tag', False, False, None),
     ('FAILED', 'runtime-tag', False, False, 'Task failed'),
