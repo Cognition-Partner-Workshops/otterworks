@@ -3,8 +3,10 @@
 import uuid
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.document import Document, DocumentVersion
 from app.schemas.document import (
     CommentCreate,
     DocumentCreate,
@@ -53,6 +55,55 @@ async def test_list_documents_with_filters(
 
     items, total = await service.list_documents(folder_id=folder_id)
     assert total == 1
+
+
+@pytest.mark.asyncio
+async def test_list_documents_batches_recent_versions(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    service = DocumentService(db_session)
+    documents = [Document(title=f"Document {i}", owner_id=owner_id) for i in range(8)]
+    empty = Document(title="No versions", owner_id=owner_id)
+    db_session.add_all([*documents, empty])
+    await db_session.flush()
+    for doc in documents:
+        db_session.add_all([
+            DocumentVersion(
+                document_id=doc.id,
+                version_number=number,
+                title=f"Version {number}",
+                content="",
+                created_by=owner_id,
+            )
+            for number in range(1, 9)
+        ])
+    await db_session.commit()
+
+    statements = []
+
+    def count_statement(conn, cursor, statement, parameters, context, executemany):
+        statements.append(statement)
+
+    engine = db_session.bind.sync_engine
+    event.listen(engine, "before_cursor_execute", count_statement)
+    try:
+        for size in (1, 4, 20):
+            statements.clear()
+            items, total = await service.list_documents(owner_id=owner_id, size=size)
+            assert total == 9
+            assert len(items) == min(size, total)
+            assert len(statements) == 5
+            for doc in items:
+                expected = [] if doc.id == empty.id else [8, 7, 6, 5, 4]
+                assert [v.version_number for v in doc.recent_versions] == expected
+                assert all(v.document_id == doc.id for v in doc.recent_versions)
+
+        statements.clear()
+        items, total = await service.list_documents(owner_id=uuid.uuid4())
+        assert (items, total) == ([], 0)
+        assert len(statements) == 2
+    finally:
+        event.remove(engine, "before_cursor_execute", count_statement)
 
 
 @pytest.mark.asyncio
