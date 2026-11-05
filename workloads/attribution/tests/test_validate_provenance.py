@@ -100,6 +100,16 @@ def test_directory_must_match_workload(tmp_path):
     assert any("does not match its directory" in e for e in errors)
 
 
+def test_self_consistent_unregistered_workload_is_rejected(tmp_path):
+    path = tmp_path / "new_demo" / "provenance.yaml"
+    path.parent.mkdir()
+    text = _path("doc_usage_dashboard").read_text()
+    path.write_text(text.replace("doc_usage_dashboard", "new_demo").replace("DOC_USAGE_DASHBOARD", "NEW_DEMO"))
+    assert vp.validate(vp.load(path), path) == [
+        "workload 'new_demo' has no registered endpoints in sf_attribution.ENDPOINTS"
+    ]
+
+
 def test_main_reports_failures(tmp_path, capsys):
     bad = tmp_path / "doc_usage_dashboard" / "provenance.yaml"
     bad.parent.mkdir()

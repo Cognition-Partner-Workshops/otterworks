@@ -88,7 +88,9 @@ def validate(doc: object, path: Path | None = None) -> list[str]:
         if ep["service_user"] != sf.service_user(ep["csid"]):
             errors.append(f"endpoints/{i}/service_user: expected {sf.service_user(ep['csid'])}, got {ep['service_user']}")
     registered = sf.workload_csids(workload)
-    if registered and sorted(csids) != registered:
+    if not registered:
+        errors.append(f"workload {workload!r} has no registered endpoints in sf_attribution.ENDPOINTS")
+    elif sorted(csids) != registered:
         errors.append(f"endpoints: {sorted(csids)} differ from the registered endpoints {registered}")
 
     expected = _expected_names(workload)
