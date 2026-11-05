@@ -72,6 +72,24 @@ objects:
     devin_csid: cs_doc_usage_dashboard_account_usage
     comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_usage_dashboard_account_usage"}'
     state: provisioned
+data_quality:
+  suite: tag:dq_doc_usage_dashboard
+  ran_at: "2026-11-05T09:37:23.600062Z"
+  commit: "9aed72d06d8b546fae8a7a4c0baef2c0caeb3bee"
+  refresh_task_run:
+    query_id: 01c8347e-030c-d20e-0035-065b0009f08e
+    graph_run_group_id: a7b66fa3-1133-40ed-9cb4-d964d7724f60
+    scheduled_time: "2026-11-05T09:34:34.606000Z"
+  tests:
+    - {name: accepted_range, check: accepted_range, status: pass, failing_rows: 0, cause: ""}
+    - {name: freshness, check: freshness, status: pass, failing_rows: 0, cause: ""}
+    - {name: row_count, check: row_count, status: pass, failing_rows: 0, cause: ""}
+    - {name: storage_examples, check: worked_example, status: pass, failing_rows: 0, cause: ""}
+    - name: uniqueness
+      check: uniqueness
+      status: fail
+      failing_rows: 5
+      cause: "5 duplicate (snapshot, user_id) keys in RAW.ADMIN_STORAGE_QUOTAS from the SFEXT_20261105A_DUPQUOTA fixture; DUPQUOTA_1 and DUPQUOTA_4 still carry their marker hash; the quota MERGE's _row_hash tie-break in APP.REFRESH_ACCOUNT_STORAGE_USAGE rewrote DUPQUOTA_2, 3 and 5 into copies of the originals (finding, not fixed here); output-grain uniqueness passes"
 usage:
   source: SNOWFLAKE.ACCOUNT_USAGE
   reported_through: pending

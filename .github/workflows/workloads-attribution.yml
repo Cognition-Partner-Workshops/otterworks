@@ -42,5 +42,10 @@ jobs:
       - run: mypy --ignore-missing-imports --follow-imports=silent workloads/pipeline/runtime.py workloads/pipeline/source.py
       - run: pytest workloads/attribution/tests workloads/pipeline/unit_tests workloads/doc_usage_dashboard/tests -v
       - run: dbt parse --project-dir workloads/pipeline --profiles-dir workloads/pipeline
+      - name: dq
+        run: |
+          tests=$(dbt --quiet ls --project-dir workloads/pipeline --profiles-dir workloads/pipeline --select tag:dq_doc_usage_dashboard --resource-type test)
+          printf '%s\n' "$tests"
+          test -n "$tests"
       - run: python workloads/attribution/validate_provenance.py
       - run: python workloads/foundation/apply.py --dry-run
