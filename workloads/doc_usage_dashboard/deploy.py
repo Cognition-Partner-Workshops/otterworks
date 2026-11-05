@@ -144,7 +144,7 @@ def main(argv: list[str] | None = None) -> int:
         with _admin_connection(commit) as conn:
             _run(conn, provision_sql(Path(args.public_key).read_text()))
         return 0
-    os.environ.setdefault("SNOWFLAKE_ROLE", APP_ROLE)
+    os.environ["SNOWFLAKE_ROLE"] = APP_ROLE
     with tempfile.TemporaryDirectory() as stage_dir:
         build_stage_dir(stage_dir, commit, run_id)
         with sf.connect(EP, "dev") as conn:
