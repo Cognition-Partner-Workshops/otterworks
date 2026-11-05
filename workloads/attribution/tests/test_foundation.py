@@ -106,6 +106,8 @@ def test_migration_contracts():
             columns = [column.strip().split()[0].lower() for column in re.split(r",(?!\d)", match[1])]
             assert columns == source["columns"]
         assert "CREATE RESOURCE MONITOR" not in sql
+        assert "ON FUTURE TABLES" not in sql
+        assert f"GRANT SELECT ON ALL TABLES IN SCHEMA {sf.database_name(workload)}.APP" in sql
     dashboard = "\n".join(sql for _, sql in foundation.render(
         foundation.ROOT / "doc_usage_dashboard" / "migrations", foundation.template_vars("doc_usage_dashboard")
     ))
@@ -113,6 +115,8 @@ def test_migration_contracts():
     assert "ELSE '***MASKED***'" in dashboard
     assert "MODIFY COLUMN EMAIL\n    SET MASKING POLICY" in dashboard
     assert "'@example.com'" in dashboard
+    assert "WHERE NOT EXISTS" in dashboard
+    assert "TARGET.ID =" in dashboard
     assert sf.RUN_TOKEN in foundation.bootstrap_sql() and sf.EXPIRES in foundation.bootstrap_sql()
 
 

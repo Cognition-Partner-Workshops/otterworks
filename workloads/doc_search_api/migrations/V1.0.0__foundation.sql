@@ -16,4 +16,3 @@ CREATE TABLE IF NOT EXISTS {{ database }}.RAW.DOCUMENT_DOCUMENTS (
 GRANT USAGE ON DATABASE {{ database }} TO ROLE {{ reader }};
 GRANT USAGE ON SCHEMA {{ database }}.APP TO ROLE {{ reader }};
 GRANT SELECT ON ALL TABLES IN SCHEMA {{ database }}.APP TO ROLE {{ reader }};
-GRANT SELECT ON FUTURE TABLES IN SCHEMA {{ database }}.APP TO ROLE {{ reader }};
