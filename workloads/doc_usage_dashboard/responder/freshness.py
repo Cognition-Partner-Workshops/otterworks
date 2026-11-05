@@ -81,8 +81,8 @@ def history_sql():
 
 def validate_faults(rows):
     active = [r for r in rows if r["cleared_at"] is None]
-    if len(active) != 1 or any(r["target_task"] != TASK or r["mode"] != "statement_timeout" for r in active):
-        raise ResponderError("Recovery requires exactly one active dashboard statement_timeout fault")
+    if len(active) != 1 or any(r["target_task"] != TASK or r["mode"] != "user_task_timeout_ms" for r in active):
+        raise ResponderError("Recovery requires exactly one active dashboard user_task_timeout_ms fault")
 
 
 class Responder:

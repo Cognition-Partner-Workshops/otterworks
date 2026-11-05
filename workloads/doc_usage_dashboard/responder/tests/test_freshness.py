@@ -111,7 +111,7 @@ def test_check_normal_empty_stale_failed_and_suspended(fresh, history, state, he
     assert "SCHEDULED_TIME_RANGE_END=>CURRENT_TIMESTAMP()" in r.query.call_args_list[2].args[0]
 
 
-@pytest.mark.parametrize("faults", [[], [dict(target_task="OTHER.APP.TASK", mode="statement_timeout", cleared_at=None)]])
+@pytest.mark.parametrize("faults", [[], [dict(target_task="OTHER.APP.TASK", mode="user_task_timeout_ms", cleared_at=None)]])
 def test_recovery_refuses_missing_or_non_dashboard_targets(faults):
     r = f.Responder(None)
     r.query = MagicMock(side_effect=[[{"name": f.MONITOR, "used_credits": "2"}], faults])
@@ -126,7 +126,7 @@ def test_recovery_polls_new_run_then_rechecks():
     r.credit_guard = MagicMock()
     r.check = MagicMock(return_value=True)
     r.query = MagicMock(side_effect=[
-        [{"target_task": f.TASK, "mode": "statement_timeout", "cleared_at": None}],
+        [{"target_task": f.TASK, "mode": "user_task_timeout_ms", "cleared_at": None}],
         [{"result": {"target_task": f.TASK, "recovery_started_at": now.isoformat()}}],
         [{"scheduled_time": now, "state": "SUCCEEDED"}],
     ])
@@ -157,8 +157,9 @@ def test_migration_is_narrow_and_uses_data_timestamps():
     assert not any("ARM_DASHBOARD_FAULT" in line for line in grants)
     assert "EXECUTE AS OWNER" in sql and "invalid_count <> 0" in sql
     assert "TARGET_TASK <> '" + f.TASK + "'" in sql
-    assert "SET STATEMENT_TIMEOUT_IN_SECONDS = 1" in sql
-    assert "UNSET STATEMENT_TIMEOUT_IN_SECONDS" in sql
+    assert "SET USER_TASK_TIMEOUT_MS = 1000" in sql
+    assert "UNSET USER_TASK_TIMEOUT_MS" in sql
+    assert "STATEMENT_TIMEOUT_IN_SECONDS" not in sql
     assert "CREATE OR REPLACE TASK" not in sql and "CREATE OR REPLACE PROCEDURE" not in sql
     assert "CHURN" not in sql and "SEARCH" not in sql
     assert "LAST_ALTERED" not in sql and "MAX(REFRESHED_AT)" in sql

@@ -53,7 +53,7 @@ BEGIN
   SELECT COUNT(*) INTO :active_count FROM {{ database }}.OPS.DASHBOARD_FAULT_CONTROL WHERE CLEARED_AT IS NULL;
   SHOW TASKS LIKE 'REFRESH_DOC_USAGE_DASHBOARD' IN SCHEMA {{ database }}.APP;
   SELECT "state" INTO :task_state FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
-  SHOW PARAMETERS LIKE 'STATEMENT_TIMEOUT_IN_SECONDS' IN TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD;
+  SHOW PARAMETERS LIKE 'USER_TASK_TIMEOUT_MS' IN TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD;
   SELECT "value", "level" INTO :prior_value, :prior_level FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()));
   IF (active_count <> 0 OR task_state <> 'suspended' OR prior_level = 'TASK') THEN
     RAISE invalid_state;
@@ -63,8 +63,8 @@ BEGIN
   INSERT INTO {{ database }}.OPS.DASHBOARD_FAULT_CONTROL
     (FAULT_ID, TARGET_TASK, TARGET_SCHEDULED_TIME, MODE, PRIOR_PARAMETER_VALUE, PRIOR_PARAMETER_LEVEL, ARMED_AT, ARMED_BY)
   VALUES (:fault_id, '{{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD', :next_run,
-    'statement_timeout', :prior_value, :prior_level, CURRENT_TIMESTAMP(), CURRENT_USER());
-  ALTER TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD SET STATEMENT_TIMEOUT_IN_SECONDS = 1;
+    'user_task_timeout_ms', :prior_value, :prior_level, CURRENT_TIMESTAMP(), CURRENT_USER());
+  ALTER TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD SET USER_TASK_TIMEOUT_MS = 1000;
   RETURN OBJECT_CONSTRUCT('fault_id', fault_id, 'target_scheduled_time', next_run, 'state', 'armed_task_still_suspended');
 END;
 $$;
@@ -73,7 +73,7 @@ CREATE PROCEDURE IF NOT EXISTS {{ database }}.OPS.RECOVER_DASHBOARD_TASK()
 RETURNS VARIANT LANGUAGE SQL COMMENT = {{ comment }} EXECUTE AS OWNER AS
 $$
 DECLARE
-  invalid_target EXCEPTION (-20002, 'Recovery requires exactly one active dashboard statement_timeout fault; other targets are forbidden');
+  invalid_target EXCEPTION (-20002, 'Recovery requires exactly one active dashboard user_task_timeout_ms fault; other targets are forbidden');
   active_count INTEGER;
   invalid_count INTEGER;
   recovery_started_at TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP();
@@ -83,7 +83,7 @@ DECLARE
   execute_id VARCHAR;
   failed_runs INTEGER;
 BEGIN
-  SELECT COUNT(*), COUNT_IF(TARGET_TASK <> '{{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD' OR MODE <> 'statement_timeout')
+  SELECT COUNT(*), COUNT_IF(TARGET_TASK <> '{{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD' OR MODE <> 'user_task_timeout_ms')
     INTO :active_count, :invalid_count
     FROM {{ database }}.OPS.DASHBOARD_FAULT_CONTROL WHERE CLEARED_AT IS NULL;
   IF (active_count <> 1 OR invalid_count <> 0) THEN
@@ -97,7 +97,7 @@ BEGIN
   WHERE f.CLEARED_AT IS NULL AND h.STATE = 'FAILED';
   ALTER TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD SUSPEND;
   suspend_id := SQLID;
-  ALTER TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD UNSET STATEMENT_TIMEOUT_IN_SECONDS;
+  ALTER TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD UNSET USER_TASK_TIMEOUT_MS;
   unset_id := SQLID;
   ALTER TASK {{ database }}.APP.REFRESH_DOC_USAGE_DASHBOARD RESUME;
   resume_id := SQLID;
