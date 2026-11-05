@@ -244,6 +244,15 @@ class ParityTest(unittest.TestCase):
         self.assertFalse(run.report("fx-report", [])["pass"])
         self.assertFalse(run.report("rates-batch", [])["pass"])
 
+    def test_equivalent_non_loopback_ips_have_one_endpoint_key(self):
+        for vm, kind in (
+            ("http://[2001:db8::1]:8086", "http://[2001:0db8:0:0:0:0:0:1]:8086"),
+            ("http://[::ffff:192.0.2.1]:8086", "http://[0:0:0:0:0:ffff:c000:201]:8086"),
+            ("http://192.0.2.1:8086", "http://[::ffff:192.0.2.1]:8086"),
+        ):
+            with self.subTest(vm=vm, kind=kind):
+                self.assertEqual(run.endpoint_key(vm), run.endpoint_key(kind))
+
 
 if __name__ == "__main__":
     unittest.main()

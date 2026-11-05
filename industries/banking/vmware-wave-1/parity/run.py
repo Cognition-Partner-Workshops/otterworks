@@ -30,6 +30,7 @@ def endpoint_key(base):
     else:
         mapped = getattr(address, "ipv4_mapped", None)
         loopback = address.is_loopback or (mapped is not None and mapped.is_loopback)
+        host = str(mapped or address)
     if loopback:
         host = "loopback"
     return (
