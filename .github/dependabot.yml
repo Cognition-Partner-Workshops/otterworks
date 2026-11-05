@@ -1,5 +1,6 @@
 # Dependabot config (PES-3). One entry per package ecosystem present in the
-# repo; minor/patch bumps are grouped per ecosystem to keep PR volume down.
+# repo; minor/patch bumps are grouped per ecosystem to keep PR volume down,
+# and new releases wait 7 days (cooldown) before Dependabot proposes them.
 # sbt (services/analytics-service) is not supported by Dependabot.
 version: 2
 updates:
@@ -7,6 +8,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       github-actions:
         patterns: ["*"]
@@ -15,6 +18,8 @@ updates:
     directory: /services/api-gateway
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       gomod-minor-patch:
         update-types: [minor, patch]
@@ -23,6 +28,8 @@ updates:
     directory: /services/file-service
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       cargo-minor-patch:
         update-types: [minor, patch]
@@ -36,6 +43,8 @@ updates:
       - /frontend/client-app/mobile/android
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: org.apache.commons:commons-text
     groups:
@@ -52,6 +61,8 @@ updates:
       - /tests/legacy-suites/selenium
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     ignore:
       - dependency-name: org.apache.commons:commons-text
     groups:
@@ -70,6 +81,8 @@ updates:
       - /tests/legacy-suites/cypress
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       npm-minor-patch:
         update-types: [minor, patch]
@@ -86,6 +99,8 @@ updates:
       - /tests/api
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       pip-minor-patch:
         update-types: [minor, patch]
@@ -94,6 +109,8 @@ updates:
     directory: /services/billing-service
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       uv-minor-patch:
         update-types: [minor, patch]
@@ -102,6 +119,8 @@ updates:
     directory: /services/admin-service
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       bundler-minor-patch:
         update-types: [minor, patch]
@@ -112,6 +131,8 @@ updates:
       - /clients/windows-desktop
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       nuget-minor-patch:
         update-types: [minor, patch]
@@ -142,6 +163,8 @@ updates:
       - /platform/standards/examples/sample-service
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       docker-minor-patch:
         update-types: [minor, patch]
@@ -153,6 +176,8 @@ updates:
       - /services/legacy-portal
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       docker-compose-minor-patch:
         update-types: [minor, patch]
@@ -172,6 +197,8 @@ updates:
       - /demo-platform/otter-projects/infra/terraform
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       terraform-minor-patch:
         update-types: [minor, patch]
