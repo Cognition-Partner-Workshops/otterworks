@@ -1,0 +1,8 @@
+{
+  "case": "list-second",
+  "method": "GET",
+  "path": "/documents/HG621000002",
+  "status": 200,
+  "content_type": "application/json",
+  "body": "[\"id-card-1793884790089.jpg\",\"passport-1793884790076.pdf\",\"payslip-1793884790114.jpeg\",\"proof-of-address-1793884790101.png\"]"
+}

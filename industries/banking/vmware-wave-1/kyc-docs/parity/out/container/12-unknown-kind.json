@@ -1,0 +1,8 @@
+{
+  "case": "unknown-kind",
+  "method": "POST",
+  "path": "/documents/HG611000001?kind=selfie",
+  "status": 400,
+  "content_type": "application/json",
+  "body": "{\"error\":\"unknown document kind\"}"
+}

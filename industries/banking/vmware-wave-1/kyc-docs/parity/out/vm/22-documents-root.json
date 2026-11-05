@@ -1,0 +1,8 @@
+{
+  "case": "documents-root",
+  "method": "GET",
+  "path": "/documents/",
+  "status": 404,
+  "content_type": "application/json",
+  "body": "{\"timestamp\":\"2026-11-05T13:17:00.038+00:00\",\"status\":404,\"error\":\"Not Found\",\"message\":\"\",\"path\":\"/documents/\"}"
+}

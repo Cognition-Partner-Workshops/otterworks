@@ -15,8 +15,8 @@ class DocumentStoreTest {
 
     @Test
     void savesUnderCustomerAndLists() throws Exception {
-        DocumentStore s = new DocumentStore(tmp.toString());
-        Map<String, Object> r = s.save("HG611000001", "passport", "Scan.PDF", new ByteArrayInputStream(new byte[42]));
+        DocumentStore s = new DocumentStore(new FileBlobStore(tmp.toString()));
+        Map<String, Object> r = s.save("HG611000001", "passport", "Scan.PDF", new ByteArrayInputStream(new byte[42]), 42);
         assertEquals(42L, r.get("bytes"));
         assertTrue(((String) r.get("file")).startsWith("passport-"));
         assertTrue(((String) r.get("file")).endsWith(".pdf"));
@@ -25,11 +25,11 @@ class DocumentStoreTest {
 
     @Test
     void rejectsPathTricksAndUnknownKinds() {
-        DocumentStore s = new DocumentStore(tmp.toString());
+        DocumentStore s = new DocumentStore(new FileBlobStore(tmp.toString()));
         assertThrows(IllegalArgumentException.class,
-                () -> s.save("../etc", "passport", "a.pdf", new ByteArrayInputStream(new byte[1])));
+                () -> s.save("../etc", "passport", "a.pdf", new ByteArrayInputStream(new byte[1]), 1));
         assertThrows(IllegalArgumentException.class,
-                () -> s.save("HG611000001", "selfie", "a.pdf", new ByteArrayInputStream(new byte[1])));
+                () -> s.save("HG611000001", "selfie", "a.pdf", new ByteArrayInputStream(new byte[1]), 1));
         assertEquals(".bin", DocumentStore.extension("run.sh"));
     }
 }

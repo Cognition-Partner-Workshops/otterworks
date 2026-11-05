@@ -1,0 +1,5 @@
+replicas: 2
+env:
+  KYC_S3_ENDPOINT: http://s3.deps.svc.cluster.local:9000
+  KYC_S3_PATH_STYLE: "true"
+  KYC_S3_BUCKET: kyc-docs

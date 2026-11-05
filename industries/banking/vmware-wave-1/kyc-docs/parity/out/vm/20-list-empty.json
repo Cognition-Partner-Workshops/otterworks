@@ -1,0 +1,8 @@
+{
+  "case": "list-empty",
+  "method": "GET",
+  "path": "/documents/HG631000003",
+  "status": 200,
+  "content_type": "application/json",
+  "body": "[]"
+}

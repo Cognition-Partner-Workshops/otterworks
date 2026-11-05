@@ -1,0 +1,8 @@
+{
+  "case": "exe-extension",
+  "method": "POST",
+  "path": "/documents/HG611000001?kind=passport",
+  "status": 201,
+  "content_type": "application/json",
+  "body": "{\"customer\":\"HG611000001\",\"kind\":\"passport\",\"file\":\"passport-1793884619957.bin\",\"bytes\":38}"
+}

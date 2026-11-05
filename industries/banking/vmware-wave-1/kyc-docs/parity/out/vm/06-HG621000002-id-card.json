@@ -1,0 +1,8 @@
+{
+  "case": "HG621000002-id-card",
+  "method": "POST",
+  "path": "/documents/HG621000002?kind=id-card",
+  "status": 201,
+  "content_type": "application/json",
+  "body": "{\"customer\":\"HG621000002\",\"kind\":\"id-card\",\"file\":\"id-card-1793884619897.jpg\",\"bytes\":26}"
+}
