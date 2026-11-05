@@ -7,6 +7,7 @@ import requests
 from flask import Flask, jsonify, render_template, request
 
 import geo
+import server
 import settings
 
 logging.basicConfig(filename=settings.LOG_FILE, level=logging.INFO,
@@ -52,4 +53,4 @@ def api_nearest():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=settings.PORT)
+    server.serve(app, "0.0.0.0", settings.PORT)
