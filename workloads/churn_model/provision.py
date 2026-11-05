@@ -73,12 +73,14 @@ def service_connection(run_id, commit):
         user_ready = False
         try:
             with admin.cursor() as cursor:
+                statements = provision_sql(public)
+                cursor.execute(statements[0])
                 cursor.execute("SHOW GRANTS OF DATABASE ROLE SNOWFLAKE.CORTEX_USER")
                 columns = [column[0] for column in cursor.description]
                 grants = [dict(zip(columns, row)) for row in cursor.fetchall()]
                 if not any(row.get("granted_to") == "ROLE" and row.get("grantee_name") in ("PUBLIC", ROLE) for row in grants):
                     cursor.execute(f"GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE {ROLE}")
-                for statement in provision_sql(public):
+                for statement in statements[1:]:
                     cursor.execute(statement)
                     if statement.startswith("CREATE USER"):
                         user_ready = True

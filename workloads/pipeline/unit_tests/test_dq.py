@@ -90,3 +90,32 @@ def test_churn_row_counts_use_both_sources_and_strict_history_cutoff():
     assert "coalesce(s.status,'active')<>'deleted'" in sql
     assert 'not coalesce(u.is_deleted,false)' in sql
     assert "('AUTH_USERS',2000)" in sql and "('DOCUMENT_DOCUMENTS',50000)" in sql
+
+
+@pytest.mark.parametrize('workload', WORKLOADS)
+def test_freshness_rejects_failed_latest_attempt_and_unprocessed_export(workload):
+    tests = Path(__file__).resolve().parents[1] / f'tests/dq/{workload}'
+    prefix = '' if workload == 'doc_usage_dashboard' else f'{workload}_'
+    sql = (tests / f'{prefix}freshness.sql').read_text()
+    assert 'SCHEDULED_TIME_RANGE_END=>CURRENT_TIMESTAMP()' in sql
+    assert 'order by scheduled_time desc, attempt_number desc' in sql
+    assert "state not in ('SCHEDULED','EXECUTING')" in sql
+    assert "from latest_attempt where state<>'SUCCEEDED'" in sql
+    assert "convert_timezone('UTC',r.completed_time)::timestamp_ntz<e.exported_at" in sql
+    assert 'completed_time<=dateadd(hour,-2,current_timestamp())' in sql
+
+
+def test_retained_score_completeness_uses_evaluated_run_cohort_not_weekly_output():
+    tests = Path(__file__).resolve().parents[1] / 'tests/dq/churn_model'
+    sql = (tests / 'churn_model_row_count.sql').read_text()
+    assert 'APP.CHURN_MODEL_EVALUATION e' in sql and 'APP.CHURN_MODEL_RUNS r on r.run_id=e.run_id' in sql
+    assert 'p.payload:exported_at::timestamp_ntz<=r.started_at' in sql
+    assert "[('users','AUTH_USERS'),('auth','AUTH_USER_STATE_HISTORY'),('admin','ADMIN_USER_STATE_HISTORY')]" in sql
+    assert 'coalesce(u.created_at,h.created_at,h.effective_at)' in sql
+    assert 'a.created_at<dateadd(day,-28,r.prediction_date)' in sql
+    assert 's.effective_at<r.prediction_date' in sql
+    assert "coalesce(s.status,'active') not in ('suspended','deleted')" in sql
+    assert 'retained model scores are empty for evaluated run=' in sql
+    assert 'from expected_scores e full outer join actual_scores a' in sql
+    assert 'a.run_id=e.run_id and a.account_id=e.account_id and a.prediction_date=e.prediction_date' in sql
+    assert 'where e.run_id is null or a.run_id is null or a.n<>1' in sql

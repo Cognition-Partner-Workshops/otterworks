@@ -1,7 +1,9 @@
 import pandas as pd
 import pytest
+from unittest.mock import MagicMock
 
 from workloads.churn_model import model as m
+from workloads.churn_model import provision
 from workloads.churn_model.provision import ROLE, provision_sql
 from workloads.churn_model.warehouse import insert_statement
 
@@ -104,6 +106,36 @@ def test_provision_grants_explicit_sources_and_outputs():
     sql = "\n".join(provision_sql("PUBLICKEY"))
     assert ROLE in sql and "RAW.PIPELINE_EXPORTS" in sql and "RAW.SUPPORT_NOTES" in sql
     assert "APP.CHURN_MODEL_EVALUATION" in sql and "ALL TABLES" not in sql
+
+
+@pytest.mark.parametrize("public_grant", [True, False])
+@pytest.mark.parametrize("connection_fails", [True, False])
+def test_first_provision_creates_role_before_cortex_grant_and_cleans_key(monkeypatch, public_grant, connection_fails):
+    admin = MagicMock()
+    cursor = admin.cursor.return_value.__enter__.return_value
+    cursor.description = [("granted_to",), ("grantee_name",)]
+    cursor.fetchall.return_value = [("ROLE", "PUBLIC")] if public_grant else []
+    admin_context = MagicMock()
+    admin_context.__enter__.return_value = admin
+    monkeypatch.setattr(provision, "admin_connection", lambda *args: admin_context)
+    monkeypatch.setattr(provision, "params", lambda *args: {})
+    connect = MagicMock()
+    if connection_fails:
+        connect.side_effect = RuntimeError("connection failed")
+    monkeypatch.setattr(provision.snowflake.connector, "connect", connect)
+    if connection_fails:
+        with pytest.raises(RuntimeError, match="connection failed"):
+            with provision.service_connection("run", "commit"):
+                pytest.fail("connection should not open")
+    else:
+        with provision.service_connection("run", "commit"):
+            pass
+    sql = [call.args[0] for call in cursor.execute.call_args_list]
+    assert sql[0].startswith(f"CREATE ROLE IF NOT EXISTS {ROLE}")
+    grant = f"GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE {ROLE}"
+    assert (grant in sql) is not public_grant
+    assert sql[1] == "SHOW GRANTS OF DATABASE ROLE SNOWFLAKE.CORTEX_USER"
+    assert sql[-1] == f"ALTER USER {provision.EP.service_user} UNSET RSA_PUBLIC_KEY"
 
 
 def test_document_inputs_and_hard_bound():
