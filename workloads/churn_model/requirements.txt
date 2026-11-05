@@ -1,0 +1,4 @@
+-r ../attribution/requirements.txt
+snowflake-snowpark-python[pandas]==1.56.0
+scikit-learn==1.7.2
+pandas==2.3.3
