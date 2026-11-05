@@ -103,6 +103,8 @@ def test_freshness_rejects_failed_latest_attempt_and_unprocessed_export(workload
     assert "from latest_attempt where state<>'SUCCEEDED'" in sql
     assert "convert_timezone('UTC',r.completed_time)::timestamp_ntz<e.exported_at" in sql
     assert 'completed_time<=dateadd(hour,-2,current_timestamp())' in sql
+    assert "select 'freshness: no source export' as failure\nwhere not exists (select 1 from latest_export)" in sql
+    assert 'e.snapshot_date is null or e.exported_at is null or not exists (' in sql
 
 
 def test_retained_score_completeness_uses_evaluated_run_cohort_not_weekly_output():

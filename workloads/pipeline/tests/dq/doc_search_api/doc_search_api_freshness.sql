@@ -20,6 +20,9 @@ select 'freshness: no successful refresh in the last two hours' as failure
 from successful_run
 where completed_time is null or completed_time<=dateadd(hour,-2,current_timestamp())
 union all
+select 'freshness: no source export' as failure
+where not exists (select 1 from latest_export)
+union all
 select 'freshness: latest completed refresh attempt did not succeed' as failure
 from latest_attempt where state<>'SUCCEEDED'
 union all
@@ -29,7 +32,7 @@ where convert_timezone('UTC',r.completed_time)::timestamp_ntz<e.exported_at
 union all
 select 'freshness: missing latest export window in output' as failure
 from latest_export e
-where e.snapshot_date is null or not exists (
+where e.snapshot_date is null or e.exported_at is null or not exists (
   select 1 from {{ ref('top_search_items') }} o
   where o.window_end_date=dateadd(day,-1,e.snapshot_date)
 )
