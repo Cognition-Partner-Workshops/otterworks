@@ -19,6 +19,14 @@ implementation to a FastAPI asynchronous implementation while preserving all ext
 | Queue consumer | SQS polling in a background thread |
 | Auth | Middleware registered via `require_auth(app)` |
 
+## Insights endpoint
+
+`GET /api/v1/insights/search/accounts/{account_id}/top` serves an account's top search
+terms or documents from the Snowflake `ANALYTICS.DOC_SEARCH_API` output. The required
+`type` query parameter is `term` or `document`; `limit` defaults to 10 and accepts 1–10;
+`window_end_date` is optional and defaults to the latest available window. The caller must
+match `X-User-ID` to the account or present the configured service token.
+
 ## Target Stack
 
 | Layer | Technology |

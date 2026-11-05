@@ -1,0 +1,287 @@
+name: Snowflake CD
+
+on:
+  push:
+    branches:
+      - demo-stack-snowflake
+  pull_request:
+    branches:
+      - demo-stack-snowflake
+    paths:
+      - "workloads/**"
+      - ".github/workflows/snowflake-cd.yml"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Operation to run"
+        required: true
+        type: choice
+        options:
+          - dry-run
+          - deploy
+          - rollback
+        default: dry-run
+      rollback_commit:
+        description: "Optional source commit for rollback"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snowflake-sfnfr
+  cancel-in-progress: false
+
+jobs:
+  dry-run:
+    if: >-
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'workflow_dispatch' && inputs.mode == 'dry-run')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required Snowflake secrets
+        env:
+          SFNFR_ACCOUNT: ${{ secrets.SFNFR_ACCOUNT }}
+          SFNFR_USER: ${{ secrets.SFNFR_USER }}
+          SFNFR_ROLE: ${{ secrets.SFNFR_ROLE }}
+          SFNFR_PRIVATE_KEY: ${{ secrets.SFNFR_PRIVATE_KEY }}
+          SFNFR_SVC_DOC_USAGE_PRIVATE_KEY: ${{ secrets.SFNFR_SVC_DOC_USAGE_PRIVATE_KEY }}
+        run: |
+          set -eu
+          for name in SFNFR_ACCOUNT SFNFR_USER SFNFR_ROLE SFNFR_PRIVATE_KEY SFNFR_SVC_DOC_USAGE_PRIVATE_KEY; do
+            eval "value=\${$name}"
+            if [ -z "$value" ]; then
+              echo "Required Snowflake secret is missing: $name" >&2
+              exit 1
+            fi
+          done
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - name: Create temporary Snowflake key files
+        env:
+          SFNFR_PRIVATE_KEY: ${{ secrets.SFNFR_PRIVATE_KEY }}
+          SFNFR_SVC_DOC_USAGE_PRIVATE_KEY: ${{ secrets.SFNFR_SVC_DOC_USAGE_PRIVATE_KEY }}
+        run: |
+          set -eu
+          umask 077
+          builder_key="$RUNNER_TEMP/snowflake-builder.p8"
+          service_key="$RUNNER_TEMP/snowflake-doc-usage-service.p8"
+          printf '%s' "$SFNFR_PRIVATE_KEY" > "$builder_key"
+          printf '%s' "$SFNFR_SVC_DOC_USAGE_PRIVATE_KEY" > "$service_key"
+          {
+            echo "SNOWFLAKE_PRIVATE_KEY_FILE=$builder_key"
+            echo "SNOWFLAKE_SVC_PRIVATE_KEY_FILE=$service_key"
+          } >> "$GITHUB_ENV"
+      - name: Run read-only Snowflake plan
+        env:
+          SF_PHASE: runtime
+          SF_COMMIT: ${{ github.sha }}
+          SF_CD_RESULTS_DIR: ${{ runner.temp }}/snowflake-cd
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SFNFR_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SFNFR_USER }}
+          SNOWFLAKE_ROLE: ${{ secrets.SFNFR_ROLE }}
+        run: bash workloads/snowflake/cd_deploy.sh --dry-run
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: snowflake-cd-dry-run-results
+          path: ${{ runner.temp }}/snowflake-cd
+          if-no-files-found: ignore
+      - name: Remove temporary Snowflake key files
+        if: always()
+        run: rm -f "$RUNNER_TEMP/snowflake-builder.p8" "$RUNNER_TEMP/snowflake-doc-usage-service.p8"
+
+  deploy:
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/demo-stack-snowflake') ||
+      (github.event_name == 'workflow_dispatch' && inputs.mode == 'deploy')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      reached_dbt: ${{ steps.deploy.outputs.reached_dbt }}
+    steps:
+      - name: Check required Snowflake secrets
+        env:
+          SFNFR_ACCOUNT: ${{ secrets.SFNFR_ACCOUNT }}
+          SFNFR_USER: ${{ secrets.SFNFR_USER }}
+          SFNFR_ROLE: ${{ secrets.SFNFR_ROLE }}
+          SFNFR_PRIVATE_KEY: ${{ secrets.SFNFR_PRIVATE_KEY }}
+          SFNFR_SVC_DOC_USAGE_PRIVATE_KEY: ${{ secrets.SFNFR_SVC_DOC_USAGE_PRIVATE_KEY }}
+        run: |
+          set -eu
+          for name in SFNFR_ACCOUNT SFNFR_USER SFNFR_ROLE SFNFR_PRIVATE_KEY SFNFR_SVC_DOC_USAGE_PRIVATE_KEY; do
+            eval "value=\${$name}"
+            if [ -z "$value" ]; then
+              echo "Required Snowflake secret is missing: $name" >&2
+              exit 1
+            fi
+          done
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - name: Create temporary Snowflake key files
+        env:
+          SFNFR_PRIVATE_KEY: ${{ secrets.SFNFR_PRIVATE_KEY }}
+          SFNFR_SVC_DOC_USAGE_PRIVATE_KEY: ${{ secrets.SFNFR_SVC_DOC_USAGE_PRIVATE_KEY }}
+        run: |
+          set -eu
+          umask 077
+          builder_key="$RUNNER_TEMP/snowflake-builder.p8"
+          service_key="$RUNNER_TEMP/snowflake-doc-usage-service.p8"
+          printf '%s' "$SFNFR_PRIVATE_KEY" > "$builder_key"
+          printf '%s' "$SFNFR_SVC_DOC_USAGE_PRIVATE_KEY" > "$service_key"
+          {
+            echo "SNOWFLAKE_PRIVATE_KEY_FILE=$builder_key"
+            echo "SNOWFLAKE_SVC_PRIVATE_KEY_FILE=$service_key"
+          } >> "$GITHUB_ENV"
+      - name: Deploy Snowflake workloads
+        id: deploy
+        env:
+          SF_PHASE: runtime
+          SF_COMMIT: ${{ github.sha }}
+          SF_CD_RESULTS_DIR: ${{ runner.temp }}/snowflake-cd
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SFNFR_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SFNFR_USER }}
+          SNOWFLAKE_ROLE: ${{ secrets.SFNFR_ROLE }}
+        run: bash workloads/snowflake/cd_deploy.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: snowflake-cd-deploy-results
+          path: ${{ runner.temp }}/snowflake-cd
+          if-no-files-found: ignore
+      - name: Record provenance and push to triggering branch
+        if: success()
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+          SF_COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git diff -- workloads/*/provenance.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add workloads/churn_model/provenance.yaml \
+            workloads/doc_search_api/provenance.yaml \
+            workloads/doc_usage_dashboard/provenance.yaml
+          if git diff --cached --quiet; then
+            echo "No provenance changes to commit"
+            exit 0
+          fi
+          git commit -m "snowflake-cd: record deploy of $SF_COMMIT [skip ci]"
+          for attempt in 1 2 3; do
+            git fetch origin "$TARGET_BRANCH"
+            git pull --rebase origin "$TARGET_BRANCH"
+            if git push origin "HEAD:$TARGET_BRANCH"; then
+              exit 0
+            fi
+          done
+          echo "Failed to push provenance after three attempts" >&2
+          exit 1
+      - name: Remove temporary Snowflake key files
+        if: always()
+        run: rm -f "$RUNNER_TEMP/snowflake-builder.p8" "$RUNNER_TEMP/snowflake-doc-usage-service.p8"
+
+  # Migrations are forward-only; rollback redeploys application artifacts only.
+  rollback:
+    needs: deploy
+    if: >-
+      always() &&
+      ((github.event_name == 'workflow_dispatch' && inputs.mode == 'rollback') ||
+       (needs.deploy.result == 'failure' && needs.deploy.outputs.reached_dbt == 'true'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check required Snowflake secrets
+        env:
+          SFNFR_ACCOUNT: ${{ secrets.SFNFR_ACCOUNT }}
+          SFNFR_USER: ${{ secrets.SFNFR_USER }}
+          SFNFR_ROLE: ${{ secrets.SFNFR_ROLE }}
+          SFNFR_PRIVATE_KEY: ${{ secrets.SFNFR_PRIVATE_KEY }}
+          SFNFR_SVC_DOC_USAGE_PRIVATE_KEY: ${{ secrets.SFNFR_SVC_DOC_USAGE_PRIVATE_KEY }}
+        run: |
+          set -eu
+          for name in SFNFR_ACCOUNT SFNFR_USER SFNFR_ROLE SFNFR_PRIVATE_KEY SFNFR_SVC_DOC_USAGE_PRIVATE_KEY; do
+            eval "value=\${$name}"
+            if [ -z "$value" ]; then
+              echo "Required Snowflake secret is missing: $name" >&2
+              exit 1
+            fi
+          done
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+      - name: Create temporary Snowflake key files
+        env:
+          SFNFR_PRIVATE_KEY: ${{ secrets.SFNFR_PRIVATE_KEY }}
+          SFNFR_SVC_DOC_USAGE_PRIVATE_KEY: ${{ secrets.SFNFR_SVC_DOC_USAGE_PRIVATE_KEY }}
+        run: |
+          set -eu
+          umask 077
+          builder_key="$RUNNER_TEMP/snowflake-builder.p8"
+          service_key="$RUNNER_TEMP/snowflake-doc-usage-service.p8"
+          printf '%s' "$SFNFR_PRIVATE_KEY" > "$builder_key"
+          printf '%s' "$SFNFR_SVC_DOC_USAGE_PRIVATE_KEY" > "$service_key"
+          {
+            echo "SNOWFLAKE_PRIVATE_KEY_FILE=$builder_key"
+            echo "SNOWFLAKE_SVC_PRIVATE_KEY_FILE=$service_key"
+          } >> "$GITHUB_ENV"
+      - name: Roll back dbt project, task, and Streamlit
+        env:
+          SF_PHASE: runtime
+          SF_COMMIT: ${{ github.sha }}
+          SF_CD_RESULTS_DIR: ${{ runner.temp }}/snowflake-cd
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SFNFR_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SFNFR_USER }}
+          SNOWFLAKE_ROLE: ${{ secrets.SFNFR_ROLE }}
+          ROLLBACK_COMMIT: ${{ inputs.rollback_commit }}
+        run: |
+          if [ -n "$ROLLBACK_COMMIT" ]; then
+            bash workloads/snowflake/cd_deploy.sh --rollback "$ROLLBACK_COMMIT"
+          else
+            bash workloads/snowflake/cd_deploy.sh --rollback
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: snowflake-cd-rollback-results
+          path: ${{ runner.temp }}/snowflake-cd
+          if-no-files-found: ignore
+      - name: Record rollback provenance and push to triggering branch
+        if: success()
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+          ROLLBACK_COMMIT: ${{ inputs.rollback_commit }}
+        run: |
+          set -euo pipefail
+          git diff -- workloads/*/provenance.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add workloads/churn_model/provenance.yaml \
+            workloads/doc_search_api/provenance.yaml \
+            workloads/doc_usage_dashboard/provenance.yaml
+          if git diff --cached --quiet; then
+            echo "No provenance changes to commit"
+            exit 0
+          fi
+          target="${ROLLBACK_COMMIT:-rollback target selected from provenance history}"
+          git commit -m "snowflake-cd: record rollback to $target [skip ci]"
+          for attempt in 1 2 3; do
+            git fetch origin "$TARGET_BRANCH"
+            git pull --rebase origin "$TARGET_BRANCH"
+            if git push origin "HEAD:$TARGET_BRANCH"; then
+              exit 0
+            fi
+          done
+          echo "Failed to push rollback provenance after three attempts" >&2
+          exit 1
+      - name: Remove temporary Snowflake key files
+        if: always()
+        run: rm -f "$RUNNER_TEMP/snowflake-builder.p8" "$RUNNER_TEMP/snowflake-doc-usage-service.p8"
