@@ -1,4 +1,6 @@
+import csv
 import json
+import re
 import tempfile
 import threading
 import unittest
@@ -8,7 +10,7 @@ from unittest.mock import patch
 
 import run
 
-FX_BODY = b"Business date 2026-10-16<table><tr><th>Pair</th></tr><tr><td>GBPUSD</td><td>1.2</td></tr></table>"
+FX_BODY = b"Business date 2026-10-16<table><tr><th>Pair</th></tr><tr><td>EURUSD</td><td>1.2</td></tr></table>"
 
 
 class ParityTest(unittest.TestCase):
@@ -98,6 +100,13 @@ class ParityTest(unittest.TestCase):
                 "day"
             ],
         )
+        with (run.HERE.parent / f"data/rates/in/ticks-{day}.csv").open() as source:
+            pairs = {row["pair"] for row in csv.DictReader(source)}
+        required_pairs = set(
+            re.findall(r"<td>([A-Z]{6})</td>", "".join(spec["required_text"]))
+        )
+        self.assertTrue(required_pairs)
+        self.assertLessEqual(required_pairs, pairs)
         for body in (
             b"No rates file for this day yet.",
             b"Business date 2026-10-16<table><th>Pair</th></table>",
