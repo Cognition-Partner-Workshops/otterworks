@@ -1,0 +1,16 @@
+{
+  "unit": "custbill-spark",
+  "source_artifact_path": "etl/legacy-extra/jobs/sftp_ingest_poll.ksh, etl/legacy-extra/jobs/parse_custbill_fixedwidth.sh, etl/legacy-extra/jobs/finance_excel_report.pl",
+  "target_objects": ["etl/custbill-spark/custbill.py", "reports/finance_billing_YYYYMMDD.csv", "reports/finance_billing_YYYYMMDD.xls"],
+  "golden_baseline_location": "etl/legacy-extra/reports/parity/",
+  "acceptance_checks": [
+    {"id": "byte-parity", "description": "Spark chain artifacts equal every legacy harness case byte-for-byte."},
+    {"id": "idempotency", "description": "Rerunning a completed root does not change staged, parsed, or report artifacts."},
+    {"id": "operations", "description": "Locking, completion handshake, atomic writes, validation ledger and delivery receipt are exercised."}
+  ],
+  "encoding_policy": {"input_encoding": "latin-1 byte roundtrip", "byte_transparency": "Spark binaryFiles, never UTF-8 text decoding", "invalid_bytes": "preserve in non-strict parity mode"},
+  "malformed_record_policy": {"extra_delimited_fields": "fail", "null_attribution": "fail", "details": "Schema and trailer errors are quarantined and recorded; CUSTBILL_STRICT=1 fails the stage."},
+  "empty_input_semantics": {"action": "write-empty-result", "details": "A header-only CSV and byte-identical XLS are written."},
+  "trigger_granularity": "per-batch",
+  "planted_anomalies": [{"id": "xls-copy", "description": "The finance-compatible XLS remains a byte-identical CSV copy.", "status": "must-detect"}]
+}

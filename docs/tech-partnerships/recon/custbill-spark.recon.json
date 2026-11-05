@@ -1,0 +1,17 @@
+{
+  "kind": "recon-report",
+  "unit": "custbill-spark",
+  "namespace": "fixture",
+  "generated_at": "2026-11-05T12:20:00Z",
+  "run_mode": "fixture",
+  "checks": [
+    {"id": "legacy-characterization", "expected": "legacy parity PASS", "actual": "legacy parity PASS", "source_of_truth": "make -C etl/legacy-extra parity CANDIDATE=legacy", "result": "pass"},
+    {"id": "spark-byte-parity", "expected": "all reported rows yes", "actual": "all reported rows yes", "source_of_truth": "make -C etl/legacy-extra parity CANDIDATE=etl/custbill-spark/launch chain", "result": "pass"},
+    {"id": "pytest", "expected": "6 passed", "actual": "6 passed", "source_of_truth": "make -C etl/custbill-spark test", "result": "pass"},
+    {"id": "ruff", "expected": "clean", "actual": "clean", "source_of_truth": "make -C etl/custbill-spark lint", "result": "pass"}
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {"performed": true, "result": "pass", "evidence": "test_chain_rerun_and_validation performs two chain runs and a replay."},
+  "planted_anomaly_detections": {"expected_set": ["xls-copy"], "actual_set": ["xls-copy"], "missing": [], "unexpected": []},
+  "unverified_paths": ["make tp-smoke is blocked by missing go executable in this Linux environment.", "real email delivery is intentionally not attempted; configured delivery receipt is verified."]
+}

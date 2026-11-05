@@ -1,0 +1,155 @@
+import hashlib
+import json
+import os
+import random
+import subprocess
+import time
+from pathlib import Path
+
+import pytest
+from pyspark.sql import SparkSession
+
+import custbill as cb
+
+LEGACY = Path(__file__).resolve().parents[1] / 'legacy-extra'
+
+
+@pytest.fixture(scope='session')
+def spark():
+    os.environ['SPARK_LOCAL_IP'] = '127.0.0.1'
+    session = SparkSession.builder.master('local[*]').appName('ow_tp_custbill_tests').getOrCreate()
+    session.sparkContext.addPyFile(str(Path(cb.__file__).resolve()))
+    yield session
+    session.stop()
+
+
+def record(amount='000000001234'):
+    return ('C000000001' + 'CUSTOMER'.ljust(30) + '20250101' + amount + 'USD01').encode()
+
+
+def snapshot(root):
+    return {str(p.relative_to(root)): p.read_bytes() for directory in ('incoming', 'parsed', 'reports', 'archive')
+            for p in (root / directory).glob('*') if p.is_file()}
+
+
+def test_real_awk_pipeline(tmp_path):
+    randomizer = random.Random(2542)
+    bodies = [b'', b'a', b'x' * 80, b'\r', record(), record(b'12bad'.decode().ljust(12)),
+              record('-00000000050'), record()[:5] + b'|' + record()[6:],
+              record().replace(b'CUSTOMER', b'\xffUSTOME\x00'), record() + b'\r']
+    bodies += [bytes(randomizer.choice([32, 65, 124, 13, 255, 49]) for _ in range(randomizer.randrange(90)))
+               for _ in range(100)]
+    data = b'HDR header\n' + b'\n'.join(bodies) + b'\nTRL0000000110'
+    path = tmp_path / 'input'
+    path.write_bytes(data)
+    command = r'''paste -d'|' <(cut -c1-10 "$1") <(cut -c11-40 "$1") <(cut -c41-48 "$1") <(cut -c49-60 "$1") <(cut -c61-63 "$1") <(cut -c64-65 "$1") | awk -F'|' 'BEGIN{OFS="|"} {gsub(/ +$/,"",$1); gsub(/ +$/,"",$2); gsub(/ +$/,"",$5); $4=sprintf("%.2f",($4+0)/100); $3=substr($3,1,4)"-"substr($3,5,2)"-"substr($3,7,2); print}' '''
+    stripped = subprocess.check_output(['sed', '-e', '/^HDR/d', '-e', '/^TRL/d', str(path)])
+    path.write_bytes(stripped)
+    expected = subprocess.check_output(['bash', '-c', command, '_', str(path)], env=dict(os.environ, LC_ALL='C'))
+    assert cb.parse_bytes(data) == expected
+    assert cb.parse_bytes(b'') == b''
+    assert cb.parse_bytes(b'x') == cb.parse_bytes(b'x\n')
+
+
+def test_real_perl_order_and_empty(spark, tmp_path):
+    parsed = tmp_path / 'parsed'
+    parsed.mkdir()
+    randomizer = random.Random(25)
+    for name in ('CUSTBILL_Z.psv', 'CUSTBILL_A.psv'):
+        amounts = ['1e16', '1', '-1e16'] + [str(randomizer.uniform(-1e10, 1e10)) for _ in range(300)]
+        rows = [f'C|N|D|{amount}|USD|01\n'.encode() for amount in amounts]
+        rows += [b'C|N|D|12garbage|EUR|99\r\n', b'|skip|D|999|USD|01\n', b'C|N|D||GBP|\n', b'C|N|D|-.5|USD|02']
+        (parsed / name).write_bytes(b''.join(rows))
+    env = dict(os.environ, OTTERWORKS_LEGACY_ROOT=str(tmp_path), LC_ALL='C', TZ='UTC')
+    subprocess.run(['perl', str(LEGACY / 'jobs/finance_excel_report.pl')], env=env, check=True, capture_output=True)
+    expected = next((tmp_path / 'reports').glob('*.csv')).read_bytes()
+    cb.report(spark, tmp_path)
+    assert next((tmp_path / 'reports').glob('*.csv')).read_bytes() == expected
+    assert next((tmp_path / 'reports').glob('*.xls')).read_bytes() == expected
+    assert next((tmp_path / 'delivery').glob('*.xls')).read_bytes() == expected
+    for path in parsed.glob('*'):
+        path.unlink()
+    cb.report(spark, tmp_path)
+    assert next((tmp_path / 'reports').glob('*.csv')).read_bytes() == b'Currency,RecordType,RecordCount,TotalAmount\n'
+
+
+def test_chain_rerun_and_validation(spark, tmp_path, monkeypatch):
+    drop = tmp_path / 'sftp-drop/upload'
+    drop.mkdir(parents=True)
+    data = b'HDR\n' + record() + b'\nTRL0000000099\n'
+    (drop / 'CUSTBILL_TEST.dat').write_bytes(data)
+    monkeypatch.setenv('CUSTBILL_DISTRIBUTION', '["ow_tp_finance_fixture"]')
+    with cb.locked(tmp_path):
+        cb.ingest(spark, tmp_path)
+        cb.parse(spark, tmp_path)
+        cb.report(spark, tmp_path)
+    first = snapshot(tmp_path)
+    with cb.locked(tmp_path):
+        cb.ingest(spark, tmp_path)
+        cb.parse(spark, tmp_path)
+        cb.report(spark, tmp_path)
+    assert snapshot(tmp_path) == first
+    assert not list(drop.iterdir())
+    assert (tmp_path / 'incoming/CUSTBILL_TEST.dat.done').read_bytes() == data
+    ledger = next((tmp_path / 'ledger').glob('CUSTBILL*.json'))
+    assert json.loads(ledger.read_text())['errors'][0]['reason'] == 'trailer mismatch'
+    assert list((tmp_path / 'quarantine').iterdir())
+    assert json.loads((tmp_path / 'ledger/delivery.json').read_text())['distribution'] == ['ow_tp_finance_fixture']
+    # Replay the same completed transfer, not merely an empty drop.
+    (drop / 'CUSTBILL_TEST.dat').write_bytes(data)
+    cb.ingest(spark, tmp_path)
+    cb.parse(spark, tmp_path)
+    cb.report(spark, tmp_path)
+    assert snapshot(tmp_path) == first
+
+
+def test_errors_and_strict_mode(spark, tmp_path, monkeypatch):
+    drop = tmp_path / 'sftp-drop/upload'
+    drop.mkdir(parents=True)
+    path = drop / 'CUSTBILL_BAD.dat'
+    path.write_bytes(record())
+    with pytest.raises(ValueError, match='incomplete transfer'):
+        cb.ingest(spark, tmp_path)
+    assert path.exists()
+    path.write_bytes(b'HDR\nx\nTRL0000000001\n')
+    cb.ingest(spark, tmp_path)
+    monkeypatch.setenv('CUSTBILL_STRICT', '1')
+    with pytest.raises(ValueError, match='validation failed'):
+        cb.parse(spark, tmp_path)
+    assert not list((tmp_path / 'parsed').glob('*'))
+    assert (tmp_path / 'incoming/CUSTBILL_BAD.dat').exists()
+    assert list((tmp_path / 'quarantine').iterdir())
+    monkeypatch.setenv('CUSTBILL_DISTRIBUTION', 'not-json')
+    with pytest.raises(json.JSONDecodeError):
+        cb.report(spark, tmp_path)
+
+
+def test_lock_process_and_release(tmp_path):
+    script = 'import sys; from pathlib import Path; import custbill;\nwith custbill.locked(Path(sys.argv[1])): pass'
+    command = [os.sys.executable, '-c', script, str(tmp_path)]
+    with cb.locked(tmp_path):
+        result = subprocess.run(command, check=False, capture_output=True)
+        assert result.returncode != 0
+        assert b'BlockingIOError' in result.stderr
+    assert subprocess.run(command, check=False, capture_output=True).returncode == 0
+    with pytest.raises(RuntimeError), cb.locked(tmp_path):
+        raise RuntimeError('failed stage')
+    assert subprocess.run(command, check=False, capture_output=True).returncode == 0
+
+
+def test_retention_safe_rerun(tmp_path):
+    raw = b'old'
+    digest = hashlib.sha256(raw).hexdigest()
+    cb.atomic(tmp_path / 'ledger/CUSTBILL_X.json', json.dumps({'file': 'CUSTBILL_X.dat', 'sha256': digest}).encode())
+    archive = tmp_path / 'archive' / ('CUSTBILL_X.dat.' + digest)
+    done = tmp_path / 'incoming/CUSTBILL_X.dat.done'
+    cb.atomic(archive, raw)
+    cb.atomic(done, b'newer run')
+    old = time.time() - 3 * 86400
+    os.utime(archive, (old, old))
+    os.utime(done, (old, old))
+    cb.retain(tmp_path, 1)
+    cb.retain(tmp_path, 1)
+    assert not archive.exists()
+    assert done.read_bytes() == b'newer run'
+    assert list((tmp_path / 'ledger').iterdir())
