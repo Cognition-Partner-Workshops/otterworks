@@ -3,6 +3,7 @@ import pytest
 
 from workloads.churn_model import model as m
 from workloads.churn_model.provision import ROLE, provision_sql
+from workloads.churn_model.warehouse import insert_statement
 
 P = pd.Timestamp("2026-10-05")
 
@@ -128,3 +129,9 @@ def test_dataset_eligibility_and_label_observation_end():
     assert rows.account_id.tolist() == ["a"] and rows.churned.tolist() == [0]
     assert m.dataset(tables, [P], P + pd.Timedelta(days=27)).churned.isna().all()
     assert m.dataset(tables, [], P).empty
+
+
+def test_insert_uses_sql_null_and_explicit_timestamp_conversion():
+    sql, params = insert_statement("CHURN_LEAKAGE_CHECK", "run", dict(source=pd.NaT, cutoff=None, prediction=P, passed=True))
+    assert "VALUES (?,NULL,NULL,TO_TIMESTAMP_NTZ(?),?)" in sql
+    assert params == ["run", P.isoformat(), True]

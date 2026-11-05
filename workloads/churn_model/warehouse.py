@@ -6,11 +6,31 @@ from datetime import datetime
 
 import pandas as pd
 
-import model
+try:
+    from . import model
+except ImportError:
+    import model
 
 RAW = {"AUTH_USERS": "ID", "AUTH_USER_STATE_HISTORY": "ID", "ADMIN_USER_STATE_HISTORY": "ID",
        "ADMIN_STORAGE_QUOTAS": "USER_ID", "DOCUMENT_DOCUMENT_VERSIONS": "ID",
        "ANALYTICS_ANALYTICS_EVENTS": "EVENT_ID"}
+
+
+def insert_statement(table, run_id, record):
+    values, marks = [run_id], ["?"]
+    for value in record.values():
+        if value is None or (not isinstance(value, str) and pd.isna(value)):
+            marks.append("NULL")
+            continue
+        if isinstance(value, (pd.Timestamp, datetime)):
+            value = value.isoformat()
+            marks.append("TO_TIMESTAMP_NTZ(?)")
+        else:
+            marks.append("?")
+            if hasattr(value, "item"):
+                value = value.item()
+        values.append(value)
+    return (f"INSERT INTO APP.{table} (RUN_ID,{','.join(record)}) VALUES ({','.join(marks)})", values)
 
 
 def raw_sql(table, key):
@@ -30,17 +50,8 @@ def run(session, run_id, commit, fallback):
 
     def append(table, records):
         for record in records:
-            values = []
-            for value in record.values():
-                if value is None or (not isinstance(value, str) and pd.isna(value)):
-                    value = None
-                elif isinstance(value, pd.Timestamp):
-                    value = value.to_pydatetime()
-                elif hasattr(value, "item"):
-                    value = value.item()
-                values.append(value)
-            session.sql(f"INSERT INTO APP.{table} (RUN_ID,{','.join(record)}) VALUES (?,{','.join('?' for _ in record)})",
-                        params=[run_id, *values]).collect()
+            sql, values = insert_statement(table, run_id, record)
+            session.sql(sql, params=values).collect()
 
     tables = {}
     for table, key in RAW.items():
