@@ -138,6 +138,21 @@ async def test_search(db_session: AsyncSession, owner_id: uuid.UUID):
     assert items[0].title == "Python Guide"
 
 
+
+@pytest.mark.asyncio
+async def test_search_accepts_page_and_size_positionally(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    service = DocumentService(db_session)
+    for n in range(3):
+        await service.create(
+            DocumentCreate(title=f"Guide {n}", content="text", owner_id=owner_id)
+        )
+
+    items, total = await service.search("Guide", 2, 2)
+    assert total == 3
+    assert len(items) == 1
+
 @pytest.mark.asyncio
 async def test_export_formats(db_session: AsyncSession, owner_id: uuid.UUID):
     service = DocumentService(db_session)

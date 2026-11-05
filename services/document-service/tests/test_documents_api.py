@@ -1,14 +1,12 @@
 """Tests for document API endpoints."""
 
-import os
 import uuid
 
 import jwt
 import pytest
 from httpx import AsyncClient
 
-TEST_JWT_SECRET = "test-jwt-secret-for-unit-tests-pad32"  # noqa: S105
-os.environ.setdefault("JWT_SECRET", TEST_JWT_SECRET)
+from tests.conftest import TEST_JWT_SECRET
 
 
 def _make_jwt(user_id: str) -> str:
@@ -266,10 +264,10 @@ async def test_create_document_via_jwt_hs384(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
+async def test_create_document_x_user_id_header_ignored(anon_client: AsyncClient):
     """X-User-Id header alone is not trusted (prevents identity spoofing)."""
     user_id = uuid.uuid4()
-    resp = await client.post(
+    resp = await anon_client.post(
         "/api/v1/documents/",
         json={"title": "Header Doc"},
         headers={"X-User-Id": str(user_id)},
@@ -278,9 +276,9 @@ async def test_create_document_x_user_id_header_ignored(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_create_document_no_auth_returns_401(client: AsyncClient):
+async def test_create_document_no_auth_returns_401(anon_client: AsyncClient):
     """Creating a document without owner_id and without auth returns 401."""
-    resp = await client.post(
+    resp = await anon_client.post(
         "/api/v1/documents/",
         json={"title": "No Auth Doc"},
     )

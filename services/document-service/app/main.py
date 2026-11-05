@@ -14,6 +14,7 @@ from app.db.migrate import upgrade_to_head
 from app.db.session import async_session, engine
 from app.jobs import stats_rollup
 from app.middleware import request_log
+from app.services.share_link import ShareLinkService
 
 logger = structlog.get_logger()
 
@@ -34,6 +35,7 @@ structlog.configure(
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     logger.info("document_service_starting")
+    ShareLinkService()  # refuse to start without SHARE_LINK_SECRET
     await upgrade_to_head(engine)
     rollup_task = stats_rollup.start(async_session)
 
