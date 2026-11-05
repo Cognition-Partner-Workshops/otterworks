@@ -1,0 +1,217 @@
+{
+  "kind": "recon-report",
+  "unit": "custbill-spark-chain",
+  "namespace": "parity-harness(dev,qa,edges,empty)",
+  "generated_at": "2026-11-05T12:24:59Z",
+  "run_mode": "fixture",
+  "checks": [
+    {
+      "id": "parity-dev/ingest/drop",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-dev/ingest/incoming",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-dev/parse",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-dev/report/csv",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-dev/report/xls",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-dev/execution",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-qa/ingest/drop",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-qa/ingest/incoming",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-qa/parse",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-qa/report/csv",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-qa/report/xls",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-qa/execution",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-edges/ingest/drop",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-edges/ingest/incoming",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-edges/parse",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-edges/report/csv",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-edges/report/xls",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-edges/execution",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-empty/ingest/drop",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-empty/ingest/incoming",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-empty/parse",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-empty/report/csv",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-empty/report/xls",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "parity-empty/execution",
+      "expected": "byte-identical to legacy",
+      "actual": "byte-identical",
+      "source_of_truth": "legacy chain run by etl/legacy-extra/parity/harness.py",
+      "result": "pass"
+    },
+    {
+      "id": "edges-trailer-reconciliation",
+      "expected": {
+        "trailer_count": 99,
+        "records": 4
+      },
+      "actual": {
+        "trailer_count": 99,
+        "records": 4
+      },
+      "source_of_truth": "etl/legacy-extra/parity/fixtures/CUSTBILL_EDGES.dat",
+      "result": "pass"
+    }
+  ],
+  "values_recomputed_from_target": true,
+  "idempotency_rerun": {
+    "performed": true,
+    "result": "pass",
+    "evidence": "second `custbill-spark chain` on the dev candidate estate: exit 0, files changed outside control/: none"
+  },
+  "planted_anomaly_detections": {
+    "expected_set": [
+      "trailer-mismatch",
+      "unknown-record-type",
+      "awk-numeric-coercion",
+      "xls-copy"
+    ],
+    "actual_set": [
+      "trailer-mismatch",
+      "unknown-record-type",
+      "awk-numeric-coercion",
+      "xls-copy"
+    ],
+    "missing": [],
+    "unexpected": []
+  },
+  "unverified_paths": [
+    "Delivery to a real finance mailbox: the report stage copies to CUSTBILL_DELIVERY_DIR and records CUSTBILL_DISTRIBUTION; no mail relay is exercised.",
+    "A live SFTP server: the harness and nightly job use the file-system drop directory."
+  ],
+  "parity_table": "etl/legacy-extra/reports/parity/parity.md"
+}
