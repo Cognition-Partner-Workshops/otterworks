@@ -53,7 +53,6 @@ def provision_sql(public_key):
         statements.append(f"GRANT SELECT, INSERT ON TABLE {EP.database}.APP.{table} TO ROLE {ROLE}")
     statements += [f"GRANT CREATE PROCEDURE, CREATE TABLE, CREATE STAGE ON SCHEMA {EP.database}.APP TO ROLE {ROLE}",
                    f"GRANT CREATE SNOWFLAKE.ML.CLASSIFICATION ON SCHEMA {EP.database}.APP TO ROLE {ROLE}",
-                   f"GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE {ROLE}",
                    sf.service_user_ddl(EP, rsa_public_key=public_key, role=ROLE),
                    f"ALTER USER {EP.service_user} SET RSA_PUBLIC_KEY = {sf.sql_string(public_key)} DEFAULT_ROLE = {ROLE}",
                    f"GRANT ROLE {ROLE} TO USER {EP.service_user}"]
@@ -71,14 +70,23 @@ def service_connection(run_id, commit):
     public = key.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo).decode()
     public = "".join(line for line in public.splitlines() if not line.startswith("-----"))
     with admin_connection(run_id, commit) as admin:
+        user_ready = False
         try:
             with admin.cursor() as cursor:
+                cursor.execute("SHOW GRANTS OF DATABASE ROLE SNOWFLAKE.CORTEX_USER")
+                columns = [column[0] for column in cursor.description]
+                grants = [dict(zip(columns, row)) for row in cursor.fetchall()]
+                if not any(row.get("granted_to") == "ROLE" and row.get("grantee_name") in ("PUBLIC", ROLE) for row in grants):
+                    cursor.execute(f"GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE {ROLE}")
                 for statement in provision_sql(public):
                     cursor.execute(statement)
+                    if statement.startswith("CREATE USER"):
+                        user_ready = True
             with snowflake.connector.connect(**params(key, run_id, commit)) as connection:
                 yield connection
         finally:
-            unset(admin)
+            if user_ready:
+                unset(admin)
 
 
 def main():
