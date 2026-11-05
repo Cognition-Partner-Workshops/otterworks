@@ -109,6 +109,8 @@ def test_retained_score_completeness_uses_evaluated_run_cohort_not_weekly_output
     tests = Path(__file__).resolve().parents[1] / 'tests/dq/churn_model'
     sql = (tests / 'churn_model_row_count.sql').read_text()
     assert 'APP.CHURN_MODEL_EVALUATION e' in sql and 'APP.CHURN_MODEL_RUNS r on r.run_id=e.run_id' in sql
+    assert 'coalesce(r.started_at,try_to_timestamp_ntz(' in sql
+    assert "regexp_substr(e.run_id,'[0-9]{8}T[0-9]{6}Z')" in sql
     assert 'p.payload:exported_at::timestamp_ntz<=r.started_at' in sql
     assert "[('users','AUTH_USERS'),('auth','AUTH_USER_STATE_HISTORY'),('admin','ADMIN_USER_STATE_HISTORY')]" in sql
     assert 'coalesce(u.created_at,h.created_at,h.effective_at)' in sql

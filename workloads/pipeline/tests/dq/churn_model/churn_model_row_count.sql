@@ -43,11 +43,14 @@ with latest_export as (
 , actual as (
   select count(*) as n from {{ ref('weekly_churn_scores') }}
   where week_start_date=(select week_start_date from latest_export)
-), retained_runs as (
-  select e.run_id, r.started_at,
-    dateadd(day,1-dayofweekiso(r.started_at::date),r.started_at::date) as prediction_date
+), retained_run_times as (
+  select e.run_id,coalesce(r.started_at,try_to_timestamp_ntz(
+    regexp_substr(e.run_id,'[0-9]{8}T[0-9]{6}Z'),'YYYYMMDD"T"HH24MISS"Z"')) as started_at
   from {{ db }}.APP.CHURN_MODEL_EVALUATION e
   left join {{ db }}.APP.CHURN_MODEL_RUNS r on r.run_id=e.run_id
+), retained_runs as (
+  select run_id,started_at,dateadd(day,1-dayofweekiso(started_at::date),started_at::date) as prediction_date
+  from retained_run_times
 ), retained_exports as (
   select r.*, p.payload:snapshot_date::date as snapshot_date,
     p.payload:exported_at::timestamp_ntz as exported_at
