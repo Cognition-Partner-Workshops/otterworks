@@ -2,8 +2,9 @@
 # URLs from the environment and writes /tmp/alertmanager.yml.
 #
 # Routing model: anything labelled `page: devin` goes to the Devin Automation
-# webhook AND to Slack. Everything else lands only in the local sink so it is
-# visible in the demo but never pages. Alerts are grouped per alertname so one
+# webhook AND to Slack. Platform critical alerts go to the platform rotation
+# webhook; platform warnings go only to #platform. Everything else lands in
+# the sink so it is visible in the demo but never pages. Alerts are grouped per alertname so one
 # incident produces one page, and repeat_interval is long so a slow fix does not
 # re-page mid-demo.
 #
@@ -22,6 +23,10 @@ route:
   group_interval: 1m
   repeat_interval: 4h
   routes:
+    - matchers: [team = platform, severity = critical]
+      receiver: platform-oncall
+    - matchers: [team = platform, severity = warning]
+      receiver: platform-channel
     - matchers: [page = devin]
       receiver: devin-oncall
       continue: true
@@ -35,6 +40,21 @@ inhibit_rules:
     equal: [service]
 
 receivers:
+  - name: platform-oncall
+    webhook_configs:
+      - url: '__PLATFORM_ONCALL_WEBHOOK_URL__'
+        send_resolved: true
+
+  - name: platform-channel
+    slack_configs:
+      - api_url: '__PLATFORM_SLACK_WEBHOOK_URL__'
+        channel: '#platform'
+        send_resolved: true
+        username: Alertmanager
+        icon_emoji: ':warning:'
+        title: '{{ template "otterworks.slack.title" . }}'
+        text: '{{ template "otterworks.slack.text" . }}'
+
   - name: sink
     webhook_configs:
       - url: http://alert-sink:9095/sink

@@ -19,6 +19,22 @@ alerting:
             - alertmanager:9093
 
 scrape_configs:
+  - job_name: kyc-docs
+    scrape_interval: 15s
+    metrics_path: /actuator/prometheus
+    scheme: http
+    static_configs:
+      - targets: ["kyc-01:8081"]
+        labels:
+          service: kyc-docs
+          language: java
+          tier: backend
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: "(.+):\\d+"
+        replacement: "${1}"
+
   # -------------------------------------------------------
   # Prometheus self-monitoring
   # -------------------------------------------------------

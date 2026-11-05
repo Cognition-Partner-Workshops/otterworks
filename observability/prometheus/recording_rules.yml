@@ -1,4 +1,15 @@
 groups:
+  - name: otterworks.kyc_upload_latency
+    interval: 15s
+    rules:
+      - record: job:kyc_document_upload_duration_seconds:p99_5m
+        expr: >-
+          histogram_quantile(0.99,
+            sum by (job, le) (
+              rate(http_server_requests_seconds_bucket{job="kyc-docs",application="kyc-docs",method="POST",uri="/documents/{customer}"}[5m])
+            )
+          )
+
   # -----------------------------------------------------------
   # Request Rate Recording Rules
   # -----------------------------------------------------------

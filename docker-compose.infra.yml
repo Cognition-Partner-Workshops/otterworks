@@ -96,6 +96,9 @@ services:
     - no-new-privileges:true
   prometheus:
     image: prom/prometheus:v2.51.0
+    networks:
+      default:
+      kyc-monitoring:
     container_name: otterworks-prometheus
     command:
     - --config.file=/etc/prometheus/prometheus.yml
@@ -250,6 +253,14 @@ services:
     tmpfs:
     - /tmp
 networks:
+  kyc-monitoring:
+    name: kyc-monitoring
+    internal: true
+    driver_opts:
+      com.docker.network.bridge.inhibit_ipv4: "true"
+    ipam:
+      config:
+        - subnet: 172.30.250.0/24
   default:
     name: otterworks-network
 volumes:

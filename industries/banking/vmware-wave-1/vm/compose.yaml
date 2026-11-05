@@ -86,8 +86,20 @@ services:
       args:
         MAVEN_MIRROR: ${MAVEN_MIRROR:-}
     image: wave1/kyc-docs-vm
+    environment:
+      MANAGEMENT_SERVER_ADDRESS: 172.30.250.10
+    networks:
+      default:
+      kyc-monitoring:
+        ipv4_address: 172.30.250.10
+        aliases: [kyc-01]
     ports:
       - "127.0.0.1:8085:8443"
+
+networks:
+  kyc-monitoring:
+    name: kyc-monitoring
+    external: true
 
 volumes:
   rates-out:

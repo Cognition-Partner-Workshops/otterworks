@@ -57,13 +57,17 @@ insurance-test: procs-validate ## Run the Commission Pay OLTP + OLAP test suites
 
 # --- Local Development ---
 
-infra-up: ## Start local infrastructure (Postgres, Redis, LocalStack, MeiliSearch)
+.PHONY: kyc-monitoring-network
+kyc-monitoring-network:
+	bash scripts/ensure-kyc-monitoring-network.sh
+
+infra-up: kyc-monitoring-network ## Start local infrastructure (Postgres, Redis, LocalStack, MeiliSearch)
 	docker compose -f docker-compose.infra.yml up -d
 
 infra-down: ## Stop local infrastructure
 	docker compose -f docker-compose.infra.yml down
 
-up: ## Start all services (add seed=1 to seed after start)
+up: kyc-monitoring-network ## Start all services (add seed=1 to seed after start)
 	docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build
  ifdef seed
 	@$(MAKE) --no-print-directory wait-for-db seed
@@ -478,7 +482,7 @@ ifdef UI
 INCIDENT_SERVICES += auth-service api-gateway web-app
 endif
 
-incident-up: ## Start document-service + observability + Alertmanager for the incident demo (UI=1 adds gateway/web-app)
+incident-up: kyc-monitoring-network ## Start document-service + observability + Alertmanager for the incident demo (UI=1 adds gateway/web-app)
 	$(INCIDENT_COMPOSE) up -d --build $(INCIDENT_SERVICES)
 
 incident-down: ## Stop the incident demo stack (keeps volumes)
