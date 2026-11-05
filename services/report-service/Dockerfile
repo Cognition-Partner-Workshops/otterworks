@@ -1,6 +1,6 @@
 # LEGACY: Uses JDK 8 (target: JDK 17+ or 21+)
 # Maven build instead of Gradle (matches legacy Java enterprise pattern)
-FROM maven:3.8.7-eclipse-temurin-8 AS builder
+FROM maven:3.9-eclipse-temurin-8 AS builder
 
 WORKDIR /app
 COPY pom.xml .
