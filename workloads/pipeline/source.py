@@ -23,6 +23,7 @@ TABLES = {
             "effective_at": "TIMESTAMP_NTZ",
             "created_at": "TIMESTAMP_NTZ",
             "last_login_at": "TIMESTAMP_NTZ",
+            "is_deleted": "BOOLEAN",
         },
     ),
     "ADMIN_USER_STATE_HISTORY": (

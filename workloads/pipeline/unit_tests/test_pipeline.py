@@ -226,6 +226,35 @@ def test_monday_changes_before_first_export_preserve_source_history(
                 ]
                 state = max(history, key=lambda h: (h["effective_at"], h["id"]))
                 assert state[field].startswith(expected)
+            with conn, conn.cursor() as cur:
+                cur.execute(
+                    psycopg2.sql.SQL("DELETE FROM {}.users WHERE id=%s").format(
+                        psycopg2.sql.Identifier(schema)
+                    ),
+                    (user_id,),
+                )
+                cur.execute(
+                    psycopg2.sql.SQL(
+                        "SELECT is_deleted FROM {}.user_state_history "
+                        "WHERE user_id=%s ORDER BY effective_at DESC,id DESC LIMIT 1"
+                    ).format(psycopg2.sql.Identifier(schema)),
+                    (user_id,),
+                )
+                assert cur.fetchone() == (True,)
+                cur.execute(
+                    psycopg2.sql.SQL("DELETE FROM {}.admin_users WHERE id=%s").format(
+                        psycopg2.sql.Identifier(schema)
+                    ),
+                    (user_id,),
+                )
+                cur.execute(
+                    psycopg2.sql.SQL(
+                        "SELECT status FROM {}.admin_user_state_history "
+                        "WHERE user_id=%s ORDER BY effective_at DESC,id DESC LIMIT 1"
+                    ).format(psycopg2.sql.Identifier(schema)),
+                    (user_id,),
+                )
+                assert cur.fetchone() == ("deleted",)
             with pytest.raises(psycopg2.errors.RaiseException, match="append-only"):
                 with conn, conn.cursor() as cur:
                     cur.execute(
@@ -233,6 +262,40 @@ def test_monday_changes_before_first_export_preserve_source_history(
                             psycopg2.sql.Identifier(schema)
                         )
                     )
+        finally:
+            with conn, conn.cursor() as cur:
+                cur.execute(
+                    psycopg2.sql.SQL("DROP SCHEMA IF EXISTS {} CASCADE").format(
+                        psycopg2.sql.Identifier(schema)
+                    )
+                )
+
+
+@pytest.mark.skipif(
+    not os.environ.get("POSTGRES_DSN"), reason="requires local Postgres"
+)
+def test_populated_source_without_history_cannot_invent_week_end_state(monkeypatch):
+    schema = source.SOURCE_SCHEMA + "_no_history_test"
+    monkeypatch.setattr(source, "SOURCE_SCHEMA", schema)
+    with closing(psycopg2.connect(os.environ["POSTGRES_DSN"])) as conn:
+        try:
+            with conn, conn.cursor() as cur:
+                cur.execute(
+                    psycopg2.sql.SQL("CREATE SCHEMA {}").format(
+                        psycopg2.sql.Identifier(schema)
+                    )
+                )
+                cur.execute(
+                    psycopg2.sql.SQL("SET LOCAL search_path TO {}").format(
+                        psycopg2.sql.Identifier(schema)
+                    )
+                )
+                cur.execute("CREATE TABLE users (id uuid PRIMARY KEY)")
+                cur.execute(
+                    "INSERT INTO users VALUES ('00000000-0000-4000-8000-000000000104')"
+                )
+            with pytest.raises(ValueError, match="cannot reconstruct historical state"):
+                source.seed(conn)
         finally:
             with conn, conn.cursor() as cur:
                 cur.execute(
