@@ -6,17 +6,19 @@ services:
     image: docker.io/library/postgres:16-alpine
     environment:
       POSTGRES_DB: bankwave
-      POSTGRES_USER: statements_app
-      POSTGRES_PASSWORD: St4tements-Ro!2019
+      POSTGRES_PASSWORD: ${WAVE1_DB_ADMIN_PASSWORD:?WAVE1_DB_ADMIN_PASSWORD is required}
+      STATEMENTS_DB_PASSWORD: ${STATEMENTS_DB_PASSWORD:?STATEMENTS_DB_PASSWORD is required}
     volumes:
       - ../data/seed.sql:/docker-entrypoint-initdb.d/01-seed.sql:ro
       - ./db-roles.sql:/docker-entrypoint-initdb.d/02-roles.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U statements_app -d bankwave"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bankwave"]
       interval: 3s
       retries: 20
 
   stmt-web-01:
+    environment:
+      STATEMENTS_DB_PASSWORD: ${STATEMENTS_DB_PASSWORD:?STATEMENTS_DB_PASSWORD is required}
     build:
       context: ../statements-web
       dockerfile: vm/Dockerfile

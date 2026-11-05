@@ -11,3 +11,4 @@ statements-web serves the statement pages that retail customers open from online
 - Pages: `/statements/accounts` and `/statements/statement?account=<id>`.
 
 Run the VM stand-in with `make vm-up` from the wave folder; it answers on http://localhost:8081/statements/accounts.
+The datasource password comes from `STATEMENTS_DB_PASSWORD`; the stand-in generates throwaway credentials in `vm/.env`.

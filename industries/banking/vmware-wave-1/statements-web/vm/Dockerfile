@@ -11,6 +11,7 @@ RUN mvn -q -B package && mvn -q -B org.apache.maven.plugins:maven-dependency-plu
       -Dartifact=org.postgresql:postgresql:42.2.27.jre7 -DoutputDirectory=/src/lib
 
 FROM docker.io/library/tomcat:8.5-jre8@sha256:e3ca75a4b11560bfb30894c3fa5d066ff0105e2e8e1ad183711df97606321e51
+ENV CATALINA_OPTS="-Dorg.apache.tomcat.util.digester.PROPERTY_SOURCE=org.apache.tomcat.util.digester.EnvironmentPropertySource"
 COPY --from=build /src/lib/ /usr/local/tomcat/lib/
 COPY vm/conf/context.xml /usr/local/tomcat/conf/context.xml
 COPY vm/opt-app-conf/ /opt/app/conf/
