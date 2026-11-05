@@ -1,6 +1,6 @@
 # Wave 1 estate
 
-Six applications that run on VMs today, each with the files that keep it running there. They are the input for a replatforming wave onto the shared EKS cluster and the platform standards under `platform/standards/` on `main`.
+Six applications that run on VMs today, each with the files that keep it running there. They are the input for a replatforming wave onto local Kubernetes using the standards under `platform/standards/`.
 
 | App | What it does | Runtime on the VM | VM stand-in |
 | --- | --- | --- | --- |
@@ -11,7 +11,7 @@ Six applications that run on VMs today, each with the files that keep it running
 | `kyc-docs` | identity document intake | Spring Boot 2.3 with its own TLS | https://localhost:8085/documents/HG611000001 |
 | `fx-report` | FX desk morning report | Perl CGI behind Apache | http://localhost:8086/fx/fx-report.cgi |
 
-Each app folder has its source, its tests, `HOST.md` (how the VM runs it) and `vm/` (the host files and a Dockerfile that stands in for the VM). `complexity-manifest.json` lists what each app expects from its host and where that lives in the code.
+Each app folder has its source, tests, `HOST.md` (host configuration) and `vm/` (host files and a stand-in Dockerfile). The scorer's reference manifest is stored separately at `demos/app/bank-wave1-complexity-manifest.json`. Assessment and application workers must exclude `demos/` from their scope.
 
 ## Shared data
 
@@ -26,12 +26,10 @@ make vm-smoke      # one request per app
 make reset         # stop and drop the volumes
 ```
 
-## Cloud resources
+Set a unique `COMPOSE_PROJECT_NAME` per run. `parity/run.py` compares independent VM and kind endpoints on the same seed data; `parity/README.md` lists the commands and comparison depths.
 
-A replatforming run uses ECR repositories `otterworks/bank-<app>` and namespaces `bank-w1-<run>-pr<n>` on `otterworks-dev`, deployed only by the pipeline's OIDC role. Every resource carries the run token (`run_token` tag on ECR, `demo/run-token` label on namespaces) and an expiry (`Expires` tag; `demo/expires-at` and `demo/expires-at-epoch` annotations, 72 hours by default).
+The local gate uses kind on GitHub-hosted runners. Cloud deployment is disabled in the wave caller.
 
-```
-make ecr RUN=<token>
-make ns RUN=<token> PR=<n>
-make destroy RUN=<token>   # removes both and exits non-zero if anything tagged with the token is left
-```
+## Existing cloud targets
+
+The Makefile retains `ecr`, `ns` and `destroy` for separately approved cloud runs. Local-only runs must leave `BANK_W1_EKS` unset, keep `eks_deploy` false and avoid cloud creation targets.
