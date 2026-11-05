@@ -99,28 +99,30 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		cfg.Logger.Fatal().Err(err).Str("target", route.TargetURL).Msg("invalid proxy target URL")
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
-
-	// Wrap the default director to forward authenticated user identity.
-	// The auth-service issues JWTs with the user ID in the standard "sub" claim
-	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
-	defaultDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
-		req.Header.Del(HeaderUserID)
-		req.Header.Del(HeaderUserRoles)
-		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
-			userID := claims.Subject
-			if userID == "" {
-				userID = claims.UserID
+	// Rewrite (not Director) so the identity headers set here cannot be undone by
+	// hop-by-hop header removal. Client-supplied identity headers are always
+	// dropped; only values from a validated JWT reach the backend. The auth-service
+	// puts the user ID in "sub" (claims.Subject), with "user_id" as a fallback.
+	proxy := &httputil.ReverseProxy{
+		Rewrite: func(pr *httputil.ProxyRequest) {
+			pr.SetURL(target)
+			pr.Out.Host = pr.In.Host
+			pr.SetXForwarded()
+			pr.Out.Header.Del(HeaderUserID)
+			pr.Out.Header.Del(HeaderUserRoles)
+			if claims := middleware.GetJWTClaims(pr.In.Context()); claims != nil {
+				userID := claims.Subject
+				if userID == "" {
+					userID = claims.UserID
+				}
+				if userID != "" {
+					pr.Out.Header.Set(HeaderUserID, userID)
+				}
+				if len(claims.Roles) > 0 {
+					pr.Out.Header.Set(HeaderUserRoles, strings.Join(claims.Roles, ","))
+				}
 			}
-			if userID != "" {
-				req.Header.Set(HeaderUserID, userID)
-			}
-			if len(claims.Roles) > 0 {
-				req.Header.Set(HeaderUserRoles, strings.Join(claims.Roles, ","))
-			}
-		}
+		},
 	}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {

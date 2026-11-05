@@ -155,14 +155,14 @@ module "monitoring" {
 # --- MeiliSearch is deployed via ECS; no domain access policy needed. ---
 
 module "irsa" {
-  source            = "./modules/irsa"
-  environment       = var.environment
-  project           = "otterworks"
-  namespace         = var.namespace
+  source      = "./modules/irsa"
+  environment = var.environment
+  project     = "otterworks"
+  namespace   = var.namespace
   # fluent-bit runs in the platform's otterworks-system namespace.
   additional_namespaces = ["otterworks-system"]
   oidc_provider_arn     = local.oidc_provider_arn
-  oidc_provider_url = local.oidc_provider_url
+  oidc_provider_url     = local.oidc_provider_url
 
   service_accounts = {
     "file-service" = jsonencode({
