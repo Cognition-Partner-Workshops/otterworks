@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: branch-db
+spec:
+  selector:
+    app: branch-db
+  ports:
+    - port: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: branch-db
+spec:
+  selector:
+    matchLabels:
+      app: branch-db
+  template:
+    metadata:
+      labels:
+        app: branch-db
+    spec:
+      containers:
+        - name: postgres
+          image: docker.io/library/postgres:16-alpine
+          env:
+            - name: POSTGRES_DB
+              value: bankwave
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: branch-db
+                  key: POSTGRES_PASSWORD
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: branch-db
+                  key: DB_PASSWORD
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: [sh, -c, "pg_isready -U postgres -d bankwave"]
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: seed
+              mountPath: /docker-entrypoint-initdb.d/01-seed.sql
+              subPath: 01-seed.sql
+            - name: role
+              mountPath: /docker-entrypoint-initdb.d/02-role.sh
+              subPath: 02-role.sh
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: seed
+          configMap:
+            name: branch-seed
+        - name: role
+          configMap:
+            name: branch-role
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: branch-role
+data:
+  02-role.sh: |
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set=role_password="$DB_PASSWORD" <<'SQL'
+    CREATE ROLE branch_app LOGIN PASSWORD :'role_password';
+    GRANT SELECT ON branches TO branch_app;
+    SQL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: branch-geo
+spec:
+  selector:
+    app: branch-geo
+  ports:
+    - port: 8090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: branch-geo
+spec:
+  selector:
+    matchLabels:
+      app: branch-geo
+  template:
+    metadata:
+      labels:
+        app: branch-geo
+    spec:
+      containers:
+        - name: geo
+          image: docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+          command: [python, /geo/geo_stub.py]
+          ports:
+            - containerPort: 8090
+          readinessProbe:
+            httpGet:
+              path: /geocode?q=harbour
+              port: 8090
+          securityContext:
+            runAsUser: 10001
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: code
+              mountPath: /geo
+              readOnly: true
+      volumes:
+        - name: code
+          configMap:
+            name: branch-geo

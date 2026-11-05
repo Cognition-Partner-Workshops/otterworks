@@ -1,0 +1,8 @@
+app: branch-locator
+smoke:
+  - path: /health
+    expect: 200
+  - path: /
+    expect: 200
+  - path: /api/nearest?q=harbour
+    expect: 200
