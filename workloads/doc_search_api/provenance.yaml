@@ -1,0 +1,91 @@
+# Starting provenance for the document-search API. Validate: python workloads/attribution/validate_provenance.py
+# Usage values Snowflake has not reported are `pending`; Cortex credits are kept apart from compute.
+schema_version: 1
+workload: doc_search_api
+run_token: SFEXT_20261105A
+expires: "2026-11-19"
+application:
+  name: Devin_Demo
+  registration: unregistered
+source:
+  repository: Cognition-Partner-Workshops/otterworks
+  base_branch: demo-stack-snowflake
+  base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
+  commit: "b2dabc19ed6ac8f82b22eb44f6b2142c230a9faa"
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2508
+  session_url: https://partner-workshops.devinenterprise.com/sessions/af3d96ed64d14c498b8342d7bd370231
+# Branch: devin/1793859874-doc-search-api-endpoint
+# GET /api/v1/insights/search/accounts/<account_id>/top
+# Role SFEXT_20261105A_DOC_SEARCH_API_ENDPOINT provisioned: warehouse/database/schema
+# USAGE and SELECT on APP.TOP_SEARCH_ITEMS only; run_token SFEXT_20261105A, expires 2026-11-19.
+endpoints:
+  - csid: cs_doc_search_api_top_items
+    service_user: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    auth: key_pair
+query_tag:
+  keys: [csid, workload, phase, commit, run_id]
+  dev_keys: [session_url]
+  task_phase: runtime
+warehouse:
+  name: WH_DOC_SEARCH_API
+  size: LARGE
+  auto_suspend_seconds: 60
+  resource_monitor:
+    name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
+    frequency: MONTHLY
+    credit_quota: 10
+objects:
+  - type: database
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: provisioned
+  - type: schema
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: provisioned
+  - type: schema
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.RAW
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: provisioned
+  - type: warehouse
+    name: WH_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","workload":"doc_search_api"}'
+    state: provisioned
+  - type: resource_monitor
+    name: RM_SFEXT_20261105A_20261119_DOC_SEARCH_API
+    comment: 'Attachment applied by ACCOUNTADMIN outside schemachange; query_id=01c83320-030c-d2f8-0035-065b0009466e'
+    state: provisioned
+  - type: user
+    name: SVC_CS_DOC_SEARCH_API_TOP_ITEMS
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
+    state: provisioned
+  - type: task
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_DOC_SEARCH_API
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
+    state: provisioned
+  - type: streamlit
+    name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.DOC_SEARCH_API_APP
+    devin_csid: cs_doc_search_api_top_items
+    comment: '{"run_token":"SFEXT_20261105A","expires":"2026-11-19","csid":"cs_doc_search_api_top_items"}'
+    state: planned
+usage:
+  source: SNOWFLAKE.ACCOUNT_USAGE
+  reported_through: pending
+  dev:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  runtime:
+    compute_credits: pending
+    query_acceleration_credits: pending
+    query_count: pending
+  cortex:
+    dev:
+      cortex_credits: pending
+      cortex_tokens: pending
+    runtime:
+      cortex_credits: pending
+      cortex_tokens: pending
