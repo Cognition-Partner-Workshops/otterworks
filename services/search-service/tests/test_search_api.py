@@ -123,6 +123,26 @@ class TestSuggestEndpoint:
         data = response.get_json()
         assert data["suggestions"] == []
 
+    def test_suggest_with_ranking_flag_set_returns_200(self, client, mock_meilisearch_client):
+        """The suggest_500 chaos flag must not turn suggestions into a 500 (SearchSuggestErrors)."""
+        mock_index = mock_meilisearch_client.index.return_value
+        mock_index.search.return_value = {
+            "estimatedTotalHits": 2,
+            "hits": [{"title": "Quarterly report"}, {"title": "Quick notes"}],
+        }
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=qu", headers={"X-User-ID": "user-1"})
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == ["Quarterly report", "Quick notes"]
+
+    def test_suggest_with_ranking_flag_set_and_no_hits_returns_200(self, client, mock_meilisearch_client):
+        """An empty index with the chaos flag set returns an empty list, not a 500."""
+        mock_meilisearch_client.index.return_value.search.return_value = {"estimatedTotalHits": 0, "hits": []}
+        with patch("app.api.search._chaos_active", return_value=True):
+            response = client.get("/api/v1/search/suggest?q=zz", headers={"X-User-ID": "user-1"})
+        assert response.status_code == 200
+        assert response.get_json()["suggestions"] == []
+
 
 class TestAdvancedSearchEndpoint:
     """Tests for POST /api/v1/search/advanced."""
