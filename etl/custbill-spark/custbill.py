@@ -7,6 +7,7 @@ import json
 import math
 import os
 import re
+import subprocess
 import tempfile
 import time
 from contextlib import contextmanager
@@ -15,6 +16,8 @@ from pathlib import Path
 
 from pyspark.sql import SparkSession
 
+_AWK_FORMATS = {}
+
 
 def lines(data):
     parts = data.decode('latin-1').split('\n')
@@ -22,12 +25,7 @@ def lines(data):
 
 
 def number(value):
-    """Match mawk's numeric-prefix coercion for the fixed-width parser."""
-    token = value.lstrip(' \t\r\v\f')
-    if re.match(r'^[+-]inf(?:inity)?(?:$|[^A-Za-z])', token, re.IGNORECASE):
-        return math.inf if token[0] != '-' else -math.inf
-    if re.match(r'^[+-]nan(?:$|[^A-Za-z])', token, re.IGNORECASE):
-        return math.nan
+    """Convert a decimal numeric prefix for the fixed-width parser."""
     match = re.match(r'^[ \t\r\v\f]*([+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)', value)
     return float(match[1]) if match else 0.0
 
@@ -44,14 +42,28 @@ def perl_number(value):
     return float(match[1]) if match else 0.0
 
 
+def awk_formats(executable):
+    """Probe host awk's non-finite coercion/printf dialect once per worker."""
+    if executable in _AWK_FORMATS:
+        return _AWK_FORMATS[executable]
+    tokens = [sign + word for sign in ('', '+', '-') for word in ('inf', 'infinity', 'nan')]
+    tokens += ['1e400', '-1e400']
+    result = subprocess.run([executable, '{printf "%.2f\\n", ($0+0)/100}'],
+                            input='\n'.join(tokens) + '\n', text=True, capture_output=True,
+                            env=dict(os.environ, LC_ALL='C'), check=True)
+    _AWK_FORMATS[executable] = dict(zip(tokens, result.stdout.splitlines(), strict=True))
+    return _AWK_FORMATS[executable]
+
+
 def awk_amount(value):
     """Render awk's special printf spellings after fixed-width numification."""
+    special = re.match(r'^[ \t\r\v\f]*([+-]?(?:inf(?:inity)?|nan))(?:$|[^A-Za-z])', value, re.IGNORECASE)
+    executable = os.environ.get('CUSTBILL_AWK', 'awk')
+    if special:
+        return awk_formats(executable)[special[1].lower()]
     amount = number(value) / 100
-    token = value.lstrip(' \t\r\v\f')
-    if math.isnan(amount):
-        return '-nan' if token.lower().startswith('-nan') else '+nan' if token.lower().startswith('+nan') else 'nan'
     if math.isinf(amount):
-        return '-inf' if amount < 0 else '+inf'
+        return awk_formats(executable)['-1e400' if amount < 0 else '1e400']
     return f'{amount:.2f}'
 
 

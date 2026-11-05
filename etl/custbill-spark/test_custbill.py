@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import random
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -34,7 +35,11 @@ def snapshot(root):
             for p in (root / directory).glob('*') if p.is_file()}
 
 
-def test_real_awk_pipeline(tmp_path):
+@pytest.mark.parametrize('executable', ['awk', 'gawk', 'mawk'])
+def test_real_awk_pipeline(tmp_path, monkeypatch, executable):
+    if not shutil.which(executable):
+        pytest.skip(f'{executable} is not installed')
+    monkeypatch.setenv('CUSTBILL_AWK', executable)
     randomizer = random.Random(2542)
     bodies = [b'', b'a', b'x' * 80, b'\r', record(), record(b'12bad'.decode().ljust(12)),
               record('-00000000050'),
@@ -47,6 +52,7 @@ def test_real_awk_pipeline(tmp_path):
     path = tmp_path / 'input'
     path.write_bytes(data)
     command = r'''paste -d'|' <(cut -c1-10 "$1") <(cut -c11-40 "$1") <(cut -c41-48 "$1") <(cut -c49-60 "$1") <(cut -c61-63 "$1") <(cut -c64-65 "$1") | awk -F'|' 'BEGIN{OFS="|"} {gsub(/ +$/,"",$1); gsub(/ +$/,"",$2); gsub(/ +$/,"",$5); $4=sprintf("%.2f",($4+0)/100); $3=substr($3,1,4)"-"substr($3,5,2)"-"substr($3,7,2); print}' '''
+    command = command.replace('| awk ', f'| {executable} ')
     stripped = subprocess.check_output(['sed', '-e', '/^HDR/d', '-e', '/^TRL/d', str(path)])
     path.write_bytes(stripped)
     expected = subprocess.check_output(['bash', '-c', command, '_', str(path)], env=dict(os.environ, LC_ALL='C'))
