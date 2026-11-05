@@ -307,24 +307,18 @@ data_quality:
       cause: All five input landing keys are unique per export snapshot; weekly output and retained model table keys are unique.
 deployment:
   attempted:
-    commit: 863d66c3894d1095a94dfd4ab1db90d7bb094695
+    commit: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
     mode: deploy
-    run_id: SFEXT_20261105A-churn_model-dev-20261105T110933Z-7c6c1b77
-    started_at: '2026-11-05T11:09:33.503086+00:00'
-    finished_at: '2026-11-05T11:10:21.576933+00:00'
+    run_id: SFEXT_20261105A-churn_model-dev-20261105T112942Z-26980c3f
+    started_at: '2026-11-05T11:29:42.557030+00:00'
+    finished_at: '2026-11-05T11:30:53.969121+00:00'
     status: failed
     failed_step: dbt_test
     gate: dbt_test
     failing_tests:
     - test.otterworks_pipeline.churn_model_accepted_range
-    failed_gates:
-    - gate: retained_tables_unchanged
-      detail: >-
-        Post-run read-only evidence: PIPELINE_REFRESH_RUNS changed from count 18,
-        HASH_AGG(*) -1069606349591723737 to count 20, HASH_AGG(*) -3505482680495491451.
-        The six other retained tables were unchanged. Filtering REFRESHED_AT before
-        2026-11-05T11:09:33.503086+00:00 reproduces the original 18-row count and hash.
-        CD insert 01c834de-030c-dbbf-0035-065b000a01ca and concurrent runtime insert
-        01c834de-030c-d2f7-0035-065b00096aba appended the two rows; no restoration or
-        live redeployment was performed.
+    retained_table_policy: 'PIPELINE_REFRESH_RUNS append-only audit: preserve rows
+      with REFRESHED_AT < 2026-11-05T11:29:42.557030+00:00; full-table equality for
+      every other retained table'
+    retained_table_result: passed
   deployed: null

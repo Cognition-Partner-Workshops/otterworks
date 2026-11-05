@@ -134,24 +134,30 @@ usage:
       cortex_tokens: pending
 deployment:
   attempted:
-    commit: 863d66c3894d1095a94dfd4ab1db90d7bb094695
+    commit: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
     mode: deploy
-    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T111118Z-ec8d3d99
-    started_at: '2026-11-05T11:11:18.912156+00:00'
-    finished_at: '2026-11-05T11:12:02.677826+00:00'
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    started_at: '2026-11-05T11:28:14.917261+00:00'
+    finished_at: '2026-11-05T11:29:17.550425+00:00'
     status: succeeded
     failed_step: null
     gate: null
     failing_tests: []
   deployed:
-    commit: 863d66c3894d1095a94dfd4ab1db90d7bb094695
+    commit: 50e2fe6bf90dda1c71c9c139c42a6e99e056aba9
     mode: deploy
-    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T111118Z-ec8d3d99
-    deployed_at: '2026-11-05T11:12:02.677814+00:00'
+    run_id: SFEXT_20261105A-doc_search_api-dev-20261105T112814Z-2148ab28
+    deployed_at: '2026-11-05T11:29:17.550415+00:00'
     objects:
     - type: migrations
       name: doc_search_api
-      detail: '[{"version": "1.0.1", "script": "V1.0.1__restore_auto_suspend.sql"}]'
+      detail: '[]'
+    - type: procedure
+      name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_TOP_SEARCH_ITEMS
+      detail: installed from selected commit
+    - type: task
+      name: DB_DOC_SEARCH_API_SFEXT_20261105A.APP.REFRESH_DOC_SEARCH_API
+      detail: installed from selected commit
     - type: model
       name: top_search_items
       detail: built
