@@ -41,6 +41,7 @@ app.get('/outbox/:account', (req, res) => {
   function read(account) {
     db.lrange('notify:outbox:' + account, 0, 49, (err, rows) => {
       if (err) return res.status(503).json({ error: 'store unavailable' });
+      if (!rows.length) return res.json([]);
       const reference = createHash('sha256').update(String(account)).digest('hex');
       db.set('notify:reference:' + reference, account, (mappingError) => {
         if (mappingError) return res.status(503).json({ error: 'store unavailable' });

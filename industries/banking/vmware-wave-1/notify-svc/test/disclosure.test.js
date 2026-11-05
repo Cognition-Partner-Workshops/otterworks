@@ -36,8 +36,21 @@ function service(rows = []) {
     console: { log() {}, error() {} }
   });
   const res = { code: 200, status(code) { this.code = code; return this; }, json(body) { this.body = body; } };
-  return { routes, res, db };
+  return { routes, res, db, values };
 }
+
+test('unknown and empty outbox lookups create no Redis reference keys', () => {
+  const { routes, res, db, values } = service();
+  for (let n = 0; n < 100; n++) {
+    routes['/outbox/:account']({ params: { account: 'missing-' + n } }, res);
+    assert.equal(JSON.stringify(res.body), '[]');
+  }
+  assert.equal(values.size, 0, 'Empty lookups must not allocate persistent mappings');
+  db.lrange = (key, start, end, cb) => cb(new Error('store failure'));
+  routes['/outbox/:account']({ params: { account: 'missing-error' } }, res);
+  assert.equal(res.code, 503);
+  assert.equal(values.size, 0);
+});
 
 test('outbox links and legacy text disclose no complete account, and links still work', () => {
   const account = 'HG611000001';
