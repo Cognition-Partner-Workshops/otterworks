@@ -69,15 +69,14 @@ jobs:
 
   platform:
     needs: detect
-    if: needs.detect.outputs.apps != '[]'
     strategy:
       fail-fast: false
       matrix:
-        app_dir: ${{ fromJson(needs.detect.outputs.apps) }}
-    uses: Cognition-Partner-Workshops/otterworks/.github/workflows/platform-app-pipeline.yml@devin/1792540800-platform-standards
+        app_dir: [industries/banking/vmware-wave-1/branch-locator]
+    uses: Cognition-Partner-Workshops/otterworks/.github/workflows/platform-app-pipeline.yml@18e3d4d3f2cec15ddff9261d3f1c6a5878085f1c
     with:
       app_dir: ${{ matrix.app_dir }}
-      standards_ref: devin/1792540800-platform-standards
+      standards_ref: 18e3d4d3f2cec15ddff9261d3f1c6a5878085f1c
       run_token: rpl1020
-      eks_deploy: true
+      eks_deploy: false
     secrets: inherit
