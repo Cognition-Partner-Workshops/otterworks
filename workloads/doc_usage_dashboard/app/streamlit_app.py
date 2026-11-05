@@ -42,7 +42,7 @@ def show_accounts(frame):
     display["usage_pct"] = display["usage_pct"].map(
         lambda value: None if value is None or value != value else f"{value:.2f}"
     )
-    st.dataframe(display, hide_index=True, use_container_width=True)
+    st.dataframe(display, use_container_width=True)
 
 
 st.title("Account storage usage")
