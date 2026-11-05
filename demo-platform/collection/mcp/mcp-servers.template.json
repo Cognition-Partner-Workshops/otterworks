@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "collection-grafana": {
+      "transport": "stdio",
+      "command": "bash",
+      "args": ["${OTTERWORKS_CHECKOUT}/demo-platform/collection/mcp/grafana-stdio.sh"],
+      "env": {}
+    },
+    "collection-postgres": {
+      "transport": "stdio",
+      "command": "bash",
+      "args": ["${OTTERWORKS_CHECKOUT}/demo-platform/collection/mcp/postgres-stdio.sh"],
+      "env": {}
+    }
+  }
+}

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collection workspace - sign in</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="login">
+<form class="login-card" method="post" action="/login">
+  <div class="brand-mark">#</div>
+  <h1>Collection workspace</h1>
+  <p class="muted">Enter the workspace access token held by the server operator.</p>
+  <label for="token">Access token</label>
+  <input id="token" name="token" type="password" autocomplete="current-password" required>
+  <button type="submit">Sign in</button>
+  <p class="muted small" id="login-hint">Mock workspace for local demos.</p>
+</form>
+</body>
+</html>

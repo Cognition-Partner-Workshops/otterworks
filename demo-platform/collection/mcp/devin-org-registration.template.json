@@ -1,0 +1,19 @@
+{
+  "_comment": "One entry per org. Each Devin VM runs its own Compose stack; the stdio launchers start it on demand and read secrets from that VM's .env. No URL, port or credential crosses VMs.",
+  "servers": [
+    {
+      "name": "collection-grafana",
+      "transport": "STDIO",
+      "command": "bash",
+      "args": ["/home/ubuntu/repos/otterworks/demo-platform/collection/mcp/grafana-stdio.sh"],
+      "env_variables": {}
+    },
+    {
+      "name": "collection-postgres",
+      "transport": "STDIO",
+      "command": "bash",
+      "args": ["/home/ubuntu/repos/otterworks/demo-platform/collection/mcp/postgres-stdio.sh"],
+      "env_variables": {}
+    }
+  ]
+}

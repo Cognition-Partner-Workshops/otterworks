@@ -1,0 +1,50 @@
+:root { --bg: #f8f8fa; --side: #3f0e40; --side-text: #e9d8ea; --line: #e5e7eb; --text: #1d1c1d; --muted: #6b7280; --accent: #1264a3; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+.muted { color: var(--muted); } .small { font-size: 12px; } .warn { color: #b91c1c; }
+.banner { background: #fef3c7; color: #78350f; border-bottom: 1px solid #f59e0b; padding: 8px 16px; font-weight: 600; text-align: center; }
+.layout { display: grid; grid-template-columns: 240px 1fr auto; height: calc(100vh - 0px); }
+.banner:not([hidden]) + .layout { height: calc(100vh - 38px); }
+.sidebar { background: var(--side); color: var(--side-text); padding: 14px 10px; display: flex; flex-direction: column; gap: 6px; }
+.workspace { font-weight: 800; color: #fff; font-size: 17px; padding: 4px 8px 12px; border-bottom: 1px solid #5b2c5c; }
+.section-label { text-transform: uppercase; font-size: 11px; letter-spacing: .06em; opacity: .7; padding: 12px 8px 4px; }
+.channel-link { display: block; width: 100%; text-align: left; background: none; border: 0; color: var(--side-text); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 15px; }
+.channel-link:hover { background: #350d36; } .channel-link.active { background: var(--accent); color: #fff; }
+.sidebar select { margin: 0 8px; padding: 6px; border-radius: 6px; border: 0; }
+.persona-preview { display: flex; align-items: center; gap: 8px; padding: 8px; color: #fff; }
+.sidebar .link { color: var(--side-text); margin: auto 8px 0; }
+.channel { display: flex; flex-direction: column; min-width: 0; background: #fff; }
+.channel-header { display: flex; align-items: baseline; gap: 12px; padding: 12px 18px; border-bottom: 1px solid var(--line); }
+.channel-header h2 { margin: 0; font-size: 17px; }
+.threads { flex: 1; overflow-y: auto; padding: 12px 18px; display: flex; flex-direction: column; gap: 10px; }
+.thread-card { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.thread-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.thread-foot { display: flex; align-items: center; gap: 10px; padding-left: 46px; }
+.message { display: flex; gap: 10px; padding: 6px 0; }
+.message.system .text { color: var(--muted); font-style: italic; }
+.avatar { width: 36px; height: 36px; border-radius: 8px; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; flex: none; font-size: 14px; }
+.avatar.bot { border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111827; }
+.meta { display: flex; gap: 8px; align-items: baseline; } .author { font-weight: 700; } .time { font-size: 12px; }
+.tag { font-size: 10px; background: #e5e7eb; border-radius: 3px; padding: 0 4px; font-weight: 700; }
+.text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.message-body { min-width: 0; }
+.composer { border-top: 1px solid var(--line); padding: 10px 18px; background: #fff; }
+.composer textarea { width: 100%; resize: vertical; border: 1px solid #c9c9cf; border-radius: 8px; padding: 8px; font: inherit; }
+.composer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+button { background: #007a5a; color: #fff; border: 0; border-radius: 6px; padding: 6px 14px; font-weight: 600; cursor: pointer; }
+button:disabled { opacity: .6; }
+button.link { background: none; color: var(--accent); padding: 0; font-weight: 600; }
+.thread-pane { width: 420px; border-left: 1px solid var(--line); display: flex; flex-direction: column; background: #fff; }
+.thread-pane[hidden] { display: none; }
+.messages { flex: 1; overflow-y: auto; padding: 10px 18px; }
+.badge { font-size: 12px; border-radius: 10px; padding: 1px 8px; background: #f3f4f6; color: var(--muted); }
+.badge:empty { display: none; }
+.badge.active { background: #dcfce7; color: #166534; } .badge.rejected, .badge.failed { background: #fee2e2; color: #991b1b; }
+.badge.creating, .badge.verifying, .badge.interrupted { background: #fef3c7; color: #92400e; }
+.badge a { color: inherit; }
+.empty { text-align: center; margin-top: 40px; }
+body.login { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--side); }
+.login-card { background: #fff; padding: 32px; border-radius: 12px; width: 360px; display: flex; flex-direction: column; gap: 10px; }
+.login-card h1 { margin: 0; font-size: 22px; } .login-card input { padding: 9px; border: 1px solid #c9c9cf; border-radius: 6px; font: inherit; }
+.brand-mark { width: 44px; height: 44px; border-radius: 10px; background: var(--side); color: #fff; font-size: 26px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.login-error { color: #b42318; margin: 0; }
