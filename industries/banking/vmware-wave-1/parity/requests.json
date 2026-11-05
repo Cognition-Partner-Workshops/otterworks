@@ -15,7 +15,7 @@
     {"name": "invalid-kind", "path": "/notify", "method": "POST", "json": {"account": "PARITY0001", "kind": "unknown"}, "status": 400}
   ],
   "kyc-docs": [
-    {"name": "upload", "path": "/documents/{account}?kind=passport", "method": "POST", "multipart": true, "per_account": true, "status": 200, "generated_document_names": true},
+    {"name": "upload", "path": "/documents/{account}?kind=passport", "method": "POST", "multipart": true, "per_account": true, "status": 201, "generated_document_names": true},
     {"name": "list", "path": "/documents/{account}", "per_account": true, "status": 200, "generated_document_names": true}
   ],
   "rates-batch": {"business_days": ["2026-10-14", "2026-10-15", "2026-10-16"], "filename": "rates-{day}.csv"},

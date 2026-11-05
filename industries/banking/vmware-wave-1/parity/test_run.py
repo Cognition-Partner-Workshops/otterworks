@@ -46,6 +46,20 @@ class ParityTest(unittest.TestCase):
             run.comparable(a, spec), run.comparable(b.replace(b"42", b"41"), spec)
         )
 
+    def test_document_uploads_expect_created(self):
+        def response(base, spec, fields, context):
+            return (201 if spec.get("multipart") else 200), b'{"bytes":42}'
+
+        with patch.object(run, "fetch", side_effect=response):
+            rows = run.compare_http("kyc-docs", "http://vm", "http://kind", None)
+        uploads = [row for row in rows if row["case"].startswith("upload:")]
+        self.assertEqual(24, len(uploads))
+        self.assertTrue(all(row["expected_status"] == 201 for row in uploads))
+        self.assertTrue(run.report("kyc-docs", rows)["pass"])
+        with patch.object(run, "fetch", return_value=(200, b'{"bytes":42}')):
+            rows = run.compare_http("kyc-docs", "http://vm", "http://kind", None)
+        self.assertFalse(run.report("kyc-docs", rows)["pass"])
+
     def test_matching_errors_cannot_pass(self):
         with patch.object(run, "fetch", return_value=(500, b"same error")):
             rows = run.compare_http("fx-report", "http://vm", "http://kind", None)
