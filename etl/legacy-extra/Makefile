@@ -1,6 +1,9 @@
-.PHONY: parity parity-test spark-venv spark-smoke
+.PHONY: help parity parity-test spark-venv spark-smoke
 
 export CANDIDATE
+
+help: ## List available targets
+	@awk 'BEGIN {FS = ":.*## "} /^[a-z-]+:.*## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 parity: ## Compare legacy with CANDIDATE shell command (or legacy)
 	python3 parity/harness.py
