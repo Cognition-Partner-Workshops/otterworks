@@ -260,13 +260,14 @@ usage:
 # Review corrections: retained-score completeness uses each evaluated run's source
 # export and scoring cohort; the legacy NULL STARTED_AT falls back to the UTC time
 # in its attributed run ID. SELECT-only regressions reject empty, missing and
-# wrong-account predictions, and failed/new-export freshness states for all gates.
+# wrong-account predictions, and failed/new/empty/incomplete-export freshness
+# states for all gates.
 # First-time endpoint role creation ordering is corrected with mocked unit tests
 # only; provisioning was not executed against Snowflake.
 data_quality:
   suite: tag:dq_churn_model
-  ran_at: "2026-11-05T10:28:29.645034+00:00"
-  commit: 1b3d12b8416d744315f4e5e320971da04227f4e6
+  ran_at: "2026-11-05T10:36:50.953488+00:00"
+  commit: b5a858a4b99edabd8a6528879336c48db0f30f5c
   refresh_task_run:
     query_id: 01c834a2-030c-d4ad-0035-065b000747ea
     graph_run_group_id: f46d0390-0749-4e7b-9973-9d62f39eaaa0
