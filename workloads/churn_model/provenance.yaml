@@ -11,7 +11,7 @@ source:
   repository: Cognition-Partner-Workshops/otterworks
   base_branch: demo-stack-snowflake
   base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
-  commit: "ecda4243de263fb1974fb1bd69a89a82bab28d83"
+  commit: "ba054aaf0574b39cd9aa9baf68fd51f5d4874c8e"
   pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2498
   session_url: https://partner-workshops.devinenterprise.com/sessions/6b490330916b45c1a3532b15a809de89
 endpoints:
