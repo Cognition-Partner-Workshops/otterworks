@@ -12,7 +12,7 @@ source:
   base_branch: demo-stack-snowflake
   base_commit: "a271367cd476545f60e8982458d616c5dc7151bb"
   commit: pending
-  pull_request: pending
+  pull_request: https://github.com/Cognition-Partner-Workshops/otterworks/pull/2471
   session_url: https://partner-workshops.devinenterprise.com/sessions/563ff0e055ca499a8ee42b2b4e40d8b6
 endpoints:
   - csid: cs_doc_usage_dashboard_account_usage
