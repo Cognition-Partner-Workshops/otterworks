@@ -15,6 +15,7 @@ import { AwarenessService } from './services/awareness';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
 import { canEditDocument } from './services/document-access';
+import { protectWebSocket } from './services/websocket-access';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { setupWSConnection } = require('y-websocket/bin/utils');
@@ -132,7 +133,7 @@ const collabManager = setupCollaborationHandlers(
 const wss = new WebSocketServer({ noServer: true });
 wss.on('connection', (conn, req) => {
   setupWSConnection(conn, req);
-  logger.info({ url: req.url }, 'y-websocket_client_connected');
+  logger.info('y-websocket_client_connected');
 });
 
 // Route WebSocket upgrades: Socket.IO paths go to Socket.IO, all others to y-websocket
@@ -142,30 +143,30 @@ httpServer.on('upgrade', async (request, socket, head) => {
     return;
   }
 
-  // JWT authentication for y-websocket connections
-  const url = new URL(request.url || '', `http://${request.headers.host}`);
-  const token =
-    url.searchParams.get('token') ||
-    request.headers.authorization?.replace('Bearer ', '');
-
-  if (!token) {
-    logger.warn('y-websocket_connection_rejected: no token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
-    return;
-  }
-
+  let token: string;
+  let userId: string;
+  let expiresAt: number;
+  let documentId: string;
   try {
-    const claims = jwt.verify(token, config.jwt.secret) as jwt.JwtPayload;
-    const documentId = decodeURIComponent(url.pathname.slice(1));
+    const url = new URL(request.url || '/', 'http://collab.internal');
+    const candidate =
+      url.searchParams.get('token') ||
+      request.headers.authorization?.replace('Bearer ', '');
+    if (!candidate) throw new Error('Missing access token');
+    const claims = jwt.verify(candidate, config.jwt.secret) as jwt.JwtPayload;
+    documentId = decodeURIComponent(url.pathname.slice(1));
     if (
       typeof claims.sub !== 'string' ||
-      !(await canEditDocument(documentId, token, claims.sub))
+      typeof claims.exp !== 'number' ||
+      !(await canEditDocument(documentId, candidate, claims.sub))
     ) {
       socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
       socket.destroy();
       return;
     }
+    token = candidate;
+    userId = claims.sub;
+    expiresAt = claims.exp * 1000;
   } catch {
     logger.warn('y-websocket_connection_rejected: invalid token');
     socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
@@ -174,6 +175,7 @@ httpServer.on('upgrade', async (request, socket, head) => {
   }
 
   wss.handleUpgrade(request, socket, head, (ws) => {
+    protectWebSocket(ws, expiresAt, () => canEditDocument(documentId, token, userId));
     wss.emit('connection', ws, request);
   });
 });
