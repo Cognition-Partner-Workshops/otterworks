@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -12,6 +15,31 @@ class DocumentStoreTest {
 
     @TempDir
     Path tmp;
+
+    @Test
+    void masksCustomerInUploadResponse() throws Exception {
+        DocumentStore s = new DocumentStore(tmp.toString());
+        Map<String, Object> r = s.save("HG611000001", "passport", "scan.pdf",
+                new ByteArrayInputStream(new byte[] { 1 }));
+        assertEquals("****0001", r.get("customer"));
+        assertTrue(Files.isDirectory(tmp.resolve("HG611000001")));
+    }
+
+    @Test
+    void repeatedUploadsRetainEveryOriginalDocument() throws Exception {
+        DocumentStore s = new DocumentStore(tmp.toString());
+        List<String> names = new ArrayList<>();
+        for (int i = 0; i < 1000; i++) {
+            byte[] content = ("identity document " + i).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            names.add((String) s.save("HG611000001", "passport", "scan.pdf",
+                    new ByteArrayInputStream(content)).get("file"));
+        }
+        assertEquals(1000, s.list("HG611000001").size(), "every upload must be retained, even within one millisecond");
+        for (int i = 0; i < names.size(); i++) {
+            assertEquals("identity document " + i,
+                    Files.readString(tmp.resolve("HG611000001").resolve(names.get(i))));
+        }
+    }
 
     @Test
     void savesUnderCustomerAndLists() throws Exception {
