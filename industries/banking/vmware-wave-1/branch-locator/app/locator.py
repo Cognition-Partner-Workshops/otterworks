@@ -47,7 +47,7 @@ def api_nearest():
     lat, lon = locate(q)
     now = datetime.datetime.now().strftime("%H:%M")
     rows = geo.nearest(branches(), lat, lon, now)
-    log.info("nearest q=%s -> %s", q, [r["name"] for r in rows])
+    log.info("nearest q=%r -> %s", q, [r["name"] for r in rows])
     return jsonify(query=q, lat=lat, lon=lon, branches=rows)
 
 
