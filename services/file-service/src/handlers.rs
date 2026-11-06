@@ -5,11 +5,6 @@ use chrono::Utc;
 use futures_util::StreamExt;
 use uuid::Uuid;
 
-async fn chaos_active(cm: &mut redis::aio::ConnectionManager, flag: &str) -> bool {
-    let result: redis::RedisResult<i64> = redis::cmd("EXISTS").arg(flag).query_async(cm).await;
-    result.unwrap_or(0) > 0
-}
-
 use crate::config::AppConfig;
 use crate::errors::ServiceError;
 use crate::events::EventPublisher;
@@ -48,7 +43,6 @@ pub async fn upload_file(
     meta: web::Data<MetadataClient>,
     events: web::Data<EventPublisher>,
     config: web::Data<AppConfig>,
-    redis_cm: web::Data<redis::aio::ConnectionManager>,
     mut payload: Multipart,
 ) -> Result<HttpResponse, ServiceError> {
     // Prefer owner_id from X-User-ID header (injected by api-gateway from JWT).
@@ -136,26 +130,7 @@ pub async fn upload_file(
     let now = Utc::now();
     let size = file_bytes.len() as u64;
 
-    // CHAOS: when this flag is active the S3 client targets a nonexistent
-    // bucket, simulating a misconfigured bucket name after a recent infra
-    // change.  The AWS SDK returns NoSuchBucket which surfaces as a 500.
-    let effective_bucket = if chaos_active(
-        &mut redis_cm.get_ref().clone(),
-        "chaos:file-service:upload_s3_error",
-    )
-    .await
-    {
-        tracing::warn!("Chaos flag active: redirecting upload to nonexistent bucket");
-        "otterworks-files-chaos-nonexistent".to_string()
-    } else {
-        s3.bucket.clone()
-    };
-    let chaos_s3 = crate::storage::S3Client {
-        client: s3.client.clone(),
-        bucket: effective_bucket,
-    };
-    chaos_s3
-        .upload_object(&s3_key, file_bytes.freeze(), &content_type)
+    s3.upload_object(&s3_key, file_bytes.freeze(), &content_type)
         .await?;
 
     let file_meta = FileMetadata {
@@ -721,5 +696,82 @@ mod tests {
     async fn test_metrics_endpoint() {
         let resp = metrics().await;
         assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+    }
+
+    // Regression for FileUploadErrors: the upload handler must write to the
+    // configured bucket and must not depend on a Redis chaos flag to do so.
+    #[actix_rt::test]
+    async fn test_upload_writes_to_configured_bucket() {
+        use std::sync::{Arc, Mutex};
+
+        std::env::set_var("AWS_ACCESS_KEY_ID", "test");
+        std::env::set_var("AWS_SECRET_ACCESS_KEY", "test");
+
+        let seen: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
+        let recorder = seen.clone();
+        let stub = actix_web::HttpServer::new(move || {
+            let recorder = recorder.clone();
+            actix_web::App::new().default_service(web::to(move |req: HttpRequest| {
+                let recorder = recorder.clone();
+                async move {
+                    recorder
+                        .lock()
+                        .unwrap()
+                        .push(format!("{} {}", req.method(), req.path()));
+                    HttpResponse::Ok()
+                        .content_type("application/x-amz-json-1.0")
+                        .body("{}")
+                }
+            }))
+        })
+        .workers(1)
+        .bind(("127.0.0.1", 0))
+        .unwrap();
+        let addr = stub.addrs()[0];
+        let stub = stub.run();
+        let stub_handle = stub.handle();
+        actix_rt::spawn(stub);
+
+        let mut config = AppConfig::from_env();
+        config.aws.endpoint_url = Some(format!("http://{addr}"));
+        config.aws.s3_bucket = "otterworks-files".into();
+        config.sns.topic_arn = None;
+        let s3 = S3Client::new(&config.aws).await;
+        let meta = MetadataClient::new(&config.aws).await;
+        let events = EventPublisher::new(&config.sns, &config.aws).await;
+
+        let app = actix_web::test::init_service(
+            actix_web::App::new()
+                .app_data(web::Data::new(config))
+                .app_data(web::Data::new(s3))
+                .app_data(web::Data::new(meta))
+                .app_data(web::Data::new(events))
+                .route("/api/v1/files/upload", web::post().to(upload_file)),
+        )
+        .await;
+
+        let boundary = "otterworksboundary";
+        let body = format!(
+            "--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"probe.txt\"\r\nContent-Type: text/plain\r\n\r\nhello\r\n--{boundary}--\r\n"
+        );
+        let req = actix_web::test::TestRequest::post()
+            .uri("/api/v1/files/upload")
+            .insert_header(("X-User-ID", "00000000-0000-0000-0000-000000000001"))
+            .insert_header((
+                "Content-Type",
+                format!("multipart/form-data; boundary={boundary}"),
+            ))
+            .set_payload(body)
+            .to_request();
+        let resp = actix_web::test::call_service(&app, req).await;
+        stub_handle.stop(false).await;
+
+        assert_eq!(resp.status(), actix_web::http::StatusCode::CREATED);
+        let seen = seen.lock().unwrap();
+        assert!(
+            seen.iter()
+                .any(|r| r.starts_with("PUT /otterworks-files/files/")),
+            "expected PutObject to the configured bucket, saw {seen:?}"
+        );
     }
 }
