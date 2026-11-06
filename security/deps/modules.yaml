@@ -103,6 +103,21 @@ modules:
     test: -B test
     cases: null
 
+  # Java 21 / Spring Boot 3.3 owner of the Commission Pay rules extracted from
+  # COMMISSION_PKG. No interpolation call path: measured for the dependency tree
+  # and its suite only.
+  - id: commission-service
+    path: services/commission-service
+    build: maven
+    java_home:
+      - $JAVA_HOME_21_X64
+      - /usr/lib/jvm/java-21-openjdk-amd64
+    tool:
+      - ./mvnw
+      - mvn
+    test: -B test
+    cases: null
+
 exempt:
   - path: frontend/client-app/mobile/android
     reason: >
