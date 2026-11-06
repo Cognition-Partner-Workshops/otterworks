@@ -8,7 +8,7 @@ from uuid import UUID
 import structlog
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import aliased, raiseload
 
 from app.models.document import Comment, Document, DocumentVersion, Template
 from app.schemas.document import (
@@ -102,7 +102,8 @@ class DocumentService:
         count_q = select(func.count()).select_from(base.subquery())
         total = (await self.db.execute(count_q)).scalar_one()
 
-        query = base.order_by(Document.updated_at.desc())
+        query = base.options(raiseload(Document.versions), raiseload(Document.comments))
+        query = query.order_by(Document.updated_at.desc())
         query = query.offset((page - 1) * size).limit(size)
         result = await self.db.execute(query)
         documents = list(result.scalars().all())
