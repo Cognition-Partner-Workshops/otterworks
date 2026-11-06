@@ -7,7 +7,6 @@ from uuid import UUID
 import structlog
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import aliased
 
 from app.models.document import Comment, Document, DocumentVersion, Template
 from app.schemas.document import (
@@ -106,31 +105,11 @@ class DocumentService:
         result = await self.db.execute(query)
         documents = list(result.scalars().all())
 
-        recent: dict[UUID, list[DocumentVersion]] = {doc.id: [] for doc in documents}
-        if documents:
-            ranked = (
-                select(
-                    DocumentVersion,
-                    func.row_number()
-                    .over(
-                        partition_by=DocumentVersion.document_id,
-                        order_by=DocumentVersion.version_number.desc(),
-                    )
-                    .label("rn"),
-                )
-                .where(DocumentVersion.document_id.in_(recent.keys()))
-                .subquery()
-            )
-            ranked_version = aliased(DocumentVersion, ranked)
-            ver_result = await self.db.execute(
-                select(ranked_version)
-                .where(ranked.c.rn <= 5)
-                .order_by(ranked.c.document_id, ranked.c.version_number.desc())
-            )
-            for version in ver_result.scalars().all():
-                recent[version.document_id].append(version)
+        # Document.versions is selectin-loaded for the whole page in one query.
         for doc in documents:
-            doc.recent_versions = recent[doc.id]
+            doc.recent_versions = sorted(
+                doc.versions, key=lambda v: v.version_number, reverse=True
+            )[:5]
 
         return documents, total
 
