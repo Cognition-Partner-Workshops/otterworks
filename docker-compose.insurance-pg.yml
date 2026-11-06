@@ -1,0 +1,30 @@
+# OtterWorks Industry Solutions — insurance Commission Pay on PostgreSQL 16.
+# The migration target for the Oracle fixture in docker-compose.insurance.yml:
+# the COMMISSION_PAY and COMMISSION_DW schemas translated to PostgreSQL, filled
+# by services/industry-solutions/insurance/pg/migrate.py and checked by
+# reconcile.py. Local-only (loopback port), per-namespace project and volume.
+services:
+  insurance-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: commission
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${INSURANCE_PG_PWD:-Workshop123}
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "127.0.0.1:${INSURANCE_PG_PORT:-52432}:5432"
+    volumes:
+      - ./services/industry-solutions/insurance/pg/schema:/docker-entrypoint-initdb.d:ro
+      - insurance-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # TCP only: the init-time server listens on the socket alone, so this
+      # passes once every schema script has run and the real server is up.
+      test: ["CMD-SHELL", "psql -h 127.0.0.1 -U postgres -d commission -tAc 'SELECT 1 FROM commission_dw.mv_agent_commission_summary LIMIT 0' >/dev/null"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+      start_period: 10s
+
+volumes:
+  insurance-postgres-data:
