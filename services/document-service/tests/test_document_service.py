@@ -3,6 +3,7 @@
 import uuid
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.document import (
@@ -237,3 +238,39 @@ async def test_paginate_helper():
     assert DocumentService.paginate(11, 1, 5) == 3
     assert DocumentService.paginate(0, 1, 5) == 1
     assert DocumentService.paginate(10, 1, 0) == 1
+
+
+@pytest.mark.asyncio
+async def test_list_documents_statement_count_is_constant_in_page_size(
+    db_session: AsyncSession, owner_id: uuid.UUID
+):
+    service = DocumentService(db_session)
+    for i in range(12):
+        doc = await service.create(
+            DocumentCreate(title=f"Doc {i}", content="v1", owner_id=owner_id)
+        )
+        for n in range(2, 8):
+            await service.update(doc.id, DocumentUpdate(title=f"Doc {i}", content=f"v{n}"))
+
+    statements: list[str] = []
+
+    def _count(conn, cursor, statement, parameters, context, executemany):  # noqa: ANN001
+        statements.append(statement)
+
+    sync_engine = db_session.bind.sync_engine
+    event.listen(sync_engine, "before_cursor_execute", _count)
+    try:
+        counts = {}
+        for size in (2, 12):
+            db_session.expunge_all()
+            statements.clear()
+            items, total = await service.list_documents(owner_id=owner_id, size=size)
+            assert len(items) == size
+            assert total == 12
+            assert all(len(d.recent_versions) == 5 for d in items)
+            assert [v.version_number for v in items[0].recent_versions] == [7, 6, 5, 4, 3]
+            counts[size] = len(statements)
+    finally:
+        event.remove(sync_engine, "before_cursor_execute", _count)
+
+    assert counts[2] == counts[12] <= 5
