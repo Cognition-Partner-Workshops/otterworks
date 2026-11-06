@@ -5,11 +5,6 @@ use chrono::Utc;
 use futures_util::StreamExt;
 use uuid::Uuid;
 
-async fn chaos_active(cm: &mut redis::aio::ConnectionManager, flag: &str) -> bool {
-    let result: redis::RedisResult<i64> = redis::cmd("EXISTS").arg(flag).query_async(cm).await;
-    result.unwrap_or(0) > 0
-}
-
 use crate::config::AppConfig;
 use crate::errors::ServiceError;
 use crate::events::EventPublisher;
@@ -48,7 +43,6 @@ pub async fn upload_file(
     meta: web::Data<MetadataClient>,
     events: web::Data<EventPublisher>,
     config: web::Data<AppConfig>,
-    redis_cm: web::Data<redis::aio::ConnectionManager>,
     mut payload: Multipart,
 ) -> Result<HttpResponse, ServiceError> {
     // Prefer owner_id from X-User-ID header (injected by api-gateway from JWT).
@@ -136,26 +130,7 @@ pub async fn upload_file(
     let now = Utc::now();
     let size = file_bytes.len() as u64;
 
-    // CHAOS: when this flag is active the S3 client targets a nonexistent
-    // bucket, simulating a misconfigured bucket name after a recent infra
-    // change.  The AWS SDK returns NoSuchBucket which surfaces as a 500.
-    let effective_bucket = if chaos_active(
-        &mut redis_cm.get_ref().clone(),
-        "chaos:file-service:upload_s3_error",
-    )
-    .await
-    {
-        tracing::warn!("Chaos flag active: redirecting upload to nonexistent bucket");
-        "otterworks-files-chaos-nonexistent".to_string()
-    } else {
-        s3.bucket.clone()
-    };
-    let chaos_s3 = crate::storage::S3Client {
-        client: s3.client.clone(),
-        bucket: effective_bucket,
-    };
-    chaos_s3
-        .upload_object(&s3_key, file_bytes.freeze(), &content_type)
+    s3.upload_object(&s3_key, file_bytes.freeze(), &content_type)
         .await?;
 
     let file_meta = FileMetadata {
@@ -721,5 +696,105 @@ mod tests {
     async fn test_metrics_endpoint() {
         let resp = metrics().await;
         assert_eq!(resp.status(), actix_web::http::StatusCode::OK);
+    }
+
+    /// Regression for FileUploadErrors: upload must write to the configured
+    /// bucket and must not depend on Redis chaos state.
+    #[actix_rt::test]
+    async fn test_upload_writes_to_configured_bucket() {
+        use actix_web::{test, App, HttpServer};
+        use std::sync::{Arc, Mutex};
+
+        let seen: Arc<Mutex<Vec<String>>> = Arc::default();
+        let recorder = seen.clone();
+        let aws_mock = HttpServer::new(move || {
+            let recorder = recorder.clone();
+            App::new().default_service(web::to(move |req: HttpRequest, _body: web::Bytes| {
+                let recorder = recorder.clone();
+                async move {
+                    recorder
+                        .lock()
+                        .unwrap()
+                        .push(format!("{} {}", req.method(), req.path()));
+                    HttpResponse::Ok()
+                        .content_type("application/x-amz-json-1.0")
+                        .body("{}")
+                }
+            }))
+        })
+        .workers(1)
+        .bind(("127.0.0.1", 0))
+        .unwrap();
+        let endpoint = format!("http://{}", aws_mock.addrs()[0]);
+        actix_rt::spawn(aws_mock.run());
+
+        let credentials = aws_sdk_s3::config::Credentials::new("test", "test", None, None, "test");
+        let region = aws_sdk_s3::config::Region::new("us-east-1");
+        let s3 = S3Client {
+            client: aws_sdk_s3::Client::from_conf(
+                aws_sdk_s3::Config::builder()
+                    .behavior_version(aws_sdk_s3::config::BehaviorVersion::latest())
+                    .region(region.clone())
+                    .credentials_provider(credentials.clone())
+                    .endpoint_url(&endpoint)
+                    .force_path_style(true)
+                    .build(),
+            ),
+            bucket: "otterworks-files".into(),
+        };
+        let meta = MetadataClient {
+            client: aws_sdk_dynamodb::Client::from_conf(
+                aws_sdk_dynamodb::Config::builder()
+                    .behavior_version(aws_sdk_dynamodb::config::BehaviorVersion::latest())
+                    .region(region)
+                    .credentials_provider(credentials)
+                    .endpoint_url(&endpoint)
+                    .build(),
+            ),
+            files_table: "files".into(),
+            folders_table: "folders".into(),
+            versions_table: "versions".into(),
+            shares_table: "shares".into(),
+        };
+        let config = AppConfig::from_env();
+        let events =
+            EventPublisher::new(&crate::config::SnsConfig { topic_arn: None }, &config.aws).await;
+
+        let app = test::init_service(
+            App::new()
+                .app_data(web::Data::new(config))
+                .app_data(web::Data::new(s3))
+                .app_data(web::Data::new(meta))
+                .app_data(web::Data::new(events))
+                .route("/upload", web::post().to(upload_file)),
+        )
+        .await;
+
+        let owner = "00000000-0000-0000-0000-000000000001";
+        let body =
+            "--b\r\nContent-Disposition: form-data; name=\"file\"; filename=\"probe.txt\"\r\n\
+                    Content-Type: text/plain\r\n\r\nprobe\r\n--b--\r\n";
+        let req = test::TestRequest::post()
+            .uri("/upload")
+            .insert_header(("X-User-ID", owner))
+            .insert_header(("Content-Type", "multipart/form-data; boundary=b"))
+            .set_payload(body)
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+
+        assert_eq!(resp.status(), actix_web::http::StatusCode::CREATED);
+        let puts: Vec<String> = seen
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|r| r.starts_with("PUT "))
+            .cloned()
+            .collect();
+        assert_eq!(puts.len(), 1, "expected one S3 PUT, saw {puts:?}");
+        assert!(
+            puts[0].starts_with(&format!("PUT /otterworks-files/files/{owner}/")),
+            "upload went to the wrong bucket: {}",
+            puts[0]
+        );
     }
 }
