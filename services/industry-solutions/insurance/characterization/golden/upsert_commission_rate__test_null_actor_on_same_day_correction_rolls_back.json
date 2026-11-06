@@ -1,0 +1,25 @@
+{
+  "rules": [
+    "R5",
+    "R9"
+  ],
+  "steps": [
+    {
+      "call": "upsert_commission_rate",
+      "error": {
+        "code": "ORA-01407",
+        "message": "cannot update (\"COMMISSION_PAY\".\"COMMISSION_RATES\".\"CREATED_BY\") to NULL"
+      },
+      "inputs": {
+        "p_actor": null,
+        "p_agent_id": null,
+        "p_effective_from": "2024-01-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "8.25"
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_upsert_commission_rate.py::test_null_actor_on_same_day_correction_rolls_back"
+}

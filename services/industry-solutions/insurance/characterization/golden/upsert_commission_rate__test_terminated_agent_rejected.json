@@ -1,0 +1,34 @@
+{
+  "rules": [
+    "R4"
+  ],
+  "steps": [
+    {
+      "call": "setup",
+      "inputs": {
+        "note": "",
+        "params": {},
+        "sql": "INSERT INTO agents (agent_id, agent_code, full_name, license_no, status, hired_date) VALUES (5, 'AG-104', 'Terminated Agent', 'LIC-TX-55005', 'TERMINATED', DATE '2016-01-04')"
+      },
+      "outputs": {},
+      "writes": {}
+    },
+    {
+      "call": "upsert_commission_rate",
+      "error": {
+        "code": "ORA-20003",
+        "message": "Agent 5 is TERMINATED"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": 5,
+        "p_effective_from": "2026-02-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "9"
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_upsert_commission_rate.py::test_terminated_agent_rejected"
+}

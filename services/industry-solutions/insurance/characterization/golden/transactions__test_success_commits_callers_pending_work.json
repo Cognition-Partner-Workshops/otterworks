@@ -1,0 +1,70 @@
+{
+  "rules": [
+    "R9"
+  ],
+  "steps": [
+    {
+      "call": "upsert_commission_rate",
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_from": "2026-01-01",
+        "p_product_code": "AUTO-STD",
+        "p_rate_pct": "8.50"
+      },
+      "outputs": {
+        "o_rate_id": 5.0
+      },
+      "sql": "BEGIN commission_pkg.upsert_commission_rate(:p_product_code, :p_agent_id, :p_rate_pct, :p_effective_from, :p_actor, :o_rate_id); END;",
+      "writes": {
+        "commission_rates": {
+          "inserted": [
+            {
+              "agent_id": null,
+              "created_by": "char",
+              "effective_from": "2026-01-01",
+              "effective_to": null,
+              "product_code": "AUTO-STD",
+              "rate_id": 5,
+              "rate_pct": "8.5"
+            }
+          ],
+          "updated": [
+            {
+              "changes": {
+                "effective_to": [
+                  null,
+                  "2025-12-31"
+                ]
+              },
+              "rate_id": 1
+            }
+          ]
+        },
+        "rate_audit_log": {
+          "inserted": [
+            {
+              "action": "CALLER_PENDING",
+              "actor": "caller",
+              "agent_id": null,
+              "audit_id": 1,
+              "detail": "uncommitted caller work",
+              "policy_id": null,
+              "product_code": null
+            },
+            {
+              "action": "RATE_UPSERT",
+              "actor": "char",
+              "agent_id": null,
+              "audit_id": 2,
+              "detail": "rate_id=5 pct=8.5 from=2026-01-01",
+              "policy_id": null,
+              "product_code": "AUTO-STD"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "test": "tests/test_transactions.py::test_success_commits_callers_pending_work"
+}

@@ -1,0 +1,23 @@
+{
+  "rules": [
+    "R10"
+  ],
+  "steps": [
+    {
+      "call": "end_commission_rate",
+      "error": {
+        "code": "ORA-02290",
+        "message": "check constraint (COMMISSION_PAY.CK_RATES_DATES) violated"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": 1,
+        "p_effective_to": "2024-05-31",
+        "p_product_code": "AUTO-STD"
+      },
+      "sql": "BEGIN commission_pkg.end_commission_rate(:p_product_code, :p_agent_id, :p_effective_to, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_end_commission_rate.py::test_end_before_start_violates_check_and_rolls_back"
+}

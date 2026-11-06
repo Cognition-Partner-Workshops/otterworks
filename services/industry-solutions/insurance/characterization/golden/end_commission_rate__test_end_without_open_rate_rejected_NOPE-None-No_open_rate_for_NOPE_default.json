@@ -1,0 +1,23 @@
+{
+  "rules": [
+    "R11"
+  ],
+  "steps": [
+    {
+      "call": "end_commission_rate",
+      "error": {
+        "code": "ORA-20007",
+        "message": "No open rate for NOPE/default"
+      },
+      "inputs": {
+        "p_actor": "char",
+        "p_agent_id": null,
+        "p_effective_to": "2025-12-31",
+        "p_product_code": "NOPE"
+      },
+      "sql": "BEGIN commission_pkg.end_commission_rate(:p_product_code, :p_agent_id, :p_effective_to, :p_actor); END;",
+      "writes": {}
+    }
+  ],
+  "test": "tests/test_end_commission_rate.py::test_end_without_open_rate_rejected[NOPE-None-No open rate for NOPE/default]"
+}
