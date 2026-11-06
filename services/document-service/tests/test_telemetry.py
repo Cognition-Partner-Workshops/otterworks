@@ -26,3 +26,24 @@ async def test_metrics_expose_query_fanout(client: AsyncClient, owner_id: uuid.U
     assert "otterworks_db_queries_per_request_bucket" in resp.text
     assert 'handler="/api/v1/documents/"' in resp.text
     assert "http_request_duration_seconds_bucket" in resp.text
+
+
+@pytest.mark.asyncio
+async def test_list_query_count_does_not_grow_with_page_size(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    for i in range(12):
+        await client.post(
+            "/api/v1/documents/",
+            json={"title": f"Doc {i}", "content": "", "owner_id": str(owner_id)},
+        )
+    small = await client.get(
+        "/api/v1/documents/", params={"owner_id": str(owner_id), "size": 2}
+    )
+    large = await client.get(
+        "/api/v1/documents/", params={"owner_id": str(owner_id), "size": 12}
+    )
+    assert small.status_code == large.status_code == 200
+    assert len(large.json()["items"]) == 12
+    assert int(large.headers["X-DB-Queries"]) == int(small.headers["X-DB-Queries"])
+    assert int(large.headers["X-DB-Queries"]) <= 5
