@@ -42,11 +42,15 @@ procs-rules-gate: ## Validate the approved HITL rule ledger (MODULE=<module> or 
 
 INSURANCE_COMPOSE = docker compose -f docker-compose.insurance.yml -p otterworks-insurance-$(NS)
 INSURANCE_DB_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(51521 + $(PROCS_PORT_OFFSET))")
-INSURANCE_ENV = NS=$(NS) INSURANCE_DB_PORT=$(INSURANCE_DB_PORT)
+INSURANCE_SVC_PORT = $(shell test -n "$(PROCS_PORT_OFFSET)" && python3 -c "print(58000 + $(PROCS_PORT_OFFSET))")
+INSURANCE_ENV = NS=$(NS) INSURANCE_DB_PORT=$(INSURANCE_DB_PORT) INSURANCE_SVC_PORT=$(INSURANCE_SVC_PORT)
 INSURANCE_SQLPLUS = docker exec -i otterworks-insurance-$(NS)-insurance-oracle-1 sqlplus -s
 
-insurance-up: procs-validate ## Start the Oracle insurance Commission Pay fixture (NS=<namespace>)
-	$(INSURANCE_ENV) $(INSURANCE_COMPOSE) up -d --wait --wait-timeout 900
+insurance-up: procs-validate ## Start the Oracle insurance Commission Pay fixture and commission-service (NS=<namespace>)
+	$(INSURANCE_ENV) $(INSURANCE_COMPOSE) up -d --build --wait --wait-timeout 900
+
+commission-service-test: ## Run the commission-service unit tests
+	cd services/commission-service && ./mvnw -q -B verify
 
 insurance-down: procs-validate ## Stop the Oracle insurance fixture and drop its data (NS=<namespace>)
 	$(INSURANCE_ENV) $(INSURANCE_COMPOSE) down -v
