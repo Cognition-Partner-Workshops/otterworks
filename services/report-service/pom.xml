@@ -32,7 +32,7 @@
         <!-- LEGACY: Apache POI 4.1.2 (2020). Upgrade target: 5.2+ -->
         <poi.version>4.1.2</poi.version>
         <!-- LEGACY: iText 5.5.13.3 (AGPL, pre-license-change). Upgrade target: OpenPDF or iText 7+ -->
-        <itext.version>5.5.13.3</itext.version>
+        <itext.version>5.5.13.6</itext.version>
         <!-- LEGACY: Commons Lang 2.6 (EOL). Upgrade target: commons-lang3 -->
         <commons-lang.version>2.6</commons-lang.version>
         <!-- LEGACY: Commons IO 2.6 (2018). Upgrade target: 2.15+ -->
@@ -91,7 +91,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>12.6.1.jre8</version>
+            <version>12.6.5.jre8</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -153,7 +153,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
+            <version>4.5.14</version>
         </dependency>
 
         <!-- Observability (also legacy versions) -->
