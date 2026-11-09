@@ -8,6 +8,7 @@ import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { useAuthStore } from "@/stores/auth-store";
 import { generateColor } from "@/lib/utils";
+import type { Collaborator } from "@/types";
 import {
   Bold,
   Italic,
@@ -30,6 +31,7 @@ interface CollaborativeEditorProps {
   documentId: string;
   initialContent?: string;
   onUpdate?: (content: string) => void;
+  onPresenceChange?: (collaborators: Collaborator[]) => void;
 }
 
 // Web builds use a secure WebSocket (wss) whenever the page itself is served
@@ -40,35 +42,52 @@ interface CollaborativeEditorProps {
 // matching the api-client's plain-http local-dev default.
 // Any real deployment must point VITE_COLLAB_WS_URL at a wss endpoint.
 const WEB_WS_SCHEME =
-  typeof window !== "undefined" && window.location.protocol === "https:" ? "wss" : "ws";
+  typeof window !== "undefined" && window.location.protocol === "https:"
+    ? "wss"
+    : "ws";
 const NATIVE_WS_SCHEME = "ws";
-const NATIVE_WS_HOST = Capacitor.getPlatform() === "android" ? "10.0.2.2" : "localhost";
+const NATIVE_WS_HOST =
+  Capacitor.getPlatform() === "android" ? "10.0.2.2" : "localhost";
 const COLLAB_WS_URL =
   import.meta.env.VITE_COLLAB_WS_URL ||
   (Capacitor.isNativePlatform()
     ? `${NATIVE_WS_SCHEME}://${NATIVE_WS_HOST}:8085`
     : `${WEB_WS_SCHEME}://localhost:8085`);
 
-export function CollaborativeEditor({ documentId, initialContent, onUpdate }: CollaborativeEditorProps) {
+export function CollaborativeEditor({
+  documentId,
+  initialContent,
+  onUpdate,
+  onPresenceChange,
+}: CollaborativeEditorProps) {
   const { user } = useAuthStore();
   const [ydoc] = useState(() => new Y.Doc());
   const [provider, setProvider] = useState<WebsocketProvider | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<"connected" | "disconnected" | "connecting">("connecting");
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connected" | "disconnected" | "connecting"
+  >("connecting");
   const [isSynced, setIsSynced] = useState(false);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onPresenceChangeRef = useRef(onPresenceChange);
+  onPresenceChangeRef.current = onPresenceChange;
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("otter_access_token") : null;
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("otter_access_token")
+        : null;
     const wsProvider = new WebsocketProvider(
       COLLAB_WS_URL,
       `document-${documentId}`,
       ydoc,
-      { params: { token: token || "" } }
+      { params: { token: token || "" } },
     );
 
     wsProvider.on("status", (event: { status: string }) => {
-      setConnectionStatus(event.status as "connected" | "disconnected" | "connecting");
+      setConnectionStatus(
+        event.status as "connected" | "disconnected" | "connecting",
+      );
     });
 
     wsProvider.on("sync", (synced: boolean) => {
@@ -78,9 +97,31 @@ export function CollaborativeEditor({ documentId, initialContent, onUpdate }: Co
       }
     });
 
+    // Live presence comes from y-websocket awareness (one state per connected
+    // client, including this one); dedupe by user so two tabs count once.
+    const emitPresence = () => {
+      const byUser = new Map<string, Collaborator>();
+      wsProvider.awareness.getStates().forEach((state, clientId) => {
+        const u = state.user as
+          { id?: string; name?: string; color?: string } | undefined;
+        if (!u) return;
+        const userId = u.id || String(clientId);
+        byUser.set(userId, {
+          userId,
+          name: u.name || "Anonymous",
+          color: u.color || generateColor(userId),
+          isOnline: true,
+        });
+      });
+      onPresenceChangeRef.current?.([...byUser.values()]);
+    };
+    wsProvider.awareness.on("change", emitPresence);
+
     setProvider(wsProvider);
 
     return () => {
+      wsProvider.awareness.off("change", emitPresence);
+      onPresenceChangeRef.current?.([]);
       wsProvider.destroy();
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
     };
@@ -100,6 +141,7 @@ export function CollaborativeEditor({ documentId, initialContent, onUpdate }: Co
               CollaborationCursor.configure({
                 provider,
                 user: {
+                  id: user?.id,
                   name: user?.displayName || "Anonymous",
                   color: generateColor(user?.id || "anon"),
                 },
@@ -124,7 +166,7 @@ export function CollaborativeEditor({ documentId, initialContent, onUpdate }: Co
         }
       },
     },
-    [provider]
+    [provider],
   );
 
   // Load saved content from the API when the editor is ready and the Yjs doc is empty
@@ -138,7 +180,9 @@ export function CollaborativeEditor({ documentId, initialContent, onUpdate }: Co
           suppressSaveRef.current = true;
           editor.commands.setContent(initialContent);
           // Clear suppression after a short delay so any async Yjs observer fires are also caught
-          setTimeout(() => { suppressSaveRef.current = false; }, 50);
+          setTimeout(() => {
+            suppressSaveRef.current = false;
+          }, 50);
         }
         setContentLoaded(true);
       }, 500);
@@ -315,7 +359,7 @@ function ToolbarButton({
       title={title}
       className={cn(
         "p-1.5 rounded hover:bg-gray-200 transition",
-        active ? "bg-gray-200 text-otter-700" : "text-gray-600"
+        active ? "bg-gray-200 text-otter-700" : "text-gray-600",
       )}
     >
       {children}
