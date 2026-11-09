@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.thistlecombe.example/claims/triage" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="http://schemas.thistlecombe.example/claims/triage" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo root_reference="TriageFacts" displayroot_reference="TriageFacts" />
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- The fact document the ClaimTriage BRE policy reasons over. ReserveEstimate and ReportDelayDays are computed by scripting functoids in ClaimCreate_to_TriageFacts. -->
+  <xs:element name="TriageFacts">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ClaimNumber" type="ClaimNumberType" />
+        <xs:element name="LossCause" type="xs:string" />
+        <xs:element name="EstimatedAmount" type="xs:decimal" />
+        <xs:element name="ReserveEstimate" type="xs:decimal" />
+        <xs:element name="ReportDelayDays" type="xs:int" />
+        <xs:element name="PolicyAgeDaysAtLoss" type="xs:int" />
+        <xs:element name="InjuryFlag" type="xs:boolean" />
+        <xs:element name="PriorFraudFlag" type="xs:boolean" />
+        <xs:element name="InForceAtLoss" type="xs:boolean" />
+        <xs:element name="NetExposure" type="xs:decimal" />
+        <xs:element name="Outcome" type="xs:string" minOccurs="0" />
+        <xs:element name="Reason" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

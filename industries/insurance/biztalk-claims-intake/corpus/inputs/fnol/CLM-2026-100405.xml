@@ -1,0 +1,41 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000005</RqUID>
+  <TransactionRequestDt>2026-10-13T08:20:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-1305</ProducerId>
+      <ProducerName>Marlow Street Agency</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-AUTO-48135</PolicyNumber>
+      <LOBCd>AUTO</LOBCd>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Priya</GivenName>
+      <Surname>Venkataraman</Surname>
+      <TaxId>105-45-7065</TaxId>
+        <PhoneNumber>401-555-1185</PhoneNumber>
+        <EmailAddr>priya.venkataraman@example.net</EmailAddr>
+        <PriorFraudFlagInd>false</PriorFraudFlagInd>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100405</ClaimNumber>
+      <LossDt>2026-09-10</LossDt>
+      <ReportedDt>2026-10-13</ReportedDt>
+      <LossCauseCd>THFT</LossCauseCd>
+      <IncidentDesc>Items stolen; discovered on return from travel</IncidentDesc>
+      <EstimatedLossAmt>1002.50</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+        <PoliceReportInd>true</PoliceReportInd>
+      <Addr>
+        <City>Bristol</City>
+        <StateProvCd>RI</StateProvCd>
+        <PostalCode>02809</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+      <AutoLossInfo>
+        <VIN>1HGCM82633A104555</VIN>
+        <DriveableInd>true</DriveableInd>
+      </AutoLossInfo>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>

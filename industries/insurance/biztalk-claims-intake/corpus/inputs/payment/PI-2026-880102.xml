@@ -1,0 +1,27 @@
+<ns0:PaymentInstruction xmlns:ns0="http://schemas.thistlecombe.example/canonical/payment">
+  <InstructionId>PI-2026-880102</InstructionId>
+  <ClaimNumber>CLM-2026-100406</ClaimNumber>
+  <PolicyNumber>POL-AUTO-48122</PolicyNumber>
+  <VendorCode>PAYV01</VendorCode>
+  <Payee>
+    <Name>Northlight Glass</Name>
+    <PayeeType>VN</PayeeType>
+    <BankAccountMasked>****1146</BankAccountMasked>
+  </Payee>
+  <ValueDate>2026-10-03</ValueDate>
+  <CurrencyCd>USD</CurrencyCd>
+  <Line>
+    <LineNo>1</LineNo>
+    <LineType>IND</LineType>
+    <Amount>11125.07</Amount>
+    <GLAccount>61010100</GLAccount>
+    <Memo>Indemnity per adjuster estimate</Memo>
+  </Line>
+  <Line>
+    <LineNo>2</LineNo>
+    <LineType>EXP</LineType>
+    <Amount>415.39</Amount>
+    <GLAccount>61020300</GLAccount>
+    <Memo>Independent appraisal fee</Memo>
+  </Line>
+</ns0:PaymentInstruction>

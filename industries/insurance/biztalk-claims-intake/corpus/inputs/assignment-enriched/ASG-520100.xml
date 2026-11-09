@@ -1,0 +1,50 @@
+<ns0:Root xmlns:ns0="http://schemas.microsoft.com/BizTalk/2003/aggschema">
+  <InputMessagePart_0>
+    <ns0:RosterResult xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+      <Adjuster>
+        <AdjusterId>ADJ-101</AdjusterId>
+        <Name>Sunniva Haraldsen</Name>
+        <Email>sunniva.haraldsen@thistlecombe.example</Email>
+        <Region>NORTHEAST</Region>
+        <Skills>AUTO-PD,AUTO-BI</Skills>
+        <OpenClaims>11</OpenClaims>
+        <MaxClaims>25</MaxClaims>
+        <Available>true</Available>
+      </Adjuster>
+      <Adjuster>
+        <AdjusterId>ADJ-102</AdjusterId>
+        <Name>Lorcan Byrne</Name>
+        <Email>lorcan.byrne@thistlecombe.example</Email>
+        <Region>NORTHEAST</Region>
+        <Skills>AUTO-PD</Skills>
+        <OpenClaims>7</OpenClaims>
+        <MaxClaims>20</MaxClaims>
+        <Available>true</Available>
+      </Adjuster>
+      <Adjuster>
+        <AdjusterId>ADJ-103</AdjusterId>
+        <Name>Ingrid Castellanos</Name>
+        <Email>ingrid.castellanos@thistlecombe.example</Email>
+        <Region>NORTHEAST</Region>
+        <Skills>PROPERTY,LARGE-LOSS</Skills>
+        <OpenClaims>19</OpenClaims>
+        <MaxClaims>20</MaxClaims>
+        <Available>true</Available>
+      </Adjuster>
+    </ns0:RosterResult>
+  </InputMessagePart_0>
+  <InputMessagePart_1>
+    <ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+      <RequestId>ASG-520100</RequestId>
+      <ClaimNumber>CLM-2026-100400</ClaimNumber>
+      <LineOfBusiness>AUTO</LineOfBusiness>
+      <LossCause>COLL</LossCause>
+      <Region>NORTHEAST</Region>
+      <Severity>HIGH</Severity>
+      <RequiredSkill>AUTO-BI</RequiredSkill>
+      <RequestedDt>2026-09-24</RequestedDt>
+      <ClaimantName>Imogen Castellanos</ClaimantName>
+      <EstimatedAmount>17200.00</EstimatedAmount>
+    </ns0:AssignmentRequest>
+  </InputMessagePart_1>
+</ns0:Root>

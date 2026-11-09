@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="https://ClaimsHub.PropertySchema" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="https://ClaimsHub.PropertySchema" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo schema_type="property" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" />
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- Promoted properties the orchestrations correlate on and the send-port filters subscribe to. -->
+  <xs:element name="ClaimNumber" type="ClaimNumberType"><xs:annotation><xs:appinfo><b:propertyInfo propertyGuid="5f3c6c6e-0a51-4a6e-9f0c-1d1f2b7a0001" propSchFieldBase="MessageContextPropertyBase" /></xs:appinfo></xs:annotation></xs:element>
+  <xs:element name="LossCauseCd" type="xs:string"><xs:annotation><xs:appinfo><b:propertyInfo propertyGuid="5f3c6c6e-0a51-4a6e-9f0c-1d1f2b7a0002" propSchFieldBase="MessageContextPropertyBase" /></xs:appinfo></xs:annotation></xs:element>
+  <xs:element name="AgencyId" type="AgencyIdType"><xs:annotation><xs:appinfo><b:propertyInfo propertyGuid="5f3c6c6e-0a51-4a6e-9f0c-1d1f2b7a0003" propSchFieldBase="MessageContextPropertyBase" /></xs:appinfo></xs:annotation></xs:element>
+  <xs:element name="BatchId" type="xs:string"><xs:annotation><xs:appinfo><b:propertyInfo propertyGuid="5f3c6c6e-0a51-4a6e-9f0c-1d1f2b7a0004" propSchFieldBase="MessageContextPropertyBase" /></xs:appinfo></xs:annotation></xs:element>
+  <xs:element name="TriageOutcome" type="xs:string"><xs:annotation><xs:appinfo><b:propertyInfo propertyGuid="5f3c6c6e-0a51-4a6e-9f0c-1d1f2b7a0005" propSchFieldBase="MessageContextPropertyBase" /></xs:appinfo></xs:annotation></xs:element>
+  <xs:element name="PaymentVendorCd" type="xs:string"><xs:annotation><xs:appinfo><b:propertyInfo propertyGuid="5f3c6c6e-0a51-4a6e-9f0c-1d1f2b7a0006" propSchFieldBase="MessageContextPropertyBase" /></xs:appinfo></xs:annotation></xs:element>
+  <xs:element name="Region" type="xs:string"><xs:annotation><xs:appinfo><b:propertyInfo propertyGuid="5f3c6c6e-0a51-4a6e-9f0c-1d1f2b7a0007" propSchFieldBase="MessageContextPropertyBase" /></xs:appinfo></xs:annotation></xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- AgencyId reaches the declines folder name (declines\%ClaimsHub.AgencyId%); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="AgencyIdType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="AG-[0-9]{4}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

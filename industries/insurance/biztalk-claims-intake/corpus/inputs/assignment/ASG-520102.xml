@@ -1,0 +1,12 @@
+<ns0:AssignmentRequest xmlns:ns0="http://schemas.thistlecombe.example/claims/assignment">
+  <RequestId>ASG-520102</RequestId>
+  <ClaimNumber>CLM-2026-100410</ClaimNumber>
+  <LineOfBusiness>HOME</LineOfBusiness>
+  <LossCause>FIRE</LossCause>
+  <Region>NORTHEAST</Region>
+  <Severity>HIGH</Severity>
+  <RequiredSkill>LARGE-LOSS</RequiredSkill>
+  <RequestedDt>2026-09-26</RequestedDt>
+  <ClaimantName>Cormac Delahunty</ClaimantName>
+  <EstimatedAmount>61500.00</EstimatedAmount>
+</ns0:AssignmentRequest>

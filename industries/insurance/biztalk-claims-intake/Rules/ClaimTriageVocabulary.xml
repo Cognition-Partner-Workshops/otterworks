@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<brl xmlns="http://schemas.microsoft.com/businessruleslanguage/2002">
+  <vocabulary id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e6f1" name="ClaimTriage" uri="" description="Facts and thresholds the ClaimTriage policy reasons over. Every term binds to an element of the TriageFacts document.">
+    <version major="1" minor="2" description="Added PolicyAgeDaysAtLoss for the new-policy fraud rule" modifiedby="claims-integration" date="2024-03-11T09:30:00" />
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e601" name="Claim net exposure" description="EstimatedAmount capped at the coverage limit, less the deductible, never below zero.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='NetExposure']" type="decimal" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e602" name="Claim estimated amount" description="Agency estimate as reported.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='EstimatedAmount']" type="decimal" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e603" name="Claim reserve estimate" description="Initial reserve computed by the InsertClaim_to_TriageFacts map.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='ReserveEstimate']" type="decimal" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e604" name="Claim loss cause" description="ACORD loss cause code.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='LossCause']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e605" name="Claim report delay days" description="Days between loss date and reported date.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='ReportDelayDays']" type="int" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e606" name="Policy age days at loss" description="Days between policy effective date and loss date.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='PolicyAgeDaysAtLoss']" type="int" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e607" name="Claim has injury" description="InjuryInd from the FNOL.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='InjuryFlag']" type="boolean" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e608" name="Claimant has prior fraud flag" description="PriorFraudFlagInd from the FNOL, false when absent.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='PriorFraudFlag']" type="boolean" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e609" name="Policy in force at loss" description="Computed by Claim_PolicyInqRs_to_InsertClaim from status, effective and expiration dates.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='InForceAtLoss']" type="boolean" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e60a" name="Triage outcome" description="Set by the policy. Empty until a rule fires.">
+      <xmldocumentmember xpath="/*[local-name()='TriageFacts']/*[local-name()='Outcome']" type="string" documenttype="ThistlecombeMutual.ClaimsHub.Schemas.TriageFacts" selector="/*[local-name()='TriageFacts']" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e60b" name="Add triage reason" description="Appends a Reason element to the facts document.">
+      <classmember classref="ThistlecombeMutual.ClaimsHub.Helpers.TriageFactsHelper" member="AddReason" type="void" assembly="ThistlecombeMutual.ClaimsHub.Helpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=9c7f1e0a3b2d4e5f">
+        <parameter name="facts" type="System.Xml.XmlNode" />
+        <parameter name="reason" type="System.String" />
+      </classmember>
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e60c" name="Fast-track exposure limit" description="Net exposure at or below this settles from the desk.">
+      <literaldefinition type="decimal" value="2500.00" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e60d" name="Late report threshold days" description="Reports later than this are referred to the fraud desk.">
+      <literaldefinition type="int" value="30" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e60e" name="New policy window days" description="Losses inside this many days of inception are new-policy losses.">
+      <literaldefinition type="int" value="90" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e60f" name="New policy large loss amount" description="Estimate above this inside the new-policy window refers to the fraud desk.">
+      <literaldefinition type="decimal" value="5000.00" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e610" name="Large loss reserve threshold" description="Reserves at or above this go to the large-loss unit.">
+      <literaldefinition type="decimal" value="50000.00" />
+    </vocabularydefinition>
+    <vocabularydefinition id="7c4b9a10-2d3e-4f50-8a61-72b3c4d5e611" name="Fast-track loss causes" description="Comma-separated causes eligible for fast track.">
+      <literaldefinition type="string" value="GLAS,TOWG,WIND" />
+    </vocabularydefinition>
+  </vocabulary>
+</brl>

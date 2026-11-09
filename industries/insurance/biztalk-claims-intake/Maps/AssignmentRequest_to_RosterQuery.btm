@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mapsource Name="ThistlecombeMutual.ClaimsHub.Maps.AssignmentRequest_to_RosterQuery" BizTalkServerMapperTool_Version="3.0" Version="2" XRange="100" YRange="420" OmitXmlDeclaration="Yes" TreatElementsAsRecords="No" OptimizeValueMapping="Yes" GenerateDefaultFixedNodes="Yes" CopyPIs="No" method="xml" xmlVersion="1.0" IgnoreNamespacesForLinks="Yes">
+  <SrcTree>
+    <Reference Location="..\Schemas\AdjusterAssignment.xsd" />
+  </SrcTree>
+  <TrgTree>
+    <Reference Location="..\Schemas\AdjusterAssignment.xsd" />
+  </TrgTree>
+  <ScriptTypePrecedence>
+    <CSharp Enabled="Yes" />
+    <ExternalAssembly Enabled="Yes" />
+    <VbNet Enabled="Yes" />
+    <JScript Enabled="Yes" />
+    <XsltCallTemplate Enabled="Yes" />
+    <Xslt Enabled="Yes" />
+  </ScriptTypePrecedence>
+  <TreeValues>
+    <TestValues />
+    <ConstantValues />
+  </TreeValues>
+  <Pages>
+    <Page Name="Page 1">
+      <Links />
+      <Functoids>
+
+      </Functoids>
+    </Page>
+  </Pages>
+  <!-- The compiled XSLT this map emits is kept beside it as AssignmentRequest_to_RosterQuery.xslt; the Mapper regenerates it on build. -->
+</mapsource>

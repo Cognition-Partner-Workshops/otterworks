@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.microsoft.com/Sql/2008/05/TypedProcedures/dbo" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="http://schemas.microsoft.com/Sql/2008/05/TypedProcedures/dbo" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo root_reference="usp_InsertClaim" displayroot_reference="usp_InsertClaim" />
+      <b:properties>
+        <b:property name="ClaimsHub.ClaimNumber" xpath="/*[local-name()='usp_InsertClaim']/*[local-name()='ClaimNumber']" />
+        <b:property name="ClaimsHub.TriageOutcome" xpath="/*[local-name()='usp_InsertClaim']/*[local-name()='TriageOutcome']" />
+      </b:properties>
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- WCF-SQL typed procedure request generated from dbo.usp_InsertClaim on the claims system database. -->
+  <xs:element name="usp_InsertClaim">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ClaimNumber" type="ClaimNumberType" />
+        <xs:element name="PolicyNumber" type="xs:string" />
+        <xs:element name="PolicyStatus" type="xs:string" />
+        <xs:element name="PolicyEffectiveDate" type="xs:date" />
+        <xs:element name="LineOfBusiness" type="xs:string" />
+        <xs:element name="InsuredPartyId" type="xs:string" />
+        <xs:element name="ClaimantName" type="xs:string" />
+        <xs:element name="ClaimantTaxIdMasked" type="xs:string" nillable="true" />
+        <xs:element name="LossDate" type="xs:date" />
+        <xs:element name="ReportedDate" type="xs:date" />
+        <xs:element name="LossCause" type="xs:string" />
+        <xs:element name="LossDescription" type="xs:string" />
+        <xs:element name="EstimatedAmount" type="xs:decimal" />
+        <xs:element name="Deductible" type="xs:decimal" />
+        <xs:element name="CoverageLimit" type="xs:decimal" />
+        <xs:element name="NetExposure" type="xs:decimal" />
+        <xs:element name="InjuryFlag" type="xs:boolean" />
+        <xs:element name="PriorFraudFlag" type="xs:boolean" />
+        <xs:element name="InForceAtLoss" type="xs:boolean" />
+        <xs:element name="AgencyId" type="AgencyIdType" />
+        <xs:element name="TriageOutcome" type="xs:string" nillable="true" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- AgencyId reaches the declines folder name (declines\%ClaimsHub.AgencyId%); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="AgencyIdType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="AG-[0-9]{4}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

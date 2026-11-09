@@ -1,0 +1,35 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000006</RqUID>
+  <TransactionRequestDt>2026-09-12T08:21:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0417</ProducerId>
+      <ProducerName>Harbourline Brokers</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-HOME-48142</PolicyNumber>
+      <LOBCd>HOME</LOBCd>
+        <EffectiveDt>2026-09-01</EffectiveDt>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Declan</GivenName>
+      <Surname>Ashworth</Surname>
+      <TaxId>106-46-7078</TaxId>
+        <EmailAddr>declan.ashworth@example.net</EmailAddr>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100406</ClaimNumber>
+      <LossDt>2026-09-11</LossDt>
+      <ReportedDt>2026-09-12</ReportedDt>
+      <LossCauseCd>WIND</LossCauseCd>
+      <IncidentDesc>Shingles and a section of fence lost in the overnight storm</IncidentDesc>
+      <EstimatedLossAmt>2501.50</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+      <Addr>
+        <City>Portsmouth</City>
+        <StateProvCd>NH</StateProvCd>
+        <PostalCode>03801</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>

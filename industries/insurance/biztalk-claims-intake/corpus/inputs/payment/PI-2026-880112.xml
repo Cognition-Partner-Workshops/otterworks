@@ -1,0 +1,34 @@
+<ns0:PaymentInstruction xmlns:ns0="http://schemas.thistlecombe.example/canonical/payment">
+  <InstructionId>PI-2026-880112</InstructionId>
+  <ClaimNumber>CLM-2026-100404</ClaimNumber>
+  <PolicyNumber>POL-AUTO-48232</PolicyNumber>
+  <VendorCode>PAYV01</VendorCode>
+  <Payee>
+    <Name>Harbour Collision Repair</Name>
+    <PayeeType>VN</PayeeType>
+    <BankAccountMasked>****1876</BankAccountMasked>
+  </Payee>
+  <ValueDate>2026-10-13</ValueDate>
+  <CurrencyCd>USD</CurrencyCd>
+  <Line>
+    <LineNo>1</LineNo>
+    <LineType>IND</LineType>
+    <Amount>7298.35</Amount>
+    <GLAccount>61010100</GLAccount>
+    <Memo>Indemnity per adjuster estimate</Memo>
+  </Line>
+  <Line>
+    <LineNo>2</LineNo>
+    <LineType>EXP</LineType>
+    <Amount>128.84</Amount>
+    <GLAccount>61020300</GLAccount>
+    <Memo>Independent appraisal fee</Memo>
+  </Line>
+  <Line>
+    <LineNo>3</LineNo>
+    <LineType>SLV</LineType>
+    <Amount>-239.81</Amount>
+    <GLAccount>41050200</GLAccount>
+    <Memo>Salvage recovery credit</Memo>
+  </Line>
+</ns0:PaymentInstruction>

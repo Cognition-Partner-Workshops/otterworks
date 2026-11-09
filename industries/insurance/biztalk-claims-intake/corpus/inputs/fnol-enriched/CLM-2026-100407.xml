@@ -1,0 +1,26 @@
+<ns0:Root xmlns:ns0="http://schemas.microsoft.com/BizTalk/2003/aggschema">
+  <InputMessagePart_0>
+    <ns0:Claim xmlns:ns0="http://schemas.thistlecombe.example/canonical/claim"><ClaimNumber>CLM-2026-100407</ClaimNumber><SourceRqUID>6f1c3a2e-0000-4b1a-9c0d-000000000007</SourceRqUID><Agency><Id>AG-0922</Id><Name>Penrose &amp; Daughters</Name></Agency><PolicyNumber>POL-HOME-48149</PolicyNumber><LineOfBusiness>HOME</LineOfBusiness><Claimant><FullName>Marisol Ibanez</FullName><TaxIdMasked>***-**-7091</TaxIdMasked><Phone>401-555-1259</Phone><Email>marisol.ibanez@example.net</Email><PriorFraudFlag>false</PriorFraudFlag></Claimant><Loss><LossDate>2026-09-12</LossDate><ReportedDate>2026-09-13</ReportedDate><CauseCode>WATR</CauseCode><Description>Washing machine hose burst, kitchen and hallway floor damaged</Description><EstimatedAmount>6400.00</EstimatedAmount><Injury>false</Injury><PoliceReport>false</PoliceReport><City>Mystic</City><State>CT</State><PostalCode>06355</PostalCode></Loss></ns0:Claim>
+  </InputMessagePart_0>
+  <InputMessagePart_1>
+    <ns0:PolicyInqRs xmlns:ns0="http://schemas.thistlecombe.example/acord/policy">
+      <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000007</RqUID>
+      <PolicyNumber>POL-HOME-48149</PolicyNumber>
+      <PolicyStatusCd>Cancelled</PolicyStatusCd>
+      <LOBCd>HOME</LOBCd>
+      <EffectiveDt>2026-01-01</EffectiveDt>
+      <ExpirationDt>2026-06-30</ExpirationDt>
+      <DeductibleAmt>500.00</DeductibleAmt>
+      <CoverageLimitAmt>100000.00</CoverageLimitAmt>
+      <InsuredPartyId>PTY-070217</InsuredPartyId>
+      <Coverage>
+        <CoverageCd>DWELL</CoverageCd>
+        <LimitAmt>100000.00</LimitAmt>
+      </Coverage>
+      <Coverage>
+        <CoverageCd>LIAB</CoverageCd>
+        <LimitAmt>300000.00</LimitAmt>
+      </Coverage>
+    </ns0:PolicyInqRs>
+  </InputMessagePart_1>
+</ns0:Root>

@@ -1,0 +1,36 @@
+<ns0:ClaimsSvcRq xmlns:ns0="http://schemas.thistlecombe.example/acord/claims/fnol">
+  <RqUID>6f1c3a2e-0000-4b1a-9c0d-000000000007</RqUID>
+  <TransactionRequestDt>2026-09-13T08:22:00</TransactionRequestDt>
+  <ClaimsNotificationAddRq>
+    <Producer>
+      <ProducerId>AG-0922</ProducerId>
+      <ProducerName>Penrose &amp; Daughters</ProducerName>
+    </Producer>
+    <Policy>
+      <PolicyNumber>POL-HOME-48149</PolicyNumber>
+      <LOBCd>HOME</LOBCd>
+    </Policy>
+    <InsuredOrPrincipal>
+      <GivenName>Marisol</GivenName>
+      <Surname>Ibanez</Surname>
+      <TaxId>107-47-7091</TaxId>
+        <PhoneNumber>401-555-1259</PhoneNumber>
+        <EmailAddr>marisol.ibanez@example.net</EmailAddr>
+    </InsuredOrPrincipal>
+    <ClaimsOccurrence>
+      <ClaimNumber>CLM-2026-100407</ClaimNumber>
+      <LossDt>2026-09-12</LossDt>
+      <ReportedDt>2026-09-13</ReportedDt>
+      <LossCauseCd>WATR</LossCauseCd>
+      <IncidentDesc>Washing machine hose burst, kitchen and hallway floor damaged</IncidentDesc>
+      <EstimatedLossAmt>6400.00</EstimatedLossAmt>
+      <InjuryInd>false</InjuryInd>
+        <PoliceReportInd>false</PoliceReportInd>
+      <Addr>
+        <City>Mystic</City>
+        <StateProvCd>CT</StateProvCd>
+        <PostalCode>06355</PostalCode>
+      </Addr>
+    </ClaimsOccurrence>
+  </ClaimsNotificationAddRq>
+</ns0:ClaimsSvcRq>

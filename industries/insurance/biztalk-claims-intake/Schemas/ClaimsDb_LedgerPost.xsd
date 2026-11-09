@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns="http://schemas.microsoft.com/Sql/2008/05/TypedProcedures/dbo" xmlns:b="http://schemas.microsoft.com/BizTalk/2003" targetNamespace="http://schemas.microsoft.com/Sql/2008/05/TypedProcedures/dbo" elementFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:annotation>
+    <xs:appinfo>
+      <b:schemaInfo root_reference="usp_PostClaimPayment" displayroot_reference="usp_PostClaimPayment" />
+    </xs:appinfo>
+  </xs:annotation>
+  <!-- WCF-SQL typed procedure dbo.usp_PostClaimPayment: the ledger post the ClaimPayment orchestration compensates when the vendor file cannot be delivered. -->
+  <xs:element name="usp_PostClaimPayment">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="InstructionId" type="xs:string" />
+        <xs:element name="ClaimNumber" type="ClaimNumberType" />
+        <xs:element name="VendorReference" type="xs:string" />
+        <xs:element name="PayeeName" type="xs:string" />
+        <xs:element name="ValueDate" type="xs:date" />
+        <xs:element name="Currency" type="xs:string" />
+        <xs:element name="IndemnityAmount" type="xs:string" />
+        <xs:element name="ExpenseAmount" type="xs:string" />
+        <xs:element name="SalvageCredit" type="xs:string" />
+        <xs:element name="NetAmount" type="xs:string" />
+        <xs:element name="LineCount" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!-- ClaimNumber reaches send-port file names (%ClaimsHub.ClaimNumber%.xml); the pattern keeps path separators and dot segments out of it. -->
+  <xs:simpleType name="ClaimNumberType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="CLM-[0-9]{4}-[0-9]{6}" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
