@@ -86,3 +86,53 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_content_type_tautology_stays_owner_scoped(client: AsyncClient, owner_id: uuid.UUID):
+    other_owner = uuid.uuid4()
+    await _create(client, owner_id, "Mine", content_type="text/markdown")
+    await _create(client, other_owner, "Theirs", content_type="text/markdown")
+
+    resp = await client.get(
+        "/api/v1/documents/",
+        params={"owner_id": str(owner_id), "content_type": "text/markdown' OR '1'='1"},
+    )
+
+    assert resp.status_code == 200
+    assert resp.json() == {"items": [], "total": 0, "page": 1, "size": 20, "pages": 1}
+
+
+@pytest.mark.asyncio
+async def test_title_with_quote_is_a_literal_filter(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "Q3 report")
+    await _create(client, owner_id, "Bob's report")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "bob's"})
+
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["Bob's report"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"sort": "title; DROP TABLE documents"},
+        {"sort": "owner_id"},
+        {"sort": "title", "direction": "asc; SELECT 1"},
+    ],
+)
+async def test_unknown_sort_or_direction_is_rejected(
+    client: AsyncClient, owner_id: uuid.UUID, params: dict[str, str]
+):
+    await _create(client, owner_id, "Plan")
+
+    resp = await client.get("/api/v1/documents/", params=params)
+
+    assert resp.status_code == 400
+    assert resp.json() == {"detail": "Invalid filter"}
+
+    still_there = await client.get("/api/v1/documents/", params={"title": "plan"})
+    assert still_there.status_code == 200
+    assert still_there.json()["total"] == 1
