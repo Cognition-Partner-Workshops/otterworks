@@ -21,10 +21,12 @@ type Route struct {
 
 // RouterConfig holds configuration for the reverse proxy router.
 type RouterConfig struct {
-	Routes         []Route
-	CBManager      *CircuitBreakerManager
-	Logger         zerolog.Logger
-	EnableTracing  bool
+	Routes        []Route
+	CBManager     *CircuitBreakerManager
+	Logger        zerolog.Logger
+	EnableTracing bool
+	// InternalAuthSecret signs the forwarded identity (see identity.go).
+	InternalAuthSecret string
 }
 
 // NewRouter creates a chi router with all service routes mounted.
@@ -59,21 +61,27 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 		cfg.Logger.Fatal().Err(err).Str("target", route.TargetURL).Msg("invalid proxy target URL")
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
+	proxy := &httputil.ReverseProxy{}
 
-	// Wrap the default director to forward authenticated user identity.
-	// The auth-service issues JWTs with the user ID in the standard "sub" claim
-	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
-	defaultDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		defaultDirector(req)
-		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
+	// Rewrite (not Director: ReverseProxy may strip headers a Director adds)
+	// forwards the authenticated user identity. The auth-service issues JWTs with
+	// the user ID in the standard "sub" claim (claims.Subject); fall back to the
+	// custom "user_id" claim for compatibility. Whatever identity headers the
+	// client sent are dropped first: backends only trust X-User-ID when it
+	// arrives with a gateway signature over it.
+	proxy.Rewrite = func(r *httputil.ProxyRequest) {
+		r.SetURL(target)
+		r.Out.Host = r.In.Host
+		r.SetXForwarded()
+		r.Out.Header.Del(UserIDHeader)
+		r.Out.Header.Del(SignatureHeader)
+		if claims := middleware.GetJWTClaims(r.In.Context()); claims != nil {
 			userID := claims.Subject
 			if userID == "" {
 				userID = claims.UserID
 			}
 			if userID != "" {
-				req.Header.Set("X-User-ID", userID)
+				AttestIdentity(r.Out.Header, cfg.InternalAuthSecret, userID)
 			}
 		}
 	}

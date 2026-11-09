@@ -40,6 +40,9 @@ class AuthConfig:
     service_token: str = field(
         default_factory=lambda: os.getenv("SEARCH_SERVICE_TOKEN", "")
     )
+    internal_auth_secret: str = field(
+        default_factory=lambda: os.getenv("INTERNAL_AUTH_SECRET", "")
+    )
     require_auth: bool = field(
         default_factory=lambda: os.getenv("REQUIRE_AUTH", "true").lower() == "true"
     )

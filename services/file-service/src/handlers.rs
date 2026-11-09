@@ -1,5 +1,5 @@
 use actix_multipart::Multipart;
-use actix_web::{web, HttpRequest, HttpResponse};
+use actix_web::{web, HttpResponse};
 use bytes::BytesMut;
 use chrono::Utc;
 use futures_util::StreamExt;
@@ -10,6 +10,7 @@ async fn chaos_active(cm: &mut redis::aio::ConnectionManager, flag: &str) -> boo
     result.unwrap_or(0) > 0
 }
 
+use crate::auth::GatewayIdentity;
 use crate::config::AppConfig;
 use crate::errors::ServiceError;
 use crate::events::EventPublisher;
@@ -43,7 +44,7 @@ pub async fn metrics() -> HttpResponse {
 // -- File Handlers --
 
 pub async fn upload_file(
-    req: HttpRequest,
+    identity: GatewayIdentity,
     s3: web::Data<S3Client>,
     meta: web::Data<MetadataClient>,
     events: web::Data<EventPublisher>,
@@ -51,18 +52,13 @@ pub async fn upload_file(
     redis_cm: web::Data<redis::aio::ConnectionManager>,
     mut payload: Multipart,
 ) -> Result<HttpResponse, ServiceError> {
-    // Prefer owner_id from X-User-ID header (injected by api-gateway from JWT).
-    // Fall back to the multipart field for direct/internal callers.
-    let header_owner_id = req
-        .headers()
-        .get("X-User-ID")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.trim().parse::<Uuid>().ok());
+    // The owner is always the gateway-attested caller; a multipart `owner_id`
+    // field is ignored like any other unknown field.
+    let owner = identity.user_id;
 
     let mut file_bytes = BytesMut::new();
     let mut file_name = String::from("unnamed");
     let mut content_type = String::from("application/octet-stream");
-    let mut owner_id: Option<Uuid> = None;
     let mut folder_id: Option<Uuid> = None;
 
     while let Some(item) = payload.next().await {
@@ -92,19 +88,6 @@ pub async fn upload_file(
                     }
                 }
             }
-            "owner_id" => {
-                let mut value = BytesMut::new();
-                while let Some(chunk) = field.next().await {
-                    let data = chunk.map_err(|e| ServiceError::BadRequest(e.to_string()))?;
-                    value.extend_from_slice(&data);
-                }
-                let s = String::from_utf8_lossy(&value).to_string();
-                owner_id = Some(
-                    s.trim()
-                        .parse::<Uuid>()
-                        .map_err(|e| ServiceError::BadRequest(format!("invalid owner_id: {e}")))?,
-                );
-            }
             "folder_id" => {
                 let mut value = BytesMut::new();
                 while let Some(chunk) = field.next().await {
@@ -122,10 +105,6 @@ pub async fn upload_file(
             _ => {}
         }
     }
-
-    let owner = header_owner_id
-        .or(owner_id)
-        .ok_or_else(|| ServiceError::BadRequest("owner_id is required".into()))?;
 
     if file_bytes.is_empty() {
         return Err(ServiceError::BadRequest("file field is required".into()));
@@ -216,31 +195,14 @@ pub async fn get_file_metadata(
     }))
 }
 
-/// Resolve the effective owner_id for list operations.
-///
-/// Prefer the `X-User-ID` header injected by the api-gateway from the
-/// authenticated JWT. This prevents a caller from spoofing another user's
-/// `owner_id` via the query string. Fall back to `query.owner_id` only when
-/// no header is present (direct/internal callers).
-fn resolve_owner_id(req: &HttpRequest, query_owner_id: Option<Uuid>) -> Option<Uuid> {
-    let header_owner_id = req
-        .headers()
-        .get("X-User-ID")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.trim().parse::<Uuid>().ok());
-
-    header_owner_id.or(query_owner_id)
-}
-
 pub async fn list_files(
-    req: HttpRequest,
+    identity: GatewayIdentity,
     meta: web::Data<MetadataClient>,
     query: web::Query<ListFilesQuery>,
 ) -> Result<HttpResponse, ServiceError> {
     let include_trashed = query.include_trashed.unwrap_or(false);
-    let owner_id = resolve_owner_id(&req, query.owner_id);
     let files = meta
-        .list_files(query.folder_id, owner_id, include_trashed)
+        .list_files(query.folder_id, identity.user_id, include_trashed)
         .await?;
 
     let page = query.page.unwrap_or(1).max(1);
@@ -262,16 +224,11 @@ pub async fn list_files(
 }
 
 pub async fn list_shared_files(
+    identity: GatewayIdentity,
     meta: web::Data<MetadataClient>,
-    req: HttpRequest,
     query: web::Query<ListFilesQuery>,
 ) -> Result<HttpResponse, ServiceError> {
-    let user_id: Uuid = req
-        .headers()
-        .get("X-User-ID")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.parse().ok())
-        .ok_or_else(|| ServiceError::BadRequest("missing X-User-ID header".into()))?;
+    let user_id = identity.user_id;
 
     let shares = meta.list_shares_for_user(&user_id).await?;
 
@@ -307,12 +264,11 @@ pub async fn list_shared_files(
 }
 
 pub async fn list_trashed(
-    req: HttpRequest,
+    identity: GatewayIdentity,
     meta: web::Data<MetadataClient>,
     query: web::Query<ListFilesQuery>,
 ) -> Result<HttpResponse, ServiceError> {
-    let owner_id = resolve_owner_id(&req, query.owner_id);
-    let files = meta.list_trashed(owner_id).await?;
+    let files = meta.list_trashed(identity.user_id).await?;
 
     let page = query.page.unwrap_or(1).max(1);
     let page_size = query.page_size.unwrap_or(50).min(100);
@@ -569,16 +525,16 @@ pub async fn remove_share(
 // -- Folder Handlers --
 
 pub async fn list_folders(
-    req: HttpRequest,
+    identity: GatewayIdentity,
     meta: web::Data<MetadataClient>,
     query: web::Query<ListFoldersQuery>,
 ) -> Result<HttpResponse, ServiceError> {
-    let owner_id = resolve_owner_id(&req, query.owner_id);
-    let folders = meta.list_folders(query.parent_id, owner_id).await?;
+    let folders = meta.list_folders(query.parent_id, identity.user_id).await?;
     Ok(HttpResponse::Ok().json(ListFoldersResponse { folders }))
 }
 
 pub async fn create_folder(
+    identity: GatewayIdentity,
     meta: web::Data<MetadataClient>,
     body: web::Json<CreateFolderRequest>,
 ) -> Result<HttpResponse, ServiceError> {
@@ -587,7 +543,7 @@ pub async fn create_folder(
         id: Uuid::new_v4(),
         name: body.name.clone(),
         parent_id: body.parent_id,
-        owner_id: body.owner_id,
+        owner_id: identity.user_id,
         created_at: now,
         updated_at: now,
     };
@@ -643,21 +599,16 @@ pub async fn delete_folder(
 // -- Activity Handler --
 
 pub async fn list_activity(
-    req: HttpRequest,
+    identity: GatewayIdentity,
     meta: web::Data<MetadataClient>,
     query: web::Query<ActivityQuery>,
 ) -> Result<HttpResponse, ServiceError> {
-    let owner_id = req
-        .headers()
-        .get("X-User-ID")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|s| s.trim().parse::<Uuid>().ok())
-        .ok_or_else(|| ServiceError::BadRequest("missing owner context".into()))?;
+    let owner_id = identity.user_id;
 
     let limit = query.limit.unwrap_or(20).min(50) as usize;
 
     let (files, shares) = futures_util::future::join(
-        meta.list_files(None, Some(owner_id), true),
+        meta.list_files(None, owner_id, true),
         meta.list_shares_by_owner(&owner_id),
     )
     .await;

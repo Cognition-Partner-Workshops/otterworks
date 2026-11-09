@@ -5,6 +5,14 @@ pub struct AppConfig {
     pub server: ServerConfig,
     pub aws: AwsConfig,
     pub sns: SnsConfig,
+    pub auth: AuthConfig,
+}
+
+/// Shared secret the api-gateway uses to sign the `X-User-ID` it forwards
+/// (`X-Gateway-Signature`). Empty means no identity header is ever trusted.
+#[derive(Clone, Debug)]
+pub struct AuthConfig {
+    pub internal_auth_secret: String,
 }
 
 #[derive(Clone, Debug)]
@@ -35,6 +43,21 @@ impl AppConfig {
             server: ServerConfig::from_env(),
             aws: AwsConfig::from_env(),
             sns: SnsConfig::from_env(),
+            auth: AuthConfig::from_env(),
+        }
+    }
+}
+
+impl AuthConfig {
+    pub fn from_env() -> Self {
+        let internal_auth_secret = env::var("INTERNAL_AUTH_SECRET").unwrap_or_default();
+        if internal_auth_secret.is_empty() {
+            tracing::warn!(
+                "INTERNAL_AUTH_SECRET is unset; gateway identity headers will be rejected"
+            );
+        }
+        Self {
+            internal_auth_secret,
         }
     }
 }

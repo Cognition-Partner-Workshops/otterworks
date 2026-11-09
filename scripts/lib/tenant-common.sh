@@ -296,6 +296,12 @@ build_helm_args() {
         add_secret JWT_SECRET "${JWT_SECRET}" ;;
     esac
   fi
+  if [ -n "${INTERNAL_AUTH_SECRET:-}" ]; then
+    case "$service" in
+      api-gateway|file-service|search-service|admin-service)
+        add_secret INTERNAL_AUTH_SECRET "${INTERNAL_AUTH_SECRET}" ;;
+    esac
+  fi
 
   local sns_topic=""; local sqs_notif=""
   if [ "${T_WIRE_EVENTING}" = "true" ]; then
