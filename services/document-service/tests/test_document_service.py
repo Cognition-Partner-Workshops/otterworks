@@ -18,9 +18,7 @@ from app.services.document_service import DocumentService
 @pytest.mark.asyncio
 async def test_create_and_get(db_session: AsyncSession, owner_id: uuid.UUID):
     service = DocumentService(db_session)
-    data = DocumentCreate(
-        title="Service Test", content="Body text", owner_id=owner_id
-    )
+    data = DocumentCreate(title="Service Test", content="Body text", owner_id=owner_id)
     doc = await service.create(data)
     assert doc.title == "Service Test"
     assert doc.word_count == 2
@@ -41,30 +39,26 @@ async def test_list_documents_with_filters(
     await service.create(
         DocumentCreate(title="A", content="", owner_id=owner_id, folder_id=folder_id)
     )
-    await service.create(
-        DocumentCreate(title="B", content="", owner_id=owner_id)
-    )
-    await service.create(
-        DocumentCreate(title="C", content="", owner_id=other_owner)
-    )
+    await service.create(DocumentCreate(title="B", content="", owner_id=owner_id))
+    await service.create(DocumentCreate(title="C", content="", owner_id=other_owner))
 
     items, total = await service.list_documents(owner_id=owner_id)
     assert total == 2
 
-    items, total = await service.list_documents(folder_id=folder_id)
+    items, total = await service.list_documents(owner_id=owner_id, folder_id=folder_id)
     assert total == 1
+
+    items, total = await service.list_documents(owner_id=other_owner)
+    assert total == 1
+    assert items[0].title == "C"
 
 
 @pytest.mark.asyncio
 async def test_update_creates_version(db_session: AsyncSession, owner_id: uuid.UUID):
     service = DocumentService(db_session)
-    doc = await service.create(
-        DocumentCreate(title="V1", content="First", owner_id=owner_id)
-    )
+    doc = await service.create(DocumentCreate(title="V1", content="First", owner_id=owner_id))
 
-    updated = await service.update(
-        doc.id, DocumentUpdate(title="V2", content="Second")
-    )
+    updated = await service.update(doc.id, DocumentUpdate(title="V2", content="Second"))
     assert updated is not None
     assert updated.version == 2
     assert updated.title == "V2"
@@ -92,9 +86,7 @@ async def test_patch_partial_update(db_session: AsyncSession, owner_id: uuid.UUI
 @pytest.mark.asyncio
 async def test_soft_delete(db_session: AsyncSession, owner_id: uuid.UUID):
     service = DocumentService(db_session)
-    doc = await service.create(
-        DocumentCreate(title="Delete Me", content="", owner_id=owner_id)
-    )
+    doc = await service.create(DocumentCreate(title="Delete Me", content="", owner_id=owner_id))
 
     assert await service.delete(doc.id) is True
     assert await service.get(doc.id) is None
@@ -133,9 +125,12 @@ async def test_search(db_session: AsyncSession, owner_id: uuid.UUID):
         DocumentCreate(title="Rust Guide", content="Learn Rust", owner_id=owner_id)
     )
 
-    items, total = await service.search("Python")
+    items, total = await service.search("Python", owner_id=owner_id)
     assert total == 1
     assert items[0].title == "Python Guide"
+
+    items, total = await service.search("Python", owner_id=uuid.uuid4())
+    assert total == 0
 
 
 @pytest.mark.asyncio
@@ -161,14 +156,10 @@ async def test_export_formats(db_session: AsyncSession, owner_id: uuid.UUID):
 @pytest.mark.asyncio
 async def test_comments_crud(db_session: AsyncSession, owner_id: uuid.UUID):
     service = DocumentService(db_session)
-    doc = await service.create(
-        DocumentCreate(title="Commented", content="", owner_id=owner_id)
-    )
+    doc = await service.create(DocumentCreate(title="Commented", content="", owner_id=owner_id))
     author = uuid.uuid4()
 
-    comment = await service.add_comment(
-        doc.id, CommentCreate(author_id=author, content="Nice!")
-    )
+    comment = await service.add_comment(doc.id, CommentCreate(author_id=author, content="Nice!"))
     assert comment is not None
     assert comment.content == "Nice!"
 
@@ -189,9 +180,7 @@ async def test_add_comment_to_nonexistent_document(db_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_template_crud_and_create_from(
-    db_session: AsyncSession, owner_id: uuid.UUID
-):
+async def test_template_crud_and_create_from(db_session: AsyncSession, owner_id: uuid.UUID):
     service = DocumentService(db_session)
     template = await service.create_template(
         TemplateCreate(
@@ -218,9 +207,7 @@ async def test_template_crud_and_create_from(
 
 
 @pytest.mark.asyncio
-async def test_create_from_nonexistent_template(
-    db_session: AsyncSession, owner_id: uuid.UUID
-):
+async def test_create_from_nonexistent_template(db_session: AsyncSession, owner_id: uuid.UUID):
     service = DocumentService(db_session)
     from app.schemas.document import DocumentFromTemplate
 

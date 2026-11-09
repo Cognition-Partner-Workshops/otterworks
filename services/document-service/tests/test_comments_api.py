@@ -5,12 +5,15 @@ import uuid
 import pytest
 from httpx import AsyncClient
 
+from tests.conftest import auth_headers
+
 
 @pytest.mark.asyncio
 async def test_add_comment(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Commented Doc", "content": "", "owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
     )
     doc_id = create_resp.json()["id"]
     author_id = str(uuid.uuid4())
@@ -18,6 +21,7 @@ async def test_add_comment(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.post(
         f"/api/v1/documents/{doc_id}/comments",
         json={"author_id": author_id, "content": "Great document!"},
+        headers=auth_headers(owner_id),
     )
     assert resp.status_code == 201
     data = resp.json()
@@ -27,10 +31,11 @@ async def test_add_comment(client: AsyncClient, owner_id: uuid.UUID):
 
 
 @pytest.mark.asyncio
-async def test_add_comment_document_not_found(client: AsyncClient):
+async def test_add_comment_document_not_found(client: AsyncClient, owner_id: uuid.UUID):
     resp = await client.post(
         f"/api/v1/documents/{uuid.uuid4()}/comments",
         json={"author_id": str(uuid.uuid4()), "content": "Orphan comment"},
+        headers=auth_headers(owner_id),
     )
     assert resp.status_code == 404
 
@@ -40,6 +45,7 @@ async def test_list_comments(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "", "owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
     )
     doc_id = create_resp.json()["id"]
 
@@ -47,9 +53,10 @@ async def test_list_comments(client: AsyncClient, owner_id: uuid.UUID):
         await client.post(
             f"/api/v1/documents/{doc_id}/comments",
             json={"author_id": str(uuid.uuid4()), "content": f"Comment {i}"},
+            headers=auth_headers(owner_id),
         )
 
-    resp = await client.get(f"/api/v1/documents/{doc_id}/comments")
+    resp = await client.get(f"/api/v1/documents/{doc_id}/comments", headers=auth_headers(owner_id))
     assert resp.status_code == 200
     assert len(resp.json()) == 3
 
@@ -59,19 +66,25 @@ async def test_delete_comment(client: AsyncClient, owner_id: uuid.UUID):
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "", "owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
     )
     doc_id = create_resp.json()["id"]
 
     comment_resp = await client.post(
         f"/api/v1/documents/{doc_id}/comments",
         json={"author_id": str(uuid.uuid4()), "content": "To delete"},
+        headers=auth_headers(owner_id),
     )
     comment_id = comment_resp.json()["id"]
 
-    resp = await client.delete(f"/api/v1/documents/{doc_id}/comments/{comment_id}")
+    resp = await client.delete(
+        f"/api/v1/documents/{doc_id}/comments/{comment_id}", headers=auth_headers(owner_id)
+    )
     assert resp.status_code == 204
 
-    list_resp = await client.get(f"/api/v1/documents/{doc_id}/comments")
+    list_resp = await client.get(
+        f"/api/v1/documents/{doc_id}/comments", headers=auth_headers(owner_id)
+    )
     assert len(list_resp.json()) == 0
 
 
@@ -80,10 +93,12 @@ async def test_delete_comment_not_found(client: AsyncClient, owner_id: uuid.UUID
     create_resp = await client.post(
         "/api/v1/documents/",
         json={"title": "Doc", "content": "", "owner_id": str(owner_id)},
+        headers=auth_headers(owner_id),
     )
     doc_id = create_resp.json()["id"]
 
     resp = await client.delete(
-        f"/api/v1/documents/{doc_id}/comments/{uuid.uuid4()}"
+        f"/api/v1/documents/{doc_id}/comments/{uuid.uuid4()}",
+        headers=auth_headers(owner_id),
     )
     assert resp.status_code == 404

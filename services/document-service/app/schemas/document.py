@@ -69,6 +69,12 @@ class DocumentListResponse(BaseModel):
 # ---- Version schemas ----
 
 
+class DocumentAccessResponse(BaseModel):
+    document_id: UUID
+    user_id: UUID
+    allowed: bool
+
+
 class DocumentVersionResponse(BaseModel):
     id: UUID
     document_id: UUID

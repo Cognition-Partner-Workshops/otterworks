@@ -1,5 +1,6 @@
 import express from 'express';
 import { createServer } from 'http';
+import type { Duplex } from 'stream';
 import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
 import jwt from 'jsonwebtoken';
@@ -11,6 +12,10 @@ import { MetricsCollector } from './metrics';
 import { createAuthMiddleware } from './middleware/auth';
 import { RedisAdapter } from './services/redis-adapter';
 import { DocumentStore } from './services/document-store';
+import {
+  DocumentServiceAccessClient,
+  documentIdFromRoom,
+} from './services/document-access';
 import { AwarenessService } from './services/awareness';
 import { PresenceHandler } from './handlers/presence';
 import { setupCollaborationHandlers } from './handlers/collaboration';
@@ -112,6 +117,12 @@ const documentStore = new DocumentStore(redisAdapter, logger, {
   maxSnapshots: config.persistence.maxSnapshotsPerDocument,
 });
 
+const documentAccess = new DocumentServiceAccessClient(
+  config.documentService.url,
+  logger,
+  config.documentService.timeoutMs,
+);
+
 const awareness = new AwarenessService(logger);
 const presenceHandler = new PresenceHandler(awareness, logger);
 
@@ -119,6 +130,7 @@ const presenceHandler = new PresenceHandler(awareness, logger);
 const collabManager = setupCollaborationHandlers(
   io,
   documentStore,
+  documentAccess,
   awareness,
   presenceHandler,
   metrics,
@@ -134,6 +146,12 @@ wss.on('connection', (conn, req) => {
   logger.info({ url: req.url }, 'y-websocket_client_connected');
 });
 
+function rejectUpgrade(socket: Duplex, status: string, reason: string): void {
+  logger.warn(`y-websocket_connection_rejected: ${reason}`);
+  socket.write(`HTTP/1.1 ${status}\r\n\r\n`);
+  socket.destroy();
+}
+
 // Route WebSocket upgrades: Socket.IO paths go to Socket.IO, all others to y-websocket
 httpServer.on('upgrade', (request, socket, head) => {
   if (request.url?.startsWith('/socket.io')) {
@@ -148,24 +166,40 @@ httpServer.on('upgrade', (request, socket, head) => {
     request.headers.authorization?.replace('Bearer ', '');
 
   if (!token) {
-    logger.warn('y-websocket_connection_rejected: no token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
+    rejectUpgrade(socket, '401 Unauthorized', 'no token');
     return;
   }
 
   try {
     jwt.verify(token, config.jwt.secret);
   } catch {
-    logger.warn('y-websocket_connection_rejected: invalid token');
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
+    rejectUpgrade(socket, '401 Unauthorized', 'invalid token');
     return;
   }
 
-  wss.handleUpgrade(request, socket, head, (ws) => {
-    wss.emit('connection', ws, request);
-  });
+  // The y-websocket room is the document, so the caller must be allowed to use it.
+  const documentId = documentIdFromRoom(url.pathname);
+  if (!documentId) {
+    rejectUpgrade(socket, '403 Forbidden', 'no document room');
+    return;
+  }
+
+  documentAccess
+    .canAccess(documentId, token)
+    .then((allowed) => {
+      if (socket.destroyed) return;
+      if (!allowed) {
+        rejectUpgrade(socket, '403 Forbidden', `document ${documentId} not authorized`);
+        return;
+      }
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    })
+    .catch((err) => {
+      logger.error({ err, documentId }, 'y-websocket_access_check_failed');
+      rejectUpgrade(socket, '403 Forbidden', 'access check failed');
+    });
 });
 
 // Start presence cleanup with document eviction callback

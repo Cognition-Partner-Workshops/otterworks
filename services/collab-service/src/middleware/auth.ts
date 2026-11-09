@@ -12,6 +12,8 @@ export interface AuthenticatedUser {
 
 export interface AuthenticatedSocket extends Socket {
   user?: AuthenticatedUser;
+  token?: string;
+  authorizedDocuments?: Set<string>;
 }
 
 interface JwtPayload {
@@ -39,12 +41,15 @@ export function createAuthMiddleware(jwtSecret: string, logger: Logger) {
     try {
       const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
 
-      (socket as AuthenticatedSocket).user = {
+      const authSocket = socket as AuthenticatedSocket;
+      authSocket.user = {
         userId: decoded.sub,
         email: decoded.email || '',
         displayName: decoded.name || decoded.display_name || 'Anonymous',
         roles: decoded.roles || [],
       };
+      authSocket.token = token;
+      authSocket.authorizedDocuments = new Set();
 
       logger.debug(
         { socketId: socket.id, userId: decoded.sub },
@@ -71,4 +76,24 @@ export function extractUserFromSocket(socket: Socket): AuthenticatedUser {
       roles: [],
     }
   );
+}
+
+export function extractTokenFromSocket(socket: Socket): string | undefined {
+  return (socket as AuthenticatedSocket).token;
+}
+
+/** Record that join-document authorized this socket for a document. */
+export function grantDocumentAccess(socket: Socket, documentId: string): void {
+  const authSocket = socket as AuthenticatedSocket;
+  authSocket.authorizedDocuments ??= new Set();
+  authSocket.authorizedDocuments.add(documentId);
+}
+
+export function revokeDocumentAccess(socket: Socket, documentId: string): void {
+  (socket as AuthenticatedSocket).authorizedDocuments?.delete(documentId);
+}
+
+/** True only for documents this socket joined through an authorized join-document. */
+export function hasDocumentAccess(socket: Socket, documentId: string): boolean {
+  return (socket as AuthenticatedSocket).authorizedDocuments?.has(documentId) ?? false;
 }

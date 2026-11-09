@@ -10,6 +10,7 @@ import { PresenceHandler } from '../handlers/presence';
 import { MetricsCollector } from '../metrics';
 import { createAuthMiddleware } from '../middleware/auth';
 import { RedisAdapter } from '../services/redis-adapter';
+import type { DocumentAccessChecker } from '../services/document-access';
 
 const JWT_SECRET = 'test-secret-key-for-unit-tests';
 let PORT: number;
@@ -38,6 +39,23 @@ const mockRedis = {
   disconnect: jest.fn(),
   ping: jest.fn().mockResolvedValue(true),
 } as unknown as jest.Mocked<RedisAdapter>;
+
+/**
+ * Stand-in for document-service's access check: documents listed in
+ * `restrictedDocuments` are only open to the owners named there, everything
+ * else is open to any authenticated user.
+ */
+const restrictedDocuments = new Map<string, Set<string>>([
+  ['doc-owned-by-alice', new Set(['user-alice'])],
+]);
+
+const fakeDocumentAccess: DocumentAccessChecker = {
+  canAccess: jest.fn(async (documentId: string, token: string) => {
+    const { sub } = jwt.verify(token, JWT_SECRET) as { sub: string };
+    const owners = restrictedDocuments.get(documentId);
+    return owners ? owners.has(sub) : true;
+  }),
+};
 
 const mockLogger = {
   info: jest.fn(),
@@ -75,6 +93,7 @@ describe('CollaborationManager', () => {
     manager = new CollaborationManager({
       io,
       documentStore,
+      documentAccess: fakeDocumentAccess,
       awareness,
       presenceHandler,
       metrics,
@@ -215,6 +234,119 @@ describe('CollaborationManager', () => {
 
       client1.disconnect();
       client2.disconnect();
+    });
+  });
+
+  describe('Document Authorization', () => {
+    function join(
+      client: ClientSocket,
+      documentId: string,
+    ): Promise<{ success: boolean; error?: string }> {
+      return new Promise((resolve) => {
+        client.emit(
+          'join-document',
+          { documentId },
+          (res: { success: boolean; error?: string }) => resolve(res),
+        );
+      });
+    }
+
+    function waitFor<T>(client: ClientSocket, event: string): Promise<T> {
+      return new Promise((resolve) => client.once(event, (data: T) => resolve(data)));
+    }
+
+    function expectSilence(client: ClientSocket, event: string, ms = 150): Promise<void> {
+      return new Promise((resolve, reject) => {
+        const onEvent = () => reject(new Error(`unexpected ${event}`));
+        client.once(event, onEvent);
+        setTimeout(() => {
+          client.off(event, onEvent);
+          resolve();
+        }, ms);
+      });
+    }
+
+    it('asks document-service with the caller token before joining', async () => {
+      const client = await connectClient('user-alice', 'Alice');
+      const response = await join(client, 'doc-owned-by-alice');
+
+      expect(response.success).toBe(true);
+      expect(fakeDocumentAccess.canAccess).toHaveBeenCalledWith(
+        'doc-owned-by-alice',
+        expect.any(String),
+      );
+      const [, token] = (fakeDocumentAccess.canAccess as jest.Mock).mock.calls.at(-1)!;
+      expect((jwt.verify(token, JWT_SECRET) as { sub: string }).sub).toBe('user-alice');
+      client.disconnect();
+    });
+
+    it('rejects join-document for a document the caller may not access', async () => {
+      const alice = await connectClient('user-alice', 'Alice');
+      const mallory = await connectClient('user-mallory', 'Mallory');
+      expect((await join(alice, 'doc-owned-by-alice')).success).toBe(true);
+
+      const syncSeen = expectSilence(mallory, 'sync-document');
+      const response = await join(mallory, 'doc-owned-by-alice');
+
+      expect(response).toEqual({ success: false, error: 'Access denied' });
+      await syncSeen;
+      alice.disconnect();
+      mallory.disconnect();
+    });
+
+    it('drops document-update, comments and history for documents the socket never joined', async () => {
+      const alice = await connectClient('user-alice', 'Alice');
+      const mallory = await connectClient('user-mallory', 'Mallory');
+      expect((await join(alice, 'doc-owned-by-alice')).success).toBe(true);
+      await new Promise((r) => setTimeout(r, 50));
+
+      const tempDoc = new Y.Doc();
+      tempDoc.getText('content').insert(0, 'pwned');
+      const update = Buffer.from(Y.encodeStateAsUpdate(tempDoc)).toString('base64');
+
+      const aliceUpdate = expectSilence(alice, 'document-update');
+      const aliceComment = expectSilence(alice, 'comment-added');
+      const denied = waitFor<{ documentId: string; event: string }>(
+        mallory,
+        'access-denied',
+      );
+      mallory.emit('document-update', { documentId: 'doc-owned-by-alice', update });
+      expect(await denied).toMatchObject({
+        documentId: 'doc-owned-by-alice',
+        event: 'document-update',
+      });
+
+      const deniedComment = waitFor<{ event: string }>(mallory, 'access-denied');
+      mallory.emit('comment-add', {
+        documentId: 'doc-owned-by-alice',
+        comment: { id: 'c1', threadId: 't1', content: 'hi', rangeStart: 0, rangeEnd: 1 },
+      });
+      expect((await deniedComment).event).toBe('comment-add');
+
+      const historySilent = expectSilence(mallory, 'document-history');
+      const deniedHistory = waitFor<{ event: string }>(mallory, 'access-denied');
+      mallory.emit('request-history', { documentId: 'doc-owned-by-alice' });
+      expect((await deniedHistory).event).toBe('request-history');
+      await Promise.all([aliceUpdate, aliceComment, historySilent]);
+
+      expect(
+        manager.getDocument('doc-owned-by-alice')?.getText('content').toString(),
+      ).toBe('');
+      expect(mockRedis.lrange).not.toHaveBeenCalled();
+
+      alice.disconnect();
+      mallory.disconnect();
+    });
+
+    it('revokes access when the socket leaves the document', async () => {
+      const alice = await connectClient('user-alice', 'Alice');
+      expect((await join(alice, 'doc-owned-by-alice')).success).toBe(true);
+      alice.emit('leave-document', { documentId: 'doc-owned-by-alice' });
+
+      const denied = waitFor<{ event: string }>(alice, 'access-denied');
+      alice.emit('request-history', { documentId: 'doc-owned-by-alice' });
+      expect((await denied).event).toBe('request-history');
+      alice.disconnect();
     });
   });
 

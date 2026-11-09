@@ -26,9 +26,8 @@ def test_socketio_rejects_missing_or_invalid_token(base_url):
         )
 
 
-def test_socketio_two_users_join_same_document_and_presence_updates(api_client, base_url):
+def test_socketio_two_sessions_join_same_document_and_presence_updates(api_client, base_url):
     user_a = api_client.register_user("ws-user-a")
-    user_b = api_client.register_user("ws-user-b")
     document = api_client.create_document(
         user_a,
         title=f"WebSocket Document {api_client.run_id}",
@@ -37,6 +36,7 @@ def test_socketio_two_users_join_same_document_and_presence_updates(api_client, 
     document_id = document["id"]
     received_by_b: list[dict] = []
 
+    # Two sessions of the document's owner (e.g. two browser tabs).
     client_a = socketio.Client(reconnection=False, request_timeout=5)
     client_b = socketio.Client(reconnection=False, request_timeout=5)
 
@@ -46,10 +46,10 @@ def test_socketio_two_users_join_same_document_and_presence_updates(api_client, 
 
     try:
         client_a.connect(_collab_url(base_url), auth={"token": user_a.access_token}, transports=["websocket"])
-        client_b.connect(_collab_url(base_url), auth={"token": user_b.access_token}, transports=["websocket"])
+        client_b.connect(_collab_url(base_url), auth={"token": user_a.access_token}, transports=["websocket"])
 
-        client_a.emit("join-document", {"documentId": document_id})
-        client_b.emit("join-document", {"documentId": document_id})
+        assert client_a.call("join-document", {"documentId": document_id}, timeout=5) == {"success": True}
+        assert client_b.call("join-document", {"documentId": document_id}, timeout=5) == {"success": True}
         time.sleep(0.5)
 
         presence_response = api_client.client.get(
@@ -75,3 +75,40 @@ def test_socketio_two_users_join_same_document_and_presence_updates(api_client, 
             client_a.disconnect()
         if client_b.connected:
             client_b.disconnect()
+
+
+def test_socketio_rejects_join_and_updates_for_another_users_document(api_client, base_url):
+    owner = api_client.register_user("ws-owner")
+    intruder = api_client.register_user("ws-intruder")
+    document = api_client.create_document(
+        owner,
+        title=f"Private Document {api_client.run_id}",
+        content="owner only",
+    )
+    document_id = document["id"]
+    denied: list[dict] = []
+
+    client = socketio.Client(reconnection=False, request_timeout=5)
+
+    @client.on("access-denied")
+    def on_access_denied(data):
+        denied.append(data)
+
+    try:
+        client.connect(_collab_url(base_url), auth={"token": intruder.access_token}, transports=["websocket"])
+
+        response = client.call("join-document", {"documentId": document_id}, timeout=5)
+        assert response == {"success": False, "error": "Access denied"}
+
+        client.emit("document-update", {"documentId": document_id, "update": {"text": "intrusion"}})
+        client.emit("request-history", {"documentId": document_id})
+        api_client.poll_until(
+            lambda: denied,
+            lambda events: {event["event"] for event in events} >= {"document-update", "request-history"},
+            timeout_seconds=10,
+            interval_seconds=0.25,
+            description="collab-service refuses events for a document the socket never joined",
+        )
+    finally:
+        if client.connected:
+            client.disconnect()
