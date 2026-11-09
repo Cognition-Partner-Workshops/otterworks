@@ -21,10 +21,12 @@ type Route struct {
 
 // RouterConfig holds configuration for the reverse proxy router.
 type RouterConfig struct {
-	Routes         []Route
-	CBManager      *CircuitBreakerManager
-	Logger         zerolog.Logger
-	EnableTracing  bool
+	Routes        []Route
+	CBManager     *CircuitBreakerManager
+	Logger        zerolog.Logger
+	EnableTracing bool
+	// InternalAuthSecret signs the forwarded identity (see identity.go).
+	InternalAuthSecret string
 }
 
 // NewRouter creates a chi router with all service routes mounted.
@@ -64,16 +66,20 @@ func newProxyHandler(route Route, cfg RouterConfig) http.HandlerFunc {
 	// Wrap the default director to forward authenticated user identity.
 	// The auth-service issues JWTs with the user ID in the standard "sub" claim
 	// (claims.Subject). Fall back to the custom "user_id" claim for compatibility.
+	// Whatever identity headers the client sent are dropped first: backends only
+	// trust X-User-ID when it arrives with a gateway signature over it.
 	defaultDirector := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		defaultDirector(req)
+		req.Header.Del(UserIDHeader)
+		req.Header.Del(SignatureHeader)
 		if claims := middleware.GetJWTClaims(req.Context()); claims != nil {
 			userID := claims.Subject
 			if userID == "" {
 				userID = claims.UserID
 			}
 			if userID != "" {
-				req.Header.Set("X-User-ID", userID)
+				AttestIdentity(req.Header, cfg.InternalAuthSecret, userID)
 			}
 		}
 	}

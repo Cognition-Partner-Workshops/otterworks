@@ -1,4 +1,5 @@
 require 'net/http'
+require 'openssl'
 require 'securerandom'
 
 # Generates synthetic traffic to chaos-affected services so that Prometheus
@@ -93,9 +94,21 @@ class ChaosProbeService
               end
 
     config[:headers]&.each { |k, v| request[k] = v }
+    attest_identity(request)
     http.request(request)
   rescue StandardError
     nil
+  end
+
+  # Backends only trust X-User-ID when it carries the api-gateway's signature
+  # (hex HMAC-SHA256 of the user id under INTERNAL_AUTH_SECRET); sign ours the
+  # same way so the probe is accepted like a gateway-proxied request.
+  def self.attest_identity(request)
+    user_id = request['X-User-ID']
+    secret = ENV.fetch('INTERNAL_AUTH_SECRET', '')
+    return if user_id.nil? || secret.empty?
+
+    request['X-Gateway-Signature'] = OpenSSL::HMAC.hexdigest('SHA256', secret, user_id)
   end
 
   # Builds a multipart/form-data POST with a small dummy file.
