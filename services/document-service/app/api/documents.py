@@ -25,7 +25,7 @@ from app.schemas.document import (
 )
 from app.services.document_query_repository import DocumentQueryRepository
 from app.services.document_service import DocumentService
-from app.services.export_archive import ExportArchive
+from app.services.export_archive import ExportArchive, ExportTooLargeError
 from app.services.render_cache import render_cache
 from app.services.share_link import ShareLinkService
 
@@ -158,6 +158,8 @@ async def read_export(name: str = Query(..., min_length=1)):
     archive = ExportArchive()
     try:
         return archive.read_export(name)
+    except ExportTooLargeError as exc:
+        raise HTTPException(status_code=413, detail="Export too large") from exc
     except (OSError, UnicodeDecodeError) as exc:
         raise HTTPException(status_code=404, detail="Export not found") from exc
 
