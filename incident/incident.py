@@ -139,7 +139,27 @@ def load_scale() -> float:
 
 
 def jwt_secret() -> str:
-    return os.environ.get("JWT_SECRET", "otterworks-local-dev-jwt-secret-change-me-in-production")
+    """The HMAC key the target stack verifies tokens with: the environment (a tenant's,
+    exported per the skill) or the Compose stack's gitignored .env. No committed default:
+    a known key would let anyone forge a bearer token for any user."""
+    secret = os.environ.get("JWT_SECRET") or compose_dotenv().get("JWT_SECRET")
+    if not secret:
+        die("JWT_SECRET is not set; export the target's or run `make .env` for the Compose stack")
+    return secret
+
+
+def compose_dotenv() -> dict[str, str]:
+    path = REPO / ".env"
+    if not path.is_file():
+        return {}
+    values: dict[str, str] = {}
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        values[key.strip()] = value.strip().strip("'\"")
+    return values
 
 
 def bearer(user_id: str) -> dict[str, str]:
