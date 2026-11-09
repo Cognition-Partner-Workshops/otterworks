@@ -38,6 +38,18 @@ def _document_index_payload(document: Document) -> dict[str, object]:
     }
 
 
+class DocumentAccessError(Exception):
+    """Raised when a caller is not allowed to reach a document."""
+
+    status_code = 403
+    detail = "Access denied"
+
+
+class DocumentNotFoundError(DocumentAccessError):
+    status_code = 404
+    detail = "Document not found"
+
+
 class DocumentService:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -76,24 +88,57 @@ class DocumentService:
 
     async def get(self, document_id: UUID) -> Document | None:
         result = await self.db.execute(
-            select(Document).where(
-                Document.id == document_id, Document.is_deleted.is_(False)
-            )
+            select(Document).where(Document.id == document_id, Document.is_deleted.is_(False))
         )
         return result.scalar_one_or_none()
 
+    # ---- Authorization ----
+
+    @staticmethod
+    def scope_owner(requested_owner_id: UUID | None, user_id: UUID) -> UUID:
+        """Return the owner a listing must be scoped to.
+
+        Listings are always scoped to the authenticated user; a caller-supplied
+        owner that differs from the caller's identity is rejected rather than
+        silently honoured.
+        """
+        if requested_owner_id is not None and requested_owner_id != user_id:
+            raise DocumentAccessError()
+        return user_id
+
+    async def get_for_user(self, document_id: UUID, user_id: UUID) -> Document:
+        """Return a document the user owns, or raise ``DocumentAccessError``."""
+        document = await self.get(document_id)
+        if not document:
+            raise DocumentNotFoundError()
+        if document.owner_id != user_id:
+            raise DocumentAccessError()
+        return document
+
+    async def can_access(self, document_id: UUID, user_id: UUID) -> bool:
+        """Whether the user may read and edit the document.
+
+        This is the single ownership check other services (collab-service) rely
+        on, so any sharing model added later only needs to be implemented here.
+        """
+        try:
+            await self.get_for_user(document_id, user_id)
+        except DocumentAccessError:
+            return False
+        return True
+
     async def list_documents(
         self,
-        owner_id: UUID | None = None,
+        owner_id: UUID,
         folder_id: UUID | None = None,
         page: int = 1,
         size: int = 20,
     ) -> tuple[list[Document], int]:
         base = select(Document).where(
-            Document.is_deleted.is_(False), Document.is_template.is_(False)
+            Document.is_deleted.is_(False),
+            Document.is_template.is_(False),
+            Document.owner_id == owner_id,
         )
-        if owner_id:
-            base = base.where(Document.owner_id == owner_id)
         if folder_id:
             base = base.where(Document.folder_id == folder_id)
 
@@ -196,9 +241,7 @@ class DocumentService:
         document.is_deleted = True
         await self.db.commit()
 
-        await event_publisher.publish(
-            "document_deleted", {"id": document_id, "type": "document"}
-        )
+        await event_publisher.publish("document_deleted", {"id": document_id, "type": "document"})
         return True
 
     # ---- Versions ----
@@ -211,9 +254,7 @@ class DocumentService:
         )
         return list(result.scalars().all())
 
-    async def restore_version(
-        self, document_id: UUID, version_id: UUID
-    ) -> Document | None:
+    async def restore_version(self, document_id: UUID, version_id: UUID) -> Document | None:
         document = await self.get(document_id)
         if not document:
             return None
@@ -256,13 +297,14 @@ class DocumentService:
     # ---- Search ----
 
     async def search(
-        self, query: str, page: int = 1, size: int = 20
+        self, query: str, owner_id: UUID, page: int = 1, size: int = 20
     ) -> tuple[list[Document], int]:
         escaped = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
         pattern = f"%{escaped}%"
         base = select(Document).where(
             Document.is_deleted.is_(False),
             Document.is_template.is_(False),
+            Document.owner_id == owner_id,
             or_(
                 Document.title.ilike(pattern),
                 Document.content.ilike(pattern),
@@ -297,9 +339,7 @@ class DocumentService:
 
     # ---- Comments ----
 
-    async def add_comment(
-        self, document_id: UUID, data: CommentCreate
-    ) -> Comment | None:
+    async def add_comment(self, document_id: UUID, data: CommentCreate) -> Comment | None:
         document = await self.get(document_id)
         if not document:
             return None
@@ -333,9 +373,7 @@ class DocumentService:
 
     async def delete_comment(self, document_id: UUID, comment_id: UUID) -> bool:
         result = await self.db.execute(
-            select(Comment).where(
-                Comment.id == comment_id, Comment.document_id == document_id
-            )
+            select(Comment).where(Comment.id == comment_id, Comment.document_id == document_id)
         )
         comment = result.scalar_one_or_none()
         if not comment:
@@ -360,15 +398,11 @@ class DocumentService:
         return template
 
     async def list_templates(self) -> list[Template]:
-        result = await self.db.execute(
-            select(Template).order_by(Template.name.asc())
-        )
+        result = await self.db.execute(select(Template).order_by(Template.name.asc()))
         return list(result.scalars().all())
 
     async def get_template(self, template_id: UUID) -> Template | None:
-        result = await self.db.execute(
-            select(Template).where(Template.id == template_id)
-        )
+        result = await self.db.execute(select(Template).where(Template.id == template_id))
         return result.scalar_one_or_none()
 
     async def create_from_template(

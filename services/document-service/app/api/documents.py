@@ -1,20 +1,20 @@
 """Document CRUD API endpoints."""
 
 import asyncio
-import os
 import random
 from uuid import UUID
 
-import jwt
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import PlainTextResponse
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.auth import extract_user_id, require_user_id
 from app.chaos import FLAG_RENDER_CACHE, FLAG_SLOW_QUERIES, flag_active
 from app.db.session import get_db
 from app.schemas.document import (
+    DocumentAccessResponse,
     DocumentCreate,
     DocumentFromTemplate,
     DocumentListResponse,
@@ -44,45 +44,8 @@ async def _maybe_inject_latency() -> None:
         await asyncio.sleep(delay)
 
 
-def _get_jwt_secret() -> str:
-    return os.environ.get("JWT_SECRET", "")
-
-
-def _extract_user_id(request: Request) -> UUID | None:
-    """Extract user ID from the Authorization JWT."""
-    auth_header = request.headers.get("Authorization")
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header[len("Bearer "):]
-        secret = _get_jwt_secret()
-        if secret:
-            try:
-                payload = jwt.decode(token, secret, algorithms=["HS256", "HS384"])
-                user_id_str = payload.get("user_id") or payload.get("sub")
-                if user_id_str:
-                    return UUID(str(user_id_str))
-            except (jwt.PyJWTError, ValueError):
-                pass
-        else:
-            forwarded_user_id = request.headers.get("X-User-ID")
-            if forwarded_user_id:
-                try:
-                    return UUID(str(forwarded_user_id))
-                except ValueError:
-                    pass
-
-    return None
-
-
-def _require_user_id(request: Request) -> UUID:
-    user_id = _extract_user_id(request)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Authentication required")
-    return user_id
-
-
-def _ensure_owner(document: object, user_id: UUID) -> None:
-    if getattr(document, "owner_id", None) != user_id:
-        raise HTTPException(status_code=403, detail="Access denied")
+_extract_user_id = extract_user_id
+_require_user_id = require_user_id
 
 
 async def _do_create_document(
@@ -138,11 +101,12 @@ async def search_documents(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    user_id: UUID = Depends(require_user_id),
 ):
-    """Search documents by title or content."""
+    """Search the authenticated user's documents by title or content."""
     await _maybe_inject_latency()
     service = DocumentService(db)
-    items, total = await service.search(q, page=page, size=size)
+    items, total = await service.search(q, owner_id=user_id, page=page, size=size)
     return DocumentListResponse(
         items=items,
         total=total,
@@ -178,7 +142,7 @@ async def get_shared_document(
 
 
 async def _do_list_documents(
-    owner_id: UUID | None,
+    owner_id: UUID,
     folder_id: UUID | None,
     page: int,
     size: int,
@@ -199,7 +163,7 @@ async def _do_list_documents(
 
 
 async def _do_filter_documents(
-    owner_id: UUID | None,
+    owner_id: UUID,
     folder_id: UUID | None,
     title: str | None,
     content_type: str | None,
@@ -212,7 +176,7 @@ async def _do_filter_documents(
     await _maybe_inject_latency()
     repo = DocumentQueryRepository(db)
     filters = {
-        "owner_id": str(owner_id) if owner_id else None,
+        "owner_id": str(owner_id),
         "title_contains": title,
         "content_type": content_type,
         "folder_id": str(folder_id) if folder_id else None,
@@ -237,9 +201,7 @@ async def _do_filter_documents(
     )
 
 
-def _is_filtered(
-    title: str | None, content_type: str | None, sort: str, direction: str
-) -> bool:
+def _is_filtered(title: str | None, content_type: str | None, sort: str, direction: str) -> bool:
     """Whether the request needs the metadata-filter query path.
 
     Caller-chosen ordering only exists on that path, so a request that asks for
@@ -265,9 +227,10 @@ async def list_documents(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    user_id: UUID = Depends(require_user_id),
 ):
     """List documents with optional filtering and pagination."""
-    effective_owner = owner_id or _extract_user_id(request)
+    effective_owner = DocumentService.scope_owner(owner_id, user_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,
@@ -299,9 +262,10 @@ async def list_documents_no_slash(
     page: int = Query(1, ge=1),
     size: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    user_id: UUID = Depends(require_user_id),
 ):
     """List documents (no trailing slash)."""
-    effective_owner = owner_id or _extract_user_id(request)
+    effective_owner = DocumentService.scope_owner(owner_id, user_id)
     if _is_filtered(title, content_type, sort, direction):
         return await _do_filter_documents(
             effective_owner,
@@ -317,6 +281,21 @@ async def list_documents_no_slash(
     return await _do_list_documents(effective_owner, folder_id, page, size, db)
 
 
+@router.get("/{document_id}/access", response_model=DocumentAccessResponse)
+async def check_document_access(
+    document_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    user_id: UUID = Depends(require_user_id),
+):
+    """Report whether the authenticated user may read and edit the document.
+
+    Used by collab-service to authorize real-time sessions against the same
+    ownership rule every REST route enforces.
+    """
+    allowed = await DocumentService(db).can_access(document_id, user_id)
+    return DocumentAccessResponse(document_id=document_id, user_id=user_id, allowed=allowed)
+
+
 @router.get("/{document_id}", response_model=DocumentResponse)
 async def get_document(
     document_id: UUID,
@@ -327,10 +306,7 @@ async def get_document(
     await _maybe_inject_latency()
     user_id = _require_user_id(request)
     service = DocumentService(db)
-    document = await service.get(document_id)
-    if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
-    _ensure_owner(document, user_id)
+    document = await service.get_for_user(document_id, user_id)
     return document
 
 
@@ -345,10 +321,7 @@ async def update_document(
     await _maybe_inject_latency()
     user_id = _require_user_id(request)
     service = DocumentService(db)
-    existing = await service.get(document_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Document not found")
-    _ensure_owner(existing, user_id)
+    await service.get_for_user(document_id, user_id)
     document = await service.update(document_id, body)
     logger.info("document_updated", document_id=str(document_id))
     return document
@@ -365,10 +338,7 @@ async def patch_document(
     await _maybe_inject_latency()
     user_id = _require_user_id(request)
     service = DocumentService(db)
-    existing = await service.get(document_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Document not found")
-    _ensure_owner(existing, user_id)
+    await service.get_for_user(document_id, user_id)
     document = await service.patch(document_id, body)
     logger.info("document_patched", document_id=str(document_id))
     return document
@@ -384,10 +354,7 @@ async def delete_document(
     await _maybe_inject_latency()
     user_id = _require_user_id(request)
     service = DocumentService(db)
-    existing = await service.get(document_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Document not found")
-    _ensure_owner(existing, user_id)
+    await service.get_for_user(document_id, user_id)
     await service.delete(document_id)
     logger.info("document_deleted", document_id=str(document_id))
 
@@ -401,10 +368,7 @@ async def list_versions(
     """List document versions."""
     user_id = _require_user_id(request)
     service = DocumentService(db)
-    document = await service.get(document_id)
-    if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
-    _ensure_owner(document, user_id)
+    await service.get_for_user(document_id, user_id)
     versions = await service.list_versions(document_id)
     return versions
 
@@ -422,15 +386,10 @@ async def restore_version(
     """Restore a document to a previous version."""
     user_id = _require_user_id(request)
     service = DocumentService(db)
-    existing = await service.get(document_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Document or version not found")
-    _ensure_owner(existing, user_id)
+    await service.get_for_user(document_id, user_id)
     document = await service.restore_version(document_id, version_id)
     if not document:
-        raise HTTPException(
-            status_code=404, detail="Document or version not found"
-        )
+        raise HTTPException(status_code=404, detail="Document or version not found")
     logger.info(
         "document_version_restored",
         document_id=str(document_id),
@@ -448,10 +407,7 @@ async def create_share_link(
     """Mint a read-only share link for a document."""
     user_id = _require_user_id(request)
     service = DocumentService(db)
-    document = await service.get(document_id)
-    if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
-    _ensure_owner(document, user_id)
+    await service.get_for_user(document_id, user_id)
     token = ShareLinkService().mint_token(str(document_id))
     logger.info("share_link_created", document_id=str(document_id))
     return {"document_id": str(document_id), "token": token}
@@ -467,10 +423,7 @@ async def export_document(
     """Export a document in the requested format."""
     user_id = _require_user_id(request)
     service = DocumentService(db)
-    document = await service.get(document_id)
-    if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
-    _ensure_owner(document, user_id)
+    document = await service.get_for_user(document_id, user_id)
 
     if flag_active(FLAG_RENDER_CACHE):
         cached = render_cache.get(document, format)

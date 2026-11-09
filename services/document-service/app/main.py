@@ -9,11 +9,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import telemetry
 from app.api import comments, documents, health, templates
+from app.api.auth import document_access_error_handler
 from app.config import settings
 from app.db.migrate import upgrade_to_head
 from app.db.session import async_session, engine
 from app.jobs import stats_rollup
 from app.middleware import request_log
+from app.services.document_service import DocumentAccessError
 
 logger = structlog.get_logger()
 
@@ -58,6 +60,7 @@ telemetry.instrument_sql()
 telemetry.instrument_app(app)
 telemetry.setup_tracing(app, engine)
 request_log.install(app)
+app.add_exception_handler(DocumentAccessError, document_access_error_handler)
 
 app.add_middleware(
     CORSMiddleware,
