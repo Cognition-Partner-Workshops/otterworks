@@ -220,3 +220,58 @@ def test_content_inventory_guard():
         u.inventory_guard(before, [row('ROLE_GRANT', 2)])
     with pytest.raises(ValueError, match='scratch relation remains'):
         u.inventory_guard(before, before + [row('TEAM_MEMBER__DBT_TMP')])
+
+
+@pytest.mark.parametrize('relation', [u.TARGET, u.TARGET + '__dbt_tmp',
+                                    u.SCHEMA + '.UNT8_FIXTURE_SEEDED',
+                                    u.SCHEMA + '.UNT8_FIXTURE_DUP_KEY__dbt_tmp'])
+@pytest.mark.parametrize('sql', [
+    'create or replace  temporary view {relation}\n  as (select 1)',
+    'merge into {relation} as DBT_INTERNAL_DEST using tmp on true when matched then update set a=1',
+    'drop view if exists {relation} cascade',
+    'alter table {relation} set tag "SFX_D1110_AFTER".GOVERNANCE.SFX_RUN = \'sfx-d1110\'',
+    'comment on table {relation}\n is \'run_token=sfx-d1110 expires=2026-11-24\'',
+    'comment on view {relation} is \'run_token=sfx-d1110\'',
+])
+def test_actual_dbt_statement_shapes_whitespace(sql, relation):
+    text = sql.format(relation=relation)
+    for variant in (text, re.sub(' +', '\t\n ', text).swapcase(), ' /* dbt */ ' + text):
+        row = ['qid', variant, 'ALTER', '{"mapping":"m_SFX_TEAM_MEMBER"}', None, None, 'SUCCESS', None, None]
+        result = u.write_scope([row])
+        assert result['passed']
+        assert result['writes'][0]['relation'] == relation.upper()
+
+
+def test_actual_captured_run2_queries():
+    path = u.DEST / 'production/run2/history.json'
+    if not path.exists():
+        pytest.skip('Local captured Snowflake history not present')
+    records = [[None if c[0] == 'null' else c[1] for c in row] for row in u.load(path)]
+    assert any('create or replace  temporary view' in r[1] for r in records)
+    for subject in ('production', 'seeded', 'dup_key'):
+        projected = [list(row) for row in records]
+        if subject != 'production':
+            for row in projected:
+                row[1] = row[1].replace(u.TARGET, u.table(subject)).replace(
+                    '"SFX_D1110_AFTER"."PC_CONTENT"."TEAM_MEMBER"', u.table(subject))
+        result = u.write_scope(projected)
+        assert result['passed']
+        assert not result['failed_statements']
+
+
+@pytest.mark.parametrize('kind,sql', [('DESCRIBE', 'describe table t'), ('SHOW', 'show terse objects'),
+                                      ('SELECT', 'select 1'), ('BEGIN', 'begin;'),
+                                      ('COMMIT', 'COMMIT'), ('ALTER_SESSION', 'alter session set query_tag=\'x\'')])
+def test_dbt_read_and_session_shapes(kind, sql):
+    row = ['qid', sql, kind, '{"mapping":"m_SFX_TEAM_MEMBER"}', None, None, 'SUCCESS', None, None]
+    assert u.write_scope([row])['passed']
+
+
+@pytest.mark.parametrize('relation', [u.TARGET + '__DBT_OTHER', u.TARGET + '_OTHER',
+                                    'SFX_D1110_AFTER.PC_CONTENT.ROLE_GRANT',
+                                    'SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS',
+                                    'SFX_D1110_AFTER.PC_FX_UNT7_ROLE_GRANT.X'])
+def test_classifier_does_not_expand_allowed_objects(relation):
+    row = ['qid', 'create or replace  temporary view ' + relation + ' as (select 1)', 'CREATE_VIEW',
+           '{"mapping":"m_SFX_TEAM_MEMBER"}', None, None, 'SUCCESS', None, None]
+    assert not u.write_scope([row])['passed']

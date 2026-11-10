@@ -430,17 +430,18 @@ def write_scope(rows):
             continue
         if row[2] in ('SELECT', 'SHOW', 'DESCRIBE', 'USE', 'ALTER_SESSION', 'BEGIN_TRANSACTION', 'COMMIT', 'ROLLBACK'):
             continue
-        sql = re.sub(r'/\*.*?\*/', '', row[1] or '', flags=re.S).replace('"', '').strip().upper()
+        sql = re.sub(r'/\*.*?\*/', ' ', row[1] or '', flags=re.S).replace('"', '')
+        sql = ' '.join(sql.split()).upper()
         if re.match(r'^(USE |ALTER SESSION |BEGIN|COMMIT|ROLLBACK)', sql):
             continue
-        match = re.search(r'(?:MERGE INTO|INSERT INTO|UPDATE|DELETE FROM|COMMENT ON TABLE|'
+        match = re.match(r'(?:MERGE INTO|INSERT INTO|UPDATE|DELETE FROM|COMMENT ON (?:TABLE|VIEW)|'
                           r'(?:CREATE(?: OR REPLACE)?(?: TEMPORARY| TEMP| TRANSIENT)?|ALTER|DROP) (?:TABLE|VIEW|SCHEMA))'
                           r'\s+(?:IF (?:NOT )?EXISTS\s+)?([A-Z0-9_.]+)', sql)
         if not match:
             unparsed.append(row)
             continue
         relation = match.group(1)
-        allowed = relation == TARGET or relation.startswith(TARGET + '__DBT_') or relation == SCHEMA or relation.startswith(SCHEMA + '.')
+        allowed = relation in (TARGET, TARGET + '__DBT_TMP', SCHEMA) or relation.startswith(SCHEMA + '.')
         writes.append({'qid': row[0], 'relation': relation, 'allowed': allowed})
     return {'writes': writes, 'failed_statements': [[cell(v) for v in r] for r in failed],
             'unparsed_successful_statements': [[cell(v) for v in r] for r in unparsed],
@@ -545,8 +546,8 @@ def compare(subject):
             result['comparisons'].append(equal(load(oracle_path / 'target.json'),
                                                one if n == 1 else two, path / f'parity{n}.json'))
         classified_path = DEST / subject / f'run{n}/classified.json'
-        if subject == 'production' and n == 1:
-            classified_path = DEST / 'recovery/run1/classified.json'
+        if subject == 'production':
+            classified_path = DEST / 'recovery' / f'run{n}' / 'classified.json'
         classified = load(classified_path)
         index = classified['columns'].index('CLASSIFICATION')
         actual = Counter(r[index][1] for r in classified['rows'])
@@ -605,13 +606,13 @@ def postflight():
             raise ValueError('Unparsed or out-of-scope successful writes; review retained history')
 
 
-def recover():
-    path = DEST / 'recovery/run1'
+def recover(number=1):
+    path = DEST / 'recovery' / f'run{number}'
     fresh(path)
     continuation(path)
-    original = DEST / 'production/run1'
+    original = DEST / 'production' / f'run{number}'
     dump(path / 'original_attempt_index.json', {
-        'label': 'UNTOUCHED successful build 1 / failed unbounded collector at 2108f983f',
+        'label': f'UNTOUCHED successful build {number} / failed collector attempt',
         'files': {str(p.relative_to(DEST)): {'sha256': sha(p), 'size': p.stat().st_size}
                   for p in original.rglob('*') if p.is_file()}})
     execution = load(original / 'execution.json')
@@ -626,20 +627,20 @@ def recover():
                                for r in listing['rows']),
         'limitation': 'Original listing proves names/existence, not original CREATED/row counts; '
                       'full metadata inventory begins at recovery; protected typed snapshots unchanged'})
-    with queries(path, 'unt8-run1-recovery') as q:
+    with queries(path, f'unt8-run{number}-recovery') as q:
         rows = history(q, execution['start_utc'], execution['end_utc'])
         dump(path / 'history.json', [[cell(v) for v in r] for r in rows])
         scope = write_scope(rows)
         dump(path / 'write_scope.json', scope)
         if not scope['passed']:
-            raise ValueError('Recovered build 1 write scope failed')
+            raise ValueError('Recovered build write scope failed')
         inventory = content_inventory(q)
         dump(path / 'content_now.json', inventory)
         inventory_guard(inventory, inventory)
         unchanged(q, path)
         template = load(original / 'target.json')
         equal(template, fetched(q, TARGET, template), path / 'target_unchanged.json')
-        classify(q, path, 'production', 'unt8-run1-recovery', os.environ.copy())
+        classify(q, path, 'production', f'unt8-run{number}-recovery', os.environ.copy())
 
 
 def main():
@@ -664,7 +665,7 @@ def main():
     elif args.command == 'compare':
         compare(args.subject)
     elif args.command == 'recover':
-        recover()
+        recover(args.run or 1)
     else:
         postflight()
 
