@@ -36,7 +36,7 @@ sfx-teradata-run: sfx-teradata-validate warehouse/.venv/.requirements ## Rerun t
 	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/teradata/jobs/daily_chain --reuse-landing --business-date "$(BUSINESS_DATE)"
 
 sfx-teradata-test: sfx-teradata-validate warehouse/.venv/.requirements ## Test the warehouse against its PostgreSQL instance (NS required)
-	$(SFX_TD_ENV) $(SFX_TD_PY) -m pytest -q warehouse
+	$(SFX_TD_ENV) $(SFX_TD_PY) -m pytest -q warehouse/tests warehouse/teradata/tests
 
 sfx-teradata-down: sfx-teradata-validate ## Stop the warehouse and remove its volume (NS required)
 	$(SFX_TD_ENV) warehouse/teradata/bin/compose down -v
