@@ -7,6 +7,7 @@ import yaml
 
 from runner.params import resolve
 from runner.repo import Repository
+from runner.workflow import select_mappings
 
 ESTATE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = Repository(os.path.join(ESTATE, "repository"))
@@ -95,3 +96,19 @@ def test_workflow_exports_are_self_contained():
         assert len(folder.findall("WORKFLOW")) == 1, path
         mappings = {m.get("NAME") for m in folder.findall("MAPPING")}
         assert {s.get("MAPPINGNAME") for s in folder.findall("SESSION")} == mappings, path
+
+
+def test_mapping_selection():
+    assert select_mappings(REPO, "") is None
+    assert select_mappings(REPO, "all") is None
+    assert select_mappings(REPO, "20") is None
+    assert len(select_mappings(REPO, "3")) == 3
+    assert select_mappings(REPO, "m_SFX_GL_JOURNAL_LINE") == {"m_SFX_GL_JOURNAL_LINE"}
+    assert select_mappings(REPO, "SFX_PAYMENT, m_SFX_*INVOICE*") == {
+        "m_SFX_PAYMENT", "m_SFX_STG_INVOICE_HDR", "m_SFX_INVOICE_HDR", "m_SFX_INVOICE_LINE"}
+    try:
+        select_mappings(REPO, "m_NOPE")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("unknown mapping accepted")

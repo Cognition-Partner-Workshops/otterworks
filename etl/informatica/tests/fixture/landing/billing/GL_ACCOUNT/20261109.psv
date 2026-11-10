@@ -1,12 +1,10 @@
-101|1000|Cash and cash equivalents|ASSET|DR
-102|1100|Undeposited funds|ASSET|DR
-103|1200|Accounts receivable|ASSET|DR
-104|1250|Allowance for doubtful accounts|ASSET|CR
-105|2100|Accounts payable|LIABILITY|CR
-106|2200|Sales tax payable|LIABILITY|CR
-107|2300|Deferred revenue|LIABILITY|CR
-108|4000|Subscription revenue|REVENUE|CR
-109|4100|Usage revenue|REVENUE|CR
-110|4900|Credit notes and refunds|REVENUE|DR
-111|6100|Payment processing fees|EXPENSE|DR
-112|6900|Bad debt expense|EXPENSE|DR
+1000|1000|Cash and bank|ASSET|DR
+1200|1200|Accounts receivable|ASSET|DR
+2100|2100|Accounts payable|LIABILITY|CR
+2200|2200|Sales tax payable|LIABILITY|CR
+2300|2300|Deferred revenue|LIABILITY|CR
+3000|3000|Retained earnings|EQUITY|CR
+4000|4000|Subscription revenue|REVENUE|CR
+4100|4100|Usage revenue|REVENUE|CR
+5000|5000|Hosting and storage costs|EXPENSE|DR
+6100|6100|Payment processing fees|EXPENSE|DR

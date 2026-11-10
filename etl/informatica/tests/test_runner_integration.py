@@ -88,6 +88,18 @@ def test_pmcmd_cli_writes_logs(warehouse):
     assert bad.returncode != 0
 
 
+
+def test_mappings_selection_cli(warehouse):
+    env = dict(os.environ, MAPPINGS="m_SFX_STG_INVOICE_HDR,m_SFX_GL_JOURNAL_LINE")
+    res = subprocess.run([sys.executable, "-m", "runner", "startworkflow", "-f", "SFX_BILLING", "wf_SFX_BILLING_DAILY"],
+                         cwd=ESTATE, env=env, capture_output=True, text=True)
+    assert res.returncode == 0, res.stdout + res.stderr
+    assert "(2/2 sessions succeeded)" in res.stdout
+    assert "[s_m_SFX_PAYMENT]: mapping not selected by MAPPINGS; skipped." in res.stdout
+    res = subprocess.run([sys.executable, "-m", "runner", "startworkflow", "-f", "SFX_AUDIT", "wf_SFX_AUDIT_DAILY"],
+                         cwd=ESTATE, env=env, capture_output=True, text=True)
+    assert res.returncode == 0 and "not started" in res.stdout, res.stdout + res.stderr
+
 @pytest.mark.parametrize("folder,wf", ORDER)
 def test_listobjects(folder, wf):
     res = subprocess.run([sys.executable, "-m", "runner", "listobjects", "-f", folder], cwd=ESTATE, capture_output=True, text=True)
