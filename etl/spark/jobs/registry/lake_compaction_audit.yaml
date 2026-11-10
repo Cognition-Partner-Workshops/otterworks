@@ -2,8 +2,7 @@
   "job": "lake_compaction_audit",
   "language": "python",
   "target": "retired",
-  "status": "snowflake",
+  "status": "retired",
   "schedule": null,
-  "profile": "small",
-  "command": "echo 'lake_compaction_audit is retired; its data lives in SFX_D1110_AFTER.MART_SPARK.AUDIT_DAILY_SUMMARY (built by audit_daily_summary).'"
+  "profile": "small"
 }
