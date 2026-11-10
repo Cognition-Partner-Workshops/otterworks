@@ -1,0 +1,9 @@
+version: 2
+models:
+  - name: security_alert_anomaly
+    description: "sfx-d1110: Full refresh of SFX_D1110_AFTER.MART_SPARK.SECURITY_ALERT_ANOMALY, replacing lake/audit/security_alert_anomaly and JDBC sfx_audit.SPARK_ALERT_ANOMALY. Uses population variance E[x*x]-E[x]^2 clamped to zero and a unit denominator for zero variance."
+    columns:
+      - name: ALERT_ID
+        tests: [not_null, unique]
+      - name: Z_SCORE
+        tests: [not_null]

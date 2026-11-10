@@ -70,8 +70,8 @@
   reason: "Applies a logistic risk model to per-user activity features rather than a relational aggregation."
 - job: security_alert_anomaly
   language: python
-  target: snowpark_python
-  reason: "Computes distributed score moments and applies a z-score function through RDD transformations."
+  target: dbt
+  reason: "Population score moments and z-scores use SQL aggregates and a cross join; RDD execution is unnecessary."
 - job: docs_event_export_hourly
   language: python
   target: dbt
