@@ -1,0 +1,5 @@
+# Worker session prompt
+
+Fill in `<unit>`, `<run-token>` and `<run-branch>` and launch one session per unit.
+
+> Port the legacy SQL Server procedure for unit `<unit>` to dbt in `otterworks`. Read `migration/snowflake/AGENTS.md`, then the unit's row in `migration/snowflake/demo/units.yaml` and in `migration/snowflake/gate/manifest.yaml`. Branch `unit/<unit>` off `<run-branch>`. Write `migration/snowflake/target/dbt/models/marts/<unit>.sql` (the procedure in `migration/snowflake/source/procs/` is the spec) and add key tests for it to `models/schema.yml`. Bring up SQL Server with `make sfm-up`, then prove parity with `make sfm-dual-run RUN=<run-token> DATE=2026-09-15` and again with `DATE=2026-09-30`. Your unit has to show PASS on both dates. If it diverges, fix the model and never touch the legacy side or the manifest. Stop after three full attempts and report what still differs. Open a PR into `<run-branch>` with the ledger rows for your unit and the `dbt build` summary in the description. Don't merge it.

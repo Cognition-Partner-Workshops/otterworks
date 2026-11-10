@@ -3,7 +3,7 @@ SFM_ROOT = migration/snowflake
 SFM_RUN_REQUIRED = @test -n "$(RUN)" || (echo "RUN is required, e.g. make sfm-bootstrap RUN=sfm-20261012-bd" >&2; exit 2)
 SFM_DATE_REQUIRED = @test -n "$(DATE)" || (echo "DATE is required, e.g. make sfm-gate RUN=sfm-20261012-bd DATE=2026-09-15" >&2; exit 2)
 
-.PHONY: sfm-require-run sfm-bootstrap sfm-load-raw sfm-dbt sfm-gate sfm-dual-run sfm-cutover sfm-teardown sfm-verify-clean sfm-tasks sfm-gate-test
+.PHONY: sfm-require-run sfm-bootstrap sfm-load-raw sfm-dbt sfm-gate sfm-dual-run sfm-cutover sfm-teardown sfm-verify-clean sfm-tasks sfm-gate-test sfm-demo-reset
 
 sfm-require-run:
 	$(SFM_RUN_REQUIRED)
@@ -39,3 +39,12 @@ sfm-tasks: sfm-require-run ## Create the suspended Snowflake task graph
 
 sfm-gate-test: ## Run the in-memory parity gate tests
 	$(PY) -m pytest $(SFM_ROOT)/gate/tests -q
+
+# Presenter reset: a fresh Snowflake build for the token, back to the 7-of-25 starting ledger.
+sfm-demo-reset: sfm-require-run
+	-$(PY) $(SFM_ROOT)/target/bootstrap/bootstrap.py teardown --run "$(RUN)"
+	rm -rf $(SFM_ROOT)/gate/out
+	$(PY) $(SFM_ROOT)/target/bootstrap/bootstrap.py up --run "$(RUN)" $(if $(EXPIRES),--expires "$(EXPIRES)",)
+	$(PY) $(SFM_ROOT)/target/python/load_raw.py --run "$(RUN)"
+	-$(PY) $(SFM_ROOT)/gate/dual_run.py --run "$(RUN)" --date 2026-09-15
+	@head -1 $(SFM_ROOT)/gate/out/ledger.md

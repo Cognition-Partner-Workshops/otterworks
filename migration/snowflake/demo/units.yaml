@@ -1,0 +1,36 @@
+# Wave plan for the live fan-out. One worker session per unit; a wave starts once the
+# previous wave's PRs have merged into the run branch, because later models ref() earlier ones.
+version: 1
+run_branch: sfm-run-<run-suffix>
+dates: [2026-09-15, 2026-09-30]
+waves:
+  - wave: 1
+    note: facts built straight from RAW and the seven ported dims
+    units:
+      - {unit: rollup_storage_daily,   proc: usp_rollup_storage_daily.sql,   refs: [dim_tenant, dim_plan]}
+      - {unit: rollup_usage_events,    proc: usp_rollup_usage_events.sql,    refs: []}
+      - {unit: rollup_seats,           proc: usp_rollup_seats.sql,           refs: [dim_user, dim_tenant]}
+      - {unit: rollup_collab_daily,    proc: usp_rollup_collab_daily.sql,    refs: []}
+      - {unit: rollup_audit,           proc: usp_rollup_audit.sql,           refs: []}
+      - {unit: rollup_document_status, proc: usp_rollup_document_status.sql, refs: [dim_document]}
+      - {unit: rollup_retention,       proc: usp_rollup_retention.sql,       refs: [dim_document, dim_file]}
+      - {unit: build_invoice_lines,    proc: usp_build_invoice_lines.sql,    refs: []}
+  - wave: 2
+    note: rating and marts over the wave 1 facts
+    units:
+      - {unit: rate_overage,                  proc: usp_rate_overage.sql,                  refs: [rollup_storage_daily, dim_plan]}
+      - {unit: apply_plan_limits,             proc: usp_apply_plan_limits.sql,             refs: [rollup_seats, dim_plan]}
+      - {unit: build_capacity_forecast_input, proc: usp_build_capacity_forecast_input.sql, refs: [rollup_seats, dim_tenant]}
+      - {unit: build_mart_audit,              proc: usp_build_mart_audit.sql,              refs: [rollup_audit]}
+      - {unit: build_mart_retention,          proc: usp_build_mart_retention.sql,          refs: [rollup_retention]}
+      - {unit: build_mart_tenant_usage,       proc: usp_build_mart_tenant_usage.sql,       refs: [rollup_usage_events, rollup_storage_daily, rollup_audit, dim_tenant, dim_document, dim_file]}
+  - wave: 3
+    note: marts that read wave 2 output
+    units:
+      - {unit: build_mart_plan_seat_summary, proc: usp_build_mart_plan_seat_summary.sql, refs: [rollup_seats, apply_plan_limits]}
+      - {unit: build_mart_overage,           proc: usp_build_mart_overage.sql,           refs: [rollup_storage_daily, rate_overage, dim_tenant, dim_plan]}
+  - wave: 4
+    note: the orchestrator's own work, run log and housekeeping, then the Tasks graph and cutover
+    units:
+      - {unit: log_run,       proc: usp_log_run.sql,       refs: []}
+      - {unit: purge_expired, proc: usp_purge_expired.sql, refs: [log_run]}
