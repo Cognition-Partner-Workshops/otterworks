@@ -3,6 +3,7 @@
 from unittest.mock import AsyncMock
 
 import pytest
+from sqlalchemy.dialects.postgresql.asyncpg import dialect
 
 from app.services.document_query_repository import DocumentQueryRepository
 
@@ -19,6 +20,13 @@ async def test_filter_values_are_bound(value):
     assert value not in str(query)
     assert value in query.params.values()
     assert f"%{value}%" in query.params.values()
+
+
+def test_uuid_filters_use_database_inferred_types():
+    query = DocumentQueryRepository(None)._where("owner", None, None, "folder")
+    compiled = query.compile(dialect=dialect())
+    assert "::VARCHAR" not in str(compiled)
+    assert compiled.params == {"owner_id": "owner", "folder_id": "folder"}
 
 
 @pytest.mark.parametrize("sort,direction", [("title; DROP TABLE documents", "asc"),

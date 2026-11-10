@@ -10,8 +10,9 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-from sqlalchemy import and_, column, func, select, table
+from sqlalchemy import and_, bindparam, column, func, select, table
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.types import NullType
 
 logger = structlog.get_logger()
 
@@ -47,9 +48,13 @@ class DocumentQueryRepository:
     ):
         clauses = [DOCUMENTS.c.is_deleted == False, DOCUMENTS.c.is_template == False]  # noqa: E712
         if owner_id:
-            clauses.append(DOCUMENTS.c.owner_id == owner_id)
+            clauses.append(
+                DOCUMENTS.c.owner_id == bindparam("owner_id", owner_id, type_=NullType())
+            )
         if folder_id:
-            clauses.append(DOCUMENTS.c.folder_id == folder_id)
+            clauses.append(
+                DOCUMENTS.c.folder_id == bindparam("folder_id", folder_id, type_=NullType())
+            )
         if title_contains:
             clauses.append(func.lower(DOCUMENTS.c.title).like(func.lower(f"%{title_contains}%")))
         if content_type:
