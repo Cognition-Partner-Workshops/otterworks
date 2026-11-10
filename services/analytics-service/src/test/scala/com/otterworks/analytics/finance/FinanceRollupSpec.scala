@@ -14,7 +14,7 @@ import spray.json.*
 
 class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTest:
   private val settings = FinanceSettings.load(ConfigFactory.parseResources(
-    "com/otterworks/analytics/finance/teradata.conf").resolve())
+    "com/otterworks/analytics/finance/snowflake.conf").resolve())
   private val row = FinanceRollup("2026-01", "California", "Workspace Team - Monthly", BigDecimal("18000.50"),
     BigDecimal("15000.25"), 14)
 
@@ -36,6 +36,7 @@ class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTes
         case "getBigDecimal" => (if args(0) == "BILLED_REVENUE" then row.billedRevenue
           else row.collectedCash).bigDecimal
         case "getLong" => Long.box(row.activeAccounts)
+        case "isWrapperFor" => Boolean.box(false)
         case "close" => closed += "result"; null
         case _ => throw new UnsupportedOperationException(method)
     }
@@ -48,11 +49,11 @@ class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTes
     }
     val connection = proxy(classOf[Connection]) { (method, args) =>
       method match
-        case "prepareStatement" => args(0) shouldBe TeradataFinanceRollupRepository.Sql; statement
+        case "prepareStatement" => args(0) shouldBe SnowflakeFinanceRollupRepository.Sql; statement
         case "close" => closed += "connection"; null
         case _ => throw new UnsupportedOperationException(method)
     }
-    val repo = new TeradataFinanceRollupRepository(() => connection)
+    val repo = new SnowflakeFinanceRollupRepository(() => connection)
     Await.result(repo.rollups(settings.statuses.head, settings.featuredPlan), 3.seconds) shouldBe List(row)
     bound shouldBe Map(1 -> settings.statuses.head, 2 -> settings.featuredPlan)
     closed shouldBe Set("connection", "statement", "result")
@@ -60,7 +61,7 @@ class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTes
   }
 
   it should "return connection failures through the future" in {
-    val repo = new TeradataFinanceRollupRepository(() => throw new SQLException("unavailable"))
+    val repo = new SnowflakeFinanceRollupRepository(() => throw new SQLException("unavailable"))
     intercept[SQLException](Await.result(repo.rollups(settings.statuses.head, settings.featuredPlan), 3.seconds))
   }
 
