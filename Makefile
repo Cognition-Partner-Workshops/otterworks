@@ -61,6 +61,30 @@ sfx-snowflake-deploy: warehouse/.venv/.sfx-installed ## Deploy Snowflake scaffol
 sfx-snowflake-load: warehouse/.venv/.sfx-installed ## Load Snowflake landing files
 	warehouse/.venv/bin/python warehouse/snowflake/load.py --area all
 
+.PHONY: sfx-pc-setup sfx-pc-before sfx-pc-dbt sfx-pc-parity sfx-pc-idempotence sfx-pc-mark sfx-pc-licence sfx-pc-dag sfx-pc-test
+sfx-pc-setup: warehouse/.venv/.sfx-installed ## Seed additive migration inventory and source snapshot
+	cd warehouse && .venv/bin/python -m parity setup $(if $(filter 1,$(SKIP_CONTROL)),--skip-control)
+
+sfx-pc-before sfx-pc-parity sfx-pc-idempotence: warehouse/.venv/.sfx-installed ## Capture/compare/rebuild MAPPING
+	@test -n "$(MAPPING)" || (echo 'MAPPING is required'; exit 2)
+	cd warehouse && .venv/bin/python -m parity $(patsubst sfx-pc-%,%,$@) --mapping "$(MAPPING)"
+
+sfx-pc-dbt: warehouse/.venv/.sfx-installed ## Build MAPPING or all PC models in FOLDER
+	cd warehouse && .venv/bin/python -m parity dbt $(if $(MAPPING),--mapping "$(MAPPING)",--folder "$(FOLDER)")
+
+sfx-pc-mark: warehouse/.venv/.sfx-installed ## Publish evidence for MAPPING (AMBER/OWNER/PR_URL optional)
+	@test -n "$(MAPPING)" || (echo 'MAPPING is required'; exit 2)
+	cd warehouse && .venv/bin/python -m parity mark --mapping "$(MAPPING)" $(if $(AMBER),--amber "$(AMBER)") $(if $(OWNER),--owner "$(OWNER)") $(if $(PR_URL),--pr-url "$(PR_URL)")
+
+sfx-pc-licence: warehouse/.venv/.sfx-installed ## Count remaining PowerCenter mappings
+	cd warehouse && .venv/bin/python -m parity licence
+
+sfx-pc-dag: warehouse/.venv/.sfx-installed ## Deploy suspended FOLDER DAG (RUN_ONCE=1 to execute)
+	warehouse/.venv/bin/python warehouse/snowflake/pc_dag.py --folder "$(FOLDER)" $(if $(filter 1,$(RUN_ONCE)),--run-once)
+
+sfx-pc-test: warehouse/.venv/.sfx-installed ## Offline migration harness and PC DAG tests
+	cd warehouse && .venv/bin/python -m pytest parity/tests -q
+
 sfx-snowflake-test: warehouse/.venv/.sfx-installed ## Run offline Snowflake scaffold tests
 	warehouse/.venv/bin/python -m pytest warehouse/snowflake/tests -q
 	warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py parse

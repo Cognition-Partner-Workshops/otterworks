@@ -12,7 +12,7 @@ WORKLOADS = yaml.safe_load((ROOT / "workloads.yml").read_text())
 RUN_ID = os.environ.get("SFX_RUN_ID") or str(uuid.uuid4())
 
 
-def query_tag(workload, phase):
+def query_tag(workload, phase, extra=None):
     if workload not in WORKLOADS:
         raise ValueError(f"Unknown workload: {workload}")
     commit = os.environ.get("SFX_COMMIT")
@@ -26,14 +26,15 @@ def query_tag(workload, phase):
         "run_token": os.environ.get("SNOWFLAKE_RUN_TOKEN", "sfx-d1110"),
         "executed_by": os.environ.get("SFX_EXECUTED_BY", "manual"),
         "built_with": os.environ.get("SFX_BUILT_WITH", "devin"),
+        **(extra or {}),
     }, separators=(",", ":"))
 
 
-def connect(workload, phase, **kw):
+def connect(workload, phase, extra_tag=None, **kw):
     import snowflake.connector
     from cryptography.hazmat.primitives import serialization
 
-    tag = query_tag(workload, phase)
+    tag = query_tag(workload, phase, extra_tag)
     key = serialization.load_pem_private_key(
         os.environ["SNOWFLAKE_PRIVATE_KEY"].encode(), password=None
     )

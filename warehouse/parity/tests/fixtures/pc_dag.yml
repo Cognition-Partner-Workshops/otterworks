@@ -1,0 +1,10 @@
+root: START
+tasks:
+  START:
+    sql: SELECT 1
+  PAYMENT:
+    after: [START]
+    sql: SELECT 2
+  FINISH:
+    after: [PAYMENT]
+    sql: SELECT 3

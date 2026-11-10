@@ -1,0 +1,56 @@
+from datetime import date, datetime, timezone
+from decimal import Decimal
+import pytest
+
+from parity.compare import compare, normal, status
+from parity.commands import identifier, relation, mark_sql
+from parity.harness import control_table
+from parity.inventory import target_relation
+
+
+def test_normalisation():
+    assert normal(Decimal('1.00')) == normal(1)
+    assert normal(Decimal('123456789012345678901234567890.10'))[1] == '123456789012345678901234567890.1'
+    assert normal(' a ') == normal('a')
+    assert normal(None) != normal('null')
+    assert normal(date(2026, 11, 9)) == ['date', '2026-11-09']
+    assert normal(datetime(2026, 11, 9, tzinfo=timezone.utc))[1].startswith('2026-11-09T')
+
+
+def test_keyed_diff_and_multiset():
+    b = [dict(ID=1, V=' a '), dict(ID=2, V='b')]
+    a = [dict(ID=1, V='a'), dict(ID=3, V='c')]
+    r = compare(b, a, ['ID', 'V'], ['ID'], 1)
+    assert (r['matched_keys'], r['missing_keys'], r['extra_keys']) == (1, 1, 1)
+    assert len(r['sampled_diffs']) == 1
+    changed = compare(b, [dict(ID=1, V='z'), b[1]], ['ID', 'V'], ['ID'])
+    assert changed['changed_keys'] == 1
+    assert 'V' in changed['sampled_diffs'][0]['columns']
+    assert not compare(b, b + [b[0]], ['ID', 'V'], [])['keyed_hash_match']
+    assert compare([], [], ['ID'], [])['keyed_hash_match']
+    assert compare(b, list(reversed(b)), ['ID', 'V'], [])['keyed_hash_match']
+
+
+def test_decisions():
+    assert status({}) == 'PENDING'
+    assert status({}, 'Needs review.') == 'AMBER'
+    r = dict(rowcount_match=True, keyed_hash_match=True, rerun_duplicates=0,
+             run1_rows=2, run2_rows=2, after_rows=2)
+    assert status(r) == 'VERIFIED'
+    assert status(dict(r, rerun_duplicates=1)) == 'PENDING'
+    with pytest.raises(ValueError):
+        status({}, 'two\nlines')
+
+
+def test_sql_scope_and_owner(monkeypatch):
+    assert target_relation('PAYMENT') == 'SFX_BILLING.PAYMENT'
+    assert target_relation('DOCUMENT') == 'SFX_DOCUMENTS.DOCUMENT'
+    monkeypatch.setenv('PC_CONTROL_SCHEMA', 'PC_CONTROL')
+    assert control_table() == 'SFX_D1110_AFTER.PC_CONTROL.MIGRATION_CONTROL'
+    assert 't.OWNER_EFFORT=s.OWNER_EFFORT' in mark_sql()
+    assert 'WHEN NOT MATCHED' not in mark_sql()
+    assert relation('PC_BILLING.PAYMENT') == 'SFX_D1110_AFTER.PC_BILLING.PAYMENT'
+    with pytest.raises(ValueError):
+        relation('OTHER.PC_BILLING.PAYMENT')
+    with pytest.raises(ValueError):
+        identifier('bad; DROP TABLE x')
