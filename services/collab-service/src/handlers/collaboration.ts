@@ -460,7 +460,10 @@ export class CollaborationManager {
       const userCount = awareness.getDocumentUserCount(mapping.documentId);
       if (userCount === 0) {
         this.persistAndCleanupDocument(mapping.documentId).catch((err) => {
-          logger.error({ err, documentId: mapping.documentId }, 'persist_and_cleanup_failed');
+          logger.error(
+            { err, documentId: mapping.documentId },
+            'persist_and_cleanup_failed',
+          );
         });
       }
     }
