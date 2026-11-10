@@ -1,9 +1,9 @@
 {
   "job": "security_alert_anomaly",
   "language": "python",
-  "target": "dbt",
+  "target": "snowpark_python",
   "status": "snowflake",
   "schedule": "17 2 * * *",
   "profile": "small",
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --phase spark-job --job security_alert_anomaly --select security_alert_anomaly"
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job security_alert_anomaly"
 }
