@@ -5,7 +5,12 @@ The registry uses JSON-form YAML so the container only needs Python's standard
 library. `small` (1 GiB) and `large` (2 GiB) are the only size profiles; both use
 one core per executor and at most four executors. AQE coalesces 48 initial
 shuffle partitions toward 128 MiB. Standalone dynamic allocation uses shuffle
-tracking, not an external shuffle service.
+tracking, not an external shuffle service. Idle executors time out after 15s
+to reduce idle executor-hours on short jobs. Shuffle tracking times out after
+120s so executors holding shuffle data are not retained indefinitely; this
+allows a longer reuse window than the ordinary idle timeout, at the cost of
+possible shuffle recomputation after eviction. The minimum of one executor
+still applies while an application is running.
 
 There is one whole-job retry policy: Airflow retries twice with exponential
 backoff, starting at one minute and capped at ten minutes. The submit script
