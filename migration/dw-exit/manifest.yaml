@@ -375,7 +375,7 @@ objects:
   complexity: medium
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
-  target: core_users__s_m_sfx_document
+  target: core_documents__s_m_sfx_document
   wave: 2
   owner: '@otterworks/analytics'
   owner_source: DBQL readership via consumers/registry.yaml
@@ -389,7 +389,7 @@ objects:
   complexity: medium
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
-  target: core_users__s_m_sfx_doc_share
+  target: core_documents__s_m_sfx_doc_share
   wave: 2
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -545,7 +545,7 @@ objects:
   complexity: medium
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML
   target_type: dbt_model
-  target: stg_users__s_m_sfx_stg_document
+  target: stg_documents__s_m_sfx_stg_document
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -2882,7 +2882,7 @@ objects:
   complexity: medium
   source: warehouse/teradata/load/tpt/documents_collab_session.tpt
   target_type: snowflake_scripting
-  target: RAW_USERS.LOAD_USERS
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -2896,7 +2896,7 @@ objects:
   complexity: medium
   source: warehouse/teradata/load/tpt/documents_doc_comment.tpt
   target_type: snowflake_scripting
-  target: RAW_USERS.LOAD_USERS
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -2910,7 +2910,7 @@ objects:
   complexity: medium
   source: warehouse/teradata/load/tpt/documents_doc_share.tpt
   target_type: snowflake_scripting
-  target: RAW_USERS.LOAD_USERS
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -2924,7 +2924,7 @@ objects:
   complexity: medium
   source: warehouse/teradata/load/tpt/documents_doc_tag.tpt
   target_type: snowflake_scripting
-  target: RAW_USERS.LOAD_USERS
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -2938,7 +2938,7 @@ objects:
   complexity: medium
   source: warehouse/teradata/load/tpt/documents_doc_version.tpt
   target_type: snowflake_scripting
-  target: RAW_USERS.LOAD_USERS
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -2952,7 +2952,7 @@ objects:
   complexity: medium
   source: warehouse/teradata/load/tpt/documents_document.tpt
   target_type: snowflake_scripting
-  target: RAW_USERS.LOAD_USERS
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -2966,7 +2966,7 @@ objects:
   complexity: medium
   source: warehouse/teradata/load/tpt/documents_file_object.tpt
   target_type: snowflake_scripting
-  target: RAW_USERS.LOAD_USERS
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -2980,7 +2980,7 @@ objects:
   complexity: medium
   source: warehouse/teradata/load/tpt/documents_folder.tpt
   target_type: snowflake_scripting
-  target: RAW_USERS.LOAD_USERS
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed
@@ -3009,7 +3009,7 @@ objects:
   complexity: medium
   source: warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt
   target_type: snowflake_scripting
-  target: RAW_USERS.LOAD_USERS
+  target: RAW_DOCUMENTS.LOAD_DOCUMENTS
   wave: 1
   owner: '@otterworks/data-platform'
   owner_source: proposed

@@ -69,6 +69,46 @@ def test_dependency_order(estate):
     assert all(objects[a]['wave'] <= objects[b]['wave'] for a, b in estate['dependencies'])
 
 
+def test_every_target_matches_source_area(estate):
+    import re
+    import xml.etree.ElementTree as ET
+    for row in estate['objects']:
+        path = assess.ROOT / row['source']
+        if row['kind'] in ('mapping', 'session'):
+            tree = ET.parse(path)
+            mapping_name = row['name'] if row['kind'] == 'mapping' else next(e.get('MAPPINGNAME') for e in tree.findall('.//SESSION') if e.get('NAME') == row['name'])
+            mapping = next(e for e in tree.findall('.//MAPPING') if e.get('NAME') == mapping_name)
+            names = {e.get('TRANSFORMATION_NAME') for e in mapping.findall('INSTANCE') if e.get('TYPE') == 'TARGET'}
+            tables = {r['name'] for r in estate['objects'] if r['kind'] == 'table' and r['name'].split('.')[-1] in names}
+            areas = {name.split('.')[0].removeprefix('SFX_') for name in tables}
+            assert len(areas) == 1
+            expected = areas.pop()
+        elif '.' in row['name']:
+            expected = row['name'].split('.')[0].removeprefix('SFX_')
+        else:
+            matches = re.findall(r'(?:^|[/_])(billing|audit|users|documents|content)(?=[/_]|$)', row['source'].lower())
+            assert matches, row['name']
+            expected = matches[-1].upper()
+        artifact = next(r for r in estate['artifacts'] if r['id'] == row['id'])
+        assert assess.source_area(artifact, estate['artifacts'], set(estate['links'])) == expected
+        if row['target_type'] == 'retire':
+            assert row['target'] in ('NONE', 'SNOWFLAKE.ACCOUNT_USAGE')
+        elif row['kind'] in ('fastload', 'tpt'):
+            assert row['target'] == f'RAW_{expected}.LOAD_{expected}'
+        elif row['target_type'] == 'dbt_model':
+            assert row['target'].split('__')[0] in ('stg_' + expected.lower(), 'core_' + expected.lower())
+        elif row['target_type'] == 'compatibility_view':
+            assert row['target'].startswith('COMPAT.SFX_' + expected + '__')
+        else:
+            # Named routines retain the source symbol rather than an area schema.
+            assert row['target'].split('.', 1)[1] == re.sub(r'\W', '_', row['name']).upper()
+
+
+def test_unknown_area_is_not_defaulted_to_users():
+    with pytest.raises(ValueError, match='source area'):
+        assess.source_area({'id': 'x', 'name': 'unknown', 'kind': 'tpt', 'file': 'load/unknown.tpt'}, [], set())
+
+
 def test_missing_outputs(tmp_path):
     errors = check.validate(tmp_path, source=False)
     assert 'missing: inventory.csv' in errors

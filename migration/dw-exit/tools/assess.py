@@ -75,6 +75,25 @@ def hidden_consumers(root, readers):
                    'repo_hits': paths} for user, paths in sorted(hits.items())}
 
 
+def source_area(row, artifacts, links):
+    if '.' in row['name']:
+        return row['name'].split('.')[0].removeprefix('SFX_')
+    path = Path(row['file'])
+    for area in ('billing', 'audit', 'users', 'documents'):
+        if area in path.parts or path.stem.startswith(area + '_') or 'SFX_' + area.upper() in path.parts:
+            return area.upper()
+    nodes = {row['id']}
+    if row['kind'] == 'session':
+        nodes |= {a for a, b in links if b == row['id'] and any(r['id'] == a and r['kind'] == 'mapping' for r in artifacts)}
+    targets = {r['name'].split('.')[0].removeprefix('SFX_') for r in artifacts
+               if r['kind'] == 'table' and any((node, r['id']) in links for node in nodes)}
+    if len(targets) == 1:
+        return targets.pop()
+    if row['kind'] in ('workflow', 'worklet') and 'SFX_CONTENT' in path.parts:
+        return 'CONTENT'
+    raise ValueError('Cannot resolve unique source area: ' + row['name'])
+
+
 def build(root=ROOT):
     artifacts, links, feeds = [], set(), set()
     def add(kind, name, path, text, constructs=()):
@@ -198,17 +217,7 @@ def build(root=ROOT):
         qs = reads[name]
         row['dbql_reads_90d'] = len(qs)
         row['last_read'] = max((q['StartTime'] for q in qs), default='')
-        area = name.split('.')[0].removeprefix('SFX_') if '.' in name else ('BILLING' if 'BILLING' in name.upper() or '/billing/' in row['file'] else 'AUDIT' if 'AUDIT' in name.upper() or '/audit/' in row['file'] else 'USERS')
-        if '/SFX_BILLING/' in row['file']:
-            area = 'BILLING'
-        elif '/SFX_AUDIT/' in row['file']:
-            area = 'AUDIT'
-        elif '/documents/' in row['file']:
-            area = 'DOCUMENTS'
-        elif row['kind'] == 'mapping':
-            targets = [r['name'].split('.')[0].removeprefix('SFX_') for r in artifacts if r['kind'] == 'table' and (row['id'], r['id']) in normalized]
-            if len(set(targets)) == 1:
-                area = targets[0]
+        area = source_area(row, artifacts, normalized)
         stage = '.STG_' in name or '_STG_' in name
         target_type = 'dbt_model'
         wave = 1 if stage or kind in ('fastload', 'tpt', 'catalog') or name in dead else 3 if area == 'BILLING' or kind in ('macro', 'procedure') else 2
