@@ -1,0 +1,21 @@
+m_SFX_STG_CUSTOMER_ACCOUNT:
+  key_columns: [CUSTOMER_ID]
+  patterns: ["Source Qualifier", "Expression"]
+m_SFX_CUSTOMER_ACCOUNT:
+  key_columns: [CUSTOMER_ID]
+  patterns: ["Source Qualifier", "Lookup Procedure", "Update Strategy"]
+m_SFX_STG_INVOICE_HDR:
+  key_columns: [INVOICE_ID]
+  patterns: ["Source Qualifier", "Expression"]
+m_SFX_INVOICE_HDR:
+  key_columns: [INVOICE_ID]
+  patterns: ["Source Qualifier", "Lookup Procedure", "Router", "Update Strategy"]
+m_SFX_INVOICE_LINE:
+  key_columns: [INVOICE_LINE_ID]
+  patterns: ["Source Qualifier", "Expression", "Filter"]
+m_SFX_PAYMENT:
+  key_columns: [PAYMENT_ID]
+  patterns: ["Source Qualifier", "Expression", "Filter"]
+m_SFX_GL_JOURNAL_LINE:
+  key_columns: [JOURNAL_LINE_ID]
+  patterns: ["Source Qualifier", "Expression", "Filter", "Router", "Lookup Procedure (unconnected)", "Sequence Generator"]

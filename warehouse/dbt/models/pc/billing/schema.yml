@@ -1,0 +1,27 @@
+version: 2
+models:
+  - name: pc_billing__customer_account
+    description: "Migrated m_SFX_CUSTOMER_ACCOUNT target."
+    columns:
+      - name: CUSTOMER_ID
+        data_tests: [not_null, unique]
+  - name: pc_billing__invoice_hdr
+    description: "Migrated m_SFX_INVOICE_HDR target."
+    columns:
+      - name: INVOICE_ID
+        data_tests: [not_null, unique]
+  - name: pc_billing__invoice_line
+    description: "Migrated m_SFX_INVOICE_LINE target."
+    columns:
+      - name: INVOICE_LINE_ID
+        data_tests: [not_null, unique]
+  - name: pc_billing__payment
+    description: "Migrated m_SFX_PAYMENT target."
+    columns:
+      - name: PAYMENT_ID
+        data_tests: [not_null, unique]
+  - name: pc_billing__gl_journal_line
+    description: "Migrated m_SFX_GL_JOURNAL_LINE target."
+    columns:
+      - name: JOURNAL_LINE_ID
+        data_tests: [not_null, unique]
