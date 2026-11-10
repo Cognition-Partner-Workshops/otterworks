@@ -37,6 +37,8 @@ def main():
     if args.command == "build":
         command += ["--select", args.selection]
     command += ["--vars", json.dumps({"phase": args.phase})]
+    # Fixed adjacent dbt executable and argv; secret-bearing environment is intentionally inherited.
+    # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
     subprocess.run(command, env=env, check=True)
 
 

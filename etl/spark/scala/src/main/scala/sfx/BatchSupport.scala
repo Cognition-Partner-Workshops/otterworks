@@ -27,10 +27,14 @@ object BatchSupport {
       frame.write.format("jdbc").option("url", url).option("user", user).option("password", password)
         .option("driver", "org.postgresql.Driver").option("dbtable", stage).mode("error").save()
       connection.setAutoCommit(false)
+      // Identifiers are regex-validated; stage adds a UUID and columns are quoted below.
+      // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
       statement.execute(s"CREATE TABLE IF NOT EXISTS $table (LIKE $stage INCLUDING ALL)")
       statement.execute(s"LOCK TABLE $table IN ACCESS EXCLUSIVE MODE")
+      // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
       statement.executeUpdate(s"DELETE FROM $table")
       val columns = frame.columns.map(column => "\"" + column.replace("\"", "\"\"") + "\"").mkString(", ")
+      // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
       statement.executeUpdate(s"INSERT INTO $table ($columns) SELECT $columns FROM $stage")
       connection.commit()
     } catch {
@@ -38,6 +42,7 @@ object BatchSupport {
     } finally {
       try {
         connection.setAutoCommit(true)
+        // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
         statement.execute(s"DROP TABLE IF EXISTS $stage")
       } finally {
         statement.close()

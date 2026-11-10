@@ -18,10 +18,13 @@ from eventlog import decompress
 
 def spark_measure(app, history="http://localhost:18080"):
     url = history.rstrip("/") + "/api/v1/applications/" + quote(app, safe="")
+    # History Server endpoint is operator-supplied, not application/request input.
+    # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
     with urlopen(url, timeout=60) as response:
         application = json.load(response)
     if not application["attempts"][0]["completed"]:
         raise ValueError("Application must be completed")
+    # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
     with urlopen(url + "/logs", timeout=120) as response:
         archive = zipfile.ZipFile(io.BytesIO(response.read()))
     names = sorted(name for name in archive.namelist() if name.endswith(".zstd"))

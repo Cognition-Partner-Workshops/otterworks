@@ -16,6 +16,8 @@ def run(job):
     if entry["status"] != "snowflake" or not entry.get("command", "").strip():
         raise ValueError("Job must have snowflake status and a command")
     env = {**os.environ, "SFX_SPARK_JOB": job}
+    # Commands are reviewed repository code, never caller-provided shell text.
+    # nosemgrep: python.lang.security.audit.subprocess-shell-true.subprocess-shell-true
     return subprocess.run(entry["command"], shell=True, cwd=ROOT, env=env, check=True)
 
 

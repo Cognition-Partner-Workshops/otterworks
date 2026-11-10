@@ -20,6 +20,9 @@ def objects():
 def reapply(cursor):
     token = json.loads(query_tag('ops', 'governance'))['run_token']
     for kind, name in objects():
+        # Kinds and object names are from the repository-owned scaffold manifest.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         cursor.execute(f'ALTER {kind} {name} SET TAG GOVERNANCE.SFX_RUN = %s', (token,))
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         cursor.execute(f'COMMENT ON {kind} {name} IS %s', (token + ' governed scaffold object',))
         print(f'governance reapplied: {kind} {name}')

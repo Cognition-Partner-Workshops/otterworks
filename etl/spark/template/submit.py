@@ -30,4 +30,6 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit("Usage: submit.sh <job>")
     command = arguments(sys.argv[1])
+    # Fixed Spark executable; job is validated and arguments come from the reviewed registry.
+    # nosemgrep: python.lang.security.audit.dangerous-os-exec-tainted-env-args.dangerous-os-exec-tainted-env-args
     os.execv(command[0], command)

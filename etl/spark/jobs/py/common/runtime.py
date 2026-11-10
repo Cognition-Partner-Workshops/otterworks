@@ -81,7 +81,10 @@ def save_jdbc_refresh(frame, table):
     try:
         frame.write.format("jdbc").options(**options).option("dbtable", stage).mode("error").save()
         connection.setAutoCommit(False)
+        # JDBC identifiers cannot be bound; table is regex-validated and stage adds only a UUID.
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         statement.execute(f"CREATE TABLE IF NOT EXISTS {table} (LIKE {stage} INCLUDING ALL)")
+        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         statement.execute(f"LOCK TABLE {table} IN ACCESS EXCLUSIVE MODE")
         statement.executeUpdate(f"DELETE FROM {table}")
         columns = ", ".join('"' + column.replace('"', '""') + '"' for column in frame.columns)
@@ -93,6 +96,7 @@ def save_jdbc_refresh(frame, table):
     finally:
         try:
             connection.setAutoCommit(True)
+            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             statement.execute(f"DROP TABLE IF EXISTS {stage}")
         finally:
             statement.close()

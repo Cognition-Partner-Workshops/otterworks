@@ -18,6 +18,8 @@ def capture(app, output, history="http://localhost:18080", executable=None):
 
     base = history.rstrip("/")
     identity = quote(app, safe="")
+    # History endpoint is operator-supplied; the app ID is URL-encoded.
+    # nosemgrep: python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected
     with urlopen(f"{base}/api/v1/applications/{identity}/stages", timeout=60) as response:
         stage = heaviest_stage(json.load(response))
     output = Path(output)

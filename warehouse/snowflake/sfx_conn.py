@@ -70,12 +70,15 @@ def suspend_all():
         with conn.cursor() as cur:
             for warehouse in WORKLOADS.values():
                 try:
+                    # Warehouse names come only from the repository-owned workload map.
+                    # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     cur.execute(f"ALTER WAREHOUSE {warehouse} SUSPEND")
                     print(f"{warehouse}: suspended")
                 except ProgrammingError as error:
                     if "already suspended" not in str(error).lower():
                         if error.errno != 90064:
                             raise
+                        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                         cur.execute(f"SHOW WAREHOUSES LIKE '{warehouse}'")
                         columns = [column[0] for column in cur.description]
                         states = [dict(zip(columns, row)) for row in cur.fetchall()]

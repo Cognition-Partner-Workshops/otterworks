@@ -75,6 +75,8 @@ def has_create_role(cursor):
         if current in visited:
             continue
         visited.add(current)
+        # Server-returned role name is quoted as a Snowflake identifier.
+        # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         cursor.execute('SHOW GRANTS TO ROLE "' + current.replace('"', '""') + '"')
         columns = [col[0].lower() for col in cursor.description]
         grants = [dict(zip(columns, row)) for row in cursor.fetchall()]
