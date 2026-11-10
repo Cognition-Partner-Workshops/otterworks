@@ -18,12 +18,65 @@ via the gateway.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
+import jwt
 import structlog
-from flask import jsonify, request
+from flask import current_app, jsonify, request
 
 logger = structlog.get_logger()
 
 PUBLIC_PREFIXES = ("/health", "/metrics")
+ADMIN_ROLES = frozenset({"ADMIN", "ROLE_ADMIN"})
+
+
+@dataclass(frozen=True)
+class Caller:
+    """Who is making the current request.
+
+    ``user_id`` is the gateway-injected ``X-User-ID``. A caller with no user
+    identity only gets this far when it holds the service token or when
+    ``REQUIRE_AUTH`` is off (internal, cluster-only callers), so it is trusted.
+    """
+
+    user_id: str | None
+    is_admin: bool = False
+    is_service: bool = False
+
+    @property
+    def is_trusted(self) -> bool:
+        return self.is_service or self.is_admin or self.user_id is None
+
+
+def get_caller() -> Caller:
+    """Resolve the caller of the current request."""
+    auth_config = current_app.config["APP_CONFIG"].auth
+    token = _extract_bearer_token()
+    if auth_config.service_token and token and token == auth_config.service_token:
+        return Caller(user_id=None, is_service=True)
+
+    user_id = request.headers.get("X-User-ID", "").strip() or None
+    if user_id is None:
+        return Caller(user_id=None)
+    return Caller(user_id=user_id, is_admin=_token_grants_admin(token, user_id, auth_config.jwt_secret))
+
+
+def _token_grants_admin(token: str, user_id: str, secret: str) -> bool:
+    """True if *token* is a valid access JWT for *user_id* carrying an admin role."""
+    if not token or not secret:
+        return False
+    try:
+        claims = jwt.decode(token, secret, algorithms=["HS256", "HS384", "HS512"])
+    except jwt.PyJWTError:
+        return False
+    if claims.get("type", "access") != "access":
+        return False
+    if str(claims.get("sub") or claims.get("user_id") or "") != user_id:
+        return False
+    roles = claims.get("roles") or []
+    if isinstance(roles, str):
+        roles = [roles]
+    return any(str(role).upper() in ADMIN_ROLES for role in roles)
 
 
 def require_auth(app):
