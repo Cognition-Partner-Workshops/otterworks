@@ -2,8 +2,8 @@
   "job": "audit_daily_summary",
   "language": "scala",
   "target": "dbt",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "8 1 * * *",
   "profile": "small",
-  "class": "sfx.AuditDailySummary"
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job audit_daily_summary --select path:models/spark/audit_daily_summary"
 }
