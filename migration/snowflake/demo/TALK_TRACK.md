@@ -2,7 +2,7 @@
 
 ## Opening
 
-Your billing warehouse has run on SQL Server since 2016. It has 25 stored procedures, 12 SSIS packages, a SQL Agent schedule and a cron file the team has stopped editing, and 30 reports read from it every morning. Moving it to Snowflake usually means a team rewriting procedures for a quarter and then arguing about whether the numbers match. Today Devin does the rewrite in parallel, and a parity gate decides when each piece is done.
+Your billing warehouse has run on SQL Server since 2016. It has 25 stored procedures, 12 SSIS packages, a SQL Agent schedule and a cron file the team has stopped editing, and 30 reports read from it every morning. Today Devin does the rewrite in parallel, and a parity gate decides when each piece is done.
 
 ## Legacy estate
 
