@@ -40,3 +40,12 @@ m_SFX_DOC_SHARE:
   session: s_m_SFX_DOC_SHARE
   workflow: wf_SFX_CONTENT_DAILY
   patterns: [Source Qualifier, Expression, Lookup Procedure, DECODE, Update else Insert]
+# UNT-6 adds LOGIN_EVENT; the original act-3 header and entries above are preserved.
+m_SFX_LOGIN_EVENT:
+  key_columns: [LOGIN_ID]
+  dbt_model: pc_content__login_event
+  after_table: PC_CONTENT.LOGIN_EVENT
+  before_table: PC_BEFORE.LOGIN_EVENT
+  session: s_m_SFX_LOGIN_EVENT
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Router, Update else Insert]
