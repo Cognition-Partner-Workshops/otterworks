@@ -5,5 +5,5 @@
   "status": "snowflake",
   "schedule": "28 3 * * *",
   "profile": "small",
-  "command": "cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job user_pref_json_flatten --select path:models/spark/user_pref_json_flatten"
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job user_pref_json_flatten --select path:models/spark/user_pref_json_flatten"
 }
