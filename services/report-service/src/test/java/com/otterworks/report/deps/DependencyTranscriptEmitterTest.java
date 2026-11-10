@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -93,7 +94,7 @@ public class DependencyTranscriptEmitterTest {
         if (content == null) {
             return template;
         }
-        File fixture = File.createTempFile("ow-deps-fixture", ".txt");
+        File fixture = Files.createTempFile("ow-deps-fixture", ".txt").toFile();
         fixture.deleteOnExit();
         PrintWriter writer = new PrintWriter(fixture, "UTF-8");
         try {
