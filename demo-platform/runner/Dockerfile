@@ -63,6 +63,27 @@ RUN curl -fsSL -o /tmp/terraform.zip \
 WORKDIR /workspace
 COPY . /workspace
 
+# The image is pushed to a shared registry, so credentials must never ride along
+# in the build context (see the secrets section of the root .dockerignore). Fail
+# the build if any did, e.g. when built with a different context or ignore file.
+RUN leaked="$(find /workspace \
+        -path /workspace/etl/config.ini \
+        -o -path /workspace/.demo \
+        -o \( \( -name '.env' -o -name '.env.*' -o -name '*.env' \) \
+               ! -name '.env.example' ! -path '/workspace/infrastructure/helm/tenant-values/*/eventing.env' \) \
+        -o -name 'secrets.yaml' -o -name 'secrets.yml' -o -name '*-secrets.yaml' \
+        -o \( \( -name '*.tfvars' -o -name '*.tfvars.json' \) \
+               ! -path '/workspace/platform/terraform/environments/*.tfvars' \) \
+        -o -name '*.pem' -o -name '*.key' -o -name '*.p12' -o -name '*.pfx' \
+        -o -name 'id_rsa*' -o -name 'id_ed25519*' \
+        -o -name '.npmrc' -o -name '.netrc' -o -name '.pgpass' \
+        -o -name '.aws' -o -name '.kube' -o -name 'kubeconfig*' \
+      | sort)" \
+  && if [ -n "${leaked}" ]; then \
+       echo "refusing to build: credential files in the build context:" >&2; \
+       echo "${leaked}" >&2; exit 1; \
+     fi
+
 RUN chmod +x \
       /workspace/demo-platform/runner/entrypoint.sh \
       /workspace/demo-platform/reaper/reaper.sh \
