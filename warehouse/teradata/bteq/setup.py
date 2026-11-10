@@ -26,7 +26,7 @@ def extend_table(runner, statement, name):
 
 
 def setup(runner, root=DDL_ROOT):
-    paths = sorted(root.glob('*/00_*.sql')) + sorted(root.glob('*/10_*.sql'))
+    paths = sorted(root.glob('*/00_*.sql')) + sorted(root.glob('*/10_*.sql')) + sorted(root.glob('*/20_*.sql'))
     paths += sorted((root.parent / 'macros').glob('*.sql'))
     paths += sorted((root.parent / 'procedures').glob('*.spl'))
     for path in paths:
@@ -42,6 +42,9 @@ def setup(runner, root=DDL_ROOT):
             runner.execute(statement)
             if runner.errorcode:
                 raise RuntimeError(f'{path}: Teradata error {runner.errorcode}')
+    if root == DDL_ROOT:
+        from dbql.load import load_history
+        load_history(runner)
 
 
 def main():

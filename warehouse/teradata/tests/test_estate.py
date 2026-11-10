@@ -48,7 +48,7 @@ def test_generate_setup_load(estate, tmp_path):
         core = table.database.lower() + '.' + table.name.lower()
         metadata = estate.conn.execute('SELECT is_set FROM sfx_td.tables WHERE name=%s', (core,)).fetchone()
         assert metadata == (table.is_set,)
-    assert estate.conn.execute("SELECT count(*) FROM pg_views WHERE schemaname IN ('sfx_billing','sfx_documents','sfx_users','sfx_audit')").fetchone() == (8,)
+    assert estate.conn.execute("SELECT count(*) FROM pg_views WHERE schemaname IN ('sfx_billing','sfx_documents','sfx_users','sfx_audit')").fetchone() == (11,)
     setup(estate)
     assert load_all(estate, tmp_path) == counts
     for target, count in counts.items():

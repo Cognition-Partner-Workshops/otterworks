@@ -58,6 +58,23 @@ failed copy restores the previous contents. The loader accepts `--controls` to
 select another control-file root. The integration tests create and drop an
 isolated database, so their configured PostgreSQL role needs CREATEDB permission.
 
+Setup creates the layered views after their dependencies and loads the committed
+DBQL CSVs into `DBC`. To regenerate the deterministic 90-day history, reload it,
+and rank successful SELECT requests per calendar day over its final 30 days:
+
+```sh
+warehouse/.venv/bin/python warehouse/teradata/dbql/generate.py --seed 1110
+warehouse/.venv/bin/python -m dbql.load
+warehouse/teradata/bin/bteq run warehouse/teradata/dbql/consumer_reads.bteq
+```
+
+`DBC.QryLogV`, `DBC.QryLogObjectsV`, and `DBC.TablesV` expose the history, expanded
+object references, and catalog access timestamps. Rows are synthetic, not a live
+server trace. CSV timestamps span 2026-08-12 through 2026-11-09; the final 30 days
+contain denser interactive/reporting traffic. `consumer_reads.bteq` is standalone
+and is not run by the daily chain. Reloading replaces all three DBQL tables in
+one transaction.
+
 `bteq.setup` also creates the macros and SPL procedures. `jobs/daily_chain` runs
 setup, feed generation, staging loads, core loads, daily summaries, monthly
 storage and invoice processing, and reconciliation. It stops on the first
