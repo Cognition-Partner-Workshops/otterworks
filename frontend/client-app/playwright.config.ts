@@ -25,7 +25,17 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testIgnore: "**/migrated/**",
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "tosca-migrated",
+      testDir: "./e2e/migrated",
+      use: {
+        ...devices["Desktop Chrome"],
+        trace: "retain-on-failure",
+        screenshot: "only-on-failure",
+      },
     },
   ],
 

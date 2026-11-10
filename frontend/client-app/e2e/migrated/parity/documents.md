@@ -1,0 +1,12 @@
+# Parity: Tosca `TestCases/Documents` → Playwright
+
+Tosca source: `tests/legacy-suites/tosca/ExecutionLists/ClientRegression.xml` and
+`ExecutionLogs/client-regression-2025-02.xml` (last execution).
+Playwright run: `npx playwright test --project tosca-migrated` in `frontend/client-app` (Chromium, local Vite, API mocked from `fixtures/data/documents.ts`).
+
+| TestCase ID | Playwright test | Tosca result (last log) | Playwright result | Verdict | Decision and reason |
+| --- | --- | --- | --- | --- | --- |
+| TC-DOC-001 | `e2e/migrated/documents.spec.ts` › `TC-DOC-001 View the document list` (`@TC-DOC-001`) | Passed | Passed | Match | Heading "Documents" and the "Quarterly Planning" card are shown, as in Tosca's `documents.png`. |
+| TC-DOC-002 | `e2e/migrated/documents.spec.ts` › `TC-DOC-002 Open a document` (`@TC-DOC-002`) | Passed | Passed | Match (Playwright checks more) | Tosca step 2 re-read the title on the **list** card (`documents.png`), so it never proved the document opened. Playwright asserts the URL `/documents/doc-101` and the editor's level-1 heading "Quarterly Planning". |
+| TC-DOC-003 | `e2e/migrated/documents.spec.ts` › `TC-DOC-003 Verify the dashboard document count` (`@TC-DOC-003`) | Passed | Passed (expects 4) | Tosca wrong: data sheet stale, check passed without testing the value | The TestCaseDesign row `DashboardCount` says `ExpectedDocumentCount=3`, but in the same run Tosca's `dashboard.png` and the module scan (`MA-DASH-002`, InnerText `4`) show **4**, and the document list in that run had 4 documents (Quarterly Planning, Release Checklist, Support Handoff, Workspace Guide). Tosca still marked the step Passed, so its check never compared against the sheet value. The app is right: the dashboard count is the `/documents` `total`, and document-service counts exactly the documents the list shows (it leaves out deleted documents and templates). Playwright expects 4, which is the number of documents in its fixture, and keeps the stale `3` in the fixture row for traceability. Follow-up: correct `Documents.csv` in the Tosca source of record. |
+| TC-DOC-004 | `e2e/migrated/documents.spec.ts` › `TC-DOC-004 Filter documents by title` (`@TC-DOC-004`) | Passed | Passed | Match (Playwright checks more) | Filter `Planning` leaves "Quarterly Planning" on screen. Playwright also checks that the three cards that don't match are gone. Tosca only checked that the matching card was visible. |
