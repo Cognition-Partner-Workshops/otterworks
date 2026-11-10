@@ -5,5 +5,5 @@
   "status": "snowflake",
   "schedule": "5 1 * * *",
   "profile": "small",
-  "command": "cd \"${SFX_REPO_ROOT:-.}\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_share_activity --select path:models/spark/docs_share_activity"
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_share_activity --select path:models/spark/docs_share_activity"
 }
