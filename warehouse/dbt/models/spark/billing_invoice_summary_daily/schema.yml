@@ -1,0 +1,16 @@
+version: 2
+models:
+- name: billing_invoice_summary_daily
+  description: sfx-d1110 Spark billing_invoice_summary_daily invoice lines per customer and invoice date
+  tests:
+  - unique:
+      column_name: "CUSTOMER_ID || '|' || INVOICE_DATE"
+  columns:
+  - name: CUSTOMER_ID
+    tests: [not_null]
+  - name: INVOICE_DATE
+    tests: [not_null]
+  - name: LINE_COUNT
+    tests: [not_null]
+  - name: AMOUNT
+    tests: [not_null]
