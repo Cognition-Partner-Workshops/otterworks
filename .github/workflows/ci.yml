@@ -541,3 +541,43 @@ jobs:
           --set namespaceToken=ci1-after --set expires=2026-01-01T00:00:00Z
           --set pv.volumeName=pv-ci
           --set initJob.image.repository=ci/ldm-job --set initJob.image.tag=ci
+
+  # Emulated PowerCenter estate: XML exports, pmcmd emulator and its PostgreSQL integration tests.
+  informatica-runner:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: teradata
+        ports: ['55499:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      TD_HOST: 127.0.0.1
+      TD_PORT: "55499"
+      TD_DB: teradata
+      TD_USER: postgres
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        id: changes
+        with:
+          filters: |
+            informatica:
+              - 'etl/informatica/**'
+              - 'demos/app/complexity/sfx-informatica.json'
+              - 'Makefile'
+      - if: steps.changes.outputs.informatica == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - if: steps.changes.outputs.informatica == 'true'
+        run: pip install -r requirements.txt
+        working-directory: etl/informatica
+      - if: steps.changes.outputs.informatica == 'true'
+        run: python -m pytest -q tests
+        working-directory: etl/informatica
+      - if: steps.changes.outputs.informatica == 'true'
+        run: python -c "import json; json.load(open('demos/app/complexity/sfx-informatica.json'))"

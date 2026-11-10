@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE POWERMART SYSTEM "powrmart.dtd">
+<POWERMART CREATION_DATE="11/03/2026 14:27:13" REPOSITORY_VERSION="188.103">
+<REPOSITORY NAME="REP_SFX_PROD" VERSION="188" CODEPAGE="UTF-8" DATABASETYPE="Oracle">
+<FOLDER NAME="SFX_AUDIT" GROUP="" OWNER="etl_admin" SHARED="NOTSHARED" DESCRIPTION="sfx-d1110 audit subject area" PERMISSIONS="rwx---r--" UUID="4a07e5c4-e523-843e-87a0-67703da857ad">
+    <CONFIG DESCRIPTION="Default session configuration object" ISDEFAULT="YES" NAME="default_session_config" VERSIONNUMBER="1">
+        <ATTRIBUTE NAME="Advanced" VALUE=""/>
+        <ATTRIBUTE NAME="Constraint based load ordering" VALUE="NO"/>
+        <ATTRIBUTE NAME="Cache LOOKUP() function" VALUE="YES"/>
+        <ATTRIBUTE NAME="Default buffer block size" VALUE="Auto"/>
+        <ATTRIBUTE NAME="Line Sequential buffer length" VALUE="1024"/>
+        <ATTRIBUTE NAME="Maximum Memory Allowed For Auto Memory Attributes" VALUE="512MB"/>
+        <ATTRIBUTE NAME="Maximum Percentage of Total Memory Allowed For Auto Memory Attributes" VALUE="5"/>
+        <ATTRIBUTE NAME="Log Options" VALUE=""/>
+        <ATTRIBUTE NAME="Save session log by" VALUE="Session runs"/>
+        <ATTRIBUTE NAME="Save session log for these runs" VALUE="10"/>
+        <ATTRIBUTE NAME="Session Log File Max Size" VALUE="0"/>
+        <ATTRIBUTE NAME="Error handling" VALUE=""/>
+        <ATTRIBUTE NAME="Stop on errors" VALUE="0"/>
+        <ATTRIBUTE NAME="Override tracing" VALUE="None"/>
+        <ATTRIBUTE NAME="On Stored Procedure error" VALUE="Stop"/>
+        <ATTRIBUTE NAME="On Pre-session command task error" VALUE="Stop"/>
+        <ATTRIBUTE NAME="On Pre-Post SQL error" VALUE="Stop"/>
+        <ATTRIBUTE NAME="Error Log Type" VALUE="None"/>
+    </CONFIG>
+    <SESSION DESCRIPTION="" ISVALID="YES" MAPPINGNAME="m_SFX_STG_AUDIT_EVENT" NAME="s_m_SFX_STG_AUDIT_EVENT" REUSABLE="YES" SORTORDER="Binary" VERSIONNUMBER="1">
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="FF_AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="FF_AUDIT_EVENT" TRANSFORMATIONTYPE="Source Definition"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SQ_FF_AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="SQ_FF_AUDIT_EVENT" TRANSFORMATIONTYPE="Source Qualifier"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="EXP_AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="EXP_AUDIT_EVENT" TRANSFORMATIONTYPE="Expression"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="STG_AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="STG_AUDIT_EVENT" TRANSFORMATIONTYPE="Target Definition"/>
+        <SESSIONEXTENSION DSQINSTNAME="SQ_FF_AUDIT_EVENT" DSQINSTTYPE="Source Qualifier" NAME="File Reader" SINSTANCENAME="FF_AUDIT_EVENT" SUBTYPE="File Reader" TRANSFORMATIONTYPE="Source Definition" TYPE="READER">
+            <ATTRIBUTE NAME="Source file directory" VALUE="$PMSourceFileDir/audit/AUDIT_EVENT/"/>
+            <ATTRIBUTE NAME="Source filename" VALUE="$$LOAD_DATE.psv"/>
+            <ATTRIBUTE NAME="Source filetype" VALUE="Direct"/>
+            <ATTRIBUTE NAME="Datetime Format" VALUE="A  19 YYYY-MM-DD HH24:MI:SS"/>
+            <ATTRIBUTE NAME="Truncate string null" VALUE="NO"/>
+        </SESSIONEXTENSION>
+        <SESSIONEXTENSION NAME="Relational Writer" SINSTANCENAME="STG_AUDIT_EVENT" SUBTYPE="Relational Writer" TRANSFORMATIONTYPE="Target Definition" TYPE="WRITER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_TGT"/>
+            <ATTRIBUTE NAME="Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Update" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Update else Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Delete" VALUE="YES"/>
+            <ATTRIBUTE NAME="Truncate target table option" VALUE="YES"/>
+            <ATTRIBUTE NAME="Table Name Prefix" VALUE="SFX_AUDIT"/>
+            <ATTRIBUTE NAME="Reject file directory" VALUE="$PMBadFileDir/"/>
+            <ATTRIBUTE NAME="Reject filename" VALUE="stg_audit_event1.bad"/>
+        </SESSIONEXTENSION>
+        <ATTRIBUTE NAME="General Options" VALUE=""/>
+        <ATTRIBUTE NAME="Write Backward Compatible Session Log File" VALUE="NO"/>
+        <ATTRIBUTE NAME="Session Log File Name" VALUE="s_m_SFX_STG_AUDIT_EVENT.log"/>
+        <ATTRIBUTE NAME="Session Log File directory" VALUE="$PMSessionLogDir/"/>
+        <ATTRIBUTE NAME="Parameter Filename" VALUE=""/>
+        <ATTRIBUTE NAME="Enable Test Load" VALUE="NO"/>
+        <ATTRIBUTE NAME="$Source connection value" VALUE="$DBConnection_SRC"/>
+        <ATTRIBUTE NAME="$Target connection value" VALUE="$DBConnection_TGT"/>
+        <ATTRIBUTE NAME="Treat source rows as" VALUE="Insert"/>
+        <ATTRIBUTE NAME="Commit Type" VALUE="Target"/>
+        <ATTRIBUTE NAME="Commit Interval" VALUE="10000"/>
+        <ATTRIBUTE NAME="Commit On End Of File" VALUE="YES"/>
+        <ATTRIBUTE NAME="Rollback Transactions on Errors" VALUE="NO"/>
+        <ATTRIBUTE NAME="Recovery Strategy" VALUE="Fail task and continue workflow"/>
+        <ATTRIBUTE NAME="Java Classpath" VALUE=""/>
+        <ATTRIBUTE NAME="Performance" VALUE=""/>
+        <ATTRIBUTE NAME="DTM buffer size" VALUE="Auto"/>
+        <ATTRIBUTE NAME="Collect performance data" VALUE="NO"/>
+        <ATTRIBUTE NAME="Incremental Aggregation" VALUE="NO"/>
+        <ATTRIBUTE NAME="Stop on errors" VALUE="0"/>
+        <ATTRIBUTE NAME="Override tracing" VALUE="None"/>
+        <ATTRIBUTE NAME="Save session log by" VALUE="Session runs"/>
+        <ATTRIBUTE NAME="Save session log for these runs" VALUE="10"/>
+        <CONFIGREFERENCE REFOBJECTNAME="default_session_config" TYPE="Session config"/>
+    </SESSION>
+    <SESSION DESCRIPTION="" ISVALID="YES" MAPPINGNAME="m_SFX_AUDIT_EVENT" NAME="s_m_SFX_AUDIT_EVENT" REUSABLE="YES" SORTORDER="Binary" VERSIONNUMBER="1">
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="STG_AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="STG_AUDIT_EVENT" TRANSFORMATIONTYPE="Source Definition"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SQ_STG_AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="SQ_STG_AUDIT_EVENT" TRANSFORMATIONTYPE="Source Qualifier"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="EXP_STANDARDISE" STAGE="1" TRANSFORMATIONNAME="EXP_STANDARDISE" TRANSFORMATIONTYPE="Expression"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="AUDIT_EVENT" TRANSFORMATIONTYPE="Target Definition"/>
+        <SESSIONEXTENSION NAME="Relational Reader" SINSTANCENAME="SQ_STG_AUDIT_EVENT" SUBTYPE="Relational Reader" TRANSFORMATIONTYPE="Source Qualifier" TYPE="READER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_SRC"/>
+        </SESSIONEXTENSION>
+        <SESSIONEXTENSION NAME="Relational Writer" SINSTANCENAME="AUDIT_EVENT" SUBTYPE="Relational Writer" TRANSFORMATIONTYPE="Target Definition" TYPE="WRITER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_TGT"/>
+            <ATTRIBUTE NAME="Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Update" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Update else Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Delete" VALUE="YES"/>
+            <ATTRIBUTE NAME="Truncate target table option" VALUE="NO"/>
+            <ATTRIBUTE NAME="Table Name Prefix" VALUE="SFX_AUDIT"/>
+            <ATTRIBUTE NAME="Reject file directory" VALUE="$PMBadFileDir/"/>
+            <ATTRIBUTE NAME="Reject filename" VALUE="audit_event1.bad"/>
+        </SESSIONEXTENSION>
+        <ATTRIBUTE NAME="General Options" VALUE=""/>
+        <ATTRIBUTE NAME="Write Backward Compatible Session Log File" VALUE="NO"/>
+        <ATTRIBUTE NAME="Session Log File Name" VALUE="s_m_SFX_AUDIT_EVENT.log"/>
+        <ATTRIBUTE NAME="Session Log File directory" VALUE="$PMSessionLogDir/"/>
+        <ATTRIBUTE NAME="Parameter Filename" VALUE=""/>
+        <ATTRIBUTE NAME="Enable Test Load" VALUE="NO"/>
+        <ATTRIBUTE NAME="$Source connection value" VALUE="$DBConnection_SRC"/>
+        <ATTRIBUTE NAME="$Target connection value" VALUE="$DBConnection_TGT"/>
+        <ATTRIBUTE NAME="Treat source rows as" VALUE="Update"/>
+        <ATTRIBUTE NAME="Commit Type" VALUE="Target"/>
+        <ATTRIBUTE NAME="Commit Interval" VALUE="10000"/>
+        <ATTRIBUTE NAME="Commit On End Of File" VALUE="YES"/>
+        <ATTRIBUTE NAME="Rollback Transactions on Errors" VALUE="NO"/>
+        <ATTRIBUTE NAME="Recovery Strategy" VALUE="Fail task and continue workflow"/>
+        <ATTRIBUTE NAME="Java Classpath" VALUE=""/>
+        <ATTRIBUTE NAME="Performance" VALUE=""/>
+        <ATTRIBUTE NAME="DTM buffer size" VALUE="Auto"/>
+        <ATTRIBUTE NAME="Collect performance data" VALUE="NO"/>
+        <ATTRIBUTE NAME="Incremental Aggregation" VALUE="NO"/>
+        <ATTRIBUTE NAME="Stop on errors" VALUE="0"/>
+        <ATTRIBUTE NAME="Override tracing" VALUE="None"/>
+        <ATTRIBUTE NAME="Save session log by" VALUE="Session runs"/>
+        <ATTRIBUTE NAME="Save session log for these runs" VALUE="10"/>
+        <CONFIGREFERENCE REFOBJECTNAME="default_session_config" TYPE="Session config"/>
+    </SESSION>
+    <SESSION DESCRIPTION="" ISVALID="YES" MAPPINGNAME="m_SFX_AUDIT_DAILY_SUMMARY" NAME="s_m_SFX_AUDIT_DAILY_SUMMARY" REUSABLE="YES" SORTORDER="Binary" VERSIONNUMBER="1">
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="AUDIT_EVENT" TRANSFORMATIONTYPE="Source Definition"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SQ_AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="SQ_AUDIT_EVENT" TRANSFORMATIONTYPE="Source Qualifier"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="EXP_SUMMARY_KEYS" STAGE="1" TRANSFORMATIONNAME="EXP_SUMMARY_KEYS" TRANSFORMATIONTYPE="Expression"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="AGG_DAILY_EVENTS" STAGE="1" TRANSFORMATIONNAME="AGG_DAILY_EVENTS" TRANSFORMATIONTYPE="Aggregator"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SEQ_AUDIT_SUMMARY" STAGE="1" TRANSFORMATIONNAME="SEQ_AUDIT_SUMMARY" TRANSFORMATIONTYPE="Sequence"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="AUDIT_DAILY_SUMMARY" STAGE="1" TRANSFORMATIONNAME="AUDIT_DAILY_SUMMARY" TRANSFORMATIONTYPE="Target Definition"/>
+        <SESSIONEXTENSION NAME="Relational Reader" SINSTANCENAME="SQ_AUDIT_EVENT" SUBTYPE="Relational Reader" TRANSFORMATIONTYPE="Source Qualifier" TYPE="READER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_SRC"/>
+        </SESSIONEXTENSION>
+        <SESSIONEXTENSION NAME="Relational Writer" SINSTANCENAME="AUDIT_DAILY_SUMMARY" SUBTYPE="Relational Writer" TRANSFORMATIONTYPE="Target Definition" TYPE="WRITER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_TGT"/>
+            <ATTRIBUTE NAME="Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Update" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Update else Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Delete" VALUE="YES"/>
+            <ATTRIBUTE NAME="Truncate target table option" VALUE="NO"/>
+            <ATTRIBUTE NAME="Table Name Prefix" VALUE="SFX_AUDIT"/>
+            <ATTRIBUTE NAME="Reject file directory" VALUE="$PMBadFileDir/"/>
+            <ATTRIBUTE NAME="Reject filename" VALUE="audit_daily_summary1.bad"/>
+        </SESSIONEXTENSION>
+        <ATTRIBUTE NAME="General Options" VALUE=""/>
+        <ATTRIBUTE NAME="Write Backward Compatible Session Log File" VALUE="NO"/>
+        <ATTRIBUTE NAME="Session Log File Name" VALUE="s_m_SFX_AUDIT_DAILY_SUMMARY.log"/>
+        <ATTRIBUTE NAME="Session Log File directory" VALUE="$PMSessionLogDir/"/>
+        <ATTRIBUTE NAME="Parameter Filename" VALUE=""/>
+        <ATTRIBUTE NAME="Enable Test Load" VALUE="NO"/>
+        <ATTRIBUTE NAME="$Source connection value" VALUE="$DBConnection_SRC"/>
+        <ATTRIBUTE NAME="$Target connection value" VALUE="$DBConnection_TGT"/>
+        <ATTRIBUTE NAME="Treat source rows as" VALUE="Insert"/>
+        <ATTRIBUTE NAME="Commit Type" VALUE="Target"/>
+        <ATTRIBUTE NAME="Commit Interval" VALUE="10000"/>
+        <ATTRIBUTE NAME="Commit On End Of File" VALUE="YES"/>
+        <ATTRIBUTE NAME="Rollback Transactions on Errors" VALUE="NO"/>
+        <ATTRIBUTE NAME="Recovery Strategy" VALUE="Fail task and continue workflow"/>
+        <ATTRIBUTE NAME="Java Classpath" VALUE=""/>
+        <ATTRIBUTE NAME="Performance" VALUE=""/>
+        <ATTRIBUTE NAME="DTM buffer size" VALUE="Auto"/>
+        <ATTRIBUTE NAME="Collect performance data" VALUE="NO"/>
+        <ATTRIBUTE NAME="Incremental Aggregation" VALUE="NO"/>
+        <ATTRIBUTE NAME="Stop on errors" VALUE="0"/>
+        <ATTRIBUTE NAME="Override tracing" VALUE="None"/>
+        <ATTRIBUTE NAME="Save session log by" VALUE="Session runs"/>
+        <ATTRIBUTE NAME="Save session log for these runs" VALUE="10"/>
+        <CONFIGREFERENCE REFOBJECTNAME="default_session_config" TYPE="Session config"/>
+    </SESSION>
+    <SESSION DESCRIPTION="" ISVALID="YES" MAPPINGNAME="m_SFX_SECURITY_ALERT" NAME="s_m_SFX_SECURITY_ALERT" REUSABLE="YES" SORTORDER="Binary" VERSIONNUMBER="1">
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="FF_SECURITY_ALERT" STAGE="1" TRANSFORMATIONNAME="FF_SECURITY_ALERT" TRANSFORMATIONTYPE="Source Definition"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SQ_FF_SECURITY_ALERT" STAGE="1" TRANSFORMATIONNAME="SQ_FF_SECURITY_ALERT" TRANSFORMATIONTYPE="Source Qualifier"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="EXP_SECURITY_ALERT" STAGE="1" TRANSFORMATIONNAME="EXP_SECURITY_ALERT" TRANSFORMATIONTYPE="Expression"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="RTR_SEVERITY" STAGE="1" TRANSFORMATIONNAME="RTR_SEVERITY" TRANSFORMATIONTYPE="Router"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="EXP_ESCALATE" STAGE="1" TRANSFORMATIONNAME="EXP_ESCALATE" TRANSFORMATIONTYPE="Expression"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="UPD_ALERT_CRITICAL" STAGE="1" TRANSFORMATIONNAME="UPD_ALERT_CRITICAL" TRANSFORMATIONTYPE="Update Strategy"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="UPD_ALERT_STANDARD" STAGE="1" TRANSFORMATIONNAME="UPD_ALERT_STANDARD" TRANSFORMATIONTYPE="Update Strategy"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="UPD_ALERT_UNKNOWN" STAGE="1" TRANSFORMATIONNAME="UPD_ALERT_UNKNOWN" TRANSFORMATIONTYPE="Update Strategy"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SECURITY_ALERT" STAGE="1" TRANSFORMATIONNAME="SECURITY_ALERT" TRANSFORMATIONTYPE="Target Definition"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SECURITY_ALERT1" STAGE="1" TRANSFORMATIONNAME="SECURITY_ALERT" TRANSFORMATIONTYPE="Target Definition"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SECURITY_ALERT2" STAGE="1" TRANSFORMATIONNAME="SECURITY_ALERT" TRANSFORMATIONTYPE="Target Definition"/>
+        <SESSIONEXTENSION DSQINSTNAME="SQ_FF_SECURITY_ALERT" DSQINSTTYPE="Source Qualifier" NAME="File Reader" SINSTANCENAME="FF_SECURITY_ALERT" SUBTYPE="File Reader" TRANSFORMATIONTYPE="Source Definition" TYPE="READER">
+            <ATTRIBUTE NAME="Source file directory" VALUE="$PMSourceFileDir/audit/SECURITY_ALERT/"/>
+            <ATTRIBUTE NAME="Source filename" VALUE="$$LOAD_DATE.psv"/>
+            <ATTRIBUTE NAME="Source filetype" VALUE="Direct"/>
+            <ATTRIBUTE NAME="Datetime Format" VALUE="A  19 YYYY-MM-DD HH24:MI:SS"/>
+            <ATTRIBUTE NAME="Truncate string null" VALUE="NO"/>
+        </SESSIONEXTENSION>
+        <SESSIONEXTENSION NAME="Relational Writer" SINSTANCENAME="SECURITY_ALERT" SUBTYPE="Relational Writer" TRANSFORMATIONTYPE="Target Definition" TYPE="WRITER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_TGT"/>
+            <ATTRIBUTE NAME="Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Update" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Update else Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Delete" VALUE="YES"/>
+            <ATTRIBUTE NAME="Truncate target table option" VALUE="NO"/>
+            <ATTRIBUTE NAME="Table Name Prefix" VALUE="SFX_AUDIT"/>
+            <ATTRIBUTE NAME="Reject file directory" VALUE="$PMBadFileDir/"/>
+            <ATTRIBUTE NAME="Reject filename" VALUE="security_alert1.bad"/>
+        </SESSIONEXTENSION>
+        <SESSIONEXTENSION NAME="Relational Writer" SINSTANCENAME="SECURITY_ALERT1" SUBTYPE="Relational Writer" TRANSFORMATIONTYPE="Target Definition" TYPE="WRITER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_TGT"/>
+            <ATTRIBUTE NAME="Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Update" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Update else Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Delete" VALUE="YES"/>
+            <ATTRIBUTE NAME="Truncate target table option" VALUE="NO"/>
+            <ATTRIBUTE NAME="Table Name Prefix" VALUE="SFX_AUDIT"/>
+            <ATTRIBUTE NAME="Reject file directory" VALUE="$PMBadFileDir/"/>
+            <ATTRIBUTE NAME="Reject filename" VALUE="security_alert11.bad"/>
+        </SESSIONEXTENSION>
+        <SESSIONEXTENSION NAME="Relational Writer" SINSTANCENAME="SECURITY_ALERT2" SUBTYPE="Relational Writer" TRANSFORMATIONTYPE="Target Definition" TYPE="WRITER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_TGT"/>
+            <ATTRIBUTE NAME="Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Update" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Update else Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Delete" VALUE="YES"/>
+            <ATTRIBUTE NAME="Truncate target table option" VALUE="NO"/>
+            <ATTRIBUTE NAME="Table Name Prefix" VALUE="SFX_AUDIT"/>
+            <ATTRIBUTE NAME="Reject file directory" VALUE="$PMBadFileDir/"/>
+            <ATTRIBUTE NAME="Reject filename" VALUE="security_alert21.bad"/>
+        </SESSIONEXTENSION>
+        <ATTRIBUTE NAME="General Options" VALUE=""/>
+        <ATTRIBUTE NAME="Write Backward Compatible Session Log File" VALUE="NO"/>
+        <ATTRIBUTE NAME="Session Log File Name" VALUE="s_m_SFX_SECURITY_ALERT.log"/>
+        <ATTRIBUTE NAME="Session Log File directory" VALUE="$PMSessionLogDir/"/>
+        <ATTRIBUTE NAME="Parameter Filename" VALUE=""/>
+        <ATTRIBUTE NAME="Enable Test Load" VALUE="NO"/>
+        <ATTRIBUTE NAME="$Source connection value" VALUE="$DBConnection_SRC"/>
+        <ATTRIBUTE NAME="$Target connection value" VALUE="$DBConnection_TGT"/>
+        <ATTRIBUTE NAME="Treat source rows as" VALUE="Data driven"/>
+        <ATTRIBUTE NAME="Commit Type" VALUE="Target"/>
+        <ATTRIBUTE NAME="Commit Interval" VALUE="10000"/>
+        <ATTRIBUTE NAME="Commit On End Of File" VALUE="YES"/>
+        <ATTRIBUTE NAME="Rollback Transactions on Errors" VALUE="NO"/>
+        <ATTRIBUTE NAME="Recovery Strategy" VALUE="Fail task and continue workflow"/>
+        <ATTRIBUTE NAME="Java Classpath" VALUE=""/>
+        <ATTRIBUTE NAME="Performance" VALUE=""/>
+        <ATTRIBUTE NAME="DTM buffer size" VALUE="Auto"/>
+        <ATTRIBUTE NAME="Collect performance data" VALUE="NO"/>
+        <ATTRIBUTE NAME="Incremental Aggregation" VALUE="NO"/>
+        <ATTRIBUTE NAME="Stop on errors" VALUE="0"/>
+        <ATTRIBUTE NAME="Override tracing" VALUE="None"/>
+        <ATTRIBUTE NAME="Save session log by" VALUE="Session runs"/>
+        <ATTRIBUTE NAME="Save session log for these runs" VALUE="10"/>
+        <CONFIGREFERENCE REFOBJECTNAME="default_session_config" TYPE="Session config"/>
+    </SESSION>
+    <SESSION DESCRIPTION="" ISVALID="YES" MAPPINGNAME="m_SFX_AUDIT_EVENT_ARCHIVE" NAME="s_m_SFX_AUDIT_EVENT_ARCHIVE" REUSABLE="YES" SORTORDER="Binary" VERSIONNUMBER="1">
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="AUDIT_EVENT" TRANSFORMATIONTYPE="Source Definition"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SQ_AUDIT_EVENT" STAGE="1" TRANSFORMATIONNAME="SQ_AUDIT_EVENT" TRANSFORMATIONTYPE="Source Qualifier"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="NO" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="SEQ_AUDIT_ARCHIVE" STAGE="1" TRANSFORMATIONNAME="SEQ_AUDIT_ARCHIVE" TRANSFORMATIONTYPE="Sequence"/>
+        <SESSTRANSFORMATIONINST ISREPARTITIONPOINT="YES" PARTITIONTYPE="PASS THROUGH" PIPELINE="1" SINSTANCENAME="AUDIT_EVENT_ARCHIVE" STAGE="1" TRANSFORMATIONNAME="AUDIT_EVENT_ARCHIVE" TRANSFORMATIONTYPE="Target Definition"/>
+        <SESSIONEXTENSION NAME="Relational Reader" SINSTANCENAME="SQ_AUDIT_EVENT" SUBTYPE="Relational Reader" TRANSFORMATIONTYPE="Source Qualifier" TYPE="READER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_SRC"/>
+        </SESSIONEXTENSION>
+        <SESSIONEXTENSION NAME="Relational Writer" SINSTANCENAME="AUDIT_EVENT_ARCHIVE" SUBTYPE="Relational Writer" TRANSFORMATIONTYPE="Target Definition" TYPE="WRITER">
+            <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="" CONNECTIONTYPE="Relational" VARIABLE="$DBConnection_TGT"/>
+            <ATTRIBUTE NAME="Insert" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Update" VALUE="YES"/>
+            <ATTRIBUTE NAME="Update as Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Update else Insert" VALUE="NO"/>
+            <ATTRIBUTE NAME="Delete" VALUE="YES"/>
+            <ATTRIBUTE NAME="Truncate target table option" VALUE="NO"/>
+            <ATTRIBUTE NAME="Table Name Prefix" VALUE="SFX_AUDIT"/>
+            <ATTRIBUTE NAME="Reject file directory" VALUE="$PMBadFileDir/"/>
+            <ATTRIBUTE NAME="Reject filename" VALUE="audit_event_archive1.bad"/>
+        </SESSIONEXTENSION>
+        <ATTRIBUTE NAME="General Options" VALUE=""/>
+        <ATTRIBUTE NAME="Write Backward Compatible Session Log File" VALUE="NO"/>
+        <ATTRIBUTE NAME="Session Log File Name" VALUE="s_m_SFX_AUDIT_EVENT_ARCHIVE.log"/>
+        <ATTRIBUTE NAME="Session Log File directory" VALUE="$PMSessionLogDir/"/>
+        <ATTRIBUTE NAME="Parameter Filename" VALUE=""/>
+        <ATTRIBUTE NAME="Enable Test Load" VALUE="NO"/>
+        <ATTRIBUTE NAME="$Source connection value" VALUE="$DBConnection_SRC"/>
+        <ATTRIBUTE NAME="$Target connection value" VALUE="$DBConnection_TGT"/>
+        <ATTRIBUTE NAME="Treat source rows as" VALUE="Insert"/>
+        <ATTRIBUTE NAME="Commit Type" VALUE="Target"/>
+        <ATTRIBUTE NAME="Commit Interval" VALUE="10000"/>
+        <ATTRIBUTE NAME="Commit On End Of File" VALUE="YES"/>
+        <ATTRIBUTE NAME="Rollback Transactions on Errors" VALUE="NO"/>
+        <ATTRIBUTE NAME="Recovery Strategy" VALUE="Fail task and continue workflow"/>
+        <ATTRIBUTE NAME="Java Classpath" VALUE=""/>
+        <ATTRIBUTE NAME="Performance" VALUE=""/>
+        <ATTRIBUTE NAME="DTM buffer size" VALUE="Auto"/>
+        <ATTRIBUTE NAME="Collect performance data" VALUE="NO"/>
+        <ATTRIBUTE NAME="Incremental Aggregation" VALUE="NO"/>
+        <ATTRIBUTE NAME="Stop on errors" VALUE="0"/>
+        <ATTRIBUTE NAME="Override tracing" VALUE="None"/>
+        <ATTRIBUTE NAME="Save session log by" VALUE="Session runs"/>
+        <ATTRIBUTE NAME="Save session log for these runs" VALUE="10"/>
+        <CONFIGREFERENCE REFOBJECTNAME="default_session_config" TYPE="Session config"/>
+    </SESSION>
+    <WORKFLOW DESCRIPTION="sfx-d1110 audit daily batch" ISENABLED="YES" ISRUNNABLESERVICE="NO" ISSERVICE="NO" ISVALID="YES" NAME="wf_SFX_AUDIT_DAILY" REUSABLE_SCHEDULER="NO" SCHEDULERNAME="Scheduler" SERVERNAME="IS_SFX_D1110" SERVER_DOMAINNAME="Domain_sfx_d1110" SUSPEND_ON_ERROR="NO" TASKS_MUST_RUN_ON_SERVER="NO" VERSIONNUMBER="1">
+        <SCHEDULER DESCRIPTION="" NAME="Scheduler" REUSABLE="NO" VERSIONNUMBER="1">
+            <SCHEDULEINFO SCHEDULETYPE="CUSTOMIZED">
+                <STARTOPTIONS STARTDATE="07/01/2026" STARTTIME="03:00"/>
+                <ENDOPTIONS ENDDATE="" ENDTYPE="NOEND" RUNCOUNT="0"/>
+                <SCHEDULEOPTIONS SCHEDULE_TYPE="DAILY"><RECURRING DAYS="1" HOURS="0" MINUTES="0"/></SCHEDULEOPTIONS>
+            </SCHEDULEINFO>
+        </SCHEDULER>
+        <TASK DESCRIPTION="" NAME="Start" REUSABLE="NO" TYPE="Start" VERSIONNUMBER="1"/>
+        <TASKINSTANCE DESCRIPTION="" ISENABLED="YES" NAME="Start" REUSABLE="NO" TASKNAME="Start" TASKTYPE="Start"/>
+        <TASKINSTANCE DESCRIPTION="" FAIL_PARENT_IF_INSTANCE_DID_NOT_RUN="NO" FAIL_PARENT_IF_INSTANCE_FAILS="YES" ISENABLED="YES" NAME="s_m_SFX_STG_AUDIT_EVENT" REUSABLE="YES" TASKNAME="s_m_SFX_STG_AUDIT_EVENT" TASKTYPE="Session" TREAT_INPUTLINK_AS_AND="YES">
+            <ATTRIBUTE NAME="Fail task if any command fails" VALUE="NO"/>
+            <ATTRIBUTE NAME="Recovery Strategy" VALUE="Restart task"/>
+        </TASKINSTANCE>
+        <TASKINSTANCE DESCRIPTION="" FAIL_PARENT_IF_INSTANCE_DID_NOT_RUN="NO" FAIL_PARENT_IF_INSTANCE_FAILS="YES" ISENABLED="YES" NAME="s_m_SFX_AUDIT_EVENT" REUSABLE="YES" TASKNAME="s_m_SFX_AUDIT_EVENT" TASKTYPE="Session" TREAT_INPUTLINK_AS_AND="YES">
+            <ATTRIBUTE NAME="Fail task if any command fails" VALUE="NO"/>
+            <ATTRIBUTE NAME="Recovery Strategy" VALUE="Restart task"/>
+        </TASKINSTANCE>
+        <TASKINSTANCE DESCRIPTION="" FAIL_PARENT_IF_INSTANCE_DID_NOT_RUN="NO" FAIL_PARENT_IF_INSTANCE_FAILS="YES" ISENABLED="YES" NAME="s_m_SFX_AUDIT_DAILY_SUMMARY" REUSABLE="YES" TASKNAME="s_m_SFX_AUDIT_DAILY_SUMMARY" TASKTYPE="Session" TREAT_INPUTLINK_AS_AND="YES">
+            <ATTRIBUTE NAME="Fail task if any command fails" VALUE="NO"/>
+            <ATTRIBUTE NAME="Recovery Strategy" VALUE="Restart task"/>
+        </TASKINSTANCE>
+        <TASKINSTANCE DESCRIPTION="" FAIL_PARENT_IF_INSTANCE_DID_NOT_RUN="NO" FAIL_PARENT_IF_INSTANCE_FAILS="YES" ISENABLED="YES" NAME="s_m_SFX_SECURITY_ALERT" REUSABLE="YES" TASKNAME="s_m_SFX_SECURITY_ALERT" TASKTYPE="Session" TREAT_INPUTLINK_AS_AND="YES">
+            <ATTRIBUTE NAME="Fail task if any command fails" VALUE="NO"/>
+            <ATTRIBUTE NAME="Recovery Strategy" VALUE="Restart task"/>
+        </TASKINSTANCE>
+        <TASKINSTANCE DESCRIPTION="" FAIL_PARENT_IF_INSTANCE_DID_NOT_RUN="NO" FAIL_PARENT_IF_INSTANCE_FAILS="YES" ISENABLED="NO" NAME="s_m_SFX_AUDIT_EVENT_ARCHIVE" REUSABLE="YES" TASKNAME="s_m_SFX_AUDIT_EVENT_ARCHIVE" TASKTYPE="Session" TREAT_INPUTLINK_AS_AND="YES">
+            <ATTRIBUTE NAME="Fail task if any command fails" VALUE="NO"/>
+            <ATTRIBUTE NAME="Recovery Strategy" VALUE="Restart task"/>
+        </TASKINSTANCE>
+        <WORKFLOWLINK CONDITION="" FROMTASK="Start" TOTASK="s_m_SFX_STG_AUDIT_EVENT"/>
+        <WORKFLOWLINK CONDITION="$s_m_SFX_STG_AUDIT_EVENT.Status=SUCCEEDED" FROMTASK="s_m_SFX_STG_AUDIT_EVENT" TOTASK="s_m_SFX_AUDIT_EVENT"/>
+        <WORKFLOWLINK CONDITION="$s_m_SFX_AUDIT_EVENT.Status=SUCCEEDED" FROMTASK="s_m_SFX_AUDIT_EVENT" TOTASK="s_m_SFX_AUDIT_DAILY_SUMMARY"/>
+        <WORKFLOWLINK CONDITION="$s_m_SFX_AUDIT_EVENT.Status=SUCCEEDED" FROMTASK="s_m_SFX_AUDIT_EVENT" TOTASK="s_m_SFX_AUDIT_EVENT_ARCHIVE"/>
+        <WORKFLOWLINK CONDITION="" FROMTASK="Start" TOTASK="s_m_SFX_SECURITY_ALERT"/>
+        <WORKFLOWVARIABLE DATATYPE="date/time" DEFAULTVALUE="" DESCRIPTION="" ISNULL="NO" ISPERSISTENT="NO" NAME="$Start.StartTime" USERDEFINED="NO"/>
+        <WORKFLOWVARIABLE DATATYPE="integer" DEFAULTVALUE="" DESCRIPTION="" ISNULL="NO" ISPERSISTENT="NO" NAME="$Start.Status" USERDEFINED="NO"/>
+        <ATTRIBUTE NAME="Parameter Filename" VALUE="$PMRootDir/params/sfx_d1110_daily.par"/>
+        <ATTRIBUTE NAME="Write Backward Compatible Workflow Log File" VALUE="NO"/>
+        <ATTRIBUTE NAME="Workflow Log File Name" VALUE="wf_SFX_AUDIT_DAILY.log"/>
+        <ATTRIBUTE NAME="Workflow Log File Directory" VALUE="$PMWorkflowLogDir/"/>
+        <ATTRIBUTE NAME="Save Workflow log by" VALUE="By runs"/>
+        <ATTRIBUTE NAME="Save workflow log for these runs" VALUE="10"/>
+        <ATTRIBUTE NAME="Service Name" VALUE="IS_SFX_D1110"/>
+    </WORKFLOW>
+</FOLDER>
+</REPOSITORY>
+</POWERMART>

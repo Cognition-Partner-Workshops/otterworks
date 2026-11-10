@@ -1,3 +1,4 @@
+.PHONY: sfx-informatica-up sfx-informatica-run sfx-informatica-test sfx-informatica-down
 .PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
@@ -629,3 +630,35 @@ lp-ec2-down: ## Destroy the run's legacy-portal EC2 stack (RUN=)
 
 lp-ec2-verify-clean: ## Prove nothing tagged or named with the run token remains (RUN=)
 	@$(LP_EC2) verify-clean
+
+# --- sfx-informatica: emulated PowerCenter estate (etl/informatica, run token sfx-d1110) ---
+# INFA_DB=fixture (default) starts a throwaway warehouse database loaded with the local fixture schema;
+# INFA_DB=teradata points the runner at the Teradata emulation's compose service instead.
+INFA_DIR = etl/informatica
+INFA_NS = $(or $(NS),sfx-d1110-before)
+INFA_DB ?= fixture
+INFA_PORT_OFFSET = $(shell python3 -c "import zlib; print(zlib.crc32('$(INFA_NS)'.encode()) % 1000)")
+INFA_TD_PORT = $(shell python3 -c "print($(if $(filter teradata,$(INFA_DB)),54500,55500) + $(INFA_PORT_OFFSET))")
+INFA_LANDING = $(or $(LANDING_DIR),$(if $(wildcard warehouse/landing/billing),$(CURDIR)/warehouse/landing,$(CURDIR)/$(INFA_DIR)/tests/fixture/landing))
+INFA_PY = $(CURDIR)/$(INFA_DIR)/.venv/bin/python
+INFA_ENV = NS=$(INFA_NS) TD_PORT=$(or $(TD_PORT),$(INFA_TD_PORT)) LANDING_DIR=$(INFA_LANDING) PMROOTDIR=$(CURDIR)/$(INFA_DIR)/infa_shared/$(INFA_NS)
+INFA_COMPOSE = NS=$(INFA_NS) TD_PORT=$(INFA_TD_PORT) docker compose -f $(INFA_DIR)/docker-compose.informatica.yml
+INFA_WORKFLOWS = SFX_CONTENT:wf_SFX_CONTENT_DAILY SFX_BILLING:wf_SFX_BILLING_DAILY SFX_AUDIT:wf_SFX_AUDIT_DAILY
+
+sfx-informatica-up: ## Create the runner venv and start the warehouse database for NS (INFA_DB=fixture|teradata)
+	@test -x $(INFA_PY) || (python3 -m venv $(INFA_DIR)/.venv && $(INFA_DIR)/.venv/bin/pip install -q -r $(INFA_DIR)/requirements.txt)
+	@if [ "$(INFA_DB)" = teradata ]; then $(MAKE) sfx-teradata-up NS=$(INFA_NS); else \
+	  docker image inspect postgres:16 >/dev/null 2>&1 || (docker pull mirror.gcr.io/library/postgres:16 && docker tag mirror.gcr.io/library/postgres:16 postgres:16); \
+	  $(INFA_COMPOSE) up -d --wait; fi
+	@echo "warehouse for $(INFA_NS): 127.0.0.1:$(INFA_TD_PORT) (INFA_DB=$(INFA_DB))"
+
+sfx-informatica-run: ## Run the three daily workflows through the pmcmd emulator (NS=, LANDING_DIR= optional)
+	@cd $(INFA_DIR) && for wf in $(INFA_WORKFLOWS); do \
+	  $(INFA_ENV) $(INFA_PY) -m runner startworkflow -f $${wf%%:*} $${wf##*:} || exit 1; done
+
+sfx-informatica-test: ## Unit and integration tests of the runner against the NS warehouse database
+	@cd $(INFA_DIR) && $(INFA_ENV) $(INFA_PY) -m pytest -q tests
+
+sfx-informatica-down: ## Stop the NS warehouse database, drop its volume and the run directory
+	@if [ "$(INFA_DB)" != teradata ]; then $(INFA_COMPOSE) down -v --remove-orphans; fi
+	@rm -rf $(INFA_DIR)/infa_shared/$(INFA_NS)
