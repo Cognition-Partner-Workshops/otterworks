@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{screens/fragments :: head('Rate history')}"></head>
+<body>
+<header th:replace="~{screens/fragments :: header}"></header>
+<main>
+  <div th:replace="~{screens/fragments :: nav}"></div>
+  <h2>Rate history</h2>
+  <p>
+    Agent <strong th:text="${agent.agentCode}">AG-100</strong>
+    (id <span th:text="${agent.agentId}">1</span>) <span th:text="${agent.fullName}">name</span>:
+    rates for this agent and the product defaults &middot;
+    highlighted rows were used by the <strong th:text="${period}">2026-03</strong> statement
+  </p>
+  <table id="rates">
+    <thead>
+    <tr><th>Rate id</th><th>Product</th><th>Agent</th><th class="num">Rate %</th><th>Effective from</th><th>Effective to</th><th>Used in period</th></tr>
+    </thead>
+    <tbody>
+    <tr th:each="r : ${rates}" th:classappend="${usedRateIds.contains(r.rateId)} ? 'used'">
+      <td th:text="${r.rateId}">1</td>
+      <td th:text="${r.productCode}">AUTO-STD</td>
+      <td th:text="${r.agentId == null} ? 'default' : ${r.agentCode}">default</td>
+      <td class="num" th:text="${fmt.money(r.ratePct)}">8.50</td>
+      <td th:text="${r.effectiveFrom}">2025-01-01</td>
+      <td th:text="${r.effectiveTo == null} ? 'open' : ${r.effectiveTo}">open</td>
+      <td th:text="${usedRateIds.contains(r.rateId)} ? 'yes' : ''"></td>
+    </tr>
+    <tr th:if="${#lists.isEmpty(rates)}"><td colspan="7">No rates.</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

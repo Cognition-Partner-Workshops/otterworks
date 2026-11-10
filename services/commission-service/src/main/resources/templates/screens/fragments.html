@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+  <meta charset="utf-8">
+  <title th:text="${title}">Commission Pay</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; color: #1f2933; }
+    header { padding: 12px 24px; color: #fff; }
+    header.ORACLE { background: #a4262c; }
+    header.POSTGRES { background: #1f5f99; }
+    header h1 { margin: 0; font-size: 20px; }
+    header .db { font-size: 13px; opacity: .9; }
+    main { padding: 16px 24px; }
+    nav a { margin-right: 16px; }
+    table { border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #c5ccd3; padding: 6px 10px; font-size: 14px; }
+    th { background: #eef1f4; text-align: left; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr.total td { font-weight: 700; background: #f7f9fa; }
+    tr.used td { background: #fff7d6; }
+    .meta { color: #52606d; font-size: 13px; }
+    form { margin: 8px 0; }
+  </style>
+</head>
+<body>
+<header th:fragment="header" th:class="${backend}">
+  <h1>Commission Pay &middot; backend <span th:text="${backend}">ORACLE</span></h1>
+  <div class="db" th:if="${database != null}">
+    <span th:text="${database.product}">Oracle Database</span> &middot; <span th:text="${database.url}">jdbc:...</span>
+  </div>
+</header>
+<div th:fragment="nav">
+  <form method="get">
+    Agent id <input name="agent" size="4" th:value="${agent.agentId}">
+    Period <input name="period" size="8" th:value="${period}">
+    <button type="submit">Open</button>
+  </form>
+  <nav>
+    <a th:href="@{/screens/statement(agent=${agent.agentId},period=${period})}">Commission statement</a>
+    <a th:href="@{/screens/rates(agent=${agent.agentId},period=${period})}">Rate history</a>
+  </nav>
+</div>
+</body>
+</html>
