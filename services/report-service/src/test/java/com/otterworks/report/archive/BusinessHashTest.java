@@ -53,10 +53,10 @@ public class BusinessHashTest {
         e.actorId = "U00000000042";
         e.retentionClass = "FIN7";
         e.dispositionCode = "00";
-        e.clientIp = "10.1.2.3";
+        e.clientIp = "192.0.2.3";
         e.detailText = "VIEW v3";
         String expected = BusinessHash.sha256Hex("FA000000000000000123|DA00000000000042|VIEW|"
-                + "2015-07-02-08.00.00.000000000001|U00000000042|FIN7|00|10.1.2.3|VIEW v3");
+                + "2015-07-02-08.00.00.000000000001|U00000000042|FIN7|00|192.0.2.3|VIEW v3");
         assertEquals(expected, BusinessHash.fileaud(e));
     }
 }

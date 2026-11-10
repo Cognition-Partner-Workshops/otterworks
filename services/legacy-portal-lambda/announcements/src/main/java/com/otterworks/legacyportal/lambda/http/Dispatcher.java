@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.NoSuchElementException;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -36,6 +38,27 @@ public class Dispatcher {
 
     public record Request(String method, String path, String rawQueryString,
                           Map<String, String> headers, byte[] body) {
+
+        @Override
+        public boolean equals(Object other) {
+            return other instanceof Request that
+                    && Objects.equals(method, that.method)
+                    && Objects.equals(path, that.path)
+                    && Objects.equals(rawQueryString, that.rawQueryString)
+                    && Objects.equals(headers, that.headers)
+                    && Arrays.equals(body, that.body);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * Objects.hash(method, path, rawQueryString, headers) + Arrays.hashCode(body);
+        }
+
+        @Override
+        public String toString() {
+            return "Request[method=" + method + ", path=" + path + ", rawQueryString=" + rawQueryString
+                    + ", headers=" + headers + ", body=" + Arrays.toString(body) + "]";
+        }
     }
 
     public record Response(int status, Map<String, String> headers, String body) {

@@ -137,7 +137,7 @@ public class ArchiveControllerTest {
         e.actorId = "U00000000042";
         e.retentionClass = "FIN7";
         e.dispositionCode = "00";
-        e.clientIp = "10.1.2.3";
+        e.clientIp = "192.0.2.3";
         e.detailText = "VIEW v3";
         v.events = Collections.singletonList(e);
         return new ArchiveDocument("doc-1", "db2", Collections.singletonList(v));

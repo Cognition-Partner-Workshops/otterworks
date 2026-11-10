@@ -19,7 +19,8 @@ def test_minted_token_verifies(service):
 
 
 def test_token_is_stable_across_calls(service):
-    assert service.mint_token(DOC_ID) == service.mint_token(DOC_ID)
+    first = service.mint_token(DOC_ID)
+    assert service.mint_token(DOC_ID) == first
 
 
 def test_token_of_another_document_is_rejected(service):

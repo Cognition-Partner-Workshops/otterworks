@@ -17,7 +17,8 @@ class SpecTests(unittest.TestCase):
         self.assertEqual(spec.splitmix64(0), 0xE220A8397B1DCDAF)
 
     def test_h_is_pure(self) -> None:
-        self.assertEqual(spec.h("DOCARCH", 17, 5), spec.h("DOCARCH", 17, 5))
+        first, second = spec.h("DOCARCH", 17, 5), spec.h("DOCARCH", 17, 5)
+        self.assertEqual(first, second)
         self.assertNotEqual(spec.h("DOCARCH", 17, 5), spec.h("PLANTED", 17, 5))
 
     def test_encoders(self) -> None:

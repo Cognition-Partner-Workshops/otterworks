@@ -190,7 +190,7 @@ class Sizes:
         if scale <= 0 or scale > 1:
             raise ValueError("--scale must be in (0, 1]")
         self.scale = scale
-        s = (lambda n: n) if scale == 1.0 else (lambda n: max(1, round(n * scale)))
+        s = (lambda n: n) if scale >= 1 else (lambda n: max(1, round(n * scale)))
         self.docarch_generated = s(DOCARCH_GENERATED)
         self.docarch_s = s(DOCARCH_S)
         self.docarch_r = s(DOCARCH_R)

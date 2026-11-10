@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.rdsdata.RdsDataClient;
 import software.amazon.awssdk.services.rdsdata.model.ExecuteStatementRequest;
@@ -129,7 +130,9 @@ public final class DataApiFeedbackRepository implements FeedbackRepository {
 
     private boolean isRetryable(Throwable exception) {
         for (Throwable current = exception; current != null; current = current.getCause()) {
-            if (current.getClass().getSimpleName().equals("DatabaseResumingException")) {
+            if (current instanceof AwsServiceException serviceException
+                    && serviceException.awsErrorDetails() != null
+                    && "DatabaseResumingException".equals(serviceException.awsErrorDetails().errorCode())) {
                 return true;
             }
             String message = current.getMessage();

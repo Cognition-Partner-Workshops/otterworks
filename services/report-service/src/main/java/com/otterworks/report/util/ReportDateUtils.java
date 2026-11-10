@@ -5,7 +5,8 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -24,17 +25,11 @@ import java.util.TimeZone;
  */
 public final class ReportDateUtils {
 
-    // LEGACY: SimpleDateFormat is NOT thread-safe — shared instance is a bug
-    // in multithreaded environments. java.time.DateTimeFormatter is immutable and thread-safe.
-    private static final SimpleDateFormat ISO_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    private static final SimpleDateFormat DISPLAY_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm");
-    private static final SimpleDateFormat FILE_NAME_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
-
-    static {
-        ISO_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-        DISPLAY_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-        FILE_NAME_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-    }
+    // DateTimeFormatter is immutable and thread-safe, unlike a shared SimpleDateFormat.
+    private static final DateTimeFormatter DISPLAY_FORMAT =
+            DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm").withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter FILE_NAME_FORMAT =
+            DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").withZone(ZoneOffset.UTC);
 
     private ReportDateUtils() {
         // Utility class
@@ -59,9 +54,7 @@ public final class ReportDateUtils {
         if (date == null) {
             return "N/A";
         }
-        synchronized (DISPLAY_FORMAT) {
-            return DISPLAY_FORMAT.format(date);
-        }
+        return DISPLAY_FORMAT.format(date.toInstant());
     }
 
     /**
@@ -71,9 +64,7 @@ public final class ReportDateUtils {
         if (date == null) {
             date = new Date();
         }
-        synchronized (FILE_NAME_FORMAT) {
-            return FILE_NAME_FORMAT.format(date);
-        }
+        return FILE_NAME_FORMAT.format(date.toInstant());
     }
 
     /**
