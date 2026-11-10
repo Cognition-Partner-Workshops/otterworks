@@ -2,6 +2,8 @@ name: ubw
 version: "1.0.0"
 config-version: 2
 profile: ubw
+on-run-end:
+  - "{{ log_run_results(results) }}"
 model-paths: ["models"]
 macro-paths: ["macros"]
 target-path: target
@@ -13,3 +15,6 @@ models:
   ubw:
     +materialized: table
     +schema: MARTS
+    ops:
+      +schema: OPS
+      +materialized: view
