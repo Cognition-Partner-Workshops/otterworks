@@ -4,14 +4,14 @@ import lkml
 from semantic import ROOT, project, queries
 
 
-def test_every_lookml_file_parses_and_views_read_fin_dw():
+def test_every_lookml_file_parses_and_views_read_billing_schema():
     for path in ROOT.rglob("*.lkml"):
         assert lkml.load(path.read_text())
     _, views = project()
     assert views
     for view in views.values():
         source = view.get("sql_table_name", view.get("derived_table", {}).get("sql", ""))
-        assert re.search(r"FIN_DW\.[A-Z_]+", source), view["name"]
+        assert re.search(r"SFX_BILLING\.[A-Z_]+", source), view["name"]
 
 
 def test_explores_and_join_fields_resolve():

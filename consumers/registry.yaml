@@ -91,10 +91,12 @@ consumers:
     teradata_service_account: svc_bi_semantic
     cadence: "Looker PDT rebuild every 4h"
     entrypoint: "Looker finance.model.lkml explores and overdue_accounts PDT"
-    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.GL_ACCOUNT","FIN_DW.GL_JOURNAL","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    tables: ["SFX_BILLING.INVOICE_HDR","SFX_BILLING.V_INVOICE_REVENUE","SFX_BILLING.CUSTOMER_ACCOUNT","SFX_BILLING.PAYMENT","SFX_BILLING.GL_ACCOUNT","SFX_BILLING.GL_JOURNAL_LINE"]
     teradata_constructs: ["SEL","TOP 100","ZEROIFNULL","CURRENT_DATE - 30","1YYMMDD","FORMAT","QUALIFY ROW_NUMBER"]
     unit_test: "cd consumers/bi && python -m pytest"
     contract_test: "cd consumers/bi && python -m pytest contract"
+    contract_replay_test: "cd consumers/bi && WAREHOUSE_CONTRACT_TARGET=replay python -m pytest contract"
+    contract_targets: ["teradata-emulator","replay","snowflake-semantics","snowflake"]
     workflow: .github/workflows/consumer-bi-semantic.yml
     snowflake:
       database: SFX_D1110_AFTER
