@@ -49,6 +49,7 @@ tf_vars() {
     date -u -d "+${EXPIRES_DAYS:-3} days" +%Y-%m-%d > "$expires_file"
   fi
   TF_VARS=(-var "run_token=${RUN}" -var "expires=$(cat "$expires_file")")
+  [ -z "${CERTIFICATE_ARN:-}" ] || TF_VARS+=(-var "certificate_arn=${CERTIFICATE_ARN}")
 }
 
 elapsed() { awk -v s="$1" -v e="$(date +%s)" 'BEGIN { printf "%d s (%.1f min)", e - s, (e - s) / 60 }'; }
@@ -87,6 +88,15 @@ load_outputs() {
   BASE_URL="$(jq -r .base_url.value <<<"$json")"
   INSTANCE_ID="$(jq -r .instance_id.value <<<"$json")"
   TG_ARN="$(jq -r .target_group_arn.value <<<"$json")"
+  # The HTTPS listener carries a self-signed certificate unless CERTIFICATE_ARN was set at apply.
+  CURL_TLS=(); REPLAY_ENV=()
+  local ca ca_file="${ROOT}/.demo/legacy-portal/${RUN}/alb-ca.pem"
+  ca="$(jq -r '.alb_ca_cert_pem.value // ""' <<<"$json")"
+  if [ -n "$ca" ]; then
+    printf '%s\n' "$ca" > "$ca_file"
+    CURL_TLS=(--cacert "$ca_file")
+    REPLAY_ENV=("SSL_CERT_FILE=${ca_file}")
+  fi
 }
 
 wait_healthy() {
@@ -138,7 +148,7 @@ cmd_status() {
   aws elbv2 describe-target-health --target-group-arn "$TG_ARN" --output table \
     --query 'TargetHealthDescriptions[0].{target:Target.Id,port:Target.Port,state:TargetHealth.State,reason:TargetHealth.Reason}'
   echo "health of the ALB:"
-  curl -s -o /dev/null -w '  GET /health %{http_code} in %{time_total}s\n' "${BASE_URL%/}/health" || true
+  curl -s "${CURL_TLS[@]}" -o /dev/null -w '  GET /health %{http_code} in %{time_total}s\n' "${BASE_URL%/}/health" || true
 }
 
 cmd_replay() {
@@ -149,7 +159,7 @@ cmd_replay() {
   out="${ROOT}/.demo/legacy-portal/${RUN}/replay-${stage}-${ctx}-$(date -u +%Y%m%dT%H%M%SZ)"
   echo "target ${BASE_URL}  context ${ctx}  stage ${stage}"
   (cd "$PARITY" && sha256sum -c SHA256SUMS)
-  python3 "${PARITY}/replay.py" --base "$BASE_URL" --context "$ctx" --stage "$stage" --out "$out" || rc=$?
+  env "${REPLAY_ENV[@]}" python3 "${PARITY}/replay.py" --base "$BASE_URL" --context "$ctx" --stage "$stage" --out "$out" || rc=$?
   echo "replay exit ${rc} (0 all identical, 1 divergences found, 3 corpus checksum mismatch)"
   return "$rc"
 }

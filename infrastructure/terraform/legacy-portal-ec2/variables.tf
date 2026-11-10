@@ -55,3 +55,9 @@ variable "log_retention_days" {
   type        = number
   default     = 7
 }
+
+variable "certificate_arn" {
+  description = "ACM certificate for the HTTPS listener. Leave null to import a self-signed certificate for the ALB's DNS name."
+  type        = string
+  default     = null
+}
