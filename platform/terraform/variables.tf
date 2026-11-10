@@ -39,12 +39,6 @@ variable "az_count" {
   default     = 2
 }
 
-variable "enable_nat_gateway" {
-  description = "Whether to create a NAT gateway (adds ~$32/mo cost)"
-  type        = bool
-  default     = false
-}
-
 variable "node_instance_types" {
   description = "Instance types for EKS node group"
   type        = list(string)

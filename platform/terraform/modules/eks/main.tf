@@ -150,6 +150,13 @@ resource "aws_launch_template" "node_group" {
     http_put_response_hop_limit = 2
   }
 
+  # Nodes never take a public IP, whatever the subnet's map_public_ip_on_launch
+  # says; they sit in private subnets and egress through the NAT gateway.
+  network_interfaces {
+    associate_public_ip_address = false
+    delete_on_termination       = true
+  }
+
   dynamic "tag_specifications" {
     for_each = toset(["instance", "volume", "network-interface"])
     content {

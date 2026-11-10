@@ -30,7 +30,7 @@ variable "private_subnet_ids" {
 }
 
 variable "node_subnet_ids" {
-  description = "Subnet IDs for the node group (typically public for cost-optimized dev)"
+  description = "Private subnet IDs for the node group (nodes get no public IP)"
   type        = list(string)
 }
 
