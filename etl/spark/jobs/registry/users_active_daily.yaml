@@ -2,7 +2,8 @@
   "job": "users_active_daily",
   "language": "python",
   "target": "dbt",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "6 1 * * *",
-  "profile": "small"
+  "profile": "small",
+  "command": "cd \"${SFX_REPO_ROOT:-.}\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job users_active_daily --select path:models/spark/users_active_daily"
 }

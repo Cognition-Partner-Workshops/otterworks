@@ -1,0 +1,9 @@
+version: 2
+models:
+  - name: users_active_daily
+    description: "sfx-d1110 Daily active users, logins and actions from USER_ACTIVITY_DAILY. Replaces the Spark lake output users/users_active_daily."
+    columns:
+      - name: ACTIVITY_DATE
+        tests: [unique]
+      - name: ACTIVE_USERS
+        tests: [not_null]
