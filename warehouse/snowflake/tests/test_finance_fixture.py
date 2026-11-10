@@ -18,7 +18,7 @@ def fixture():
 
 def test_realistic_values_and_types():
     data = fixture()
-    spec = yaml.safe_load((ROOT / 'landing_columns.yml').read_text())
+    spec = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
     for tables in spec.values():
         for table, columns in tables.items():
             for row in data[table]:
@@ -126,6 +126,6 @@ def test_balanced_journal_generic_normal_empty_and_errors():
 
 
 def test_loader_includes_every_billing_table():
-    spec = yaml.safe_load((ROOT / 'landing_columns.yml').read_text())
+    spec = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
     procedure = (ROOT / 'migrations/V003__loaders_and_tasks.sql').read_text().split('$$;', 1)[0]
     assert all("'" + table + "'" in procedure for table in spec['billing'])

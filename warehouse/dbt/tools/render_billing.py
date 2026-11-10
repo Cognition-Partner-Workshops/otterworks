@@ -1,19 +1,28 @@
 """Render typed billing views and their column-level contracts."""
 from pathlib import Path
+import sys
 
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT.parent / 'snowflake'))
+from seed_contract import seed_spec
 
 
 def render():
     spec = yaml.safe_load((ROOT.parent / "snowflake/landing_columns.yml").read_text())
     output = {}
     models = []
+    seed = seed_spec()['billing']
     for table, columns in spec["billing"].items():
         name = "stg_billing__" + table.lower()
         selections = [f"    cast({col} as {kind}) as {col.lower()}"
                       for col, kind in columns.items()]
+        aliases = {next(iter(seed[table])): table + '_ID', 'INVOICE_ID': 'INVOICE_HDR_ID'}
+        for index, (col, kind) in enumerate(columns.items()):
+            alias = aliases.get(col)
+            if alias and alias != col and alias in columns:
+                selections[index] = f'    cast(coalesce({col}, {alias}) as {kind}) as {col.lower()}'
         output[f"{name}.sql"] = (
             "select\n" + ",\n".join(selections)
             + f"\nfrom {{{{ source('billing', '{table}') }}}}\n"
@@ -21,23 +30,25 @@ def render():
         tests = []
         for column in columns:
             checks = []
-            if column == table + "_ID":
+            if column == next(iter(seed[table])):
                 checks += ["not_null", "unique"]
-            if column == "CUSTOMER_ID":
-                checks += ["not_null"]
+            if column == "CUSTOMER_ID" and column in seed[table]:
+                if 'not_null' not in checks:
+                    checks += ["not_null"]
                 if table == "CUSTOMER_ACCOUNT":
-                    checks += ["unique"]
+                    if 'unique' not in checks:
+                        checks += ["unique"]
                 else:
                     checks += [{"relationships": {
                         "to": "ref('stg_billing__customer_account')", "field": "customer_id"}}]
             if column == "IS_ACTIVE":
                 checks += [{"accepted_values": {"values": ["Y", "N"]}}]
             targets = {
-                'GL_ACCOUNT_ID': 'gl_account', 'INVOICE_HDR_ID': 'invoice_hdr',
-                'PLAN_CATALOG_ID': 'plan_catalog',
+                'GL_ACCOUNT_ID': 'gl_account', 'INVOICE_ID': 'invoice_hdr',
+                'SUBSCRIPTION_ID': 'subscription', 'CREDIT_NOTE_ID': 'credit_note',
             }
-            if column in targets and column != table + '_ID':
-                checks += ['not_null', {'relationships': {
+            if column in targets and column in seed[table] and column != next(iter(seed[table])):
+                checks += [{'relationships': {
                     'to': "ref('stg_billing__" + targets[column] + "')",
                     'field': column.lower()}}]
             if column == 'JOURNAL_ID':

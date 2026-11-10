@@ -49,6 +49,7 @@ sfx-teradata-snowconvert: sfx-teradata-validate warehouse/.venv/.requirements ##
 .PHONY: sfx-snowflake-ledger sfx-snowflake-teardown sfx-snowflake-roles-dry-run sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down
 
 SFX_PYTHON ?= python3.10
+SFX_TEST_PYTHON ?= warehouse/.venv/bin/python
 
 warehouse/.venv/.sfx-installed: warehouse/snowflake/requirements.txt
 	$(SFX_PYTHON) -m venv warehouse/.venv
@@ -62,8 +63,8 @@ sfx-snowflake-load: warehouse/.venv/.sfx-installed ## Load Snowflake landing fil
 	warehouse/.venv/bin/python warehouse/snowflake/load.py --area all
 
 sfx-snowflake-test: warehouse/.venv/.sfx-installed ## Run offline Snowflake scaffold tests
-	warehouse/.venv/bin/python -m pytest warehouse/snowflake/tests -q
-	warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py parse
+	$(SFX_TEST_PYTHON) -m pytest warehouse/snowflake/tests -q
+	$(SFX_TEST_PYTHON) warehouse/snowflake/run_dbt.py parse
 
 sfx-snowflake-dbt: warehouse/.venv/.sfx-installed ## Build and test billing staging views
 	warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build

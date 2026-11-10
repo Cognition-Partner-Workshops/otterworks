@@ -26,7 +26,7 @@ NOW = datetime(2026, 11, 10, 12, tzinfo=timezone.utc)
 
 
 def test_compat_shapes_normal_and_empty():
-    spec = yaml.safe_load((ROOT / 'landing_columns.yml').read_text())
+    spec = yaml.safe_load((ROOT / 'fixture_columns.yml').read_text())
     sql = (ROOT / 'migrations/V004__compat.sql').read_text()
     views = dict(re.findall(r'CREATE OR REPLACE VIEW COMPAT\.(\w+).*?\nAS (SELECT.*?);', sql, re.S))
     expected = dict(CUSTOMER='CUSTOMER_ACCOUNT', ACCOUNT='CUSTOMER_ACCOUNT', INVOICE='INVOICE_HDR',

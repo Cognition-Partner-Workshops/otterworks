@@ -12,6 +12,9 @@ SFX_EXECUTED_BY=devin make sfx-snowflake-load
 warehouse/.venv/bin/python warehouse/snowflake/sfx_conn.py
 ```
 
+For an existing alternate Python environment, run
+make sfx-snowflake-test SFX_TEST_PYTHON=/path/to/python3.11.
+
 Deploy uses schemachange 4's Python API with an in-memory JWT session (no key
 file). Its history table is bootstrapped with a run-token comment. Versioned
 migrations run once; tasks are created suspended. Do not resume tasks unless
@@ -24,14 +27,12 @@ between otherwise identical deployments.
 
 ```sh
 warehouse/.venv/bin/python warehouse/snowflake/fixtures/make_fixture.py --rows 20 --seed 1110
-warehouse/.venv/bin/python warehouse/snowflake/tools/render_raw.py
 warehouse/.venv/bin/python warehouse/snowflake/load.py --area billing --date 20261101
 warehouse/.venv/bin/python warehouse/snowflake/load.py --area all --landing-dir warehouse/snowflake/fixtures/landing
 ```
 
-Landing paths are warehouse/landing/<area>/<TABLE>/<yyyymmdd>.psv, with a
-pipe-delimited header in landing_columns.yml order. If warehouse/landing does
-not exist, load.py uses the committed fixture. PUT preserves filenames and COPY
+The default source is the committed headered fixture, whose frozen V002 contract
+is fixture_columns.yml. PUT preserves filenames and COPY
 history skips already loaded files; use new date filenames for new batches.
 A date limits COPY to that file; without a date all staged files are considered.
 Metadata columns record source filename and scan timestamp. The fixture uses
@@ -40,18 +41,55 @@ run and settled receipts separately by currency. SOURCE_BATCH_NUMBER identifies
 the fixture batch; each currency has invoice and receipt journals. Reconcile them
 to invoice subtotal/tax/total and payment amounts in the same currency, rather
 than joining a summary ledger line to an individual customer or invoice.
-Reconcile the column contract
-when warehouse/seed/generate.py arrives. No legacy transformations run here.
+No legacy transformations run here.
+
+## Shared seeded RAW data
+
+```sh
+python3 warehouse/seed/generate.py --rows 200000 --seed 1110
+warehouse/.venv/bin/python warehouse/snowflake/deploy.py
+warehouse/.venv/bin/python warehouse/snowflake/load.py --source seed --area all --date 20261109 --truncate
+warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build
+warehouse/.venv/bin/python warehouse/snowflake/sfx_conn.py
+```
+
+The shared generator writes headerless PSV under warehouse/landing/<area>/<TABLE>/.
+The seed loader validates every input and produces headered gzip files under
+ignored warehouse/landing/.snowflake before connecting. It keeps all rows and
+values, including reserved-key edge cases, mixed-case codes and duplicate SET
+rows; it does not emulate Teradata truncation, collation or deduplication.
+APP_USER.DISPLAY_NAME is VARCHAR(256) to preserve the generator's overlength names.
+Uploads use a run-specific seed stage prefix. --truncate explicitly replaces RAW
+data and COPY history; each output row reports area, table, COPY rows and COUNT(*).
+Without --truncate, existing RAW rows are not removed. --landing-dir overrides
+the input directory; --source seed requires --date. No generated files are committed.
+
+landing_columns.yml is the additive superset of both formats. V007 adds the seed
+columns and only widens existing types where necessary; V001–V006 are immutable.
+tools/render_seed.py renders V007/the superset; render_raw.py remains bound to the
+frozen fixture/V002 contract. dbt exposes both column sets and tests the shared
+primary/foreign keys, using legacy fixture IDs as fallbacks. Legacy-only fields
+absent from the shared seed remain NULL, not invented values. Catalog, chart and
+tax records have no customer association in the shared seed, so customer FK tests
+apply only to tables whose actual seed contract includes CUSTOMER_ID.
+
+The shared generator supplies GL_ACCOUNT but currently writes an empty
+GL_JOURNAL_LINE. The seed loader supplements only that empty journal using scaled
+fixture postings from the actual seeded invoices, payments and credit notes:
+invoice DR AR / CR revenue / CR sales tax, payment DR cash / CR AR, credit-note
+DR revenue / CR AR. It uses the seed chart IDs and invoice currencies, validates
+each journal's decimal balance, and retains INVOICE_ID/CREDIT_NOTE_ID provenance.
+This is fixture construction, not converted legacy accounting logic.
 
 ## Compatibility reads
 
 COMPAT views expose CUSTOMER (account columns plus owner name/email), ACCOUNT
 (CUSTOMER_ACCOUNT), INVOICE (INVOICE_HDR), INVOICE_LINE, PAYMENT, GL_JOURNAL_LINE
-and DAILY_USAGE (customer/date/currency quantity and amount sums). Columns mirror
-landing_columns.yml, excluding load metadata. No Teradata builder branch was
-available at implementation time. Reconcile COMPAT names and shapes with the
-SFX_BILLING Teradata DDL when it lands; these are projections, not an emulation
-of Teradata semantics.
+and DAILY_USAGE (customer/date/currency rollup). V007 adds the shared Teradata
+column names while retaining the original aliases and adds GL_ACCOUNT,
+CUSTOMER_ACCOUNT and INVOICE_HDR views. Quantity comes from seeded UNITS;
+DAILY_USAGE.AMOUNT remains NULL when the source has no amount. These are plain
+projections, joins and aggregates, not Teradata-semantics emulation.
 
 Tag consumer SELECT sessions with JSON containing run=sfx-d1110, act=consumers,
 and consumer=<service-name>. Additional run_id/executed_by/built_with fields allow
