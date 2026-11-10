@@ -193,6 +193,18 @@ def test_complexity_security_review_resolved():
     assert fragment["security_review"] == []
 
 
+def test_make_uses_separate_snowflake_and_teradata_environments():
+    for target, own, other in (
+        ('sfx-snowflake-test', 'warehouse/snowflake/.venv', 'warehouse/.venv'),
+        ('sfx-teradata-test', 'warehouse/.venv', 'warehouse/snowflake/.venv'),
+    ):
+        result = subprocess.run(['make', '-Bn', target, 'NS=sfx-d1110-before'],
+                                cwd=ROOT.parents[1], capture_output=True, text=True, check=True)
+        assert f'-m venv {own}' in result.stdout
+        assert f'{own}/bin/python -m pytest' in result.stdout
+        assert other not in result.stdout
+
+
 def test_role_apply_refuses_without_privilege(monkeypatch, capsys):
     cur = Cursor([
         (["CURRENT_ROLE()"], [("SFX_D1110_ROLE",)]),

@@ -1,6 +1,8 @@
 # Snowflake scaffold
 
-Use Python 3.10. Supply SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE,
+Use Python 3.10. Snowflake targets install into warehouse/snowflake/.venv,
+separate from Teradata's warehouse/.venv; SFX_VENV overrides that location.
+Supply SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE,
 SNOWFLAKE_DATABASE, SNOWFLAKE_PRIVATE_KEY (unencrypted PEM text), and
 SNOWFLAKE_RUN_TOKEN through environment injection. Never put credentials in files.
 The database is SFX_D1110_AFTER; workloads.yml selects the warehouse.
@@ -9,7 +11,7 @@ The database is SFX_D1110_AFTER; workloads.yml selects the warehouse.
 make sfx-snowflake-test
 SFX_EXECUTED_BY=devin make sfx-snowflake-deploy
 SFX_EXECUTED_BY=devin make sfx-snowflake-load
-warehouse/.venv/bin/python warehouse/snowflake/sfx_conn.py
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/sfx_conn.py
 ```
 
 For an existing alternate Python environment, run
@@ -26,9 +28,9 @@ Scheduled task tags use a stable run_id of "scheduled" to avoid checksum drift
 between otherwise identical deployments.
 
 ```sh
-warehouse/.venv/bin/python warehouse/snowflake/fixtures/make_fixture.py --rows 20 --seed 1110
-warehouse/.venv/bin/python warehouse/snowflake/load.py --area billing --date 20261101
-warehouse/.venv/bin/python warehouse/snowflake/load.py --area all --landing-dir warehouse/snowflake/fixtures/landing
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/fixtures/make_fixture.py --rows 20 --seed 1110
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/load.py --area billing --date 20261101
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/load.py --area all --landing-dir warehouse/snowflake/fixtures/landing
 ```
 
 The default source is the committed headered fixture, whose frozen V002 contract
@@ -47,10 +49,10 @@ No legacy transformations run here.
 
 ```sh
 python3 warehouse/seed/generate.py --rows 200000 --seed 1110
-warehouse/.venv/bin/python warehouse/snowflake/deploy.py
-warehouse/.venv/bin/python warehouse/snowflake/load.py --source seed --area all --date 20261109 --truncate
-warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build
-warehouse/.venv/bin/python warehouse/snowflake/sfx_conn.py
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/deploy.py
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/load.py --source seed --area all --date 20261109 --truncate
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/run_dbt.py build
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/sfx_conn.py
 ```
 
 The shared generator writes headerless PSV under warehouse/landing/<area>/<TABLE>/.

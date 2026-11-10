@@ -49,44 +49,45 @@ sfx-teradata-snowconvert: sfx-teradata-validate warehouse/.venv/.requirements ##
 .PHONY: sfx-snowflake-ledger sfx-snowflake-teardown sfx-snowflake-roles-dry-run sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down
 
 SFX_PYTHON ?= python3.10
-SFX_TEST_PYTHON ?= warehouse/.venv/bin/python
+SFX_VENV ?= warehouse/snowflake/.venv
+SFX_TEST_PYTHON ?= $(SFX_VENV)/bin/python
 
-warehouse/.venv/.sfx-installed: warehouse/snowflake/requirements.txt
-	$(SFX_PYTHON) -m venv warehouse/.venv
-	warehouse/.venv/bin/pip install -r warehouse/snowflake/requirements.txt
+$(SFX_VENV)/.sfx-installed: warehouse/snowflake/requirements.txt
+	$(SFX_PYTHON) -m venv $(SFX_VENV)
+	$(SFX_VENV)/bin/pip install -r warehouse/snowflake/requirements.txt
 	@touch $@
 
-sfx-snowflake-deploy: warehouse/.venv/.sfx-installed ## Deploy Snowflake scaffold migrations
-	warehouse/.venv/bin/python warehouse/snowflake/deploy.py
+sfx-snowflake-deploy: $(SFX_VENV)/.sfx-installed ## Deploy Snowflake scaffold migrations
+	$(SFX_VENV)/bin/python warehouse/snowflake/deploy.py
 
-sfx-snowflake-load: warehouse/.venv/.sfx-installed ## Load Snowflake landing files
-	warehouse/.venv/bin/python warehouse/snowflake/load.py --area all
+sfx-snowflake-load: $(SFX_VENV)/.sfx-installed ## Load Snowflake landing files
+	$(SFX_VENV)/bin/python warehouse/snowflake/load.py --area all
 
-sfx-snowflake-test: warehouse/.venv/.sfx-installed ## Run offline Snowflake scaffold tests
+sfx-snowflake-test: $(SFX_VENV)/.sfx-installed ## Run offline Snowflake scaffold tests
 	$(SFX_TEST_PYTHON) -m pytest warehouse/snowflake/tests -q
 	$(SFX_TEST_PYTHON) warehouse/snowflake/run_dbt.py parse
 
-sfx-snowflake-dbt: warehouse/.venv/.sfx-installed ## Build and test billing staging views
-	warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build
+sfx-snowflake-dbt: $(SFX_VENV)/.sfx-installed ## Build and test billing staging views
+	$(SFX_VENV)/bin/python warehouse/snowflake/run_dbt.py build
 
-sfx-snowflake-dag: warehouse/.venv/.sfx-installed ## Execute the log-only DAG once and suspend its tasks
-	warehouse/.venv/bin/python warehouse/snowflake/task_dag.py --run-once
+sfx-snowflake-dag: $(SFX_VENV)/.sfx-installed ## Execute the log-only DAG once and suspend its tasks
+	$(SFX_VENV)/bin/python warehouse/snowflake/task_dag.py --run-once
 
-sfx-snowflake-consumers: warehouse/.venv/.sfx-installed ## Report observed tagged consumer reads
-	warehouse/.venv/bin/python warehouse/snowflake/consumer_reads.py
+sfx-snowflake-consumers: $(SFX_VENV)/.sfx-installed ## Report observed tagged consumer reads
+	$(SFX_VENV)/bin/python warehouse/snowflake/consumer_reads.py
 
 .PHONY: sfx-snowflake-snowconvert
-sfx-snowflake-snowconvert: warehouse/.venv/.sfx-installed ## Run SnowConvert CLI into ignored raw output
-	warehouse/.venv/bin/python warehouse/snowflake/snowconvert.py
+sfx-snowflake-snowconvert: $(SFX_VENV)/.sfx-installed ## Run SnowConvert CLI into ignored raw output
+	$(SFX_VENV)/bin/python warehouse/snowflake/snowconvert.py
 
-sfx-snowflake-ledger: warehouse/.venv/.sfx-installed ## Report lag-aware Snowflake credits
-	warehouse/.venv/bin/python warehouse/snowflake/ledger.py
+sfx-snowflake-ledger: $(SFX_VENV)/.sfx-installed ## Report lag-aware Snowflake credits
+	$(SFX_VENV)/bin/python warehouse/snowflake/ledger.py
 
-sfx-snowflake-teardown: warehouse/.venv/.sfx-installed ## Drop token-scoped objects (TEARDOWN_ARGS=--dry-run to preview)
-	warehouse/.venv/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 $(TEARDOWN_ARGS)
+sfx-snowflake-teardown: $(SFX_VENV)/.sfx-installed ## Drop token-scoped objects (TEARDOWN_ARGS=--dry-run to preview)
+	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 $(TEARDOWN_ARGS)
 
-sfx-snowflake-roles-dry-run: warehouse/.venv/.sfx-installed ## Validate roles and check live CREATE ROLE privilege
-	warehouse/.venv/bin/python warehouse/snowflake/roles/dry_run.py --check-live
+sfx-snowflake-roles-dry-run: $(SFX_VENV)/.sfx-installed ## Validate roles and check live CREATE ROLE privilege
+	$(SFX_VENV)/bin/python warehouse/snowflake/roles/dry_run.py --check-live
 
 ifeq ($(NS),sfx-d1110-before)
 sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down:
@@ -99,8 +100,8 @@ sfx-snowflake-run: ## Load, build billing staging, and report credits
 	$(MAKE) sfx-snowflake-dbt
 	$(MAKE) sfx-snowflake-ledger
 
-sfx-snowflake-down: warehouse/.venv/.sfx-installed ## Suspend tasks and warehouses without dropping objects
-	warehouse/.venv/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 --suspend-only
+sfx-snowflake-down: $(SFX_VENV)/.sfx-installed ## Suspend tasks and warehouses without dropping objects
+	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 --suspend-only
 endif
 
 help: ## Show this help
