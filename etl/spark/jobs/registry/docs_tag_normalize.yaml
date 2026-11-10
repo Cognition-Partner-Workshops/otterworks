@@ -1,9 +1,9 @@
 {
   "job": "docs_tag_normalize",
   "language": "python",
-  "target": "dbt",
+  "target": "snowpark_python",
   "status": "snowflake",
   "schedule": "14 2 * * *",
   "profile": "small",
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_tag_normalize --select path:models/spark/docs_tag_normalize"
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job docs_tag_normalize"
 }
