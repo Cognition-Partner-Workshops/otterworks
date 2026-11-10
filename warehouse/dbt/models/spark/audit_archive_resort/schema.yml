@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: audit_archive_resort
+    description: sfx-d1110 archived audit events copied without transformation and clustered by event type, timestamp and archive ID, replacing lake path audit/audit_archive_resort.
+    columns:
+      - name: AUDIT_EVENT_ARCHIVE_ID
+        tests:
+          - unique
+          - not_null
+      - name: ACTOR_USER_ID
+      - name: DOCUMENT_ID
+      - name: EVENT_TYPE
+      - name: EVENT_AT
+        description: UTC event time from the timezone-free landing timestamp.
+      - name: DETAILS
