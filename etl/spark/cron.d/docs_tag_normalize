@@ -1,1 +1,0 @@
-14 2 * * * /opt/etl/spark/submit/docs_tag_normalize.sh >> /var/log/etl/spark-docs_tag_normalize.log 2>&1
