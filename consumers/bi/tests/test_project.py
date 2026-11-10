@@ -11,7 +11,21 @@ def test_every_lookml_file_parses_and_views_read_billing_schema():
     assert views
     for view in views.values():
         source = view.get("sql_table_name", view.get("derived_table", {}).get("sql", ""))
-        assert re.search(r"SFX_BILLING\.[A-Z_]+", source), view["name"]
+        assert re.search(r"SFX_D1110_AFTER\.(COMPAT|RAW_BILLING|CORE_BILLING)\.[A-Z_]+", source), view["name"]
+        for database in re.findall(r"\b([A-Z_][A-Z_0-9]*\.[A-Z_]+\.[A-Z_]+)\b", source):
+            assert re.fullmatch(r"SFX_D1110_AFTER\.(COMPAT|RAW_BILLING|CORE_BILLING)\.[A-Z_]+", database)
+
+
+def test_no_retired_dialect_or_connection():
+    for path in ROOT.rglob("*.lkml"):
+        assert not re.search(r"\b(SFX_BILLING|SEL|TOP|ZEROIFNULL|FORMAT|1200101)\b", path.read_text(), re.I)
+    model, _ = project()
+    assert model["connection"] == "sfx_fin"
+    connection = (ROOT / "connection.md").read_text()
+    assert "Snowflake" in connection
+    assert "Teradata" not in connection
+    assert "tdprod_fin" not in connection
+    assert "svc_bi_semantic is retired" in connection
 
 
 def test_explores_and_join_fields_resolve():

@@ -1,4 +1,4 @@
-connection: "tdprod_fin"
+connection: "sfx_fin"
 include: "/views/*.view.lkml"
 
 datagroup: finance_four_hours {
