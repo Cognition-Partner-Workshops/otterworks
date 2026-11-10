@@ -33,7 +33,7 @@ export function withSession(
     }
 
     try {
-      const params = routeCtx?.params ? await routeCtx.params : undefined;
+      const params = routeCtx ? await routeCtx.params : undefined;
       return await handler(req, { actor, params });
     } catch (err) {
       return translateError(err);

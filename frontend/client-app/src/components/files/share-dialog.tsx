@@ -162,7 +162,7 @@ export function ShareDialog({
                     placeholder="Add people by email"
                     className="flex-1 px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-otter-500 focus:border-transparent transition"
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") handleShare();
+                      if (e.key === "Enter") void handleShare();
                     }}
                   />
                   <select

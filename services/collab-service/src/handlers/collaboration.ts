@@ -124,7 +124,9 @@ export class CollaborationManager {
         });
         presenceHandler.broadcastPresenceUpdate(io, oldDocId);
         if (awareness.getDocumentUserCount(oldDocId) === 0) {
-          this.persistAndCleanupDocument(oldDocId);
+          this.persistAndCleanupDocument(oldDocId).catch((err) => {
+            logger.error({ err, documentId: oldDocId }, 'persist_and_cleanup_failed');
+          });
         }
         logger.info(
           { oldDocumentId: oldDocId, newDocumentId: documentId, socketId: socket.id },
@@ -199,7 +201,9 @@ export class CollaborationManager {
     // Clean up empty documents from memory
     const userCount = awareness.getDocumentUserCount(trackedDocId);
     if (userCount === 0) {
-      this.persistAndCleanupDocument(trackedDocId);
+      this.persistAndCleanupDocument(trackedDocId).catch((err) => {
+        logger.error({ err, documentId: trackedDocId }, 'persist_and_cleanup_failed');
+      });
     }
 
     logger.info({ documentId: trackedDocId, socketId: socket.id }, 'user_left_document');
@@ -455,7 +459,9 @@ export class CollaborationManager {
       // Clean up empty documents
       const userCount = awareness.getDocumentUserCount(mapping.documentId);
       if (userCount === 0) {
-        this.persistAndCleanupDocument(mapping.documentId);
+        this.persistAndCleanupDocument(mapping.documentId).catch((err) => {
+          logger.error({ err, documentId: mapping.documentId }, 'persist_and_cleanup_failed');
+        });
       }
     }
   }
