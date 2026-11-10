@@ -135,6 +135,23 @@
       "expected_sqlstate": null,
       "expected_count": 12,
       "headline": true
+    },
+    {
+      "id": "DWX-01",
+      "title": "Mixed-case dimension filters depend on case-insensitive string comparison",
+      "table": "FIN_DW.CUSTOMER",
+      "planted_keys": [
+        "Emea",
+        "Amer",
+        "Apac",
+        "Enterprise Annual"
+      ],
+      "expected_stage": "CONTRACT",
+      "expected_rule": "ROWCOUNT_MISMATCH",
+      "expected_field": "REGION_CODE",
+      "expected_sqlstate": null,
+      "expected_count": 5,
+      "headline": false
     }
   ]
 }

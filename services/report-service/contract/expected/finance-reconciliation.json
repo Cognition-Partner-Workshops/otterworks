@@ -1,0 +1,5 @@
+{
+  "query": "finance-reconciliation",
+  "row_count": 1,
+  "sums": {"INVOICED_TOTAL": "18250.75", "PAID_TOTAL": "12000.25", "AR_GL_BALANCE": "6250.50", "VARIANCE": "0.00"}
+}

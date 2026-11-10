@@ -1,0 +1,12 @@
+{
+  "query": "invoices",
+  "row_count": 2,
+  "sums": {
+    "AMOUNT": "90000.50"
+  },
+  "key_column": "LABEL",
+  "keys": [
+    "2026-09",
+    "2026-10"
+  ]
+}
