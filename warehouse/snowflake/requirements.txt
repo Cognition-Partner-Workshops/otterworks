@@ -7,3 +7,4 @@ dbt-snowflake==1.9.0
 tomlkit==0.15.2
 pyOpenSSL==24.3.0
 cryptography==44.0.3
+snowflake-snowpark-python==1.27.0

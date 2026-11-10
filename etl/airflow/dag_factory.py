@@ -35,6 +35,6 @@ def build_dags(registry, spark_root):
             max_active_runs=1, default_args=RETRY_POLICY,
         )
         BashOperator(task_id="run", bash_command=command, dag=dag, append_env=True,
-                     env={"SFX_RUN_DATE": "{{ ds }}"})
+                     env={"SFX_RUN_DATE": "{{ ds }}", "SFX_SPARK_JOB": job})
         dags[dag.dag_id] = dag
     return dags

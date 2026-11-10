@@ -37,6 +37,10 @@ sfx-spark-test: ## Run fixture, inventory, history and local Spark checks
 sfx-airflow-test: ## Parse generated DAGs and verify routing and retry policy
 	AIRFLOW_HOME=$(HOME)/.sfx-airflow AIRFLOW__CORE__LOAD_EXAMPLES=False uv run --python 3.11 --with-requirements etl/airflow/requirements.txt python -m unittest discover -s etl/airflow/tests -v
 
+.PHONY: sfx-spark-snowflake
+sfx-spark-snowflake: warehouse/.venv/.sfx-installed ## Run a migrated registry command (JOB=<job>)
+	warehouse/.venv/bin/python warehouse/snowflake/run_spark_job.py --job "$(JOB)"
+
 .PHONY: sfx-snowflake-deploy sfx-snowflake-load sfx-snowflake-test sfx-snowflake-dbt
 .PHONY: sfx-snowflake-dag sfx-snowflake-consumers
 .PHONY: sfx-snowflake-ledger sfx-snowflake-teardown sfx-snowflake-roles-dry-run sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down

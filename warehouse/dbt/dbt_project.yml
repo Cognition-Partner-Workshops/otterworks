@@ -20,3 +20,6 @@ models:
         +schema: CORE_BILLING
     marts:
       +schema: MART
+    spark:
+      +schema: MART_SPARK
+      +materialized: table

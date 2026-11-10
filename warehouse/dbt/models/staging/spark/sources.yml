@@ -1,0 +1,310 @@
+version: 2
+sources:
+- name: spark_billing
+  schema: SPARK_RAW_BILLING
+  tables:
+  - name: CUSTOMER_ACCOUNT
+    columns:
+    - name: CUSTOMER_ID
+    - name: OWNER_USER_ID
+    - name: ACCOUNT_NUMBER
+    - name: ACCOUNT_NAME
+    - name: CURRENCY_CODE
+    - name: COUNTRY
+    - name: STATUS
+    - name: CREATED_AT
+  - name: PLAN_CATALOG
+    columns:
+    - name: PLAN_ID
+    - name: PLAN_NAME
+    - name: MONTHLY_PRICE
+  - name: SUBSCRIPTION
+    columns:
+    - name: SUBSCRIPTION_ID
+    - name: CUSTOMER_ID
+    - name: PLAN_ID
+    - name: START_DATE
+    - name: END_DATE
+    - name: STATUS
+  - name: INVOICE_HDR
+    columns:
+    - name: INVOICE_ID
+    - name: CUSTOMER_ID
+    - name: INVOICE_NUMBER
+    - name: INVOICE_DATE
+    - name: DUE_DATE
+    - name: CURRENCY_CODE
+    - name: TOTAL_AMOUNT
+    - name: STATUS
+  - name: INVOICE_LINE
+    columns:
+    - name: INVOICE_LINE_ID
+    - name: INVOICE_ID
+    - name: PLAN_ID
+    - name: QUANTITY
+    - name: UNIT_PRICE
+    - name: AMOUNT
+  - name: PAYMENT
+    columns:
+    - name: PAYMENT_ID
+    - name: INVOICE_ID
+    - name: CUSTOMER_ID
+    - name: PAYMENT_DATE
+    - name: AMOUNT
+    - name: STATUS
+  - name: CREDIT_NOTE
+    columns:
+    - name: CREDIT_NOTE_ID
+    - name: INVOICE_ID
+    - name: CUSTOMER_ID
+    - name: GL_ACCOUNT_ID
+    - name: POSTING_DATE
+    - name: CURRENCY_CODE
+    - name: AMOUNT
+    - name: REASON
+  - name: TAX_RATE
+    columns:
+    - name: TAX_RATE_ID
+    - name: REGION
+    - name: RATE
+  - name: USAGE_DAILY
+    columns:
+    - name: USAGE_ID
+    - name: CUSTOMER_ID
+    - name: USAGE_DATE
+    - name: UNITS
+    - name: AMOUNT
+  - name: BILLING_ADJ
+    columns:
+    - name: BILLING_ADJ_ID
+    - name: CUSTOMER_ID
+    - name: INVOICE_ID
+    - name: AMOUNT
+    - name: REASON
+  - name: GL_ACCOUNT
+    columns:
+    - name: GL_ACCOUNT_ID
+    - name: ACCOUNT_CODE
+    - name: ACCOUNT_NAME
+    - name: ACCOUNT_TYPE
+  - name: GL_JOURNAL_LINE
+    columns:
+    - name: GL_JOURNAL_LINE_ID
+    - name: JOURNAL_ID
+    - name: LINE_NO
+    - name: GL_ACCOUNT_ID
+    - name: DEBIT_AMT
+    - name: CREDIT_AMT
+    - name: CURRENCY_CODE
+    - name: POSTING_DATE
+    - name: SOURCE
+    - name: CUSTOMER_ID
+    - name: INVOICE_ID
+- name: spark_documents
+  schema: SPARK_RAW_DOCUMENTS
+  tables:
+  - name: FOLDER
+    columns:
+    - name: FOLDER_ID
+    - name: OWNER_USER_ID
+    - name: PARENT_FOLDER_ID
+    - name: FOLDER_NAME
+  - name: DOCUMENT
+    columns:
+    - name: DOCUMENT_ID
+    - name: OWNER_USER_ID
+    - name: FOLDER_ID
+    - name: TITLE
+    - name: CREATED_AT
+    - name: STATUS
+  - name: DOC_VERSION
+    columns:
+    - name: DOC_VERSION_ID
+    - name: DOCUMENT_ID
+    - name: VERSION_NUMBER
+    - name: BODY
+    - name: CREATED_AT
+  - name: DOC_SHARE
+    columns:
+    - name: DOC_SHARE_ID
+    - name: DOCUMENT_ID
+    - name: OWNER_USER_ID
+    - name: SHARED_WITH_USER_ID
+    - name: PERMISSION
+  - name: DOC_TAG
+    columns:
+    - name: DOC_TAG_ID
+    - name: DOCUMENT_ID
+    - name: TAG
+  - name: FILE_OBJECT
+    columns:
+    - name: FILE_OBJECT_ID
+    - name: DOCUMENT_ID
+    - name: SIZE_BYTES
+    - name: CHECKSUM
+    - name: STORAGE_KEY
+  - name: DOC_COMMENT
+    columns:
+    - name: DOC_COMMENT_ID
+    - name: DOCUMENT_ID
+    - name: USER_ID
+    - name: BODY
+    - name: CREATED_AT
+  - name: COLLAB_SESSION
+    columns:
+    - name: COLLAB_SESSION_ID
+    - name: DOCUMENT_ID
+    - name: USER_ID
+    - name: SESSION_ID
+    - name: EVENT_AT
+  - name: STORAGE_USAGE_DAILY
+    columns:
+    - name: STORAGE_USAGE_ID
+    - name: OWNER_USER_ID
+    - name: USAGE_DATE
+    - name: SIZE_BYTES
+    - name: DOCUMENT_COUNT
+  - name: SEARCH_INDEX_LOG
+    columns:
+    - name: SEARCH_INDEX_LOG_ID
+    - name: DOCUMENT_ID
+    - name: EVENT_AT
+    - name: RAW_LINE
+    - name: STATUS
+- name: spark_users
+  schema: SPARK_RAW_USERS
+  tables:
+  - name: APP_USER
+    columns:
+    - name: USER_ID
+    - name: EMAIL
+    - name: DISPLAY_NAME
+    - name: CREATED_AT
+    - name: STATUS
+  - name: USER_PROFILE
+    columns:
+    - name: USER_PROFILE_ID
+    - name: USER_ID
+    - name: DEPARTMENT
+    - name: COUNTRY
+  - name: TEAM
+    columns:
+    - name: TEAM_ID
+    - name: OWNER_USER_ID
+    - name: TEAM_NAME
+  - name: TEAM_MEMBER
+    columns:
+    - name: TEAM_MEMBER_ID
+    - name: TEAM_ID
+    - name: USER_ID
+    - name: ROLE
+  - name: ROLE_GRANT
+    columns:
+    - name: ROLE_GRANT_ID
+    - name: USER_ID
+    - name: ROLE
+    - name: GRANTED_AT
+  - name: SSO_IDENTITY
+    columns:
+    - name: SSO_IDENTITY_ID
+    - name: USER_ID
+    - name: PROVIDER
+    - name: EXTERNAL_ID
+  - name: LOGIN_EVENT
+    columns:
+    - name: LOGIN_EVENT_ID
+    - name: USER_ID
+    - name: EVENT_AT
+    - name: IP_ADDRESS
+    - name: USER_AGENT
+    - name: RAW_LINE
+  - name: USER_ACTIVITY_DAILY
+    columns:
+    - name: USER_ACTIVITY_ID
+    - name: USER_ID
+    - name: ACTIVITY_DATE
+    - name: LOGIN_COUNT
+    - name: ACTION_COUNT
+  - name: USER_PREF
+    columns:
+    - name: USER_PREF_ID
+    - name: USER_ID
+    - name: PREF_JSON
+  - name: USER_STATUS_HIST
+    columns:
+    - name: USER_STATUS_HIST_ID
+    - name: USER_ID
+    - name: STATUS
+    - name: CHANGED_AT
+- name: spark_audit
+  schema: SPARK_RAW_AUDIT
+  tables:
+  - name: AUDIT_EVENT
+    columns:
+    - name: AUDIT_EVENT_ID
+    - name: ACTOR_USER_ID
+    - name: DOCUMENT_ID
+    - name: EVENT_TYPE
+    - name: EVENT_AT
+    - name: DETAILS
+  - name: AUDIT_EVENT_ARCHIVE
+    columns:
+    - name: AUDIT_EVENT_ARCHIVE_ID
+    - name: ACTOR_USER_ID
+    - name: DOCUMENT_ID
+    - name: EVENT_TYPE
+    - name: EVENT_AT
+    - name: DETAILS
+  - name: ACCESS_REVIEW
+    columns:
+    - name: ACCESS_REVIEW_ID
+    - name: USER_ID
+    - name: DOCUMENT_ID
+    - name: REVIEW_DATE
+    - name: STATUS
+  - name: RETENTION_POLICY
+    columns:
+    - name: RETENTION_POLICY_ID
+    - name: POLICY_NAME
+    - name: RETENTION_DAYS
+  - name: DATA_EXPORT_REQ
+    columns:
+    - name: DATA_EXPORT_REQ_ID
+    - name: USER_ID
+    - name: REQUESTED_AT
+    - name: STATUS
+  - name: COMPLIANCE_FLAG
+    columns:
+    - name: COMPLIANCE_FLAG_ID
+    - name: DOCUMENT_ID
+    - name: USER_ID
+    - name: FLAG_TYPE
+    - name: SEVERITY
+    - name: STATUS
+  - name: SECURITY_ALERT
+    columns:
+    - name: SECURITY_ALERT_ID
+    - name: USER_ID
+    - name: EVENT_AT
+    - name: ALERT_TYPE
+    - name: SCORE
+  - name: LEGAL_HOLD
+    columns:
+    - name: LEGAL_HOLD_ID
+    - name: DOCUMENT_ID
+    - name: CUSTOMER_ID
+    - name: START_DATE
+    - name: STATUS
+  - name: AUDIT_DAILY_SUMMARY
+    columns:
+    - name: AUDIT_DAILY_SUMMARY_ID
+    - name: SUMMARY_DATE
+    - name: EVENT_TYPE
+    - name: EVENT_COUNT
+  - name: AUDIT_RECON
+    columns:
+    - name: AUDIT_RECON_ID
+    - name: SUMMARY_DATE
+    - name: SOURCE_COUNT
+    - name: TARGET_COUNT
+    - name: STATUS

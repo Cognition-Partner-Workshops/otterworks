@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import re
 import shlex
+import tempfile
 import unittest
 
 import yaml
@@ -48,7 +49,9 @@ class InventoryTest(unittest.TestCase):
                     if entry["status"] == "snowflake":
                         self.assertTrue(entry["command"].strip())
                         self.assertFalse(path.exists())
-                        self.assertFalse((ROOT / "k8s/jobs" / job).exists())
+                        self.assertTrue((ROOT / "k8s/jobs" / job / "kustomization.yaml").is_file())
+                        self.assertFalse((ROOT / "k8s/jobs" / job / "application.yaml").exists())
+                        self.assert_snowflake_kustomization(ROOT / "k8s/jobs" / job)
                     elif path.exists():
                         self.assertIn("template/submit.sh", path.read_text())
                         self.assertNotIn("--executor", path.read_text())
@@ -106,6 +109,25 @@ class InventoryTest(unittest.TestCase):
         for path in (directory / "jobs").iterdir():
             obj = yaml.safe_load((path / "kustomization.yaml").read_text())
             self.assertEqual(obj["resources"], [p.name for p in path.glob("application.yaml")])
+
+    def assert_snowflake_kustomization(self, directory):
+        obj = yaml.safe_load((directory / "kustomization.yaml").read_text())
+        self.assertEqual(obj["resources"], [])
+        self.assertFalse((directory / "application.yaml").exists())
+
+    def test_snowflake_kustomization_stub(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            path = directory / "kustomization.yaml"
+            path.write_text("resources: []\n")
+            self.assert_snowflake_kustomization(directory)
+            path.write_text("resources: [application.yaml]\n")
+            with self.assertRaises(AssertionError):
+                self.assert_snowflake_kustomization(directory)
+            path.write_text("resources: []\n")
+            (directory / "application.yaml").write_text("kind: SparkApplication\n")
+            with self.assertRaises(AssertionError):
+                self.assert_snowflake_kustomization(directory)
 
 
 if __name__ == "__main__":
