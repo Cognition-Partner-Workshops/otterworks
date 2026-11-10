@@ -1,9 +1,9 @@
 {
   "job": "docs_folder_tree_walk",
   "language": "python",
-  "target": "dbt",
+  "target": "snowpark_python",
   "status": "snowflake",
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_folder_tree_walk --select path:models/spark/docs_folder_tree_walk",
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job docs_folder_tree_walk",
   "schedule": "21 3 * * *",
   "profile": "small"
 }
