@@ -1,83 +1,59 @@
-# Admin service
+# Finance operations admin dashboard
 
-Rails 7.1 API service for OtterWorks administration.
+Separate repository owned by **@otterworks/finance-ops**. The JWT-protected
+GET /api/v1/admin/finance/dashboard returns DSO, AR open balance, last-30-day
+collections and the ten highest overdue accounts. The finance:refresh_dashboard
+rake task refreshes the one-hour Rails cache; scheduling is external. Disabled
+access is 404; warehouse errors are sanitized 503s. Empty data yields zero metrics
+and an empty list. The planted production configuration is unchanged.
 
-## Finance warehouse consumer
+The fake plaintext ODBC DSN in config/finance_warehouse.yml points to TDPROD /
+SFX_BILLING as svc_admin_fin. FINANCE_WAREHOUSE_DSN overrides it.
+FINANCE_WAREHOUSE_ENABLED defaults true. Boot never loads ODBC or connects;
+connections are per query. Install optional ruby-odbc and native unixODBC in
+warehouse-enabled deployments (bundle config set with teradata; bundle install).
+Ordinary frozen CI installations omit the optional driver.
 
-Treat this consumer as a separate repository owned by **@otterworks/finance-ops**.
-It reads TDPROD / FIN_DW using Teradata account `svc_admin_fin`.
+## Data and metrics
 
-`GET /api/v1/admin/finance/dashboard` returns DSO, AR open balance, collections
-over the last 30 days and the top ten overdue accounts. The route uses the
-existing JWT middleware; send an Authorization bearer token as for other admin
-endpoints. Amounts and DSO are decimal strings, not binary floating-point values.
-Set `FINANCE_WAREHOUSE_ENABLED=false` to disable the endpoint (404) and task.
-Warehouse/driver failures return a sanitized 503.
-The flag defaults on, but no driver is loaded or warehouse connection opened at boot.
+All sources use real SFX_BILLING DDL:
+- GL_JOURNAL_LINE (GL_ACCOUNT_ID, DEBIT_AMOUNT, CREDIT_AMOUNT) and GL_ACCOUNT
+  (GL_ACCOUNT_ID, ACCOUNT_NUMBER): AR is net debit-minus-credit on account 1200.
+- INVOICE_HDR (INVOICE_DT, TOTAL_AMOUNT): trailing 30-day billed total, less
+  CREDIT_NOTE (CREDIT_DT, AMOUNT) credits in that window, is the DSO denominator.
+  DSO = AR / net billed * 30; zero denominator yields zero. GL and credit sources
+  overlap this account's DBQL reports.
+- PAYMENT (INVOICE_ID, PAYMENT_DT, AMOUNT): trailing 30-day cash collections and
+  independently aggregated all-time invoice payments.
+- CUSTOMER_ACCOUNT (CUSTOMER_ID, ACCOUNT_NUMBER, ACCOUNT_NAME) joins invoice
+  CUSTOMER_ID for the overdue list. Net-30 due dates are INVOICE_DT + 30 because
+  the schema has no DUE_DT. Overdue balances subtract payments from invoice totals;
+  unlike the ledger summary, this operational list does not allocate credit notes.
 
-The dashboard uses:
-- FIN_DW.INVOICE: INVOICE_ID, ACCOUNT_ID, INVOICE_DT, DUE_DT, AMOUNT_DUE.
-- FIN_DW.PAYMENT: INVOICE_ID, PAYMENT_DT, AMOUNT.
-- FIN_DW.ACCOUNT: ACCOUNT_ID, CUSTOMER_ID, ACCOUNT_NO.
-- FIN_DW.CUSTOMER: CUSTOMER_ID, CUSTOMER_NAME.
+The dashboard retains its existing cross-currency totals without FX conversion;
+consumers must not interpret them as a currency-normalized financial statement.
+SQL keeps SEL, TOP 10, ZEROIFNULL, NULLIFZERO, CURRENT_DATE - 30, 1200101,
+DATE FORMAT and QUALIFY ROW_NUMBER. The API's legacy field names remain stable.
 
-AR open balance sums positive invoice balances after all recorded payments,
-excluding invoices before 2020-01-01. DSO is AR open balance divided by billed
-amount over the last 30 days, multiplied by 30; no billing activity returns zero.
-Collections use payment dates in that same window. Overdue accounts include
-invoices due before today, ordered by total overdue amount then account number.
-The model assumes one reporting currency; no FX conversion is performed.
-
-```sh
-bundle exec rake finance:refresh_dashboard
-```
-
-Run this task hourly from an external scheduler. It recomputes both queries,
-updates the one-hour dashboard cache, and prints the refreshed JSON.
-The endpoint fills the same cache on a miss. Persistence/sharing of the cache
-depends on the Rails cache store; a null store does not retain it across calls.
-
-### ODBC setup
-
-Fake connection settings are in `config/finance_warehouse.yml`. Override the full
-connection string with `FINANCE_WAREHOUSE_DSN`. The client lazily requires
-`odbc` and uses the native Teradata ODBC driver through unixODBC.
-
-The `ruby-odbc` gem is locked in an **optional** Bundler group, excluded from
-ordinary install and CI. A warehouse-enabled runtime must install unixODBC
-development headers, the Teradata ODBC driver/DSN, then opt into the group:
+## Checks and contracts
 
 ```sh
-bundle config set --local with teradata
-bundle install
+RAILS_ENV=test bundle exec rails db:schema:load
+RAILS_ENV=test bundle exec rspec
+WAREHOUSE_CONTRACT_TARGET=replay bundle exec rspec contract
 ```
 
-The fake DSN alone cannot connect to a live warehouse.
+Unit specs use PostgreSQL 15; contract specs are isolated from ordinary discovery
+and need no Rails database. Default teradata-emulator executes both DAL SQL
+constants LIVE through ../../consumers/contract-kit. Follow its README for
+runtime/seed setup (ROWS_PER_TABLE=800, BUSINESS_DATE=20261109), TD_PG_PORT,
+bridge dependencies and CONTRACT_KIT_PYTHON. TD_EMULATOR_HOME optionally overrides
+the default repository-root runtime. CONTRACT_RECORD=true bundle exec rspec contract
+records the live JSON; review expected counts, sums and keys after changes.
 
-### Checks
-
-With Ruby 3.3, PostgreSQL 15 and RAILS_ENV=test, configure DATABASE_HOST,
-DATABASE_PORT, DATABASE_USER and DATABASE_PASSWORD for the test database:
-
-```sh
-bundle install
-bundle exec rails db:schema:load
-bundle exec rspec
-bundle exec rspec contract
-```
-
-Default RSpec discovery runs only `spec/`. Unit/request specs use a fake ODBC
-client and the existing JWT helper. Contract specs in `contract/` run separately
-without Rails or PostgreSQL. Default `WAREHOUSE_CONTRACT_TARGET=teradata-emulator`
-replays synthetic recorded results in `contract/recorded/teradata/` and checks
-row counts, account keys and monetary aggregates against `contract/expected/`.
-The adapter receives the exact SQL constants used by the dashboard.
-TD_EMULATOR_URL selects a stub that explicitly raises
-"emulator endpoint not configured" until the endpoint protocol is available.
-
-`WAREHOUSE_CONTRACT_TARGET=snowflake` reads SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER,
-SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE and SNOWFLAKE_PRIVATE_KEY. Missing values skip
-the specs; configured values currently raise an explicit unsupported-operation
-error pending adapter implementation. Destination constants are
-SFX_D1110_AFTER.COMPAT and session QUERY_TAG
+Replay needs no Python/warehouse and runs in a dedicated CI job.
+snowflake-semantics invokes the shared live bridge. snowflake is an explicit
+placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE or PRIVATE_KEY
+skips; configured execution is unsupported. Destination metadata:
+SFX_D1110_AFTER.COMPAT, query tag
 `{"run":"sfx-d1110","act":"consumers","consumer":"admin-service"}`.

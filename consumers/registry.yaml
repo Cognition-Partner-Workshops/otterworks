@@ -74,10 +74,12 @@ consumers:
     teradata_service_account: svc_admin_fin
     cadence: "rake task hourly + dashboard endpoint"
     entrypoint: "GET /api/v1/admin/finance/dashboard; bundle exec rake finance:refresh_dashboard"
-    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    tables: ["SFX_BILLING.GL_JOURNAL_LINE","SFX_BILLING.GL_ACCOUNT","SFX_BILLING.CREDIT_NOTE","SFX_BILLING.INVOICE_HDR","SFX_BILLING.PAYMENT","SFX_BILLING.CUSTOMER_ACCOUNT"]
     teradata_constructs: ["SEL","TOP 10","ZEROIFNULL","NULLIFZERO","CURRENT_DATE - 30","1YYMMDD","FORMAT","QUALIFY ROW_NUMBER"]
     unit_test: "cd services/admin-service && bundle exec rails db:schema:load && bundle exec rspec"
     contract_test: "cd services/admin-service && bundle exec rspec contract"
+    contract_replay_test: "cd services/admin-service && WAREHOUSE_CONTRACT_TARGET=replay bundle exec rspec contract"
+    contract_targets: ["teradata-emulator","replay","snowflake-semantics","snowflake"]
     workflow: .github/workflows/consumer-admin-service.yml
     snowflake:
       database: SFX_D1110_AFTER
