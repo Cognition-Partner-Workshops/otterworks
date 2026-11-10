@@ -46,7 +46,7 @@ jobs:
       - if: steps.changes.outputs.warehouse == 'true'
         run: python -m pip install -r warehouse/requirements.txt
       - if: steps.changes.outputs.warehouse == 'true'
-        run: python -m pytest -q warehouse/tests warehouse/teradata/tests
+        run: python -m pytest -q warehouse/seed/tests warehouse/teradata/tests
       - if: steps.changes.outputs.warehouse == 'true'
         name: Warehouse smoke
         run: |
