@@ -49,6 +49,30 @@ def test_snowflake_dedup_tags_and_failures():
     assert summary([], [{**row, 'execution_status': 'FAIL'}])['reader']['snowflake'] == 0
 
 
+def test_parity_tooling_is_visible_but_does_not_block():
+    data = summary([td('svc_exit_parity'), td('svc_etl_load')])
+    parity = data['parity tooling (out of scope)']
+    assert parity['baseline'] == parity['teradata'] == 1
+    assert parity['accounts'] == {'svc_exit_parity': 1}
+    assert parity['days']['2026-11-09']['teradata'] == 1
+    assert decommission.remaining(data) == 0
+    assert 'parity tooling (out of scope) | 1 | 1 | 0' in reads.render(data)
+    records = board.rows(data, CONSUMERS, [])
+    assert records[-1] == ['parity tooling (out of scope)', '—', 'svc_exit_parity', 1, 1, 0, '—', '—', 'out of scope']
+    assert 'parity tooling (out of scope)' in board.document(records)
+    failed = td('svc_exit_parity')
+    failed['errorcode'] = 3807
+    assert summary([failed])['parity tooling (out of scope)']['teradata'] == 0
+    assert summary()['parity tooling (out of scope)']['teradata'] == 0
+
+
+def test_unknown_and_other_unmanaged_accounts_block():
+    data = summary([td('unknown'), td('unregistered'), td('svc_exit_parity')])
+    assert data['unmanaged']['accounts'] == {'unknown': 1, 'unregistered': 1}
+    assert data['unmanaged']['teradata'] == 2
+    assert decommission.remaining(data) == 2
+
+
 def pr(**kw):
     return dict(number=1, state='open', merged_at=None, base={'ref': 'demo-snowflake-dw-exit'},
                 head={'ref': 'devin/sfx-d1110-consumer-reader', 'sha': 'abc'}, html_url='https://example.invalid/pr', **kw)
@@ -72,8 +96,10 @@ def test_board_workflow_sha_and_status():
 
 def test_csv_baseline():
     data = reads.summarize(reads.teradata(reads.ROOT / 'warehouse/teradata/dbql/qrylog.csv'), [], reads.registry(), '2026-10-11', '2026-11-10')
-    assert len(data) == 10
-    assert all(r['baseline'] == r['teradata'] and r['baseline'] > 0 for r in data.values())
+    assert len(data) == 11
+    assert data['parity tooling (out of scope)']['baseline'] == 0
+    assert all(r['baseline'] == r['teradata'] and r['baseline'] > 0
+               for name, r in data.items() if name != 'parity tooling (out of scope)')
 
 
 def test_offline_cli(tmp_path):

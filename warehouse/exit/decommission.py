@@ -1,10 +1,10 @@
-"""Fail closed until every non-ETL Teradata reader has stopped."""
+"""Fail closed until every in-scope Teradata reader has stopped."""
 import json
-from reads import arguments, collect, render
+from reads import OUT_OF_SCOPE, arguments, collect, render
 
 
 def remaining(data):
-    return sum(row['teradata'] for name, row in data.items() if name != 'etl (out of scope)')
+    return sum(row['teradata'] for name, row in data.items() if name not in OUT_OF_SCOPE)
 
 
 if __name__ == '__main__':
@@ -14,5 +14,5 @@ if __name__ == '__main__':
     for name, row in data.items():
         print(f"{name}: " + (', '.join(f'{a}={n}' for a, n in row['accounts'].items()) or 'no accounts with reads'))
     count = remaining(data)
-    print(f'Non-ETL Teradata reads: {count}; ' + ('BLOCKED' if count else 'CLEAR'))
+    print(f'In-scope Teradata reads: {count}; ' + ('BLOCKED' if count else 'CLEAR'))
     raise SystemExit(1 if count else 0)

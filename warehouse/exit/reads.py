@@ -10,6 +10,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 BASELINE = ('2026-10-11', '2026-11-10')
+OUT_OF_SCOPE = ('etl (out of scope)', 'parity tooling (out of scope)')
 
 
 def timestamp(value):
@@ -24,6 +25,8 @@ def registry():
 
 def classify(row, consumers):
     account = row['username'].strip().lower()
+    if account == 'svc_exit_parity':
+        return 'parity tooling (out of scope)'
     if account.startswith('svc_etl_') or account == 'svc_fastload':
         return 'etl (out of scope)'
     for consumer in consumers:
@@ -81,7 +84,7 @@ def summarize(td, sf, consumers, since, until):
     lo, hi = timestamp(since), timestamp(until)
     consumer_names = {c['name'] for c in consumers}
     result = {c['name']: {'baseline': 0, 'teradata': 0, 'snowflake': 0, 'days': {}, 'accounts': {}} for c in consumers}
-    for name in ('unmanaged', 'etl (out of scope)'):
+    for name in ('unmanaged', *OUT_OF_SCOPE):
         result[name] = {'baseline': 0, 'teradata': 0, 'snowflake': 0, 'days': {}, 'accounts': {}}
     for row in td:
         if row['statementtype'].strip().upper() != 'SELECT' or int(row['errorcode'] or 0):

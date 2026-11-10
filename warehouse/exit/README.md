@@ -14,7 +14,12 @@ All windows are UTC and half-open, `[since, until)`. `until` defaults to now.
 The baseline is successful SELECT requests from 2026-10-11 through 2026-11-09,
 not rows returned. Per-day counts are included in text/JSON reads output.
 ETL (`svc_etl_*`, `svc_fastload`) is shown but never blocks decommissioning.
-Every other unknown account blocks it and is reported as unmanaged. Notebook
+Parity/contract comparison tooling must log on as `svc_exit_parity`. Its reads
+are shown separately as `parity tooling (out of scope)` in side-by-side reports
+and on the board, but do not block decommissioning. This account is reserved for
+migration tooling: clients' own production read paths must never use it.
+Every other unknown account blocks decommissioning and is reported as unmanaged,
+including the runner's `unknown` fallback when `TD_USER` is unset. Notebook
 aliases are recognized by JupyterLab AppID or notebook ClientID; registry account
 matches take precedence. Account names are read from registry/DBQL, never embedded.
 

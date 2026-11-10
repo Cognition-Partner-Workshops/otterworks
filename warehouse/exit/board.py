@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 
-from reads import arguments, collect, registry
+from reads import OUT_OF_SCOPE, arguments, collect, registry
 
 REPO = 'Cognition-Partner-Workshops/otterworks'
 
@@ -51,7 +51,7 @@ def rows(data, consumers, prs):
         result.append([name, consumer['team'], consumer['teradata_service_account'],
                        data[name]['baseline'], data[name]['teradata'], data[name]['snowflake'],
                        pr['html_url'] if pr else '—', ci, status])
-    for name, status in [('unmanaged', 'unmanaged — needs owner'), ('etl (out of scope)', 'out of scope')]:
+    for name, status in [('unmanaged', 'unmanaged — needs owner'), *((name, 'out of scope') for name in OUT_OF_SCOPE)]:
         row = data[name]
         result.append([name, '—', ', '.join(row['accounts']) or 'see DBQL', row['baseline'], row['teradata'], row['snowflake'], '—', '—', status])
     return result
