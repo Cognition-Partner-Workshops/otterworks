@@ -1,9 +1,0 @@
-version: 2
-models:
-  - name: users_risk_score
-    description: "sfx-d1110: Full refresh of SFX_D1110_AFTER.MART_SPARK.USERS_RISK_SCORE, replacing lake/users/users_risk_score and JDBC sfx_users.SPARK_RISK_SCORE. Preserves activity columns and the logistic risk formula."
-    columns:
-      - name: USER_ACTIVITY_ID
-        tests: [not_null, unique]
-      - name: RISK_SCORE
-        tests: [not_null]
