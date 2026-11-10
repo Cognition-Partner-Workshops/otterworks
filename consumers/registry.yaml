@@ -57,10 +57,12 @@ consumers:
     teradata_service_account: svc_legacy_billing
     cadence: "on request (Flask page/JSON)"
     entrypoint: "GET /finance/ar-aging"
-    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    tables: ["SFX_BILLING.V_ACCOUNT_INVOICES","SFX_BILLING.CUSTOMER_ACCOUNT","SFX_BILLING.PAYMENT"]
     teradata_constructs: ["SEL","TOP 100","ZEROIFNULL","NULLIFZERO","CURRENT_DATE - DUE_DT","1YYMMDD","FORMAT"]
     unit_test: "cd services/legacy-billing && pytest"
     contract_test: "cd services/legacy-billing && pytest contract"
+    contract_replay_test: "cd services/legacy-billing && WAREHOUSE_CONTRACT_TARGET=replay pytest contract"
+    contract_targets: ["teradata-emulator","replay","snowflake-semantics","snowflake"]
     workflow: .github/workflows/consumer-legacy-billing.yml
     snowflake:
       database: SFX_D1110_AFTER
