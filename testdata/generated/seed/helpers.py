@@ -92,7 +92,7 @@ def get_connection():
 
 def set_search_path(cur, ns: str) -> None:
     schema = f"otterworks_{ns}"
-    query = sql.SQL("SET search_path TO {}").format(sql.Identifier(schema))
+    query = sql.Composed([sql.SQL("SET search_path TO "), sql.Identifier(schema)])
     cur.execute(query)
 
 

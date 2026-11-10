@@ -96,8 +96,9 @@ def check_row_count(
     cur, schema: str, table: str, expected_min: int, expected_max: int | None = None
 ) -> CheckResult:
     """Verify row count is within expected bounds."""
-    query = sql.SQL("SELECT count(*) FROM {}.{}").format(
-        sql.Identifier(schema), sql.Identifier(table))
+    query = sql.Composed([
+        sql.SQL("SELECT count(*) FROM "), sql.Identifier(schema), sql.SQL("."), sql.Identifier(table),
+    ])
     cur.execute(query)
     count = cur.fetchone()[0]
     if count < expected_min:
@@ -119,8 +120,10 @@ def check_not_null(cur, schema: str, table: str, columns: list[str]) -> CheckRes
     """Verify specified columns have no NULL values."""
     failures = []
     for col in columns:
-        query = sql.SQL("SELECT count(*) FROM {}.{} WHERE {} IS NULL").format(
-            sql.Identifier(schema), sql.Identifier(table), sql.Identifier(col))
+        query = sql.Composed([
+            sql.SQL("SELECT count(*) FROM "), sql.Identifier(schema), sql.SQL("."), sql.Identifier(table),
+            sql.SQL(" WHERE "), sql.Identifier(col), sql.SQL(" IS NULL"),
+        ])
         cur.execute(query)
         null_count = cur.fetchone()[0]
         if null_count > 0:
@@ -136,11 +139,11 @@ def check_unique(cur, schema: str, table: str, columns: list[str]) -> CheckResul
     """Verify uniqueness constraints hold."""
     failures = []
     for col in columns:
-        query = sql.SQL("""
-            SELECT count(*) - count(DISTINCT {col})
-            FROM {schema}.{table}
-            WHERE {col} IS NOT NULL
-            """).format(col=sql.Identifier(col), schema=sql.Identifier(schema), table=sql.Identifier(table))
+        query = sql.Composed([
+            sql.SQL("SELECT count(*) - count(DISTINCT "), sql.Identifier(col), sql.SQL(") FROM "),
+            sql.Identifier(schema), sql.SQL("."), sql.Identifier(table),
+            sql.SQL(" WHERE "), sql.Identifier(col), sql.SQL(" IS NOT NULL"),
+        ])
         cur.execute(query)
         dup_count = cur.fetchone()[0]
         if dup_count > 0:
@@ -154,14 +157,13 @@ def check_fk_integrity(
     cur, schema: str, child_table: str, child_col: str, parent_table: str, parent_col: str
 ) -> CheckResult:
     """Verify all FK references resolve to existing parent rows."""
-    query = sql.SQL("""
-        SELECT count(*)
-        FROM {schema}.{child_table} c
-        LEFT JOIN {schema}.{parent_table} p ON c.{child_col} = p.{parent_col}
-        WHERE c.{child_col} IS NOT NULL AND p.{parent_col} IS NULL
-        """).format(schema=sql.Identifier(schema), child_table=sql.Identifier(child_table),
-                    parent_table=sql.Identifier(parent_table), child_col=sql.Identifier(child_col),
-                    parent_col=sql.Identifier(parent_col))
+    query = sql.Composed([
+        sql.SQL("SELECT count(*) FROM "), sql.Identifier(schema), sql.SQL("."), sql.Identifier(child_table),
+        sql.SQL(" c LEFT JOIN "), sql.Identifier(schema), sql.SQL("."), sql.Identifier(parent_table),
+        sql.SQL(" p ON c."), sql.Identifier(child_col), sql.SQL(" = p."), sql.Identifier(parent_col),
+        sql.SQL(" WHERE c."), sql.Identifier(child_col), sql.SQL(" IS NOT NULL AND p."),
+        sql.Identifier(parent_col), sql.SQL(" IS NULL"),
+    ])
     cur.execute(query)
     orphan_count = cur.fetchone()[0]
     if orphan_count > 0:
@@ -192,14 +194,12 @@ def check_temporal_consistency(
     Example: an audit_log entry should not have created_at < the resource's
     created_at (the event can't happen before the resource exists).
     """
-    query = sql.SQL("""
-        SELECT count(*)
-        FROM {schema}.{event_table} e
-        JOIN {schema}.{resource_table} r ON e.{join_col} = r."id"
-        WHERE e.{event_ts_col} < r.{resource_ts_col}
-        """).format(schema=sql.Identifier(schema), event_table=sql.Identifier(event_table),
-                    resource_table=sql.Identifier(resource_table), join_col=sql.Identifier(join_col),
-                    event_ts_col=sql.Identifier(event_ts_col), resource_ts_col=sql.Identifier(resource_ts_col))
+    query = sql.Composed([
+        sql.SQL("SELECT count(*) FROM "), sql.Identifier(schema), sql.SQL("."), sql.Identifier(event_table),
+        sql.SQL(" e JOIN "), sql.Identifier(schema), sql.SQL("."), sql.Identifier(resource_table),
+        sql.SQL(" r ON e."), sql.Identifier(join_col), sql.SQL(' = r."id" WHERE e.'),
+        sql.Identifier(event_ts_col), sql.SQL(" < r."), sql.Identifier(resource_ts_col),
+    ])
     cur.execute(query)
     violations = cur.fetchone()[0]
     if violations > 0:
@@ -219,8 +219,11 @@ def check_enum_values(
     cur, schema: str, table: str, column: str, allowed: list[str]
 ) -> CheckResult:
     """Verify a column only contains allowed enum values."""
-    query = sql.SQL("SELECT DISTINCT {column} FROM {schema}.{table} WHERE {column} IS NOT NULL").format(
-        column=sql.Identifier(column), schema=sql.Identifier(schema), table=sql.Identifier(table))
+    query = sql.Composed([
+        sql.SQL("SELECT DISTINCT "), sql.Identifier(column), sql.SQL(" FROM "),
+        sql.Identifier(schema), sql.SQL("."), sql.Identifier(table),
+        sql.SQL(" WHERE "), sql.Identifier(column), sql.SQL(" IS NOT NULL"),
+    ])
     cur.execute(query)
     actual = {row[0] for row in cur.fetchall()}
     invalid = actual - set(allowed)
@@ -237,11 +240,10 @@ def check_enum_values(
 
 def check_quota_not_exceeded(cur, schema: str) -> CheckResult:
     """Verify used_bytes does not exceed quota_bytes in storage_quotas."""
-    query = sql.SQL("""
-        SELECT count(*)
-        FROM {}."storage_quotas"
-        WHERE used_bytes > quota_bytes
-        """).format(sql.Identifier(schema))
+    query = sql.Composed([
+        sql.SQL("SELECT count(*) FROM "), sql.Identifier(schema),
+        sql.SQL('."storage_quotas" WHERE used_bytes > quota_bytes'),
+    ])
     cur.execute(query)
     violations = cur.fetchone()[0]
     if violations > 0:
