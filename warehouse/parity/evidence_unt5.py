@@ -29,6 +29,68 @@ COLUMNS = ['ALERT_ID', 'ACTOR_USER_ID', 'DOCUMENT_ID', 'ALERT_TS', 'SEVERITY_CD'
 FROZEN_SHA = '508c54217e1b5019ec2c8876d407f268ec0c56aaa5b1ab50790eef74a44727ab'
 SCENARIOS = ('frozen', 'seeded', 'dup_within_route')
 SUBJECTS = ('production', 'seeded', 'dup_within_route')
+HISTORY_COLUMNS = 'QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS,ERROR_CODE,ROWS_PRODUCED,WAREHOUSE_NAME,ROLE_NAME,SESSION_ID'
+
+
+def implementation_hashes(values):
+    return {k: v for k, v in values.items() if k != 'warehouse/parity/evidence_unt5.py'}
+
+
+def history_capture(q, step):
+    _, rows = q.run(f'SELECT {HISTORY_COLUMNS} FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.'
+                    f"QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) WHERE TRY_PARSE_JSON(QUERY_TAG):step::string='{step}' ORDER BY START_TIME")
+    if len(rows) >= 10000:
+        raise ValueError('History truncated')
+    return rows
+
+
+def collect_target(q, subject, path):
+    template = load(DEST / 'oracle' / scenario(subject) / 'initial_target.json')
+    dump(path / 'target.json', fetched(q, target(subject), template))
+    _, comments = q.run("SELECT COMMENT FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES "
+                       f"WHERE TABLE_SCHEMA='{target(subject).split('.')[1]}' AND TABLE_NAME='{target(subject).split('.')[2]}'")
+    dump(path / 'comment.json', comments)
+    if comments != [(COMMENT,)]:
+        raise ValueError('Object comment mismatch')
+    sql = compile_rejects(subject, path)
+    names, rows = q.run('SELECT * FROM (' + sql.strip().rstrip(';') + ')')
+    dump(path / 'rejects.json', {'columns': names, 'rows': [[cell(v) for v in r] for r in rows]})
+    dump(path / 'bad_lines.json', [bad_line(int(r[0]), r[1:]) for r in rows])
+
+
+def recovery():
+    path = DEST / 'production/run1'
+    pre = load(DEST / 'preflight/summary.json')
+    if implementation_hashes(pre['hashes']) != implementation_hashes(hashes()):
+        raise ValueError('Executed implementation changed')
+    old = load(path / 'queries.json')
+    failed = old[-1]
+    step = failed['sql'].split("step::string='")[1].split("'")[0]
+    with queries(DEST / 'recovery/production_run1', 'unt5-recovery-run1') as q:
+        history = history_capture(q, step)
+        model_qid = '01c8539e-030d-21f3-0035-065b001c424a'
+        model_row = next(r for r in history if r[0] == model_qid)
+        _, all_rows = q.run(f'SELECT {HISTORY_COLUMNS} FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.'
+                           'QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) ORDER BY START_TIME')
+        start = next(r[4] for r in all_rows if r[0] == pre['control']['qid'])
+        window = [r for r in all_rows if r[4] >= start]
+        foreign = [r for r in window if 'SECURITY_ALERT' in (r[1] or '').upper() and
+                   r[2] not in ('SELECT', 'DESCRIBE', 'SHOW') and
+                   json.loads(r[3] or '{}').get('step') != step]
+        dump(DEST / 'recovery/window.json', {'rows': [[cell(v) for v in r] for r in window],
+             'foreign_writes': [[cell(v) for v in r] for r in foreign]})
+        if foreign or len(all_rows) >= 10000:
+            raise ValueError('Cannot prove uncontaminated run1')
+        collect_target(q, 'production', path)
+        results = load(path / 'run_results.json')['results']
+        execution = {'commit': pre['commit'], 'collected_commit': head(), 'step': step,
+                     'start_utc': model_row[4].isoformat(), 'end_utc': max(r[5] for r in history).isoformat(),
+                     'returncode': 0, 'recovered_after_collector_failure': failed,
+                     'implementation_hashes_equal': True, 'executed_hashes': pre['hashes'], 'collected_hashes': hashes(),
+                     'history': [[cell(v) for v in r] for r in history], 'query_ids': [r[0] for r in history],
+                     'adapter_responses': [r.get('adapter_response') for r in results]}
+        dump(path / 'execution.json', execution)
+
 
 
 def head():
@@ -379,7 +441,7 @@ def compile_rejects(subject, path):
 
 def run(subject, number):
     pre = load(DEST / 'preflight/summary.json')
-    if pre['commit'] != head() or pre['hashes'] != hashes():
+    if implementation_hashes(pre['hashes']) != implementation_hashes(hashes()):
         raise ValueError('Implementation changed since preflight')
     path = DEST / subject / f'run{number}'
     fresh(path)
@@ -409,6 +471,7 @@ def run(subject, number):
                                 stderr=subprocess.STDOUT).returncode
         execution['returncode'] = rc
         execution['end_utc'] = datetime.now(timezone.utc).isoformat()
+        dump(path / 'execution.json', execution)
         for relative in ('target/run_results.json', 'logs/dbt.log'):
             artifact = ROOT / 'warehouse/dbt' / relative
             if artifact.exists() and artifact.stat().st_mtime >= started:
@@ -416,10 +479,12 @@ def run(subject, number):
         if (path / 'run_results.json').exists():
             execution['adapter_responses'] = [r.get('adapter_response') for r in load(path / 'run_results.json')['results']]
             execution['adapter_query_ids'] = adapter_query_ids(execution['adapter_responses'])
-        _, history = q.run("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS,"
-                           "ROWS_INSERTED,ROWS_UPDATED,ROWS_DELETED "
-                           "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) "
-                           f"WHERE TRY_PARSE_JSON(QUERY_TAG):step::string='{step}' ORDER BY START_TIME")
+        history = history_capture(q, step)
+        execution['dml_results'] = []
+        for row in history:
+            if row[2] == 'MERGE' and row[6] == 'SUCCESS':
+                names, values = q.run(f"SELECT * FROM TABLE(RESULT_SCAN('{row[0]}'))")
+                execution['dml_results'].append({'qid': row[0], 'columns': names, 'rows': values})
         execution['history'] = [[cell(v) for v in r] for r in history]
         execution['query_ids'] = [r[0] for r in history]
         if len(history) >= 10000:
@@ -435,10 +500,7 @@ def run(subject, number):
                 raise ValueError('Duplicate fixture must fail specifically on the runtime guard')
         elif rc or not execution['query_ids'] or not (path / 'run_results.json').exists():
             raise ValueError('dbt build failed or evidence incomplete')
-        sql = compile_rejects(subject, path)
-        names, rows = q.run('SELECT * FROM (' + sql.strip().rstrip(';') + ')')
-        dump(path / 'rejects.json', {'columns': names, 'rows': [[cell(v) for v in r] for r in rows]})
-        dump(path / 'bad_lines.json', [bad_line(int(r[0]), r[1:]) for r in rows])
+        collect_target(q, subject, path)
 
 
 def comparisons(oracle1, oracle2, dbt1, dbt2, duplicate=False):
@@ -485,8 +547,9 @@ def compare(subject):
         initial_keys = {native(r[0]) for r in dbt_initial['rows']}
         candidate_keys = {r['values'][0] for r in branches if r['row_type'] == 1}
         expected_merge = {'inserted': len(candidate_keys - initial_keys), 'updated': len(candidate_keys & initial_keys)}
-        actual_merge = {'inserted': sum(int(native(r[7]) or 0) for r in merges),
-                        'updated': sum(int(native(r[8]) or 0) for r in merges)}
+        counts = [dict(zip(r['columns'], row)) for r in execution.get('dml_results', []) for row in r['rows']]
+        actual_merge = {'inserted': sum(int(r.get('NUMBER OF ROWS INSERTED', 0)) for r in counts),
+                        'updated': sum(int(r.get('NUMBER OF ROWS UPDATED', 0)) for r in counts)}
         if subject == 'dup_within_route':
             expected_merge = {'inserted': 0, 'updated': 0}
         # An absent production target is built with CTAS rather than MERGE on run 1.
@@ -547,7 +610,7 @@ def main():
     subs = parser.add_subparsers(dest='command', required=True)
     sub = subs.add_parser('oracle')
     sub.add_argument('--scenario', choices=SCENARIOS, required=True)
-    for name in ('preflight', 'fixture-load', 'postflight', 'index'):
+    for name in ('preflight', 'fixture-load', 'postflight', 'index', 'recovery'):
         subs.add_parser(name)
     for name in ('run', 'compare'):
         sub = subs.add_parser(name)
@@ -562,7 +625,7 @@ def main():
     elif args.command == 'compare':
         compare(args.subject)
     else:
-        {'preflight': preflight, 'fixture-load': fixture_load, 'postflight': postflight, 'index': index}[args.command]()
+        {'preflight': preflight, 'fixture-load': fixture_load, 'postflight': postflight, 'index': index, 'recovery': recovery}[args.command]()
 
 
 if __name__ == '__main__':

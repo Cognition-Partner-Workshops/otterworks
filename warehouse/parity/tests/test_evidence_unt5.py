@@ -131,3 +131,10 @@ def test_macro_guard_and_reject_projection():
     assert 'ROUTE=3 or ALERT_ID is null' in rejects
     assert 'rpad(' not in rejects
     assert 'as ROW_TYPE' in rejects
+
+
+def test_history_uses_discovered_columns():
+    assert 'ROWS_UPDATED' not in u.HISTORY_COLUMNS
+    assert 'ROWS_DELETED' not in u.HISTORY_COLUMNS
+    assert 'ROWS_PRODUCED' in u.HISTORY_COLUMNS
+    assert u.implementation_hashes({'warehouse/parity/evidence_unt5.py': 'a', 'model.sql': 'b'}) == {'model.sql': 'b'}
