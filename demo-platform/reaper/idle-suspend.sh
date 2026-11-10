@@ -270,7 +270,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
   REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
   # shellcheck source=/dev/null
   source "${REPO_ROOT}/demo-platform/lib/control-common.sh"
-  # shellcheck source=../../scripts/lib/tenant-redis.sh
+  # shellcheck source=/dev/null
   source "${REPO_ROOT}/scripts/lib/tenant-redis.sh"
   suspend_idle_tenants
 fi
