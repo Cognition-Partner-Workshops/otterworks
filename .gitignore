@@ -124,3 +124,8 @@ incident/reports/
 warehouse/teradata/.snowconvert/
 services/legacy-portal/parity/out/
 services/legacy-portal-lambda/*/target/
+
+# --- PowerCenter emulation (etl/informatica) ---
+etl/informatica/.venv/
+etl/informatica/infa_shared/
+etl/informatica/snowconvert/
