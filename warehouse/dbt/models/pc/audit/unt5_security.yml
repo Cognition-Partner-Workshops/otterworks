@@ -1,0 +1,27 @@
+version: 2
+sources:
+  - name: unt5_pc_src
+    database: SFX_D1110_AFTER
+    schema: PC_SRC
+    tables:
+      - name: SECURITY_ALERT
+  - name: unt5_fixture
+    database: SFX_D1110_AFTER
+    schema: PC_AUDIT_UNT5_FIXTURE
+    tables:
+      - name: SEEDED_SOURCE
+      - name: DUP_WITHIN_ROUTE_SOURCE
+models:
+  - name: pc_audit__security_alert
+    description: Runner-exact severity routing and ordered update-else-insert; within-route duplicate keys fail closed.
+    columns:
+      - name: ALERT_ID
+        tests: [not_null, unique]
+  - name: pc_audit__unt5_fixture_seeded
+    columns:
+      - name: ALERT_ID
+        tests: [not_null, unique]
+  - name: pc_audit__unt5_fixture_dup_within_route
+    columns:
+      - name: ALERT_ID
+        tests: [not_null, unique]
