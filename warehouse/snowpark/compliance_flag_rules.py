@@ -20,7 +20,6 @@ def run(session):
         language python
         runtime_version = '3.10'
         handler = 'disposition'
-        called on null input
         as $$
 {DISPOSITION_HANDLER}
 $$
