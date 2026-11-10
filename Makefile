@@ -13,7 +13,7 @@ sfx-exit-reads sfx-exit-board sfx-exit-decommission: warehouse/.venv/.requiremen
 ROWS_PER_TABLE ?= 200000
 BUSINESS_DATE ?= 20261109
 SFX_TD_PYTHON ?= python3
-SCAI ?= scai
+SCAI ?= $(or $(shell command -v scai 2>/dev/null),$(wildcard $(HOME)/.local/bin/scai),scai)
 TD_PG_PORT ?= $(shell NS="$(NS)" $(SFX_TD_PYTHON) -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')
 SFX_TD_ENV = NS="$(NS)" TD_PG_PORT="$(TD_PG_PORT)" PYTHONPATH="$(abspath warehouse/teradata)"
 SFX_TD_PY = warehouse/.venv/bin/python

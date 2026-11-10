@@ -7,10 +7,10 @@ from pathlib import Path
 
 try:
     from .columns import TABLES
-    from .profiles import enrich
+    from .profiles import enrich, journal_history
 except ImportError:
     from columns import TABLES
-    from profiles import enrich
+    from profiles import enrich, journal_history
 
 
 RESERVED_START = 9_000_000_001
@@ -98,6 +98,9 @@ def make_row(table, key, rng, counts, business_date, seed=1110):
 
 def rows_for(table, rows, seed, business_date):
     counts = {t.name: t.count(rows) for t in TABLES}
+    if table.name == 'GL_JOURNAL_LINE':
+        yield from journal_history(rows, seed, business_date, counts)
+        return
     derived = int.from_bytes(hashlib.sha256(f'{seed}:{table.name}'.encode()).digest()[:8], 'big')
     rng = random.Random(derived)
     for key in range(1, counts[table.name] + 1):

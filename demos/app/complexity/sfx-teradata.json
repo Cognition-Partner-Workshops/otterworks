@@ -8,7 +8,7 @@
       "instances": [
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 29,
+          "line": 33,
           "object": "SFX_BILLING.PLAN_CATALOG",
           "anchor": "PLAN_CODE CHAR(10)",
           "planted_keys": {
@@ -46,7 +46,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 46,
+          "line": 52,
           "object": "SFX_BILLING.SUBSCRIPTION",
           "anchor": "PLAN_CODE VARCHAR(10)",
           "planted_keys": {
@@ -84,7 +84,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 119,
+          "line": 122,
           "object": "SFX_BILLING.SUBSCRIPTION",
           "anchor": "PLAN_CODE=('pro'",
           "planted_keys": {
@@ -122,7 +122,7 @@
         },
         {
           "file": "warehouse/teradata/macros/subscription_plans.sql",
-          "line": 4,
+          "line": 5,
           "object": "SFX_BILLING.M_SUBSCRIPTION_PLANS",
           "anchor": "s.PLAN_CODE = p.PLAN_CODE",
           "planted_keys": {
@@ -273,9 +273,9 @@
           "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
         },
         {
-          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
-          "line": 56,
-          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "file": "warehouse/teradata/scripts/billing/12_invoice_monthly.bteq",
+          "line": 23,
+          "object": "SFX_BILLING.GL_JOURNAL_LINE",
           "anchor": "s.PLAN_CODE=p.PLAN_CODE",
           "planted_keys": {
             "table": "SFX_BILLING.SUBSCRIPTION",
@@ -311,9 +311,9 @@
           "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
         },
         {
-          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
-          "line": 75,
-          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "file": "warehouse/teradata/scripts/billing/12_invoice_monthly.bteq",
+          "line": 43,
+          "object": "SFX_BILLING.GL_JOURNAL_LINE",
           "anchor": "s.PLAN_CODE=p.PLAN_CODE",
           "planted_keys": {
             "table": "SFX_BILLING.SUBSCRIPTION",
@@ -350,7 +350,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 68,
+          "line": 76,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "CURRENCY_CD CHAR(3)",
           "planted_keys": {
@@ -388,7 +388,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 239,
+          "line": 263,
           "object": "SFX_BILLING.GL_JOURNAL_LINE",
           "anchor": "CURRENCY_CD CHAR(3)",
           "planted_keys": {
@@ -426,7 +426,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 122,
+          "line": 125,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "CURRENCY_CD=('usd'",
           "planted_keys": {
@@ -464,7 +464,7 @@
         },
         {
           "file": "warehouse/teradata/macros/currency_totals.sql",
-          "line": 4,
+          "line": 5,
           "object": "SFX_BILLING.M_CURRENCY_TOTALS",
           "anchor": "GROUP BY CURRENCY_CD",
           "planted_keys": {
@@ -577,8 +577,8 @@
           "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
         },
         {
-          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
-          "line": 45,
+          "file": "warehouse/teradata/scripts/billing/12_invoice_monthly.bteq",
+          "line": 12,
           "object": "SFX_BILLING.GL_JOURNAL_LINE",
           "anchor": "x.CURRENCY_CD",
           "planted_keys": {
@@ -615,9 +615,9 @@
           "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
         },
         {
-          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
-          "line": 57,
-          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "file": "warehouse/teradata/scripts/billing/12_invoice_monthly.bteq",
+          "line": 24,
+          "object": "SFX_BILLING.GL_JOURNAL_LINE",
           "anchor": "GROUP BY CURRENCY_CD",
           "planted_keys": {
             "table": "SFX_BILLING.INVOICE_HDR",
@@ -653,8 +653,8 @@
           "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
         },
         {
-          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
-          "line": 64,
+          "file": "warehouse/teradata/scripts/billing/12_invoice_monthly.bteq",
+          "line": 32,
           "object": "SFX_BILLING.GL_JOURNAL_LINE",
           "anchor": "x.CURRENCY_CD",
           "planted_keys": {
@@ -691,9 +691,9 @@
           "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
         },
         {
-          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
-          "line": 77,
-          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "file": "warehouse/teradata/scripts/billing/12_invoice_monthly.bteq",
+          "line": 45,
+          "object": "SFX_BILLING.GL_JOURNAL_LINE",
           "anchor": "GROUP BY CURRENCY_CD",
           "planted_keys": {
             "table": "SFX_BILLING.INVOICE_HDR",
@@ -768,7 +768,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/20_views.sql",
-          "line": 9,
+          "line": 11,
           "object": "SFX_BILLING.V_INVOICE_REVENUE",
           "anchor": "GROUP BY CURRENCY_CD",
           "planted_keys": {
@@ -811,7 +811,7 @@
       "instances": [
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 65,
+          "line": 73,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "INVOICE_DT DATE FORMAT",
           "planted_keys": {
@@ -849,7 +849,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 66,
+          "line": 74,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "BILL_DT DATE FORMAT",
           "planted_keys": {
@@ -887,7 +887,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 67,
+          "line": 75,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "PERIOD_START_DT DATE FORMAT",
           "planted_keys": {
@@ -925,7 +925,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 74,
+          "line": 82,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "INVOICE_PERIOD CHAR(7)",
           "planted_keys": {
@@ -963,7 +963,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 75,
+          "line": 83,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "PERIOD_KEY INTEGER",
           "planted_keys": {
@@ -1001,7 +1001,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 76,
+          "line": 84,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "PRIOR_PERIOD_END_DT DATE",
           "planted_keys": {
@@ -1039,7 +1039,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/00_tables.sql",
-          "line": 77,
+          "line": 85,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "INVOICE_MONTH INTEGER",
           "planted_keys": {
@@ -1115,7 +1115,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 121,
+          "line": 124,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "DATE_POINTS[index",
           "planted_keys": {
@@ -1153,7 +1153,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 123,
+          "line": 126,
           "object": "SFX_BILLING.INVOICE_HDR",
           "anchor": "PERIOD_START_DT=date.replace",
           "planted_keys": {
@@ -1191,7 +1191,7 @@
         },
         {
           "file": "warehouse/teradata/procedures/monthly_invoice.sql",
-          "line": 4,
+          "line": 5,
           "object": "SFX_BILLING.P_MONTHLY_INVOICE",
           "anchor": "CAST(p_day AS DATE FORMAT",
           "planted_keys": {
@@ -1647,7 +1647,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/20_views.sql",
-          "line": 6,
+          "line": 8,
           "object": "SFX_BILLING.V_INVOICE_REVENUE",
           "anchor": "CAST(CAST(INVOICE_DT AS FORMAT",
           "planted_keys": {
@@ -1685,7 +1685,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/billing/20_views.sql",
-          "line": 9,
+          "line": 11,
           "object": "SFX_BILLING.V_INVOICE_REVENUE",
           "anchor": "CAST(CAST(INVOICE_DT AS FORMAT",
           "planted_keys": {
@@ -1728,7 +1728,7 @@
       "instances": [
         {
           "file": "warehouse/teradata/ddl/documents/00_tables.sql",
-          "line": 45,
+          "line": 51,
           "object": "SFX_DOCUMENTS.DOC_VERSION",
           "anchor": "VERSION_TS TIMESTAMP(0)",
           "planted_keys": {
@@ -1766,7 +1766,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/documents/00_tables.sql",
-          "line": 54,
+          "line": 61,
           "object": "SFX_DOCUMENTS.STG_DOC_VERSION",
           "anchor": "VERSION_TS TIMESTAMP(0)",
           "planted_keys": {
@@ -1804,7 +1804,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 128,
+          "line": 131,
           "object": "SFX_DOCUMENTS.STG_DOC_VERSION",
           "anchor": "DOCUMENT_ID=RESERVED_START + index // 2",
           "planted_keys": {
@@ -1842,7 +1842,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 129,
+          "line": 132,
           "object": "SFX_DOCUMENTS.STG_DOC_VERSION",
           "anchor": "VERSION_TS=business_date",
           "planted_keys": {
@@ -1923,7 +1923,7 @@
       "instances": [
         {
           "file": "warehouse/teradata/ddl/users/00_tables.sql",
-          "line": 5,
+          "line": 7,
           "object": "SFX_USERS.APP_USER",
           "anchor": "DISPLAY_NAME VARCHAR(60)",
           "planted_keys": {
@@ -1961,7 +1961,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/users/00_tables.sql",
-          "line": 13,
+          "line": 16,
           "object": "SFX_USERS.STG_APP_USER",
           "anchor": "DISPLAY_NAME VARCHAR(200)",
           "planted_keys": {
@@ -1999,7 +1999,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 114,
+          "line": 117,
           "object": "SFX_USERS.STG_APP_USER",
           "anchor": "Senior Workspace Operations",
           "planted_keys": {
@@ -2156,7 +2156,7 @@
       "instances": [
         {
           "file": "warehouse/teradata/ddl/documents/00_tables.sql",
-          "line": 139,
+          "line": 157,
           "object": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY",
           "anchor": "CREATE SET TABLE",
           "planted_keys": {
@@ -2194,7 +2194,7 @@
         },
         {
           "file": "warehouse/teradata/ddl/documents/00_tables.sql",
-          "line": 148,
+          "line": 167,
           "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
           "anchor": "CREATE MULTISET TABLE",
           "planted_keys": {
@@ -2232,7 +2232,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 109,
+          "line": 112,
           "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
           "anchor": "RESERVED_START + index // 2",
           "planted_keys": {
@@ -2270,7 +2270,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 110,
+          "line": 113,
           "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
           "anchor": "random.Random(key + seed)",
           "planted_keys": {
@@ -2308,7 +2308,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 132,
+          "line": 135,
           "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
           "anchor": "row.update(CUSTOMER_ID=key",
           "planted_keys": {
@@ -2346,7 +2346,7 @@
         },
         {
           "file": "warehouse/seed/generate.py",
-          "line": 133,
+          "line": 136,
           "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
           "anchor": "BYTES_USED=1048576",
           "planted_keys": {
@@ -2536,7 +2536,7 @@
         },
         {
           "file": "warehouse/teradata/macros/storage_totals.sql",
-          "line": 2,
+          "line": 3,
           "object": "SFX_DOCUMENTS.M_STORAGE_TOTALS",
           "anchor": "SUM(BYTES_USED)",
           "planted_keys": {

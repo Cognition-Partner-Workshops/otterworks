@@ -73,11 +73,12 @@ part of the daily chain. Regenerate CSVs with
 Install SnowConvert AI CLI using the vendor's
 [installation instructions](https://docs.snowflake.com/en/en/migrations/snowconvert-docs/general/user-guide/snowconvert/command-line-interface/README).
 It is not available on PyPI. The target fails clearly if `scai` cannot be found;
-`SCAI=/absolute/path/to/scai` overrides executable discovery.
+`SCAI=/absolute/path/to/scai` overrides discovery through PATH or `~/.local/bin/scai`.
 
 The target creates `warehouse/teradata/.snowconvert/<UTC timestamp>-<NS>/`.
-It copies the DDL/macros/procedures/DBC schema into one-statement `.sql` staging
-files and preserves BTEQ `.bteq` files, without modifying the checked-in sources.
+It copies DDL/macros/procedures/DBC schema `.sql` files and BTEQ `.bteq` files
+unchanged into an input directory. SQL objects carry paired SC tags in Teradata
+comments for the CLI arrange step; BTEQ files are recognized by their extension.
 After checking that `scai` exists, `bin/snowflake_connection.py` requires
 `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_WAREHOUSE`,
 `SNOWFLAKE_DATABASE`, and `SNOWFLAKE_PRIVATE_KEY` from the environment. It creates
@@ -90,17 +91,17 @@ These files are outside the repository; keep them private and manage their
 lifecycle independently of the local PostgreSQL volume. The raw private-key
 environment variable is not forwarded to the converter subprocess.
 
-It then runs `scai init <project> -l Teradata`, `scai code add -i <input>
---code-already-split`, captures `scai code convert --help`, then runs
-`scai code convert --scripttargetlanguage SnowScript`, with
-`SNOWFLAKE_CONNECTION=sfx_d1110`. Source preparation avoids
-the arrange phase's SC-tag requirement for unsplit Teradata SQL files.
+It then runs `scai init project -n sfx-d1110-teradata-<NS> -l Teradata -c sfx_d1110`,
+`scai code add -i <input>`, and `scai code convert --show-ewis`, with
+`SNOWFLAKE_CONNECTION=sfx_d1110`.
 Flags follow the vendor's
 [command reference](https://docs.snowflake.com/en/migrations/aim-for-datawarehouses/manual-migration/SCAI_Command_Reference).
 
-`command.log` records commands, raw stdout/stderr, and exit codes. The entire
+`init.log`, `add.log`, and `convert.log` retain each stage's raw stdout/stderr;
+`command.log` also records commands and exit codes. `raw-output` contains the
+unmodified converted files and `Reports` copies the CLI's assessment CSVs. The entire
 project, raw tool output and reports remain under the ignored timestamp directory;
-never commit them. No connections are opened by this wrapper, no deployment is
+never commit them. No source database connection is opened and no deployment is
 performed, and no credentials are passed as CLI flags. Credentials are written
 only to the private files described above, never to the repository or command log.
 Actual conversion requires the installed CLI;
