@@ -1,15 +1,34 @@
 {
   "as_of": "2026-11-09",
+  "reference_run": {
+    "target": "teradata-emulator",
+    "rows_per_table": 200000,
+    "business_date": "20261109",
+    "td_user": "svc_exit_parity",
+    "source": "PR #2734 shared-seed parity run; DSO = AR * 30 / (billed - credits)"
+  },
   "must_agree": {
     "dashboard-summary": {
       "row_count": 1,
-      "values": { "COLLECTIONS_30_DAYS": "27892499.60" }
+      "values": {
+        "AR_OPEN_BALANCE": "77512580.24",
+        "COLLECTIONS_30_DAYS": "27892499.60",
+        "DSO": "30.00162748863311745345"
+      },
+      "tolerances": { "AR_OPEN_BALANCE": "0.01", "COLLECTIONS_30_DAYS": "0.01", "DSO": "0.0001" }
+    },
+    "billing-inputs": {
+      "values": { "BILLED_30_DAYS": "77844053.16", "CREDITS_30_DAYS": "335677.72" },
+      "tolerance": "0.01"
     },
     "overdue-accounts": { "row_count": 10 }
   },
-  "intended_differences": {
-    "AR_OPEN_BALANCE": "live RAW_BILLING.GL_JOURNAL_LINE holds a different journal volume than the emulator load, so the 1200 balance differs",
-    "DSO": "derived from AR_OPEN_BALANCE and invoices billed in the window, whose date distribution differs between the live seed and the emulator load",
-    "overdue-accounts": "the top 10 depends on invoice dates and open balances, which differ for the same reason; shape, ordering and limit must agree"
+  "open_data_gaps": {
+    "upstream": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2669",
+    "status": "open; merge blocked until invoiced totals and GL postings match the 200k emulator and the live contract passes",
+    "BILLED_30_DAYS": "COMPAT.INVOICE_HDR.TOTAL_AMOUNT is landed SUBTOTAL_AMOUNT + TAX_AMOUNT, before P_MONTHLY_INVOICE recalculates invoiced totals from lines",
+    "AR_OPEN_BALANCE": "COMPAT.GL_JOURNAL_LINE account 1200 postings do not match the shared-seed Teradata net",
+    "DSO": "Both the GL AR numerator and billed-minus-credits denominator are affected by the upstream gaps",
+    "overdue-accounts": "Invoice total and open balance gaps affect the top 10. Shape and ordering checks do not establish member or balance parity; revalidate after #2669 is corrected"
   }
 }

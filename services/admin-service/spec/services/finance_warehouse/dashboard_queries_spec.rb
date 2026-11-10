@@ -64,6 +64,29 @@ RSpec.describe FinanceWarehouse::DashboardQueries do
     expect(dated.call[:dso]).to eq('27.0')
   end
 
+  it 'isolates cached dashboards and refreshes for each business date' do
+    cache = ActiveSupport::Cache::MemoryStore.new
+    allow(Rails).to receive(:cache).and_return(cache)
+    live_result = queries.refresh
+    date = Date.new(2026, 11, 9)
+    dated = described_class.new(client: client, as_of: date)
+    earlier = described_class.new(client: client, as_of: date - 1)
+    dated_summary = summary.merge('DSO' => '30.00')
+    allow(client).to receive(:query).with(described_class::SUMMARY_SQL, [date.iso8601]).and_return([dated_summary])
+    allow(client).to receive(:query).with(described_class::OVERDUE_SQL, [date.iso8601]).and_return([])
+    allow(client).to receive(:query).with(described_class::SUMMARY_SQL, [(date - 1).iso8601]).and_return([summary])
+    allow(client).to receive(:query).with(described_class::OVERDUE_SQL, [(date - 1).iso8601]).and_return([])
+
+    dated_result = dated.dashboard
+    expect(dated_result[:dso]).to eq('30.0')
+    expect(earlier.dashboard[:dso]).to eq('27.0')
+    expect(dated.refresh).to eq(dated_result)
+    expect(cache.read(described_class::CACHE_KEY)).to eq(live_result)
+    expect(client).not_to receive(:query)
+    expect(queries.dashboard).to eq(live_result)
+    expect(dated.dashboard).to eq(dated_result)
+  end
+
   it 'issues Snowflake SQL only' do
     [described_class::SUMMARY_SQL, described_class::OVERDUE_SQL].each do |sql|
       expect(sql).not_to match(/\bSEL\b|\bTOP\b|QUALIFY|FORMAT|SFX_BILLING|1200101/)

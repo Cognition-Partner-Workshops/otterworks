@@ -20,16 +20,43 @@ RSpec.describe 'admin-service on live Snowflake' do
     JSON.parse(File.read(File.join(ContractWarehouse::ROOT, 'recorded', 'teradata', "#{query}.json")))
   end
 
-  it 'returns the dashboard summary shape and the collections the emulator returns' do
+  it 'matches the 200k shared-seed emulator summary within tolerance', :aggregate_failures do
     rows = @warehouse.query(FinanceWarehouse::DashboardQueries::SUMMARY_SQL, binds)
+    puts "Live dashboard summary: #{JSON.generate(rows)}"
     expected = parity.dig('must_agree', 'dashboard-summary')
     expect(rows.length).to eq(expected.fetch('row_count'))
     expect(rows.first.keys).to eq(recorded('dashboard-summary').fetch('columns'))
     expected.fetch('values').each do |column, value|
-      expect(BigDecimal(rows.first.fetch(column))).to eq(BigDecimal(value))
+      tolerance = BigDecimal(expected.fetch('tolerances').fetch(column))
+      expect(BigDecimal(rows.first.fetch(column))).to be_within(tolerance).of(BigDecimal(value)),
+        "#{column} differs from the 200k emulator; open #2669 data gap blocks merge"
     end
-    expect(BigDecimal(rows.first.fetch('AR_OPEN_BALANCE'))).to be_positive
-    expect(BigDecimal(rows.first.fetch('DSO'))).to be_positive
+  end
+
+  it 'matches billed and credits inputs from the same 200k seed', :aggregate_failures do
+    rows = @warehouse.query(<<~SQL, binds)
+      WITH #{FinanceWarehouse::DashboardQueries::AS_OF}, invoices AS (
+        SELECT ZEROIFNULL(SUM(CASE
+          WHEN i.INVOICE_DATE > DATEADD(day, -30, params.AS_OF) AND i.INVOICE_DATE <= params.AS_OF
+            AND i.INVOICE_DATE >= DATE '2020-01-01' THEN i.TOTAL_AMOUNT ELSE 0 END)) AS BILLED_30_DAYS,
+          COUNT(*) AS INVOICE_ROWS,
+          COUNT_IF(i.TOTAL_AMOUNT = i.SUBTOTAL_AMOUNT + i.TAX_AMOUNT) AS PRE_INVOICING_ROWS,
+          SUM(i.TOTAL_AMOUNT) AS TOTAL_AMOUNT
+        FROM COMPAT.INVOICE_HDR i CROSS JOIN params
+      ), credits AS (
+        SELECT ZEROIFNULL(SUM(c.AMOUNT)) AS CREDITS_30_DAYS
+        FROM CORE_BILLING.STG_BILLING__CREDIT_NOTE c CROSS JOIN params
+        WHERE c.CREDIT_DT > DATEADD(day, -30, params.AS_OF) AND c.CREDIT_DT <= params.AS_OF
+      )
+      SELECT invoices.*, credits.CREDITS_30_DAYS FROM invoices CROSS JOIN credits
+    SQL
+    puts "Live billing inputs: #{JSON.generate(rows)}"
+    expected = parity.dig('must_agree', 'billing-inputs')
+    expected.fetch('values').each do |column, value|
+      expect(BigDecimal(rows.first.fetch(column)))
+        .to be_within(BigDecimal(expected.fetch('tolerance'))).of(BigDecimal(value)),
+            "#{column} differs from the 200k emulator; open #2669 data gap blocks merge"
+    end
   end
 
   it 'returns the top overdue accounts in the legacy shape and order' do

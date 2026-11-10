@@ -13,7 +13,7 @@ module FinanceWarehouse
         SELECT ZEROIFNULL(SUM(j.DEBIT_AMOUNT - j.CREDIT_AMOUNT)) AS AR_OPEN_BALANCE
         FROM COMPAT.GL_JOURNAL_LINE j
         JOIN COMPAT.GL_ACCOUNT a ON a.GL_ACCOUNT_ID = j.GL_ACCOUNT_ID
-        WHERE a.ACCOUNT_NUMBER = '1200'
+        WHERE UPPER(RTRIM(a.ACCOUNT_NUMBER)) = '1200'
       ), billed AS (
         SELECT ZEROIFNULL(SUM(i.TOTAL_AMOUNT)) AS BILLED_30_DAYS
         FROM COMPAT.INVOICE_HDR i CROSS JOIN params
@@ -71,12 +71,12 @@ module FinanceWarehouse
 
     def dashboard
       check_enabled!
-      Rails.cache.fetch(CACHE_KEY, expires_in: 1.hour) { call }
+      Rails.cache.fetch(cache_key, expires_in: 1.hour) { call }
     end
 
     def refresh
       result = call
-      Rails.cache.write(CACHE_KEY, result, expires_in: 1.hour)
+      Rails.cache.write(cache_key, result, expires_in: 1.hour)
       result
     end
 
@@ -92,6 +92,10 @@ module FinanceWarehouse
     end
 
     private
+
+    def cache_key
+      @as_of ? "#{CACHE_KEY}/#{@as_of.iso8601}" : CACHE_KEY
+    end
 
     def binds
       [@as_of&.iso8601.to_s]
