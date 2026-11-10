@@ -39,7 +39,9 @@ def test_garbage_token_is_rejected(service):
 
 
 def test_token_is_truncated_hmac_sha256(service):
-    expected = hmac.new(b"test-share-secret", f"{DOC_ID}:test-salt".encode(), hashlib.sha256).hexdigest()[:16]
+    expected = hmac.new(
+        b"test-share-secret", f"{DOC_ID}:test-salt".encode(), hashlib.sha256
+    ).hexdigest()[:16]
     assert service.mint_token(DOC_ID) == expected
 
 
