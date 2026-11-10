@@ -12,8 +12,8 @@ def arguments(job):
     if not re.fullmatch(r"[a-z][a-z0-9_]*", job):
         raise ValueError("Invalid job identifier")
     entry = json.loads((ROOT / "jobs/registry" / f"{job}.yaml").read_text())
-    if entry["status"] == "snowflake":
-        raise ValueError("Snowflake jobs cannot be submitted to Spark")
+    if entry["status"] in ("snowflake", "retired"):
+        raise ValueError("Snowflake or retired jobs cannot be submitted to Spark")
     args = ["/opt/spark/bin/spark-submit", "--master", "spark://spark-master:7077",
             "--deploy-mode", "client", "--properties-file", str(ROOT / "template/spark-defaults.conf"),
             "--executor-memory", PROFILES[entry["profile"]]]

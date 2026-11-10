@@ -1,6 +1,8 @@
 import importlib.util
+import json
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -15,12 +17,30 @@ spec.loader.exec_module(submit)
 
 class TemplateTest(unittest.TestCase):
     def test_submission(self):
-        args = submit.arguments("billing_revenue_by_plan")
+        args = submit.arguments("file_object_binary_extract")
         self.assertIn("--properties-file", args)
-        self.assertTrue(args[-1].endswith("billing_revenue_by_plan.py"))
-        args = submit.arguments("docs_share_activity")
-        self.assertEqual(args[args.index("--class") + 1], "sfx.DocsShareActivity")
+        self.assertTrue(args[-1].endswith("file_object_binary_extract.py"))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry = root / "jobs/registry"
+            registry.mkdir(parents=True)
+            (registry / "scala_example.yaml").write_text(json.dumps({
+                "status": "template", "language": "scala", "profile": "small", "class": "sfx.Example",
+            }))
+            with patch.object(submit, "ROOT", root):
+                args = submit.arguments("scala_example")
+        self.assertEqual(args[args.index("--class") + 1], "sfx.Example")
         self.assertFalse(any("password" in arg.lower() for arg in args))
+
+    def test_inactive_submission(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry = root / "jobs/registry"
+            registry.mkdir(parents=True)
+            for status in ("snowflake", "retired"):
+                (registry / "inactive.yaml").write_text(json.dumps({"status": status}))
+                with patch.object(submit, "ROOT", root), self.assertRaises(ValueError):
+                    submit.arguments("inactive")
 
     def test_invalid_submission(self):
         for job in ("", "../unknown", "missing"):

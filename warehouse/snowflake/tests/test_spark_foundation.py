@@ -110,7 +110,7 @@ def test_registry_dispatch(tmp_path, monkeypatch):
     monkeypatch.setattr(run_spark_job.subprocess, "run", execute)
     run_spark_job.run("example")
     assert execute.call_args.kwargs["env"]["SFX_SPARK_JOB"] == "example"
-    for entry in ({"status": "legacy"}, {"status": "snowflake", "command": ""}):
+    for entry in ({"status": "legacy"}, {"status": "retired"}, {"status": "snowflake", "command": ""}):
         path.write_text(json.dumps(entry))
         with pytest.raises(ValueError):
             run_spark_job.run("example")

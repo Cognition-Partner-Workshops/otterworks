@@ -26,6 +26,16 @@ list during a job migration. Airflow workers need the repository mounted at `/op
 Spark client and network access to the master; set `SFX_SPARK_ROOT` if needed.
 Set `SFX_REGISTRY_DIR` to override the registry location. DAG files and the
 factory must be deployed together. Secrets are supplied by the worker environment.
+Tasks run from the repository root derived from the DAG factory location; set
+`SFX_REPO_ROOT` to override it when the repository is mounted elsewhere. Registry
+commands can therefore use repository-relative paths.
+
+`status: retired` keeps a job in the 30-entry registry and historical `jobs.txt`
+inventory but creates no Airflow DAG and is excluded from the Spark batch runner.
+Retired jobs have no cron file, submit script or SparkApplication manifest, and
+need no `command`. Keep their per-job kustomization with `resources: []` so the
+shared top-level list stays unchanged. Preserve the original `target` or set it
+to `retired`; retain the other registration metadata for historical accounting.
 
 ## Rerun-safe output
 

@@ -3,8 +3,10 @@ import json
 from pathlib import Path
 import re
 import shlex
+import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import yaml
 
@@ -34,20 +36,24 @@ class InventoryTest(unittest.TestCase):
             self.assertEqual(obj["metadata"]["labels"], LABEL, path.name)
             if obj["kind"] == "SparkApplication":
                 applications[path.parent.name] = obj
-        self.assertEqual(set(applications), {job for job in jobs if registry[job]["status"] != "snowflake"})
-        crontab = [line for path in (ROOT / "cron.d").iterdir() for line in path.read_text().splitlines()]
+        self.assertEqual(set(applications), {job for job in jobs if registry[job]["status"] in ("legacy", "template")})
+        crontab = [line for path in (ROOT / "cron.d").glob("*") for line in path.read_text().splitlines()]
         for job in jobs:
             with self.subTest(job=job):
                 entry = registry[job]
-                self.assertIn(entry["status"], ("legacy", "template", "snowflake"))
+                self.assertIn(entry["status"], ("legacy", "template", "snowflake", "retired"))
                 self.assertEqual(entry["language"], classified[job]["language"])
-                self.assertEqual(entry["target"], classified[job]["target"])
+                if entry["status"] == "retired":
+                    self.assertIn(entry["target"], (classified[job]["target"], "retired"))
+                else:
+                    self.assertEqual(entry["target"], classified[job]["target"])
                 self.assertIn(entry["profile"], ("small", "large"))
                 path = ROOT / "submit" / f"{job}.sh"
                 if entry["status"] != "legacy":
                     self.assertFalse((ROOT / "cron.d" / job).exists())
-                    if entry["status"] == "snowflake":
-                        self.assertTrue(entry["command"].strip())
+                    if entry["status"] in ("snowflake", "retired"):
+                        if entry["status"] == "snowflake":
+                            self.assertTrue(entry["command"].strip())
                         self.assertFalse(path.exists())
                         self.assertTrue((ROOT / "k8s/jobs" / job / "kustomization.yaml").is_file())
                         self.assertFalse((ROOT / "k8s/jobs" / job / "application.yaml").exists())
@@ -114,6 +120,28 @@ class InventoryTest(unittest.TestCase):
         obj = yaml.safe_load((directory / "kustomization.yaml").read_text())
         self.assertEqual(obj["resources"], [])
         self.assertFalse((directory / "application.yaml").exists())
+
+    def test_retired_inventory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ("jobs/registry", "submit", "cron.d", "k8s"):
+                if (ROOT / name).exists():
+                    shutil.copytree(ROOT / name, root / name)
+                else:
+                    (root / name).mkdir(parents=True)
+            shutil.copy(ROOT / "classification.yaml", root / "classification.yaml")
+            job = "docs_folder_legacy_report"
+            registration = root / "jobs/registry" / f"{job}.yaml"
+            entry = json.loads(registration.read_text())
+            entry.update(status="retired", target="retired")
+            registration.write_text(json.dumps(entry))
+            (root / "submit" / f"{job}.sh").unlink(missing_ok=True)
+            (root / "cron.d" / job).unlink(missing_ok=True)
+            (root / "k8s/jobs" / job / "application.yaml").unlink(missing_ok=True)
+            (root / "k8s/jobs" / job / "kustomization.yaml").write_text("resources: []\n")
+            with patch(__name__ + ".ROOT", root):
+                self.test_job_inventory()
+                self.test_kustomization()
 
     def test_snowflake_kustomization_stub(self):
         with tempfile.TemporaryDirectory() as temporary:

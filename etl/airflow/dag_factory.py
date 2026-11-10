@@ -20,7 +20,7 @@ def build_dags(registry, spark_root):
     for path in sorted(Path(registry).glob("*.yaml")):
         entry = json.loads(path.read_text())
         status = entry["status"]
-        if status == "legacy":
+        if status in ("legacy", "retired"):
             continue
         if status not in ("template", "snowflake"):
             raise ValueError(f"Unknown status: {status}")
@@ -34,7 +34,8 @@ def build_dags(registry, spark_root):
             start_date=datetime(2026, 1, 1, tzinfo=timezone.utc), catchup=False,
             max_active_runs=1, default_args=RETRY_POLICY,
         )
-        BashOperator(task_id="run", bash_command=command, dag=dag, append_env=True,
+        repo_root = Path(os.environ.get("SFX_REPO_ROOT", Path(__file__).resolve().parents[2])).resolve()
+        BashOperator(task_id="run", bash_command=command, dag=dag, append_env=True, cwd=str(repo_root),
                      env={"SFX_RUN_DATE": "{{ ds }}", "SFX_SPARK_JOB": job})
         dags[dag.dag_id] = dag
     return dags

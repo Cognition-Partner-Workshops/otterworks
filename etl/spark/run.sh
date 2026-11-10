@@ -4,7 +4,7 @@ cd "$(dirname "$0")/../.."
 ns=${NS:-sfx-d1110-before}
 limit=${SPARK_JOBS:-30}
 mkdir -p etl/spark/.data/logs
-mapfile -t jobs < <(python3 -c 'import json,pathlib; entries=[json.loads(p.read_text()) for p in sorted(pathlib.Path("etl/spark/jobs/registry").glob("*.yaml"))]; [print(e["job"]) for e in entries if e["status"] != "snowflake"]')
+mapfile -t jobs < <(python3 -c 'import json,pathlib; entries=[json.loads(p.read_text()) for p in sorted(pathlib.Path("etl/spark/jobs/registry").glob("*.yaml"))]; [print(e["job"]) for e in entries if e["status"] not in ("snowflake", "retired")]')
 if [ -n "${JOB:-}" ]; then
     found=0
     for job in "${jobs[@]}"; do

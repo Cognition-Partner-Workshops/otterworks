@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -23,7 +24,7 @@ class DagTest(unittest.TestCase):
 
     def test_factory_routes_and_retries(self):
         with tempfile.TemporaryDirectory() as directory:
-            for job, status in (("old", "legacy"), ("compute", "template"), ("sql", "snowflake")):
+            for job, status in (("old", "legacy"), ("retired", "retired"), ("compute", "template"), ("sql", "snowflake")):
                 (Path(directory) / f"{job}.yaml").write_text(json.dumps({
                     "job": job, "status": status, "schedule": "0 1 * * *", "command": "echo sql",
                 }))
@@ -46,6 +47,26 @@ class DagTest(unittest.TestCase):
 
     def test_empty_registry(self):
         with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(build_dags(directory, "/spark"), {})
+
+    def test_repo_working_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for job, status in (("compute", "template"), ("sql", "snowflake")):
+                (Path(directory) / f"{job}.yaml").write_text(json.dumps({
+                    "job": job, "status": status, "schedule": None, "command": "echo sql",
+                }))
+            with patch.dict(os.environ):
+                os.environ.pop("SFX_REPO_ROOT", None)
+                dags = build_dags(directory, "/spark")
+                for dag in dags.values():
+                    self.assertEqual(dag.get_task("run").cwd, str(ROOT.parents[1]))
+                os.environ["SFX_REPO_ROOT"] = directory
+                for dag in build_dags(directory, "/spark").values():
+                    self.assertEqual(dag.get_task("run").cwd, directory)
+
+    def test_retired_registry_has_no_dags(self):
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / "retired.yaml").write_text(json.dumps({"status": "retired"}))
             self.assertEqual(build_dags(directory, "/spark"), {})
 
     def test_invalid_registration(self):

@@ -74,3 +74,14 @@ class RunnerTest(unittest.TestCase):
         for job in jobs:
             if next(entry for entry in entries if entry["job"] == job)["status"] == "legacy":
                 self.assertTrue((ROOT / "submit" / (job + ".sh")).is_file())
+
+    def test_retired_jobs_are_not_run(self):
+        result = self.run_jobs(["first", "retired"], statuses={"retired": "retired"})
+        self.assertEqual(result.returncode, 0)
+        self.assertRegex(result.stdout, "first +OK")
+        self.assertNotIn("retired", result.stdout)
+        result = self.run_jobs(["retired"], statuses={"retired": "retired"})
+        self.assertEqual(result.returncode, 0)
+        self.assertNotIn("retired", result.stdout)
+        result = self.run_jobs(["retired"], statuses={"retired": "retired"}, JOB="retired")
+        self.assertEqual(result.returncode, 2)
