@@ -54,8 +54,8 @@
   reason: "Applies a Python regular-expression parser to raw search-index log records."
 - job: users_login_useragent_parse
   language: python
-  target: dbt
-  reason: "Extracts the first supported browser/version token with a regular expression; no Python-specific parser is needed."
+  target: snowpark_python
+  reason: "Parses browser families and versions from raw user-agent strings in a Python UDF."
 - job: docs_tag_normalize
   language: python
   target: snowpark_python
