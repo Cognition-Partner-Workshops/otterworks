@@ -54,59 +54,49 @@ app or shared-infrastructure deployment is provided for this fixture.
 
 ## Finance warehouse consumer
 
-Treat this consumer as a separate repository owned by **@otterworks/billing**.
-Its nightly invoice export reads TDPROD / FIN_DW using account
-`svc_billing_export`; scheduling is external to this service.
+Owned by **@otterworks/billing** as a separate repository. The nightly invoice
+export reads TDPROD / SFX_BILLING as svc_billing_export; scheduling is external.
+Fake plaintext DSN: app/warehouse/config.toml (override FINANCE_WAREHOUSE_DSN).
+The default-on FINANCE_WAREHOUSE_ENABLED flag gates exports. Driver import and
+connections are lazy; HTTP startup opens no warehouse connection.
 
 ```sh
-uv sync
-uv run python -m app.export_invoices --date 2026-01-06 --out invoices.csv
-uv run export-invoices --date 2026-01-06 --out invoices.csv
+uv run python -m app.export_invoices --date 2026-11-10 --out invoices.csv
 ```
+The date is the run date; BILL_DT on the previous day is exported. Without it,
+SQL uses CURRENT_DATE - 1. CSV retains invoice_no, customer_name, account_no,
+invoice_date, currency_cd, amount_due, tax_amt and open_balance. Invoice number,
+account name and account number come from INVOICE_HDR.INVOICE_NUMBER and
+CUSTOMER_ACCOUNT.ACCOUNT_NAME/ACCOUNT_NUMBER joined on CUSTOMER_ID.
+INVOICE_HDR supplies BILL_DT, INVOICE_DT, CURRENCY_CD, TOTAL_AMOUNT and TAX_AMOUNT.
+PAYMENT (INVOICE_ID, AMOUNT) is aggregated across all dates and subtracted for
+open balance. This is not a historical snapshot or FX-normalized report.
+SQL keeps SEL, TOP 100001, ZEROIFNULL, integer date arithmetic, 1200101 and
+FORMAT date/amount casts. The account's DBQL inventory also reads headers/payments.
 
-`--date` is the run date: these examples export invoices dated **2026-01-05**.
-Omitting it uses Teradata's current date and exports the prior day.
-The output includes invoice number, customer name, account number, invoice date,
-currency, amount due, tax and open balance, ordered by invoice number/ID.
-Open balance subtracts all payments recorded for each invoice at export time;
-it is not an historical payment snapshot. No FX conversion is performed.
-An empty day writes a header-only CSV. Output replacement is atomic; query or
-write failures leave an existing output intact. The output directory must exist.
-The export fails rather than silently truncating above 100,000 invoices.
-
-The DAL reads FIN_DW.INVOICE (INVOICE_ID, ACCOUNT_ID, INVOICE_NO, INVOICE_DT,
-AMOUNT_DUE, TAX_AMT, CURRENCY_CD), ACCOUNT (ACCOUNT_ID, CUSTOMER_ID, ACCOUNT_NO),
-CUSTOMER (CUSTOMER_ID, CUSTOMER_NAME), and PAYMENT (INVOICE_ID, AMOUNT).
-It uses Teradata date arithmetic, integer-date floor 1200101 (2020-01-01), and
-formatted date/amount output. Monetary values are mapped to exact decimals.
-Fake connection settings are in `app/warehouse/config.toml`.
-Override the DSN with `FINANCE_WAREHOUSE_DSN`.
-
-The export defaults on. `FINANCE_WAREHOUSE_ENABLED=false` disables it and returns
-a nonzero CLI exit code without querying or writing a file. Driver import and
-connection creation are deferred until the export is called; the HTTP app's
-startup does not connect to Teradata.
-
-### Checks
+An empty export writes only the CSV header. Atomic output replacement preserves
+prior files on failure. Above 100000 invoices the export fails rather than truncates.
+The destination directory must exist.
 
 ```sh
 uv run pytest
 uv run ruff check .
-uv run pytest contract
+WAREHOUSE_CONTRACT_TARGET=replay uv run pytest contract
 ```
+Contracts are excluded from ordinary discovery. The default teradata-emulator
+target executes the DAL SQL LIVE through ../../consumers/contract-kit.
+Seed the emulator with ROWS_PER_TABLE=800, BUSINESS_DATE=20261109; install kit
+dependencies and set TD_PG_PORT and CONTRACT_KIT_PYTHON for the live environment.
+The runtime defaults to this repository; TD_EMULATOR_HOME overrides it.
+Parameters are bound client-side as escaped SQL literals before invoking the kit.
 
-Default pytest discovery uses only `tests/`; contract tests are separate.
-The contract executes the DAL with the same SQL and run-date parameters through
-a warehouse adapter. Default `WAREHOUSE_CONTRACT_TARGET=teradata-emulator`
-replays the synthetic recorded-format fixture in
-`contract/recorded/teradata/invoice-export.json` and compares row count, invoice
-keys, and monetary aggregates against `contract/expected/invoice-export.json`.
-Setting TD_EMULATOR_URL selects an explicit stub raising
-"emulator endpoint not configured" until the endpoint protocol is available.
-
-For `WAREHOUSE_CONTRACT_TARGET=snowflake`, the placeholder reads
-SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE and
-SNOWFLAKE_PRIVATE_KEY; missing values skip the contract. With values configured,
-it raises an explicit unsupported-operation error until the adapter is finished.
-Its destination is SFX_D1110_AFTER.COMPAT, with session QUERY_TAG
+```sh
+CONTRACT_RECORD=true uv run pytest contract
+```
+Records exact live JSON under contract/recorded/teradata. Review expected keys,
+counts and sums after changes. Replay requires no warehouse or bridge dependencies
+and runs in CI's contract-replay job. snowflake-semantics uses the shared live bridge.
+The snowflake target remains an explicit placeholder (missing SNOWFLAKE_ACCOUNT,
+USER, ROLE, WAREHOUSE or PRIVATE_KEY skips; configured execution is unsupported).
+Destination metadata: SFX_D1110_AFTER.COMPAT, QUERY_TAG
 `{"run":"sfx-d1110","act":"consumers","consumer":"billing-service"}`.

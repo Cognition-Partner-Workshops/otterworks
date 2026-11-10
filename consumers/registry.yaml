@@ -40,10 +40,12 @@ consumers:
     teradata_service_account: svc_billing_export
     cadence: "nightly invoice export CLI"
     entrypoint: "python -m app.export_invoices --date YYYY-MM-DD --out invoices.csv"
-    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    tables: ["SFX_BILLING.CUSTOMER_ACCOUNT","SFX_BILLING.INVOICE_HDR","SFX_BILLING.PAYMENT"]
     teradata_constructs: ["SEL","TOP 100001","ZEROIFNULL","CURRENT_DATE - 1","1YYMMDD","FORMAT"]
     unit_test: "cd services/billing-service && pytest"
     contract_test: "cd services/billing-service && pytest contract"
+    contract_replay_test: "cd services/billing-service && WAREHOUSE_CONTRACT_TARGET=replay pytest contract"
+    contract_targets: ["teradata-emulator","replay","snowflake-semantics","snowflake"]
     workflow: .github/workflows/consumer-billing-service.yml
     snowflake:
       database: SFX_D1110_AFTER

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, Protocol
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT.parents[2] / "consumers" / "contract-kit"))
+from contract_client import execute as execute_contract  # noqa: E402
 
 
 class ContractWarehouse(Protocol):
@@ -14,21 +16,11 @@ class ContractWarehouse(Protocol):
 
 class EmulatorWarehouse:
     def execute(self, sql: str, parameters: list[str | None]) -> dict[str, Any]:
-        if endpoint := os.getenv("TD_EMULATOR_URL"):
-            return self._execute_endpoint(endpoint, sql, parameters)
         from app.warehouse.teradata import SQL
 
         if sql != SQL:
             raise ValueError("unknown invoice contract query")
-        return json.loads((ROOT / "recorded/teradata/invoice-export.json").read_text())
-
-    def _execute_endpoint(
-        self,
-        endpoint: str,
-        sql: str,
-        parameters: list[str | None],
-    ) -> dict[str, Any]:
-        raise NotImplementedError("emulator endpoint not configured")
+        return execute_contract(sql, ROOT, "invoice-export", parameters)
 
 
 class SnowflakeWarehouse:

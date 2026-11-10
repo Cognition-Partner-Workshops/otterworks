@@ -18,7 +18,7 @@ from app.warehouse.teradata import TeradataInvoiceWarehouse
 
 def test_invoice_export_contract():
     target = os.getenv("WAREHOUSE_CONTRACT_TARGET", "teradata-emulator")
-    if target == "teradata-emulator":
+    if target in {"teradata-emulator", "replay", "snowflake-semantics"}:
         adapter = EmulatorWarehouse()
     elif target == "snowflake":
         required = ("ACCOUNT", "USER", "ROLE", "WAREHOUSE", "PRIVATE_KEY")
@@ -29,9 +29,9 @@ def test_invoice_export_contract():
         pytest.fail(f"unknown WAREHOUSE_CONTRACT_TARGET: {target}")
     connection = ContractConnection(adapter)
     warehouse = TeradataInvoiceWarehouse(connect=lambda **kwargs: connection)
-    rows = warehouse.invoices_for_run(date(2026, 1, 6))
+    rows = warehouse.invoices_for_run(date(2026, 11, 10))
     expected = json.loads((ROOT / "expected/invoice-export.json").read_text())
-    assert connection.parameters == ["2026-01-06"]
+    assert connection.parameters == ["2026-11-10"]
     assert connection.result["query"] == expected["query"]
     assert len(rows) == expected["row_count"]
     assert [row.invoice_no for row in rows] == expected["keys"]
