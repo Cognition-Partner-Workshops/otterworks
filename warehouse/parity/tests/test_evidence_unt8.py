@@ -65,6 +65,8 @@ def test_last_successful_update_wins_and_unmentioned_rows_survive():
     assert u.expected(actual, rows) == actual
     assert u.writer_rejects(initial, rows) == ['1,D,1,D,9223372036854775808,D,3,D,ADMIN,D,2026-11-09']
     assert u.writer_rejects([], [row(key=None)])[0].startswith('0,D,')
+    assert u.writer_rejects([], [row(team='9223372036854775808')])[0].startswith('1,D,')
+    assert u.seed('seeded')[1][3] == 'SURVIVES    '
 
 
 def test_fixture_valid_keys_unique_and_update_survival():
@@ -126,6 +128,20 @@ def test_macro_has_atomic_duplicate_guard_and_no_delete():
         analysis = macro('SOURCE_TABLE', rejects=True, raw_input=raw)
         assert 'transformation_drop' in analysis and 'writer_reject' in analysis
         assert 'CLASSIFICATION_COUNT' in analysis
+        import sqlglot
+        assert sqlglot.parse_one(sql, read='snowflake')
+        assert sqlglot.parse_one(analysis, read='snowflake')
+
+
+def test_write_scope_fails_closed():
+    def record(sql, status='SUCCESS'):
+        return ['qid', sql, 'MERGE', '{"mapping":"m_SFX_TEAM_MEMBER"}', None, None, status, None, None]
+    good = record('MERGE INTO "SFX_D1110_AFTER"."PC_CONTENT"."TEAM_MEMBER" USING t ON true')
+    bad = record('UPDATE SFX_D1110_AFTER.PC_CONTENT.ROLE_GRANT SET ROLE_CD=1')
+    failed = record('UNKNOWN SQL', 'FAILED_WITH_ERROR')
+    assert u.write_scope([good, failed])['passed']
+    assert not u.write_scope([good, bad])['passed']
+    assert not u.write_scope([record('EXECUTE TASK other_task')])['passed']
 
 
 def test_dirty_tree_refused_before_evidence_creation(monkeypatch, tmp_path):

@@ -78,7 +78,7 @@ def seed(subject):
     if subject == 'production':
         return []
     return [[int(v) if i < 3 and v is not None else date.fromisoformat(v)
-             if i == 4 and v is not None else v for i, v in enumerate(r)]
+             if i == 4 and v is not None else v.ljust(12) if i == 3 and v is not None else v for i, v in enumerate(r)]
             for r in read_psv(FIXTURES / (subject + '_target.psv'))]
 
 
@@ -114,7 +114,9 @@ def writer_rejects(initial, rows):
         record = route(raw)
         values = record['values']
         if record['classification'] == 'writer_reject':
-            row_type = 1 if values[0] in keys else 0
+            update_error = any(v is not None and not -(2**63) <= v < 2**63 for v in values[1:3])
+            update_error |= values[3] is not None and '\x00' in values[3]
+            row_type = 1 if update_error or values[0] in keys else 0
             records.append(','.join([str(row_type)] + ['D,' + ('' if v is None else str(v)) for v in values]))
         elif record['classification'] == 'accepted':
             keys.add(values[0])

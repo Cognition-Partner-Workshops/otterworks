@@ -26,6 +26,10 @@ calendar validation. Transformation errors drop rows, not `.bad` records.
 Writer rejects are NULL keys, any of the three integers outside signed bigint,
 and PostgreSQL's unsupported NUL character in the final ROLE_CD. Rejected
 updates leave existing values unchanged. The target's other columns are nullable.
+Non-key overflow/NUL binding can reject the UPDATE statement even for an absent
+key (UPDATE `.bad` row type 1); null/out-of-range keys with valid non-key fields
+reach failed fallback INSERT (row type 0). Raw reject comparison preserves that
+distinction. Initial CHAR(12) seeds are padded exactly as PostgreSQL stores them.
 
 The session treats rows as Update, enables Update else Insert, and explicitly
 disables truncation. There is no delete path. Stop on errors=0 means expression
