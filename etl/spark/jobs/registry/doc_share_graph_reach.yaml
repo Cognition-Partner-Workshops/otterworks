@@ -3,7 +3,7 @@
   "language": "python",
   "target": "dbt",
   "status": "snowflake",
-  "command": "if [ ! -f warehouse/snowflake/run_dbt.py ]; then cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" || exit 1; fi; warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job doc_share_graph_reach --select path:models/spark/doc_share_graph_reach",
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job doc_share_graph_reach --select path:models/spark/doc_share_graph_reach",
   "schedule": "23 3 * * *",
   "profile": "small"
 }
