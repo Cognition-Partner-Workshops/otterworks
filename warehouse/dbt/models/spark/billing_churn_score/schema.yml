@@ -1,0 +1,9 @@
+version: 2
+models:
+  - name: billing_churn_score
+    description: "sfx-d1110: Full refresh of SFX_D1110_AFTER.MART_SPARK.BILLING_CHURN_SCORE, replacing lake/billing/billing_churn_score. Preserves subscription columns and the logistic churn formula."
+    columns:
+      - name: SUBSCRIPTION_ID
+        tests: [not_null, unique]
+      - name: CHURN_SCORE
+        tests: [not_null]
