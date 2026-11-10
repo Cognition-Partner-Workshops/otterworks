@@ -11,6 +11,50 @@ env:
   ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/workshop
 
 jobs:
+  sfx-teradata:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: teradata
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d teradata" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      TD_PG_HOST: localhost
+      TD_PG_PORT: '5432'
+      TD_PG_DB: teradata
+      TD_PG_USER: postgres
+      PYTHONPATH: warehouse/teradata
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        id: changes
+        with:
+          filters: |
+            warehouse:
+              - 'warehouse/**'
+              - 'Makefile'
+              - 'demos/app/complexity/sfx-teradata.json'
+              - '.github/workflows/ci.yml'
+      - if: steps.changes.outputs.warehouse == 'true'
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.12'
+      - if: steps.changes.outputs.warehouse == 'true'
+        run: python -m pip install -r warehouse/requirements.txt
+      - if: steps.changes.outputs.warehouse == 'true'
+        run: python -m pytest -q warehouse
+      - if: steps.changes.outputs.warehouse == 'true'
+        name: Warehouse smoke
+        run: |
+          python warehouse/seed/generate.py --rows 2000 --seed 1110 --business-date 20261109
+          python -m bteq.setup
+          python -m bteq.load --landing warehouse/landing --business-date 20261109
+          python warehouse/teradata/jobs/daily_chain --reuse-landing --business-date 20261109
+
   # The document-service chart renders generated copies of the incident alert
   # rules and dashboard; they must match observability/.
   incident-chart-sync:

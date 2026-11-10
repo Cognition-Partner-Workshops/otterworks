@@ -1,6 +1,47 @@
 .PHONY: help infra-up infra-down up down build test test-coverage test-api-flows test-api-flows-collect lint deploy-dev teardown-dev seed wait-for-db security-scan test-report build-report testdata-validate testdata-clean testdata-setup-schema batch-usage-rollup batch-usage-rollup-seed dev-backend dev-web dev-admin dev-android dev-electron workbench-up workbench-down dast-list dast-scan dast-verify dast-baseline dast-zap procs-validate procs-up procs-down procs-record procs-list procs-parity procs-rules-gate insurance-up insurance-down insurance-test deps-inventory deps-gate deps-command deps-transcript deps-transcript-baseline deps-tests deps-record dast-coverage dast-routes dast-test eq-list eq-gate eq-baseline eq-verify eq-exploit eq-exploit-refactored eq-tests eq-record demo-up demo-migrate demo-destroy demo-verify-clean demo-reaper incident-up incident-down incident-arm incident-disarm incident-status incident-verify incident-load incident-seed incident-simulate incident-fingerprint incident-record incident-reset-fixture incident-chart-sync incident-chart-check arm disarm lp-up lp-replay lp-status lp-reset lp-down lp-verify-clean lp-ec2-up lp-ec2-status lp-ec2-replay lp-ec2-down lp-ec2-verify-clean lp-deploy lp-break lp-heal lp-page-status
 
 SHELL := /bin/bash
+.DEFAULT_GOAL := help
+
+.PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-snowconvert sfx-teradata-validate
+
+ROWS_PER_TABLE ?= 200000
+BUSINESS_DATE ?= 20261109
+SFX_TD_PYTHON ?= python3
+SCAI ?= scai
+TD_PG_PORT ?= $(shell NS="$(NS)" $(SFX_TD_PYTHON) -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')
+SFX_TD_ENV = NS="$(NS)" TD_PG_PORT="$(TD_PG_PORT)" PYTHONPATH="$(abspath warehouse/teradata)"
+SFX_TD_PY = warehouse/.venv/bin/python
+
+sfx-teradata-validate:
+	@test -n "$(NS)" || (echo "NS is required, e.g. NS=sfx-d1110-before" >&2; exit 2)
+	@[[ "$(NS)" =~ ^[a-z0-9][a-z0-9-]*$$ ]] || (echo "NS must contain lowercase letters, digits or hyphens" >&2; exit 2)
+
+warehouse/.venv/.requirements: warehouse/requirements.txt
+	$(SFX_TD_PYTHON) -m venv warehouse/.venv
+	$(SFX_TD_PY) -m pip install -r warehouse/requirements.txt
+	@touch $@
+
+sfx-teradata-up: sfx-teradata-validate warehouse/.venv/.requirements ## Start and load the Teradata warehouse (NS required; ROWS_PER_TABLE=200000)
+	docker pull mirror.gcr.io/library/postgres:16
+	docker tag mirror.gcr.io/library/postgres:16 postgres:16
+	$(SFX_TD_ENV) warehouse/teradata/bin/compose up -d --wait --pull never
+	$(SFX_TD_ENV) $(SFX_TD_PY) -m bteq.setup
+	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/seed/generate.py --rows "$(ROWS_PER_TABLE)" --seed 1110 --business-date "$(BUSINESS_DATE)"
+	$(SFX_TD_ENV) $(SFX_TD_PY) -m bteq.load --landing warehouse/landing --business-date "$(BUSINESS_DATE)"
+	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/teradata/jobs/daily_chain --reuse-landing --business-date "$(BUSINESS_DATE)"
+
+sfx-teradata-run: sfx-teradata-validate warehouse/.venv/.requirements ## Rerun the warehouse chain using existing landing files (NS required)
+	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/teradata/jobs/daily_chain --reuse-landing --business-date "$(BUSINESS_DATE)"
+
+sfx-teradata-test: sfx-teradata-validate warehouse/.venv/.requirements ## Test the warehouse against its PostgreSQL instance (NS required)
+	$(SFX_TD_ENV) $(SFX_TD_PY) -m pytest -q warehouse
+
+sfx-teradata-down: sfx-teradata-validate ## Stop the warehouse and remove its volume (NS required)
+	$(SFX_TD_ENV) warehouse/teradata/bin/compose down -v
+
+sfx-teradata-snowconvert: sfx-teradata-validate warehouse/.venv/.requirements ## Run offline SnowConvert into ignored output (NS required; SCAI executable optional)
+	$(SFX_TD_PY) warehouse/teradata/jobs/snowconvert.py --scai "$(SCAI)" --namespace "$(NS)"
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
