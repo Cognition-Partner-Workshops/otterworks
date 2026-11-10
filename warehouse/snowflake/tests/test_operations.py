@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -194,12 +195,15 @@ def test_complexity_security_review_resolved():
 
 
 def test_make_uses_separate_snowflake_and_teradata_environments():
+    env = os.environ.copy()
+    for key in ('MAKEFLAGS', 'MFLAGS', 'MAKEOVERRIDES', 'SFX_TEST_PYTHON', 'SFX_VENV'):
+        env.pop(key, None)
     for target, own, other in (
         ('sfx-snowflake-test', 'warehouse/snowflake/.venv', 'warehouse/.venv'),
         ('sfx-teradata-test', 'warehouse/.venv', 'warehouse/snowflake/.venv'),
     ):
         result = subprocess.run(['make', '-Bn', target, 'NS=sfx-d1110-before'],
-                                cwd=ROOT.parents[1], capture_output=True, text=True, check=True)
+                                cwd=ROOT.parents[1], env=env, capture_output=True, text=True, check=True)
         assert f'-m venv {own}' in result.stdout
         assert f'{own}/bin/python -m pytest' in result.stdout
         assert other not in result.stdout
