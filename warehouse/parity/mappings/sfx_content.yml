@@ -49,3 +49,13 @@ m_SFX_LOGIN_EVENT:
   session: s_m_SFX_LOGIN_EVENT
   workflow: wf_SFX_CONTENT_DAILY
   patterns: [Source Qualifier, Expression, Router, Update else Insert]
+
+# UNT-7 appends ROLE_GRANT; all prior entries are preserved.
+m_SFX_ROLE_GRANT:
+  key_columns: [GRANT_ID]
+  dbt_model: pc_content__role_grant
+  after_table: PC_CONTENT.ROLE_GRANT
+  before_table: PC_BEFORE.ROLE_GRANT
+  session: s_m_SFX_ROLE_GRANT
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Truncate and load]

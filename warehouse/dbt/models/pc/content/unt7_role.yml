@@ -1,0 +1,29 @@
+version: 2
+sources:
+  - name: unt7_pc_src
+    database: SFX_D1110_AFTER
+    schema: PC_SRC
+    tables:
+      - name: ROLE_GRANT
+  - name: unt7_fixture
+    database: SFX_D1110_AFTER
+    schema: PC_FX_UNT7_ROLE_GRANT
+    tables:
+      - name: SEEDED_SOURCE
+      - name: DUP_KEY_SOURCE
+models:
+  - name: pc_content__role_grant
+    description: Truncate-and-load role grants; unordered duplicate candidate keys fail closed.
+    columns:
+      - name: GRANT_ID
+        tests: [not_null, unique]
+  - name: pc_content__unt7_fixture_seeded
+    description: Raw string conversion and truncate-and-load fixture.
+    columns:
+      - name: GRANT_ID
+        tests: [not_null, unique]
+  - name: pc_content__unt7_fixture_dup_key
+    description: NOT PARITY; duplicate candidate keys must fail atomically.
+    columns:
+      - name: GRANT_ID
+        tests: [not_null, unique]
