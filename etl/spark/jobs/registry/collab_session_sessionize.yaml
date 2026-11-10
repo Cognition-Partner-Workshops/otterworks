@@ -5,5 +5,5 @@
   "status": "snowflake",
   "schedule": "24 3 * * *",
   "profile": "small",
-  "command": "cd \"${SFX_REPO_ROOT:-.}\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job collab_session_sessionize --select path:models/spark/collab_session_sessionize"
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job collab_session_sessionize --select path:models/spark/collab_session_sessionize"
 }
