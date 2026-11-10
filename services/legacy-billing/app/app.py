@@ -1,4 +1,5 @@
 import os
+import secrets
 import uuid
 from datetime import date
 from decimal import Decimal
@@ -6,8 +7,13 @@ from decimal import Decimal
 import psycopg
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from finance_warehouse import COLUMNS, ReceivablesWarehouse, SnowflakeReceivablesWarehouse
+from flask_wtf.csrf import CSRFProtect
 
 app = Flask(__name__)
+# Signs CSRF tokens. Set LEGACY_BILLING_SECRET_KEY when running more than one worker;
+# the per-process fallback only suits a single worker.
+app.config["SECRET_KEY"] = os.getenv("LEGACY_BILLING_SECRET_KEY") or secrets.token_hex(32)
+csrf = CSRFProtect(app)
 app.config["FINANCE_WAREHOUSE_ENABLED"] = (
     os.getenv("FINANCE_WAREHOUSE_ENABLED", "true").lower() not in {"false", "0", "no", "off"}
 )
