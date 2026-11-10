@@ -1,9 +1,8 @@
 {
   "job": "docs_folder_legacy_report",
   "language": "python",
-  "target": "dbt",
-  "status": "snowflake",
-  "command": "if [ -z \"${SFX_SPARK_ROOT:-}\" ] && [ -f warehouse/snowflake/run_dbt.py ]; then export SFX_SPARK_ROOT=\"$PWD/etl/spark\"; fi; cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_folder_legacy_report --select path:models/spark/docs_folder_legacy_report",
+  "target": "retired",
+  "status": "retired",
   "schedule": null,
   "profile": "small"
 }
