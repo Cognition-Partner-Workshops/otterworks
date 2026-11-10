@@ -6,6 +6,10 @@ SHELL := /bin/bash
 
 .PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-snowconvert sfx-teradata-validate
 
+.PHONY: sfx-exit-reads sfx-exit-board sfx-exit-decommission
+sfx-exit-reads sfx-exit-board sfx-exit-decommission: warehouse/.venv/.requirements
+	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/exit/$(patsubst sfx-exit-%,%,$@).py $(ARGS)
+
 ROWS_PER_TABLE ?= 200000
 BUSINESS_DATE ?= 20261109
 SFX_TD_PYTHON ?= python3

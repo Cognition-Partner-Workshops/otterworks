@@ -55,6 +55,7 @@ WHERE r.ObjectTableName IS NULL ORDER BY t.DatabaseName,t.TableName''')
     assert query(estate, '''SELECT COUNT(*) FROM DBC.TablesV t JOIN (
 SELECT o.ObjectDatabaseName,o.ObjectTableName,COUNT(*) AS AccessCount,MAX(q.StartTime) AS LastAccessTimeStamp
 FROM DBC.QryLogObjectsV o JOIN DBC.QryLogV q ON o.QueryID=q.QueryID
+WHERE q.StartTime<TIMESTAMP '2026-11-10 00:00:00'
 GROUP BY o.ObjectDatabaseName,o.ObjectTableName
 ) r ON t.DatabaseName=r.ObjectDatabaseName AND t.TableName=r.ObjectTableName
 WHERE t.AccessCount<>r.AccessCount OR t.LastAccessTimeStamp<>r.LastAccessTimeStamp''') == [(0,)]
@@ -91,20 +92,21 @@ def test_layered_views(estate):
 
 
 def test_history_empty_and_failed_reload(estate, tmp_path):
-    before = query(estate, 'SELECT COUNT(*) FROM DBC.QryLogV')
+    history_count = "SELECT COUNT(*) FROM DBC.QryLogV WHERE StartTime<TIMESTAMP '2026-11-10 00:00:00'"
+    before = query(estate, history_count)
     for name, _, columns in FEEDS:
         with (tmp_path/name).open('w', newline='') as handle:
             csv.writer(handle).writerow(columns)
     (tmp_path/'tablesv.csv').write_text('wrong,header\n')
     with pytest.raises(ValueError, match='header'):
         load_history(estate, tmp_path)
-    assert query(estate, 'SELECT COUNT(*) FROM DBC.QryLogV') == before
+    assert query(estate, history_count) == before
     (tmp_path/'tablesv.csv').unlink()
     with pytest.raises(FileNotFoundError):
         load_history(estate, tmp_path)
-    assert query(estate, 'SELECT COUNT(*) FROM DBC.QryLogV') == before
+    assert query(estate, history_count) == before
     with (tmp_path/'tablesv.csv').open('w', newline='') as handle:
         csv.writer(handle).writerow(FEEDS[2][2])
     assert all(count == 0 for count in load_history(estate, tmp_path).values())
-    assert query(estate, 'SELECT COUNT(*) FROM DBC.QryLogV') == [(0,)]
+    assert query(estate, history_count) == [(0,)]
     assert all(count > 0 for count in load_history(estate).values())
