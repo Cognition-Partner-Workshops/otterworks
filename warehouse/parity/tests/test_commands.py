@@ -46,7 +46,8 @@ def test_sql_scope_and_owner(monkeypatch):
     assert target_relation('PAYMENT') == 'SFX_BILLING.PAYMENT'
     assert target_relation('DOCUMENT') == 'SFX_DOCUMENTS.DOCUMENT'
     monkeypatch.setenv('PC_CONTROL_SCHEMA', 'PC_CONTROL')
-    assert control_table() == 'SFX_D1110_AFTER.PC_CONTROL.MIGRATION_CONTROL'
+    monkeypatch.setenv('PC_CONTROL_TABLE', 'CUSTOM_MAPPINGS')
+    assert control_table() == 'SFX_D1110_AFTER.PC_CONTROL.CUSTOM_MAPPINGS'
     assert 't.OWNER_EFFORT=s.OWNER_EFFORT' in mark_sql()
     assert 'WHEN NOT MATCHED' not in mark_sql()
     assert relation('PC_BILLING.PAYMENT') == 'SFX_D1110_AFTER.PC_BILLING.PAYMENT'
@@ -54,3 +55,27 @@ def test_sql_scope_and_owner(monkeypatch):
         relation('OTHER.PC_BILLING.PAYMENT')
     with pytest.raises(ValueError):
         identifier('bad; DROP TABLE x')
+
+
+def test_mark_rejects_other_owner_before_reading_evidence(monkeypatch):
+    from types import SimpleNamespace
+    from parity import commands
+    statements = []
+
+    class Cursor:
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+        def cursor(self):
+            return self
+        def execute(self, sql, params):
+            statements.append(sql)
+        def fetchall(self):
+            return [('migrations-page',)]
+
+    monkeypatch.setattr(commands, 'connection', lambda *args: Cursor())
+    with pytest.raises(ValueError, match='ownership mismatch'):
+        commands.mark({'mapping': 'm_SFX_LOGIN_EVENT'}, SimpleNamespace(owner='act3-workflow'))
+    assert len(statements) == 1
+    assert statements[0].startswith('SELECT OWNER_EFFORT')

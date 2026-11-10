@@ -62,6 +62,8 @@ sfx-snowflake-load: warehouse/.venv/.sfx-installed ## Load Snowflake landing fil
 	warehouse/.venv/bin/python warehouse/snowflake/load.py --area all
 
 .PHONY: sfx-pc-setup sfx-pc-before sfx-pc-dbt sfx-pc-parity sfx-pc-idempotence sfx-pc-mark sfx-pc-licence sfx-pc-dag sfx-pc-test
+export PC_CONTROL_SCHEMA ?= MIGRATION_CONTROL
+export PC_CONTROL_TABLE ?= MAPPINGS
 sfx-pc-setup: warehouse/.venv/.sfx-installed ## Seed additive migration inventory and source snapshot
 	cd warehouse && .venv/bin/python -m parity setup $(if $(filter 1,$(SKIP_CONTROL)),--skip-control)
 

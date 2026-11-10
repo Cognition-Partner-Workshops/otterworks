@@ -18,15 +18,19 @@ Default before relations are PC_BEFORE.<target>; default after relations are
 PC_<area>.<target>. STG targets have no primary key in XML or bootstrap, so their
 default key list is empty: workers must explicitly choose an appropriate key.
 
-MIGRATION_CONTROL is seeded with a guarded MERGE: existing rows are never
+SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS is seeded with a guarded MERGE: existing rows are never
 changed except to fill NULL OWNER_EFFORT. Ownership assignments live in
 harness.py (owner_effort / ACT3_CONTENT); 12 belong to act3-workflow and eight
 to migrations-page. require_owner is the reusable write-path ownership guard.
 The counter counts AMBER as still requiring PowerCenter and reports per owner.
 
-`PC_CONTROL_SCHEMA` (or `--control-schema`) selects the control schema, default
-PUBLIC. Setup loads PC_SRC first, then seeds control. Use `setup --skip-control`
-while waiting for control-schema access.
+`PC_CONTROL_SCHEMA` (or `--control-schema`) selects the existing control schema,
+default MIGRATION_CONTROL. `PC_CONTROL_TABLE` (or `--control-table`) selects the
+table, default MAPPINGS. These defaults also apply through Make. Setup never
+creates, alters or comments the control schema or touches other objects in it;
+it only creates the table if absent and adds OWNER_EFFORT if absent before
+seeding. Setup loads PC_SRC first, then seeds control. Use `setup --skip-control`
+to load sources without control-table access.
 
 From warehouse/, use `python -m parity before|parity|idempotence|mark --mapping
 m_SFX_PAYMENT`. `before` requires `make sfx-informatica-up`; it creates a fresh

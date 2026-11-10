@@ -12,10 +12,13 @@ from .inventory import BOOTSTRAP, ESTATE, inventory, landing_sources, table_defi
 DATABASE = "SFX_D1110_AFTER"
 COMMENT = "run_token=sfx-d1110 expires=2026-11-24"
 def control_table():
-    schema = os.environ.get('PC_CONTROL_SCHEMA', 'PUBLIC').upper()
+    schema = os.environ.get('PC_CONTROL_SCHEMA', 'MIGRATION_CONTROL').upper()
+    table = os.environ.get('PC_CONTROL_TABLE', 'MAPPINGS').upper()
     if not re.fullmatch(r'[A-Z][A-Z0-9_]*', schema):
         raise ValueError('Invalid PC_CONTROL_SCHEMA')
-    return f'{DATABASE}.{schema}.MIGRATION_CONTROL'
+    if not re.fullmatch(r'[A-Z][A-Z0-9_]*', table):
+        raise ValueError('Invalid PC_CONTROL_TABLE')
+    return f'{DATABASE}.{schema}.{table}'
 DESCRIPTIVE = ["folder", "mapping", "workflow", "session_name", "source_objects",
                "target_table", "dbt_model", "patterns", "owner_effort"]
 ACT3_CONTENT = {'m_SFX_APP_USER', 'm_SFX_STG_APP_USER', 'm_SFX_DOCUMENT',
@@ -119,8 +122,6 @@ def setup(landing=None, skip_control=False):
             print('Control setup skipped; PC_SRC load complete')
             return
         try:
-            schema = control_table().rsplit('.', 1)[0]
-            cur.execute(f"CREATE SCHEMA IF NOT EXISTS {schema} COMMENT = '{COMMENT}'")
             cur.execute(control_ddl())
             cur.execute(f'ALTER TABLE {control_table()} ADD COLUMN IF NOT EXISTS OWNER_EFFORT VARCHAR')
             for row in rows:

@@ -9,6 +9,7 @@ parser.add_argument("command", choices=["setup", "licence", "before", "parity", 
 parser.add_argument("--landing-dir", type=Path)
 parser.add_argument('--skip-control', action='store_true')
 parser.add_argument('--control-schema')
+parser.add_argument('--control-table')
 parser.add_argument('--mapping')
 parser.add_argument('--folder')
 parser.add_argument('--sample', type=int, default=10)
@@ -18,6 +19,8 @@ parser.add_argument('--pr-url')
 args = parser.parse_args()
 if args.control_schema:
     os.environ['PC_CONTROL_SCHEMA'] = args.control_schema
+if args.control_table:
+    os.environ['PC_CONTROL_TABLE'] = args.control_table
 if args.command == "setup":
     setup(args.landing_dir, args.skip_control)
 elif args.command == 'licence':

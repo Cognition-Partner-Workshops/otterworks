@@ -212,12 +212,12 @@ def mark_sql():
 
 
 def mark(row, args):
-    result = json.loads((OUT / (row['mapping'] + '.json')).read_text())
-    if result.get('config') != row:
-        raise ValueError('Mapping configuration changed; regenerate evidence')
-    decision = status(result, args.amber)
     with connection('ops', 'mark', row['mapping']) as conn, conn.cursor() as cur:
         require_owner(cur, row['mapping'], args.owner)
+        result = json.loads((OUT / (row['mapping'] + '.json')).read_text())
+        if result.get('config') != row:
+            raise ValueError('Mapping configuration changed; regenerate evidence')
+        decision = status(result, args.amber)
         cur.execute(mark_sql(), (row['mapping'], args.owner, result.get('before_rows'),
                     result.get('after_rows'), result.get('rowcount_match'), result.get('keyed_hash_match'),
                     json.dumps(result.get('sampled_diffs', [])), result.get('run1_rows'),

@@ -10,6 +10,47 @@ from sfx_conn import query_tag
 from parity.harness import owner_effort, require_owner
 
 
+def test_control_location(monkeypatch):
+    from parity.harness import control_table
+    monkeypatch.delenv('PC_CONTROL_SCHEMA', raising=False)
+    monkeypatch.delenv('PC_CONTROL_TABLE', raising=False)
+    assert control_table() == 'SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS'
+    for setting in ('PC_CONTROL_SCHEMA', 'PC_CONTROL_TABLE'):
+        for value in ('', 'bad; DROP TABLE x'):
+            with monkeypatch.context() as patch:
+                patch.setenv(setting, value)
+                with pytest.raises(ValueError, match=setting):
+                    control_table()
+
+
+def test_setup_control_ddl(monkeypatch):
+    from parity import harness
+    statements = []
+
+    class Cursor:
+        def __enter__(self):
+            return self
+        def __exit__(self, *args):
+            pass
+        def cursor(self):
+            return self
+        def execute(self, sql, params=None):
+            statements.append(sql)
+        def fetchone(self):
+            return (0,)
+
+    monkeypatch.setenv('PC_CONTROL_SCHEMA', 'MIGRATION_CONTROL')
+    monkeypatch.setenv('PC_CONTROL_TABLE', 'MAPPINGS')
+    monkeypatch.setattr(harness, 'connection', lambda *args: Cursor())
+    harness.setup()
+    control = [sql for sql in statements if 'SFX_D1110_AFTER.MIGRATION_CONTROL' in sql]
+    assert len(control) == 22
+    assert control[0] == harness.control_ddl()
+    assert control[1] == ('ALTER TABLE SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS '
+                          'ADD COLUMN IF NOT EXISTS OWNER_EFFORT VARCHAR')
+    assert all(sql == harness.merge_sql() for sql in control[2:])
+
+
 def test_inventory():
     rows = inventory()
     assert len(rows) == 20
