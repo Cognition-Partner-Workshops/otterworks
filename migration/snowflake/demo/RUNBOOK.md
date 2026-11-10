@@ -9,7 +9,7 @@ Do this the day before, on a machine with Docker and the Snowflake secrets.
 1. Check out `demo-snowflake-migration` and create a virtualenv from `target/*/requirements.txt` and `gate/requirements.txt`. Pass it to every target as `PY=<venv>/bin/python` and put its `bin` first on `PATH`, so dbt picks up the Snowflake adapter.
 2. Export `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_HOST`, `SNOWFLAKE_USER`, `SNOWFLAKE_PAT` and `SNOWFLAKE_PRIVATE_KEY`, plus `UBW_SQL_HOST`, `UBW_SQL_PORT`, `UBW_SQL_USER` and `UBW_SQL_PASSWORD` from the defaults in `migration/snowflake/Makefile`.
 3. Run `make sfm-up`. The first pull of the SQL Server image took about 3 minutes on the build machine.
-4. Pick a token such as `sfm-20261118-demo` and run `make sfm-demo-reset RUN=<token>`. The last line should read `Parity PASS=7 DIVERGE=0 PENDING=18`.
+4. Pick a token such as `sfm-20261118-demo` and run `make sfm-demo-reset RUN=<token>`. It took about 3.5 minutes on the build machine, and the last line should read `Parity PASS=7 DIVERGE=0 PENDING=18`. The teardown error at the start is expected when the token is new.
 5. Set `UBW_VIEWER_PASSWORD` before the reset if you want to show Snowsight as the read-only `<PREFIX>_VIEWER` user.
 
 ## Run
