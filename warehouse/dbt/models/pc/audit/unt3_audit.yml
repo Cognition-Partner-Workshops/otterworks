@@ -1,0 +1,41 @@
+version: 2
+sources:
+  - name: unt3_pc_src
+    database: SFX_D1110_AFTER
+    schema: PC_SRC
+    tables:
+      - name: AUDIT_EVENT
+        description: Frozen typed landing; shared loader encodes empty fields as NULL, not an empty string.
+models:
+  - name: pc_audit__stg_audit_event
+    description: >-
+      Runner-exact staging of the frozen audit feed. Session truncate YES and Insert
+      (wf_SFX_AUDIT_DAILY.XML:597,610) maps to table replacement. IDs come from the
+      feed. SQ string precision truncates EVENT_TYPE to 12 and DETAILS to 160 before
+      trimming (runner/engine.py:26-35,339-367). Shared PC_SRC has already typed
+      integers and timestamps; TRY conversions retain explicit reject predicates even
+      though conversion failures cannot occur on this frozen typed input. No dedupe:
+      staging has no PK; duplicate EVENT_IDs are reported, not removed.
+    columns:
+      - name: EVENT_ID
+        description: Feed identity; duplicate warnings preserve every staging row.
+        tests:
+          - unique:
+              config:
+                severity: warn
+  - name: pc_audit__audit_event
+    description: >-
+      Runner Update else Insert with no truncate (wf_SFX_AUDIT_DAILY.XML:640-655;
+      runner/engine.py:791-818,866-899). Incremental EVENT_ID merge updates all non-key
+      columns and inserts missing keys; unrelated existing rows survive. Never full
+      refresh. IDs are source supplied. Numeric IIF without else returns 0, including
+      NULL predicates (runner/expr.py:924-931,960-973). RPAD(EVENT_TYPE,12) is only a
+      representation translation: PostgreSQL char(12) pads, Snowflake CHAR does not.
+      Duplicate source keys are never silently deduped: evidence prechecks fail before
+      merge. Runner sequential updates are last-write-wins because queued inserts
+      flush before each update (runner/engine.py:880-899); Snowflake duplicate merge
+      is not equivalent. Only the zero-duplicate frozen input is certified.
+    columns:
+      - name: EVENT_ID
+        description: Source supplied primary key, stable across reruns.
+        tests: [not_null, unique]

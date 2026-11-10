@@ -1,2 +1,16 @@
 m_SFX_STG_AUDIT_EVENT:
   key_columns: [EVENT_ID]
+  dbt_model: pc_audit__stg_audit_event
+  after_table: PC_AUDIT.STG_AUDIT_EVENT
+  before_table: PC_BEFORE.STG_AUDIT_EVENT
+  session: s_m_SFX_STG_AUDIT_EVENT
+  workflow: wf_SFX_AUDIT_DAILY
+  patterns: [Expression, Source Qualifier]
+m_SFX_AUDIT_EVENT:
+  key_columns: [EVENT_ID]
+  dbt_model: pc_audit__audit_event
+  after_table: PC_AUDIT.AUDIT_EVENT
+  before_table: PC_BEFORE.AUDIT_EVENT
+  session: s_m_SFX_AUDIT_EVENT
+  workflow: wf_SFX_AUDIT_DAILY
+  patterns: [Expression, Source Qualifier]
