@@ -1,0 +1,122 @@
+run: sfx-d1110
+consumers:
+  - name: report-service
+    path: services/report-service
+    team: "@otterworks/finance-reporting"
+    teradata_service_account: svc_report_recon
+    cadence: "on demand endpoint + daily 06:00"
+    entrypoint: "GET /api/v1/reports/finance-reconciliation?period=YYYYMM"
+    tables: ["FIN_DW.ACCOUNT","FIN_DW.GL_JOURNAL","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    teradata_constructs: ["LOCKING ROW FOR ACCESS","SEL","TOP 25","ZEROIFNULL","CURRENT_DATE - 30","1YYMMDD","FORMAT","EXTRACT"]
+    unit_test: "cd services/report-service && mvn -B test"
+    contract_test: "cd services/report-service && mvn -B -Pcontract test"
+    workflow: .github/workflows/consumer-report-service.yml
+    snowflake:
+      database: SFX_D1110_AFTER
+      schema: COMPAT
+      query_tag: {"run":"sfx-d1110","act":"consumers","consumer":"report-service"}
+  - name: analytics-service
+    path: services/analytics-service
+    team: "@otterworks/analytics"
+    teradata_service_account: svc_analytics_dash
+    cadence: "dashboard on request, cached 15m"
+    entrypoint: "GET /api/v1/analytics/finance/rollups?region=&plan="
+    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    teradata_constructs: ["SEL","TOP 12","ZEROIFNULL","ADD_MONTHS","CURRENT_DATE integer arithmetic","FORMAT","EXTRACT"]
+    unit_test: "cd services/analytics-service && sbt compile test"
+    contract_test: "cd services/analytics-service && sbt \"contract:test\""
+    workflow: .github/workflows/consumer-analytics-service.yml
+    snowflake:
+      database: SFX_D1110_AFTER
+      schema: COMPAT
+      query_tag: {"run":"sfx-d1110","act":"consumers","consumer":"analytics-service"}
+  - name: billing-service
+    path: services/billing-service
+    team: "@otterworks/billing"
+    teradata_service_account: svc_billing_export
+    cadence: "nightly invoice export CLI"
+    entrypoint: "python -m app.export_invoices --date YYYY-MM-DD --out invoices.csv"
+    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    teradata_constructs: ["SEL","TOP 100001","ZEROIFNULL","CURRENT_DATE - 1","1YYMMDD","FORMAT"]
+    unit_test: "cd services/billing-service && pytest"
+    contract_test: "cd services/billing-service && pytest contract"
+    workflow: .github/workflows/consumer-billing-service.yml
+    snowflake:
+      database: SFX_D1110_AFTER
+      schema: COMPAT
+      query_tag: {"run":"sfx-d1110","act":"consumers","consumer":"billing-service"}
+  - name: legacy-billing
+    path: services/legacy-billing
+    team: "@otterworks/legacy-billing"
+    teradata_service_account: svc_legacy_billing
+    cadence: "on request (Flask page/JSON)"
+    entrypoint: "GET /finance/ar-aging"
+    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    teradata_constructs: ["SEL","TOP 100","ZEROIFNULL","NULLIFZERO","CURRENT_DATE - DUE_DT","1YYMMDD","FORMAT"]
+    unit_test: "cd services/legacy-billing && pytest"
+    contract_test: "cd services/legacy-billing && pytest contract"
+    workflow: .github/workflows/consumer-legacy-billing.yml
+    snowflake:
+      database: SFX_D1110_AFTER
+      schema: COMPAT
+      query_tag: {"run":"sfx-d1110","act":"consumers","consumer":"legacy-billing"}
+  - name: admin-service
+    path: services/admin-service
+    team: "@otterworks/finance-ops"
+    teradata_service_account: svc_admin_fin
+    cadence: "rake task hourly + dashboard endpoint"
+    entrypoint: "GET /api/v1/admin/finance/dashboard; bundle exec rake finance:refresh_dashboard"
+    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    teradata_constructs: ["SEL","TOP 10","ZEROIFNULL","NULLIFZERO","CURRENT_DATE - 30","1YYMMDD","FORMAT","QUALIFY ROW_NUMBER"]
+    unit_test: "cd services/admin-service && bundle exec rails db:schema:load && bundle exec rspec"
+    contract_test: "cd services/admin-service && bundle exec rspec contract"
+    workflow: .github/workflows/consumer-admin-service.yml
+    snowflake:
+      database: SFX_D1110_AFTER
+      schema: COMPAT
+      query_tag: {"run":"sfx-d1110","act":"consumers","consumer":"admin-service"}
+  - name: bi-semantic
+    path: consumers/bi
+    team: "@otterworks/bi"
+    teradata_service_account: svc_bi_semantic
+    cadence: "Looker PDT rebuild every 4h"
+    entrypoint: "Looker finance.model.lkml explores and overdue_accounts PDT"
+    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.GL_ACCOUNT","FIN_DW.GL_JOURNAL","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    teradata_constructs: ["SEL","TOP 100","ZEROIFNULL","CURRENT_DATE - 30","1YYMMDD","FORMAT","QUALIFY ROW_NUMBER"]
+    unit_test: "cd consumers/bi && python -m pytest"
+    contract_test: "cd consumers/bi && python -m pytest contract"
+    workflow: .github/workflows/consumer-bi-semantic.yml
+    snowflake:
+      database: SFX_D1110_AFTER
+      schema: COMPAT
+      query_tag: {"run":"sfx-d1110","act":"consumers","consumer":"bi-semantic"}
+  - name: finance-notebook
+    path: consumers/notebooks
+    team: "@otterworks/data-science"
+    teradata_service_account: nb_finance_analysis
+    cadence: "ad hoc / month-end"
+    entrypoint: "finance_analysis.ipynb (run cells in order)"
+    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    teradata_constructs: ["SEL","TOP 10","ZEROIFNULL","NULLIFZERO","ADD_MONTHS","CURRENT_DATE - 90","1YYMMDD","FORMAT"]
+    unit_test: "cd consumers/notebooks && python -m pytest"
+    contract_test: "cd consumers/notebooks && python -m pytest contract"
+    workflow: .github/workflows/consumer-finance-notebook.yml
+    snowflake:
+      database: SFX_D1110_AFTER
+      schema: COMPAT
+      query_tag: {"run":"sfx-d1110","act":"consumers","consumer":"finance-notebook"}
+  - name: partner-extract
+    path: consumers/partner-extract
+    team: "@otterworks/partner-integrations"
+    teradata_service_account: svc_partner_sftp
+    cadence: "nightly 02:15"
+    entrypoint: "bin/nightly_extract.sh [YYYY-MM-DD] [output.csv]"
+    tables: ["FIN_DW.ACCOUNT","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    teradata_constructs: [".LOGON",".SET SEPARATOR",".EXPORT","LOCKING ROW FOR ACCESS","SEL","ZEROIFNULL","FORMAT","1YYMMDD","CURRENT_DATE - 1"]
+    unit_test: "cd consumers/partner-extract && bash tests/run.sh"
+    contract_test: "cd consumers/partner-extract && bash contract/run.sh"
+    workflow: .github/workflows/consumer-partner-extract.yml
+    snowflake:
+      database: SFX_D1110_AFTER
+      schema: COMPAT
+      query_tag: {"run":"sfx-d1110","act":"consumers","consumer":"partner-extract"}

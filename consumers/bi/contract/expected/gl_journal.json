@@ -1,0 +1,12 @@
+{
+  "query": "gl_journal",
+  "row_count": 2,
+  "sums": {
+    "AMOUNT": "7000.25"
+  },
+  "key_column": "LABEL",
+  "keys": [
+    "202609",
+    "202610"
+  ]
+}

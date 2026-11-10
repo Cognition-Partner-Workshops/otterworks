@@ -1,0 +1,3 @@
+pandas==2.2.3
+teradatasql==20.0.0.75
+nbformat==5.10.4

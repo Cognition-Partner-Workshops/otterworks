@@ -1,0 +1,5 @@
+{
+  "query": "dashboard-summary",
+  "row_count": 1,
+  "sums": {"AR_OPEN_BALANCE": "45000.00", "COLLECTIONS_30_DAYS": "32000.00", "DSO": "27.00"}
+}

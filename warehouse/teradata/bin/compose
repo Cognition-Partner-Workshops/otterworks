@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+: "${NS:?NS is required}"
+TD_PG_PORT=${TD_PG_PORT:-$(python3 -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')}
+export TD_PG_PORT
+exec docker compose -f "$(dirname "$0")/../docker-compose.teradata.yml" "$@"

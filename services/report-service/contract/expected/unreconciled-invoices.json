@@ -1,0 +1,6 @@
+{
+  "query": "unreconciled-invoices",
+  "row_count": 2,
+  "sums": {"AMOUNT_DUE": "7250.50", "PAID": "1200.00"},
+  "keys": ["INV-2026-004812", "INV-2026-004937"]
+}

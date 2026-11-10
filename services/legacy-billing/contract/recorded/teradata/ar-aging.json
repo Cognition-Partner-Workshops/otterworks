@@ -1,0 +1,8 @@
+{
+  "query": "ar-aging",
+  "columns": ["ACCOUNT_NO", "CUSTOMER_NAME", "CURRENCY_CD", "OLDEST_DUE_DATE", "OPEN_BALANCE", "CURRENT_AMT", "DAYS_1_30", "DAYS_31_60", "DAYS_61_90", "DAYS_OVER_90", "OPEN_RATIO"],
+  "rows": [
+    ["A000318274", "Bramblewood Outfitters", "USD", "2025-10-15", "6000.00", "1000.00", "1200.00", "800.00", "500.00", "2500.00", "0.7500"],
+    ["A000529681", "Northgate Ceramics", "USD", "2025-12-10", "2450.50", "0.00", "1450.50", "1000.00", "0.00", "0.00", "1.0000"]
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "query": "dso",
+  "row_count": 2,
+  "sums": {
+    "DSO": "55.75"
+  },
+  "key_column": "MONTH_LABEL",
+  "keys": [
+    "2026-09",
+    "2026-10"
+  ]
+}
