@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "area": "snowflake",
+  "run_token": "sfx-d1110",
+  "classes": [],
+  "retire_candidates": [],
+  "security_review": [
+    {
+      "role": "SFX_D1110_ANALYST",
+      "file": "warehouse/snowflake/roles/03_schema_grants.sql",
+      "grants": [
+        {"lines": [109], "privileges": "ALL PRIVILEGES on database SFX_D1110_AFTER"},
+        {"lines": [110], "privileges": "ALL PRIVILEGES on future schemas in database SFX_D1110_AFTER"},
+        {"lines": [111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121], "privileges": "ALL PRIVILEGES on future tables in SCHEMACHANGE, LANDING, RAW_BILLING, RAW_DOCUMENTS, RAW_USERS, RAW_AUDIT, CORE_BILLING, CORE_DOCUMENTS, CORE_USERS, CORE_AUDIT and MART"}
+      ]
+    }
+  ]
+}
