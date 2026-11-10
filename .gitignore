@@ -1,8 +1,9 @@
 # OS
-etl/spark/.data/
-etl/spark/.cache/
 .DS_Store
 Thumbs.db
+
+etl/spark/.data/
+etl/spark/.cache/
 
 # IDEs
 .idea/
