@@ -1,9 +1,9 @@
 {
   "job": "billing_churn_score",
   "language": "python",
-  "target": "dbt",
+  "target": "snowpark_python",
   "status": "snowflake",
   "schedule": "15 2 * * *",
   "profile": "small",
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --phase spark-job --job billing_churn_score --select billing_churn_score"
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job billing_churn_score"
 }
