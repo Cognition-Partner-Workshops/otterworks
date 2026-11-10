@@ -1,0 +1,23 @@
+{
+  "query": "overdue",
+  "columns": [
+    "ACCOUNT_NO",
+    "CUSTOMER_NAME",
+    "OLDEST_DUE_DATE",
+    "OVERDUE_BALANCE"
+  ],
+  "rows": [
+    [
+      "A000318274",
+      "Bramblewood Outfitters",
+      "2026-07-15",
+      "12000.50"
+    ],
+    [
+      "A000627195",
+      "Northgate Ceramics",
+      "2026-08-01",
+      "6500.25"
+    ]
+  ]
+}

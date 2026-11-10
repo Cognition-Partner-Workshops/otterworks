@@ -1,0 +1,77 @@
+name: Consumer admin-service
+
+on:
+  push:
+    branches: [demo-snowflake-dw-exit, 'devin/sfx-d1110-**']
+    paths: ['services/admin-service/**', '.github/workflows/consumer-admin-service.yml']
+  pull_request:
+    paths: ['services/admin-service/**', '.github/workflows/consumer-admin-service.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    env:
+      BUNDLE_FROZEN: 'true'
+      DATABASE_HOST: localhost
+      DATABASE_PORT: '5432'
+      DATABASE_USER: otterworks
+      DATABASE_PASSWORD: otterworks # gitleaks:allow
+      RAILS_ENV: test
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: otterworks
+          POSTGRES_PASSWORD: otterworks # gitleaks:allow
+          POSTGRES_DB: admin_service_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: services/admin-service
+      - run: "cd services/admin-service && bundle exec rails db:schema:load && bundle exec rspec"
+
+  snowflake-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - id: check
+        env:
+          PRESENT: ${{ secrets.SNOWFLAKE_ACCOUNT != '' && secrets.SNOWFLAKE_PRIVATE_KEY != '' }}
+        run: echo "present=$PRESENT" >> "$GITHUB_OUTPUT"
+
+  contract:
+    needs: [unit, snowflake-secrets]
+    if: needs.snowflake-secrets.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    env:
+      BUNDLE_FROZEN: 'true'
+      WAREHOUSE_CONTRACT_TARGET: ${{ vars.CONSUMER_CONTRACT_TARGET || 'teradata-emulator' }}
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+      SNOWFLAKE_QUERY_TAG: '{"run":"sfx-d1110","act":"consumers","consumer":"admin-service"}'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: services/admin-service
+      - run: "cd services/admin-service && bundle exec rspec contract"

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Accounts receivable aging — Legacy Billing</title>
+  </head>
+  <body>
+    <h1>Accounts receivable aging</h1>
+    <p>Top 100 account balances by currency. Aging uses the warehouse's current date.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Account</th><th>Customer</th><th>Currency</th><th>Oldest due date</th>
+          <th>Open balance</th><th>Current</th><th>1–30 days</th><th>31–60 days</th>
+          <th>61–90 days</th><th>Over 90 days</th><th>Open ratio</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in aging %}
+        <tr>
+          {% for column in columns %}
+          <td>{{ row[column] if row[column] is not none else "—" }}</td>
+          {% endfor %}
+        </tr>
+        {% else %}
+        <tr><td colspan="11">No outstanding receivables.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

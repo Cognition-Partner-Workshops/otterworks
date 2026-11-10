@@ -1,0 +1,13 @@
+{
+  "query": "partner-invoices",
+  "row_count": 2,
+  "sums": {
+    "AMOUNT_DUE": "1410.75",
+    "TAX_AMT": "110.75",
+    "OPEN_BALANCE": "610.75"
+  },
+  "keys": [
+    "INV-2026-004812",
+    "INV-2026-004813"
+  ]
+}

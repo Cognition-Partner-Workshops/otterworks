@@ -1,0 +1,8 @@
+{
+  "query": "finance-rollups",
+  "columns": ["MONTH_LABEL", "REGION_CODE", "PLAN_NAME", "BILLED_REVENUE", "COLLECTED_CASH", "ACTIVE_ACCOUNTS"],
+  "rows": [
+    ["2025-12", "EMEA", "ENTERPRISE ANNUAL", "16400.00", "15800.00", 12],
+    ["2026-01", "EMEA", "ENTERPRISE ANNUAL", "18000.50", "15000.25", 14]
+  ]
+}

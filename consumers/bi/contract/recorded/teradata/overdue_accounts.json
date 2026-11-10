@@ -1,0 +1,17 @@
+{
+  "query": "overdue_accounts",
+  "columns": [
+    "ACCOUNT_NO",
+    "OVERDUE_BALANCE"
+  ],
+  "rows": [
+    [
+      "A000318274",
+      "12000.50"
+    ],
+    [
+      "A000627195",
+      "6500.25"
+    ]
+  ]
+}
