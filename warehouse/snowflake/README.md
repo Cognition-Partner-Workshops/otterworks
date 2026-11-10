@@ -59,7 +59,10 @@ ignored warehouse/landing/.snowflake before connecting. It keeps all rows and
 values, including reserved-key edge cases, mixed-case codes and duplicate SET
 rows; it does not emulate Teradata truncation, collation or deduplication.
 APP_USER.DISPLAY_NAME is VARCHAR(256) to preserve the generator's overlength names.
-Uploads use a run-specific seed stage prefix. --truncate explicitly replaces RAW
+Uploads use a stable area/table/date seed stage prefix and COPY selects only that
+date's filename. Reruns preserve the staged file and COPY history, so they are
+no-ops; use --truncate to replace a date's staged data and RAW rows.
+--truncate explicitly replaces RAW
 data and COPY history; each output row reports area, table, COPY rows and COUNT(*).
 Without --truncate, existing RAW rows are not removed. --landing-dir overrides
 the input directory; --source seed requires --date. No generated files are committed.

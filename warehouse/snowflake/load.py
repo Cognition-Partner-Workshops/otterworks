@@ -6,7 +6,7 @@ import re
 
 import yaml
 
-from sfx_conn import ROOT, connect, query_tag
+from sfx_conn import ROOT, connect
 from seed_contract import prepare_seed
 
 SPEC = yaml.safe_load((ROOT / "landing_columns.yml").read_text())
@@ -59,18 +59,20 @@ def main():
 
 
 def load_seed(cur, prepared, area='all', truncate=False):
-    run_id = json.loads(query_tag('load', 'copy_seed'))['run_id']
-    prefix = 'seed/' + re.sub(r'[^A-Za-z0-9_-]', '_', run_id)
     for source_area, table, path, expected in prepared:
         if area != 'all' and source_area != area:
             continue
         relation = f'RAW_{source_area.upper()}.{table}'
-        stage = f'@LANDING.LANDING_STAGE/{prefix}/{source_area}/{table}/'
+        match = re.fullmatch(r'([0-9]{8})\.psv\.gz', path.name)
+        if not match:
+            raise ValueError(f'Invalid prepared seed filename: {path.name}')
+        stage = f'@LANDING.LANDING_STAGE/seed/{source_area}/{table}/{match.group(1)}/'
         uri = path.resolve().as_uri().replace("'", "''")
-        cur.execute(f"PUT '{uri}' {stage} AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
+        cur.execute(f"PUT '{uri}' {stage} AUTO_COMPRESS=FALSE OVERWRITE={'TRUE' if truncate else 'FALSE'}")
         if truncate:
             cur.execute(f'TRUNCATE TABLE {relation}')
         cur.execute(f'COPY INTO {relation} FROM {stage}'
+                    f" FILES=('{path.name}')"
                     ' FILE_FORMAT=(FORMAT_NAME=LANDING.PSV_HEADER)'
                     ' MATCH_BY_COLUMN_NAME=CASE_INSENSITIVE'
                     ' INCLUDE_METADATA=(_SRC_FILE=METADATA$FILENAME,_LOADED_AT=METADATA$START_SCAN_TIME)'
@@ -78,10 +80,13 @@ def load_seed(cur, prepared, area='all', truncate=False):
         columns = [c[0].lower() for c in cur.description]
         copied = [dict(zip(columns, row)) for row in cur.fetchall()]
         loaded = sum(int(row.get('rows_loaded', 0)) for row in copied)
+        skipped = not copied or all(str(row.get('status', '')).upper() in {
+            'LOAD_SKIPPED', 'SKIPPED', 'COPY EXECUTED WITH 0 FILES PROCESSED.'
+        } for row in copied)
         cur.execute(f'SELECT COUNT(*) FROM {relation}')
         count = cur.fetchone()[0]
         print(f'{source_area} | {table} | {loaded} | {count}')
-        if loaded != expected or (truncate and count != expected):
+        if (loaded != expected and not (not truncate and loaded == 0 and skipped)) or (truncate and count != expected):
             raise RuntimeError(f'{relation}: expected {expected} rows, COPY loaded {loaded}, count={count}')
 
 

@@ -2,6 +2,7 @@ import csv
 from decimal import Decimal
 import gzip
 import importlib.util
+import re
 from pathlib import Path
 
 import pytest
@@ -116,3 +117,63 @@ def test_seed_copy_truncate_and_error(tmp_path, capsys):
     load_seed(cur, [], truncate=True)
     load_seed(cur, prepared, area='audit', truncate=True)
     assert cur.commands == []
+
+
+def test_seed_copy_repeat_and_date_isolation(tmp_path, monkeypatch, capsys):
+    class HistoryCursor(Cursor):
+        def __init__(self):
+            super().__init__()
+            self.loaded = set()
+            self.count = 0
+
+        def execute(self, command):
+            super().execute(command)
+            if command.startswith('COPY'):
+                stage, filename = re.search(r"FROM (\S+) FILES=\('([^']+)'\)", command).groups()
+                assert stage.endswith('/' + filename[:8] + '/')
+                key = stage + filename
+                self.description = [('status',), ('rows_loaded',)]
+                if key in self.loaded:
+                    self.result = [('LOAD_SKIPPED', 0)]
+                else:
+                    self.loaded.add(key)
+                    self.count += 3
+                    self.result = [('LOADED', 3)]
+
+        def fetchall(self):
+            return self.result
+
+        def fetchone(self):
+            return (self.count,)
+
+    cur = HistoryCursor()
+    prepared = [('billing', 'INVOICE_HDR', tmp_path / '20261109.psv.gz', 3)]
+    monkeypatch.setenv('SFX_RUN_ID', 'first')
+    load_seed(cur, prepared)
+    monkeypatch.setenv('SFX_RUN_ID', 'different-process')
+    load_seed(cur, prepared)
+    assert cur.count == 3
+    assert 'billing | INVOICE_HDR | 0 | 3' in capsys.readouterr().out
+    load_seed(cur, [('billing', 'INVOICE_HDR', tmp_path / '20261110.psv.gz', 3)])
+    assert cur.count == 6
+    copies = [sql for sql in cur.commands if sql.startswith('COPY')]
+    assert copies[0] == copies[1]
+    assert '/seed/billing/INVOICE_HDR/20261109/' in copies[0]
+    assert "FILES=('20261109.psv.gz')" in copies[0]
+    assert '20261109' not in copies[2]
+    assert all('OVERWRITE=FALSE' in sql for sql in cur.commands if sql.startswith('PUT'))
+
+
+@pytest.mark.parametrize('result', [[], [('Copy executed with 0 files processed.',)]])
+def test_seed_copy_history_noop(tmp_path, result):
+    cur = Cursor()
+    cur.description = [('status',)]
+    cur.fetchall = lambda: result
+    load_seed(cur, [('billing', 'INVOICE_HDR', tmp_path / '20261109.psv.gz', 3)])
+
+
+def test_seed_copy_rejects_bad_filename_and_unexplained_zero(tmp_path):
+    with pytest.raises(ValueError, match='Invalid prepared seed filename'):
+        load_seed(Cursor(), [('billing', 'INVOICE_HDR', tmp_path / 'other.psv.gz', 3)])
+    with pytest.raises(RuntimeError, match='expected 3 rows'):
+        load_seed(Cursor(rows=0), [('billing', 'INVOICE_HDR', tmp_path / '20261109.psv.gz', 3)])
