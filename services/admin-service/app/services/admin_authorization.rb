@@ -17,11 +17,12 @@ class AdminAuthorization
     incidents.create incidents.update incidents.destroy incidents.trigger_session
     quotas.update settings.update_auto_investigate
   ].freeze
+  FINANCE_ACTIONS = %w[finance.dashboard].freeze
   PERMISSIONS = {
     'viewer' => READ_ACTIONS,
     'editor' => (READ_ACTIONS + CONTENT_ACTIONS).freeze,
-    'admin' => (READ_ACTIONS + CONTENT_ACTIONS + ADMIN_ACTIONS).freeze,
-    'super_admin' => (READ_ACTIONS + CONTENT_ACTIONS + ADMIN_ACTIONS + %w[config.index config.show config.update]).freeze
+    'admin' => (READ_ACTIONS + CONTENT_ACTIONS + ADMIN_ACTIONS + FINANCE_ACTIONS).freeze,
+    'super_admin' => (READ_ACTIONS + CONTENT_ACTIONS + ADMIN_ACTIONS + FINANCE_ACTIONS + %w[config.index config.show config.update]).freeze
   }.freeze
   RESOURCES = {
     'AdminUser' => 'users', 'Announcement' => 'announcements', 'FeatureFlag' => 'features',

@@ -9,6 +9,13 @@ RSpec.describe 'Admin authorization', type: :request do
 
   let!(:user) { create(:admin_user) }
 
+  it 'forbids viewers and editors from accessing the finance dashboard' do
+    %w[viewer editor].each do |role|
+      get '/api/v1/admin/finance/dashboard', headers: headers_for('role' => role)
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   it 'allows viewers to read records' do
     get "/api/v1/admin/users/#{user.id}", headers: headers_for('role' => 'viewer')
     expect(response).to have_http_status(:ok)

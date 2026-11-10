@@ -16,6 +16,17 @@ RSpec.describe AdminAuthorization do
   end
 
   describe '.permitted?' do
+    it 'reserves finance dashboard reads for admins and super admins' do
+      %w[admin super_admin].each do |role|
+        expect(described_class.permitted?(role, 'finance', 'dashboard')).to be true
+      end
+      %w[viewer editor].each do |role|
+        expect(described_class.permitted?(role, 'finance', 'dashboard')).to be false
+      end
+      expect(described_class.permitted?(nil, 'finance', 'dashboard')).to be false
+      expect(described_class.permitted?('admin', 'finance', 'update')).to be false
+    end
+
     it 'keeps viewers read-only and editors limited to content changes' do
       expect(described_class.permitted?('viewer', 'users', 'index')).to be true
       expect(described_class.permitted?('viewer', 'announcements', 'create')).to be false
