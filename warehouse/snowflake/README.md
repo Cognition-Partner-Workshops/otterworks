@@ -236,7 +236,8 @@ bindings. Key-pair rejection stops the run; no password fallback is attempted.
 
 The wrapper creates separate Teradata and Informatica projects with
 `scai init <project> -l Teradata -c sfx_d1110`, adds staged inputs, and runs
-`scai code convert --show-ewis` in each project. Teradata DDL, macros and procedures
+`scai code convert --show-ewis` in each project. Teradata DDL, macros, procedures
+and `dbql/schema.sql` (the DBC schema used by `dbql/consumer_reads.bteq`)
 are split into individual statements using the builder's parser, then added with
 `--code-already-split`; BTEQ/BTQ scripts are copied unchanged. PostgreSQL emulator
 bootstrap SQL is excluded. Informatica uses the self-contained `wf_*.XML` exports

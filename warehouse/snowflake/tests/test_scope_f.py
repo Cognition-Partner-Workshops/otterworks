@@ -296,6 +296,31 @@ def test_snowconvert_prepares_split_sql_and_self_contained_workflows(tmp_path):
     assert len(json.loads((output / 'inputs.json').read_text())) == 2
 
 
+def test_snowconvert_stages_dbql_schema_with_consumer_reads(tmp_path):
+    td = tmp_path / 'warehouse/teradata'
+    dbql = td / 'dbql'
+    dbql.mkdir(parents=True)
+    schema = 'CREATE DATABASE DBC; CREATE MULTISET TABLE DBC.DBQLogTbl (QueryID BIGINT);'
+    (dbql / 'schema.sql').write_text(schema)
+    assert snowconvert.inputs(tmp_path)[1] == [td]
+    consumer = 'SELECT * FROM DBC.DBQLogTbl;'
+    (dbql / 'consumer_reads.bteq').write_text(consumer)
+    (td / 'bteq').mkdir()
+    (td / 'bteq/bootstrap.sql').write_text('CREATE SCHEMA emulator;')
+    output = tmp_path / 'output'
+    _, found = snowconvert.inputs(tmp_path)
+    staged = dict(snowconvert.prepare_inputs(tmp_path, output, found))['teradata']
+    statements = sorted((staged / 'dbql').glob('schema_*.sql'))
+    assert len(statements) == 2
+    assert 'CREATE DATABASE DBC;' in statements[0].read_text()
+    assert 'CREATE MULTISET TABLE DBC.DBQLogTbl' in statements[1].read_text()
+    assert (staged / 'dbql/consumer_reads.bteq').read_text() == consumer
+    assert not (staged / 'bteq/bootstrap.sql').exists()
+    assert set(json.loads((output / 'inputs.json').read_text())) == {
+        'warehouse/teradata/dbql/schema.sql', 'warehouse/teradata/dbql/consumer_reads.bteq',
+    }
+
+
 def test_snowconvert_emulator_only_is_not_conversion_input(tmp_path, monkeypatch):
     bootstrap = tmp_path / 'warehouse/teradata/bteq'
     bootstrap.mkdir(parents=True)

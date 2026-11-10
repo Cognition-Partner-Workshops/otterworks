@@ -51,7 +51,8 @@ def inputs(repo):
         suffixes = {'.sql', '.bteq', '.btq'} if root.name == 'teradata' else {'.xml'}
         if root.exists() and any(p.is_file() and p.suffix.lower() in suffixes and (
                 root.name != 'teradata' or p.suffix.lower() != '.sql' or
-                p.relative_to(root).parts[0] in {'ddl', 'macros', 'procedures'})
+                p.relative_to(root).parts[0] in {'ddl', 'macros', 'procedures'} or
+                p.relative_to(root) == Path('dbql/schema.sql'))
                 for p in root.rglob('*')):
             found.append(root)
     return roots, found
@@ -68,8 +69,8 @@ def prepare_inputs(repo, output, found):
         if root.name == 'teradata':
             paths = [p for p in paths if p.is_file() and (
                 p.suffix.lower() in {'.bteq', '.btq'} or
-                (p.suffix.lower() == '.sql' and p.relative_to(root).parts[0] in
-                 {'ddl', 'macros', 'procedures'}))]
+                (p.suffix.lower() == '.sql' and (p.relative_to(root).parts[0] in
+                 {'ddl', 'macros', 'procedures'} or p.relative_to(root) == Path('dbql/schema.sql'))))]
         else:
             paths = [p for p in paths if p.is_file() and p.suffix.lower() == '.xml']
             workflows = [p for p in paths if p.name.lower().startswith('wf_')]
