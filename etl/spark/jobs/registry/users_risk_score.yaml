@@ -6,5 +6,5 @@
   "schedule": "16 2 * * *",
   "profile": "small",
   "class": "sfx.UsersRiskScore",
-  "command": "cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --phase spark-job --job users_risk_score --select users_risk_score"
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --phase spark-job --job users_risk_score --select users_risk_score"
 }
