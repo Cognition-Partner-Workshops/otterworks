@@ -3,7 +3,7 @@ Shared Python bridge for consumers. Uses the Teradata worktree's own
 `bteq.Runner` without modifying that worktree. Python 3.10+ is supported.
 
 ## Emulator
-In a separate worktree at origin/devin/sfx-d1110-teradata:
+From the repository root (or an optional separate Teradata worktree):
 ```sh
 make sfx-teradata-up NS=sfx-d1110-consumers ROWS_PER_TABLE=800
 ```
@@ -27,7 +27,9 @@ echo "SEL CUSTOMER_ID FROM SFX_BILLING.CUSTOMER_ACCOUNT" | "$CONTRACT_KIT_PYTHON
 ```
 Connection settings are the Runner's TD_PG_DSN or TD_PG_HOST/PORT/DB/USER/PASSWORD
 variables; defaults are localhost, 5432, teradata, postgres, empty password.
-TD_EMULATOR_HOME is mandatory for live execution. No silent replay fallback.
+By default, the runtime is warehouse/teradata in the repository containing this
+bridge. TD_EMULATOR_HOME overrides that root, for example for a separate worktree.
+If neither location contains the runtime, execution fails. No silent replay fallback.
 
 The bridge reads SQL from stdin or --sql-file and prints only JSON to stdout:
 columns are uppercase labels; rows contain decimals as strings and ISO dates.

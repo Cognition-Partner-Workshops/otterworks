@@ -14,12 +14,12 @@ class FinanceRoutes(repository: FinanceRollupRepository, settings: FinanceSettin
     if !settings.enabled then reject
     else path("api" / "v1" / "analytics" / "finance" / "rollups") {
       get {
-        parameters("region".withDefault(settings.regions.head), "plan".withDefault(settings.featuredPlan)) {
-          (region, plan) =>
-            if region.isEmpty || plan.isEmpty || region.length > 16 || plan.length > 40 then
-              complete(StatusCodes.BadRequest, "invalid region or plan")
+        parameters("status".withDefault(settings.statuses.head), "plan".withDefault(settings.featuredPlan)) {
+          (status, plan) =>
+            if status.isEmpty || plan.isEmpty || status.length > 16 || plan.length > 40 then
+              complete(StatusCodes.BadRequest, "invalid status or plan")
             else
-              onComplete(repository.rollups(region, plan)) {
+              onComplete(repository.rollups(status, plan)) {
                 case Success(rows) =>
                   complete(HttpEntity(ContentTypes.`application/json`, rows.toJson.compactPrint))
                 case Failure(_) => complete(StatusCodes.ServiceUnavailable, "finance warehouse unavailable")

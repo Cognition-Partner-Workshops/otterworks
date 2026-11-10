@@ -22,11 +22,13 @@ consumers:
     team: "@otterworks/analytics"
     teradata_service_account: svc_analytics_dash
     cadence: "dashboard on request, cached 15m"
-    entrypoint: "GET /api/v1/analytics/finance/rollups?region=&plan="
-    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    entrypoint: "GET /api/v1/analytics/finance/rollups?status=&plan="
+    tables: ["SFX_BILLING.CUSTOMER_ACCOUNT","SFX_BILLING.SUBSCRIPTION","SFX_BILLING.PLAN_CATALOG","SFX_BILLING.INVOICE_HDR","SFX_BILLING.PAYMENT"]
     teradata_constructs: ["SEL","TOP 12","ZEROIFNULL","ADD_MONTHS","CURRENT_DATE integer arithmetic","FORMAT","EXTRACT"]
     unit_test: "cd services/analytics-service && sbt compile test"
     contract_test: "cd services/analytics-service && sbt \"contract:test\""
+    contract_replay_test: "cd services/analytics-service && WAREHOUSE_CONTRACT_TARGET=replay sbt \"contract:test\""
+    contract_targets: ["teradata-emulator","replay","snowflake-semantics","snowflake"]
     workflow: .github/workflows/consumer-analytics-service.yml
     snowflake:
       database: SFX_D1110_AFTER

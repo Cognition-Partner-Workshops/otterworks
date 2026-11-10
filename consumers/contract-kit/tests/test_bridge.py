@@ -8,7 +8,7 @@ import sys
 
 import pytest
 
-from bridge import execute, json_value
+from bridge import execute, json_value, runtime_path
 
 BRIDGE = Path(__file__).resolve().parents[1] / "bridge.py"
 QUERY = "SEL CUSTOMER_ID FROM SFX_BILLING.CUSTOMER_ACCOUNT WHERE STATUS_CD = 'Active' ORDER BY CUSTOMER_ID"
@@ -49,16 +49,24 @@ def test_empty_result_and_decimal_date_serialization():
     assert json_value(date(2026, 11, 9)) == "2026-11-09"
 
 
-def test_query_error_and_missing_home_are_nonzero():
+def test_query_error_and_invalid_override_are_nonzero(tmp_path):
     result = subprocess.run([sys.executable, str(BRIDGE)], input="SEL no_such_column FROM SFX_BILLING.INVOICE_HDR",
                             capture_output=True, text=True)
     assert result.returncode != 0 and result.stdout == ""
     assert "warehouse query failed" in result.stderr
     env = dict(os.environ)
-    env.pop("TD_EMULATOR_HOME", None)
+    env["TD_EMULATOR_HOME"] = str(tmp_path)
     result = subprocess.run([sys.executable, str(BRIDGE)], input=QUERY, env=env,
                             capture_output=True, text=True)
     assert result.returncode != 0 and "TD_EMULATOR_HOME" in result.stderr
+
+
+def test_repository_runtime_is_default(monkeypatch):
+    monkeypatch.delenv("TD_EMULATOR_HOME", raising=False)
+    assert runtime_path() == BRIDGE.parents[2] / "warehouse" / "teradata"
+    result = subprocess.run([sys.executable, str(BRIDGE)], input=QUERY,
+                            capture_output=True, text=True, check=True)
+    assert len(json.loads(result.stdout)["rows"]) >= 12
 
 
 @pytest.mark.parametrize("sql", ["", "   "])

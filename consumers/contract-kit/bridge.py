@@ -9,13 +9,16 @@ from pathlib import Path
 import sys
 
 
-def runner_class():
-    home = os.environ.get("TD_EMULATOR_HOME")
-    if not home:
-        raise ValueError("TD_EMULATOR_HOME must point to the Teradata worktree")
-    runtime = Path(home).resolve() / "warehouse" / "teradata"
+def runtime_path():
+    home = Path(os.environ["TD_EMULATOR_HOME"]) if "TD_EMULATOR_HOME" in os.environ else Path(__file__).resolve().parents[2]
+    runtime = home.resolve() / "warehouse" / "teradata"
     if not (runtime / "bteq" / "runner.py").is_file():
-        raise ValueError("TD_EMULATOR_HOME does not contain warehouse/teradata/bteq")
+        raise ValueError("Set TD_EMULATOR_HOME to a repository containing warehouse/teradata/bteq")
+    return runtime
+
+
+def runner_class():
+    runtime = runtime_path()
     sys.path.insert(0, str(runtime))
     from bteq import Runner
     from sqlglot import exp, parse_one

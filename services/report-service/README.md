@@ -60,11 +60,11 @@ The contract profile runs only contract tests; CI additionally runs replay in
 the contract-replay job without credentials or a warehouse.
 
 For live contracts, first follow `../../consumers/contract-kit/README.md` to
-create the Teradata worktree, seed the emulator with ROWS_PER_TABLE=800,
+use the repository's warehouse/teradata runtime, seed the emulator with ROWS_PER_TABLE=800,
 BUSINESS_DATE=20261109, and install the Python bridge dependencies.
 Then (adjust paths/port for your namespace):
 ```sh
-export TD_EMULATOR_HOME=/home/ubuntu/sfx/td
+export TD_EMULATOR_HOME=/home/ubuntu/sfx/td # optional separate-worktree override
 export TD_PG_PORT=54902
 export CONTRACT_KIT_PYTHON=/path/to/contract-venv/bin/python
 mvn -B -Pcontract test
