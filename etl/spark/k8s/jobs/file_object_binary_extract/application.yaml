@@ -16,15 +16,29 @@ spec:
   restartPolicy:
     type: "Never"
   dynamicAllocation:
-    enabled: false
+    enabled: true
+    initialExecutors: 1
+    minExecutors: 1
+    maxExecutors: 4
   sparkConf:
+    spark.eventLog.dir: "/opt/spark-events"
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+    spark.sql.adaptive.skewJoin.enabled: "true"
+    spark.sql.adaptive.advisoryPartitionSizeInBytes: "134217728"
+    spark.dynamicAllocation.shuffleTracking.enabled: "true"
+    spark.shuffle.service.enabled: "false"
+    spark.dynamicAllocation.executorIdleTimeout: "15s"
+    spark.dynamicAllocation.shuffleTracking.timeout: "120s"
+    spark.sql.files.maxPartitionBytes: "134217728"
+    spark.sql.shuffle.partitions: "48"
+    spark.sql.sources.partitionOverwriteMode: "dynamic"
+    spark.task.maxFailures: "4"
     spark.eventLog.enabled: "true"
     spark.eventLog.compress: "true"
     spark.eventLog.compression.codec: "zstd"
-    spark.eventLog.dir: "/opt/spark-events"
     spark.driver.extraClassPath: "/opt/sfx/spark/.cache/jars/*"
     spark.executor.extraClassPath: "/opt/sfx/spark/.cache/jars/*"
-    spark.sql.shuffle.partitions: "6"
   deps:
     pyFiles:
       - "local:///opt/sfx/spark/.cache/common.zip"
@@ -38,16 +52,6 @@ spec:
     serviceAccount: "sfx-d1110-spark"
     labels:
       otterworks.run-token: "sfx-d1110"
-    env:
-      - name: "TD_JDBC_URL"
-        value: "jdbc:postgresql://sfx-tdemu:5432/sfx_teradata"
-      - name: "TD_JDBC_USER"
-        value: "etl_batch"
-      - name: "TD_JDBC_PASSWORD"
-        valueFrom:
-          secretKeyRef:
-            name: "sfx-d1110-jdbc"
-            key: "password"
     volumeMounts:
       - name: "workspace"
         mountPath: "/opt/sfx/spark"
@@ -64,20 +68,9 @@ spec:
         subPath: ".data/eventlogs"
   executor:
     cores: 1
-    instances: 3
-    memory: "768m"
+    memory: "1g"
     labels:
       otterworks.run-token: "sfx-d1110"
-    env:
-      - name: "TD_JDBC_URL"
-        value: "jdbc:postgresql://sfx-tdemu:5432/sfx_teradata"
-      - name: "TD_JDBC_USER"
-        value: "etl_batch"
-      - name: "TD_JDBC_PASSWORD"
-        valueFrom:
-          secretKeyRef:
-            name: "sfx-d1110-jdbc"
-            key: "password"
     volumeMounts:
       - name: "workspace"
         mountPath: "/opt/sfx/spark"
