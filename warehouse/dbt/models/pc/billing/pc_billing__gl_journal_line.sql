@@ -1,9 +1,4 @@
-{% set delete_load %}
-{% if is_incremental() %}
-delete from {{ this }}
-where JOURNAL_NO like 'JE-{{ var("load_date", "20261109") }}-%'
-{% endif %}
-{% endset %}
+{% set delete_load = "{% if is_incremental() %}delete from {{ this }} where JOURNAL_NO like 'JE-{{ var(\"load_date\", \"20261109\") }}-%'{% endif %}" %}
 {{ config(materialized='incremental', incremental_strategy='merge', unique_key='JOURNAL_LINE_ID', pre_hook=delete_load) }}
 
 with postable as (
@@ -38,7 +33,11 @@ accounts as (
 ),
 numbered as (
     select r.*, a.GL_ACCOUNT_ID,
+        {% if is_incremental() %}
+        (select coalesce(max(JOURNAL_LINE_ID), {{ var('gl_seq_start', 900001) }} - 1) from {{ this }})
+        {% else %}
         {{ var('gl_seq_start', 900001) }} - 1
+        {% endif %}
             + row_number() over (order by r.GROUP_ORDER, r.SRC_ROW_NO) as JOURNAL_LINE_ID
     from routed r
     left join accounts a on r.ACCOUNT_CODE = a.ACCOUNT_CODE
