@@ -5,5 +5,5 @@
   "status": "snowflake",
   "schedule": "8 1 * * *",
   "profile": "small",
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job audit_daily_summary --select path:models/spark/audit_daily_summary"
+  "command": "{ [ -d warehouse/dbt ] || cd \"$(dirname \"${SFX_SPARK_ROOT:-/opt/etl/spark}\")/..\"; } && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job audit_daily_summary --select path:models/spark/audit_daily_summary"
 }
