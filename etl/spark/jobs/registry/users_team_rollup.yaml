@@ -2,7 +2,8 @@
   "job": "users_team_rollup",
   "language": "python",
   "target": "dbt",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "7 1 * * *",
-  "profile": "small"
+  "profile": "small",
+  "command": "cd \"${SFX_REPO_ROOT:-.}\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job users_team_rollup --select path:models/spark/users_team_rollup"
 }

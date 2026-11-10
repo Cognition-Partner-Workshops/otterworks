@@ -1,0 +1,9 @@
+version: 2
+models:
+  - name: users_team_rollup
+    description: "sfx-d1110 Team membership totals (left joins TEAM -> TEAM_MEMBER -> APP_USER). Replaces the Spark lake output users/users_team_rollup and the JDBC table sfx_users.SPARK_TEAM_ROLLUP."
+    columns:
+      - name: TEAM_ID
+        tests: [unique]
+      - name: MEMBERS
+        tests: [not_null]
