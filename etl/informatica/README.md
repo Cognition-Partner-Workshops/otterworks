@@ -7,8 +7,8 @@ PowerCenter 10.5 repository exports for the `sfx-d1110` warehouse plus a Python 
 
 | Path | Contents |
 |---|---|
-| `repository/<FOLDER>/mappings/*.XML` | 20 mapping exports (SOURCE, TARGET, TRANSFORMATION, MAPPING, CONNECTOR) |
-| `repository/<FOLDER>/workflows/*.XML` | sessions, worklet and the three workflows `wf_SFX_BILLING_DAILY`, `wf_SFX_CONTENT_DAILY`, `wf_SFX_AUDIT_DAILY` |
+| `repository/<FOLDER>/mappings/*.XML` | 20 Designer mapping exports (SOURCE, TARGET, TRANSFORMATION, MAPPING, CONNECTOR) |
+| `repository/<FOLDER>/wf_*.XML` | Workflow Manager exports with dependencies, one workflow per file: sources, targets, mappings, sessions, worklet and workflow (`wf_SFX_BILLING_DAILY`, `wf_SFX_CONTENT_DAILY`, `wf_SFX_AUDIT_DAILY`) |
 | `params/sfx_d1110_daily.par` | parameter file (`$$` mapping parameters, `$DBConnection_*` connection variables) |
 | `config/connections.yaml` | relational connection `TD_SFX_EDW`, resolved from `TD_HOST TD_PORT TD_DB TD_USER TD_PASSWORD` |
 | `logs/REP_SESS_LOG.psv`, `logs/REP_WFLOW_RUN.psv` | repository run history export (session and workflow runs) |
@@ -63,6 +63,18 @@ python -m runner listobjects   -f SFX_CONTENT
 - Workflows run Start, Session, Worklet, Decision and Email tasks along `WORKFLOWLINK` conditions
   (`$task.Status`, `$task.TgtFailedRows`, `$decision.Condition`). Each session logs target row counts before and after the
   load; a load that only appended rows on top of existing data is flagged as `WRT_8170`.
+
+## SnowConvert
+
+```sh
+make sfx-informatica-snowconvert NS=sfx-d1110-before [SNOWFLAKE_CONNECTION=<name>]
+```
+
+Runs SnowConvert AI (`scai init -l Teradata`, `scai code add`, `scai code convert`) on the `wf_*.XML` workflow
+exports, which satisfy `scai code add`'s one-workflow-per-file check. `scai` reads the Snowflake password only from
+`connections.toml`. The untouched output is copied to `snowconvert/<NS>/raw-output/` (git-ignored) with
+`init.log`, `add.log` and `convert.log`. Install `scai` with
+`curl -fsSL https://snowconvert.snowflake.com/storage/linux/prod/cli/install.sh | sh`.
 
 ## Tests
 

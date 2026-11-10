@@ -82,3 +82,16 @@ def test_licence_covers_every_mapping():
     for ms in lic["mapping_features"].values():
         for feats in ms.values():
             assert set(feats) <= set(lic["features"])
+
+
+def test_workflow_exports_are_self_contained():
+    import glob
+    import xml.etree.ElementTree as ET
+
+    files = sorted(glob.glob(os.path.join(ESTATE, "repository", "*", "wf_*.XML")))
+    assert len(files) == 3
+    for path in files:
+        folder = ET.parse(path).getroot().find("REPOSITORY/FOLDER")
+        assert len(folder.findall("WORKFLOW")) == 1, path
+        mappings = {m.get("NAME") for m in folder.findall("MAPPING")}
+        assert {s.get("MAPPINGNAME") for s in folder.findall("SESSION")} == mappings, path
