@@ -195,8 +195,19 @@ a dropped token user. The GOVERNANCE schema is included in cleanup.
 
 ## SnowConvert CLI
 
-Install the SnowConvert AI CLI (`scai`) from Snowflake's distribution; it is not
-available on PyPI. Run `make sfx-snowflake-snowconvert`. The wrapper looks for SQL,
+Install the SnowConvert AI CLI (`scai`) using the same public installer as the
+PowerCenter builder (PR #2654); it is not available on PyPI:
+
+```sh
+curl -fsSL https://snowconvert.snowflake.com/storage/linux/prod/cli/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+scai --version
+make sfx-snowflake-snowconvert
+```
+
+The user-local installer verifies its archive checksum and bundles the runtime;
+no license, login, Java change or separate runtime installation was needed for
+stable CLI 2.52.5 on this VM. The wrapper looks for SQL,
 BTEQ and BTQ files under `warehouse/teradata/`, and PowerCenter XML under
 `etl/informatica/` (the path on `origin/devin/sfx-d1110-informatica`). It does not
 fetch or check out sibling builders automatically. With no input it reports the
@@ -212,8 +223,16 @@ umask; symlink destinations are refused. These credential files are outside the
 repository. `scai` receives `SNOWFLAKE_CONNECTION=sfx_d1110`, not the credential
 bindings. Key-pair rejection stops the run; no password fallback is attempted.
 
-The wrapper runs `scai init <project> -l Teradata`, `scai code add -i <input>` for
-each input root, then `scai code convert`. XML is detected by the CLI. Original
+The wrapper creates separate Teradata and Informatica projects with
+`scai init <project> -l Teradata -c sfx_d1110`, adds staged inputs, and runs
+`scai code convert --show-ewis` in each project. Teradata DDL, macros and procedures
+are split into individual statements using the builder's parser, then added with
+`--code-already-split`; BTEQ/BTQ scripts are copied unchanged. PostgreSQL emulator
+bootstrap SQL is excluded. Informatica uses the self-contained `wf_*.XML` exports
+when present, as the PowerCenter builder does, avoiding duplicate standalone
+mapping imports; XML is added without the split flag. No source files are edited.
+`inputs.json` lists the original inputs and `summary.json` records commands,
+working directories and exit codes. Original
 stdout/stderr, the tool project/output and a short `summary.json` remain under
 `warehouse/snowconvert/raw/<UTC timestamp>/`, which is gitignored. Nothing is
 deployed, edited into the target scaffold, or committed. Output containing private

@@ -225,10 +225,45 @@ def test_fake_scai_receives_connection_and_keeps_raw(tmp_path, rejected):
     assert code == (2 if rejected else 0)
     output = next((repo / 'warehouse/snowconvert/raw').iterdir())
     summary = json.loads((output / 'summary.json').read_text())
-    assert len(summary) == (1 if rejected else 4)
+    assert len(summary) == (1 if rejected else 6)
     if not rejected:
-        assert summary[-1]['command'] == ['code', 'convert']
-        assert (output / '03.stdout').read_bytes() == b'raw output unchanged\n'
+        assert summary[-1]['command'] == ['code', 'convert', '--show-ewis']
+        assert summary[0]['command'][-2:] == ['-c', 'sfx_d1110']
+        assert summary[1]['command'][-1] == '--code-already-split'
+        assert '--code-already-split' not in summary[4]['command']
+        assert (output / '05.stdout').read_bytes() == b'raw output unchanged\n'
+
+
+def test_snowconvert_prepares_split_sql_and_self_contained_workflows(tmp_path):
+    repo = tmp_path / 'repo'
+    td = repo / 'warehouse/teradata'
+    ddl = td / 'ddl/billing'
+    ddl.mkdir(parents=True)
+    sql = 'CREATE TABLE T (ID INT); CREATE VIEW V AS SELECT ID FROM T;'
+    (ddl / 'tables.sql').write_text(sql)
+    (td / 'bteq').mkdir()
+    (td / 'bteq/bootstrap.sql').write_text('CREATE SCHEMA emulator;')
+    infa = repo / 'etl/informatica/repository'
+    infa.mkdir(parents=True)
+    (infa / 'wf_daily.XML').write_text('<POWERMART/>')
+    (infa / 'mapping.XML').write_text('<MAPPING/>')
+    _, found = snowconvert.inputs(repo)
+    output = tmp_path / 'output'
+    prepared = dict(snowconvert.prepare_inputs(repo, output, found))
+    assert len(list(prepared['teradata'].rglob('*.sql'))) == 2
+    assert not (prepared['teradata'] / 'bteq').exists()
+    assert [p.name for p in prepared['informatica'].rglob('*.XML')] == ['wf_daily.XML']
+    assert (ddl / 'tables.sql').read_text() == sql
+    assert len(json.loads((output / 'inputs.json').read_text())) == 2
+
+
+def test_snowconvert_emulator_only_is_not_conversion_input(tmp_path, monkeypatch):
+    bootstrap = tmp_path / 'warehouse/teradata/bteq'
+    bootstrap.mkdir(parents=True)
+    (bootstrap / 'bootstrap.sql').write_text('CREATE SCHEMA emulator;')
+    monkeypatch.setattr(snowconvert.shutil, 'which', lambda *a, **kw: 'scai')
+    assert snowconvert.run(tmp_path, tmp_path, {}) == 0
+    assert not (tmp_path / '.snowflake').exists()
 
 
 def test_snowconvert_missing_empty_and_symlink(tmp_path, monkeypatch, capsys):

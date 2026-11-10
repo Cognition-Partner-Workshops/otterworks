@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import re
+from runpy import run_path
 import shutil
 import subprocess
 
@@ -48,9 +49,44 @@ def inputs(repo):
     found = []
     for root in roots:
         suffixes = {'.sql', '.bteq', '.btq'} if root.name == 'teradata' else {'.xml'}
-        if root.exists() and any(p.is_file() and p.suffix.lower() in suffixes for p in root.rglob('*')):
+        if root.exists() and any(p.is_file() and p.suffix.lower() in suffixes and (
+                root.name != 'teradata' or p.suffix.lower() != '.sql' or
+                p.relative_to(root).parts[0] in {'ddl', 'macros', 'procedures'})
+                for p in root.rglob('*')):
             found.append(root)
     return roots, found
+
+
+def prepare_inputs(repo, output, found):
+    split = run_path(str(ROOT.parent / 'teradata/bteq/parser.py'))['commands']
+    prepared = []
+    manifest = []
+    for root in found:
+        destination = output / 'input' / root.name
+        destination.mkdir(parents=True)
+        paths = sorted(root.rglob('*'))
+        if root.name == 'teradata':
+            paths = [p for p in paths if p.is_file() and (
+                p.suffix.lower() in {'.bteq', '.btq'} or
+                (p.suffix.lower() == '.sql' and p.relative_to(root).parts[0] in
+                 {'ddl', 'macros', 'procedures'}))]
+        else:
+            paths = [p for p in paths if p.is_file() and p.suffix.lower() == '.xml']
+            workflows = [p for p in paths if p.name.lower().startswith('wf_')]
+            paths = workflows or paths
+        for path in paths:
+            target = destination / path.relative_to(root)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if path.suffix.lower() == '.sql':
+                for index, statement in enumerate(split(path.read_text())):
+                    target.with_name(f'{target.stem}_{index:03d}.sql').write_text(statement + ';\n')
+            else:
+                shutil.copyfile(path, target)
+            manifest.append(str(path.relative_to(repo)))
+        if paths:
+            prepared.append((root.name, destination))
+    (output / 'inputs.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    return prepared
 
 
 def run(repo, home, env):
@@ -72,12 +108,18 @@ def run(repo, home, env):
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     output = repo / 'warehouse/snowconvert/raw' / stamp
     output.mkdir(parents=True, mode=0o700)
-    project = output / 'project'
+    prepared = prepare_inputs(repo, output, found)
     child_env = {k: v for k, v in env.items() if not k.startswith('SNOWFLAKE_')}
     child_env['SNOWFLAKE_CONNECTION'] = 'sfx_d1110'
-    commands = [([executable, 'init', str(project), '-l', 'Teradata'], output)]
-    commands += [([executable, 'code', 'add', '-i', str(path)], project) for path in found]
-    commands.append(([executable, 'code', 'convert'], project))
+    commands = []
+    for area, source in prepared:
+        project = output / (area + '_project')
+        commands.append(([executable, 'init', str(project), '-l', 'Teradata', '-c', 'sfx_d1110'], output))
+        add = [executable, 'code', 'add', '-i', str(source)]
+        if area == 'teradata':
+            add.append('--code-already-split')
+        commands.append((add, project))
+        commands.append(([executable, 'code', 'convert', '--show-ewis'], project))
     summary = []
     for index, (command, cwd) in enumerate(commands):
         result = subprocess.run(command, cwd=cwd, env=child_env, capture_output=True)
@@ -88,7 +130,8 @@ def run(repo, home, env):
             return 2
         (output / f'{index:02d}.stdout').write_bytes(result.stdout)
         (output / f'{index:02d}.stderr').write_bytes(result.stderr)
-        summary.append({'command': command[1:3], 'exit_code': result.returncode})
+        summary.append({'command': command[1:], 'cwd': str(cwd.relative_to(output)),
+                        'exit_code': result.returncode})
         (output / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
         text = combined.decode(errors='replace').lower()
         key_auth = r'(key[- ]?pair|snowflake_jwt|private[-_ ]?key)'
