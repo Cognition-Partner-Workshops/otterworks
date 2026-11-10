@@ -59,3 +59,13 @@ m_SFX_ROLE_GRANT:
   session: s_m_SFX_ROLE_GRANT
   workflow: wf_SFX_CONTENT_DAILY
   patterns: [Source Qualifier, Expression, Truncate and load]
+
+# UNT-8 appends TEAM_MEMBER; all prior entries are preserved.
+m_SFX_TEAM_MEMBER:
+  key_columns: [TEAM_MEMBER_ID]
+  dbt_model: pc_content__team_member
+  after_table: PC_CONTENT.TEAM_MEMBER
+  before_table: PC_BEFORE.TEAM_MEMBER
+  session: s_m_SFX_TEAM_MEMBER
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Update else Insert]
