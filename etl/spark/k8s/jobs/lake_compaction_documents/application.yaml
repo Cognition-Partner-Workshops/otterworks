@@ -21,6 +21,7 @@ spec:
     minExecutors: 1
     maxExecutors: 4
   sparkConf:
+    spark.sql.sources.parallelPartitionDiscovery.threshold: "100000"
     spark.sql.adaptive.enabled: "true"
     spark.sql.adaptive.coalescePartitions.enabled: "true"
     spark.sql.adaptive.skewJoin.enabled: "true"
