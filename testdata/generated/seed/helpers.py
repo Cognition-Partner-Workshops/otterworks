@@ -71,7 +71,7 @@ def minutes_ago(n: int) -> datetime:
 # ── Password hashing ─────────────────────────────────────────────────────────
 
 def hash_password(plain: str) -> str:
-    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt(rounds=4)).decode()
+    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt(rounds=12)).decode()
 
 
 # ── DB connection ─────────────────────────────────────────────────────────────

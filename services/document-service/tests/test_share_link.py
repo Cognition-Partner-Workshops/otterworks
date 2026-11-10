@@ -1,5 +1,7 @@
 """Tests for read-only share-link tokens."""
 
+import hashlib
+import hmac
 import uuid
 
 import pytest
@@ -7,6 +9,11 @@ import pytest
 from app.services.share_link import ShareLinkService
 
 DOC_ID = "11111111-1111-4111-8111-111111111111"
+
+
+@pytest.fixture(autouse=True)
+def configure_share_secret(monkeypatch):
+    monkeypatch.setenv("SHARE_LINK_SECRET", "test-share-secret")
 
 
 @pytest.fixture
@@ -29,6 +36,32 @@ def test_token_of_another_document_is_rejected(service):
 
 def test_garbage_token_is_rejected(service):
     assert service.verify_token(DOC_ID, "not-a-token") is False
+
+
+def test_token_is_truncated_hmac_sha256(service):
+    expected = hmac.new(b"test-share-secret", f"{DOC_ID}:test-salt".encode(), hashlib.sha256).hexdigest()[:16]
+    assert service.mint_token(DOC_ID) == expected
+
+
+def test_token_depends_on_secret(service, monkeypatch):
+    token = service.mint_token(DOC_ID)
+    monkeypatch.setenv("SHARE_LINK_SECRET", "other-share-secret")
+    assert service.verify_token(DOC_ID, token) is False
+
+
+@pytest.mark.parametrize("token", ["", "☃", None])
+def test_invalid_token_values_are_rejected(service, token):
+    assert service.verify_token(DOC_ID, token) is False
+
+
+@pytest.mark.parametrize("secret", [None, ""])
+def test_missing_secret_fails_closed(service, monkeypatch, secret):
+    if secret is None:
+        monkeypatch.delenv("SHARE_LINK_SECRET", raising=False)
+    else:
+        monkeypatch.setenv("SHARE_LINK_SECRET", secret)
+    with pytest.raises(ValueError, match="SHARE_LINK_SECRET is required"):
+        service.mint_token(DOC_ID)
 
 
 @pytest.mark.asyncio

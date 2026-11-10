@@ -69,5 +69,19 @@ RSpec.describe FeatureFlag do
       flag = build(:feature_flag, :enabled, rollout_percentage: 100)
       expect(flag.enabled_for_user?(user_id)).to be true
     end
+
+    it 'uses stable SHA-256 buckets for partial rollouts' do
+      flag = build(:feature_flag, :enabled, name: 'partial_rollout', rollout_percentage: 40)
+      %w[user_a user_b user_c user_d].each do |id|
+        expected = (Digest::SHA256.hexdigest("#{flag.name}:#{id}").hex % 100) < 40
+        expect(flag.enabled_for_user?(id)).to eq(expected)
+        expect(flag.enabled_for_user?(id)).to eq(expected)
+      end
+    end
+
+    it 'does not bucket users into a zero rollout or expired flag' do
+      expect(build(:feature_flag, :enabled, rollout_percentage: 0).enabled_for_user?(user_id)).to be false
+      expect(build(:feature_flag, :enabled, :expired, rollout_percentage: 100).enabled_for_user?(user_id)).to be false
+    end
   end
 end
