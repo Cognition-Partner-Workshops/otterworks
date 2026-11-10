@@ -1,0 +1,21 @@
+SSO_IDENTITY_ID|USER_ID|PROVIDER|EXTERNAL_SUBJECT|EMAIL|CREATED_AT|IS_ACTIVE
+1|1|Workspace SAML|7e622008bb177a94e8a74c98baa22ec6049e723b202b538e72aa2a426ca7df29|mira.merrow@alderquay.example|2026-01-08 11:17:00|Y
+2|2|Workspace SAML|44f68543427aff7b8f749e2edf4753271f9fa99ed460fb8a95c16d829a721a68|tessa.vale@brindlehaven.example|2026-01-11 10:56:00|Y
+3|3|Workspace SAML|ecdf02714e1b3262f9f7f64d1f654e9ab8cdd92b525109bb1f44bf73e014e059|ivo.fenwick@cindermere.example|2026-01-14 10:19:00|Y
+4|4|Workspace SAML|1a43ba64561ed015b2f33029929a992fbd2274702b46c2225ac0f2f0dbfd2e44|arlen.calder@dovewick.example|2026-01-17 09:20:00|Y
+5|5|Workspace SAML|83fb2b4d6e5f36e2ff48ab7d48095a55f75366071786157086afd85f79f31493|nella.wren@elmspire.example|2026-01-20 11:11:00|Y
+6|6|Workspace SAML|9e74a1d8591740c7057e50a10d32253043d1a4ce56696477d5b9a8df9444c1ff|soren.alder@ferncrest.example|2026-01-23 10:24:00|Y
+7|7|Workspace SAML|1d692dbb869d67f0f22bc3e45bbd675bf171146efa1f68f6adb2558304d73e7b|liora.thorne@glenmarsh.example|2026-01-26 09:21:00|Y
+8|8|Workspace SAML|5982cb96802d6079f7085007b3e0cfe36a97cfd33a33b971ee48da85b5649be5|ewan.ellery@hearthvale.example|2026-01-29 11:55:00|Y
+9|9|Workspace SAML|f69f326f43086fc109f271dcff954ee94c0d67d7ad4c4170fa8521195e02d661|anya.rosden@ironwillow.example|2026-02-01 10:22:00|Y
+10|10|Workspace SAML|94d61d1d2a021917330069da4b081922f3777844907e96b15f0e3e785b9378ec|dorian.halden@juniperquay.example|2026-02-04 13:05:00|Y
+11|11|Workspace SAML|c495e8cc80168cc4b54e3e033350bc5e2207b5e31fede945adb1156321122699|freya.briar@kestrelford.example|2026-02-07 13:02:00|Y
+12|12|Workspace SAML|b9aa41d08a8bb4485393c340fc89f5e3545b8b7f2bc385010a691db73220ef1d|leif.voss@larkbridge.example|2026-02-10 11:34:00|Y
+13|13|Workspace SAML|7d7774971b82850f38ccfdfb7b77ea2602f15f8f8b7592372e9bd922499ebbf1|elara.larkin@mosscairn.example|2026-02-13 11:54:00|Y
+14|14|Workspace SAML|445b26f6871ed0c3afb02eba3f39b8e91149a924eec4ecacce3bddf99e83b45f|ronan.selwyn@northfen.example|2026-02-16 11:19:00|Y
+15|15|Workspace SAML|6f118d110f88787039c39c43f22643d1aaf2a36f63e78940dbdfc86013cdbfd2|cora.arden@oakhollow.example|2026-02-19 10:32:00|Y
+16|16|Workspace SAML|f8e74a9f20e413faf9ef24b33a78b00b1f65e6d30ea151ade9ac2a4f52d8dcd6|alden.greaves@pebblewick.example|2026-02-22 09:31:00|Y
+17|17|Workspace SAML|ac0275a6f6820e0263c746b6f9ffc36f4ed7419cbb64c6d9969a05768b498409|iris.marlow@quillhaven.example|2026-02-25 09:33:00|Y
+18|18|Workspace SAML|f5d6423512f440ed9d8f149e69f6ee5f9cc636514af7e4e60a8721593a8bb65b|nico.quill@reedspire.example|2026-02-28 11:48:00|Y
+19|19|Workspace SAML|07cb342f48b357671580e70dbd0420a44fee6c4a231bba85c992866ccface03b|esme.riven@silverfen.example|2026-03-03 11:41:00|Y
+20|20|Workspace SAML|04b55865860976e29b125917bccacf379885fab1bf9ccc6563e07f1920ca7f99|orin.ashby@thistlequay.example|2026-03-06 12:52:00|Y

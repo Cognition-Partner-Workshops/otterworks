@@ -1,0 +1,435 @@
+version: 2
+sources:
+- name: billing
+  schema: RAW_BILLING
+  tables:
+  - name: CUSTOMER_ACCOUNT
+    columns:
+    - name: CUSTOMER_ACCOUNT_ID
+    - name: CUSTOMER_ID
+    - name: OWNER_USER_ID
+    - name: ACCOUNT_NUMBER
+    - name: LEGAL_NAME
+    - name: BILLING_COUNTRY
+    - name: CURRENCY_CODE
+    - name: PAYMENT_TERMS_DAYS
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: PLAN_CATALOG
+    columns:
+    - name: PLAN_CATALOG_ID
+    - name: CUSTOMER_ID
+    - name: PLAN_CODE
+    - name: PLAN_NAME
+    - name: MONTHLY_PRICE
+    - name: CURRENCY_CODE
+    - name: STORAGE_LIMIT_GB
+    - name: SEAT_LIMIT
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: SUBSCRIPTION
+    columns:
+    - name: SUBSCRIPTION_ID
+    - name: CUSTOMER_ID
+    - name: PLAN_CATALOG_ID
+    - name: START_DATE
+    - name: NEXT_BILL_DATE
+    - name: SEAT_COUNT
+    - name: STATUS
+    - name: CURRENCY_CODE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: INVOICE_HDR
+    columns:
+    - name: INVOICE_HDR_ID
+    - name: CUSTOMER_ID
+    - name: INVOICE_NUMBER
+    - name: INVOICE_DATE
+    - name: DUE_DATE
+    - name: SUBTOTAL_AMOUNT
+    - name: TAX_AMOUNT
+    - name: TOTAL_AMOUNT
+    - name: CURRENCY_CODE
+    - name: STATUS
+  - name: INVOICE_LINE
+    columns:
+    - name: INVOICE_LINE_ID
+    - name: INVOICE_HDR_ID
+    - name: CUSTOMER_ID
+    - name: DESCRIPTION
+    - name: QUANTITY
+    - name: UNIT_PRICE
+    - name: LINE_AMOUNT
+    - name: TAX_AMOUNT
+    - name: CURRENCY_CODE
+    - name: SERVICE_DATE
+  - name: PAYMENT
+    columns:
+    - name: PAYMENT_ID
+    - name: CUSTOMER_ID
+    - name: INVOICE_HDR_ID
+    - name: PAYMENT_NUMBER
+    - name: PAYMENT_DATE
+    - name: AMOUNT
+    - name: CURRENCY_CODE
+    - name: METHOD
+    - name: STATUS
+    - name: CREATED_AT
+  - name: CREDIT_NOTE
+    columns:
+    - name: CREDIT_NOTE_ID
+    - name: CUSTOMER_ID
+    - name: INVOICE_HDR_ID
+    - name: CREDIT_NUMBER
+    - name: ISSUE_DATE
+    - name: AMOUNT
+    - name: CURRENCY_CODE
+    - name: REASON
+    - name: STATUS
+    - name: CREATED_AT
+  - name: TAX_RATE
+    columns:
+    - name: TAX_RATE_ID
+    - name: CUSTOMER_ID
+    - name: COUNTRY_CODE
+    - name: CURRENCY_CODE
+    - name: TAX_NAME
+    - name: RATE
+    - name: EFFECTIVE_DATE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: USAGE_DAILY
+    columns:
+    - name: USAGE_DAILY_ID
+    - name: CUSTOMER_ID
+    - name: USAGE_DATE
+    - name: QUANTITY
+    - name: UNIT_PRICE
+    - name: AMOUNT
+    - name: CURRENCY_CODE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: BILLING_ADJ
+    columns:
+    - name: BILLING_ADJ_ID
+    - name: CUSTOMER_ID
+    - name: INVOICE_HDR_ID
+    - name: ADJUSTMENT_DATE
+    - name: AMOUNT
+    - name: CURRENCY_CODE
+    - name: REASON
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: GL_ACCOUNT
+    columns:
+    - name: GL_ACCOUNT_ID
+    - name: ACCOUNT_CODE
+    - name: ACCOUNT_NAME
+    - name: ACCOUNT_TYPE
+    - name: CURRENCY_CODE
+    - name: NORMAL_BALANCE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: GL_JOURNAL_LINE
+    columns:
+    - name: GL_JOURNAL_LINE_ID
+    - name: JOURNAL_ID
+    - name: GL_ACCOUNT_ID
+    - name: SOURCE_BATCH_NUMBER
+    - name: DESCRIPTION
+    - name: POSTING_DATE
+    - name: DEBIT_AMOUNT
+    - name: CREDIT_AMOUNT
+    - name: CURRENCY_CODE
+- name: documents
+  schema: RAW_DOCUMENTS
+  tables:
+  - name: FOLDER
+    columns:
+    - name: FOLDER_ID
+    - name: OWNER_USER_ID
+    - name: FOLDER_NAME
+    - name: PATH
+    - name: VISIBILITY
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: DOCUMENT
+    columns:
+    - name: DOCUMENT_ID
+    - name: OWNER_USER_ID
+    - name: FOLDER_ID
+    - name: TITLE
+    - name: DOCUMENT_TYPE
+    - name: STATUS
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: DOC_VERSION
+    columns:
+    - name: DOC_VERSION_ID
+    - name: DOCUMENT_ID
+    - name: VERSION_NUMBER
+    - name: CHANGE_SUMMARY
+    - name: FILE_OBJECT_ID
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: DOC_SHARE
+    columns:
+    - name: DOC_SHARE_ID
+    - name: DOCUMENT_ID
+    - name: USER_ID
+    - name: PERMISSION
+    - name: EXPIRES_DATE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: DOC_TAG
+    columns:
+    - name: DOC_TAG_ID
+    - name: DOCUMENT_ID
+    - name: TAG_NAME
+    - name: TAG_CATEGORY
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: FILE_OBJECT
+    columns:
+    - name: FILE_OBJECT_ID
+    - name: DOCUMENT_ID
+    - name: OBJECT_KEY
+    - name: MIME_TYPE
+    - name: SIZE_BYTES
+    - name: CHECKSUM
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: DOC_COMMENT
+    columns:
+    - name: DOC_COMMENT_ID
+    - name: DOCUMENT_ID
+    - name: USER_ID
+    - name: BODY
+    - name: RESOLVED
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: COLLAB_SESSION
+    columns:
+    - name: COLLAB_SESSION_ID
+    - name: DOCUMENT_ID
+    - name: USER_ID
+    - name: STARTED_AT
+    - name: ENDED_AT
+    - name: EDIT_COUNT
+    - name: CLIENT_TYPE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: STORAGE_USAGE_DAILY
+    columns:
+    - name: STORAGE_USAGE_DAILY_ID
+    - name: USER_ID
+    - name: USAGE_DATE
+    - name: SIZE_BYTES
+    - name: FILE_COUNT
+    - name: QUOTA_BYTES
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: SEARCH_INDEX_LOG
+    columns:
+    - name: SEARCH_INDEX_LOG_ID
+    - name: DOCUMENT_ID
+    - name: INDEXED_AT
+    - name: INDEX_NAME
+    - name: STATUS
+    - name: DURATION_MS
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+- name: users
+  schema: RAW_USERS
+  tables:
+  - name: APP_USER
+    columns:
+    - name: APP_USER_ID
+    - name: USER_ID
+    - name: EMAIL
+    - name: FIRST_NAME
+    - name: LAST_NAME
+    - name: TIME_ZONE
+    - name: STATUS
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: USER_PROFILE
+    columns:
+    - name: USER_PROFILE_ID
+    - name: USER_ID
+    - name: DISPLAY_NAME
+    - name: JOB_TITLE
+    - name: DEPARTMENT
+    - name: LOCALE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: TEAM
+    columns:
+    - name: TEAM_ID
+    - name: OWNER_USER_ID
+    - name: TEAM_NAME
+    - name: DESCRIPTION
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: TEAM_MEMBER
+    columns:
+    - name: TEAM_MEMBER_ID
+    - name: TEAM_ID
+    - name: USER_ID
+    - name: MEMBERSHIP_ROLE
+    - name: JOINED_DATE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: ROLE_GRANT
+    columns:
+    - name: ROLE_GRANT_ID
+    - name: USER_ID
+    - name: ROLE_NAME
+    - name: SCOPE_NAME
+    - name: GRANTED_AT
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: SSO_IDENTITY
+    columns:
+    - name: SSO_IDENTITY_ID
+    - name: USER_ID
+    - name: PROVIDER
+    - name: EXTERNAL_SUBJECT
+    - name: EMAIL
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: LOGIN_EVENT
+    columns:
+    - name: LOGIN_EVENT_ID
+    - name: USER_ID
+    - name: LOGIN_AT
+    - name: AUTH_METHOD
+    - name: OUTCOME
+    - name: COUNTRY_CODE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: USER_ACTIVITY_DAILY
+    columns:
+    - name: USER_ACTIVITY_DAILY_ID
+    - name: USER_ID
+    - name: ACTIVITY_DATE
+    - name: EVENT_COUNT
+    - name: DOCUMENTS_VIEWED
+    - name: ACTIVE_MINUTES
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: USER_PREF
+    columns:
+    - name: USER_PREF_ID
+    - name: USER_ID
+    - name: PREF_KEY
+    - name: PREF_VALUE
+    - name: UPDATED_AT
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: USER_STATUS_HIST
+    columns:
+    - name: USER_STATUS_HIST_ID
+    - name: USER_ID
+    - name: STATUS_CODE
+    - name: REASON
+    - name: EFFECTIVE_DATE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+- name: audit
+  schema: RAW_AUDIT
+  tables:
+  - name: AUDIT_EVENT
+    columns:
+    - name: AUDIT_EVENT_ID
+    - name: ACTOR_USER_ID
+    - name: DOCUMENT_ID
+    - name: ACTION_NAME
+    - name: OUTCOME
+    - name: RESOURCE_TYPE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: AUDIT_EVENT_ARCHIVE
+    columns:
+    - name: AUDIT_EVENT_ARCHIVE_ID
+    - name: AUDIT_EVENT_ID
+    - name: ARCHIVED_AT
+    - name: ARCHIVE_PATH
+    - name: RETENTION_UNTIL
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: ACCESS_REVIEW
+    columns:
+    - name: ACCESS_REVIEW_ID
+    - name: USER_ID
+    - name: REVIEWER_USER_ID
+    - name: REVIEW_DATE
+    - name: DECISION
+    - name: REVIEW_NOTES
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: RETENTION_POLICY
+    columns:
+    - name: RETENTION_POLICY_ID
+    - name: POLICY_NAME
+    - name: RESOURCE_TYPE
+    - name: RETENTION_DAYS
+    - name: DISPOSITION
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: DATA_EXPORT_REQ
+    columns:
+    - name: DATA_EXPORT_REQ_ID
+    - name: USER_ID
+    - name: REQUESTED_AT
+    - name: EXPORT_FORMAT
+    - name: STATUS
+    - name: PURPOSE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: COMPLIANCE_FLAG
+    columns:
+    - name: COMPLIANCE_FLAG_ID
+    - name: AUDIT_EVENT_ID
+    - name: FLAG_CODE
+    - name: SEVERITY
+    - name: REVIEW_STATUS
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: SECURITY_ALERT
+    columns:
+    - name: SECURITY_ALERT_ID
+    - name: ACTOR_USER_ID
+    - name: SEVERITY
+    - name: ALERT_TYPE
+    - name: RESOLUTION
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: LEGAL_HOLD
+    columns:
+    - name: LEGAL_HOLD_ID
+    - name: DOCUMENT_ID
+    - name: MATTER_NUMBER
+    - name: REASON
+    - name: RELEASE_DATE
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: AUDIT_DAILY_SUMMARY
+    columns:
+    - name: AUDIT_DAILY_SUMMARY_ID
+    - name: SUMMARY_DATE
+    - name: EVENT_COUNT
+    - name: SUCCESS_COUNT
+    - name: FAILURE_COUNT
+    - name: CREATED_AT
+    - name: IS_ACTIVE
+  - name: AUDIT_RECON
+    columns:
+    - name: AUDIT_RECON_ID
+    - name: AUDIT_EVENT_ID
+    - name: RECON_DATE
+    - name: SOURCE_SYSTEM
+    - name: STATUS
+    - name: DIFFERENCE_COUNT
+    - name: CREATED_AT
+    - name: IS_ACTIVE

@@ -1,0 +1,22 @@
+name: sfx_warehouse
+version: '1.0.0'
+config-version: 2
+profile: sfx_warehouse
+model-paths: ["models"]
+macro-paths: ["macros"]
+clean-targets: ["target", "dbt_packages"]
+vars:
+  run_token: "{{ env_var('SNOWFLAKE_RUN_TOKEN', 'sfx-d1110') }}"
+  governance_policies: {}
+on-run-end:
+  - "{{ reapply_governance(results) }}"
+models:
+  sfx_warehouse:
+    +persist_docs:
+      relation: true
+    staging:
+      billing:
+        +materialized: view
+        +schema: CORE_BILLING
+    marts:
+      +schema: MART
