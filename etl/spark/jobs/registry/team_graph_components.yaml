@@ -1,8 +1,9 @@
 {
   "job": "team_graph_components",
   "language": "scala",
-  "target": "snowpark_python",
-  "status": "legacy",
+  "target": "dbt",
+  "status": "snowflake",
+  "command": "cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job team_graph_components --select path:models/spark/team_graph_components",
   "schedule": "22 3 * * *",
   "profile": "small",
   "class": "sfx.TeamGraphComponents"
