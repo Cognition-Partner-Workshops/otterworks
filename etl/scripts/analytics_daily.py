@@ -16,6 +16,8 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import boto3
+
+from bucket_owner import expected_bucket_owner
 import pandas as pd
 import psycopg2
 
@@ -286,6 +288,7 @@ def main():
     ))
 
     # ---- Load to S3 data lake ----
+    bucket_owner = expected_bucket_owner()
     s3_client = boto3.client(
         "s3",
         region_name=aws_region,
@@ -298,6 +301,7 @@ def main():
     summary_bytes = gzip.compress(json.dumps(summary, indent=2).encode("utf-8"))
     s3_client.put_object(
         Bucket=data_lake_bucket,
+        ExpectedBucketOwner=bucket_owner,
         Key=summary_key,
         Body=summary_bytes,
     )
@@ -308,6 +312,7 @@ def main():
     hourly_bytes = gzip.compress(json.dumps(hourly_breakdown, indent=2).encode("utf-8"))
     s3_client.put_object(
         Bucket=data_lake_bucket,
+        ExpectedBucketOwner=bucket_owner,
         Key=hourly_key,
         Body=hourly_bytes,
     )
@@ -321,6 +326,7 @@ def main():
             gz.write(b"\n")
     s3_client.put_object(
         Bucket=data_lake_bucket,
+        ExpectedBucketOwner=bucket_owner,
         Key=users_key,
         Body=buf.getvalue(),
     )
@@ -414,12 +420,14 @@ def main():
     }
 
     report_key = "reports/analytics/daily/%s/report.json" % ds
+    bucket_owner = expected_bucket_owner()
     s3_client_report = boto3.client(
         "s3",
         region_name=aws_region,
     )
     s3_client_report.put_object(
         Bucket=data_lake_bucket,
+        ExpectedBucketOwner=bucket_owner,
         Key=report_key,
         Body=json.dumps(report, indent=2).encode("utf-8"),
     )

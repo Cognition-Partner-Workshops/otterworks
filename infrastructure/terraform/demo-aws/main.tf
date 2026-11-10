@@ -80,7 +80,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "demo" {
 resource "aws_s3_bucket_versioning" "demo" {
   bucket = aws_s3_bucket.demo.id
   versioning_configuration {
-    status = "Disabled"
+    status = "Enabled"
   }
 }
 
@@ -94,6 +94,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "demo" {
     }
     expiration {
       days = 7
+    }
+    noncurrent_version_expiration {
+      noncurrent_days = 1
     }
     abort_incomplete_multipart_upload {
       days_after_initiation = 1
@@ -217,4 +220,18 @@ resource "aws_s3_bucket_policy" "demo_tls" {
       Condition = { Bool = { "aws:SecureTransport" = "false" } }
     }]
   })
+}
+
+module "access_logs" {
+  source         = "../modules/access-log-bucket"
+  bucket         = "${local.bucket_name}-logs"
+  force_destroy  = true
+  retention_days = 14
+  tags           = { Name = "${local.bucket_name}-logs" }
+}
+
+resource "aws_s3_bucket_logging" "demo" {
+  bucket        = aws_s3_bucket.demo.id
+  target_bucket = module.access_logs.id
+  target_prefix = "s3/demo/"
 }

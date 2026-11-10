@@ -15,6 +15,8 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 import boto3
+
+from bucket_owner import expected_bucket_owner
 import psycopg2
 
 from runtime_config import load_config, required_secret
@@ -123,6 +125,7 @@ def main():
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"), lookback_days
     ))
 
+    bucket_owner = expected_bucket_owner()
     s3_client = boto3.client(
         "s3",
         region_name=aws_region,
@@ -139,7 +142,7 @@ def main():
         key = "analytics/daily/year=%s/month=%s/day=%s/top_users.jsonl.gz" % (year, month, day)
 
         try:
-            response = s3_client.get_object(Bucket=data_lake_bucket, Key=key)
+            response = s3_client.get_object(Bucket=data_lake_bucket, ExpectedBucketOwner=bucket_owner, Key=key)
             body = response["Body"].read()
             decompressed = gzip.decompress(body).decode("utf-8")
 
@@ -199,6 +202,7 @@ def main():
     # ---- Store reports to S3 ----
     print("[%s] Storing reports to S3..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
+    bucket_owner = expected_bucket_owner()
     s3_client_upload = boto3.client(
         "s3",
         region_name=aws_region,
@@ -208,6 +212,7 @@ def main():
     report_key = "%s/%s/activity_report.json" % (s3_reports_prefix, ds)
     s3_client_upload.put_object(
         Bucket=data_lake_bucket,
+        ExpectedBucketOwner=bucket_owner,
         Key=report_key,
         Body=json.dumps(report, indent=2, default=str).encode("utf-8"),
     )
@@ -216,6 +221,7 @@ def main():
     latest_key = "%s/latest/activity_report.json" % s3_reports_prefix
     s3_client_upload.put_object(
         Bucket=data_lake_bucket,
+        ExpectedBucketOwner=bucket_owner,
         Key=latest_key,
         Body=json.dumps(report, indent=2, default=str).encode("utf-8"),
     )
@@ -227,6 +233,7 @@ def main():
         lines = [json.dumps(u, default=str) for u in user_summaries]
         s3_client_upload.put_object(
             Bucket=data_lake_bucket,
+            ExpectedBucketOwner=bucket_owner,
             Key=users_key,
             Body=("\n".join(lines) + "\n").encode("utf-8"),
         )

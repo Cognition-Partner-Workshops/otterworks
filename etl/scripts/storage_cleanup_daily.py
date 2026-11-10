@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 
 import boto3
 
+from bucket_owner import expected_bucket_owner
 from runtime_config import load_config
 
 
@@ -40,6 +41,7 @@ def main():
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"), file_storage_bucket, files_prefix
     ))
 
+    bucket_owner = expected_bucket_owner()
     s3_client = boto3.client(
         "s3",
         region_name=aws_region,
@@ -131,11 +133,13 @@ def main():
         try:
             s3_client.copy_object(
                 Bucket=quarantine_bucket,
+                ExpectedBucketOwner=bucket_owner,
+                ExpectedSourceBucketOwner=bucket_owner,
                 Key=dest_key,
                 CopySource={"Bucket": file_storage_bucket, "Key": source_key},
                 MetadataDirective="COPY",
             )
-            s3_client.delete_object(Bucket=file_storage_bucket, Key=source_key)
+            s3_client.delete_object(Bucket=file_storage_bucket, ExpectedBucketOwner=bucket_owner, Key=source_key)
             moved_count += 1
         except Exception as e:
             print("[%s] WARNING: Failed to quarantine %s: %s" % (
@@ -183,12 +187,14 @@ def main():
     }
 
     report_key = "reports/storage-cleanup/%s/report.json" % ds
+    bucket_owner = expected_bucket_owner()
     s3_client_report = boto3.client(
         "s3",
         region_name=aws_region,
     )
     s3_client_report.put_object(
         Bucket=data_lake_bucket,
+        ExpectedBucketOwner=bucket_owner,
         Key=report_key,
         Body=json.dumps(report, indent=2).encode("utf-8"),
     )

@@ -2,12 +2,18 @@
 # on-prem deployment is reached today. No TLS listener: the "before" state
 # serves plain HTTP.
 
-resource "aws_lb" "this" { # nosemgrep: terraform.aws.security.aws-elb-access-logs-not-enabled.aws-elb-access-logs-not-enabled
+resource "aws_lb" "this" {
   name               = local.name
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
   subnets            = data.aws_subnets.public.ids
+
+  access_logs {
+    bucket  = module.access_logs.id
+    prefix  = "alb"
+    enabled = true
+  }
 }
 
 resource "aws_lb_target_group" "app" {

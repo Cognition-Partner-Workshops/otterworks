@@ -149,3 +149,17 @@ resource "aws_s3_bucket_policy" "probe_artifacts_tls" {
     }]
   })
 }
+
+module "access_logs" {
+  source         = "../modules/access-log-bucket"
+  bucket         = "${local.name}-access-logs-${local.account}"
+  force_destroy  = true
+  retention_days = 14
+  tags           = local.tags
+}
+
+resource "aws_s3_bucket_logging" "probe_artifacts" {
+  bucket        = aws_s3_bucket.probe_artifacts.id
+  target_bucket = module.access_logs.id
+  target_prefix = "s3/probe-artifacts/"
+}

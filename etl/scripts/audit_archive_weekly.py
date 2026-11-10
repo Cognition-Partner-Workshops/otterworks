@@ -18,6 +18,7 @@ from decimal import Decimal
 
 import boto3
 
+from bucket_owner import expected_bucket_owner
 from runtime_config import load_config
 
 
@@ -105,6 +106,7 @@ def main():
     ))
 
     # ---- Upload to S3 with Glacier storage class ----
+    bucket_owner = expected_bucket_owner()
     s3_client = boto3.client(
         "s3",
         region_name=aws_region,
@@ -112,6 +114,7 @@ def main():
 
     s3_client.put_object(
         Bucket=archive_bucket,
+        ExpectedBucketOwner=bucket_owner,
         Key=archive_key,
         Body=buf.getvalue(),
         StorageClass="GLACIER",
@@ -187,12 +190,14 @@ def main():
     }
 
     report_key = "reports/compliance/audit-archive/%s/report.json" % ds
+    bucket_owner = expected_bucket_owner()
     s3_client_report = boto3.client(
         "s3",
         region_name=aws_region,
     )
     s3_client_report.put_object(
         Bucket=archive_bucket,
+        ExpectedBucketOwner=bucket_owner,
         Key=report_key,
         Body=json.dumps(report, indent=2).encode("utf-8"),
     )
