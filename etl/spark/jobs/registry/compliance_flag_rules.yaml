@@ -5,5 +5,5 @@
   "status": "snowflake",
   "schedule": "29 3 * * *",
   "profile": "small",
-  "command": "{ [ -d warehouse/dbt ] || cd \"$(dirname \"${SFX_SPARK_ROOT:-/opt/etl/spark}\")/..\"; } && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job compliance_flag_rules --select path:models/spark/compliance_flag_rules"
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job compliance_flag_rules --select path:models/spark/compliance_flag_rules"
 }
