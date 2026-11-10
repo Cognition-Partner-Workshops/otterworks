@@ -77,15 +77,6 @@ variable "enable_karpenter" {
 }
 
 
-# Audit is ~99% of control-plane log volume (about 1.3 GB/day on an idle
-# cluster, ~$19/month in ingestion) and nothing reads it. Add "audit" back for
-# an investigation; switching log types is an in-place update.
-variable "cluster_log_types" {
-  description = "EKS control-plane log types shipped to CloudWatch"
-  type        = list(string)
-  default     = ["api"]
-}
-
 variable "cluster_log_retention_days" {
   description = "Retention for the EKS control-plane CloudWatch log group"
   type        = number
