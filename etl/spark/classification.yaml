@@ -66,8 +66,8 @@
   reason: "Evaluates a logistic churn-scoring function in Python for each subscription."
 - job: users_risk_score
   language: scala
-  target: snowpark_python
-  reason: "Applies a logistic risk model to per-user activity features rather than a relational aggregation."
+  target: dbt
+  reason: "Logistic risk scoring is arithmetic and EXP over daily activity features; SQL preserves the formula."
 - job: security_alert_anomaly
   language: python
   target: snowpark_python
