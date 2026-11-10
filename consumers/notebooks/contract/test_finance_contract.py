@@ -51,7 +51,7 @@ def test_snowflake_session_is_tagged_on_parity_warehouse(warehouse):
     assert warehouse.session() == {
         "DATABASE_NAME": SnowflakeWarehouse.DATABASE,
         "SCHEMA_NAME": SnowflakeWarehouse.SCHEMA,
-        "WAREHOUSE_NAME": os.getenv("SNOWFLAKE_CONTRACT_WAREHOUSE", SnowflakeWarehouse.WAREHOUSE),
+        "WAREHOUSE_NAME": "SFX_D1110_PARITY_WH",
         "QUERY_TAG": '{"run":"sfx-d1110","act":"consumers","consumer":"finance-notebook"}',
     }
 

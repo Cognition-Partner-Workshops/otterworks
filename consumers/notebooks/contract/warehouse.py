@@ -50,8 +50,7 @@ class SnowflakeWarehouse:
         if self._connection is None:
             if not self.configured:
                 raise ValueError("Snowflake environment not configured")
-            warehouse = os.getenv("SNOWFLAKE_CONTRACT_WAREHOUSE", self.WAREHOUSE)
-            self._connection = connect(default_config({**os.environ, "SNOWFLAKE_WAREHOUSE": warehouse}))
+            self._connection = connect(default_config({**os.environ, "SNOWFLAKE_WAREHOUSE": self.WAREHOUSE}))
         return self._connection
 
     def _execute(self, sql):

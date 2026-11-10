@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import nbformat
 import pytest
 
+from contract.warehouse import SnowflakeWarehouse
 from finance_nb.queries import NOTEBOOK, extract_queries
 from finance_nb.warehouse import QUERY_TAG, WarehouseUnavailable, connect, run_query
 
@@ -45,7 +46,19 @@ def test_notebook_valid_clear_and_every_query_is_extractable():
 
 def test_notebook_has_no_teradata_logon():
     text = NOTEBOOK.read_text()
-    assert "nb_dsci_pkhan" not in text and "tdprod" not in text and "password" not in text
+    assert not any(marker in text.lower() for marker in (".logon", "tdprod", "teradatasql", "td_host", "td_user", "password"))
+
+
+def test_contract_warehouse_ignores_environment_override(monkeypatch):
+    for name, value in SNOWFLAKE_ENV.items():
+        monkeypatch.setenv(name, value)
+    monkeypatch.setenv("SNOWFLAKE_CONTRACT_WAREHOUSE", "other-wh")
+    connector = MagicMock()
+    monkeypatch.setattr("contract.warehouse.connect", connector)
+    monkeypatch.setattr("finance_nb.warehouse._der_private_key", lambda key: b"der")
+    warehouse = SnowflakeWarehouse({})
+    assert warehouse.connection is connector.return_value
+    assert connector.call_args.args[0]["warehouse"] == "SFX_D1110_PARITY_WH"
 
 
 def test_connection_uses_fake_without_driver_import():

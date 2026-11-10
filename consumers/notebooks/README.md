@@ -54,7 +54,7 @@ account) and refuse any other TD_USER. Seed with ROWS_PER_TABLE=800 and
 BUSINESS_DATE=20261109. CONTRACT_RECORD=true re-records live JSON.
 
 snowflake runs the notebook's exact SQL against SFX_D1110_AFTER.COMPAT on
-SFX_D1110_PARITY_WH (override with SNOWFLAKE_CONTRACT_WAREHOUSE), asserts the
+SFX_D1110_PARITY_WH (fixed; environment overrides are ignored), asserts the
 session's database, schema, warehouse and QUERY_TAG, and prints each query ID.
 Missing SNOWFLAKE_ACCOUNT, USER, ROLE or PRIVATE_KEY skips. It must agree with the
 recorded Teradata fixtures on column names and order, row counts, month keys
