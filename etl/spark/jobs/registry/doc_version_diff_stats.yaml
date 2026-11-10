@@ -5,5 +5,5 @@
   "status": "snowflake",
   "schedule": "25 3 * * *",
   "profile": "small",
-  "command": "cd \"${SFX_REPO_ROOT:-.}\" && warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job doc_version_diff_stats"
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job doc_version_diff_stats"
 }
