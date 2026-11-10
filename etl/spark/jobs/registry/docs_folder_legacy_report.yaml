@@ -2,7 +2,8 @@
   "job": "docs_folder_legacy_report",
   "language": "python",
   "target": "dbt",
-  "status": "legacy",
-  "schedule": "11 2 * * *",
+  "status": "snowflake",
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_folder_legacy_report --select path:models/spark/docs_folder_legacy_report",
+  "schedule": null,
   "profile": "small"
 }
