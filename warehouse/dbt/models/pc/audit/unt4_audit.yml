@@ -1,0 +1,42 @@
+version: 2
+sources:
+  - name: unt4_archive_fixture
+    database: SFX_D1110_AFTER
+    schema: PC_AUDIT_UNT4_FIXTURE
+    tables:
+      - name: AUDIT_EVENT
+        description: Test-only archive fixture input, row-identical to the isolated runner fixture database.
+models:
+  - name: pc_audit__audit_daily_summary
+    description: >-
+      m_SFX_AUDIT_DAILY_SUMMARY. AGG_DAILY_EVENTS groups by SUMMARY_DT = TRUNC(EVENT_TS,'DD') and
+      CUSTOMER_ID; EVENT_COUNT = COUNT(EVENT_ID), EXPORT_COUNT = SUM(IIF(EVENT_TYPE='DOC_EXPORT',1,0)), where
+      a NULL predicate yields 0. SEQ_AUDIT_SUMMARY starts at 50001, Reset NO. The runner numbers groups in
+      first-seen SQ read order (runner/engine.py t_aggregator, _seq_value), which is EVENT_ID order for the
+      audit target, so new groups are ranked by MIN(EVENT_ID). The session is Insert with no truncate, so a
+      legacy rerun appends a second copy of every group with fresh sequence IDs
+      (etl/informatica/tests/test_runner_integration.py). INTENDED DIFFERENCE: dbt replay is idempotent. The
+      first load matches PowerCenter including generated IDs. On replay, existing (SUMMARY_DT, CUSTOMER_ID)
+      groups keep their SUMMARY_ID and their counts are merged in place, and new groups continue from
+      MAX(SUMMARY_ID)+1. Never full refresh.
+    columns:
+      - name: SUMMARY_ID
+        tests: [not_null, unique]
+  - name: pc_audit__audit_event_archive
+    description: >-
+      m_SFX_AUDIT_EVENT_ARCHIVE. Source filter EVENT_TS < CURRENT_DATE - $$ARCHIVE_DAYS with the session
+      override $$ARCHIVE_DAYS=2555 (params/sfx_d1110_daily.par), not the workflow default of 730. CURRENT_DATE
+      is the UTC date, matching the runner's PostgreSQL session (Etc/UTC). SEQ_AUDIT_ARCHIVE starts at 1, Reset
+      NO, and is numbered in SQ read order (EVENT_ID order). s_m_SFX_AUDIT_EVENT_ARCHIVE is DISABLED in
+      wf_SFX_AUDIT_DAILY (ISENABLED="NO") and stays disabled in the migrated workflow. INTENDED DIFFERENCE: a
+      legacy rerun appends every qualifying event again with new IDs. dbt appends only the occurrences of each
+      complete (ACTOR_USER_ID, DOCUMENT_ID, EVENT_TS, EVENT_TYPE, DETAILS) tuple that are not yet archived, and
+      continues IDs from MAX(ARCHIVE_ID)+1. That equals the runner's persisted sequence while the archive is
+      written only by this mapping. Never full refresh.
+    columns:
+      - name: ARCHIVE_ID
+        tests: [not_null, unique]
+  - name: pc_audit__unt4_fixture_archive_empty
+    description: Test-only nonempty archive fixture starting from an empty target and sequence 1. Enabled only with SFX_UNT4_ARCHIVE_FIXTURE=1.
+  - name: pc_audit__unt4_fixture_archive_history
+    description: Test-only archive fixture that starts with prior history rows and a persisted sequence. Enabled only with SFX_UNT4_ARCHIVE_FIXTURE=1.
