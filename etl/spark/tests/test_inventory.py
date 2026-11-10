@@ -13,9 +13,19 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 LABEL = {"otterworks.run-token": "sfx-d1110"}
+TARGETS = ("dbt", "snowpark_python", "spark_standard_template", "retired")
 
 
 class InventoryTest(unittest.TestCase):
+    def assert_classification(self, entry):
+        self.assertIn(entry["target"], TARGETS)
+        self.assertTrue(entry["reason"].strip())
+        self.assertEqual("original_target" in entry, "change_reason" in entry)
+        if "original_target" in entry:
+            self.assertIn(entry["original_target"], TARGETS[:-1])
+            self.assertNotEqual(entry["original_target"], entry["target"])
+            self.assertTrue(entry["change_reason"].strip())
+
     def test_job_inventory(self):
         entries = [json.loads(path.read_text()) for path in sorted((ROOT / "jobs/registry").glob("*.yaml"))]
         jobs = [entry["job"] for entry in entries]
@@ -41,10 +51,15 @@ class InventoryTest(unittest.TestCase):
         for job in jobs:
             with self.subTest(job=job):
                 entry = registry[job]
+                self.assert_classification(classified[job])
                 self.assertIn(entry["status"], ("legacy", "template", "snowflake", "retired"))
                 self.assertEqual(entry["language"], classified[job]["language"])
                 if entry["status"] == "retired":
-                    self.assertIn(entry["target"], (classified[job]["target"], "retired"))
+                    self.assertIn(entry["target"], (
+                        classified[job]["target"], classified[job].get("original_target", classified[job]["target"]), "retired",
+                    ))
+                elif entry["status"] == "legacy":
+                    self.assertEqual(entry["target"], classified[job].get("original_target", classified[job]["target"]))
                 else:
                     self.assertEqual(entry["target"], classified[job]["target"])
                 self.assertIn(entry["profile"], ("small", "large"))
@@ -86,7 +101,7 @@ class InventoryTest(unittest.TestCase):
                 scala = "--class" in tokens
                 self.assertEqual(classified[job]["language"], "scala" if scala else "python")
                 self.assertEqual(spec["type"], "Scala" if scala else "Python")
-                self.assertIn(classified[job]["target"], ("dbt", "snowpark_python", "spark_standard_template"))
+                self.assertIn(classified[job]["target"], TARGETS)
                 self.assertTrue(classified[job]["reason"])
                 if scala:
                     self.assertEqual(spec["mainClass"], option("--class"))
@@ -104,6 +119,26 @@ class InventoryTest(unittest.TestCase):
                         self.assertIn("valueFrom", environment["TD_JDBC_PASSWORD"])
                 text = (ROOT / "k8s/jobs" / job / "application.yaml").read_text()
                 self.assertEqual(text.count("# gitleaks:allow"), 2 * len(inline))
+
+    def test_classification_provenance(self):
+        for target in TARGETS:
+            with self.subTest(target=target):
+                self.assert_classification({"target": target, "reason": "Retain the computation."})
+        self.assert_classification({
+            "target": "retired", "reason": "No consumers remain.",
+            "original_target": "dbt", "change_reason": "The cron was already disabled.",
+        })
+
+    def test_invalid_classification_provenance(self):
+        for changes in (
+            {"target": "unknown"}, {"target": ""}, {"reason": ""},
+            {"original_target": "snowpark_python"}, {"change_reason": "SQL windows suffice."},
+            {"original_target": "dbt", "change_reason": "Unchanged target."},
+            {"original_target": "retired", "change_reason": "Invalid original target."},
+            {"original_target": "snowpark_python", "change_reason": " "},
+        ):
+            with self.subTest(changes=changes), self.assertRaises(AssertionError):
+                self.assert_classification({"target": "dbt", "reason": "A relational summary.", **changes})
 
     def test_kustomization(self):
         directory = ROOT / "k8s"
@@ -142,6 +177,9 @@ class InventoryTest(unittest.TestCase):
             with patch(__name__ + ".ROOT", root):
                 self.test_job_inventory()
                 self.test_kustomization()
+                entry["target"] = "dbt"
+                registration.write_text(json.dumps(entry))
+                self.test_job_inventory()
 
     def test_snowflake_kustomization_stub(self):
         with tempfile.TemporaryDirectory() as temporary:
