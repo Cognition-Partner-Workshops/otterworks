@@ -37,7 +37,7 @@ def test_generate_setup_load(estate, tmp_path):
     generated = subprocess.run([sys.executable, str(generator), '--rows', '2000', '--seed', '1110', '--out', str(tmp_path)], text=True, capture_output=True)
     assert generated.returncode == 0, generated.stderr
     counts = load_all(estate, tmp_path)
-    assert len(counts) == 40
+    assert len(counts) == 42
     for table in TABLES:
         path = tmp_path / table.area / table.name / '20261109.psv'
         with path.open() as handle:
@@ -109,7 +109,8 @@ def test_daily_chain(estate, tmp_path):
     assert len([r for r in plans if int(r[0]) >= 9000000001]) == 100
     with (exports / 'currency_daily.psv').open() as handle:
         currency = list(csv.reader(handle, delimiter='|'))
-    assert len(currency) == 1 and int(currency[0][1]) == 2100
+    assert len(currency) == 6 and sum(int(row[1]) for row in currency) == 2100
+    assert len([row for row in currency if row[0].strip().upper() == 'USD']) == 1
     with (exports / 'invoice_periods.psv').open() as handle:
         periods = {int(r[0]): r for r in csv.reader(handle, delimiter='|')}
     dates = ('2026-10-31', '2024-02-29', '2025-12-31', '2026-01-01', '1999-12-31', '2026-11-30')
@@ -118,6 +119,13 @@ def test_daily_chain(estate, tmp_path):
         row = periods[9000000001 + index]
         assert row[1:] == [(date-dt.timedelta(days=1)).isoformat(), str(date.month),
                            date.replace(day=1).strftime('%Y%m%d'), date.strftime('%Y-%m'), '2026-11-09']
+        persisted = estate.conn.execute('SELECT prior_period_end_dt,invoice_month,period_key,invoice_period,period_closed_cd FROM sfx_billing.invoice_hdr WHERE invoice_id=%s', (9000000001+index,)).fetchone()
+        assert persisted == (date-dt.timedelta(days=1), date.month, int(date.replace(day=1).strftime('%Y%m%d')),
+                             date.strftime('%Y-%m'), 'Y' if value == '2026-10-31' else 'N')
+    assert_journals(estate)
+    snapshot = estate.conn.execute('SELECT count(*),sum(debit_amount),sum(credit_amount) FROM sfx_billing.gl_journal_line').fetchone()
+    assert estate.conn.execute("SELECT count(*) FROM sfx_billing.invoice_line WHERE invoice_id>=9000000001 AND description='Monthly subscription'").fetchone() == (84,)
+    assert estate.conn.execute('SELECT count(*) FROM sfx_billing.invoice_hdr h JOIN (SELECT currency_cd,sum(total_amount) AS total FROM sfx_billing.invoice_hdr GROUP BY currency_cd) c ON h.currency_cd=c.currency_cd WHERE h.currency_control_total<>c.total').fetchone() == (0,)
     assert estate.conn.execute('SELECT count(*),count(DISTINCT document_id) FROM sfx_documents.doc_version WHERE document_id>=9000000001').fetchone() == (50, 50)
     assert estate.conn.execute("SELECT units FROM sfx_billing.usage_daily WHERE customer_id=9000000001 AND usage_type='STORAGE'").fetchone() == (1048576,)
     assert estate.conn.execute("SELECT count(*) FROM sfx_billing.invoice_line WHERE description='Monthly storage'").fetchone()[0] > 0
@@ -127,6 +135,39 @@ def test_daily_chain(estate, tmp_path):
         assert estate.conn.execute('SELECT count(*) FROM ' + table).fetchone() == (0,)
     again = subprocess.run(command + ['--reuse-landing'], env=environment, text=True, capture_output=True, timeout=120)
     assert again.returncode == 0, again.stdout + again.stderr
+    assert estate.conn.execute('SELECT count(*),sum(debit_amount),sum(credit_amount) FROM sfx_billing.gl_journal_line').fetchone() == snapshot
+
+
+def assert_journals(estate):
+    conn = estate.conn
+    assert conn.execute('SELECT count(*) FROM sfx_billing.gl_account').fetchone() == (10,)
+    assert conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line').fetchone()[0] > 0
+    assert conn.execute('SELECT sum(debit_amount-credit_amount) FROM sfx_billing.gl_journal_line').fetchone() == (0,)
+    assert conn.execute('SELECT invoice_id FROM sfx_billing.gl_journal_line GROUP BY invoice_id HAVING sum(debit_amount)<>sum(credit_amount)').fetchall() == []
+    assert conn.execute('SELECT credit_note_id FROM sfx_billing.gl_journal_line WHERE credit_note_id IS NOT NULL GROUP BY credit_note_id HAVING sum(debit_amount)<>sum(credit_amount)').fetchall() == []
+    assert conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line WHERE debit_amount<0 OR credit_amount<0 OR (debit_amount>0 AND credit_amount>0)').fetchone() == (0,)
+    assert conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line j LEFT JOIN sfx_billing.gl_account a ON j.gl_account_id=a.gl_account_id WHERE a.gl_account_id IS NULL').fetchone() == (0,)
+    assert conn.execute('SELECT count(*) FROM sfx_billing.invoice_hdr h WHERE h.invoice_dt<=DATE \'2026-11-09\' AND NOT EXISTS (SELECT 1 FROM sfx_billing.gl_journal_line j WHERE j.invoice_id=h.invoice_id)').fetchone() == (0,)
+    assert conn.execute('SELECT count(*) FROM sfx_billing.invoice_hdr h JOIN (SELECT invoice_id,sum(line_amount) AS subtotal FROM sfx_billing.invoice_line GROUP BY invoice_id) l ON h.invoice_id=l.invoice_id WHERE h.invoice_dt<=DATE \'2026-11-09\' AND h.total_amount<>l.subtotal+h.tax_amount').fetchone() == (0,)
+    assert conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line j JOIN sfx_billing.invoice_hdr h ON j.invoice_id=h.invoice_id WHERE j.credit_note_id IS NULL AND j.gl_account_id=1200 AND j.debit_amount-j.credit_amount<>h.total_amount').fetchone() == (0,)
+    assert conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line j JOIN sfx_billing.credit_note c ON j.credit_note_id=c.credit_note_id WHERE j.gl_account_id=1200 AND j.credit_amount-j.debit_amount<>c.amount').fetchone() == (0,)
+
+
+def test_invoice_empty_and_invalid_period(estate):
+    estate.execute("CALL SFX_BILLING.P_MONTHLY_INVOICE('20261109', ?)")
+    assert estate.errorcode == 0, estate.output.getvalue()
+    assert estate.conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line').fetchone() == (0,)
+    estate.execute("CALL SFX_BILLING.P_MONTHLY_INVOICE('20260230', ?)")
+    assert estate.errorcode != 0
+    assert estate.conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line').fetchone() == (0,)
+
+
+def test_setup_extends_existing_table(estate):
+    estate.conn.execute('ALTER TABLE sfx_billing.invoice_hdr DROP COLUMN invoice_period')
+    setup(estate)
+    estate.execute("UPDATE SFX_BILLING.INVOICE_HDR SET INVOICE_PERIOD=CAST(CAST(INVOICE_DT AS FORMAT 'YYYY-MM') AS CHAR(7))")
+    assert estate.errorcode == 0, estate.output.getvalue()
+    assert estate.conn.execute("SELECT formats->>'prior_period_end_dt' FROM sfx_td.tables WHERE name='sfx_billing.invoice_hdr'").fetchone() == ('YYYY-MM-DD',)
 
 
 def test_chain_stops_on_load_error(estate, tmp_path):

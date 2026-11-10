@@ -28,6 +28,8 @@ class Table:
         return self.name == "STORAGE_USAGE_DAILY"
 
     def count(self, rows):
+        if self.name == 'GL_JOURNAL_LINE':
+            return 0
         return self.fixed or max(1, rows // self.divisor)
 
 
@@ -39,6 +41,9 @@ TABLES = (
         Column("STATUS_CD", "C12"),
         Column("CURRENCY_CD", "C3"),
         Column("CREATED_DT", "D"),
+        Column("ACCOUNT_NUMBER", "V24"),
+        Column("COUNTRY_CD", "C2"),
+        Column("REGION_CD", "V20"),
     ), 10, 0),
     Table("billing", "PLAN_CATALOG", (
         Column("PLAN_ID", "B"),
@@ -64,6 +69,16 @@ TABLES = (
         Column("PERIOD_START_DT", "D"),
         Column("CURRENCY_CD", "C3"),
         Column("TOTAL_AMOUNT", "N"),
+        Column("INVOICE_NUMBER", "V32"),
+        Column("TAX_RATE_ID", "B"),
+        Column("SUBTOTAL_AMOUNT", "N"),
+        Column("TAX_AMOUNT", "N"),
+        Column("INVOICE_PERIOD", "C7"),
+        Column("PERIOD_KEY", "I"),
+        Column("PRIOR_PERIOD_END_DT", "D"),
+        Column("INVOICE_MONTH", "I"),
+        Column("PERIOD_CLOSED_CD", "C1"),
+        Column("CURRENCY_CONTROL_TOTAL", "N"),
     ), 1, 0),
     Table("billing", "INVOICE_LINE", (
         Column("INVOICE_LINE_ID", "B"),
@@ -81,6 +96,7 @@ TABLES = (
         Column("PAYMENT_DT", "D"),
         Column("AMOUNT", "N"),
         Column("METHOD_CD", "C12"),
+        Column("PAYMENT_REFERENCE", "V32"),
     ), 1, 0),
     Table("billing", "CREDIT_NOTE", (
         Column("CREDIT_NOTE_ID", "B"),
@@ -89,6 +105,8 @@ TABLES = (
         Column("CREDIT_DT", "D"),
         Column("AMOUNT", "N"),
         Column("REASON_CD", "C12"),
+        Column("CREDIT_NUMBER", "V32"),
+        Column("REASON_TEXT", "V120"),
     ), 20, 0),
     Table("billing", "TAX_RATE", (
         Column("TAX_RATE_ID", "B"),
@@ -128,6 +146,7 @@ TABLES = (
         Column("DOCUMENT_NAME", "V120"),
         Column("CREATED_DT", "D"),
         Column("STATUS_CD", "C12"),
+        Column("FILE_TYPE", "C8"),
     ), 5, 0),
     Table("documents", "DOC_VERSION", (
         Column("VERSION_ID", "B"),
@@ -333,6 +352,24 @@ TABLES = (
         Column("TARGET_COUNT", "B"),
         Column("DIFFERENCE_COUNT", "B"),
     ), 100, 0),
+    Table("billing", "GL_ACCOUNT", (
+        Column("GL_ACCOUNT_ID", "B"),
+        Column("ACCOUNT_NUMBER", "C4"),
+        Column("ACCOUNT_NAME", "V80"),
+        Column("ACCOUNT_TYPE", "C12"),
+        Column("NORMAL_BALANCE", "C2"),
+    ), 0, 10),
+    Table("billing", "GL_JOURNAL_LINE", (
+        Column("JOURNAL_LINE_ID", "B"),
+        Column("INVOICE_ID", "B"),
+        Column("CREDIT_NOTE_ID", "B"),
+        Column("GL_ACCOUNT_ID", "B"),
+        Column("POSTING_DT", "D"),
+        Column("CURRENCY_CD", "C3"),
+        Column("DEBIT_AMOUNT", "N"),
+        Column("CREDIT_AMOUNT", "N"),
+        Column("DESCRIPTION", "V120"),
+    ), 1, 0),
 )
 
 BY_NAME = {t.name: t for t in TABLES}

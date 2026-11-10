@@ -20,10 +20,15 @@ def substitute(statement, values):
 
 
 def tokenize(body):
-    pattern = r"('(?:''|[^'])*')|\b(END\s+(?:IF|WHILE|FOR)|ELSEIF\b.*?\bTHEN|IF\b.*?\bTHEN|WHILE\b.*?\bDO|FOR\b.*?\bDO|ELSE)\b|;"
-    tokens, start = [], 0
+    pattern = r"('(?:''|[^'])*')|\b(END\s+(?:IF|WHILE|FOR)|ELSEIF\b.*?\bTHEN|IF\b.*?\bTHEN|WHILE\b.*?\bDO|FOR\b.*?\bDO|ELSE)\b|\b(CASE|END)\b|;"
+    tokens, start, case_depth = [], 0, 0
     for m in re.finditer(pattern, body, re.I | re.S):
         if m[1]:
+            continue
+        if m[3]:
+            case_depth += 1 if m[3].upper() == 'CASE' else -1
+            continue
+        if case_depth:
             continue
         prefix = body[start:m.start()].strip()
         if prefix:

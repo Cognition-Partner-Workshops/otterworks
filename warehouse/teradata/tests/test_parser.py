@@ -1,6 +1,22 @@
 from bteq.parser import commands, split
 
 
+def test_sql_case_inside_procedure(td):
+    td.execute('''REPLACE PROCEDURE p_case (IN amount INTEGER, OUT result INTEGER)
+BEGIN
+IF amount > 0 THEN
+SET result=CASE WHEN amount>10 THEN CASE WHEN amount>20 THEN 3 ELSE 2 END ELSE 1 END;
+ELSE
+SET result=0;
+END IF;
+END''')
+    assert td.errorcode == 0
+    for value, expected in ((0, 0), (5, 1), (15, 2), (25, 3)):
+        td.execute(f'CALL p_case({value}, ?)')
+        assert td.errorcode == 0, td.output.getvalue()
+        assert f'result = {expected}' in td.output.getvalue()
+
+
 def test_parser():
     assert list(commands("-- comment\n.LOGON ${TD_USER}\nSELECT 'a;--x',\n'it''s'; /* c */\n.QUIT 0")) == ['.LOGON ${TD_USER}', "SELECT 'a;--x',\n'it''s'", '.QUIT 0']
     assert split("a(1,2),'x,y',z", ',') == ['a(1,2)', "'x,y'", 'z']

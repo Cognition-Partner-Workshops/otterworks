@@ -3,6 +3,14 @@ import datetime
 import pytest
 
 
+def test_nested_currency_group_projection(td):
+    td.execute('CREATE MULTISET TABLE balances (currency_cd CHAR(3) NOT CASESPECIFIC, amount DECIMAL(14,2)) NO PRIMARY INDEX')
+    td.execute("INSERT INTO balances VALUES ('usd', 12.34), ('Usd', 5.67), ('EUR', 9.00)")
+    td.execute('SELECT x.currency_cd,x.total FROM (SELECT c.currency_cd,c.total FROM (SELECT currency_cd,SUM(amount) AS total FROM balances GROUP BY currency_cd) c) x ORDER BY x.total')
+    assert td.errorcode == 0, td.output.getvalue()
+    assert len(td.rows) == 2 and [str(row[1]) for row in td.rows] == ['9.00', '18.01']
+
+
 def ok(td, sql):
     td.execute(sql)
     assert td.errorcode == 0, td.output.getvalue()

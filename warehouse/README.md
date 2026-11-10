@@ -43,8 +43,15 @@ accepts `--rows`, `--seed`, `--out` (default `warehouse/landing`), and
 `--business-date` (default `20261109`). Files are headerless pipe-delimited UTF-8
 at `<out>/<area>/<TABLE>/<business-date>.psv`.
 
+Names and financial profiles are generated from deterministic word-part lists
+without external name services. `GL_ACCOUNT` supplies the chart of accounts.
+The `GL_JOURNAL_LINE` feed is empty; monthly processing posts invoice and credit
+note entries into its core table. The monthly run replaces its journal entries
+and subscription/adjustment lines, making repeated processing reproducible.
+
 `bteq.setup` executes the Teradata files in `teradata/ddl`, creating schemas and
-tables before views; existing objects are left intact. `bteq.load` parses the
+tables before views; missing columns are added to existing tables without removing
+existing rows. `bteq.load` parses the
 FastLoad files in `teradata/load/fastload` and the TPT jobs in `teradata/load/tpt`.
 Each file load truncates and copies its staging table in one transaction. A
 failed copy restores the previous contents. The loader accepts `--controls` to

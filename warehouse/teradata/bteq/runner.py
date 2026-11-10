@@ -216,10 +216,12 @@ class Runner:
         tree = tree.transform(eliminate_qualify)
         types = self.resolve_types(tree)
         for select in tree.find_all(exp.Select):
-            grouped = {c.name.lower() for group in select.find_all(exp.Group) for c in group.find_all(exp.Column)}
+            columns = [c for c in select.find_all(exp.Column) if c.find_ancestor(exp.Select) is select]
+            group = select.args.get('group')
+            grouped = {c.name.lower() for c in group.find_all(exp.Column)} if group else set()
             if select.args.get('distinct'):
-                grouped.update(c.name.lower() for c in select.find_all(exp.Column))
-            for column in list(select.find_all(exp.Column)):
+                grouped.update(c.name.lower() for c in columns)
+            for column in columns:
                 if column.name.lower() in grouped and types.get(column.name.lower(), '').startswith(('character', 'varchar')):
                     replacement = exp.Anonymous(this='RTRIM', expressions=[exp.Cast(this=column.copy(), to=exp.DataType.build('TEXT'))])
                     if column.parent is select:

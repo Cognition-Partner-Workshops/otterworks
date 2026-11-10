@@ -7,8 +7,10 @@ from pathlib import Path
 
 try:
     from .columns import TABLES
+    from .profiles import enrich
 except ImportError:
     from columns import TABLES
+    from profiles import enrich
 
 
 RESERVED_START = 9_000_000_001
@@ -19,6 +21,7 @@ REFERENCES = {
     'CUSTOMER_ID': 'CUSTOMER_ACCOUNT', 'SUBSCRIPTION_ID': 'SUBSCRIPTION',
     'INVOICE_ID': 'INVOICE_HDR', 'DOCUMENT_ID': 'DOCUMENT', 'FOLDER_ID': 'FOLDER',
     'TEAM_ID': 'TEAM',
+    'TAX_RATE_ID': 'TAX_RATE', 'GL_ACCOUNT_ID': 'GL_ACCOUNT', 'CREDIT_NOTE_ID': 'CREDIT_NOTE',
 }
 DATE_POINTS = ('2026-10-31', '2024-02-29', '2025-12-31', '2026-01-01', '1999-12-31', '2026-11-30')
 
@@ -33,7 +36,7 @@ def extra_count(name):
     return DOCUMENT_ROWS if name == 'DOCUMENT' else 0
 
 
-def make_row(table, key, rng, counts, business_date):
+def make_row(table, key, rng, counts, business_date, seed=1110):
     date = business_date - dt.timedelta(days=(key - 1) % 3)
     row = {}
     for column in table.columns:
@@ -50,12 +53,8 @@ def make_row(table, key, rng, counts, business_date):
             value = ('US', 'GB', 'DE', 'CA')[key % 4]
         elif name in ('STATUS_CD', 'RESULT_CD', 'DECISION_CD'):
             value = 'ACTIVE' if name == 'STATUS_CD' else ('SUCCESS' if name == 'RESULT_CD' else 'APPROVED')
-        elif name == 'EMAIL':
-            value = f'user{key}@example.invalid'
         elif name == 'CONTENT_HASH':
             value = f'{key:064x}'
-        elif name == 'OBJECT_KEY':
-            value = f'objects/{row["DOCUMENT_ID"]}/{key}.dat'
         elif name == 'TIMEZONE':
             value = 'UTC'
         elif kind == 'D':
@@ -90,9 +89,11 @@ def make_row(table, key, rng, counts, business_date):
                      'EVENT_TYPE': 'READ', 'USAGE_TYPE': 'REQUEST', 'PROVIDER_CD': 'OIDC',
                      'REASON_CD': 'SERVICE', 'FLAG_TYPE': 'REVIEW'}.get(name, 'DEFAULT')
         else:
-            value = f'{name.lower().replace("_", " ")} {key}'[:int(kind[1:])]
+            value = ''
         row[name] = value
-    return row
+    if table.name == 'INVOICE_HDR':
+        row['CUSTOMER_ID'] = (row['SUBSCRIPTION_ID'] - 1) % counts['CUSTOMER_ACCOUNT'] + 1
+    return enrich(table, row, key, rng, counts, business_date, seed)
 
 
 def rows_for(table, rows, seed, business_date):
@@ -100,25 +101,27 @@ def rows_for(table, rows, seed, business_date):
     derived = int.from_bytes(hashlib.sha256(f'{seed}:{table.name}'.encode()).digest()[:8], 'big')
     rng = random.Random(derived)
     for key in range(1, counts[table.name] + 1):
-        yield make_row(table, key, rng, counts, business_date)
+        yield make_row(table, key, rng, counts, business_date, seed)
     extra_rng = random.Random(derived ^ RESERVED_START)
     for index in range(extra_count(table.name)):
         key = RESERVED_START + index
         if table.name == 'STORAGE_USAGE_DAILY':
             key = RESERVED_START + index // 2
-            row = make_row(table, key, random.Random(key + seed), counts, business_date)
+            row = make_row(table, key, random.Random(key + seed), counts, business_date, seed)
         else:
-            row = make_row(table, key, extra_rng, counts, business_date)
+            row = make_row(table, key, extra_rng, counts, business_date, seed)
         if table.name == 'APP_USER':
-            row['DISPLAY_NAME'] = f'User {key} ' + 'Workspace Operations Coordinator ' * 3
+            row['DISPLAY_NAME'] += ' - Senior Workspace Operations and Records Governance Coordinator'
         elif table.name == 'CUSTOMER_ACCOUNT':
             row['OWNER_USER_ID'] = key
+            row['CURRENCY_CD'] = 'USD'
         elif table.name == 'SUBSCRIPTION':
             row.update(CUSTOMER_ID=key, PLAN_CODE=('pro', 'Pro ', 'TEAM  ', 'team')[index % 4])
         elif table.name == 'INVOICE_HDR':
             date = dt.date.fromisoformat(DATE_POINTS[index % len(DATE_POINTS)])
             row.update(CUSTOMER_ID=key, SUBSCRIPTION_ID=key, CURRENCY_CD=('usd', 'Usd', 'USD')[index % 3],
                        INVOICE_DT=date.isoformat(), BILL_DT=date.isoformat(), PERIOD_START_DT=date.replace(day=1).isoformat())
+            row['INVOICE_NUMBER'] = f'INV-{date.year}-{key:07d}'
         elif table.name == 'DOCUMENT':
             row.update(OWNER_USER_ID=key, CUSTOMER_ID=key)
         elif table.name == 'DOC_VERSION':
