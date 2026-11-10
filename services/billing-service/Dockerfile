@@ -8,7 +8,8 @@ RUN pip install --no-cache-dir \
     "pydantic>=2.6,<3" \
     "pydantic-settings>=2.2,<3" \
     "psycopg[binary]>=3.2,<4" \
-    "teradatasql>=20,<21"
+    "snowflake-connector-python>=3.12,<4" \
+    "cryptography"
 COPY app ./app
 COPY db ./db
 COPY scripts ./scripts
