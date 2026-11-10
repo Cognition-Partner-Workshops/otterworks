@@ -269,9 +269,9 @@
     },
     {
       "class_id": "SFX-09",
-      "file": "etl/informatica/repository/SFX_AUDIT/workflows/wf_SFX_AUDIT_DAILY.XML",
+      "file": "etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML",
       "object": "s_m_SFX_AUDIT_DAILY_SUMMARY / writer AUDIT_DAILY_SUMMARY",
-      "line": 137,
+      "line": 689,
       "detail": "Insert-only load keyed by SEQ_AUDIT_SUMMARY with no truncate or key match; a second run of the same LOAD_DATE doubles AUDIT_DAILY_SUMMARY (the runner logs WRT_8170).",
       "related": {
         "file": "etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_DAILY_SUMMARY.XML",
