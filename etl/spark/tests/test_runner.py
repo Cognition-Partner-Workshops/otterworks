@@ -1,4 +1,5 @@
 import os
+import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -10,13 +11,17 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class RunnerTest(unittest.TestCase):
-    def run_jobs(self, jobs, **settings):
+    def run_jobs(self, jobs, statuses=None, **settings):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             spark = root / "etl/spark"
             spark.mkdir(parents=True)
             shutil.copy(ROOT / "run.sh", spark / "run.sh")
             (spark / "jobs.txt").write_text("\n".join(jobs) + "\n")
+            registry = spark / "jobs/registry"
+            registry.mkdir(parents=True)
+            for job in jobs:
+                (registry / f"{job}.yaml").write_text(json.dumps({"job": job, "status": (statuses or {}).get(job, "legacy")}))
             binary = root / "bin"
             binary.mkdir()
             docker = binary / "docker"
@@ -52,10 +57,20 @@ class RunnerTest(unittest.TestCase):
             result = self.run_jobs(["first"], **settings)
             self.assertEqual(result.returncode, 2)
 
+    def test_template_and_snowflake_routing(self):
+        result = self.run_jobs(["first", "second", "third"], statuses={"second": "template", "third": "snowflake"})
+        self.assertEqual(result.returncode, 0)
+        self.assertRegex(result.stdout, "second +OK")
+        self.assertNotIn("third", result.stdout)
+        result = self.run_jobs(["third"], statuses={"third": "snowflake"}, JOB="third")
+        self.assertEqual(result.returncode, 2)
+
     def test_job_inventory(self):
-        jobs = (ROOT / "jobs.txt").read_text().splitlines()
+        entries = [json.loads(path.read_text()) for path in sorted((ROOT / "jobs/registry").glob("*.yaml"))]
+        jobs = [entry["job"] for entry in entries]
         self.assertEqual(len(jobs), 30)
         self.assertEqual(len(set(jobs)), 30)
-        self.assertEqual(jobs[11], "docs_folder_legacy_report")
+        self.assertIn("docs_folder_legacy_report", jobs)
         for job in jobs:
-            self.assertTrue((ROOT / "submit" / (job + ".sh")).is_file())
+            if next(entry for entry in entries if entry["job"] == job)["status"] == "legacy":
+                self.assertTrue((ROOT / "submit" / (job + ".sh")).is_file())

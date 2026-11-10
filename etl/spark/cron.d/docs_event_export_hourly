@@ -1,0 +1,1 @@
+18 * * * * /opt/etl/spark/submit/docs_event_export_hourly.sh >> /var/log/etl/spark-docs_event_export_hourly.log 2>&1

@@ -2,7 +2,7 @@
 
 ## Local execution
 
-Requirements: Docker Compose, Python 3, curl, Java 17 and uv. Tests install
+Requirements: Docker Compose, Python 3, curl, Java 17 or 21 and uv. Tests install
 PySpark 3.5.3 and PyYAML 6.0.2 through uv; they do not require Docker or PostgreSQL.
 Ubuntu's libzstd1 is used to read the compressed history.
 
@@ -15,7 +15,8 @@ make sfx-spark-down
 ```
 
 Defaults: `NS=sfx-d1110-before`, `ROWS_PER_TABLE=200000`,
-`SPARK_JOBS=30`. `SPARK_JOBS=N` runs the first N entries of jobs.txt;
+`SPARK_JOBS=30`. `SPARK_JOBS=N` runs the first N non-Snowflake registry entries
+in filename order;
 `JOB=<id>` selects one entry, including docs_folder_legacy_report.
 The runner continues after a failed submission and returns nonzero if any fail.
 Down removes the Compose volumes; bind-mounted files remain.
@@ -89,15 +90,21 @@ logs.
 
 ## Kubernetes manifests
 
-`k8s/kustomization.yaml` includes 30 SparkApplication resources, namespace,
+`k8s/kustomization.yaml` includes 30 per-job directories under `k8s/jobs/`, namespace,
 service account, namespaced RBAC and a shared workspace claim. Nothing is applied
 by the Make targets. An existing Spark Operator supporting
-`sparkoperator.k8s.io/v1beta2` is required to use these files.
+`sparkoperator.k8s.io/v1beta2` is required to use these files. Each job directory
+has its own application and kustomization.
 
 The workspace claim requires a ReadWriteMany storage class. Populate its root with
 the contents of etl/spark, including .cache/common.zip, the compiled Scala jar,
 JDBC jars, and the .data/landing, .data/lake and .data/eventlogs directories.
 Supply the referenced sfx-d1110-jdbc object with a password entry and a PostgreSQL
 service reachable as sfx-tdemu, or adjust the JDBC environment references.
-Driver and executor pods mount the same workspace. Scheduling remains in
-etl/crontab; no ScheduledSparkApplication resources are included.
+Driver and executor pods mount the same workspace. Legacy schedules are in
+`cron.d/<job>`; install their unchanged lines into the batch user's crontab.
+These are user-crontab fragments, not system `/etc/cron.d` files (no user column).
+No ScheduledSparkApplication resources are included. The registry in
+`jobs/registry/<job>.yaml` drives execution and the Airflow factory in
+`../airflow/`; `jobs.txt` remains the immutable packaged-history inventory.
+See `template/README.md` for migration and rerun-safe write contracts.

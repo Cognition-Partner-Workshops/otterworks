@@ -1,0 +1,8 @@
+{
+  "job": "users_active_daily",
+  "language": "python",
+  "target": "dbt",
+  "status": "legacy",
+  "schedule": "6 1 * * *",
+  "profile": "small"
+}

@@ -33,6 +33,10 @@ sfx-spark-test: ## Run fixture, inventory, history and local Spark checks
 	$(SFX_SPARK_UV) python -m unittest discover -s etl/spark/tests -v
 	python3 etl/spark/history/compute_baseline.py --check
 
+.PHONY: sfx-airflow-test
+sfx-airflow-test: ## Parse generated DAGs and verify routing and retry policy
+	AIRFLOW_HOME=$(HOME)/.sfx-airflow AIRFLOW__CORE__LOAD_EXAMPLES=False uv run --python 3.11 --with-requirements etl/airflow/requirements.txt python -m unittest discover -s etl/airflow/tests -v
+
 .PHONY: sfx-snowflake-deploy sfx-snowflake-load sfx-snowflake-test sfx-snowflake-dbt
 .PHONY: sfx-snowflake-dag sfx-snowflake-consumers
 .PHONY: sfx-snowflake-ledger sfx-snowflake-teardown sfx-snowflake-roles-dry-run sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down

@@ -1,0 +1,8 @@
+{
+  "job": "billing_revenue_by_plan",
+  "language": "python",
+  "target": "dbt",
+  "status": "legacy",
+  "schedule": "1 1 * * *",
+  "profile": "small"
+}

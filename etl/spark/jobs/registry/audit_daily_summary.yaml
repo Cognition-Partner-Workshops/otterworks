@@ -1,0 +1,9 @@
+{
+  "job": "audit_daily_summary",
+  "language": "scala",
+  "target": "dbt",
+  "status": "legacy",
+  "schedule": "8 1 * * *",
+  "profile": "small",
+  "class": "sfx.AuditDailySummary"
+}

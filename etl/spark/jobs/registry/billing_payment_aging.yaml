@@ -1,0 +1,8 @@
+{
+  "job": "billing_payment_aging",
+  "language": "python",
+  "target": "dbt",
+  "status": "legacy",
+  "schedule": "2 1 * * *",
+  "profile": "small"
+}

@@ -1,0 +1,8 @@
+{
+  "job": "audit_archive_resort",
+  "language": "python",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "27 3 * * *",
+  "profile": "small"
+}

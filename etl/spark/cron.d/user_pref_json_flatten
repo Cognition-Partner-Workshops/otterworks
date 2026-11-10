@@ -1,0 +1,1 @@
+28 3 * * * /opt/etl/spark/submit/user_pref_json_flatten.sh >> /var/log/etl/spark-user_pref_json_flatten.log 2>&1

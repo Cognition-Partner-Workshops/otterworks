@@ -1,0 +1,8 @@
+{
+  "job": "billing_gl_trial_balance",
+  "language": "python",
+  "target": "dbt",
+  "status": "legacy",
+  "schedule": "10 2 * * *",
+  "profile": "small"
+}

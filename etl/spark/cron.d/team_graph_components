@@ -1,0 +1,1 @@
+22 3 * * * /opt/etl/spark/submit/team_graph_components.sh >> /var/log/etl/spark-team_graph_components.log 2>&1

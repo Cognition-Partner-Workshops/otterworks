@@ -1,0 +1,9 @@
+{
+  "job": "compliance_flag_rules",
+  "language": "scala",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "29 3 * * *",
+  "profile": "small",
+  "class": "sfx.ComplianceFlagRules"
+}

@@ -1,0 +1,9 @@
+{
+  "job": "team_graph_components",
+  "language": "scala",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "22 3 * * *",
+  "profile": "small",
+  "class": "sfx.TeamGraphComponents"
+}

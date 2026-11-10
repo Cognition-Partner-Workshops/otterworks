@@ -1,0 +1,8 @@
+{
+  "job": "doc_version_diff_stats",
+  "language": "python",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "25 3 * * *",
+  "profile": "small"
+}

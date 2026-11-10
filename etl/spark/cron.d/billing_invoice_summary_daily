@@ -1,0 +1,1 @@
+0 1 * * * /opt/etl/spark/submit/billing_invoice_summary_daily.sh >> /var/log/etl/spark-billing_invoice_summary_daily.log 2>&1

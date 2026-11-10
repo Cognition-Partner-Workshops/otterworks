@@ -1,0 +1,1 @@
+15 2 * * * /opt/etl/spark/submit/billing_churn_score.sh >> /var/log/etl/spark-billing_churn_score.log 2>&1
