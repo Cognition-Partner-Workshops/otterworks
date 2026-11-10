@@ -105,13 +105,15 @@ consumers:
   - name: finance-notebook
     path: consumers/notebooks
     team: "@otterworks/data-science"
-    teradata_service_account: nb_finance_analysis
+    teradata_service_account: nb_dsci_pkhan
     cadence: "ad hoc / month-end"
     entrypoint: "finance_analysis.ipynb (run cells in order)"
-    tables: ["FIN_DW.ACCOUNT","FIN_DW.CUSTOMER","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    tables: ["SFX_BILLING.INVOICE_HDR","SFX_BILLING.PAYMENT","SFX_BILLING.CUSTOMER_ACCOUNT"]
     teradata_constructs: ["SEL","TOP 10","ZEROIFNULL","NULLIFZERO","ADD_MONTHS","CURRENT_DATE - 90","1YYMMDD","FORMAT"]
     unit_test: "cd consumers/notebooks && python -m pytest"
     contract_test: "cd consumers/notebooks && python -m pytest contract"
+    contract_replay_test: "cd consumers/notebooks && WAREHOUSE_CONTRACT_TARGET=replay python -m pytest contract"
+    contract_targets: ["teradata-emulator","replay","snowflake-semantics","snowflake"]
     workflow: .github/workflows/consumer-finance-notebook.yml
     snowflake:
       database: SFX_D1110_AFTER

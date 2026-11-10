@@ -1,10 +1,12 @@
-"""Contract target ports; replay is the default until remote adapters exist."""
-import json
+"""Contract warehouse target ports."""
 import os
+import sys
 from pathlib import Path
 from typing import Protocol
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT.parents[2] / 'consumers' / 'contract-kit'))
+from contract_client import execute as execute_contract
 
 
 class Warehouse(Protocol):
@@ -16,14 +18,8 @@ class EmulatorWarehouse:
         self.names = {sql: name for name, sql in queries.items()}
 
     def query(self, sql):
-        if os.getenv("TD_EMULATOR_URL"):
-            return self.execute_endpoint(os.environ["TD_EMULATOR_URL"], sql)
-        name = self.names[sql]
-        data = json.loads((ROOT / "recorded" / "teradata" / f"{name}.json").read_text())
+        data = execute_contract(sql, ROOT, self.names[sql])
         return [dict(zip(data["columns"], row, strict=True)) for row in data["rows"]]
-
-    def execute_endpoint(self, endpoint, sql):
-        raise NotImplementedError("emulator endpoint not configured")
 
 
 class SnowflakeWarehouse:
@@ -48,7 +44,7 @@ class SnowflakeWarehouse:
 
 def target(queries):
     name = os.getenv("WAREHOUSE_CONTRACT_TARGET", "teradata-emulator")
-    if name == "teradata-emulator":
+    if name in {"teradata-emulator", "replay", "snowflake-semantics"}:
         return EmulatorWarehouse(queries)
     if name == "snowflake":
         return SnowflakeWarehouse()

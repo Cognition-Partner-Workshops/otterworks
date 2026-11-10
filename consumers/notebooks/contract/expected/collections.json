@@ -2,12 +2,12 @@
   "query": "collections",
   "row_count": 2,
   "sums": {
-    "BILLED": "90000.50",
-    "COLLECTED": "83000.25"
+    "BILLED": "315514.64",
+    "COLLECTED": "117504.79"
   },
   "key_column": "MONTH_LABEL",
   "keys": [
-    "2026-09",
-    "2026-10"
+    "2026-10",
+    "2026-11"
   ]
 }
