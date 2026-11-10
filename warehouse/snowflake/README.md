@@ -141,6 +141,10 @@ these three lifecycle targets are no-ops. The test target always runs.
 
 roles/dry_run.py validates and prints the ordered SQL plan. --check-live inspects
 SHOW GRANTS without applying DDL. --apply refuses unless CREATE ROLE is held.
+Analysts retain database and transform-warehouse USAGE, with schema USAGE and
+SELECT on current/future tables and views only in CORE_*, MART and COMPAT.
+Validation rejects analyst write grants, inherited functional roles, and access
+to RAW_*, LANDING or SCHEMACHANGE.
 
 ledger.py --token sfx-d1110 --days 14 [--json] allocates warehouse-hour compute
 credits using tagged execution time divided by all queries' execution time in
