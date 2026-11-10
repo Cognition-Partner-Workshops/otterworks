@@ -31,11 +31,11 @@ public class FinanceWarehouseTest {
         when(rs.getBigDecimal("INVOICED_TOTAL")).thenReturn(new BigDecimal("18250.75"));
         when(rs.getBigDecimal("PAID_TOTAL")).thenReturn(new BigDecimal("12000.25"));
         when(rs.getBigDecimal("AR_GL_BALANCE")).thenReturn(new BigDecimal("6250.50"));
-        when(rs.getString("INVOICE_NO")).thenReturn("INV-2026-004812");
-        when(rs.getString("ACCOUNT_NO")).thenReturn("A000318274");
+        when(rs.getString("INVOICE_NUMBER")).thenReturn("INV-2026-004812");
+        when(rs.getString("ACCOUNT_NUMBER")).thenReturn("ACC-0000012");
         when(rs.getString("INVOICE_DATE")).thenReturn("2026-01-05");
         when(rs.getInt("DAYS_OVERDUE")).thenReturn(65);
-        when(rs.getBigDecimal("AMOUNT_DUE")).thenReturn(new BigDecimal("4800.00"));
+        when(rs.getBigDecimal("TOTAL_AMOUNT")).thenReturn(new BigDecimal("4800.00"));
         when(rs.getBigDecimal("PAID")).thenReturn(new BigDecimal("1200.00"));
         when(jdbc.query(eq(TeradataFinanceWarehouse.UNRECONCILED_SQL), any(RowMapper.class), eq(202601)))
                 .thenAnswer(call -> Collections.singletonList(((RowMapper<?>) call.getArgument(1)).mapRow(rs, 0)));
@@ -48,7 +48,7 @@ public class FinanceWarehouseTest {
         assertEquals(1, result.unreconciledInvoices.size());
         UnreconciledInvoice invoice = result.unreconciledInvoices.get(0);
         assertEquals("INV-2026-004812", invoice.invoiceNo);
-        assertEquals("A000318274", invoice.accountNo);
+        assertEquals("ACC-0000012", invoice.accountNo);
         assertEquals("2026-01-05", invoice.invoiceDate);
         assertEquals(65, invoice.daysOverdue);
         assertEquals(new BigDecimal("4800.00"), invoice.amountDue);
@@ -65,7 +65,7 @@ public class FinanceWarehouseTest {
                 .andExpect(jsonPath("$.invoicedTotal").value(0)).andExpect(jsonPath("$.variance").value(0));
         MockMvc populated = mvc(period -> new FinanceReconciliation(period,
                 new BigDecimal("100.00"), new BigDecimal("40.00"), new BigDecimal("59.00"),
-                Collections.singletonList(new UnreconciledInvoice("INV-2026-004812", "A000318274",
+                Collections.singletonList(new UnreconciledInvoice("INV-2026-004812", "ACC-0000012",
                         "2026-01-05", 65, new BigDecimal("100.00"), new BigDecimal("40.00")))));
         populated.perform(get("/api/v1/reports/finance-reconciliation").param("period", "202601"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.variance").value(1))

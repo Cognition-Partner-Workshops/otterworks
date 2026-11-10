@@ -6,10 +6,12 @@ consumers:
     teradata_service_account: svc_report_recon
     cadence: "on demand endpoint + daily 06:00"
     entrypoint: "GET /api/v1/reports/finance-reconciliation?period=YYYYMM"
-    tables: ["FIN_DW.ACCOUNT","FIN_DW.GL_JOURNAL","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    tables: ["SFX_BILLING.CUSTOMER_ACCOUNT","SFX_BILLING.GL_ACCOUNT","SFX_BILLING.GL_JOURNAL_LINE","SFX_BILLING.INVOICE_HDR","SFX_BILLING.PAYMENT"]
     teradata_constructs: ["LOCKING ROW FOR ACCESS","SEL","TOP 25","ZEROIFNULL","CURRENT_DATE - 30","1YYMMDD","FORMAT","EXTRACT"]
     unit_test: "cd services/report-service && mvn -B test"
     contract_test: "cd services/report-service && mvn -B -Pcontract test"
+    contract_replay_test: "cd services/report-service && WAREHOUSE_CONTRACT_TARGET=replay mvn -B -Pcontract test"
+    contract_targets: ["teradata-emulator","replay","snowflake-semantics","snowflake"]
     workflow: .github/workflows/consumer-report-service.yml
     snowflake:
       database: SFX_D1110_AFTER

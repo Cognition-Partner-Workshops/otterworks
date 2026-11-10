@@ -16,25 +16,29 @@ import static org.junit.Assert.assertTrue;
 public class FinanceWarehouseContractTest {
     @Test
     public void reconciliationMatchesRecordedContract() throws Exception {
-        assertContract(TeradataFinanceWarehouse.SQL, "finance-reconciliation");
+        assertContract(TeradataFinanceWarehouse.SQL, "finance-reconciliation", 202611);
     }
 
     @Test
     public void unreconciledInvoicesMatchRecordedContract() throws Exception {
-        assertContract(TeradataFinanceWarehouse.UNRECONCILED_SQL, "unreconciled-invoices");
+        assertContract(TeradataFinanceWarehouse.UNRECONCILED_SQL, "unreconciled-invoices", 202601);
     }
 
-    private void assertContract(String sql, String query) throws Exception {
+    private void assertContract(String sql, String query, int period) throws Exception {
         String target = System.getenv("WAREHOUSE_CONTRACT_TARGET");
         ContractWarehouse warehouse;
         if (target == null || "teradata-emulator".equals(target)) {
-            warehouse = new EmulatorWarehouse();
+            warehouse = new EmulatorWarehouse("teradata-emulator");
+        } else if ("snowflake-semantics".equals(target)) {
+            warehouse = new EmulatorWarehouse(target);
+        } else if ("replay".equals(target)) {
+            warehouse = new ReplayWarehouse();
         } else if ("snowflake".equals(target)) {
             warehouse = new SnowflakeWarehouse();
         } else {
             throw new IllegalArgumentException("Unknown WAREHOUSE_CONTRACT_TARGET: " + target);
         }
-        JsonNode actual = warehouse.execute(sql, 202601);
+        JsonNode actual = warehouse.execute(sql, period);
         JsonNode expected = new ObjectMapper().readTree(new File("contract/expected/" + query + ".json"));
         assertEquals(expected.get("query"), actual.get("query"));
         assertEquals(expected.get("row_count").asInt(), actual.get("rows").size());

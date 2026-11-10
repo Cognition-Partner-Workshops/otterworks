@@ -3,73 +3,97 @@
 ## Finance warehouse consumer
 
 Treat this consumer as a separate repository owned by **@otterworks/finance-reporting**.
-It reads TDPROD / FIN_DW using Teradata account `svc_report_recon`, on demand
+It reads TDPROD / SFX_BILLING using Teradata account `svc_report_recon`, on demand
 (and is intended for daily 06:00 invocation by an external scheduler; none is installed here).
 
-`GET /api/v1/reports/finance-reconciliation?period=202601` returns JSON with
-`period`, `invoicedTotal`, `paidTotal`, `arGlBalance`, and `variance`.
-The period must be YYYYMM. Invalid input returns 400; warehouse failures return 503.
-Set `finance.warehouse.enabled=false` to remove the endpoint and warehouse bean.
-The flag defaults on; creating the Spring context does not open a warehouse connection.
-Fake TD connection settings live next to the DAL in
+`GET /api/v1/reports/finance-reconciliation?period=202611` returns JSON with
+`period`, `invoicedTotal`, `paidTotal`, `arGlBalance`, `variance` and
+`unreconciledInvoices`. Period must be YYYYMM. Invalid input returns 400;
+warehouse failures return 503. Set `finance.warehouse.enabled=false` to remove
+the endpoint and warehouse bean. The flag defaults on; creating the Spring
+context does not open a warehouse connection. Fake TD connection settings live in
 `src/main/resources/com/otterworks/report/financewarehouse/teradata.properties`;
-override them with Spring properties for a real deployment. The runtime driver is
-`com.teradata.jdbc.TeraDriver`, loaded through JDBC service discovery.
+override with Spring properties for deployment. Runtime driver:
+`com.teradata.jdbc.TeraDriver` through JDBC service discovery.
 
-This is a monthly **activity** reconciliation, not a cumulative AR aging report:
-- FIN_DW.INVOICE: INVOICE_DT, AMOUNT_DUE (invoice total, already including tax).
-- FIN_DW.PAYMENT: PAYMENT_DT, AMOUNT (all payments posted in the selected month,
+### Schema and reconciliation
+This is a monthly **activity** reconciliation, not a cumulative AR aging report.
+All tables below are in SFX_BILLING:
+- INVOICE_HDR: INVOICE_ID, CUSTOMER_ID, INVOICE_NUMBER, INVOICE_DT, TOTAL_AMOUNT
+  (invoice total including tax).
+- PAYMENT: INVOICE_ID, PAYMENT_DT, AMOUNT (all payments in the selected month,
   including settlement of earlier invoices).
-- FIN_DW.GL_JOURNAL: PERIOD_ID, GL_ACCOUNT_CD, DEBIT_AMT, CREDIT_AMT
-  (AR account 112000, debits minus credits in the selected accounting period).
-- Variance = invoiced total minus paid total minus AR GL movement.
-Independent aggregates prevent invoice/payment/journal join fan-out. Empty periods
-return one zero-valued row. Amounts are exact decimals; the warehouse is assumed to
-use a single reporting currency (there is no FX conversion).
-The migration ledger in the existing `reconciliation` package is unrelated and unchanged.
+- GL_JOURNAL_LINE: GL_ACCOUNT_ID, POSTING_DT, DEBIT_AMOUNT, CREDIT_AMOUNT.
+- GL_ACCOUNT: GL_ACCOUNT_ID, ACCOUNT_NUMBER (AR account 1200).
+- CUSTOMER_ACCOUNT: CUSTOMER_ID, ACCOUNT_NUMBER.
 
-The same response includes `unreconciledInvoices`: up to 25 underpaid invoices
-from the requested invoice month, with due dates more than 30 days before today.
-Payments are summed over all dates for each invoice (not just the activity month).
-The list includes invoice/account numbers, formatted invoice date, days overdue,
-amount due and paid total, ordered by days overdue descending then invoice ID.
-This second query joins FIN_DW.ACCOUNT (ACCOUNT_ID, ACCOUNT_NO), INVOICE
-(INVOICE_ID, ACCOUNT_ID, INVOICE_NO, INVOICE_DT, DUE_DT, AMOUNT_DUE) and PAYMENT
-(INVOICE_ID, AMOUNT). It uses Teradata TOP 25, integer date arithmetic, a
-1200101 integer date floor (2020-01-01), and a DATE FORMAT cast.
+Independent invoice, payment and journal aggregates prevent join fan-out.
+AR GL movement is debits minus credits posted in the selected month.
+Variance = invoice total minus paid total minus AR GL movement; mismatches are
+reported, not suppressed. Empty periods produce a zero-valued summary.
+Amounts are exact decimals. There is no FX conversion; these totals assume one
+reporting currency. The seeded estate contains multiple currencies, so its
+contract aggregates are mechanical control totals, not an FX-normalized ledger.
+The unrelated migration ledger in the existing `reconciliation` package is unchanged.
+
+The second query lists up to 25 underpaid invoices from the selected invoice month,
+with all-date payment totals. SFX_BILLING has no due-date column: this report uses
+a **net-30 policy**, due date = INVOICE_DT + 30 days. Invoices must be more than
+30 days past that derived due date. The API retains its existing invoiceNo,
+accountNo, invoiceDate, daysOverdue, amountDue and paid fields, mapped from
+INVOICE_NUMBER, ACCOUNT_NUMBER, formatted INVOICE_DT, derived days overdue,
+TOTAL_AMOUNT and summed AMOUNT. Ordering is days overdue descending, then INVOICE_ID.
 An empty result is an empty list. No CSV endpoint is provided.
-The contract profile checks both queries, including the invoice fixture's ordered
-invoice keys and amount aggregates; overdue-day fixtures represent a fixed recorded date.
+
+SQL retains LOCKING ROW FOR ACCESS, SEL, TOP 25, ZEROIFNULL, EXTRACT, integer
+date arithmetic (`CURRENT_DATE - 30`), a 1200101 date floor (2020-01-01), and
+DATE FORMAT casts. The account's DBQL report inventory also reads INVOICE_HDR.
 
 ### Checks
-
-From this directory, with Maven and Java 8:
+From this directory with Maven and Java 8:
 ```sh
 mvn -B test
-mvn -B -Pcontract test
-mvn -B checkstyle:check
+WAREHOUSE_CONTRACT_TARGET=replay mvn -B -Pcontract test
 ```
+Unit tests use mocked JDBC/fake DALs and exclude the contract package.
+The contract profile runs only contract tests; CI additionally runs replay in
+the contract-replay job without credentials or a warehouse.
 
-Without local Maven, use:
+For live contracts, first follow `../../consumers/contract-kit/README.md` to
+create the Teradata worktree, seed the emulator with ROWS_PER_TABLE=800,
+BUSINESS_DATE=20261109, and install the Python bridge dependencies.
+Then (adjust paths/port for your namespace):
 ```sh
-docker run --rm -v "$PWD":/w -v "$HOME/.m2":/root/.m2 -w /w maven:3.9-eclipse-temurin-8 mvn -B test
-docker run --rm -v "$PWD":/w -v "$HOME/.m2":/root/.m2 -w /w maven:3.9-eclipse-temurin-8 mvn -B -Pcontract test
+export TD_EMULATOR_HOME=/home/ubuntu/sfx/td
+export TD_PG_PORT=54902
+export CONTRACT_KIT_PYTHON=/path/to/contract-venv/bin/python
+mvn -B -Pcontract test
+WAREHOUSE_CONTRACT_TARGET=snowflake-semantics mvn -B -Pcontract test
 ```
+The default target is **teradata-emulator**, executed LIVE through the shared
+Python bridge. There is no fallback if the emulator is unavailable.
+CONTRACT_KIT_BRIDGE optionally overrides the bridge file path.
+The adapter substitutes each integer period parameter as a validated integer
+literal before sending the exact DAL SQL; production still uses JDBC binds.
 
-Default unit tests use mocked JDBC and a fake DAL and exclude the contract package.
-The contract profile runs only the contract test. Default
-`WAREHOUSE_CONTRACT_TARGET=teradata-emulator` replays
-`contract/recorded/teradata/finance-reconciliation.json` and compares row count and
-all monetary aggregates with `contract/expected/finance-reconciliation.json`.
-These are synthetic recorded-format fixtures, not evidence of a live Teradata query.
-If TD_EMULATOR_URL is set, the adapter explicitly raises
-"emulator endpoint not configured" until the emulator protocol is available.
-The contract passes the exact DAL SQL constant and period to the selected adapter.
+The reconciliation fixture uses November 2026, exercising billed amounts,
+payments and AR journal postings. The ordered unreconciled fixture uses
+January 2026, exercising historical underpaid invoices. Expected files assert
+row counts, keys and monetary sums. Days overdue depends on CURRENT_DATE and
+is not an aggregate assertion. Recordings were captured from the seeded emulator,
+not handwritten; compare them with expected files after intentional changes.
+To re-record through the same Java adapter and bridge:
+```sh
+CONTRACT_RECORD=true mvn -B -Pcontract test
+```
+This writes both live query outputs under contract/recorded/teradata/ using the
+kit's --record option. Existing assertions still run; inspect any mismatches and
+review expected values rather than blindly accepting new outputs.
+Replay reads these JSON files locally and needs neither Python nor a database.
 
-For `WAREHOUSE_CONTRACT_TARGET=snowflake`, the placeholder reads
-SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE, PRIVATE_KEY (each with the SNOWFLAKE_ prefix);
-missing values skip cleanly. With them present it explicitly fails as unsupported
-until the official Snowflake JDBC adapter is installed. Its destination constants
-are SFX_D1110_AFTER.COMPAT and its session QUERY_TAG is
+WAREHOUSE_CONTRACT_TARGET supports teradata-emulator, replay,
+snowflake-semantics (live, case-sensitive string comparisons), and snowflake.
+The last remains a placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE,
+WAREHOUSE or PRIVATE_KEY skips the test; configured credentials produce an
+explicit unsupported-adapter error. Destination: SFX_D1110_AFTER.COMPAT, QUERY_TAG:
 `{"run":"sfx-d1110","act":"consumers","consumer":"report-service"}`.
-The later migration worker must execute the supplied DAL SQL there and finish the adapter.
