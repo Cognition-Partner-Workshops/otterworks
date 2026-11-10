@@ -1,7 +1,8 @@
-# UNT-6 login-event evidence — STEP A
+# UNT-6 login-event evidence
 
-Implementation, offline tests and local PostgreSQL runner captures only.
-**No Snowflake connection or writes were made. Live parity is not certified.**
+The Step A record below describes implementation, offline tests and local
+PostgreSQL captures. Step B live results follow and supersede its historical
+not-yet-certified Snowflake limitations.
 The XML, runner, shared harness and UNT-2 through UNT-5 files are unchanged.
 
 ## Frozen production input (checked before implementing semantics)
@@ -142,3 +143,117 @@ guard atomicity, raw-string conversions beyond the exercised fixtures (including
 Unicode digit/whitespace differences), and concurrent foreign writers.
 Production PC_SRC is typed and cannot preserve malformed numeric/date strings.
 The duplicate subject must never be presented as oracle/dbt value parity.
+
+## Step B live results — 2026-11-10
+
+All live commands executed at
+`9956fea7c160a038908b7d63629915c43241f8af`.
+No implementation fixes were required. The follow-up commit changes only this
+document; model/macro/fixture/evidence implementation hashes remain identical.
+Final-HEAD offline check logs and packaging provenance are retained separately.
+JWT keys stayed in memory and were never printed or saved.
+
+### Guarded chronology
+
+1. Read-only preflight guards captured session ID, user, QUERY_TAG, control,
+   target absence, fixture-schema absence and full act-3 table snapshots.
+2. Preflight confirmed 420/420 typed source rows, zero multiset differences,
+   absent production target, and PC_BEFORE 412/412 matching the local runner.
+3. Fixture-load created only the new commented fixture schema and its four
+   tables, then verified raw input and seed readbacks.
+4. Production run 1 CTAS, production run 2 MERGE, comparison; seeded runs 1/2
+   MERGE, comparison; duplicate runs 1/2 expected failed MERGE, comparison.
+   Every evidence command exited 0; the two duplicate dbt subprocesses exited 1.
+5. Postflight control and five act-3 snapshots were byte-identical. Current-user
+   tagged query history captured the full write window.
+6. Additional read-only shared-macro checks proved the entire 420-row production
+   input after expressions matched the runner in both directions (0/0), and
+   counted exactly six seeded expression drops.
+
+Exact subprocess argument vectors, executed HEAD and UTC times are in
+`chronology/*.json` and each run's `execution.json`. The actual recorded
+`run_dbt.py` invocations are preserved in
+`chronology/actual_dbt_invocations.txt`; they are not inferred from dbt logs.
+All paths in this section are relative to `out/evidence/unt6/`.
+
+### Results
+
+| Subject/run | Target | Rejects | Oracle minus dbt | dbt minus oracle | dbt insert/update |
+|---|---:|---:|---:|---:|---:|
+| production/1 | 412 | 0 | 0 | 0 | 412/0 CTAS readback |
+| production/2 | 412 | 0 | 0 | 0 | 0/412 |
+| seeded/1 | 14 | 4 | 0 | 0 | 11/1 |
+| seeded/2 | 14 | 4 | 0 | 0 | 0/12 |
+| duplicate/1 | 1 unchanged | 0 | 1 | 1 | 0/0 — NOT PARITY |
+| duplicate/2 | 1 unchanged | 0 | 1 | 1 | 0/0 — NOT PARITY |
+
+EXCEPT-direction counts above are strict typed multiset differences, including
+multiplicities, calculated offline from full Snowflake and oracle snapshots.
+They are not merely SQL EXCEPT DISTINCT counts. Production and seeded have no
+duplicate LOGIN_IDs and byte-equivalent typed values across runs. Seed row 104
+is preserved with user 92 and both padded UNTOUCHED strings. Raw .bad line
+multisets and typed reject exports agree on both seeded runs. Six expression
+errors are dropped before routing; they do not appear in the four writer rejects.
+
+All four successful builds report
+`Done. PASS=5 WARN=0 ERROR=0 SKIP=0 TOTAL=5`.
+Both duplicate MERGEs fail with `100051 (22012): Division by zero`,
+and full target snapshots prove atomic seed preservation. Their 1/1 differences
+from the ordered-update oracle are intentional, not parity.
+No truncate, reset or full-refresh was used.
+
+| Subject/run | Model statement QID | run_results invocation_id |
+|---|---|---|
+| production/1 | 01c853b6-030d-1e5e-0035-065b001a3f3a | 3b98cf56-1cb2-4a39-9f71-0e085821d5b0 |
+| production/2 | 01c853b6-030d-2214-0035-065b001c5316 | ccb88285-1618-44f0-acc3-0c9b945a6d70 |
+| seeded/1 | 01c853b7-030d-1e75-0035-065b0019dd5a | 8db08735-3a17-4d75-988c-5982cfff1322 |
+| seeded/2 | 01c853b7-030d-1e64-0035-065b0019fdc2 | f25ae225-a0b3-4aac-a867-7c0dfbad4e69 |
+| duplicate/1 | 01c853b8-030d-1e5d-0035-065b001a8ea6 | a8ce8b75-e52c-4fa9-882a-b99e3a8892a0 |
+| duplicate/2 | 01c853b8-030d-1e73-0035-065b001a9ef2 | 20060953-5868-4c5a-b429-da4c5d270b5b |
+
+### Control and no-touch proof
+
+Control preflight QID: `01c853b5-030d-1e63-0035-065b001a7e3a`.
+Postflight QID: `01c853b9-030d-1e75-0035-065b0019dd86`.
+Both have 20 rows, 8 migrations-page / 12 act3-workflow, byte-identical SHA256:
+`36035640ebee71b816d4e1a15ba52e1d1c37aef9da577722e0533320a2fe9ab3`.
+
+Full sorted typed act-3 snapshots were byte-identical, not just row counts:
+STG_APP_USER 126, APP_USER 126, STG_DOCUMENT 155, DOCUMENT 154, DOC_SHARE 164.
+Per-table before/after SHA256 values are in
+`preflight_guards/act3_tables.json` and `postflight_audit/act3_tables.json`.
+
+History retained 304 run/mapping-tagged queries, with 50 write/transaction
+candidates and zero unparsed nontransaction targets. Durable DML/DDL targets:
+
+- PC_CONTENT.LOGIN_EVENT
+- PC_CONTENT_UNT6_FIXTURE (schema creation)
+- PC_CONTENT_UNT6_FIXTURE.SEEDED_SOURCE
+- PC_CONTENT_UNT6_FIXTURE.DUP_WITHIN_ROUTE_SOURCE
+- PC_CONTENT_UNT6_FIXTURE.UNT6_FIXTURE_SEEDED
+- PC_CONTENT_UNT6_FIXTURE.UNT6_FIXTURE_DUP_WITHIN_ROUTE
+
+The adapter additionally creates/drops session-temporary source views:
+PC_CONTENT.LOGIN_EVENT__DBT_TMP and fixture
+UNT6_FIXTURE_SEEDED__DBT_TMP / UNT6_FIXTURE_DUP_WITHIN_ROUTE__DBT_TMP.
+These are the expected dbt incremental implementation, not additional durable
+production tables. Governance comments/tags target only the built relations.
+No history target is PC_SRC, PC_BEFORE, MIGRATION_CONTROL, another production
+table, a grant, or a warehouse mutation.
+
+Every retained history row includes QUERY_TAG and SESSION_ID; evidence-query
+records include SQL and QIDs. Session parameter readbacks are also retained for
+the guard/audit sessions. Coverage is current-user INFORMATION_SCHEMA history,
+filtered by run/mapping and bounded from preflight through postflight; it does
+not independently rule out other-user or untagged writes. Between-run checks
+found no intervening target writes. ACCESS_HISTORY was not queried.
+
+The fixture schema is **left in place**, following UNT-5's preserved-for-review
+precedent. Remaining limits are unexercised arbitrary raw strings/Unicode
+conversions and account-wide concurrent-writer auditing. The duplicate subject
+remains NOT PARITY by contract.
+
+Packaging: `evidence_index.json`, `bundle.tar.gz`,
+`checks_logs.tar.gz` and `implementation_binding.json` bind the final packaging
+HEAD to the executed implementation hashes, while individual captures preserve
+their original executed HEAD. Final offline logs live in `checks_final/`.
