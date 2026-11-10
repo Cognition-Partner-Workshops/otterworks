@@ -59,7 +59,8 @@ fun Application.configureRouting(prometheusRegistry: PrometheusMeterRegistry) {
                 }
 
                 val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 1
-                val pageSize = call.request.queryParameters["page_size"]?.toIntOrNull() ?: 20
+                val pageSize = (call.request.queryParameters["pageSize"] ?: call.request.queryParameters["page_size"])
+                    ?.toIntOrNull() ?: 20
 
                 val (notifications, total) = notificationService.getNotifications(userId, page, pageSize)
 
