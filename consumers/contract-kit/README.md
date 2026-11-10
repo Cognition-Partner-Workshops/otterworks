@@ -19,7 +19,6 @@ From the consumers repository root:
 ```sh
 python3 -m venv /path/to/contract-venv
 /path/to/contract-venv/bin/pip install -r consumers/contract-kit/requirements-dev.txt
-export TD_EMULATOR_HOME=/home/ubuntu/sfx/td
 export TD_PG_PORT=54902
 export CONTRACT_KIT_PYTHON=/path/to/contract-venv/bin/python
 echo "SEL CUSTOMER_ID FROM SFX_BILLING.CUSTOMER_ACCOUNT" | "$CONTRACT_KIT_PYTHON" consumers/contract-kit/bridge.py
@@ -52,3 +51,9 @@ the exact live output in the shared fixture format. Review and update expected
 counts/sums/keys independently after an intentional data/query change.
 Consumer targets replay and snowflake are dispatched by each consumer; the
 latter remains an explicit placeholder.
+
+Python consumers share contract_client.execute(sql, contract_root, query_name,
+parameters=()). It binds positional string/NULL parameters, dispatches live
+targets to the bridge in CONTRACT_KIT_PYTHON (default: the current interpreter),
+and loads local JSON for replay without importing the warehouse runtime.
+CONTRACT_RECORD=true records live output to contract_root/recorded/teradata.

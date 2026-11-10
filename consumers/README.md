@@ -3,7 +3,7 @@
 Each consumer is treated as a separate repository owned by its team, even
 though these projects share this monorepo. The estate spans JVM services,
 Python and Ruby applications, a LookML semantic model, a finance notebook,
-and a BTEQ partner extract. Each reads TDPROD / FIN_DW today.
+and a BTEQ partner extract. Each reads TDPROD / SFX_BILLING today.
 
 [registry.yaml](registry.yaml) is the inventory: ownership, service accounts,
 entrypoints, cadence, referenced tables and Teradata constructs, root-relative
