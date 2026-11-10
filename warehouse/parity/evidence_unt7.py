@@ -36,6 +36,44 @@ def implementation_hashes(values):
     return values
 
 
+CONTINUATION_ALLOWLIST = ('warehouse/parity/evidence_unt7.py',
+                          'warehouse/parity/tests/test_evidence_unt7.py')
+
+
+def continuation(pre):
+    current = hashes()
+    changed = sorted(p for p in pre['hashes'].keys() | current.keys()
+                     if pre['hashes'].get(p) != current.get(p))
+    if any(p not in CONTINUATION_ALLOWLIST for p in changed):
+        raise ValueError('Implementation changed since preflight')
+    return {'preflight_head': pre['commit'], 'executed_head': head(),
+            'allowlist': list(CONTINUATION_ALLOWLIST), 'changed_files': changed,
+            'preflight_hashes': pre['hashes'], 'executed_hashes': current}
+
+
+def intervening_statements(history, relation):
+    writes = [r for r in history if r[6] == 'SUCCESS' and
+              r[2] not in ('SELECT', 'DESCRIBE', 'SHOW') and
+              relation.split('.')[-1] in (r[1] or '').upper()]
+    failed = [r for r in history if r[6] != 'SUCCESS']
+    return writes, failed
+
+
+def comparison_attempt(path):
+    original = [p for p in [path / 'comparison.json', *(path / 'between_runs').glob('*')] if p.is_file()]
+    before = {str(p.relative_to(path)): sha(p) for p in original}
+    output = path if not before else path / 'comparison_attempts' / uuid.uuid4().hex
+    output.mkdir(parents=True, exist_ok=True)
+    return output, before
+
+
+def preserved_comparison(path, before):
+    after = {p: sha(path / p) for p in before}
+    if before != after:
+        raise ValueError('Original comparison capture changed')
+    return {'before': before, 'after': after, 'byte_identical': True}
+
+
 def control_snapshot(q, path):
     result = capture_control(q, path)
     if result['row_count'] != 20:
@@ -460,10 +498,10 @@ def compile_rejects(subject, path):
 
 def run(subject, number):
     pre = load(DEST / 'preflight/summary.json')
-    if pre['commit'] != head() or implementation_hashes(pre['hashes']) != implementation_hashes(hashes()):
-        raise ValueError('Implementation changed since preflight')
+    binding = continuation(pre)
     path = DEST / subject / f'run{number}'
     fresh(path)
+    dump(path / 'continuation.json', binding)
     if number == 2 and not (path.parent / 'run1/execution.json').exists():
         raise ValueError('Run 1 must precede run 2')
     step = f'unt7-{subject}-run{number}-{uuid.uuid4().hex}'
@@ -536,6 +574,7 @@ def comparisons(oracle1, oracle2, dbt1, dbt2, duplicate=False):
 
 def compare(subject):
     path = DEST / subject
+    output, original = comparison_attempt(path)
     oracle_path = DEST / 'oracle' / scenario(subject)
     result = comparisons(*(load(p / 'target.json') for p in
                          (oracle_path / 'run1', oracle_path / 'run2', path / 'run1', path / 'run2')),
@@ -570,22 +609,23 @@ def compare(subject):
                                    'dbt_adapter': execution.get('adapter_responses'),
                                    'materialization': 'atomic table replacement, not merge'}
     a, b = [load(path / f'run{n}/execution.json') for n in (1, 2)]
-    with queries(path / 'between_runs', 'unt7-between-runs') as q:
-        _, history = q.run("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS "
+    with queries(output / 'between_runs', 'unt7-between-runs') as q:
+        _, history = q.run("SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS,ERROR_CODE,ERROR_MESSAGE "
                            "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
                            f"END_TIME_RANGE_START=>'{a['end_utc']}'::TIMESTAMP_LTZ,"
                            f"END_TIME_RANGE_END=>'{b['start_utc']}'::TIMESTAMP_LTZ,RESULT_LIMIT=>10000)) ORDER BY START_TIME")
-    writes = [r for r in history if r[2] not in ('SELECT', 'DESCRIBE', 'SHOW') and
-              target(subject).split('.')[-1] in (r[1] or '').upper()]
+    writes, failed = intervening_statements(history, target(subject))
     if len(history) >= 10000:
         raise ValueError('Query history truncated; cannot prove absence of intervening writes')
-    result['between_runs'] = {'queries': len(history), 'writes': [[cell(v) for v in r] for r in writes]}
+    result['between_runs'] = {'queries': len(history), 'writes': [[cell(v) for v in r] for r in writes],
+                              'failed_statements': [[cell(v) for v in r] for r in failed]}
     result['passed'] = (result['passed'] and not writes and all(checks) and
                         (subject == 'dup_key' or all(r['equal'] and r['typed_equal'] for r in result['rejects'].values())))
     if subject == 'dup_key':
         result['intended_difference'] = 'Runner accepts first ordered insert and rejects later duplicates; dbt fails closed because PC_SRC has no order column.'
-    dump(path / 'comparison.json', result)
-    print(json.dumps({'subject': subject, 'passed': result['passed']}))
+    result['original_capture_preservation'] = preserved_comparison(path, original)
+    dump(output / 'comparison.json', result)
+    print(json.dumps({'subject': subject, 'passed': result['passed'], 'output': str(output)}))
     if not result['passed']:
         raise ValueError('UNT-7 comparison failed')
 

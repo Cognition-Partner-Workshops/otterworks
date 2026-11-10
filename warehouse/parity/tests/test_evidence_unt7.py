@@ -231,3 +231,55 @@ def test_oracle_captures():
             bad = [line for f in u.load(path / f'run{n}/rejects.json') for line in f['rows']]
             assert u.bad_multiset(bad) == u.bad_multiset([
                 u.bad_line(r['row_type'], r['values']) for r in u.route_rows(rows) if r['row_type'] is not None])
+
+
+def test_intervening_statements_success_only():
+    failed = ('failed-qid', 'SELECT COUNT(*) AS ROWS FROM PC_CONTENT.ROLE_GRANT',
+              'UNKNOWN', '', '', '', 'FAILED_WITH_ERROR', '001003', 'unexpected ROWS')
+    write = ('write-qid', 'CREATE TABLE PC_CONTENT.ROLE_GRANT AS SELECT 1',
+             'CREATE_TABLE_AS_SELECT', '', '', '', 'SUCCESS', None, None)
+    read = ('read-qid', 'SELECT * FROM PC_CONTENT.ROLE_GRANT',
+            'SELECT', '', '', '', 'SUCCESS', None, None)
+    writes, failures = u.intervening_statements([failed, write, read], u.TARGET)
+    assert writes == [write] and failures == [failed]
+    assert u.intervening_statements([], u.TARGET) == ([], [])
+
+
+def test_comparison_attempt_preserves_original(tmp_path):
+    (tmp_path / 'comparison.json').write_text('failed original')
+    (tmp_path / 'between_runs').mkdir()
+    (tmp_path / 'between_runs/queries.json').write_text('original queries')
+    output, before = u.comparison_attempt(tmp_path)
+    assert output != tmp_path and output.is_dir()
+    u.dump(output / 'comparison.json', {'passed': True})
+    proof = u.preserved_comparison(tmp_path, before)
+    assert proof['byte_identical'] and proof['before'] == proof['after']
+    again, _ = u.comparison_attempt(tmp_path)
+    assert again != output
+    (tmp_path / 'comparison.json').write_text('modified')
+    with pytest.raises(ValueError, match='capture changed'):
+        u.preserved_comparison(tmp_path, before)
+
+
+def test_first_comparison_uses_original_path(tmp_path):
+    output, before = u.comparison_attempt(tmp_path)
+    assert output == tmp_path and before == {}
+
+
+def test_continuation_only_allows_collector_and_test_changes(monkeypatch):
+    old = {'warehouse/dbt/macros/pc_content_role_grant.sql': 'dbt',
+           'oracle/runner.py': 'oracle', **{p: 'old' for p in u.CONTINUATION_ALLOWLIST}}
+    new = {**old, **{p: 'new' for p in u.CONTINUATION_ALLOWLIST}}
+    monkeypatch.setattr(u, 'hashes', lambda: new)
+    monkeypatch.setattr(u, 'head', lambda: 'new-head')
+    result = u.continuation({'commit': 'old-head', 'hashes': old})
+    assert result['preflight_head'] == 'old-head' and result['executed_head'] == 'new-head'
+    assert set(result['changed_files']) == set(u.CONTINUATION_ALLOWLIST)
+    for p in ('warehouse/dbt/macros/pc_content_role_grant.sql', 'oracle/runner.py', 'unexpected'):
+        new[p] = 'modified'
+        with pytest.raises(ValueError, match='Implementation changed'):
+            u.continuation({'commit': 'old-head', 'hashes': old})
+        if p in old:
+            new[p] = old[p]
+        else:
+            del new[p]
