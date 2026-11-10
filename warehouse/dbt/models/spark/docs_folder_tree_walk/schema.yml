@@ -1,0 +1,35 @@
+version: 2
+models:
+  - name: docs_folder_tree_walk
+    description: "sfx-d1110: replaces lake/documents/docs_folder_tree_walk in SFX_D1110_AFTER.MART_SPARK.DOCS_FOLDER_TREE_WALK; preserves 20 parent-pointer iterations, including dangling parents and cycles."
+    columns:
+      - name: FOLDER_ID
+        data_tests: [not_null, unique]
+      - name: ROOT_FOLDER_ID
+        data_tests: [not_null]
+      - name: DEPTH
+        data_tests: [not_null]
+unit_tests:
+  - name: folder_walk_preserves_bounded_legacy_semantics
+    model: docs_folder_tree_walk
+    given:
+      - input: source('spark_documents', 'FOLDER')
+        rows:
+          - {FOLDER_ID: 1, PARENT_FOLDER_ID: null}
+          - {FOLDER_ID: 2, PARENT_FOLDER_ID: 1}
+          - {FOLDER_ID: 3, PARENT_FOLDER_ID: 2}
+          - {FOLDER_ID: 4, PARENT_FOLDER_ID: 999}
+          - {FOLDER_ID: 5, PARENT_FOLDER_ID: 6}
+          - {FOLDER_ID: 6, PARENT_FOLDER_ID: 5}
+          - {FOLDER_ID: 7, PARENT_FOLDER_ID: 0}
+          - {FOLDER_ID: 8, PARENT_FOLDER_ID: 8}
+    expect:
+      rows:
+        - {FOLDER_ID: 1, ROOT_FOLDER_ID: 1, DEPTH: 0}
+        - {FOLDER_ID: 2, ROOT_FOLDER_ID: 1, DEPTH: 1}
+        - {FOLDER_ID: 3, ROOT_FOLDER_ID: 1, DEPTH: 2}
+        - {FOLDER_ID: 4, ROOT_FOLDER_ID: 999, DEPTH: 1}
+        - {FOLDER_ID: 5, ROOT_FOLDER_ID: 5, DEPTH: 20}
+        - {FOLDER_ID: 6, ROOT_FOLDER_ID: 6, DEPTH: 20}
+        - {FOLDER_ID: 7, ROOT_FOLDER_ID: 7, DEPTH: 20}
+        - {FOLDER_ID: 8, ROOT_FOLDER_ID: 8, DEPTH: 20}
