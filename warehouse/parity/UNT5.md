@@ -91,3 +91,70 @@ Output: `warehouse/parity/out/evidence/unt5/` (ignored). `index` writes
 Capture HEADs remain in lineage/execution files if artifacts span commits;
 index's commit is the packaging HEAD. Preserve original evidence, never overwrite
 captures or alter the historical UNT-2/UNT-4 lineage gates to accept a new run.
+
+## Live results (2026-11-10)
+
+Production run 1 was built at `8e04db3c14358ae01d360b6ab38bf1a9f462154c`.
+Its build and key tests passed, but the collector failed with `invalid identifier
+'ROWS_UPDATED'` (query `01c8539f-030d-1e7e-0035-065b001b3ad2`). Read-only
+discovery established the supported history columns; collector/test fix
+`ab23117bc` removed unsupported fields and used adapter responses and MERGE
+RESULT_SCAN instead. Its first recovery attempt stopped with `Cannot prove
+uncontaminated run1`: the history window was not bounded to preflight. Fix
+`b3a5ddc3181f451f4e153baa2f5550b5488f4495` bounded that window. Both failed
+captures remain in the evidence. Run 1 was collected post hoc at this latter
+commit, without rebuilding or resetting the target. Executed implementation
+hashes equal collected hashes, excluding only the collector; models, macro,
+analysis and fixtures are byte-identical to `8e04db3c`.
+
+All subsequent live steps executed at `b3a5ddc3181f451f4e153baa2f5550b5488f4495`.
+Preflight, recovery, production run 2, fixture-load, both seeded runs, both
+duplicate-fixture evidence commands, all three comparisons, and postflight
+exited 0. Duplicate dbt subprocesses intentionally exited 1 on
+`100051 (22012): Division by zero`; their evidence commands verified unchanged
+targets and accepted this expected failure. Production/seeded builds passed
+their unique/not-null tests (`PASS=5 WARN=0 ERROR=0 SKIP=0 TOTAL=5`).
+
+| Subject/run | Target rows | dbt inserted | dbt updated | Reject export rows |
+|---|---:|---:|---:|---:|
+| production/1 | 61 | 61 (CTAS readback) | 0 | 3 |
+| production/2 | 61 | 0 | 61 | 3 |
+| seeded/1 | 11 | 7 | 2 | 7 |
+| seeded/2 | 11 | 0 | 9 | 7 |
+| dup_within_route/1 | 1 (unchanged) | 0 | 0 | 0 |
+| dup_within_route/2 | 1 (unchanged) | 0 | 0 | 0 |
+
+Production run 1 used CTAS, not MERGE: its adapter `rows_affected=1` is a
+statement result, not a target-row count. The comparison JSON records zero
+MERGE rows for that run; 61 comes from full typed target readback. Other
+successful runs' inserted/updated counts come from MERGE RESULT_SCAN.
+
+All four full typed comparisons pass for production and seeded, in both
+directions, with no duplicate keys. Duplicate-fixture oracle1/oracle2 and
+dbt1/dbt2 pass; oracle/dbt comparisons intentionally differ: the runner performs
+two ordered updates while dbt fails closed and retains the initial row.
+Raw .bad multisets and typed rejects pass for every subject/run. Branch checks
+and runner writer-stat expectations pass. Seeded runner run 1 records 7 inserts
+and 3 updates; run 2 records 10 updates. dbt applies only 9 distinct winning
+keys, because the STANDARD winner replaces the critical operation for a
+cross-route key. These are operation-count differences, not value differences.
+PostgreSQL CHAR(12) padding is preserved in typed comparisons, not stripped.
+
+Recovery history reports no foreign target writes from preflight through
+recovery; each between-run check reports no intervening target writes. These
+checks use current-user INFORMATION_SCHEMA history, not account-wide audit
+history, so other users' activity is not independently certified. Production
+and fixture target comment readbacks match the required token/expiry. The
+fixture schema is preserved for review; no target reset/full refresh was used.
+
+Control preflight query: `01c8539e-030d-21f3-0035-065b001c4242`.
+Postflight query: `01c853a4-030d-1e67-0035-065b001a2d72`.
+All 20 rows are byte-identical, SHA256
+`36035640ebee71b816d4e1a15ba52e1d1c37aef9da577722e0533320a2fe9ab3`.
+Final offline regression: `98 passed in 3.80s`.
+
+Evidence index and bundle: `warehouse/parity/out/evidence/unt5/evidence_index.json`
+and `warehouse/parity/out/evidence/unt5/bundle.tar.gz`, packaged at the executed
+collector commit above; individual execution files retain original provenance.
+Within-route duplicate keys deliberately fail closed rather than reproduce
+runner last-write semantics. Malformed/untyped inputs are not certified.
