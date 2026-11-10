@@ -149,3 +149,153 @@ certification in Step A. Arbitrary Unicode digits/whitespace/case conversions
 remain untested. Typed production sources cannot represent malformed strings.
 History is current-user only, not an independent account-wide writer audit.
 Duplicate subject is explicitly NOT PARITY. No UI surface was changed.
+
+## Step B live results — 2026-11-10
+
+Production builds executed at `0607eba02ad7e700ccb23415de602be12956ad4a`.
+Seeded and dup_key builds executed at
+`6f052a157b7717cca41129db26ce38827527f9a7`, after the separately approved
+collector-only fix, "Count only successful statements as intervening writes".
+No dbt macro, model, analysis, YAML, PSV fixture, mapping configuration, oracle,
+runner, bootstrap, parameter or XML input changed between these executed HEADs.
+The final follow-up commit appends only this section. Packaging binds both
+executed HEADs to the final HEAD with per-file SHA256s and explicitly records
+the collector and test changes. JWT key material stayed in memory.
+
+### Guarded chronology and the retained failed comparison
+
+Read-only preflight verified absent production target and fixture schema,
+149/149 matching frozen source rows, and PC_BEFORE.ROLE_GRANT matching all 149
+local oracle rows. Fixture-load created only the approved new fixture schema
+and its four commented tables. Production builds 1/2 succeeded without rebuilds.
+
+An auxiliary readback used the reserved alias ROWS and failed compilation:
+QID `01c853cc-030d-1e7f-0035-065b001bb81e`, error 001003,
+"syntax error line 1 at position 19 unexpected 'ROWS'." Its corrected read-only
+query used N_ROWS and returned 149 rows / 149 distinct GRANT_IDs.
+Snowflake classified the failed SELECT as UNKNOWN / FAILED_WITH_ERROR, so the
+original conservative comparison incorrectly reported an intervening write.
+All value, reject and writer-count comparisons already matched.
+
+Execution stopped for approval. The approved collector change counts only
+EXECUTION_STATUS=SUCCESS statements as intervening writes, and retains failed
+statements separately with QID, error code and message. A failed Snowflake
+statement is atomic and writes nothing; that failed SELECT changed no data.
+Original production/comparison.json and production/between_runs files remain
+byte-for-byte unchanged. Their before/after SHA256s are recorded in
+production/comparison_attempts/52134f52efa940ccb2ff9856d1c51460/comparison.json.
+The read-only comparison retry passed; no production build was repeated.
+
+Continuation records bind the preflight HEAD to the new executed HEAD and allow
+only evidence_unt7.py and test_evidence_unt7.py changes. Every other hashed file
+must match; all source, control, protected-table and initial-target gates remain.
+Offline classifier/preservation/continuation tests reported
+`187 passed, 1 skipped in 4.50s` before the classifier commit.
+
+Seeded runs 1/2, compare, dup_key runs 1/2, compare and postflight all completed.
+The duplicate dbt subprocesses exited 1 as expected; their evidence commands
+exited 0 after verifying division-by-zero errors and full initial-row preservation.
+All exact outer argv vectors, raw stdout/stderr, UTC start/end times and HEADs
+are retained in chronology and each run's execution.json; the actual run_dbt.py
+build argv vectors are collected in chronology/actual_dbt_invocations.json.
+The initial orchestration attempt resolved the venv Python symlink to system
+Python and failed before a connection; that failed invocation is retained too.
+
+### Results
+
+| Subject/run | Target rows | Rejects | Oracle minus dbt | dbt minus oracle | Result |
+|---|---:|---:|---:|---:|---|
+| production/1 | 149 | 0 | 0 | 0 | PARITY |
+| production/2 | 149 | 0 | 0 | 0 | PARITY |
+| seeded/1 | 13 | 4 | 0 | 0 | PARITY |
+| seeded/2 | 13 | 4 | 0 | 0 | PARITY |
+| dup_key/1 | 2 unchanged | 0 | 1 | 2 | NOT PARITY; expected guard failure |
+| dup_key/2 | 2 unchanged | 0 | 1 | 2 | NOT PARITY; expected guard failure |
+
+These are strict typed bidirectional multiset differences with multiplicities,
+not EXCEPT DISTINCT counts. Production and seeded values/keys are stable across
+runs, including CHAR-equivalent padding and NULLs. Seeded oracle has eight
+expression drops and four writer rejects, not twelve .bad rows; raw and typed
+reject exports agree on both runs. Seed 999 disappears and input 101 replaces
+its old seeded value. Duplicate oracle retains FIRST/user 1 and rejects SECOND;
+dbt keeps both original seeded rows, rather than choosing an unordered winner.
+
+Four successful builds report `Done. PASS=5 WARN=0 ERROR=0 SKIP=0 TOTAL=5`.
+Both duplicate builds report `100051 (22012): Division by zero` and
+`Done. PASS=2 WARN=0 ERROR=1 SKIP=2 TOTAL=5`. Full snapshots certify their
+failure leaves the initial target intact. Duplicate value/reject parity is
+intentionally not asserted.
+
+| Subject/run | Model statement QID | run_results invocation_id |
+|---|---|---|
+| production/1 | 01c853cb-030d-1e77-0035-065b001a6f8e | db8e4ae5-f48d-4e6b-98da-09665bd6f9b1 |
+| production/2 | 01c853cd-030d-1e7d-0035-065b001a5fda | e88d646c-3f49-470c-a937-e6cfdb223b85 |
+| seeded/1 | 01c853d0-030d-1e6e-0035-065b00199f42 | c05e7634-83d6-4e8f-90b6-f4fc67f478bf |
+| seeded/2 | 01c853d0-030d-1e6e-0035-065b00199f62 | 9118cf2f-e733-410e-8ed0-800243688e48 |
+| dup_key/1 | 01c853d1-030d-1e67-0035-065b001a2e72 | 9bf951b5-17d7-4f0f-a91d-b9eb1fb0dc72 |
+| dup_key/2 | 01c853d2-030d-1e72-0035-065b0019bff6 | 539a4785-7b80-4cc7-af65-8fbcb77174fe |
+
+### Table recreation, not object-identity replay
+
+Actual model statements are CREATE OR REPLACE TRANSIENT TABLE AS SELECT, not
+MERGE. SHOW TABLES and INFORMATION_SCHEMA.TABLES confirm transient objects.
+Production SHOW/readback after both runs certifies 149 rows and 149 distinct
+GRANT_IDs, with full row snapshots retained.
+
+| Relation | CREATED after run 1 / before run 2 (UTC) | CREATED after run 2 (UTC) |
+|---|---|---|
+| PC_CONTENT.ROLE_GRANT | 2026-11-10 23:07:54.744 | 2026-11-10 23:09:08.951 |
+| PC_FX_UNT7_ROLE_GRANT.UNT7_FIXTURE_SEEDED | 2026-11-10 23:12:02.169 | 2026-11-10 23:12:43.026 |
+
+These independent SHOW/INFORMATION_SCHEMA observations and successful replacement
+QIDs prove recreation on each successful build. Row keys and values are stable;
+the object is recreated, not identity-preserved, as the chosen truncate-and-load
+equivalent. Numeric TABLE_ID changes are not directly certified: ACCOUNT_USAGE
+TABLES was queried twice but had not exposed these new objects yet.
+INFORMATION_SCHEMA.TABLES and SHOW TABLES expose CREATED, not a TABLE_ID column.
+No unsupported TABLE_ID query or metadata mutation was attempted. The fixture
+schema remains available for review.
+
+### Control, protected tables and write-scope proof
+
+All 20 control rows (8 migrations-page / 12 act3-workflow) are byte-identical:
+pre/post SHA256
+`36035640ebee71b816d4e1a15ba52e1d1c37aef9da577722e0533320a2fe9ab3`.
+Protected aggregate pre/post SHA256:
+`47c1cf166f3e4874b2a124844e1d5f80dd7dad8c26f50cc65693b34ba79b6396`.
+Full sorted typed snapshots match for STG_APP_USER 126, APP_USER 126,
+STG_DOCUMENT 155, DOCUMENT 154, DOC_SHARE 164 and LOGIN_EVENT 412.
+Per-table pre/post SHA256s are in postflight_audit/protected_tables.json.
+
+The current-user run/mapping-tagged history capture contains 511 queries,
+33 successful durable DML/DDL/comment/tag statements, 26 session-setting
+statements, and zero unparsed successful non-read targets. Durable write targets:
+
+- PC_CONTENT.ROLE_GRANT
+- PC_FX_UNT7_ROLE_GRANT (schema creation)
+- PC_FX_UNT7_ROLE_GRANT.SEEDED_SOURCE
+- PC_FX_UNT7_ROLE_GRANT.DUP_KEY_SOURCE
+- PC_FX_UNT7_ROLE_GRANT.UNT7_FIXTURE_SEEDED
+- PC_FX_UNT7_ROLE_GRANT.UNT7_FIXTURE_DUP_KEY
+
+No __DBT_TMP object was needed by this table materialization. Comments finalized
+to run_token=sfx-d1110 expires=2026-11-24. No write targets PC_SRC, PC_BEFORE,
+PC_AUDIT, LOGIN_EVENT, an act-3 table, PC_BILLING or MIGRATION_CONTROL; no grant,
+task execution, setup/global load, truncate, reset, full-refresh or restore ran.
+Between-run history has no successful intervening target writes. The failed
+auxiliary SELECT and both expected failed duplicate statements are retained
+with their QIDs/errors, not erased or counted as writes.
+
+Final read-only activity check found zero other running/queued/blocked tagged
+UNT-7 queries; connections closed and no local dbt/evidence subprocess remained.
+Limits: history is current-user tagged history, not an account-wide audit of
+other-user or untagged writes; arbitrary Unicode conversions remain unexercised;
+dup_key remains NOT PARITY; numeric TABLE_ID changes remain unavailable.
+NO CI RAN. Final-HEAD offline tests and both inert-profile dbt parses are recorded
+separately under checks_final, with HEAD, argv and exit codes.
+
+Packaging: evidence_index.json, bundle.tar.gz (all raw evidence),
+checks_logs.tar.gz and implementation_binding.json bind the two executed HEADs
+to the final documentation HEAD. The binding proves all dbt implementation and
+oracle/runner/XML inputs identical while explicitly listing the approved
+collector/test hash changes; only documentation changes after the fixture builds.
