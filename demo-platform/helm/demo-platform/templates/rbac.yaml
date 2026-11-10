@@ -19,13 +19,12 @@ rules:
   - apiGroups: [""]
     resources: ["pods", "services", "secrets", "configmaps", "serviceaccounts", "persistentvolumeclaims", "resourcequotas", "limitranges", "events"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  # Pod logs (dashboard streams runner Job logs) + exec (inject-bug drives Redis).
+  # Pod logs: the dashboard streams runner Job logs, and inject-bug / idle-suspend
+  # read Redis through short-lived redis-cli pods (scripts/lib/tenant-redis.sh)
+  # rather than exec-ing into running pods.
   - apiGroups: [""]
     resources: ["pods/log"]
     verbs: ["get", "list"]
-  - apiGroups: [""]
-    resources: ["pods/exec"]
-    verbs: ["create"]
   - apiGroups: ["apps"]
     resources: ["deployments", "replicasets", "statefulsets"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
@@ -56,6 +55,36 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ .Release.Name }}-ops
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.serviceAccount.name }}
+    namespace: {{ .Values.platformNamespace }}
+---
+# idle-suspend's fallback metrics scrape goes through the API server's pod proxy,
+# limited to the ingress controller's namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Name }}-ingress-metrics
+  namespace: {{ .Values.ingressNamespace | default "ingress-nginx" }}
+  labels:
+    {{- include "demo-platform.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods/proxy"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Name }}-ingress-metrics
+  namespace: {{ .Values.ingressNamespace | default "ingress-nginx" }}
+  labels:
+    {{- include "demo-platform.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Release.Name }}-ingress-metrics
 subjects:
   - kind: ServiceAccount
     name: {{ .Values.serviceAccount.name }}

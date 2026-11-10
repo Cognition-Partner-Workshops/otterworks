@@ -24,6 +24,7 @@ spec:
       annotations:
         checksum/ddl: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
     spec:
+      automountServiceAccountToken: false
       terminationGracePeriodSeconds: 120
       # The image runs as oracle (54321:54321); fsGroup hands it the fresh ext4 volume.
       securityContext:

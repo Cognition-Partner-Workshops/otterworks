@@ -66,8 +66,8 @@ ingress_request_counts() {
              -l app.kubernetes.io/component=controller \
              -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)"
     [ -n "${pod}" ] || return 1
-    raw="$(kubectl -n "${INGRESS_NAMESPACE}" exec "${pod}" -- \
-             curl -sf --max-time 10 http://127.0.0.1:10254/metrics 2>/dev/null)"
+    raw="$(kubectl get --raw \
+             "/api/v1/namespaces/${INGRESS_NAMESPACE}/pods/${pod}:10254/proxy/metrics" 2>/dev/null)"
   fi
   [ -n "${raw}" ] || return 1
 
@@ -130,7 +130,7 @@ running_deployments() {
 tenant_has_chaos() {
   local ns="$1"
   # Same access path inject-bug.sh uses, so the two agree on what "injected" means.
-  kubectl -n "${ns}" exec deploy/redis -- redis-cli --scan --pattern 'chaos:*' 2>/dev/null | grep -q .
+  tenant_redis "${ns}" --scan --pattern 'chaos:*' 2>/dev/null | grep -q .
 }
 
 # Returns non-zero if the tenant is still running afterwards. The caller records
@@ -270,5 +270,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
   REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
   # shellcheck source=/dev/null
   source "${REPO_ROOT}/demo-platform/lib/control-common.sh"
+  # shellcheck source=../../scripts/lib/tenant-redis.sh
+  source "${REPO_ROOT}/scripts/lib/tenant-redis.sh"
   suspend_idle_tenants
 fi
