@@ -262,12 +262,12 @@ def parse_stats(text):
 
 
 @contextmanager
-def queries(path, step):
+def queries(path, step, workload='parity'):
     path.mkdir(parents=True, exist_ok=True)
     previous = evidence_live.LIVE
     evidence_live.LIVE = path
     try:
-        with connection('parity', step, MAPPING) as conn, conn.cursor() as cursor:
+        with connection(workload, step, MAPPING) as conn, conn.cursor() as cursor:
             yield ReadOnlyQueries(cursor)
     finally:
         evidence_live.LIVE = previous
@@ -328,7 +328,7 @@ def fixture_load():
     path = DEST / 'fixture_load'
     fresh(path)
     records = []
-    with queries(path, 'unt5-fixture-load') as q:
+    with queries(path, 'unt5-fixture-load', workload='load') as q:
         _, existing = q.run("SELECT SCHEMA_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.SCHEMATA "
                             "WHERE SCHEMA_NAME='PC_AUDIT_UNT5_FIXTURE'")
         if existing:
@@ -360,9 +360,12 @@ def dbt_env(subject):
 
 
 def compile_rejects(subject, path):
+    from .harness import tag
+    from sfx_conn import query_tag
     env = dbt_env(subject)
     env['DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY'] = env['SNOWFLAKE_PRIVATE_KEY']
     env['DBT_SEND_ANONYMOUS_USAGE_STATS'] = 'false'
+    env['SFX_QUERY_TAG'] = query_tag('transform', 'unt5-reject-compile', tag('unt5-reject-compile', MAPPING))
     project = ROOT / 'warehouse/dbt'
     command = [str(Path(sys.executable).with_name('dbt')), 'compile', '--project-dir', str(project),
                '--profiles-dir', str(project), '--select', 'unt5_security_alert_rejects',
