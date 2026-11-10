@@ -133,12 +133,16 @@ tasks:
     sql: |
       EXECUTE IMMEDIATE $$
       DECLARE
+          load_date VARCHAR;
           expected_count INTEGER;
           actual_count INTEGER;
           debit_total NUMBER(38,2);
           credit_total NUMBER(38,2);
-          posting_failed EXCEPTION (-20002, 'GL posting for 20261109 did not balance');
+          posting_failed EXCEPTION (-20002, 'Latest GL posting did not balance');
       BEGIN
+          SELECT MAX(REGEXP_SUBSTR(JOURNAL_NO, '^JE-([0-9]{8})-', 1, 1, 'e', 1))
+              INTO :load_date
+          FROM SFX_D1110_AFTER.PC_BILLING.GL_JOURNAL_LINE;
           SELECT COALESCE(SUM(2 + IFF(ROUND(TOTAL_AMOUNT * 0.0825 / 1.0825, 2) <> 0, 1, 0)), 0)
               INTO :expected_count
           FROM SFX_D1110_AFTER.PC_BILLING.STG_INVOICE_HDR
@@ -146,8 +150,8 @@ tasks:
           SELECT COUNT(*), COALESCE(SUM(DEBIT_AMOUNT), 0), COALESCE(SUM(CREDIT_AMOUNT), 0)
               INTO :actual_count, :debit_total, :credit_total
           FROM SFX_D1110_AFTER.PC_BILLING.GL_JOURNAL_LINE
-          WHERE JOURNAL_NO LIKE 'JE-20261109-%';
-          IF (actual_count <> expected_count OR debit_total <> credit_total) THEN
+          WHERE JOURNAL_NO LIKE 'JE-' || :load_date || '-%';
+          IF (load_date IS NULL OR actual_count <> expected_count OR debit_total <> credit_total) THEN
               RAISE posting_failed;
           END IF;
           RETURN actual_count::VARCHAR;
