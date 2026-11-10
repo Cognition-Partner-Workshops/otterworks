@@ -60,7 +60,16 @@ def main() -> int:
     src.connect()
     loaded = load_manifest(Path(a.manifest), a.namespace)
     tables = build_table_specs(loaded)
-    ctx = RunContext(loaded, "smoke", src, None, None, Path(tempfile.mkdtemp(prefix="oracle-smoke-")), Log(sys.stderr), tables=tables)  # type: ignore[arg-type]
+    ctx = RunContext(
+        loaded,
+        "smoke",
+        src,
+        None,
+        None,
+        Path(tempfile.mkdtemp(prefix="oracle-smoke-")),
+        Log(sys.stderr),
+        tables=tables,
+    )  # type: ignore[arg-type]
 
     out: dict[str, object] = {"dsn": a.dsn, "tables": {}}
     ok = True
