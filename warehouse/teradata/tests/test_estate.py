@@ -1,4 +1,7 @@
 import io
+import csv
+import datetime as dt
+import os
 import subprocess
 import sys
 import uuid
@@ -88,3 +91,49 @@ def test_control_validation(tmp_path):
     path.write_text('INSERT INTO SFX_USERS.STG_APP_USER (USER_ID) VALUES(:DISPLAY_NAME);')
     with pytest.raises(ValueError, match='same order'):
         parse_control(path)
+
+
+def test_daily_chain(estate, tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    exports = tmp_path / 'exports'
+    command = [sys.executable, str(root / 'jobs' / 'daily_chain'), '--rows', '2000',
+               '--landing', str(tmp_path / 'landing'), '--exports', str(exports)]
+    environment = {**os.environ, 'TD_PG_DSN': estate.conn.info.dsn, 'TD_PG_DB': estate.conn.info.dbname}
+    result = subprocess.run(command, env=environment, text=True, capture_output=True, timeout=120)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert 'audit/11_reconciliation | 0' in result.stdout
+    assert estate.conn.execute('SELECT (SELECT count(*) FROM sfx_documents.stg_storage_usage_daily)-(SELECT count(*) FROM sfx_documents.storage_usage_daily)').fetchone() == (50,)
+    assert estate.conn.execute('SELECT min(length(display_name)),max(length(display_name)) FROM sfx_users.app_user WHERE user_id>=9000000001').fetchone() == (60, 60)
+    with (exports / 'subscription_plans.psv').open() as handle:
+        plans = list(csv.reader(handle, delimiter='|'))
+    assert len([r for r in plans if int(r[0]) >= 9000000001]) == 100
+    with (exports / 'currency_daily.psv').open() as handle:
+        currency = list(csv.reader(handle, delimiter='|'))
+    assert len(currency) == 1 and int(currency[0][1]) == 2100
+    with (exports / 'invoice_periods.psv').open() as handle:
+        periods = {int(r[0]): r for r in csv.reader(handle, delimiter='|')}
+    dates = ('2026-10-31', '2024-02-29', '2025-12-31', '2026-01-01', '1999-12-31', '2026-11-30')
+    for index, value in enumerate(dates):
+        date = dt.date.fromisoformat(value)
+        row = periods[9000000001 + index]
+        assert row[1:] == [(date-dt.timedelta(days=1)).isoformat(), str(date.month),
+                           date.replace(day=1).strftime('%Y%m%d'), date.strftime('%Y-%m'), '2026-11-09']
+    assert estate.conn.execute('SELECT count(*),count(DISTINCT document_id) FROM sfx_documents.doc_version WHERE document_id>=9000000001').fetchone() == (50, 50)
+    assert estate.conn.execute("SELECT units FROM sfx_billing.usage_daily WHERE customer_id=9000000001 AND usage_type='STORAGE'").fetchone() == (1048576,)
+    assert estate.conn.execute("SELECT count(*) FROM sfx_billing.invoice_line WHERE description='Monthly storage'").fetchone()[0] > 0
+    assert estate.conn.execute('SELECT difference_count FROM sfx_audit.audit_recon WHERE recon_id=21000000001').fetchone() == (50,)
+    assert estate.conn.execute("SELECT kind,count(*) FROM sfx_td.routines GROUP BY kind ORDER BY kind").fetchall() == [('MACRO', 6), ('PROCEDURE', 4)]
+    for table in ('sfx_users.user_pref', 'sfx_documents.search_index_log', 'sfx_audit.audit_event_archive'):
+        assert estate.conn.execute('SELECT count(*) FROM ' + table).fetchone() == (0,)
+    again = subprocess.run(command + ['--reuse-landing'], env=environment, text=True, capture_output=True, timeout=120)
+    assert again.returncode == 0, again.stdout + again.stderr
+
+
+def test_chain_stops_on_load_error(estate, tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    result = subprocess.run([sys.executable, str(root / 'jobs' / 'daily_chain'), '--reuse-landing',
+                             '--landing', str(tmp_path / 'absent'), '--exports', str(tmp_path / 'exports')],
+                            env={**os.environ, 'TD_PG_DSN': estate.conn.info.dsn, 'TD_PG_DB': estate.conn.info.dbname},
+                            text=True, capture_output=True, timeout=30)
+    assert result.returncode == 1
+    assert 'staging | 1' in result.stdout and 'users/01_load_users |' not in result.stdout

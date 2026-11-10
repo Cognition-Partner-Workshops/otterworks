@@ -11,6 +11,8 @@ DDL_ROOT = Path(__file__).resolve().parents[1] / 'ddl'
 
 def setup(runner, root=DDL_ROOT):
     paths = sorted(root.glob('*/00_*.sql')) + sorted(root.glob('*/10_*.sql'))
+    paths += sorted((root.parent / 'macros').glob('*.sql'))
+    paths += sorted((root.parent / 'procedures').glob('*.spl'))
     for path in paths:
         for statement in commands(path.read_text()):
             database = re.match(r'CREATE DATABASE\s+(\w+)', statement, re.I)

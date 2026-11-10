@@ -1,4 +1,6 @@
 import csv
+import datetime
+from decimal import Decimal
 import hashlib
 import json
 import os
@@ -22,7 +24,11 @@ ERRORS = {'42P01': 3807, '42704': 3807, '42P07': 3803, '3F000': 3802,
 def literal(value):
     if value is None:
         return 'NULL'
-    if isinstance(value, (int, float)):
+    if isinstance(value, datetime.datetime):
+        return "TIMESTAMP '" + value.isoformat(sep=' ') + "'"
+    if isinstance(value, datetime.date):
+        return "DATE '" + value.isoformat() + "'"
+    if isinstance(value, (int, float, Decimal)):
         return str(value)
     return "'" + str(value).replace("'", "''") + "'"
 
@@ -389,7 +395,11 @@ class Runner:
         values = {}
         for p, arg in zip(params, args):
             name = p[1] if p[0].upper() in ('IN', 'OUT', 'INOUT') else p[0]
-            values[name.lower()] = self.conn.execute('SELECT ' + arg).fetchone()[0] if arg != '?' else None
+            if arg == '?':
+                values[name.lower()] = None
+            else:
+                statement, _ = self.translate('SELECT ' + arg)
+                values[name.lower()] = self.conn.execute(statement).fetchone()[0]
         if kind == 'MACRO':
             for statement in split(body):
                 self.execute(re.sub(r':(\w+)', lambda n: literal(values[n[1].lower()]), statement))

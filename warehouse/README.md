@@ -14,6 +14,7 @@ warehouse/.venv/bin/python warehouse/seed/generate.py --rows 200000 --seed 1110
 export PYTHONPATH=warehouse/teradata
 warehouse/.venv/bin/python -m bteq.setup
 warehouse/.venv/bin/python -m bteq.load --landing warehouse/landing --business-date 20261109
+warehouse/.venv/bin/python warehouse/teradata/jobs/daily_chain --rows 2000
 warehouse/.venv/bin/pytest -q warehouse/seed/tests warehouse/teradata/tests
 warehouse/teradata/bin/bteq run path/to/script.bteq --var BUSINESS_DATE=20261109
 warehouse/teradata/bin/bteq < path/to/script.bteq
@@ -49,3 +50,19 @@ Each file load truncates and copies its staging table in one transaction. A
 failed copy restores the previous contents. The loader accepts `--controls` to
 select another control-file root. The integration tests create and drop an
 isolated database, so their configured PostgreSQL role needs CREATEDB permission.
+
+`bteq.setup` also creates the macros and SPL procedures. `jobs/daily_chain` runs
+setup, feed generation, staging loads, core loads, daily summaries, monthly
+storage and invoice processing, and reconciliation. It stops on the first
+nonzero exit and prints step timings. Defaults are `--rows 200000 --seed 1110
+--business-date 20261109`; use `--reuse-landing` to load existing feed files.
+`--landing` and `--exports` select input and report directories. Reports default
+to `warehouse/exports`. The close-period date range is the previous calendar
+month; the storage report uses the business date's calendar month.
+
+For a single table count comparison after loading:
+
+```sh
+warehouse/.venv/bin/python warehouse/teradata/jobs/reconcile \
+  --area documents --table STORAGE_USAGE_DAILY --business-date 20261109
+```
