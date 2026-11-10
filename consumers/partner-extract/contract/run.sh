@@ -1,23 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-SNOWFLAKE_DATABASE=SFX_D1110_AFTER
-SNOWFLAKE_SCHEMA=COMPAT
-QUERY_TAG='{"run":"sfx-d1110","act":"consumers","consumer":"partner-extract"}'
 case "${WAREHOUSE_CONTRACT_TARGET:-teradata-emulator}" in
   teradata-emulator|replay|snowflake-semantics)
     ;;
   snowflake)
-    for key in ACCOUNT USER ROLE WAREHOUSE PRIVATE_KEY; do
+    for key in ACCOUNT USER ROLE PRIVATE_KEY; do
       variable="SNOWFLAKE_$key"
       if [[ -z ${!variable:-} ]]; then
-        printf 'Snowflake environment not configured: missing %s\n' "$variable" >&2
-        exit 1
+        printf 'SKIP snowflake contract: missing %s\n' "$variable"
+        exit 0
       fi
     done
-    printf 'Snowflake adapter not installed; execute sql/partner_invoice_extract.bteq SQL in %s.%s with QUERY_TAG=%s\n' \
-      "$SNOWFLAKE_DATABASE" "$SNOWFLAKE_SCHEMA" "$QUERY_TAG" >&2
-    exit 1
+    export SNOWFLAKE_WAREHOUSE=SFX_D1110_PARITY_WH
+    work=$(mktemp -d)
+    trap 'rm -rf -- "$work"' EXIT
+    unset WAREHOUSE_EXPORT_BIN
+    SFTP_DRY_RUN=1 FINANCE_WAREHOUSE_ENABLED=true \
+      bash "$ROOT/bin/nightly_extract.sh" 2026-11-09 "$work/partner.csv"
+    "${PARTNER_EXTRACT_PYTHON:-python3}" "$ROOT/contract/snowflake_check.py" "$work/partner.csv" "$work"
+    exit 0
     ;;
   *)
     printf '%s\n' 'unknown warehouse contract target' >&2
@@ -26,7 +28,8 @@ case "${WAREHOUSE_CONTRACT_TARGET:-teradata-emulator}" in
 esac
 work=$(mktemp -d)
 trap 'rm -rf -- "$work"' EXIT
-BTEQ_BIN="$ROOT/contract/replay_bteq.sh" SFTP_DRY_RUN=1 FINANCE_WAREHOUSE_ENABLED=true \
+export TD_USER=svc_exit_parity
+WAREHOUSE_EXPORT_BIN="$ROOT/contract/teradata_export.sh" SFTP_DRY_RUN=1 FINANCE_WAREHOUSE_ENABLED=true \
   bash "$ROOT/bin/nightly_extract.sh" 2026-11-09 "$work/partner.csv" > "$work/run.log"
 cmp "$ROOT/contract/expected/partner-invoices.csv" "$work/partner.csv"
 python3 - "$ROOT/contract/expected/partner-invoices.json" "$work/partner.csv" <<'PY'

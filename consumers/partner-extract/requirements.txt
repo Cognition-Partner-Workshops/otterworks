@@ -1,0 +1,2 @@
+snowflake-connector-python==3.18.1
+cryptography==46.0.3
