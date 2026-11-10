@@ -1,8 +1,9 @@
 {
   "job": "users_login_useragent_parse",
   "language": "python",
-  "target": "snowpark_python",
-  "status": "legacy",
+  "target": "dbt",
+  "status": "snowflake",
   "schedule": "13 2 * * *",
-  "profile": "small"
+  "profile": "small",
+  "command": "cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job users_login_useragent_parse --select path:models/spark/users_login_useragent_parse"
 }
