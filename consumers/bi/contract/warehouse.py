@@ -18,7 +18,7 @@ class EmulatorWarehouse:
     def __init__(self, queries):
         name = os.getenv("WAREHOUSE_CONTRACT_TARGET", "teradata-emulator")
         if name != "replay":
-            user = os.getenv("TD_USER")
+            user = os.environ.setdefault("TD_USER", "svc_exit_parity")
             if user == "svc_bi_semantic":
                 raise ValueError("svc_bi_semantic is retired; use svc_exit_parity")
             if user != "svc_exit_parity":

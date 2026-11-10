@@ -30,8 +30,8 @@ limited; full Looker compilation requires an external Looker installation.
 contract/queries/*.sql are regenerated Snowflake queries.
 contract/queries/teradata/*.sql are unchanged frozen baseline queries used by
 replay, teradata-emulator and snowflake-semantics. Replay requires no credentials.
-Both emulator targets require TD_USER=svc_exit_parity; the retired
-svc_bi_semantic account is explicitly rejected. Follow ../contract-kit/README.md
+Both emulator targets run as TD_USER=svc_exit_parity (the default when TD_USER
+is unset); the retired svc_bi_semantic account and any other user are rejected. Follow ../contract-kit/README.md
 for bridge dependencies, TD_PG_PORT and CONTRACT_KIT_PYTHON. Use an 800-row seed
 and BUSINESS_DATE=20261109. TD_EMULATOR_HOME overrides the repo runtime root.
 CONTRACT_RECORD=true records emulator results; recorded/expected fixtures must

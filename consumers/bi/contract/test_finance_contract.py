@@ -69,9 +69,9 @@ def test_snowflake_semantic_contract(warehouse):
         row["LABEL"]: row["AMOUNT"] for row in results["invoice_revenue"]
     }
     duplicates = warehouse.query(
-        "SELECT UPPER(ACCOUNT_NUMBER) AS ACCOUNT_KEY "
+        "SELECT UPPER(RTRIM(ACCOUNT_NUMBER)) AS ACCOUNT_KEY "
         "FROM SFX_D1110_AFTER.COMPAT.ACCOUNT "
-        "GROUP BY UPPER(ACCOUNT_NUMBER) "
+        "GROUP BY UPPER(RTRIM(ACCOUNT_NUMBER)) "
         "HAVING COUNT(DISTINCT ACCOUNT_NUMBER) > 1",
         "account_case_duplicates",
     )

@@ -1,3 +1,4 @@
+import os
 from unittest.mock import MagicMock
 
 import pytest
@@ -5,16 +6,21 @@ import pytest
 from contract.warehouse import EmulatorWarehouse, SnowflakeWarehouse
 
 
-@pytest.mark.parametrize("user", [None, "svc_bi_semantic", "other"])
+@pytest.mark.parametrize("user", ["svc_bi_semantic", "other"])
 @pytest.mark.parametrize("target", ["teradata-emulator", "snowflake-semantics"])
 def test_emulators_require_parity_identity(monkeypatch, user, target):
     monkeypatch.setenv("WAREHOUSE_CONTRACT_TARGET", target)
-    if user is None:
-        monkeypatch.delenv("TD_USER", raising=False)
-    else:
-        monkeypatch.setenv("TD_USER", user)
+    monkeypatch.setenv("TD_USER", user)
     with pytest.raises(ValueError):
         EmulatorWarehouse({})
+
+
+@pytest.mark.parametrize("target", ["teradata-emulator", "snowflake-semantics"])
+def test_emulators_default_to_parity_identity(monkeypatch, target):
+    monkeypatch.setenv("WAREHOUSE_CONTRACT_TARGET", target)
+    monkeypatch.delenv("TD_USER", raising=False)
+    assert EmulatorWarehouse({}).names == {}
+    assert os.environ["TD_USER"] == "svc_exit_parity"
 
 
 def test_replay_needs_no_identity(monkeypatch):
