@@ -1,9 +1,9 @@
 {
   "job": "docs_search_log_parse",
   "language": "python",
-  "target": "dbt",
+  "target": "snowpark_python",
   "status": "snowflake",
   "schedule": "12 2 * * *",
   "profile": "small",
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_search_log_parse --select path:models/spark/docs_search_log_parse"
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job docs_search_log_parse"
 }
