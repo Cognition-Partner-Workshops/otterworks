@@ -1,0 +1,21 @@
+AUDIT_EVENT_ARCHIVE_ID|AUDIT_EVENT_ID|ARCHIVED_AT|ARCHIVE_PATH|RETENTION_UNTIL|CREATED_AT|IS_ACTIVE
+1|1|2026-09-05 10:52:00|audit/2026/alderquay/publication.json|2033-12-31|2026-01-08 11:17:00|Y
+2|2|2026-09-08 11:14:00|audit/2026/brindlehaven/publication.json|2033-12-31|2026-01-11 10:56:00|Y
+3|3|2026-09-11 11:47:00|audit/2026/cindermere/publication.json|2033-12-31|2026-01-14 10:19:00|Y
+4|4|2026-09-14 13:50:00|audit/2026/dovewick/publication.json|2033-12-31|2026-01-17 09:20:00|Y
+5|5|2026-09-17 11:22:00|audit/2026/elmspire/publication.json|2033-12-31|2026-01-20 11:11:00|Y
+6|6|2026-09-20 10:31:00|audit/2026/ferncrest/publication.json|2033-12-31|2026-01-23 10:24:00|Y
+7|7|2026-09-23 11:28:00|audit/2026/glenmarsh/publication.json|2033-12-31|2026-01-26 09:21:00|Y
+8|8|2026-09-26 10:10:00|audit/2026/hearthvale/publication.json|2033-12-31|2026-01-29 11:55:00|Y
+9|9|2026-09-29 12:11:00|audit/2026/ironwillow/publication.json|2033-12-31|2026-02-01 10:22:00|Y
+10|10|2026-10-02 10:14:00|audit/2026/juniperquay/publication.json|2033-12-31|2026-02-04 13:05:00|Y
+11|11|2026-10-05 13:28:00|audit/2026/kestrelford/publication.json|2033-12-31|2026-02-07 13:02:00|Y
+12|12|2026-10-08 12:13:00|audit/2026/larkbridge/publication.json|2033-12-31|2026-02-10 11:34:00|Y
+13|13|2026-10-11 13:36:00|audit/2026/mosscairn/publication.json|2033-12-31|2026-02-13 11:54:00|Y
+14|14|2026-10-14 10:24:00|audit/2026/northfen/publication.json|2033-12-31|2026-02-16 11:19:00|Y
+15|15|2026-10-17 13:49:00|audit/2026/oakhollow/publication.json|2033-12-31|2026-02-19 10:32:00|Y
+16|16|2026-10-20 13:25:00|audit/2026/pebblewick/publication.json|2033-12-31|2026-02-22 09:31:00|Y
+17|17|2026-10-23 10:23:00|audit/2026/quillhaven/publication.json|2033-12-31|2026-02-25 09:33:00|Y
+18|18|2026-10-26 13:26:00|audit/2026/reedspire/publication.json|2033-12-31|2026-02-28 11:48:00|Y
+19|19|2026-10-29 10:11:00|audit/2026/silverfen/publication.json|2033-12-31|2026-03-03 11:41:00|Y
+20|20|2026-11-01 11:31:00|audit/2026/thistlequay/publication.json|2033-12-31|2026-03-06 12:52:00|Y

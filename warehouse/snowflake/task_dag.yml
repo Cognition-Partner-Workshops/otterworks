@@ -1,0 +1,26 @@
+workflow: wf_SFX_BILLING_DAILY
+steps:
+  start:
+    task: DAG_START
+    source_name: Start
+    after: []
+  worklet_a:
+    task: DAG_WORKLET_A
+    source_name: wklt_SFX_BILLING_STAGE
+    after: [start]
+  session_b:
+    task: DAG_SESSION_B
+    source_name: s_m_SFX_INVOICE_HDR
+    after: [worklet_a]
+  session_c:
+    task: DAG_SESSION_C
+    source_name: s_m_SFX_INVOICE_LINE
+    after: [worklet_a]
+  session_d:
+    task: DAG_SESSION_D
+    source_name: s_m_SFX_GL_JOURNAL_LINE
+    after: [session_b, session_c]
+  decision:
+    task: DAG_DECISION
+    source_name: dec_GL_POSTED
+    after: [session_d]
