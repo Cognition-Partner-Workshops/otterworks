@@ -8,7 +8,7 @@ object LegacyFinanceRollupSql:
        | FROM ($offsets) offsets
        |), selected_subscriptions AS (
        | SEL DISTINCT s.SUBSCRIPTION_ID, s.CUSTOMER_ID, p.PLAN_NAME
-       | FROM SFX_BILLING.SUBSCRIPTION s JOIN SFX_BILLING.PLAN_CATALOG p ON p.PLAN_CODE = s.PLAN_CODE
+       | FROM SFX_BILLING.SUBSCRIPTION s JOIN SFX_BILLING.PLAN_CATALOG p ON ${FinanceRollupSql.PlanJoin}
        | WHERE ${FinanceRollupSql.SubscriptionFilter}
        |), accounts AS (
        | SEL DISTINCT c.CUSTOMER_ID, c.REGION_CD, c.STATUS_CD, c.CREATED_DT, s.PLAN_NAME
@@ -39,4 +39,3 @@ object LegacyFinanceRollupSql:
        |LEFT JOIN cash p ON p.CUSTOMER_ID = a.CUSTOMER_ID
        | AND p.PERIOD_ID = EXTRACT(YEAR FROM m.MONTH_START) * 100 + EXTRACT(MONTH FROM m.MONTH_START)
        |GROUP BY 1, 2, 3 ORDER BY 1, 2, 3""".stripMargin
-

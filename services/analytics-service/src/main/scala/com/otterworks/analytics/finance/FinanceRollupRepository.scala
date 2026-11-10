@@ -22,8 +22,9 @@ object FinanceSettings:
       c.getString("featured-plan"), c.getString("account"), c.getString("user"), c.getString("role"), c.getString("private-key"))
 
 object FinanceRollupSql:
-  val SubscriptionFilter = "s.STATUS_CD = ? AND s.PLAN_CODE = ?"
-  val ActiveAccount = "a.STATUS_CD = 'ACTIVE'"
+  val SubscriptionFilter = "UPPER(RTRIM(s.STATUS_CD)) = UPPER(RTRIM(?)) AND UPPER(RTRIM(s.PLAN_CODE)) = UPPER(RTRIM(?))"
+  val PlanJoin = "UPPER(RTRIM(p.PLAN_CODE)) = UPPER(RTRIM(s.PLAN_CODE))"
+  val ActiveAccount = "UPPER(RTRIM(a.STATUS_CD)) = 'ACTIVE'"
 
 object SnowflakeFinanceRollupRepository:
   private val offsets = (0 until 12).map(n => s"SELECT $n AS N").mkString(" UNION ALL ")
@@ -33,20 +34,20 @@ object SnowflakeFinanceRollupRepository:
        | FROM ($offsets) offsets
        |), selected_subscriptions AS (
        | SELECT DISTINCT s.SUBSCRIPTION_ID, s.CUSTOMER_ID, p.PLAN_NAME
-       | FROM SFX_D1110_AFTER.CORE_BILLING.STG_BILLING__SUBSCRIPTION s JOIN SFX_D1110_AFTER.CORE_BILLING.STG_BILLING__PLAN_CATALOG p ON p.PLAN_CODE = s.PLAN_CODE
+       | FROM SFX_D1110_AFTER.CORE_BILLING.STG_BILLING__SUBSCRIPTION s JOIN SFX_D1110_AFTER.CORE_BILLING.STG_BILLING__PLAN_CATALOG p ON ${FinanceRollupSql.PlanJoin}
        | WHERE ${FinanceRollupSql.SubscriptionFilter}
        |), accounts AS (
        | SELECT DISTINCT c.CUSTOMER_ID, c.REGION_CD, c.STATUS_CD, c.CREATED_DT, s.PLAN_NAME
        | FROM SFX_D1110_AFTER.COMPAT.CUSTOMER_ACCOUNT c JOIN selected_subscriptions s ON s.CUSTOMER_ID = c.CUSTOMER_ID
        |), billed AS (
-       | SELECT s.CUSTOMER_ID, EXTRACT(YEAR FROM i.INVOICE_DT) * 100 + EXTRACT(MONTH FROM i.INVOICE_DT) AS PERIOD_ID,
+       | SELECT i.CUSTOMER_ID, EXTRACT(YEAR FROM i.INVOICE_DT) * 100 + EXTRACT(MONTH FROM i.INVOICE_DT) AS PERIOD_ID,
        | SUM(i.SUBTOTAL_AMOUNT) AS REVENUE FROM SFX_D1110_AFTER.COMPAT.INVOICE_HDR i
        | JOIN selected_subscriptions s ON s.SUBSCRIPTION_ID = i.SUBSCRIPTION_ID
        | WHERE INVOICE_DT >= ADD_MONTHS(DATE_TRUNC('MONTH', CURRENT_DATE()), -11)
        | AND INVOICE_DT < ADD_MONTHS(DATE_TRUNC('MONTH', CURRENT_DATE()), 1)
        | GROUP BY 1, 2
        |), cash AS (
-       | SELECT s.CUSTOMER_ID, EXTRACT(YEAR FROM p.PAYMENT_DT) * 100 + EXTRACT(MONTH FROM p.PAYMENT_DT) AS PERIOD_ID,
+       | SELECT p.CUSTOMER_ID, EXTRACT(YEAR FROM p.PAYMENT_DT) * 100 + EXTRACT(MONTH FROM p.PAYMENT_DT) AS PERIOD_ID,
        | SUM(p.AMOUNT) AS COLLECTED FROM SFX_D1110_AFTER.COMPAT.PAYMENT p
        | JOIN SFX_D1110_AFTER.COMPAT.INVOICE_HDR i ON i.INVOICE_ID = p.INVOICE_ID
        | JOIN selected_subscriptions s ON s.SUBSCRIPTION_ID = i.SUBSCRIPTION_ID
