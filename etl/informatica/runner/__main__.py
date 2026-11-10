@@ -13,7 +13,7 @@ import os
 import sys
 
 from .repo import Repository
-from .workflow import ESTATE, Integration
+from .workflow import ESTATE, Integration, select_mappings, workflow_mappings
 
 
 def _parser():
@@ -30,6 +30,8 @@ def _parser():
         sp.add_argument("-paramfile", action="append", default=None)
         sp.add_argument("-wait", action="store_true")
         sp.add_argument("-nowait", action="store_true")
+        sp.add_argument("-mappings", default=os.environ.get("MAPPINGS"),
+                        help="all (default), a count N, or comma-separated mapping names/globs")
 
     sw = sub.add_parser("startworkflow")
     common(sw)
@@ -61,11 +63,20 @@ def main(argv=None):
                     print(f"  session {t.name} -> mapping {s.mapping}{'' if t.enabled else ' (disabled)'}")
         return 0
     param_files = default_param_files() + (args.paramfile or [])
-    svc = Integration(repo, param_files, args.connections, args.pmrootdir, echo=print)
+    try:
+        selected = select_mappings(repo, args.mappings)
+    except ValueError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 3
+    svc = Integration(repo, param_files, args.connections, args.pmrootdir, echo=print, mappings=selected)
     if args.command == "startworkflow":
         if (args.folder, args.workflow) not in repo.workflows:
             print(f"ERROR: Workflow [{args.folder}:{args.workflow}] not found in repository.", file=sys.stderr)
             return 3
+        wf_maps = workflow_mappings(repo, args.folder, repo.workflows[(args.folder, args.workflow)])
+        if selected is not None and not selected.intersection(wf_maps):
+            print(f"Workflow {args.workflow}: no mapping selected by MAPPINGS [{args.mappings}]; not started.")
+            return 0
         status, results = svc.run_workflow(args.folder, args.workflow)
         print(f"Workflow {args.workflow} completed with status [{status}] "
               f"({sum(1 for r in results.values() if r['RUN_STATUS'] == 'SUCCEEDED')}/{len(results)} sessions succeeded).")
