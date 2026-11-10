@@ -10,7 +10,11 @@ docker tag mirror.gcr.io/library/postgres:16 postgres:16
 export NS=sfx-d1110-before
 export TD_PG_PORT=$(python3 -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')
 warehouse/teradata/bin/compose up -d --wait --pull never
-warehouse/.venv/bin/pytest -q warehouse/teradata/tests
+warehouse/.venv/bin/python warehouse/seed/generate.py --rows 200000 --seed 1110
+export PYTHONPATH=warehouse/teradata
+warehouse/.venv/bin/python -m bteq.setup
+warehouse/.venv/bin/python -m bteq.load --landing warehouse/landing --business-date 20261109
+warehouse/.venv/bin/pytest -q warehouse/seed/tests warehouse/teradata/tests
 warehouse/teradata/bin/bteq run path/to/script.bteq --var BUSINESS_DATE=20261109
 warehouse/teradata/bin/bteq < path/to/script.bteq
 warehouse/teradata/bin/compose down -v
@@ -32,3 +36,16 @@ The `tests` directory exercises SQL semantics against PostgreSQL 16 and script
 parsing. Database tests skip when no server is reachable only if no `TD_PG_*`
 variables were provided. An explicitly configured unreachable server fails tests.
 Export destinations must have an existing parent directory.
+
+`seed/columns.py` defines landing-file column order and table sizing. The generator
+accepts `--rows`, `--seed`, `--out` (default `warehouse/landing`), and
+`--business-date` (default `20261109`). Files are headerless pipe-delimited UTF-8
+at `<out>/<area>/<TABLE>/<business-date>.psv`.
+
+`bteq.setup` executes the Teradata files in `teradata/ddl`, creating schemas and
+tables before views; existing objects are left intact. `bteq.load` parses the
+FastLoad files in `teradata/load/fastload` and the TPT jobs in `teradata/load/tpt`.
+Each file load truncates and copies its staging table in one transaction. A
+failed copy restores the previous contents. The loader accepts `--controls` to
+select another control-file root. The integration tests create and drop an
+isolated database, so their configured PostgreSQL role needs CREATEDB permission.
