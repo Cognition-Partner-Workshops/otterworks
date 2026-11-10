@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe FinanceWarehouse::DashboardQueries do
   subject(:queries) { described_class.new(client: client) }
 
-  let(:client) { instance_double(FinanceWarehouse::TeradataClient) }
+  let(:client) { instance_double(FinanceWarehouse::SnowflakeClient) }
   let(:summary) { { 'DSO' => '27.00', 'AR_OPEN_BALANCE' => '45000.00', 'COLLECTIONS_30_DAYS' => '32000.00' } }
   let(:account) do
     {
@@ -14,8 +14,8 @@ RSpec.describe FinanceWarehouse::DashboardQueries do
 
   before do
     allow(described_class).to receive(:enabled?).and_return(true)
-    allow(client).to receive(:query).with(described_class::SUMMARY_SQL).and_return([summary])
-    allow(client).to receive(:query).with(described_class::OVERDUE_SQL).and_return([account])
+    allow(client).to receive(:query).with(described_class::SUMMARY_SQL, ['']).and_return([summary])
+    allow(client).to receive(:query).with(described_class::OVERDUE_SQL, ['']).and_return([account])
   end
 
   it 'maps summary amounts and overdue account values' do
@@ -28,10 +28,10 @@ RSpec.describe FinanceWarehouse::DashboardQueries do
   end
 
   it 'returns an empty account list and zero summary for an empty warehouse' do
-    allow(client).to receive(:query).with(described_class::SUMMARY_SQL).and_return([
+    allow(client).to receive(:query).with(described_class::SUMMARY_SQL, ['']).and_return([
       { 'DSO' => 0, 'AR_OPEN_BALANCE' => 0, 'COLLECTIONS_30_DAYS' => 0 }
     ])
-    allow(client).to receive(:query).with(described_class::OVERDUE_SQL).and_return([])
+    allow(client).to receive(:query).with(described_class::OVERDUE_SQL, ['']).and_return([])
     expect(queries.call).to eq(
       dso: '0.0', ar_open_balance: '0.0', collections_30_days: '0.0', top_overdue_accounts: []
     )
@@ -44,8 +44,8 @@ RSpec.describe FinanceWarehouse::DashboardQueries do
   end
 
   it 'propagates warehouse errors' do
-    allow(client).to receive(:query).and_raise(FinanceWarehouse::TeradataClient::Unavailable)
-    expect { queries.call }.to raise_error(FinanceWarehouse::TeradataClient::Unavailable)
+    allow(client).to receive(:query).and_raise(FinanceWarehouse::SnowflakeClient::Unavailable)
+    expect { queries.call }.to raise_error(FinanceWarehouse::SnowflakeClient::Unavailable)
   end
 
   it 'refreshes the cache and reuses the dashboard cache' do
@@ -55,5 +55,18 @@ RSpec.describe FinanceWarehouse::DashboardQueries do
     expect(cache.read(described_class::CACHE_KEY)).to eq(refreshed)
     expect(client).not_to receive(:query)
     expect(queries.dashboard).to eq(refreshed)
+  end
+
+  it 'binds the business date when one is given' do
+    dated = described_class.new(client: client, as_of: Date.new(2026, 11, 9))
+    allow(client).to receive(:query).with(described_class::SUMMARY_SQL, ['2026-11-09']).and_return([summary])
+    allow(client).to receive(:query).with(described_class::OVERDUE_SQL, ['2026-11-09']).and_return([])
+    expect(dated.call[:dso]).to eq('27.0')
+  end
+
+  it 'issues Snowflake SQL only' do
+    [described_class::SUMMARY_SQL, described_class::OVERDUE_SQL].each do |sql|
+      expect(sql).not_to match(/\bSEL\b|\bTOP\b|QUALIFY|FORMAT|SFX_BILLING|1200101/)
+    end
   end
 end

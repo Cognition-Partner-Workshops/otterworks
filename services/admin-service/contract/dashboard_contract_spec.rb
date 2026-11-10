@@ -6,9 +6,7 @@ RSpec.describe FinanceWarehouse::DashboardQueries do
     when 'teradata-emulator', 'replay', 'snowflake-semantics'
       ContractWarehouse::EmulatorWarehouse.new
     when 'snowflake'
-      keys = %w[ACCOUNT USER ROLE WAREHOUSE PRIVATE_KEY]
-      skip 'Snowflake environment not configured' if keys.any? { |key| ENV["SNOWFLAKE_#{key}"].to_s.empty? }
-      ContractWarehouse::SnowflakeWarehouse.new
+      skip 'live Snowflake is covered by snowflake_live_contract_spec.rb'
     else
       raise ArgumentError, 'unknown WAREHOUSE_CONTRACT_TARGET'
     end

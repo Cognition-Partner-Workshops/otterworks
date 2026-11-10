@@ -2,15 +2,15 @@ require 'rails_helper'
 
 RSpec.describe 'Finance dashboard', type: :request do
   let(:path) { '/api/v1/admin/finance/dashboard' }
-  let(:client) { instance_double(FinanceWarehouse::TeradataClient) }
+  let(:client) { instance_double(FinanceWarehouse::SnowflakeClient) }
 
   before do
-    allow(FinanceWarehouse::TeradataClient).to receive(:new).and_return(client)
+    allow(FinanceWarehouse::SnowflakeClient).to receive(:new).and_return(client)
     allow(FinanceWarehouse::DashboardQueries).to receive(:enabled?).and_return(true)
-    allow(client).to receive(:query).with(FinanceWarehouse::DashboardQueries::SUMMARY_SQL).and_return([
+    allow(client).to receive(:query).with(FinanceWarehouse::DashboardQueries::SUMMARY_SQL, ['']).and_return([
       { 'DSO' => '27.00', 'AR_OPEN_BALANCE' => '45000.00', 'COLLECTIONS_30_DAYS' => '32000.00' }
     ])
-    allow(client).to receive(:query).with(FinanceWarehouse::DashboardQueries::OVERDUE_SQL).and_return([])
+    allow(client).to receive(:query).with(FinanceWarehouse::DashboardQueries::OVERDUE_SQL, ['']).and_return([])
   end
 
   it 'requires a JWT' do
@@ -36,7 +36,7 @@ RSpec.describe 'Finance dashboard', type: :request do
   end
 
   it 'returns a sanitized 503 for warehouse failures' do
-    allow(client).to receive(:query).and_raise(FinanceWarehouse::TeradataClient::Unavailable)
+    allow(client).to receive(:query).and_raise(FinanceWarehouse::SnowflakeClient::Unavailable)
     get path, headers: auth_headers
     expect(response).to have_http_status(:service_unavailable)
     expect(response.parsed_body).to eq('error' => 'finance warehouse unavailable')

@@ -1,0 +1,15 @@
+{
+  "as_of": "2026-11-09",
+  "must_agree": {
+    "dashboard-summary": {
+      "row_count": 1,
+      "values": { "COLLECTIONS_30_DAYS": "27892499.60" }
+    },
+    "overdue-accounts": { "row_count": 10 }
+  },
+  "intended_differences": {
+    "AR_OPEN_BALANCE": "live RAW_BILLING.GL_JOURNAL_LINE holds a different journal volume than the emulator load, so the 1200 balance differs",
+    "DSO": "derived from AR_OPEN_BALANCE and invoices billed in the window, whose date distribution differs between the live seed and the emulator load",
+    "overdue-accounts": "the top 10 depends on invoice dates and open balances, which differ for the same reason; shape, ordering and limit must agree"
+  }
+}
