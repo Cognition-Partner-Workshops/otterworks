@@ -5,5 +5,5 @@
   "status": "snowflake",
   "schedule": "18 * * * *",
   "profile": "small",
-  "command": "{ [ -d warehouse/dbt ] || cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\"; } && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_event_export_hourly --select path:models/spark/docs_event_export_hourly"
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_event_export_hourly --select path:models/spark/docs_event_export_hourly"
 }
