@@ -122,3 +122,51 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "audit_archive" {
     bucket_key_enabled = true
   }
 }
+
+# Deny any request to the file storage bucket that does not arrive over TLS.
+resource "aws_s3_bucket_policy" "files_tls" {
+  bucket = aws_s3_bucket.files.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.files.arn, "${aws_s3_bucket.files.arn}/*"]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+}
+
+# Deny any request to the data lake bucket that does not arrive over TLS.
+resource "aws_s3_bucket_policy" "data_lake_tls" {
+  bucket = aws_s3_bucket.data_lake.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.data_lake.arn, "${aws_s3_bucket.data_lake.arn}/*"]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+}
+
+# Deny any request to the audit archive bucket that does not arrive over TLS.
+resource "aws_s3_bucket_policy" "audit_archive_tls" {
+  bucket = aws_s3_bucket.audit_archive.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.audit_archive.arn, "${aws_s3_bucket.audit_archive.arn}/*"]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+}

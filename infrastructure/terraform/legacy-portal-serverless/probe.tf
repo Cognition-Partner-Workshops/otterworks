@@ -133,3 +133,19 @@ resource "aws_synthetics_canary" "probe" {
 
   depends_on = [aws_iam_role_policy.probe]
 }
+
+# Deny any request to the canary artifact bucket that does not arrive over TLS.
+resource "aws_s3_bucket_policy" "probe_artifacts_tls" {
+  bucket = aws_s3_bucket.probe_artifacts.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.probe_artifacts.arn, "${aws_s3_bucket.probe_artifacts.arn}/*"]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+}

@@ -68,3 +68,18 @@ resource "aws_cloudwatch_log_group" "app" { # nosemgrep: terraform.aws.security.
   retention_in_days = var.log_retention_days
 }
 
+# Deny any request to the artifact bucket that does not arrive over TLS.
+resource "aws_s3_bucket_policy" "artifacts_tls" {
+  bucket = aws_s3_bucket.artifacts.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.artifacts.arn, "${aws_s3_bucket.artifacts.arn}/*"]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+}
