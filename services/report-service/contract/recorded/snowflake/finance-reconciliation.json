@@ -1,0 +1,5 @@
+{
+  "query" : "finance-reconciliation",
+  "columns" : [ "PERIOD_ID", "INVOICED_TOTAL", "PAID_TOTAL", "AR_GL_BALANCE", "VARIANCE" ],
+  "rows" : [ [ 202611, "32857287.39", "27892499.60", "4629110.07", "335677.72" ] ]
+}

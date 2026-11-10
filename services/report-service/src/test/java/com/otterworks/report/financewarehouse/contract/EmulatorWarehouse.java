@@ -32,7 +32,9 @@ class EmulatorWarehouse implements ContractWarehouse {
         File error = File.createTempFile("finance-contract-", ".log");
         Process process = null;
         try {
-            process = new ProcessBuilder(command).redirectOutput(output).redirectError(error).start();
+            ProcessBuilder builder = new ProcessBuilder(command).redirectOutput(output).redirectError(error);
+            builder.environment().put("TD_USER", "svc_exit_parity");
+            process = builder.start();
             try (java.io.OutputStream input = process.getOutputStream()) {
                 input.write(sql.replace("?", Integer.toString(period)).getBytes(StandardCharsets.UTF_8));
             }

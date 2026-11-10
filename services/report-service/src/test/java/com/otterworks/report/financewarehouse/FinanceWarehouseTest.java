@@ -37,12 +37,12 @@ public class FinanceWarehouseTest {
         when(rs.getInt("DAYS_OVERDUE")).thenReturn(65);
         when(rs.getBigDecimal("TOTAL_AMOUNT")).thenReturn(new BigDecimal("4800.00"));
         when(rs.getBigDecimal("PAID")).thenReturn(new BigDecimal("1200.00"));
-        when(jdbc.query(eq(TeradataFinanceWarehouse.UNRECONCILED_SQL), any(RowMapper.class), eq(202601)))
+        when(jdbc.query(eq(SnowflakeFinanceWarehouse.UNRECONCILED_SQL), any(RowMapper.class), eq(202601)))
                 .thenAnswer(call -> Collections.singletonList(((RowMapper<?>) call.getArgument(1)).mapRow(rs, 0)));
-        when(jdbc.queryForObject(eq(TeradataFinanceWarehouse.SQL), any(RowMapper.class),
+        when(jdbc.queryForObject(eq(SnowflakeFinanceWarehouse.SQL), any(RowMapper.class),
                 eq(202601), eq(202601), eq(202601), eq(202601)))
                 .thenAnswer(call -> ((RowMapper<?>) call.getArgument(1)).mapRow(rs, 0));
-        FinanceReconciliation result = new TeradataFinanceWarehouse(jdbc).reconcile(202601);
+        FinanceReconciliation result = new SnowflakeFinanceWarehouse(jdbc).reconcile(202601);
         assertEquals(new BigDecimal("0.00"), result.variance);
         assertEquals(new BigDecimal("18250.75"), result.invoicedTotal);
         assertEquals(1, result.unreconciledInvoices.size());

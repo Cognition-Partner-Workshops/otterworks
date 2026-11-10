@@ -45,10 +45,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.teradata.jdbc</groupId>
-            <artifactId>terajdbc</artifactId>
-            <version>20.00.00.33</version>
-            <scope>runtime</scope>
+            <groupId>net.snowflake</groupId>
+            <artifactId>snowflake-jdbc</artifactId>
+            <version>3.24.2</version>
         </dependency>
         <!-- Spring Boot starters -->
         <dependency>
