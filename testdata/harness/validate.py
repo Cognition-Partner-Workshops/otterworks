@@ -32,6 +32,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import psycopg2
+from psycopg2 import sql
 from tabulate import tabulate
 
 # ── Configuration ─────────────────────────────────────────────────────────────
@@ -95,7 +96,8 @@ def check_row_count(
     cur, schema: str, table: str, expected_min: int, expected_max: int | None = None
 ) -> CheckResult:
     """Verify row count is within expected bounds."""
-    cur.execute(f'SELECT count(*) FROM "{schema}"."{table}"')  # noqa: S608
+    cur.execute(sql.SQL("SELECT count(*) FROM {}.{}").format(
+        sql.Identifier(schema), sql.Identifier(table)))
     count = cur.fetchone()[0]
     if count < expected_min:
         return CheckResult(
@@ -117,7 +119,8 @@ def check_not_null(cur, schema: str, table: str, columns: list[str]) -> CheckRes
     failures = []
     for col in columns:
         cur.execute(
-            f'SELECT count(*) FROM "{schema}"."{table}" WHERE "{col}" IS NULL'  # noqa: S608
+            sql.SQL("SELECT count(*) FROM {}.{} WHERE {} IS NULL").format(
+                sql.Identifier(schema), sql.Identifier(table), sql.Identifier(col))
         )
         null_count = cur.fetchone()[0]
         if null_count > 0:
@@ -134,11 +137,11 @@ def check_unique(cur, schema: str, table: str, columns: list[str]) -> CheckResul
     failures = []
     for col in columns:
         cur.execute(
-            f"""
-            SELECT count(*) - count(DISTINCT "{col}")
-            FROM "{schema}"."{table}"
-            WHERE "{col}" IS NOT NULL
-            """  # noqa: S608
+            sql.SQL("""
+            SELECT count(*) - count(DISTINCT {col})
+            FROM {schema}.{table}
+            WHERE {col} IS NOT NULL
+            """).format(col=sql.Identifier(col), schema=sql.Identifier(schema), table=sql.Identifier(table))
         )
         dup_count = cur.fetchone()[0]
         if dup_count > 0:
@@ -153,12 +156,14 @@ def check_fk_integrity(
 ) -> CheckResult:
     """Verify all FK references resolve to existing parent rows."""
     cur.execute(
-        f"""
+        sql.SQL("""
         SELECT count(*)
-        FROM "{schema}"."{child_table}" c
-        LEFT JOIN "{schema}"."{parent_table}" p ON c."{child_col}" = p."{parent_col}"
-        WHERE c."{child_col}" IS NOT NULL AND p."{parent_col}" IS NULL
-        """  # noqa: S608
+        FROM {schema}.{child_table} c
+        LEFT JOIN {schema}.{parent_table} p ON c.{child_col} = p.{parent_col}
+        WHERE c.{child_col} IS NOT NULL AND p.{parent_col} IS NULL
+        """).format(schema=sql.Identifier(schema), child_table=sql.Identifier(child_table),
+                    parent_table=sql.Identifier(parent_table), child_col=sql.Identifier(child_col),
+                    parent_col=sql.Identifier(parent_col))
     )
     orphan_count = cur.fetchone()[0]
     if orphan_count > 0:
@@ -190,12 +195,14 @@ def check_temporal_consistency(
     created_at (the event can't happen before the resource exists).
     """
     cur.execute(
-        f"""
+        sql.SQL("""
         SELECT count(*)
-        FROM "{schema}"."{event_table}" e
-        JOIN "{schema}"."{resource_table}" r ON e."{join_col}" = r."id"
-        WHERE e."{event_ts_col}" < r."{resource_ts_col}"
-        """  # noqa: S608
+        FROM {schema}.{event_table} e
+        JOIN {schema}.{resource_table} r ON e.{join_col} = r."id"
+        WHERE e.{event_ts_col} < r.{resource_ts_col}
+        """).format(schema=sql.Identifier(schema), event_table=sql.Identifier(event_table),
+                    resource_table=sql.Identifier(resource_table), join_col=sql.Identifier(join_col),
+                    event_ts_col=sql.Identifier(event_ts_col), resource_ts_col=sql.Identifier(resource_ts_col))
     )
     violations = cur.fetchone()[0]
     if violations > 0:
@@ -216,7 +223,8 @@ def check_enum_values(
 ) -> CheckResult:
     """Verify a column only contains allowed enum values."""
     cur.execute(
-        f'SELECT DISTINCT "{column}" FROM "{schema}"."{table}" WHERE "{column}" IS NOT NULL'  # noqa: S608
+        sql.SQL("SELECT DISTINCT {column} FROM {schema}.{table} WHERE {column} IS NOT NULL").format(
+            column=sql.Identifier(column), schema=sql.Identifier(schema), table=sql.Identifier(table))
     )
     actual = {row[0] for row in cur.fetchall()}
     invalid = actual - set(allowed)
@@ -234,11 +242,11 @@ def check_enum_values(
 def check_quota_not_exceeded(cur, schema: str) -> CheckResult:
     """Verify used_bytes does not exceed quota_bytes in storage_quotas."""
     cur.execute(
-        f"""
+        sql.SQL("""
         SELECT count(*)
-        FROM "{schema}"."storage_quotas"
+        FROM {}."storage_quotas"
         WHERE used_bytes > quota_bytes
-        """  # noqa: S608
+        """).format(sql.Identifier(schema))
     )
     violations = cur.fetchone()[0]
     if violations > 0:

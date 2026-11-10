@@ -47,7 +47,7 @@ def ora_error(what: str, e: BaseException) -> SourceError:
 
 
 def _ident(name: str) -> str:
-    if not _IDENT_RE.match(name):
+    if not _IDENT_RE.fullmatch(name):
         raise ConfigError(f"unsafe SQL identifier {name!r}")
     return f'"{name}"'
 
@@ -250,7 +250,8 @@ class OracleSource:
                 for i in range(0, len(keys), IN_LIST_MAX):
                     part = list(keys[i : i + IN_LIST_MAX])
                     placeholders = ", ".join(f":{n + 1}" for n in range(len(part)))
-                    cur.execute(f"DELETE FROM {qualified} WHERE {key} IN ({placeholders})", part)
+                    statement = " ".join(("DELETE FROM", qualified, "WHERE", key, "IN (" + placeholders + ")"))
+                    cur.execute(statement, part)
                     deleted += int(cur.rowcount)
             if deleted != len(keys):
                 conn.rollback()

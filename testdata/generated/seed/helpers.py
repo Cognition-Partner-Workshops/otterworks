@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 import psycopg2
+from psycopg2 import sql
 from psycopg2.extras import execute_values, Json
 
 # ── Deterministic UUID namespace ──────────────────────────────────────────────
@@ -91,7 +92,7 @@ def get_connection():
 
 def set_search_path(cur, ns: str) -> None:
     schema = f"otterworks_{ns}"
-    cur.execute(f'SET search_path TO "{schema}"')
+    cur.execute(sql.SQL("SET search_path TO {}").format(sql.Identifier(schema)))
 
 
 # ── Insert helper ─────────────────────────────────────────────────────────────
@@ -100,7 +101,17 @@ def bulk_insert(cur, table: str, columns: list[str], rows: list[tuple],
                 on_conflict: str = "DO NOTHING", template: str | None = None) -> int:
     if not rows:
         return 0
-    cols = ", ".join(columns)
-    sql = f"INSERT INTO {table} ({cols}) VALUES %s ON CONFLICT {on_conflict}"
-    execute_values(cur, sql, rows, template=template)
+    conflicts = {
+        "DO NOTHING", "(user_id, role) DO NOTHING", "(email) DO NOTHING",
+        "(key) DO NOTHING", "(user_id) DO NOTHING", "(name) DO NOTHING",
+        "(token_id) DO NOTHING",
+    }
+    if on_conflict not in conflicts:
+        raise ValueError("Unsupported conflict clause")
+    query = sql.SQL("INSERT INTO {} ({}) VALUES %s ON CONFLICT {}").format(
+        sql.Identifier(table),
+        sql.SQL(", ").join(map(sql.Identifier, columns)),
+        sql.SQL(on_conflict),
+    )
+    execute_values(cur, query, rows, template=template)
     return len(rows)

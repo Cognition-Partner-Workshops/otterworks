@@ -243,8 +243,13 @@ def _chunks(n: int) -> list[tuple[int, int]]:
 def counts(conn: Connection) -> dict[str, int]:
     out = {}
     with conn.cursor() as cur:
-        for t in ("RETNPLCY", "DOCARCH", "FILEAUD"):
-            cur.execute(f"SELECT COUNT(*) FROM ARCHIVE.{t}")
+        queries = {
+            "RETNPLCY": "SELECT COUNT(*) FROM ARCHIVE.RETNPLCY",
+            "DOCARCH": "SELECT COUNT(*) FROM ARCHIVE.DOCARCH",
+            "FILEAUD": "SELECT COUNT(*) FROM ARCHIVE.FILEAUD",
+        }
+        for t, query in queries.items():
+            cur.execute(query)
             out[t] = int(cur.fetchone()[0])
     return out
 
@@ -255,9 +260,17 @@ def planted_present(conn: Connection) -> dict[str, int]:
     out = {}
     with conn.cursor() as cur:
         for tag, ks in keys.items():
-            table, col = ("FILEAUD", "AUDIT_KEY") if tag == "MIG-05" else ("DOCARCH", "ARCH_KEY")
-            marks = ", ".join(f":{i + 1}" for i in range(len(ks)))
-            cur.execute(f"SELECT COUNT(*) FROM ARCHIVE.{table} WHERE {col} IN ({marks})", ks)
+            if tag == "MIG-05":
+                query = (
+                    "SELECT COUNT(*) FROM ARCHIVE.FILEAUD WHERE AUDIT_KEY IN "
+                    "(SELECT k FROM JSON_TABLE(:1, '$[*]' COLUMNS (k VARCHAR2(4000) PATH '$')))"
+                )
+            else:
+                query = (
+                    "SELECT COUNT(*) FROM ARCHIVE.DOCARCH WHERE ARCH_KEY IN "
+                    "(SELECT k FROM JSON_TABLE(:1, '$[*]' COLUMNS (k VARCHAR2(4000) PATH '$')))"
+                )
+            cur.execute(query, [json.dumps(ks)])
             out[tag] = int(cur.fetchone()[0])
     return out
 
