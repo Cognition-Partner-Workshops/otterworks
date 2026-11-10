@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::API
+  before_action :authorize_admin_action
   before_action :set_request_metadata
 
   rescue_from StandardError do |e|
@@ -18,7 +19,46 @@ class ApplicationController < ActionController::API
     render json: { error: "Missing parameter: #{e.param}" }, status: :bad_request
   end
 
+  rescue_from AdminAuthorization::Forbidden do
+    render json: { error: 'Forbidden' }, status: :forbidden
+  end
+
+  rescue_from AdminAuthorization::InvalidRole do
+    render json: { error: 'Invalid role', details: ['Role is not included in the list'] }, status: :unprocessable_entity
+  end
+
   private
+
+  def authorize_admin_action
+    return if JwtAuthenticator::EXCLUDED_PATHS.include?(request.path)
+
+    unless AdminAuthorization.permitted?(current_user_role, controller_name, action_name)
+      raise AdminAuthorization::Forbidden
+    end
+    raise AdminAuthorization::Forbidden if role_change_requested? && current_user_role != 'super_admin'
+  end
+
+  def role_change_requested?
+    case controller_name
+    when 'users'
+      action_name == 'update' && params[:user].respond_to?(:key?) && params[:user].key?(:role)
+    when 'bulk'
+      params[:operation] == 'update_role' || params.key?(:role)
+    else
+      false
+    end
+  end
+
+  def authorized_scope(model)
+    AdminAuthorization.scope(current_user_role, model, action_name)
+  end
+
+  def authorized_role(value)
+    raise AdminAuthorization::Forbidden unless current_user_role == 'super_admin'
+    raise AdminAuthorization::InvalidRole unless AdminUser::ROLES.include?(value)
+
+    value
+  end
 
   def current_user_id
     request.env['jwt.user_id']

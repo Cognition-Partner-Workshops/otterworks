@@ -31,7 +31,7 @@ module Api
         private
 
         def set_quota
-          @quota = StorageQuota.find_by!(user_id: params[:user_id])
+          @quota = authorized_scope(StorageQuota).find_by!(user_id: params[:user_id])
         end
 
         def quota_params

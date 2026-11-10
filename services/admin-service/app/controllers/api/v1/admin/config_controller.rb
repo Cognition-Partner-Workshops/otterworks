@@ -6,7 +6,7 @@ module Api
 
         # GET /api/v1/admin/config
         def index
-          configs = SystemConfig.public_configs.order(key: :asc)
+          configs = authorized_scope(SystemConfig).public_configs.order(key: :asc)
 
           render json: {
             configs: ActiveModelSerializers::SerializableResource.new(configs)
@@ -41,7 +41,7 @@ module Api
         private
 
         def set_config
-          @config = SystemConfig.find(params[:id]) # nosemgrep: ruby.rails.security.brakeman.check-unscoped-find.check-unscoped-find
+          @config = authorized_scope(SystemConfig).find(params[:id])
         end
 
         def config_params

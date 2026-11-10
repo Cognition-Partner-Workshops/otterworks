@@ -6,7 +6,7 @@ module Api
 
         # GET /api/v1/admin/incidents
         def index
-          scope = Incident.all
+          scope = authorized_scope(Incident)
           scope = scope.by_status(params[:status]) if params[:status].present?
           scope = scope.by_severity(params[:severity]) if params[:severity].present?
           scope = scope.active if params[:active] == 'true'
@@ -154,7 +154,7 @@ module Api
         private
 
         def set_incident
-          @incident = Incident.find(params[:id]) # nosemgrep: ruby.rails.security.brakeman.check-unscoped-find.check-unscoped-find
+          @incident = authorized_scope(Incident).find(params[:id])
         end
 
         def incident_params
