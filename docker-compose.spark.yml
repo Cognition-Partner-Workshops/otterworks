@@ -11,17 +11,18 @@ x-spark: &spark
     TD_JDBC_PASSWORD: etl_batch_dev
   volumes:
     - ./etl/spark:/opt/sfx/spark:ro
-    - ${LANDING_DIR:-./etl/spark/.data/landing}:/opt/landing:ro
-    - ./etl/spark/.data/lake:/opt/lake
-    - ./etl/spark/.data/eventlogs:/opt/spark-events
-    - ./etl/spark/.cache:/opt/sfx/spark/.cache
+    - ./etl/spark/.data/${NS:-sfx-d1110-before}:/opt/sfx/spark/.data:ro
+    - ${LANDING_DIR:-./etl/spark/.data/${NS:-sfx-d1110-before}/landing}:/opt/landing:ro
+    - ./etl/spark/.data/${NS:-sfx-d1110-before}/lake:/opt/lake
+    - ./etl/spark/.data/${NS:-sfx-d1110-before}/eventlogs:/opt/spark-events
+    - ./etl/spark/.cache/${NS:-sfx-d1110-before}:/opt/sfx/spark/.cache
 services:
   spark-master:
     <<: *spark
     hostname: spark-master
     command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master", "--host", "spark-master"]
     ports:
-      - "${SFX_SPARK_MASTER_PORT:-7077}:7077"
+      - "127.0.0.1:${SFX_SPARK_MASTER_PORT:-7077}:7077"
       - "${SFX_SPARK_MASTER_UI_PORT:-8080}:8080"
     healthcheck:
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/spark-master/7077"]
@@ -65,10 +66,10 @@ services:
       POSTGRES_USER: etl_batch
       POSTGRES_PASSWORD: etl_batch_dev
     ports:
-      - "${SFX_TDEMU_PORT:-55432}:5432"
+      - "127.0.0.1:${SFX_TDEMU_PORT:-55432}:5432"
     volumes:
       - tdemu:/var/lib/postgresql/data
-      - ${LANDING_DIR:-./etl/spark/.data/landing}:/opt/landing:ro
+      - ${LANDING_DIR:-./etl/spark/.data/${NS:-sfx-d1110-before}/landing}:/opt/landing:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U etl_batch -d sfx_teradata"]
       interval: 3s

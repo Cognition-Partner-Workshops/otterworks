@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/../../.."
-python3 - "${LANDING_DIR:-etl/spark/.data/landing}" <<'PY' | docker compose -f docker-compose.spark.yml -p "sfx-d1110-spark-${NS:-sfx-d1110-before}" exec -T sfx-tdemu psql -v ON_ERROR_STOP=1 -U etl_batch -d sfx_teradata
+python3 - "${LANDING_DIR:-etl/spark/.data/${NS:-sfx-d1110-before}/landing}" <<'PY' | docker compose -f docker-compose.spark.yml -p "sfx-d1110-spark-${NS:-sfx-d1110-before}" exec -T sfx-tdemu psql -v ON_ERROR_STOP=1 -U etl_batch -d sfx_teradata
 import sys
 from pathlib import Path
 sys.path.insert(0, "etl/spark/jobs/py")

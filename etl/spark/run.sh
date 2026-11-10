@@ -3,7 +3,8 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 ns=${NS:-sfx-d1110-before}
 limit=${SPARK_JOBS:-30}
-mkdir -p etl/spark/.data/logs
+logs="etl/spark/.data/$ns/logs"
+mkdir -p "$logs"
 mapfile -t jobs < etl/spark/jobs.txt
 if [ -n "${JOB:-}" ]; then
     found=0
@@ -17,12 +18,12 @@ else
     jobs=("${jobs[@]:0:limit}")
 fi
 failed=0
-summary=etl/spark/.data/logs/status.tsv
+summary="$logs/status.tsv"
 printf '%-36s %-8s %s\n' JOB STATUS SECONDS > "$summary"
 for job in "${jobs[@]}"; do
     start=$SECONDS
     if docker compose -f docker-compose.spark.yml -p "sfx-d1110-spark-$ns" exec -T spark-master \
-        bash "/opt/sfx/spark/submit/$job.sh" > "etl/spark/.data/logs/$job.log" 2>&1; then
+        bash "/opt/sfx/spark/submit/$job.sh" > "$logs/$job.log" 2>&1; then
         status=OK
     else
         status=FAILED
