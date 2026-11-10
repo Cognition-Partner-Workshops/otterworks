@@ -3,7 +3,7 @@
   "language": "python",
   "target": "dbt",
   "status": "snowflake",
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_folder_legacy_report --select path:models/spark/docs_folder_legacy_report",
+  "command": "if [ -z \"${SFX_SPARK_ROOT:-}\" ] && [ -f warehouse/snowflake/run_dbt.py ]; then export SFX_SPARK_ROOT=\"$PWD/etl/spark\"; fi; cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_folder_legacy_report --select path:models/spark/docs_folder_legacy_report",
   "schedule": null,
   "profile": "small"
 }
