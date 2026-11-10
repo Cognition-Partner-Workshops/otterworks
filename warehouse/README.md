@@ -24,6 +24,10 @@ points below directly against its PostgreSQL service, without nested Compose.
 `make sfx-teradata-snowconvert NS=sfx-d1110-before [SCAI=/path/to/scai]` runs
 SnowConvert separately; it is never part of up/run and does not deploy output.
 See [Teradata tooling](teradata/README.md) for source layout and conversion details.
+When the CLI is present, conversion also requires `SNOWFLAKE_ACCOUNT`,
+`SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_WAREHOUSE`, `SNOWFLAKE_DATABASE`,
+and `SNOWFLAKE_PRIVATE_KEY` in the environment. It updates the private
+`sfx_d1110` JWT profile under `~/.snowflake`, preserving other profiles.
 
 ```sh
 python3 -m venv warehouse/.venv

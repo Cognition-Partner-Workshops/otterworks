@@ -78,9 +78,22 @@ It is not available on PyPI. The target fails clearly if `scai` cannot be found;
 The target creates `warehouse/teradata/.snowconvert/<UTC timestamp>-<NS>/`.
 It copies the DDL/macros/procedures/DBC schema into one-statement `.sql` staging
 files and preserves BTEQ `.bteq` files, without modifying the checked-in sources.
-It runs `scai init <project> -l Teradata`, `scai code add -i <input>
+After checking that `scai` exists, `bin/snowflake_connection.py` requires
+`SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_WAREHOUSE`,
+`SNOWFLAKE_DATABASE`, and `SNOWFLAKE_PRIVATE_KEY` from the environment. It creates
+`~/.snowflake` with mode 700, writes the private key to
+`~/.snowflake/sfx_d1110.p8` with mode 600, and updates only `[sfx_d1110]` in
+`~/.snowflake/connections.toml` (mode 600), preserving other connections.
+The profile uses `SNOWFLAKE_JWT` and an absolute key-file path. Values are never
+printed, including in errors. Missing-variable errors contain variable names only.
+These files are outside the repository; keep them private and manage their
+lifecycle independently of the local PostgreSQL volume. The raw private-key
+environment variable is not forwarded to the converter subprocess.
+
+It then runs `scai init <project> -l Teradata`, `scai code add -i <input>
 --code-already-split`, captures `scai code convert --help`, then runs
-`scai code convert --scripttargetlanguage SnowScript`. Source preparation avoids
+`scai code convert --scripttargetlanguage SnowScript`, with
+`SNOWFLAKE_CONNECTION=sfx_d1110`. Source preparation avoids
 the arrange phase's SC-tag requirement for unsplit Teradata SQL files.
 Flags follow the vendor's
 [command reference](https://docs.snowflake.com/en/migrations/aim-for-datawarehouses/manual-migration/SCAI_Command_Reference).
@@ -88,8 +101,7 @@ Flags follow the vendor's
 `command.log` records commands, raw stdout/stderr, and exit codes. The entire
 project, raw tool output and reports remain under the ignored timestamp directory;
 never commit them. No connections are opened by this wrapper, no deployment is
-performed, and no credentials are passed as CLI flags or written to configuration.
-Any CLI profile metadata required by a particular release must already exist in
-the operator's local TOML configuration; passwords are managed by SnowConvert's
-`connections.toml`, not this target. Actual conversion requires the installed CLI;
+performed, and no credentials are passed as CLI flags. Credentials are written
+only to the private files described above, never to the repository or command log.
+Actual conversion requires the installed CLI;
 the emulator and Make up/run/test targets do not depend on it.

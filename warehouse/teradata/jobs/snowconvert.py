@@ -1,5 +1,6 @@
 import argparse
 import datetime as dt
+import os
 from pathlib import Path
 import shlex
 import shutil
@@ -39,6 +40,9 @@ def convert(scai, namespace):
     if not executable:
         print(f'SnowConvert CLI not found: {scai}. Install scai using {INSTALL_DOCS}; set SCAI=/path/to/scai. It is not a PyPI package.', file=sys.stderr)
         return 2
+    configuration = subprocess.run([sys.executable, str(ROOT / 'bin/snowflake_connection.py')])
+    if configuration.returncode:
+        return configuration.returncode
     stamp = dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     output = ROOT / '.snowconvert' / (stamp+'-'+namespace)
     output.mkdir(parents=True)
@@ -54,7 +58,9 @@ def convert(scai, namespace):
             command = [executable, *arguments]
             log.write('$ '+shlex.join(command)+'\n')
             log.flush()
-            result = subprocess.run(command, cwd=cwd, stdout=log, stderr=subprocess.STDOUT)
+            environment = {key: value for key, value in os.environ.items() if key != 'SNOWFLAKE_PRIVATE_KEY'}
+            environment['SNOWFLAKE_CONNECTION'] = 'sfx_d1110'
+            result = subprocess.run(command, cwd=cwd, stdout=log, stderr=subprocess.STDOUT, env=environment)
             log.write(f'EXIT {result.returncode}\n')
             log.flush()
             if result.returncode:
