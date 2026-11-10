@@ -1,0 +1,11 @@
+version: 2
+models:
+- name: docs_storage_by_owner
+  description: sfx-d1110 file count and stored bytes per document owner (replaces lake documents/docs_storage_by_owner)
+  columns:
+  - name: USER_ID
+    tests:
+    - not_null
+  - name: FILE_COUNT
+    tests:
+    - not_null
