@@ -63,8 +63,7 @@ resource "aws_eks_cluster" "main" { # nosemgrep: terraform.lang.security.eks-pub
   version  = var.cluster_version
   role_arn = aws_iam_role.cluster.arn
 
-  # api + audit only; the other three are noise for a demo cluster and bill per GB.
-  enabled_cluster_log_types = ["api", "audit"]
+  enabled_cluster_log_types = var.cluster_log_types
 
   vpc_config {
     subnet_ids              = concat(var.public_subnet_ids, var.private_subnet_ids)
