@@ -46,7 +46,7 @@ jobs:
       - if: steps.changes.outputs.warehouse == 'true'
         run: python -m pip install -r warehouse/requirements.txt
       - if: steps.changes.outputs.warehouse == 'true'
-        run: python -m pytest -q warehouse
+        run: python -m pytest -q warehouse/seed/tests warehouse/teradata/tests
       - if: steps.changes.outputs.warehouse == 'true'
         name: Warehouse smoke
         run: |
@@ -152,6 +152,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: make sfx-snowflake-test SFX_PYTHON=python
+      - run: make sfx-pc-test SFX_PYTHON=python
 
   # Go - API Gateway
   api-gateway:
