@@ -207,7 +207,8 @@ def manage(run: str, operation: str) -> None:
             cursor.execute("SELECT SYSTEM$TASK_DEPENDENTS_ENABLE(%s)", (root_name,))
             print(f"RESUMED GRAPH     {root_name}")
         else:
-            for _, name in reversed(TASK_FILES):
+            # The graph's root must be suspended before any of its children can be.
+            for name in sorted((name for _, name in TASK_FILES), key=lambda n: n != "UBW_NIGHTLY_LOAD"):
                 cursor.execute(f"ALTER TASK {prefix}.OPS.{name} SUSPEND")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
                 print(f"SUSPENDED         {prefix}.OPS.{name}")
 
@@ -230,10 +231,13 @@ def publish(run: str) -> None:
         cursor.execute(  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query  # noqa: E501
             f"CREATE STAGE IF NOT EXISTS {prefix}.OPS.DBT_MODELS DIRECTORY = (ENABLE = TRUE)"
         )
-        for model in DIM_MODELS:
+        for model in MODEL_NAMES:
             compiled = compiled_dir / f"{model}.sql"
             if not compiled.is_file():
-                raise FileNotFoundError(f"dbt did not compile model {model}: {compiled}")
+                if model in DIM_MODELS:
+                    raise FileNotFoundError(f"dbt did not compile model {model}: {compiled}")
+                print(f"NOT PORTED        {model}")
+                continue
             destination = upload_dir / f"{model}.sql"
             statement = (
                 f"CREATE OR REPLACE TABLE {prefix}.MARTS.{model.upper()} AS\n"
