@@ -1,0 +1,42 @@
+# SFX_CONTENT mappings owned by act3-workflow. The other SFX_CONTENT mappings
+# (LOGIN_EVENT, ROLE_GRANT, TEAM_MEMBER) are owned by another effort and are not listed.
+m_SFX_STG_APP_USER:
+  key_columns: [USER_ID]
+  dbt_model: pc_content__stg_app_user
+  after_table: PC_CONTENT.STG_APP_USER
+  before_table: PC_BEFORE.STG_APP_USER
+  session: s_m_SFX_STG_APP_USER
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Truncate and load]
+m_SFX_APP_USER:
+  key_columns: [USER_ID]
+  dbt_model: pc_content__app_user
+  after_table: PC_CONTENT.APP_USER
+  before_table: PC_BEFORE.APP_USER
+  session: s_m_SFX_APP_USER
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Lookup Procedure, Update Strategy]
+m_SFX_STG_DOCUMENT:
+  key_columns: [DOCUMENT_ID]
+  dbt_model: pc_content__stg_document
+  after_table: PC_CONTENT.STG_DOCUMENT
+  before_table: PC_BEFORE.STG_DOCUMENT
+  session: s_m_SFX_STG_DOCUMENT
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Truncate and load]
+m_SFX_DOCUMENT:
+  key_columns: [DOCUMENT_ID]
+  dbt_model: pc_content__document
+  after_table: PC_CONTENT.DOCUMENT
+  before_table: PC_BEFORE.DOCUMENT
+  session: s_m_SFX_DOCUMENT
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Unconnected Lookup, Filter, Lookup Procedure, Update Strategy]
+m_SFX_DOC_SHARE:
+  key_columns: [SHARE_ID]
+  dbt_model: pc_content__doc_share
+  after_table: PC_CONTENT.DOC_SHARE
+  before_table: PC_BEFORE.DOC_SHARE
+  session: s_m_SFX_DOC_SHARE
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Lookup Procedure, DECODE, Update else Insert]
