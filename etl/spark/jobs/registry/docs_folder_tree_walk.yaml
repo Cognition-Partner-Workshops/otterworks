@@ -3,7 +3,7 @@
   "language": "python",
   "target": "dbt",
   "status": "snowflake",
-  "command": "cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_folder_tree_walk --select path:models/spark/docs_folder_tree_walk",
+  "command": "if [ ! -f warehouse/snowflake/run_dbt.py ]; then cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" || exit 1; fi; warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_folder_tree_walk --select path:models/spark/docs_folder_tree_walk",
   "schedule": "21 3 * * *",
   "profile": "small"
 }
