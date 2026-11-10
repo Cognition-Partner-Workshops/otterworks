@@ -1,0 +1,12 @@
+version: 2
+models:
+- name: docs_event_export_hourly
+  description: sfx-d1110 DOCUMENT rows with EXPORT_BUCKET = pmod(DOCUMENT_ID, 10000). Replaces lake documents/docs_event_export_hourly, which wrote one parquet directory per bucket.
+  columns:
+  - name: DOCUMENT_ID
+    tests:
+    - not_null
+    - unique
+  - name: EXPORT_BUCKET
+    tests:
+    - not_null
