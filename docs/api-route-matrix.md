@@ -7,6 +7,7 @@ This matrix captures the primary API endpoints used to design and expand the bla
 | Prefix | Service | Notes |
 | --- | --- | --- |
 | `/api/v1/auth` | Auth service | Registration, login, profile, refresh, logout, admin user listing. |
+| `/api/v1/settings` | Auth service | Per-user Settings page preferences (notification toggles). |
 | `/api/v1/files` | File service | File upload, metadata, download, versions, trash/restore, share. |
 | `/api/v1/documents` | Document service | Document CRUD, versions, export, comments, template instantiation. |
 | `/api/v1/collab` | Collaboration service | Presence APIs and Socket.IO collaboration. |
@@ -21,6 +22,7 @@ This matrix captures the primary API endpoints used to design and expand the bla
 | Flow | Routes | Current API test coverage |
 | --- | --- | --- |
 | Account/session lifecycle | `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/profile`, `PUT /api/v1/auth/profile`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`, `GET /api/v1/auth/users` | `tests/api/test_auth_flow.py` |
+| Settings page | `GET /api/v1/settings`, `PATCH /api/v1/settings` | `tests/api/test_settings_flow.py` |
 | Document authoring | `POST /api/v1/documents/`, `GET /api/v1/documents/`, `GET /api/v1/documents/{id}`, `PUT /api/v1/documents/{id}`, `PATCH /api/v1/documents/{id}`, `DELETE /api/v1/documents/{id}` | `tests/api/test_document_flow.py` |
 | Document history/export | `GET /api/v1/documents/{id}/versions`, `POST /api/v1/documents/{id}/versions/{version_id}/restore`, `GET /api/v1/documents/{id}/export` | `tests/api/test_document_flow.py` |
 | Comments | `POST /api/v1/documents/{id}/comments`, `GET /api/v1/documents/{id}/comments`, `DELETE /api/v1/documents/{id}/comments/{comment_id}` | `tests/api/test_document_flow.py` |
