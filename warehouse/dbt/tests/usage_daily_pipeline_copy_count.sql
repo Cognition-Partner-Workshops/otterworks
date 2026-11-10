@@ -1,6 +1,9 @@
 {% set usage = source('billing', 'USAGE_DAILY') %}
 
-with latest_copy as (
+with retained_files as (
+    select distinct 'pipeline/' || regexp_substr(metadata$filename, '[^/]+$') as src_file
+    from @LANDING.LANDING_STAGE/pipeline/
+), latest_copy as (
     select 'pipeline/' || regexp_substr(file_name, '[^/]+$') as src_file,
            row_parsed
     from table({{ usage.database }}.information_schema.copy_history(
@@ -22,4 +25,5 @@ select coalesce(actual.src_file, latest_copy.src_file) as src_file,
 from actual
 full outer join latest_copy on actual.src_file = latest_copy.src_file
 where latest_copy.row_parsed is not null
+  and latest_copy.src_file in (select src_file from retained_files)
   and coalesce(actual.row_count, 0) <> latest_copy.row_parsed

@@ -180,7 +180,7 @@ def monitoring_fixture(broken=False):
     connection = MagicMock()
     cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
     days = [("2026-11-10", 42, 42, 42), ("2026-11-09", 48, 0, 0)] if broken else [("2026-11-09", 48, 0, 0)]
-    history = [("pipeline/2026-11-10.csv", "Partially loaded", 6, None),
+    history = [("LANDING.LANDING_STAGE/pipeline/2026-11-10.csv", "Partially loaded", 6, None),
                ("pipeline/2026-11-09.csv", "Loaded", 0, None)]
     files = [("landing_stage/pipeline/2026-11-09.csv",)]
     if broken:
@@ -194,6 +194,8 @@ def test_shared_checks_with_mocked_connector(broken):
     connector = monitoring_fixture(broken)
     result = checks.run_checks(connector=connector)
     connector.assert_called_once_with("monitor", "SFX_D1110_OPS_WH")
+    cursor = connector.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+    assert "FILE_NAME LIKE '%%pipeline/%%'" in cursor.execute.call_args_list[1].args[0]
     assert all(c["firing"] == broken for c in result["checks"].values())
     assert result["load_errors"] == (6 if broken else 0)
     assert result["null_ratios"]["amount"] == (1 if broken else 0)

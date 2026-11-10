@@ -88,7 +88,7 @@ def run_checks(limits=None, connector=None):
                 FROM TABLE(INFORMATION_SCHEMA.COPY_HISTORY(
                     TABLE_NAME=>'SFX_D1110_AFTER.RAW_BILLING.USAGE_DAILY',
                     START_TIME=>DATEADD('hour',-%s,CURRENT_TIMESTAMP())))
-                WHERE FILE_NAME LIKE 'pipeline/%%' ORDER BY LAST_LOAD_TIME DESC""",
+                WHERE FILE_NAME LIKE '%%pipeline/%%' ORDER BY LAST_LOAD_TIME DESC""",
                            (limits.lookback_hours,))
             history = cursor.fetchall()
             cursor.execute("LIST @LANDING.LANDING_STAGE/pipeline/")
