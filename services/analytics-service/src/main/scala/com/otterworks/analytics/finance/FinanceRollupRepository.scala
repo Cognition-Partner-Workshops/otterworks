@@ -82,6 +82,7 @@ object SnowflakeFinanceRollupRepository:
     properties.setProperty("authenticator", "SNOWFLAKE_JWT")
     properties.put("privateKey", key)
     properties.setProperty("QUERY_TAG", QueryTag)
+    properties.setProperty("TIMEZONE", "UTC")
     properties.setProperty("JDBC_QUERY_RESULT_FORMAT", "JSON")
     DriverManager.getConnection(s"jdbc:snowflake://${settings.account}.snowflakecomputing.com", properties)
 

@@ -82,7 +82,27 @@ class SnowflakeWarehouse extends ContractWarehouse:
     given ExecutionContext = ExecutionContext.global
     val settings = FinanceSettings.load(ConfigFactory.parseResources(
       "com/otterworks/analytics/finance/snowflake.conf").resolve())
-    val repository = new SnowflakeFinanceRollupRepository(settings)
+    val repository = new SnowflakeFinanceRollupRepository(() => {
+      val connection = SnowflakeFinanceRollupRepository.connect(settings)
+      try
+        val statement = connection.createStatement()
+        try
+          List("TIMEZONE" -> "UTC", "QUERY_TAG" -> SnowflakeFinanceRollupRepository.QueryTag).foreach { (name, expected) =>
+            val result = statement.executeQuery(s"SHOW PARAMETERS LIKE '$name' IN SESSION")
+            try
+              require(result.next(), s"Missing session parameter: $name")
+              val value = result.getString("value")
+              require(value == expected, s"Unexpected session $name: $value")
+              println(s"Snowflake session $name=$value (assertion passed)")
+            finally result.close()
+          }
+        finally statement.close()
+        connection
+      catch
+        case error: Throwable =>
+          connection.close()
+          throw error
+    })
     val rows = Await.result(repository.rollups(status, plan), 3.minutes)
     repository.queryIds.foreach(id => println(s"Snowflake query ID: $id"))
     Json.obj("query" -> Json.fromString("finance-rollups"),
@@ -119,6 +139,7 @@ class FinanceRollupContractSpec extends AnyFlatSpec with Matchers:
         val index = columns.indexOf(column)
         rows.map(_(index)).toSet shouldBe referenceRows.map(_(index)).toSet
       }
+      println(s"Snowflake contract: ${rows.size} rows; columns, month labels and plan names match replay")
     else
       assertAggregates(actual)
   }

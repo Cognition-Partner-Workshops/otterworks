@@ -128,6 +128,7 @@ Set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE and
 SNOWFLAKE_PRIVATE_KEY (PKCS8 PEM). Sessions use SFX_D1110_AFTER and only
 SFX_D1110_PARITY_WH, with QUERY_TAG
 `{"run":"sfx-d1110","act":"consumers","consumer":"analytics-service"}`.
+Sessions pin TIMEZONE=UTC so calendar-month windows and labels use UTC.
 
 Customer, invoice and payment reads use COMPAT views. Subscription and plan
 catalog reads use CORE_BILLING staging models because COMPAT has no equivalents.
@@ -149,6 +150,10 @@ Set FINANCE_WAREHOUSE_ENABLED=false or finance.warehouse.enabled=false to
 disable the route. It defaults on, without connecting at startup.
 
 Revenue uses invoice subtotals for the selected subscriptions, excluding tax.
+Specifically, revenue is COMPAT.INVOICE_HDR.SUBTOTAL_AMOUNT, equal to
+TOTAL_AMOUNT-ZEROIFNULL(TAX_AMOUNT) on live data. COMPAT SUBTOTAL/TOTAL are
+pre-invoicing values, not P_MONTHLY_INVOICE recalculated amounts, so
+BILLED_REVENUE differs from Teradata by design of the target data.
 Cash is grouped independently by payment month, attributed through each
 payment's invoice to its subscription. Both are aggregated before joining the
 month/account grid. Accounts are deduplicated within each plan; active counts
