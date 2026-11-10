@@ -9,7 +9,6 @@
 # TODO ETL-160: Cache PostgreSQL connection across runs (deferred Q2 2020)
 # TODO ETL-210: Add email notification for report generation (never done)
 
-import configparser
 import gzip
 import json
 import sys
@@ -18,23 +17,21 @@ from datetime import datetime, timedelta, timezone
 import boto3
 import psycopg2
 
+from runtime_config import load_config, required_secret
+
 
 def main():
     print("[%s] user_activity_daily.py starting..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # ---- Load config ----
-    config = configparser.ConfigParser()
-    config.read("/opt/etl/config.ini")
-
-    aws_access_key = config.get("aws", "access_key")
-    aws_secret_key = config.get("aws", "secret_key")
+    config = load_config()
     aws_region = config.get("aws", "region")
 
     db_host = config.get("database", "host")
     db_port = config.getint("database", "port")
     db_name = config.get("database", "database")
     db_user = config.get("database", "user")
-    db_password = config.get("database", "password")
+    db_password = required_secret("ETL_DB_PASSWORD")
 
     data_lake_bucket = config.get("s3", "data_lake_bucket")
 
@@ -128,8 +125,6 @@ def main():
 
     s3_client = boto3.client(
         "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
 
@@ -206,8 +201,6 @@ def main():
 
     s3_client_upload = boto3.client(
         "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
 

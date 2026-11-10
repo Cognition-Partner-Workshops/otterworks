@@ -5,10 +5,8 @@
 #
 # Owner: Jake (data-team@otterworks.dev) -- Jake left mid-2020
 # TODO ETL-078: Refactor this into proper modules (deferred Q4 2019)
-# TODO ETL-142: Move credentials to secrets manager (deferred Q3 2020)
 # TODO ETL-201: Add unit tests (never prioritized)
 
-import configparser
 import gzip
 import io
 import json
@@ -21,23 +19,21 @@ import boto3
 import pandas as pd
 import psycopg2
 
+from runtime_config import load_config, required_secret
+
 
 def main():
     print("[%s] analytics_daily.py starting..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # ---- Load config ----
-    config = configparser.ConfigParser()
-    config.read("/opt/etl/config.ini")
-
-    aws_access_key = config.get("aws", "access_key")
-    aws_secret_key = config.get("aws", "secret_key")
+    config = load_config()
     aws_region = config.get("aws", "region")
 
     db_host = config.get("database", "host")
     db_port = config.getint("database", "port")
     db_name = config.get("database", "database")
     db_user = config.get("database", "user")
-    db_password = config.get("database", "password")
+    db_password = required_secret("ETL_DB_PASSWORD")
 
     data_lake_bucket = config.get("s3", "data_lake_bucket")
     analytics_prefix = config.get("s3", "analytics_prefix")
@@ -52,8 +48,6 @@ def main():
     sqs_queue_url = "https://sqs.us-east-1.amazonaws.com/123456789012/otterworks-analytics"
     sqs_client = boto3.client(
         "sqs",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
 
@@ -112,8 +106,6 @@ def main():
     dynamodb_table_name = "otterworks-analytics-events"
     dynamodb = boto3.resource(
         "dynamodb",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
     table = dynamodb.Table(dynamodb_table_name)
@@ -296,8 +288,6 @@ def main():
     # ---- Load to S3 data lake ----
     s3_client = boto3.client(
         "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
 
@@ -426,8 +416,6 @@ def main():
     report_key = "reports/analytics/daily/%s/report.json" % ds
     s3_client_report = boto3.client(
         "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
     s3_client_report.put_object(

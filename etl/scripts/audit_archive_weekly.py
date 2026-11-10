@@ -9,7 +9,6 @@
 # TODO ETL-167: Handle DynamoDB throughput throttling properly (2020-04-10)
 # TODO ETL-199: This script has no tests whatsoever (never prioritized)
 
-import configparser
 import gzip
 import io
 import json
@@ -18,6 +17,8 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import boto3
+
+from runtime_config import load_config
 
 
 class DecimalEncoder(json.JSONEncoder):
@@ -34,11 +35,7 @@ def main():
     print("[%s] audit_archive_weekly.py starting..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # ---- Load config ----
-    config = configparser.ConfigParser()
-    config.read("/opt/etl/config.ini")
-
-    aws_access_key = config.get("aws", "access_key")
-    aws_secret_key = config.get("aws", "secret_key")
+    config = load_config()
     aws_region = config.get("aws", "region")
 
     archive_bucket = config.get("s3", "archive_bucket")
@@ -60,8 +57,6 @@ def main():
     # ---- Scan DynamoDB for old audit events ----
     dynamodb = boto3.resource(
         "dynamodb",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
     table = dynamodb.Table(dynamodb_table_name)
@@ -112,8 +107,6 @@ def main():
     # ---- Upload to S3 with Glacier storage class ----
     s3_client = boto3.client(
         "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
 
@@ -196,8 +189,6 @@ def main():
     report_key = "reports/compliance/audit-archive/%s/report.json" % ds
     s3_client_report = boto3.client(
         "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
     s3_client_report.put_object(
