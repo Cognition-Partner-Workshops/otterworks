@@ -3,7 +3,7 @@
   "language": "scala",
   "target": "dbt",
   "status": "snowflake",
-  "command": "cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" && warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job team_graph_components --select path:models/spark/team_graph_components",
+  "command": "if [ ! -f warehouse/snowflake/run_dbt.py ]; then cd \"${SFX_SPARK_ROOT:-/opt/etl/spark}/../..\" || exit 1; fi; warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job team_graph_components --select path:models/spark/team_graph_components",
   "schedule": "22 3 * * *",
   "profile": "small",
   "class": "sfx.TeamGraphComponents"
