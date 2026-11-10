@@ -73,13 +73,15 @@ def recovery():
         _, all_rows = q.run(f'SELECT {HISTORY_COLUMNS} FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.'
                            'QUERY_HISTORY_BY_USER(RESULT_LIMIT=>10000)) ORDER BY START_TIME')
         start = next(r[4] for r in all_rows if r[0] == pre['control']['qid'])
-        window = [r for r in all_rows if r[4] >= start]
+        _, window = q.run(f'SELECT {HISTORY_COLUMNS} FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.'
+                          f"QUERY_HISTORY_BY_USER(END_TIME_RANGE_START=>'{start.isoformat()}'::TIMESTAMP_LTZ,"
+                          'RESULT_LIMIT=>10000)) ORDER BY START_TIME')
         foreign = [r for r in window if 'SECURITY_ALERT' in (r[1] or '').upper() and
                    r[2] not in ('SELECT', 'DESCRIBE', 'SHOW') and
                    json.loads(r[3] or '{}').get('step') != step]
         dump(DEST / 'recovery/window.json', {'rows': [[cell(v) for v in r] for r in window],
              'foreign_writes': [[cell(v) for v in r] for r in foreign]})
-        if foreign or len(all_rows) >= 10000:
+        if foreign or len(window) >= 10000:
             raise ValueError('Cannot prove uncontaminated run1')
         collect_target(q, 'production', path)
         results = load(path / 'run_results.json')['results']
