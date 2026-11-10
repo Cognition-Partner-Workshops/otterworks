@@ -1,4 +1,7 @@
 # OS
+warehouse/landing/
+warehouse/.venv/
+warehouse/exports/
 .DS_Store
 Thumbs.db
 

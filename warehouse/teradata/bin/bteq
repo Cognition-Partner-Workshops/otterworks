@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
+export PYTHONPATH="$root/teradata${PYTHONPATH:+:$PYTHONPATH}"
+exec "$root/.venv/bin/python" -m bteq "$@"
