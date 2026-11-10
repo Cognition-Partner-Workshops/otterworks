@@ -52,6 +52,25 @@ SFX_PYTHON ?= python3.10
 SFX_VENV ?= warehouse/snowflake/.venv
 SFX_TEST_PYTHON ?= $(SFX_VENV)/bin/python
 
+.PHONY: sfx-operate-load sfx-operate-break sfx-operate-reset sfx-operate-check sfx-operate-alert sfx-operate-exporter
+sfx-operate-check: $(SFX_VENV)/.sfx-installed ## Print shared pipeline checks
+	$(SFX_VENV)/bin/python warehouse/pipeline/checks.py
+
+sfx-operate-alert: $(SFX_VENV)/.sfx-installed ## Send or dry-run pipeline notification
+	$(SFX_VENV)/bin/python warehouse/pipeline/fire_alert.py
+
+sfx-operate-exporter: $(SFX_VENV)/.sfx-installed ## Serve pipeline metrics
+	$(SFX_VENV)/bin/python observability/pipeline/sfx_pipeline_exporter.py
+
+sfx-operate-load: $(SFX_VENV)/.sfx-installed ## Load the good daily billing feed
+	$(SFX_VENV)/bin/python warehouse/pipeline/load_daily.py --date 2026-11-09
+
+sfx-operate-break: $(SFX_VENV)/.sfx-installed ## Receive the changed vendor feed
+	SFX_VENV="$(abspath $(SFX_VENV))" bash warehouse/pipeline/break_upstream.sh
+
+sfx-operate-reset: $(SFX_VENV)/.sfx-installed ## Remove the changed feed and rebuild staging
+	$(SFX_VENV)/bin/python warehouse/pipeline/load_daily.py --date 2026-11-10 --reset
+
 $(SFX_VENV)/.sfx-installed: warehouse/snowflake/requirements.txt
 	$(SFX_PYTHON) -m venv $(SFX_VENV)
 	$(SFX_VENV)/bin/pip install -r warehouse/snowflake/requirements.txt
