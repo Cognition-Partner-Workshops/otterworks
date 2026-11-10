@@ -2,6 +2,8 @@
 warehouse/landing/
 warehouse/.venv/
 warehouse/exports/
+etl/spark/.data/
+etl/spark/.cache/
 .DS_Store
 Thumbs.db
 
