@@ -128,7 +128,8 @@ through a temporary column; the table, its COPY history and Time Travel are kept
 and CURRENCY_CODE becomes the last column (every load here maps by name). V008 is a
 no-op when the column is already three characters wide and refuses to run while any
 row holds a longer value: such rows come from an out-of-contract load and must be
-removed or replayed first. dbt exposes both column sets and tests the shared
+removed or replayed first. Each DDL statement autocommits, so V008 inspects the
+column layout first and a rerun resumes from wherever an interrupted run stopped. dbt exposes both column sets and tests the shared
 primary/foreign keys, using legacy fixture IDs as fallbacks. Legacy-only fields
 absent from shared RAW seed data remain NULL; the approved COMPAT/staging date
 fallbacks above are explicit exceptions at projection time. Catalog, chart and
