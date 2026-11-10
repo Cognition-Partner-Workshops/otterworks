@@ -62,7 +62,7 @@ jobs:
         run: |
           git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
           base="$(git merge-base "origin/$BASE_REF" HEAD)"
-          uv run --python 3.11 --with semgrep==1.108.0 semgrep scan \
+          uv run --python 3.11 --with semgrep==1.108.0 --with "setuptools<70" semgrep scan \
             --config p/default --config p/owasp-top-ten --config p/security-audit \
             --metrics off --error --baseline-commit "$base" \
             etl/spark docker-compose.spark.yml etl/crontab Makefile \
