@@ -33,6 +33,31 @@ def main() -> int:
     if not re.fullmatch(r"sfm-\d{8}-[a-z0-9]{2,8}", args.run):
         print("run token does not look like sfm-<yyyymmdd>-<suffix>", file=sys.stderr)
         return 2
+    ledger_path = HERE / "out" / "ledger.json"
+    if not ledger_path.is_file():
+        print(f"No parity ledger is available to reread: {ledger_path}", file=sys.stderr)
+        return 2
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    # Recheck the ledger before touching the legacy side, so a failed gate leaves SQL Server running.
+    result = subprocess.run(
+        [  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args  # noqa: E501
+            sys.executable,
+            str(HERE / "parity.py"),
+            "--run",
+            args.run,
+            "--date",
+            str(ledger.get("date", "")),
+            "--reread",
+        ],
+        cwd=ROOT,
+        check=False,
+    )
+    if result.returncode:
+        print(
+            "Parity gate is not clean; SQL Server keeps running and consumers stay on it.",
+            file=sys.stderr,
+        )
+        return result.returncode
     compose_path = ROOT / "migration" / "snowflake" / "compose.yaml"
     if compose_path.is_file():
         service = sqlserver_service(compose_path)
@@ -52,25 +77,7 @@ def main() -> int:
     backend_path = ROOT / "migration" / "snowflake" / ".backend.env"
     backend_path.write_text("UBW_BACKEND=snowflake\n", encoding="utf-8")
     print(f"Wrote {backend_path}: UBW_BACKEND=snowflake")
-    ledger_path = HERE / "out" / "ledger.json"
-    if not ledger_path.is_file():
-        print(f"No parity ledger is available to reread: {ledger_path}", file=sys.stderr)
-        return 2
-    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
-    result = subprocess.run(
-        [  # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args  # noqa: E501
-            sys.executable,
-            str(HERE / "parity.py"),
-            "--run",
-            args.run,
-            "--date",
-            str(ledger.get("date", "")),
-            "--reread",
-        ],
-        cwd=ROOT,
-        check=False,
-    )
-    return result.returncode
+    return 0
 
 
 if __name__ == "__main__":
