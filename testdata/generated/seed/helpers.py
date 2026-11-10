@@ -92,7 +92,8 @@ def get_connection():
 
 def set_search_path(cur, ns: str) -> None:
     schema = f"otterworks_{ns}"
-    cur.execute(sql.SQL("SET search_path TO {}").format(sql.Identifier(schema)))
+    query = sql.SQL("SET search_path TO {}").format(sql.Identifier(schema))
+    cur.execute(query)
 
 
 # ── Insert helper ─────────────────────────────────────────────────────────────
