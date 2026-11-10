@@ -19,7 +19,7 @@ Do this the day before, on a machine with Docker and the Snowflake secrets.
 3. Start the orchestrator session with `demo/ORCHESTRATOR_PROMPT.md`. It writes the migration plan from `demo/units.yaml` and launches eight wave 1 workers with `demo/CHILD_UNIT_PROMPT.md`.
 4. While wave 1 runs, open one worker and walk its trajectory: it reads the procedure, writes the model, runs `make sfm-dual-run` and reads the ledger. On the build machine each dual run took about 100 seconds per date.
 5. Open a PR from a worker. The description carries the ledger rows for that unit on both dates.
-6. After waves 2 and 3, the orchestrator does wave 4 itself, publishes the models to the Tasks graph and runs the cutover.
+6. After waves 2 and 3, the orchestrator does wave 4 itself and publishes the models with `tasks.py --run <token> publish`. One execution of the nightly graph (load, dims, facts, marts, log) took about 50 seconds on the build run. Then it runs `make sfm-cutover`, which rechecks the ledger and stops SQL Server only if the gate is clean.
 7. Close on the final ledger in Snowsight and the session list with its ACU totals.
 
 ## Moments to point at
@@ -30,8 +30,8 @@ Do this the day before, on a machine with Docker and the Snowflake secrets.
 
 ## Fallback
 
-Branch `devin/1794295625-sfm-reference` holds a finished port of all 18 units. On the build run it gave 23 PASS on 2026-09-15 and 2026-09-30, and with the two explanations written, `make sfm-gate` exited 0. If the live run stalls, check that branch out and run `make sfm-dual-run RUN=<token> DATE=2026-09-15`.
+Branch `devin/1794295625-sfm-reference` holds a finished port of all 18 units. On the build run it gave 23 PASS on 2026-09-15 and 2026-09-30, and with the two explanations written, `make sfm-gate` exited 0. If the live run stalls, check that branch out, run `make sfm-dual-run RUN=<token> DATE=2026-09-15`, then `python migration/snowflake/demo/apply_reference_explanations.py` and `make sfm-gate RUN=<token> DATE=2026-09-15`, which should exit 0.
 
 ## Reset and cleanup
 
-`make sfm-demo-reset RUN=<token>` tears the token down, rebuilds it and brings the ledger back to 7 PASS. Close any worker PRs and delete the run branch. After the demo, run `make sfm-teardown RUN=<token>` and `make sfm-verify-clean RUN=<token>`. The tag check in verify-clean lags by up to two hours, so run it again later in the day.
+`gate/out/` is shared by every token, so a reset also clears explanations written for other runs. `make sfm-demo-reset RUN=<token>` tears the token down, rebuilds it and brings the ledger back to 7 PASS. Close any worker PRs and delete the run branch. The cutover stops the SQL Server container, so run `make sfm-up` before the next rehearsal. After the demo, run `make sfm-teardown RUN=<token>` and `make sfm-verify-clean RUN=<token>`. The tag check in verify-clean lags by up to two hours, so run it again later in the day.
