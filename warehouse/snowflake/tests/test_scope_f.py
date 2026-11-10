@@ -127,8 +127,9 @@ class Inventory:
             rows = [dict(name='SFX_D1110_AFTER', comment=''),
                     dict(name=name, comment=comment),
                     dict(name='DROPPED_USER$FOREIGN', comment='', owner='OTHER')]
-            if self.user_dropped and 'DROP DATABASE IF EXISTS "DROPPED_USER$EXTRA_123456" CASCADE' not in self.calls:
-                rows += [dict(name='DROPPED_USER$EXTRA_123456', comment='', owner='OTHER')]
+            orphan = f'DROPPED_USER${name}_123456'
+            if self.user_dropped and f'DROP DATABASE IF EXISTS "{orphan}" CASCADE' not in self.calls:
+                rows += [dict(name=orphan, comment='', owner='OTHER')]
         elif sql.startswith('SHOW SCHEMAS'):
             rows = [dict(name='GOVERNANCE', comment='sfx-d1110')] if not self.name_mode else [dict(name=name, comment=comment)]
         elif sql == 'SHOW USERS':
@@ -151,9 +152,12 @@ def test_inventory_matches_names_and_comments(name_mode):
     assert {obj.kind for obj in objects} == {'DATABASE', 'SCHEMA', 'TASK', 'STAGE', 'TAG',
         'USER', 'ROLE', 'WAREHOUSE', 'RESOURCE MONITOR', 'INTEGRATION', 'APPLICATION', 'COMPUTE POOL', 'SERVICE'}
     commands = teardown.plan(objects)
-    assert any('ALTER COMPUTE POOL' in sql for sql in commands)
+    assert any('ALTER COMPUTE POOL' in sql for sql in commands) == name_mode
     assert any('DROP TAG' in sql for sql in commands)
-    assert next(i for i, s in enumerate(commands) if s.startswith('DROP SERVICE')) < next(i for i, s in enumerate(commands) if s.startswith('DROP COMPUTE POOL'))
+    if name_mode:
+        assert next(i for i, s in enumerate(commands) if s.startswith('DROP SERVICE')) < next(i for i, s in enumerate(commands) if s.startswith('DROP COMPUTE POOL'))
+    else:
+        assert not any('DROP DATABASE IF EXISTS "EXTRA"' in sql for sql in commands)
     assert not any('FOREIGN' in sql for sql in commands)
 
 
@@ -166,14 +170,49 @@ def test_inventory_privilege_per_type(command, capsys):
 
 
 def test_dropped_user_database_sweep_and_guard(capsys):
-    cur = Inventory()
+    cur = Inventory(name_mode=True)
     teardown.cleanup(cur, 'sfx-d1110')
-    assert 'DROP DATABASE IF EXISTS "DROPPED_USER$EXTRA_123456" CASCADE' in cur.calls
+    assert 'DROP DATABASE IF EXISTS "DROPPED_USER$SFX_D1110_EXTRA_123456" CASCADE' in cur.calls
     assert not any('DROP DATABASE IF EXISTS "DROPPED_USER$FOREIGN"' in sql for sql in cur.calls)
     assert 'unattributed DROPPED_USER database; not removed' in capsys.readouterr().out
     cur = Inventory()
     teardown.cleanup(cur, 'sfx-d1110', dry_run=True)
     assert not any(sql.startswith('DROP ') for sql in cur.calls)
+
+
+@pytest.mark.parametrize('kind', [
+    'DATABASE', 'WAREHOUSE', 'ROLE', 'USER', 'RESOURCE MONITOR',
+    'INTEGRATION', 'APPLICATION', 'COMPUTE POOL',
+])
+def test_comment_only_account_objects_are_never_modified(kind):
+    obj = teardown.Object(kind, ('SHARED',), 'sfx-d1110')
+    assert teardown.plan([obj]) == []
+    assert teardown.plan([obj], include_provisioned=True) == []
+    assert teardown.plan([obj], suspend_only=True) == []
+    owned = teardown.Object(kind, ('SFX_D1110_EXTRA',))
+    assert any(sql.startswith('DROP ') for sql in teardown.plan([owned]))
+
+
+@pytest.mark.parametrize('kind,tail', [
+    ('SCHEMA', ('SCHEMA',)), ('TASK', ('SCHEMA', 'TASK')),
+    ('STAGE', ('SCHEMA', 'STAGE')), ('TAG', ('SCHEMA', 'TAG')),
+    ('SERVICE', ('SCHEMA', 'SERVICE')),
+])
+def test_comment_only_children_require_a_name_scoped_database(kind, tail):
+    shared = teardown.Object(kind, ('SHARED', *tail), 'sfx-d1110')
+    assert teardown.plan([shared]) == []
+    scoped = teardown.Object(kind, ('SFX_D1110_AFTER', *tail), 'sfx-d1110')
+    assert any(sql.startswith('DROP ') for sql in teardown.plan([scoped]))
+
+
+def test_comment_only_database_is_reported_remaining(capsys):
+    cur = Inventory()
+    assert teardown.cleanup(cur, 'sfx-d1110', dry_run=True) == 1
+    output = capsys.readouterr().out
+    assert 'REMAINS DATABASE EXTRA (not name-scoped; retained)' in output
+    assert 'PLAN DROP DATABASE IF EXISTS "EXTRA"' not in output
+    assert all(sql.startswith('SHOW ') for sql in cur.calls)
+    assert teardown.plan([]) == []
 
 
 def dummy_env(tmp_path):

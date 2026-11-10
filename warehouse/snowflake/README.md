@@ -162,9 +162,11 @@ ACCOUNT_USAGE can lag up to about 3h. This is attribution, not a billing invoice
 TEARDOWN_ARGS=--dry-run to preview. It preserves the provisioned role, user,
 database, warehouses and resource monitor unless --include-provisioned is
 explicitly passed. That flag can remove the active service identity and database.
-Cleanup suspends before dropping; token-matched schemas/databases are dropped
-with CASCADE, including their contents. It also removes token-matched
-non-provisioned roles, users, warehouses and resource monitors. Discovery is
+Cleanup suspends before dropping. Database and account-level object names must
+start with SFX_D1110_ (or the scoped token prefix); comment-only matches remain
+in the inventory and affect the exit code but are never modified. Schema-local
+comment matches may be removed only inside a name-scoped database. Eligible
+schemas/databases are dropped with CASCADE, including their contents. Discovery is
 limited to objects visible to the current role; explicit permission failures are
 reported and cause a nonzero exit. Remaining non-exempt objects also cause a
 nonzero exit, including in dry-run mode. No real teardown is needed for normal

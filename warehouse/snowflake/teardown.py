@@ -23,6 +23,17 @@ def tagged(name, comment, token):
     return normalized(token) in normalized(name) or token.lower() in (comment or "").lower()
 
 
+def name_scoped(name, token):
+    prefix = re.sub(r'[^a-z0-9]', '_', token.lower()) + '_'
+    return name.lower().startswith(prefix)
+
+
+def removable(obj, token):
+    if obj.kind == 'DATABASE' and obj.name.upper().startswith('DROPPED_USER$'):
+        return tagged(obj.name, obj.comment, token)
+    return name_scoped(obj.parts[0], token)
+
+
 @dataclass(frozen=True)
 class Object:
     kind: str
@@ -63,7 +74,7 @@ def discover(cursor, token, dropped_users=None):
     dropped_users = dropped_users if dropped_users is not None else set()
     users = show(cursor, 'SHOW USERS', denied)
     for row in users:
-        if tagged(row['name'], row.get('comment'), token):
+        if name_scoped(row['name'], token):
             dropped_users.add(row['name'].upper())
     candidates = show(cursor, "SHOW DATABASES LIKE '%SFX_D1110%'", denied)
     candidates += show(cursor, "SHOW DATABASES", denied)
@@ -104,8 +115,9 @@ def discover(cursor, token, dropped_users=None):
     return sorted(objects, key=lambda obj: (obj.kind, obj.name)), denied
 
 
-def plan(objects, include_provisioned=False, suspend_only=False):
+def plan(objects, include_provisioned=False, suspend_only=False, token='sfx-d1110'):
     commands = []
+    objects = [obj for obj in objects if removable(obj, token)]
     tasks = [obj for obj in objects if obj.kind == "TASK"]
     warehouses = [obj for obj in objects if obj.kind == "WAREHOUSE"]
     pools = [obj for obj in objects if obj.kind == 'COMPUTE POOL']
@@ -143,7 +155,7 @@ def execute_plan(cursor, commands):
 def cleanup(cursor, token, dry_run=False, include_provisioned=False, suspend_only=False):
     dropped_users = set()
     objects, denied = discover(cursor, token, dropped_users)
-    commands = plan(objects, include_provisioned, suspend_only)
+    commands = plan(objects, include_provisioned, suspend_only, token)
     print("Inventory is limited to objects visible to the current role")
     for command in commands:
         print(("PLAN " if dry_run else "EXECUTE ") + command + ";")
@@ -155,7 +167,8 @@ def cleanup(cursor, token, dry_run=False, include_provisioned=False, suspend_onl
     remaining, remaining_denied = discover(cursor, token, dropped_users)
     if not dry_run:
         orphans = [obj for obj in remaining if obj.kind == 'DATABASE'
-                   and obj.parts[0].upper().startswith('DROPPED_USER$') and not obj.provisioned]
+                   and obj.parts[0].upper().startswith('DROPPED_USER$') and not obj.provisioned
+                   and removable(obj, token)]
         for obj in orphans:
             print(f'EXECUTE DROP DATABASE IF EXISTS {obj.sql_name} CASCADE;')
             cursor.execute(f'DROP DATABASE IF EXISTS {obj.sql_name} CASCADE')
@@ -165,7 +178,8 @@ def cleanup(cursor, token, dry_run=False, include_provisioned=False, suspend_onl
     leftovers = [obj for obj in remaining if include_provisioned or not obj.provisioned]
     for obj in remaining:
         print(f"REMAINS {obj.kind} {obj.name}"
-              + (" (provisioned)" if obj.provisioned else ""))
+              + (" (provisioned)" if obj.provisioned else
+                 " (not name-scoped; retained)" if not removable(obj, token) else ""))
     code = int(bool(leftovers or denied or remaining_denied))
     print(f"{'Dry-run' if dry_run else 'Teardown'} summary: {len(commands)} planned commands; "
           f"{len(leftovers)} non-exempt objects remain; exit code {code}")
