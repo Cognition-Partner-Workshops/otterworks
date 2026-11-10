@@ -163,3 +163,60 @@ def test_success_only_intervening_history():
 def test_multiset_differences_do_not_hide_duplicates():
     snap = {'columns': u.COLUMNS, 'types': {}, 'rows': [[cell(v) for v in [1, 2, 3, 'A', None]]]}
     assert not full_compare(snap, {**snap, 'rows': snap['rows'] * 2}, u.KEYS)['equal']
+
+
+def test_bounded_history_filters_and_paginates():
+    class Queries:
+        calls = []
+
+        def run(self, sql):
+            self.calls.append(sql)
+            row = ['qid', 'SELECT 1', 'SELECT', '{}', 'time', 'time', 'SUCCESS', None, None]
+            if len(self.calls) == 1:
+                return [], [row + [10000, True]]
+            return [], [row + [2, True], ['running'] * 9 + [2, False]]
+
+    q = Queries()
+    assert len(u.history(q, '2026-11-10T00:00:00+00:00', '2026-11-10T01:00:00+00:00')) == 1
+    assert len(q.calls) == 3
+    assert all('END_TIME >= START_TIME' in sql and "EXECUTION_STATUS <> 'RUNNING'" in sql
+               and 'START_TIME >=' in sql and 'END_TIME <=' in sql for sql in q.calls)
+
+
+def test_bounded_history_empty_and_invalid():
+    class Queries:
+        def run(self, sql):
+            return [], []
+    assert u.history(Queries(), '2026-11-10T00:00:00+00:00', '2026-11-10T00:00:01+00:00') == []
+    with pytest.raises(ValueError, match='timezone-aware'):
+        u.history(Queries(), '2026-11-10', '2026-11-09')
+
+
+def test_bounded_history_fails_on_unsplittable_truncation():
+    class Queries:
+        def run(self, sql):
+            return [], [[None] * 9 + [10000, True]]
+    with pytest.raises(ValueError, match='Bounded history truncated'):
+        u.history(Queries(), '2026-11-10T00:00:00+00:00', '2026-11-10T00:00:00+00:00')
+
+
+def test_continuation_hash_gate(monkeypatch, tmp_path):
+    original = {'head': '2108f983f65993a9cee828b2a2bbb21ee1f9c87a', 'sha256': {'model': 'a'}}
+    monkeypatch.setattr(u, 'load', lambda path: {'implementation': original})
+    monkeypatch.setattr(u, 'binding', lambda: {**original, 'head': 'new'})
+    u.continuation(tmp_path)
+    assert (tmp_path / 'continuation_binding.json').exists()
+    monkeypatch.setattr(u, 'binding', lambda: {**original, 'sha256': {'model': 'changed'}})
+    with pytest.raises(ValueError, match='outside collector/test'):
+        u.continuation(tmp_path)
+
+
+def test_content_inventory_guard():
+    def row(name, count=1):
+        return {'TABLE_NAME': ['str', name], 'ROW_COUNT': ['int', str(count)]}
+    before = [row('ROLE_GRANT'), row('TEAM_MEMBER')]
+    u.inventory_guard(before, [row('ROLE_GRANT'), row('TEAM_MEMBER', 2)])
+    with pytest.raises(ValueError, match='outside TEAM_MEMBER'):
+        u.inventory_guard(before, [row('ROLE_GRANT', 2)])
+    with pytest.raises(ValueError, match='scratch relation remains'):
+        u.inventory_guard(before, before + [row('TEAM_MEMBER__DBT_TMP')])

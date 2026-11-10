@@ -49,6 +49,37 @@ def fresh(path):
     dump(path / 'implementation.json', implementation)
 
 
+def continuation(path):
+    executed = load(DEST / 'production/run1/execution.json')['implementation']
+    current = binding()
+    if executed['head'] != '2108f983f65993a9cee828b2a2bbb21ee1f9c87a':
+        raise ValueError('Unexpected build 1 commit')
+    allowed = {'warehouse/parity/evidence_unt8.py', 'warehouse/parity/tests/test_evidence_unt8.py'}
+    changes = [name for name in executed['sha256'].keys() | current['sha256'].keys()
+               if executed['sha256'].get(name) != current['sha256'].get(name)]
+    if set(changes) - allowed:
+        raise ValueError('Implementation changed outside collector/test: ' + str(changes))
+    dump(path / 'continuation_binding.json', {'executed': executed, 'current': current,
+                                             'collector_only_changes': changes})
+
+
+def content_inventory(q):
+    names, rows = q.run("SELECT TABLE_NAME,TABLE_TYPE,CREATED,ROW_COUNT FROM "
+                        "SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='PC_CONTENT' "
+                        "ORDER BY TABLE_NAME")
+    return [dict(zip(names, [cell(v) for v in row])) for row in rows]
+
+
+def inventory_guard(before, after):
+    exempt = {'TEAM_MEMBER', 'TEAM_MEMBER__DBT_TMP'}
+    def stable(rows):
+        return [r for r in rows if r['TABLE_NAME'][1] not in exempt]
+    if stable(before) != stable(after):
+        raise ValueError('PC_CONTENT object inventory changed outside TEAM_MEMBER')
+    if any(r['TABLE_NAME'][1] == 'TEAM_MEMBER__DBT_TMP' for r in after):
+        raise ValueError('dbt scratch relation remains after step')
+
+
 def landing(subject):
     if subject not in SUBJECTS:
         raise ValueError('Unknown subject')
@@ -276,6 +307,7 @@ def preflight():
     path = DEST / 'preflight'
     fresh(path)
     with queries(path, 'unt8-preflight') as q:
+        dump(path / 'content_before.json', content_inventory(q))
         controls(q, path)
         protected(q, path)
         state = target_state(q, TARGET)
@@ -353,13 +385,29 @@ def identity(q, relation):
             'table_id_limitation': 'ACCOUNT_USAGE may lag; no numeric identity claim when absent'}
 
 
-def history(q, start=None, end=None):
-    bounds = f"END_TIME_RANGE_START=>'{start}'::TIMESTAMP_LTZ,END_TIME_RANGE_END=>'{end}'::TIMESTAMP_LTZ," if start else ''
-    _, rows = q.run(f'SELECT {HISTORY} FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER('
-                   + bounds + "RESULT_LIMIT=>10000)) ORDER BY START_TIME")
-    if len(rows) >= 10000:
-        raise ValueError('History truncated')
-    return rows
+def history(q, start, end):
+    first, last = datetime.fromisoformat(start), datetime.fromisoformat(end)
+    if first.tzinfo is None or last.tzinfo is None or last < first:
+        raise ValueError('History requires an ordered timezone-aware interval')
+
+    def page(lo, hi, depth=0):
+        _, raw = q.run(f"SELECT {HISTORY}, COUNT(*) OVER () AS RAW_COUNT, "
+                      f"(START_TIME >= '{first.isoformat()}'::TIMESTAMP_LTZ AND "
+                      f"END_TIME <= '{last.isoformat()}'::TIMESTAMP_LTZ AND END_TIME >= START_TIME "
+                      "AND EXECUTION_STATUS <> 'RUNNING') AS IN_STEP "
+                      "FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
+                      f"END_TIME_RANGE_START=>'{lo.isoformat()}'::TIMESTAMP_LTZ,"
+                      f"END_TIME_RANGE_END=>'{hi.isoformat()}'::TIMESTAMP_LTZ,RESULT_LIMIT=>10000)) "
+                      "ORDER BY START_TIME")
+        if raw and int(raw[0][9]) >= 10000:
+            middle = lo + (hi - lo) / 2
+            if depth >= 30 or middle in (lo, hi):
+                raise ValueError('Bounded history truncated at minimum window')
+            return page(lo, middle, depth + 1) + page(middle, hi, depth + 1)
+        return [r[:9] for r in raw if r[10]]
+
+    rows = {r[0]: r for r in page(first, last)}
+    return sorted(rows.values(), key=lambda r: (r[4], r[0]))
 
 
 def intervening(rows, relation):
@@ -403,9 +451,7 @@ def write_scope(rows):
 def run(subject, number):
     path = DEST / subject / f'run{number}'
     fresh(path)
-    pre = load(DEST / 'preflight/implementation.json')
-    if binding() != pre:
-        raise ValueError('Implementation changed since preflight')
+    continuation(path)
     env = os.environ.copy()
     if subject != 'production':
         env['SFX_UNT8_TEAM_FIXTURE'] = '1'
@@ -413,6 +459,9 @@ def run(subject, number):
     command = [sys.executable, str(ROOT / 'warehouse/snowflake/run_dbt.py'), 'build',
                '--select', model(subject), '--step', step, '--mapping', MAPPING]
     with queries(path, step + '-readback') as q:
+        inventory = content_inventory(q)
+        dump(path / 'content_before.json', inventory)
+        inventory_guard(load(DEST / 'recovery/run1/content_now.json'), inventory)
         unchanged(q, path)
         input_template = load(DEST / 'oracle' / subject / 'input.json')
         equal(input_template, fetched(q, source(subject), input_template, source_loading=True), path / 'source_comparison.json')
@@ -438,32 +487,43 @@ def run(subject, number):
         dump(path / 'target.json', fetched(q, table(subject), template))
         dump(path / 'execution.json', dict(argv=command, start_utc=start, end_utc=end,
                                            returncode=result.returncode, implementation=binding()))
-        rows = history(q)
+        after_inventory = content_inventory(q)
+        dump(path / 'content_after.json', after_inventory)
+        inventory_guard(inventory, after_inventory)
+        rows = history(q, start, end)
         dump(path / 'history.json', [[cell(v) for v in r] for r in rows
                                     if MAPPING in (r[3] or '') and step in (r[3] or '')])
+        scope = write_scope(rows)
+        dump(path / 'write_scope.json', scope)
+        if not scope['passed']:
+            raise ValueError('Build history write scope failed')
         if subject == 'dup_key':
             if not result.returncode or 'Division by zero' not in result.stdout + result.stderr:
                 raise ValueError('Duplicate build did not fail closed')
             equal(template, load(path / 'target.json'), path / 'preservation.json')
         elif result.returncode:
             raise ValueError('dbt build failed')
-        env['DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY'] = env['SNOWFLAKE_PRIVATE_KEY']
-        env['DBT_SEND_ANONYMOUS_USAGE_STATS'] = 'false'
-        env['SFX_QUERY_TAG'] = json.dumps(dict(run='sfx-d1110', mapping=MAPPING, step=step + '-rejects'))
-        project = ROOT / 'warehouse/dbt'
-        compile_argv = [str(Path(sys.executable).with_name('dbt')), 'compile', '--project-dir', str(project),
-                        '--profiles-dir', str(project), '--select', 'unt8_team_member_rejects',
-                        '--vars', json.dumps({'unt8_subject': subject})]
-        compiled = subprocess.run(compile_argv, env=env, capture_output=True, text=True)
-        (path / 'reject_compile.log').write_text(compiled.stdout + compiled.stderr)
-        dump(path / 'reject_compile_execution.json', {'argv': compile_argv, 'returncode': compiled.returncode,
-                                                      'implementation': binding()})
-        if compiled.returncode:
-            raise ValueError('Reject compile failed')
-        sql = (project / 'target/compiled/sfx_warehouse/analyses/unt8_team_member_rejects.sql').read_text()
-        (path / 'rejects.sql').write_text(sql)
-        names, rows = q.run('SELECT * FROM (' + sql.strip().rstrip(';') + ')')
-        dump(path / 'classified.json', {'columns': names, 'rows': [[cell(v) for v in r] for r in rows]})
+        classify(q, path, subject, step, env)
+
+
+def classify(q, path, subject, step, env):
+    env['DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY'] = env['SNOWFLAKE_PRIVATE_KEY']
+    env['DBT_SEND_ANONYMOUS_USAGE_STATS'] = 'false'
+    env['SFX_QUERY_TAG'] = json.dumps(dict(run='sfx-d1110', act='scale', mapping=MAPPING, step=step + '-rejects'))
+    project = ROOT / 'warehouse/dbt'
+    compile_argv = [str(Path(sys.executable).with_name('dbt')), 'compile', '--project-dir', str(project),
+                    '--profiles-dir', str(project), '--select', 'unt8_team_member_rejects',
+                    '--vars', json.dumps({'unt8_subject': subject})]
+    compiled = subprocess.run(compile_argv, env=env, capture_output=True, text=True)
+    (path / 'reject_compile.log').write_text(compiled.stdout + compiled.stderr)
+    dump(path / 'reject_compile_execution.json', {'argv': compile_argv, 'returncode': compiled.returncode,
+                                                  'implementation': binding()})
+    if compiled.returncode:
+        raise ValueError('Reject compile failed')
+    sql = (project / 'target/compiled/sfx_warehouse/analyses/unt8_team_member_rejects.sql').read_text()
+    (path / 'rejects.sql').write_text(sql)
+    names, rows = q.run('SELECT * FROM (' + sql.strip().rstrip(';') + ')')
+    dump(path / 'classified.json', {'columns': names, 'rows': [[cell(v) for v in r] for r in rows]})
 
 
 def compare(subject):
@@ -484,7 +544,10 @@ def compare(subject):
         if subject != 'dup_key':
             result['comparisons'].append(equal(load(oracle_path / 'target.json'),
                                                one if n == 1 else two, path / f'parity{n}.json'))
-        classified = load(DEST / subject / f'run{n}/classified.json')
+        classified_path = DEST / subject / f'run{n}/classified.json'
+        if subject == 'production' and n == 1:
+            classified_path = DEST / 'recovery/run1/classified.json'
+        classified = load(classified_path)
         index = classified['columns'].index('CLASSIFICATION')
         actual = Counter(r[index][1] for r in classified['rows'])
         want = Counter(route(r)['classification'] for r in read_psv(landing(subject)))
@@ -530,7 +593,11 @@ def postflight():
         if state['exists']:
             template = load(DEST / 'preflight/before.json')
             equal(template, fetched(q, before, template), path / 'before_comparison.json')
-        rows = history(q)
+        inventory = content_inventory(q)
+        dump(path / 'content_after.json', inventory)
+        inventory_guard(load(DEST / 'recovery/run1/content_now.json'), inventory)
+        first = load(DEST / 'production/run1/execution.json')['start_utc']
+        rows = history(q, first, datetime.now(timezone.utc).isoformat())
         dump(path / 'tagged_history.json', [[cell(v) for v in r] for r in rows if MAPPING in (r[3] or '')])
         result = write_scope(rows)
         dump(path / 'write_scope.json', result)
@@ -538,9 +605,46 @@ def postflight():
             raise ValueError('Unparsed or out-of-scope successful writes; review retained history')
 
 
+def recover():
+    path = DEST / 'recovery/run1'
+    fresh(path)
+    continuation(path)
+    original = DEST / 'production/run1'
+    dump(path / 'original_attempt_index.json', {
+        'label': 'UNTOUCHED successful build 1 / failed unbounded collector at 2108f983f',
+        'files': {str(p.relative_to(DEST)): {'sha256': sha(p), 'size': p.stat().st_size}
+                  for p in original.rglob('*') if p.is_file()}})
+    execution = load(original / 'execution.json')
+    listings = [r for r in load(DEST / 'preflight/queries.json')
+                if 'SELECT TABLE_SCHEMA,TABLE_NAME' in r['sql']]
+    if not listings:
+        raise ValueError('Missing original PC_CONTENT listing')
+    listing = listings[0]
+    dump(path / 'scratch_preflight.json', {
+        'source': 'preflight/queries.json', 'query_id': listing['qid'],
+        'scratch_existed': any(r[0][1] == 'PC_CONTENT' and r[1][1] == 'TEAM_MEMBER__DBT_TMP'
+                               for r in listing['rows']),
+        'limitation': 'Original listing proves names/existence, not original CREATED/row counts; '
+                      'full metadata inventory begins at recovery; protected typed snapshots unchanged'})
+    with queries(path, 'unt8-run1-recovery') as q:
+        rows = history(q, execution['start_utc'], execution['end_utc'])
+        dump(path / 'history.json', [[cell(v) for v in r] for r in rows])
+        scope = write_scope(rows)
+        dump(path / 'write_scope.json', scope)
+        if not scope['passed']:
+            raise ValueError('Recovered build 1 write scope failed')
+        inventory = content_inventory(q)
+        dump(path / 'content_now.json', inventory)
+        inventory_guard(inventory, inventory)
+        unchanged(q, path)
+        template = load(original / 'target.json')
+        equal(template, fetched(q, TARGET, template), path / 'target_unchanged.json')
+        classify(q, path, 'production', 'unt8-run1-recovery', os.environ.copy())
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', choices=['oracle', 'preflight', 'fixture-load', 'run', 'compare', 'postflight'])
+    parser.add_argument('command', choices=['oracle', 'preflight', 'fixture-load', 'run', 'compare', 'postflight', 'recover'])
     parser.add_argument('--subject', choices=SUBJECTS)
     parser.add_argument('--run', type=int, choices=[1, 2])
     args = parser.parse_args()
@@ -559,6 +663,8 @@ def main():
         run(args.subject, args.run)
     elif args.command == 'compare':
         compare(args.subject)
+    elif args.command == 'recover':
+        recover()
     else:
         postflight()
 
