@@ -1,0 +1,42 @@
+version: 2
+models:
+  - name: doc_share_graph_reach
+    description: "sfx-d1110: replaces lake/documents/doc_share_graph_reach in SFX_D1110_AFTER.MART_SPARK.DOC_SHARE_GRAPH_REACH; minimum directed distance from user 1, capped at four edges."
+    columns:
+      - name: USER_ID
+        data_tests: [not_null, unique]
+      - name: DISTANCE
+        data_tests: [not_null]
+unit_tests:
+  - name: share_reach_handles_cycles_duplicates_shortcuts_and_four_hop_limit
+    model: doc_share_graph_reach
+    given:
+      - input: source('spark_documents', 'DOC_SHARE')
+        rows:
+          - {OWNER_USER_ID: 1, SHARED_WITH_USER_ID: 1}
+          - {OWNER_USER_ID: 1, SHARED_WITH_USER_ID: 2}
+          - {OWNER_USER_ID: 1, SHARED_WITH_USER_ID: 2}
+          - {OWNER_USER_ID: 2, SHARED_WITH_USER_ID: 3}
+          - {OWNER_USER_ID: 3, SHARED_WITH_USER_ID: 1}
+          - {OWNER_USER_ID: 1, SHARED_WITH_USER_ID: 3}
+          - {OWNER_USER_ID: 3, SHARED_WITH_USER_ID: 4}
+          - {OWNER_USER_ID: 4, SHARED_WITH_USER_ID: 5}
+          - {OWNER_USER_ID: 5, SHARED_WITH_USER_ID: 6}
+          - {OWNER_USER_ID: 6, SHARED_WITH_USER_ID: 7}
+          - {OWNER_USER_ID: 99, SHARED_WITH_USER_ID: 1}
+    expect:
+      rows:
+        - {USER_ID: 1, DISTANCE: 0}
+        - {USER_ID: 2, DISTANCE: 1}
+        - {USER_ID: 3, DISTANCE: 1}
+        - {USER_ID: 4, DISTANCE: 2}
+        - {USER_ID: 5, DISTANCE: 3}
+        - {USER_ID: 6, DISTANCE: 4}
+  - name: share_reach_keeps_seed_on_empty_input
+    model: doc_share_graph_reach
+    given:
+      - input: source('spark_documents', 'DOC_SHARE')
+        rows: []
+    expect:
+      rows:
+        - {USER_ID: 1, DISTANCE: 0}
