@@ -125,10 +125,12 @@ consumers:
     teradata_service_account: svc_partner_sftp
     cadence: "nightly 02:15"
     entrypoint: "bin/nightly_extract.sh [YYYY-MM-DD] [output.csv]"
-    tables: ["FIN_DW.ACCOUNT","FIN_DW.INVOICE","FIN_DW.PAYMENT"]
+    tables: ["SFX_BILLING.V_INVOICE_BASE","SFX_BILLING.INVOICE_HDR","SFX_BILLING.CUSTOMER_ACCOUNT","SFX_BILLING.PAYMENT"]
     teradata_constructs: [".LOGON",".SET SEPARATOR",".EXPORT","LOCKING ROW FOR ACCESS","SEL","ZEROIFNULL","FORMAT","1YYMMDD","CURRENT_DATE - 1"]
     unit_test: "cd consumers/partner-extract && bash tests/run.sh"
     contract_test: "cd consumers/partner-extract && bash contract/run.sh"
+    contract_replay_test: "cd consumers/partner-extract && WAREHOUSE_CONTRACT_TARGET=replay bash contract/run.sh"
+    contract_targets: ["teradata-emulator","replay","snowflake-semantics","snowflake"]
     workflow: .github/workflows/consumer-partner-extract.yml
     snowflake:
       database: SFX_D1110_AFTER
