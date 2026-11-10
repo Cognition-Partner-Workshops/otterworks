@@ -145,9 +145,25 @@ sources:
     - name: QUANTITY
     - name: UNIT_PRICE
     - name: AMOUNT
+      tests:
+      - not_null:
+          config:
+            where: "_SRC_FILE like 'pipeline/%'"
     - name: CURRENCY_CODE
+      tests:
+      - not_null:
+          config:
+            where: "_SRC_FILE like 'pipeline/%'"
     - name: CREATED_AT
+      tests:
+      - not_null:
+          config:
+            where: "_SRC_FILE like 'pipeline/%'"
     - name: IS_ACTIVE
+      tests:
+      - not_null:
+          config:
+            where: "_SRC_FILE like 'pipeline/%'"
     - name: USAGE_ID
     - name: SUBSCRIPTION_ID
     - name: USAGE_DT
