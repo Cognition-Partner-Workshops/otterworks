@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+import argparse
+import calendar
+import datetime as dt
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT.parent))
+
+from bteq import Runner
+from bteq.load import load_all
+from bteq.setup import setup
+from seed.generate import generate
+
+
+CORE = (
+    'users/01_load_users', 'users/02_load_teams', 'users/03_load_identity', 'users/04_load_events',
+    'billing/01_load_accounts', 'billing/02_load_subscriptions', 'billing/03_load_invoices',
+    'billing/04_load_payments', 'billing/05_load_usage',
+    'documents/01_load_folders', 'documents/02_current_versions', 'documents/03_load_access',
+    'documents/04_load_objects', 'documents/05_load_sessions',
+    'audit/01_load_events', 'audit/02_load_controls', 'audit/03_load_reviews',
+)
+REPORTS = (
+    'users/10_activity_daily', 'audit/10_summary_daily', 'billing/10_subscription_report',
+    'billing/11_currency_daily', 'documents/10_storage_monthly',
+    'billing/12_invoice_monthly', 'billing/13_period_close',
+)
+
+
+def variables(business_date, exports):
+    date = dt.datetime.strptime(business_date, '%Y%m%d').date()
+    first = date.replace(day=1)
+    previous_end = first - dt.timedelta(days=1)
+    previous_start = previous_end.replace(day=1)
+    next_month = first + dt.timedelta(days=calendar.monthrange(first.year, first.month)[1])
+    def encoded(value):
+        return str((value.year - 1900) * 10000 + value.month * 100 + value.day)
+    return {'BUSINESS_DATE': business_date, 'EXPORT_DIR': str(exports.resolve()),
+            'MONTH_START': first.strftime('%Y%m%d'), 'MONTH_END': next_month.strftime('%Y%m%d'),
+            'PERIOD_START_INT': encoded(previous_start), 'PERIOD_END_INT': encoded(previous_end)}
+
+
+def run_chain(args):
+    args.exports.mkdir(parents=True, exist_ok=True)
+    values = variables(args.business_date, args.exports)
+    environment = {**os.environ, **values}
+    environment.setdefault('TD_HOST', environment.get('TD_PG_HOST', 'localhost'))
+    environment.setdefault('TD_USER', environment.get('TD_PG_USER', 'postgres'))
+    environment.setdefault('TD_PASSWORD', environment.get('TD_PG_PASSWORD', ''))
+    results = []
+    started = time.perf_counter()
+
+    def stage(name, action):
+        start = time.perf_counter()
+        try:
+            code = action() or 0
+        except Exception as exc:
+            print(f'{name}: {exc}', flush=True)
+            code = 1
+        results.append((name, code, time.perf_counter() - start))
+        return code
+
+    def script(name):
+        return subprocess.run([sys.executable, '-m', 'bteq', 'run', str(ROOT / 'scripts' / (name + '.bteq'))],
+                              env={**environment, 'PYTHONPATH': str(ROOT)}).returncode
+
+    try:
+        with Runner() as runner:
+            if stage('setup', lambda: setup(runner)):
+                return 1
+            if not args.reuse_landing:
+                def feeds():
+                    counts = generate(args.rows, args.seed, args.landing, args.business_date)
+                    print(f'Generated {sum(counts.values())} rows', flush=True)
+                if stage('generate', feeds):
+                    return 1
+            def staging():
+                counts = load_all(runner, args.landing, args.business_date)
+                print(f'Loaded {sum(counts.values())} staging rows', flush=True)
+            if stage('staging', staging):
+                return 1
+        for name in CORE + REPORTS:
+            code = stage(name, lambda name=name: script(name))
+            if code:
+                return code
+        code = stage('jobs/reconcile', lambda: subprocess.run(
+            [sys.executable, str(ROOT / 'jobs' / 'reconcile'), '--area', 'documents',
+             '--table', 'STORAGE_USAGE_DAILY', '--business-date', args.business_date], env=environment).returncode)
+        if code:
+            return code
+        return stage('audit/11_reconciliation', lambda: script('audit/11_reconciliation'))
+    finally:
+        print('\nSCRIPT | EXIT | SECONDS')
+        for name, code, duration in results:
+            print(f'{name} | {code} | {duration:.3f}')
+        print(f'TOTAL | {0 if results and results[-1][1] == 0 else 1} | {time.perf_counter()-started:.3f}')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--rows', type=int, default=200000)
+    parser.add_argument('--seed', type=int, default=1110)
+    parser.add_argument('--business-date', default='20261109')
+    parser.add_argument('--landing', type=Path, default=ROOT.parent / 'landing')
+    parser.add_argument('--exports', type=Path, default=ROOT.parent / 'exports')
+    parser.add_argument('--reuse-landing', action='store_true')
+    return run_chain(parser.parse_args())
+
+
+if __name__ == '__main__':
+    sys.exit(main())

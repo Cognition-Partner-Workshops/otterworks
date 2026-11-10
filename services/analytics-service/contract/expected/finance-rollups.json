@@ -1,0 +1,5 @@
+{
+  "query": "finance-rollups",
+  "row_count": 2,
+  "sums": {"BILLED_REVENUE": "34400.50", "COLLECTED_CASH": "30800.25", "ACTIVE_ACCOUNTS": "26"}
+}

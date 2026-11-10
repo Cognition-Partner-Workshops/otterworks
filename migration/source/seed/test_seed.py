@@ -127,7 +127,8 @@ class ComplexityManifestTests(unittest.TestCase):
 
     def test_planted_keys_match_register(self) -> None:
         classes = {c["id"]: c for c in json.loads(self.MANIFEST.read_text())["classes"]}
-        self.assertEqual(sorted(classes), [f"MIG-0{i}" for i in range(1, 8)])
+        self.assertEqual(sorted(classes), ["DWX-01"] + [f"MIG-0{i}" for i in range(1, 8)])
+        classes = {cid: c for cid, c in classes.items() if cid.startswith("MIG-")}
         planted = tables.planted_docarch()
         keys: dict[str, list[str]] = {}
         for tag, row in planted:
@@ -141,6 +142,14 @@ class ComplexityManifestTests(unittest.TestCase):
             self.assertIn(c["expected_stage"], ("LOAD", "VALIDATE"), cid)
         self.assertEqual([cid for cid, c in classes.items() if c["headline"]], ["MIG-07"])
         self.assertEqual(classes["MIG-05"]["table"], "FILEAUD")
+
+    def test_contract_entry_schema(self) -> None:
+        classes = {c["id"]: c for c in json.loads(self.MANIFEST.read_text())["classes"]}
+        entry = classes["DWX-01"]
+        self.assertEqual(set(entry), set(classes["MIG-01"]))
+        self.assertEqual(entry["expected_stage"], "CONTRACT")
+        self.assertEqual(entry["expected_count"], 5)
+        self.assertFalse(entry["headline"])
 
 
 class GenerateTests(unittest.TestCase):

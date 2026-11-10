@@ -11,6 +11,50 @@ env:
   ECR_REGISTRY: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/workshop
 
 jobs:
+  sfx-teradata:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: teradata
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres -d teradata" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      TD_PG_HOST: localhost
+      TD_PG_PORT: '5432'
+      TD_PG_DB: teradata
+      TD_PG_USER: postgres
+      PYTHONPATH: warehouse/teradata
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        id: changes
+        with:
+          filters: |
+            warehouse:
+              - 'warehouse/**'
+              - 'Makefile'
+              - 'demos/app/complexity/sfx-teradata.json'
+              - '.github/workflows/ci.yml'
+      - if: steps.changes.outputs.warehouse == 'true'
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.12'
+      - if: steps.changes.outputs.warehouse == 'true'
+        run: python -m pip install -r warehouse/requirements.txt
+      - if: steps.changes.outputs.warehouse == 'true'
+        run: python -m pytest -q warehouse
+      - if: steps.changes.outputs.warehouse == 'true'
+        name: Warehouse smoke
+        run: |
+          python warehouse/seed/generate.py --rows 2000 --seed 1110 --business-date 20261109
+          python -m bteq.setup
+          python -m bteq.load --landing warehouse/landing --business-date 20261109
+          python warehouse/teradata/jobs/daily_chain --reuse-landing --business-date 20261109
+
   # The document-service chart renders generated copies of the incident alert
   # rules and dashboard; they must match observability/.
   incident-chart-sync:
@@ -248,12 +292,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install sbt
-        run: |
-          echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
-          curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo apt-key add -
-          sudo apt-get update
-          sudo apt-get install -y sbt
+      - uses: sbt/setup-sbt@c6bd01274abceb9dd5bd9f1a336c2a26c259de69 # v1
       - run: sbt compile
       - run: sbt test
 
@@ -560,3 +599,43 @@ jobs:
           --set namespaceToken=ci1-after --set expires=2026-01-01T00:00:00Z
           --set pv.volumeName=pv-ci
           --set initJob.image.repository=ci/ldm-job --set initJob.image.tag=ci
+
+  # Emulated PowerCenter estate: XML exports, pmcmd emulator and its PostgreSQL integration tests.
+  informatica-runner:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: teradata
+        ports: ['55499:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      TD_HOST: 127.0.0.1
+      TD_PORT: "55499"
+      TD_DB: teradata
+      TD_USER: postgres
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
+        id: changes
+        with:
+          filters: |
+            informatica:
+              - 'etl/informatica/**'
+              - 'demos/app/complexity/sfx-informatica.json'
+              - 'Makefile'
+      - if: steps.changes.outputs.informatica == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - if: steps.changes.outputs.informatica == 'true'
+        run: pip install -r requirements.txt
+        working-directory: etl/informatica
+      - if: steps.changes.outputs.informatica == 'true'
+        run: python -m pytest -q tests
+        working-directory: etl/informatica
+      - if: steps.changes.outputs.informatica == 'true'
+        run: python -c "import json; json.load(open('demos/app/complexity/sfx-informatica.json'))"

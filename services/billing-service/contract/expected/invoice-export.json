@@ -1,0 +1,6 @@
+{
+  "query": "invoice-export",
+  "row_count": 2,
+  "sums": {"AMOUNT_DUE": "7250.50", "TAX_AMT": "1150.50", "OPEN_BALANCE": "6050.50"},
+  "keys": ["INV-2026-004812", "INV-2026-004813"]
+}

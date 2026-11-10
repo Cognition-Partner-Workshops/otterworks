@@ -1,0 +1,8 @@
+{
+  "query": "invoice-export",
+  "columns": ["INVOICE_NO", "CUSTOMER_NAME", "ACCOUNT_NO", "INVOICE_DATE", "CURRENCY_CD", "AMOUNT_DUE", "TAX_AMT", "OPEN_BALANCE"],
+  "rows": [
+    ["INV-2026-004812", "Bramblewood Outfitters", "A000318274", "2026-01-05", "USD", "4800.00", "800.00", "3600.00"],
+    ["INV-2026-004813", "Northgate Ceramics", "A000529681", "2026-01-05", "USD", "2450.50", "350.50", "2450.50"]
+  ]
+}

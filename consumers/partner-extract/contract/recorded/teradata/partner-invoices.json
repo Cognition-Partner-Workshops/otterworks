@@ -1,0 +1,32 @@
+{
+  "query": "partner-invoices",
+  "columns": [
+    "INVOICE_NO",
+    "ACCOUNT_NO",
+    "INVOICE_DATE",
+    "AMOUNT_DUE",
+    "TAX_AMT",
+    "OPEN_BALANCE",
+    "CURRENCY"
+  ],
+  "rows": [
+    [
+      "INV-2026-004812",
+      "A000318274",
+      "2026-01-05",
+      "1299.95",
+      "99.95",
+      "499.95",
+      "USD"
+    ],
+    [
+      "INV-2026-004813",
+      "A000627195",
+      "2026-01-05",
+      "110.80",
+      "10.80",
+      "110.80",
+      "USD"
+    ]
+  ]
+}

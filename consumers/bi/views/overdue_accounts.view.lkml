@@ -1,0 +1,21 @@
+view: overdue_accounts {
+  derived_table: {
+    datagroup_trigger: finance_four_hours
+    sql:
+      WITH balances AS (
+        SEL i.ACCOUNT_ID, i.AMOUNT_DUE - ZEROIFNULL(p.PAID) AS OPEN_BALANCE
+        FROM FIN_DW.INVOICE i
+        LEFT JOIN (SEL INVOICE_ID, SUM(AMOUNT) AS PAID FROM FIN_DW.PAYMENT GROUP BY INVOICE_ID) p
+          ON p.INVOICE_ID = i.INVOICE_ID
+        WHERE i.INVOICE_DT >= 1200101 AND i.DUE_DT < CURRENT_DATE - 30
+      )
+      SEL TOP 100 a.ACCOUNT_NO, SUM(b.OPEN_BALANCE) AS OVERDUE_BALANCE
+      FROM balances b JOIN FIN_DW.ACCOUNT a ON a.ACCOUNT_ID = b.ACCOUNT_ID
+      WHERE b.OPEN_BALANCE > 0
+      GROUP BY a.ACCOUNT_NO
+      QUALIFY ROW_NUMBER() OVER (ORDER BY SUM(b.OPEN_BALANCE) DESC, a.ACCOUNT_NO) <= 100
+      ORDER BY OVERDUE_BALANCE DESC, a.ACCOUNT_NO ;;
+  }
+  dimension: account_no { primary_key: yes sql: ${TABLE}.ACCOUNT_NO ;; }
+  measure: overdue_balance { type: sum sql: ZEROIFNULL(${TABLE}.OVERDUE_BALANCE) ;; }
+}

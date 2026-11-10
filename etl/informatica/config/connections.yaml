@@ -1,0 +1,15 @@
+# Relational connection objects of the Integration Service (Workflow Manager > Connections > Relational).
+# Values are resolved from the environment at run time; nothing secret is stored here.
+connections:
+  TD_SFX_EDW:
+    type: Teradata
+    subtype: ODBC
+    host: ${TD_HOST}
+    port: ${TD_PORT}
+    database: ${TD_DB}
+    user: ${TD_USER}
+    password: ${TD_PASSWORD}
+    default_database: SFX_BILLING
+    code_page: UTF-8
+    labels:
+      sfx.run_token: sfx-d1110

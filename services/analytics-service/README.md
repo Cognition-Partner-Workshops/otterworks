@@ -120,3 +120,57 @@ sbt assembly       # fat jar (used by the Docker image / deploy)
 
 The reconciliation suite uses Testcontainers and requires Docker; when Docker is
 unavailable it is cancelled (not failed), so Docker-less runners stay green.
+
+## Finance warehouse consumer
+
+This consumer is operated as a separate repository owned by
+**@otterworks/analytics**, using TDPROD / FIN_DW account `svc_analytics_dash`.
+The dashboard requests trailing twelve calendar months (including the current
+month) on demand and caches successful results for 15 minutes per filter pair.
+
+`GET /api/v1/analytics/finance/rollups?region=&plan=` returns monthly billed
+revenue, collected cash and active-account counts by region and plan.
+Omitted filters use the configured dashboard defaults. Invalid empty/oversized
+filters return 400; warehouse failures return a sanitized 503.
+Set `FINANCE_WAREHOUSE_ENABLED=false` or `finance.warehouse.enabled=false`
+to disable the route. It defaults on, without connecting at startup.
+
+The DAL reads FIN_DW.CUSTOMER (CUSTOMER_ID, REGION_CODE), ACCOUNT
+(ACCOUNT_ID, CUSTOMER_ID, PLAN_NAME, STATUS_CD, OPENED_DT), INVOICE
+(ACCOUNT_ID, INVOICE_DT, AMOUNT_DUE, TAX_AMT) and PAYMENT
+(ACCOUNT_ID, PAYMENT_DT, AMOUNT). Billed revenue excludes tax; cash is grouped by
+payment month independently of invoices. Active accounts use current status A
+and an opened date before the month's end; historical status changes are not
+available in this model. Months with matching accounts but no activity return
+zero amounts. No FX conversion is performed.
+
+Connection defaults are fake and live alongside the DAL in
+`src/main/resources/com/otterworks/analytics/finance/teradata.conf`.
+The runtime driver is `com.teradata.jdbc.TeraDriver`.
+
+```sh
+sbt compile test
+sbt "contract:test"
+```
+
+The separate contract configuration is excluded from `test`. Its default
+`WAREHOUSE_CONTRACT_TARGET=teradata-emulator` replays the synthetic recorded
+result in `contract/recorded/teradata/finance-rollups.json` and checks non-zero
+row count and aggregates against `contract/expected/finance-rollups.json`.
+Setting TD_EMULATOR_URL selects an explicit stub raising
+"emulator endpoint not configured" until the endpoint protocol is available.
+The adapter receives the DAL's SQL constant and dashboard filters.
+
+For `WAREHOUSE_CONTRACT_TARGET=snowflake`, the placeholder reads
+SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE and
+SNOWFLAKE_PRIVATE_KEY. Missing values cancel the spec; a configured adapter
+currently raises an explicit unsupported-operation error pending implementation.
+Its target is SFX_D1110_AFTER.COMPAT, with session QUERY_TAG
+`{"run":"sfx-d1110","act":"consumers","consumer":"analytics-service"}`.
+
+Without local sbt, run each command through Docker (Java 17), for example:
+```sh
+docker run --rm -v "$PWD":/w -v "$HOME/.ivy2":/root/.ivy2 \
+  -v "$HOME/.sbt":/root/.sbt -v "$HOME/.cache/coursier":/root/.cache/coursier \
+  -w /w sbtscala/scala-sbt:eclipse-temurin-17.0.21_9_1.13.1_3.3.9 sbt compile test
+```

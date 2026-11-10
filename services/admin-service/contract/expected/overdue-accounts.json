@@ -1,0 +1,6 @@
+{
+  "query": "overdue-accounts",
+  "row_count": 2,
+  "sums": {"OVERDUE_BALANCE": "18500.50"},
+  "keys": ["A000318274", "A000529681"]
+}
