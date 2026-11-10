@@ -2,4 +2,6 @@
 set -eu
 root=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
 export PYTHONPATH="$root/teradata${PYTHONPATH:+:$PYTHONPATH}"
-exec "$root/.venv/bin/python" -m bteq "$@"
+python="$root/.venv/bin/python"
+if [ ! -x "$python" ]; then python=python3; fi
+exec "$python" -m bteq "$@"

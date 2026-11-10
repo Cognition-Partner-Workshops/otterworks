@@ -4,6 +4,8 @@ from pathlib import Path
 
 from psycopg import sql
 
+from dbql.load import load_history
+
 from .parser import commands, split
 from .runner import Runner
 
@@ -28,7 +30,7 @@ def extend_table(runner, statement, name):
 def setup(runner, root=DDL_ROOT):
     paths = sorted(root.glob('*/00_*.sql')) + sorted(root.glob('*/10_*.sql')) + sorted(root.glob('*/20_*.sql'))
     paths += sorted((root.parent / 'macros').glob('*.sql'))
-    paths += sorted((root.parent / 'procedures').glob('*.spl'))
+    paths += sorted((root.parent / 'procedures').glob('*.sql'))
     for path in paths:
         for statement in commands(path.read_text()):
             database = re.match(r'CREATE DATABASE\s+(\w+)', statement, re.I)
@@ -43,7 +45,6 @@ def setup(runner, root=DDL_ROOT):
             if runner.errorcode:
                 raise RuntimeError(f'{path}: Teradata error {runner.errorcode}')
     if root == DDL_ROOT:
-        from dbql.load import load_history
         load_history(runner)
 
 

@@ -2,6 +2,29 @@
 
 Requires Python 3.10 or later and Docker Compose v2.
 
+From the repository root:
+
+```sh
+make sfx-teradata-up NS=sfx-d1110-before # default 200000 rows per fact table
+make sfx-teradata-run NS=sfx-d1110-before
+make sfx-teradata-test NS=sfx-d1110-before
+make sfx-teradata-down NS=sfx-d1110-before
+```
+
+Use `ROWS_PER_TABLE=2000` on `-up` for a smaller dataset. `BUSINESS_DATE=20261109`
+is the default; use the same date for up and subsequent runs. Up bootstraps
+`warehouse/.venv`, pulls PostgreSQL 16 from `mirror.gcr.io` and retags it locally,
+waits for Compose readiness, creates DDL/routines/views/DBQL, generates feeds,
+loads staging, and runs the chain. Run reuses existing landing files; down removes
+the database volume but retains ignored landing files and exports. NS is required
+for every target. `SFX_TD_PYTHON=/path/to/python3` selects the bootstrap interpreter.
+`TD_PG_PORT` can override namespace port derivation. CI uses the Python entry
+points below directly against its PostgreSQL service, without nested Compose.
+
+`make sfx-teradata-snowconvert NS=sfx-d1110-before [SCAI=/path/to/scai]` runs
+SnowConvert separately; it is never part of up/run and does not deploy output.
+See [Teradata tooling](teradata/README.md) for source layout and conversion details.
+
 ```sh
 python3 -m venv warehouse/.venv
 warehouse/.venv/bin/pip install -r warehouse/requirements.txt

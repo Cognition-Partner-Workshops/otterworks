@@ -121,5 +121,6 @@ incident/reports/
 !infrastructure/helm/tenant-values/**/eventing.env
 
 # legacy-portal replay evidence written by replay.py without --out
+warehouse/teradata/.snowconvert/
 services/legacy-portal/parity/out/
 services/legacy-portal-lambda/*/target/

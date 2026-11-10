@@ -2,6 +2,46 @@
 
 SHELL := /bin/bash
 
+.PHONY: sfx-teradata-up sfx-teradata-run sfx-teradata-test sfx-teradata-down sfx-teradata-snowconvert sfx-teradata-validate
+
+ROWS_PER_TABLE ?= 200000
+BUSINESS_DATE ?= 20261109
+SFX_TD_PYTHON ?= python3
+SCAI ?= scai
+TD_PG_PORT ?= $(shell NS="$(NS)" $(SFX_TD_PYTHON) -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')
+SFX_TD_ENV = NS="$(NS)" TD_PG_PORT="$(TD_PG_PORT)" PYTHONPATH="$(abspath warehouse/teradata)"
+SFX_TD_PY = warehouse/.venv/bin/python
+
+sfx-teradata-validate:
+	@test -n "$(NS)" || (echo "NS is required, e.g. NS=sfx-d1110-before" >&2; exit 2)
+	@[[ "$(NS)" =~ ^[a-z0-9][a-z0-9-]*$$ ]] || (echo "NS must contain lowercase letters, digits or hyphens" >&2; exit 2)
+
+warehouse/.venv/.requirements: warehouse/requirements.txt
+	$(SFX_TD_PYTHON) -m venv warehouse/.venv
+	$(SFX_TD_PY) -m pip install -r warehouse/requirements.txt
+	@touch $@
+
+sfx-teradata-up: sfx-teradata-validate warehouse/.venv/.requirements ## Start and load the Teradata warehouse (NS required; ROWS_PER_TABLE=200000)
+	docker pull mirror.gcr.io/library/postgres:16
+	docker tag mirror.gcr.io/library/postgres:16 postgres:16
+	$(SFX_TD_ENV) warehouse/teradata/bin/compose up -d --wait --pull never
+	$(SFX_TD_ENV) $(SFX_TD_PY) -m bteq.setup
+	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/seed/generate.py --rows "$(ROWS_PER_TABLE)" --seed 1110 --business-date "$(BUSINESS_DATE)"
+	$(SFX_TD_ENV) $(SFX_TD_PY) -m bteq.load --landing warehouse/landing --business-date "$(BUSINESS_DATE)"
+	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/teradata/jobs/daily_chain --reuse-landing --business-date "$(BUSINESS_DATE)"
+
+sfx-teradata-run: sfx-teradata-validate warehouse/.venv/.requirements ## Rerun the warehouse chain using existing landing files (NS required)
+	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/teradata/jobs/daily_chain --reuse-landing --business-date "$(BUSINESS_DATE)"
+
+sfx-teradata-test: sfx-teradata-validate warehouse/.venv/.requirements ## Test the warehouse against its PostgreSQL instance (NS required)
+	$(SFX_TD_ENV) $(SFX_TD_PY) -m pytest -q warehouse
+
+sfx-teradata-down: sfx-teradata-validate ## Stop the warehouse and remove its volume (NS required)
+	$(SFX_TD_ENV) warehouse/teradata/bin/compose down -v
+
+sfx-teradata-snowconvert: sfx-teradata-validate warehouse/.venv/.requirements ## Run offline SnowConvert into ignored output (NS required; SCAI executable optional)
+	$(SFX_TD_PY) warehouse/teradata/jobs/snowconvert.py --scai "$(SCAI)" --namespace "$(NS)"
+
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 

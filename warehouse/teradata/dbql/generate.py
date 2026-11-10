@@ -81,7 +81,7 @@ REPORTS = {
 def inventory(root=ROOT):
     result = {}
     paths = sorted((root / 'ddl').glob('*/*.sql'))
-    paths += sorted((root / 'macros').glob('*.sql')) + sorted((root / 'procedures').glob('*.spl'))
+    paths += sorted((root / 'macros').glob('*.sql')) + sorted((root / 'procedures').glob('*.sql'))
     paths.append(root / 'dbql' / 'schema.sql')
     for path in paths:
         for statement in commands(path.read_text()):
