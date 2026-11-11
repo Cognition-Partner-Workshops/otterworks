@@ -60,6 +60,42 @@ class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTes
     Await.result(repo.rollups("Pending", "PRO"), 3.seconds) shouldBe empty
   }
 
+  it should "retain only the most recent Snowflake query IDs" in {
+    var issued = 0
+    val snowflakeResult = proxy(classOf[net.snowflake.client.jdbc.SnowflakeResultSet]) { (method, _) =>
+      method match
+        case "getQueryID" => s"q-$issued"
+        case _ => throw new UnsupportedOperationException(method)
+    }
+    val statement = proxy(classOf[PreparedStatement]) { (method, _) =>
+      method match
+        case "setString" | "close" => null
+        case "executeQuery" =>
+          issued += 1
+          proxy(classOf[ResultSet]) { (method, _) =>
+            method match
+              case "isWrapperFor" => Boolean.box(true)
+              case "unwrap" => snowflakeResult
+              case "next" => Boolean.box(false)
+              case "close" => null
+              case _ => throw new UnsupportedOperationException(method)
+          }
+        case _ => throw new UnsupportedOperationException(method)
+    }
+    val connection = proxy(classOf[Connection]) { (method, _) =>
+      method match
+        case "prepareStatement" => statement
+        case "close" => null
+        case _ => throw new UnsupportedOperationException(method)
+    }
+    val repo = new SnowflakeFinanceRollupRepository(() => connection)
+    Await.result(repo.rollups(settings.statuses.head, settings.featuredPlan), 3.seconds)
+    repo.queryIds shouldBe List("q-1")
+    (2 to 1000).foreach(_ => Await.result(repo.rollups(settings.statuses.head, settings.featuredPlan), 3.seconds))
+    repo.queryIds.size shouldBe 32
+    repo.queryIds shouldBe (969 to 1000).map(n => s"q-$n").toList
+  }
+
   it should "return connection failures through the future" in {
     val repo = new SnowflakeFinanceRollupRepository(() => throw new SQLException("unavailable"))
     intercept[SQLException](Await.result(repo.rollups(settings.statuses.head, settings.featuredPlan), 3.seconds))
