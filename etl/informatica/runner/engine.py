@@ -93,6 +93,7 @@ class TargetStats:
         self.ins_rej = self.upd_rej = self.del_rej = 0
         self.rejected = 0
         self.rows_before = self.rows_after = 0
+        self.cleared = False
 
     @property
     def applied(self):
@@ -807,11 +808,13 @@ class MappingRun:
             for stmt in [x for x in pre_sql.split(";") if x.strip()]:
                 cur.execute(rewrite_sql(stmt, conn))
                 self.log.info("WRT_8251", f"Pre SQL issued for target [{inst_name}]: [{stmt.strip()}] affected [{cur.rowcount}] rows")
+                stats.cleared = True
         cur.execute(f"SELECT count(*) FROM {qualified(schema, table)}")
         stats.rows_before = cur.fetchone()[0]
         if attrs.get("Truncate target table option", "NO") == "YES":
             cur.execute(f"DELETE FROM {qualified(schema, table)}")
             self.log.info("WRT_8124", f"Target Table {table} :Truncated using DELETE FROM")
+            stats.cleared = True
         phys = [cols.get(f.name.upper(), f.name) for f in fields]
         ins_sql = f"INSERT INTO {qualified(schema, table)} ({', '.join(qi(c) for c in phys)}) VALUES ({', '.join(['%s'] * len(phys))})"
         nonkey = [f for f in fields if f.name.upper() not in keys]

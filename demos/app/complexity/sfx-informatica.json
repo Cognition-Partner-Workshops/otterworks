@@ -2,7 +2,7 @@
   "schema_version": 1,
   "area": "informatica",
   "run_token": "sfx-d1110",
-  "fixture_note": "planted_keys refer to the local fixture under etl/informatica/tests/fixture/landing (business date 20261109); the integration builder maps them onto the seed generator output.",
+  "fixture_note": "planted_keys refer to the local fixture under etl/informatica/tests/fixture/landing (business date 20261109); source and target columns match warehouse/seed/columns.py, so the same mappings also run on the seed generator output (make sfx-informatica-run INFA_DB=teradata).",
   "instances": [
     {
       "class_id": "SFX-06",

@@ -22,7 +22,7 @@ Folders: `SFX_BILLING` (billing and general ledger), `SFX_CONTENT` (users and do
 
 ```sh
 make sfx-informatica-up   NS=sfx-d1110-before   # venv + warehouse database (fixture schema)
-make sfx-informatica-run  NS=sfx-d1110-before   # runs the three daily workflows
+make sfx-informatica-run  NS=sfx-d1110-before   # runs the three daily workflows (MAPPINGS=20, i.e. all)
 make sfx-informatica-test NS=sfx-d1110-before   # unit + integration tests
 make sfx-informatica-down NS=sfx-d1110-before
 ```
@@ -30,6 +30,14 @@ make sfx-informatica-down NS=sfx-d1110-before
 - `INFA_DB=teradata` runs against the Teradata emulation's compose service (`make sfx-teradata-up`) instead of the
   local fixture database. The fixture database listens on `127.0.0.1:55500 + crc32(NS) % 1000`; the Teradata service on
   `54500 + crc32(NS) % 1000`.
+- `MAPPINGS` selects what `sfx-informatica-run` executes: `all` or a count `N` (the first N mappings in
+  `listobjects` order; 20 or more means all), or comma-separated mapping names or globs, e.g.
+  `MAPPINGS=m_SFX_GL_JOURNAL_LINE` or `MAPPINGS='m_SFX_*INVOICE*,m_SFX_PAYMENT'`. Sessions of unselected mappings are
+  logged as skipped and their links still fire; a workflow with no selected mapping is not started, and one whose selected
+  mappings are all on disabled sessions is not started and exits with an error. `INFA_WORKFLOWS`
+  narrows the workflow list (`FOLDER:workflow ...`). The runner reads the same selection from `-mappings` or `$MAPPINGS`.
+- Against the seeded warehouse: `make sfx-teradata-up NS=...` then
+  `make sfx-informatica-run NS=... INFA_DB=teradata` (source and target columns match `warehouse/seed/columns.py`).
 - `LANDING_DIR` overrides the landing zone. It defaults to `warehouse/landing` when that has been generated, else to
   `tests/fixture/landing`. Files are read from `$PMSourceFileDir/<area>/<TABLE>/$$LOAD_DATE.psv`.
 - Session logs, workflow logs, reject files, sequence state and the appended `REP_SESS_LOG.psv` are written under

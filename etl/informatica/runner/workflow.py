@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import fnmatch
 import json
 import os
 import re
@@ -38,11 +39,49 @@ def process_variables(root=None):
     return pv
 
 
+def listed_sessions(repo, folder, flow, prefix="", enabled=True):
+    """(instance path, session, enabled) in task order with worklets expanded: the order listobjects prints."""
+    for t in flow.tasks.values():
+        on = enabled and t.enabled
+        if t.tasktype == "Session":
+            yield prefix + t.name, repo.sessions[(folder, t.taskname)], on
+        elif t.tasktype == "Worklet":
+            yield from listed_sessions(repo, folder, repo.worklets[(folder, t.taskname)], f"{prefix}{t.name}.", on)
+
+
+def workflow_mappings(repo, folder, flow, enabled_only=False):
+    """Mapping names a workflow or worklet runs, in listobjects order; disabled tasks only when enabled_only is false."""
+    return [s.mapping for _, s, on in listed_sessions(repo, folder, flow) if on or not enabled_only]
+
+
+def select_mappings(repo, spec):
+    """MAPPINGS selection: empty/'all', a count N (first N mappings in listobjects order) or comma-separated names/globs."""
+    spec = (spec or "").strip()
+    if not spec or spec.lower() == "all":
+        return None
+    ordered = []
+    for (folder, _), wf in sorted(repo.workflows.items()):
+        for m in workflow_mappings(repo, folder, wf):
+            if m not in ordered:
+                ordered.append(m)
+    if spec.isdigit():
+        n = int(spec)
+        return None if n >= len(ordered) else set(ordered[:n])
+    picked = set()
+    for pat in [p.strip() for p in spec.split(",") if p.strip()]:
+        hits = [m for m in ordered if fnmatch.fnmatchcase(m, pat) or fnmatch.fnmatchcase(m, "m_" + pat)]
+        if not hits:
+            raise ValueError(f"MAPPINGS: no mapping matches [{pat}]")
+        picked.update(hits)
+    return picked
+
+
 def target_summary(targets):
     """Per physical table: (line, appended) where appended means rows were added on top of prior data."""
     by_table: dict = {}
     for tg in targets:
-        agg = by_table.setdefault(tg["table"], {"before": tg["before"], "after": 0, "inserted": 0, "updated": 0, "rejected": 0, "instances": []})
+        agg = by_table.setdefault(tg["table"], {"before": tg["before"], "after": 0, "inserted": 0, "updated": 0, "rejected": 0, "instances": [], "cleared": False})
+        agg["cleared"] = agg["cleared"] or tg.get("cleared", False)
         agg["after"] = tg["after"]
         for k in ("inserted", "updated", "rejected"):
             agg[k] += tg[k]
@@ -51,7 +90,7 @@ def target_summary(targets):
     for table, a in by_table.items():
         line = (f"  target [{table}] ({', '.join(a['instances'])}): rows before [{a['before']}] after [{a['after']}]"
                 f" (inserted {a['inserted']}, updated {a['updated']}, rejected {a['rejected']})")
-        out.append((line, a["before"] > 0 and a["updated"] == 0 and a["inserted"] >= a["before"]
+        out.append((line, not a["cleared"] and a["before"] > 0 and a["updated"] == 0 and a["inserted"] >= a["before"]
                     and a["after"] >= a["before"] + a["inserted"]))
     return out
 
@@ -59,8 +98,9 @@ def target_summary(targets):
 class Integration:
     """A single-node Integration Service bound to one exported repository."""
 
-    def __init__(self, repo, param_files=(), connections_file=None, pmrootdir=None, echo=None):
+    def __init__(self, repo, param_files=(), connections_file=None, pmrootdir=None, echo=None, mappings=None):
         self.repo = repo
+        self.mappings = mappings
         self.param_files = list(param_files)
         self.connections_spec = load_connections(connections_file or os.path.join(ESTATE, "config", "connections.yaml"))
         self.pvars = process_variables(pmrootdir)
@@ -151,7 +191,7 @@ class Integration:
         append_rep_sess_log(os.path.join(self.pvars["$PMRootDir"], "REP_SESS_LOG.psv"), record)
         record["elapsed"] = round(time.monotonic() - t0, 2)
         record["targets"] = [
-            {"instance": t.instance, "table": t.table, "before": t.rows_before, "after": t.rows_after,
+            {"instance": t.instance, "table": t.table, "before": t.rows_before, "after": t.rows_after, "cleared": t.cleared,
              "inserted": t.inserted, "updated": t.updated, "rejected": t.failed}
             for t in (stats.targets.values() if stats else [])
         ]
@@ -202,7 +242,12 @@ class Integration:
                     state[name] = {"Status": "DISABLED"}
                     wlog.info("LM_36317", f"{task.tasktype} task instance [{scope}{name}]: Disabled; skipped.")
                     continue
-                if task.tasktype == "Session":
+                if task.tasktype == "Session" and self.mappings is not None \
+                        and self.repo.sessions[(folder, task.taskname)].mapping not in self.mappings:
+                    state[name] = {"Status": "SUCCEEDED", "PrevTaskStatus": "SUCCEEDED", "SrcSuccessRows": 0,
+                                   "TgtSuccessRows": 0, "TgtFailedRows": 0, "ErrorCode": 0}
+                    wlog.info("LM_36317", f"Session task instance [{scope}{name}]: mapping not selected by MAPPINGS; skipped.")
+                elif task.tasktype == "Session":
                     sessions.append(task)
                 elif task.tasktype == "Worklet":
                     wl = self.repo.worklets[(folder, task.taskname)]

@@ -73,6 +73,21 @@ def test_lookup_multiple_match_policy(warehouse):
     assert any(first[k] != last[k] for k in first)
 
 
+
+def test_rerun_keeps_postings_of_unpostable_invoices(warehouse):
+    run_all()
+    # 7000248 is staged without a total, so FIL_POSTABLE drops it; a posting made earlier must survive the rerun
+    warehouse.execute("insert into sfx_billing.gl_journal_line (journal_line_id, invoice_id, gl_account_id, posting_dt,"
+                      " currency_cd, debit_amount, credit_amount, description)"
+                      " select 7999999999999, 7000248, gl_account_id, date '2026-10-31', 'GBP', 120.00, 0, 'AR INV-2026-0012248'"
+                      " from sfx_billing.gl_account where account_number = '1200'")
+    warehouse.commit()
+    before = q(warehouse, "select count(*) from sfx_billing.gl_journal_line")[0][0]
+    svc = Integration(Repository(os.path.join(ESTATE, "repository")), PARAMS)
+    assert svc.run_workflow("SFX_BILLING", "wf_SFX_BILLING_DAILY")[0] == "SUCCEEDED"
+    assert q(warehouse, "select count(*) from sfx_billing.gl_journal_line where invoice_id = 7000248")[0][0] == 1
+    assert q(warehouse, "select count(*) from sfx_billing.gl_journal_line")[0][0] == before
+
 def test_pmcmd_cli_writes_logs(warehouse):
     env = dict(os.environ)
     res = subprocess.run([sys.executable, "-m", "runner", "startworkflow", "-f", "SFX_AUDIT", "wf_SFX_AUDIT_DAILY"],
@@ -87,6 +102,18 @@ def test_pmcmd_cli_writes_logs(warehouse):
                          capture_output=True, text=True)
     assert bad.returncode != 0
 
+
+
+def test_mappings_selection_cli(warehouse):
+    env = dict(os.environ, MAPPINGS="m_SFX_STG_INVOICE_HDR,m_SFX_GL_JOURNAL_LINE")
+    res = subprocess.run([sys.executable, "-m", "runner", "startworkflow", "-f", "SFX_BILLING", "wf_SFX_BILLING_DAILY"],
+                         cwd=ESTATE, env=env, capture_output=True, text=True)
+    assert res.returncode == 0, res.stdout + res.stderr
+    assert "(2/2 sessions succeeded)" in res.stdout
+    assert "[s_m_SFX_PAYMENT]: mapping not selected by MAPPINGS; skipped." in res.stdout
+    res = subprocess.run([sys.executable, "-m", "runner", "startworkflow", "-f", "SFX_AUDIT", "wf_SFX_AUDIT_DAILY"],
+                         cwd=ESTATE, env=env, capture_output=True, text=True)
+    assert res.returncode == 0 and "not started" in res.stdout, res.stdout + res.stderr
 
 @pytest.mark.parametrize("folder,wf", ORDER)
 def test_listobjects(folder, wf):

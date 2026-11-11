@@ -7,6 +7,8 @@ import yaml
 
 from runner.params import resolve
 from runner.repo import Repository
+from runner.__main__ import main
+from runner.workflow import select_mappings
 
 ESTATE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = Repository(os.path.join(ESTATE, "repository"))
@@ -95,3 +97,43 @@ def test_workflow_exports_are_self_contained():
         assert len(folder.findall("WORKFLOW")) == 1, path
         mappings = {m.get("NAME") for m in folder.findall("MAPPING")}
         assert {s.get("MAPPINGNAME") for s in folder.findall("SESSION")} == mappings, path
+
+
+def test_mapping_selection():
+    assert select_mappings(REPO, "") is None
+    assert select_mappings(REPO, "all") is None
+    assert select_mappings(REPO, "20") is None
+    assert len(select_mappings(REPO, "3")) == 3
+    assert select_mappings(REPO, "m_SFX_GL_JOURNAL_LINE") == {"m_SFX_GL_JOURNAL_LINE"}
+    assert select_mappings(REPO, "SFX_PAYMENT, m_SFX_*INVOICE*") == {
+        "m_SFX_PAYMENT", "m_SFX_STG_INVOICE_HDR", "m_SFX_INVOICE_HDR", "m_SFX_INVOICE_LINE"}
+    try:
+        select_mappings(REPO, "m_NOPE")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("unknown mapping accepted")
+
+
+def test_mapping_count_follows_listobjects_order(capsys):
+    assert main(["listobjects"]) == 0
+    out = capsys.readouterr().out
+    assert "session wklt_SFX_BILLING_STAGE.s_m_SFX_CUSTOMER_ACCOUNT -> mapping m_SFX_CUSTOMER_ACCOUNT" in out
+    listed = []
+    for line in out.splitlines():
+        if " -> mapping " in line:
+            m = line.split(" -> mapping ")[1].split()[0]
+            if m not in listed:
+                listed.append(m)
+    assert len(listed) == 20
+    for n in range(1, len(listed)):
+        assert select_mappings(REPO, str(n)) == set(listed[:n]), n
+
+
+def test_disabled_only_selection_is_not_started(tmp_path, capsys):
+    rc = main(["--pmrootdir", str(tmp_path), "startworkflow", "-f", "SFX_CONTENT", "-mappings", "m_SFX_TEAM_MEMBER",
+               "wf_SFX_CONTENT_DAILY"])
+    err = capsys.readouterr().err
+    assert rc == 1
+    assert "selects only disabled sessions (m_SFX_TEAM_MEMBER); not started." in err
+    assert not os.path.exists(tmp_path / "WorkflowLogs" / "wf_SFX_CONTENT_DAILY.log")
