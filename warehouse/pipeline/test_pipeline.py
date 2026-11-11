@@ -91,9 +91,11 @@ def test_load_replaces_only_its_source_and_builds(monkeypatch, results):
     monkeypatch.setattr(load_daily, "build", build)
     load_daily.load(load_daily.GOOD_DATE)
     calls = cursor.execute.call_args_list
-    assert calls[2].args == ("DELETE FROM RAW_BILLING.USAGE_DAILY WHERE _SRC_FILE=%s",
+    assert calls[2].args == ("BEGIN",)
+    assert calls[3].args == ("DELETE FROM RAW_BILLING.USAGE_DAILY WHERE _SRC_FILE=%s",
                             ("pipeline/2026-11-09.csv",))
-    assert "ON_ERROR=CONTINUE FORCE=TRUE" in calls[3].args[0]
+    assert "ON_ERROR=ABORT_STATEMENT FORCE=TRUE" in calls[4].args[0]
+    assert calls[5].args == ("COMMIT",)
     build.assert_called_once()
 
 
@@ -119,12 +121,58 @@ def test_reset_removes_only_break_file(tmp_path, monkeypatch):
 def test_copy_failure_does_not_claim_success_or_build(monkeypatch):
     connection = MagicMock()
     cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
-    cursor.execute.side_effect = [None, None, None, RuntimeError("offline copy failure")]
+    cursor.execute.side_effect = [None, None, None, None, RuntimeError("offline copy failure"), None]
     monkeypatch.setattr(load_daily, "connect", Mock(return_value=connection))
     build = Mock()
     monkeypatch.setattr(load_daily, "build", build)
     with pytest.raises(RuntimeError, match="offline copy failure"):
         load_daily.load(load_daily.GOOD_DATE)
+    build.assert_not_called()
+    assert cursor.execute.call_args.args == ("ROLLBACK",)
+
+
+@pytest.mark.parametrize("header", ["", "USAGE_DAILY_ID,CUSTOMER_ID\n"])
+def test_missing_headers_fail_before_connect(tmp_path, monkeypatch, header):
+    landing = tmp_path / "landing"
+    landing.mkdir()
+    (landing / "2026-11-09.csv").write_text(header)
+    monkeypatch.setattr(load_daily, "ROOT", tmp_path)
+    connector = Mock()
+    monkeypatch.setattr(load_daily, "connect", connector)
+    with pytest.raises(ValueError, match="missing required columns"):
+        load_daily.load(load_daily.GOOD_DATE)
+    connector.assert_not_called()
+
+
+@pytest.mark.parametrize("schema,warehouse", [("OTHER", "SFX_D1110_LOAD_WH"),
+                                              ("RAW_BILLING;DROP", "SFX_D1110_LOAD_WH"),
+                                              ("RAW_BILLING", "OTHER_WH")])
+def test_invalid_target(schema, warehouse):
+    with pytest.raises(ValueError):
+        load_daily.validate_target(schema, warehouse)
+
+
+def test_header_only_reordered_feed_and_clone_target(tmp_path, monkeypatch, capsys):
+    landing = tmp_path / "landing"
+    landing.mkdir()
+    header = ["DISCOUNT_CODE", *reversed(load_daily.REQUIRED)]
+    path = landing / "2026-11-09.csv"
+    path.write_text(",".join(header) + "\n")
+    monkeypatch.setattr(load_daily, "ROOT", tmp_path)
+    connection = MagicMock()
+    connector = Mock(return_value=connection)
+    monkeypatch.setattr(load_daily, "connect", connector)
+    build = Mock()
+    monkeypatch.setattr(load_daily, "build", build)
+    load_daily.load(load_daily.GOOD_DATE, "backfill", "RAW_BILLING_SFX_D1110_BACKFILL",
+                    "SFX_D1110_TRANSFORM_WH", True)
+    connector.assert_called_once_with("backfill", "SFX_D1110_TRANSFORM_WH")
+    cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
+    sql = cursor.execute.call_args_list[4].args[0]
+    assert "COPY INTO RAW_BILLING_SFX_D1110_BACKFILL.USAGE_DAILY" in sql
+    assert "TRY_TO_NUMBER($10),TRY_TO_NUMBER($9),TRY_TO_DATE($8)" in sql
+    assert "TRY_TO_DECIMAL(REGEXP_REPLACE($5, '[^0-9.+-]', ''),12,2)" in sql
+    assert "ignored extra columns: DISCOUNT_CODE" in capsys.readouterr().out
     build.assert_not_called()
 
 
@@ -132,7 +180,7 @@ def monitoring_fixture(broken=False):
     connection = MagicMock()
     cursor = connection.__enter__.return_value.cursor.return_value.__enter__.return_value
     days = [("2026-11-10", 42, 42, 42), ("2026-11-09", 48, 0, 0)] if broken else [("2026-11-09", 48, 0, 0)]
-    history = [("pipeline/2026-11-10.csv", "Partially loaded", 6, None),
+    history = [("LANDING.LANDING_STAGE/pipeline/2026-11-10.csv", "Partially loaded", 6, None),
                ("pipeline/2026-11-09.csv", "Loaded", 0, None)]
     files = [("landing_stage/pipeline/2026-11-09.csv",)]
     if broken:
@@ -146,6 +194,8 @@ def test_shared_checks_with_mocked_connector(broken):
     connector = monitoring_fixture(broken)
     result = checks.run_checks(connector=connector)
     connector.assert_called_once_with("monitor", "SFX_D1110_OPS_WH")
+    cursor = connector.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+    assert "FILE_NAME LIKE '%%pipeline/%%'" in cursor.execute.call_args_list[1].args[0]
     assert all(c["firing"] == broken for c in result["checks"].values())
     assert result["load_errors"] == (6 if broken else 0)
     assert result["null_ratios"]["amount"] == (1 if broken else 0)
@@ -241,12 +291,15 @@ def test_fixture_end_to_end_good_then_break(tmp_path, monkeypatch, capsys):
             elif sql.startswith("COPY"):
                 with (landing / f"{self.day}.csv").open() as handle:
                     records = list(csv.reader(handle))[1:]
-                loaded = [row for row in records if len(row[8]) <= 3]
-                errors = len(records) - len(loaded)
-                status = "Partially loaded" if errors else "Loaded"
+                assert "ON_ERROR=ABORT_STATEMENT" in sql
+                mapping = load_daily.header_columns(landing / f"{self.day}.csv")
+                assert f"TRY_TO_TIMESTAMP_NTZ({mapping['CREATED_AT']})" in sql
+                assert f"REGEXP_REPLACE({mapping['AMOUNT']}" in sql
+                loaded = records
+                errors = 0
+                status = "Loaded"
                 self.days[self.day] = (self.day, len(loaded),
-                                       sum(row[7].startswith("$") for row in loaded),
-                                       sum(not row[8] for row in loaded))
+                                       0, 0)
                 self.files[f"pipeline/{self.day}.csv"] = (status, errors)
                 self.description = [(name,) for name in ("rows_loaded", "errors_seen", "status")]
                 self.result = [(len(loaded), errors, status)]
@@ -285,13 +338,13 @@ def test_fixture_end_to_end_good_then_break(tmp_path, monkeypatch, capsys):
         load_daily.main()
         capsys.readouterr()
         result = checks.run_checks()
-        assert all(check["firing"] == expected_firing for check in result["checks"].values())
+        assert not any(check["firing"] for check in result["checks"].values())
         monkeypatch.setattr(sys, "argv", ["fire_alert.py"])
         assert fire_alert.main() == 0
         body = json.loads(capsys.readouterr().out)
-        assert body["status"] == ("firing" if expected_firing else "resolved")
-        assert len(body["alerts"]) == (3 if expected_firing else 0)
-    assert result["rows"] == {"latest": 42, "previous": 48}
-    assert result["load_errors"] == 6
+        assert body["status"] == "resolved"
+        assert body["alerts"] == []
+    assert result["rows"] == {"latest": 48, "previous": 48}
+    assert result["load_errors"] == 0
     assert dbt.call_count == 2
-    assert all("stg_billing__usage_daily+" in call.args[0] for call in dbt.call_args_list)
+    assert all("source:billing.USAGE_DAILY+" in call.args[0] for call in dbt.call_args_list)
