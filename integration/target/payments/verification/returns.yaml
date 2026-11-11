@@ -1,0 +1,13 @@
+version: 1
+package: returns
+module: payments
+flows:
+  - id: payments.payment-returns
+    status: matched-required
+    evidence:
+      - Processes/payments/payment-returns.bwp:14 concrete JMSQueueReceiver on HB.PAYMENT.RETURNS (CLIENT_ACKNOWLEDGE, sequencingKey accountId)
+      - Processes/payments/payment-returns.bwp:11 no scope or transaction; JDBC Update commitMode AUTO_COMMIT kept non-XA
+      - Processes/payments/payment-returns.bwp:29 persistent publish to HB.RETURN.POSTED with requestId,accountId,JMSXGroupID,sequence
+faults:
+  definitions: supplemental.yaml
+  lock: sha256.json

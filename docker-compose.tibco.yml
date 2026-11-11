@@ -107,6 +107,9 @@ services:
       BROKER_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
       DB_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}
       JAVA_TOOL_OPTIONS: -Xms64m -Xmx256m
+      PAYMENTS_TX_HOLD_MS: ${PAYMENTS_TX_HOLD_MS:-0}
+    volumes:
+      - payments-transactions:/app/transaction-logs
     depends_on:
       broker: {condition: service_healthy}
       integration-db: {condition: service_healthy}
@@ -179,6 +182,7 @@ services:
     networks: [integration]
 
 volumes:
+  payments-transactions:
   integration-broker:
   integration-db:
   integration-files:
