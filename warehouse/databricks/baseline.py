@@ -10,6 +10,7 @@ from decimal import Decimal
 import json
 import os
 import re
+from uuid import uuid4
 
 from .sql import Warehouse, identifier
 
@@ -64,22 +65,29 @@ def load(source, target, subject, *, catalog="cpw", schema="dbx_d1111_before", b
                                  "WHERE n.nspname=%s AND c.relname=%s AND a.attnum>0 "
                                  "AND NOT a.attisdropped ORDER BY a.attnum", (source_schema, table)).fetchall()
         ddl = ", ".join(f"{identifier(n)} {delta_type(t)}" for n, t in columns)
-        target.execute(f"CREATE TABLE IF NOT EXISTS {destination} ({ddl}) USING DELTA "
-                       f"COMMENT '{comment}'", step="baseline-table")
-        # Replace only this run's baseline table; a failed load never emits a receipt.
-        target.execute(f"TRUNCATE TABLE {destination}", step="baseline-clear")
-        cursor = source.execute(sql.SQL("SELECT * FROM {}.{}").format(
-            sql.Identifier(source_schema), sql.Identifier(table)))
-        count = 0
-        while rows := cursor.fetchmany(batch):
-            values = ",".join("(" + ",".join(literal(v) for v in row) + ")" for row in rows)
-            target.execute(f"INSERT INTO {destination} VALUES {values}", step="baseline-load")
-            count += len(rows)
-        actual = target.execute(f"SELECT COUNT(*) FROM {destination}", step="baseline-count")
-        if int(actual["rows"][0][0]) != count:
-            raise RuntimeError("baseline row count mismatch: " + table)
+        staging = f"{identifier(catalog)}.{identifier(schema)}.{identifier('_loading_' + uuid4().hex)}"
+        target.execute(f"CREATE TABLE {staging} ({ddl}) USING DELTA "
+                       f"COMMENT '{comment}'", step="baseline-stage")
+        try:
+            cursor = source.execute(sql.SQL("SELECT * FROM {}.{}").format(
+                sql.Identifier(source_schema), sql.Identifier(table)))
+            count = 0
+            while rows := cursor.fetchmany(batch):
+                values = ",".join("(" + ",".join(literal(v) for v in row) + ")" for row in rows)
+                target.execute(f"INSERT INTO {staging} VALUES {values}", step="baseline-load")
+                count += len(rows)
+            actual = target.execute(f"SELECT COUNT(*) FROM {staging}", step="baseline-count")
+            if int(actual["rows"][0][0]) != count:
+                raise RuntimeError("baseline row count mismatch: " + table)
+            # Delta publishes one completed table atomically, including a changed schema.
+            published = target.execute(f"CREATE OR REPLACE TABLE {destination} USING DELTA "
+                                       f"COMMENT '{comment}' AS SELECT * FROM {staging}",
+                                       step="baseline-publish")
+        finally:
+            target.execute(f"DROP TABLE IF EXISTS {staging}", step="baseline-stage-cleanup")
         receipts.append({"source": source_schema + "." + table, "target": destination,
-                         "rows": count, "statement_id": actual["statement_id"]})
+                         "rows": count, "statement_id": published["statement_id"],
+                         "count_statement_id": actual["statement_id"]})
     if not receipts:
         raise RuntimeError("no baseline tables found; run the Teradata daily chain first")
     return receipts
