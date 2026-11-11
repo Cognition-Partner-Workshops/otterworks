@@ -57,3 +57,27 @@ placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE or PRIVATE_KEY
 skips; configured execution is unsupported. Destination metadata:
 SFX_D1110_AFTER.COMPAT, query tag
 `{"run":"sfx-d1110","act":"consumers","consumer":"admin-service"}`.
+
+## Databricks cutover target
+
+`FINANCE_WAREHOUSE_TARGET=databricks` makes the dashboard use
+`FinanceWarehouse::DatabricksClient` (shared `consumers/contract-kit/databricks_bridge.py`,
+catalog `cpw`, schema `dbx_d1111_after`) with native Databricks SQL
+(`DATABRICKS_SUMMARY_SQL`, `DATABRICKS_OVERDUE_SQL`) over the Teradata-shaped
+`billing__*` tables. No compatibility view is used; the API shape is unchanged and
+bridge errors surface as the same sanitized 503.
+
+Contract runs pin `CURRENT_DATE` to `CONTRACT_AS_OF_DATE` (default 2026-11-09, the
+seeded business date) on every path. Seed the emulator to match the live baseline:
+
+```sh
+make sfx-teradata-up NS=dbx-d1111-consumers-admin-service ROWS_PER_TABLE=2000 BUSINESS_DATE=20261109
+export TD_PG_PORT=54736 CONTRACT_KIT_PYTHON=/path/to/venv/bin/python  # requirements-dev + requirements-databricks + psycopg
+$CONTRACT_KIT_PYTHON contract/databricks/input_equality.py                 # emulator vs cpw.dbx_d1111_before
+WAREHOUSE_CONTRACT_TARGET=teradata-emulator bundle exec rspec contract     # old read path
+WAREHOUSE_CONTRACT_TARGET=databricks bundle exec rspec contract            # live target + old-path row equality
+```
+
+The `databricks` target skips without DATABRICKS_HOST, DATABRICKS_TOKEN and
+DATABRICKS_WAREHOUSE_ID; the old-path equality examples skip without TD_PG_PORT.
+
