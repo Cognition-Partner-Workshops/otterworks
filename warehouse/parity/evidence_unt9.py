@@ -223,7 +223,9 @@ def preflight():
 
 
 def targets(q, template):
-    return {s: fetched(q, f'{FQ_SCHEMA}.{t[2]}', template[s], source_loading=True) for s, t in TARGETS.items()}
+    # Stage/event/summary keep source timestamp precision (UNT-3/UNT-4); security alert is TIMESTAMP_NTZ(9) (UNT-5).
+    return {s: fetched(q, f'{FQ_SCHEMA}.{t[2]}', template[s], source_loading=s != 's_m_SFX_SECURITY_ALERT')
+            for s, t in TARGETS.items()}
 
 
 def history(q, start, path):
