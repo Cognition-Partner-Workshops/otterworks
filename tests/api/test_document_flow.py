@@ -21,6 +21,7 @@ def test_document_crud_versions_export_comments_and_template_flow(api_client):
     document_id = document["id"]
     assert document["owner_id"] == user.id
     assert document["word_count"] == 3
+    assert document["reading_time_minutes"] == 1
     assert document["version"] == 1
 
     get_response = api_client.client.get(f"/api/v1/documents/{document_id}", headers=headers)
@@ -35,7 +36,8 @@ def test_document_crud_versions_export_comments_and_template_flow(api_client):
     assert list_response.status_code == 200, list_response.text
     list_data = list_response.json()
     assert list_data["total"] >= 1
-    assert any(item["id"] == document_id for item in list_data["items"])
+    listed = next(item for item in list_data["items"] if item["id"] == document_id)
+    assert listed["reading_time_minutes"] == 1
 
     put_response = api_client.client.put(
         f"/api/v1/documents/{document_id}",
@@ -56,6 +58,7 @@ def test_document_crud_versions_export_comments_and_template_flow(api_client):
     patched = patch_response.json()
     assert patched["version"] == 3
     assert patched["word_count"] == 2
+    assert patched["reading_time_minutes"] == 1
 
     versions_response = api_client.client.get(
         f"/api/v1/documents/{document_id}/versions",

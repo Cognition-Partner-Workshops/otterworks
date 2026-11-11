@@ -1,9 +1,12 @@
 """Pydantic schemas for request/response validation."""
 
+import math
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, computed_field, field_validator
+
+READING_WORDS_PER_MINUTE = 200
 
 # ---- Document schemas ----
 
@@ -56,6 +59,12 @@ class DocumentResponse(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+    @computed_field
+    @property
+    def reading_time_minutes(self) -> int:
+        """Estimated reading time, rounded up to whole minutes."""
+        return math.ceil(self.word_count / READING_WORDS_PER_MINUTE)
 
 
 class DocumentListResponse(BaseModel):
