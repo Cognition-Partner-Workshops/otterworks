@@ -2,7 +2,7 @@
 
 Before: packaged History Server baseline (not the live-input parity application).
 Executor-hours and DBUs are distinct units; no savings comparison is implied.
-Billing and history counts were not collected in this handoff (time-budget priority); DBUs remain PENDING, never zero.
+system.billing.usage by usage_metadata.job_id (all 23 per-job jobs + daily) returned 0 rows at 2026-11-11 (statement 01f1dd8d-2ff6-1fa4-b33a-660dd3b78742); billing ingestion lags hours, so DBUs are PENDING, never zero. query.history counts not collected (budget).
 
 Per-job query-history template (substitute `<job>`):
 ```sql
