@@ -72,3 +72,8 @@ the seeded business date) on both paths. The `databricks` target asserts the tea
 (row count, sums, ordered keys) against `expected/baseline/` and exact row equality with the
 old path in `recorded/teradata-baseline/`. `expected/` and `recorded/teradata/` stay the
 800-row emulator/replay contract.
+
+Cutover status is **red**: successful DBQL reads of `SFX_USERS.V_TEAM_MEMBERS`
+are outside the five billing queries and have no complete after target. See
+[shared_changes_needed.md](shared_changes_needed.md). The live contract includes
+an explicit users dependency check; billing parity alone cannot certify cutover.

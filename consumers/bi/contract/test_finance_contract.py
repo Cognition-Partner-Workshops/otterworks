@@ -50,6 +50,8 @@ def test_query_matches_recorded_contract(name, warehouse):
     for column, amount in expected["sums"].items():
         assert sum((Decimal(str(row[column])) for row in rows), Decimal("0")) == Decimal(amount)
     assert [str(row[expected["key_column"]]).strip() for row in rows] == expected["keys"]
+    if isinstance(warehouse, DatabricksWarehouse):
+        print(f"{name}: {len(rows)} rows; statement_id={warehouse.statement_ids[name]}")
 
 
 @pytest.mark.parametrize("name", sorted(QUERIES))
