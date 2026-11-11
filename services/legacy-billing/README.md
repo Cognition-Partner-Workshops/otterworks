@@ -107,3 +107,60 @@ explicit placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE or
 PRIVATE_KEY skips, while configured execution is unsupported.
 Destination metadata: SFX_D1110_AFTER.COMPAT, query tag
 `{"run":"sfx-d1110","act":"consumers","consumer":"legacy-billing"}`.
+
+### Databricks live target (dbx-d1111)
+
+Set `FINANCE_WAREHOUSE_TARGET=databricks` to select the native AR aging DAL.
+Connections remain lazy. The query reads the existing `billing__v_account_invoices`,
+`billing__customer_account` and `billing__payment` objects in
+`cpw.dbx_d1111_after`; no compatibility objects or infrastructure are created.
+`FINANCE_WAREHOUSE_AS_OF=2026-11-09` pins the application date for comparisons;
+without it the date is evaluated on each request.
+
+The native rewrite replaces SEL/TOP, ZEROIFNULL/NULLIFZERO and integer date
+arithmetic with SELECT/LIMIT, COALESCE and explicit DATE/date_add/datediff.
+The Teradata `1200101` floor is `DATE '2020-01-01'`. Grouped text is right-trimmed
+as in the bridge; account names/numbers retain case, while the Latin currency
+code uses `UTF8_LCASE` for NOT CASESPECIFIC grouping and ordering. Joins use
+numeric identifiers. DATE values and decimal sums use the existing response
+mapper. Only OPEN_RATIO is computed from the two exact warehouse sums in Python:
+this preserves PostgreSQL bridge numeric-division precision instead of Spark's
+reduced decimal scale. The internal denominator never enters the public response.
+
+This on-request, consumer-owned query is best protected by a native rewrite:
+a compatibility view cannot translate client SEL/TOP/FORMAT or date arithmetic,
+and changing a shared view would affect other readers. The current live data
+has 2,000 generated rows per main entity plus fixture additions. Its expected
+result is separate from the existing 800-row replay contract, which is retained.
+
+From the repository root, with the five DATABRICKS_HOST/TOKEN/WAREHOUSE_ID/CATALOG/
+RUN_TOKEN variables securely supplied (`cpw`, `dbx-d1111` only):
+
+```sh
+python3 -m venv /path/to/legacy-billing-venv
+/path/to/legacy-billing-venv/bin/pip install -r services/legacy-billing/requirements-contract.txt
+make sfx-teradata-up NS=dbx-d1111-consumers-legacy-billing ROWS_PER_TABLE=2000 BUSINESS_DATE=20261109
+export TD_PG_PORT=$(NS=dbx-d1111-consumers-legacy-billing python3 -c 'import os,zlib; print(54500+zlib.crc32(os.environ["NS"].encode())%1000)')
+cd services/legacy-billing
+/path/to/legacy-billing-venv/bin/pytest
+WAREHOUSE_CONTRACT_TARGET=replay /path/to/legacy-billing-venv/bin/pytest contract
+WAREHOUSE_CONTRACT_TARGET=databricks /path/to/legacy-billing-venv/bin/pytest -s contract
+```
+
+The live target clearly skips when secrets are missing, with no replay fallback.
+It pins both paths to 2026-11-09, proves counts and order-independent SHA256 of
+all columns in CUSTOMER_ACCOUNT, INVOICE_HDR, PAYMENT and V_ACCOUNT_INVOICES
+across the emulator/before/after, then compares every ordered output field with
+the original Teradata SQL through the shared bridge and with checked-in expected
+keys, sums and full result hash. Canonical hashes encode nulls distinctly, dates
+as ISO, exact numerics without scale-only differences, and right-trimmed strings
+to remove CHAR storage padding. Duplicates remain in the hash input.
+Set `LEGACY_BILLING_EVIDENCE=/absolute/path/result.json` to save proof and statement
+IDs. The consumer workflow runs this target only when all five GitHub secrets
+are configured and seeds an isolated Docker emulator.
+
+**Cutover remains red:** DBQL records INVOICE_EXPORT_QUEUE reads, but no such
+object exists in either live schema inventory and no queue SQL exists in this
+consumer. A target read fails TABLE_OR_VIEW_NOT_FOUND. A safe implementation
+needs the source definition and ownership decision; AR aging parity alone
+does not retire this account's Teradata dependency. No empty view is substituted.

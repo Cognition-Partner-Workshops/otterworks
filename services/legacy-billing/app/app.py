@@ -11,7 +11,12 @@ app = Flask(__name__)
 app.config["FINANCE_WAREHOUSE_ENABLED"] = (
     os.getenv("FINANCE_WAREHOUSE_ENABLED", "true").lower() not in {"false", "0", "no", "off"}
 )
-app.extensions["finance_warehouse"] = TeradataReceivablesWarehouse()
+if os.getenv("FINANCE_WAREHOUSE_TARGET", "teradata") == "databricks":
+    from databricks_receivables import DatabricksReceivablesWarehouse
+
+    app.extensions["finance_warehouse"] = DatabricksReceivablesWarehouse()
+else:
+    app.extensions["finance_warehouse"] = TeradataReceivablesWarehouse()
 
 
 @app.get("/finance/ar-aging")
