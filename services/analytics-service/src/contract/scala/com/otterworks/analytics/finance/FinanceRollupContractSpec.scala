@@ -20,13 +20,14 @@ class ReplayWarehouse extends ContractWarehouse:
     require(sql == TeradataFinanceRollupRepository.Sql, "Unknown contract query")
     ContractFixtures.read("recorded/teradata/finance-rollups.json")
 
-class EmulatorWarehouse(target: String) extends ContractWarehouse:
+class EmulatorWarehouse(target: String, asOf: Option[java.time.LocalDate] = None) extends ContractWarehouse:
   def execute(sql: String, status: String, plan: String): Json =
     require(sql == TeradataFinanceRollupRepository.Sql, "Unknown contract query")
     val literal = (value: String) => "'" + value.replace("'", "''") + "'"
     val parts = sql.split("\\?", -1)
     require(parts.length == 3, "Expected two query parameters")
-    val bound = parts(0) + literal(status) + parts(1) + literal(plan) + parts(2)
+    val unpinned = parts(0) + literal(status) + parts(1) + literal(plan) + parts(2)
+    val bound = asOf.fold(unpinned)(date => unpinned.replace("CURRENT_DATE", s"DATE '$date'"))
     val python = sys.env.getOrElse("CONTRACT_KIT_PYTHON", "python3")
     val bridge = sys.env.getOrElse("CONTRACT_KIT_BRIDGE", "../../consumers/contract-kit/bridge.py")
     val command = List(python, bridge, "--target", target, "--query", "finance-rollups") ++
@@ -70,6 +71,7 @@ class FinanceRollupContractSpec extends AnyFlatSpec with Matchers:
         if !keys.forall(key => sys.env.get("SNOWFLAKE_" + key).exists(_.nonEmpty)) then
           cancel("Snowflake environment not configured")
         new SnowflakeWarehouse
+      case "databricks" => cancel("Databricks target is covered by the live Databricks contract")
       case other => fail(s"Unknown WAREHOUSE_CONTRACT_TARGET: $other")
     val settings = FinanceSettings.load(ConfigFactory.parseResources(
       "com/otterworks/analytics/finance/teradata.conf").resolve())
@@ -85,5 +87,40 @@ class FinanceRollupContractSpec extends AnyFlatSpec with Matchers:
       index should be >= 0
       val total = rows.map(row => BigDecimal(row(index).asString.getOrElse(row(index).noSpaces))).sum
       total shouldBe BigDecimal(sum.asString.get)
+    }
+  }
+
+  "Finance rollups on Databricks" should "match the Teradata read path on the same live data" in {
+    if !sys.env.get("WAREHOUSE_CONTRACT_TARGET").contains("databricks") then
+      cancel("WAREHOUSE_CONTRACT_TARGET is not databricks")
+    if !List("DATABRICKS_HOST", "DATABRICKS_TOKEN", "DATABRICKS_WAREHOUSE_ID").forall(key => sys.env.get(key).exists(_.nonEmpty)) then
+      cancel("Databricks environment not configured")
+    given scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+    val settings = FinanceSettings.load(ConfigFactory.parseResources(
+      "com/otterworks/analytics/finance/teradata.conf").resolve())
+    val asOf = java.time.LocalDate.parse(sys.env.getOrElse("CONTRACT_AS_OF", "2026-11-09"))
+    val step = sys.env.getOrElse("CONTRACT_STEP", "contract")
+    val repository = new DatabricksFinanceRollupRepository(asOf = () => asOf, step = step)
+    val live = scala.concurrent.Await.result(repository.rollups(settings.statuses.head, settings.featuredPlan),
+      scala.concurrent.duration.Duration(5, "minutes"))
+    val old = sys.env.get("CONTRACT_OLDPATH") match
+      case Some("emulator") => new EmulatorWarehouse("teradata-emulator", Some(asOf))
+        .execute(TeradataFinanceRollupRepository.Sql, settings.statuses.head, settings.featuredPlan)
+      case _ => ContractFixtures.read("recorded/dbx-d1111-baseline/finance-rollups.json")
+    val text = (value: Json) => value.asString.getOrElse(value.noSpaces)
+    val oldRows = old.hcursor.get[Vector[Vector[Json]]]("rows").toOption.get.toList.map(row =>
+      FinanceRollup(text(row(0)), text(row(1)), text(row(2)), BigDecimal(text(row(3))), BigDecimal(text(row(4))),
+        text(row(5)).toLong))
+    def summary(rows: List[FinanceRollup]) =
+      s"rows=${rows.size} billed=${rows.map(_.billedRevenue).sum} collected=${rows.map(_.collectedCash).sum} " +
+        s"active=${rows.map(_.activeAccounts).sum}"
+    info(s"as_of=$asOf step=$step databricks: ${summary(live)}")
+    info(s"as_of=$asOf teradata old path: ${summary(oldRows)}")
+    val expected = ContractFixtures.read("expected/finance-rollups.json")
+    withClue(s"databricks ${summary(live)} vs teradata ${summary(oldRows)}: ") {
+      live.size should be > 0
+      live.size shouldBe expected.hcursor.get[Int]("row_count").toOption.get
+      summary(live) shouldBe summary(oldRows)
+      live shouldBe oldRows
     }
   }
