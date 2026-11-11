@@ -1,0 +1,36 @@
+{
+  "spark_ref": "pr-2740",
+  "spark_commit": "40a2465c7eb30777a634abfa698d3a2e7ca17e47",
+  "waves": {
+    "1": 87,
+    "2": 70,
+    "3": 100,
+    "4": 16
+  },
+  "kinds": {
+    "BTEQ": 25,
+    "FastLoad": 22,
+    "PowerCenter mapping": 20,
+    "PowerCenter session": 20,
+    "PowerCenter workflow": 3,
+    "Spark job": 30,
+    "Spark shared": 6,
+    "TPT": 20,
+    "batch job": 6,
+    "consumer": 8,
+    "decommission": 1,
+    "hidden consumer": 4,
+    "macro": 6,
+    "procedure": 4,
+    "scheduler": 3,
+    "table": 84,
+    "view": 11
+  },
+  "loc": 8028,
+  "counters": {
+    "teradata_objects": 105,
+    "powercenter_mappings": 20,
+    "spark_executor_hours": 0.206092502
+  },
+  "spark_applications": 30
+}
