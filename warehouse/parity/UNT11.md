@@ -74,3 +74,20 @@ or all-folder Make targets. Read-only checks:
   full refresh; any drop/rebuild needs separate approval. PowerCenter stays the system of record (not retired).
 - Tasks: stay suspended with no schedule; do not `EXECUTE TASK` or resume. `teardown.py` is run-wide and is not
   a recovery step for this scope.
+
+## CI and SAST on PR #2739
+
+Changes after UNT-10 are CI/test only. `sqlglot==28.0.0` was added to `warehouse/snowflake/requirements.txt`.
+`fetch-depth: 0` was added for the `sfx-snowflake` job. Two history and Unicode-version tests now skip only when their
+prerequisite is unavailable. No model, macro or mark code changed, so the accepted evidence still applies.
+
+- Passing: `sfx-snowflake (3.10)`, `sfx-snowflake (3.11)`, `sfx-teradata`, `informatica-runner`, `api-flow-tests`,
+  `migration-job`, `deps`, `detect-changes`, `incident-chart-sync`.
+- Failing (shared, pre-existing, identical on harness PR #2677): `parity` fails because the pinned `psycopg-binary==3.2.9`
+  has no cp314 wheel. `equivalence` fails because `asyncpg 0.29.0` does not compile on Python 3.14. Neither job tests this scope's code.
+  The fix belongs to the owners of those workflows.
+- SonarQube: no SonarQube/SAST check runs on PRs into `demo-**`. `sonarqube-banking.yml` covers `security/ingest/**`.
+  `sast-auto-remediate.yml` runs only on PRs against `main`. A local scan used the same SonarQube Community image and
+  scanner as `sonarqube-banking.yml` over the 217 changed paths. Gate OK, but no conditions were configured. 0 hotspots, 0 bugs.
+  It found 7 `python:S2245` (non-crypto PRNG) in the deterministic synthetic fixture generator
+  `warehouse/snowflake/fixtures/make_fixture.py`, which are not a security exposure. No SQL analyzer ran.
