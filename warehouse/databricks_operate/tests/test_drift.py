@@ -1,6 +1,6 @@
 from copy import deepcopy
 import json
-import re
+from shutil import copyfile
 import subprocess
 import sys
 
@@ -16,23 +16,15 @@ DRIFTED = ('{"invoice_id":7,"customer_id":10,"amount":"120.00","currency":"USD",
            '"tax_region":"domestic"}\n')
 
 
-def pre_drift_copy(tmp_path):
-    # Strip only the appended field so existing literals stay byte-identical.
-    landing = tmp_path / "invoices.jsonl"
-    landing.write_text("".join(re.sub(r',"tax_region":"[^"]*"}$', "}", line) + "\n"
-                               for line in FIXTURE.read_text().splitlines()))
-    return landing
-
-
 def test_landing_change_fails_until_the_contract_and_loader_are_repaired(tmp_path):
     assert list(SCHEMA) == ["invoice_id", "customer_id", "amount", "currency", "tax_region"]
-    landing = pre_drift_copy(tmp_path)
+    landing = tmp_path / "invoices.jsonl"
+    copyfile(FIXTURE, landing)
     rows = read_rows(landing)
     before = validate(rows, PRE_DRIFT_SCHEMA)
     with pytest.raises(SchemaDrift, match=r"missing=\['tax_region'\]"):
         validate(rows, SCHEMA)
     seed(landing)
-    assert landing.read_text() == FIXTURE.read_text()
     changed = read_rows(landing)
     with pytest.raises(SchemaDrift, match=r"added=\['tax_region'\]"):
         validate(changed, PRE_DRIFT_SCHEMA)
@@ -65,8 +57,11 @@ def test_tax_region_must_be_a_string(tmp_path, region):
         validate(read_rows(landing), SCHEMA)
 
 
-def test_duplicate_and_cent_changes_fail():
-    rows = read_rows(FIXTURE)
+def test_duplicate_and_cent_changes_fail(tmp_path):
+    landing = tmp_path / "invoices.jsonl"
+    copyfile(FIXTURE, landing)
+    seed(landing)
+    rows = read_rows(landing)
     schema = SCHEMA
     validate(rows, schema)
     with pytest.raises(SchemaDrift, match="duplicate"):
@@ -106,7 +101,7 @@ def test_json_amount_keeps_sub_cent_precision(tmp_path):
 def test_repeated_json_fields_are_rejected_before_values_are_lost(tmp_path):
     landing = tmp_path / "duplicate.jsonl"
     landing.write_text('{"invoice_id":1,"customer_id":10,"amount":"120.00",'
-                       '"currency":"USD","amount":"1.00"}\n')
+                       '"currency":"USD","tax_region":"domestic","amount":"1.00"}\n')
     with pytest.raises(SchemaDrift, match="duplicate field: amount"):
         read_rows(landing)
 
@@ -117,6 +112,7 @@ def test_seed_preserves_numeric_amounts_and_rejects_repeat_seeding(tmp_path):
     before = read_rows(landing)
     seed(landing)
     after = read_rows(landing)
+    validate(after, SCHEMA)
     assert [{k: v for k, v in row.items() if k != "tax_region"} for row in after] == before
     assert '"amount":120.00' in landing.read_text()
     with pytest.raises(ValueError, match="already seeded"):

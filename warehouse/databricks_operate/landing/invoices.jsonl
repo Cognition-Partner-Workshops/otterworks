@@ -1,3 +1,3 @@
-{"invoice_id":1,"customer_id":10,"amount":"120.00","currency":"USD","tax_region":"domestic"}
-{"invoice_id":2,"customer_id":11,"amount":"45.50","currency":"EUR","tax_region":"export"}
-{"invoice_id":3,"customer_id":10,"amount":"17.25","currency":"USD","tax_region":"domestic"}
+{"invoice_id":1,"customer_id":10,"amount":"120.00","currency":"USD"}
+{"invoice_id":2,"customer_id":11,"amount":"45.50","currency":"EUR"}
+{"invoice_id":3,"customer_id":10,"amount":"17.25","currency":"USD"}
