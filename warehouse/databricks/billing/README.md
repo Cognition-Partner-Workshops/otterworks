@@ -65,6 +65,10 @@ difference (nondeterministic source tie)", not claimed as exact keyed-hash parit
 The independent `qualify_ties` probe checks exact rows for untied documents and
 membership in the source's maximal-timestamp candidate set for tied documents;
 it reports different baseline picks and enforces the approved final rule in v2.
+The probe parses each conversion's actual window ordering keys and groups the
+source staging rows by document plus those keys to detect unresolved ties.
+V1 is red with 50 unresolved documents even when its picks are valid candidates;
+v2 has a total order and zero unresolved documents.
 The explicit `untied_exact` rung compares all stored columns with EXCEPT ALL in
 both directions for documents having a unique maximal timestamp.
 

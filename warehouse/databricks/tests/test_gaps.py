@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from warehouse.databricks.gaps import probe_queries, run_gaps, tie_query
+from warehouse.databricks.gaps import conversion_ordering, probe_queries, run_gaps, tie_query
 
 
 def client_fixture(different=False):
@@ -11,7 +11,8 @@ def client_fixture(different=False):
     def execute(query, *, step):
         rows = []
         if step == 'gap-qualify_ties':
-            rows = [['1' if different else '0','50','49','0','0']]
+            rows = [['1' if different else '0','50','49','0','0',
+                     '50' if 'GROUP BY document_id,VERSION_TS HAVING' in query else '0']]
         elif step == 'gap-format-history':
             rows = [['literal-failed-id','FAILED','YYYY-MM rejected']]
         elif step.startswith('gap-') and different:
@@ -48,9 +49,9 @@ def test_direct_records_literal_format_failure_and_value_differences(tmp_path):
     assert fmt['detail']['literal_format_failure']['rows'][0][0]=='literal-failed-id'
 
 
-def test_no_rows_is_pass_except_historical_direct_format_error(tmp_path):
+def test_no_value_diffs_does_not_hide_unresolved_direct_ordering(tmp_path):
     results = run_gaps(client_fixture(),'v1-direct',tmp_path)
-    assert [r['rung'] for r in results if r['status']=='fail']==['format_period_key']
+    assert [r['rung'] for r in results if r['status']=='fail']==['qualify_ties','format_period_key']
 
 
 def test_missing_history_and_transport_errors_fail_closed(tmp_path):
@@ -79,8 +80,21 @@ def test_final_rule_violation_fails_even_for_valid_candidate(tmp_path):
     original = client.execute.side_effect
     def execute(query, **kwargs):
         if kwargs['step']=='gap-qualify_ties':
-            return {'statement_id':'tie-id','rows':[['0','50','49','0','1']]}
+            return {'statement_id':'tie-id','rows':[['0','50','49','0','1','0']]}
         return original(query, **kwargs)
     client.execute.side_effect = execute
     results = run_gaps(client,'v2-fixed',tmp_path,objects=['billing__in_documents_doc_version'])
     assert next(r for r in results if r['rung']=='qualify_ties')['status']=='fail'
+
+
+def test_ordering_keys_come_from_actual_conversion_and_probe_is_scoped(tmp_path):
+    assert conversion_ordering('v1-direct') == ['VERSION_TS']
+    assert conversion_ordering('v2-fixed') == ['VERSION_TS','VERSION_NO','VERSION_ID']
+    for label, expected in [('v1-direct',50),('v2-fixed',0)]:
+        client = client_fixture()
+        rows = run_gaps(client,label,tmp_path,rungs=['qualify_ties'])
+        assert len(rows)==1
+        assert rows[0]['detail']['unresolved_tied_documents']==expected
+        assert rows[0]['status']==('fail' if expected else 'pass')
+        measured = [c.kwargs['step'] for c in client.execute.call_args_list if c.kwargs['step'].startswith('gap-')]
+        assert measured==['gap-qualify_ties']

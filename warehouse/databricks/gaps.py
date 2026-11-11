@@ -3,8 +3,12 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 
+import sqlglot
+from sqlglot import exp
+
 from .baseline import literal
 from .parity import DOCUMENT_VERSION, RESULTS
+from ..teradata.bteq.parser import split
 
 
 BEFORE = "cpw.dbx_d1111_before."
@@ -21,7 +25,21 @@ def projection(table, key, columns, where=""):
     return f"SELECT CAST({key} AS STRING) k,to_json(array({','.join('CAST('+c+' AS STRING)' for c in columns)})) v FROM {table} {where}"
 
 
-def tie_query():
+def conversion_ordering(label):
+    version = {'v1-direct': 'direct', 'v2-fixed': 'fixed'}[label]
+    script = Path(__file__).with_name('billing').joinpath(version+'.sql').read_text()
+    statement = next(s for s in split(script)
+                     if s.startswith('CREATE OR REPLACE TABLE '+AFTER+DOCUMENT_VERSION+' '))
+    tree = sqlglot.parse_one(statement, read='databricks')
+    windows = [w for w in tree.find_all(exp.Window) if isinstance(w.this, exp.RowNumber)]
+    if len(windows) != 1 or not windows[0].args.get('order'):
+        raise ValueError('document conversion must have one explicitly ordered ROW_NUMBER window')
+    return [key.this.sql(dialect='databricks') for key in windows[0].args['order'].expressions]
+
+
+def tie_query(ordering_keys=None):
+    ordering_keys = ordering_keys or conversion_ordering('v2-fixed')
+    group_keys = ','.join(dict.fromkeys(['document_id', *ordering_keys]))
     columns = "version_id,document_id,version_no,version_ts,file_size,content_hash"
     row = "to_json(array(" + ",".join("CAST(" + c + " AS STRING)" for c in columns.split(',')) + "))"
     return f"""WITH candidates AS (
@@ -29,7 +47,9 @@ def tie_query():
         SELECT * FROM {BEFORE}documents__stg_doc_version
         QUALIFY DENSE_RANK() OVER (PARTITION BY document_id ORDER BY version_ts DESC NULLS LAST)=1
       ) m
-    ), final_pick AS (SELECT document_id,{row} v FROM candidates
+    ), unresolved AS (SELECT document_id FROM {BEFORE}documents__stg_doc_version
+      GROUP BY {group_keys} HAVING COUNT(*)>1),
+    final_pick AS (SELECT document_id,{row} v FROM candidates
       QUALIFY ROW_NUMBER() OVER (PARTITION BY document_id ORDER BY version_no DESC,version_id DESC)=1),
     c AS (SELECT document_id,MAX(candidate_count) n,collect_set({row}) allowed FROM candidates GROUP BY document_id),
     b AS (SELECT document_id,{row} v FROM {BEFORE}documents__doc_version),
@@ -41,7 +61,8 @@ def tie_query():
       SUM(CASE WHEN n>1 THEN 1 ELSE 0 END) tied_documents,
       SUM(CASE WHEN n>1 AND NOT(bv <=> av) THEN 1 ELSE 0 END) different_baseline_picks,
       (SELECT COUNT(*) FROM a LEFT ANTI JOIN c ON a.document_id=c.document_id) extra_documents,
-      (SELECT COUNT(*) FROM final_pick f FULL OUTER JOIN a ON f.document_id=a.document_id WHERE NOT(f.v <=> a.v)) final_rule_mismatches
+      (SELECT COUNT(*) FROM final_pick f FULL OUTER JOIN a ON f.document_id=a.document_id WHERE NOT(f.v <=> a.v)) final_rule_mismatches,
+      (SELECT COUNT(DISTINCT document_id) FROM unresolved) unresolved_tied_documents
     FROM checked"""
 
 
@@ -58,7 +79,7 @@ def untied_query():
     UNION ALL SELECT 'missing_or_different_before' difference,* FROM (SELECT * FROM a EXCEPT ALL SELECT * FROM b)"""
 
 
-def probe_queries():
+def probe_queries(label='v2-fixed'):
     probes = {}
     def pair(name, obj, source, key, columns, where=""):
         probes[name] = (obj, difference_query(projection(BEFORE+source,key,columns,where), projection(AFTER+obj,key,columns,where)))
@@ -66,7 +87,7 @@ def probe_queries():
     b = f"SELECT CAST(storage_usage_id AS STRING) k,to_json(array(CAST(COUNT(*) AS STRING))) v FROM {BEFORE}documents__storage_usage_daily WHERE storage_usage_id>=9000000001 GROUP BY storage_usage_id"
     a = b.replace(BEFORE+'documents__storage_usage_daily',AFTER+'billing__in_documents_storage_usage_daily')
     probes['set_duplicates'] = ('billing__in_documents_storage_usage_daily',difference_query(b,a))
-    probes['qualify_ties'] = ('billing__in_documents_doc_version',tie_query())
+    probes['qualify_ties'] = ('billing__in_documents_doc_version',tie_query(conversion_ordering(label)))
     probes['untied_exact'] = (DOCUMENT_VERSION,untied_query())
     pair('format_period_key','billing__invoice_hdr','billing__invoice_hdr','invoice_id',['invoice_period','period_key'],'WHERE invoice_id>=9000000001')
     pair('date_arithmetic','billing__invoice_hdr','billing__invoice_hdr','invoice_id',['CAST(invoice_dt AS STRING)','CAST(bill_dt AS STRING)','invoice_month','CAST(prior_period_end_dt AS STRING)','period_closed_cd'],'WHERE invoice_id>=9000000001')
@@ -79,18 +100,21 @@ def probe_queries():
     return probes
 
 
-def run_gaps(client, label, evidence_dir=None, *, objects=None):
+def run_gaps(client, label, evidence_dir=None, *, objects=None, rungs=None):
     directory = Path(evidence_dir or Path.home()/'dbx-evidence')
     path = directory/f'gaps_{label}.json'
     results = json.loads(path.read_text()) if path.exists() else []
-    for name,(obj,query) in probe_queries().items():
+    for name,(obj,query) in probe_queries(label).items():
         if objects is not None and obj not in objects:
+            continue
+        if rungs is not None and name not in rungs:
             continue
         response = client.execute(query,step='gap-'+name)
         if name=='qualify_ties':
             values = [int(v or 0) for v in response['rows'][0]]
-            passed = values[0]==0 and values[3]==0 and (label!='v2-fixed' or values[4]==0)
-            detail = dict(zip(['invalid_rows','tied_documents','different_baseline_picks','extra_documents','final_rule_mismatches'],values))
+            passed = values[0]==0 and values[3]==0 and values[5]==0 and (label!='v2-fixed' or values[4]==0)
+            detail = dict(zip(['invalid_rows','tied_documents','different_baseline_picks','extra_documents','final_rule_mismatches','unresolved_tied_documents'],values))
+            detail['ordering_keys'] = conversion_ordering(label)
         else:
             passed = not response['rows']
             detail = {'differences':response['rows']}
