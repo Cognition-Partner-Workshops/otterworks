@@ -105,6 +105,7 @@ __pycache__/
 .pytest_cache/
 
 # --- Misc ---
+warehouse/pipeline/landing/2026-11-10.csv
 *.bak
 *.tmp
 

@@ -2,43 +2,35 @@ from __future__ import annotations
 
 import os
 from collections.abc import Callable
-from configparser import ConfigParser
+from contextlib import closing
 from datetime import date
 from decimal import Decimal
-from pathlib import Path
 from typing import Any, Protocol
-from urllib.parse import unquote, urlparse
 
-SQL = """
-WITH receivables AS (
-    SEL i.ACCOUNT_ID, i.DUE_DT, i.CURRENCY_CD, i.AMOUNT_DUE,
-        i.AMOUNT_DUE - ZEROIFNULL(p.PAID) AS OPEN_BALANCE
-    FROM FIN_DW.INVOICE i
+SQL = """WITH receivables AS (
+    SELECT i.CUSTOMER_ID, DATEADD(day, 30, i.INVOICE_DT) AS DUE_DT, i.CURRENCY_CD,
+        i.TOTAL_AMOUNT AS AMOUNT_DUE, i.TOTAL_AMOUNT - COALESCE(p.PAID, 0) AS OPEN_BALANCE
+    FROM SFX_D1110_AFTER.COMPAT.INVOICE_HDR i
+    JOIN SFX_D1110_AFTER.COMPAT.CUSTOMER_ACCOUNT ia ON ia.CUSTOMER_ID = i.CUSTOMER_ID
     LEFT JOIN (
-        SEL INVOICE_ID, SUM(AMOUNT) AS PAID FROM FIN_DW.PAYMENT GROUP BY INVOICE_ID
+        SELECT INVOICE_ID, SUM(AMOUNT) AS PAID FROM SFX_D1110_AFTER.COMPAT.PAYMENT GROUP BY INVOICE_ID
     ) p ON p.INVOICE_ID = i.INVOICE_ID
-    WHERE i.INVOICE_DT >= 1200101
-        AND i.AMOUNT_DUE - ZEROIFNULL(p.PAID) > 0
+    WHERE i.INVOICE_DT >= DATE '2020-01-01'
+        AND i.TOTAL_AMOUNT - COALESCE(p.PAID, 0) > 0
 )
-SEL TOP 100 a.ACCOUNT_NO, c.CUSTOMER_NAME, i.CURRENCY_CD,
-    CAST(MIN(i.DUE_DT) AS DATE FORMAT 'YYYY-MM-DD') AS OLDEST_DUE_DATE,
-    SUM(i.OPEN_BALANCE) AS OPEN_BALANCE,
-    ZEROIFNULL(SUM(CASE WHEN CURRENT_DATE - i.DUE_DT <= 0
-        THEN i.OPEN_BALANCE ELSE 0 END)) AS CURRENT_AMT,
-    ZEROIFNULL(SUM(CASE WHEN CURRENT_DATE - i.DUE_DT BETWEEN 1 AND 30
-        THEN i.OPEN_BALANCE ELSE 0 END)) AS DAYS_1_30,
-    ZEROIFNULL(SUM(CASE WHEN CURRENT_DATE - i.DUE_DT BETWEEN 31 AND 60
-        THEN i.OPEN_BALANCE ELSE 0 END)) AS DAYS_31_60,
-    ZEROIFNULL(SUM(CASE WHEN CURRENT_DATE - i.DUE_DT BETWEEN 61 AND 90
-        THEN i.OPEN_BALANCE ELSE 0 END)) AS DAYS_61_90,
-    ZEROIFNULL(SUM(CASE WHEN CURRENT_DATE - i.DUE_DT > 90
-        THEN i.OPEN_BALANCE ELSE 0 END)) AS DAYS_OVER_90,
-    SUM(i.OPEN_BALANCE) / NULLIFZERO(SUM(i.AMOUNT_DUE)) AS OPEN_RATIO
+SELECT a.ACCOUNT_NUMBER AS ACCOUNT_NO, a.ACCOUNT_NAME AS CUSTOMER_NAME, i.CURRENCY_CD,
+    MIN(i.DUE_DT) AS OLDEST_DUE_DATE, SUM(i.OPEN_BALANCE) AS OPEN_BALANCE,
+    SUM(CASE WHEN DATEDIFF(day, i.DUE_DT, CURRENT_DATE) <= 0 THEN i.OPEN_BALANCE ELSE 0 END) AS CURRENT_AMT,
+    SUM(CASE WHEN DATEDIFF(day, i.DUE_DT, CURRENT_DATE) BETWEEN 1 AND 30 THEN i.OPEN_BALANCE ELSE 0 END) AS DAYS_1_30,
+    SUM(CASE WHEN DATEDIFF(day, i.DUE_DT, CURRENT_DATE) BETWEEN 31 AND 60 THEN i.OPEN_BALANCE ELSE 0 END) AS DAYS_31_60,
+    SUM(CASE WHEN DATEDIFF(day, i.DUE_DT, CURRENT_DATE) BETWEEN 61 AND 90 THEN i.OPEN_BALANCE ELSE 0 END) AS DAYS_61_90,
+    SUM(CASE WHEN DATEDIFF(day, i.DUE_DT, CURRENT_DATE) > 90 THEN i.OPEN_BALANCE ELSE 0 END) AS DAYS_OVER_90,
+    SUM(i.OPEN_BALANCE) / NULLIF(SUM(i.AMOUNT_DUE), 0) AS OPEN_RATIO
 FROM receivables i
-JOIN FIN_DW.ACCOUNT a ON a.ACCOUNT_ID = i.ACCOUNT_ID
-JOIN FIN_DW.CUSTOMER c ON c.CUSTOMER_ID = a.CUSTOMER_ID
-GROUP BY a.ACCOUNT_NO, c.CUSTOMER_NAME, i.CURRENCY_CD
-ORDER BY OPEN_BALANCE DESC, a.ACCOUNT_NO, i.CURRENCY_CD
+JOIN SFX_D1110_AFTER.COMPAT.CUSTOMER_ACCOUNT a ON a.CUSTOMER_ID = i.CUSTOMER_ID
+GROUP BY a.ACCOUNT_NUMBER, a.ACCOUNT_NAME, i.CURRENCY_CD
+ORDER BY OPEN_BALANCE DESC, a.ACCOUNT_NUMBER, i.CURRENCY_CD
+LIMIT 100
 """
 COLUMNS = (
     "ACCOUNT_NO", "CUSTOMER_NAME", "CURRENCY_CD", "OLDEST_DUE_DATE", "OPEN_BALANCE",
@@ -50,33 +42,52 @@ class ReceivablesWarehouse(Protocol):
     def ar_aging(self) -> list[dict[str, Any]]: ...
 
 
-def default_dsn() -> str:
-    config = ConfigParser(interpolation=None)
-    config.read(Path(__file__).with_suffix(".ini"))
-    return config["warehouse"]["dsn"]
+QUERY_TAG = '{"run":"sfx-d1110","act":"consumers","consumer":"legacy-billing"}'
 
 
-class TeradataReceivablesWarehouse:
+class SnowflakeReceivablesWarehouse:
     def __init__(
-        self, dsn: str | None = None, connect: Callable[..., Any] | None = None,
+        self, warehouse: str | None = None, connect: Callable[..., Any] | None = None,
+        database: str | None = None,
     ) -> None:
-        self.dsn = dsn or os.getenv("FINANCE_WAREHOUSE_DSN") or default_dsn()
+        self.warehouse = warehouse
+        self.database = database
         self._connect = connect
+        self.last_query_id: str | None = None
 
     def ar_aging(self) -> list[dict[str, Any]]:
+        credentials = {
+            key.lower(): os.getenv(f"SNOWFLAKE_{key}")
+            for key in ("ACCOUNT", "USER", "ROLE", "PRIVATE_KEY")
+        }
+        missing = [f"SNOWFLAKE_{key.upper()}" for key, value in credentials.items() if not value]
+        if missing:
+            raise ValueError("Missing Snowflake credentials: " + ", ".join(missing))
+        from cryptography.hazmat.primitives import serialization
+
+        key = serialization.load_pem_private_key(
+            credentials.pop("private_key").encode(), password=None,
+        )
+        private_key = key.private_bytes(
+            serialization.Encoding.DER, serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        )
         connect = self._connect
         if connect is None:
-            import teradatasql
+            import snowflake.connector
 
-            connect = teradatasql.connect
-        dsn = urlparse(self.dsn)
-        if dsn.scheme != "teradata" or not dsn.hostname or not dsn.path.strip("/"):
-            raise ValueError("invalid finance warehouse DSN")
-        with connect(
-            host=dsn.hostname, user=unquote(dsn.username or ""),
-            password=unquote(dsn.password or ""), database=dsn.path.strip("/"),
-        ) as connection, connection.cursor() as cursor:
-            cursor.execute(SQL)
+            connect = snowflake.connector.connect
+        self.last_query_id = None
+        with closing(connect(
+            **credentials, private_key=private_key, authenticator="SNOWFLAKE_JWT",
+            database=self.database or os.getenv("SNOWFLAKE_DATABASE", "SFX_D1110_AFTER"),
+            warehouse=self.warehouse or os.getenv("SNOWFLAKE_WAREHOUSE"),
+            session_parameters={"QUERY_TAG": QUERY_TAG, "TIMEZONE": "UTC"},
+        )) as connection, closing(connection.cursor()) as cursor:
+            try:
+                cursor.execute(SQL)
+            finally:
+                self.last_query_id = getattr(cursor, "sfqid", None)
             values = cursor.fetchall()
         return [self._map_row(row) for row in values]
 

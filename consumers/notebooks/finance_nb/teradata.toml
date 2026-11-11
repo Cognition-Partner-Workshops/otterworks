@@ -1,5 +1,5 @@
 [connection]
 host = "tdprod-fin.otterworks.internal"
-user = "nb_finance_analysis"
+user = "nb_dsci_pkhan"
 password = "not-a-real-password" # gitleaks:allow
-database = "FIN_DW"
+database = "SFX_BILLING"

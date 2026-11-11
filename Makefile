@@ -36,7 +36,7 @@ sfx-teradata-run: sfx-teradata-validate warehouse/.venv/.requirements ## Rerun t
 	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/teradata/jobs/daily_chain --reuse-landing --business-date "$(BUSINESS_DATE)"
 
 sfx-teradata-test: sfx-teradata-validate warehouse/.venv/.requirements ## Test the warehouse against its PostgreSQL instance (NS required)
-	$(SFX_TD_ENV) $(SFX_TD_PY) -m pytest -q warehouse
+	$(SFX_TD_ENV) $(SFX_TD_PY) -m pytest -q warehouse/seed/tests warehouse/teradata/tests
 
 sfx-teradata-down: sfx-teradata-validate ## Stop the warehouse and remove its volume (NS required)
 	$(SFX_TD_ENV) warehouse/teradata/bin/compose down -v
@@ -49,69 +49,95 @@ sfx-teradata-snowconvert: sfx-teradata-validate warehouse/.venv/.requirements ##
 .PHONY: sfx-snowflake-ledger sfx-snowflake-teardown sfx-snowflake-roles-dry-run sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down
 
 SFX_PYTHON ?= python3.10
+SFX_VENV ?= warehouse/snowflake/.venv
+SFX_TEST_PYTHON ?= $(SFX_VENV)/bin/python
 
-warehouse/.venv/.sfx-installed: warehouse/snowflake/requirements.txt
-	$(SFX_PYTHON) -m venv warehouse/.venv
-	warehouse/.venv/bin/pip install -r warehouse/snowflake/requirements.txt
+.PHONY: sfx-operate-load sfx-operate-break sfx-operate-reset sfx-operate-check sfx-operate-alert sfx-operate-exporter
+sfx-operate-check: $(SFX_VENV)/.sfx-installed ## Print shared pipeline checks
+	$(SFX_VENV)/bin/python warehouse/pipeline/checks.py
+
+sfx-operate-alert: $(SFX_VENV)/.sfx-installed ## Send or dry-run pipeline notification
+	$(SFX_VENV)/bin/python warehouse/pipeline/fire_alert.py
+
+sfx-operate-exporter: $(SFX_VENV)/.sfx-installed ## Serve pipeline metrics
+	$(SFX_VENV)/bin/python observability/pipeline/sfx_pipeline_exporter.py
+
+sfx-operate-load: $(SFX_VENV)/.sfx-installed ## Load the good daily billing feed
+	$(SFX_VENV)/bin/python warehouse/pipeline/load_daily.py --date 2026-11-09
+
+sfx-operate-break: $(SFX_VENV)/.sfx-installed ## Receive the changed vendor feed
+	SFX_VENV="$(abspath $(SFX_VENV))" bash warehouse/pipeline/break_upstream.sh
+
+sfx-operate-reset: $(SFX_VENV)/.sfx-installed ## Remove the changed feed and rebuild staging
+	$(SFX_VENV)/bin/python warehouse/pipeline/load_daily.py --date 2026-11-10 --reset
+
+$(SFX_VENV)/.sfx-installed: warehouse/snowflake/requirements.txt
+	$(SFX_PYTHON) -m venv $(SFX_VENV)
+	$(SFX_VENV)/bin/pip install -r warehouse/snowflake/requirements.txt
 	@touch $@
 
-sfx-snowflake-deploy: warehouse/.venv/.sfx-installed ## Deploy Snowflake scaffold migrations
-	warehouse/.venv/bin/python warehouse/snowflake/deploy.py
+sfx-snowflake-deploy: $(SFX_VENV)/.sfx-installed ## Deploy Snowflake scaffold migrations
+	$(SFX_VENV)/bin/python warehouse/snowflake/deploy.py
 
-sfx-snowflake-load: warehouse/.venv/.sfx-installed ## Load Snowflake landing files
-	warehouse/.venv/bin/python warehouse/snowflake/load.py --area all
+sfx-snowflake-load: $(SFX_VENV)/.sfx-installed ## Load Snowflake landing files
+	$(SFX_VENV)/bin/python warehouse/snowflake/load.py --area all
 
 .PHONY: sfx-pc-setup sfx-pc-before sfx-pc-dbt sfx-pc-parity sfx-pc-idempotence sfx-pc-mark sfx-pc-licence sfx-pc-dag sfx-pc-test
 export PC_CONTROL_SCHEMA ?= MIGRATION_CONTROL
 export PC_CONTROL_TABLE ?= MAPPINGS
-sfx-pc-setup: warehouse/.venv/.sfx-installed ## Seed additive migration inventory and source snapshot
-	cd warehouse && .venv/bin/python -m parity setup $(if $(filter 1,$(SKIP_CONTROL)),--skip-control)
+SFX_PC_PY = $(abspath $(SFX_VENV))/bin/python
+sfx-pc-setup: $(SFX_VENV)/.sfx-installed ## Seed additive migration inventory and source snapshot
+	cd warehouse && $(SFX_PC_PY) -m parity setup $(if $(filter 1,$(SKIP_CONTROL)),--skip-control)
 
-sfx-pc-before sfx-pc-parity sfx-pc-idempotence: warehouse/.venv/.sfx-installed ## Capture/compare/rebuild MAPPING
+sfx-pc-before sfx-pc-parity sfx-pc-idempotence: $(SFX_VENV)/.sfx-installed ## Capture/compare/rebuild MAPPING
 	@test -n "$(MAPPING)" || (echo 'MAPPING is required'; exit 2)
-	cd warehouse && .venv/bin/python -m parity $(patsubst sfx-pc-%,%,$@) --mapping "$(MAPPING)"
+	cd warehouse && $(SFX_PC_PY) -m parity $(patsubst sfx-pc-%,%,$@) --mapping "$(MAPPING)"
 
-sfx-pc-dbt: warehouse/.venv/.sfx-installed ## Build MAPPING or all PC models in FOLDER
-	cd warehouse && .venv/bin/python -m parity dbt $(if $(MAPPING),--mapping "$(MAPPING)",--folder "$(FOLDER)")
+sfx-pc-dbt: $(SFX_VENV)/.sfx-installed ## Build MAPPING or all PC models in FOLDER
+	cd warehouse && $(SFX_PC_PY) -m parity dbt $(if $(MAPPING),--mapping "$(MAPPING)",--folder "$(FOLDER)")
 
-sfx-pc-mark: warehouse/.venv/.sfx-installed ## Publish evidence for MAPPING (AMBER/OWNER/PR_URL optional)
+sfx-pc-mark: $(SFX_VENV)/.sfx-installed ## Publish evidence for MAPPING (AMBER/OWNER/PR_URL optional)
 	@test -n "$(MAPPING)" || (echo 'MAPPING is required'; exit 2)
-	cd warehouse && .venv/bin/python -m parity mark --mapping "$(MAPPING)" $(if $(AMBER),--amber "$(AMBER)") $(if $(OWNER),--owner "$(OWNER)") $(if $(PR_URL),--pr-url "$(PR_URL)")
+	cd warehouse && $(SFX_PC_PY) -m parity mark --mapping "$(MAPPING)" $(if $(AMBER),--amber "$(AMBER)") $(if $(OWNER),--owner "$(OWNER)") $(if $(PR_URL),--pr-url "$(PR_URL)")
 
-sfx-pc-licence: warehouse/.venv/.sfx-installed ## Count remaining PowerCenter mappings
-	cd warehouse && .venv/bin/python -m parity licence
+sfx-pc-licence: $(SFX_VENV)/.sfx-installed ## Count remaining PowerCenter mappings
+	cd warehouse && $(SFX_PC_PY) -m parity licence
 
-sfx-pc-dag: warehouse/.venv/.sfx-installed ## Deploy suspended FOLDER DAG (RUN_ONCE=1 to execute)
-	warehouse/.venv/bin/python warehouse/snowflake/pc_dag.py --folder "$(FOLDER)" $(if $(filter 1,$(RUN_ONCE)),--run-once)
+sfx-pc-dag: $(SFX_VENV)/.sfx-installed ## Deploy suspended FOLDER DAG (RUN_ONCE=1 to execute)
+	$(SFX_PC_PY) warehouse/snowflake/pc_dag.py --folder "$(FOLDER)" $(if $(filter 1,$(RUN_ONCE)),--run-once)
 
-sfx-pc-test: warehouse/.venv/.sfx-installed ## Offline migration harness and PC DAG tests
-	cd warehouse && .venv/bin/python -m pytest parity/tests -q
+sfx-pc-test: $(SFX_VENV)/.sfx-installed ## Offline migration harness and PC DAG tests
+	cd warehouse && $(SFX_PC_PY) -m pytest parity/tests -q
 
-sfx-snowflake-test: warehouse/.venv/.sfx-installed ## Run offline Snowflake scaffold tests
-	warehouse/.venv/bin/python -m pytest warehouse/snowflake/tests -q
-	warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py parse
+.PHONY: sfx-snowflake-load-before
+sfx-snowflake-load-before: sfx-teradata-validate $(SFX_VENV)/.sfx-installed warehouse/.venv/.requirements ## Land processed billing after sfx-teradata-run
+	$(SFX_TD_ENV) $(SFX_VENV)/bin/python warehouse/snowflake/load.py --source teradata-before --area billing --date "$(BUSINESS_DATE)" --teradata-python "$(SFX_TD_PY)"
 
-sfx-snowflake-dbt: warehouse/.venv/.sfx-installed ## Build and test billing staging views
-	warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build
+sfx-snowflake-test: $(SFX_VENV)/.sfx-installed ## Run offline Snowflake scaffold tests
+	$(SFX_TEST_PYTHON) -m pytest warehouse/snowflake/tests -q
+	$(SFX_TEST_PYTHON) warehouse/snowflake/run_dbt.py parse
 
-sfx-snowflake-dag: warehouse/.venv/.sfx-installed ## Execute the log-only DAG once and suspend its tasks
-	warehouse/.venv/bin/python warehouse/snowflake/task_dag.py --run-once
+sfx-snowflake-dbt: $(SFX_VENV)/.sfx-installed ## Build and test billing staging views
+	$(SFX_VENV)/bin/python warehouse/snowflake/run_dbt.py build
 
-sfx-snowflake-consumers: warehouse/.venv/.sfx-installed ## Report observed tagged consumer reads
-	warehouse/.venv/bin/python warehouse/snowflake/consumer_reads.py
+sfx-snowflake-dag: $(SFX_VENV)/.sfx-installed ## Execute the log-only DAG once and suspend its tasks
+	$(SFX_VENV)/bin/python warehouse/snowflake/task_dag.py --run-once
+
+sfx-snowflake-consumers: $(SFX_VENV)/.sfx-installed ## Report observed tagged consumer reads
+	$(SFX_VENV)/bin/python warehouse/snowflake/consumer_reads.py
 
 .PHONY: sfx-snowflake-snowconvert
-sfx-snowflake-snowconvert: warehouse/.venv/.sfx-installed ## Run SnowConvert CLI into ignored raw output
-	warehouse/.venv/bin/python warehouse/snowflake/snowconvert.py
+sfx-snowflake-snowconvert: $(SFX_VENV)/.sfx-installed ## Run SnowConvert CLI into ignored raw output
+	$(SFX_VENV)/bin/python warehouse/snowflake/snowconvert.py
 
-sfx-snowflake-ledger: warehouse/.venv/.sfx-installed ## Report lag-aware Snowflake credits
-	warehouse/.venv/bin/python warehouse/snowflake/ledger.py
+sfx-snowflake-ledger: $(SFX_VENV)/.sfx-installed ## Report lag-aware Snowflake credits
+	$(SFX_VENV)/bin/python warehouse/snowflake/ledger.py
 
-sfx-snowflake-teardown: warehouse/.venv/.sfx-installed ## Drop token-scoped objects (TEARDOWN_ARGS=--dry-run to preview)
-	warehouse/.venv/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 $(TEARDOWN_ARGS)
+sfx-snowflake-teardown: $(SFX_VENV)/.sfx-installed ## Drop token-scoped objects (TEARDOWN_ARGS=--dry-run to preview)
+	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 $(TEARDOWN_ARGS)
 
-sfx-snowflake-roles-dry-run: warehouse/.venv/.sfx-installed ## Validate roles and check live CREATE ROLE privilege
-	warehouse/.venv/bin/python warehouse/snowflake/roles/dry_run.py --check-live
+sfx-snowflake-roles-dry-run: $(SFX_VENV)/.sfx-installed ## Validate roles and check live CREATE ROLE privilege
+	$(SFX_VENV)/bin/python warehouse/snowflake/roles/dry_run.py --check-live
 
 ifeq ($(NS),sfx-d1110-before)
 sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down:
@@ -124,8 +150,8 @@ sfx-snowflake-run: ## Load, build billing staging, and report credits
 	$(MAKE) sfx-snowflake-dbt
 	$(MAKE) sfx-snowflake-ledger
 
-sfx-snowflake-down: warehouse/.venv/.sfx-installed ## Suspend tasks and warehouses without dropping objects
-	warehouse/.venv/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 --suspend-only
+sfx-snowflake-down: $(SFX_VENV)/.sfx-installed ## Suspend tasks and warehouses without dropping objects
+	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 --suspend-only
 endif
 
 help: ## Show this help

@@ -1,51 +1,53 @@
-# finance-notebook
-A separate repository owned by **@otterworks/data-science**. Ad hoc/month-end
-analysis against TDPROD / FIN_DW as `nb_finance_analysis`.
+# Finance analysis notebook
 
-## Run
-Install requirements.txt in a Python 3.12 notebook kernel, open
-finance_analysis.ipynb from this directory, and run cells in order.
-The connection cell contains obviously fake credentials; replace them only in
-your local environment. The helper also has a fake default connection config
-in finance_nb/teradata.toml. It lazily imports teradatasql on connect, never
-during import. Set FINANCE_WAREHOUSE_ENABLED=false to prevent connections
-(default true). The caller owns and closes the connection in the final cell;
-if a query fails, close it before rerunning. Query cursors close on all paths.
-`run_query` accepts any connection implementing the cursor interface and
-returns pandas dataframes without coercing warehouse decimals to floats.
+Separate repository owned by **@otterworks/data-science**. Run
+finance_analysis.ipynb from this directory for month-end analysis, as
+nb_dsci_pkhan (the DBQL account), against TDPROD / SFX_BILLING.
+Connection settings are planted fake plaintext values in the notebook and
+finance_nb/teradata.toml. Outputs remain cleared. FINANCE_WAREHOUSE_ENABLED defaults
+true; setting false blocks connection creation. The helper lazily loads
+teradatasql, accepts injected connectors, closes cursors and sanitizes errors.
+The final notebook cell closes its connection.
 
-Revenue is billed amount less tax over a trailing year (includes partial
-months). DSO uses month-end outstanding invoice balances after payments up to
-that month-end, divided by that month's billing times 30; no billed amount
-returns zero. Credits offset AR; history starts 2020-01-01.
-Collections vs billing covers the last 90 days, independently grouped by
-payment/invoice date. Top ten accounts have positive balances overdue by
-more than 30 days, after all recorded payments. There is no FX conversion;
-inputs assume a single reporting currency.
+## Analysis and sources
+All warehouse-query tagged cells contain literal inline Teradata SQL:
+- Revenue: INVOICE_HDR (INVOICE_DT, TOTAL_AMOUNT, TAX_AMOUNT), trailing 12 months,
+  including the current partial month; total less tax.
+- DSO trend: monthly billed totals and cumulative open AR as of each month end.
+  PAYMENT (INVOICE_ID, PAYMENT_DT, AMOUNT) is independently aggregated up to each
+  month-end before joining invoices. DSO is month-end open AR / monthly billed * 30;
+  no billing yields zero. Negative balances are retained.
+- Collections versus billing: monthly totals over the last 90 days, full outer
+  joined so either side may be absent. PAYMENT overlaps this account's DBQL report.
+- Overdue accounts: INVOICE_HDR (INVOICE_ID, CUSTOMER_ID, INVOICE_DT, TOTAL_AMOUNT)
+  joined to CUSTOMER_ACCOUNT (CUSTOMER_ID, ACCOUNT_NUMBER, ACCOUNT_NAME) and summed
+  payments; top ten positive balances more than 30 days overdue.
+  Due dates derive net-30 terms (INVOICE_DT + 30); the schema has no DUE_DT.
 
-Read columns:
-- INVOICE: INVOICE_ID, ACCOUNT_ID, INVOICE_DT, DUE_DT, AMOUNT_DUE, TAX_AMT.
-- PAYMENT: INVOICE_ID, PAYMENT_DT, AMOUNT.
-- ACCOUNT: ACCOUNT_ID, CUSTOMER_ID, ACCOUNT_NO.
-- CUSTOMER: CUSTOMER_ID, CUSTOMER_NAME.
+The notebook keeps SEL, TOP 10, ZEROIFNULL, NULLIFZERO, ADD_MONTHS, LAST_DAY,
+CURRENT_DATE - 90, 1200101 and FORMAT casts. Historical invoices start in 2020.
+No FX conversion or credit-note allocation is performed. Currency aggregates are
+not a currency-normalized financial statement. All-time payments offset the
+overdue list; the DSO trend instead uses historical cutoffs.
 
-## Checks
+## Checks and contracts
 ```sh
-python -m pip install -r requirements-dev.txt
+pip install -r requirements-dev.txt
 python -m pytest
-python -m pytest contract
+WAREHOUSE_CONTRACT_TARGET=replay python -m pytest contract
 ```
-Outputs and execution counts are cleared in version control.
-Tagged warehouse-query cells contain literal SQL extracted with Python AST,
-without executing connection cells. Contracts receive those exact SQL strings.
 
-Contracts default to WAREHOUSE_CONTRACT_TARGET=teradata-emulator and replay
-synthetic recorded results; assertions check counts, monetary/DSO aggregates
-and account/month keys against contract/expected.
-TD_EMULATOR_URL selects an explicit unsupported endpoint stub.
-WAREHOUSE_CONTRACT_TARGET=snowflake reads SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER,
-SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE, SNOWFLAKE_PRIVATE_KEY; missing values skip.
-Configured execution remains an explicit placeholder for SFX_D1110_AFTER.COMPAT,
-with QUERY_TAG
+Unit tests validate nbformat, cleared outputs, query extraction and helper
+normal/empty/error paths without executing the notebook or opening a warehouse.
+Contracts extract the tagged SQL via AST and execute all four exact statements.
+The default teradata-emulator target runs LIVE through ../contract-kit; follow its
+README for Python bridge dependencies, TD_PG_PORT and CONTRACT_KIT_PYTHON.
+Seed with ROWS_PER_TABLE=800 and BUSINESS_DATE=20261109. Runtime defaults to the
+repository root; TD_EMULATOR_HOME overrides it.
+CONTRACT_RECORD=true python -m pytest contract re-records live JSON; review
+expected counts, keys and sums after changes. Replay needs neither a warehouse
+nor bridge dependencies and runs in a dedicated CI job.
+snowflake-semantics uses the shared live bridge. snowflake is an explicit
+placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE or PRIVATE_KEY skips;
+configured execution is unsupported. Metadata: SFX_D1110_AFTER.COMPAT, query tag
 `{"run":"sfx-d1110","act":"consumers","consumer":"finance-notebook"}`.
-No live warehouse or notebook execution is asserted by replay tests.

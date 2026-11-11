@@ -3,12 +3,10 @@ require_relative 'spec_helper'
 RSpec.describe FinanceWarehouse::DashboardQueries do
   let(:client) do
     case ENV.fetch('WAREHOUSE_CONTRACT_TARGET', 'teradata-emulator')
-    when 'teradata-emulator'
+    when 'teradata-emulator', 'replay', 'snowflake-semantics'
       ContractWarehouse::EmulatorWarehouse.new
     when 'snowflake'
-      keys = %w[ACCOUNT USER ROLE WAREHOUSE PRIVATE_KEY]
-      skip 'Snowflake environment not configured' if keys.any? { |key| ENV["SNOWFLAKE_#{key}"].to_s.empty? }
-      ContractWarehouse::SnowflakeWarehouse.new
+      skip 'live Snowflake is covered by snowflake_live_contract_spec.rb'
     else
       raise ArgumentError, 'unknown WAREHOUSE_CONTRACT_TARGET'
     end
@@ -29,7 +27,9 @@ RSpec.describe FinanceWarehouse::DashboardQueries do
   it 'maps the dashboard using the selected warehouse' do
     allow(described_class).to receive(:enabled?).and_return(true)
     dashboard = described_class.new(client: client).call
-    expect(dashboard[:ar_open_balance]).to eq('45000.0')
-    expect(dashboard[:top_overdue_accounts].length).to eq(2)
+    expected = JSON.parse(File.read(File.join(ContractWarehouse::ROOT, 'expected', 'dashboard-summary.json')))
+    accounts = JSON.parse(File.read(File.join(ContractWarehouse::ROOT, 'expected', 'overdue-accounts.json')))
+    expect(BigDecimal(dashboard[:ar_open_balance])).to eq(BigDecimal(expected.fetch('sums').fetch('AR_OPEN_BALANCE')))
+    expect(dashboard[:top_overdue_accounts].length).to eq(accounts.fetch('row_count'))
   end
 end

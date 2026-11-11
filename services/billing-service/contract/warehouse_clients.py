@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import json
-import os
+import sys
 from pathlib import Path
 from typing import Any, Protocol
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT.parents[2] / "consumers" / "contract-kit"))
+from contract_client import execute as execute_contract  # noqa: E402
 
 
 class ContractWarehouse(Protocol):
@@ -14,39 +15,11 @@ class ContractWarehouse(Protocol):
 
 class EmulatorWarehouse:
     def execute(self, sql: str, parameters: list[str | None]) -> dict[str, Any]:
-        if endpoint := os.getenv("TD_EMULATOR_URL"):
-            return self._execute_endpoint(endpoint, sql, parameters)
-        from app.warehouse.teradata import SQL
+        from teradata_reference import SQL
 
         if sql != SQL:
             raise ValueError("unknown invoice contract query")
-        return json.loads((ROOT / "recorded/teradata/invoice-export.json").read_text())
-
-    def _execute_endpoint(
-        self,
-        endpoint: str,
-        sql: str,
-        parameters: list[str | None],
-    ) -> dict[str, Any]:
-        raise NotImplementedError("emulator endpoint not configured")
-
-
-class SnowflakeWarehouse:
-    DATABASE = "SFX_D1110_AFTER"
-    SCHEMA = "COMPAT"
-    QUERY_TAG = '{"run":"sfx-d1110","act":"consumers","consumer":"billing-service"}'
-
-    def execute(self, sql: str, parameters: list[str | None]) -> dict[str, Any]:
-        credentials = {
-            key: os.getenv(f"SNOWFLAKE_{key}")
-            for key in ("ACCOUNT", "USER", "ROLE", "WAREHOUSE", "PRIVATE_KEY")
-        }
-        if not all(credentials.values()):
-            raise ValueError("Snowflake environment not configured")
-        raise NotImplementedError(
-            "Snowflake adapter not installed; execute supplied DAL SQL in "
-            f"{self.DATABASE}.{self.SCHEMA} with QUERY_TAG={self.QUERY_TAG}"
-        )
+        return execute_contract(sql, ROOT, "invoice-export", parameters)
 
 
 class ContractConnection:

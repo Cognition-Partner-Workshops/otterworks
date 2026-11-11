@@ -15,7 +15,7 @@ import spray.json.*
 class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTest:
   private val settings = FinanceSettings.load(ConfigFactory.parseResources(
     "com/otterworks/analytics/finance/teradata.conf").resolve())
-  private val row = FinanceRollup("2026-01", "EMEA", "ENTERPRISE ANNUAL", BigDecimal("18000.50"),
+  private val row = FinanceRollup("2026-01", "California", "Workspace Team - Monthly", BigDecimal("18000.50"),
     BigDecimal("15000.25"), 14)
 
   private def proxy[A](kind: Class[A])(f: (String, Array[Object]) => Object): A =
@@ -31,7 +31,7 @@ class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTes
     val rs = proxy(classOf[ResultSet]) { (method, args) =>
       method match
         case "next" => val value = next; next = false; Boolean.box(value)
-        case "getString" => Map("MONTH_LABEL" -> row.month, "REGION_CODE" -> row.region,
+        case "getString" => Map("MONTH_LABEL" -> row.month, "REGION_CD" -> row.region,
           "PLAN_NAME" -> row.plan)(args(0).toString)
         case "getBigDecimal" => (if args(0) == "BILLED_REVENUE" then row.billedRevenue
           else row.collectedCash).bigDecimal
@@ -53,42 +53,42 @@ class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTes
         case _ => throw new UnsupportedOperationException(method)
     }
     val repo = new TeradataFinanceRollupRepository(() => connection)
-    Await.result(repo.rollups(settings.regions.head, settings.featuredPlan), 3.seconds) shouldBe List(row)
-    bound shouldBe Map(1 -> settings.regions.head, 2 -> settings.featuredPlan)
+    Await.result(repo.rollups(settings.statuses.head, settings.featuredPlan), 3.seconds) shouldBe List(row)
+    bound shouldBe Map(1 -> settings.statuses.head, 2 -> settings.featuredPlan)
     closed shouldBe Set("connection", "statement", "result")
-    Await.result(repo.rollups("Amer", "Team Monthly"), 3.seconds) shouldBe empty
+    Await.result(repo.rollups("Pending", "PRO"), 3.seconds) shouldBe empty
   }
 
   it should "return connection failures through the future" in {
     val repo = new TeradataFinanceRollupRepository(() => throw new SQLException("unavailable"))
-    intercept[SQLException](Await.result(repo.rollups(settings.regions.head, settings.featuredPlan), 3.seconds))
+    intercept[SQLException](Await.result(repo.rollups(settings.statuses.head, settings.featuredPlan), 3.seconds))
   }
 
   "Finance route" should "serve defaults and supplied filters" in {
     var filters = List.empty[(String, String)]
     val repo = new FinanceRollupRepository:
-      def rollups(region: String, plan: String) =
-        filters = filters :+ (region, plan)
+      def rollups(status: String, plan: String) =
+        filters = filters :+ (status, plan)
         Future.successful(List(row))
     val routes = new FinanceRoutes(repo, settings).routes
     Get("/api/v1/analytics/finance/rollups") ~> routes ~> check {
       status shouldBe StatusCodes.OK
       responseAs[String].parseJson.asInstanceOf[JsArray].elements.size shouldBe 1
     }
-    Get("/api/v1/analytics/finance/rollups?region=Apac&plan=Team%20Monthly") ~> routes ~> check {
+    Get("/api/v1/analytics/finance/rollups?status=Pending&plan=PRO") ~> routes ~> check {
       status shouldBe StatusCodes.OK
     }
-    filters shouldBe List((settings.regions.head, settings.featuredPlan), ("Apac", "Team Monthly"))
+    filters shouldBe List((settings.statuses.head, settings.featuredPlan), ("Pending", "PRO"))
   }
 
   it should "serve empty results and reject invalid filters" in {
     val repo = new FinanceRollupRepository:
-      def rollups(region: String, plan: String) = Future.successful(Nil)
+      def rollups(status: String, plan: String) = Future.successful(Nil)
     val routes = new FinanceRoutes(repo, settings).routes
     Get("/api/v1/analytics/finance/rollups") ~> routes ~> check {
       responseAs[String].parseJson shouldBe JsArray()
     }
-    Get("/api/v1/analytics/finance/rollups?region=") ~> routes ~> check {
+    Get("/api/v1/analytics/finance/rollups?status=") ~> routes ~> check {
       status shouldBe StatusCodes.BadRequest
     }
     Get("/api/v1/analytics/finance/rollups") ~>
@@ -99,7 +99,7 @@ class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTes
 
   it should "sanitize warehouse failures" in {
     val repo = new FinanceRollupRepository:
-      def rollups(region: String, plan: String) = Future.failed(new SQLException("private details"))
+      def rollups(status: String, plan: String) = Future.failed(new SQLException("private details"))
     Get("/api/v1/analytics/finance/rollups") ~> new FinanceRoutes(repo, settings).routes ~> check {
       status shouldBe StatusCodes.ServiceUnavailable
       responseAs[String] shouldBe "finance warehouse unavailable"
@@ -110,17 +110,17 @@ class FinanceRollupSpec extends AnyFlatSpec with Matchers with ScalatestRouteTes
     var calls = 0
     var clock = 0L
     val delegate = new FinanceRollupRepository:
-      def rollups(region: String, plan: String) =
+      def rollups(status: String, plan: String) =
         calls += 1
         Future.successful(List(row))
     val cache = new CachedFinanceRollups(delegate, 100L, () => clock)
-    def load(region: String) = Await.result(cache.rollups(region, settings.featuredPlan), 3.seconds)
-    load("Emea")
-    load("Emea")
+    def load(status: String) = Await.result(cache.rollups(status, settings.featuredPlan), 3.seconds)
+    load("Active")
+    load("Active")
     calls shouldBe 1
-    load("Amer")
+    load("Pending")
     calls shouldBe 2
     clock = 101L
-    load("Emea")
+    load("Active")
     calls shouldBe 3
   }

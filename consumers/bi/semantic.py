@@ -33,6 +33,7 @@ def queries():
     for name, dimension, measure in [
         ("invoices", "month_label", "billed"),
         ("payments", "month_label", "collected"),
+        ("invoice_revenue", "month_label", "billed"),
         ("gl_journal", "period_id", "movement"),
     ]:
         view = views[name]

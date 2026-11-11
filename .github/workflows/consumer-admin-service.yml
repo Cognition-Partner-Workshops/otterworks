@@ -43,6 +43,21 @@ jobs:
           working-directory: services/admin-service
       - run: "cd services/admin-service && bundle exec rails db:schema:load && bundle exec rspec"
 
+  contract-replay:
+    needs: unit
+    runs-on: ubuntu-latest
+    env:
+      BUNDLE_FROZEN: 'true'
+      WAREHOUSE_CONTRACT_TARGET: replay
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: services/admin-service
+      - run: "cd services/admin-service && bundle exec rspec contract"
+
   snowflake-secrets:
     runs-on: ubuntu-latest
     outputs:

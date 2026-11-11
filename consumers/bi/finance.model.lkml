@@ -39,3 +39,7 @@ explore: gl_journal {
 explore: overdue_accounts {
   required_access_grants: [finance_enabled]
 }
+
+explore: invoice_revenue {
+  required_access_grants: [finance_enabled]
+}

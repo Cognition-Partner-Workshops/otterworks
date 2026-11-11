@@ -54,59 +54,49 @@ app or shared-infrastructure deployment is provided for this fixture.
 
 ## Finance warehouse consumer
 
-Treat this consumer as a separate repository owned by **@otterworks/billing**.
-Its nightly invoice export reads TDPROD / FIN_DW using account
-`svc_billing_export`; scheduling is external to this service.
+The nightly invoice export reads Snowflake SFX_D1110_AFTER.COMPAT.INVOICE_HDR,
+CUSTOMER_ACCOUNT and PAYMENT. Scheduling is external. Set SNOWFLAKE_ACCOUNT,
+SNOWFLAKE_USER, SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE and SNOWFLAKE_PRIVATE_KEY
+(unencrypted PEM private key). SNOWFLAKE_DATABASE defaults to SFX_D1110_AFTER;
+the SQL intentionally uses that database explicitly. Key-pair JWT authentication
+is used. FINANCE_WAREHOUSE_ENABLED defaults to true. Driver import and connections
+are lazy; HTTP startup opens no warehouse connection. Every session uses UTC and
+QUERY_TAG `{"run":"sfx-d1110","act":"consumers","consumer":"billing-service"}`.
 
 ```sh
-uv sync
-uv run python -m app.export_invoices --date 2026-01-06 --out invoices.csv
-uv run export-invoices --date 2026-01-06 --out invoices.csv
+uv run python -m app.export_invoices --date 2026-11-10 --out invoices.csv
 ```
 
-`--date` is the run date: these examples export invoices dated **2026-01-05**.
-Omitting it uses Teradata's current date and exports the prior day.
-The output includes invoice number, customer name, account number, invoice date,
-currency, amount due, tax and open balance, ordered by invoice number/ID.
-Open balance subtracts all payments recorded for each invoice at export time;
-it is not an historical payment snapshot. No FX conversion is performed.
-An empty day writes a header-only CSV. Output replacement is atomic; query or
-write failures leave an existing output intact. The output directory must exist.
-The export fails rather than silently truncating above 100,000 invoices.
-
-The DAL reads FIN_DW.INVOICE (INVOICE_ID, ACCOUNT_ID, INVOICE_NO, INVOICE_DT,
-AMOUNT_DUE, TAX_AMT, CURRENCY_CD), ACCOUNT (ACCOUNT_ID, CUSTOMER_ID, ACCOUNT_NO),
-CUSTOMER (CUSTOMER_ID, CUSTOMER_NAME), and PAYMENT (INVOICE_ID, AMOUNT).
-It uses Teradata date arithmetic, integer-date floor 1200101 (2020-01-01), and
-formatted date/amount output. Monetary values are mapped to exact decimals.
-Fake connection settings are in `app/warehouse/config.toml`.
-Override the DSN with `FINANCE_WAREHOUSE_DSN`.
-
-The export defaults on. `FINANCE_WAREHOUSE_ENABLED=false` disables it and returns
-a nonzero CLI exit code without querying or writing a file. Driver import and
-connection creation are deferred until the export is called; the HTTP app's
-startup does not connect to Teradata.
-
-### Checks
+The date is the run date; BILL_DT on the previous day is exported. Without it,
+SQL uses the current UTC date. INVOICE_DT must be at least 2020-01-01.
+Accounts join on CUSTOMER_ID; payments aggregate across all dates by INVOICE_ID.
+Open balance subtracts payments from TOTAL_AMOUNT. This is not a historical
+snapshot or FX-normalized report. CSV columns and Decimal values are preserved.
+An empty export writes only the header; atomic replacement preserves prior files
+on failure. More than 100000 invoices fails rather than truncates. The destination
+directory must exist.
 
 ```sh
 uv run pytest
 uv run ruff check .
-uv run pytest contract
+WAREHOUSE_CONTRACT_TARGET=replay uv run pytest contract
+WAREHOUSE_CONTRACT_TARGET=snowflake uv run pytest contract -s
 ```
 
-Default pytest discovery uses only `tests/`; contract tests are separate.
-The contract executes the DAL with the same SQL and run-date parameters through
-a warehouse adapter. Default `WAREHOUSE_CONTRACT_TARGET=teradata-emulator`
-replays the synthetic recorded-format fixture in
-`contract/recorded/teradata/invoice-export.json` and compares row count, invoice
-keys, and monetary aggregates against `contract/expected/invoice-export.json`.
-Setting TD_EMULATOR_URL selects an explicit stub raising
-"emulator endpoint not configured" until the endpoint protocol is available.
+Contracts are excluded from ordinary discovery. Replay uses unchanged recorded
+JSON and frozen legacy SQL in contract/teradata_reference.py. The teradata-emulator
+and snowflake-semantics targets use ../../consumers/contract-kit. For live emulator
+comparisons set TD_USER=svc_exit_parity, ROWS_PER_TABLE=800, BUSINESS_DATE=20261109,
+TD_PG_PORT and CONTRACT_KIT_PYTHON. TD_EMULATOR_HOME overrides the runtime path.
+CONTRACT_RECORD=true records the baseline; review expected keys, counts and sums.
 
-For `WAREHOUSE_CONTRACT_TARGET=snowflake`, the placeholder reads
-SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE and
-SNOWFLAKE_PRIVATE_KEY; missing values skip the contract. With values configured,
-it raises an explicit unsupported-operation error until the adapter is finished.
-Its destination is SFX_D1110_AFTER.COMPAT, with session QUERY_TAG
-`{"run":"sfx-d1110","act":"consumers","consumer":"billing-service"}`.
+The Snowflake target skips without credentials or the connector. It forces
+SFX_D1110_PARITY_WH (SNOWFLAKE_CONTRACT_WAREHOUSE may explicitly name that same
+warehouse), prints every query ID and issues SELECTs only. It compares column
+labels, overlapping invoice keys, dates and currencies to the recorded fixture,
+then independently cross-checks counts and Decimal totals against RAW_BILLING.
+The larger Snowflake seed has 20,100 accounts and 66,667 matching invoices versus
+the 800-row emulator seed's 267 matching invoices. Customer names, account numbers
+and amounts intentionally differ for overlapping keys. Snowflake FM amount strings
+are trimmed (e.g. 0.00), unlike padded Teradata FORMAT strings; from_values parses
+both as Decimal.

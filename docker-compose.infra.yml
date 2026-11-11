@@ -96,6 +96,8 @@ services:
     - no-new-privileges:true
   prometheus:
     image: prom/prometheus:v2.51.0
+    extra_hosts:
+    - host.docker.internal:host-gateway
     container_name: otterworks-prometheus
     command:
     - --config.file=/etc/prometheus/prometheus.yml
@@ -140,6 +142,8 @@ services:
       GF_ALERTING_ENABLED: 'false'
       # Secret sent to the admin-service alert webhook
       ALERT_WEBHOOK_SECRET: ${ALERT_WEBHOOK_SECRET:-demo-alert-secret}
+      DEVIN_PIPELINE_WEBHOOK_URL: ${DEVIN_PIPELINE_WEBHOOK_URL:-}
+      DEVIN_PIPELINE_WEBHOOK_SECRET: ${DEVIN_PIPELINE_WEBHOOK_SECRET:-}
     ports:
     - 3001:3000
     volumes:
