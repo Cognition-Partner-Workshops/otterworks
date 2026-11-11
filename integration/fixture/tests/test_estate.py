@@ -1,14 +1,16 @@
 import importlib
 import json
+import subprocess
 import xml.etree.ElementTree as ET
 from collections import Counter
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
 
 from integration.fixture.summary import summarize
-from integration.fixture.reconcile import reconcile
+from integration.fixture.reconcile import BROKER_IMAGE, artemis, reconcile
 from integration.fixture.smoke import create
 from integration.harness.faults import FaultHook
 from integration.harness.fingerprints import verify_lock
@@ -181,6 +183,18 @@ def test_reconcile_converts_only_anycast_queues_and_routing_on_topics(capsys):
                        ("address", "update", "--name", "HB.ACCOUNT.EVENTS", "--multicast", "--no-anycast")]
     assert "HB.UNDLV" not in {c[3] for c in calls if c[0] == "address"}
     assert "3 messages kept" in capsys.readouterr().out
+
+
+def test_reconcile_cli_runs_outside_the_broker_memory_limit(monkeypatch):
+    seen = []
+    monkeypatch.setenv("REPLAY_BROKER_USER", "replay")
+    monkeypatch.setenv("REPLAY_BROKER_PASSWORD", "secret")
+    monkeypatch.setattr(subprocess, "run", lambda command, **_: seen.append(command) or SimpleNamespace(stdout="ok"))
+    assert artemis("isolated-broker", "queue", "stat") == "ok"
+    assert seen[0][:8] == ["docker", "run", "--rm", "--network", "container:isolated-broker",
+                           "--entrypoint", "/opt/activemq-artemis/bin/artemis", BROKER_IMAGE]
+    broker = yaml.safe_load((ROOT / "docker-compose.tibco.yml").read_text())["services"]["broker"]
+    assert broker["image"] == BROKER_IMAGE
 
 
 def test_broker_resyncs_fixture_config_on_existing_volume():

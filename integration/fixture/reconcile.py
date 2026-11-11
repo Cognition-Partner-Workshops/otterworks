@@ -15,6 +15,7 @@ from pathlib import Path
 
 CORE = {"a": "urn:activemq:core"}
 BROKER_XML = Path("integration/fixture/broker.xml")
+BROKER_IMAGE = "apache/activemq-artemis:2.40.0-alpine"
 
 
 def multicast_addresses(path=BROKER_XML):
@@ -24,7 +25,10 @@ def multicast_addresses(path=BROKER_XML):
 
 
 def artemis(container, *args):
-    command = ["docker", "exec", container, "./bin/artemis", *args, "--url", "tcp://localhost:61616",
+    # Its own container on the broker's network: a docker exec JVM shares the broker's 512m limit and,
+    # next to the healthcheck JVM, gets the broker OOM-killed.
+    command = ["docker", "run", "--rm", "--network", f"container:{container}",
+               "--entrypoint", "/opt/activemq-artemis/bin/artemis", BROKER_IMAGE, *args, "--url", "tcp://localhost:61616",
                "--user", os.environ["REPLAY_BROKER_USER"], "--password", os.environ["REPLAY_BROKER_PASSWORD"]]
     try:
         return subprocess.run(command, check=True, capture_output=True, text=True, timeout=120).stdout
