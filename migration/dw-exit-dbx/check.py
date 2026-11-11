@@ -1,6 +1,9 @@
 """Validate local assessment and live control-table counts; never creates objects."""
 import sys
 import json
+import copy
+import re
+import subprocess
 from collections import Counter
 from decimal import Decimal
 
@@ -16,6 +19,30 @@ def live_differences(entries, rows):
     return sorted(key for key in expected.keys() | actual.keys() if expected.get(key) != actual.get(key))
 
 
+def manifest_differences(recorded, expected):
+    if recorded['metadata']['spark_ref'] != 'working tree':
+        return [] if recorded == expected else ['manifest fields differ from regenerated estate assessment']
+    failures = []
+    commit = recorded['metadata']['spark_commit']
+    paths = sorted({p for doc in (recorded, expected) for e in doc['objects'] for p in e['source_paths']}
+                   | set(assess.source_files()) | set(assess.spark_files()))
+    try:
+        if not re.fullmatch(r'[0-9a-f]{40}|[0-9a-f]{64}', commit):
+            raise ValueError('invalid commit ID')
+        assess.git('cat-file', '-e', commit + '^{commit}')
+        if assess.git('diff', '--name-only', commit, 'HEAD', '--', *paths).strip() or assess.git('diff', '--name-only', 'HEAD', '--', *paths).strip():
+            failures.append('working-tree assessed sources changed since recorded commit')
+    except (subprocess.CalledProcessError, ValueError):
+        failures.append('working-tree provenance commit does not exist or is invalid')
+    recorded = copy.deepcopy(recorded)
+    expected = copy.deepcopy(expected)
+    for document in (recorded, expected):
+        document['metadata'].pop('spark_commit', None)
+    if recorded != expected:
+        failures.append('manifest fields differ from regenerated estate assessment')
+    return failures
+
+
 def main():
     failures = []
     path = BASE / 'manifest.yaml'
@@ -27,8 +54,7 @@ def main():
         metadata = yaml.safe_load(path.read_text())['metadata']
         assess.SPARK_REF = None if metadata['spark_ref'] == 'working tree' else metadata['spark_ref']
         expected = assess.manifest_document()
-        if yaml.safe_load(path.read_text()) != expected:
-            failures.append('manifest fields differ from regenerated estate assessment')
+        failures.extend(manifest_differences(yaml.safe_load(path.read_text()), expected))
         covered = {p for e in entries for p in e['source_paths']}
         if not set(source_files()) <= covered:
             failures.append('source file coverage incomplete')

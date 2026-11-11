@@ -1,10 +1,12 @@
 import unittest
 import os
+import copy
+import subprocess
 from unittest.mock import patch
 
 from assess import area, loc, mask
 import assess
-from check import live_differences
+from check import live_differences, manifest_differences
 from load_control import connect
 
 
@@ -63,6 +65,25 @@ class AssessmentHelpers(unittest.TestCase):
             self.assertEqual(assess.spark_io(text), (['SEARCH_INDEX_LOG'], ['/opt/lake/documents/parsed']))
             self.assertEqual(assess.spark_io(''), ([], []))
             self.assertEqual(assess.spark_io('landing(spark, "UNKNOWN_TABLE")'), ([], []))
+
+    def test_working_tree_provenance(self):
+        recorded = {'metadata': {'spark_ref': 'working tree', 'spark_commit': 'a' * 40}, 'objects': []}
+        expected = copy.deepcopy(recorded)
+        expected['metadata']['spark_commit'] = 'b' * 40
+        with patch.object(assess, 'source_files', return_value=[]), patch.object(assess, 'spark_files', return_value=[]), patch.object(assess, 'git', return_value=''):
+            self.assertEqual(manifest_differences(recorded, expected), [])
+            expected['objects'] = [{'source_paths': ['source.py'], 'owner': 'changed'}]
+            self.assertIn('manifest fields differ from regenerated estate assessment', manifest_differences(recorded, expected))
+        with patch.object(assess, 'source_files', return_value=[]), patch.object(assess, 'spark_files', return_value=[]), patch.object(assess, 'git', side_effect=['', 'source.py']):
+            self.assertIn('working-tree assessed sources changed since recorded commit', manifest_differences(recorded, expected))
+        with patch.object(assess, 'source_files', return_value=[]), patch.object(assess, 'spark_files', return_value=[]), patch.object(assess, 'git', side_effect=subprocess.CalledProcessError(1, 'git')):
+            self.assertIn('working-tree provenance commit does not exist or is invalid', manifest_differences(recorded, expected))
+
+    def test_pinned_provenance_is_exact(self):
+        recorded = {'metadata': {'spark_ref': 'pr-2740', 'spark_commit': 'a' * 40}, 'objects': []}
+        expected = copy.deepcopy(recorded)
+        expected['metadata']['spark_commit'] = 'b' * 40
+        self.assertTrue(manifest_differences(recorded, expected))
 
 
 if __name__ == '__main__':

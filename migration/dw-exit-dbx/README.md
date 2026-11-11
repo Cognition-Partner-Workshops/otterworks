@@ -107,6 +107,10 @@ retired. updated_at changes on reload. No DELETE or replacement is performed.
 Changing the inventory to remove entries requires explicit operator reconciliation;
 check.py rejects stale row counts rather than deleting demo-owned state.
 It regenerates the complete manifest document in memory and compares every field,
+except the HEAD-derived spark_commit in working-tree mode: that recorded commit
+must exist and all assessed source paths must be unchanged through HEAD and the
+working tree. Committing only generated output therefore does not invalidate the
+assessment. Pinned-ref mode retains exact provenance comparison. It
 then compares live target/wave/owner/risk per ID. Demo-managed status, parity, pr
 and updated_at are intentionally not compared to planned defaults.
 
