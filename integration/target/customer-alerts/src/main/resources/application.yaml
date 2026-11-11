@@ -5,11 +5,25 @@ spring:
     mode: native
     broker-url: ${BROKER_URL:tcp://broker:61616}
     user: ${BROKER_USER:replay}
-    password: ${BROKER_PASSWORD}
+    password: ${BROKER_PASSWORD:integration-local-only}
   datasource:
     url: ${DB_URL:jdbc:postgresql://integration-db:5432/integration}
     username: ${DB_USER:replay}
-    password: ${DB_PASSWORD}
+    password: ${DB_PASSWORD:integration-local-only}
+narayana:
+  log-dir: ${TX_LOG_DIR:/app/transaction-logs}
+  node-identifier: customer-alerts
+  default-timeout: 60
+  periodic-recovery-period: 10
+  recovery-backoff-period: 2
+notifications:
+  url: http://notification-service:8086/api/notifications
+billing:
+  url: http://billing-service:8092/api/fees
+files:
+  url: http://file-service:8082/api/files
+screening:
+  url: http://screening:8080/v1/screen
 camel:
   springboot:
     main-run-controller: true

@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-TIBCO_COMPOSE = NS=$(NS) REPLAY_UID=$$(id -u) REPLAY_GID=$$(id -g) DOCKER_GID=$$(stat -c %g /var/run/docker.sock) docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-$(NS)
+TIBCO_COMPOSE = NS=$(NS) REPLAY_UID=$$(id -u) REPLAY_GID=$$(id -g) DOCKER_GID=$$(stat -c %g /var/run/docker.sock 2>/dev/null || stat -f %g /var/run/docker.sock) docker compose -f docker-compose.yml -f docker-compose.tibco.yml -f docker-compose.tibco.runtime.yml -p otterworks-tibco-$(NS)
 
 .PHONY: tibco-validate tibco-up tibco-replay tibco-parity tibco-fault tibco-fault-smoke tibco-down
 tibco-validate:
@@ -20,6 +20,15 @@ tibco-replay: tibco-validate ## Replay selected integration flows (NS=<namespace
 
 tibco-parity: tibco-replay ## Write integration parity evidence (NS=<namespace>)
 
+.PHONY: tibco-runtime-up tibco-packages
+MODULES ?= customer-alerts fees-billing account-events statements-documents
+tibco-runtime-up: tibco-validate ## Build/start selected module runtimes after tibco-up
+	$(TIBCO_COMPOSE) --profile targets up -d --build $(MODULES)
+	python -m integration.wave0.wait_ready $(NS) $(MODULES)
+
+tibco-packages: ## Discover package-owned replay verification manifests
+	python -m integration.wave0.discover
+
 tibco-fault: tibco-validate ## Run an integration fault (NS=<namespace>, TEST required)
 	@test -n "$(TEST)" || (echo "TEST is required" >&2; exit 2)
 	@case "$(TEST)" in broker-kill) flow=payments.instruction-intake;; consumer-restart) flow=account-events.event-fanout;; poison) flow=customer-alerts.card-dispute;; ordering) flow=account-events.limit-changed;; *) echo "Unknown fault test" >&2; exit 2;; esac; \
@@ -32,7 +41,7 @@ tibco-fault-smoke: tibco-validate ## Prove broker kill against a transactional e
 	$(TIBCO_COMPOSE) run --rm replay-runner fault --corpus /state/fault-corpus --flow echo --test broker-kill --report-dir /reports/fault-smoke
 
 tibco-down: tibco-validate ## Remove only the local integration fixture (NS=<namespace>)
-	$(TIBCO_COMPOSE) down -v
+	$(TIBCO_COMPOSE) --profile targets down -v
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

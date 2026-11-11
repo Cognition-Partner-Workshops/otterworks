@@ -1,0 +1,34 @@
+services:
+  customer-alerts:
+    build:
+      dockerfile: Dockerfile.runtime
+    environment:
+      TX_LOG_DIR: /app/transaction-logs
+    volumes:
+      - customer-alerts-transactions:/app/transaction-logs
+  fees-billing:
+    build:
+      dockerfile: Dockerfile.runtime
+    environment:
+      TX_LOG_DIR: /app/transaction-logs
+    volumes:
+      - fees-billing-transactions:/app/transaction-logs
+  account-events:
+    build:
+      dockerfile: Dockerfile.runtime
+    environment:
+      TX_LOG_DIR: /app/transaction-logs
+    volumes:
+      - account-events-transactions:/app/transaction-logs
+  statements-documents:
+    build:
+      dockerfile: Dockerfile.runtime
+    environment:
+      TX_LOG_DIR: /app/transaction-logs
+    volumes:
+      - statements-documents-transactions:/app/transaction-logs
+volumes:
+  customer-alerts-transactions:
+  fees-billing-transactions:
+  account-events-transactions:
+  statements-documents-transactions:
