@@ -13,6 +13,7 @@ class ContractRuntimeTest(unittest.TestCase):
         live = workflow.split("\n  contract:\n", 1)[1]
         self.assertIn("WAREHOUSE_CONTRACT_TARGET: snowflake", live)
         self.assertIn("actions/setup-python@", live)
+        self.assertRegex(live, r"actions/setup-python@[0-9a-f]{40} # v5")
         self.assertIn("python -m pip install -r consumers/partner-extract/requirements.txt", live)
 
     def test_no_emulator_endpoint(self):
