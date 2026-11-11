@@ -1,0 +1,84 @@
+{
+  "waves": {
+    "1": {
+      "total": 108,
+      "by_kind": {
+        "catalog": 6,
+        "fastload": 22,
+        "macro": 1,
+        "mapping": 6,
+        "session": 6,
+        "table": 45,
+        "tpt": 20,
+        "view": 2
+      },
+      "by_target": {
+        "dbt_model": 49,
+        "retire": 20,
+        "snowflake_scripting": 39
+      }
+    },
+    "2": {
+      "total": 51,
+      "by_kind": {
+        "bteq": 12,
+        "mapping": 9,
+        "session": 9,
+        "table": 21
+      },
+      "by_target": {
+        "dbt_model": 35,
+        "snowflake_scripting": 12,
+        "snowpark": 4
+      }
+    },
+    "3": {
+      "total": 52,
+      "by_kind": {
+        "bteq": 13,
+        "macro": 5,
+        "mapping": 5,
+        "procedure": 4,
+        "session": 5,
+        "table": 18,
+        "workflow": 1,
+        "worklet": 1
+      },
+      "by_target": {
+        "dbt_model": 25,
+        "snowflake_scripting": 24,
+        "snowpark": 3
+      }
+    },
+    "4": {
+      "total": 11,
+      "by_kind": {
+        "view": 9,
+        "workflow": 2
+      },
+      "by_target": {
+        "compatibility_view": 9,
+        "snowflake_scripting": 2
+      }
+    }
+  },
+  "licence_counters": {
+    "teradata_objects": {
+      "remaining": 111,
+      "target": 0
+    },
+    "powercenter_mappings": {
+      "remaining": 20,
+      "target": 0
+    },
+    "spark_executor_hours": {
+      "remaining": 0,
+      "target": 0,
+      "status": "no Spark estate on branch yet"
+    },
+    "powercenter_annual_cost": {
+      "value": 412000,
+      "currency": "USD"
+    }
+  }
+}
