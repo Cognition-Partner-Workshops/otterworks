@@ -2,7 +2,16 @@
     first-seen read order, which is EVENT_ID order for the audit target, so new groups are ranked by MIN(EVENT_ID).
     Existing groups keep their SUMMARY_ID: replay is idempotent instead of the legacy duplicate append. -#}
 {% set sequence_start = var('pc_audit_summary_sequence_start', 50001) | int %}
-{{ config(materialized='incremental', incremental_strategy='merge', unique_key='SUMMARY_ID', full_refresh=false) }}
+{% set reconcile_groups %}
+delete from {{ this }}
+where not exists (
+    select 1 from {{ ref('pc_audit__audit_event') }} e
+    where equal_null(e.EVENT_TS::date, {{ this }}.SUMMARY_DT)
+      and equal_null(e.CUSTOMER_ID::number(38,0), {{ this }}.CUSTOMER_ID)
+)
+{% endset %}
+{{ config(materialized='incremental', incremental_strategy='merge', unique_key='SUMMARY_ID', full_refresh=false,
+          post_hook=[reconcile_groups]) }}
 
 with grouped as (
     select

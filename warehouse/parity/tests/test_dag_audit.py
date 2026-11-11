@@ -61,6 +61,25 @@ def test_rejects_wrong_target_and_scope(tmp_path):
         pc_dag_audit.generate(run, 'PC_FX_UNT9_AUDIT_WF', 'PC_AUDIT')
 
 
+def test_summary_task_replays_model_reconciliation(tmp_path):
+    from jinja2 import Environment
+    import yaml
+
+    model = Path(__file__).resolve().parents[2] / 'dbt/models/pc/audit/pc_audit__audit_daily_summary.sql'
+    config = {}
+    Environment().from_string(model.read_text()).render(
+        config=lambda **kw: config.update(kw) or '', this='SFX_D1110_AFTER.PC_AUDIT.AUDIT_DAILY_SUMMARY',
+        ref=lambda name: 'SFX_D1110_AFTER.PC_AUDIT.AUDIT_EVENT',
+        var=lambda name, default: default, is_incremental=lambda: True)
+    generated = pc_dag_audit.generate(fake_run(tmp_path), 'PC_FX_UNT9_AUDIT_WF', 'PC_AUDIT')
+    committed = yaml.safe_load((pc_dag_audit.ROOT / 'pc_dag/audit.yml').read_text())
+    for doc in (generated, committed):
+        sql = doc['tasks']['AUDIT_DAILY_SUMMARY']['sql']
+        assert config['post_hook'][0].strip() in sql
+        assert sql.index('merge into') < sql.index('delete from') < sql.index('COMMENT ON TABLE')
+        assert 'delete from' not in doc['tasks']['AUDIT_EVENT']['sql']
+
+
 def test_rejects_select_only_body(tmp_path):
     run = fake_run(tmp_path)
     (run / 's_m_SFX_SECURITY_ALERT/run.sql').write_text(f'select count(*) from {FX}SECURITY_ALERT')

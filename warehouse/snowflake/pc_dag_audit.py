@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 import sys
 
+from jinja2 import Environment
 import yaml
 
 ROOT = Path(__file__).resolve().parent
@@ -34,6 +35,17 @@ def unwrap(sql):
     return strip(match.group(1)) if match else sql
 
 
+def summary_hooks(schema):
+    model = ROOT.parent / 'dbt/models/pc/audit/pc_audit__audit_daily_summary.sql'
+    config = {}
+    Environment().from_string(model.read_text()).render(
+        config=lambda **kw: config.update(kw) or '',
+        this=relation(schema, 'AUDIT_DAILY_SUMMARY'),
+        ref=lambda name: relation(schema, name.split('__', 1)[1].upper()),
+        var=lambda name, default: default, is_incremental=lambda: True)
+    return [strip(sql) for sql in config['post_hook']]
+
+
 def body(session_dir, schema, name):
     """Snowflake Scripting block replaying the session's dbt write: CTAS for tables, temp view + MERGE for incrementals."""
     run_sql = unwrap((session_dir / 'run.sql').read_text())
@@ -54,6 +66,8 @@ def body(session_dir, schema, name):
         statements.append(run_sql)
     else:
         raise ValueError(f'{session_dir.name}: unsupported dbt write')
+    if name == 'AUDIT_DAILY_SUMMARY':
+        statements.extend(summary_hooks(schema))
     statements.append(f"COMMENT ON TABLE {target} IS '{COMMENT}'")
     return 'EXECUTE IMMEDIATE $$\nBEGIN\n' + ''.join(s + ';\n' for s in statements) + 'END;\n$$'
 
