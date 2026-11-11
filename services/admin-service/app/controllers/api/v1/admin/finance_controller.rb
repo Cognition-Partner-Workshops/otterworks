@@ -19,9 +19,16 @@ module Api
             return render json: { error: 'Authenticated subject required' }, status: :unauthorized
           end
 
-          return if %w[super_admin admin].include?(current_user_role)
+          return if finance_admin?
 
           render json: { error: 'Administrator role required' }, status: :forbidden
+        end
+
+        def finance_admin?
+          roles = [current_user_role]
+          payload = request.env['jwt.payload']
+          roles += payload['roles'] if payload.is_a?(Hash) && payload['roles'].is_a?(Array)
+          roles.any? { |role| role.is_a?(String) && %w[super_admin admin].include?(role.downcase) }
         end
       end
     end

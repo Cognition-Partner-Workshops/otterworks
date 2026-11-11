@@ -2,7 +2,8 @@
 
 Separate repository owned by **@otterworks/finance-ops**. The JWT-protected
 GET /api/v1/admin/finance/dashboard requires a nonempty string subject and the
-`super_admin` or `admin` role from the verified JWT. Missing subjects receive 401;
+`super_admin` or `admin` role from the verified JWT's `role` or `roles` claims
+(including the auth-service's uppercase `ADMIN`). Missing subjects receive 401;
 other or missing roles receive 403 before cache or warehouse access. It returns
 DSO, AR open balance, last-30-day
 collections and the ten highest overdue accounts. The finance:refresh_dashboard
