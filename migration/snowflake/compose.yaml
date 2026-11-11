@@ -23,5 +23,22 @@ services:
       retries: 30
       start_period: 30s
 
+  metabase:
+    image: metabase/metabase:v0.50.36
+    profiles: ["metabase"]
+    environment:
+      MB_DB_FILE: /metabase-data/metabase.db
+    ports:
+      - "127.0.0.1:${MB_PORT:-3000}:3000"
+    volumes:
+      - metabase-data:/metabase-data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:3000/api/health || wget -qO- http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
 volumes:
   ubw-data:
+  metabase-data:
