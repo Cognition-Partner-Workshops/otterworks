@@ -16,7 +16,19 @@
       <permission type="consume" roles="amq"/><permission type="browse" roles="amq"/><permission type="send" roles="amq"/>
       <permission type="manage" roles="amq"/>
     </security-setting></security-settings>
-    <address-settings><address-setting match="#">
+    <address-settings><address-setting match="HB.ACCOUNT.EVENTS.IN">
+      <default-queue-routing-type>MULTICAST</default-queue-routing-type>
+    </address-setting><address-setting match="HB.ACCOUNT.EVENTS">
+      <default-queue-routing-type>MULTICAST</default-queue-routing-type>
+    </address-setting><address-setting match="HB.ACCOUNT.OPENED">
+      <default-queue-routing-type>MULTICAST</default-queue-routing-type>
+    </address-setting><address-setting match="HB.ADDRESS.CHANGED">
+      <default-queue-routing-type>MULTICAST</default-queue-routing-type>
+    </address-setting><address-setting match="HB.LIMIT.CHANGED">
+      <default-queue-routing-type>MULTICAST</default-queue-routing-type>
+    </address-setting><address-setting match="HB.ACCOUNT.CLOSED">
+      <default-queue-routing-type>MULTICAST</default-queue-routing-type>
+    </address-setting><address-setting match="#">
       <dead-letter-address>HB.UNDLV</dead-letter-address><expiry-address>HB.EXPIRY</expiry-address>
       <max-delivery-attempts>4</max-delivery-attempts><redelivery-delay>100</redelivery-delay>
       <auto-create-queues>true</auto-create-queues><auto-create-addresses>true</auto-create-addresses>
