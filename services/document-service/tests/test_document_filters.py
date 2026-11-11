@@ -86,3 +86,45 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_title_quote_is_bound_not_injected(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "x') OR 1=1--"})
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_content_type_tautology_matches_nothing(
+    client: AsyncClient, owner_id: uuid.UUID
+):
+    await _create(client, owner_id, "Plan", content_type="text/markdown")
+
+    resp = await client.get(
+        "/api/v1/documents/", params={"content_type": "text/markdown' OR '1'='1"}
+    )
+
+    assert resp.status_code == 200
+    assert resp.json()["items"] == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "params",
+    [{"sort": "id;select 1"}, {"sort": "title", "direction": "desc; DROP TABLE documents"}],
+)
+async def test_sort_outside_allowlist_is_rejected(
+    client: AsyncClient, owner_id: uuid.UUID, params: dict
+):
+    await _create(client, owner_id, "Quarterly Report")
+
+    resp = await client.get("/api/v1/documents/", params=params)
+
+    assert resp.status_code == 400
+    detail = resp.json()["detail"]
+    assert "sqlite" not in detail.lower() and "SELECT" not in detail
+    assert "select 1" not in detail and "DROP" not in detail

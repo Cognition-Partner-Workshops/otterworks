@@ -31,6 +31,14 @@ COLUMNS = (
 )
 
 
+SORTABLE_COLUMNS = {column: column for column in COLUMNS}
+SORT_DIRECTIONS = {"asc": "ASC", "desc": "DESC"}
+
+
+class InvalidFilterError(ValueError):
+    """A caller-supplied sort field or direction is not on the allow-list."""
+
+
 class DocumentQueryRepository:
     """Reads the document table for the list endpoint's metadata filters."""
 
@@ -43,17 +51,34 @@ class DocumentQueryRepository:
         title_contains: str | None,
         content_type: str | None,
         folder_id: str | None = None,
-    ) -> str:
+    ) -> tuple[str, dict[str, Any]]:
         clauses = ["is_deleted = false", "is_template = false"]
+        params: dict[str, Any] = {}
         if owner_id:
-            clauses.append(f"owner_id = '{owner_id}'")
+            clauses.append("owner_id = :owner_id")
+            params["owner_id"] = owner_id
         if folder_id:
-            clauses.append(f"folder_id = '{folder_id}'")
+            clauses.append("folder_id = :folder_id")
+            params["folder_id"] = folder_id
         if title_contains:
-            clauses.append(f"lower(title) LIKE lower('%{title_contains}%')")
+            clauses.append("lower(title) LIKE lower(:title_pattern)")
+            params["title_pattern"] = f"%{title_contains}%"
         if content_type:
-            clauses.append(f"content_type = '{content_type}'")
-        return " AND ".join(clauses)
+            clauses.append("content_type = :content_type")
+            params["content_type"] = content_type
+        return " AND ".join(clauses), params
+
+    @staticmethod
+    def _order_by(sort: str, direction: str) -> str:
+        column = SORTABLE_COLUMNS.get(sort)
+        order = SORT_DIRECTIONS.get(str(direction).lower())
+        if column is None:
+            raise InvalidFilterError(
+                "Unsupported sort field; allowed: " + ", ".join(SORTABLE_COLUMNS)
+            )
+        if order is None:
+            raise InvalidFilterError("Unsupported sort direction; allowed: asc, desc")
+        return f"{column} {order}"
 
     async def count_documents(
         self,
@@ -64,15 +89,10 @@ class DocumentQueryRepository:
         folder_id: str | None = None,
     ) -> int:
         """Count documents matching the metadata filters."""
-        sql = (
-            "SELECT count(*) FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
+        where, params = self._where(owner_id, title_contains, content_type, folder_id)
+        result = await self.db.execute(
+            text(f"SELECT count(*) FROM documents WHERE {where}"), params
         )
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
         return int(result.scalar_one())
 
     async def search_documents(
@@ -88,15 +108,14 @@ class DocumentQueryRepository:
         offset: int = 0,
     ) -> list[dict[str, Any]]:
         """Return document rows matching the metadata filters, newest first."""
+        order_by = self._order_by(sort, direction)
+        where, params = self._where(owner_id, title_contains, content_type, folder_id)
+        params["limit"] = int(limit)
+        params["offset"] = int(offset)
         sql = (
-            f"SELECT {', '.join(COLUMNS)} FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
-            + f" ORDER BY {sort} {direction} LIMIT {limit} OFFSET {offset}"
+            f"SELECT {', '.join(COLUMNS)} FROM documents WHERE {where}"
+            f" ORDER BY {order_by} LIMIT :limit OFFSET :offset"
         )
         logger.debug("document_filter_query", sort=sort, direction=direction)
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
+        result = await self.db.execute(text(sql), params)
         return [dict(row._mapping) for row in result]
