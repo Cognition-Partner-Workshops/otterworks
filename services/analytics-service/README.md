@@ -150,10 +150,13 @@ Set FINANCE_WAREHOUSE_ENABLED=false or finance.warehouse.enabled=false to
 disable the route. It defaults on, without connecting at startup.
 
 Revenue uses invoice subtotals for the selected subscriptions, excluding tax.
-Specifically, revenue is COMPAT.INVOICE_HDR.SUBTOTAL_AMOUNT, equal to
-TOTAL_AMOUNT-ZEROIFNULL(TAX_AMOUNT) on live data. COMPAT SUBTOTAL/TOTAL are
-pre-invoicing values, not P_MONTHLY_INVOICE recalculated amounts, so
-BILLED_REVENUE differs from Teradata by design of the target data.
+Specifically, revenue is COMPAT.INVOICE_HDR.SUBTOTAL_AMOUNT, preserving the
+legacy measure. It equals TOTAL_AMOUNT-ZEROIFNULL(TAX_AMOUNT) when those
+invoice columns reconcile; the consumer does not derive revenue from total
+and tax. Amount provenance depends on the shared COMPAT views and data.
+If they expose landed pre-invoicing values instead of P_MONTHLY_INVOICE
+recalculated amounts, BILLED_REVENUE differs from Teradata. A passing live
+contract checks shape and calendar semantics, not monetary parity.
 Cash is grouped independently by payment month, attributed through each
 payment's invoice to its subscription. Both are aggregated before joining the
 month/account grid. Accounts are deduplicated within each plan; active counts
