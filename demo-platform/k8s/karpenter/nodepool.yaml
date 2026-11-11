@@ -21,10 +21,10 @@ spec:
   # Created by Terraform rather than by Karpenter, which is why the controller
   # holds no IAM write permissions.
   instanceProfile: __INSTANCE_PROFILE__
-  # The cluster runs without a NAT gateway (deliberately -- it would cost more
-  # than the public addresses do), so nodes reach ECR and the API over a public
-  # IP. Same arrangement the managed node group already uses.
-  associatePublicIPAddress: true
+  # Nodes launch into the private subnets (the only ones carrying the discovery
+  # tag) and reach ECR and the API through the NAT gateway, never over a public
+  # IP. Same arrangement the managed node group uses.
+  associatePublicIPAddress: false
   blockDeviceMappings:
     - deviceName: /dev/xvda
       ebs:

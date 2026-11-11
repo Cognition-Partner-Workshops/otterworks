@@ -80,12 +80,14 @@ if [ "${MODE}" = "all" ]; then
 
   log "Full teardown complete. Everything destroyed."
 else
-  # Targeted destroy of just the EKS module: removes the control plane, node group
-  # and add-ons while leaving the VPC + ECR (and the whole app-infra layer) intact.
-  log "Destroying EKS compute only (module.eks); VPC, ECR and app data are kept..."
+  # Targeted destroy of the EKS module plus the NAT gateway and its EIP (paid,
+  # and only the private-subnet nodes use them). The rest of the VPC, ECR and
+  # the whole app-infra layer stay; spinup-dev.sh's full apply recreates them.
+  log "Destroying EKS compute and the NAT gateway; VPC, ECR and app data are kept..."
   terraform -chdir="${REPO_ROOT}/platform/terraform" init -input=false
   terraform -chdir="${REPO_ROOT}/platform/terraform" destroy \
-    -target=module.eks -var-file=environments/dev.tfvars -auto-approve -input=false
+    -target=module.eks -target=module.vpc.aws_nat_gateway.main -target=module.vpc.aws_eip.nat \
+    -var-file=environments/dev.tfvars -auto-approve -input=false
 
   log "EKS torn down. Residual cost is just RDS/Redis/S3/DynamoDB (~\$25/mo)."
   log "Spin back up with: AWS_ACCOUNT_ID=<id> DB_PASSWORD=<pw> ./scripts/spinup-dev.sh"

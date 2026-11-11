@@ -44,12 +44,15 @@ provider "aws" {
 module "vpc" {
   source = "./modules/vpc"
 
-  project            = "otterworks"
-  environment        = var.environment
-  vpc_cidr           = var.vpc_cidr
-  az_count           = var.az_count
-  cluster_name       = var.cluster_name
-  enable_nat_gateway = var.enable_nat_gateway
+  project      = "otterworks"
+  environment  = var.environment
+  vpc_cidr     = var.vpc_cidr
+  az_count     = var.az_count
+  cluster_name = var.cluster_name
+
+  # Nodes have no public IPs, so the NAT gateway is their only route to ECR,
+  # the EKS API and public image registries.
+  enable_nat_gateway = true
 }
 
 # --- EKS ---
@@ -64,8 +67,7 @@ module "eks" {
 
   public_subnet_ids  = module.vpc.public_subnet_ids
   private_subnet_ids = module.vpc.private_subnet_ids
-  # Use public subnets for nodes in dev (no NAT gateway needed, cost-optimized)
-  node_subnet_ids = var.enable_nat_gateway ? module.vpc.private_subnet_ids : module.vpc.public_subnet_ids
+  node_subnet_ids    = module.vpc.private_subnet_ids
 
   node_instance_types = var.node_instance_types
   node_capacity_type  = var.node_capacity_type

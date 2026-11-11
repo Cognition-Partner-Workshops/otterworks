@@ -150,6 +150,10 @@ resource "aws_launch_template" "node_group" {
     http_put_response_hop_limit = 2
   }
 
+  # No network interface override here: it breaks the multi-instance-type Spot node
+  # group. Nodes get no public IP because node_subnet_ids are the private
+  # subnets, which do not map public IPs on launch.
+
   dynamic "tag_specifications" {
     for_each = toset(["instance", "volume", "network-interface"])
     content {

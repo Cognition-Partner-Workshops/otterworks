@@ -8,9 +8,8 @@ cluster_name = "otterworks-dev"
 # support until 2026-12-02; schedule the next bump before then.
 cluster_version = "1.34"
 
-vpc_cidr           = "10.0.0.0/16"
-az_count           = 2
-enable_nat_gateway = false
+vpc_cidr = "10.0.0.0/16"
+az_count = 2
 
 # This group is the SYSTEM pool, not the tenant pool. Tenant capacity comes and
 # goes with Karpenter (demo-platform/scripts/install-karpenter.sh), which the
