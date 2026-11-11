@@ -17,6 +17,15 @@ Build with `integration/target/mvnw -f integration/target/pom.xml package` on JD
 read-only pilot prerequisite). `make tibco-down NS=w0` removes this namespace.
 Docker Compose v2 is required. Make's socket group detection supports GNU/Linux
 and BSD/macOS stat. macOS execution is **not verified by this Linux checkpoint**.
+`REPLAY_UID`, `REPLAY_GID`, and `DOCKER_GID` accept environment or Make command-line
+overrides. Linux defaults remain the current user's uid/gid and Docker socket gid.
+On Darwin, a primary gid below 1000 defaults to 1000: macOS's staff gid 20 already
+exists in the Linux replay image and cannot be passed to its groupadd.
+Socket detection uses the path in a `unix://` `DOCKER_HOST`, otherwise
+`/var/run/docker.sock`; an absent socket defaults to gid 0 without a stat error.
+With Colima, the socket mounted inside the VM has the relevant group, which can
+differ from the macOS socket. Pass that VM gid explicitly, for example
+`make tibco-up NS=w0 DOCKER_GID=<vm-socket-gid>`.
 Do not enable the application profile to satisfy HTTP calls with the unrelated
 golden app. No production endpoints or credentials are configured.
 
@@ -28,6 +37,15 @@ The primary DataSource is XA; inject `@Qualifier("autoCommitDataSource")` explic
 for AUTO_COMMIT activity JDBC. The latter is not enlisted in JTA. JMS uses
 CACHE_NONE, exposeListenerSession, persistent sends, one consumer and 100ms
 recovery. Global route configuration sets Camel redeliveries to zero.
+
+Shared and package Spring tests can import `runtime.IsolatedRuntimeTestConfiguration`.
+It replaces both datasources with distinct H2 databases (the primary remains
+Narayana-wrapped XA), initializes them from the read-only frozen database schema,
+and supplies an isolated in-VM Artemis with XA JMS. Run tests from within the
+repository so the schema can be located. No production readiness callbacks or
+routes are disabled: package DB checks and output queue declaration still execute.
+SkeletonTest compares installed routes with the definitions from package-owned
+RouteBuilder beans, checks the shared JMS/retry contract, and verifies DB isolation.
 
 Packages must preserve source transaction scopes; availability of JTA does not
 authorize widening them. Use the `required` policy only as needed.
