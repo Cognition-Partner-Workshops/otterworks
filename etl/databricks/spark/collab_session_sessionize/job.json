@@ -1,0 +1,27 @@
+{
+  "name": "dbx-d1111-spark-collab_session_sessionize",
+  "description": "run_token=dbx-d1111 expires=2026-11-24",
+  "tags": {
+    "run_token": "dbx-d1111",
+    "expires": "2026-11-24",
+    "act": "spark"
+  },
+  "max_concurrent_runs": 1,
+  "timeout_seconds": 3600,
+  "tasks": [
+    {
+      "task_key": "collab_session_sessionize",
+      "sql_task": {
+        "file": {
+          "path": "/Workspace/Shared/dbx-d1111-spark/collab_session_sessionize/collab_session_sessionize.sql",
+          "source": "WORKSPACE"
+        },
+        "warehouse_id": "${DATABRICKS_WAREHOUSE_ID}"
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}
