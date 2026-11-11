@@ -169,7 +169,9 @@ build_and_push() {
 
   local image="${ECR_REGISTRY}/${ECR_PREFIX}${service}:${IMAGE_TAG}"
   log "Building ${service}..."
-  docker build -t "${image}" "${service_dir}" --platform linux/amd64
+  local build_contexts=()
+  [ "${service}" = "admin-service" ] && build_contexts=(--build-context "contract-kit=${REPO_ROOT}/consumers/contract-kit")
+  docker build -t "${image}" "${service_dir}" --platform linux/amd64 "${build_contexts[@]}"
   log "Pushing ${service}..."
   docker push "${image}"
 }

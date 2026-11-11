@@ -2,7 +2,7 @@ name: Consumer admin-service
 
 on:
   push:
-    branches: [demo-snowflake-dw-exit, 'devin/sfx-d1110-**']
+    branches: [demo-snowflake-dw-exit, 'devin/sfx-d1110-**', demo-databricks-dw-exit, 'devin/dbx-d1111-**']
     paths: ['services/admin-service/**', '.github/workflows/consumer-admin-service.yml']
   pull_request:
     paths: ['services/admin-service/**', '.github/workflows/consumer-admin-service.yml']
@@ -90,3 +90,38 @@ jobs:
           bundler-cache: true
           working-directory: services/admin-service
       - run: "cd services/admin-service && bundle exec rspec contract"
+
+  databricks-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - id: check
+        env:
+          PRESENT: ${{ secrets.DATABRICKS_HOST != '' && secrets.DATABRICKS_TOKEN != '' && secrets.DATABRICKS_WAREHOUSE_ID != '' }}
+        run: echo "present=$PRESENT" >> "$GITHUB_OUTPUT"
+
+  contract-databricks:
+    needs: [unit, databricks-secrets]
+    if: needs.databricks-secrets.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    env:
+      BUNDLE_FROZEN: 'true'
+      WAREHOUSE_CONTRACT_TARGET: databricks
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      DATABRICKS_WAREHOUSE_ID: ${{ secrets.DATABRICKS_WAREHOUSE_ID }}
+      CONTRACT_KIT_PYTHON: ${{ github.workspace }}/.contract-venv/bin/python
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m venv .contract-venv && .contract-venv/bin/pip install -r consumers/contract-kit/requirements-databricks.txt
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: services/admin-service
+      - run: "cd services/admin-service && bundle exec rspec contract"
+

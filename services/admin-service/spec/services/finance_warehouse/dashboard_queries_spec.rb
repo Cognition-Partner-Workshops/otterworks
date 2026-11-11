@@ -56,4 +56,21 @@ RSpec.describe FinanceWarehouse::DashboardQueries do
     expect(client).not_to receive(:query)
     expect(queries.dashboard).to eq(refreshed)
   end
+
+  context 'with the Databricks client' do
+    let(:client) { instance_double(FinanceWarehouse::DatabricksClient) }
+
+    before do
+      allow(client).to receive(:is_a?).and_return(false)
+      allow(client).to receive(:is_a?).with(FinanceWarehouse::DatabricksClient).and_return(true)
+      allow(client).to receive(:query).with(described_class::DATABRICKS_SUMMARY_SQL).and_return([summary])
+      allow(client).to receive(:query).with(described_class::DATABRICKS_OVERDUE_SQL).and_return([account])
+    end
+
+    it 'sends the native Databricks SQL and maps the same API shape' do
+      expect(queries.call[:top_overdue_accounts].first).to include(account_no: 'A000318274', oldest_due_date: '2025-10-15')
+      expect(described_class::DATABRICKS_SUMMARY_SQL).not_to match(/\b(SEL|ZEROIFNULL|NULLIFZERO|TOP)\b|1200101/)
+      expect(described_class::DATABRICKS_OVERDUE_SQL).not_to match(/\b(SEL|ZEROIFNULL|TOP|QUALIFY|FORMAT)\b|1200101/)
+    end
+  end
 end

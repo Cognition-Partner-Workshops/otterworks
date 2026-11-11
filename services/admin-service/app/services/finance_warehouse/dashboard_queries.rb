@@ -52,11 +52,68 @@ module FinanceWarehouse
       ORDER BY OVERDUE_BALANCE DESC, ACCOUNT_NO
     SQL
 
+    # Native Databricks SQL over the Teradata-shaped billing__* tables in the session schema.
+    DATABRICKS_SUMMARY_SQL = <<~SQL.freeze
+      WITH ar AS (
+        SELECT COALESCE(SUM(j.debit_amount - j.credit_amount), 0) AS AR_OPEN_BALANCE
+        FROM billing__gl_journal_line j
+        JOIN billing__gl_account a ON a.gl_account_id = j.gl_account_id
+        WHERE rtrim(a.account_number) = '1200'
+      ), billed AS (
+        SELECT COALESCE(SUM(total_amount), 0) AS BILLED_30_DAYS FROM billing__invoice_hdr
+        WHERE invoice_dt > date_sub(CURRENT_DATE, 30) AND invoice_dt <= CURRENT_DATE
+          AND invoice_dt >= DATE '2020-01-01'
+      ), credits AS (
+        SELECT COALESCE(SUM(amount), 0) AS CREDITS_30_DAYS FROM billing__credit_note
+        WHERE credit_dt > date_sub(CURRENT_DATE, 30) AND credit_dt <= CURRENT_DATE
+      ), collected AS (
+        SELECT COALESCE(SUM(amount), 0) AS COLLECTIONS_30_DAYS FROM billing__payment
+        WHERE payment_dt > date_sub(CURRENT_DATE, 30) AND payment_dt <= CURRENT_DATE
+      ), net_billed AS (
+        SELECT billed.BILLED_30_DAYS - credits.CREDITS_30_DAYS AS AMOUNT
+        FROM billed CROSS JOIN credits
+      ), metrics AS (
+        SELECT ar.AR_OPEN_BALANCE, collected.COLLECTIONS_30_DAYS,
+          CAST(CAST(ar.AR_OPEN_BALANCE AS DECIMAL(17, 2))
+            / NULLIF(CAST(net_billed.AMOUNT AS DECIMAL(17, 2)), 0) AS DECIMAL(35, 20)) * 30 AS RAW_DSO
+        FROM ar CROSS JOIN net_billed CROSS JOIN collected
+      )
+      SELECT AR_OPEN_BALANCE, COLLECTIONS_30_DAYS, COALESCE(RAW_DSO, 0) AS DSO FROM metrics
+    SQL
+    DATABRICKS_OVERDUE_SQL = <<~SQL.freeze
+      WITH paid AS (
+        SELECT invoice_id, SUM(amount) AS PAID FROM billing__payment GROUP BY invoice_id
+      ), overdue AS (
+        SELECT i.customer_id, date_add(i.invoice_dt, 30) AS DUE_DT,
+          i.total_amount - COALESCE(p.PAID, 0) AS OPEN_BALANCE
+        FROM billing__invoice_hdr i
+        LEFT JOIN paid p ON p.invoice_id = i.invoice_id
+        WHERE i.invoice_dt >= DATE '2020-01-01' AND date_add(i.invoice_dt, 30) < CURRENT_DATE
+          AND i.total_amount - COALESCE(p.PAID, 0) > 0
+      ), accounts AS (
+        SELECT a.account_number AS ACCOUNT_NO, a.account_name AS CUSTOMER_NAME,
+          MIN(i.DUE_DT) AS OLDEST_DUE_DATE, SUM(i.OPEN_BALANCE) AS OVERDUE_BALANCE
+        FROM overdue i JOIN billing__customer_account a ON a.customer_id = i.customer_id
+        GROUP BY a.account_number, a.account_name
+      )
+      SELECT ACCOUNT_NO, CUSTOMER_NAME, OLDEST_DUE_DATE, OVERDUE_BALANCE FROM accounts
+      ORDER BY OVERDUE_BALANCE DESC, ACCOUNT_NO
+      LIMIT 10
+    SQL
+    SQL_BY_DIALECT = {
+      teradata: { summary: SUMMARY_SQL, overdue: OVERDUE_SQL },
+      databricks: { summary: DATABRICKS_SUMMARY_SQL, overdue: DATABRICKS_OVERDUE_SQL }
+    }.freeze
+
     def self.enabled?
       ActiveModel::Type::Boolean.new.cast(Rails.application.config_for(:finance_warehouse).fetch(:enabled))
     end
 
-    def initialize(client: TeradataClient.new)
+    def self.default_client
+      ENV['FINANCE_WAREHOUSE_TARGET'] == 'databricks' ? DatabricksClient.new : TeradataClient.new
+    end
+
+    def initialize(client: self.class.default_client)
       @client = client
     end
 
@@ -73,12 +130,13 @@ module FinanceWarehouse
 
     def call
       check_enabled!
-      summary = @client.query(SUMMARY_SQL).fetch(0)
+      sql = SQL_BY_DIALECT.fetch(@client.is_a?(DatabricksClient) ? :databricks : :teradata)
+      summary = @client.query(sql.fetch(:summary)).fetch(0)
       {
         dso: decimal(summary.fetch('DSO')),
         ar_open_balance: decimal(summary.fetch('AR_OPEN_BALANCE')),
         collections_30_days: decimal(summary.fetch('COLLECTIONS_30_DAYS')),
-        top_overdue_accounts: @client.query(OVERDUE_SQL).map { |row| overdue_account(row) }
+        top_overdue_accounts: @client.query(sql.fetch(:overdue)).map { |row| overdue_account(row) }
       }
     end
 

@@ -41,7 +41,7 @@ jobs:
           - { name: notification-service, context: services/notification-service }
           - { name: search-service, context: services/search-service }
           - { name: analytics-service, context: services/analytics-service }
-          - { name: admin-service, context: services/admin-service }
+          - { name: admin-service, context: services/admin-service, build-contexts: 'contract-kit=consumers/contract-kit' }
           - { name: audit-service, context: services/audit-service }
           - { name: report-service, context: services/report-service }
           - { name: web-app, context: frontend/client-app }
@@ -76,6 +76,7 @@ jobs:
         uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: ${{ matrix.service.context }}
+          build-contexts: ${{ matrix.service.build-contexts }}
           push: true
           platforms: linux/amd64
           # otterworks/<service>: the repository layout every deploy script

@@ -345,6 +345,8 @@ services:
     build:
       context: ./services/admin-service
       dockerfile: Dockerfile
+      additional_contexts:
+        contract-kit: ./consumers/contract-kit
     container_name: otterworks-admin-service
     ports:
     - 8089:8089

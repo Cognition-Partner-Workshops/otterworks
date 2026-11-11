@@ -2,8 +2,8 @@
   "query": "dashboard-summary",
   "row_count": 1,
   "sums": {
-    "AR_OPEN_BALANCE": "315022.97",
-    "COLLECTIONS_30_DAYS": "117504.79",
-    "DSO": "30.40584499934479377450"
+    "AR_OPEN_BALANCE": "738280.13",
+    "COLLECTIONS_30_DAYS": "268853.38",
+    "DSO": "30.17184067471658528550"
   }
 }
