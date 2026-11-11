@@ -80,3 +80,16 @@ def test_seed_preserves_numeric_amounts_and_rejects_repeat_seeding(tmp_path):
     assert '"amount":120.00' in landing.read_text()
     with pytest.raises(ValueError, match="already seeded"):
         seed(landing)
+
+
+def test_total_of_valid_cent_amounts_is_exact(tmp_path):
+    landing = tmp_path / "large.jsonl"
+    landing.write_text(
+        '{"invoice_id":1,"customer_id":10,"amount":"99999999999999999999999999.99","currency":"USD"}\n'
+        '{"invoice_id":2,"customer_id":10,"amount":"99999999999999999999999999.99","currency":"USD"}\n'
+        '{"invoice_id":3,"customer_id":10,"amount":-0.01,"currency":"USD"}\n')
+    result = subprocess.run([sys.executable, "-m", "warehouse.databricks_operate.drift",
+                             "check", "--landing", str(landing)], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"rows": 3, "invoice_ids": [1, 2, 3],
+                                         "amount": "199999999999999999999999999.97"}
