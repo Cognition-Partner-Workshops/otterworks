@@ -72,9 +72,12 @@ at `<out>/<area>/<TABLE>/<business-date>.psv`.
 
 Names and financial profiles are generated from deterministic word-part lists
 without external name services. `GL_ACCOUNT` supplies the chart of accounts.
-The `GL_JOURNAL_LINE` feed is empty; monthly processing posts invoice and credit
-note entries into its core table. The monthly run replaces its journal entries
-and subscription/adjustment lines, making repeated processing reproducible.
+The `GL_JOURNAL_LINE` feed contains balanced prior-month invoice closes and credit
+reversals. Core loading replaces the matching historical posting dates. The monthly
+BTEQ posts current-period invoice and credit entries, replacing only that period;
+older postings remain intact. It exports `gl_trial_balance.psv` with account totals
+and a grand total, and exits nonzero if any currency is out of balance. The procedure
+calculates invoice lines, tax, totals and currency controls before journal posting.
 
 `bteq.setup` executes the Teradata files in `teradata/ddl`, creating schemas and
 tables before views; missing columns are added to existing tables without removing

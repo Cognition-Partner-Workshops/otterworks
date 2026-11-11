@@ -42,7 +42,7 @@ def test_references_and_reserved_rows():
     for table in TABLES:
         for column in table.names[1:]:
             if column in REFERENCES:
-                assert {row[column] for row in tables[table.name]} <= keys[REFERENCES[column]]
+                assert {row[column] for row in tables[table.name] if row[column] is not None} <= keys[REFERENCES[column]]
     plans = {row['PLAN_CODE'].strip().upper() for row in tables['PLAN_CATALOG']}
     assert all(row['PLAN_CODE'].strip().upper() in plans for row in tables['SUBSCRIPTION'])
     users = [r for r in tables['APP_USER'] if r['USER_ID'] >= RESERVED_START]
@@ -112,7 +112,13 @@ def test_finance_and_document_profiles():
     assert {r['METHOD_CD'] for r in tables['PAYMENT']} == {'CARD', 'BANK_WIRE', 'ACH', 'DIRECT_DEBIT'}
     assert all(r['REASON_TEXT'] and r['CREDIT_NUMBER'].startswith('CRN-') for r in tables['CREDIT_NOTE'])
     assert {r['GL_ACCOUNT_ID'] for r in tables['GL_ACCOUNT']} == {r[0] for r in CHART}
-    assert tables['GL_JOURNAL_LINE'] == []
+    journals = tables['GL_JOURNAL_LINE']
+    assert journals and {r['POSTING_DT'] for r in journals} == {'2026-10-31'}
+    assert sum(Decimal(r['DEBIT_AMOUNT'])-Decimal(r['CREDIT_AMOUNT']) for r in journals) == 0
+    assert any(r['CREDIT_NOTE_ID'] is not None for r in journals)
+    assert len({r['JOURNAL_LINE_ID'] for r in journals}) == len(journals)
+    for invoice in {r['INVOICE_ID'] for r in journals}:
+        assert sum(Decimal(r['DEBIT_AMOUNT'])-Decimal(r['CREDIT_AMOUNT']) for r in journals if r['INVOICE_ID']==invoice) == 0
     assert all(r['DOCUMENT_NAME'].endswith('.'+r['FILE_TYPE']) for r in tables['DOCUMENT'])
     assert {r['FILE_TYPE'] for r in tables['DOCUMENT']} == set(FILE_TYPES)
     assert all(r['EVENT_TYPE'] in r['DETAILS'] for r in tables['AUDIT_EVENT'])
@@ -123,3 +129,11 @@ def test_finance_and_document_profiles():
             for column in table.columns:
                 if column.kind.startswith(('C', 'V')) and not (table.name == 'APP_USER' and column.name == 'DISPLAY_NAME'):
                     assert len(row[column.name]) <= int(column.kind[1:]), (table.name, column.name, row[column.name])
+
+
+@pytest.mark.parametrize('date,expected', [('20261109','2026-10-31'), ('20240301','2024-02-29'), ('20260101','2025-12-31')])
+def test_journal_periods(date, expected):
+    rows = list(rows_for(BY_NAME['GL_JOURNAL_LINE'], 1, 1110, dt.datetime.strptime(date,'%Y%m%d').date()))
+    assert len(rows) == 7
+    assert {r['POSTING_DT'] for r in rows} == {expected}
+    assert sum(Decimal(r['DEBIT_AMOUNT']) for r in rows) == sum(Decimal(r['CREDIT_AMOUNT']) for r in rows)

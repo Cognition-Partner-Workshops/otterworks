@@ -10,9 +10,6 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from bteq.parser import commands
-
-
 INSTALL_DOCS = 'https://docs.snowflake.com/en/en/migrations/snowconvert-docs/general/user-guide/snowconvert/command-line-interface/README'
 
 
@@ -22,11 +19,10 @@ def prepare_input(destination):
     paths.append(ROOT / 'dbql/schema.sql')
     count = 0
     for path in paths:
-        for index, statement in enumerate(commands(path.read_text())):
-            target = destination / path.relative_to(ROOT).parent / (path.stem+f'_{index:03d}.sql')
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(statement+';\n')
-            count += 1
+        target = destination / path.relative_to(ROOT)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, target)
+        count += 1
     for path in sorted((ROOT / 'scripts').glob('*/*.bteq')) + sorted((ROOT / 'dbql').glob('*.bteq')):
         target = destination / path.relative_to(ROOT)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -51,21 +47,29 @@ def convert(scai, namespace):
     print(f'SnowConvert input: {count} files; output: {output}', flush=True)
     project = output / 'project'
     with (output / 'command.log').open('w') as log:
-        for arguments, cwd in [(['init', str(project), '-l', 'Teradata'], output),
-                               (['code', 'add', '-i', str(source), '--code-already-split'], project),
-                               (['code', 'convert', '--help'], project),
-                               (['code', 'convert', '--scripttargetlanguage', 'SnowScript'], project)]:
+        for stage, arguments, cwd in [('init', ['init', 'project', '-n', 'sfx-d1110-teradata-'+namespace, '-l', 'Teradata', '-c', 'sfx_d1110'], output),
+                                      ('add', ['code', 'add', '-i', str(source)], project),
+                                      ('convert', ['code', 'convert', '--show-ewis'], project)]:
             command = [executable, *arguments]
             log.write('$ '+shlex.join(command)+'\n')
             log.flush()
             environment = {key: value for key, value in os.environ.items() if key != 'SNOWFLAKE_PRIVATE_KEY'}
             environment['SNOWFLAKE_CONNECTION'] = 'sfx_d1110'
-            result = subprocess.run(command, cwd=cwd, stdout=log, stderr=subprocess.STDOUT, env=environment)
+            with (output / (stage+'.log')).open('w') as stage_log:
+                result = subprocess.run(command, cwd=cwd, stdout=stage_log, stderr=subprocess.STDOUT, env=environment)
+            log.write((output / (stage+'.log')).read_text())
             log.write(f'EXIT {result.returncode}\n')
             log.flush()
             if result.returncode:
                 print(f'SnowConvert exited {result.returncode}; see {output / "command.log"}', file=sys.stderr)
                 return result.returncode
+    if (project / 'snowflake').exists():
+        shutil.copytree(project / 'snowflake', output / 'raw-output')
+        for reports, target in [(project / '.scai/reports', 'Reports'), (project / 'reports', 'Reports/Add'),
+                                (project / '.scai/logs', 'Logs')]:
+            if reports.exists():
+                shutil.copytree(reports, output / 'raw-output' / target, dirs_exist_ok=True)
+    print(f'SnowConvert raw output: {output / "raw-output"}')
     return 0
 
 

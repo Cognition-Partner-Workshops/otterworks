@@ -81,7 +81,12 @@ def prepare_seed(source, destination, date):
     result = []
     for table in TABLES:
         path = source / table.area / table.name / f'{date}.psv'
-        fallback = table.name == 'GL_JOURNAL_LINE' and path.stat().st_size == 0
+        journal = None
+        if table.name == 'GL_JOURNAL_LINE':
+            # The shared seed carries only prior-period Teradata history; the batch journal is derived here.
+            month = f'{date[:4]}-{date[4:6]}'
+            journal = [r for r in seed_rows(path, table) if str(r['POSTING_DT'])[:7] == month]
+        fallback = journal is not None and not journal
         fields = list(table.names)
         if table.name == 'GL_JOURNAL_LINE':
             fields.append('JOURNAL_ID')
@@ -91,12 +96,12 @@ def prepare_seed(source, destination, date):
         with gzip.open(output, 'wt', newline='', encoding='utf-8') as stream:
             writer = csv.DictWriter(stream, fieldnames=fields, delimiter='|', lineterminator='\n')
             writer.writeheader()
-            rows = journal_rows(source, date) if fallback else seed_rows(path, table)
+            rows = journal_rows(source, date) if fallback else journal if journal is not None else seed_rows(path, table)
             for row in rows:
                 if table.name == 'GL_JOURNAL_LINE':
                     row.setdefault('JOURNAL_ID', row['INVOICE_ID'])
                 writer.writerow(row)
                 count += 1
         result.append((table.area, table.name, output, count))
-        print(f'Prepared {table.area}.{table.name}: {count} rows' + (' (scaled journal fixture; shared seed journal is empty)' if fallback else ''))
+        print(f'Prepared {table.area}.{table.name}: {count} rows' + (' (scaled journal fixture; shared seed journal has no postings for this batch)' if fallback else ''))
     return result

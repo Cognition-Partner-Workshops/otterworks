@@ -123,6 +123,11 @@ def test_daily_chain(estate, tmp_path):
         assert persisted == (date-dt.timedelta(days=1), date.month, int(date.replace(day=1).strftime('%Y%m%d')),
                              date.strftime('%Y-%m'), 'Y' if value == '2026-10-31' else 'N')
     assert_journals(estate)
+    history = estate.conn.execute("SELECT count(*) FROM sfx_billing.gl_journal_line WHERE posting_dt=DATE '2026-10-31'").fetchone()[0]
+    assert history == next(t for t in TABLES if t.name=='GL_JOURNAL_LINE').count(2000)
+    with (exports / 'gl_trial_balance.psv').open() as handle:
+        trial = list(csv.reader(handle, delimiter='|'))
+    assert trial[-1][0] == 'TOTAL' and trial[-1][2] == trial[-1][3]
     snapshot = estate.conn.execute('SELECT count(*),sum(debit_amount),sum(credit_amount) FROM sfx_billing.gl_journal_line').fetchone()
     assert estate.conn.execute("SELECT count(*) FROM sfx_billing.invoice_line WHERE invoice_id>=9000000001 AND description='Monthly subscription'").fetchone() == (84,)
     assert estate.conn.execute('SELECT count(*) FROM sfx_billing.invoice_hdr h JOIN (SELECT currency_cd,sum(total_amount) AS total FROM sfx_billing.invoice_hdr GROUP BY currency_cd) c ON h.currency_cd=c.currency_cd WHERE h.currency_control_total<>c.total').fetchone() == (0,)
@@ -138,6 +143,25 @@ def test_daily_chain(estate, tmp_path):
     assert estate.conn.execute('SELECT count(*),sum(debit_amount),sum(credit_amount) FROM sfx_billing.gl_journal_line').fetchone() == snapshot
 
 
+def test_next_month_keeps_closed_journals(estate, tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    environment = {**os.environ, 'TD_PG_DSN': estate.conn.info.dsn, 'TD_PG_DB': estate.conn.info.dbname}
+    snapshot = "SELECT journal_line_id,invoice_id,credit_note_id,gl_account_id,debit_amount,credit_amount,description FROM sfx_billing.gl_journal_line WHERE posting_dt=DATE '2026-11-30' ORDER BY journal_line_id"
+
+    def chain(business_date):
+        command = [sys.executable, str(root / 'jobs' / 'daily_chain'), '--rows', '2000', '--business-date', business_date,
+                   '--landing', str(tmp_path / business_date / 'landing'), '--exports', str(tmp_path / business_date / 'exports')]
+        result = subprocess.run(command, env=environment, text=True, capture_output=True, timeout=180)
+        assert result.returncode == 0, result.stdout + result.stderr
+
+    chain('20261130')
+    closed = estate.conn.execute(snapshot).fetchall()
+    assert closed and {row[6] for row in closed} <= {'Monthly invoice posting', 'Credit note reversal'}
+    chain('20261209')
+    assert estate.conn.execute(snapshot).fetchall() == closed
+    assert estate.conn.execute('SELECT sum(debit_amount-credit_amount) FROM sfx_billing.gl_journal_line').fetchone() == (0,)
+
+
 def assert_journals(estate):
     conn = estate.conn
     assert conn.execute('SELECT count(*) FROM sfx_billing.gl_account').fetchone() == (10,)
@@ -149,8 +173,8 @@ def assert_journals(estate):
     assert conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line j LEFT JOIN sfx_billing.gl_account a ON j.gl_account_id=a.gl_account_id WHERE a.gl_account_id IS NULL').fetchone() == (0,)
     assert conn.execute('SELECT count(*) FROM sfx_billing.invoice_hdr h WHERE h.invoice_dt<=DATE \'2026-11-09\' AND NOT EXISTS (SELECT 1 FROM sfx_billing.gl_journal_line j WHERE j.invoice_id=h.invoice_id)').fetchone() == (0,)
     assert conn.execute('SELECT count(*) FROM sfx_billing.invoice_hdr h JOIN (SELECT invoice_id,sum(line_amount) AS subtotal FROM sfx_billing.invoice_line GROUP BY invoice_id) l ON h.invoice_id=l.invoice_id WHERE h.invoice_dt<=DATE \'2026-11-09\' AND h.total_amount<>l.subtotal+h.tax_amount').fetchone() == (0,)
-    assert conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line j JOIN sfx_billing.invoice_hdr h ON j.invoice_id=h.invoice_id WHERE j.credit_note_id IS NULL AND j.gl_account_id=1200 AND j.debit_amount-j.credit_amount<>h.total_amount').fetchone() == (0,)
-    assert conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line j JOIN sfx_billing.credit_note c ON j.credit_note_id=c.credit_note_id WHERE j.gl_account_id=1200 AND j.credit_amount-j.debit_amount<>c.amount').fetchone() == (0,)
+    assert conn.execute("SELECT count(*) FROM sfx_billing.gl_journal_line j JOIN sfx_billing.invoice_hdr h ON j.invoice_id=h.invoice_id WHERE j.posting_dt=DATE '2026-11-09' AND j.credit_note_id IS NULL AND j.gl_account_id=1200 AND j.debit_amount-j.credit_amount<>h.total_amount").fetchone() == (0,)
+    assert conn.execute("SELECT count(*) FROM sfx_billing.gl_journal_line j JOIN sfx_billing.credit_note c ON j.credit_note_id=c.credit_note_id WHERE j.posting_dt=DATE '2026-11-09' AND j.gl_account_id=1200 AND j.credit_amount-j.debit_amount<>c.amount").fetchone() == (0,)
 
 
 def test_invoice_empty_and_invalid_period(estate):
@@ -160,6 +184,16 @@ def test_invoice_empty_and_invalid_period(estate):
     estate.execute("CALL SFX_BILLING.P_MONTHLY_INVOICE('20260230', ?)")
     assert estate.errorcode != 0
     assert estate.conn.execute('SELECT count(*) FROM sfx_billing.gl_journal_line').fetchone() == (0,)
+
+
+def test_trial_balance_empty_and_unbalanced(estate, tmp_path):
+    script = Path(__file__).resolve().parents[1] / 'scripts/billing/12_invoice_monthly.bteq'
+    estate.variables.update(BUSINESS_DATE='20261109', MONTH_START='20261101', MONTH_END='20261201', EXPORT_DIR=str(tmp_path))
+    assert estate.run(script.read_text()) == 0, estate.output.getvalue()
+    assert 'TOTAL|All accounts|0|0' in (tmp_path/'gl_trial_balance.psv').read_text()
+    estate.execute("INSERT INTO SFX_BILLING.GL_JOURNAL_LINE (JOURNAL_LINE_ID,GL_ACCOUNT_ID,POSTING_DT,CURRENCY_CD,DEBIT_AMOUNT,CREDIT_AMOUNT) VALUES (1,1200,DATE '2026-10-31','USD',1,0)")
+    assert estate.errorcode == 0
+    assert estate.run(script.read_text()) == 8, estate.output.getvalue()
 
 
 def test_setup_extends_existing_table(estate):

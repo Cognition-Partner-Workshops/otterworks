@@ -1,4 +1,6 @@
 import hashlib
+import datetime as dt
+from decimal import Decimal, ROUND_HALF_UP
 import random
 
 
@@ -168,3 +170,35 @@ def enrich(table, row, key, rng, counts, business_date, seed):
     if 'RETENTION_DAYS' in row:
         row['RETENTION_DAYS'] = rng.choice((365, 1095, 2190, 2555, 3650))
     return row
+
+
+def journal_history(rows, seed, business_date, counts):
+    posting_date = business_date.replace(day=1) - dt.timedelta(days=1)
+    period = posting_date.year * 100 + posting_date.month
+
+    def lines(invoice, credit, amounts, description):
+        customer = (invoice-1) % counts['SUBSCRIPTION'] % counts['CUSTOMER_ACCOUNT'] + 1
+        currency = REGIONS[(customer-1) % len(REGIONS)][2]
+        base = period * 1000000000000 + (500000000000+credit*10 if credit else invoice*10)
+        for index, (account, amount) in enumerate(amounts, 1):
+            yield dict(JOURNAL_LINE_ID=base+index, INVOICE_ID=invoice, CREDIT_NOTE_ID=credit,
+                       GL_ACCOUNT_ID=account, POSTING_DT=posting_date.isoformat(), CURRENCY_CD=currency,
+                       DEBIT_AMOUNT=money(max(0, amount)), CREDIT_AMOUNT=money(max(0, -amount)),
+                       DESCRIPTION=description)
+
+    for invoice in range(1, max(1, rows//10)+1):
+        customer = (invoice-1) % counts['SUBSCRIPTION'] % counts['CUSTOMER_ACCOUNT'] + 1
+        rate = Decimal(REGIONS[(customer-1) % len(REGIONS)][4])
+        subscription = int(Decimal(PLAN_PRICES[(invoice-1) % len(PLAN_PRICES)])*100)
+        usage = usage_cents(invoice, seed)
+        tax = int((Decimal(subscription+usage)*rate).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
+        yield from lines(invoice, None, ((1200, subscription+usage+tax), (4000, -subscription),
+                                       (4100, -usage), (2200, -tax)), 'Prior-period invoice close')
+    for credit in range(1, max(1, rows//200)+1):
+        invoice = ((credit-1)*17) % counts['INVOICE_HDR'] + 1
+        customer = (invoice-1) % counts['SUBSCRIPTION'] % counts['CUSTOMER_ACCOUNT'] + 1
+        rate = Decimal(REGIONS[(customer-1) % len(REGIONS)][4])
+        gross = max(1, usage_cents(invoice, seed)//10)
+        revenue = int((Decimal(gross)/(1+rate)).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
+        yield from lines(invoice, credit, ((1200, -gross), (4100, revenue), (2200, gross-revenue)),
+                         'Prior-period credit reversal')

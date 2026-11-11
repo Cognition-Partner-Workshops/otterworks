@@ -59,7 +59,8 @@ def parse_control(path, variables=None):
 
 def load_control(runner, path, variables=None):
     control = parse_control(path, variables)
-    actual = tuple(name for name, _ in runner.columns(control.target))
+    metadata = runner.columns(control.target)
+    actual = tuple(name for name, _ in metadata)
     if control.columns != actual:
         raise ValueError('Control file column order differs from the target DDL')
     target = sql.Identifier(*control.target.split('.'))
@@ -71,7 +72,8 @@ def load_control(runner, path, variables=None):
             for row in csv.reader(handle, delimiter=control.delimiter):
                 if len(row) != len(control.columns):
                     raise ValueError(f'{control.path}: row {count + 1} has {len(row)} fields; expected {len(control.columns)}')
-                copy.write_row(row)
+                copy.write_row([None if value == '' and not kind.startswith(('character', 'text')) else value
+                                for value, (_, kind) in zip(row, metadata)])
                 count += 1
     return count
 

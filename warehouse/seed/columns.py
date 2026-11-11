@@ -29,7 +29,7 @@ class Table:
 
     def count(self, rows):
         if self.name == 'GL_JOURNAL_LINE':
-            return 0
+            return 4 * max(1, rows // 10) + 3 * max(1, rows // 200)
         return self.fixed or max(1, rows // self.divisor)
 
 
