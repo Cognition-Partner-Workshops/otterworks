@@ -10,6 +10,8 @@ import com.otterworks.legacyportal.common.PortalBrandingSettings;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermissions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -86,7 +88,8 @@ class DependencyTranscriptEmitterTest {
         if (content == null) {
             return template;
         }
-        File fixture = File.createTempFile("ow-deps-fixture", ".txt");
+        File fixture = Files.createTempFile("ow-deps-fixture", ".txt",
+                PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))).toFile();
         fixture.deleteOnExit();
         try (PrintWriter writer = new PrintWriter(fixture, "UTF-8")) {
             writer.print(content.asText());

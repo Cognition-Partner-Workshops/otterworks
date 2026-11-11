@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -42,6 +43,11 @@ def count_keys(src: OracleSource, schema: str, table: str, key_column: str, keys
 
 
 def main() -> int:
+    with tempfile.TemporaryDirectory(prefix="oracle-smoke-") as local_dir:
+        return smoke(Path(local_dir))
+
+
+def smoke(local_dir: Path) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dsn", required=True)
     ap.add_argument("--user", required=True)
@@ -59,7 +65,16 @@ def main() -> int:
     src.connect()
     loaded = load_manifest(Path(a.manifest), a.namespace)
     tables = build_table_specs(loaded)
-    ctx = RunContext(loaded, "smoke", src, None, None, Path("/tmp"), Log(sys.stderr), tables=tables)  # type: ignore[arg-type]
+    ctx = RunContext(
+        loaded,
+        "smoke",
+        src,
+        None,
+        None,
+        local_dir,
+        Log(sys.stderr),
+        tables=tables,
+    )  # type: ignore[arg-type]
 
     out: dict[str, object] = {"dsn": a.dsn, "tables": {}}
     ok = True
