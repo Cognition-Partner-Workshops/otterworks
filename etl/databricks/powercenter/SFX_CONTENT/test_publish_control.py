@@ -24,8 +24,11 @@ class PublishTests(unittest.TestCase):
                             {'rows': inventory}, {'statement_id': 'merge', 'rows': []}, {'statement_id': 'verify', 'rows': verified}]) as sql:
                     publish_control.publish('pr')
                 merge = sql.call_args_list[2].args[0]
-                expected = publish_control.literal(json.dumps(dependencies)) + ' AS cross_folder_dependencies'
-                self.assertEqual(merge.count(expected), 5)
+                records = merge.split('UNION ALL')
+                for row, record in zip(evidence['rows'], records):
+                    own = [d for d in dependencies if row['mapping'] in [name.strip() for name in d['mapping'].split(',')]]
+                    expected = publish_control.literal(json.dumps(own)) + ' AS cross_folder_dependencies'
+                    self.assertIn(expected, record)
 
     def test_missing_dependencies_refuses_publish(self):
         evidence = json.loads((ROOT / 'evidence.json').read_text())
