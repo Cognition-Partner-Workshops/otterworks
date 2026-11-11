@@ -8,12 +8,8 @@ from datetime import date
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from app.warehouse.teradata import (
-    InvoiceExportRow,
-    InvoiceWarehouse,
-    TeradataInvoiceWarehouse,
-    WarehouseSettings,
-)
+from app.warehouse import InvoiceExportRow, InvoiceWarehouse
+from app.warehouse.snowflake import SnowflakeInvoiceWarehouse, WarehouseSettings
 
 
 def export_invoices(
@@ -54,14 +50,14 @@ def main(argv: list[str] | None = None) -> int:
         description="Export the prior day's finance warehouse invoices"
     )
     parser.add_argument(
-        "--date", type=date.fromisoformat, help="run date YYYY-MM-DD (default: TD today)"
+        "--date", type=date.fromisoformat, help="run date YYYY-MM-DD (default: UTC today)"
     )
     parser.add_argument("--out", type=Path, required=True, help="CSV output path")
     args = parser.parse_args(argv)
     try:
         settings = WarehouseSettings()
         count = export_invoices(
-            TeradataInvoiceWarehouse(settings),
+            SnowflakeInvoiceWarehouse(settings),
             args.date,
             args.out,
             enabled=settings.enabled,

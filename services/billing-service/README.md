@@ -54,49 +54,49 @@ app or shared-infrastructure deployment is provided for this fixture.
 
 ## Finance warehouse consumer
 
-Owned by **@otterworks/billing** as a separate repository. The nightly invoice
-export reads TDPROD / SFX_BILLING as svc_billing_export; scheduling is external.
-Fake plaintext DSN: app/warehouse/config.toml (override FINANCE_WAREHOUSE_DSN).
-The default-on FINANCE_WAREHOUSE_ENABLED flag gates exports. Driver import and
-connections are lazy; HTTP startup opens no warehouse connection.
+The nightly invoice export reads Snowflake SFX_D1110_AFTER.COMPAT.INVOICE_HDR,
+CUSTOMER_ACCOUNT and PAYMENT. Scheduling is external. Set SNOWFLAKE_ACCOUNT,
+SNOWFLAKE_USER, SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE and SNOWFLAKE_PRIVATE_KEY
+(unencrypted PEM private key). SNOWFLAKE_DATABASE defaults to SFX_D1110_AFTER;
+the SQL intentionally uses that database explicitly. Key-pair JWT authentication
+is used. FINANCE_WAREHOUSE_ENABLED defaults to true. Driver import and connections
+are lazy; HTTP startup opens no warehouse connection. Every session uses UTC and
+QUERY_TAG `{"run":"sfx-d1110","act":"consumers","consumer":"billing-service"}`.
 
 ```sh
 uv run python -m app.export_invoices --date 2026-11-10 --out invoices.csv
 ```
-The date is the run date; BILL_DT on the previous day is exported. Without it,
-SQL uses CURRENT_DATE - 1. CSV retains invoice_no, customer_name, account_no,
-invoice_date, currency_cd, amount_due, tax_amt and open_balance. Invoice number,
-account name and account number come from INVOICE_HDR.INVOICE_NUMBER and
-CUSTOMER_ACCOUNT.ACCOUNT_NAME/ACCOUNT_NUMBER joined on CUSTOMER_ID.
-INVOICE_HDR supplies BILL_DT, INVOICE_DT, CURRENCY_CD, TOTAL_AMOUNT and TAX_AMOUNT.
-PAYMENT (INVOICE_ID, AMOUNT) is aggregated across all dates and subtracted for
-open balance. This is not a historical snapshot or FX-normalized report.
-SQL keeps SEL, TOP 100001, ZEROIFNULL, integer date arithmetic, 1200101 and
-FORMAT date/amount casts. The account's DBQL inventory also reads headers/payments.
 
-An empty export writes only the CSV header. Atomic output replacement preserves
-prior files on failure. Above 100000 invoices the export fails rather than truncates.
-The destination directory must exist.
+The date is the run date; BILL_DT on the previous day is exported. Without it,
+SQL uses the current UTC date. INVOICE_DT must be at least 2020-01-01.
+Accounts join on CUSTOMER_ID; payments aggregate across all dates by INVOICE_ID.
+Open balance subtracts payments from TOTAL_AMOUNT. This is not a historical
+snapshot or FX-normalized report. CSV columns and Decimal values are preserved.
+An empty export writes only the header; atomic replacement preserves prior files
+on failure. More than 100000 invoices fails rather than truncates. The destination
+directory must exist.
 
 ```sh
 uv run pytest
 uv run ruff check .
 WAREHOUSE_CONTRACT_TARGET=replay uv run pytest contract
+WAREHOUSE_CONTRACT_TARGET=snowflake uv run pytest contract -s
 ```
-Contracts are excluded from ordinary discovery. The default teradata-emulator
-target executes the DAL SQL LIVE through ../../consumers/contract-kit.
-Seed the emulator with ROWS_PER_TABLE=800, BUSINESS_DATE=20261109; install kit
-dependencies and set TD_PG_PORT and CONTRACT_KIT_PYTHON for the live environment.
-The runtime defaults to this repository; TD_EMULATOR_HOME overrides it.
-Parameters are bound client-side as escaped SQL literals before invoking the kit.
 
-```sh
-CONTRACT_RECORD=true uv run pytest contract
-```
-Records exact live JSON under contract/recorded/teradata. Review expected keys,
-counts and sums after changes. Replay requires no warehouse or bridge dependencies
-and runs in CI's contract-replay job. snowflake-semantics uses the shared live bridge.
-The snowflake target remains an explicit placeholder (missing SNOWFLAKE_ACCOUNT,
-USER, ROLE, WAREHOUSE or PRIVATE_KEY skips; configured execution is unsupported).
-Destination metadata: SFX_D1110_AFTER.COMPAT, QUERY_TAG
-`{"run":"sfx-d1110","act":"consumers","consumer":"billing-service"}`.
+Contracts are excluded from ordinary discovery. Replay uses unchanged recorded
+JSON and frozen legacy SQL in contract/teradata_reference.py. The teradata-emulator
+and snowflake-semantics targets use ../../consumers/contract-kit. For live emulator
+comparisons set TD_USER=svc_exit_parity, ROWS_PER_TABLE=800, BUSINESS_DATE=20261109,
+TD_PG_PORT and CONTRACT_KIT_PYTHON. TD_EMULATOR_HOME overrides the runtime path.
+CONTRACT_RECORD=true records the baseline; review expected keys, counts and sums.
+
+The Snowflake target skips without credentials or the connector. It forces
+SFX_D1110_PARITY_WH (SNOWFLAKE_CONTRACT_WAREHOUSE may explicitly name that same
+warehouse), prints every query ID and issues SELECTs only. It compares column
+labels, overlapping invoice keys, dates and currencies to the recorded fixture,
+then independently cross-checks counts and Decimal totals against RAW_BILLING.
+The larger Snowflake seed has 20,100 accounts and 66,667 matching invoices versus
+the 800-row emulator seed's 267 matching invoices. Customer names, account numbers
+and amounts intentionally differ for overlapping keys. Snowflake FM amount strings
+are trimmed (e.g. 0.00), unlike padded Teradata FORMAT strings; from_values parses
+both as Decimal.
