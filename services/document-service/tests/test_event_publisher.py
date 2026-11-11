@@ -20,14 +20,20 @@ class _FakeClient:
 
     def put_events(self, **kwargs: Any) -> dict[str, Any]:
         self.calls.append(kwargs)
-        entry = {"ErrorCode": "Throttled", "ErrorMessage": "slow down"} if self.failed else {"EventId": "e-1"}
+        if self.failed:
+            entry = {"ErrorCode": "Throttled", "ErrorMessage": "slow down"}
+        else:
+            entry = {"EventId": "e-1"}
         return {"FailedEntryCount": self.failed, "Entries": [entry]}
+
+
+TOPIC_ARN = "arn:aws:sns:us-east-1:000000000000:otterworks-events"
 
 
 @pytest.fixture
 def publisher(monkeypatch: pytest.MonkeyPatch) -> tuple[EventPublisher, _FakeClient, _FakeClient]:
     monkeypatch.setattr(settings, "sns_enabled", True)
-    monkeypatch.setattr(settings, "sns_topic_arn", "arn:aws:sns:us-east-1:000000000000:otterworks-events")
+    monkeypatch.setattr(settings, "sns_topic_arn", TOPIC_ARN)
     monkeypatch.setattr(settings, "event_bus_name", "otterworks-events")
     pub = EventPublisher()
     sns, events = _FakeClient(), _FakeClient()
@@ -41,7 +47,8 @@ async def test_default_transport_is_sns_only(publisher, monkeypatch):
     await pub.publish("document_created", {"id": "d-1"})
     assert len(sns.calls) == 1 and events.calls == []
     call = sns.calls[0]
-    assert call["MessageAttributes"] == {"event_type": {"DataType": "String", "StringValue": "document_created"}}
+    attribute = {"DataType": "String", "StringValue": "document_created"}
+    assert call["MessageAttributes"] == {"event_type": attribute}
     assert json.loads(call["Message"])["payload"] == {"id": "d-1"}
 
 
