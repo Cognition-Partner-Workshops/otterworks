@@ -144,6 +144,7 @@ uv run python contract/cutover.py
 The live target clearly skips when Databricks credentials are absent. With them,
 it requires the emulator, checks complete input-table counts and order-independent
 hashes against the live `before` schema (normalizing only original CHAR padding),
+also compares exact normalized row multisets to rule out delimiter/hash collisions,
 runs both DAL implementations, compares every mapped field and CSV byte, and
 checks `contract/expected/invoice-export.json`. Statement IDs are printed from
 connector cursor metadata, never inferred from replay. The workflow gates its

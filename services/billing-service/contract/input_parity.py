@@ -2,12 +2,27 @@
 
 import hashlib
 import os
+from collections import Counter
 
 import psycopg
 
 from app.warehouse.databricks import execute
 
 TABLES = ("customer_account", "invoice_hdr", "payment")
+
+
+def row_counts(rows, columns, char_columns):
+    return Counter(
+        tuple(
+            None
+            if value is None
+            else str(value).rstrip(" ")
+            if columns[index] in char_columns
+            else str(value)
+            for index, value in enumerate(row)
+        )
+        for row in rows
+    )
 
 
 def row_hash(rows, columns, char_columns):
@@ -68,4 +83,7 @@ def input_equality():
                 "statement_id": live["statement_id"],
             }
             assert old == baseline, f"input mismatch for {table}: {evidence[table]}"
+            assert row_counts(old_rows, columns, char_columns) == row_counts(
+                live["rows"], columns, char_columns
+            ), f"input row mismatch for {table} despite matching hash"
     return evidence
