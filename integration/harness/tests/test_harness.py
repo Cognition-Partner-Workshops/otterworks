@@ -204,6 +204,8 @@ def test_loss_duplicate_results(test):
         assert fault_result(test, spec, expected, actual, events)["status"] == "failed"
     assert fault_result(test, spec, [], [], events)["status"] == "failed"
     assert fault_result(test, spec, expected, expected, [])["status"] == "failed"
+    blank = [dict(message(), headers={"id": ""})]
+    assert fault_result(test, spec, blank, blank, events)["status"] == "failed"
 
 
 def test_poison_result():
@@ -259,6 +261,23 @@ def test_report_and_cli(corpus, tmp_path):
     assert main(["record-lock", "--corpus", str(corpus), "--reason", "approved change"]) == 0
     write_report({"flows": []}, directory)
     assert "<table>" in (directory / "parity.html").read_text()
+    assert main(["report", "--input", str(directory / "parity.json"), "--report-dir", str(corpus / "out")]) == 2
+    assert main(["verify-lock", "--corpus", str(corpus)]) == 0
+
+
+def test_sftp_open_failure_closes_client(monkeypatch):
+    closed = []
+
+    class Client:
+        def load_system_host_keys(self): pass
+        def connect(self, *args, **kwargs): pass
+        def open_sftp(self): raise OSError("subsystem refused")
+        def close(self): closed.append(True)
+    monkeypatch.setitem(sys.modules, "paramiko", SimpleNamespace(SSHClient=Client))
+    resources = Resources({"sftp": {"host": "h", "input_root": "/in"}})
+    with pytest.raises(OSError):
+        resources._sftp()
+    assert closed == [True]
 
 
 def test_files_normalization_and_path_safety(tmp_path):

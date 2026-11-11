@@ -72,7 +72,7 @@ def fault_result(test: str, spec: dict, expected: list, actual: list, events: li
             identity = spec["identity_header"]
             wanted = Counter(field(m, identity) for m in expected)
             seen = Counter(field(m, identity) for m in actual)
-            if not wanted or any(count != 1 for count in wanted.values()):
+            if not wanted or any(not key or count != 1 for key, count in wanted.items()):
                 reasons.append("Expected message identities must be non-empty and unique")
             if wanted != seen:
                 reasons.append("Messages lost, duplicated or unexpected")

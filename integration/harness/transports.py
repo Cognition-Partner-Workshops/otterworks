@@ -157,7 +157,11 @@ class Resources:
         client.connect(spec["host"], port=spec.get("port", 22),
                        username=env_value(spec, "username"), password=env_value(spec, "password"),
                        key_filename=spec.get("key_filename"), timeout=10)
-        return client, client.open_sftp()
+        try:
+            return client, client.open_sftp()
+        except Exception:
+            client.close()
+            raise
 
     def drop(self, item: dict):
         client, sftp = self._sftp()
