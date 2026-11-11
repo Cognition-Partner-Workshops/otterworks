@@ -9,8 +9,9 @@ Base: `devin/sfx-d1110-unt10-control-certify` @ `6b7bc8476` (accepted UNT-10). A
 `origin/demo-snowflake-dw-exit` @ `a48ea0e29` and harness `devin/sfx-d1110-act3-harness` @ `3347010b7`.
 Post-UNT-10 changes are delivery documentation and CI/test dependency/provenance fixes only.
 No model, macro or mark code changed; accepted live evidence was not re-run and no control row was
-re-marked. No Task DAG executed or redeployed. Every PR remains open for human review; nothing is
-merged. Delivery means this open PR plus its evidence, not cutover or approval of outstanding findings.
+re-marked. No Task DAG executed or redeployed. Harness PR #2677 is now merged into
+`demo-snowflake-dw-exit` as `fea43801e`. Delivery PR #2739 remains open for human review;
+delivery means this open PR plus its evidence, not cutover or approval of outstanding findings.
 
 ## Nine-asset evidence index
 
@@ -60,9 +61,9 @@ the PowerCenter runner output in `PC_BEFORE`. Mark only with the shared command 
 or all-folder Make targets. Read-only checks:
 
 ```sh
-.venv/bin/python -m parity.evidence_unt10 readback --label <label>
-.venv/bin/python -m parity.evidence_unt10 diff --against <earlier-label> --label <label>
-.venv/bin/python -m parity licence
+snowflake/.venv/bin/python -m parity.evidence_unt10 readback --label <label>
+snowflake/.venv/bin/python -m parity.evidence_unt10 diff --against <earlier-label> --label <label>
+snowflake/.venv/bin/python -m parity licence
 ```
 
 ## Rollback / recovery
@@ -200,7 +201,7 @@ The same error lines are present on all four compared heads:
 |---|---|---|
 | before `308443e94` | 42942474517 / 130267318604 | 42942474571 / 130267318927 |
 | after `c83db7f58` | 42944580130 / 130274184354 | 42944580134 / 130274183889 |
-| harness #2677 latest head `3347010b7` | 42902120034 / 130130521564 | 42902120250 / 130130522601 |
+| harness #2677 historical tested head `3347010b7` (now merged as `fea43801e`) | 42902120034 / 130130521564 | 42902120250 / 130130522601 |
 | unrelated `devin/sfx-d1110-spark-file_object_binary_extract` @ `97d5c61ab` | 42930668532 / 130228293370 | 42930668554 / 130228293777 |
 
 ## SAST coverage and limits
