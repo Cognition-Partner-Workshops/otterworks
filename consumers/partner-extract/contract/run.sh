@@ -2,7 +2,17 @@
 set -euo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 case "${WAREHOUSE_CONTRACT_TARGET:-teradata-emulator}" in
-  teradata-emulator|replay|snowflake-semantics)
+  teradata-emulator)
+    if [[ -z ${TD_PG_DSN:-} && -z ${TD_PG_HOST:-} ]]; then
+      printf '%s\n' 'SKIP teradata-emulator contract: set TD_PG_DSN or TD_PG_HOST for the emulator endpoint'
+      exit 0
+    fi
+    if ! python3 -c 'import psycopg, sqlglot' > /dev/null 2>&1; then
+      printf '%s\n' 'SKIP teradata-emulator contract: missing Python dependencies psycopg and/or sqlglot'
+      exit 0
+    fi
+    ;;
+  replay|snowflake-semantics)
     ;;
   snowflake)
     for key in ACCOUNT USER ROLE PRIVATE_KEY; do

@@ -91,4 +91,5 @@ grep -Fxq 'SKIP snowflake contract: missing SNOWFLAKE_ACCOUNT' "$work/skip.log"
 printf '%s\n' 'PASS Snowflake SQL scope, missing credentials and contract skip'
 python3 "$ROOT/tests/test_snowflake_export.py"
 python3 "$ROOT/tests/test_default_date.py"
+python3 "$ROOT/tests/test_contract_runtime.py"
 printf '%s\n' 'All partner-extract unit tests passed'
