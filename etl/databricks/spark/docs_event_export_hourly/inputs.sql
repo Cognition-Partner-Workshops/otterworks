@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=docs_event_export_hourly */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Input adapter for docs_event_export_hourly: landing table documents/DOCUMENT
 -- (etl/spark/jobs/py/common/schemas.py) from the live baseline
@@ -9,7 +10,6 @@
 --   CREATED_AT    <- created_dt (DATE, cast to TIMESTAMP at midnight UTC)
 --   STATUS        <- status_cd (CHAR(12); trailing pad removed, as a CHAR export to TEXT does)
 -- customer_id and file_type have no landing column and are not read.
-/* run=dbx-d1111 act=spark step=inputs consumer=docs_event_export_hourly */
 SELECT document_id                  AS DOCUMENT_ID,
        owner_user_id                AS OWNER_USER_ID,
        folder_id                    AS FOLDER_ID,

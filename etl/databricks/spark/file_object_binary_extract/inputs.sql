@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=file_object_binary_extract */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Input adapter for file_object_binary_extract. The job reads two inputs:
 --   1. binaryFile over landing/documents/FILE_OBJECT_BLOBS/* (the self-run blob store), and
@@ -13,7 +14,6 @@
 --                     a different store ('workspaces/<n>/documents/<n>/original.<ext>'); statement 2 shows that
 --                     no live key is of the form 'documents/FILE_OBJECT_BLOBS/<name>' that the job joins on.
 -- The blob content itself is not in Unity Catalog: the run schemas have no volume (statement 3).
-/* run=dbx-d1111 act=spark step=inputs consumer=file_object_binary_extract */
 SELECT file_object_id AS FILE_OBJECT_ID,
        document_id    AS DOCUMENT_ID,
        bytes_used     AS SIZE_BYTES,

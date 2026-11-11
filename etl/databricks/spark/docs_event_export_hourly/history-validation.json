@@ -1,0 +1,9 @@
+{
+  "pr": 2760,
+  "job": "docs_event_export_hourly",
+  "file": "etl/databricks/spark/docs_event_export_hourly/parity.sql",
+  "table": "cpw.dbx_d1111_after.documents__spark_docs_event_export_hourly",
+  "statement": "/* run=dbx-d1111 act=spark step=idempotence consumer=docs_event_export_hourly */\nDESCRIBE HISTORY cpw.dbx_d1111_after.documents__spark_docs_event_export_hourly LIMIT 2;",
+  "statement_id": "01f1dd8d-a73d-13b8-9be3-a80d1579b4ed",
+  "state": "SUCCEEDED"
+}
