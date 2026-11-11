@@ -379,6 +379,22 @@ build_helm_args() {
     report-service)
       EXTRA_ARGS+=(--set-string "config.DB_HOST=${DB_ENDPOINT_HOST}" --set-string "config.DB_PORT=${DB_ENDPOINT_PORT}")
       EXTRA_ARGS+=(--set-string "config.DB_NAME=${T_DB_NAME}" --set-string "config.DB_USER=${DB_USER}")
-      add_secret DB_PASSWORD "${DB_PASSWORD}" ;;
+      add_secret DB_PASSWORD "${DB_PASSWORD}"
+      if [ "${FINANCE_WAREHOUSE_ENABLED:-true}" = "false" ]; then
+        EXTRA_ARGS+=(--set-string "config.FINANCE_WAREHOUSE_ENABLED=false")
+      else
+        local key missing=()
+        for key in SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_ROLE SNOWFLAKE_PRIVATE_KEY SNOWFLAKE_WAREHOUSE; do
+          if [[ -z "${!key:-}" || "${!key}" =~ ^[[:space:]]*$ ]]; then missing+=("$key"); fi
+        done
+        if [ "${#missing[@]}" -gt 0 ]; then
+          echo "Missing finance warehouse settings: ${missing[*]}. Set them or FINANCE_WAREHOUSE_ENABLED=false." >&2
+          return 1
+        fi
+        for key in SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_ROLE SNOWFLAKE_WAREHOUSE; do
+          EXTRA_ARGS+=(--set-string "config.${key}=${!key}")
+        done
+        add_secret SNOWFLAKE_PRIVATE_KEY "${SNOWFLAKE_PRIVATE_KEY}"
+      fi ;;
   esac
 }

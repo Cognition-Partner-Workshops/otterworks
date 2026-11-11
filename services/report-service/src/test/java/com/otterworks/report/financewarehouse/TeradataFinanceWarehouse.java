@@ -45,6 +45,7 @@ public class TeradataFinanceWarehouse implements FinanceWarehouse {
         return new FinanceReconciliation(summary.period, summary.invoicedTotal, summary.paidTotal,
                 summary.arGlBalance, jdbc.query(UNRECONCILED_SQL, (rs, row) -> new UnreconciledInvoice(
                         rs.getString("INVOICE_NUMBER"), rs.getString("ACCOUNT_NUMBER"), rs.getString("INVOICE_DATE"),
-                        rs.getInt("DAYS_OVERDUE"), rs.getBigDecimal("TOTAL_AMOUNT"), rs.getBigDecimal("PAID")), period));
+                        rs.getInt("DAYS_OVERDUE"), rs.getBigDecimal("TOTAL_AMOUNT"),
+                        rs.getBigDecimal("PAID")), period));
     }
 }

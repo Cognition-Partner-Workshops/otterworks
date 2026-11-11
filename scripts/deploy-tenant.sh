@@ -508,9 +508,10 @@ deploy_service() {
   local secret_file="" secret_args=()
   if [ "${#SECRET_KV[@]}" -gt 0 ]; then
     secret_file="$(mktemp)"; chmod 600 "${secret_file}"
-    jq -n --args '{secrets: (reduce range(0; ($ARGS.positional | length); 2) as $i
-      ({}; . + {($ARGS.positional[$i]): $ARGS.positional[$i + 1]}))}' \
-      "${SECRET_KV[@]}" > "${secret_file}"
+    { printf '%s\0' "${SECRET_KV[@]}"; printf end; } |
+      jq -Rs 'split("\u0000") | .[:-1] | . as $kv |
+        {secrets: (reduce range(0; length; 2) as $i
+        ({}; . + {($kv[$i]): $kv[$i + 1]}))}' > "${secret_file}"
     secret_args=(-f "${secret_file}")
   fi
 

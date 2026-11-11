@@ -404,7 +404,23 @@ build_helm_args() {
     report-service)
       EXTRA_ARGS+=(--set-string "config.DB_HOST=${DB_ENDPOINT_HOST}" --set-string "config.DB_PORT=${DB_ENDPOINT_PORT}")
       EXTRA_ARGS+=(--set-string "config.DB_NAME=${DB_NAME}" --set-string "config.DB_USER=${DB_USER}")
-      add_secret DB_PASSWORD "${DB_PASSWORD}" ;;
+      add_secret DB_PASSWORD "${DB_PASSWORD}"
+      if [ "${FINANCE_WAREHOUSE_ENABLED:-true}" = "false" ]; then
+        EXTRA_ARGS+=(--set-string "config.FINANCE_WAREHOUSE_ENABLED=false")
+      else
+        local key missing=()
+        for key in SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_ROLE SNOWFLAKE_PRIVATE_KEY SNOWFLAKE_WAREHOUSE; do
+          if [[ -z "${!key:-}" || "${!key}" =~ ^[[:space:]]*$ ]]; then missing+=("$key"); fi
+        done
+        if [ "${#missing[@]}" -gt 0 ]; then
+          echo "Missing finance warehouse settings: ${missing[*]}. Set them or FINANCE_WAREHOUSE_ENABLED=false." >&2
+          return 1
+        fi
+        for key in SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_ROLE SNOWFLAKE_WAREHOUSE; do
+          EXTRA_ARGS+=(--set-string "config.${key}=${!key}")
+        done
+        add_secret SNOWFLAKE_PRIVATE_KEY "${SNOWFLAKE_PRIVATE_KEY}"
+      fi ;;
   esac
 }
 
@@ -426,9 +442,10 @@ deploy_service() {
   if [ "${#SECRET_KV[@]}" -gt 0 ]; then
     secret_file="$(mktemp)"
     chmod 600 "${secret_file}"
-    jq -n --args '{secrets: (reduce range(0; ($ARGS.positional | length); 2) as $i
-      ({}; . + {($ARGS.positional[$i]): $ARGS.positional[$i + 1]}))}' \
-      "${SECRET_KV[@]}" > "${secret_file}"
+    { printf '%s\0' "${SECRET_KV[@]}"; printf end; } |
+      jq -Rs 'split("\u0000") | .[:-1] | . as $kv |
+        {secrets: (reduce range(0; length; 2) as $i
+        ({}; . + {($kv[$i]): $kv[$i + 1]}))}' > "${secret_file}"
     secret_args=(-f "${secret_file}")
   fi
 

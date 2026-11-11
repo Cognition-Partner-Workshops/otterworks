@@ -34,7 +34,10 @@ Non-secret (control-plane metadata): `OP`, `TENANT_ID`, `TIER`, `TTL`,
 `AWS_REGION`, `EKS_CLUSTER` (default `otterworks-dev`), `ACTOR`.
 
 Secrets (from Kubernetes Secret refs — **env only, never argv**): `DB_PASSWORD`,
-`JWT_SECRET`, `SECRET_KEY_BASE`. AWS creds come from the pod's IRSA role.
+`JWT_SECRET`, `SECRET_KEY_BASE`, `GITHUB_TOKEN`, `SNOWFLAKE_ACCOUNT`,
+`SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_WAREHOUSE`, `SNOWFLAKE_PRIVATE_KEY`.
+The five Snowflake keys are required when deploying report-service with its finance
+warehouse enabled. AWS creds come from the pod's IRSA role.
 
 ## Example Job (deploy)
 
