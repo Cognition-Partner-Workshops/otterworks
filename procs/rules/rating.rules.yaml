@@ -1,0 +1,285 @@
+module: rating
+rules:
+  - id: RATING-001
+    statement: >-
+      The rated subscription is the tenant's subscription with the latest
+      starts_on that overlaps the period (starts_on <= period_end and ends_on
+      is null or >= period_start), with no status filter; its plan supplies
+      included_units (returned as quota_units) and overage_rate.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [31, 41]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [quota_units]
+    confidence: high
+    tags: [legacy-quirk, follow-up]
+    scenarios: [RATING-001, RATING-002, RATING-003, RATING-004, RATING-005, RATING-006]
+    question: >-
+      No status filter: a suspended or cancelled subscription that overlaps the
+      period is still rated (RATING-003 rates suspended tenant 2). With no
+      overlapping subscription at all, legacy returns a row with quota_units
+      null, billable_units 0 and overage_amount null instead of an error.
+      Reproduce both?
+    recommendation: >-
+      Reproduce both exactly (parity first). Record the no-subscription null
+      row as a follow-up for billing-platform; no scenario covers it.
+    answer: >-
+      Approved as recommended. Reproduce both exactly (parity first). Record the no-subscription null row as a follow-up for billing-platform; no scenario covers it.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
+  - id: RATING-002
+    statement: >-
+      used_units is the sum of usage_events.units whose occurred_at, cast to a
+      date in the database session time zone (Etc/UTC on the legacy stack),
+      falls inside the inclusive [period_start, period_end] window; 0 when
+      there are none.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [43, 46]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [used_units]
+    confidence: high
+    tags: [legacy-quirk]
+    scenarios: [RATING-001, RATING-008]
+    question: >-
+      The day boundary depends on the Postgres session TimeZone, which is
+      Etc/UTC on the legacy stack but is not pinned anywhere in the procedure.
+      Pin the target to UTC dates explicitly?
+    recommendation: >-
+      Yes: compute occurred_at dates in UTC in the target, which equals legacy
+      behaviour on the recorded stack.
+    answer: >-
+      Approved as recommended. Yes: compute occurred_at dates in UTC in the target, which equals legacy behaviour on the recorded stack.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
+  - id: RATING-003
+    statement: >-
+      rollover_units is the sum of rating_results.rollover_units for the
+      tenant's prior rating_periods whose period_start is >= period_start - 3
+      months (inclusive) and < period_start, capped at 2 x included_units.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [48, 56]
+    inputs: [tenant_id, period_start]
+    outputs: [rollover_units]
+    confidence: high
+    tags: [legacy-quirk]
+    scenarios: [RATING-001, RATING-002]
+    question: >-
+      The 2x cap is applied twice (lines 48 and 56; redundant, same result).
+      The window is three calendar months back with an inclusive lower edge,
+      so for 2026-02-01 it counts Nov, Dec and Jan (300 units, capped to 200
+      in RATING-002). Rollover credit is never consumed or expired by use:
+      the same prior unused quota counts in up to three later periods. Keep
+      this exactly?
+    recommendation: >-
+      Keep exactly, with a single cap in Python (identical output). Tag the
+      "credit counted up to three times" behaviour as a follow-up for finance
+      to confirm; do not change it here.
+    answer: >-
+      Approved as recommended. Keep exactly, with a single cap in Python (identical output). Tag the "credit counted up to three times" behaviour as a follow-up for finance to confirm; do not change it here.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
+  - id: RATING-004
+    statement: >-
+      billable_units (before proration) is max(used_units - rollover_units -
+      included_units, 0).
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [57, 57]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [billable_units]
+    confidence: high
+    scenarios: [RATING-001, RATING-008]
+    recommendation: Approve as written.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
+  - id: RATING-005
+    statement: >-
+      The first pricing tier holds min(billable_units, 101) units; units beyond
+      101 fall into the second tier (max(billable_units - 101, 0)).
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [58, 59]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [first_tier_units, second_tier_units]
+    confidence: high
+    tags: [suspected-legacy-defect, follow-up]
+    scenarios: [RATING-004, RATING-005, RATING-006]
+    question: >-
+      The tier boundary is 101, not 100, which reads like an off-by-one.
+      RATING-004 (201 used, 101 first tier, 5.56) and RATING-005 (202 used,
+      101 + 1) only reproduce with 101. Preserve 101?
+    recommendation: >-
+      Preserve 101 for parity; raise the boundary with finance as a follow-up
+      (suspected legacy defect), since changing it changes issued bills.
+    answer: >-
+      Approved as recommended. Preserve 101 for parity; raise the boundary with finance as a follow-up (suspected legacy defect), since changing it changes issued bills.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
+  - id: RATING-006
+    statement: >-
+      overage_amount (before proration) is first_tier_units x overage_rate +
+      second_tier_units x overage_rate x 1.5, summed exactly and rounded once
+      to 2 decimal places, half away from zero (Postgres numeric round).
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [60, 60]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [overage_amount]
+    confidence: high
+    tags: [legacy-quirk]
+    scenarios: [RATING-003, RATING-004, RATING-006]
+    question: >-
+      Rounding is once on the total, not per tier, and ties go up
+      (RATING-004: 101 x 0.055 = 5.555 -> 5.56). Python's default round() is
+      banker's rounding and would give 5.55 here. Use Decimal ROUND_HALF_UP on
+      the exact sum?
+    recommendation: >-
+      Yes: Decimal arithmetic end to end, one ROUND_HALF_UP quantize to 0.01
+      on the summed amount; no floats.
+    answer: >-
+      Approved as recommended. Yes: Decimal arithmetic end to end, one ROUND_HALF_UP quantize to 0.01 on the summed amount; no floats.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
+  - id: RATING-007
+    statement: >-
+      When the rated subscription has status 'suspended' and suspended_on lies
+      inside the period, billable_units becomes round(billable_units x f) as an
+      integer and overage_amount becomes round(overage_amount x f, 2), where
+      f = (period_end - suspended_on + 1) / (period_end - period_start + 1)
+      as a Postgres numeric quotient (20 decimal places for these inputs) and
+      both rounds are half away from zero. The amount is prorated from the
+      already-rounded pre-proration amount, and first/second tier units are
+      returned un-prorated.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [62, 72]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [billable_units, overage_amount]
+    confidence: medium
+    tags: [suspected-legacy-defect, legacy-quirk, follow-up]
+    scenarios: [RATING-003]
+    question: >-
+      Three things finance should rule on. (a) f counts the days from
+      suspended_on to period_end, i.e. it bills the suspended tail, not the
+      active head; RATING-003 cannot tell the two apart because 14/28 days is
+      symmetric (Feb 15 in a 28-day month). (b) Double rounding: 8.7325 ->
+      8.73 -> x 0.5 = 4.365 -> 4.37, where single rounding of 4.36625 gives
+      4.37 here but can differ by a cent elsewhere. (c) first_tier_units 101
+      + second_tier_units 99 are returned next to billable_units 100.
+      Reproduce all three exactly, including Postgres's quotient precision?
+    recommendation: >-
+      Reproduce all three exactly, emulating the numeric quotient scale so
+      ties land on the same cent. Record (a) as a suspected legacy defect and
+      follow-up with a proposed asymmetric scenario (e.g. suspended_on
+      2026-02-10) for a later, separately approved recording; do not add or
+      re-record scenarios in this PR.
+    answer: >-
+      Approved as recommended. Reproduce all three exactly, emulating the numeric quotient scale so ties land on the same cent. Record (a) as a suspected legacy defect and follow-up with a proposed asymmetric scenario (e.g. suspended_on 2026-02-10) for a later, separately approved recording; do not add or re-record scenarios in this PR.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
+  - id: RATING-008
+    statement: >-
+      The usage summary groups the period's usage_events (same UTC inclusive
+      date window as RATING-002) by kind and returns kind, event_count and
+      units ordered by kind; kinds with no events are omitted.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [79, 93]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [kind, event_count, units]
+    confidence: high
+    scenarios: [RATING-007]
+    recommendation: Approve as written.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
+  - id: RATING-009
+    statement: >-
+      Finalizing upserts rating_periods with id md5(tenant_id::text ||
+      period_start::text)::uuid on (tenant_id, period_start), updating only
+      period_end on conflict (an existing row keeps its id), and records the
+      latest overlapping subscription (same selection as RATING-001) as
+      subscription_id.
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [103, 118]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [rating_result]
+    confidence: medium
+    tags: [legacy-quirk, suspected-legacy-defect, follow-up]
+    scenarios: [RATING-008]
+    question: >-
+      The md5-derived ids must be rebuilt in Python to stay compatible with
+      legacy rows. Because the conflict branch keeps an existing period's id,
+      finalizing a period that already exists under a non-md5 id (e.g. the
+      seeded 2026-01 row for tenant 1) makes the rating_results insert point
+      at a period id that does not exist and fail with a foreign-key error.
+      Reproduce, including that failure?
+    recommendation: >-
+      Reproduce exactly (md5 helper is a legacy-compatibility id, not a
+      security use; noted in the PR for CodeQL). Surface the FK failure as a
+      400 from the target and list it as a follow-up; no scenario covers it.
+    answer: >-
+      Approved as recommended. Reproduce exactly (md5 helper is a legacy-compatibility id, not a security use; noted in the PR for CodeQL). Surface the FK failure as a 400 from the target and list it as a follow-up; no scenario covers it.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
+  - id: RATING-010
+    statement: >-
+      Finalizing then upserts rating_results with id md5(period_id::text)::uuid,
+      storing used_units, quota_units, billable_units and overage_amount from
+      the rating (RATING-001..007), rollover_units as max(quota_units -
+      used_units, 0) (this period's unused quota, not the rollover consumed),
+      and created_at = period_end at midnight UTC; on conflict only used,
+      rollover, billable and overage are refreshed (quota_units,
+      subscription_id and created_at keep their first values).
+    source:
+      file: services/legacy-billing/db/procs/rating.sql
+      lines: [120, 137]
+    inputs: [tenant_id, period_start, period_end]
+    outputs: [used_units, quota_units, rollover_units, billable_units, overage_amount]
+    confidence: medium
+    tags: [legacy-quirk, follow-up]
+    scenarios: [RATING-008]
+    question: >-
+      The stored rollover_units is unused quota generated for later periods
+      (RATING-008 stores 0 while the rating consumed 200 of rollover), so the
+      returned and persisted rollover_units mean different things. The
+      re-finalize path leaves quota_units stale if the plan changed. Keep both?
+    recommendation: >-
+      Keep both exactly. Follow-up: rename or document the stored column's
+      meaning, and decide whether re-finalize should refresh quota_units.
+    answer: >-
+      Approved as recommended. Keep both exactly. Follow-up: rename or document the stored column's meaning, and decide whether re-finalize should refresh quota_units.
+    decision:
+      status: approved
+      reviewer: presales-architect
+      date: "2026-11-11"
+      note: Approved all rules as recommended (reproduce legacy behaviour; tagged items are follow-ups).
