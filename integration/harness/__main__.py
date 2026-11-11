@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from .faults import TESTS
-from .fingerprints import record_lock, verify_lock
+from .fingerprints import LOCK, record_lock, verify_lock
 from .report import write_report
 from .runner import replay
 
@@ -36,6 +36,9 @@ def main(argv=None):
             print("Corpus lock verified")
         else:
             if args.command == "report":
+                target = args.report_dir.resolve()
+                if any((parent / LOCK).exists() for parent in (target, *target.parents)):
+                    raise ValueError("Reports must be outside the frozen corpus")
                 result = json.loads(args.input.read_text())
             else:
                 if args.report_dir.resolve().is_relative_to(args.corpus.resolve()):
