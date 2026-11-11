@@ -65,19 +65,19 @@ printf 'SECRET:%s\n' "${SECRET_KV[@]}"
         for script in ["scripts/deploy-dev.sh", "scripts/deploy-tenant.sh"]:
             with self.subTest(script=script):
                 source = (ROOT / script).read_text()
-                serialization = re.search(r"    printf '%s\\0'.*?> \"\$\{secret_file\}\"",
+                serialization = re.search(r"    \{ printf '%s\\0'.*?> \"\$\{secret_file\}\"",
                                           source, re.S).group()
                 self.assertNotIn("--args", serialization)
                 self.assertEqual(serialization.count('"${SECRET_KV[@]}"'), 1)
-                secret = '-----BEGIN PRIVATE KEY-----\nthrowaway "quoted" \\ key\n-----END PRIVATE KEY-----\n'
+                secret = 'throwaway multiline value\n"quoted" \\ text\n'
                 result = subprocess.run(["bash", "-c", """
 set -e
-SECRET_KV=(SNOWFLAKE_PRIVATE_KEY "$TEST_KEY" DB_PASSWORD dummy)
+SECRET_KV=(SNOWFLAKE_PRIVATE_KEY "$TEST_KEY" DB_PASSWORD dummy EMPTY_VALUE "")
 secret_file=/dev/stdout
 """ + serialization], env={**os.environ, "TEST_KEY": secret}, text=True, capture_output=True)
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(json.loads(result.stdout), {
-                    "secrets": {"SNOWFLAKE_PRIVATE_KEY": secret, "DB_PASSWORD": "dummy"}})
+                    "secrets": {"SNOWFLAKE_PRIVATE_KEY": secret, "DB_PASSWORD": "dummy", "EMPTY_VALUE": ""}})
 
     def test_runner_references(self):
         jobs = (ROOT / "demo-platform/dashboard/lib/jobs.ts").read_text()
