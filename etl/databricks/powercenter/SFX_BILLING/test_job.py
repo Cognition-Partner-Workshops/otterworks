@@ -42,7 +42,10 @@ class JobTests(unittest.TestCase):
     def test_rendered_sql(self):
         files = sql_files()
         self.assertEqual(len(files), 8)
-        self.assertEqual(sum(len(statements(text)) for key, text in files.items() if key.startswith("m_SFX_")), 9)
+        self.assertEqual(sum(len(statements(text)) for key, text in files.items() if key.startswith("m_SFX_")), 8)
+        gl = statements(files["m_SFX_GL_JOURNAL_LINE.sql"])
+        self.assertEqual(len(gl), 1)
+        self.assertIn("REPLACE WHERE journal_no LIKE 'JE-20261109-%'", gl[0])
         for text in files.values():
             for sql in statements(text):
                 self.assertTrue(sql.startswith("/* run=dbx-d1111 act=scale step=job-run consumer=m_SFX_"))

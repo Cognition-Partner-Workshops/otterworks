@@ -1,10 +1,7 @@
 /* run=dbx-d1111 act=scale step=${STEP} consumer=m_SFX_GL_JOURNAL_LINE */
-DELETE FROM cpw.dbx_d1111_after.billing__sfx_gl_journal_line
-WHERE journal_no LIKE 'JE-${LOAD_DATE}-%';
-
-/* run=dbx-d1111 act=scale step=${STEP} consumer=m_SFX_GL_JOURNAL_LINE */
 INSERT INTO cpw.dbx_d1111_after.billing__sfx_gl_journal_line
 (journal_no,invoice_id,gl_account_id,posting_dt,debit_amount,credit_amount,currency_cd,line_desc)
+REPLACE WHERE journal_no LIKE 'JE-${LOAD_DATE}-%'
 WITH lookup_snapshot AS (
  SELECT account_number,gl_account_id,
  row_number() OVER (PARTITION BY account_number ORDER BY account_number) rn
