@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: audit_daily_summary
+    description: sfx-d1110 daily audit event counts and distinct nonnull actors.
+    tests:
+      - unique:
+          column_name: "to_json(array_construct(EVENT_DATE, EVENT_TYPE))"
+    columns:
+      - name: EVENT_DATE
+        description: UTC event date from the timezone-free landing timestamp.
+      - name: EVENT_TYPE
+      - name: EVENT_COUNT
+        tests:
+          - not_null
+      - name: ACTORS
+        tests:
+          - not_null
