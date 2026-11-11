@@ -43,6 +43,11 @@ def count_keys(src: OracleSource, schema: str, table: str, key_column: str, keys
 
 
 def main() -> int:
+    with tempfile.TemporaryDirectory(prefix="oracle-smoke-") as local_dir:
+        return smoke(Path(local_dir))
+
+
+def smoke(local_dir: Path) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dsn", required=True)
     ap.add_argument("--user", required=True)
@@ -66,7 +71,7 @@ def main() -> int:
         src,
         None,
         None,
-        Path(tempfile.mkdtemp(prefix="oracle-smoke-")),
+        local_dir,
         Log(sys.stderr),
         tables=tables,
     )  # type: ignore[arg-type]
