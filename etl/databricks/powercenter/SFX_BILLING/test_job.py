@@ -106,8 +106,17 @@ class JobTests(unittest.TestCase):
                 "query_text": sql, "sql_statements": [{"lookup_key": "opaque"}]}}}}
             (path / "1-outputs.json").write_text(json.dumps(output))
             with patch.object(job, "api", return_value={"res": []}):
-                with self.assertRaisesRegex(ValueError, "retry collect"):
-                    job.record_statements(run)
+                job.record_statements(run)
+            pending = json.loads((path / "1-statements.json").read_text())
+            self.assertEqual(pending[0]["state"], "PENDING")
+            self.assertEqual(pending[0]["query_history"], "missing")
+            output["s_PAYMENT"]["sql_output"]["file_output"]["sql_statements"] = []
+            (path / "1-outputs.json").write_text(json.dumps(output))
+            with patch.object(job, "api", return_value={"res": []}):
+                job.record_statements(run)
+            self.assertEqual(len(json.loads((path / "1-statements.json").read_text())), 1)
+            output["s_PAYMENT"]["sql_output"]["file_output"]["sql_statements"] = [{"lookup_key": "opaque"}]
+            (path / "1-outputs.json").write_text(json.dumps(output))
             history = {"res": [{"lookup_key": "opaque", "query_id": "statement-id",
                                  "query_text": sql, "status": "FINISHED"}]}
             with patch.object(job, "api", return_value=history):

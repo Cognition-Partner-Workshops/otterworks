@@ -137,24 +137,34 @@ class Job(Runner):
         (self.output / (str(run["run_id"]) + "-history.json")).write_text(json.dumps(history, indent=2))
         by_key = {r["lookup_key"]: r for r in history if r.get("lookup_key")}
         rows = []
+        evidence = []
         for task_key, output in outputs.items():
             file_output = output.get("sql_output", {}).get("file_output", {})
             sql = statements(file_output.get("query_text", ""))
             executed = file_output.get("sql_statements", [])
             if len(executed) > len(sql):
                 raise ValueError("Incomplete SQL task statement evidence: " + task_key)
-            for text, result in zip(sql, executed):
+            for index, text in enumerate(sql):
                 match = re.match(r"/\* run=dbx-d1111 act=scale step=job-run consumer=(\S+) \*/", text)
-                query = by_key.get(result["lookup_key"])
-                if not match or query is None:
-                    raise ValueError("Statement history not available or invalid header; retry collect: " + task_key)
+                if not match:
+                    raise ValueError("Invalid statement header: " + task_key)
+                result = executed[index] if index < len(executed) else {}
+                query = by_key.get(result.get("lookup_key"))
+                item = {"task_key": task_key, "sql": text, "lookup_key": result.get("lookup_key"),
+                        "statement_id": query["query_id"] if query else None,
+                        "state": "PENDING", "query_history": "available" if query else "missing"}
+                evidence.append(item)
+                if query is None:
+                    continue
                 if not query["query_text"].startswith(match[0]):
                     raise ValueError("Query history header mismatch: " + task_key)
                 state = {"FINISHED": "SUCCEEDED", "FAILED": "FAILED", "CANCELED": "CANCELED"}.get(query["status"])
                 if state is None:
-                    raise ValueError("Statement history is not final; retry collect: " + task_key)
+                    continue
+                item["state"] = state
                 rows.append(["job-run", match[1], f"job {run['run_id']} {task_key}", query["query_id"], state])
-        if not rows:
+        (self.output / (str(run["run_id"]) + "-statements.json")).write_text(json.dumps(evidence, indent=2))
+        if not evidence:
             raise ValueError("No SQL statements found")
         prior = set()
         if self.ledger.exists():
