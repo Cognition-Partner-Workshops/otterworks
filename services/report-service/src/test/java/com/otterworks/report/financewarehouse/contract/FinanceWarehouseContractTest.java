@@ -14,6 +14,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class FinanceWarehouseContractTest {
+    /** As-of date for CURRENT_DATE logic on every path: the seeded business date 20261109. */
+    static final String AS_OF = "2026-11-09";
+
     @Test
     public void reconciliationMatchesRecordedContract() throws Exception {
         assertContract(TeradataFinanceWarehouse.SQL, "finance-reconciliation", 202611);
@@ -33,13 +36,23 @@ public class FinanceWarehouseContractTest {
             warehouse = new EmulatorWarehouse(target);
         } else if ("replay".equals(target)) {
             warehouse = new ReplayWarehouse();
+        } else if ("databricks".equals(target)) {
+            warehouse = new DatabricksWarehouse();
         } else if ("snowflake".equals(target)) {
             warehouse = new SnowflakeWarehouse();
         } else {
             throw new IllegalArgumentException("Unknown WAREHOUSE_CONTRACT_TARGET: " + target);
         }
         JsonNode actual = warehouse.execute(sql, period);
-        JsonNode expected = new ObjectMapper().readTree(new File("contract/expected/" + query + ".json"));
+        if ("databricks".equals(target) && "true".equals(System.getenv("CONTRACT_COMPARE_OLDPATH"))) {
+            JsonNode oldPath = new EmulatorWarehouse("teradata-emulator").execute(sql, period);
+            if ("true".equals(System.getenv("CONTRACT_SHOW"))) {
+                System.out.println("OLD PATH (teradata-emulator) " + query + ": " + oldPath.get("rows"));
+                System.out.println("NEW PATH (databricks)        " + query + ": " + actual.get("rows"));
+            }
+            assertSameResult(oldPath, actual);
+        }
+        JsonNode expected = new ObjectMapper().readTree(new File(System.getenv().getOrDefault("CONTRACT_EXPECTED_DIR", "contract/expected") + "/" + query + ".json"));
         assertEquals(expected.get("query"), actual.get("query"));
         assertEquals(expected.get("row_count").asInt(), actual.get("rows").size());
         if (expected.has("keys")) {
@@ -63,5 +76,29 @@ public class FinanceWarehouseContractTest {
             }
             assertEquals(sum.getKey(), 0, total.compareTo(new BigDecimal(sum.getValue().asText())));
         }
+    }
+
+    /** Old read path vs new read path on the same data: same columns, same ordered rows, numeric-equal values. */
+    static void assertSameResult(JsonNode oldPath, JsonNode newPath) {
+        assertEquals(oldPath.get("columns"), newPath.get("columns"));
+        assertEquals("row count", oldPath.get("rows").size(), newPath.get("rows").size());
+        for (int r = 0; r < oldPath.get("rows").size(); r++) {
+            for (int c = 0; c < oldPath.get("columns").size(); c++) {
+                JsonNode before = oldPath.get("rows").get(r).get(c);
+                JsonNode after = newPath.get("rows").get(r).get(c);
+                String where = "row " + r + " " + oldPath.get("columns").get(c).asText();
+                if (before.isNull() || after.isNull()) {
+                    assertEquals(where, before.isNull(), after.isNull());
+                } else if (isNumber(before.asText()) && isNumber(after.asText())) {
+                    assertEquals(where, 0, new BigDecimal(before.asText()).compareTo(new BigDecimal(after.asText())));
+                } else {
+                    assertEquals(where, before.asText(), after.asText());
+                }
+            }
+        }
+    }
+
+    private static boolean isNumber(String value) {
+        return value.matches("-?\\d+(\\.\\d+)?");
     }
 }

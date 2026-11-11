@@ -18,6 +18,11 @@ class EmulatorWarehouse implements ContractWarehouse {
         this.target = target;
     }
 
+    /** Pins Teradata CURRENT_DATE to the contract as-of date so both paths use the same day. */
+    static String pinAsOf(String sql) {
+        return sql.replace("CURRENT_DATE", "DATE '" + FinanceWarehouseContractTest.AS_OF + "'");
+    }
+
     @Override
     public JsonNode execute(String sql, int period) throws Exception {
         String query = ReplayWarehouse.queryName(sql);
@@ -34,7 +39,7 @@ class EmulatorWarehouse implements ContractWarehouse {
         try {
             process = new ProcessBuilder(command).redirectOutput(output).redirectError(error).start();
             try (java.io.OutputStream input = process.getOutputStream()) {
-                input.write(sql.replace("?", Integer.toString(period)).getBytes(StandardCharsets.UTF_8));
+                input.write(pinAsOf(sql).replace("?", Integer.toString(period)).getBytes(StandardCharsets.UTF_8));
             }
             if (!process.waitFor(60, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Contract bridge timed out");
