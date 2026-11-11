@@ -32,6 +32,7 @@ def deploy():
     saved=EVIDENCE/'job-created.json'
     if saved.exists():
         job=json.loads(saved.read_text())
+        api('POST','/api/2.2/jobs/reset',{'job_id':job['job_id'],'new_settings':body})
     else:
         job=api('POST','/api/2.2/jobs/create',body)
         saved.write_text(json.dumps(job,indent=2))
