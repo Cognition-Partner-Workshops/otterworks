@@ -26,7 +26,7 @@
     "source_path": "etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala",
     "baseline_app_id": "app-20261110202613-0016",
     "area": "users",
-    "pr": ""
+    "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757"
   },
   "statements": [
     {
@@ -74,6 +74,24 @@
     {
       "step": "control",
       "statement_id": "01f1dd85-4b87-141f-b971-9785d2e422f6",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "history",
+      "statement_id": "01f1dd85-6e8c-17c3-9666-cb7b0318a094",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-7575-1c44-b29f-fa8fb222d5b2",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "evidence",
+      "statement_id": "01f1dd85-7bde-1801-bc7c-7d3fd92ae404",
       "execution_status": "SUCCEEDED",
       "error": null
     }

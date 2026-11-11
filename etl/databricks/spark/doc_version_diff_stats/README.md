@@ -12,7 +12,7 @@
 | Job / runs | 1071117012399528 / none |
 | Executor-hours before | 0.030714722; packaged History Server app app-20261110202830-0025 |
 | DBU after | NOT RUN |
-| PR | See the pull request containing this directory |
+| PR | https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757 |
 
 ## Input contract and evidence
 
@@ -99,8 +99,8 @@ WHERE statement_text LIKE '/* run=dbx-d1111 act=spark step=%consumer=doc_version
 ORDER BY start_time;
 ```
 
-The latest history check (01f1dd84-eda7-1371-9c62-ab31f922ce4c) returned
-0 rows. Ingestion is PENDING, not evidence of absent execution; history can lag
+The latest history check (01f1dd85-70b7-1557-aa48-136de2e1d268) returned
+7 rows. Ingestion is PENDING, not evidence of absent execution; history can lag
 30–40 minutes. Re-run the exact query after ingestion catches up.
 
 ```sql

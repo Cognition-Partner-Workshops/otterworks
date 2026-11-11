@@ -37,7 +37,7 @@
     "source_path": "etl/spark/jobs/py/billing_churn_score.py",
     "baseline_app_id": "app-20261110202605-0015",
     "area": "billing",
-    "pr": ""
+    "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757"
   },
   "statements": [
     {
@@ -331,6 +331,30 @@
     {
       "step": "control",
       "statement_id": "01f1dd85-49da-13d2-95dc-3739fd8f669f",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "history",
+      "statement_id": "01f1dd85-6aa0-1ea8-a210-294c01ff75e3",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "billing",
+      "statement_id": "01f1dd85-6ce4-1023-8228-86ce35468c99",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-72e1-1f0d-9f9e-7ef4ab8dae12",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "evidence",
+      "statement_id": "01f1dd85-7a9f-1991-9dd1-7bb0ead4a945",
       "execution_status": "SUCCEEDED",
       "error": null
     }

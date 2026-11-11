@@ -12,7 +12,7 @@
 | Job / runs | 843322654414524 / 487564212166246, 1039480886636949, 151365825676628 |
 | Executor-hours before | 0.00381; packaged History Server app app-20261110202605-0015 |
 | DBU after | PENDING |
-| PR | See the pull request containing this directory |
+| PR | https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757 |
 
 ## Input contract and evidence
 
@@ -115,8 +115,8 @@ WHERE statement_text LIKE '/* run=dbx-d1111 act=spark step=%consumer=billing_chu
 ORDER BY start_time;
 ```
 
-The latest history check (01f1dd84-e97b-1ff2-8e9f-f7f77cf7a971) returned
-0 rows. Ingestion is PENDING, not evidence of absent execution; history can lag
+The latest history check (01f1dd85-6aa0-1ea8-a210-294c01ff75e3) returned
+15 rows. Ingestion is PENDING, not evidence of absent execution; history can lag
 30–40 minutes. Re-run the exact query after ingestion catches up.
 
 ```sql
@@ -129,6 +129,6 @@ WHERE usage_metadata.job_id = '843322654414524'
 GROUP BY ALL;
 ```
 
-Billing check 01f1dd85-1f45-19a4-af30-1b46c9763e53 returned no rows.
+Billing check 01f1dd85-6ce4-1023-8228-86ce35468c99 returned no rows.
 DBU after is PENDING because billing ingestion lags hours, never zero.
 Executor-hours and DBUs are distinct units; no savings ratio is calculated.

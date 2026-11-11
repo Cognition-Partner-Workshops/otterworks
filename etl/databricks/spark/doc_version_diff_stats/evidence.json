@@ -26,7 +26,7 @@
     "source_path": "etl/spark/jobs/py/doc_version_diff_stats.py",
     "baseline_app_id": "app-20261110202830-0025",
     "area": "documents",
-    "pr": ""
+    "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757"
   },
   "statements": [
     {
@@ -86,6 +86,24 @@
     {
       "step": "control",
       "statement_id": "01f1dd85-4d05-1538-98dd-c60da7ba5850",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "history",
+      "statement_id": "01f1dd85-70b7-1557-aa48-136de2e1d268",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-77b3-19b7-bc13-6ac8a0838ec1",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "evidence",
+      "statement_id": "01f1dd85-7d19-1b14-8c18-e5207a303521",
       "execution_status": "SUCCEEDED",
       "error": null
     }
