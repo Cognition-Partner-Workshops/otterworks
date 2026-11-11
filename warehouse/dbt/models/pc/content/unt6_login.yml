@@ -1,0 +1,27 @@
+version: 2
+sources:
+  - name: unt6_pc_src
+    database: SFX_D1110_AFTER
+    schema: PC_SRC
+    tables:
+      - name: LOGIN_EVENT
+  - name: unt6_fixture
+    database: SFX_D1110_AFTER
+    schema: PC_CONTENT_UNT6_FIXTURE
+    tables:
+      - name: SEEDED_SOURCE
+      - name: DUP_WITHIN_ROUTE_SOURCE
+models:
+  - name: pc_content__login_event
+    description: Runner login result routing and update-else-insert; within-route duplicates fail closed.
+    columns:
+      - name: LOGIN_ID
+        tests: [not_null, unique]
+  - name: pc_content__unt6_fixture_seeded
+    columns:
+      - name: LOGIN_ID
+        tests: [not_null, unique]
+  - name: pc_content__unt6_fixture_dup_within_route
+    columns:
+      - name: LOGIN_ID
+        tests: [not_null, unique]

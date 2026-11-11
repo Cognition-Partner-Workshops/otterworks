@@ -125,6 +125,81 @@ with folder/workflow/session/targets, reject filenames, parameters, disabled-tas
 reasons and sequence initial values from canonical exports; the manifest records
 that full resolved configuration.
 
+## UNT-4 audit daily summary and archive
+
+Scope: `m_SFX_AUDIT_DAILY_SUMMARY` -> `PC_AUDIT.AUDIT_DAILY_SUMMARY` and
+`m_SFX_AUDIT_EVENT_ARCHIVE` -> `PC_AUDIT.AUDIT_EVENT_ARCHIVE`, built on UNT-3
+(`PC_AUDIT.AUDIT_EVENT`, unchanged and re-verified row-for-row before every run).
+Executed candidate b64d903a35c4af58a53f78b50fd0346a97cef8b0. `evidence_unt4.py` refuses to
+run if HEAD or any implementation file hash changes after preflight.
+
+Summary: `AGG_DAILY_EVENTS` groups by `TRUNC(EVENT_TS,'DD')` and `CUSTOMER_ID`.
+`SEQ_AUDIT_SUMMARY` starts at 50001. The runner numbers groups in the order it
+first sees them, which is EVENT_ID order for the audit target. Ranking the
+accepted UNT-2 oracle's groups by `MIN(EVENT_ID)` reproduces all 118
+SUMMARY_IDs, so the model uses that ordering. **Intended difference:** the
+legacy session is Insert with no truncate, so a rerun appends 118 duplicate
+groups with new IDs (`tests/test_runner_integration.py`). dbt instead MERGEs on
+SUMMARY_ID. Existing groups keep their IDs (run 2 rewrites the 118 matched rows
+with identical values), and new groups continue from MAX(SUMMARY_ID)+1.
+First-load parity includes generated IDs. Legacy second-run equivalence is
+**not** claimed.
+
+Archive: the source filter is `EVENT_TS < CURRENT_DATE - $$ARCHIVE_DAYS`, using
+the session override of 2555 days, not the workflow default of 730. The date is
+the UTC date, matching the runner's PostgreSQL session (`Etc/UTC`).
+`SEQ_AUDIT_ARCHIVE` starts at 1, in EVENT_ID order. The session stays
+**disabled** in `wf_SFX_AUDIT_DAILY` (`ISENABLED="NO"`), and the XML, params and
+oracle are unchanged. On replay, dbt appends only the occurrences of a complete
+key tuple that are not archived yet, so a rerun adds nothing (**intended
+difference**: a legacy rerun re-archives everything with new IDs).
+
+The frozen archive oracle is empty, so `fixture-runner` builds two isolated,
+test-only cases in throwaway local PostgreSQL databases and runs the real
+`startsession` twice. The 13 source events cover:
+- one second before the cutoff, exactly at it and one second after;
+- a NULL timestamp;
+- all-NULL columns;
+- whitespace, a 160-character value, and empty-string versus NULL DETAILS;
+- an event older than 730 days but newer than 2555;
+- the oldest event with the latest EVENT_ID.
+
+`empty` starts from an empty target and sequence 1. `history` starts with three
+prior rows (IDs 7-9) and a persisted sequence of 10. `fixture-load` copies the
+identical source and initial target into `PC_AUDIT_UNT4_FIXTURE`, which is the
+only schema the guarded writes may touch, and verifies the copy against
+PostgreSQL by full multiset comparison. The fixture models are enabled only with
+`SFX_UNT4_ARCHIVE_FIXTURE=1` and share the production macro
+`pc_audit_event_archive`. A fixture run aborts if the Snowflake UTC date differs
+from the runner's CURRENT_DATE.
+
+```sh
+cd warehouse  # bind secret:org:SNOWFLAKE_* references at exec time only
+TD_PORT=<local pg> .venv/bin/python -m parity.evidence_unt4 fixture-runner --scenario empty
+TD_PORT=<local pg> .venv/bin/python -m parity.evidence_unt4 fixture-runner --scenario history
+.venv/bin/python -m parity.evidence_unt4 fixture-load
+.venv/bin/python -m parity.evidence_unt4 preflight
+for s in empty history m_SFX_AUDIT_DAILY_SUMMARY m_SFX_AUDIT_EVENT_ARCHIVE; do
+  .venv/bin/python -m parity.evidence_unt4 run --subject $s --run 1
+  .venv/bin/python -m parity.evidence_unt4 run --subject $s --run 2
+  .venv/bin/python -m parity.evidence_unt4 replay --subject $s; done
+.venv/bin/python -m parity.evidence_unt4 postflight
+```
+
+Each replay compares typed full-row multisets (oracle vs run 1, oracle vs run 2,
+and run 1 vs run 2) and business-key multiplicities. It also checks that
+sequence IDs are stable, that runner sessions report SUCCEEDED, FAILED_ROWS=0
+and no `.bad` rows, and that no query wrote the target between the two runs
+(QUERY_HISTORY_BY_USER window). Neither dbt model has a reject path.
+
+Not certified:
+- archive key-tuple collisions (the shared gate fails them by contract);
+- source orders that differ from EVENT_ID order;
+- archives that are also written by other jobs, where MAX(ID)+1 differs from the
+  persisted sequence;
+- summary NULL EVENT_TS groups;
+- Task DAG execution, control marking (UNT-10) and CI.
+
 ## Reproduce local baseline
 
 From repository root:

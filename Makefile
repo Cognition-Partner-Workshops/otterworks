@@ -100,27 +100,27 @@ export PC_CONTROL_SCHEMA ?= MIGRATION_CONTROL
 export PC_CONTROL_TABLE ?= MAPPINGS
 SFX_PC_PY = $(abspath $(SFX_VENV))/bin/python
 sfx-pc-setup: $(SFX_VENV)/.sfx-installed ## Seed additive migration inventory and source snapshot
-	cd warehouse && $(SFX_PC_PY) -m parity setup $(if $(filter 1,$(SKIP_CONTROL)),--skip-control)
+	cd warehouse && "$(SFX_PC_PY)" -m parity setup $(if $(filter 1,$(SKIP_CONTROL)),--skip-control)
 
 sfx-pc-before sfx-pc-parity sfx-pc-idempotence: $(SFX_VENV)/.sfx-installed ## Capture/compare/rebuild MAPPING
 	@test -n "$(MAPPING)" || (echo 'MAPPING is required'; exit 2)
-	cd warehouse && $(SFX_PC_PY) -m parity $(patsubst sfx-pc-%,%,$@) --mapping "$(MAPPING)"
+	cd warehouse && "$(SFX_PC_PY)" -m parity $(patsubst sfx-pc-%,%,$@) --mapping "$(MAPPING)"
 
 sfx-pc-dbt: $(SFX_VENV)/.sfx-installed ## Build MAPPING or all PC models in FOLDER
-	cd warehouse && $(SFX_PC_PY) -m parity dbt $(if $(MAPPING),--mapping "$(MAPPING)",--folder "$(FOLDER)") $(if $(LOAD_DATE),--load-date "$(LOAD_DATE)")
+	cd warehouse && "$(SFX_PC_PY)" -m parity dbt $(if $(MAPPING),--mapping "$(MAPPING)",--folder "$(FOLDER)") $(if $(LOAD_DATE),--load-date "$(LOAD_DATE)")
 
 sfx-pc-mark: $(SFX_VENV)/.sfx-installed ## Publish evidence for MAPPING (AMBER/OWNER/PR_URL optional)
 	@test -n "$(MAPPING)" || (echo 'MAPPING is required'; exit 2)
-	cd warehouse && $(SFX_PC_PY) -m parity mark --mapping "$(MAPPING)" $(if $(AMBER),--amber "$(AMBER)") $(if $(OWNER),--owner "$(OWNER)") $(if $(PR_URL),--pr-url "$(PR_URL)")
+	cd warehouse && "$(SFX_PC_PY)" -m parity mark --mapping "$(MAPPING)" $(if $(AMBER),--amber "$(AMBER)") $(if $(OWNER),--owner "$(OWNER)") $(if $(PR_URL),--pr-url "$(PR_URL)")
 
 sfx-pc-licence: $(SFX_VENV)/.sfx-installed ## Count remaining PowerCenter mappings
-	cd warehouse && $(SFX_PC_PY) -m parity licence
+	cd warehouse && "$(SFX_PC_PY)" -m parity licence
 
 sfx-pc-dag: $(SFX_VENV)/.sfx-installed ## Deploy suspended FOLDER DAG (RUN_ONCE=1 to execute)
-	$(SFX_PC_PY) warehouse/snowflake/pc_dag.py --folder "$(FOLDER)" $(if $(filter 1,$(RUN_ONCE)),--run-once) $(if $(LOAD_DATE),--load-date "$(LOAD_DATE)")
+	"$(SFX_PC_PY)" warehouse/snowflake/pc_dag.py --folder "$(FOLDER)" $(if $(filter 1,$(RUN_ONCE)),--run-once) $(if $(LOAD_DATE),--load-date "$(LOAD_DATE)")
 
 sfx-pc-test: $(SFX_VENV)/.sfx-installed ## Offline migration harness and PC DAG tests
-	cd warehouse && $(SFX_PC_PY) -m pytest parity/tests -q
+	cd warehouse && "$(abspath $(SFX_TEST_PYTHON))" -m pytest parity/tests -q
 
 .PHONY: sfx-snowflake-load-before
 sfx-snowflake-load-before: sfx-teradata-validate $(SFX_VENV)/.sfx-installed warehouse/.venv/.requirements ## Land processed billing after sfx-teradata-run

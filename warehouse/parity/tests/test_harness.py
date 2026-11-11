@@ -109,9 +109,13 @@ def test_owners():
     assert sum(owner_effort(r) == 'migrations-page' for r in rows) == 8
     class Cursor:
         def execute(self, sql, params):
-            assert params == ('m_SFX_PAYMENT',)
+            assert sql == 'SELECT FOLDER, OWNER_EFFORT FROM IDENTIFIER(%s) WHERE MAPPING=%s'
+            assert params == ('SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS', 'm_SFX_PAYMENT')
         def fetchall(self):
-            return [('act3-workflow',)]
+            return [('SFX_BILLING', 'act3-workflow')]
     require_owner(Cursor(), 'm_SFX_PAYMENT')
+    require_owner(Cursor(), 'm_SFX_PAYMENT', folder='SFX_BILLING')
     with pytest.raises(ValueError, match='ownership mismatch'):
         require_owner(Cursor(), 'm_SFX_PAYMENT', 'migrations-page')
+    with pytest.raises(ValueError, match='folder mismatch'):
+        require_owner(Cursor(), 'm_SFX_PAYMENT', folder='SFX_CONTENT')

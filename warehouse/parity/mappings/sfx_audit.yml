@@ -14,3 +14,18 @@ m_SFX_AUDIT_EVENT:
   session: s_m_SFX_AUDIT_EVENT
   workflow: wf_SFX_AUDIT_DAILY
   patterns: [Expression, Source Qualifier]
+m_SFX_AUDIT_DAILY_SUMMARY:
+  key_columns: [SUMMARY_DT, CUSTOMER_ID]
+  dbt_model: pc_audit__audit_daily_summary
+  after_table: PC_AUDIT.AUDIT_DAILY_SUMMARY
+  before_table: PC_BEFORE.AUDIT_DAILY_SUMMARY
+  session: s_m_SFX_AUDIT_DAILY_SUMMARY
+  workflow: wf_SFX_AUDIT_DAILY
+# s_m_SFX_AUDIT_EVENT_ARCHIVE is ISENABLED=NO in wf_SFX_AUDIT_DAILY and stays disabled.
+m_SFX_AUDIT_EVENT_ARCHIVE:
+  key_columns: [ACTOR_USER_ID, DOCUMENT_ID, EVENT_TS, EVENT_TYPE, DETAILS]
+  dbt_model: pc_audit__audit_event_archive
+  after_table: PC_AUDIT.AUDIT_EVENT_ARCHIVE
+  before_table: PC_BEFORE.AUDIT_EVENT_ARCHIVE
+  session: s_m_SFX_AUDIT_EVENT_ARCHIVE
+  workflow: wf_SFX_AUDIT_DAILY

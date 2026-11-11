@@ -40,3 +40,32 @@ m_SFX_DOC_SHARE:
   session: s_m_SFX_DOC_SHARE
   workflow: wf_SFX_CONTENT_DAILY
   patterns: [Source Qualifier, Expression, Lookup Procedure, DECODE, Update else Insert]
+# UNT-6 adds LOGIN_EVENT; the original act-3 header and entries above are preserved.
+m_SFX_LOGIN_EVENT:
+  key_columns: [LOGIN_ID]
+  dbt_model: pc_content__login_event
+  after_table: PC_CONTENT.LOGIN_EVENT
+  before_table: PC_BEFORE.LOGIN_EVENT
+  session: s_m_SFX_LOGIN_EVENT
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Router, Update else Insert]
+
+# UNT-7 appends ROLE_GRANT; all prior entries are preserved.
+m_SFX_ROLE_GRANT:
+  key_columns: [GRANT_ID]
+  dbt_model: pc_content__role_grant
+  after_table: PC_CONTENT.ROLE_GRANT
+  before_table: PC_BEFORE.ROLE_GRANT
+  session: s_m_SFX_ROLE_GRANT
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Truncate and load]
+
+# UNT-8 appends TEAM_MEMBER; all prior entries are preserved.
+m_SFX_TEAM_MEMBER:
+  key_columns: [TEAM_MEMBER_ID]
+  dbt_model: pc_content__team_member
+  after_table: PC_CONTENT.TEAM_MEMBER
+  before_table: PC_BEFORE.TEAM_MEMBER
+  session: s_m_SFX_TEAM_MEMBER
+  workflow: wf_SFX_CONTENT_DAILY
+  patterns: [Source Qualifier, Expression, Update else Insert]

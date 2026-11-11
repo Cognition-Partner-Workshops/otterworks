@@ -1,0 +1,26 @@
+version: 2
+sources:
+  - name: unt8_pc_src
+    database: SFX_D1110_AFTER
+    schema: PC_SRC
+    tables:
+      - name: TEAM_MEMBER
+  - name: unt8_fixture
+    database: SFX_D1110_AFTER
+    schema: PC_FX_UNT8_TEAM_MEMBER
+    tables:
+      - name: SEEDED_SOURCE
+      - name: DUP_KEY_SOURCE
+models:
+  - name: pc_content__team_member
+    columns:
+      - name: TEAM_MEMBER_ID
+        tests: [not_null, unique]
+  - name: pc_content__unt8_fixture_seeded
+    columns:
+      - name: TEAM_MEMBER_ID
+        tests: [not_null, unique]
+  - name: pc_content__unt8_fixture_dup_key
+    columns:
+      - name: TEAM_MEMBER_ID
+        tests: [not_null, unique]
