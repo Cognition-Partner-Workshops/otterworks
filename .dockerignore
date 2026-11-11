@@ -11,3 +11,35 @@
 **/*.tfstate
 **/*.tfstate.*
 **/npm-debug.log*
+
+# Credentials and local secrets. The runner image is pushed to a shared registry
+# and only needs scripts/, demo-platform/ and the deploy manifests, so nothing
+# below may enter the build context. .gitignore does not apply here: gitignored
+# local files (.env, Helm secrets.yaml, tfvars) would otherwise be copied too.
+# demo-platform/runner/Dockerfile fails the build if any of these slip through.
+etl/config.ini
+**/.env
+**/.env.*
+**/*.env
+!**/.env.example
+!infrastructure/helm/tenant-values/**/eventing.env
+**/secrets.yaml
+**/secrets.yml
+**/*-secrets.yaml
+**/*.tfvars
+**/*.tfvars.json
+!**/*.tfvars.example
+!platform/terraform/environments/dev.tfvars
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/id_rsa*
+**/id_ed25519*
+**/.npmrc
+**/.netrc
+**/.pgpass
+**/.aws
+**/.kube
+**/kubeconfig*
+.demo
