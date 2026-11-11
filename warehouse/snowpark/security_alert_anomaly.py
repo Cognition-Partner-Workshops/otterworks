@@ -64,5 +64,6 @@ $$
     result.write.save_as_table(
         [database, "MART_SPARK", "SECURITY_ALERT_ANOMALY"],
         mode="overwrite",
+        copy_grants=True,
         comment="sfx-d1110 Replaces the Spark lake output audit/security_alert_anomaly.",
     )
