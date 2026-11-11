@@ -141,8 +141,42 @@ Implementation/test head `c83db7f58f0f07f18583eb92c914ad1e04ff5ce0`, settled:
 | infrastructure | skipped | 42944580215 | 130274245385 |
 | audit-service | skipped | 42944580215 | 130274245360 |
 
-Documentation-commit CI is recorded below after completion; final-head raw checks and logs are
-included in `unt11_ci` in the delivery archive.
+Documentation head `398b1d99d` also settled at **9 passed / 2 failed / 0 pending / 18 skipped**.
+The two failures have the same verbatim error lines below. This follow-up docs-only commit records
+that completed run; its own final-head checks and logs are retained in `unt11_ci` in the delivery
+archive rather than recursively creating another commit to record its own CI.
+
+| Check | Conclusion | Run ID | Job ID |
+|---|---|---|---|
+| sfx-snowflake (3.10) | success | 42945398428 | 130276909187 |
+| sfx-snowflake (3.11) | success | 42945398428 | 130276909136 |
+| api-flow-tests | success | 42945398428 | 130276909137 |
+| detect-changes | success | 42945398428 | 130276850292 |
+| incident-chart-sync | success | 42945398428 | 130276850213 |
+| sfx-teradata | success | 42945398428 | 130276850163 |
+| informatica-runner | success | 42945398428 | 130276850119 |
+| migration-job | success | 42945398428 | 130276849846 |
+| deps | success | 42945398525 | 130276849680 |
+| equivalence | failure | 42945398408 | 130276849311 |
+| parity | failure | 42945398401 | 130276848831 |
+| audit-service | skipped | 42945398428 | 130276911680 |
+| analytics-service | skipped | 42945398428 | 130276911665 |
+| admin-service | skipped | 42945398428 | 130276911579 |
+| infrastructure | skipped | 42945398428 | 130276911500 |
+| search-service | skipped | 42945398428 | 130276911427 |
+| auth-service | skipped | 42945398428 | 130276911404 |
+| document-service | skipped | 42945398428 | 130276911368 |
+| report-service | skipped | 42945398428 | 130276911285 |
+| web-app | skipped | 42945398428 | 130276911093 |
+| api-gateway | skipped | 42945398428 | 130276911034 |
+| workbench | skipped | 42945398428 | 130276910850 |
+| collab-service | skipped | 42945398428 | 130276910828 |
+| notification-service | skipped | 42945398428 | 130276910826 |
+| legacy-portal | skipped | 42945398428 | 130276910770 |
+| demo-platform-terraform | skipped | 42945398428 | 130276910685 |
+| admin-dashboard | skipped | 42945398428 | 130276910675 |
+| demo-platform | skipped | 42945398428 | 130276910515 |
+| file-service | skipped | 42945398428 | 130276910499 |
 
 ## Known shared failures (not waived and not skipped)
 
