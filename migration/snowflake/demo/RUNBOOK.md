@@ -28,6 +28,18 @@ Do this the day before, on a machine with Docker and the Snowflake secrets.
 
 `log_run` and `purge_expired` can't pass row for row, because the legacy run log appends a row per replay and per SSIS package. The orchestrator writes an explanation for each in the ledger, and the gate exits 0 only once both explanations are filled in. A person approves the explanations in the PR.
 
+## Tableau workbook unit
+
+This is the short version of the demo: one BI workflow moves end to end and the parity check is on screen the whole time. The estate has 20 Tableau workbooks in `source/tableau/`, built from 29 of the 30 SSRS reports (`make sfm-bi-workbooks` regenerates them from SQL Server). Each one connects to SQL Server with T-SQL custom SQL. The contract in `gate/bi/workbooks.yaml` lists each workbook's datasources, report, keys and the units behind it.
+
+1. After `make sfm-demo-reset RUN=<token>`, run `make sfm-bi-console` and open `http://127.0.0.1:8050/?live`. All 20 workbooks show as on SQL Server, and the page reloads every 4 seconds.
+2. Open `source/tableau/Storage Overage.twb` and point at the three datasources, the `Business Date` parameter and the custom SQL against `mart.mart_overage_charges`.
+3. Start one session with `demo/BI_UNIT_PROMPT.md` for `Storage Overage`. It traces the three sheets to `rollup_storage_daily`, `rate_overage` and `build_mart_overage`, ports them and writes `target/tableau/Storage Overage.twb`.
+4. When it runs `make sfm-bi-parity`, the Storage Overage page goes red if the first port of `rate_overage` keeps the fractions. On the build run the naive port differed on 41 of 60 tenants on 2026-09-15 (3,699.2481 cents in Snowflake against 3,690 in SQL Server for the top tenant) and on all three plan tiers. Each differing bar and cell is red, with the SQL Server value beside it.
+5. The session matches the whole-gigabyte rule, reruns the dual run and the check, and the page turns green on both dates. The datasource cards at the bottom show the T-SQL and the Snowflake SQL side by side.
+
+Snowflake keeps one business date per build, so run `make sfm-dual-run` for a date before `make sfm-bi-parity` for that date. Otherwise every row shows as missing in Snowflake. For the fallback, check out the reference branch and run `python migration/snowflake/demo/apply_reference_workbooks.py --run <token>`, which writes a Snowflake copy of all 20 workbooks. After the dual run for a date, `make sfm-bi-parity RUN=<token> DATE=<date>` showed 20 PASS on both dates on the build run.
+
 ## Fallback
 
 Branch `devin/1794295625-sfm-reference` holds a finished port of all 18 units. On the build run it gave 23 PASS on 2026-09-15 and 2026-09-30, and with the two explanations written, `make sfm-gate` exited 0. If the live run stalls, check that branch out, run `make sfm-dual-run RUN=<token> DATE=2026-09-15`, then `python migration/snowflake/demo/apply_reference_explanations.py` and `make sfm-gate RUN=<token> DATE=2026-09-15`, which should exit 0.

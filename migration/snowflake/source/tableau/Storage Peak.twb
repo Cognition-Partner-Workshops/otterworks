@@ -1,0 +1,124 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Storage Peak" inline='true' name='federated.f738210a6a3a9917e0689afc36a5' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.36645d6c02b5ff96b124a449d009'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.36645d6c02b5ff96b124a449d009' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, tenant_name, plan_tier, storage_peak_mb, bytes_used FROM mart.mart_tenant_usage_daily WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY storage_peak_mb DESC</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[storage_peak_mb]' role='measure' type='quantitative' />
+<column datatype='integer' name='[bytes_used]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Peak Storage MB by Tenant">
+<table>
+<view>
+<datasources>
+<datasource caption="Storage Peak" name='federated.f738210a6a3a9917e0689afc36a5' />
+</datasources>
+<datasource-dependencies datasource='federated.f738210a6a3a9917e0689afc36a5'>
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='integer' name='[storage_peak_mb]' role='measure' type='quantitative' />
+<column-instance column='[tenant_name]' derivation='None' name='[none:tenant_name:nk]' pivot='key' type='nominal' />
+<column-instance column='[storage_peak_mb]' derivation='Sum' name='[sum:storage_peak_mb:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.f738210a6a3a9917e0689afc36a5].[none:tenant_name:nk]" direction='DESC' using="[federated.f738210a6a3a9917e0689afc36a5].[sum:storage_peak_mb:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.f738210a6a3a9917e0689afc36a5].[none:tenant_name:nk]</rows>
+<cols>[federated.f738210a6a3a9917e0689afc36a5].[sum:storage_peak_mb:qk]</cols>
+</table>
+<simple-id uuid='{003D5A26-EADF-5425-8BF6-FF498F220DB9}' />
+</worksheet>
+<worksheet name="Peak Storage Detail">
+<table>
+<view>
+<datasources>
+<datasource caption="Storage Peak" name='federated.f738210a6a3a9917e0689afc36a5' />
+</datasources>
+<datasource-dependencies datasource='federated.f738210a6a3a9917e0689afc36a5'>
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[storage_peak_mb]' role='measure' type='quantitative' />
+<column datatype='integer' name='[bytes_used]' role='measure' type='quantitative' />
+<column-instance column='[tenant_name]' derivation='None' name='[none:tenant_name:nk]' pivot='key' type='nominal' />
+<column-instance column='[plan_tier]' derivation='None' name='[none:plan_tier:nk]' pivot='key' type='nominal' />
+<column-instance column='[storage_peak_mb]' derivation='Sum' name='[sum:storage_peak_mb:qk]' pivot='key' type='quantitative' />
+<column-instance column='[bytes_used]' derivation='Sum' name='[sum:bytes_used:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<filter class='categorical' column='[federated.f738210a6a3a9917e0689afc36a5].[:Measure Names]'>
+<groupfilter function='union' user:op='manual'>
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.f738210a6a3a9917e0689afc36a5].[sum:storage_peak_mb:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.f738210a6a3a9917e0689afc36a5].[sum:bytes_used:qk]"' />
+</groupfilter>
+</filter>
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Text' />
+<encodings>
+<text column='[federated.f738210a6a3a9917e0689afc36a5].[Multiple Values]' />
+</encodings>
+</pane>
+</panes>
+<rows>([federated.f738210a6a3a9917e0689afc36a5].[none:tenant_name:nk] / [federated.f738210a6a3a9917e0689afc36a5].[none:plan_tier:nk])</rows>
+<cols>[federated.f738210a6a3a9917e0689afc36a5].[:Measure Names]</cols>
+</table>
+<simple-id uuid='{DECFC3B3-F610-528A-858E-F9C83B7167F1}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Storage Peak">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='50000' id='2' name="Peak Storage MB by Tenant" w='100000' x='0' y='0' />
+<zone h='50000' id='3' name="Peak Storage Detail" w='100000' x='0' y='50000' />
+</zone>
+</zones>
+<simple-id uuid='{6744DA18-6DDB-5FC3-ADDE-3C3602530185}' />
+</dashboard>
+</dashboards>
+</workbook>

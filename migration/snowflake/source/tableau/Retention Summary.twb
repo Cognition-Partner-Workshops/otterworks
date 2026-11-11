@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Retention Summary" inline='true' name='federated.7311ca6c5f07a51a4750a1997598' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.eeb7de48a765078c5f1f184eabce'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.eeb7de48a765078c5f1f184eabce' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, resource_type, retention_action, item_count FROM mart.mart_retention_summary WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY tenant_id, resource_type</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_type]' role='dimension' type='nominal' />
+<column datatype='string' name='[retention_action]' role='dimension' type='nominal' />
+<column datatype='integer' name='[item_count]' role='measure' type='quantitative' />
+</datasource>
+<datasource caption="Archived Content" inline='true' name='federated.4fd5ec16cdc91f89a8d30606d26a' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.953bee417ca86bc87fd565b073fa'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.953bee417ca86bc87fd565b073fa' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, resource_type, retention_action, item_count FROM mart.mart_retention_summary WHERE business_date = &lt;[Parameters].[Business Date]&gt; AND retention_action = 'archive' ORDER BY tenant_id</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_type]' role='dimension' type='nominal' />
+<column datatype='string' name='[retention_action]' role='dimension' type='nominal' />
+<column datatype='integer' name='[item_count]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Items by Retention Action">
+<table>
+<view>
+<datasources>
+<datasource caption="Retention Summary" name='federated.7311ca6c5f07a51a4750a1997598' />
+</datasources>
+<datasource-dependencies datasource='federated.7311ca6c5f07a51a4750a1997598'>
+<column datatype='string' name='[retention_action]' role='dimension' type='nominal' />
+<column datatype='integer' name='[item_count]' role='measure' type='quantitative' />
+<column-instance column='[retention_action]' derivation='None' name='[none:retention_action:nk]' pivot='key' type='nominal' />
+<column-instance column='[item_count]' derivation='Sum' name='[sum:item_count:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.7311ca6c5f07a51a4750a1997598].[none:retention_action:nk]" direction='DESC' using="[federated.7311ca6c5f07a51a4750a1997598].[sum:item_count:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.7311ca6c5f07a51a4750a1997598].[none:retention_action:nk]</rows>
+<cols>[federated.7311ca6c5f07a51a4750a1997598].[sum:item_count:qk]</cols>
+</table>
+<simple-id uuid='{DF6B582D-AD7E-5877-A359-09CAF5A78EEE}' />
+</worksheet>
+<worksheet name="Items by Resource Type">
+<table>
+<view>
+<datasources>
+<datasource caption="Retention Summary" name='federated.7311ca6c5f07a51a4750a1997598' />
+</datasources>
+<datasource-dependencies datasource='federated.7311ca6c5f07a51a4750a1997598'>
+<column datatype='string' name='[resource_type]' role='dimension' type='nominal' />
+<column datatype='integer' name='[item_count]' role='measure' type='quantitative' />
+<column-instance column='[resource_type]' derivation='None' name='[none:resource_type:nk]' pivot='key' type='nominal' />
+<column-instance column='[item_count]' derivation='Sum' name='[sum:item_count:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.7311ca6c5f07a51a4750a1997598].[none:resource_type:nk]" direction='DESC' using="[federated.7311ca6c5f07a51a4750a1997598].[sum:item_count:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.7311ca6c5f07a51a4750a1997598].[none:resource_type:nk]</rows>
+<cols>[federated.7311ca6c5f07a51a4750a1997598].[sum:item_count:qk]</cols>
+</table>
+<simple-id uuid='{8AD1304D-8803-5243-9A6E-B08DAED5A171}' />
+</worksheet>
+<worksheet name="Archived Items">
+<table>
+<view>
+<datasources>
+<datasource caption="Archived Content" name='federated.4fd5ec16cdc91f89a8d30606d26a' />
+</datasources>
+<datasource-dependencies datasource='federated.4fd5ec16cdc91f89a8d30606d26a'>
+<column datatype='string' name='[resource_type]' role='dimension' type='nominal' />
+<column datatype='integer' name='[item_count]' role='measure' type='quantitative' />
+<column-instance column='[resource_type]' derivation='None' name='[none:resource_type:nk]' pivot='key' type='nominal' />
+<column-instance column='[item_count]' derivation='Sum' name='[sum:item_count:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.4fd5ec16cdc91f89a8d30606d26a].[none:resource_type:nk]" direction='DESC' using="[federated.4fd5ec16cdc91f89a8d30606d26a].[sum:item_count:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.4fd5ec16cdc91f89a8d30606d26a].[none:resource_type:nk]</rows>
+<cols>[federated.4fd5ec16cdc91f89a8d30606d26a].[sum:item_count:qk]</cols>
+</table>
+<simple-id uuid='{EA9EF1A9-6370-5942-89C9-4E0FEC781978}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Retention Summary">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='33333' id='2' name="Items by Retention Action" w='100000' x='0' y='0' />
+<zone h='33333' id='3' name="Items by Resource Type" w='100000' x='0' y='33333' />
+<zone h='33333' id='4' name="Archived Items" w='100000' x='0' y='66666' />
+</zone>
+</zones>
+<simple-id uuid='{C3070861-DA49-52F6-8542-E64C149BADFF}' />
+</dashboard>
+</dashboards>
+</workbook>

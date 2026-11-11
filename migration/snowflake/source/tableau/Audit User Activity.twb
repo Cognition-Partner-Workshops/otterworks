@@ -1,0 +1,114 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="User Activity" inline='true' name='federated.56d12ec1707e638a6eb8de0f71b2' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.a67fc937387940e1a4d9ea7d35e8'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.a67fc937387940e1a4d9ea7d35e8' name='Custom SQL Query' type='text'>SELECT audit_id, business_date, tenant_id, user_id, action, resource_type, resource_id, event_ts_utc FROM fact.fact_audit_events WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY event_ts_utc DESC</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='string' name='[audit_id]' role='dimension' type='nominal' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[user_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[action]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_type]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_id]' role='dimension' type='nominal' />
+<column datatype='datetime' name='[event_ts_utc]' role='dimension' type='ordinal' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Events by Action">
+<table>
+<view>
+<datasources>
+<datasource caption="User Activity" name='federated.56d12ec1707e638a6eb8de0f71b2' />
+</datasources>
+<datasource-dependencies datasource='federated.56d12ec1707e638a6eb8de0f71b2'>
+<column datatype='string' name='[action]' role='dimension' type='nominal' />
+<column datatype='string' name='[audit_id]' role='dimension' type='nominal' />
+<column-instance column='[action]' derivation='None' name='[none:action:nk]' pivot='key' type='nominal' />
+<column-instance column='[audit_id]' derivation='Count' name='[cnt:audit_id:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.56d12ec1707e638a6eb8de0f71b2].[none:action:nk]" direction='DESC' using="[federated.56d12ec1707e638a6eb8de0f71b2].[cnt:audit_id:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.56d12ec1707e638a6eb8de0f71b2].[none:action:nk]</rows>
+<cols>[federated.56d12ec1707e638a6eb8de0f71b2].[cnt:audit_id:qk]</cols>
+</table>
+<simple-id uuid='{C1286372-BD8B-5743-96EF-10235276C40C}' />
+</worksheet>
+<worksheet name="Events by Resource Type">
+<table>
+<view>
+<datasources>
+<datasource caption="User Activity" name='federated.56d12ec1707e638a6eb8de0f71b2' />
+</datasources>
+<datasource-dependencies datasource='federated.56d12ec1707e638a6eb8de0f71b2'>
+<column datatype='string' name='[resource_type]' role='dimension' type='nominal' />
+<column datatype='string' name='[audit_id]' role='dimension' type='nominal' />
+<column-instance column='[resource_type]' derivation='None' name='[none:resource_type:nk]' pivot='key' type='nominal' />
+<column-instance column='[audit_id]' derivation='Count' name='[cnt:audit_id:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.56d12ec1707e638a6eb8de0f71b2].[none:resource_type:nk]" direction='DESC' using="[federated.56d12ec1707e638a6eb8de0f71b2].[cnt:audit_id:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.56d12ec1707e638a6eb8de0f71b2].[none:resource_type:nk]</rows>
+<cols>[federated.56d12ec1707e638a6eb8de0f71b2].[cnt:audit_id:qk]</cols>
+</table>
+<simple-id uuid='{09252FE1-EDE8-5CC5-896E-CBB379F12C66}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Audit User Activity">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='50000' id='2' name="Events by Action" w='100000' x='0' y='0' />
+<zone h='50000' id='3' name="Events by Resource Type" w='100000' x='0' y='50000' />
+</zone>
+</zones>
+<simple-id uuid='{C2DB3657-3FE8-54B1-BFB5-71E4D606CDA7}' />
+</dashboard>
+</dashboards>
+</workbook>

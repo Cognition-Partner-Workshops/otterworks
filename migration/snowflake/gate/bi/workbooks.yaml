@@ -1,0 +1,412 @@
+# Report-level parity contract for the Tableau estate. Written by source/tableau/generate.py.
+# Read-only for worker sessions, like gate/manifest.yaml.
+business_dates:
+- '2026-09-15'
+- '2026-09-30'
+workbooks:
+- name: Storage Overage
+  file: Storage Overage.twb
+  folder: Billing
+  legacy_tables:
+  - mart.mart_overage_charges
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - rollup_storage_daily
+  - rate_overage
+  - build_mart_overage
+  datasources:
+  - caption: Overage Charges
+    report: rpt_overage_charges
+    keys:
+    - business_date
+    - tenant_id
+  - caption: Overage by Tier
+    report: rpt_overage_by_tier
+    keys:
+    - business_date
+    - plan_tier
+  - caption: Storage vs Included
+    report: rpt_storage_vs_included
+    keys:
+    - business_date
+    - tenant_id
+- name: Invoice Lines
+  file: Invoice Lines.twb
+  folder: Billing
+  legacy_tables:
+  - fact.fact_invoice_lines
+  units:
+  - build_invoice_lines
+  datasources:
+  - caption: Invoice Lines
+    report: rpt_invoice_lines
+    keys:
+    - business_date
+    - invoice_id
+    - line_no
+- name: Invoice Totals by Tenant
+  file: Invoice Totals by Tenant.twb
+  folder: Billing
+  legacy_tables:
+  - fact.fact_invoice_lines
+  units:
+  - build_invoice_lines
+  datasources:
+  - caption: Invoice Totals
+    report: rpt_invoice_totals_by_tenant
+    keys:
+    - business_date
+    - tenant_id
+- name: Monthly Billing Summary
+  file: Monthly Billing Summary.twb
+  folder: Billing
+  legacy_tables:
+  - fact.fact_invoice_lines
+  units:
+  - build_invoice_lines
+  datasources:
+  - caption: Billing Summary
+    report: rpt_monthly_billing_summary
+    keys:
+    - business_date
+    - line_type
+    - invoice_status
+- name: Tenant Usage Daily
+  file: Tenant Usage Daily.twb
+  folder: Usage
+  legacy_tables:
+  - mart.mart_tenant_usage_daily
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_document
+  - load_dim_file
+  - rollup_storage_daily
+  - rollup_usage_events
+  - rollup_audit
+  - rate_overage
+  - build_mart_tenant_usage
+  datasources:
+  - caption: Tenant Usage
+    report: rpt_tenant_usage_daily
+    keys:
+    - business_date
+    - tenant_id
+- name: Top 20 Tenants by Storage
+  file: Top 20 Tenants by Storage.twb
+  folder: Usage
+  legacy_tables:
+  - mart.mart_tenant_usage_daily
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_document
+  - load_dim_file
+  - rollup_storage_daily
+  - rollup_usage_events
+  - rollup_audit
+  - rate_overage
+  - build_mart_tenant_usage
+  datasources:
+  - caption: Top Tenants
+    report: rpt_tenant_usage_top20
+    keys:
+    - business_date
+    - tenant_id
+- name: Usage by Region
+  file: Usage by Region.twb
+  folder: Usage
+  legacy_tables:
+  - mart.mart_tenant_usage_daily
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_document
+  - load_dim_file
+  - rollup_storage_daily
+  - rollup_usage_events
+  - rollup_audit
+  - rate_overage
+  - build_mart_tenant_usage
+  datasources:
+  - caption: Region Usage
+    report: rpt_tenant_usage_by_region
+    keys:
+    - business_date
+    - region_code
+- name: Active Users
+  file: Active Users.twb
+  folder: Usage
+  legacy_tables:
+  - mart.mart_tenant_usage_daily
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_document
+  - load_dim_file
+  - rollup_storage_daily
+  - rollup_usage_events
+  - rollup_audit
+  - rate_overage
+  - build_mart_tenant_usage
+  datasources:
+  - caption: Active Users
+    report: rpt_tenant_active_users
+    keys:
+    - business_date
+    - tenant_id
+- name: API and Compute Units
+  file: API and Compute Units.twb
+  folder: Usage
+  legacy_tables:
+  - mart.mart_tenant_usage_daily
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_document
+  - load_dim_file
+  - rollup_storage_daily
+  - rollup_usage_events
+  - rollup_audit
+  - rate_overage
+  - build_mart_tenant_usage
+  datasources:
+  - caption: API Units
+    report: rpt_tenant_api_units
+    keys:
+    - business_date
+    - tenant_id
+  - caption: Compute Units
+    report: rpt_tenant_compute_units
+    keys:
+    - business_date
+    - tenant_id
+- name: Storage Peak
+  file: Storage Peak.twb
+  folder: Usage
+  legacy_tables:
+  - mart.mart_tenant_usage_daily
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_document
+  - load_dim_file
+  - rollup_storage_daily
+  - rollup_usage_events
+  - rollup_audit
+  - rate_overage
+  - build_mart_tenant_usage
+  datasources:
+  - caption: Storage Peak
+    report: rpt_tenant_storage_peak
+    keys:
+    - business_date
+    - tenant_id
+- name: Content Inventory
+  file: Content Inventory.twb
+  folder: Usage
+  legacy_tables:
+  - fact.fact_document_status_daily
+  - mart.mart_tenant_usage_daily
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_document
+  - load_dim_file
+  - rollup_storage_daily
+  - rollup_usage_events
+  - rollup_audit
+  - rollup_document_status
+  - rate_overage
+  - build_mart_tenant_usage
+  datasources:
+  - caption: Content Counts
+    report: rpt_tenant_content_counts
+    keys:
+    - business_date
+    - tenant_id
+  - caption: Document Status
+    report: rpt_document_status
+    keys:
+    - business_date
+    - tenant_id
+    - workspace_id
+    - status_label
+- name: Plan Mix
+  file: Plan Mix.twb
+  folder: Plans and Seats
+  legacy_tables:
+  - mart.mart_plan_seat_summary
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_user
+  - rollup_seats
+  - build_mart_plan_seat_summary
+  datasources:
+  - caption: Plan Mix
+    report: rpt_plan_mix
+    keys:
+    - business_date
+    - plan_tier
+  - caption: Plan Tier Summary
+    report: rpt_plan_tier_summary
+    keys:
+    - business_date
+    - plan_tier
+- name: Seat Utilization
+  file: Seat Utilization.twb
+  folder: Plans and Seats
+  legacy_tables:
+  - fact.fact_seat_assignments
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_user
+  - rollup_seats
+  datasources:
+  - caption: Seat Utilization
+    report: rpt_seat_utilization
+    keys:
+    - business_date
+    - tenant_id
+    tolerance:
+      utilization: 1.0e-06
+  - caption: Seat Counts
+    report: rpt_seat_count_by_tenant
+    keys:
+    - business_date
+    - tenant_id
+- name: Seat Headroom
+  file: Seat Headroom.twb
+  folder: Plans and Seats
+  legacy_tables:
+  - fact.fact_seat_assignments
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_user
+  - rollup_seats
+  datasources:
+  - caption: Seat Headroom
+    report: rpt_seat_limit_headroom
+    keys:
+    - business_date
+    - tenant_id
+  - caption: Seats Over Limit
+    report: rpt_seats_over_limit
+    keys:
+    - business_date
+    - tenant_id
+- name: Storage Growth Trend
+  file: Storage Growth Trend.twb
+  folder: Capacity
+  legacy_tables:
+  - mart.mart_capacity_forecast_input
+  units:
+  - load_dim_tenant
+  - load_dim_plan
+  - load_dim_user
+  - rollup_seats
+  - build_capacity_forecast_input
+  datasources:
+  - caption: Storage Growth
+    report: rpt_storage_growth_trend
+    keys:
+    - business_date
+    - tenant_id
+    - observation_date
+- name: Retention Summary
+  file: Retention Summary.twb
+  folder: Retention
+  legacy_tables:
+  - mart.mart_retention_summary
+  units:
+  - load_dim_document
+  - load_dim_file
+  - rollup_retention
+  - build_mart_retention
+  datasources:
+  - caption: Retention Summary
+    report: rpt_retention_summary
+    keys:
+    - business_date
+    - tenant_id
+    - resource_type
+    - retention_action
+  - caption: Archived Content
+    report: rpt_archived_content
+    keys:
+    - business_date
+    - tenant_id
+    - resource_type
+    - retention_action
+- name: Retention Candidates
+  file: Retention Candidates.twb
+  folder: Retention
+  legacy_tables:
+  - fact.fact_retention_actions
+  units:
+  - load_dim_document
+  - load_dim_file
+  - rollup_retention
+  datasources:
+  - caption: Retention Candidates
+    report: rpt_retention_candidates
+    keys:
+    - business_date
+    - tenant_id
+    - resource_type
+    - resource_id
+    - retention_action
+  - caption: Purge Candidates
+    report: rpt_trash_purge_candidates
+    keys:
+    - business_date
+    - tenant_id
+    - resource_type
+    - resource_id
+    - retention_action
+- name: Audit Rollup
+  file: Audit Rollup.twb
+  folder: Audit
+  legacy_tables:
+  - mart.mart_audit_rollup
+  units:
+  - rollup_audit
+  - build_mart_audit
+  datasources:
+  - caption: Audit Rollup
+    report: rpt_audit_rollup
+    keys:
+    - business_date
+    - tenant_id
+    - action
+    - resource_type
+- name: Audit User Activity
+  file: Audit User Activity.twb
+  folder: Audit
+  legacy_tables:
+  - fact.fact_audit_events
+  units:
+  - rollup_audit
+  datasources:
+  - caption: User Activity
+    report: rpt_audit_user_activity
+    keys:
+    - business_date
+    - audit_id
+- name: Sensitive Actions
+  file: Sensitive Actions.twb
+  folder: Audit
+  legacy_tables:
+  - fact.fact_audit_events
+  units:
+  - rollup_audit
+  datasources:
+  - caption: Sensitive Actions
+    report: rpt_audit_sensitive_actions
+    keys:
+    - business_date
+    - audit_id

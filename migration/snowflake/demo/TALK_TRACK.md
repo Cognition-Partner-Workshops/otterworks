@@ -16,6 +16,10 @@ I hand the whole migration to one Devin session, which reads the estate, writes 
 
 The worker in this session owns `rate_overage`, the procedure that bills storage overage. It wrote the dbt model, ran the same nightly job on both warehouses for the 15th and compared every row. The first try diverged on 41 tenants. SQL Server says 40 gigabytes and Snowflake says 40.64, because the old code divides two integers and T-SQL drops the fraction. Your invoices have always billed whole gigabytes, so Devin matched the legacy rule and wrote down why. The unit passes on the 15th and on month-end.
 
+## One report
+
+Here's the storage overage workbook your billing team opens every morning. It runs on SQL Server through three custom SQL queries. Devin read the workbook, followed each sheet back to the procedures that build its table, ported them and pointed a copy of the workbook at Snowflake. The left side is the report as it runs today and the right side is the same report on Snowflake. On the first try 41 of the 60 tenants came out red, because Snowflake kept the fractions of a gigabyte. Devin applied the legacy rule and every bar now matches on both dates.
+
 ## Evidence
 
 Every pull request arrives with the ledger rows for its unit and the dbt test results. Nobody merges on trust. The gate exits 0 only when every unit passes or carries a written explanation that a person approved.
