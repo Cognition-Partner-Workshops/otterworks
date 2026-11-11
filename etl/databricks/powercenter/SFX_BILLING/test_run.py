@@ -10,6 +10,23 @@ from string import Template
 
 
 class RunnerTests(unittest.TestCase):
+    @patch.dict("os.environ", {"DATABRICKS_HOST": "https://example.invalid"})
+    def test_parity_mismatch_exits_with_error(self):
+        for counts, differences in ((["1", "1"], []), (["1", "2"], []), (["1", "1"], [["extra"]]), (["0", "0"], [])):
+            with self.subTest(counts=counts, differences=differences), tempfile.TemporaryDirectory() as directory:
+                runner = Runner("parity", Path(directory), Path(directory) / "ledger.tsv")
+                def file(path, **kwargs):
+                    data = ([["left", counts[0], None], ["right", counts[1], None]]
+                            if path == "parity/compare.sql" else differences)
+                    return [{"statement_id": "id", "result": {"data_array": data}}]
+                with patch("run.ORDER", ["PAYMENT"]), patch.object(runner, "file", side_effect=file), patch.object(
+                        runner, "query", return_value={"result": {"data_array": [["id", "int"]]}}):
+                    if counts[0] != counts[1] or differences:
+                        with self.assertRaisesRegex(ValueError, "Business parity failed"):
+                            runner.parity(1)
+                    else:
+                        runner.parity(1)
+
     def test_templates(self):
         for path in [HERE / "00_ddl.sql", *(HERE / ("m_SFX_" + name + ".sql") for name in ORDER)]:
             rendered = Template(path.read_text()).substitute(**PARAMETERS, STEP="convert-run1")

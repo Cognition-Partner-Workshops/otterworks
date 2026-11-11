@@ -113,6 +113,12 @@ class Runner:
                    "SELECT customer_id,count(*) n FROM cpw.dbx_d1111_after.billing__sfx_stg_customer_account GROUP BY customer_id HAVING count(*)>1")
         self.query("m_SFX_INVOICE_HDR", "reject count",
                    "SELECT count(*) FROM cpw.dbx_d1111_after.billing__sfx_invoice_hdr__reject")
+        for entry in report:
+            if entry["mapping"] == "GL_JOURNAL_LINE" and entry["reference"].endswith("__pc_before"):
+                continue
+            left, right = entry["hash_rows"]
+            if left[1:] != right[1:] or any(d["rows"] for d in entry["differences"]):
+                raise ValueError("Business parity failed: " + entry["mapping"])
 
 
 def main():
