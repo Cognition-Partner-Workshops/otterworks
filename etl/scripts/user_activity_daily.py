@@ -15,11 +15,23 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 import boto3
+from botocore.exceptions import ClientError
 
 from bucket_owner import expected_bucket_owner
 import psycopg2
 
 from runtime_config import load_config, required_secret
+
+
+def read_activity_day(s3_client, bucket, bucket_owner, key):
+    """Return the day's file, or None if it does not exist. Other S3 errors propagate."""
+    try:
+        response = s3_client.get_object(Bucket=bucket, ExpectedBucketOwner=bucket_owner, Key=key)
+    except ClientError as e:
+        if e.response.get("Error", {}).get("Code") in ("NoSuchKey", "404"):
+            return None
+        raise
+    return response["Body"].read()
 
 
 def main():
@@ -142,8 +154,9 @@ def main():
         key = "analytics/daily/year=%s/month=%s/day=%s/top_users.jsonl.gz" % (year, month, day)
 
         try:
-            response = s3_client.get_object(Bucket=data_lake_bucket, ExpectedBucketOwner=bucket_owner, Key=key)
-            body = response["Body"].read()
+            body = read_activity_day(s3_client, data_lake_bucket, bucket_owner, key)
+            if body is None:
+                continue
             decompressed = gzip.decompress(body).decode("utf-8")
 
             for line in decompressed.strip().split("\n"):

@@ -40,6 +40,9 @@ def main():
     data_lake_bucket = config.get("s3", "data_lake_bucket")
     analytics_prefix = config.get("s3", "analytics_prefix")
 
+    # Resolve before any SQS message is deleted, so a bad setting cannot lose events.
+    bucket_owner = expected_bucket_owner()
+
     # today's date for partitioning
     ds = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
 
@@ -288,7 +291,6 @@ def main():
     ))
 
     # ---- Load to S3 data lake ----
-    bucket_owner = expected_bucket_owner()
     s3_client = boto3.client(
         "s3",
         region_name=aws_region,
@@ -420,7 +422,6 @@ def main():
     }
 
     report_key = "reports/analytics/daily/%s/report.json" % ds
-    bucket_owner = expected_bucket_owner()
     s3_client_report = boto3.client(
         "s3",
         region_name=aws_region,
