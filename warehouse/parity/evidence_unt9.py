@@ -414,7 +414,11 @@ def dag():
         q = evidence_live.Queries(cur)
         _, now = q.run('SELECT CURRENT_TIMESTAMP()::VARCHAR')
         since = now[0][0]
-        prior = task_history(q, '2026-11-01 00:00:00 Z')
+        _, window = q.run('SELECT DATEADD(DAY,-6,CURRENT_TIMESTAMP())::VARCHAR')
+        prior = task_history(q, window[0][0])
+        _, existing = q.run(f"SHOW TASKS LIKE '{TASK_PREFIX}%' IN SCHEMA SFX_D1110_AFTER.PC_AUDIT")
+        if existing:
+            raise ValueError('Audit tasks already exist; refusing to redeploy')
         if prior:
             raise ValueError('Audit tasks already have history; refusing a second DAG run')
         try:
