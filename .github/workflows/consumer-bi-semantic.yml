@@ -2,7 +2,7 @@ name: Consumer bi-semantic
 
 on:
   push:
-    branches: [demo-snowflake-dw-exit, 'devin/sfx-d1110-**']
+    branches: [demo-snowflake-dw-exit, demo-databricks-dw-exit, 'devin/sfx-d1110-**', 'devin/dbx-d1111-**']
     paths: ['consumers/bi/**', '.github/workflows/consumer-bi-semantic.yml']
   pull_request:
     paths: ['consumers/bi/**', '.github/workflows/consumer-bi-semantic.yml']
@@ -63,4 +63,33 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install -r consumers/bi/requirements-dev.txt
+      - run: "cd consumers/bi && python -m pytest contract"
+
+  databricks-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - id: check
+        env:
+          PRESENT: ${{ secrets.DATABRICKS_HOST != '' && secrets.DATABRICKS_TOKEN != '' && secrets.DATABRICKS_WAREHOUSE_ID != '' }}
+        run: echo "present=$PRESENT" >> "$GITHUB_OUTPUT"
+
+  contract-databricks:
+    needs: [unit, databricks-secrets]
+    if: needs.databricks-secrets.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    env:
+      WAREHOUSE_CONTRACT_TARGET: databricks
+      CONTRACT_AS_OF_DATE: '2026-11-09'
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      DATABRICKS_WAREHOUSE_ID: ${{ secrets.DATABRICKS_WAREHOUSE_ID }}
+      DATABRICKS_RUN_TOKEN: dbx-d1111
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r consumers/bi/requirements-dev.txt -r consumers/contract-kit/requirements-databricks.txt
       - run: "cd consumers/bi && python -m pytest contract"

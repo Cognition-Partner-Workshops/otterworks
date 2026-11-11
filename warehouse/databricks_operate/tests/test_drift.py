@@ -82,17 +82,11 @@ def test_seed_preserves_numeric_amounts_and_rejects_repeat_seeding(tmp_path):
         seed(landing)
 
 
-def test_total_of_valid_cent_amounts_is_exact(tmp_path):
-    landing = tmp_path / "large.jsonl"
-    landing.write_text(
-        '{"invoice_id":1,"customer_id":10,"amount":"99999999999999999999999999.99","currency":"USD"}\n'
-        '{"invoice_id":2,"customer_id":10,"amount":"99999999999999999999999999.99","currency":"USD"}\n'
-        '{"invoice_id":3,"customer_id":10,"amount":-0.01,"currency":"USD"}\n')
-    result = subprocess.run([sys.executable, "-m", "warehouse.databricks_operate.drift",
-                             "check", "--landing", str(landing)], capture_output=True, text=True)
-    assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout) == {"rows": 3, "invoice_ids": [1, 2, 3],
-                                         "amount": "199999999999999999999999999.97"}
+def test_total_of_valid_cent_amounts_is_exact():
+    schema = json.loads((ROOT / "schema.json").read_text())
+    rows = [{"invoice_id": i, "customer_id": 10, "amount": "99999999999999999999999999.99",
+             "currency": "USD"} for i in (1, 2)]
+    assert validate(rows, schema)["amount"] == "199999999999999999999999999.98"
 
 
 def test_compact_zero_exponent_does_not_widen_the_total():

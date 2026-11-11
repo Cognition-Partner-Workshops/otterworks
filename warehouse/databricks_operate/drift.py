@@ -5,13 +5,11 @@ python -m warehouse.databricks_operate.drift seed --landing <run-copy>
 The seed command refuses to modify checked-in landing files.
 """
 import argparse
-from decimal import MAX_EMAX, MAX_PREC, MIN_EMIN, Context, Decimal, Inexact, InvalidOperation
+from decimal import Decimal, Inexact, InvalidOperation, localcontext
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-# The default 28-digit context would round the aggregate of individually valid cent amounts.
-EXACT = Context(prec=MAX_PREC, Emax=MAX_EMAX, Emin=MIN_EMIN, traps=[Inexact, InvalidOperation])
 
 
 class SchemaDrift(ValueError):
@@ -46,7 +44,6 @@ def validate(rows, schema):
     if not rows:
         raise SchemaDrift("landing feed is empty")
     seen = set()
-    total = Decimal(0)
     for index, row in enumerate(rows, 1):
         if set(row) != set(schema):
             raise SchemaDrift(f"row {index}: added={sorted(set(row)-set(schema))} "
@@ -70,8 +67,15 @@ def validate(rows, schema):
         if key in seen:
             raise SchemaDrift(f"duplicate invoice_id {key}")
         seen.add(key)
-        # Quantized addends keep a compact zero such as 0E-1000000000 from widening the total.
-        total = EXACT.add(total, Decimal(str(row["amount"])).quantize(Decimal("0.01")))
+    # Each validated amount fits the context precision; widen it so the total is exact.
+    with localcontext() as ctx:
+        ctx.prec += len(str(len(rows)))
+        ctx.traps[Inexact] = True
+        try:
+            # Quantized addends keep a zero such as 0E-30 from padding the total with digits.
+            total = sum(Decimal(str(row["amount"])).quantize(Decimal("0.01")) for row in rows)
+        except Inexact:
+            raise SchemaDrift("amount total exceeds supported precision") from None
     return {"rows": len(rows), "invoice_ids": sorted(seen), "amount": str(total)}
 
 

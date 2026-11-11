@@ -85,7 +85,7 @@ WAREHOUSE_CONTRACT_TARGET=replay uv run pytest contract
 ```
 Contracts are excluded from ordinary discovery. The default teradata-emulator
 target executes the DAL SQL LIVE through ../../consumers/contract-kit.
-Seed the emulator with ROWS_PER_TABLE=800, BUSINESS_DATE=20261109; install kit
+Seed the emulator with ROWS_PER_TABLE=2000, BUSINESS_DATE=20261109; install kit
 dependencies and set TD_PG_PORT and CONTRACT_KIT_PYTHON for the live environment.
 The runtime defaults to this repository; TD_EMULATOR_HOME overrides it.
 Parameters are bound client-side as escaped SQL literals before invoking the kit.
@@ -100,3 +100,59 @@ The snowflake target remains an explicit placeholder (missing SNOWFLAKE_ACCOUNT,
 USER, ROLE, WAREHOUSE or PRIVATE_KEY skips; configured execution is unsupported).
 Destination metadata: SFX_D1110_AFTER.COMPAT, QUERY_TAG
 `{"run":"sfx-d1110","act":"consumers","consumer":"billing-service"}`.
+
+### Databricks cutover (dbx-d1111)
+
+The CLI now defaults to `FINANCE_WAREHOUSE_TARGET=databricks`; set it to `teradata`
+for rollback. Connections remain lazy and `FINANCE_WAREHOUSE_ENABLED=false`
+prevents both paths from connecting. Set `DATABRICKS_HOST`, `DATABRICKS_TOKEN` and
+`DATABRICKS_WAREHOUSE_ID`; catalog/schema are fixed to `cpw.dbx_d1111_after`.
+Optional `DATABRICKS_CATALOG`/`DATABRICKS_RUN_TOKEN` must be `cpw`/`dbx-d1111`.
+No warehouse infrastructure or compatibility objects are created.
+
+**Decision: native_rewrite for invoice-export.** This is a consumer-owned nightly
+query, not a shared semantic object. It reads `billing__invoice_hdr`,
+`billing__customer_account` and `billing__payment`. `SEL`/`TOP` become
+`SELECT`/`LIMIT`; `ZEROIFNULL` becomes `COALESCE`; date subtraction uses
+`date_sub`; Teradata integer `1200101` becomes `DATE '2020-01-01'`.
+Native DATE/DECIMAL values go through the existing `InvoiceExportRow` conversion
+instead of Teradata FORMAT-to-CHAR casts. The resulting CSV is byte-identical:
+two decimal places, account/currency padding removed, account names untouched.
+There are no text comparison predicates, so NOT CASESPECIFIC does not change
+selection or joins (numeric keys). Payment aggregation still includes all dates;
+no new snapshot, currency conversion, scheduling, or shared-reader semantics.
+The 100001-row sentinel still fails exports over 100000 rather than truncating.
+
+All contract runs pin the **run date to 2026-11-10**, selecting BILL_DT
+2026-11-09 on both paths. Without `--date`, production uses warehouse CURRENT_DATE
+on each respective platform. Set an explicit date for reproducible reruns.
+
+From repository root:
+
+```sh
+make sfx-teradata-up NS=dbx-d1111-consumers-billing-service ROWS_PER_TABLE=2000 BUSINESS_DATE=20261109
+export TD_PG_PORT=54714
+export CONTRACT_KIT_PYTHON="$PWD/warehouse/.venv/bin/python"
+cd services/billing-service
+uv sync --frozen --dev --python 3.12
+uv run pytest
+WAREHOUSE_CONTRACT_TARGET=replay uv run pytest contract
+WAREHOUSE_CONTRACT_TARGET=databricks uv run pytest contract -s
+uv run python contract/cutover.py
+```
+
+The live target clearly skips when Databricks credentials are absent. With them,
+it requires the emulator, checks complete input-table counts and order-independent
+hashes against the live `before` schema (normalizing only original CHAR padding),
+also compares exact normalized row multisets to rule out delimiter/hash collisions,
+runs both DAL implementations, compares every mapped field and CSV byte, and
+checks `contract/expected/invoice-export.json`. Statement IDs are printed from
+connector cursor metadata, never inferred from replay. The workflow gates its
+Databricks contract job on credentials; unit/replay jobs need none.
+
+First failure: the previous 800-row fixture had 180 accounts/900 invoices/800
+payments, but the live baseline has 300/2100/2000. The 2000-row seed fixes input
+equality without changing the warehouse. Expected/recorded results were refreshed
+from the original Teradata query, not from Databricks: 667 invoices,
+amount_due 248753.92, tax_amt 31476.06, open_balance 156116.27. The unchanged
+Teradata SQL also fails on Databricks; native SQL preserves the export contract.

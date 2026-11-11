@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 from importlib.resources import files
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 from urllib.parse import unquote, urlparse
 
 from pydantic_settings import BaseSettings
@@ -36,6 +36,7 @@ MAX_INVOICES = 100000
 
 class WarehouseSettings(BaseSettings):
     enabled: bool = True
+    target: Literal["databricks", "teradata"] = "databricks"
     dsn: str = tomllib.loads(files("app.warehouse").joinpath("config.toml").read_text())["dsn"]
 
     model_config = {"env_prefix": "FINANCE_WAREHOUSE_", "extra": "ignore"}
