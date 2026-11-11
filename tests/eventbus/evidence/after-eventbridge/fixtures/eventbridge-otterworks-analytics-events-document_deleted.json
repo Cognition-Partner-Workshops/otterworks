@@ -1,0 +1,18 @@
+{
+  "account": "000000000000",
+  "detail": {
+    "event_type": "document_deleted",
+    "payload": {
+      "id": "6f1c9d2e-0000-4000-8000-000000000001",
+      "type": "document"
+    },
+    "timestamp": "2026-11-11T18:00:00+00:00"
+  },
+  "detail-type": "document_deleted",
+  "id": "50090bef-ebac-4bfa-8656-5328e2b9a043",
+  "region": "us-east-1",
+  "resources": [],
+  "source": "otterworks.document-service",
+  "time": "2026-11-11T18:55:20Z",
+  "version": "0"
+}

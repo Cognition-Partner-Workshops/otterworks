@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     aws_endpoint_url: str = ""
     aws_region: str = "us-east-1"
     sns_enabled: bool = False
+    # sns | eventbridge | dual. sns_enabled stays the master switch for publishing.
+    event_transport: str = "sns"
+    event_bus_name: str = "otterworks-events"
 
     otel_exporter_otlp_endpoint: str = "http://localhost:4318"
     otel_enabled: bool = False

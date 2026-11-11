@@ -7,5 +7,6 @@ public class AwsSettings
     public string DynamoDbTable { get; set; } = "otterworks-audit-events";
     public string S3ArchiveBucket { get; set; } = "otterworks-audit-archive";
     public string? SnsTopicArn { get; set; }
+    public string AuditQueueName { get; set; } = "otterworks-audit-events-queue";
     public int ArchiveAfterDays { get; set; } = 90;
 }

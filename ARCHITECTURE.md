@@ -150,8 +150,9 @@ OtterWorks is a collaborative file storage and document editing platform (functi
 | CDN | CloudFront | Static assets, presigned URL caching |
 
 ### Event Bus
-- **SQS**: Point-to-point message queues (file events, notification delivery)
-- **SNS**: Fan-out topics (domain events published to multiple consumers)
+- **EventBridge**: Custom bus `otterworks-events-<env>` for domain events. Publishers send `source=otterworks.<service>`, `detail-type=<event type>`, and the event body as `detail`; one rule per consumer routes on `detail-type`; an archive keeps events for replay.
+- **SQS**: One queue per consumer (notifications, search, analytics, audit), each with its own DLQ, SSE and a DLQ-depth alarm
+- **SNS**: Legacy fan-out topic, kept while publishers migrate (`EVENT_TRANSPORT=sns|eventbridge|dual`, default `sns`). See `tests/eventbus/README.md`.
 - **Redis Pub/Sub**: Real-time presence and collaboration sync
 
 ## Infrastructure

@@ -1,0 +1,117 @@
+{
+  "envelopes": {
+    "otterworks-audit-events-queue": [
+      "sns"
+    ],
+    "otterworks-notifications": [
+      "sns"
+    ],
+    "otterworks-search-events": [
+      "sns"
+    ],
+    "tfprobe-analytics": [
+      "sns"
+    ],
+    "tfprobe-notifications": [],
+    "tfprobe-search": []
+  },
+  "matrix": {
+    "comment_added": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "document_created": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "document_deleted": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "document_updated": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "file_deleted": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "file_moved": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "file_restored": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "file_shared": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "file_trashed": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "file_updated": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    },
+    "file_uploaded": {
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 1,
+      "tfprobe-analytics": 1,
+      "tfprobe-notifications": 0,
+      "tfprobe-search": 0
+    }
+  },
+  "queues": [
+    "otterworks-audit-events-queue",
+    "otterworks-notifications",
+    "otterworks-search-events",
+    "tfprobe-analytics",
+    "tfprobe-notifications",
+    "tfprobe-search"
+  ],
+  "transport": "sns"
+}

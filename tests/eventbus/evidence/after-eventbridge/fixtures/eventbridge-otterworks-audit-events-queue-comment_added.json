@@ -1,0 +1,19 @@
+{
+  "account": "000000000000",
+  "detail": {
+    "event_type": "comment_added",
+    "payload": {
+      "author_id": "6f1c9d2e-0000-4000-8000-0000000000bb",
+      "comment_id": "c-1",
+      "document_id": "6f1c9d2e-0000-4000-8000-000000000001"
+    },
+    "timestamp": "2026-11-11T18:00:00+00:00"
+  },
+  "detail-type": "comment_added",
+  "id": "0c08b2b3-d29b-4f4e-ac6f-d2e70795475c",
+  "region": "us-east-1",
+  "resources": [],
+  "source": "otterworks.document-service",
+  "time": "2026-11-11T18:55:20Z",
+  "version": "0"
+}

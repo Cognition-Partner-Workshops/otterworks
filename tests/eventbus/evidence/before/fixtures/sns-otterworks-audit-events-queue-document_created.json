@@ -1,0 +1,17 @@
+{
+  "Message": "{\"event_type\": \"document_created\", \"timestamp\": \"2026-11-11T18:00:00+00:00\", \"payload\": {\"id\": \"6f1c9d2e-0000-4000-8000-000000000001\", \"title\": \"Q3 plan\", \"content\": \"draft\", \"owner_id\": \"6f1c9d2e-0000-4000-8000-0000000000aa\", \"tags\": [], \"created_at\": \"2026-11-11T18:00:00+00:00\", \"updated_at\": \"2026-11-11T18:00:00+00:00\"}}",
+  "MessageAttributes": {
+    "event_type": {
+      "Type": "String",
+      "Value": "document_created"
+    }
+  },
+  "MessageId": "dd9b3d63-3a0d-4e3b-9c0d-059c2e281bd4",
+  "Signature": "qdq7v/m/tPElPTlOfgEJYl6HMcE/uJWt5MRBBVOLgSwVXdVDDOQulNS/CDKGLk0yXPdS4V1CecBlXAj07evc2fPnnX4YCPaGJSUe8Owmyy6BZu3IFGDufk0zS823InmDTXEHWFv9izKv+DSoUUB494+b22DDIoCCNVB+5w1h/q8EDcslDMU2SoCYbwrxNimy555EYkn9OCwRM+8NJp0i9mFLQzOKFp7RRwXti0AbfM7ExZs7SmFk+gOm4Nk/09LWBJd2MHeUXuHXqXlIbm+oFruM9/sC0so+6rAAHgMgDX/juPNouu39qWA+Api65rlqRz0cnMZI4P25xYr82CcEeg==",
+  "SignatureVersion": "1",
+  "SigningCertURL": "http://localhost.localstack.cloud:4566/_aws/sns/SimpleNotificationService-6c6f63616c737461636b69736e696365.pem",
+  "Timestamp": "2026-11-11T18:41:32.586Z",
+  "TopicArn": "arn:aws:sns:us-east-1:000000000000:otterworks-events",
+  "Type": "Notification",
+  "UnsubscribeURL": "http://localhost.localstack.cloud:4566/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:000000000000:otterworks-events:5112a0ee-f7cf-407a-aae9-986a6cec54c8"
+}
