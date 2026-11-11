@@ -202,3 +202,35 @@ docker run --rm -v "$PWD":/w -v "$HOME/.ivy2":/root/.ivy2 \
 ```
 Live container runs additionally need Python with the bridge dependencies,
 the whole repository mounted at a stable path, and access to the emulator port.
+
+### Databricks cutover (run dbx-d1111)
+
+`DatabricksFinanceRollupRepository` (in `DatabricksReadPath.scala`) is a native
+Databricks SQL rewrite of the Teradata query, read from `cpw.dbx_d1111_after`
+(`billing__customer_account`, `billing__subscription`, `billing__plan_catalog`,
+`billing__invoice_hdr`, `billing__payment`). `FINANCE_WAREHOUSE_TARGET=databricks`
+selects it at startup (default stays Teradata). Teradata behaviour preserved:
+- NOT CASESPECIFIC CHAR/VARCHAR equality (`STATUS_CD = ?`, `PLAN_CODE = ?`, the
+  plan-catalog join and `STATUS_CD = 'ACTIVE'`) becomes `upper(rtrim(a)) = upper(rtrim(b))`;
+  Databricks compares strings exactly and keeps CHAR pads (`'ACTIVE      '`, `'TEAM  '`, `'team'`).
+- CURRENT_DATE month arithmetic becomes `trunc(as_of, 'MM')` with a bound as-of date
+  (production: today in UTC); `TOP 12` months become `explode(sequence(0, 11))`;
+  `ZEROIFNULL` becomes `coalesce(..., 0)`; `FORMAT 'YYYY-MM'` becomes `date_format`.
+No compatibility view is used: the fix depends on this consumer's bound filters,
+and the base tables are shared with other readers.
+
+Live contract (secrets only in the environment; skipped with a clear cancel when absent):
+```sh
+make -C ../.. sfx-teradata-up NS=dbx-d1111-consumers-analytics-service ROWS_PER_TABLE=800
+export TD_PG_PORT=55326 CONTRACT_KIT_PYTHON=../../warehouse/.venv/bin/python
+python scripts/emulator_baseline.py seed   # emulator inputs := cpw.dbx_d1111_before, then count+hash check
+WAREHOUSE_CONTRACT_TARGET=databricks CONTRACT_OLDPATH=emulator CONTRACT_STEP=contract-fixed sbt "contract:test"
+```
+The Databricks target runs the repository read logic with the dashboard filters,
+pins the as-of date to `CONTRACT_AS_OF` (default 2026-11-09 = BUSINESS_DATE) on both
+paths, checks `row_count` from `contract/expected` and requires row-for-row equality
+with the Teradata read path on the same data: live through the emulator
+(`CONTRACT_OLDPATH=emulator`) or `contract/recorded/dbx-d1111-baseline/finance-rollups.json`
+(recorded from the baseline-seeded emulator). The expected sums describe the
+800-row emulator seed, not the live baseline, so they are checked only by the
+emulator and replay targets.

@@ -9,7 +9,7 @@ import com.otterworks.analytics.api.{AnalyticsRoutes, EventRoutes, HealthRoutes,
 import com.otterworks.analytics.batch.MarketSeeder
 import com.otterworks.analytics.config.AppConfig
 import com.otterworks.analytics.db.AnalyticsDb
-import com.otterworks.analytics.finance.{CachedFinanceRollups, FinanceRoutes, FinanceSettings, TeradataFinanceRollupRepository}
+import com.otterworks.analytics.finance.{CachedFinanceRollups, DatabricksFinanceRollupRepository, FinanceRoutes, FinanceSettings, TeradataFinanceRollupRepository}
 import com.otterworks.analytics.repository.{InMemoryMetricsRepository, MarketRepository, MetricsRepository, PostgresMetricsRepository}
 import com.otterworks.analytics.service.{AnalyticsService, EventProcessor, MarginService}
 
@@ -78,8 +78,11 @@ object Main:
     val analyticsRoutes = AnalyticsRoutes(analyticsService)
     val eventRoutes = EventRoutes(analyticsService)
     val financeSettings = FinanceSettings.load(system.settings.config)
-    val financeRepository = new TeradataFinanceRollupRepository(financeSettings)(
-      using system.dispatchers.lookup(akka.actor.typed.DispatcherSelector.blocking()))
+    val financeDispatcher = system.dispatchers.lookup(akka.actor.typed.DispatcherSelector.blocking())
+    val financeRepository =
+      if sys.env.get("FINANCE_WAREHOUSE_TARGET").contains("databricks") then
+        new DatabricksFinanceRollupRepository()(using financeDispatcher)
+      else new TeradataFinanceRollupRepository(financeSettings)(using financeDispatcher)
     val financeRoutes = new FinanceRoutes(new CachedFinanceRollups(financeRepository), financeSettings)
 
     val routes: Route = concat(

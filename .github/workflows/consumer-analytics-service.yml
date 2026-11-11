@@ -2,7 +2,7 @@ name: Consumer analytics-service
 
 on:
   push:
-    branches: [demo-snowflake-dw-exit, 'devin/sfx-d1110-**']
+    branches: [demo-snowflake-dw-exit, demo-databricks-dw-exit, 'devin/sfx-d1110-**', 'devin/dbx-d1111-**']
     paths: ['services/analytics-service/**', '.github/workflows/consumer-analytics-service.yml']
   pull_request:
     paths: ['services/analytics-service/**', '.github/workflows/consumer-analytics-service.yml']
@@ -59,6 +59,34 @@ jobs:
       SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
       SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
       SNOWFLAKE_QUERY_TAG: '{"run":"sfx-d1110","act":"consumers","consumer":"analytics-service"}'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: sbt/setup-sbt@c6bd01274abceb9dd5bd9f1a336c2a26c259de69 # v1
+      - run: "cd services/analytics-service && sbt \"contract:test\""
+
+  databricks-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - id: check
+        env:
+          PRESENT: ${{ secrets.DATABRICKS_HOST != '' && secrets.DATABRICKS_TOKEN != '' && secrets.DATABRICKS_WAREHOUSE_ID != '' }}
+        run: echo "present=$PRESENT" >> "$GITHUB_OUTPUT"
+
+  contract-databricks:
+    needs: [unit, databricks-secrets]
+    if: needs.databricks-secrets.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    env:
+      WAREHOUSE_CONTRACT_TARGET: databricks
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      DATABRICKS_WAREHOUSE_ID: ${{ secrets.DATABRICKS_WAREHOUSE_ID }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-java@v4
