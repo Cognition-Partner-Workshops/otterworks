@@ -58,7 +58,7 @@ def test_write_guard_rejects_sibling_and_baseline_mutation(sql):
     client.execute.assert_not_called()
 
 
-def test_fixed_semantics_and_interim_tie_policy():
+def test_fixed_semantics_and_final_tie_policy():
     sql=(Path(__file__).parents[1]/'billing/fixed.sql').read_text()
     assert 'ORDER BY VERSION_TS DESC, VERSION_NO DESC, VERSION_ID DESC)' in sql
     assert 'SELECT DISTINCT STORAGE_USAGE_ID' in sql

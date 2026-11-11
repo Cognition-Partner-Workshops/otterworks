@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from warehouse.databricks.parity import canonical, compare, encoded, hash_join, run, samples
+from warehouse.databricks.parity import DOCUMENT_VERSION, RAW_DIFFERENCE, canonical, compare, encoded, hash_join, run, samples
 
 
 SPEC = {"object": "billing__subscription", "keys": ["id"]}
@@ -65,6 +65,18 @@ def test_missing_keys_and_duplicate_rows_are_not_collapsed():
     assert 'sort_array(collect_list(sha2(' in query
     result = samples([['["1"]', 'missing_after', '["[\\"1\\",\\"a \\"]"]', None]], ['id','value'])
     assert result[0]['columns']['value'] == {'before': ['a '], 'after': []}
+
+
+def test_document_raw_differences_are_observations_not_keyed_parity(tmp_path):
+    client = client_fixture(different=True)
+    spec = {'object':DOCUMENT_VERSION,'before':'documents__doc_version','keys':['id']}
+    rows = run(client,'v2-fixed',{'objects':[spec]},tmp_path,replace=True)
+    assert rows[0]['rung']=='count' and rows[0]['status']=='fail'
+    assert all(r['rung'].startswith(RAW_DIFFERENCE) and r['status']=='observed' for r in rows[1:])
+    assert rows[2]['detail']['measured_values']['different_keys']==1
+    assert rows[2]['detail']['raw_comparison_status']=='fail'
+    deletes = [c.args[0] for c in client.execute.call_args_list if c.args[0].startswith('DELETE')]
+    assert "'hash'" in deletes[0] and RAW_DIFFERENCE in deletes[0]
 
 
 def test_canonical_values_are_null_safe_and_unambiguous():

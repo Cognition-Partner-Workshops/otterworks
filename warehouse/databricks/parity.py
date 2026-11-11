@@ -15,6 +15,12 @@ from .sql import Warehouse, identifier
 
 COMMENT = "run_token=dbx-d1111 expires=2026-11-24"
 RESULTS = "cpw.dbx_d1111_parity.results"
+DOCUMENT_VERSION = "billing__in_documents_doc_version"
+RAW_DIFFERENCE = "observed raw baseline difference (nondeterministic source tie)"
+
+
+def raw_rung(metric):
+    return f"{RAW_DIFFERENCE}: {metric}"
 
 
 def relation(schema, name):
@@ -113,9 +119,15 @@ def compare(client, spec, sample_size=10):
         raise ValueError("compared columns must exist on both sides")
     results = []
     def rung(name, response, passed, detail):
+        observed = spec['object'] == DOCUMENT_VERSION and name in {'profile', 'hash', 'sample'}
+        if observed:
+            detail = {'measurement': name, 'raw_comparison_status': 'pass' if passed else 'fail',
+                      'interpretation': RAW_DIFFERENCE, 'measured_values': detail}
         results.append({"object": spec["object"], "rung": name,
-                        "status": "pass" if passed else "fail", "detail": detail,
+                        "status": "observed" if observed else "pass" if passed else "fail", "detail": detail,
                         "statement_id": response["statement_id"]})
+        if observed:
+            results[-1]['rung'] = raw_rung(name)
     count = client.execute(f"SELECT (SELECT COUNT(*) FROM {before}), (SELECT COUNT(*) FROM {after})", step="parity-count")
     b, a = count["rows"][0]
     rung("count", count, int(b) == int(a), {"before": b, "after": a})
@@ -145,6 +157,9 @@ def run(client, label, spec, evidence_dir=None, *, replace=False):
     results = json.loads(path.read_text()) if path.exists() else []
     for obj in spec["objects"]:
         if replace:
+            replaced_rungs = {'count', 'profile', 'hash', 'sample'}
+            if obj['object'] == DOCUMENT_VERSION:
+                replaced_rungs.update(raw_rung(r) for r in ('profile', 'hash', 'sample'))
             legacy = [r for r in results if obj.get('before') == r['object'] and r['rung'] in {'count','profile','hash','sample'}]
             if legacy and label == 'v1-direct':
                 ids = ','.join(literal(r['statement_id']) for r in legacy)
@@ -152,8 +167,8 @@ def run(client, label, spec, evidence_dir=None, *, replace=False):
                                f"AND statement_id IN ({ids})", step="parity-results")
                 results = [r for r in results if r not in legacy]
             client.execute(f"DELETE FROM {RESULTS} WHERE run_label={literal(label)} AND object={literal(obj['object'])} "
-                           "AND rung IN ('count','profile','hash','sample')", step="parity-results")
-            results = [r for r in results if not (r['object'] == obj['object'] and r['rung'] in {'count','profile','hash','sample'})]
+                           f"AND rung IN ({','.join(literal(r) for r in sorted(replaced_rungs))})", step="parity-results")
+            results = [r for r in results if not (r['object'] == obj['object'] and r['rung'] in replaced_rungs)]
         for row in compare(client, obj, spec.get("sample_size", 10)):
             row.update(run_label=label, measured_at=datetime.now(timezone.utc).isoformat())
             detail = json.dumps(row["detail"], default=str)
@@ -180,7 +195,7 @@ def main():
     results = run(client, args.label, spec, replace=args.replace)
     if args.gaps:
         from .gaps import run_gaps
-        results.extend(run_gaps(client, args.label))
+        results.extend(run_gaps(client, args.label, objects=args.object))
     for row in results:
         print(row["object"], row["rung"], row["status"], row["statement_id"])
 

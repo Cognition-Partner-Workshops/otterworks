@@ -58,14 +58,30 @@ reproduce arbitrary PostgreSQL physical-order changes; it is checked against
 the captured source outputs by exact parity.
 
 QUALIFY's source ordering is genuinely nondeterministic for timestamp ties.
-The interim approved target ordering is VERSION_TS DESC, VERSION_NO DESC,
-VERSION_ID DESC. Exact parity is **not** relaxed: its red rows remain visible.
+The final approved target ordering is VERSION_TS DESC, VERSION_NO DESC,
+VERSION_ID DESC: highest VERSION_NO, then highest VERSION_ID breaks timestamp ties.
+Raw profile/hash/sample measurements are retained as "observed raw baseline
+difference (nondeterministic source tie)", not claimed as exact keyed-hash parity.
 The independent `qualify_ties` probe checks exact rows for untied documents and
 membership in the source's maximal-timestamp candidate set for tied documents;
-it reports different baseline picks without treating a valid candidate as an
-error. A permanent tie policy remains pending.
+it reports different baseline picks and enforces the approved final rule in v2.
+The explicit `untied_exact` rung compares all stored columns with EXCEPT ALL in
+both directions for documents having a unique maximal timestamp.
 
-Seven gap probes persist independent receipts in the same results table.
+Eight probes persist independent receipts in the same results table.
 The FORMAT probe also retrieves the original tagged YYYY-MM failure from
 system.query.history. Replacement is scoped to the label/object/rung; the
 baseline and migration_control are never written.
+
+## Lineage evidence
+
+`python -m warehouse.databricks.lineage` reads the emulator DBQL fixture through
+TD_DSN and live system.access.table_lineage through the tagged Warehouse client.
+It supplements DBQL's routine-level READ/EXECUTE records with sqlglot-parsed
+executed routine bodies and source view definitions. This is explicitly seeded
+history, not a claim that every chain statement was logged. Direct upstream
+sets and normalized transitive leaf staging sets are reported separately.
+UC writes are restricted to fixed_receipts.json statement IDs, excluding stale
+v1/sibling inputs; view-read lineage is retained. Empty lineage is not a match:
+rerun after ingestion lag, retaining the previous measurement in lineage.json.
+Outputs default to ~/dbx-evidence/lineage.md and lineage.json.

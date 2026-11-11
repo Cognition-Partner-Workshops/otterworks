@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from .baseline import literal
-from .parity import RESULTS
+from .parity import DOCUMENT_VERSION, RESULTS
 
 
 BEFORE = "cpw.dbx_d1111_before."
@@ -29,7 +29,9 @@ def tie_query():
         SELECT * FROM {BEFORE}documents__stg_doc_version
         QUALIFY DENSE_RANK() OVER (PARTITION BY document_id ORDER BY version_ts DESC NULLS LAST)=1
       ) m
-    ), c AS (SELECT document_id,MAX(candidate_count) n,collect_set({row}) allowed FROM candidates GROUP BY document_id),
+    ), final_pick AS (SELECT document_id,{row} v FROM candidates
+      QUALIFY ROW_NUMBER() OVER (PARTITION BY document_id ORDER BY version_no DESC,version_id DESC)=1),
+    c AS (SELECT document_id,MAX(candidate_count) n,collect_set({row}) allowed FROM candidates GROUP BY document_id),
     b AS (SELECT document_id,{row} v FROM {BEFORE}documents__doc_version),
     a AS (SELECT document_id,{row} v FROM {AFTER}billing__in_documents_doc_version),
     checked AS (SELECT c.document_id,c.n,b.v bv,a.v av,
@@ -38,8 +40,22 @@ def tie_query():
     SELECT SUM(CASE WHEN NOT coalesce(valid_candidate,false) OR (n=1 AND NOT(bv <=> av)) THEN 1 ELSE 0 END) invalid_rows,
       SUM(CASE WHEN n>1 THEN 1 ELSE 0 END) tied_documents,
       SUM(CASE WHEN n>1 AND NOT(bv <=> av) THEN 1 ELSE 0 END) different_baseline_picks,
-      (SELECT COUNT(*) FROM a LEFT ANTI JOIN c ON a.document_id=c.document_id) extra_documents
+      (SELECT COUNT(*) FROM a LEFT ANTI JOIN c ON a.document_id=c.document_id) extra_documents,
+      (SELECT COUNT(*) FROM final_pick f FULL OUTER JOIN a ON f.document_id=a.document_id WHERE NOT(f.v <=> a.v)) final_rule_mismatches
     FROM checked"""
+
+
+def untied_query():
+    columns = 'version_id,document_id,version_no,version_ts,file_size,content_hash'
+    projection = ','.join('v.'+c for c in columns.split(','))
+    return f"""WITH maxima AS (
+      SELECT * FROM {BEFORE}documents__stg_doc_version
+      QUALIFY DENSE_RANK() OVER (PARTITION BY document_id ORDER BY version_ts DESC NULLS LAST)=1
+    ), untied AS (SELECT document_id FROM maxima GROUP BY document_id HAVING COUNT(*)=1),
+    b AS (SELECT {projection} FROM {BEFORE}documents__doc_version v JOIN untied u ON v.document_id=u.document_id),
+    a AS (SELECT {projection} FROM {AFTER}{DOCUMENT_VERSION} v JOIN untied u ON v.document_id=u.document_id)
+    SELECT 'missing_or_different_after' difference,* FROM (SELECT * FROM b EXCEPT ALL SELECT * FROM a)
+    UNION ALL SELECT 'missing_or_different_before' difference,* FROM (SELECT * FROM a EXCEPT ALL SELECT * FROM b)"""
 
 
 def probe_queries():
@@ -51,6 +67,7 @@ def probe_queries():
     a = b.replace(BEFORE+'documents__storage_usage_daily',AFTER+'billing__in_documents_storage_usage_daily')
     probes['set_duplicates'] = ('billing__in_documents_storage_usage_daily',difference_query(b,a))
     probes['qualify_ties'] = ('billing__in_documents_doc_version',tie_query())
+    probes['untied_exact'] = (DOCUMENT_VERSION,untied_query())
     pair('format_period_key','billing__invoice_hdr','billing__invoice_hdr','invoice_id',['invoice_period','period_key'],'WHERE invoice_id>=9000000001')
     pair('date_arithmetic','billing__invoice_hdr','billing__invoice_hdr','invoice_id',['CAST(invoice_dt AS STRING)','CAST(bill_dt AS STRING)','invoice_month','CAST(prior_period_end_dt AS STRING)','period_closed_cd'],'WHERE invoice_id>=9000000001')
     pair('silent_truncation','billing__in_users_app_user','users__app_user','user_id',['display_name','length(display_name)'],'WHERE user_id>=9000000001')
@@ -62,14 +79,18 @@ def probe_queries():
     return probes
 
 
-def run_gaps(client, label, evidence_dir=None):
-    results = []
+def run_gaps(client, label, evidence_dir=None, *, objects=None):
+    directory = Path(evidence_dir or Path.home()/'dbx-evidence')
+    path = directory/f'gaps_{label}.json'
+    results = json.loads(path.read_text()) if path.exists() else []
     for name,(obj,query) in probe_queries().items():
+        if objects is not None and obj not in objects:
+            continue
         response = client.execute(query,step='gap-'+name)
         if name=='qualify_ties':
             values = [int(v or 0) for v in response['rows'][0]]
-            passed = values[0]==0 and values[3]==0
-            detail = dict(zip(['invalid_rows','tied_documents','different_baseline_picks','extra_documents'],values))
+            passed = values[0]==0 and values[3]==0 and (label!='v2-fixed' or values[4]==0)
+            detail = dict(zip(['invalid_rows','tied_documents','different_baseline_picks','extra_documents','final_rule_mismatches'],values))
         else:
             passed = not response['rows']
             detail = {'differences':response['rows']}
@@ -88,8 +109,8 @@ def run_gaps(client, label, evidence_dir=None):
         values = [label,obj,name,row['status'],json.dumps(detail),row['statement_id']]
         receipt = client.execute(f"INSERT INTO {RESULTS} VALUES ("+','.join(literal(v) for v in values)+",current_timestamp())",step='parity-results')
         row['receipt_statement_id'] = receipt['statement_id']
+        results = [r for r in results if not(r['object']==obj and r['rung']==name)]
         results.append(row)
-    directory = Path(evidence_dir or Path.home()/'dbx-evidence')
     directory.mkdir(parents=True,exist_ok=True)
-    (directory/f'gaps_{label}.json').write_text(json.dumps(results,indent=2))
+    path.write_text(json.dumps(results,indent=2))
     return results
