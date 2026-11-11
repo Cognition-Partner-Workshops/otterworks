@@ -6,3 +6,6 @@
 3e3bb913f964e56dc9a9e16d4130abbc690c008d:infrastructure/terraform/azure/containerapps.tf:hashicorp-tf-password:171
 # Cypress auth fixture value is mock test data.
 b2af9224bda84f9a66c3c4fdf33cc4008520ad8f:tests/legacy-suites/cypress/cypress/fixtures/auth-tokens.json:generic-api-key:2
+# analytics-service strips the PEM BEGIN/END markers from the SNOWFLAKE_PRIVATE_KEY env value; the
+# source literals are the marker strings only, no key material. Commit-scoped; re-add if rebased.
+ce7629097ae4fdc2bf6c7ac9c631f18baf518642:services/analytics-service/src/main/scala/com/otterworks/analytics/finance/FinanceRollupRepository.scala:private-key:71
