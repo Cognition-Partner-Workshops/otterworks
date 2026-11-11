@@ -2,7 +2,9 @@
   "job": "billing_invoice_summary_daily",
   "language": "python",
   "target": "dbt",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "0 1 * * *",
-  "profile": "small"
+  "profile": "small",
+  "ingest": ["billing.INVOICE_HDR", "billing.INVOICE_LINE"],
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job billing_invoice_summary_daily --select path:models/spark/billing_invoice_summary_daily"
 }
