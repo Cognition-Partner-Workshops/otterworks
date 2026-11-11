@@ -35,7 +35,8 @@ def test_additive_seed_contract():
 def test_prepare_seed_balanced_and_lossless(tmp_path):
     source, output = tmp_path / 'source', tmp_path / 'output'
     counts = generate(20, 1110, source)
-    assert counts['GL_ACCOUNT'] == 10 and counts['GL_JOURNAL_LINE'] == 0
+    # The shared seed holds prior-period Teradata history only (8 invoice + 3 credit lines at 20 rows).
+    assert counts['GL_ACCOUNT'] == 10 and counts['GL_JOURNAL_LINE'] == 11
     prepared = prepare_seed(source, output, '20261109')
     assert len(prepared) == 42
     journals = {}
