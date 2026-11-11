@@ -71,3 +71,59 @@ async def test_export_endpoint_404s_for_unreadable_file(client, monkeypatch, tmp
     resp = await client.get("/api/v1/documents/exports", params={"name": "locked.md"})
 
     assert resp.status_code == 404
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "../secret.txt",
+        "reports/../../secret.txt",
+        "../../../../etc/passwd",
+        "/etc/passwd",
+        "reports/../../../etc/passwd",
+        "report.md\x00.txt",
+    ],
+)
+def test_rejects_names_outside_archive(tmp_path, name):
+    base = tmp_path / "exports"
+    (base / "reports").mkdir(parents=True)
+    (tmp_path / "secret.txt").write_text("top secret\n", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError):
+        ExportArchive(base_dir=str(base)).read_export(name)
+
+
+def test_rejects_symlink_escaping_archive(tmp_path):
+    base = tmp_path / "exports"
+    base.mkdir()
+    (tmp_path / "secret.txt").write_text("top secret\n", encoding="utf-8")
+    (base / "link.md").symlink_to(tmp_path / "secret.txt")
+
+    with pytest.raises(FileNotFoundError):
+        ExportArchive(base_dir=str(base)).read_export("link.md")
+
+
+def test_rejects_archive_directory_itself(archive):
+    with pytest.raises(FileNotFoundError):
+        archive.read_export(".")
+
+
+def test_allows_dotdot_that_stays_inside_archive(archive):
+    assert archive.read_export("reports/../report.md") == "# Report\n"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "name", ["../secret.txt", "/etc/passwd", "reports/../../secret.txt", "../../../../etc/passwd"]
+)
+async def test_export_endpoint_404s_for_traversal(client, monkeypatch, tmp_path, name):
+    base = tmp_path / "exports"
+    (base / "reports").mkdir(parents=True)
+    (tmp_path / "secret.txt").write_text("top secret\n", encoding="utf-8")
+    monkeypatch.setenv("EXPORT_ARCHIVE_DIR", str(base))
+
+    resp = await client.get("/api/v1/documents/exports", params={"name": name})
+
+    assert resp.status_code == 404
+    assert "top secret" not in resp.text
+    assert "root:" not in resp.text
