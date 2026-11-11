@@ -13,7 +13,9 @@ SEED = ROOT / "db" / "seed.sql"
 
 
 def connect() -> psycopg.Connection:
-    return psycopg.connect(settings.database_url, row_factory=dict_row)
+    return psycopg.connect(
+        settings.database_url, password=settings.db_password or None, row_factory=dict_row
+    )
 
 
 def migrate() -> None:

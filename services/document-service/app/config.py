@@ -1,6 +1,8 @@
 """Application configuration via pydantic-settings."""
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
+from sqlalchemy.engine import make_url
 
 
 class Settings(BaseSettings):
@@ -8,9 +10,8 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     debug: bool = False
 
-    database_url: str = (
-        "postgresql+asyncpg://otterworks:otterworks_dev@localhost:5432/otterworks"
-    )
+    database_url: str = "postgresql+asyncpg://otterworks@localhost:5432/otterworks"
+    db_password: str = ""
     db_pool_size: int = 10
     db_max_overflow: int = 20
 
@@ -30,6 +31,13 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:4200"]
 
     model_config = {"env_prefix": "DOC_SVC_", "env_file": ".env", "extra": "ignore"}
+
+    @model_validator(mode="after")
+    def _apply_db_password(self) -> "Settings":
+        if self.db_password:
+            url = make_url(self.database_url).set(password=self.db_password)
+            self.database_url = url.render_as_string(hide_password=False)
+        return self
 
 
 settings = Settings()

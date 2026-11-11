@@ -14,6 +14,9 @@ Individual service development may also require the language toolchains listed i
 ## Quick Start (Local Development)
 
 ```bash
+# Configure local credentials (.env is gitignored; pick your own values)
+cp .env.example .env
+
 # Start infrastructure (Postgres, Redis, LocalStack, MeiliSearch, observability stack)
 make infra-up
 

@@ -62,6 +62,9 @@ jobs:
       - name: Unit-test the harness
         run: make dast-test
 
+      - name: Generate local database password
+        run: echo "POSTGRES_PASSWORD=$(openssl rand -hex 16)" >> "$GITHUB_ENV"
+
       - name: Start the application stack
         run: |
           docker compose -f docker-compose.infra.yml -f docker-compose.yml up -d --build \

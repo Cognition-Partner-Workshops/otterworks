@@ -7,6 +7,7 @@ to query the database for parent IDs.
 """
 
 import os
+import sys
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -81,7 +82,7 @@ DB_CONFIG = {
     "port": int(os.getenv("DB_PORT", "5432")),
     "dbname": os.getenv("DB_NAME", "otterworks"),
     "user": os.getenv("DB_USER", "otterworks"),
-    "password": os.getenv("DB_PASSWORD", "otterworks_dev"),
+    "password": os.environ.get("DB_PASSWORD") or sys.exit("DB_PASSWORD must be set"),
 }
 
 
