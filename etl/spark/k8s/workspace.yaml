@@ -1,0 +1,13 @@
+apiVersion: "v1"
+kind: "PersistentVolumeClaim"
+metadata:
+  name: "sfx-d1110-workspace"
+  namespace: "sfx-d1110-before"
+  labels:
+    otterworks.run-token: "sfx-d1110"
+spec:
+  accessModes:
+    - "ReadWriteMany"
+  resources:
+    requests:
+      storage: "20Gi"
