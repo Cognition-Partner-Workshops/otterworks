@@ -85,6 +85,12 @@ class AssessmentHelpers(unittest.TestCase):
         expected['metadata']['spark_commit'] = 'b' * 40
         self.assertTrue(manifest_differences(recorded, expected))
 
+    def test_physical_lineage_identity(self):
+        path = '/opt/lake/audit/audit_daily_summary'
+        self.assertEqual(assess.lineage_node(path, 'audit'), assess.lineage_node(path, 'data-platform'))
+        self.assertNotEqual(assess.lineage_node(path, 'audit'), assess.lineage_node(path + '_other', 'audit'))
+        self.assertTrue(assess.lineage_node(path, 'audit').startswith('d'))
+
 
 if __name__ == '__main__':
     unittest.main()

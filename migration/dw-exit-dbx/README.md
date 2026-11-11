@@ -76,6 +76,9 @@ literals. save arguments identify lake and optional JDBC write targets; physical
 parquet paths are preserved. The current estate has either read-only parquet
 calls or a direct write chain per job; complex mixed read/write jobs require a
 parser extension rather than treating every qualified literal as a write.
+Physical lineage nodes are keyed by the full path, identically for reads and
+writes across areas. Job nodes use a separate ID namespace, so producer outputs
+connect directly to downstream physical-path readers without collapsing jobs.
 
 ## DBQL and privacy
 

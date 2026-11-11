@@ -224,6 +224,11 @@ def spark_io(text):
     return sorted(reads), sorted(writes)
 
 
+def lineage_node(reference, subject):
+    key = reference if reference.startswith('/') else subject + ':' + reference
+    return 'd' + hashlib.sha256(key.encode()).hexdigest()[:16]
+
+
 def build():
     dead, hidden = dbql()
     consumers = registry()
@@ -402,10 +407,10 @@ def lineage(entries, hidden, provenance):
             node = 'j' + e['id']
             lines += [f'{node}["{e["object_name"]}"]']
             for ref in refs or ['external lake/blob input']:
-                source = 't' + hashlib.sha256((subject + ref).encode()).hexdigest()[:10]
+                source = lineage_node(ref, subject)
                 lines += [f'{source}["{ref}"] --> {node}']
-            for i, output in enumerate(outputs):
-                lines += [f'{node} --> o{e["id"]}_{i}["{output}"]']
+            for output in outputs:
+                lines += [f'{node} --> {lineage_node(output, subject)}["{output}"]']
         lines += ['end']
     lines += ['```', '', '## Spark code-level references', '', '| Job | Reads | Writes | Source |', '|---|---|---|---|']
     for e in entries:
