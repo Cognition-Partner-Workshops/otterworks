@@ -141,7 +141,7 @@ def test_analyst_dry_run_is_read_only_and_curated():
         "GRANT USAGE ON DATABASE SFX_D1110_AFTER TO ROLE SFX_D1110_ANALYST;",
         "GRANT USAGE ON WAREHOUSE SFX_D1110_TRANSFORM_WH TO ROLE SFX_D1110_ANALYST;",
     }
-    for schema in ("CORE_BILLING", "CORE_DOCUMENTS", "CORE_USERS", "CORE_AUDIT", "MART", "COMPAT"):
+    for schema in ("CORE_BILLING", "CORE_DOCUMENTS", "CORE_USERS", "CORE_AUDIT", "MART", "MART_SPARK", "COMPAT"):
         expected.add(f"GRANT USAGE ON SCHEMA SFX_D1110_AFTER.{schema} TO ROLE SFX_D1110_ANALYST;")
         for scope in ("ALL", "FUTURE"):
             for kind in ("TABLES", "VIEWS"):

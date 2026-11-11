@@ -156,6 +156,8 @@ def test_snowpark_runner(tmp_path, monkeypatch):
     active = session.configs.return_value.create.return_value.__enter__.return_value
     assert json.loads(active.query_tag)["job"] == "example"
     assert json.loads(active.query_tag)["act"] == "spark"
+    assert any('SET TAG' in call.args[0] and "= 'sfx-d1110'" in call.args[0]
+               for call in active.sql.call_args_list)
     with pytest.raises(FileNotFoundError):
         runner.run("missing")
     with pytest.raises(ValueError):

@@ -32,7 +32,8 @@ def test_post_deploy_governance():
     assert "ALLOWED_VALUES 'sfx-d1110'" in (ROOT / 'migrations/V006__governance.sql').read_text()
 
 
-def render_governance(policies=None, results=None, existing=(), missing=False, standalone=False):
+def render_governance(policies=None, results=None, existing=(), missing=False, standalone=False,
+                      token='sfx-d1110'):
     calls = []
     class Relation:
         is_view = True
@@ -50,7 +51,7 @@ def render_governance(policies=None, results=None, existing=(), missing=False, s
         raise ValueError(message)
     env = Environment(extensions=['jinja2.ext.do'])
     env.globals.update(execute=True, adapter=adapter, run_query=run_query,
-                       env_var=lambda *args: 'sfx-d1110', var=lambda *args: policies or {},
+                       env_var=lambda *args: token, var=lambda *args: policies or {},
                        exceptions=SimpleNamespace(raise_compiler_error=fail),
                        graph=SimpleNamespace(nodes={'customer': node}),
                        log=lambda *args, **kw: '', **{'return': lambda value: value})
@@ -60,6 +61,18 @@ def render_governance(policies=None, results=None, existing=(), missing=False, s
     else:
         module.reapply_governance(results if results is not None else [SimpleNamespace(node=node, status='success')])
     return calls
+
+
+def test_scoped_token_uses_fixed_run_tag(monkeypatch):
+    token = "sfx-d1110-test'quoted"
+    monkeypatch.setenv('SNOWFLAKE_RUN_TOKEN', token)
+    calls = []
+    governance.reapply(SimpleNamespace(execute=lambda sql, params: calls.append((sql, params))))
+    assert all(params == ('sfx-d1110',) for sql, params in calls if 'SET TAG' in sql)
+    assert all(params[0].startswith(token + ' ') for sql, params in calls if 'COMMENT ON' in sql)
+    rendered = render_governance(token=token)
+    assert rendered[0].endswith(".GOVERNANCE.SFX_RUN = 'sfx-d1110'")
+    assert "sfx-d1110-test''quoted customer" in rendered[1]
 
 
 def test_dbt_governance_normal_empty_missing_and_policies():

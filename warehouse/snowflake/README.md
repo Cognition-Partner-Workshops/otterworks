@@ -224,6 +224,21 @@ pause/resume use.
 
 ## Governance after replacement
 
+V010 provisions `SPARK_RAW_BILLING`, `SPARK_RAW_DOCUMENTS`, `SPARK_RAW_USERS`,
+`SPARK_RAW_AUDIT` and `MART_SPARK` before any Spark landing or migrated job runs.
+After deploying migrations, apply the role plan (including `06_spark_grants.sql`)
+with the role administrator via `roles/dry_run.py --apply`. The loader only creates
+and refreshes tables in the provisioned landing schemas; it needs no database
+CREATE SCHEMA privilege. Transformer and Snowpark roles read the landing tables
+and create tables, views and Python functions in `MART_SPARK`. Parity and analyst
+roles receive read access on existing and future output tables and views.
+
+`GOVERNANCE.SFX_RUN` always stores the fixed run identifier `sfx-d1110`, matching
+V006's allowed value. A scoped `SNOWFLAKE_RUN_TOKEN` remains in query attribution
+and object comments. Both the dbt hook and the Snowpark runner restore this tag
+after publishing; their roles receive APPLY on this single tag. Snowpark table
+replacements must use `copy_grants=True` to preserve explicit consumer grants.
+
 Deploy V006 before running dbt. `deploy.py` restores `GOVERNANCE.SFX_RUN='sfx-d1110'`
 and token comments on the V003/V005 tasks and procedures after every deployment,
 including no-op deployments. The dbt `on-run-end` hook calls `reapply_governance`
