@@ -5,5 +5,6 @@
   "status": "snowflake",
   "schedule": "12 2 * * *",
   "profile": "small",
+  "ingest": ["documents.SEARCH_INDEX_LOG"],
   "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job docs_search_log_parse"
 }
