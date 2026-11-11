@@ -83,6 +83,9 @@ tdebfb8c14b["USAGE_DAILY"] --> jc5c27426ee958835
 jc5c27426ee958835 --> oc5c27426ee958835["sfx_billing.SPARK_USAGE_DAILY"]
 end
 subgraph spark_documents["documents Spark transforms"]
+jec470285f065ed9c["collab_session_sessionize"]
+td73df180ca["COLLAB_SESSION"] --> jec470285f065ed9c
+jec470285f065ed9c --> oec470285f065ed9c["collab_session_sessionize lake output"]
 j3656e055e27f9062["doc_share_graph_reach"]
 t33f3b7af0e["DOC_SHARE"] --> j3656e055e27f9062
 j3656e055e27f9062 --> o3656e055e27f9062["doc_share_graph_reach lake output"]
@@ -106,16 +109,14 @@ t9503954c4b["PARSED_ACTION"] --> j226fcb6125cd01af
 t811e4be7eb["RAW_LINE"] --> j226fcb6125cd01af
 tc76c8079eb["SEARCH_INDEX_LOG"] --> j226fcb6125cd01af
 j226fcb6125cd01af --> o226fcb6125cd01af["docs_search_log_parse lake output"]
-j2b7a6d8d0e305a41["docs_storage_by_owner"]
-t0718787605["APP_USER"] --> j2b7a6d8d0e305a41
-t41e6750b47["DOCUMENT"] --> j2b7a6d8d0e305a41
-t95c5430357["FILE_OBJECT"] --> j2b7a6d8d0e305a41
-j2b7a6d8d0e305a41 --> o2b7a6d8d0e305a41["docs_storage_by_owner lake output"]
 j1eb0f51fa396565a["docs_tag_normalize"]
 t5bf2a03ffe["DOC_TAG"] --> j1eb0f51fa396565a
 t4da9bf2048["NORMALIZED_TAG"] --> j1eb0f51fa396565a
 t256a274a18["TAG"] --> j1eb0f51fa396565a
 j1eb0f51fa396565a --> o1eb0f51fa396565a["docs_tag_normalize lake output"]
+j5378603daa2875d5["file_object_binary_extract"]
+t95c5430357["FILE_OBJECT"] --> j5378603daa2875d5
+j5378603daa2875d5 --> o5378603daa2875d5["file_object_binary_extract lake output"]
 j71b09ce48eacf50e["docs_share_activity"]
 t41e6750b47["DOCUMENT"] --> j71b09ce48eacf50e
 t33f3b7af0e["DOC_SHARE"] --> j71b09ce48eacf50e
@@ -149,34 +150,33 @@ teda186b239["USER_ACTIVITY_DAILY"] --> j3b611fa411d110e0
 j3b611fa411d110e0 --> o3b611fa411d110e0["sfx_users.SPARK_RISK_SCORE"]
 end
 subgraph spark_audit["audit Spark transforms"]
-j3239a0ca48ca7071["audit_actor_activity_join"]
-t619895e1a9["AUDIT_EVENT"] --> j3239a0ca48ca7071
-tedbd430f84["LOGIN_EVENT"] --> j3239a0ca48ca7071
-t8bdac745f3["USER_ACTIVITY_DAILY"] --> j3239a0ca48ca7071
-j3239a0ca48ca7071 --> o3239a0ca48ca7071["audit_actor_activity_join lake output"]
 jd505e2c0c31cf608["audit_archive_resort"]
 te6f1816027["AUDIT_EVENT_ARCHIVE"] --> jd505e2c0c31cf608
 jd505e2c0c31cf608 --> od505e2c0c31cf608["audit_archive_resort lake output"]
 j21023332aa8b55ce["lake_compaction_audit"]
 t3878c3c83d["external lake/blob input"] --> j21023332aa8b55ce
 j21023332aa8b55ce --> o21023332aa8b55ce["lake_compaction_audit lake output"]
+j348248e32efac0da["security_alert_anomaly"]
+ta3846bc67c["SECURITY_ALERT"] --> j348248e32efac0da
+j348248e32efac0da --> o348248e32efac0da["sfx_audit.SPARK_ALERT_ANOMALY"]
 je2e681f4b1b8c75f["audit_daily_summary"]
 t619895e1a9["AUDIT_EVENT"] --> je2e681f4b1b8c75f
 je2e681f4b1b8c75f --> oe2e681f4b1b8c75f["sfx_audit.SPARK_AUDIT_SUMMARY"]
+jf8710c1a5ac6d3c9["compliance_flag_rules"]
+ta0c4ceb9ae["COMPLIANCE_FLAG"] --> jf8710c1a5ac6d3c9
+jf8710c1a5ac6d3c9 --> of8710c1a5ac6d3c9["sfx_audit.SPARK_COMPLIANCE_REVIEW"]
 end
 subgraph spark_data_platform["data-platform Spark transforms"]
-jec470285f065ed9c["collab_session_sessionize"]
-t169ca0104a["COLLAB_SESSION"] --> jec470285f065ed9c
-jec470285f065ed9c --> oec470285f065ed9c["collab_session_sessionize lake output"]
-j5378603daa2875d5["file_object_binary_extract"]
-tea979f1939["FILE_OBJECT"] --> j5378603daa2875d5
-j5378603daa2875d5 --> o5378603daa2875d5["file_object_binary_extract lake output"]
-j348248e32efac0da["security_alert_anomaly"]
-tdc65409be1["SECURITY_ALERT"] --> j348248e32efac0da
-j348248e32efac0da --> o348248e32efac0da["sfx_audit.SPARK_ALERT_ANOMALY"]
-jf8710c1a5ac6d3c9["compliance_flag_rules"]
-t7f7b2ee26e["COMPLIANCE_FLAG"] --> jf8710c1a5ac6d3c9
-jf8710c1a5ac6d3c9 --> of8710c1a5ac6d3c9["sfx_audit.SPARK_COMPLIANCE_REVIEW"]
+j3239a0ca48ca7071["audit_actor_activity_join"]
+t4e44c04578["AUDIT_EVENT"] --> j3239a0ca48ca7071
+t93a7b92dbb["LOGIN_EVENT"] --> j3239a0ca48ca7071
+t19d1e50d43["USER_ACTIVITY_DAILY"] --> j3239a0ca48ca7071
+j3239a0ca48ca7071 --> o3239a0ca48ca7071["audit_actor_activity_join lake output"]
+j2b7a6d8d0e305a41["docs_storage_by_owner"]
+te281652877["APP_USER"] --> j2b7a6d8d0e305a41
+t640988d927["DOCUMENT"] --> j2b7a6d8d0e305a41
+tea979f1939["FILE_OBJECT"] --> j2b7a6d8d0e305a41
+j2b7a6d8d0e305a41 --> o2b7a6d8d0e305a41["docs_storage_by_owner lake output"]
 end
 ```
 

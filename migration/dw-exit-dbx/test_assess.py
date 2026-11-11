@@ -42,6 +42,13 @@ class AssessmentHelpers(unittest.TestCase):
         with patch.object(assess, 'source_files', return_value=[]), patch.object(assess, 'spark_files', return_value=[path]), patch.object(assess, 'git', return_value=''), patch.object(assess, 'read', return_value='result = landing(spark, "USER_PREF")'):
             self.assertEqual(assess.code_readers(['SFX_USERS.USER_PREF']), {'SFX_USERS.USER_PREF': [path]})
 
+    def test_spark_subject(self):
+        with patch.object(assess, 'landing_areas', return_value={'SECURITY_ALERT': 'audit', 'DOCUMENT': 'documents'}):
+            self.assertEqual(assess.spark_subject('landing(spark, "SECURITY_ALERT")'), 'audit')
+            self.assertEqual(assess.spark_subject('register(spark, "SECURITY_ALERT", "DOCUMENT")'), 'data-platform')
+            with self.assertRaisesRegex(ValueError, 'no grounded'):
+                assess.spark_subject('')
+
 
 if __name__ == '__main__':
     unittest.main()

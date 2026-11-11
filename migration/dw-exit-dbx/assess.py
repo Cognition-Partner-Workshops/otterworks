@@ -1,5 +1,6 @@
 """Deterministic, offline estate assessment (stdlib and PyYAML only)."""
 import argparse
+import ast
 import csv
 import hashlib
 import json
@@ -152,13 +153,33 @@ def area(text):
     return 'data-platform'
 
 
+def landing_areas():
+    tree = ast.parse(read('etl/spark/jobs/py/common/schemas.py'))
+    tables = next(ast.literal_eval(node.value) for node in tree.body if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'TABLES' for t in node.targets))
+    return {table: subject for subject, definitions in tables.items() for table in definitions}
+
+
+def spark_subject(text):
+    tables = landing_areas()
+    calls = re.findall(r'\b(?:register|landing|jdbc_read)\(([^\n]*)', text)
+    reads = {tables[t] for t in re.findall(r'["\']([A-Z][A-Z_0-9]+)["\']', ' '.join(calls)) if t in tables}
+    reads.update(tables[t.upper()] for t in re.findall(r'\b(?:FROM|JOIN)\s+([A-Z_0-9]+)', text, re.I) if t.upper() in tables)
+    destinations = set(re.findall(r'\bSFX_(BILLING|DOCUMENTS|USERS|AUDIT)\.', text, re.I))
+    subjects = reads | {s.lower() for s in destinations}
+    subjects.update(re.findall(r'/opt/(?:lake|landing)/(billing|documents|users|audit)/', text))
+    subjects.update(re.findall(r'\bsave\([^\n]*?,\s*"(billing|documents|users|audit)"', text))
+    if not subjects:
+        raise ValueError('Spark job has no grounded subject-area evidence')
+    return next(iter(subjects)) if len(subjects) == 1 else 'data-platform'
+
+
 def build():
     dead, hidden = dbql()
     consumers = registry()
     entries = []
 
     def add(path, name, kind, text, paths=None, hours=None, hint=None):
-        subject = area(path + name)
+        subject = spark_subject(text) if kind == 'Spark job' else area(path + name)
         count = loc(text)
         features = len(re.findall(r'\b(?:JOIN|QUALIFY|MERGE|UNION|WHILE|LOOP|UDF|RDD|TRANSFORMATION)\b', text, re.I))
         complexity = 'high' if count > 150 or features >= 8 else 'medium' if count > 40 or features >= 2 else 'low'

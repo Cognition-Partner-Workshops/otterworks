@@ -65,6 +65,12 @@ on this static assessment alone.
 lineage.md has an area-level flow overview plus Spark code-derived graph/detail;
 it is static source lineage, not a claim of observed execution.
 
+Spark job areas come from known landing-table reads (common/schemas.py), qualified
+table namespaces, save destination areas and physical /opt/lake or /opt/landing
+paths. A single evidenced area owns the job; multiple evidenced areas use
+data-platform. Missing evidence fails assessment instead of guessing from names.
+Shared runtime modules retain data-platform ownership.
+
 ## DBQL and privacy
 
 Window: 2026-08-12 through 2026-11-10 inclusive, using StartTime and joined QueryID.

@@ -1213,10 +1213,10 @@ objects:
   kind: Spark job
   target: Lakeflow pipeline
   wave: 3
-  owner: '@otterworks/audit'
+  owner: '@otterworks/data-platform'
   risk: medium
   risk_reason: Relational dbt hint becomes Lakeflow SQL transform
-  subject_area: audit
+  subject_area: data-platform
   source_system: spark-batch
   loc: 25
   complexity: medium
@@ -1373,10 +1373,10 @@ objects:
   kind: Spark job
   target: PySpark job
   wave: 3
-  owner: '@otterworks/data-platform'
+  owner: '@otterworks/documents'
   risk: low
   risk_reason: Python/Scala distributed behavior requires PySpark parity
-  subject_area: data-platform
+  subject_area: documents
   source_system: spark-batch
   loc: 20
   complexity: low
@@ -1603,10 +1603,10 @@ objects:
   kind: Spark job
   target: Lakeflow pipeline
   wave: 3
-  owner: '@otterworks/documents'
+  owner: '@otterworks/data-platform'
   risk: medium
   risk_reason: Relational dbt hint becomes Lakeflow SQL transform
-  subject_area: documents
+  subject_area: data-platform
   source_system: spark-batch
   loc: 10
   complexity: medium
@@ -1643,10 +1643,10 @@ objects:
   kind: Spark job
   target: PySpark job
   wave: 3
-  owner: '@otterworks/data-platform'
+  owner: '@otterworks/documents'
   risk: medium
   risk_reason: Python/Scala distributed behavior requires PySpark parity
-  subject_area: data-platform
+  subject_area: documents
   source_system: spark-batch
   loc: 24
   complexity: medium
@@ -1683,10 +1683,10 @@ objects:
   kind: Spark job
   target: PySpark job
   wave: 3
-  owner: '@otterworks/data-platform'
+  owner: '@otterworks/audit'
   risk: low
   risk_reason: Python/Scala distributed behavior requires PySpark parity
-  subject_area: data-platform
+  subject_area: audit
   source_system: spark-batch
   loc: 13
   complexity: low
@@ -1821,10 +1821,10 @@ objects:
   kind: Spark job
   target: PySpark job
   wave: 3
-  owner: '@otterworks/data-platform'
+  owner: '@otterworks/audit'
   risk: low
   risk_reason: Python/Scala distributed behavior requires PySpark parity
-  subject_area: data-platform
+  subject_area: audit
   source_system: spark-batch
   loc: 22
   complexity: low
