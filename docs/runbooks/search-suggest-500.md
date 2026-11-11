@@ -27,7 +27,15 @@
 
 ## Resolution Steps
 
-<!-- TODO -->
+1. If the chaos flag is set, clear it: `redis-cli DEL chaos:search-service:suggest_500`.
+2. The code cause is the ranking-score enrichment in `suggest()`: it indexed
+   `_rankingScore` on every hit, but MeiliSearch only returns that field when the
+   query sets `showRankingScore: true`, and the handler ran the sort outside its
+   `try/except`. The fix moves ranking into `MeiliSearchService.suggest`
+   (`showRankingScore: true`, hits without a score sort last) so the handler
+   always honours the "always 200" contract.
+3. Confirm recovery: `curl -s "$API/api/v1/search/suggest?q=qu"` returns 200 and
+   the `SearchSuggestHighErrorRate` alert resolves within ~2 minutes.
 
 ## Post-Incident
 
