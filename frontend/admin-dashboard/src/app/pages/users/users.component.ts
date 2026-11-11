@@ -18,6 +18,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AdminApiService } from '../../core/services/admin-api.service';
 import { User } from '../../core/models/user.model';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.component';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-users',
@@ -203,10 +204,12 @@ export class UsersComponent implements OnInit {
 
   loadUsers(): void {
     this.loading = true;
-    this.api.getUsers().subscribe(users => {
-      this.dataSource.data = users;
-      this.loading = false;
-      this.setupFilterPredicate();
+    this.api.getUsers().pipe(finalize(() => { this.loading = false; })).subscribe({
+      next: users => {
+        this.dataSource.data = users;
+        this.setupFilterPredicate();
+      },
+      error: () => { this.dataSource.data = []; },
     });
   }
 

@@ -22,14 +22,14 @@ module Api
 
         # GET /api/v1/admin/audit-logs/:id
         def show
-          audit_log = AuditLog.find(params[:id]) # nosemgrep: ruby.rails.security.brakeman.check-unscoped-find.check-unscoped-find
+          audit_log = authorized_scope(AuditLog).find(params[:id])
           render json: audit_log, serializer: AuditLogSerializer
         end
 
         private
 
         def filtered_scope
-          scope = AuditLog.recent
+          scope = authorized_scope(AuditLog).recent
           scope = scope.by_action(params[:action_type]) if params[:action_type].present?
           scope = scope.by_resource(params[:resource_type], params[:resource_id]) if params[:resource_type].present?
           scope = scope.by_actor(params[:actor_id]) if params[:actor_id].present?

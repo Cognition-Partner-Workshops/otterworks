@@ -6,7 +6,7 @@ module Api
 
         # GET /api/v1/admin/users
         def index
-          scope = AdminUser.includes(:storage_quota)
+          scope = authorized_scope(AdminUser).includes(:storage_quota)
           scope = scope.search(params[:q]) if params[:q].present?
           scope = scope.by_role(params[:role]) if params[:role].present?
           scope = scope.where(status: params[:status]) if params[:status].present?
@@ -93,11 +93,13 @@ module Api
         private
 
         def set_user
-          @user = AdminUser.includes(:storage_quota).find(params[:id]) # nosemgrep: ruby.rails.security.brakeman.check-unscoped-find.check-unscoped-find
+          @user = authorized_scope(AdminUser).includes(:storage_quota).find(params[:id])
         end
 
         def user_params
-          params.require(:user).permit(:email, :display_name, :role, :avatar_url) # nosemgrep: ruby.lang.security.model-attr-accessible.model-attr-accessible
+          attributes = params.require(:user).permit(:email, :display_name, :avatar_url)
+          attributes[:role] = authorized_role(params[:user][:role]) if params[:user].key?(:role)
+          attributes
         end
       end
     end

@@ -6,7 +6,7 @@ module Api
 
         # GET /api/v1/admin/features
         def index
-          scope = FeatureFlag.all
+          scope = authorized_scope(FeatureFlag)
           scope = scope.enabled if params[:enabled] == 'true'
           scope = scope.disabled if params[:enabled] == 'false'
           scope = scope.order(name: :asc)
@@ -81,7 +81,7 @@ module Api
         private
 
         def set_feature_flag
-          @feature_flag = FeatureFlag.find(params[:id]) # nosemgrep: ruby.rails.security.brakeman.check-unscoped-find.check-unscoped-find
+          @feature_flag = authorized_scope(FeatureFlag).find(params[:id])
         end
 
         def feature_flag_params

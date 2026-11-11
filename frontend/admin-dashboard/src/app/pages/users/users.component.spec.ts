@@ -3,6 +3,9 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { UsersComponent } from './users.component';
+import { AdminApiService } from '../../core/services/admin-api.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { of, throwError } from 'rxjs';
 
 describe('UsersComponent', () => {
   let component: UsersComponent;
@@ -28,6 +31,22 @@ describe('UsersComponent', () => {
 
   it('should start with loading state', () => {
     expect(component.loading).toBeTrue();
+  });
+
+  it('clears loading when access is forbidden', () => {
+    spyOn(TestBed.inject(AdminApiService), 'getUsers').and.returnValue(
+      throwError(() => new HttpErrorResponse({ status: 403 })),
+    );
+    component.loadUsers();
+    expect(component.loading).toBeFalse();
+    expect(component.dataSource.data).toEqual([]);
+  });
+
+  it('clears loading for an empty user list', () => {
+    spyOn(TestBed.inject(AdminApiService), 'getUsers').and.returnValue(of([]));
+    component.loadUsers();
+    expect(component.loading).toBeFalse();
+    expect(component.dataSource.data).toEqual([]);
   });
 
   it('should load users', fakeAsync(() => {

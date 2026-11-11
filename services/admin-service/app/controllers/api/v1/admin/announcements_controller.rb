@@ -6,7 +6,7 @@ module Api
 
         # GET /api/v1/admin/announcements
         def index
-          scope = Announcement.all
+          scope = authorized_scope(Announcement)
           scope = scope.where(status: params[:status]) if params[:status].present?
           scope = scope.by_severity(params[:severity]) if params[:severity].present?
           scope = scope.active if params[:active] == 'true'
@@ -83,7 +83,7 @@ module Api
         private
 
         def set_announcement
-          @announcement = Announcement.find(params[:id]) # nosemgrep: ruby.rails.security.brakeman.check-unscoped-find.check-unscoped-find
+          @announcement = authorized_scope(Announcement).find(params[:id])
         end
 
         def announcement_params
