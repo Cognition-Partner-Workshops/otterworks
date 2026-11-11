@@ -1,0 +1,9 @@
+{
+  "pr": 2758,
+  "job": "users_active_daily",
+  "file": "etl/databricks/spark/users_active_daily/parity.sql",
+  "table": "cpw.dbx_d1111_after.users__spark_users_active_daily",
+  "statement": "/* run=dbx-d1111 act=spark step=idempotence consumer=users_active_daily */\nDESCRIBE HISTORY cpw.dbx_d1111_after.users__spark_users_active_daily LIMIT 2;",
+  "statement_id": "01f1dd8d-a4cc-12dd-be24-f6bf055750b0",
+  "state": "SUCCEEDED"
+}

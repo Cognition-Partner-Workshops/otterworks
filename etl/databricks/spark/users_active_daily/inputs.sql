@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=users_active_daily */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Input adapter: live cpw.dbx_d1111_before (Teradata-style names) -> Spark landing layout (etl/spark/jobs/py/common/schemas.py).
 -- One SELECT per landing table, introduced by "-- landing: <area>/<TABLE>". Unmapped landing columns are NULL (no defensible live source).

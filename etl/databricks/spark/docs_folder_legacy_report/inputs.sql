@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=docs_folder_legacy_report */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Input adapter: live cpw.dbx_d1111_before (Teradata-style names) -> Spark landing layout (etl/spark/jobs/py/common/schemas.py).
 -- One SELECT per landing table, introduced by "-- landing: <area>/<TABLE>". Unmapped landing columns are NULL (no defensible live source).
@@ -8,6 +9,7 @@
 SELECT folder_id AS FOLDER_ID, owner_user_id AS OWNER_USER_ID, CAST(NULL AS BIGINT) AS PARENT_FOLDER_ID, folder_name AS FOLDER_NAME
 FROM cpw.dbx_d1111_before.documents__folder;
 
+/* run=dbx-d1111 act=spark step=inputs consumer=docs_folder_legacy_report */
 -- landing: documents/DOCUMENT
 -- Shared DOCUMENT mapping (same as ../docs_event_export_hourly/inputs.sql): TITLE=document_name,
 -- CREATED_AT=CAST(created_dt AS TIMESTAMP) (DATE at midnight), STATUS=rtrim(status_cd) (CHAR(12) pad is not data).

@@ -1,0 +1,9 @@
+{
+  "pr": 2758,
+  "job": "users_team_rollup",
+  "file": "etl/databricks/spark/users_team_rollup/parity.sql",
+  "table": "cpw.dbx_d1111_after.users__spark_users_team_rollup",
+  "statement": "/* run=dbx-d1111 act=spark step=idempotence consumer=users_team_rollup */\nDESCRIBE HISTORY cpw.dbx_d1111_after.users__spark_users_team_rollup LIMIT 2;",
+  "statement_id": "01f1dd8d-a603-10b3-b9e2-93e8f3d93e81",
+  "state": "SUCCEEDED"
+}

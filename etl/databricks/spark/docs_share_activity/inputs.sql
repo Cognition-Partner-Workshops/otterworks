@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=docs_share_activity */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Input adapter: live cpw.dbx_d1111_before (Teradata-style names) -> Spark landing layout (etl/spark/jobs/py/common/schemas.py).
 -- One SELECT per landing table, introduced by "-- landing: <area>/<TABLE>". Unmapped landing columns are NULL (no defensible live source).
@@ -12,6 +13,7 @@ SELECT s.share_id AS DOC_SHARE_ID, s.document_id AS DOCUMENT_ID, d.owner_user_id
 FROM cpw.dbx_d1111_before.documents__doc_share s
 LEFT JOIN cpw.dbx_d1111_before.documents__document d ON s.document_id = d.document_id;
 
+/* run=dbx-d1111 act=spark step=inputs consumer=docs_share_activity */
 -- landing: documents/DOCUMENT
 -- Shared DOCUMENT mapping (same as ../docs_event_export_hourly/inputs.sql): TITLE=document_name,
 -- CREATED_AT=CAST(created_dt AS TIMESTAMP) (DATE at midnight), STATUS=rtrim(status_cd) (CHAR(12) pad is not data).
