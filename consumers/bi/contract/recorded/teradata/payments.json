@@ -1,0 +1,13 @@
+{
+  "query": "payments",
+  "columns": [
+    "LABEL",
+    "AMOUNT"
+  ],
+  "rows": [
+    [
+      "2026-11",
+      "117504.79"
+    ]
+  ]
+}

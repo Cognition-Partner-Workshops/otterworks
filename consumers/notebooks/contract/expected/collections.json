@@ -1,0 +1,13 @@
+{
+  "query": "collections",
+  "row_count": 2,
+  "sums": {
+    "BILLED": "315514.64",
+    "COLLECTED": "117504.79"
+  },
+  "key_column": "MONTH_LABEL",
+  "keys": [
+    "2026-10",
+    "2026-11"
+  ]
+}

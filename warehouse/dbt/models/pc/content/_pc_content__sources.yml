@@ -1,0 +1,14 @@
+version: 2
+sources:
+  - name: pc_content_src
+    description: PowerCenter SFX_CONTENT landing files loaded by the parity harness (make sfx-pc-setup).
+    schema: PC_SRC
+    tables:
+      - name: APP_USER
+        description: FF_APP_USER flat file (users/APP_USER).
+      - name: DOCUMENT
+        description: FF_DOCUMENT flat file (documents/DOCUMENT).
+      - name: DOC_SHARE
+        description: FF_DOC_SHARE flat file (documents/DOC_SHARE).
+      - name: ROLE_GRANT
+        description: FF_ROLE_GRANT flat file (users/ROLE_GRANT), read only as the DOC_SHARE lookup source.

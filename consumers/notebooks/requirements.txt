@@ -1,0 +1,4 @@
+pandas==2.2.3
+snowflake-connector-python==3.12.4
+cryptography==44.0.3
+nbformat==5.10.4

@@ -41,7 +41,7 @@
 - job: billing_gl_trial_balance
   language: python
   target: dbt
-  reason: "Aggregates journal debits, credits and net by account, period and currency, then joins credit-note adjustments."
+  reason: "Set-based SQL only: journal debit/credit/net and credit-note sums by account, month and currency, unioned and joined to GL_ACCOUNT. Migrated to dbt model MART_SPARK.BILLING_GL_TRIAL_BALANCE."
 - job: docs_folder_legacy_report
   language: python
   target: retired

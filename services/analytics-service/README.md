@@ -120,3 +120,82 @@ sbt assembly       # fat jar (used by the Docker image / deploy)
 
 The reconciliation suite uses Testcontainers and requires Docker; when Docker is
 unavailable it is cancelled (not failed), so Docker-less runners stay green.
+
+## Finance warehouse consumer
+
+The finance rollup route reads Snowflake using JWT key-pair authentication.
+Set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE and
+SNOWFLAKE_PRIVATE_KEY (PKCS8 PEM). Sessions use SFX_D1110_AFTER and only
+SFX_D1110_PARITY_WH, with QUERY_TAG
+`{"run":"sfx-d1110","act":"consumers","consumer":"analytics-service"}`.
+Sessions pin TIMEZONE=UTC so calendar-month windows and labels use UTC.
+
+Customer, invoice and payment reads use COMPAT views. Subscription and plan
+catalog reads use CORE_BILLING staging models because COMPAT has no equivalents.
+Invoice/payment customer attribution uses each invoice/payment's CUSTOMER_ID.
+Native calendar truncation, month formatting and COALESCE replace Teradata
+date arithmetic, FORMAT and ZEROIFNULL. Successful results remain cached for
+15 minutes per filter pair. Defaults are in snowflake.conf.
+Shared UPPER(RTRIM(...)) comparisons preserve Teradata NOT CASESPECIFIC CHAR
+semantics for subscription filters, the plan-code join and active-account status:
+case and trailing pad spaces do not affect matching.
+
+`GET /api/v1/analytics/finance/rollups?status=&plan=` returns monthly billed
+revenue, collected cash and active-account counts by region and plan name for
+the trailing twelve calendar months, including the current month.
+Filters select subscription STATUS_CD and PLAN_CODE. Omitted parameters use
+the dashboard configuration in snowflake.conf. Empty or oversized filters
+return 400; warehouse failures return a sanitized 503.
+Set FINANCE_WAREHOUSE_ENABLED=false or finance.warehouse.enabled=false to
+disable the route. It defaults on, without connecting at startup.
+
+Revenue uses invoice subtotals for the selected subscriptions, excluding tax.
+Specifically, revenue is COMPAT.INVOICE_HDR.SUBTOTAL_AMOUNT, preserving the
+legacy measure. It equals TOTAL_AMOUNT-ZEROIFNULL(TAX_AMOUNT) when those
+invoice columns reconcile; the consumer does not derive revenue from total
+and tax. Amount provenance depends on the shared COMPAT views and data.
+If they expose landed pre-invoicing values instead of P_MONTHLY_INVOICE
+recalculated amounts, BILLED_REVENUE differs from Teradata. A passing live
+contract checks shape and calendar semantics, not monetary parity.
+Cash is grouped independently by payment month, attributed through each
+payment's invoice to its subscription. Both are aggregated before joining the
+month/account grid. Accounts are deduplicated within each plan; active counts
+use current account status ACTIVE and a creation date before the month's end.
+Historical status changes are unavailable. Matching accounts with no activity
+return zero amounts. No FX conversion is performed; totals assume a common
+reporting currency. Seeded multi-currency aggregates are mechanical control totals.
+
+### Checks
+
+```sh
+sbt compile test
+WAREHOUSE_CONTRACT_TARGET=replay sbt "contract:test"
+WAREHOUSE_CONTRACT_TARGET=snowflake sbt "contract:test"
+```
+
+Missing Snowflake credentials cancel the live test. It executes the production
+repository SQL and prints query IDs. On that same connection it asserts
+TIMEZONE=UTC and the exact QUERY_TAG, then checks month labels and both ends of
+the twelve-month window at 00:30 UTC on July 1 and December 1. These instants
+are still in the previous month in Pacific daylight and standard time.
+The live contract compares columns, month
+labels and plan names to replay. Counts and monetary totals intentionally are
+not compared: the live seed has 200,000 rows per table versus 800 in replay.
+
+The legacy reference query is contract-only. Emulator runs always use
+TD_USER=svc_exit_parity. Supply TD_PG_PORT and CONTRACT_KIT_PYTHON as described
+in ../../consumers/contract-kit/README.md. Targets teradata-emulator and
+snowflake-semantics remain available. Replay needs neither Python nor a DB.
+The separate case-comparison spec always probes snowflake-semantics: without
+a local emulator it cancels; in CI it bootstraps an isolated 800-row emulator
+via contract/start-emulator.sh. Its namespace defaults to
+sfx-d1110-analytics-ci (override ANALYTICS_CONTRACT_NS).
+The fixture was captured with ROWS_PER_TABLE=800 and BUSINESS_DATE=20261109.
+CONTRACT_RECORD=true records live emulator output under
+contract/recorded/teradata/ while still checking expected row counts and sums:
+
+```sh
+WAREHOUSE_CONTRACT_TARGET=teradata-emulator CONTRACT_RECORD=true sbt "contract:test"
+```
+
+Review expected files after any intentional data or query change.

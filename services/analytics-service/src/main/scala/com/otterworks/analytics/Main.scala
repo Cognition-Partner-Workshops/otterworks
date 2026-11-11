@@ -9,6 +9,7 @@ import com.otterworks.analytics.api.{AnalyticsRoutes, EventRoutes, HealthRoutes,
 import com.otterworks.analytics.batch.MarketSeeder
 import com.otterworks.analytics.config.AppConfig
 import com.otterworks.analytics.db.AnalyticsDb
+import com.otterworks.analytics.finance.{CachedFinanceRollups, FinanceRoutes, FinanceSettings, SnowflakeFinanceRollupRepository}
 import com.otterworks.analytics.repository.{InMemoryMetricsRepository, MarketRepository, MetricsRepository, PostgresMetricsRepository}
 import com.otterworks.analytics.service.{AnalyticsService, EventProcessor, MarginService}
 
@@ -76,12 +77,17 @@ object Main:
     val healthRoutes = HealthRoutes(analyticsService)
     val analyticsRoutes = AnalyticsRoutes(analyticsService)
     val eventRoutes = EventRoutes(analyticsService)
+    val financeSettings = FinanceSettings.load(system.settings.config)
+    val financeRepository = new SnowflakeFinanceRollupRepository(financeSettings)(
+      using system.dispatchers.lookup(akka.actor.typed.DispatcherSelector.blocking()))
+    val financeRoutes = new FinanceRoutes(new CachedFinanceRollups(financeRepository), financeSettings)
 
     val routes: Route = concat(
       healthRoutes.routes,
       eventRoutes.routes,
       analyticsRoutes.routes,
       marketRoutes,
+      financeRoutes.routes,
     )
 
     val host = config.server.host

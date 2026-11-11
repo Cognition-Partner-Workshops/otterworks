@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 import importlib.util
+import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -124,6 +126,87 @@ def test_roles_plan_and_guards():
         (["privilege", "granted_on", "name"], [("CREATE ROLE", "ACCOUNT", "account")]),
     ])
     assert roles.has_create_role(cur)
+
+
+def test_analyst_dry_run_is_read_only_and_curated():
+    plan = roles.validate(roles.statements())
+    grants = [sql for _, _, sql in plan
+              if sql.startswith("GRANT ") and sql.endswith(" TO ROLE SFX_D1110_ANALYST;")]
+    assert grants
+    for sql in grants:
+        privileges = re.match(r"GRANT (.+?) ON ", sql).group(1)
+        assert not re.search(r"\b(ALL|INSERT|UPDATE|DELETE|TRUNCATE|OWNERSHIP|CREATE|MANAGE)\b", privileges)
+        assert not re.search(r"RAW_|LANDING|SCHEMACHANGE", sql)
+    expected = {
+        "GRANT USAGE ON DATABASE SFX_D1110_AFTER TO ROLE SFX_D1110_ANALYST;",
+        "GRANT USAGE ON WAREHOUSE SFX_D1110_TRANSFORM_WH TO ROLE SFX_D1110_ANALYST;",
+    }
+    for schema in ("CORE_BILLING", "CORE_DOCUMENTS", "CORE_USERS", "CORE_AUDIT", "MART", "COMPAT"):
+        expected.add(f"GRANT USAGE ON SCHEMA SFX_D1110_AFTER.{schema} TO ROLE SFX_D1110_ANALYST;")
+        for scope in ("ALL", "FUTURE"):
+            for kind in ("TABLES", "VIEWS"):
+                expected.add(f"GRANT SELECT ON {scope} {kind} IN SCHEMA SFX_D1110_AFTER.{schema} TO ROLE SFX_D1110_ANALYST;")
+    assert set(grants) == expected
+    assert len(grants) == len(expected)
+    assert roles.validate([]) == []
+
+
+@pytest.mark.parametrize("privilege,scope", [
+    ("ALL", "DATABASE SFX_D1110_AFTER"),
+    ("ALL PRIVILEGES", "DATABASE SFX_D1110_AFTER"),
+    ("INSERT", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
+    ("UPDATE", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
+    ("DELETE", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
+    ("TRUNCATE", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
+    ("OWNERSHIP", "FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
+    ("CREATE TABLE", "SCHEMA SFX_D1110_AFTER.CORE_BILLING"),
+    ("MANAGE GRANTS", "ACCOUNT"),
+])
+def test_analyst_dry_run_rejects_write_privileges(privilege, scope):
+    sql = f"GRANT {privilege} ON {scope} TO ROLE SFX_D1110_ANALYST;"
+    with pytest.raises(ValueError):
+        roles.validate([("bad.sql", 1, sql)])
+
+
+@pytest.mark.parametrize("schema", [
+    "RAW_BILLING", "RAW_DOCUMENTS", "RAW_USERS", "RAW_AUDIT", "LANDING", "SCHEMACHANGE",
+])
+@pytest.mark.parametrize("privilege,kind", [("USAGE", "SCHEMA"), ("SELECT", "FUTURE TABLES IN SCHEMA")])
+def test_analyst_dry_run_rejects_non_curated_schemas(schema, privilege, kind):
+    sql = f"GRANT {privilege} ON {kind} SFX_D1110_AFTER.{schema} TO ROLE SFX_D1110_ANALYST;"
+    with pytest.raises(ValueError, match="Analyst grants must be read-only and curated"):
+        roles.validate([("bad.sql", 1, sql)])
+
+
+@pytest.mark.parametrize("sql", [
+    "GRANT USAGE ON FUTURE SCHEMAS IN DATABASE SFX_D1110_AFTER TO ROLE SFX_D1110_ANALYST;",
+    "GRANT USAGE ON ALL PROCEDURES IN SCHEMA SFX_D1110_AFTER.CORE_BILLING TO ROLE SFX_D1110_ANALYST;",
+    "GRANT ROLE SFX_D1110_LOADER TO ROLE SFX_D1110_ANALYST;",
+])
+def test_analyst_dry_run_rejects_broad_scopes_and_inheritance(sql):
+    with pytest.raises(ValueError):
+        roles.validate([("bad.sql", 1, sql)])
+
+
+def test_complexity_security_review_resolved():
+    fragment = json.loads((ROOT.parents[1] / "demos/app/complexity/sfx-snowflake.json").read_text())
+    assert (fragment["schema_version"], fragment["area"], fragment["run_token"]) == (1, "snowflake", "sfx-d1110")
+    assert fragment["security_review"] == []
+
+
+def test_make_uses_separate_snowflake_and_teradata_environments():
+    env = os.environ.copy()
+    for key in ('MAKEFLAGS', 'MFLAGS', 'MAKEOVERRIDES', 'SFX_TEST_PYTHON', 'SFX_VENV'):
+        env.pop(key, None)
+    for target, own, other in (
+        ('sfx-snowflake-test', 'warehouse/snowflake/.venv', 'warehouse/.venv'),
+        ('sfx-teradata-test', 'warehouse/.venv', 'warehouse/snowflake/.venv'),
+    ):
+        result = subprocess.run(['make', '-Bn', target, 'NS=sfx-d1110-before'],
+                                cwd=ROOT.parents[1], env=env, capture_output=True, text=True, check=True)
+        assert f'-m venv {own}' in result.stdout
+        assert f'{own}/bin/python -m pytest' in result.stdout
+        assert other not in result.stdout
 
 
 def test_role_apply_refuses_without_privilege(monkeypatch, capsys):

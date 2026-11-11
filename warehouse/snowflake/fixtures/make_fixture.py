@@ -138,7 +138,7 @@ def generate(rows=20, seed=1110, output=None):
     if rows < 0:
         raise ValueError("rows must be nonnegative")
     data = records(rows, seed)
-    spec = yaml.safe_load((ROOT / "landing_columns.yml").read_text())
+    spec = yaml.safe_load((ROOT / "fixture_columns.yml").read_text())
     output = Path(output) if output is not None else ROOT / "fixtures/landing"
     for area, tables in spec.items():
         for table, columns in tables.items():

@@ -27,9 +27,12 @@ class RunnerTest(unittest.TestCase):
             docker = binary / "docker"
             docker.write_text('#!/usr/bin/env bash\n[[ "${*: -1}" != */second.sh ]]\n')
             docker.chmod(0o755)
-            env = dict(os.environ, PATH=str(binary) + ":" + os.environ["PATH"], JOB="", SPARK_JOBS="30")
+            env = dict(os.environ, PATH=str(binary) + ":" + os.environ["PATH"], JOB="", SPARK_JOBS="30", NS="sfx-d1110-check")
             env.update(settings)
-            return subprocess.run(["bash", str(spark / "run.sh")], env=env, capture_output=True, text=True)
+            result = subprocess.run(["bash", str(spark / "run.sh")], env=env, capture_output=True, text=True)
+            self.assertTrue((spark / ".data" / env["NS"] / "logs").is_dir())
+            self.assertFalse((spark / ".data" / "logs").exists())
+            return result
 
     def test_continues_after_failure(self):
         result = self.run_jobs(["first", "second", "third"])

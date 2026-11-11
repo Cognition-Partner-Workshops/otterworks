@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       namespace :admin do
+        get 'finance/dashboard', to: 'finance#dashboard'
         # User Management
         resources :users, only: %i[index show update destroy] do
           member do

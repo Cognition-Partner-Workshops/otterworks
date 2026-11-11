@@ -2,7 +2,9 @@
   "job": "billing_gl_trial_balance",
   "language": "python",
   "target": "dbt",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "10 2 * * *",
-  "profile": "small"
+  "profile": "small",
+  "ingest": ["billing.GL_JOURNAL_LINE", "billing.CREDIT_NOTE", "billing.GL_ACCOUNT"],
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job billing_gl_trial_balance --select path:models/spark/billing_gl_trial_balance"
 }

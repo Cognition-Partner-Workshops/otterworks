@@ -1,0 +1,28 @@
+# Throwaway warehouse database for the PowerCenter runner when the Teradata emulation is not running.
+name: sfx-d1110-informatica-${NS:?NS is required}
+services:
+  fixture-db:
+    image: postgres:16
+    pull_policy: never
+    container_name: sfx-d1110-informatica-${NS}-db
+    labels:
+      sfx.run_token: sfx-d1110
+      sfx.namespace: ${NS}
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: teradata
+    ports:
+      - "127.0.0.1:${TD_PORT:?TD_PORT is required}:5432"
+    volumes:
+      - ./tests/fixture/bootstrap.sql:/docker-entrypoint-initdb.d/00_bootstrap.sql:ro
+      - data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d teradata]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  data:
+    name: sfx-d1110-informatica-${NS}-data
+    labels:
+      sfx.run_token: sfx-d1110

@@ -3,7 +3,8 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 ns=${NS:-sfx-d1110-before}
 limit=${SPARK_JOBS:-30}
-mkdir -p etl/spark/.data/logs
+logs="etl/spark/.data/$ns/logs"
+mkdir -p "$logs"
 mapfile -t jobs < <(python3 -c 'import json,pathlib; entries=[json.loads(p.read_text()) for p in sorted(pathlib.Path("etl/spark/jobs/registry").glob("*.yaml"))]; [print(e["job"]) for e in entries if e["status"] not in ("snowflake", "retired")]')
 if [ -n "${JOB:-}" ]; then
     found=0
@@ -17,7 +18,7 @@ else
     jobs=("${jobs[@]:0:limit}")
 fi
 failed=0
-summary=etl/spark/.data/logs/status.tsv
+summary="$logs/status.tsv"
 printf '%-36s %-8s %s\n' JOB STATUS SECONDS > "$summary"
 for job in "${jobs[@]}"; do
     start=$SECONDS
@@ -29,7 +30,7 @@ for job in "${jobs[@]}"; do
         args=("$job")
     fi
     if docker compose -f docker-compose.spark.yml -p "sfx-d1110-spark-$ns" exec -T spark-master \
-        bash "$script" "${args[@]}" > "etl/spark/.data/logs/$job.log" 2>&1; then
+        bash "$script" "${args[@]}" > "$logs/$job.log" 2>&1; then
         status=OK
     else
         status=FAILED

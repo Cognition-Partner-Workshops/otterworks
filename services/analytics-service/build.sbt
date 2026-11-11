@@ -24,6 +24,7 @@ lazy val root = project
       "io.circe" %% "circe-parser" % "0.14.6",
 
       // Database - Slick for PostgreSQL
+      "net.snowflake" % "snowflake-jdbc" % "3.21.0",
       "com.typesafe.slick" %% "slick" % "3.5.2" cross CrossVersion.for3Use2_13,
       "com.typesafe.slick" %% "slick-hikaricp" % "3.5.2" cross CrossVersion.for3Use2_13,
       "org.postgresql" % "postgresql" % "42.7.3",
@@ -67,3 +68,10 @@ lazy val root = project
       case _ => MergeStrategy.first
     },
   )
+
+lazy val Contract = config("contract") extend Test
+configs(Contract)
+inConfig(Contract)(Defaults.testSettings)
+Contract / scalaSource := baseDirectory.value / "src" / "contract" / "scala"
+Contract / resourceDirectory := baseDirectory.value / "contract"
+Contract / parallelExecution := false

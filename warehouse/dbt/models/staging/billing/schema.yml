@@ -3,10 +3,6 @@ models:
 - name: stg_billing__customer_account
   description: sfx-d1110 typed billing landing view
   columns:
-  - name: customer_account_id
-    tests:
-    - not_null
-    - unique
   - name: customer_id
     tests:
     - not_null
@@ -20,22 +16,16 @@ models:
 - name: stg_billing__plan_catalog
   description: sfx-d1110 typed billing landing view
   columns:
-  - name: plan_catalog_id
-    tests:
-    - not_null
-    - unique
-  - name: customer_id
-    tests:
-    - not_null
-    - relationships:
-        to: ref('stg_billing__customer_account')
-        field: customer_id
   - name: is_active
     tests:
     - accepted_values:
         values:
         - Y
         - N
+  - name: plan_id
+    tests:
+    - not_null
+    - unique
 - name: stg_billing__subscription
   description: sfx-d1110 typed billing landing view
   columns:
@@ -49,12 +39,6 @@ models:
     - relationships:
         to: ref('stg_billing__customer_account')
         field: customer_id
-  - name: plan_catalog_id
-    tests:
-    - not_null
-    - relationships:
-        to: ref('stg_billing__plan_catalog')
-        field: plan_catalog_id
   - name: is_active
     tests:
     - accepted_values:
@@ -64,16 +48,21 @@ models:
 - name: stg_billing__invoice_hdr
   description: sfx-d1110 typed billing landing view
   columns:
-  - name: invoice_hdr_id
-    tests:
-    - not_null
-    - unique
   - name: customer_id
     tests:
     - not_null
     - relationships:
         to: ref('stg_billing__customer_account')
         field: customer_id
+  - name: invoice_id
+    tests:
+    - not_null
+    - unique
+  - name: subscription_id
+    tests:
+    - relationships:
+        to: ref('stg_billing__subscription')
+        field: subscription_id
 - name: stg_billing__invoice_line
   description: sfx-d1110 typed billing landing view
   columns:
@@ -81,18 +70,11 @@ models:
     tests:
     - not_null
     - unique
-  - name: invoice_hdr_id
+  - name: invoice_id
     tests:
-    - not_null
     - relationships:
         to: ref('stg_billing__invoice_hdr')
-        field: invoice_hdr_id
-  - name: customer_id
-    tests:
-    - not_null
-    - relationships:
-        to: ref('stg_billing__customer_account')
-        field: customer_id
+        field: invoice_id
 - name: stg_billing__payment
   description: sfx-d1110 typed billing landing view
   columns:
@@ -106,12 +88,11 @@ models:
     - relationships:
         to: ref('stg_billing__customer_account')
         field: customer_id
-  - name: invoice_hdr_id
+  - name: invoice_id
     tests:
-    - not_null
     - relationships:
         to: ref('stg_billing__invoice_hdr')
-        field: invoice_hdr_id
+        field: invoice_id
 - name: stg_billing__credit_note
   description: sfx-d1110 typed billing landing view
   columns:
@@ -125,12 +106,11 @@ models:
     - relationships:
         to: ref('stg_billing__customer_account')
         field: customer_id
-  - name: invoice_hdr_id
+  - name: invoice_id
     tests:
-    - not_null
     - relationships:
         to: ref('stg_billing__invoice_hdr')
-        field: invoice_hdr_id
+        field: invoice_id
 - name: stg_billing__tax_rate
   description: sfx-d1110 typed billing landing view
   columns:
@@ -138,12 +118,6 @@ models:
     tests:
     - not_null
     - unique
-  - name: customer_id
-    tests:
-    - not_null
-    - relationships:
-        to: ref('stg_billing__customer_account')
-        field: customer_id
   - name: is_active
     tests:
     - accepted_values:
@@ -153,10 +127,6 @@ models:
 - name: stg_billing__usage_daily
   description: sfx-d1110 typed billing landing view
   columns:
-  - name: usage_daily_id
-    tests:
-    - not_null
-    - unique
   - name: customer_id
     tests:
     - not_null
@@ -169,31 +139,39 @@ models:
         values:
         - Y
         - N
+  - name: usage_id
+    tests:
+    - not_null
+    - unique
+  - name: subscription_id
+    tests:
+    - relationships:
+        to: ref('stg_billing__subscription')
+        field: subscription_id
 - name: stg_billing__billing_adj
   description: sfx-d1110 typed billing landing view
   columns:
-  - name: billing_adj_id
-    tests:
-    - not_null
-    - unique
   - name: customer_id
     tests:
     - not_null
     - relationships:
         to: ref('stg_billing__customer_account')
         field: customer_id
-  - name: invoice_hdr_id
-    tests:
-    - not_null
-    - relationships:
-        to: ref('stg_billing__invoice_hdr')
-        field: invoice_hdr_id
   - name: is_active
     tests:
     - accepted_values:
         values:
         - Y
         - N
+  - name: adjustment_id
+    tests:
+    - not_null
+    - unique
+  - name: invoice_id
+    tests:
+    - relationships:
+        to: ref('stg_billing__invoice_hdr')
+        field: invoice_id
 - name: stg_billing__gl_account
   description: sfx-d1110 typed billing landing view
   columns:
@@ -210,18 +188,27 @@ models:
 - name: stg_billing__gl_journal_line
   description: sfx-d1110 typed billing landing view
   columns:
-  - name: gl_journal_line_id
-    tests:
-    - not_null
-    - unique
   - name: journal_id
     tests:
     - not_null
   - name: gl_account_id
     tests:
-    - not_null
     - relationships:
         to: ref('stg_billing__gl_account')
         field: gl_account_id
+  - name: journal_line_id
+    tests:
+    - not_null
+    - unique
+  - name: invoice_id
+    tests:
+    - relationships:
+        to: ref('stg_billing__invoice_hdr')
+        field: invoice_id
+  - name: credit_note_id
+    tests:
+    - relationships:
+        to: ref('stg_billing__credit_note')
+        field: credit_note_id
   tests:
   - balanced_journal

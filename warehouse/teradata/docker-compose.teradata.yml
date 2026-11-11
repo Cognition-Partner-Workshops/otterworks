@@ -1,0 +1,24 @@
+name: sfx-d1110-teradata-${NS:?NS is required}
+services:
+  postgres:
+    image: postgres:16
+    pull_policy: never
+    labels:
+      sfx.run_token: sfx-d1110
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: teradata
+    ports:
+      - "127.0.0.1:${TD_PG_PORT:?Use bin/compose to derive the port}:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d teradata]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  data:
+    name: sfx-d1110-teradata-${NS}-data
+    labels:
+      sfx.run_token: sfx-d1110

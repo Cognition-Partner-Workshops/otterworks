@@ -46,6 +46,8 @@ def validate(plan):
         if upper.startswith("GRANT ROLE "):
             if not re.fullmatch(r"GRANT ROLE SFX_D1110_\w+ TO ROLE SFX_D1110_\w+;", upper):
                 raise ValueError("Invalid hierarchy grant")
+            if upper.endswith(" TO ROLE SFX_D1110_ANALYST;"):
+                raise ValueError("Analyst cannot inherit functional roles")
             continue
         match = re.fullmatch(
             r"GRANT ([A-Z, ]+) ON (WAREHOUSE|DATABASE|SCHEMA|(?:ALL|FUTURE) (?:STAGES|TABLES|VIEWS|PROCEDURES|FILE FORMATS) IN SCHEMA|FUTURE SCHEMAS IN DATABASE) ([A-Z0-9_.]+) TO ROLE (SFX_D1110_\w+);",
@@ -53,7 +55,21 @@ def validate(plan):
         )
         if not match:
             raise ValueError(f"Unsupported grant: {filename}:{line}")
-        _, kind, obj, _ = match.groups()
+        privileges, kind, obj, role = match.groups()
+        if role == "SFX_D1110_ANALYST":
+            if kind in ("DATABASE", "WAREHOUSE"):
+                allowed = privileges == "USAGE"
+            else:
+                schema = obj.split(".")[-1]
+                curated = schema in {"MART", "COMPAT"} or schema.startswith("CORE_")
+                allowed = curated and (
+                    (kind == "SCHEMA" and privileges == "USAGE") or
+                    (kind in ("ALL TABLES IN SCHEMA", "FUTURE TABLES IN SCHEMA",
+                              "ALL VIEWS IN SCHEMA", "FUTURE VIEWS IN SCHEMA") and
+                     privileges == "SELECT")
+                )
+            if not allowed:
+                raise ValueError(f"Analyst grants must be read-only and curated: {filename}:{line}")
         if kind == "WAREHOUSE":
             valid = obj in WORKLOADS.values()
         elif kind in ("DATABASE", "FUTURE SCHEMAS IN DATABASE"):

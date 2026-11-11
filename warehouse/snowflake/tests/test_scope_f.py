@@ -23,11 +23,11 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_post_deploy_governance():
     calls = []
     governance.reapply(SimpleNamespace(execute=lambda sql, params: calls.append((sql, params))))
-    assert len(governance.objects()) == 15
-    assert len(calls) == 30
+    assert len(governance.objects()) == 28
+    assert len(calls) == 56
     assert all('SET TAG GOVERNANCE.SFX_RUN' in sql for sql, _ in calls[::2])
     assert all('COMMENT ON' in sql and 'sfx-d1110' in params[0] for sql, params in calls[1::2])
-    assert len(set(governance.objects())) == 15
+    assert len(set(governance.objects())) == 28
     assert 'reapply(cursor)' in (ROOT / 'deploy.py').read_text()
     assert "ALLOWED_VALUES 'sfx-d1110'" in (ROOT / 'migrations/V006__governance.sql').read_text()
 
@@ -127,8 +127,9 @@ class Inventory:
             rows = [dict(name='SFX_D1110_AFTER', comment=''),
                     dict(name=name, comment=comment),
                     dict(name='DROPPED_USER$FOREIGN', comment='', owner='OTHER')]
-            if self.user_dropped and 'DROP DATABASE IF EXISTS "DROPPED_USER$EXTRA_123456" CASCADE' not in self.calls:
-                rows += [dict(name='DROPPED_USER$EXTRA_123456', comment='', owner='OTHER')]
+            orphan = f'DROPPED_USER${name}_123456'
+            if self.user_dropped and f'DROP DATABASE IF EXISTS "{orphan}" CASCADE' not in self.calls:
+                rows += [dict(name=orphan, comment='', owner='OTHER')]
         elif sql.startswith('SHOW SCHEMAS'):
             rows = [dict(name='GOVERNANCE', comment='sfx-d1110')] if not self.name_mode else [dict(name=name, comment=comment)]
         elif sql == 'SHOW USERS':
@@ -151,9 +152,12 @@ def test_inventory_matches_names_and_comments(name_mode):
     assert {obj.kind for obj in objects} == {'DATABASE', 'SCHEMA', 'TASK', 'STAGE', 'TAG',
         'USER', 'ROLE', 'WAREHOUSE', 'RESOURCE MONITOR', 'INTEGRATION', 'APPLICATION', 'COMPUTE POOL', 'SERVICE'}
     commands = teardown.plan(objects)
-    assert any('ALTER COMPUTE POOL' in sql for sql in commands)
+    assert any('ALTER COMPUTE POOL' in sql for sql in commands) == name_mode
     assert any('DROP TAG' in sql for sql in commands)
-    assert next(i for i, s in enumerate(commands) if s.startswith('DROP SERVICE')) < next(i for i, s in enumerate(commands) if s.startswith('DROP COMPUTE POOL'))
+    if name_mode:
+        assert next(i for i, s in enumerate(commands) if s.startswith('DROP SERVICE')) < next(i for i, s in enumerate(commands) if s.startswith('DROP COMPUTE POOL'))
+    else:
+        assert not any('DROP DATABASE IF EXISTS "EXTRA"' in sql for sql in commands)
     assert not any('FOREIGN' in sql for sql in commands)
 
 
@@ -166,14 +170,49 @@ def test_inventory_privilege_per_type(command, capsys):
 
 
 def test_dropped_user_database_sweep_and_guard(capsys):
-    cur = Inventory()
+    cur = Inventory(name_mode=True)
     teardown.cleanup(cur, 'sfx-d1110')
-    assert 'DROP DATABASE IF EXISTS "DROPPED_USER$EXTRA_123456" CASCADE' in cur.calls
+    assert 'DROP DATABASE IF EXISTS "DROPPED_USER$SFX_D1110_EXTRA_123456" CASCADE' in cur.calls
     assert not any('DROP DATABASE IF EXISTS "DROPPED_USER$FOREIGN"' in sql for sql in cur.calls)
     assert 'unattributed DROPPED_USER database; not removed' in capsys.readouterr().out
     cur = Inventory()
     teardown.cleanup(cur, 'sfx-d1110', dry_run=True)
     assert not any(sql.startswith('DROP ') for sql in cur.calls)
+
+
+@pytest.mark.parametrize('kind', [
+    'DATABASE', 'WAREHOUSE', 'ROLE', 'USER', 'RESOURCE MONITOR',
+    'INTEGRATION', 'APPLICATION', 'COMPUTE POOL',
+])
+def test_comment_only_account_objects_are_never_modified(kind):
+    obj = teardown.Object(kind, ('SHARED',), 'sfx-d1110')
+    assert teardown.plan([obj]) == []
+    assert teardown.plan([obj], include_provisioned=True) == []
+    assert teardown.plan([obj], suspend_only=True) == []
+    owned = teardown.Object(kind, ('SFX_D1110_EXTRA',))
+    assert any(sql.startswith('DROP ') for sql in teardown.plan([owned]))
+
+
+@pytest.mark.parametrize('kind,tail', [
+    ('SCHEMA', ('SCHEMA',)), ('TASK', ('SCHEMA', 'TASK')),
+    ('STAGE', ('SCHEMA', 'STAGE')), ('TAG', ('SCHEMA', 'TAG')),
+    ('SERVICE', ('SCHEMA', 'SERVICE')),
+])
+def test_comment_only_children_require_a_name_scoped_database(kind, tail):
+    shared = teardown.Object(kind, ('SHARED', *tail), 'sfx-d1110')
+    assert teardown.plan([shared]) == []
+    scoped = teardown.Object(kind, ('SFX_D1110_AFTER', *tail), 'sfx-d1110')
+    assert any(sql.startswith('DROP ') for sql in teardown.plan([scoped]))
+
+
+def test_comment_only_database_is_reported_remaining(capsys):
+    cur = Inventory()
+    assert teardown.cleanup(cur, 'sfx-d1110', dry_run=True) == 1
+    output = capsys.readouterr().out
+    assert 'REMAINS DATABASE EXTRA (not name-scoped; retained)' in output
+    assert 'PLAN DROP DATABASE IF EXISTS "EXTRA"' not in output
+    assert all(sql.startswith('SHOW ') for sql in cur.calls)
+    assert teardown.plan([]) == []
 
 
 def dummy_env(tmp_path):
@@ -225,10 +264,70 @@ def test_fake_scai_receives_connection_and_keeps_raw(tmp_path, rejected):
     assert code == (2 if rejected else 0)
     output = next((repo / 'warehouse/snowconvert/raw').iterdir())
     summary = json.loads((output / 'summary.json').read_text())
-    assert len(summary) == (1 if rejected else 4)
+    assert len(summary) == (1 if rejected else 6)
     if not rejected:
-        assert summary[-1]['command'] == ['code', 'convert']
-        assert (output / '03.stdout').read_bytes() == b'raw output unchanged\n'
+        assert summary[-1]['command'] == ['code', 'convert', '--show-ewis']
+        assert summary[0]['command'][-2:] == ['-c', 'sfx_d1110']
+        assert summary[1]['command'][-1] == '--code-already-split'
+        assert '--code-already-split' not in summary[4]['command']
+        assert (output / '05.stdout').read_bytes() == b'raw output unchanged\n'
+
+
+def test_snowconvert_prepares_split_sql_and_self_contained_workflows(tmp_path):
+    repo = tmp_path / 'repo'
+    td = repo / 'warehouse/teradata'
+    ddl = td / 'ddl/billing'
+    ddl.mkdir(parents=True)
+    sql = 'CREATE TABLE T (ID INT); CREATE VIEW V AS SELECT ID FROM T;'
+    (ddl / 'tables.sql').write_text(sql)
+    (td / 'bteq').mkdir()
+    (td / 'bteq/bootstrap.sql').write_text('CREATE SCHEMA emulator;')
+    infa = repo / 'etl/informatica/repository'
+    infa.mkdir(parents=True)
+    (infa / 'wf_daily.XML').write_text('<POWERMART/>')
+    (infa / 'mapping.XML').write_text('<MAPPING/>')
+    _, found = snowconvert.inputs(repo)
+    output = tmp_path / 'output'
+    prepared = dict(snowconvert.prepare_inputs(repo, output, found))
+    assert len(list(prepared['teradata'].rglob('*.sql'))) == 2
+    assert not (prepared['teradata'] / 'bteq').exists()
+    assert [p.name for p in prepared['informatica'].rglob('*.XML')] == ['wf_daily.XML']
+    assert (ddl / 'tables.sql').read_text() == sql
+    assert len(json.loads((output / 'inputs.json').read_text())) == 2
+
+
+def test_snowconvert_stages_dbql_schema_with_consumer_reads(tmp_path):
+    td = tmp_path / 'warehouse/teradata'
+    dbql = td / 'dbql'
+    dbql.mkdir(parents=True)
+    schema = 'CREATE DATABASE DBC; CREATE MULTISET TABLE DBC.DBQLogTbl (QueryID BIGINT);'
+    (dbql / 'schema.sql').write_text(schema)
+    assert snowconvert.inputs(tmp_path)[1] == [td]
+    consumer = 'SELECT * FROM DBC.DBQLogTbl;'
+    (dbql / 'consumer_reads.bteq').write_text(consumer)
+    (td / 'bteq').mkdir()
+    (td / 'bteq/bootstrap.sql').write_text('CREATE SCHEMA emulator;')
+    output = tmp_path / 'output'
+    _, found = snowconvert.inputs(tmp_path)
+    staged = dict(snowconvert.prepare_inputs(tmp_path, output, found))['teradata']
+    statements = sorted((staged / 'dbql').glob('schema_*.sql'))
+    assert len(statements) == 2
+    assert 'CREATE DATABASE DBC;' in statements[0].read_text()
+    assert 'CREATE MULTISET TABLE DBC.DBQLogTbl' in statements[1].read_text()
+    assert (staged / 'dbql/consumer_reads.bteq').read_text() == consumer
+    assert not (staged / 'bteq/bootstrap.sql').exists()
+    assert set(json.loads((output / 'inputs.json').read_text())) == {
+        'warehouse/teradata/dbql/schema.sql', 'warehouse/teradata/dbql/consumer_reads.bteq',
+    }
+
+
+def test_snowconvert_emulator_only_is_not_conversion_input(tmp_path, monkeypatch):
+    bootstrap = tmp_path / 'warehouse/teradata/bteq'
+    bootstrap.mkdir(parents=True)
+    (bootstrap / 'bootstrap.sql').write_text('CREATE SCHEMA emulator;')
+    monkeypatch.setattr(snowconvert.shutil, 'which', lambda *a, **kw: 'scai')
+    assert snowconvert.run(tmp_path, tmp_path, {}) == 0
+    assert not (tmp_path / '.snowflake').exists()
 
 
 def test_snowconvert_missing_empty_and_symlink(tmp_path, monkeypatch, capsys):

@@ -52,11 +52,13 @@ def test_migration_matches_spec():
 
 
 def test_spec_and_fixture():
-    spec = yaml.safe_load((ROOT / "landing_columns.yml").read_text())
+    spec = yaml.safe_load((ROOT / "fixture_columns.yml").read_text())
+    landing = yaml.safe_load((ROOT / "landing_columns.yml").read_text())
     assert set(spec) == {"billing", "documents", "users", "audit"}
     for area, tables in spec.items():
         assert len(tables) == (12 if area == 'billing' else 10)
         for table, columns in tables.items():
+            assert columns.keys() <= landing[area][table].keys()
             assert 5 <= len(columns) <= 10
             assert columns[table + "_ID"] == "BIGINT"
             assert all(re.fullmatch(r"BIGINT|INTEGER|NUMBER\(\d+,\d+\)|VARCHAR\(\d+\)|CHAR\(\d+\)|DATE|TIMESTAMP_NTZ", t) for t in columns.values())

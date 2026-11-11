@@ -8,11 +8,17 @@ from unittest.mock import MagicMock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "jobs/py"))
-from common.runtime import save_jdbc_refresh, save_partition
+from common.runtime import refresh_columns, save_jdbc_refresh, save_partition
 
 spec = importlib.util.spec_from_file_location("template_submit", ROOT / "template/submit.py")
 submit = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(submit)
+
+
+def target_rows(connection, names):
+    rows = connection.prepareStatement.return_value.executeQuery.return_value
+    rows.next.side_effect = [True] * len(names) + [False]
+    rows.getString.side_effect = names
 
 
 class TemplateTest(unittest.TestCase):
@@ -53,6 +59,7 @@ class TemplateTest(unittest.TestCase):
             frame.columns = ["value"]
             frame.isEmpty.return_value = empty
             connection = frame.sparkSession.sparkContext._jvm.java.sql.DriverManager.getConnection.return_value
+            target_rows(connection, ["value"])
             with patch.dict("os.environ", {"TD_JDBC_PASSWORD": "test-only"}):
                 save_jdbc_refresh(frame, "test.result")
             connection.commit.assert_called_once()
@@ -61,6 +68,26 @@ class TemplateTest(unittest.TestCase):
             sql = [call.args[0] for call in connection.createStatement.return_value.executeUpdate.call_args_list]
             self.assertEqual(sql[0], "DELETE FROM test.result")
             self.assertTrue(sql[1].startswith('INSERT INTO test.result ("value") SELECT "value" FROM test._sfx_stage_'))
+
+    def test_jdbc_existing_lowercase_target(self):
+        frame = MagicMock()
+        frame.columns = ["ACCOUNT_ID", "Region"]
+        connection = frame.sparkSession.sparkContext._jvm.java.sql.DriverManager.getConnection.return_value
+        target_rows(connection, ["account_id", "region"])
+        with patch.dict("os.environ", {"TD_JDBC_PASSWORD": "test-only"}):
+            save_jdbc_refresh(frame, "sfx_billing.customer_account")
+        connection.prepareStatement.return_value.setString.assert_called_once_with(1, "sfx_billing.customer_account")
+        sql = connection.createStatement.return_value.executeUpdate.call_args_list[1].args[0]
+        self.assertTrue(sql.startswith(
+            'INSERT INTO sfx_billing.customer_account ("account_id", "region") SELECT "ACCOUNT_ID", "Region" FROM '
+        ))
+
+    def test_refresh_columns(self):
+        self.assertEqual(refresh_columns(["ID", "Id"], ["ID", "Id"]), [("ID", "ID"), ("Id", "Id")])
+        self.assertEqual(refresh_columns(["ID"], ["id", "extra"]), [("id", "ID")])
+        for target in (["other"], ["id", "Id"]):
+            with self.assertRaises(ValueError):
+                refresh_columns(["ID"], target)
 
     def test_jdbc_error(self):
         frame = MagicMock()

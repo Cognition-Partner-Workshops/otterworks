@@ -135,6 +135,21 @@
       "expected_sqlstate": null,
       "expected_count": 12,
       "headline": true
+    },
+    {
+      "id": "DWX-01",
+      "title": "Mixed-case dimension filters depend on case-insensitive string comparison",
+      "table": "SFX_BILLING.SUBSCRIPTION",
+      "planted_keys": [
+        "Active",
+        "Team"
+      ],
+      "expected_stage": "CONTRACT",
+      "expected_rule": "ROWCOUNT_MISMATCH",
+      "expected_field": "STATUS_CD",
+      "expected_sqlstate": null,
+      "expected_count": 5,
+      "headline": false
     }
   ]
 }
