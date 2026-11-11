@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from capture import Runner, snow_type, upload
+from capture import Runner, snow_type, source_rows, upload
 from deploy import commands
 from parity.connection import COMMENT, connect
 
@@ -19,11 +19,12 @@ def run(capture, initial):
             for name in ('FEED', 'VERSIONS', 'SET_ROWS', 'MULTISET_ROWS', 'TRUNCATION', 'QUALIFY_TIES'):
                 source = 'sfx_probes.' + name.lower()
                 upload(sf, 'PROBE_' + name, [(n, snow_type(t)) for n, t in td.columns(source)],
-                       td.conn.execute('SELECT * FROM ' + source).fetchall())
+                       source_rows(td.conn, 'sfx_probes', name.lower()))
         with sf.cursor() as cursor:
-            cursor.execute(f"CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.BILLING_PROBES COMMENT = '{COMMENT}'")
+            cursor.execute('CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.BILLING_PROBES COMMENT = ?', (COMMENT,))
             for name in ('FEED', 'VERSIONS'):
-                cursor.execute(f"CREATE OR REPLACE TABLE SFX_D1110_AFTER.BILLING_PROBES.{name} CLONE SFX_D1110_AFTER.TD_BASELINE.PROBE_{name} COMMENT = '{COMMENT}'")
+                cursor.execute('CREATE OR REPLACE TABLE IDENTIFIER(?) CLONE IDENTIFIER(?) COMMENT = ?',
+                               (f'SFX_D1110_AFTER.BILLING_PROBES.{name}', f'SFX_D1110_AFTER.TD_BASELINE.PROBE_{name}', COMMENT))
             path = SQL / ('supplemental_initial.sql' if initial else 'supplemental.sql')
             for statement in commands(path.read_text()):
                 cursor.execute(statement)

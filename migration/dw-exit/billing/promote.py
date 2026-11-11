@@ -12,6 +12,14 @@ from parity.connection import COMMENT, connect
 from parity.ladder import Ladder, assert_parity
 
 CONTROL = 'SFX_D1110_AFTER.MIGRATION_CONTROL.OBJECTS'
+ROUTINES = {
+    'M_SUBSCRIPTION_PLANS': 'DESC PROCEDURE SFX_D1110_AFTER.BILLING.M_SUBSCRIPTION_PLANS(VARCHAR)',
+    'M_CURRENCY_TOTALS': 'DESC PROCEDURE SFX_D1110_AFTER.BILLING.M_CURRENCY_TOTALS(VARCHAR)',
+    'P_MONTHLY_INVOICE': 'DESC PROCEDURE SFX_D1110_AFTER.BILLING.P_MONTHLY_INVOICE(VARCHAR)',
+}
+READ_CONTROL = """SELECT OBJECT_NAME,OBJECT_TYPE,MIGRATION_STATUS,PARITY_STATUS
+    FROM SFX_D1110_AFTER.MIGRATION_CONTROL.OBJECTS
+    WHERE SUBJECT_AREA='billing' ORDER BY OBJECT_TYPE,OBJECT_NAME"""
 
 
 def inventory_objects():
@@ -47,15 +55,14 @@ def inventory_objects():
 
 def verify_routines(cursor):
     evidence = []
-    for name in ('M_SUBSCRIPTION_PLANS', 'M_CURRENCY_TOTALS', 'P_MONTHLY_INVOICE'):
-        cursor.execute(f'DESC PROCEDURE SFX_D1110_AFTER.BILLING.{name}(VARCHAR)')
+    for name, describe in ROUTINES.items():
+        cursor.execute(describe)
         evidence.append({'routine': name, 'query_id': cursor.sfqid})
     return evidence
 
 
 def read_control(cursor):
-    cursor.execute(f"""SELECT OBJECT_NAME,OBJECT_TYPE,MIGRATION_STATUS,PARITY_STATUS FROM {CONTROL}
-        WHERE SUBJECT_AREA='billing' ORDER BY OBJECT_TYPE,OBJECT_NAME""")
+    cursor.execute(READ_CONTROL)
     return cursor.fetchall()
 
 
@@ -82,12 +89,12 @@ def promote(output):
                                'routines': routines,
                                'parity_query_ids': [q['query_id'] for r in results + inputs for q in r['queries']]})
         with sf.cursor() as cursor:
-            cursor.execute(f"CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.MIGRATION_CONTROL COMMENT = '{COMMENT}'")
-            cursor.execute(f"""CREATE TABLE IF NOT EXISTS {CONTROL} (
+            cursor.execute('CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.MIGRATION_CONTROL COMMENT = ?', (COMMENT,))
+            cursor.execute("""CREATE TABLE IF NOT EXISTS SFX_D1110_AFTER.MIGRATION_CONTROL.OBJECTS (
                 SUBJECT_AREA VARCHAR, OBJECT_NAME VARCHAR, OBJECT_TYPE VARCHAR,
                 SOURCE VARCHAR, TARGET VARCHAR, MIGRATION_STATUS VARCHAR, PARITY_STATUS VARCHAR,
                 VERIFIED_AT TIMESTAMP_LTZ, EVIDENCE VARIANT
-            ) COMMENT = '{COMMENT}' """)
+            ) COMMENT = ? """, (COMMENT,))
             cursor.execute('BEGIN')
             try:
                 cursor.executemany(f"""MERGE INTO {CONTROL} t

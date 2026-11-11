@@ -8,8 +8,13 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path[:0] = [str(ROOT / 'warehouse/teradata'), str(Path(__file__).resolve().parents[1])]
 from snowflake.connector.util_text import split_statements
 from parity.connection import COMMENT, connect, validate_date
+from parity.ladder import identifier
 
 SQL = Path(__file__).resolve().parent
+MACRO_CALLS = {
+    'M_SUBSCRIPTION_PLANS': 'CALL SFX_D1110_AFTER.BILLING.M_SUBSCRIPTION_PLANS(?)',
+    'M_CURRENCY_TOTALS': 'CALL SFX_D1110_AFTER.BILLING.M_CURRENCY_TOTALS(?)',
+}
 
 
 def commands(text):
@@ -21,7 +26,7 @@ def run(business_date, output, initial=False):
     evidence = []
     with connect('billing_initial_load' if initial else 'billing_fixed_load', 'TRANSFORM') as connection:
         with connection.cursor() as cursor:
-            cursor.execute(f"CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.BILLING COMMENT = '{COMMENT}'")
+            cursor.execute('CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.BILLING COMMENT = ?', (COMMENT,))
             # An alternate display format exposes unresolved Teradata FORMAT casts.
             cursor.execute("ALTER SESSION SET DATE_OUTPUT_FORMAT = 'DD/MM/YYYY'")
             for path in sorted(SQL.glob('[0-3][0-9]_*.sql')):
@@ -36,9 +41,12 @@ def run(business_date, output, initial=False):
                     cursor.execute("SHOW TABLES LIKE 'STG_%' IN SCHEMA SFX_D1110_AFTER.BILLING")
                     tables = [row[1] for row in cursor.fetchall()]
                     for name in tables:
-                        cursor.execute(f'INSERT INTO SFX_D1110_AFTER.BILLING.{name} SELECT * FROM SFX_D1110_AFTER.TD_BASELINE.{name}')
+                        cursor.execute('INSERT INTO IDENTIFIER(?) SELECT * FROM IDENTIFIER(?)',
+                                       ('SFX_D1110_AFTER.BILLING.' + identifier(name),
+                                        'SFX_D1110_AFTER.TD_BASELINE.' + identifier(name)))
                     if not initial:
-                        cursor.execute(f"CREATE OR REPLACE TABLE SFX_D1110_AFTER.BILLING.STORAGE_USAGE_INPUT CLONE SFX_D1110_AFTER.TD_BASELINE.STORAGE_USAGE_INPUT COMMENT = '{COMMENT}'")
+                        cursor.execute('CREATE OR REPLACE TABLE SFX_D1110_AFTER.BILLING.STORAGE_USAGE_INPUT '
+                                       'CLONE SFX_D1110_AFTER.TD_BASELINE.STORAGE_USAGE_INPUT COMMENT = ?', (COMMENT,))
             cursor.execute('BEGIN')
             try:
                 cursor.execute("CALL SFX_D1110_AFTER.BILLING.P_MONTHLY_INVOICE(?)", (business_date,))
@@ -51,10 +59,11 @@ def run(business_date, output, initial=False):
             except Exception:
                 cursor.execute('ROLLBACK')
                 raise
-            for macro in ('M_SUBSCRIPTION_PLANS', 'M_CURRENCY_TOTALS'):
-                cursor.execute(f'CALL SFX_D1110_AFTER.BILLING.{macro}(?)', (business_date,))
+            for macro, call in MACRO_CALLS.items():
+                cursor.execute(call, (business_date,))
                 result_query = cursor.sfqid
-                cursor.execute(f"CREATE OR REPLACE TABLE SFX_D1110_AFTER.BILLING.{macro}_OUTPUT COMMENT = '{COMMENT}' AS SELECT * FROM TABLE(RESULT_SCAN('{result_query}'))")
+                cursor.execute('CREATE OR REPLACE TABLE IDENTIFIER(?) COMMENT = ? AS SELECT * FROM TABLE(RESULT_SCAN(?))',
+                               (f'SFX_D1110_AFTER.BILLING.{macro}_OUTPUT', COMMENT, result_query))
                 evidence.append({'macro': macro, 'result_query_id': result_query, 'query_id': cursor.sfqid})
     output.write_text(json.dumps(evidence, indent=2) + '\n')
 

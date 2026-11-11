@@ -24,12 +24,16 @@ def source_queries(business_date):
     return [s for s in commands(text) if s.startswith('SELECT')]
 
 
+CONVERTED_QUERIES = {
+    'INVOICE_PERIODS': "SELECT INVOICE_ID, PRIOR_PERIOD_END_DT AS PRIOR_DT, INVOICE_MONTH AS MONTH_NO, PERIOD_KEY, INVOICE_PERIOD, TO_DATE(?,'YYYYMMDD') AS RUN_DT FROM SFX_D1110_AFTER.BILLING.INVOICE_HDR",
+    'PERIOD_CLOSE': "SELECT MIN(RTRIM(CURRENCY_CD)) AS CURRENCY_CD, COUNT(*) AS INVOICE_COUNT, SUM(TOTAL_AMOUNT) AS TOTAL_AMOUNT FROM SFX_D1110_AFTER.BILLING.INVOICE_HDR WHERE BILL_DT >= DATEADD(month, -1, DATE_TRUNC(month, TO_DATE(?,'YYYYMMDD'))) AND BILL_DT < DATE_TRUNC(month, TO_DATE(?,'YYYYMMDD')) GROUP BY UPPER(RTRIM(CURRENCY_CD))",
+}
+
+
 def converted_queries(business_date):
-    day = f"TO_DATE('{validate_date(business_date)}','YYYYMMDD')"
-    return {
-        'INVOICE_PERIODS': f"SELECT INVOICE_ID, PRIOR_PERIOD_END_DT AS PRIOR_DT, INVOICE_MONTH AS MONTH_NO, PERIOD_KEY, INVOICE_PERIOD, {day} AS RUN_DT FROM SFX_D1110_AFTER.BILLING.INVOICE_HDR",
-        'PERIOD_CLOSE': f"SELECT MIN(RTRIM(CURRENCY_CD)) AS CURRENCY_CD, COUNT(*) AS INVOICE_COUNT, SUM(TOTAL_AMOUNT) AS TOTAL_AMOUNT FROM SFX_D1110_AFTER.BILLING.INVOICE_HDR WHERE BILL_DT >= DATEADD(month, -1, DATE_TRUNC(month, {day})) AND BILL_DT < DATE_TRUNC(month, {day}) GROUP BY UPPER(RTRIM(CURRENCY_CD))",
-    }
+    """Each export SELECT with the business date as bind parameters, one per placeholder."""
+    business_date = validate_date(business_date)
+    return {name: (query, (business_date,) * query.count('?')) for name, query in CONVERTED_QUERIES.items()}
 
 
 def run(capture, business_date):
@@ -46,8 +50,10 @@ def run(capture, business_date):
         else:
             queries = converted_queries(business_date)
             with sf.cursor() as cursor:
-                for name, query in queries.items():
-                    cursor.execute(f"CREATE OR REPLACE TABLE SFX_D1110_AFTER.BILLING.{name} COMMENT = '{COMMENT}' AS {query}")
+                for name, (query, parameters) in queries.items():
+                    cursor.execute(query, parameters)
+                    cursor.execute('CREATE OR REPLACE TABLE IDENTIFIER(?) COMMENT = ? AS SELECT * FROM TABLE(RESULT_SCAN(?))',
+                                   ('SFX_D1110_AFTER.BILLING.' + name, COMMENT, cursor.sfqid))
 
 
 if __name__ == '__main__':

@@ -15,6 +15,9 @@ from bteq import Runner
 from seed.columns import TABLES
 from parity.connection import COMMENT, connect, validate_date
 from parity.ladder import identifier
+from psycopg import sql
+
+SNOWFLAKE_TYPE = re.compile(r'NUMBER\(38,(?:[0-9]|[12][0-9]|3[0-7])\)|NUMBER\(\d{1,2},\d{1,2}\)|DATE|TIMESTAMP_NTZ|VARCHAR(?:\(\d{1,8}\))?')
 
 
 def snow_type(pg_type):
@@ -33,6 +36,18 @@ def snow_type(pg_type):
     raise ValueError(f'Unsupported source type: {pg_type}')
 
 
+def column_ddl(columns):
+    """Column list for CREATE TABLE: validated identifiers and allow-listed types only."""
+    for _, kind in columns:
+        if not SNOWFLAKE_TYPE.fullmatch(kind):
+            raise ValueError(f'Unsupported column type: {kind!r}')
+    return ', '.join(identifier(n) + ' ' + t for n, t in columns)
+
+
+def source_rows(conn, schema, table):
+    return conn.execute(sql.Composed([sql.SQL('SELECT * FROM '), sql.Identifier(schema, table)])).fetchall()
+
+
 def upload(connection, name, columns, rows):
     typed = []
     for index, (column, kind) in enumerate(columns):
@@ -43,14 +58,16 @@ def upload(connection, name, columns, rows):
         typed.append((column, kind))
     columns = typed
     target = 'SFX_D1110_AFTER.TD_BASELINE.' + identifier(name)
-    ddl = ', '.join(identifier(n) + ' ' + t for n, t in columns)
+    ddl = column_ddl(columns)
     with connection.cursor() as cursor:
-        cursor.execute(f"CREATE TABLE {target} ({ddl}) COMMENT = '{COMMENT}'")
+        # Snowflake cannot bind column definitions; column_ddl() admits only validated
+        # identifiers and allow-listed types, and the table name and comment are bound.
+        cursor.execute('CREATE TABLE IDENTIFIER(?) (' + ddl + ') COMMENT = ?', (target, COMMENT))  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
         for offset in range(0, len(rows), 2000):
             cursor.executemany(f"INSERT INTO {target} VALUES ({','.join('?' for _ in columns)})", rows[offset:offset+2000])
-        cursor.execute(f'SELECT COUNT(*) FROM {target}')
+        cursor.execute('SELECT COUNT(*) FROM IDENTIFIER(?)', (target,))
         assert cursor.fetchone()[0] == len(rows)
-        cursor.execute(f'SELECT * FROM {target}')
+        cursor.execute('SELECT * FROM IDENTIFIER(?)', (target,))
         assert Counter(rows) == Counter(cursor.fetchall()), f'{name}: source/upload mismatch'
         query_id = cursor.sfqid
     return {'name': name, 'rows': len(rows), 'source_equals_uploaded': True, 'query_id': query_id}
@@ -61,22 +78,24 @@ def capture(output, business_date):
     evidence = []
     with Runner(output=io.StringIO()) as td, connect('baseline_capture', 'LOAD') as sf:
         with sf.cursor() as cursor:
-            cursor.execute(f"CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.TD_BASELINE COMMENT = '{COMMENT}'")
+            cursor.execute('CREATE SCHEMA IF NOT EXISTS SFX_D1110_AFTER.TD_BASELINE COMMENT = ?', (COMMENT,))
         names = [t.name for t in TABLES if t.area == 'billing']
         names += ['STG_' + n for n in names]
         names += ['V_ACCOUNT_INVOICES', 'V_SUBSCRIPTION_PLANS', 'V_INVOICE_BASE', 'V_INVOICE_REVENUE']
         for name in names:
             source = 'sfx_billing.' + name.lower()
             columns = td.columns(source)
-            rows = td.conn.execute('SELECT * FROM ' + source).fetchall()
+            rows = source_rows(td.conn, 'sfx_billing', name.lower())
             evidence.append(upload(sf, name, [(n, snow_type(t)) for n, t in columns], rows))
             print(name, len(rows), flush=True)
         source = 'sfx_documents.storage_usage_daily'
-        rows = td.conn.execute('SELECT * FROM ' + source).fetchall()
+        rows = source_rows(td.conn, 'sfx_documents', 'storage_usage_daily')
         evidence.append(upload(sf, 'STORAGE_USAGE_INPUT',
                                [(n, snow_type(t)) for n, t in td.columns(source)], rows))
         for name, routine in [('M_SUBSCRIPTION_PLANS', 'M_SUBSCRIPTION_PLANS'), ('M_CURRENCY_TOTALS', 'M_CURRENCY_TOTALS')]:
-            td.execute(f"EXEC SFX_BILLING.{routine}('{business_date}')")
+            # BTEQ EXEC has no bind variables: routine is one of the two literals above and
+            # business_date has passed validate_date() (eight digits and a real calendar date).
+            td.execute(f"EXEC SFX_BILLING.{routine}('{business_date}')")  # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             assert td.errorcode == 0, td.output.getvalue()
             types = ['NUMBER(38,0)', 'NUMBER(38,0)', 'VARCHAR(10)', 'NUMBER(14,2)'] if 'SUBSCRIPTION' in name else ['VARCHAR(3)', 'NUMBER(38,0)', 'NUMBER(38,2)']
             evidence.append(upload(sf, name, list(zip(td.headers, types)), td.rows))
