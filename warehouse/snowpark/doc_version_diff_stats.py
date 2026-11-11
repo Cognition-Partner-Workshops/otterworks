@@ -31,5 +31,6 @@ $$
     result.write.save_as_table(
         [database, "MART_SPARK", "DOC_VERSION_DIFF_STATS"],
         mode="overwrite",
+        copy_grants=True,
         comment="sfx-d1110 Replaces the Spark lake output documents/doc_version_diff_stats.",
     )
