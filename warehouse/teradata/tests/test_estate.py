@@ -143,6 +143,25 @@ def test_daily_chain(estate, tmp_path):
     assert estate.conn.execute('SELECT count(*),sum(debit_amount),sum(credit_amount) FROM sfx_billing.gl_journal_line').fetchone() == snapshot
 
 
+def test_next_month_keeps_closed_journals(estate, tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    environment = {**os.environ, 'TD_PG_DSN': estate.conn.info.dsn, 'TD_PG_DB': estate.conn.info.dbname}
+    snapshot = "SELECT journal_line_id,invoice_id,credit_note_id,gl_account_id,debit_amount,credit_amount,description FROM sfx_billing.gl_journal_line WHERE posting_dt=DATE '2026-11-30' ORDER BY journal_line_id"
+
+    def chain(business_date):
+        command = [sys.executable, str(root / 'jobs' / 'daily_chain'), '--rows', '2000', '--business-date', business_date,
+                   '--landing', str(tmp_path / business_date / 'landing'), '--exports', str(tmp_path / business_date / 'exports')]
+        result = subprocess.run(command, env=environment, text=True, capture_output=True, timeout=180)
+        assert result.returncode == 0, result.stdout + result.stderr
+
+    chain('20261130')
+    closed = estate.conn.execute(snapshot).fetchall()
+    assert closed and {row[6] for row in closed} <= {'Monthly invoice posting', 'Credit note reversal'}
+    chain('20261209')
+    assert estate.conn.execute(snapshot).fetchall() == closed
+    assert estate.conn.execute('SELECT sum(debit_amount-credit_amount) FROM sfx_billing.gl_journal_line').fetchone() == (0,)
+
+
 def assert_journals(estate):
     conn = estate.conn
     assert conn.execute('SELECT count(*) FROM sfx_billing.gl_account').fetchone() == (10,)
