@@ -160,8 +160,8 @@ The probe keeps Aurora awake, so a run with the probe on does not pause at 0 ACU
 | `aws_security_group` (alb) | HTTPS 443 and HTTP 80 from anywhere |
 | `aws_iam_role` and instance profile | AmazonSSMManagedInstanceCore and CloudWatchAgentServerPolicy, plus read on the artifact bucket |
 | `aws_s3_bucket` and object | `<token>-artifacts`, public access blocked, holds the fat jar that `lp-ec2-up` builds with `mvn -q -DskipTests package` |
-| `aws_lb` with target group and listeners | Internet-facing; HTTPS on 443 with `ELBSecurityPolicy-TLS13-1-2-2021-06`, and port 80 answers with a 301 to HTTPS. Health check on `/health` |
-| `aws_acm_certificate` | Self-signed certificate for the ALB's DNS name, imported per run unless `CERTIFICATE_ARN` names an ACM certificate. `lp-ec2.sh` writes it to `.demo/legacy-portal/<token>/alb-ca.pem` and trusts it for `curl` and `replay.py` |
+| `aws_lb` with target group and listeners | Internet-facing; HTTPS on 443 with `ELBSecurityPolicy-TLS13-1-2-2021-06`, and port 80 answers GET/HEAD with a 301 to HTTPS and refuses writes (POST/PUT/PATCH/DELETE) with 426, since clients replay a 301 as GET. Health check on `/health` |
+| `aws_acm_certificate` | Self-signed certificate for the ALB's DNS name, imported per run unless `CERTIFICATE_ARN` names an ACM certificate. The self-signed one is trusted only by this harness; for any other client set `CERTIFICATE_ARN` plus `DOMAIN_NAME` (its hostname, pointed at the ALB), and `base_url` then uses that name. `lp-ec2.sh` writes it to `.demo/legacy-portal/<token>/alb-ca.pem` and trusts it for `curl` and `replay.py` |
 | `aws_cloudwatch_log_group` | `/otterworks/legacy-portal-ec2/<token>/app`, 7-day retention |
 
 User data installs Amazon Corretto 11 and PostgreSQL 15, creates the database, the login and the three context schemas, downloads the jar, writes the systemd unit with the `postgres` datasource and starts the service. The database lives on the instance on purpose. The before state runs its own PostgreSQL next to the app, with no RDS, no alarms and no autoscaling.

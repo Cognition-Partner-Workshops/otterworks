@@ -96,3 +96,26 @@ resource "aws_lb_listener" "http_redirect" {
     }
   }
 }
+
+# ALB redirects are 301/302 only, and clients replay those as GET, so a write
+# sent to port 80 would be silently dropped. Refuse it instead.
+resource "aws_lb_listener_rule" "http_writes" {
+  listener_arn = aws_lb_listener.http_redirect.arn
+  priority     = 1
+
+  condition {
+    http_request_method {
+      values = ["POST", "PUT", "PATCH", "DELETE"]
+    }
+  }
+
+  action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Use HTTPS: writes are not redirected from HTTP."
+      status_code  = "426"
+    }
+  }
+}

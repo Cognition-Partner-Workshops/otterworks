@@ -1,6 +1,11 @@
 output "base_url" {
   description = "HTTPS URL of the internet-facing ALB. lp-ec2-replay uses it as the target base URL."
-  value       = "https://${aws_lb.this.dns_name}"
+  value       = "https://${coalesce(var.domain_name, aws_lb.this.dns_name)}"
+
+  precondition {
+    condition     = var.certificate_arn == null || var.domain_name != null
+    error_message = "CERTIFICATE_ARN needs DOMAIN_NAME: the certificate's hostname, pointed (CNAME/alias) at the ALB."
+  }
 }
 
 output "alb_ca_cert_pem" {

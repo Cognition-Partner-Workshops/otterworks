@@ -56,6 +56,12 @@ variable "log_retention_days" {
   default     = 7
 }
 
+variable "domain_name" {
+  description = "Hostname the certificate_arn certificate is issued for, with DNS pointing at the ALB. base_url uses it instead of the ALB hostname."
+  type        = string
+  default     = null
+}
+
 variable "certificate_arn" {
   description = "ACM certificate for the HTTPS listener. Leave null to import a self-signed certificate for the ALB's DNS name."
   type        = string

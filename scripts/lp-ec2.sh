@@ -50,6 +50,7 @@ tf_vars() {
   fi
   TF_VARS=(-var "run_token=${RUN}" -var "expires=$(cat "$expires_file")")
   [ -z "${CERTIFICATE_ARN:-}" ] || TF_VARS+=(-var "certificate_arn=${CERTIFICATE_ARN}")
+  [ -z "${DOMAIN_NAME:-}" ] || TF_VARS+=(-var "domain_name=${DOMAIN_NAME}")
 }
 
 elapsed() { awk -v s="$1" -v e="$(date +%s)" 'BEGIN { printf "%d s (%.1f min)", e - s, (e - s) / 60 }'; }
