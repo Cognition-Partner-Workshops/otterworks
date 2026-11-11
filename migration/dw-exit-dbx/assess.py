@@ -173,6 +173,57 @@ def spark_subject(text):
     return next(iter(subjects)) if len(subjects) == 1 else 'data-platform'
 
 
+def call_arguments(text, function):
+    for match in re.finditer(r'\b' + function + r'\(', text):
+        args, start, depth, quote, escaped = [], match.end(), 0, None, False
+        for i in range(start, len(text)):
+            char = text[i]
+            if quote:
+                if escaped:
+                    escaped = False
+                elif char == '\\':
+                    escaped = True
+                elif char == quote:
+                    quote = None
+            elif char in ('"', "'"):
+                quote = char
+            elif char in '([{':
+                depth += 1
+            elif char in ')]}':
+                if char == ')' and depth == 0:
+                    yield args + [text[start:i].strip()]
+                    break
+                depth -= 1
+            elif char == ',' and depth == 0:
+                args.append(text[start:i].strip())
+                start = i + 1
+
+
+def spark_io(text):
+    known = set(landing_areas())
+    known_qualified = {m.upper() for p in source_files() if '/ddl/' in p for m in re.findall(OBJECT, read(p), re.I)}
+    reads, writes = set(), set()
+    for function in ('register', 'landing', 'jdbc_read'):
+        for args in call_arguments(text, function):
+            for arg in args[1:]:
+                if re.fullmatch(r'["\'][^"\']+["\']', arg):
+                    value = ast.literal_eval(arg)
+                    if value.upper() in known_qualified:
+                        reads.add(value.upper())
+                    elif value in known:
+                        reads.add(value)
+    for args in call_arguments(text, 'save'):
+        if len(args) >= 3 and all(re.fullmatch(r'"[a-z_0-9]+"', arg) for arg in args[1:3]):
+            writes.add('/opt/lake/' + ast.literal_eval(args[1]) + '/' + ast.literal_eval(args[2]))
+        if len(args) >= 4:
+            writes.update(m.upper() for m in re.findall(OBJECT, args[3], re.I))
+    for args in call_arguments(text, 'parquet'):
+        if args and re.fullmatch(r'"/opt/lake/[^"\n]+"', args[0]):
+            path = ast.literal_eval(args[0])
+            (writes if re.search(r'\.write\b', text) else reads).add(path)
+    return sorted(reads), sorted(writes)
+
+
 def build():
     dead, hidden = dbql()
     consumers = registry()
@@ -347,23 +398,21 @@ def lineage(entries, hidden, provenance):
             if e['kind'] != 'Spark job' or e['subject_area'] != subject:
                 continue
             text = read(e['source_paths'][0])
-            registered = re.findall(r'(?:(?:register|landing|jdbc_read)\(spark,)([^\n]*)', text)
-            refs = sorted(set(re.findall(r'"([A-Z][A-Z_0-9]+)"', ' '.join(registered))))
+            refs, outputs = spark_io(text)
             node = 'j' + e['id']
             lines += [f'{node}["{e["object_name"]}"]']
             for ref in refs or ['external lake/blob input']:
                 source = 't' + hashlib.sha256((subject + ref).encode()).hexdigest()[:10]
                 lines += [f'{source}["{ref}"] --> {node}']
-            writes = re.findall(r'(?i)sfx_(?:billing|documents|audit|users)\.[A-Z_0-9]+', text)
-            output = ', '.join(sorted(set(writes))) or e['object_name'] + ' lake output'
-            lines += [f'{node} --> o{e["id"]}["{output}"]']
+            for i, output in enumerate(outputs):
+                lines += [f'{node} --> o{e["id"]}_{i}["{output}"]']
         lines += ['end']
-    lines += ['```', '', '## Spark code-level references', '', '| Job | Read/write evidence (code literals; physical paths also retained) | Source |', '|---|---|---|']
+    lines += ['```', '', '## Spark code-level references', '', '| Job | Reads | Writes | Source |', '|---|---|---|---|']
     for e in entries:
         if e['kind'] == 'Spark job':
             text = read(e['source_paths'][0])
-            refs = sorted(set(re.findall(OBJECT, text, re.I)) | set(re.findall(r'"([A-Z][A-Z_0-9]+)"', text)))
-            lines += [f'| {e["object_name"]} | {", ".join(refs)} | {e["source_paths"][0]} |']
+            refs, outputs = spark_io(text)
+            lines += [f'| {e["object_name"]} | {", ".join(refs)} | {", ".join(outputs)} | {e["source_paths"][0]} |']
     write('lineage.md', '\n'.join(lines) + '\n')
 
 

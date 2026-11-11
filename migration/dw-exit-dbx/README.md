@@ -70,6 +70,12 @@ table namespaces, save destination areas and physical /opt/lake or /opt/landing
 paths. A single evidenced area owns the job; multiple evidenced areas use
 data-platform. Missing evidence fails assessment instead of guessing from names.
 Shared runtime modules retain data-platform ownership.
+Spark lineage reads are literal register/landing/jdbc_read arguments restricted
+to known landing feeds or qualified estate objects, never arbitrary column
+literals. save arguments identify lake and optional JDBC write targets; physical
+parquet paths are preserved. The current estate has either read-only parquet
+calls or a direct write chain per job; complex mixed read/write jobs require a
+parser extension rather than treating every qualified literal as a write.
 
 ## DBQL and privacy
 

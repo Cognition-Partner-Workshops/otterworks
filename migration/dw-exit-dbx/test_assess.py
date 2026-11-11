@@ -57,6 +57,13 @@ class AssessmentHelpers(unittest.TestCase):
         self.assertEqual(live_differences([entry], []), ['alert'])
         self.assertEqual(live_differences([], []), [])
 
+    def test_spark_lineage(self):
+        with patch.object(assess, 'landing_areas', return_value={'SEARCH_INDEX_LOG': 'documents'}), patch.object(assess, 'source_files', return_value=[]):
+            text = 'landing(spark, "SEARCH_INDEX_LOG").withColumn("PARSED_ACTION", col("RAW_LINE"))\nsave(frame.coalesce(2), "documents", "parsed")'
+            self.assertEqual(assess.spark_io(text), (['SEARCH_INDEX_LOG'], ['/opt/lake/documents/parsed']))
+            self.assertEqual(assess.spark_io(''), ([], []))
+            self.assertEqual(assess.spark_io('landing(spark, "UNKNOWN_TABLE")'), ([], []))
+
 
 if __name__ == '__main__':
     unittest.main()
