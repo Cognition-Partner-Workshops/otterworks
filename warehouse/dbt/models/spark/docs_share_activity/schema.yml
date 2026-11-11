@@ -1,0 +1,11 @@
+version: 2
+models:
+- name: docs_share_activity
+  description: sfx-d1110 share and distinct-recipient counts per document owner and permission (replaces lake documents/docs_share_activity)
+  columns:
+  - name: SHARES
+    tests:
+    - not_null
+  - name: RECIPIENTS
+    tests:
+    - not_null
