@@ -5,7 +5,7 @@
     "rows_per_table": 200000,
     "business_date": "20261109",
     "td_user": "svc_exit_parity",
-    "source": "PR #2734 shared-seed parity run; DSO = AR * 30 / (billed - credits)"
+    "source": "Fresh make sfx-teradata-up NS=sfx-d1110-admin-parity run; contract/legacy SQL through consumers/contract-kit/bridge.py with CURRENT_DATE pinned to 2026-11-09; DSO = AR * 30 / (billed - credits)"
   },
   "must_agree": {
     "dashboard-summary": {
@@ -15,20 +15,82 @@
         "COLLECTIONS_30_DAYS": "27892499.60",
         "DSO": "30.00162748863311745345"
       },
-      "tolerances": { "AR_OPEN_BALANCE": "0.01", "COLLECTIONS_30_DAYS": "0.01", "DSO": "0.0001" }
+      "tolerances": {
+        "AR_OPEN_BALANCE": "0.01",
+        "COLLECTIONS_30_DAYS": "0.01",
+        "DSO": "0.0001"
+      }
     },
     "billing-inputs": {
-      "values": { "BILLED_30_DAYS": "77844053.16", "CREDITS_30_DAYS": "335677.72" },
+      "values": {
+        "BILLED_30_DAYS": "77844053.16",
+        "CREDITS_30_DAYS": "335677.72",
+        "INVOICE_ROWS": "200100",
+        "TOTAL_AMOUNT": "77851854.33"
+      },
       "tolerance": "0.01"
     },
-    "overdue-accounts": { "row_count": 10 }
+    "overdue-accounts": {
+      "row_count": 10,
+      "tolerance": "0.01",
+      "rows": [
+        {
+          "ACCOUNT_NO": "ACC-9000000028",
+          "OLDEST_DUE_DATE": "2026-01-31",
+          "OVERDUE_BALANCE": "98.76"
+        },
+        {
+          "ACCOUNT_NO": "ACC-9000000044",
+          "OLDEST_DUE_DATE": "2024-03-30",
+          "OVERDUE_BALANCE": "98.76"
+        },
+        {
+          "ACCOUNT_NO": "ACC-9000000004",
+          "OLDEST_DUE_DATE": "2026-01-31",
+          "OVERDUE_BALANCE": "98.75"
+        },
+        {
+          "ACCOUNT_NO": "ACC-9000000020",
+          "OLDEST_DUE_DATE": "2024-03-30",
+          "OVERDUE_BALANCE": "98.75"
+        },
+        {
+          "ACCOUNT_NO": "ACC-9000000052",
+          "OLDEST_DUE_DATE": "2026-01-31",
+          "OVERDUE_BALANCE": "98.75"
+        },
+        {
+          "ACCOUNT_NO": "ACC-9000000068",
+          "OLDEST_DUE_DATE": "2024-03-30",
+          "OVERDUE_BALANCE": "98.75"
+        },
+        {
+          "ACCOUNT_NO": "ACC-9000000076",
+          "OLDEST_DUE_DATE": "2026-01-31",
+          "OVERDUE_BALANCE": "98.75"
+        },
+        {
+          "ACCOUNT_NO": "ACC-9000000092",
+          "OLDEST_DUE_DATE": "2024-03-30",
+          "OVERDUE_BALANCE": "98.75"
+        },
+        {
+          "ACCOUNT_NO": "ACC-9000000100",
+          "OLDEST_DUE_DATE": "2026-01-31",
+          "OVERDUE_BALANCE": "98.75"
+        },
+        {
+          "ACCOUNT_NO": "ACC-9000000032",
+          "OLDEST_DUE_DATE": "2024-03-30",
+          "OVERDUE_BALANCE": "94.81"
+        }
+      ]
+    }
   },
-  "open_data_gaps": {
+  "data_gaps": {
     "upstream": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2669",
-    "status": "open; merge blocked until invoiced totals and GL postings match the 200k emulator and the live contract passes",
-    "BILLED_30_DAYS": "COMPAT.INVOICE_HDR.TOTAL_AMOUNT is landed SUBTOTAL_AMOUNT + TAX_AMOUNT, before P_MONTHLY_INVOICE recalculates invoiced totals from lines",
-    "AR_OPEN_BALANCE": "COMPAT.GL_JOURNAL_LINE account 1200 postings do not match the shared-seed Teradata net",
-    "DSO": "Both the GL AR numerator and billed-minus-credits denominator are affected by the upstream gaps",
-    "overdue-accounts": "Invoice total and open balance gaps affect the top 10. Shape and ordering checks do not establish member or balance parity; revalidate after #2669 is corrected"
+    "status": "closed: #2669 merged processed Teradata INVOICE_HDR, INVOICE_LINE and GL_JOURNAL_LINE outputs into SFX_D1110_AFTER (V008 COMPAT views); the live contract now matches every value above",
+    "history": "Before #2669 landed processed billing, COMPAT.INVOICE_HDR.TOTAL_AMOUNT held pre-P_MONTHLY_INVOICE values (32,875,202.55 total) and GL 1200 netted to 4,647,025.23, giving live DSO about 4.29; that was a target data gap, not a seed difference",
+    "gate": "Any value outside tolerance is a target data gap that blocks merge; do not widen tolerances or add compensating logic in this client"
   }
 }

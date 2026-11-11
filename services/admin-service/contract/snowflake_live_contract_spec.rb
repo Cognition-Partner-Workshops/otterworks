@@ -29,7 +29,7 @@ RSpec.describe 'admin-service on live Snowflake' do
     expected.fetch('values').each do |column, value|
       tolerance = BigDecimal(expected.fetch('tolerances').fetch(column))
       expect(BigDecimal(rows.first.fetch(column))).to be_within(tolerance).of(BigDecimal(value)),
-        "#{column} differs from the 200k emulator; open #2669 data gap blocks merge"
+        "#{column} differs from the 200k emulator: target data gap, merge blocked"
     end
   end
 
@@ -40,7 +40,6 @@ RSpec.describe 'admin-service on live Snowflake' do
           WHEN i.INVOICE_DATE > DATEADD(day, -30, params.AS_OF) AND i.INVOICE_DATE <= params.AS_OF
             AND i.INVOICE_DATE >= DATE '2020-01-01' THEN i.TOTAL_AMOUNT ELSE 0 END)) AS BILLED_30_DAYS,
           COUNT(*) AS INVOICE_ROWS,
-          COUNT_IF(i.TOTAL_AMOUNT = i.SUBTOTAL_AMOUNT + i.TAX_AMOUNT) AS PRE_INVOICING_ROWS,
           SUM(i.TOTAL_AMOUNT) AS TOTAL_AMOUNT
         FROM COMPAT.INVOICE_HDR i CROSS JOIN params
       ), credits AS (
@@ -55,30 +54,37 @@ RSpec.describe 'admin-service on live Snowflake' do
     expected.fetch('values').each do |column, value|
       expect(BigDecimal(rows.first.fetch(column)))
         .to be_within(BigDecimal(expected.fetch('tolerance'))).of(BigDecimal(value)),
-            "#{column} differs from the 200k emulator; open #2669 data gap blocks merge"
+            "#{column} differs from the 200k emulator: target data gap, merge blocked"
     end
   end
 
-  it 'returns the top overdue accounts in the legacy shape and order' do
+  it 'returns the same top overdue accounts, due dates and balances as the 200k emulator', :aggregate_failures do
     rows = @warehouse.query(FinanceWarehouse::DashboardQueries::OVERDUE_SQL, binds)
-    expect(rows.length).to eq(parity.dig('must_agree', 'overdue-accounts', 'row_count'))
+    expected = parity.dig('must_agree', 'overdue-accounts')
+    tolerance = BigDecimal(expected.fetch('tolerance'))
+    puts "Live overdue accounts: #{JSON.generate(rows.map { |row| row.except('CUSTOMER_NAME') })}"
+    expect(rows.length).to eq(expected.fetch('row_count'))
     expect(rows.first.keys).to eq(recorded('overdue-accounts').fetch('columns'))
-    balances = rows.map { |row| BigDecimal(row.fetch('OVERDUE_BALANCE')) }
-    expect(balances).to eq(balances.sort.reverse)
-    expect(balances).to all(be_positive)
-    rows.each do |row|
-      expect(row.fetch('ACCOUNT_NO')).to match(/\AACC-\d+\z/)
-      expect(row.fetch('OLDEST_DUE_DATE')).to match(/\A\d{4}-\d{2}-\d{2}\z/)
-      expect(Date.iso8601(row.fetch('OLDEST_DUE_DATE'))).to be < ContractWarehouse::AS_OF
+    expect(rows.map { |row| row.fetch('ACCOUNT_NO') })
+      .to eq(expected.fetch('rows').map { |row| row.fetch('ACCOUNT_NO') }),
+          'top-10 membership or order differs from the 200k emulator: target data gap, merge blocked'
+    rows.zip(expected.fetch('rows')).each do |row, reference|
+      account = reference.fetch('ACCOUNT_NO')
+      expect(row.fetch('OLDEST_DUE_DATE')).to eq(reference.fetch('OLDEST_DUE_DATE')), "#{account} oldest due date"
+      expect(BigDecimal(row.fetch('OVERDUE_BALANCE')))
+        .to be_within(tolerance).of(BigDecimal(reference.fetch('OVERDUE_BALANCE'))), "#{account} overdue balance"
     end
   end
 
   it 'maps the dashboard from live Snowflake' do
     allow(FinanceWarehouse::DashboardQueries).to receive(:enabled?).and_return(true)
     dashboard = FinanceWarehouse::DashboardQueries.new(client: @warehouse, as_of: ContractWarehouse::AS_OF).call
-    expect(BigDecimal(dashboard[:collections_30_days]))
-      .to eq(BigDecimal(parity.dig('must_agree', 'dashboard-summary', 'values', 'COLLECTIONS_30_DAYS')))
-    expect(dashboard[:top_overdue_accounts].length).to eq(10)
+    summary = parity.dig('must_agree', 'dashboard-summary', 'values')
+    expect(BigDecimal(dashboard[:collections_30_days])).to eq(BigDecimal(summary.fetch('COLLECTIONS_30_DAYS')))
+    expect(BigDecimal(dashboard[:ar_open_balance])).to eq(BigDecimal(summary.fetch('AR_OPEN_BALANCE')))
+    expect(BigDecimal(dashboard[:dso])).to be_within(BigDecimal('0.0001')).of(BigDecimal(summary.fetch('DSO')))
+    expect(dashboard[:top_overdue_accounts].map { |account| account[:account_no] })
+      .to eq(parity.dig('must_agree', 'overdue-accounts', 'rows').map { |row| row.fetch('ACCOUNT_NO') })
   end
 
   it 'tags every statement and runs on the parity warehouse' do

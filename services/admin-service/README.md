@@ -49,30 +49,29 @@ for emulator parity runs only; production never sends it.
 Each explicit business date has its own one-hour cache entry, separate from the
 undated API dashboard.
 
-## Open target data gaps — merge blocked
+## Shared-seed parity with Teradata
 
-[Upstream #2669](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2669)
-must serve the invoiced totals and GL postings from the shared 200k seed before
-this consumer can merge. The PR stays draft until the live contract passes.
-AR, billed, DSO and overdue differences are target data gaps, not an accepted
-seed difference. The recorded 200k emulator parity run used
-TD_USER=svc_exit_parity and BUSINESS_DATE=20261109:
+The live contract compares Snowflake with a fresh 200k shared-seed emulator run
+(ROWS_PER_TABLE=200000, BUSINESS_DATE=20261109, TD_USER=svc_exit_parity), using
+the frozen contract/legacy SQL with CURRENT_DATE pinned to 2026-11-09:
 
-| Metric | 200k emulator | Live gap observed in cross-check |
+| Metric | 200k emulator | Live Snowflake |
 |---|---:|---:|
-| GL 1200 AR | 77,512,580.24 | 4,647,025.23 |
-| Billed in 30 days | 77,844,053.16 | 32,857,603.85 |
+| GL 1200 AR | 77,512,580.24 | 77,512,580.24 |
+| Billed in 30 days | 77,844,053.16 | 77,844,053.16 |
 | Credits in 30 days | 335,677.72 | 335,677.72 |
 | Collections in 30 days | 27,892,499.60 | 27,892,499.60 |
-| DSO | 30.00162749 | about 4.3 |
+| DSO | 30.00162749 | 30.00162749 |
+| Top 10 overdue accounts | 10 rows | same accounts, order, due dates and balances |
 
-Live COMPAT.INVOICE_HDR.TOTAL_AMOUNT equals SUBTOTAL_AMOUNT + TAX_AMOUNT on all
-200,100 invoice rows (total 32,875,202.55), before P_MONTHLY_INVOICE recalculates
-the invoiced amounts from lines. GL account 1200 postings also diverge. These
-gaps affect both DSO inputs and the overdue balances and top-10 membership.
-The client cannot repair the upstream data; no compensating constants or
-alternate AR formula are used here. After #2669 is corrected, rerun the strict
-live gate and compare overdue members/balances with the same-seed emulator.
+Earlier, live COMPAT.INVOICE_HDR.TOTAL_AMOUNT held landed, pre-P_MONTHLY_INVOICE
+amounts (32,875,202.55 in total) and GL 1200 netted to 4,647,025.23, so live DSO
+was about 4.29. That was a target data gap, not a seed difference. It was closed
+upstream when [#2669](https://github.com/Cognition-Partner-Workshops/otterworks/pull/2669)
+landed the processed Teradata INVOICE_HDR, INVOICE_LINE and GL_JOURNAL_LINE
+outputs. This client has no compensating constants or alternate AR formula. If
+any value drifts outside tolerance again, treat it as a target data gap that
+blocks merge.
 
 Deployment also needs SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE and
 SNOWFLAKE_PRIVATE_KEY injected into the service environment by the deployment
@@ -102,10 +101,12 @@ Unit specs use PostgreSQL 15; contract specs need no Rails database.
   with the consumer query tag on the parity warehouse. It skips when the
   Snowflake credentials are absent, whatever the target.
 
-The shared-seed reference, tolerances and open #2669 gaps are recorded in
+The shared-seed reference, tolerances and #2669 gap history are recorded in
 contract/expected/snowflake-live.json. The live contract checks AR, collections,
-billed and credits within 0.01 and DSO within 0.0001 of that emulator run. It
-prints aggregate-only live output and query IDs. It must fail while the upstream
-gap remains; positive AR/DSO and shape checks alone cannot establish parity.
+billed, credits, invoice row count and invoice total within 0.01, DSO within
+0.0001, and the top 10 overdue accounts by account, order, oldest due date and
+balance (within 0.01). It prints aggregate and account-number output (no
+customer names) and query IDs. Positive AR/DSO and shape checks alone cannot
+establish parity.
 A green unit/replay CI run with the credential-gated live job skipped is not
 approval to merge.
