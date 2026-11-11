@@ -104,7 +104,7 @@ def connect(config=None, *, connector=None, target=None, as_of=None) -> Connecti
 
 def run_query(connection: Connection, sql: str, name: str | None = None) -> pd.DataFrame:
     native = isinstance(connection, (EmulatorConnection, DatabricksConnection))
-    statement = connection.prepare(sql, name) if native else sql
+    statement = connection.prepare(sql, name) if native else pin_teradata(sql, os.getenv("FINANCE_AS_OF") or None)
     try:
         with connection.cursor() as cursor:
             cursor.execute(statement)
