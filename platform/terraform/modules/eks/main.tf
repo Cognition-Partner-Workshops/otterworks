@@ -150,12 +150,9 @@ resource "aws_launch_template" "node_group" {
     http_put_response_hop_limit = 2
   }
 
-  # Nodes never take a public IP, whatever the subnet's map_public_ip_on_launch
-  # says; they sit in private subnets and egress through the NAT gateway.
-  network_interfaces {
-    associate_public_ip_address = false
-    delete_on_termination       = true
-  }
+  # No network interface override here: it breaks the multi-instance-type Spot node
+  # group. Nodes get no public IP because node_subnet_ids are the private
+  # subnets, which do not map public IPs on launch.
 
   dynamic "tag_specifications" {
     for_each = toset(["instance", "volume", "network-interface"])
