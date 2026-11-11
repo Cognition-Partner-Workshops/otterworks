@@ -1,51 +1,51 @@
 # bi-semantic
 
-A separate repository owned by **@otterworks/bi**. The Looker connection
-tdprod_fin uses the Teradata dialect, svc_bi_semantic and TDPROD / SFX_BILLING.
-connection.md holds the planted fake plaintext settings and default-on access
-attribute. The finance_four_hours datagroup refreshes PDTs every four hours.
+The production Looker read path is finance.model.lkml and views/*.lkml using
+the Snowflake connection `sfx_fin` documented in connection.md. Logical field
+names, default-on access grants and the four-hour PDT datagroup remain stable.
+All sources are fully qualified in SFX_D1110_AFTER:
+- COMPAT.INVOICE, ACCOUNT, PAYMENT and GL_JOURNAL_LINE provide the billing facts.
+- RAW_BILLING.CUSTOMER_ACCOUNT supplies customer names/regions and
+  RAW_BILLING.GL_ACCOUNT supplies account names/types absent from COMPAT.
+- invoice_revenue derives currency/month aggregates from invoices joined to accounts.
+- overdue_accounts computes positive net-30 balances, offset by all payments,
+  restricted to the top 100 by balance descending then account number.
 
-## Model and columns
-- invoices: INVOICE_HDR (INVOICE_ID, CUSTOMER_ID, INVOICE_NUMBER, INVOICE_DT,
-  TOTAL_AMOUNT, TAX_AMOUNT). Logical accounts/customers both resolve to the real
-  CUSTOMER_ACCOUNT entity (CUSTOMER_ID, ACCOUNT_NUMBER, ACCOUNT_NAME, CURRENCY_CD,
-  REGION_CD); the two many-to-one joins retain their separate semantic roles.
-- payments: PAYMENT (PAYMENT_ID, PAYMENT_DT, AMOUNT).
-- gl_journal: GL_JOURNAL_LINE (JOURNAL_LINE_ID, GL_ACCOUNT_ID, POSTING_DT,
-  DEBIT_AMOUNT, CREDIT_AMOUNT); joins GL_ACCOUNT (GL_ACCOUNT_ID, ACCOUNT_NAME,
-  ACCOUNT_TYPE). Periods are derived from posting dates.
-- invoice_revenue: V_INVOICE_REVENUE (INVOICE_PERIOD, CURRENCY_CD, INVOICE_COUNT,
-  TOTAL_AMOUNT), overlapping this account's DBQL reports.
-- overdue_accounts PDT: top 100 positive balances more than 30 days overdue,
-  joining invoice headers, independently summed payments and customer accounts.
-  Due dates use net-30 terms (INVOICE_DT + 30); the schema has no DUE_DT.
-
-The existing logical field names remain stable. No FX conversion is performed;
-aggregate views sum currencies together unless the caller selects currency.
-Invoices include tax, payment offsets use all recorded payments.
-SQL keeps SEL, TOP 100, ZEROIFNULL, FORMAT casts, integer date math, 1200101 and
-QUALIFY ROW_NUMBER.
+No FX conversion is performed; invoices include tax. Configure a platform-owned
+writable PDT scratch schema separately from the read-only source schemas.
 
 ## Checks and contracts
+
 ```sh
-pip install -r requirements-dev.txt
-python -m pytest
-WAREHOUSE_CONTRACT_TARGET=replay python -m pytest contract
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+WAREHOUSE_CONTRACT_TARGET=replay python -m pytest contract -q
+WAREHOUSE_CONTRACT_TARGET=snowflake python -m pytest contract -v -s
 ```
 
-Tests parse every LookML file, resolve joins, verify access/datagroup settings and
-compare checked-in SQL snapshots to semantic.py's selected-field renderer.
-This renderer is intentionally limited, not a replacement for Looker's compiler.
-Looker compilation requires an external Looker installation.
+Tests parse LookML, resolve joins, verify access/datagroup settings and compare
+Snowflake snapshots with semantic.py. The selected-field renderer is deliberately
+limited; full Looker compilation requires an external Looker installation.
 
-The default teradata-emulator contract executes all five generated query
-snapshots LIVE through ../contract-kit. Follow its README for bridge dependencies,
-TD_PG_PORT and CONTRACT_KIT_PYTHON. Seed with ROWS_PER_TABLE=800 and
-BUSINESS_DATE=20261109. Runtime defaults to the repository root; TD_EMULATOR_HOME
-overrides it. CONTRACT_RECORD=true python -m pytest contract re-records exact live
-JSON. Review expected counts, keys and monetary sums after changes. Replay needs
-no bridge dependencies or warehouse and runs in a dedicated CI job.
-snowflake-semantics invokes the shared live bridge. snowflake is an explicit
-placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE or PRIVATE_KEY skips;
-configured execution is unsupported. Metadata: SFX_D1110_AFTER.COMPAT, query tag
-`{"run":"sfx-d1110","act":"consumers","consumer":"bi-semantic"}`.
+contract/queries/*.sql are regenerated Snowflake queries.
+contract/queries/teradata/*.sql are unchanged frozen baseline queries used by
+replay, teradata-emulator and snowflake-semantics. Replay requires no credentials.
+Both emulator targets run as TD_USER=svc_exit_parity (the default when TD_USER
+is unset); the retired svc_bi_semantic account and any other user are rejected. Follow ../contract-kit/README.md
+for bridge dependencies, TD_PG_PORT and CONTRACT_KIT_PYTHON. Use an 800-row seed
+and BUSINESS_DATE=20261109. TD_EMULATOR_HOME overrides the repo runtime root.
+CONTRACT_RECORD=true records emulator results; recorded/expected fixtures must
+not be refreshed for the Snowflake migration.
+
+The snowflake target uses JWT key-pair credentials from SNOWFLAKE_ACCOUNT,
+SNOWFLAKE_USER, SNOWFLAKE_ROLE and SNOWFLAKE_PRIVATE_KEY (PEM), skipping if any
+are absent. It always uses SFX_D1110_AFTER and SFX_D1110_PARITY_WH, UTC and the
+exact query tag in connection.md, ignoring SNOWFLAKE_WAREHOUSE.
+It prints each query ID without writing query-ID artifacts or creating objects.
+
+Intended differences: the Snowflake dataset is about 250x the 800-row emulator
+seed. Counts/sums for 2026-11, GL periods and the overdue account set differ.
+CURRENT_DATE uses Snowflake's UTC date, not the emulator business date.
+The live contract therefore checks label parity, invoice/revenue agreement,
+zero GL movements, valid ordered positive overdue balances and case-safe
+account numbers instead of exact seed totals. See contract/README.md.

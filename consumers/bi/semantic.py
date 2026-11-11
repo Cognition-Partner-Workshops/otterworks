@@ -41,9 +41,9 @@ def queries():
         metric = next(m for m in view["measures"] if m["name"] == measure)
         explore = next(e for e in model["explores"] if e["name"] == name)
         sql = (
-            f"SEL {expand(dim['sql'], name)} AS LABEL,\n"
+            f"SELECT {expand(dim['sql'], name)} AS LABEL,\n"
             f"  SUM({expand(metric['sql'], name)}) AS AMOUNT\n"
-            f"FROM {view['sql_table_name']} AS {name}"
+            f"FROM {view['sql_table_name'] if 'sql_table_name' in view else '(' + view['derived_table']['sql'].strip() + ')'} AS {name}"
         )
         for join in explore.get("joins", []):
             alias = join["name"]
