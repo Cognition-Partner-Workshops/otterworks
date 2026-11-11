@@ -2,6 +2,7 @@
   <core xmlns="urn:activemq:core">
     <name>halvergate-integration</name>
     <persistence-enabled>true</persistence-enabled>
+    <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>
     <journal-type>NIO</journal-type>
     <paging-directory>data/paging</paging-directory><bindings-directory>data/bindings</bindings-directory>
     <journal-directory>data/journal</journal-directory><large-messages-directory>data/large-messages</large-messages-directory>
