@@ -23,12 +23,39 @@
    redis-cli EXISTS chaos:search-service:suggest_500
    ```
 
-<!-- TODO: Complete investigation steps -->
+3. Reproduce against the service directly (bypassing the gateway) and confirm the
+   handler, not MeiliSearch, is failing:
+   ```
+   curl -i "http://localhost:8087/api/v1/search/suggest?q=te"
+   ```
+   A `500` with a `KeyError: '_rankingScore'` or `TypeError: string indices must be
+   integers` traceback points at the ranking-score enrichment step in
+   `services/search-service/app/api/search.py::suggest`.
+
+## Root Cause
+
+The autocomplete ranking step sorted suggestions with `s["_rankingScore"]`, but
+MeiliSearch only returns `_rankingScore` when `showRankingScore: true` is sent
+with the query, and `MeiliSearchService.suggest` returns plain strings. The key
+lookup raised inside the handler, outside its `try`/`except`, so every
+`/suggest` call returned 500 while the path was active.
 
 ## Resolution Steps
 
-<!-- TODO -->
+1. Rank inside `MeiliSearchService.suggest`: request `showRankingScore: True`,
+   read the score with `hit.get("_rankingScore", 0.0)`, sort, and return strings.
+2. Keep the `/suggest` handler on a single code path wrapped in `try`/`except`
+   so a backend failure degrades to `{"suggestions": []}` with HTTP 200 instead
+   of a 5xx (autocomplete is best-effort; the search bar must not break).
+3. Deploy search-service and confirm `SearchSuggestHighErrorRate` resolves:
+   ```
+   curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:8087/api/v1/search/suggest?q=te"
+   ```
+   must return `200` with the flag set or unset.
 
 ## Post-Incident
 
-<!-- TODO -->
+- Add tests for hits with and without `_rankingScore` and for a MeiliSearch
+  failure (`tests/test_search_api.py::TestSuggestEndpoint`).
+- Any future "enrichment" of MeiliSearch hits must read optional fields with
+  `.get()` and stay inside the handler's error boundary.
