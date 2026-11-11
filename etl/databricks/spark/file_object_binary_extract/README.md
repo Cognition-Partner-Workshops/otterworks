@@ -6,7 +6,7 @@ No Databricks job is created.
 
 ## Why it stays (evidence)
 - It reads `binaryFile` over the self-run blob store `/opt/landing/documents/FILE_OBJECT_BLOBS/*` (8 blobs, 2,182,861 bytes locally) and joins the extracted content to FILE_OBJECT on STORAGE_KEY.
-- Live `cpw.dbx_d1111_before.documents__file_object` has no STORAGE_KEY or CHECKSUM column; its object_key addresses another store: 2000 rows, 0 keys of the form `documents/FILE_OBJECT_BLOBS/<name>` (01f1dd85-3dd2-115a-b3b0-a64247cb4a23). On live data the join would return 0 rows. This is the first failing result.
+- Live `cpw.dbx_d1111_before.documents__file_object` has no CHECKSUM column; STORAGE_KEY maps to object_key (shared mapping with docs_storage_by_owner), but object_key addresses another store: 2000 rows, 0 keys of the form `documents/FILE_OBJECT_BLOBS/<name>` (01f1dd85-3dd2-115a-b3b0-a64247cb4a23). On live data the join would return 0 rows. This is the first failing result.
 - `SHOW VOLUMES IN cpw.dbx_d1111_before` returns no volume (01f1dd85-3e48-1875-81fd-6e5adba8698a); creating a volume, external location or other storage is not allowed, so a serverless job cannot read the blobs.
 
 ## Template
@@ -34,7 +34,7 @@ curl -s http://localhost:18080/api/v1/applications
 ## Board row
 | source | target | first failure | corrected parity | idempotence | job / runs | executor-hours before | DBU after | status |
 |---|---|---|---|---|---|---|---|---|
-| file_object_binary_extract.py | Spark common template (kept) | live file_object lacks STORAGE_KEY/CHECKSUM, 0/2000 joinable keys; no UC volume (01f1dd85-3dd2-115a-b3b0-a64247cb4a23, 01f1dd85-3e48-1875-81fd-6e5adba8698a) | n/a on Databricks; template = before: 2000 rows, same hash | template run1 = run2 | none (stays on Spark) | 0.008545 (app-20261110202856-0026) | n/a | red (kept on Spark by design) |
+| file_object_binary_extract.py | Spark common template (kept) | live file_object lacks CHECKSUM; STORAGE_KEY=object_key but 0/2000 joinable keys; no UC volume (01f1dd85-3dd2-115a-b3b0-a64247cb4a23, 01f1dd85-3e48-1875-81fd-6e5adba8698a) | n/a on Databricks; template = before: 2000 rows, same hash | template run1 = run2 | none (stays on Spark) | 0.008545 (app-20261110202856-0026) | n/a | red (kept on Spark by design) |
 
 ## Query history
 ```sql

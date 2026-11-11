@@ -9,8 +9,8 @@
 --   DOCUMENT_ID    <- document_id
 --   SIZE_BYTES     <- bytes_used
 --   CHECKSUM       <- no live equivalent (NULL; not derivable)
---   STORAGE_KEY    <- no live equivalent: object_key addresses a different store
---                     ('workspaces/<n>/documents/<n>/original.<ext>'); statement 2 shows that
+--   STORAGE_KEY    <- object_key (shared mapping, same as ../docs_storage_by_owner/inputs.sql). Its values address
+--                     a different store ('workspaces/<n>/documents/<n>/original.<ext>'); statement 2 shows that
 --                     no live key is of the form 'documents/FILE_OBJECT_BLOBS/<name>' that the job joins on.
 -- The blob content itself is not in Unity Catalog: the run schemas have no volume (statement 3).
 /* run=dbx-d1111 act=spark step=inputs consumer=file_object_binary_extract */
@@ -18,7 +18,7 @@ SELECT file_object_id AS FILE_OBJECT_ID,
        document_id    AS DOCUMENT_ID,
        bytes_used     AS SIZE_BYTES,
        CAST(NULL AS STRING) AS CHECKSUM,
-       CAST(NULL AS STRING) AS STORAGE_KEY
+       object_key     AS STORAGE_KEY
 FROM cpw.dbx_d1111_before.documents__file_object;
 
 /* run=dbx-d1111 act=spark step=inputs consumer=file_object_binary_extract */
