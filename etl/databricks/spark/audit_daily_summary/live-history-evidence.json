@@ -23,7 +23,7 @@
   "executors": [
     {
       "id": "0",
-      "hostPort": "172.18.0.5:41205",
+      "hostPort": "<local>",
       "isActive": true,
       "rddBlocks": 0,
       "memoryUsed": 0,
@@ -43,8 +43,8 @@
       "maxMemory": 566231040,
       "addTime": "2026-11-11T04:14:58.611GMT",
       "executorLogs": {
-        "stdout": "http://172.18.0.5:8081/logPage/?appId=app-20261111041452-0006&executorId=0&logType=stdout",
-        "stderr": "http://172.18.0.5:8081/logPage/?appId=app-20261111041452-0006&executorId=0&logType=stderr"
+        "stdout": "<local>",
+        "stderr": "<local>"
       },
       "memoryMetrics": {
         "usedOnHeapStorageMemory": 0,
@@ -61,7 +61,7 @@
     },
     {
       "id": "1",
-      "hostPort": "172.18.0.5:37271",
+      "hostPort": "<local>",
       "isActive": true,
       "rddBlocks": 0,
       "memoryUsed": 0,
@@ -81,8 +81,8 @@
       "maxMemory": 566231040,
       "addTime": "2026-11-11T04:14:58.916GMT",
       "executorLogs": {
-        "stdout": "http://172.18.0.5:8081/logPage/?appId=app-20261111041452-0006&executorId=1&logType=stdout",
-        "stderr": "http://172.18.0.5:8081/logPage/?appId=app-20261111041452-0006&executorId=1&logType=stderr"
+        "stdout": "<local>",
+        "stderr": "<local>"
       },
       "memoryMetrics": {
         "usedOnHeapStorageMemory": 0,
@@ -122,7 +122,7 @@
     },
     {
       "id": "2",
-      "hostPort": "172.18.0.5:45723",
+      "hostPort": "<local>",
       "isActive": true,
       "rddBlocks": 0,
       "memoryUsed": 0,
@@ -142,8 +142,8 @@
       "maxMemory": 566231040,
       "addTime": "2026-11-11T04:14:58.925GMT",
       "executorLogs": {
-        "stdout": "http://172.18.0.5:8081/logPage/?appId=app-20261111041452-0006&executorId=2&logType=stdout",
-        "stderr": "http://172.18.0.5:8081/logPage/?appId=app-20261111041452-0006&executorId=2&logType=stderr"
+        "stdout": "<local>",
+        "stderr": "<local>"
       },
       "memoryMetrics": {
         "usedOnHeapStorageMemory": 0,
@@ -183,7 +183,7 @@
     },
     {
       "id": "3",
-      "hostPort": "172.18.0.6:39321",
+      "hostPort": "<local>",
       "isActive": true,
       "rddBlocks": 0,
       "memoryUsed": 0,
@@ -203,8 +203,8 @@
       "maxMemory": 566231040,
       "addTime": "2026-11-11T04:14:58.883GMT",
       "executorLogs": {
-        "stdout": "http://172.18.0.6:8081/logPage/?appId=app-20261111041452-0006&executorId=3&logType=stdout",
-        "stderr": "http://172.18.0.6:8081/logPage/?appId=app-20261111041452-0006&executorId=3&logType=stderr"
+        "stdout": "<local>",
+        "stderr": "<local>"
       },
       "memoryMetrics": {
         "usedOnHeapStorageMemory": 0,
@@ -221,7 +221,7 @@
     },
     {
       "id": "4",
-      "hostPort": "172.18.0.6:33543",
+      "hostPort": "<local>",
       "isActive": true,
       "rddBlocks": 0,
       "memoryUsed": 0,
@@ -241,8 +241,8 @@
       "maxMemory": 566231040,
       "addTime": "2026-11-11T04:14:57.858GMT",
       "executorLogs": {
-        "stdout": "http://172.18.0.6:8081/logPage/?appId=app-20261111041452-0006&executorId=4&logType=stdout",
-        "stderr": "http://172.18.0.6:8081/logPage/?appId=app-20261111041452-0006&executorId=4&logType=stderr"
+        "stdout": "<local>",
+        "stderr": "<local>"
       },
       "memoryMetrics": {
         "usedOnHeapStorageMemory": 0,
@@ -282,7 +282,7 @@
     },
     {
       "id": "5",
-      "hostPort": "172.18.0.6:32893",
+      "hostPort": "<local>",
       "isActive": true,
       "rddBlocks": 0,
       "memoryUsed": 0,
@@ -302,8 +302,8 @@
       "maxMemory": 566231040,
       "addTime": "2026-11-11T04:14:58.799GMT",
       "executorLogs": {
-        "stdout": "http://172.18.0.6:8081/logPage/?appId=app-20261111041452-0006&executorId=5&logType=stdout",
-        "stderr": "http://172.18.0.6:8081/logPage/?appId=app-20261111041452-0006&executorId=5&logType=stderr"
+        "stdout": "<local>",
+        "stderr": "<local>"
       },
       "memoryMetrics": {
         "usedOnHeapStorageMemory": 0,
