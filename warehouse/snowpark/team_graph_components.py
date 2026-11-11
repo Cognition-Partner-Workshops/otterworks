@@ -42,5 +42,6 @@ $$
     result.write.save_as_table(
         [database, "MART_SPARK", "TEAM_GRAPH_COMPONENTS"],
         mode="overwrite",
+        copy_grants=True,
         comment="sfx-d1110 Replaces the Spark lake output users/team_graph_components.",
     )
