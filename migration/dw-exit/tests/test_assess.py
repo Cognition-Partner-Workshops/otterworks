@@ -149,3 +149,12 @@ def test_validator_rejects(tmp_path, fault):
                 r['wave'] = 1
     path.write_text(yaml.safe_dump(manifest))
     assert check.validate(tmp_path, source=False)
+
+
+def test_missing_snapshot_is_actionable(tmp_path, monkeypatch):
+    import subprocess
+    subprocess.run(['git', 'init', '-q', str(tmp_path)], check=True)
+    monkeypatch.setattr(assess, 'ROOT', tmp_path)
+    monkeypatch.setattr(assess, 'OUT', tmp_path / 'out')
+    with pytest.raises(assess.SnapshotUnavailable, match='git fetch --depth=1 origin ' + assess.BEFORE_STATE):
+        assess.before_state_root()

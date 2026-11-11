@@ -12,6 +12,42 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / 'migration/dw-exit'
+# Act 1 assesses the BEFORE estate: the tree #2678 was generated from (its fork point).
+# Later consumer migrations change the live registry and DBQL, so build() reads this snapshot.
+BEFORE_STATE = 'a48ea0e29c31ca5a5445e22074a99a0549d7d6b3'
+BEFORE_INPUTS = ['warehouse/teradata/ddl', 'warehouse/teradata/scripts', 'warehouse/teradata/macros',
+                 'warehouse/teradata/procedures', 'warehouse/teradata/load', 'warehouse/teradata/dbql',
+                 'etl/informatica/repository', 'etl/informatica/licence.yaml', 'consumers/registry.yaml',
+                 'demos/app/complexity']
+
+
+def git(*args, **kw):
+    return subprocess.run(['git', '-C', str(ROOT), *args], check=True, capture_output=True, **kw).stdout
+
+
+class SnapshotUnavailable(RuntimeError):
+    pass
+
+
+def before_state_root(commit=BEFORE_STATE):
+    """Materialize the pinned BEFORE inputs once (fetching the commit into shallow clones)."""
+    if subprocess.run(['git', '-C', str(ROOT), 'cat-file', '-e', commit + '^{commit}'], capture_output=True).returncode:
+        try:
+            git('fetch', '--quiet', '--depth=1', 'origin', commit)
+        except subprocess.CalledProcessError as error:
+            raise SnapshotUnavailable(
+                f'act 1 reads its BEFORE-state inputs from commit {commit}, which is not in this clone '
+                f'and could not be fetched ({error.stderr.decode(errors="replace").strip() or "no origin"}). '
+                f'While online, run: git fetch --depth=1 origin {commit}'
+            ) from error
+    root = OUT / '.before' / commit
+    if not (root / '.complete').exists():
+        root.mkdir(parents=True, exist_ok=True)
+        subprocess.run(['tar', '-x', '-C', str(root)], input=git('archive', commit, '--', *BEFORE_INPUTS), check=True)
+        (root / '.complete').touch()
+    return root
+
+
 FIELDS = 'id system kind name file loc complexity constructs dbql_reads_90d last_read'.split()
 OBJ = r'[A-Za-z_][\w]*\.[A-Za-z_][\w]*'
 
@@ -58,7 +94,9 @@ def dbql(root):
     return queries, usage, catalog, dead
 
 
-def hidden_consumers(root, readers):
+def hidden_consumers(root, readers, commit=None):
+    if commit:
+        return snapshot_hidden_consumers(commit, readers)
     files = subprocess.check_output(['git', 'ls-files', '-z'], cwd=root).decode().split('\0')
     hits = {user: [] for user in readers}
     for name in files:
@@ -94,7 +132,27 @@ def source_area(row, artifacts, links):
     raise ValueError('Cannot resolve unique source area: ' + row['name'])
 
 
-def build(root=ROOT):
+def scanned(name):
+    return bool(name) and not name.startswith(('warehouse/teradata/dbql/', 'migration/dw-exit/')) \
+        and '/tests/' not in name and not name.startswith('tests/')
+
+
+def snapshot_hidden_consumers(commit, readers):
+    hits = {}
+    for user in readers:
+        out = subprocess.run(['git', '-C', str(ROOT), 'grep', '-l', '-z', '-a', '-w', '-F', '-e', user, commit],
+                             capture_output=True)
+        if out.returncode not in (0, 1):
+            raise RuntimeError(out.stderr.decode())
+        hits[user] = sorted(n.split(':', 1)[1] for n in out.stdout.decode().split('\0') if n and scanned(n.split(':', 1)[1]))
+    return {user: {'warehouse_etl_hits': [p for p in paths if p.startswith(('warehouse/', 'etl/'))],
+                   'repo_hits': paths} for user, paths in sorted(hits.items())}
+
+
+def build(root=None):
+    commit = None
+    if root is None:
+        commit, root = BEFORE_STATE, before_state_root()
     artifacts, links, feeds = [], set(), set()
     def add(kind, name, path, text, constructs=()):
         tokens = sorted(set(constructs) | {token for token in ['.IF', '.GOTO', '.EXPORT', 'QUALIFY', 'MERGE', 'VOLATILE', 'SET TABLE', 'CURSOR'] if token in text.upper()})
@@ -185,7 +243,7 @@ def build(root=ROOT):
             q = queries[u['QueryID']]
             reads[u['ObjectDatabaseName'] + '.' + u['ObjectTableName']].append(q)
             principals.add(q['UserName'])
-    scans = hidden_consumers(root, principals)
+    scans = hidden_consumers(root, principals, commit)
     consumers = []
     # Utility and batch accounts are not end-user consumers.
     batch_accounts = {q['UserName'] for q in queries.values() if q['StatementGroup'] in ('UTILITY', 'ETL', 'BATCH')}

@@ -76,3 +76,22 @@ def test_dead_feeders(estate=None):
         if row['name'] in data['dead_dependents']:
             assert row['target_type'] == 'retire'
             assert 'feeds only dead objects' in row['risk_reasons']
+
+
+def test_load_uses_pinned_dbql(monkeypatch):
+    import assess
+    loaded = {}
+    monkeypatch.setattr(control, 'tag', lambda *a: None)
+    monkeypatch.setattr(control, 'create_table', lambda *a: None)
+    monkeypatch.setattr(control, 'build', lambda: {'scans': {}})
+    monkeypatch.setattr(control, 'insert_rows', lambda cursor, table, fields, records: loaded.__setitem__(table, len(records)))
+
+    class Cursor:
+        def execute(self, *args):
+            pass
+
+    control.load(Cursor())
+    pinned = assess.before_state_root() / 'warehouse/teradata/dbql/qrylog.csv'
+    with pinned.open() as stream:
+        expected = sum(1 for _ in stream) - 1
+    assert loaded['DBQL_QRYLOG'] == expected == 7990
