@@ -1,0 +1,1 @@
+17 2 * * * /opt/etl/spark/submit/security_alert_anomaly.sh >> /var/log/etl/spark-security_alert_anomaly.log 2>&1

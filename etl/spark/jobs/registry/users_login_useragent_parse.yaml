@@ -1,0 +1,8 @@
+{
+  "job": "users_login_useragent_parse",
+  "language": "python",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "13 2 * * *",
+  "profile": "small"
+}

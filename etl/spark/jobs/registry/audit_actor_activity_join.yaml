@@ -1,0 +1,8 @@
+{
+  "job": "audit_actor_activity_join",
+  "language": "python",
+  "target": "dbt",
+  "status": "legacy",
+  "schedule": "9 1 * * *",
+  "profile": "small"
+}

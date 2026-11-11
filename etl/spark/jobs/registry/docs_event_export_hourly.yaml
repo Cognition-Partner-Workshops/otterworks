@@ -1,0 +1,8 @@
+{
+  "job": "docs_event_export_hourly",
+  "language": "python",
+  "target": "spark_standard_template",
+  "status": "legacy",
+  "schedule": "18 * * * *",
+  "profile": "small"
+}

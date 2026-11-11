@@ -1,0 +1,8 @@
+{
+  "job": "docs_tag_normalize",
+  "language": "python",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "14 2 * * *",
+  "profile": "small"
+}

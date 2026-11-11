@@ -1,0 +1,1 @@
+1 1 * * * /opt/etl/spark/submit/billing_revenue_by_plan.sh >> /var/log/etl/spark-billing_revenue_by_plan.log 2>&1

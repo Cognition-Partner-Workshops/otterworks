@@ -1,0 +1,1 @@
+# 11 2 * * * /opt/etl/spark/submit/docs_folder_legacy_report.sh >> /var/log/etl/spark-docs_folder_legacy_report.log 2>&1

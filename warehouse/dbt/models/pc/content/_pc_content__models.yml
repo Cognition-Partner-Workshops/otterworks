@@ -1,0 +1,37 @@
+version: 2
+models:
+  - name: pc_content__stg_app_user
+    description: m_SFX_STG_APP_USER. Truncate and load of FF_APP_USER.
+    columns:
+      - name: USER_ID
+        tests: [not_null, unique]
+  - name: pc_content__app_user
+    description: m_SFX_APP_USER. Upsert of STG_APP_USER on USER_ID.
+    columns:
+      - name: USER_ID
+        tests: [not_null, unique]
+  - name: pc_content__stg_document
+    description: m_SFX_STG_DOCUMENT. Truncate and load of FF_DOCUMENT.
+    columns:
+      - name: DOCUMENT_ID
+        tests: [not_null, unique]
+  - name: pc_content__document
+    description: m_SFX_DOCUMENT. Documents with a known owner status, upserted on DOCUMENT_ID.
+    columns:
+      - name: DOCUMENT_ID
+        tests: [not_null, unique]
+      - name: OWNER_USER_ID
+        tests:
+          - not_null
+          - relationships:
+              to: ref('pc_content__app_user')
+              field: USER_ID
+  - name: pc_content__doc_share
+    description: m_SFX_DOC_SHARE. Shares with access level from the first role grant, upserted on SHARE_ID.
+    columns:
+      - name: SHARE_ID
+        tests: [not_null, unique]
+      - name: ACCESS_LEVEL
+        tests:
+          - accepted_values:
+              values: [OWNER, EDIT, VIEW, COMMENT]

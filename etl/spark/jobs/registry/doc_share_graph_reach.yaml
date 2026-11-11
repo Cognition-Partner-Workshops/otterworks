@@ -1,0 +1,8 @@
+{
+  "job": "doc_share_graph_reach",
+  "language": "python",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "23 3 * * *",
+  "profile": "small"
+}

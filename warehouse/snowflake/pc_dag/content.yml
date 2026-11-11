@@ -1,0 +1,35 @@
+# wf_SFX_CONTENT_DAILY as a Snowflake Task DAG (SFX_D1110_PC_CONTENT_*).
+# Each workflow link has the condition $<session>.Status=SUCCEEDED, which maps to AFTER:
+# a child task runs only when its predecessor succeeds.
+# The workflow has no worklets, decisions, timers or event waits.
+# s_m_SFX_ROLE_GRANT, s_m_SFX_LOGIN_EVENT and s_m_SFX_TEAM_MEMBER (disabled) belong to another
+# effort and have no task here. The DOC_SHARE model reads the ROLE_GRANT landing file itself.
+# Each session task checks the dbt-built relation: it fails on an empty table (division by zero)
+# or a duplicate business key, so a bad build stops the downstream tasks.
+root: START
+tasks:
+  START:
+    sql: SELECT 1
+  STG_APP_USER:
+    after: [START]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT USER_ID), 1, 0) FROM SFX_D1110_AFTER.PC_CONTENT.STG_APP_USER
+  APP_USER:
+    after: [STG_APP_USER]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT USER_ID), 1, 0) FROM SFX_D1110_AFTER.PC_CONTENT.APP_USER
+  STG_DOCUMENT:
+    after: [APP_USER]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT DOCUMENT_ID), 1, 0) FROM SFX_D1110_AFTER.PC_CONTENT.STG_DOCUMENT
+  DOCUMENT:
+    after: [STG_DOCUMENT]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT DOCUMENT_ID), 1, 0) FROM SFX_D1110_AFTER.PC_CONTENT.DOCUMENT
+  DOC_SHARE:
+    after: [DOCUMENT]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: SELECT COUNT(*) / IFF(COUNT(*) > 0 AND COUNT(*) = COUNT(DISTINCT SHARE_ID), 1, 0) FROM SFX_D1110_AFTER.PC_CONTENT.DOC_SHARE
+  FINISH:
+    after: [DOC_SHARE]
+    sql: SELECT 1

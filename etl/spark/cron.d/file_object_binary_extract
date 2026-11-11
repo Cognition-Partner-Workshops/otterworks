@@ -1,0 +1,1 @@
+26 3 * * * /opt/etl/spark/submit/file_object_binary_extract.sh >> /var/log/etl/spark-file_object_binary_extract.log 2>&1

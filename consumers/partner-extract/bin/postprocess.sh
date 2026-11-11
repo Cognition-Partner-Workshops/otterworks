@@ -5,7 +5,7 @@ if (( $# != 2 )); then
   exit 2
 fi
 LC_ALL=C awk '
-function fail() { bad = 1; print "invalid BTEQ report row " NR > "/dev/stderr"; exit 1 }
+function fail() { bad = 1; print "invalid warehouse report row " NR > "/dev/stderr"; exit 1 }
 function cents(value, parts, negative) {
   if (value !~ /^-?[0-9]*\.[0-9][0-9]$/) fail()
   negative = sub(/^-/, "", value)

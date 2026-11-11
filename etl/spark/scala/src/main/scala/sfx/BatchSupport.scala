@@ -3,6 +3,82 @@ package sfx
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object BatchSupport {
+  def savePartition(frame: DataFrame, area: String, name: String, runDate: String): Unit = {
+    require(runDate.matches("\\d{4}-\\d{2}-\\d{2}"), "runDate must be YYYY-MM-DD")
+    val path = s"${sys.env.getOrElse("LAKE_DIR", "/opt/lake")}/$area/$name"
+    if (frame.isEmpty) {
+      frame.write.mode("overwrite").option("partitionOverwriteMode", "static")
+        .parquet(s"$path/run_date=$runDate")
+    } else {
+      frame.withColumn("run_date", org.apache.spark.sql.functions.lit(runDate)).write.mode("overwrite")
+        .option("partitionOverwriteMode", "dynamic").partitionBy("run_date").parquet(path)
+    }
+  }
+
+  private def quote(name: String): String = "\"" + name.replace("\"", "\"\"") + "\""
+
+  private def targetColumns(connection: java.sql.Connection, table: String): Seq[String] = {
+    val query = connection.prepareStatement(
+      "SELECT attname FROM pg_attribute WHERE attrelid = CAST(? AS regclass) AND attnum > 0 " +
+        "AND NOT attisdropped ORDER BY attnum")
+    try {
+      query.setString(1, table)
+      val rows = query.executeQuery()
+      val names = scala.collection.mutable.ArrayBuffer.empty[String]
+      while (rows.next()) names += rows.getString(1)
+      names.toList
+    } finally query.close()
+  }
+
+  def refreshColumns(source: Seq[String], target: Seq[String]): Seq[(String, String)] = {
+    val folded = target.groupBy(_.toLowerCase)
+    source.map { column =>
+      if (target.contains(column)) (column, column)
+      else folded.getOrElse(column.toLowerCase, Nil) match {
+        case Seq(name) => (name, column)
+        case _ => throw new IllegalArgumentException(s"Target has no unique column for $column")
+      }
+    }
+  }
+
+  def saveJdbcRefresh(frame: DataFrame, table: String): Unit = {
+    require(table.matches("[a-zA-Z_][a-zA-Z_0-9]*\\.[a-zA-Z_][a-zA-Z_0-9]*"), "Expected schema.table identifier")
+    val url = sys.env.getOrElse("TD_JDBC_URL", "jdbc:postgresql://sfx-tdemu:5432/sfx_teradata")
+    val user = sys.env.getOrElse("TD_JDBC_USER", "etl_batch")
+    val password = sys.env("TD_JDBC_PASSWORD")
+    val stage = table.split("\\.")(0) + "._sfx_stage_" + java.util.UUID.randomUUID().toString.replace("-", "")
+    val connection = java.sql.DriverManager.getConnection(url, user, password)
+    val statement = connection.createStatement()
+    try {
+      frame.write.format("jdbc").option("url", url).option("user", user).option("password", password)
+        .option("driver", "org.postgresql.Driver").option("dbtable", stage).mode("error").save()
+      connection.setAutoCommit(false)
+      // Identifiers are regex-validated; stage adds a UUID and columns are quoted below.
+      // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
+      statement.execute(s"CREATE TABLE IF NOT EXISTS $table (LIKE $stage INCLUDING ALL)")
+      statement.execute(s"LOCK TABLE $table IN ACCESS EXCLUSIVE MODE")
+      // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
+      statement.executeUpdate(s"DELETE FROM $table")
+      val pairs = refreshColumns(frame.columns.toSeq, targetColumns(connection, table))
+      val targets = pairs.map(pair => quote(pair._1)).mkString(", ")
+      val sources = pairs.map(pair => quote(pair._2)).mkString(", ")
+      // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
+      statement.executeUpdate(s"INSERT INTO $table ($targets) SELECT $sources FROM $stage")
+      connection.commit()
+    } catch {
+      case error: Exception => connection.rollback(); throw error
+    } finally {
+      try {
+        connection.setAutoCommit(true)
+        // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
+        statement.execute(s"DROP TABLE IF EXISTS $stage")
+      } finally {
+        statement.close()
+        connection.close()
+      }
+    }
+  }
+
   def session(name: String): SparkSession = SparkSession.builder.appName(name).getOrCreate()
 
   def landing(spark: SparkSession, area: String, table: String): DataFrame =

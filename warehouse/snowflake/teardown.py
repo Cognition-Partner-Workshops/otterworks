@@ -171,6 +171,8 @@ def cleanup(cursor, token, dry_run=False, include_provisioned=False, suspend_onl
                    and removable(obj, token)]
         for obj in orphans:
             print(f'EXECUTE DROP DATABASE IF EXISTS {obj.sql_name} CASCADE;')
+            # Discovered server object; sql_name quotes and escapes each identifier part.
+            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
             cursor.execute(f'DROP DATABASE IF EXISTS {obj.sql_name} CASCADE')
         if orphans:
             remaining, more_denied = discover(cursor, token, dropped_users)

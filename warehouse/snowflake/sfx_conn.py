@@ -1,6 +1,7 @@
 """JWT connections and consistent workload attribution."""
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import uuid
@@ -12,7 +13,7 @@ WORKLOADS = yaml.safe_load((ROOT / "workloads.yml").read_text())
 RUN_ID = os.environ.get("SFX_RUN_ID") or str(uuid.uuid4())
 
 
-def query_tag(workload, phase, extra=None):
+def query_tag(workload, phase, extra=None, job=None):
     if workload not in WORKLOADS:
         raise ValueError(f"Unknown workload: {workload}")
     commit = os.environ.get("SFX_COMMIT")
@@ -20,21 +21,27 @@ def query_tag(workload, phase, extra=None):
         commit = subprocess.check_output(
             ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True
         ).strip()
-    return json.dumps({
+    tag = {
         "workload": workload, "phase": phase, "commit": commit,
         "run_id": os.environ.get("SFX_RUN_ID", RUN_ID),
         "run_token": os.environ.get("SNOWFLAKE_RUN_TOKEN", "sfx-d1110"),
         "executed_by": os.environ.get("SFX_EXECUTED_BY", "manual"),
         "built_with": os.environ.get("SFX_BUILT_WITH", "devin"),
-        **(extra or {}),
-    }, separators=(",", ":"))
+    }
+    tag.update(extra or {})
+    job = job or os.environ.get("SFX_SPARK_JOB")
+    if job is not None:
+        if not re.fullmatch(r"[a-z_][a-z0-9_]*", job):
+            raise ValueError("Invalid Spark job identifier")
+        tag.update(run="sfx-d1110", act="spark", job=job)
+    return json.dumps(tag, separators=(",", ":"))
 
 
-def connect(workload, phase, extra_tag=None, **kw):
+def connect(workload, phase, extra_tag=None, job=None, **kw):
     import snowflake.connector
     from cryptography.hazmat.primitives import serialization
 
-    tag = query_tag(workload, phase, extra_tag)
+    tag = query_tag(workload, phase, extra_tag, job=job)
     key = serialization.load_pem_private_key(
         os.environ["SNOWFLAKE_PRIVATE_KEY"].encode(), password=None
     )
@@ -50,6 +57,9 @@ def connect(workload, phase, extra_tag=None, **kw):
     session["QUERY_TAG"] = tag
     session["TIMEZONE"] = "UTC"
     params.update(kw)
+    if json.loads(tag).get("act") == "spark":
+        if params["database"] != "SFX_D1110_AFTER" or params["warehouse"] not in WORKLOADS.values():
+            raise ValueError("Spark act requires SFX_D1110_AFTER and a run-scoped warehouse")
     params["session_parameters"] = session
     return snowflake.connector.connect(**params)
 
@@ -61,12 +71,15 @@ def suspend_all():
         with conn.cursor() as cur:
             for warehouse in WORKLOADS.values():
                 try:
+                    # Warehouse names come only from the repository-owned workload map.
+                    # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                     cur.execute(f"ALTER WAREHOUSE {warehouse} SUSPEND")
                     print(f"{warehouse}: suspended")
                 except ProgrammingError as error:
                     if "already suspended" not in str(error).lower():
                         if error.errno != 90064:
                             raise
+                        # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                         cur.execute(f"SHOW WAREHOUSES LIKE '{warehouse}'")
                         columns = [column[0] for column in cur.description]
                         states = [dict(zip(columns, row)) for row in cur.fetchall()]

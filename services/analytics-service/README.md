@@ -123,27 +123,40 @@ unavailable it is cancelled (not failed), so Docker-less runners stay green.
 
 ## Finance warehouse consumer
 
-This consumer is operated as a separate repository owned by
-**@otterworks/analytics**, using TDPROD / SFX_BILLING account `svc_analytics_dash`.
-It requests trailing twelve calendar months, including the current month, on
-demand and caches successful results for 15 minutes per filter pair.
+The finance rollup route reads Snowflake using JWT key-pair authentication.
+Set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE and
+SNOWFLAKE_PRIVATE_KEY (PKCS8 PEM). Sessions use SFX_D1110_AFTER and only
+SFX_D1110_PARITY_WH, with QUERY_TAG
+`{"run":"sfx-d1110","act":"consumers","consumer":"analytics-service"}`.
+Sessions pin TIMEZONE=UTC so calendar-month windows and labels use UTC.
+
+Customer, invoice and payment reads use COMPAT views. Subscription and plan
+catalog reads use CORE_BILLING staging models because COMPAT has no equivalents.
+Invoice/payment customer attribution uses each invoice/payment's CUSTOMER_ID.
+Native calendar truncation, month formatting and COALESCE replace Teradata
+date arithmetic, FORMAT and ZEROIFNULL. Successful results remain cached for
+15 minutes per filter pair. Defaults are in snowflake.conf.
+Shared UPPER(RTRIM(...)) comparisons preserve Teradata NOT CASESPECIFIC CHAR
+semantics for subscription filters, the plan-code join and active-account status:
+case and trailing pad spaces do not affect matching.
 
 `GET /api/v1/analytics/finance/rollups?status=&plan=` returns monthly billed
-revenue, collected cash and active-account counts by region and plan name.
+revenue, collected cash and active-account counts by region and plan name for
+the trailing twelve calendar months, including the current month.
 Filters select subscription STATUS_CD and PLAN_CODE. Omitted parameters use
-the dashboard configuration in teradata.conf. Invalid empty/oversized filters
+the dashboard configuration in snowflake.conf. Empty or oversized filters
 return 400; warehouse failures return a sanitized 503.
 Set FINANCE_WAREHOUSE_ENABLED=false or finance.warehouse.enabled=false to
 disable the route. It defaults on, without connecting at startup.
 
-Tables and columns in SFX_BILLING:
-- CUSTOMER_ACCOUNT: CUSTOMER_ID, REGION_CD, STATUS_CD, CREATED_DT.
-- SUBSCRIPTION: SUBSCRIPTION_ID, CUSTOMER_ID, STATUS_CD, PLAN_CODE.
-- PLAN_CATALOG: PLAN_CODE, PLAN_NAME.
-- INVOICE_HDR: INVOICE_ID, SUBSCRIPTION_ID, CUSTOMER_ID, INVOICE_DT, SUBTOTAL_AMOUNT.
-- PAYMENT: INVOICE_ID, CUSTOMER_ID, PAYMENT_DT, AMOUNT.
-
 Revenue uses invoice subtotals for the selected subscriptions, excluding tax.
+Specifically, revenue is COMPAT.INVOICE_HDR.SUBTOTAL_AMOUNT, preserving the
+legacy measure. It equals TOTAL_AMOUNT-ZEROIFNULL(TAX_AMOUNT) when those
+invoice columns reconcile; the consumer does not derive revenue from total
+and tax. Amount provenance depends on the shared COMPAT views and data.
+If they expose landed pre-invoicing values instead of P_MONTHLY_INVOICE
+recalculated amounts, BILLED_REVENUE differs from Teradata. A passing live
+contract checks shape and calendar semantics, not monetary parity.
 Cash is grouped independently by payment month, attributed through each
 payment's invoice to its subscription. Both are aggregated before joining the
 month/account grid. Accounts are deduplicated within each plan; active counts
@@ -151,54 +164,38 @@ use current account status ACTIVE and a creation date before the month's end.
 Historical status changes are unavailable. Matching accounts with no activity
 return zero amounts. No FX conversion is performed; totals assume a common
 reporting currency. Seeded multi-currency aggregates are mechanical control totals.
-The account's DBQL inventory also reads invoice revenue from this billing estate.
-
-SQL retains SEL, TOP 12, ZEROIFNULL, ADD_MONTHS, CURRENT_DATE integer date
-arithmetic, EXTRACT and FORMAT casts. The runtime driver is
-com.teradata.jdbc.TeraDriver. Fake connection defaults live beside the DAL in
-`src/main/resources/com/otterworks/analytics/finance/teradata.conf`.
 
 ### Checks
-From this directory with Java 17 and sbt:
+
 ```sh
 sbt compile test
 WAREHOUSE_CONTRACT_TARGET=replay sbt "contract:test"
+WAREHOUSE_CONTRACT_TARGET=snowflake sbt "contract:test"
 ```
-The separate contract configuration is excluded from test. CI additionally runs
-the replay contract without credentials or a warehouse.
 
-For live execution, seed the emulator and install the shared Python bridge
-dependencies as documented in ../../consumers/contract-kit/README.md:
+Missing Snowflake credentials cancel the live test. It executes the production
+repository SQL and prints query IDs. On that same connection it asserts
+TIMEZONE=UTC and the exact QUERY_TAG, then checks month labels and both ends of
+the twelve-month window at 00:30 UTC on July 1 and December 1. These instants
+are still in the previous month in Pacific daylight and standard time.
+The live contract compares columns, month
+labels and plan names to replay. Counts and monetary totals intentionally are
+not compared: the live seed has 200,000 rows per table versus 800 in replay.
+
+The legacy reference query is contract-only. Emulator runs always use
+TD_USER=svc_exit_parity. Supply TD_PG_PORT and CONTRACT_KIT_PYTHON as described
+in ../../consumers/contract-kit/README.md. Targets teradata-emulator and
+snowflake-semantics remain available. Replay needs neither Python nor a DB.
+The separate case-comparison spec always probes snowflake-semantics: without
+a local emulator it cancels; in CI it bootstraps an isolated 800-row emulator
+via contract/start-emulator.sh. Its namespace defaults to
+sfx-d1110-analytics-ci (override ANALYTICS_CONTRACT_NS).
+The fixture was captured with ROWS_PER_TABLE=800 and BUSINESS_DATE=20261109.
+CONTRACT_RECORD=true records live emulator output under
+contract/recorded/teradata/ while still checking expected row counts and sums:
+
 ```sh
-export TD_PG_PORT=54902
-export CONTRACT_KIT_PYTHON=/path/to/contract-venv/bin/python
-sbt "contract:test"
-CONTRACT_RECORD=true sbt "contract:test"
+WAREHOUSE_CONTRACT_TARGET=teradata-emulator CONTRACT_RECORD=true sbt "contract:test"
 ```
-The default target teradata-emulator executes the actual DAL SQL through the
-shared bridge. Its runtime defaults to this repository's warehouse/teradata;
-TD_EMULATOR_HOME overrides the repository root for a separate worktree.
-CONTRACT_KIT_BRIDGE optionally overrides the bridge script path.
-The contract client substitutes escaped SQL string literals for the two
-parameters before invoking the bridge; production continues to use JDBC binds.
-CONTRACT_RECORD=true saves live output under contract/recorded/teradata/ while
-still checking expected row counts and sums. Review expected files after any
-intentional data or query change. The fixture was captured from the emulator
-seeded with ROWS_PER_TABLE=800 and BUSINESS_DATE=20261109.
 
-WAREHOUSE_CONTRACT_TARGET accepts teradata-emulator, replay,
-snowflake-semantics and snowflake. Replay reads recorded JSON locally without
-Python or a database. The Snowflake placeholder requires SNOWFLAKE_ACCOUNT,
-USER, ROLE, WAREHOUSE and PRIVATE_KEY; missing values cancel the spec, while a
-configured placeholder raises an explicit unsupported-operation error.
-Destination: SFX_D1110_AFTER.COMPAT; session QUERY_TAG:
-`{"run":"sfx-d1110","act":"consumers","consumer":"analytics-service"}`.
-
-Without local sbt, unit/replay commands can use:
-```sh
-docker run --rm -v "$PWD":/w -v "$HOME/.ivy2":/root/.ivy2 \
-  -v "$HOME/.sbt":/root/.sbt -v "$HOME/.cache/coursier":/root/.cache/coursier \
-  -w /w sbtscala/scala-sbt:eclipse-temurin-17.0.21_9_1.13.1_3.3.9 sbt compile test
-```
-Live container runs additionally need Python with the bridge dependencies,
-the whole repository mounted at a stable path, and access to the emulator port.
+Review expected files after any intentional data or query change.

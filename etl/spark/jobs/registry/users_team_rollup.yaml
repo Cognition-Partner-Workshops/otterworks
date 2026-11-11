@@ -1,0 +1,8 @@
+{
+  "job": "users_team_rollup",
+  "language": "python",
+  "target": "dbt",
+  "status": "legacy",
+  "schedule": "7 1 * * *",
+  "profile": "small"
+}

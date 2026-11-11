@@ -1,0 +1,8 @@
+{
+  "job": "docs_storage_by_owner",
+  "language": "python",
+  "target": "dbt",
+  "status": "legacy",
+  "schedule": "4 1 * * *",
+  "profile": "small"
+}

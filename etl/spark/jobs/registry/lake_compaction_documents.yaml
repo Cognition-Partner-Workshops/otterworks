@@ -1,0 +1,9 @@
+{
+  "job": "lake_compaction_documents",
+  "language": "scala",
+  "target": "spark_standard_template",
+  "status": "legacy",
+  "schedule": "19 2 * * *",
+  "profile": "small",
+  "class": "sfx.LakeCompactionDocuments"
+}
