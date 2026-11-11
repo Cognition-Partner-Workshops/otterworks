@@ -23,9 +23,17 @@ def render():
             alias = aliases.get(col)
             if alias and alias != col and alias in columns:
                 selections[index] = f'    cast(coalesce({col}, {alias}) as {kind}) as {col.lower()}'
+            if table == 'CREDIT_NOTE' and col == 'ISSUE_DATE':
+                selections[index] = '    cast(coalesce(ISSUE_DATE, CREDIT_DT) as DATE) as issue_date'
+            if table == 'INVOICE_HDR' and col == 'DUE_DATE':
+                selections[index] = """    cast(coalesce(DUE_DATE, dateadd(day,
+        coalesce((select max(c.PAYMENT_TERMS_DAYS)
+                  from {{ source('billing', 'CUSTOMER_ACCOUNT') }} c
+                  where c.CUSTOMER_ID = i.CUSTOMER_ID), 30),
+        coalesce(INVOICE_DATE, INVOICE_DT))) as DATE) as due_date"""
         output[f"{name}.sql"] = (
             "select\n" + ",\n".join(selections)
-            + f"\nfrom {{{{ source('billing', '{table}') }}}}\n"
+            + f"\nfrom {{{{ source('billing', '{table}') }}}}" + (' i' if table == 'INVOICE_HDR' else '') + '\n'
         )
         tests = []
         for column in columns:

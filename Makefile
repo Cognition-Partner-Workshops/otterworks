@@ -63,6 +63,10 @@ sfx-snowflake-deploy: $(SFX_VENV)/.sfx-installed ## Deploy Snowflake scaffold mi
 sfx-snowflake-load: $(SFX_VENV)/.sfx-installed ## Load Snowflake landing files
 	$(SFX_VENV)/bin/python warehouse/snowflake/load.py --area all
 
+.PHONY: sfx-snowflake-load-before
+sfx-snowflake-load-before: sfx-teradata-validate $(SFX_VENV)/.sfx-installed warehouse/.venv/.requirements ## Land processed billing after sfx-teradata-run
+	$(SFX_TD_ENV) $(SFX_VENV)/bin/python warehouse/snowflake/load.py --source teradata-before --area billing --date "$(BUSINESS_DATE)" --teradata-python "$(SFX_TD_PY)"
+
 sfx-snowflake-test: $(SFX_VENV)/.sfx-installed ## Run offline Snowflake scaffold tests
 	$(SFX_TEST_PYTHON) -m pytest warehouse/snowflake/tests -q
 	$(SFX_TEST_PYTHON) warehouse/snowflake/run_dbt.py parse

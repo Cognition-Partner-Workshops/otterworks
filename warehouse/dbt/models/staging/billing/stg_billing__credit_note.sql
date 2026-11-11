@@ -3,7 +3,7 @@ select
     cast(CUSTOMER_ID as BIGINT) as customer_id,
     cast(INVOICE_HDR_ID as BIGINT) as invoice_hdr_id,
     cast(CREDIT_NUMBER as VARCHAR(32)) as credit_number,
-    cast(ISSUE_DATE as DATE) as issue_date,
+    cast(coalesce(ISSUE_DATE, CREDIT_DT) as DATE) as issue_date,
     cast(AMOUNT as NUMBER(12,2)) as amount,
     cast(CURRENCY_CODE as CHAR(3)) as currency_code,
     cast(REASON as VARCHAR(120)) as reason,

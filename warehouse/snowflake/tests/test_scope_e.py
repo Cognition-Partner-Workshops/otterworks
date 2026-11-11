@@ -31,8 +31,12 @@ def test_compat_shapes_normal_and_empty():
     views = dict(re.findall(r'CREATE OR REPLACE VIEW COMPAT\.(\w+).*?\nAS (SELECT.*?);', sql, re.S))
     expected = dict(CUSTOMER='CUSTOMER_ACCOUNT', ACCOUNT='CUSTOMER_ACCOUNT', INVOICE='INVOICE_HDR',
                     INVOICE_LINE='INVOICE_LINE', PAYMENT='PAYMENT', GL_JOURNAL_LINE='GL_JOURNAL_LINE')
-    assert set(views) == {*expected, 'DAILY_USAGE'}
+    additional = {'GL_ACCOUNT', 'CUSTOMER_ACCOUNT', 'INVOICE_HDR', 'CREDIT_NOTE',
+                  'V_INVOICE_REVENUE', 'INVOICE_REVENUE'}
+    assert set(views) == {*expected, 'DAILY_USAGE', *additional}
     with sqlite3.connect(':memory:') as db:
+        db.create_function('TO_CHAR', 2, lambda value, pattern: value[:7] if value else None)
+        db.execute("attach database ':memory:' as COMPAT")
         for area in ('billing', 'users'):
             db.execute(f"attach database ':memory:' as RAW_{area.upper()}")
             for table, columns in spec[area].items():
@@ -42,6 +46,8 @@ def test_compat_shapes_normal_and_empty():
                     rows = list(csv.reader(stream, delimiter='|'))[1:]
                 db.executemany(f'insert into RAW_{area.upper()}.{table} values ({",".join("?" for _ in columns)})', rows)
         for name, query in views.items():
+            if name in additional:
+                continue
             cursor = db.execute(query)
             assert len(cursor.fetchall()) == 20
             columns = [c[0] for c in cursor.description]
@@ -52,9 +58,18 @@ def test_compat_shapes_normal_and_empty():
                 assert columns == wanted
             else:
                 assert columns == ['CUSTOMER_ID', 'USAGE_DATE', 'CURRENCY_CODE', 'QUANTITY', 'AMOUNT']
+        for name in ('ACCOUNT', 'INVOICE'):
+            db.execute(f'create table COMPAT.{name} as ' + views[name])
+        for name in additional - {'INVOICE_REVENUE'}:
+            cursor = db.execute(views[name])
+            assert cursor.fetchall()
+            db.execute(f'create table COMPAT.{name} as ' + views[name])
+        assert db.execute(views['INVOICE_REVENUE']).fetchall() == db.execute(views['V_INVOICE_REVENUE']).fetchall()
         for area in ('billing', 'users'):
             for table in spec[area]:
                 db.execute(f'delete from RAW_{area.upper()}.{table}')
+        for name in ('ACCOUNT', 'INVOICE', 'V_INVOICE_REVENUE'):
+            db.execute(f'delete from COMPAT.{name}')
         assert all(db.execute(query).fetchall() == [] for query in views.values())
     assert 'GRANT SELECT ON FUTURE VIEWS' not in sql
     assert 'GRANT USAGE ON SCHEMA COMPAT TO ROLE SFX_D1110_ROLE' in sql

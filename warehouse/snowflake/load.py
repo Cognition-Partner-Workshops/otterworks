@@ -8,6 +8,7 @@ import yaml
 
 from sfx_conn import ROOT, connect
 from seed_contract import prepare_seed
+from teradata_before import prepare_before
 
 SPEC = yaml.safe_load((ROOT / "landing_columns.yml").read_text())
 
@@ -17,11 +18,20 @@ def main():
     parser.add_argument("--area", choices=["all", *SPEC], default="all")
     parser.add_argument("--landing-dir", type=Path)
     parser.add_argument("--date")
-    parser.add_argument("--source", choices=["fixtures", "seed"], default="fixtures")
+    parser.add_argument("--source", choices=["fixtures", "seed", "teradata-before"], default="fixtures")
+    parser.add_argument('--teradata-python', type=Path, default=ROOT.parent / '.venv/bin/python')
     parser.add_argument("--truncate", action="store_true")
     args = parser.parse_args()
     if args.date is not None and not re.fullmatch(r"[0-9]{8}", args.date):
         parser.error("--date must be yyyymmdd")
+    if args.source == 'teradata-before':
+        if not args.date or args.area not in ('all', 'billing'):
+            parser.error('--source teradata-before requires --date and --area billing or all')
+        prepared = prepare_before(args.landing_dir or ROOT.parent / 'landing/.teradata-before',
+                                  args.date, args.teradata_python)
+        with connect('load', 'copy_teradata_before') as conn, conn.cursor() as cur:
+            load_seed(cur, prepared, 'billing', truncate=True, stage_prefix='teradata-before')
+        return
     if args.source == 'seed':
         if not args.date:
             parser.error('--source seed requires --date yyyymmdd')
@@ -58,7 +68,7 @@ def main():
                     print(f"{area}.{row['table']}: {row['rows_loaded']} rows loaded")
 
 
-def load_seed(cur, prepared, area='all', truncate=False):
+def load_seed(cur, prepared, area='all', truncate=False, stage_prefix='seed'):
     for source_area, table, path, expected in prepared:
         if area != 'all' and source_area != area:
             continue
@@ -66,7 +76,7 @@ def load_seed(cur, prepared, area='all', truncate=False):
         match = re.fullmatch(r'([0-9]{8})\.psv\.gz', path.name)
         if not match:
             raise ValueError(f'Invalid prepared seed filename: {path.name}')
-        stage = f'@LANDING.LANDING_STAGE/seed/{source_area}/{table}/{match.group(1)}/'
+        stage = f'@LANDING.LANDING_STAGE/{stage_prefix}/{source_area}/{table}/{match.group(1)}/'
         uri = path.resolve().as_uri().replace("'", "''")
         cur.execute(f"PUT '{uri}' {stage} AUTO_COMPRESS=FALSE OVERWRITE={'TRUE' if truncate else 'FALSE'}")
         if truncate:

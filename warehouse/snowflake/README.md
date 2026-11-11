@@ -1,5 +1,46 @@
 # Snowflake scaffold
 
+## Processed Teradata billing handoff
+
+To land invoiced before-state outputs without implementing legacy invoice logic
+in Snowflake, first run the emulator, then replace only the three billing outputs:
+
+```sh
+make sfx-teradata-run NS=sfx-d1110-before BUSINESS_DATE=20261109
+make sfx-snowflake-deploy
+make sfx-snowflake-load-before NS=sfx-d1110-before BUSINESS_DATE=20261109
+make sfx-snowflake-dbt
+```
+
+The additive `load.py --source teradata-before --area billing --date 20261109`
+mode exports processed SFX_BILLING.INVOICE_HDR, INVOICE_LINE and GL_JOURNAL_LINE
+using the separate Teradata interpreter (`--teradata-python`). Headered,
+pipe-delimited gzip files remain under ignored warehouse/landing/.teradata-before.
+All exports must be nonempty and match the RAW contract before connecting to
+Snowflake. This mode always TRUNCATEs and COPYs exactly those three tables with
+explicit date filenames, replacing rather than appending. Other RAW data stays
+on the shared seed. Fixture and seed loading, including seed-derived journals,
+are unchanged. Journal IDs and fixture column aliases are naming adapters;
+invoice amounts and journal debits/credits come unchanged from the emulator.
+
+V004 codifies the consumer views using only V001–V003 columns; governance tags
+are applied after the tag exists in V006. V008 is the idempotent live upgrade:
+applied V004 edits are logged as checksum drift and skipped by schemachange 4.0.1.
+COMPAT.CREDIT_NOTE mirrors the Teradata credit shape plus ISSUE_DATE;
+COMPAT.V_INVOICE_REVENUE mirrors its currency/month revenue view, with
+COMPAT.INVOICE_REVENUE retained as an alias. Currency grouping preserves case
+and trims trailing CHAR padding, matching the emulator revenue view. V009 applies
+that fidelity correction to an already-applied initial V008 without rewriting
+history; V008 itself also contains the final definition for fresh deployments.
+Deploy governance reapply covers every COMPAT view.
+
+Invoice due dates preserve actual DUE_DATE first, otherwise use customer
+PAYMENT_TERMS_DAYS with INVOICE_DATE/INVOICE_DT, and use **net 30 only as the final
+fallback** when customer terms are absent. The current processed emulator has no
+due-date column and the shared seed supplies no terms, so its rows use that
+approved final fallback. Credit ISSUE_DATE falls back to CREDIT_DT. The same
+date rules apply in dbt staging. No invoice-run procedure is translated here.
+
 Use Python 3.10. Snowflake targets install into warehouse/snowflake/.venv,
 separate from Teradata's warehouse/.venv; SFX_VENV overrides that location.
 Supply SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE,
@@ -70,11 +111,14 @@ Without --truncate, existing RAW rows are not removed. --landing-dir overrides
 the input directory; --source seed requires --date. No generated files are committed.
 
 landing_columns.yml is the additive superset of both formats. V007 adds the seed
-columns and only widens existing types where necessary; V001–V006 are immutable.
+columns and only widens existing types where necessary. V001–V003 and V005–V007
+remain unchanged; V004 codifies the initial COMPAT contract in place, with live
+replacements supplied by V008/V009 rather than replaying the applied V004.
 tools/render_seed.py renders V007/the superset; render_raw.py remains bound to the
 frozen fixture/V002 contract. dbt exposes both column sets and tests the shared
 primary/foreign keys, using legacy fixture IDs as fallbacks. Legacy-only fields
-absent from the shared seed remain NULL, not invented values. Catalog, chart and
+absent from shared RAW seed data remain NULL; the approved COMPAT/staging date
+fallbacks above are explicit exceptions at projection time. Catalog, chart and
 tax records have no customer association in the shared seed, so customer FK tests
 apply only to tables whose actual seed contract includes CUSTOMER_ID.
 

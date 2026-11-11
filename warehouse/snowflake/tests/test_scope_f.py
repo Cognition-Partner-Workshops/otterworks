@@ -23,11 +23,11 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_post_deploy_governance():
     calls = []
     governance.reapply(SimpleNamespace(execute=lambda sql, params: calls.append((sql, params))))
-    assert len(governance.objects()) == 15
-    assert len(calls) == 30
+    assert len(governance.objects()) == 28
+    assert len(calls) == 56
     assert all('SET TAG GOVERNANCE.SFX_RUN' in sql for sql, _ in calls[::2])
     assert all('COMMENT ON' in sql and 'sfx-d1110' in params[0] for sql, params in calls[1::2])
-    assert len(set(governance.objects())) == 15
+    assert len(set(governance.objects())) == 28
     assert 'reapply(cursor)' in (ROOT / 'deploy.py').read_text()
     assert "ALLOWED_VALUES 'sfx-d1110'" in (ROOT / 'migrations/V006__governance.sql').read_text()
 
