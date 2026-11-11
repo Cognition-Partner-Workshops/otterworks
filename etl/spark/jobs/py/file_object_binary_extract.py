@@ -3,6 +3,8 @@ from functools import reduce
 import heapq
 import math
 import os
+from pathlib import Path
+import shutil
 
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import broadcast, col, regexp_extract, udf
@@ -36,6 +38,20 @@ def group_count(spark, files, total_bytes):
     return min(len(files), max(cores, math.ceil(total_bytes / TARGET_GROUP_BYTES)))
 
 
+def drop_unpartitioned(path):
+    """Legacy runs wrote parquet straight into the job directory; keep only run_date= partitions."""
+    root = Path(path)
+    if not root.is_dir():
+        return
+    for entry in root.iterdir():
+        if entry.name.startswith("run_date="):
+            continue
+        if entry.is_dir():
+            shutil.rmtree(entry)
+        else:
+            entry.unlink()
+
+
 def main():
     spark = session("file_object_binary_extract")
     run_date = os.environ.get("SFX_RUN_DATE") or datetime.now(timezone.utc).date().isoformat()
@@ -56,6 +72,7 @@ def main():
     ).select("STORAGE_KEY", "EXTRACT.*").cache()
     print(f"BINARY_GROUPS={len(groups)} BINARY_EXTRACTED={extracted.count()}")
     result = landing(spark, "FILE_OBJECT").join(broadcast(extracted), "STORAGE_KEY")
+    drop_unpartitioned(f"{os.environ.get('LAKE_DIR', '/opt/lake')}/documents/file_object_binary_extract")
     save_partition(result, "documents", "file_object_binary_extract", run_date)
     print(f"BINARY_OUTPUT_ROWS={result.count()} RUN_DATE={run_date}")
     spark.stop()
