@@ -7,6 +7,7 @@ replica can validate a link without a shared lookup table.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import os
 
 import structlog
@@ -24,17 +25,18 @@ class ShareLinkService:
 
     def mint_token(self, document_id: str) -> str:
         """Return the share token for a document."""
-        # Unkeyed MD5 is the OW-SEC-403 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor replaces it with a
-        # keyed MAC and removes this suppression.
-        # nosemgrep: python.lang.security.insecure-hash-algorithms-md5.insecure-hash-algorithm-md5
-        digest = hashlib.md5(f"{document_id}:{self.salt}".encode()).hexdigest()
+        secret = os.environ.get("SHARE_LINK_SECRET")
+        if not secret:
+            raise ValueError("SHARE_LINK_SECRET is required")
+        digest = hmac.new(
+            secret.encode(), f"{document_id}:{self.salt}".encode(), hashlib.sha256
+        ).hexdigest()
         return digest[:TOKEN_LENGTH]
 
     def verify_token(self, document_id: str, token: str) -> bool:
         """Return True when the token is a valid share token for the document."""
         expected = self.mint_token(document_id)
-        ok = expected == token
+        ok = isinstance(token, str) and hmac.compare_digest(expected.encode(), token.encode())
         if not ok:
             logger.info("share_token_rejected", document_id=document_id)
         return ok

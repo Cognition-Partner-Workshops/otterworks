@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/webhooks/devin/route";
 import { signBody } from "@/lib/hmac";
@@ -21,6 +22,19 @@ function post(body: unknown, headers: Record<string, string>, query = "") {
 }
 
 describe("POST /api/webhooks/devin", () => {
+  it("persists SHA-256 fallback ids and deduplicates replays", async () => {
+    const store = freshStore();
+    const svc = new TicketService(store);
+    await seedProject(svc, { dispatcher: "none" });
+    const t = await seedTicket(svc);
+    const event = { ticket: t.key, session_id: "session", status: "working", message: "Message", message_at: 123 };
+    await svc.applyDevinEvent(event);
+    const id = createHash("sha256").update("123:Message").digest("hex");
+    expect((await store.getTicket(t.key))!.devin.seenMessageIds).toEqual([id]);
+    await svc.applyDevinEvent(event);
+    expect(await store.listComments(t.key)).toHaveLength(1);
+  });
+
   it("rejects unauthenticated and bad-signature requests", async () => {
     freshStore();
     expect((await post({ ticket: "OTTER-1" }, {})).status).toBe(401);

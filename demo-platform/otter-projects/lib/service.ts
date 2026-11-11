@@ -384,7 +384,7 @@ export class TicketService {
       const id =
         ev.message_id ||
         crypto
-          .createHash("sha1")
+          .createHash("sha256")
           .update(ev.message_at !== undefined ? `${ev.message_at}:${message}` : `${ev.session_id ?? ""}:${ev.status ?? ""}:${message}`)
           .digest("hex");
       if (!devin.seenMessageIds.includes(id)) {
