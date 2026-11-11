@@ -86,3 +86,32 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+async def test_quote_in_title_filter_is_a_literal(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "O'Brien notes")
+    await _create(client, owner_id, "Other")
+
+    resp = await client.get("/api/v1/documents/", params={"title": "o'brien"})
+
+    assert resp.status_code == 200
+    assert [item["title"] for item in resp.json()["items"]] == ["O'Brien notes"]
+
+
+@pytest.mark.asyncio
+async def test_tautology_in_content_type_matches_nothing(client: AsyncClient, owner_id: uuid.UUID):
+    await _create(client, owner_id, "Plan", content_type="text/markdown")
+
+    resp = await client.get("/api/v1/documents/", params={"content_type": "x' OR '1'='1"})
+
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_unknown_sort_column_is_rejected(client: AsyncClient, owner_id: uuid.UUID):
+    resp = await client.get("/api/v1/documents/", params={"sort": "title; DROP TABLE documents"})
+
+    assert resp.status_code == 400
+    assert resp.json()["detail"] == "Invalid filter"
