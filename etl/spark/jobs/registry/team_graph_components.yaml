@@ -2,8 +2,10 @@
   "job": "team_graph_components",
   "language": "scala",
   "target": "snowpark_python",
-  "status": "legacy",
+  "status": "snowflake",
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job team_graph_components",
   "schedule": "22 3 * * *",
   "profile": "small",
+  "ingest": ["users.TEAM_MEMBER"],
   "class": "sfx.TeamGraphComponents"
 }
