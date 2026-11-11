@@ -1,0 +1,26 @@
+{
+  "name": "dbx-d1111-spark-hourly",
+  "tasks": [
+    {
+      "task_key": "docs_event_export_hourly",
+      "run_job_task": {
+        "job_id": 274170347871647
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    }
+  ],
+  "max_concurrent_runs": 1,
+  "tags": {
+    "run_token": "dbx-d1111",
+    "expires": "2026-11-24",
+    "act": "spark"
+  },
+  "schedule": {
+    "quartz_cron_expression": "0 18 * * * ?",
+    "timezone_id": "UTC",
+    "pause_status": "PAUSED"
+  }
+}

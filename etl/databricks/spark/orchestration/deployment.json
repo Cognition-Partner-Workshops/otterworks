@@ -1,0 +1,18 @@
+{
+  "daily": {
+    "job_id": 257779550422003,
+    "schedule": {
+      "quartz_cron_expression": "0 0 1 * * ?",
+      "timezone_id": "UTC",
+      "pause_status": "PAUSED"
+    }
+  },
+  "hourly": {
+    "job_id": 992312517840786,
+    "schedule": {
+      "quartz_cron_expression": "0 18 * * * ?",
+      "timezone_id": "UTC",
+      "pause_status": "PAUSED"
+    }
+  }
+}

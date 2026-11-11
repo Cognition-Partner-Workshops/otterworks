@@ -1,0 +1,863 @@
+[
+  {
+    "after_object": "cpw.dbx_d1111_after.billing__spark_billing_invoice_summary_daily",
+    "databricks_job_id": "822926870681999",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.005417778,
+    "first_failure": "inputs.sql INVOICE_LINE adapter failed to parse (comment ended the statement); fixed and re-run. DUE_DATE/STATUS unmapped but not read by the job",
+    "first_failure_statement_id": "01f1dd84-95f3-1cda-a35c-ca54dfaa0b3f",
+    "idempotence_statement_ids": [
+      "01f1dd85-29df-115d-81b3-1f9173126620",
+      "01f1dd85-2e59-11e2-99ca-b7af5b74dc61"
+    ],
+    "job": "billing_invoice_summary_daily",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.billing__invoice_hdr",
+      "cpw.dbx_d1111_before.billing__invoice_line"
+    ],
+    "local_history_app_id": "app-20261111040235-0000",
+    "outputs": [
+      "cpw.dbx_d1111_after.billing__spark_billing_invoice_summary_daily",
+      "cpw.dbx_d1111_parity.billing__spark_billing_invoice_summary_daily__spark_before"
+    ],
+    "parity": "pass: 692 = 692 rows, hash 396927275775047228202 both sides, EXCEPT ALL 0/0",
+    "parity_statement_id": "01f1dd85-0f4b-11a7-a17a-49b3b10b6087",
+    "red_reason": "",
+    "run_ids": [
+      "960961565316335",
+      "672280075759296"
+    ],
+    "status": "green",
+    "target_kind": "databricks_sql_task",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2759"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.billing__spark_billing_revenue_by_plan",
+    "databricks_job_id": "697530729305392",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.001860556,
+    "first_failure": "INVOICE_LINE.PLAN_ID unresolved in billing__invoice_line (and stg); corrected: PLAN_ID resolved for 'Monthly subscription' lines via invoice_hdr.subscription_id -> subscription.plan_code -> plan_catalog (warehouse/teradata/procedures/monthly_invoice.sql)",
+    "first_failure_statement_id": "01f1dd84-6bfe-1b98-99de-a0fed589081a",
+    "idempotence_statement_ids": [
+      "01f1dd85-2a80-1499-94e2-f33bf45fd291",
+      "01f1dd85-2f7a-1ed9-891e-e32aa9fb8f5b"
+    ],
+    "job": "billing_revenue_by_plan",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.billing__invoice_line",
+      "cpw.dbx_d1111_before.billing__invoice_hdr",
+      "cpw.dbx_d1111_before.billing__subscription",
+      "cpw.dbx_d1111_before.billing__plan_catalog"
+    ],
+    "local_history_app_id": "app-20261111040253-0001",
+    "outputs": [
+      "cpw.dbx_d1111_after.billing__spark_billing_revenue_by_plan",
+      "cpw.dbx_d1111_parity.billing__spark_billing_revenue_by_plan__spark_before"
+    ],
+    "parity": "pass: corrected 40=40 rows, EXCEPT ALL 0/0",
+    "parity_statement_id": "01f1dd8b-67ee-184e-973f-db1847be3042",
+    "red_reason": "",
+    "run_ids": [
+      "898103829480515",
+      "1057735043935400",
+      "821791725568055",
+      "49614676889700"
+    ],
+    "status": "green",
+    "target_kind": "databricks_sql_task",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2759"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.billing__spark_billing_usage_append_daily",
+    "databricks_job_id": "159267749013173",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.003107778,
+    "first_failure": "USAGE_DAILY.AMOUNT unresolved in billing__usage_daily (and stg 01f1dd85-2d6f-1e38-b069-c2f5774d9b60). Idempotence first failure: original Spark rerun duplicates the slice 917 -> 1834 rows (lake and JDBC, 917 distinct USAGE_ID) 01f1dd85-147a-1244-8f8b-5fdae63c0b49",
+    "first_failure_statement_id": "01f1dd85-2d37-1ec7-8030-2dd1b0238834",
+    "idempotence_statement_ids": [
+      "01f1dd85-147a-1244-8f8b-5fdae63c0b49",
+      "01f1dd85-2b23-186a-8720-c07d10667794",
+      "01f1dd85-306d-11cc-9d29-c888eee0a533"
+    ],
+    "job": "billing_usage_append_daily",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.billing__usage_daily"
+    ],
+    "local_history_app_id": "app-20261111040306-0002",
+    "outputs": [
+      "cpw.dbx_d1111_after.billing__spark_billing_usage_append_daily",
+      "cpw.dbx_d1111_parity.billing__spark_billing_usage_append_daily__spark_before"
+    ],
+    "parity": "pass: 917 = 917 rows, hash 531001693408086517936 both sides, EXCEPT ALL 0/0 (AMOUNT NULL both sides)",
+    "parity_statement_id": "01f1dd85-12c3-18f5-9551-c447b0e046e0",
+    "red_reason": "USAGE_DAILY.AMOUNT has no live equivalent (billing__usage_daily, billing__stg_usage_daily); output AMOUNT would be NULL. Logic, parity on remaining columns and idempotent MERGE are proven",
+    "run_ids": [
+      "1035495213185722",
+      "916699487965450"
+    ],
+    "status": "red",
+    "target_kind": "databricks_sql_task",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2759"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.billing__spark_billing_payment_aging",
+    "databricks_job_id": "",
+    "dbu_after": "n/a",
+    "executor_hours_before": 0.005603889,
+    "first_failure": "INVOICE_HDR.DUE_DATE unresolved in billing__invoice_hdr and billing__stg_invoice_hdr (01f1dd84-6a6d-15cb-9c0f-f1de480cb202); DAYS_LATE = datediff(payment_date, due_date) cannot be computed",
+    "first_failure_statement_id": "01f1dd84-6a26-13f9-be33-b99969d0d4ff",
+    "idempotence_statement_ids": [],
+    "job": "billing_payment_aging",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.billing__payment",
+      "cpw.dbx_d1111_before.billing__invoice_hdr"
+    ],
+    "local_history_app_id": "",
+    "outputs": [],
+    "parity": "not run",
+    "parity_statement_id": "",
+    "red_reason": "INVOICE_HDR.DUE_DATE has no live equivalent (billing__invoice_hdr, billing__stg_invoice_hdr); no Databricks job created, job.sql kept as target logic",
+    "run_ids": [],
+    "status": "red",
+    "target_kind": "databricks_sql_task (not deployed)",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2759"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.billing__spark_billing_gl_trial_balance",
+    "databricks_job_id": "",
+    "dbu_after": "n/a",
+    "executor_hours_before": 0.006288056,
+    "first_failure": "CREDIT_NOTE.GL_ACCOUNT_ID/CURRENCY_CODE unresolved in billing__credit_note and billing__stg_credit_note (01f1dd84-6b1a-15ac-8cca-5ac2f821ae5c); all 100 credit notes post to >1 GL account in billing__gl_journal_line (01f1dd85-2c9e-1315-a4ad-815d65b44abd), so no single account is defensible",
+    "first_failure_statement_id": "01f1dd84-6ab0-109a-86d0-5ae28572a958",
+    "idempotence_statement_ids": [],
+    "job": "billing_gl_trial_balance",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.billing__gl_account",
+      "cpw.dbx_d1111_before.billing__gl_journal_line",
+      "cpw.dbx_d1111_before.billing__credit_note"
+    ],
+    "local_history_app_id": "",
+    "outputs": [],
+    "parity": "not run",
+    "parity_statement_id": "",
+    "red_reason": "CREDIT_NOTE.GL_ACCOUNT_ID and CURRENCY_CODE have no live equivalent; no Databricks job created, job.sql kept as target logic",
+    "run_ids": [],
+    "status": "red",
+    "target_kind": "databricks_sql_task (not deployed)",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2759"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_docs_storage_by_owner",
+    "databricks_job_id": "237874230352071",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.002620833,
+    "first_failure": "none: first comparison matched",
+    "first_failure_statement_id": "",
+    "idempotence_statement_ids": [
+      "01f1dd85-2b05-1c91-af5a-d0d5abe9b890",
+      "01f1dd85-2b9e-1e9d-85c5-07f6a39a3ca2",
+      "01f1dd85-2d06-1a75-abdb-70177368f148"
+    ],
+    "job": "docs_storage_by_owner",
+    "live_inputs": [
+      "cpw.dbx_d1111_before (adapted documents/DOCUMENT)",
+      "cpw.dbx_d1111_before (adapted documents/FILE_OBJECT)",
+      "cpw.dbx_d1111_before (adapted users/APP_USER)"
+    ],
+    "local_history_app_id": "app-20261111040039-0000",
+    "outputs": [
+      "cpw.dbx_d1111_after.documents__spark_docs_storage_by_owner",
+      "etl/databricks/spark/docs_storage_by_owner/"
+    ],
+    "parity": "count 200/200, hash equal, 0/0 EXCEPT ALL",
+    "parity_statement_id": "01f1dd85-00c0-18f1-abfd-3ad3113b5ba9",
+    "red_reason": "",
+    "run_ids": [
+      "1104480994257569",
+      "284880459397735"
+    ],
+    "status": "green",
+    "target_kind": "databricks_sql_task",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2758"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_docs_share_activity",
+    "databricks_job_id": "14491151277670",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.015369167,
+    "first_failure": "none: first comparison matched",
+    "first_failure_statement_id": "",
+    "idempotence_statement_ids": [
+      "01f1dd85-2e1c-1550-9799-24dce03524f9",
+      "01f1dd85-2ed5-11c6-84cc-66b6fddb2834",
+      "01f1dd85-3060-14e7-844a-545f225fef64"
+    ],
+    "job": "docs_share_activity",
+    "live_inputs": [
+      "cpw.dbx_d1111_before (adapted documents/DOC_SHARE)",
+      "cpw.dbx_d1111_before (adapted documents/DOCUMENT)"
+    ],
+    "local_history_app_id": "app-20261111040054-0001",
+    "outputs": [
+      "cpw.dbx_d1111_after.documents__spark_docs_share_activity",
+      "etl/databricks/spark/docs_share_activity/"
+    ],
+    "parity": "count 539/539, hash equal, 0/0 EXCEPT ALL",
+    "parity_statement_id": "01f1dd85-04d5-19cb-8280-39ff2f235a02",
+    "red_reason": "",
+    "run_ids": [
+      "735838668956230",
+      "572040926475562"
+    ],
+    "status": "green",
+    "target_kind": "databricks_sql_task",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2758"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_docs_folder_legacy_report",
+    "databricks_job_id": "596114586206524",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.007445833,
+    "first_failure": "inputs: landing FOLDER.PARENT_FOLDER_ID (an output column) has no live column in documents__folder/documents__stg_folder (0 rows)",
+    "first_failure_statement_id": "01f1dd85-20bb-11b5-a032-11991dadd354",
+    "idempotence_statement_ids": [
+      "01f1dd85-31a7-1c63-9303-e90c5c397464",
+      "01f1dd85-3242-19c9-b5bb-c598502a737b",
+      "01f1dd85-33b9-1f15-9f81-cd13a4dbb871"
+    ],
+    "job": "docs_folder_legacy_report",
+    "live_inputs": [
+      "cpw.dbx_d1111_before (adapted documents/FOLDER)",
+      "cpw.dbx_d1111_before (adapted documents/DOCUMENT)"
+    ],
+    "local_history_app_id": "app-20261111040114-0002",
+    "outputs": [
+      "cpw.dbx_d1111_after.documents__spark_docs_folder_legacy_report",
+      "etl/databricks/spark/docs_folder_legacy_report/"
+    ],
+    "parity": "count 200/200, hash equal, 0/0 EXCEPT ALL",
+    "parity_statement_id": "01f1dd85-0999-1497-b57b-07ee9b34a9a7",
+    "red_reason": "PARENT_FOLDER_ID has no live source; parity holds only with it NULL on both sides. Retire candidate (no readers; cron commented out; last app 2026-07-15).",
+    "run_ids": [
+      "445061007036294",
+      "260119777260260"
+    ],
+    "status": "red",
+    "target_kind": "databricks_sql_task",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2758"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.users__spark_users_active_daily",
+    "databricks_job_id": "663977597238323",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.002261111,
+    "first_failure": "inputs: landing USER_ACTIVITY_DAILY.ACTION_COUNT (summed into ACTIONS) has no live column; only document_count exists (0 rows)",
+    "first_failure_statement_id": "01f1dd85-2121-165c-92a1-80e96955ad3d",
+    "idempotence_statement_ids": [
+      "01f1dd85-344e-1fcd-a220-034dede87ff9",
+      "01f1dd85-34dd-185f-adb4-3b4e941ab0d0",
+      "01f1dd85-3634-1337-8205-6fbf4a576183"
+    ],
+    "job": "users_active_daily",
+    "live_inputs": [
+      "cpw.dbx_d1111_before (adapted users/USER_ACTIVITY_DAILY)"
+    ],
+    "local_history_app_id": "app-20261111040131-0003",
+    "outputs": [
+      "cpw.dbx_d1111_after.users__spark_users_active_daily",
+      "etl/databricks/spark/users_active_daily/"
+    ],
+    "parity": "count 3/3, hash equal, 0/0 EXCEPT ALL",
+    "parity_statement_id": "01f1dd85-0e61-15aa-9b97-90e6f3ee6030",
+    "red_reason": "ACTION_COUNT has no live source (document_count is a document count, loaded 0 by P_ACTIVITY_DAILY); ACTIONS is NULL on both sides, so parity cannot validate it.",
+    "run_ids": [
+      "371487412093422",
+      "458260274520407"
+    ],
+    "status": "red",
+    "target_kind": "databricks_sql_task",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2758"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.users__spark_users_team_rollup",
+    "databricks_job_id": "627663219394880",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.003556111,
+    "first_failure": "none: first comparison matched",
+    "first_failure_statement_id": "",
+    "idempotence_statement_ids": [
+      "01f1dd85-371c-1447-bc0c-b731c1a76cc8",
+      "01f1dd85-37a7-15d6-b5b0-f146c16bde48",
+      "01f1dd85-3931-182a-88f4-fd60c6ba0673"
+    ],
+    "job": "users_team_rollup",
+    "live_inputs": [
+      "cpw.dbx_d1111_before (adapted users/TEAM)",
+      "cpw.dbx_d1111_before (adapted users/TEAM_MEMBER)",
+      "cpw.dbx_d1111_before (adapted users/APP_USER)"
+    ],
+    "local_history_app_id": "app-20261111040145-0004",
+    "outputs": [
+      "cpw.dbx_d1111_after.users__spark_users_team_rollup",
+      "etl/databricks/spark/users_team_rollup/"
+    ],
+    "parity": "count 20/20, hash equal, 0/0 EXCEPT ALL",
+    "parity_statement_id": "01f1dd85-1216-1aa8-a09e-5181c66833fa",
+    "red_reason": "",
+    "run_ids": [
+      "310705676502933",
+      "1091308681060894"
+    ],
+    "status": "green",
+    "target_kind": "databricks_sql_task",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2758"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.audit__spark_audit_daily_summary",
+    "databricks_job_id": "891657763613522",
+    "dbu_after": "PENDING: billing ingestion can lag hours; not zero DBU",
+    "executor_hours_before": 0.015961667,
+    "first_failure": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14",
+    "first_failure_statement_id": "01f1dd84-1cc3-1225-bf2a-84ed7af57330",
+    "idempotence_statement_ids": [
+      "01f1dd86-b135-131a-a11b-b44b581c91d0",
+      "01f1dd86-b709-1dfa-97fe-7db9e6c59adf",
+      "01f1dd86-b789-1c70-ae49-5d576e1574b3"
+    ],
+    "job": "audit_daily_summary",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.audit__audit_event"
+    ],
+    "local_history_app_id": "app-20261111041452-0006",
+    "outputs": [
+      "cpw.dbx_d1111_after.audit__spark_audit_daily_summary"
+    ],
+    "parity": "PASS: input count/hash, output count/hash and EXCEPT ALL both ways",
+    "parity_statement_id": "01f1dd86-b135-131a-a11b-b44b581c91d0",
+    "red_reason": "",
+    "run_ids": [
+      "729010651237413",
+      "761924419433112"
+    ],
+    "status": "GREEN",
+    "target_kind": "Databricks serverless SQL / Delta",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.audit__spark_audit_actor_activity_join",
+    "databricks_job_id": "1091978784638813",
+    "dbu_after": "PENDING: no live job run; never a zero-cost claim",
+    "executor_hours_before": 0.004015278,
+    "first_failure": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14",
+    "first_failure_statement_id": "01f1dd84-1d40-1344-acb9-8789377f93a3",
+    "idempotence_statement_ids": [],
+    "job": "audit_actor_activity_join",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.audit__audit_event",
+      "cpw.dbx_d1111_before.users__user_activity_daily",
+      "cpw.dbx_d1111_before.users__login_event"
+    ],
+    "local_history_app_id": "app-20261111040604-0001",
+    "outputs": [],
+    "parity": "BLOCKED: Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.",
+    "parity_statement_id": "",
+    "red_reason": "Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.",
+    "run_ids": [],
+    "status": "RED",
+    "target_kind": "Databricks serverless SQL / Delta",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.audit__spark_lake_compaction_audit",
+    "databricks_job_id": "495078759320783",
+    "dbu_after": "PENDING: billing ingestion can lag hours; not zero DBU",
+    "executor_hours_before": 0.001205833,
+    "first_failure": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_daily_summary` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14",
+    "first_failure_statement_id": "01f1dd84-1dc1-1edd-a61b-c08fc01c5233",
+    "idempotence_statement_ids": [
+      "01f1dd86-be62-183f-9a53-a7b13ee70d83",
+      "01f1dd86-c443-1a29-a4cb-579ed75fd474",
+      "01f1dd86-c4c7-171c-9c87-2d0241eea15b"
+    ],
+    "job": "lake_compaction_audit",
+    "live_inputs": [
+      "cpw.dbx_d1111_after.audit__spark_audit_daily_summary"
+    ],
+    "local_history_app_id": "app-20261111041519-0007",
+    "outputs": [
+      "cpw.dbx_d1111_after.audit__spark_lake_compaction_audit"
+    ],
+    "parity": "PASS: input count/hash, output count/hash and EXCEPT ALL both ways",
+    "parity_statement_id": "01f1dd86-be62-183f-9a53-a7b13ee70d83",
+    "red_reason": "",
+    "run_ids": [
+      "522129685846599",
+      "566170884712306"
+    ],
+    "status": "GREEN",
+    "target_kind": "Databricks serverless SQL / Delta",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.audit__spark_security_alert_anomaly",
+    "databricks_job_id": "859825881744874",
+    "dbu_after": "PENDING: no live job run; never a zero-cost claim",
+    "executor_hours_before": 0.013226667,
+    "first_failure": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__security_alert` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14",
+    "first_failure_statement_id": "01f1dd84-1e40-1a8d-9f85-0467d72f7a49",
+    "idempotence_statement_ids": [],
+    "job": "security_alert_anomaly",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.audit__security_alert"
+    ],
+    "local_history_app_id": "app-20261111040644-0003",
+    "outputs": [],
+    "parity": "BLOCKED: Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.",
+    "parity_statement_id": "",
+    "red_reason": "Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.",
+    "run_ids": [],
+    "status": "RED",
+    "target_kind": "Databricks serverless PySpark / Delta",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.audit__spark_audit_archive_resort",
+    "databricks_job_id": "718985920991406",
+    "dbu_after": "PENDING: billing ingestion can lag hours; not zero DBU",
+    "executor_hours_before": 0.003700556,
+    "first_failure": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event_archive` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14",
+    "first_failure_statement_id": "01f1dd84-1ecb-1326-a1f6-6c7eaefcc15a",
+    "idempotence_statement_ids": [
+      "01f1dd87-ac01-1e7f-81e1-08ed15cb2ded",
+      "01f1dd87-c6a6-1285-993e-9d68c4d18e33",
+      "01f1dd87-c73d-1b9f-9377-4667d7b74d4a"
+    ],
+    "job": "audit_archive_resort",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.audit__stg_audit_event_archive"
+    ],
+    "local_history_app_id": "app-20261111041534-0008",
+    "outputs": [
+      "cpw.dbx_d1111_after.audit__spark_audit_archive_resort"
+    ],
+    "parity": "PASS: input count/hash, output count/hash and EXCEPT ALL both ways",
+    "parity_statement_id": "01f1dd87-ac01-1e7f-81e1-08ed15cb2ded",
+    "red_reason": "",
+    "run_ids": [
+      "924222549327122",
+      "335490112883267",
+      "937972557074798"
+    ],
+    "status": "GREEN",
+    "target_kind": "Databricks serverless PySpark / Delta",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.audit__spark_compliance_flag_rules",
+    "databricks_job_id": "763368305743207",
+    "dbu_after": "PENDING: no live job run; never a zero-cost claim",
+    "executor_hours_before": 0.010249167,
+    "first_failure": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14",
+    "first_failure_statement_id": "01f1dd84-1f73-1d90-b5cf-bf3587046203",
+    "idempotence_statement_ids": [],
+    "job": "compliance_flag_rules",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.audit__compliance_flag"
+    ],
+    "local_history_app_id": "app-20261111040734-0005",
+    "outputs": [],
+    "parity": "BLOCKED: Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.",
+    "parity_statement_id": "",
+    "red_reason": "Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.",
+    "run_ids": [],
+    "status": "RED",
+    "target_kind": "Databricks serverless PySpark / Delta",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_docs_tag_normalize",
+    "databricks_job_id": "885937093057247",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.001232222,
+    "first_failure": "job run 759583532929649 INTERNAL_ERROR: ParseException from CTAS with typed column list (3 attempts); run 257297868817904 same, cancelled; fixed with CASTs in SELECT",
+    "first_failure_statement_id": "n/a (Databricks job run 759583532929649, task 490714203646892; no warehouse statement)",
+    "idempotence_statement_ids": [
+      "01f1dd86-692a-16fe-b4af-d3c91c3583c5",
+      "01f1dd86-69b8-106f-812b-d06351f2434a",
+      "01f1dd86-6a0c-1a36-acae-1f46ba906627",
+      "01f1dd86-6a84-1f05-bafa-5065b8437319"
+    ],
+    "job": "docs_tag_normalize",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.documents__doc_tag"
+    ],
+    "local_history_app_id": "app-20261111040047-0000",
+    "outputs": [
+      "cpw.dbx_d1111_after.documents__spark_docs_tag_normalize",
+      "cpw.dbx_d1111_parity.documents__spark_docs_tag_normalize__spark_before"
+    ],
+    "parity": "green: 1000=1000 rows, hash 586596083625798495746 both sides, EXCEPT ALL 0/0",
+    "parity_statement_id": "01f1dd86-4282-1b69-b771-cc71e07a3471",
+    "red_reason": "",
+    "run_ids": [
+      "759583532929649",
+      "257297868817904",
+      "602474958615587",
+      "519768950748371"
+    ],
+    "status": "green",
+    "target_kind": "pyspark_serverless_job",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2765"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_docs_search_log_parse (not created)",
+    "databricks_job_id": "",
+    "dbu_after": "n/a (not run)",
+    "executor_hours_before": 0.001591111,
+    "first_failure": "documents__search_index_log 0 rows; stg has 2000 rows but no RAW_LINE column",
+    "first_failure_statement_id": "01f1dd84-5580-1e45-bb6d-3573b49ca8ed",
+    "idempotence_statement_ids": [],
+    "job": "docs_search_log_parse",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.documents__search_index_log (0 rows)",
+      "cpw.dbx_d1111_before.documents__stg_search_index_log (no RAW_LINE)"
+    ],
+    "local_history_app_id": "",
+    "outputs": [],
+    "parity": "none: no live input",
+    "parity_statement_id": "",
+    "red_reason": "No live RAW_LINE in core or stg search_index_log; the job only parses RAW_LINE, so no input without fabrication",
+    "run_ids": [],
+    "status": "red",
+    "target_kind": "pyspark_serverless_job",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2765"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.users__spark_users_login_useragent_parse (not created)",
+    "databricks_job_id": "",
+    "dbu_after": "n/a (not run)",
+    "executor_hours_before": 0.005469167,
+    "first_failure": "users__login_event has 2000 rows but no USER_AGENT/IP_ADDRESS/RAW_LINE in core or stg; client_type (API/DESKTOP/MOBILE/WEB) is not a user-agent string",
+    "first_failure_statement_id": "01f1dd84-562a-131d-91f6-ecd46eac92d1",
+    "idempotence_statement_ids": [],
+    "job": "users_login_useragent_parse",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.users__login_event (no USER_AGENT/IP_ADDRESS/RAW_LINE)"
+    ],
+    "local_history_app_id": "",
+    "outputs": [],
+    "parity": "none: no live input",
+    "parity_statement_id": "",
+    "red_reason": "No defensible live equivalent for USER_AGENT (the parsed column); client_type is a device category",
+    "run_ids": [],
+    "status": "red",
+    "target_kind": "pyspark_serverless_job",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2765"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.users__spark_user_pref_json_flatten (not created)",
+    "databricks_job_id": "",
+    "dbu_after": "n/a (not run)",
+    "executor_hours_before": 0.001498611,
+    "first_failure": "users__user_pref 0 rows; stg has 200 name/value rows, no PREF_JSON, none of the keys theme/notifications/locale",
+    "first_failure_statement_id": "01f1dd84-56e1-10b0-b78f-0f95688a9279",
+    "idempotence_statement_ids": [],
+    "job": "user_pref_json_flatten",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.users__user_pref (0 rows)",
+      "cpw.dbx_d1111_before.users__stg_user_pref (no PREF_JSON)"
+    ],
+    "local_history_app_id": "",
+    "outputs": [],
+    "parity": "none: no live input",
+    "parity_statement_id": "",
+    "red_reason": "No live PREF_JSON; building JSON from name/value rows would fabricate the input",
+    "run_ids": [],
+    "status": "red",
+    "target_kind": "pyspark_serverless_job",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2765"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.billing__spark_billing_churn_score",
+    "databricks_job_id": "843322654414524",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.00381,
+    "first_failure": "PLAN_ID absent in subscription; first case-sensitive lookup left 100 rows unmapped. Case/padding-aware lookup justified by Teradata NOT CASESPECIFIC DDL.",
+    "first_failure_statement_id": "01f1dd84-2ed4-1ab0-937d-b9b65246431e",
+    "idempotence_statement_ids": [
+      "01f1dd85-26a6-1fd1-b36f-866a62c44413",
+      "01f1dd85-2760-1b56-8278-6c28dac35fe8",
+      "01f1dd85-27bf-1a67-9a12-afed8c7e0c91",
+      "01f1dd84-fffa-1f62-970c-5babf2918b4c",
+      "01f1dd85-281e-1091-b2d7-03e6d03dee01"
+    ],
+    "job": "billing_churn_score",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.billing__subscription",
+      "cpw.dbx_d1111_before.billing__plan_catalog"
+    ],
+    "local_history_app_id": "app-20261111040237-0001",
+    "outputs": [
+      "etl/databricks/spark/billing_churn_score/"
+    ],
+    "parity": "500 rows; hash 278703278045701988246; EXCEPT ALL empty both directions",
+    "parity_statement_id": "01f1dd84-fe60-1677-8c33-5dd66762bf3a",
+    "run_ids": [
+      "487564212166246",
+      "1039480886636949",
+      "151365825676628"
+    ],
+    "status": "green",
+    "target_kind": "PySpark serverless",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.users__spark_users_risk_score",
+    "databricks_job_id": "122351353434587",
+    "dbu_after": "NOT RUN",
+    "executor_hours_before": 0.004293889,
+    "first_failure": "ACTION_COUNT absent from live and staging USER_ACTIVITY_DAILY. Fixture generates DOCUMENT_COUNT and ACTION_COUNT independently; they are not interchangeable.",
+    "first_failure_statement_id": "01f1dd84-2f0a-1459-9c76-a3402b795f6a",
+    "idempotence_statement_ids": [],
+    "job": "users_risk_score",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.users__user_activity_daily"
+    ],
+    "outputs": [
+      "etl/databricks/spark/users_risk_score/"
+    ],
+    "parity": "NOT RUN: missing required live input",
+    "red_reason": "ACTION_COUNT absent from live and staging USER_ACTIVITY_DAILY. Fixture generates DOCUMENT_COUNT and ACTION_COUNT independently; they are not interchangeable.",
+    "run_ids": [],
+    "status": "red",
+    "target_kind": "PySpark serverless",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_doc_version_diff_stats",
+    "databricks_job_id": "1071117012399528",
+    "dbu_after": "NOT RUN",
+    "executor_hours_before": 0.030714722,
+    "first_failure": "BODY absent from live/staging DOC_VERSION and DOCUMENT. CONTENT_HASH and FILE_SIZE cannot reconstruct document text.",
+    "first_failure_statement_id": "01f1dd84-2f44-106e-a159-f2cd6c96d47b",
+    "idempotence_statement_ids": [],
+    "job": "doc_version_diff_stats",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.documents__doc_version"
+    ],
+    "outputs": [
+      "etl/databricks/spark/doc_version_diff_stats/"
+    ],
+    "parity": "NOT RUN: missing required live input",
+    "red_reason": "BODY absent from live/staging DOC_VERSION and DOCUMENT. CONTENT_HASH and FILE_SIZE cannot reconstruct document text.",
+    "run_ids": [],
+    "status": "red",
+    "target_kind": "PySpark serverless",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757"
+  },
+  {
+    "after_object": "",
+    "databricks_job_id": "",
+    "dbu_after": "n/a",
+    "executor_hours_before": 0.008423056,
+    "first_failure": "inputs.sql: parent_folder_id UNRESOLVED_COLUMN on documents__folder; no parent column in before schema or stg_folder",
+    "first_failure_statement_id": "01f1dd84-82aa-1550-a0c6-e5bb66c01aba",
+    "idempotence_statement_ids": [],
+    "job": "docs_folder_tree_walk",
+    "live_inputs": [],
+    "local_history_app_id": "",
+    "outputs": [
+      "etl/databricks/spark/docs_folder_tree_walk/"
+    ],
+    "parity": "not run (no live input)",
+    "parity_statement_id": "",
+    "red_reason": "FOLDER.PARENT_FOLDER_ID has no live equivalent (documents__folder/stg_folder lack any parent column, statements 01f1dd84-82e9-1e9d-8534-02855f14ab40, 01f1dd84-836f-1d33-a414-b0e0135002b8); hierarchy not fabricated",
+    "run_ids": [],
+    "status": "red",
+    "target_kind": "pyspark spark_python_task (not deployed)",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2770"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.users__spark_team_graph_components",
+    "databricks_job_id": "296844896049163",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.006136667,
+    "first_failure": "job run 182373249747779 failed: spark.conf.get(spark.sql.adaptive.enabled) CONFIG_NOT_AVAILABLE on serverless",
+    "first_failure_statement_id": "",
+    "idempotence_statement_ids": [
+      "01f1dd87-93ab-199b-b3bc-aa79ae62faff",
+      "01f1dd87-950e-15fa-9334-ab329b5fc703"
+    ],
+    "job": "team_graph_components",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.users__team_member"
+    ],
+    "local_history_app_id": "app-20261111040140-0000",
+    "outputs": [
+      "etl/databricks/spark/team_graph_components/",
+      "cpw.dbx_d1111_after.users__spark_team_graph_components"
+    ],
+    "parity": "200=200 rows, hash 110590925637088257858 both sides, EXCEPT ALL 0/0",
+    "parity_statement_id": "01f1dd87-0d35-11fa-b87c-4e266ad317de",
+    "red_reason": "",
+    "run_ids": [
+      "182373249747779",
+      "23863445904315",
+      "169354815327145"
+    ],
+    "status": "green",
+    "target_kind": "pyspark spark_python_task (serverless)",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2770"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_doc_share_graph_reach",
+    "databricks_job_id": "689940778537169",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.004417778,
+    "first_failure": "adapter: owner_user_id UNRESOLVED_COLUMN on documents__doc_share; fixed via documents__document owner lookup",
+    "first_failure_statement_id": "01f1dd84-8402-169a-8691-7c2218c1efdf",
+    "idempotence_statement_ids": [
+      "01f1dd87-9602-1d1e-8470-70d9ce2cd78c",
+      "01f1dd87-974a-1c59-a054-26612d0930f2"
+    ],
+    "job": "doc_share_graph_reach",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.documents__doc_share",
+      "cpw.dbx_d1111_before.documents__document"
+    ],
+    "local_history_app_id": "app-20261111040158-0001",
+    "outputs": [
+      "etl/databricks/spark/doc_share_graph_reach/",
+      "cpw.dbx_d1111_after.documents__spark_doc_share_graph_reach"
+    ],
+    "parity": "1=1 rows, hash 268800694793482522 both sides, EXCEPT ALL 0/0",
+    "parity_statement_id": "01f1dd87-0fb2-180b-b7d6-b7dbd60c3f99",
+    "red_reason": "",
+    "run_ids": [
+      "662486033745289",
+      "801285571668645",
+      "221152053434479"
+    ],
+    "status": "green",
+    "target_kind": "pyspark spark_python_task (serverless)",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2770"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_collab_session_sessionize",
+    "databricks_job_id": "514823186668830",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.002546944,
+    "first_failure": "job run 24104497103694: RTAS column list not allowed; fixed with typed casts",
+    "first_failure_statement_id": "01f1dd85-4ead-1ae0-a040-77af0fe62fef",
+    "idempotence_statement_ids": [
+      "01f1dd87-9847-1052-89dd-d5f7640248e1",
+      "01f1dd87-99c0-1f93-9a74-516d025812a8"
+    ],
+    "job": "collab_session_sessionize",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.documents__collab_session"
+    ],
+    "local_history_app_id": "app-20261111040213-0002",
+    "outputs": [
+      "etl/databricks/spark/collab_session_sessionize/",
+      "cpw.dbx_d1111_after.documents__spark_collab_session_sessionize"
+    ],
+    "parity": "1200=1200 rows, hash 669533277108376373710 both sides, EXCEPT ALL 0/0",
+    "parity_statement_id": "01f1dd87-1212-1683-8c40-764d49599a76",
+    "red_reason": "",
+    "run_ids": [
+      "24104497103694",
+      "856828463402524",
+      "1049890104400595"
+    ],
+    "status": "green",
+    "target_kind": "sql_task file (serverless SQL warehouse)",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2770"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_docs_event_export_hourly",
+    "databricks_job_id": "274170347871647",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.013149444,
+    "first_failure": "adapter kept CHAR(12) status_cd padding: hash 253226484014410365799 vs 262073977905134504305; fixed with rtrim",
+    "first_failure_statement_id": "01f1dd84-bdcd-1a99-ae94-a303163cdc3e",
+    "idempotence_statement_ids": [
+      "01f1dd84-e534-1d91-a3d3-a496d97786fb",
+      "01f1dd84-e5ba-1cb1-b7ee-44f9e16ea14e",
+      "01f1dd84-e63a-1254-8594-6d896d14353a"
+    ],
+    "job": "docs_event_export_hourly",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.documents__document"
+    ],
+    "local_history_app_id": "app-20261110202641-0018",
+    "outputs": [
+      "cpw.dbx_d1111_after.documents__spark_docs_event_export_hourly"
+    ],
+    "parity": "450/450 rows, hash 262073977905134504305, EXCEPT ALL 0/0",
+    "parity_statement_id": "01f1dd84-b99a-1c37-bcbf-eefd4f6310f1",
+    "red_reason": "",
+    "run_ids": [
+      "969908575640356",
+      "800715699101340"
+    ],
+    "status": "green",
+    "target_kind": "databricks_sql",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2760"
+  },
+  {
+    "after_object": "cpw.dbx_d1111_after.documents__spark_lake_compaction_documents",
+    "databricks_job_id": "258461135155454",
+    "dbu_after": "PENDING",
+    "executor_hours_before": 0.012373611,
+    "first_failure": "none observed (input is the migrated export table)",
+    "first_failure_statement_id": "",
+    "idempotence_statement_ids": [
+      "01f1dd84-e740-1680-b1ce-b613745111d1",
+      "01f1dd84-e7e2-1973-9630-ba31484735f3",
+      "01f1dd84-e84e-1e5b-b18c-c5a6943693e0"
+    ],
+    "job": "lake_compaction_documents",
+    "live_inputs": [
+      "cpw.dbx_d1111_after.documents__spark_docs_event_export_hourly"
+    ],
+    "local_history_app_id": "app-20261110202709-0019",
+    "outputs": [
+      "cpw.dbx_d1111_after.documents__spark_lake_compaction_documents"
+    ],
+    "parity": "450/450 rows, hash 262073977905134504305, EXCEPT ALL 0/0",
+    "parity_statement_id": "01f1dd84-bbb9-1e3f-80d0-ea17fb50175f",
+    "red_reason": "",
+    "run_ids": [
+      "1055357238185615",
+      "382673924698076"
+    ],
+    "status": "green",
+    "target_kind": "databricks_sql",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2760"
+  },
+  {
+    "after_object": "etl/spark/template/submit.sh -> /opt/lake/documents/file_object_binary_extract",
+    "databricks_job_id": "",
+    "dbu_after": "n/a (kept on Spark)",
+    "executor_hours_before": 0.008545,
+    "first_failure": "live documents__file_object has no STORAGE_KEY/CHECKSUM; 0/2000 object_key joinable to blob store",
+    "first_failure_statement_id": "01f1dd85-3dd2-115a-b3b0-a64247cb4a23",
+    "idempotence_statement_ids": [],
+    "job": "file_object_binary_extract",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.documents__file_object"
+    ],
+    "local_history_app_id": "app-20261110202856-0026",
+    "outputs": [
+      "etl/spark/.data/lake/documents/file_object_binary_extract"
+    ],
+    "parity": "local only: original app-20261111040159-0002 = template app-20261111040450-0006 = app-20261111040502-0007, 2000 rows, hash 1158281207022607207777",
+    "parity_statement_id": "",
+    "red_reason": "Kept on Spark by design: binaryFile source over self-run blob store; live file_object lacks storage_key/checksum; no UC volume in run schemas (01f1dd85-3e48-1875-81fd-6e5adba8698a) and creating storage is forbidden",
+    "run_ids": [],
+    "status": "red",
+    "target_kind": "spark_template",
+    "pr_url": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2760"
+  }
+]
