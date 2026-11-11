@@ -25,7 +25,7 @@ bash "$ROOT/bin/nightly_extract.sh" 2024-02-29 "$work/leap.csv" > /dev/null
   cd "$work"
   bash "$ROOT/bin/nightly_extract.sh" > /dev/null
 )
-yesterday=$(date -d yesterday +%F)
+yesterday=$(date -u -d yesterday +%F)
 [[ -f "$work/partner-invoices-$yesterday.csv" ]]
 [[ $(head -n 1 "$EXPORT_CAPTURE") == "$yesterday" ]]
 printf '%s\n' 'PASS leap-day and default-yesterday dates'
@@ -90,4 +90,5 @@ env -u SNOWFLAKE_ACCOUNT WAREHOUSE_CONTRACT_TARGET=snowflake bash "$ROOT/contrac
 grep -Fxq 'SKIP snowflake contract: missing SNOWFLAKE_ACCOUNT' "$work/skip.log"
 printf '%s\n' 'PASS Snowflake SQL scope, missing credentials and contract skip'
 python3 "$ROOT/tests/test_snowflake_export.py"
+python3 "$ROOT/tests/test_default_date.py"
 printf '%s\n' 'All partner-extract unit tests passed'

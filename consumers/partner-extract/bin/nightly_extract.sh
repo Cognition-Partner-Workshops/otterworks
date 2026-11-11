@@ -11,7 +11,7 @@ if (( $# > 2 )); then
   printf '%s\n' 'usage: nightly_extract.sh [YYYY-MM-DD] [output.csv]' >&2
   exit 2
 fi
-extract_date=${1:-$(date -d yesterday +%F)}
+extract_date=${1:-$(date -u -d yesterday +%F)}
 if [[ ! $extract_date =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] ||
    ! normalized=$(date -d "$extract_date" +%F 2>/dev/null) ||
    [[ $normalized != "$extract_date" || $extract_date < 2020-01-01 ]]; then
