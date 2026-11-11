@@ -5,5 +5,6 @@
   "status": "snowflake",
   "schedule": "4 1 * * *",
   "profile": "small",
+  "ingest": ["documents.DOCUMENT", "documents.FILE_OBJECT", "users.APP_USER"],
   "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_storage_by_owner --select path:models/spark/docs_storage_by_owner"
 }
