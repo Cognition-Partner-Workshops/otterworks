@@ -1,0 +1,128 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "before_load_statement_id": "01f1dd86-ab1c-15cf-87da-54a09cba37ea",
+  "local_original_fingerprint": {
+    "n": 24,
+    "h": "11889509446007135789"
+  },
+  "job_id": "891657763613522",
+  "run_ids": [
+    "729010651237413",
+    "761924419433112"
+  ],
+  "parity_statement_ids": [
+    "01f1dd86-b1d7-1c68-9baf-be690141afe2",
+    "01f1dd86-b135-131a-a11b-b44b581c91d0",
+    "01f1dd86-b252-1938-b570-f5bed6c6f572",
+    "01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e"
+  ],
+  "idempotence_statement_ids": [
+    "01f1dd86-b135-131a-a11b-b44b581c91d0",
+    "01f1dd86-b709-1dfa-97fe-7db9e6c59adf",
+    "01f1dd86-b789-1c70-ae49-5d576e1574b3"
+  ],
+  "run1_state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "run1_task_runs": [
+    {
+      "run_id": 445766677758261,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "sql_output": {
+        "file": {
+          "path": "/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql",
+          "source": "WORKSPACE"
+        }
+      }
+    }
+  ],
+  "run1_fingerprint": [
+    "24",
+    "11889509446007135789"
+  ],
+  "run2_state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "run2_task_runs": [
+    {
+      "run_id": 288735269211661,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "sql_output": {
+        "file": {
+          "path": "/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql",
+          "source": "WORKSPACE"
+        }
+      }
+    }
+  ],
+  "run2_fingerprint": [
+    "24",
+    "11889509446007135789"
+  ],
+  "status": "green",
+  "parity": "PASS: input count/hash, output count/hash and EXCEPT ALL both ways",
+  "parity_statement_id": "01f1dd86-b135-131a-a11b-b44b581c91d0",
+  "idempotence": "PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable",
+  "delta_operations": [
+    {
+      "version": "1",
+      "operation": "CREATE OR REPLACE TABLE AS SELECT",
+      "operationMetrics": {
+        "numFiles": "1",
+        "numRemovedFiles": "1",
+        "numRemovedBytes": "1996",
+        "numDeletionVectorsRemoved": "0",
+        "numOutputRows": "24",
+        "numOutputBytes": "1996"
+      },
+      "job": {
+        "jobName": null,
+        "jobOwnerId": null,
+        "workspaceId": "7474652505890469",
+        "jobId": "891657763613522",
+        "jobRunId": "761924419433112",
+        "runId": "288735269211661",
+        "triggerType": null
+      }
+    },
+    {
+      "version": "0",
+      "operation": "CREATE OR REPLACE TABLE AS SELECT",
+      "operationMetrics": {
+        "numFiles": "1",
+        "numRemovedFiles": "0",
+        "numRemovedBytes": "0",
+        "numDeletionVectorsRemoved": "0",
+        "numOutputRows": "24",
+        "numOutputBytes": "1996"
+      },
+      "job": {
+        "jobName": null,
+        "jobOwnerId": null,
+        "workspaceId": "7474652505890469",
+        "jobId": "891657763613522",
+        "jobRunId": "729010651237413",
+        "runId": "445766677758261",
+        "triggerType": null
+      }
+    }
+  ],
+  "job_sql_statement_ids": []
+}

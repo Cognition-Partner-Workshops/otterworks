@@ -4,5 +4,5 @@
   "act": "spark",
   "job_id": 1091978784638813,
   "run_ids": [],
-  "run_status": "BLOCKED: missing live baseline; no fixture data uploaded"
+  "run_status": "BLOCKED: Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent."
 }

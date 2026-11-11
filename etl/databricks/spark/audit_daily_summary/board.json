@@ -1,20 +1,64 @@
 {
   "source": "etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala",
   "target": "cpw.dbx_d1111_after.audit__spark_audit_daily_summary",
-  "status": "red",
-  "red_reason": "missing live baseline",
+  "status": "green",
+  "red_reason": "",
   "first_failure": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14",
   "first_failure_statement_id": "01f1dd84-1cc3-1225-bf2a-84ed7af57330",
-  "corrected_parity": "BLOCKED: no live-adapted original result; fixture evidence is not live parity",
-  "parity_statement_id": null,
-  "idempotence": "BLOCKED: no successful live runs",
-  "idempotence_statement_ids": [],
+  "corrected_parity": "PASS: input count/hash, output count/hash and EXCEPT ALL both ways",
+  "parity_statement_id": "01f1dd86-b135-131a-a11b-b44b581c91d0",
+  "idempotence": "PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable",
+  "idempotence_statement_ids": [
+    "01f1dd86-b135-131a-a11b-b44b581c91d0",
+    "01f1dd86-b709-1dfa-97fe-7db9e6c59adf",
+    "01f1dd86-b789-1c70-ae49-5d576e1574b3"
+  ],
   "job_id": "891657763613522",
-  "job_run_ids": [],
+  "job_run_ids": [
+    "729010651237413",
+    "761924419433112"
+  ],
   "executor_hours": 0.015961667,
   "baseline_app_id": "app-20261110202448-0008",
-  "dbu_after": "PENDING: no live run; no zero-cost claim",
+  "dbu_after": "PENDING: billing ingestion can lag hours; not zero DBU",
   "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756",
   "local_fixture_exact_parity": true,
-  "local_fixture_idempotence": true
+  "local_fixture_idempotence": true,
+  "live_input": {
+    "source_export_statement_id": "01f1dd86-6016-167c-9fd7-ad166a8782e8",
+    "source_equality_statement_id": "01f1dd86-60ab-1fde-8860-e539b85ed36b",
+    "source_count_hash": [
+      "2000",
+      "1150761524327518271109"
+    ],
+    "columns": [
+      "AUDIT_EVENT_ID",
+      "ACTOR_USER_ID",
+      "DOCUMENT_ID",
+      "EVENT_TYPE",
+      "EVENT_AT",
+      "DETAILS"
+    ],
+    "source_rows": 2000,
+    "landing": "audit/AUDIT_EVENT/20261109.psv",
+    "local_count_hash": [
+      "2000",
+      "1150761524327518271109"
+    ],
+    "equality": "PASS"
+  },
+  "live_local_app_id": "app-20261111041452-0006",
+  "output_count_hash": [
+    "24",
+    "11889509446007135789"
+  ],
+  "parity_statement_ids": [
+    "01f1dd86-b1d7-1c68-9baf-be690141afe2",
+    "01f1dd86-b135-131a-a11b-b44b581c91d0",
+    "01f1dd86-b252-1938-b570-f5bed6c6f572",
+    "01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e"
+  ],
+  "job_sql_statement_ids": [],
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24"
 }

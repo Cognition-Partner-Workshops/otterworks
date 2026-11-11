@@ -1175,5 +1175,813 @@
         ]
       ]
     }
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=security_alert_anomaly */\nDESCRIBE TABLE cpw.dbx_d1111_before.audit__security_alert",
+    "statement_id": "01f1dd86-31ba-1bcb-9559-c47a144d1089",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 8
+        }
+      ],
+      "total_row_count": 8,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 8,
+      "data_array": [
+        [
+          "alert_id",
+          "bigint",
+          null
+        ],
+        [
+          "actor_user_id",
+          "bigint",
+          null
+        ],
+        [
+          "document_id",
+          "bigint",
+          null
+        ],
+        [
+          "alert_ts",
+          "timestamp",
+          null
+        ],
+        [
+          "severity_cd",
+          "string",
+          null
+        ],
+        [
+          "status_cd",
+          "string",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=security_alert_anomaly */\nSELECT count(*) row_count FROM cpw.dbx_d1111_before.audit__security_alert",
+    "statement_id": "01f1dd86-3223-14b2-8634-b8313fd9a00a",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 1,
+        "columns": [
+          {
+            "name": "row_count",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "100"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=security_alert_anomaly */\nDESCRIBE TABLE cpw.dbx_d1111_before.audit__stg_security_alert",
+    "statement_id": "01f1dd86-4a63-1bf7-8202-7cf08ca99a48",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 8
+        }
+      ],
+      "total_row_count": 8,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 8,
+      "data_array": [
+        [
+          "alert_id",
+          "bigint",
+          null
+        ],
+        [
+          "actor_user_id",
+          "bigint",
+          null
+        ],
+        [
+          "document_id",
+          "bigint",
+          null
+        ],
+        [
+          "alert_ts",
+          "timestamp",
+          null
+        ],
+        [
+          "severity_cd",
+          "string",
+          null
+        ],
+        [
+          "status_cd",
+          "string",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=security_alert_anomaly */\nSELECT count(*) row_count FROM cpw.dbx_d1111_before.audit__stg_security_alert",
+    "statement_id": "01f1dd86-4ac9-1080-a39e-23b2cd74b0d0",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 1,
+        "columns": [
+          {
+            "name": "row_count",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "100"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=security_alert_anomaly */\nSELECT SCORE FROM cpw.dbx_d1111_before.audit__security_alert LIMIT 1",
+    "statement_id": "01f1dd86-6191-1034-b37a-fa1a9cedd1c3",
+    "status": {
+      "state": "FAILED",
+      "error": {
+        "error_code": "BAD_REQUEST",
+        "message": "[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SCORE` cannot be resolved. Did you mean one of the following? [`alert_id`, `alert_ts`, `status_cd`, `document_id`, `severity_cd`]. SQLSTATE: 42703; line 2 pos 7"
+      },
+      "sql_state": "42703"
+    }
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "history",
+    "sql": "/* run=dbx-d1111 act=spark step=history consumer=security_alert_anomaly */\nSELECT statement_id, start_time, total_duration_ms, read_rows, produced_rows, execution_status\nFROM system.query.history\nWHERE statement_text LIKE '/* run=dbx-d1111 act=spark step=%consumer=security_alert_anomaly */%'\nORDER BY start_time",
+    "statement_id": "01f1dd87-edeb-1ac2-a63e-fb01c031e851",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 6,
+        "columns": [
+          {
+            "name": "statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "start_time",
+            "type_text": "TIMESTAMP",
+            "type_name": "TIMESTAMP",
+            "position": 1
+          },
+          {
+            "name": "total_duration_ms",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "read_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          },
+          {
+            "name": "produced_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 4
+          },
+          {
+            "name": "execution_status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 25
+        }
+      ],
+      "total_row_count": 25,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 25,
+      "data_array": [
+        [
+          "01f1dd84-1e40-1a8d-9f85-0467d72f7a49",
+          "2026-11-11T03:58:13.823Z",
+          "95",
+          "0",
+          null,
+          "FAILED"
+        ],
+        [
+          "01f1dd84-1e74-16ca-aef3-acdbc1987c3b",
+          "2026-11-11T03:58:14.162Z",
+          "328",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-3480-1080-aff1-fb45780d0f0b",
+          "2026-11-11T03:58:51.148Z",
+          "364",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-34d5-161b-a2f9-05d100ade666",
+          "2026-11-11T03:58:51.706Z",
+          "314",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-ee88-1334-a4c9-f1814cdeaec1",
+          "2026-11-11T04:04:03.257Z",
+          "2287",
+          "265",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-f013-125e-9df6-093e44f6ed49",
+          "2026-11-11T04:04:05.844Z",
+          "2162",
+          "266",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-f195-1956-9ff7-9c9dd8308281",
+          "2026-11-11T04:04:08.377Z",
+          "2091",
+          "267",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-f315-1653-a8eb-107a60a162a6",
+          "2026-11-11T04:04:10.893Z",
+          "2770",
+          "268",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-f4f1-1f52-a9f0-7e7847d74092",
+          "2026-11-11T04:04:14.017Z",
+          "2325",
+          "269",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-f684-1fa0-864c-69fa85c41a1e",
+          "2026-11-11T04:04:16.659Z",
+          "2200",
+          "270",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-f812-1820-83a2-bab5df9c64cf",
+          "2026-11-11T04:04:19.263Z",
+          "2320",
+          "271",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-f9a4-156c-a957-fc987fdc029f",
+          "2026-11-11T04:04:21.896Z",
+          "2206",
+          "272",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-fb26-16ee-862a-7183128a06e3",
+          "2026-11-11T04:04:24.427Z",
+          "2153",
+          "2",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-24a6-1b8f-a80d-0ed99c030799",
+          "2026-11-11T04:05:34.054Z",
+          "417",
+          "1",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-87ea-1393-b6f4-2cdf07d06f7f",
+          "2026-11-11T04:08:20.591Z",
+          "3378",
+          "4",
+          "4",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-8a1f-18ba-98e9-531f89742401",
+          "2026-11-11T04:08:24.296Z",
+          "3051",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-cc0d-1112-9d4d-8e32d9e30c8d",
+          "2026-11-11T04:10:14.905Z",
+          "2037",
+          "311",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-cd76-107f-b9e8-4920fada70f1",
+          "2026-11-11T04:10:17.269Z",
+          "2031",
+          "312",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-cedb-1aec-a593-b2cd8f89eff3",
+          "2026-11-11T04:10:19.615Z",
+          "2086",
+          "313",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-d053-1907-8fbf-74d7a0005962",
+          "2026-11-11T04:10:22.077Z",
+          "3631",
+          "4",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-31ba-1bcb-9559-c47a144d1089",
+          "2026-11-11T04:13:05.492Z",
+          "372",
+          "0",
+          "8",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-3223-14b2-8634-b8313fd9a00a",
+          "2026-11-11T04:13:06.177Z",
+          "453",
+          "0",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-4a63-1bf7-8202-7cf08ca99a48",
+          "2026-11-11T04:13:46.866Z",
+          "342",
+          "0",
+          "8",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-4ac9-1080-a39e-23b2cd74b0d0",
+          "2026-11-11T04:13:47.529Z",
+          "388",
+          "0",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-6191-1034-b37a-fa1a9cedd1c3",
+          "2026-11-11T04:14:25.752Z",
+          "168",
+          "0",
+          null,
+          "FAILED"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "billing",
+    "sql": "/* run=dbx-d1111 act=spark step=billing consumer=security_alert_anomaly */\nSELECT usage_metadata.job_id, usage_metadata.job_run_id, sum(usage_quantity) AS dbu\nFROM system.billing.usage\nWHERE usage_metadata.job_id='859825881744874' AND usage_unit='DBU'\nGROUP BY usage_metadata.job_id, usage_metadata.job_run_id",
+    "statement_id": "01f1dd87-efe2-1e73-ae64-e2504c29b158",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "job_run_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "dbu",
+            "type_text": "DECIMAL(38,18)",
+            "type_name": "DECIMAL",
+            "position": 2,
+            "type_precision": 38,
+            "type_scale": 18
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "evidence",
+    "sql": "/* run=dbx-d1111 act=spark step=evidence consumer=security_alert_anomaly */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT * FROM VALUES ('spark-security_alert_anomaly','spark:security_alert_anomaly','first-failure','red','[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__security_alert` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14','01f1dd84-1e40-1a8d-9f85-0467d72f7a49'),('spark-security_alert_anomaly','spark:security_alert_anomaly','input-recheck','red','Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.','01f1dd86-6191-1034-b37a-fa1a9cedd1c3'),('spark-security_alert_anomaly','spark:security_alert_anomaly','input-alternatives','red','Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.','01f1dd86-6191-1034-b37a-fa1a9cedd1c3'),('spark-security_alert_anomaly','spark:security_alert_anomaly','input-equality','blocked','Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.','01f1dd86-6191-1034-b37a-fa1a9cedd1c3'),('spark-security_alert_anomaly','spark:security_alert_anomaly','run1','blocked','Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.','01f1dd86-6191-1034-b37a-fa1a9cedd1c3'),('spark-security_alert_anomaly','spark:security_alert_anomaly','counts','blocked','Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.','01f1dd86-6191-1034-b37a-fa1a9cedd1c3'),('spark-security_alert_anomaly','spark:security_alert_anomaly','hash','blocked','Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.','01f1dd86-6191-1034-b37a-fa1a9cedd1c3'),('spark-security_alert_anomaly','spark:security_alert_anomaly','except-all','blocked','Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.','01f1dd86-6191-1034-b37a-fa1a9cedd1c3'),('spark-security_alert_anomaly','spark:security_alert_anomaly','run2-idempotence','blocked','Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.','01f1dd86-6191-1034-b37a-fa1a9cedd1c3'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd84-1e40-1a8d-9f85-0467d72f7a49','red','{\"step\": \"inputs\", \"status\": {\"state\": \"FAILED\", \"error\": {\"error_code\": \"BAD_REQUEST\", \"message\": \"[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__security_alert` cannot be found. Verify the spelling and correctness of the schema and catalog.\\\\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\\\\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\\\\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14\"}, \"sql_state\": \"42P01\"}, \"result\": {}}','01f1dd84-1e40-1a8d-9f85-0467d72f7a49'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd84-1e74-16ca-aef3-acdbc1987c3b','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-1e74-16ca-aef3-acdbc1987c3b'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd84-3480-1080-aff1-fb45780d0f0b','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-3480-1080-aff1-fb45780d0f0b'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd84-34d5-161b-a2f9-05d100ade666','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-34d5-161b-a2f9-05d100ade666'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd85-87ea-1393-b6f4-2cdf07d06f7f','info','{\"step\": \"history\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 4, \"data_array\": [[\"01f1dd84-1e40-1a8d-9f85-0467d72f7a49\", \"2026-11-11T03:58:13.823Z\", \"95\", \"0\", null, \"FAILED\"], [\"01f1dd84-1e74-16ca-aef3-acdbc1987c3b\", \"2026-11-11T03:58:14.162Z\", \"328\", \"0\", \"0\", \"FINISHED\"], [\"01f1dd84-3480-1080-aff1-fb45780d0f0b\", \"2026-11-11T03:58:51.148Z\", \"364\", \"0\", \"0\", \"FINISHED\"], [\"01f1dd84-34d5-161b-a2f9-05d100ade666\", \"2026-11-11T03:58:51.706Z\", \"314\", \"0\", \"0\", \"FINISHED\"]]}}','01f1dd85-87ea-1393-b6f4-2cdf07d06f7f'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd85-8a1f-18ba-98e9-531f89742401','info','{\"step\": \"billing\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd85-8a1f-18ba-98e9-531f89742401'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd86-31ba-1bcb-9559-c47a144d1089','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 8, \"data_array\": [[\"alert_id\", \"bigint\", null], [\"actor_user_id\", \"bigint\", null], [\"document_id\", \"bigint\", null], [\"alert_ts\", \"timestamp\", null], [\"severity_cd\", \"string\", null], [\"status_cd\", \"string\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd86-31ba-1bcb-9559-c47a144d1089'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd86-3223-14b2-8634-b8313fd9a00a','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"100\"]]}}','01f1dd86-3223-14b2-8634-b8313fd9a00a'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd86-4a63-1bf7-8202-7cf08ca99a48','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 8, \"data_array\": [[\"alert_id\", \"bigint\", null], [\"actor_user_id\", \"bigint\", null], [\"document_id\", \"bigint\", null], [\"alert_ts\", \"timestamp\", null], [\"severity_cd\", \"string\", null], [\"status_cd\", \"string\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd86-4a63-1bf7-8202-7cf08ca99a48'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd86-4ac9-1080-a39e-23b2cd74b0d0','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"100\"]]}}','01f1dd86-4ac9-1080-a39e-23b2cd74b0d0'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd86-6191-1034-b37a-fa1a9cedd1c3','red','{\"step\": \"inputs\", \"status\": {\"state\": \"FAILED\", \"error\": {\"error_code\": \"BAD_REQUEST\", \"message\": \"[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SCORE` cannot be resolved. Did you mean one of the following? [`alert_id`, `alert_ts`, `status_cd`, `document_id`, `severity_cd`]. SQLSTATE: 42703; line 2 pos 7\"}, \"sql_state\": \"42703\"}, \"result\": {}}','01f1dd86-6191-1034-b37a-fa1a9cedd1c3'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd87-edeb-1ac2-a63e-fb01c031e851','info','{\"step\": \"history\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"row_count\": 25, \"note\": \"Full query result retained in statement evidence\"}}','01f1dd87-edeb-1ac2-a63e-fb01c031e851'),('spark-security_alert_anomaly','spark:security_alert_anomaly','statement:01f1dd87-efe2-1e73-ae64-e2504c29b158','info','{\"step\": \"billing\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd87-efe2-1e73-ae64-e2504c29b158') AS v(run_label,object,rung,status,detail,statement_id)) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd88-08df-169e-bf33-82cdb53561be",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "22",
+          "7",
+          "0",
+          "15"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=security_alert_anomaly */\nMERGE INTO cpw.dbx_d1111_control.migration_control t\nUSING (SELECT 'spark:security_alert_anomaly' AS object_name,\n'audit' AS subject_area,\n'spark' AS source_system,\n'etl/spark/jobs/py/security_alert_anomaly.py' AS source_path,\n'cpw.dbx_d1111_after.audit__spark_security_alert_anomaly' AS target,\n'red' AS status,\n'BLOCKED: Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.' AS parity,\n'https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756' AS pr,\n'[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__security_alert` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' AS first_failure,\n'01f1dd84-1e40-1a8d-9f85-0467d72f7a49' AS first_failure_statement_id,\n'BLOCKED: Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.' AS corrected_parity,\nCAST(NULL AS STRING) AS parity_statement_id,\n'BLOCKED: no complete live input contract; no job run submitted' AS idempotence,\n'[]' AS idempotence_statement_ids,\n'0.013226667' AS executor_hours,\n'859825881744874' AS job_id,\n'[]' AS job_run_ids,\n'Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed.' AS red_reason,\n'dbx-d1111' AS run_token,\n'2026-11-24' AS expires, current_timestamp() updated_at) s\nON t.object_name=s.object_name\nWHEN MATCHED THEN UPDATE SET t.subject_area=s.subject_area, t.source_system=s.source_system, t.source_path=s.source_path, t.target=s.target, t.status=s.status, t.parity=s.parity, t.pr=s.pr, t.first_failure=s.first_failure, t.first_failure_statement_id=s.first_failure_statement_id, t.corrected_parity=s.corrected_parity, t.parity_statement_id=s.parity_statement_id, t.idempotence=s.idempotence, t.idempotence_statement_ids=s.idempotence_statement_ids, t.executor_hours=s.executor_hours, t.job_id=s.job_id, t.job_run_ids=s.job_run_ids, t.red_reason=s.red_reason, t.run_token=s.run_token, t.expires=s.expires, t.updated_at=s.updated_at\nWHEN NOT MATCHED THEN INSERT (object_name, subject_area, source_system, source_path, target, status, parity, pr, first_failure, first_failure_statement_id, corrected_parity, parity_statement_id, idempotence, idempotence_statement_ids, executor_hours, job_id, job_run_ids, red_reason, run_token, expires, updated_at) VALUES (s.object_name, s.subject_area, s.source_system, s.source_path, s.target, s.status, s.parity, s.pr, s.first_failure, s.first_failure_statement_id, s.corrected_parity, s.parity_statement_id, s.idempotence, s.idempotence_statement_ids, s.executor_hours, s.job_id, s.job_run_ids, s.red_reason, s.run_token, s.expires, s.updated_at)",
+    "statement_id": "01f1dd88-0b7a-1019-8d29-ecf71ffd6388",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "security_alert_anomaly",
+    "step": "verify",
+    "sql": "/* run=dbx-d1111 act=spark step=verify consumer=security_alert_anomaly */\nSELECT object_name,status,first_failure_statement_id,parity_statement_id,job_id,job_run_ids,red_reason\nFROM cpw.dbx_d1111_control.migration_control WHERE object_name='spark:security_alert_anomaly' ",
+    "statement_id": "01f1dd88-0e26-130a-bd9c-cb86ca606799",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 7,
+        "columns": [
+          {
+            "name": "object_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "first_failure_statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          },
+          {
+            "name": "parity_statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 3
+          },
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 4
+          },
+          {
+            "name": "job_run_ids",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          },
+          {
+            "name": "red_reason",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 6
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "spark:security_alert_anomaly",
+          "red",
+          "01f1dd84-1e40-1a8d-9f85-0467d72f7a49",
+          null,
+          "859825881744874",
+          "[]",
+          "Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed."
+        ]
+      ]
+    }
   }
 ]

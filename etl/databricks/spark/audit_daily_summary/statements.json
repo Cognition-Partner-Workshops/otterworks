@@ -1436,5 +1436,1637 @@
         ]
       ]
     }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nDESCRIBE TABLE cpw.dbx_d1111_before.audit__audit_event",
+    "statement_id": "01f1dd86-2f70-1853-8f4a-b8bd2ddbee7f",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 9
+        }
+      ],
+      "total_row_count": 9,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 9,
+      "data_array": [
+        [
+          "event_id",
+          "bigint",
+          null
+        ],
+        [
+          "actor_user_id",
+          "bigint",
+          null
+        ],
+        [
+          "document_id",
+          "bigint",
+          null
+        ],
+        [
+          "customer_id",
+          "bigint",
+          null
+        ],
+        [
+          "event_ts",
+          "timestamp",
+          null
+        ],
+        [
+          "event_type",
+          "string",
+          null
+        ],
+        [
+          "details",
+          "string",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nSELECT count(*) row_count FROM cpw.dbx_d1111_before.audit__audit_event",
+    "statement_id": "01f1dd86-2fd3-1051-92e7-25f987501df9",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 1,
+        "columns": [
+          {
+            "name": "row_count",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "2000"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nSELECT count_if(event_ts IS NULL) null_event_ts, count_if(actor_user_id IS NULL) null_actor FROM cpw.dbx_d1111_before.audit__audit_event",
+    "statement_id": "01f1dd86-4d57-177e-b7dc-4167b29d51f9",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 2,
+        "columns": [
+          {
+            "name": "null_event_ts",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "null_actor",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nSELECT event_id AS AUDIT_EVENT_ID, actor_user_id AS ACTOR_USER_ID,\n document_id AS DOCUMENT_ID, event_type AS EVENT_TYPE, event_ts AS EVENT_AT, details AS DETAILS\nFROM cpw.dbx_d1111_before.audit__audit_event",
+    "statement_id": "01f1dd86-6016-167c-9fd7-ad166a8782e8",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 6,
+        "columns": [
+          {
+            "name": "AUDIT_EVENT_ID",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "ACTOR_USER_ID",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "DOCUMENT_ID",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "EVENT_TYPE",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 3
+          },
+          {
+            "name": "EVENT_AT",
+            "type_text": "TIMESTAMP",
+            "type_name": "TIMESTAMP",
+            "position": 4
+          },
+          {
+            "name": "DETAILS",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 2000
+        }
+      ],
+      "total_row_count": 2000,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 2000,
+      "data_array": [],
+      "note": "Exported live rows omitted from git; manifest, statement_id, SHA256 and input count/hash retained"
+    },
+    "exported_data_sha256": "1b0a04fa77d966c3608617fc8b322bc8c33fd29d99147887124167e37a3d87c8"
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nWITH adapted AS (SELECT event_id AS AUDIT_EVENT_ID, actor_user_id AS ACTOR_USER_ID,\n document_id AS DOCUMENT_ID, event_type AS EVENT_TYPE, event_ts AS EVENT_AT, details AS DETAILS\nFROM cpw.dbx_d1111_before.audit__audit_event) SELECT count(*) n, sum(cast(conv(substr(md5(concat_ws('|', coalesce(cast(AUDIT_EVENT_ID AS STRING), '<NULL>'), coalesce(cast(ACTOR_USER_ID AS STRING), '<NULL>'), coalesce(cast(DOCUMENT_ID AS STRING), '<NULL>'), coalesce(cast(EVENT_TYPE AS STRING), '<NULL>'), coalesce(cast(EVENT_AT AS STRING), '<NULL>'), coalesce(cast(DETAILS AS STRING), '<NULL>'))),1,15),16,10) AS DECIMAL(38,0))) h FROM adapted",
+    "statement_id": "01f1dd86-60ab-1fde-8860-e539b85ed36b",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 2,
+        "columns": [
+          {
+            "name": "n",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "h",
+            "type_text": "DECIMAL(38,0)",
+            "type_name": "DECIMAL",
+            "position": 1,
+            "type_precision": 38,
+            "type_scale": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "2000",
+          "1150761524327518271109"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "before-load",
+    "sql": "/* run=dbx-d1111 act=spark step=before-load consumer=audit_daily_summary */\nCREATE OR REPLACE TABLE cpw.dbx_d1111_parity.audit__spark_audit_daily_summary__spark_before USING DELTA\nCOMMENT 'run_token=dbx-d1111 expires=2026-11-24'\nTBLPROPERTIES('run_token'='dbx-d1111','expires'='2026-11-24','act'='spark')\nAS SELECT * FROM VALUES (CAST('2026-11-08' AS date),CAST('VERSION_PUB ' AS string),CAST('100' AS bigint),CAST('80' AS bigint)),(CAST('2026-11-08' AS date),CAST('DOC_VIEW    ' AS string),CAST('85' AS bigint),CAST('70' AS bigint)),(CAST('2026-11-07' AS date),CAST('EXPORT_REQ  ' AS string),CAST('72' AS bigint),CAST('62' AS bigint)),(CAST('2026-11-07' AS date),CAST('DOC_VIEW    ' AS string),CAST('90' AS bigint),CAST('79' AS bigint)),(CAST('2026-11-08' AS date),CAST('EXPORT_REQ  ' AS string),CAST('93' AS bigint),CAST('83' AS bigint)),(CAST('2026-11-07' AS date),CAST('VERSION_PUB ' AS string),CAST('85' AS bigint),CAST('74' AS bigint)),(CAST('2026-11-07' AS date),CAST('DOC_SHARE   ' AS string),CAST('82' AS bigint),CAST('74' AS bigint)),(CAST('2026-11-08' AS date),CAST('DOC_UPLOAD  ' AS string),CAST('71' AS bigint),CAST('58' AS bigint)),(CAST('2026-11-08' AS date),CAST('ACCESS_DENY ' AS string),CAST('93' AS bigint),CAST('78' AS bigint)),(CAST('2026-11-08' AS date),CAST('POLICY_APPLY' AS string),CAST('84' AS bigint),CAST('73' AS bigint)),(CAST('2026-11-09' AS date),CAST('DOC_DOWNLOAD' AS string),CAST('95' AS bigint),CAST('79' AS bigint)),(CAST('2026-11-09' AS date),CAST('DOC_SHARE   ' AS string),CAST('91' AS bigint),CAST('78' AS bigint)),(CAST('2026-11-07' AS date),CAST('ACCESS_DENY ' AS string),CAST('87' AS bigint),CAST('75' AS bigint)),(CAST('2026-11-07' AS date),CAST('DOC_UPLOAD  ' AS string),CAST('86' AS bigint),CAST('75' AS bigint)),(CAST('2026-11-08' AS date),CAST('DOC_SHARE   ' AS string),CAST('62' AS bigint),CAST('54' AS bigint)),(CAST('2026-11-09' AS date),CAST('DOC_VIEW    ' AS string),CAST('85' AS bigint),CAST('74' AS bigint)),(CAST('2026-11-09' AS date),CAST('VERSION_PUB ' AS string),CAST('70' AS bigint),CAST('60' AS bigint)),(CAST('2026-11-07' AS date),CAST('POLICY_APPLY' AS string),CAST('89' AS bigint),CAST('72' AS bigint)),(CAST('2026-11-09' AS date),CAST('DOC_UPLOAD  ' AS string),CAST('71' AS bigint),CAST('62' AS bigint)),(CAST('2026-11-09' AS date),CAST('POLICY_APPLY' AS string),CAST('88' AS bigint),CAST('71' AS bigint)),(CAST('2026-11-09' AS date),CAST('ACCESS_DENY ' AS string),CAST('86' AS bigint),CAST('72' AS bigint)),(CAST('2026-11-09' AS date),CAST('EXPORT_REQ  ' AS string),CAST('81' AS bigint),CAST('69' AS bigint)),(CAST('2026-11-07' AS date),CAST('DOC_DOWNLOAD' AS string),CAST('75' AS bigint),CAST('63' AS bigint)),(CAST('2026-11-08' AS date),CAST('DOC_DOWNLOAD' AS string),CAST('79' AS bigint),CAST('71' AS bigint)) AS t(EVENT_DATE,EVENT_TYPE,EVENT_COUNT,ACTORS)",
+    "statement_id": "01f1dd86-ab1c-15cf-87da-54a09cba37ea",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 2,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=audit_daily_summary */\nSELECT count(*) n, sum(cast(conv(substr(md5(concat_ws('|', coalesce(cast(EVENT_DATE AS STRING), '<NULL>'), coalesce(cast(EVENT_TYPE AS STRING), '<NULL>'), coalesce(cast(EVENT_COUNT AS STRING), '<NULL>'), coalesce(cast(ACTORS AS STRING), '<NULL>'))),1,15),16,10) AS DECIMAL(38,0))) h FROM cpw.dbx_d1111_after.audit__spark_audit_daily_summary",
+    "statement_id": "01f1dd86-b135-131a-a11b-b44b581c91d0",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 2,
+        "columns": [
+          {
+            "name": "n",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "h",
+            "type_text": "DECIMAL(38,0)",
+            "type_name": "DECIMAL",
+            "position": 1,
+            "type_precision": 38,
+            "type_scale": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "24",
+          "11889509446007135789"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=audit_daily_summary */\nSELECT count(*) n, sum(cast(conv(substr(md5(concat_ws('|', coalesce(cast(EVENT_DATE AS STRING), '<NULL>'), coalesce(cast(EVENT_TYPE AS STRING), '<NULL>'), coalesce(cast(EVENT_COUNT AS STRING), '<NULL>'), coalesce(cast(ACTORS AS STRING), '<NULL>'))),1,15),16,10) AS DECIMAL(38,0))) h FROM cpw.dbx_d1111_parity.audit__spark_audit_daily_summary__spark_before",
+    "statement_id": "01f1dd86-b1d7-1c68-9baf-be690141afe2",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 2,
+        "columns": [
+          {
+            "name": "n",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "h",
+            "type_text": "DECIMAL(38,0)",
+            "type_name": "DECIMAL",
+            "position": 1,
+            "type_precision": 38,
+            "type_scale": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "24",
+          "11889509446007135789"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=audit_daily_summary */\nSELECT EVENT_DATE,EVENT_TYPE,EVENT_COUNT,ACTORS FROM cpw.dbx_d1111_parity.audit__spark_audit_daily_summary__spark_before EXCEPT ALL SELECT EVENT_DATE,EVENT_TYPE,EVENT_COUNT,ACTORS FROM cpw.dbx_d1111_after.audit__spark_audit_daily_summary LIMIT 20",
+    "statement_id": "01f1dd86-b252-1938-b570-f5bed6c6f572",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "EVENT_DATE",
+            "type_text": "DATE",
+            "type_name": "DATE",
+            "position": 0
+          },
+          {
+            "name": "EVENT_TYPE",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "EVENT_COUNT",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "ACTORS",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=audit_daily_summary */\nSELECT EVENT_DATE,EVENT_TYPE,EVENT_COUNT,ACTORS FROM cpw.dbx_d1111_after.audit__spark_audit_daily_summary EXCEPT ALL SELECT EVENT_DATE,EVENT_TYPE,EVENT_COUNT,ACTORS FROM cpw.dbx_d1111_parity.audit__spark_audit_daily_summary__spark_before LIMIT 20",
+    "statement_id": "01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "EVENT_DATE",
+            "type_text": "DATE",
+            "type_name": "DATE",
+            "position": 0
+          },
+          {
+            "name": "EVENT_TYPE",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "EVENT_COUNT",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "ACTORS",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "idempotence",
+    "sql": "/* run=dbx-d1111 act=spark step=idempotence consumer=audit_daily_summary */\nSELECT count(*) n, sum(cast(conv(substr(md5(concat_ws('|', coalesce(cast(EVENT_DATE AS STRING), '<NULL>'), coalesce(cast(EVENT_TYPE AS STRING), '<NULL>'), coalesce(cast(EVENT_COUNT AS STRING), '<NULL>'), coalesce(cast(ACTORS AS STRING), '<NULL>'))),1,15),16,10) AS DECIMAL(38,0))) h FROM cpw.dbx_d1111_after.audit__spark_audit_daily_summary",
+    "statement_id": "01f1dd86-b709-1dfa-97fe-7db9e6c59adf",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 2,
+        "columns": [
+          {
+            "name": "n",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "h",
+            "type_text": "DECIMAL(38,0)",
+            "type_name": "DECIMAL",
+            "position": 1,
+            "type_precision": 38,
+            "type_scale": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "24",
+          "11889509446007135789"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "idempotence",
+    "sql": "/* run=dbx-d1111 act=spark step=idempotence consumer=audit_daily_summary */\nDESCRIBE HISTORY cpw.dbx_d1111_after.audit__spark_audit_daily_summary LIMIT 2",
+    "statement_id": "01f1dd86-b789-1c70-ae49-5d576e1574b3",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 16,
+        "columns": [
+          {
+            "name": "version",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "timestamp",
+            "type_text": "TIMESTAMP",
+            "type_name": "TIMESTAMP",
+            "position": 1
+          },
+          {
+            "name": "userId",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          },
+          {
+            "name": "userName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 3
+          },
+          {
+            "name": "operation",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 4
+          },
+          {
+            "name": "operationParameters",
+            "type_text": "MAP<STRING, STRING>",
+            "type_name": "MAP",
+            "position": 5
+          },
+          {
+            "name": "job",
+            "type_text": "STRUCT<jobId: STRING, jobName: STRING, jobRunId: STRING, runId: STRING, jobOwnerId: STRING, triggerType: STRING, workspaceId: STRING>",
+            "type_name": "STRUCT",
+            "position": 6
+          },
+          {
+            "name": "notebook",
+            "type_text": "STRUCT<notebookId: STRING>",
+            "type_name": "STRUCT",
+            "position": 7
+          },
+          {
+            "name": "queryHistoryStatementId",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 8
+          },
+          {
+            "name": "clusterId",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 9
+          },
+          {
+            "name": "readVersion",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 10
+          },
+          {
+            "name": "isolationLevel",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 11
+          },
+          {
+            "name": "isBlindAppend",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 12
+          },
+          {
+            "name": "operationMetrics",
+            "type_text": "MAP<STRING, STRING>",
+            "type_name": "MAP",
+            "position": 13
+          },
+          {
+            "name": "userMetadata",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 14
+          },
+          {
+            "name": "engineInfo",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 15
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 2
+        }
+      ],
+      "total_row_count": 2,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 2,
+      "data_array": [
+        [
+          "1",
+          "2026-11-11T04:16:46.000Z",
+          "<redacted identity>",
+          "<redacted identity>",
+          "CREATE OR REPLACE TABLE AS SELECT",
+          "{\"partitionBy\":\"[]\",\"clusterBy\":\"[]\",\"description\":\"run_token=dbx-d1111 expires=2026-11-24\",\"isManaged\":\"true\",\"properties\":\"{\\\"delta.parquet.compression.codec\\\":\\\"zstd\\\",\\\"expires\\\":\\\"2026-11-24\\\",\\\"delta.parquet.format.version.afe.internal\\\":\\\"2.12.0\\\",\\\"run_token\\\":\\\"dbx-d1111\\\",\\\"delta.enableDeletionVectors\\\":\\\"true\\\",\\\"delta.checkpoint.writeStatsAsStruct\\\":\\\"true\\\",\\\"delta.parquet.format.version\\\":\\\"2.12.0\\\",\\\"delta.enableRowTracking\\\":\\\"true\\\",\\\"delta.checkpointPolicy\\\":\\\"v2\\\",\\\"delta.checkpoint.writeStatsAsJson\\\":\\\"false\\\",\\\"io.unitycatalog.tableId\\\":\\\"36bfd695-ff04-48f2-b7cd-3829da91c79a\\\",\\\"delta.rowTracking.materializedRowCommitVersionColumnName\\\":\\\"_row-commit-version-col-1630f2d7-95dd-4a24-a521-eed84d276ba8\\\",\\\"act\\\":\\\"spark\\\",\\\"delta.rowTracking.materializedRowIdColumnName\\\":\\\"_row-id-col-5c893096-c115-4fa4-b7ea-66db31b1f714\\\"}\",\"statsOnLoad\":\"true\",\"clusterByAuto\":\"true\",\"clusteringOnWriteStatus\":\"Reason for skipping: Nonexistent clustering column, generally when replacing a Liquid table with a table without clustering columns\"}",
+          "{\"jobName\":null,\"jobOwnerId\":null,\"workspaceId\":\"7474652505890469\",\"jobId\":\"891657763613522\",\"jobRunId\":\"761924419433112\",\"runId\":\"288735269211661\",\"triggerType\":null}",
+          null,
+          "01f1dd86-b410-1b54-81e8-b0092dfa0882",
+          null,
+          "0",
+          "WriteSerializable",
+          "false",
+          "{\"numFiles\":\"1\",\"numRemovedFiles\":\"1\",\"numRemovedBytes\":\"1996\",\"numDeletionVectorsRemoved\":\"0\",\"numOutputRows\":\"24\",\"numOutputBytes\":\"1996\"}",
+          null,
+          "Databricks-Runtime/19.13.x-aarch64-photon-scala2.13"
+        ],
+        [
+          "0",
+          "2026-11-11T04:16:37.000Z",
+          "<redacted identity>",
+          "<redacted identity>",
+          "CREATE OR REPLACE TABLE AS SELECT",
+          "{\"partitionBy\":\"[]\",\"clusterBy\":\"[]\",\"description\":\"run_token=dbx-d1111 expires=2026-11-24\",\"isManaged\":\"true\",\"properties\":\"{\\\"delta.parquet.compression.codec\\\":\\\"zstd\\\",\\\"expires\\\":\\\"2026-11-24\\\",\\\"delta.parquet.format.version.afe.internal\\\":\\\"2.12.0\\\",\\\"run_token\\\":\\\"dbx-d1111\\\",\\\"delta.enableDeletionVectors\\\":\\\"true\\\",\\\"delta.checkpoint.writeStatsAsStruct\\\":\\\"true\\\",\\\"delta.parquet.format.version\\\":\\\"2.12.0\\\",\\\"delta.enableRowTracking\\\":\\\"true\\\",\\\"delta.checkpointPolicy\\\":\\\"v2\\\",\\\"delta.checkpoint.writeStatsAsJson\\\":\\\"false\\\",\\\"io.unitycatalog.tableId\\\":\\\"36bfd695-ff04-48f2-b7cd-3829da91c79a\\\",\\\"delta.rowTracking.materializedRowCommitVersionColumnName\\\":\\\"_row-commit-version-col-1630f2d7-95dd-4a24-a521-eed84d276ba8\\\",\\\"act\\\":\\\"spark\\\",\\\"delta.rowTracking.materializedRowIdColumnName\\\":\\\"_row-id-col-5c893096-c115-4fa4-b7ea-66db31b1f714\\\"}\",\"statsOnLoad\":\"true\",\"clusterByAuto\":\"true\",\"clusteringOnWriteStatus\":\"Reason for skipping: Nonexistent clustering column, generally when replacing a Liquid table with a table without clustering columns\"}",
+          "{\"jobName\":null,\"jobOwnerId\":null,\"workspaceId\":\"7474652505890469\",\"jobId\":\"891657763613522\",\"jobRunId\":\"729010651237413\",\"runId\":\"445766677758261\",\"triggerType\":null}",
+          null,
+          "01f1dd86-ae35-1171-afd2-b2be1d7341be",
+          null,
+          null,
+          "WriteSerializable",
+          "false",
+          "{\"numFiles\":\"1\",\"numRemovedFiles\":\"0\",\"numRemovedBytes\":\"0\",\"numDeletionVectorsRemoved\":\"0\",\"numOutputRows\":\"24\",\"numOutputBytes\":\"1996\"}",
+          null,
+          "Databricks-Runtime/19.13.x-aarch64-photon-scala2.13"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "metadata",
+    "sql": "/* run=dbx-d1111 act=spark step=metadata consumer=audit_daily_summary */\nDESCRIBE TABLE EXTENDED cpw.dbx_d1111_after.audit__spark_audit_daily_summary",
+    "statement_id": "01f1dd87-ddd2-122d-a0f9-212b3c261db5",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 23
+        }
+      ],
+      "total_row_count": 23,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 23,
+      "data_array": [
+        [
+          "EVENT_DATE",
+          "date",
+          null
+        ],
+        [
+          "EVENT_TYPE",
+          "string",
+          null
+        ],
+        [
+          "EVENT_COUNT",
+          "bigint",
+          null
+        ],
+        [
+          "ACTORS",
+          "bigint",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ],
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "# Detailed Table Information",
+          "",
+          ""
+        ],
+        [
+          "Catalog",
+          "cpw",
+          ""
+        ],
+        [
+          "Database",
+          "dbx_d1111_after",
+          ""
+        ],
+        [
+          "Table",
+          "audit__spark_audit_daily_summary",
+          ""
+        ],
+        [
+          "Created Time",
+          "Wed Nov 11 04:16:37 UTC 2026",
+          ""
+        ],
+        [
+          "Last Access",
+          "UNKNOWN",
+          ""
+        ],
+        [
+          "Created By",
+          "Spark ",
+          ""
+        ],
+        [
+          "Statistics",
+          "1996 bytes, 24 rows",
+          ""
+        ],
+        [
+          "Type",
+          "MANAGED",
+          ""
+        ],
+        [
+          "Comment",
+          "run_token=dbx-d1111 expires=2026-11-24",
+          ""
+        ],
+        [
+          "Location",
+          "",
+          ""
+        ],
+        [
+          "Provider",
+          "delta",
+          ""
+        ],
+        [
+          "Owner",
+          "<redacted identity>",
+          ""
+        ],
+        [
+          "Is_managed_location",
+          "true",
+          ""
+        ],
+        [
+          "Predictive Optimization",
+          "ENABLE (inherited from METASTORE metastore_aws_us_west_2)",
+          ""
+        ],
+        [
+          "Table Properties",
+          "[act=spark,clusterByAuto=true,clusteringColumns=[],delta.checkpoint.writeStatsAsJson=false,delta.checkpoint.writeStatsAsStruct=true,delta.checkpointPolicy=v2,delta.enableDeletionVectors=true,delta.enableRowTracking=true,delta.feature.appendOnly=supported,delta.feature.clustering=supported,delta.feature.deletionVectors=supported,delta.feature.domainMetadata=supported,delta.feature.invariants=supported,delta.feature.rowTracking=supported,delta.feature.v2Checkpoint=supported,delta.minReaderVersion=3,delta.minWriterVersion=7,delta.parquet.compression.codec=zstd,delta.parquet.format.version=2.12.0,delta.parquet.format.version.afe.internal=2.12.0,delta.rowTracking.materializedRowCommitVersionColumnName=_row-commit-version-col-1630f2d7-95dd-4a24-a521-eed84d276ba8,delta.rowTracking.materializedRowIdColumnName=_row-id-col-5c893096-c115-4fa4-b7ea-66db31b1f714,expires=2026-11-24,io.unitycatalog.tableId=36bfd695-ff04-48f2-b7cd-3829da91c79a,run_token=dbx-d1111]",
+          ""
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "metadata",
+    "sql": "/* run=dbx-d1111 act=spark step=metadata consumer=audit_daily_summary */\nDESCRIBE TABLE EXTENDED cpw.dbx_d1111_parity.audit__spark_audit_daily_summary__spark_before",
+    "statement_id": "01f1dd87-de4a-10f0-989f-f129af7b108c",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 23
+        }
+      ],
+      "total_row_count": 23,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 23,
+      "data_array": [
+        [
+          "EVENT_DATE",
+          "date",
+          null
+        ],
+        [
+          "EVENT_TYPE",
+          "string",
+          null
+        ],
+        [
+          "EVENT_COUNT",
+          "bigint",
+          null
+        ],
+        [
+          "ACTORS",
+          "bigint",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ],
+        [
+          "",
+          "",
+          ""
+        ],
+        [
+          "# Detailed Table Information",
+          "",
+          ""
+        ],
+        [
+          "Catalog",
+          "cpw",
+          ""
+        ],
+        [
+          "Database",
+          "dbx_d1111_parity",
+          ""
+        ],
+        [
+          "Table",
+          "audit__spark_audit_daily_summary__spark_before",
+          ""
+        ],
+        [
+          "Created Time",
+          "Wed Nov 11 04:16:31 UTC 2026",
+          ""
+        ],
+        [
+          "Last Access",
+          "UNKNOWN",
+          ""
+        ],
+        [
+          "Created By",
+          "Spark ",
+          ""
+        ],
+        [
+          "Statistics",
+          "2006 bytes, 24 rows",
+          ""
+        ],
+        [
+          "Type",
+          "MANAGED",
+          ""
+        ],
+        [
+          "Comment",
+          "run_token=dbx-d1111 expires=2026-11-24",
+          ""
+        ],
+        [
+          "Location",
+          "",
+          ""
+        ],
+        [
+          "Provider",
+          "delta",
+          ""
+        ],
+        [
+          "Owner",
+          "<redacted identity>",
+          ""
+        ],
+        [
+          "Is_managed_location",
+          "true",
+          ""
+        ],
+        [
+          "Predictive Optimization",
+          "ENABLE (inherited from METASTORE metastore_aws_us_west_2)",
+          ""
+        ],
+        [
+          "Table Properties",
+          "[act=spark,clusterByAuto=true,clusteringColumns=[],delta.checkpoint.writeStatsAsJson=false,delta.checkpoint.writeStatsAsStruct=true,delta.checkpointPolicy=v2,delta.enableDeletionVectors=true,delta.enableInCommitTimestamps=true,delta.enableRowTracking=true,delta.feature.appendOnly=supported,delta.feature.catalogManaged=supported,delta.feature.clustering=supported,delta.feature.deletionVectors=supported,delta.feature.domainMetadata=supported,delta.feature.inCommitTimestamp=supported,delta.feature.invariants=supported,delta.feature.rowTracking=supported,delta.feature.v2Checkpoint=supported,delta.feature.vacuumProtocolCheck=supported,delta.minReaderVersion=3,delta.minWriterVersion=7,delta.parquet.compression.codec=zstd,delta.parquet.format.version=2.12.0,delta.parquet.format.version.afe.internal=2.12.0,delta.rowTracking.materializedRowCommitVersionColumnName=_row-commit-version-col-91446697-6257-4555-a240-14768f345e8c,delta.rowTracking.materializedRowIdColumnName=_row-id-col-a67346ee-7ea6-4e6a-9aba-5ad0cea6956c,expires=2026-11-24,io.unitycatalog.tableId=8c093493-df07-4744-bb7a-f4a09b451aed,run_token=dbx-d1111]",
+          ""
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "history",
+    "sql": "/* run=dbx-d1111 act=spark step=history consumer=audit_daily_summary */\nSELECT statement_id, start_time, total_duration_ms, read_rows, produced_rows, execution_status\nFROM system.query.history\nWHERE statement_text LIKE '/* run=dbx-d1111 act=spark step=%consumer=audit_daily_summary */%'\nORDER BY start_time",
+    "statement_id": "01f1dd87-e1b5-17c0-9654-ed3a00f7dd95",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 6,
+        "columns": [
+          {
+            "name": "statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "start_time",
+            "type_text": "TIMESTAMP",
+            "type_name": "TIMESTAMP",
+            "position": 1
+          },
+          {
+            "name": "total_duration_ms",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "read_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          },
+          {
+            "name": "produced_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 4
+          },
+          {
+            "name": "execution_status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 27
+        }
+      ],
+      "total_row_count": 27,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 27,
+      "data_array": [
+        [
+          "01f1dd84-1cc3-1225-bf2a-84ed7af57330",
+          "2026-11-11T03:58:11.321Z",
+          "142",
+          "0",
+          null,
+          "FAILED"
+        ],
+        [
+          "01f1dd84-1cfd-1209-9dcc-ada0ac31906d",
+          "2026-11-11T03:58:11.702Z",
+          "232",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-201e-1d86-a9b2-a7e373b8678f",
+          "2026-11-11T03:58:16.956Z",
+          "338",
+          "0",
+          "32",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-208c-1570-a734-4c10790f20f9",
+          "2026-11-11T03:58:17.672Z",
+          "334",
+          "0",
+          "9",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-32c1-1db9-bdca-bff7ae453b85",
+          "2026-11-11T03:58:48.223Z",
+          "231",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-3301-10b8-95e4-5b690988be18",
+          "2026-11-11T03:58:48.636Z",
+          "218",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-c3f6-1fd8-8615-370144270acf",
+          "2026-11-11T04:02:51.842Z",
+          "1869",
+          "241",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-c543-1c81-a1c2-38911a55c38c",
+          "2026-11-11T04:02:54.022Z",
+          "1773",
+          "242",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-c682-1163-9e0d-987a39513645",
+          "2026-11-11T04:02:56.108Z",
+          "2169",
+          "243",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-c806-13d0-8a11-c044530f057e",
+          "2026-11-11T04:02:58.653Z",
+          "2365",
+          "244",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-c9a1-1e2e-9965-906e7d064ac0",
+          "2026-11-11T04:03:01.348Z",
+          "2237",
+          "245",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-cb29-1364-acd3-c3bc436f3d60",
+          "2026-11-11T04:03:03.914Z",
+          "2315",
+          "246",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-ccc7-130a-b67d-1746d65615c4",
+          "2026-11-11T04:03:06.626Z",
+          "2172",
+          "247",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-ce44-1ac3-9a69-f5364d9ab607",
+          "2026-11-11T04:03:09.128Z",
+          "2234",
+          "248",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-cfcc-1f2a-a82b-b6c4a247099e",
+          "2026-11-11T04:03:11.700Z",
+          "2469",
+          "2",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-234e-1dc6-a5c1-a5b858b9aaf5",
+          "2026-11-11T04:05:31.800Z",
+          "470",
+          "1",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-7c20-1459-8540-abdc7827a846",
+          "2026-11-11T04:08:00.813Z",
+          "3353",
+          "6",
+          "6",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-7e5d-1c21-8a12-21937792545d",
+          "2026-11-11T04:08:04.571Z",
+          "2644",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-bd85-1c54-86d7-1efb6233c97e",
+          "2026-11-11T04:09:50.530Z",
+          "2142",
+          "305",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-bef9-1970-9dc6-2d4ddd5b99b2",
+          "2026-11-11T04:09:52.965Z",
+          "2057",
+          "306",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-c062-1b83-ba3a-86e67229c055",
+          "2026-11-11T04:09:55.332Z",
+          "3088",
+          "4",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-2cf4-16a7-859d-af11d4e57d5c",
+          "2026-11-11T04:12:57.482Z",
+          "642",
+          "0",
+          "24",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-2f70-1853-8f4a-b8bd2ddbee7f",
+          "2026-11-11T04:13:01.651Z",
+          "321",
+          "0",
+          "9",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-2fd3-1051-92e7-25f987501df9",
+          "2026-11-11T04:13:02.295Z",
+          "459",
+          "0",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-4d57-177e-b7dc-4167b29d51f9",
+          "2026-11-11T04:13:51.819Z",
+          "474",
+          "2000",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-6016-167c-9fd7-ad166a8782e8",
+          "2026-11-11T04:14:23.268Z",
+          "618",
+          "2000",
+          "2000",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-60ab-1fde-8860-e539b85ed36b",
+          "2026-11-11T04:14:24.250Z",
+          "407",
+          "2000",
+          "1",
+          "FINISHED"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "billing",
+    "sql": "/* run=dbx-d1111 act=spark step=billing consumer=audit_daily_summary */\nSELECT usage_metadata.job_id, usage_metadata.job_run_id, sum(usage_quantity) AS dbu\nFROM system.billing.usage\nWHERE usage_metadata.job_id='891657763613522' AND usage_metadata.job_run_id IN ('729010651237413','761924419433112') AND usage_unit='DBU'\nGROUP BY usage_metadata.job_id, usage_metadata.job_run_id",
+    "statement_id": "01f1dd87-e3e2-10e2-8bc0-c1cc1da9b94b",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "job_run_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "dbu",
+            "type_text": "DECIMAL(38,18)",
+            "type_name": "DECIMAL",
+            "position": 2,
+            "type_precision": 38,
+            "type_scale": 18
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "evidence",
+    "sql": "/* run=dbx-d1111 act=spark step=evidence consumer=audit_daily_summary */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT * FROM VALUES ('spark-audit_daily_summary','spark:audit_daily_summary','first-failure','red','[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14','01f1dd84-1cc3-1225-bf2a-84ed7af57330'),('spark-audit_daily_summary','spark:audit_daily_summary','input-recheck','pass','Live contract complete','01f1dd86-b135-131a-a11b-b44b581c91d0'),('spark-audit_daily_summary','spark:audit_daily_summary','input-alternatives','pass','{\"source_export_statement_id\": \"01f1dd86-6016-167c-9fd7-ad166a8782e8\", \"source_equality_statement_id\": \"01f1dd86-60ab-1fde-8860-e539b85ed36b\", \"source_count_hash\": [\"2000\", \"1150761524327518271109\"], \"columns\": [\"AUDIT_EVENT_ID\", \"ACTOR_USER_ID\", \"DOCUMENT_ID\", \"EVENT_TYPE\", \"EVENT_AT\", \"DETAILS\"], \"source_rows\": 2000, \"landing\": \"audit/AUDIT_EVENT/20261109.psv\", \"local_count_hash\": [\"2000\", \"1150761524327518271109\"], \"equality\": \"PASS\"}','01f1dd86-b135-131a-a11b-b44b581c91d0'),('spark-audit_daily_summary','spark:audit_daily_summary','input-equality','pass','{\"run_token\": \"dbx-d1111\", \"expires\": \"2026-11-24\", \"before_load_statement_id\": \"01f1dd86-ab1c-15cf-87da-54a09cba37ea\", \"local_original_fingerprint\": {\"n\": 24, \"h\": \"11889509446007135789\"}, \"job_id\": \"891657763613522\", \"run_ids\": [\"729010651237413\", \"761924419433112\"], \"parity_statement_ids\": [\"01f1dd86-b1d7-1c68-9baf-be690141afe2\", \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b252-1938-b570-f5bed6c6f572\", \"01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e\"], \"idempotence_statement_ids\": [\"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b709-1dfa-97fe-7db9e6c59adf\", \"01f1dd86-b789-1c70-ae49-5d576e1574b3\"], \"run1_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run1_task_runs\": [{\"run_id\": 445766677758261, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run1_fingerprint\": [\"24\", \"11889509446007135789\"], \"run2_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run2_task_runs\": [{\"run_id\": 288735269211661, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run2_fingerprint\": [\"24\", \"11889509446007135789\"], \"status\": \"green\", \"parity\": \"PASS: input count/hash, output count/hash and EXCEPT ALL both ways\", \"parity_statement_id\": \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"idempotence\": \"PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable\", \"delta_operations\": [{\"version\": \"1\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"1\", \"numRemovedBytes\": \"1996\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"761924419433112\", \"runId\": \"288735269211661\", \"triggerType\": null}}, {\"version\": \"0\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"0\", \"numRemovedBytes\": \"0\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"729010651237413\", \"runId\": \"445766677758261\", \"triggerType\": null}}], \"job_sql_statement_ids\": []}','01f1dd86-b135-131a-a11b-b44b581c91d0'),('spark-audit_daily_summary','spark:audit_daily_summary','run1','pass','{\"run_token\": \"dbx-d1111\", \"expires\": \"2026-11-24\", \"before_load_statement_id\": \"01f1dd86-ab1c-15cf-87da-54a09cba37ea\", \"local_original_fingerprint\": {\"n\": 24, \"h\": \"11889509446007135789\"}, \"job_id\": \"891657763613522\", \"run_ids\": [\"729010651237413\", \"761924419433112\"], \"parity_statement_ids\": [\"01f1dd86-b1d7-1c68-9baf-be690141afe2\", \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b252-1938-b570-f5bed6c6f572\", \"01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e\"], \"idempotence_statement_ids\": [\"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b709-1dfa-97fe-7db9e6c59adf\", \"01f1dd86-b789-1c70-ae49-5d576e1574b3\"], \"run1_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run1_task_runs\": [{\"run_id\": 445766677758261, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run1_fingerprint\": [\"24\", \"11889509446007135789\"], \"run2_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run2_task_runs\": [{\"run_id\": 288735269211661, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run2_fingerprint\": [\"24\", \"11889509446007135789\"], \"status\": \"green\", \"parity\": \"PASS: input count/hash, output count/hash and EXCEPT ALL both ways\", \"parity_statement_id\": \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"idempotence\": \"PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable\", \"delta_operations\": [{\"version\": \"1\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"1\", \"numRemovedBytes\": \"1996\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"761924419433112\", \"runId\": \"288735269211661\", \"triggerType\": null}}, {\"version\": \"0\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"0\", \"numRemovedBytes\": \"0\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"729010651237413\", \"runId\": \"445766677758261\", \"triggerType\": null}}], \"job_sql_statement_ids\": []}','01f1dd86-b135-131a-a11b-b44b581c91d0'),('spark-audit_daily_summary','spark:audit_daily_summary','counts','pass','{\"run_token\": \"dbx-d1111\", \"expires\": \"2026-11-24\", \"before_load_statement_id\": \"01f1dd86-ab1c-15cf-87da-54a09cba37ea\", \"local_original_fingerprint\": {\"n\": 24, \"h\": \"11889509446007135789\"}, \"job_id\": \"891657763613522\", \"run_ids\": [\"729010651237413\", \"761924419433112\"], \"parity_statement_ids\": [\"01f1dd86-b1d7-1c68-9baf-be690141afe2\", \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b252-1938-b570-f5bed6c6f572\", \"01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e\"], \"idempotence_statement_ids\": [\"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b709-1dfa-97fe-7db9e6c59adf\", \"01f1dd86-b789-1c70-ae49-5d576e1574b3\"], \"run1_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run1_task_runs\": [{\"run_id\": 445766677758261, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run1_fingerprint\": [\"24\", \"11889509446007135789\"], \"run2_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run2_task_runs\": [{\"run_id\": 288735269211661, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run2_fingerprint\": [\"24\", \"11889509446007135789\"], \"status\": \"green\", \"parity\": \"PASS: input count/hash, output count/hash and EXCEPT ALL both ways\", \"parity_statement_id\": \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"idempotence\": \"PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable\", \"delta_operations\": [{\"version\": \"1\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"1\", \"numRemovedBytes\": \"1996\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"761924419433112\", \"runId\": \"288735269211661\", \"triggerType\": null}}, {\"version\": \"0\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"0\", \"numRemovedBytes\": \"0\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"729010651237413\", \"runId\": \"445766677758261\", \"triggerType\": null}}], \"job_sql_statement_ids\": []}','01f1dd86-b135-131a-a11b-b44b581c91d0'),('spark-audit_daily_summary','spark:audit_daily_summary','hash','pass','{\"run_token\": \"dbx-d1111\", \"expires\": \"2026-11-24\", \"before_load_statement_id\": \"01f1dd86-ab1c-15cf-87da-54a09cba37ea\", \"local_original_fingerprint\": {\"n\": 24, \"h\": \"11889509446007135789\"}, \"job_id\": \"891657763613522\", \"run_ids\": [\"729010651237413\", \"761924419433112\"], \"parity_statement_ids\": [\"01f1dd86-b1d7-1c68-9baf-be690141afe2\", \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b252-1938-b570-f5bed6c6f572\", \"01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e\"], \"idempotence_statement_ids\": [\"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b709-1dfa-97fe-7db9e6c59adf\", \"01f1dd86-b789-1c70-ae49-5d576e1574b3\"], \"run1_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run1_task_runs\": [{\"run_id\": 445766677758261, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run1_fingerprint\": [\"24\", \"11889509446007135789\"], \"run2_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run2_task_runs\": [{\"run_id\": 288735269211661, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run2_fingerprint\": [\"24\", \"11889509446007135789\"], \"status\": \"green\", \"parity\": \"PASS: input count/hash, output count/hash and EXCEPT ALL both ways\", \"parity_statement_id\": \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"idempotence\": \"PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable\", \"delta_operations\": [{\"version\": \"1\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"1\", \"numRemovedBytes\": \"1996\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"761924419433112\", \"runId\": \"288735269211661\", \"triggerType\": null}}, {\"version\": \"0\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"0\", \"numRemovedBytes\": \"0\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"729010651237413\", \"runId\": \"445766677758261\", \"triggerType\": null}}], \"job_sql_statement_ids\": []}','01f1dd86-b135-131a-a11b-b44b581c91d0'),('spark-audit_daily_summary','spark:audit_daily_summary','except-all','pass','{\"run_token\": \"dbx-d1111\", \"expires\": \"2026-11-24\", \"before_load_statement_id\": \"01f1dd86-ab1c-15cf-87da-54a09cba37ea\", \"local_original_fingerprint\": {\"n\": 24, \"h\": \"11889509446007135789\"}, \"job_id\": \"891657763613522\", \"run_ids\": [\"729010651237413\", \"761924419433112\"], \"parity_statement_ids\": [\"01f1dd86-b1d7-1c68-9baf-be690141afe2\", \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b252-1938-b570-f5bed6c6f572\", \"01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e\"], \"idempotence_statement_ids\": [\"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b709-1dfa-97fe-7db9e6c59adf\", \"01f1dd86-b789-1c70-ae49-5d576e1574b3\"], \"run1_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run1_task_runs\": [{\"run_id\": 445766677758261, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run1_fingerprint\": [\"24\", \"11889509446007135789\"], \"run2_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run2_task_runs\": [{\"run_id\": 288735269211661, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run2_fingerprint\": [\"24\", \"11889509446007135789\"], \"status\": \"green\", \"parity\": \"PASS: input count/hash, output count/hash and EXCEPT ALL both ways\", \"parity_statement_id\": \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"idempotence\": \"PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable\", \"delta_operations\": [{\"version\": \"1\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"1\", \"numRemovedBytes\": \"1996\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"761924419433112\", \"runId\": \"288735269211661\", \"triggerType\": null}}, {\"version\": \"0\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"0\", \"numRemovedBytes\": \"0\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"729010651237413\", \"runId\": \"445766677758261\", \"triggerType\": null}}], \"job_sql_statement_ids\": []}','01f1dd86-b135-131a-a11b-b44b581c91d0'),('spark-audit_daily_summary','spark:audit_daily_summary','run2-idempotence','pass','{\"run_token\": \"dbx-d1111\", \"expires\": \"2026-11-24\", \"before_load_statement_id\": \"01f1dd86-ab1c-15cf-87da-54a09cba37ea\", \"local_original_fingerprint\": {\"n\": 24, \"h\": \"11889509446007135789\"}, \"job_id\": \"891657763613522\", \"run_ids\": [\"729010651237413\", \"761924419433112\"], \"parity_statement_ids\": [\"01f1dd86-b1d7-1c68-9baf-be690141afe2\", \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b252-1938-b570-f5bed6c6f572\", \"01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e\"], \"idempotence_statement_ids\": [\"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b709-1dfa-97fe-7db9e6c59adf\", \"01f1dd86-b789-1c70-ae49-5d576e1574b3\"], \"run1_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run1_task_runs\": [{\"run_id\": 445766677758261, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run1_fingerprint\": [\"24\", \"11889509446007135789\"], \"run2_state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"run2_task_runs\": [{\"run_id\": 288735269211661, \"state\": {\"life_cycle_state\": \"TERMINATED\", \"result_state\": \"SUCCESS\", \"state_message\": \"\", \"user_cancelled_or_timedout\": false}, \"sql_output\": {\"file\": {\"path\": \"/Workspace/Shared/dbx-d1111-spark/audit_daily_summary/migrate.sql\", \"source\": \"WORKSPACE\"}}}], \"run2_fingerprint\": [\"24\", \"11889509446007135789\"], \"status\": \"green\", \"parity\": \"PASS: input count/hash, output count/hash and EXCEPT ALL both ways\", \"parity_statement_id\": \"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"idempotence\": \"PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable\", \"delta_operations\": [{\"version\": \"1\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"1\", \"numRemovedBytes\": \"1996\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"761924419433112\", \"runId\": \"288735269211661\", \"triggerType\": null}}, {\"version\": \"0\", \"operation\": \"CREATE OR REPLACE TABLE AS SELECT\", \"operationMetrics\": {\"numFiles\": \"1\", \"numRemovedFiles\": \"0\", \"numRemovedBytes\": \"0\", \"numDeletionVectorsRemoved\": \"0\", \"numOutputRows\": \"24\", \"numOutputBytes\": \"1996\"}, \"job\": {\"jobName\": null, \"jobOwnerId\": null, \"workspaceId\": \"7474652505890469\", \"jobId\": \"891657763613522\", \"jobRunId\": \"729010651237413\", \"runId\": \"445766677758261\", \"triggerType\": null}}], \"job_sql_statement_ids\": []}','01f1dd86-b789-1c70-ae49-5d576e1574b3'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd84-1cc3-1225-bf2a-84ed7af57330','red','{\"step\": \"inputs\", \"status\": {\"state\": \"FAILED\", \"error\": {\"error_code\": \"BAD_REQUEST\", \"message\": \"[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\\\\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\\\\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\\\\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14\"}, \"sql_state\": \"42P01\"}, \"result\": {}}','01f1dd84-1cc3-1225-bf2a-84ed7af57330'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd84-1cfd-1209-9dcc-ada0ac31906d','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-1cfd-1209-9dcc-ada0ac31906d'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd84-201e-1d86-a9b2-a7e373b8678f','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"row_count\": 32, \"note\": \"Full query result retained in statement evidence\"}}','01f1dd84-201e-1d86-a9b2-a7e373b8678f'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd84-208c-1570-a734-4c10790f20f9','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 9, \"data_array\": [[\"run_label\", \"string\", null], [\"object\", \"string\", null], [\"rung\", \"string\", null], [\"status\", \"string\", null], [\"detail\", \"string\", null], [\"statement_id\", \"string\", null], [\"measured_at\", \"timestamp\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd84-208c-1570-a734-4c10790f20f9'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd84-32c1-1db9-bdca-bff7ae453b85','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-32c1-1db9-bdca-bff7ae453b85'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd84-3301-10b8-95e4-5b690988be18','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-3301-10b8-95e4-5b690988be18'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd85-7c20-1459-8540-abdc7827a846','info','{\"step\": \"history\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 6, \"data_array\": [[\"01f1dd84-1cc3-1225-bf2a-84ed7af57330\", \"2026-11-11T03:58:11.321Z\", \"142\", \"0\", null, \"FAILED\"], [\"01f1dd84-1cfd-1209-9dcc-ada0ac31906d\", \"2026-11-11T03:58:11.702Z\", \"232\", \"0\", \"0\", \"FINISHED\"], [\"01f1dd84-201e-1d86-a9b2-a7e373b8678f\", \"2026-11-11T03:58:16.956Z\", \"338\", \"0\", \"32\", \"FINISHED\"], [\"01f1dd84-208c-1570-a734-4c10790f20f9\", \"2026-11-11T03:58:17.672Z\", \"334\", \"0\", \"9\", \"FINISHED\"], [\"01f1dd84-32c1-1db9-bdca-bff7ae453b85\", \"2026-11-11T03:58:48.223Z\", \"231\", \"0\", \"0\", \"FINISHED\"], [\"01f1dd84-3301-10b8-95e4-5b690988be18\", \"2026-11-11T03:58:48.636Z\", \"218\", \"0\", \"0\", \"FINISHED\"]]}}','01f1dd85-7c20-1459-8540-abdc7827a846'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd85-7e5d-1c21-8a12-21937792545d','info','{\"step\": \"billing\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd85-7e5d-1c21-8a12-21937792545d'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-2f70-1853-8f4a-b8bd2ddbee7f','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 9, \"data_array\": [[\"event_id\", \"bigint\", null], [\"actor_user_id\", \"bigint\", null], [\"document_id\", \"bigint\", null], [\"customer_id\", \"bigint\", null], [\"event_ts\", \"timestamp\", null], [\"event_type\", \"string\", null], [\"details\", \"string\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd86-2f70-1853-8f4a-b8bd2ddbee7f'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-2fd3-1051-92e7-25f987501df9','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"2000\"]]}}','01f1dd86-2fd3-1051-92e7-25f987501df9'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-4d57-177e-b7dc-4167b29d51f9','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"0\", \"0\"]]}}','01f1dd86-4d57-177e-b7dc-4167b29d51f9'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-6016-167c-9fd7-ad166a8782e8','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 2000, \"data_array\": [], \"note\": \"Exported live rows omitted from git; manifest, statement_id, SHA256 and input count/hash retained\"}}','01f1dd86-6016-167c-9fd7-ad166a8782e8'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-60ab-1fde-8860-e539b85ed36b','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"2000\", \"1150761524327518271109\"]]}}','01f1dd86-60ab-1fde-8860-e539b85ed36b'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-ab1c-15cf-87da-54a09cba37ea','info','{\"step\": \"before-load\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd86-ab1c-15cf-87da-54a09cba37ea'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-b135-131a-a11b-b44b581c91d0','info','{\"step\": \"parity\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"24\", \"11889509446007135789\"]]}}','01f1dd86-b135-131a-a11b-b44b581c91d0'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-b1d7-1c68-9baf-be690141afe2','info','{\"step\": \"parity\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"24\", \"11889509446007135789\"]]}}','01f1dd86-b1d7-1c68-9baf-be690141afe2'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-b252-1938-b570-f5bed6c6f572','info','{\"step\": \"parity\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd86-b252-1938-b570-f5bed6c6f572'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e','info','{\"step\": \"parity\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd86-b2ad-1f0d-a301-dd5c710e8e7e'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-b709-1dfa-97fe-7db9e6c59adf','info','{\"step\": \"idempotence\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"24\", \"11889509446007135789\"]]}}','01f1dd86-b709-1dfa-97fe-7db9e6c59adf'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd86-b789-1c70-ae49-5d576e1574b3','info','{\"step\": \"idempotence\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 2, \"data_array\": [[\"1\", \"2026-11-11T04:16:46.000Z\", \"<redacted identity>\", \"<redacted identity>\", \"CREATE OR REPLACE TABLE AS SELECT\", \"{\\\\\"partitionBy\\\\\":\\\\\"[]\\\\\",\\\\\"clusterBy\\\\\":\\\\\"[]\\\\\",\\\\\"description\\\\\":\\\\\"run_token=dbx-d1111 expires=2026-11-24\\\\\",\\\\\"isManaged\\\\\":\\\\\"true\\\\\",\\\\\"properties\\\\\":\\\\\"{\\\\\\\\\\\\\"delta.parquet.compression.codec\\\\\\\\\\\\\":\\\\\\\\\\\\\"zstd\\\\\\\\\\\\\",\\\\\\\\\\\\\"expires\\\\\\\\\\\\\":\\\\\\\\\\\\\"2026-11-24\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.parquet.format.version.afe.internal\\\\\\\\\\\\\":\\\\\\\\\\\\\"2.12.0\\\\\\\\\\\\\",\\\\\\\\\\\\\"run_token\\\\\\\\\\\\\":\\\\\\\\\\\\\"dbx-d1111\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.enableDeletionVectors\\\\\\\\\\\\\":\\\\\\\\\\\\\"true\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.checkpoint.writeStatsAsStruct\\\\\\\\\\\\\":\\\\\\\\\\\\\"true\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.parquet.format.version\\\\\\\\\\\\\":\\\\\\\\\\\\\"2.12.0\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.enableRowTracking\\\\\\\\\\\\\":\\\\\\\\\\\\\"true\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.checkpointPolicy\\\\\\\\\\\\\":\\\\\\\\\\\\\"v2\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.checkpoint.writeStatsAsJson\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"io.unitycatalog.tableId\\\\\\\\\\\\\":\\\\\\\\\\\\\"36bfd695-ff04-48f2-b7cd-3829da91c79a\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.rowTracking.materializedRowCommitVersionColumnName\\\\\\\\\\\\\":\\\\\\\\\\\\\"_row-commit-version-col-1630f2d7-95dd-4a24-a521-eed84d276ba8\\\\\\\\\\\\\",\\\\\\\\\\\\\"act\\\\\\\\\\\\\":\\\\\\\\\\\\\"spark\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.rowTracking.materializedRowIdColumnName\\\\\\\\\\\\\":\\\\\\\\\\\\\"_row-id-col-5c893096-c115-4fa4-b7ea-66db31b1f714\\\\\\\\\\\\\"}\\\\\",\\\\\"statsOnLoad\\\\\":\\\\\"true\\\\\",\\\\\"clusterByAuto\\\\\":\\\\\"true\\\\\",\\\\\"clusteringOnWriteStatus\\\\\":\\\\\"Reason for skipping: Nonexistent clustering column, generally when replacing a Liquid table with a table without clustering columns\\\\\"}\", \"{\\\\\"jobName\\\\\":null,\\\\\"jobOwnerId\\\\\":null,\\\\\"workspaceId\\\\\":\\\\\"7474652505890469\\\\\",\\\\\"jobId\\\\\":\\\\\"891657763613522\\\\\",\\\\\"jobRunId\\\\\":\\\\\"761924419433112\\\\\",\\\\\"runId\\\\\":\\\\\"288735269211661\\\\\",\\\\\"triggerType\\\\\":null}\", null, \"01f1dd86-b410-1b54-81e8-b0092dfa0882\", null, \"0\", \"WriteSerializable\", \"false\", \"{\\\\\"numFiles\\\\\":\\\\\"1\\\\\",\\\\\"numRemovedFiles\\\\\":\\\\\"1\\\\\",\\\\\"numRemovedBytes\\\\\":\\\\\"1996\\\\\",\\\\\"numDeletionVectorsRemoved\\\\\":\\\\\"0\\\\\",\\\\\"numOutputRows\\\\\":\\\\\"24\\\\\",\\\\\"numOutputBytes\\\\\":\\\\\"1996\\\\\"}\", null, \"Databricks-Runtime/19.13.x-aarch64-photon-scala2.13\"], [\"0\", \"2026-11-11T04:16:37.000Z\", \"<redacted identity>\", \"<redacted identity>\", \"CREATE OR REPLACE TABLE AS SELECT\", \"{\\\\\"partitionBy\\\\\":\\\\\"[]\\\\\",\\\\\"clusterBy\\\\\":\\\\\"[]\\\\\",\\\\\"description\\\\\":\\\\\"run_token=dbx-d1111 expires=2026-11-24\\\\\",\\\\\"isManaged\\\\\":\\\\\"true\\\\\",\\\\\"properties\\\\\":\\\\\"{\\\\\\\\\\\\\"delta.parquet.compression.codec\\\\\\\\\\\\\":\\\\\\\\\\\\\"zstd\\\\\\\\\\\\\",\\\\\\\\\\\\\"expires\\\\\\\\\\\\\":\\\\\\\\\\\\\"2026-11-24\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.parquet.format.version.afe.internal\\\\\\\\\\\\\":\\\\\\\\\\\\\"2.12.0\\\\\\\\\\\\\",\\\\\\\\\\\\\"run_token\\\\\\\\\\\\\":\\\\\\\\\\\\\"dbx-d1111\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.enableDeletionVectors\\\\\\\\\\\\\":\\\\\\\\\\\\\"true\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.checkpoint.writeStatsAsStruct\\\\\\\\\\\\\":\\\\\\\\\\\\\"true\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.parquet.format.version\\\\\\\\\\\\\":\\\\\\\\\\\\\"2.12.0\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.enableRowTracking\\\\\\\\\\\\\":\\\\\\\\\\\\\"true\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.checkpointPolicy\\\\\\\\\\\\\":\\\\\\\\\\\\\"v2\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.checkpoint.writeStatsAsJson\\\\\\\\\\\\\":\\\\\\\\\\\\\"false\\\\\\\\\\\\\",\\\\\\\\\\\\\"io.unitycatalog.tableId\\\\\\\\\\\\\":\\\\\\\\\\\\\"36bfd695-ff04-48f2-b7cd-3829da91c79a\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.rowTracking.materializedRowCommitVersionColumnName\\\\\\\\\\\\\":\\\\\\\\\\\\\"_row-commit-version-col-1630f2d7-95dd-4a24-a521-eed84d276ba8\\\\\\\\\\\\\",\\\\\\\\\\\\\"act\\\\\\\\\\\\\":\\\\\\\\\\\\\"spark\\\\\\\\\\\\\",\\\\\\\\\\\\\"delta.rowTracking.materializedRowIdColumnName\\\\\\\\\\\\\":\\\\\\\\\\\\\"_row-id-col-5c893096-c115-4fa4-b7ea-66db31b1f714\\\\\\\\\\\\\"}\\\\\",\\\\\"statsOnLoad\\\\\":\\\\\"true\\\\\",\\\\\"clusterByAuto\\\\\":\\\\\"true\\\\\",\\\\\"clusteringOnWriteStatus\\\\\":\\\\\"Reason for skipping: Nonexistent clustering column, generally when replacing a Liquid table with a table without clustering columns\\\\\"}\", \"{\\\\\"jobName\\\\\":null,\\\\\"jobOwnerId\\\\\":null,\\\\\"workspaceId\\\\\":\\\\\"7474652505890469\\\\\",\\\\\"jobId\\\\\":\\\\\"891657763613522\\\\\",\\\\\"jobRunId\\\\\":\\\\\"729010651237413\\\\\",\\\\\"runId\\\\\":\\\\\"445766677758261\\\\\",\\\\\"triggerType\\\\\":null}\", null, \"01f1dd86-ae35-1171-afd2-b2be1d7341be\", null, null, \"WriteSerializable\", \"false\", \"{\\\\\"numFiles\\\\\":\\\\\"1\\\\\",\\\\\"numRemovedFiles\\\\\":\\\\\"0\\\\\",\\\\\"numRemovedBytes\\\\\":\\\\\"0\\\\\",\\\\\"numDeletionVectorsRemoved\\\\\":\\\\\"0\\\\\",\\\\\"numOutputRows\\\\\":\\\\\"24\\\\\",\\\\\"numOutputBytes\\\\\":\\\\\"1996\\\\\"}\", null, \"Databricks-Runtime/19.13.x-aarch64-photon-scala2.13\"]]}}','01f1dd86-b789-1c70-ae49-5d576e1574b3'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd87-ddd2-122d-a0f9-212b3c261db5','info','{\"step\": \"metadata\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"row_count\": 23, \"note\": \"Full query result retained in statement evidence\"}}','01f1dd87-ddd2-122d-a0f9-212b3c261db5'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd87-de4a-10f0-989f-f129af7b108c','info','{\"step\": \"metadata\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"row_count\": 23, \"note\": \"Full query result retained in statement evidence\"}}','01f1dd87-de4a-10f0-989f-f129af7b108c'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd87-e1b5-17c0-9654-ed3a00f7dd95','info','{\"step\": \"history\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"row_count\": 27, \"note\": \"Full query result retained in statement evidence\"}}','01f1dd87-e1b5-17c0-9654-ed3a00f7dd95'),('spark-audit_daily_summary','spark:audit_daily_summary','statement:01f1dd87-e3e2-10e2-8bc0-c1cc1da9b94b','info','{\"step\": \"billing\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd87-e3e2-10e2-8bc0-c1cc1da9b94b') AS v(run_label,object,rung,status,detail,statement_id)) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd87-f8c0-12f9-b2d2-99c103099f90",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "33",
+          "7",
+          "0",
+          "26"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=audit_daily_summary */\nMERGE INTO cpw.dbx_d1111_control.migration_control t\nUSING (SELECT 'spark:audit_daily_summary' AS object_name,\n'audit' AS subject_area,\n'spark' AS source_system,\n'etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala' AS source_path,\n'cpw.dbx_d1111_after.audit__spark_audit_daily_summary' AS target,\n'green' AS status,\n'PASS: input count/hash, output count/hash and EXCEPT ALL both ways' AS parity,\n'https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756' AS pr,\n'[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' AS first_failure,\n'01f1dd84-1cc3-1225-bf2a-84ed7af57330' AS first_failure_statement_id,\n'PASS: input count/hash, output count/hash and EXCEPT ALL both ways' AS corrected_parity,\n'01f1dd86-b135-131a-a11b-b44b581c91d0' AS parity_statement_id,\n'PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable' AS idempotence,\n'[\"01f1dd86-b135-131a-a11b-b44b581c91d0\", \"01f1dd86-b709-1dfa-97fe-7db9e6c59adf\", \"01f1dd86-b789-1c70-ae49-5d576e1574b3\"]' AS idempotence_statement_ids,\n'0.015961667' AS executor_hours,\n'891657763613522' AS job_id,\n'[\"729010651237413\", \"761924419433112\"]' AS job_run_ids,\n'' AS red_reason,\n'dbx-d1111' AS run_token,\n'2026-11-24' AS expires, current_timestamp() updated_at) s\nON t.object_name=s.object_name\nWHEN MATCHED THEN UPDATE SET t.subject_area=s.subject_area, t.source_system=s.source_system, t.source_path=s.source_path, t.target=s.target, t.status=s.status, t.parity=s.parity, t.pr=s.pr, t.first_failure=s.first_failure, t.first_failure_statement_id=s.first_failure_statement_id, t.corrected_parity=s.corrected_parity, t.parity_statement_id=s.parity_statement_id, t.idempotence=s.idempotence, t.idempotence_statement_ids=s.idempotence_statement_ids, t.executor_hours=s.executor_hours, t.job_id=s.job_id, t.job_run_ids=s.job_run_ids, t.red_reason=s.red_reason, t.run_token=s.run_token, t.expires=s.expires, t.updated_at=s.updated_at\nWHEN NOT MATCHED THEN INSERT (object_name, subject_area, source_system, source_path, target, status, parity, pr, first_failure, first_failure_statement_id, corrected_parity, parity_statement_id, idempotence, idempotence_statement_ids, executor_hours, job_id, job_run_ids, red_reason, run_token, expires, updated_at) VALUES (s.object_name, s.subject_area, s.source_system, s.source_path, s.target, s.status, s.parity, s.pr, s.first_failure, s.first_failure_statement_id, s.corrected_parity, s.parity_statement_id, s.idempotence, s.idempotence_statement_ids, s.executor_hours, s.job_id, s.job_run_ids, s.red_reason, s.run_token, s.expires, s.updated_at)",
+    "statement_id": "01f1dd87-fb15-19f8-8093-f5924317f0ff",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "verify",
+    "sql": "/* run=dbx-d1111 act=spark step=verify consumer=audit_daily_summary */\nSELECT object_name,status,first_failure_statement_id,parity_statement_id,job_id,job_run_ids,red_reason\nFROM cpw.dbx_d1111_control.migration_control WHERE object_name='spark:audit_daily_summary' ",
+    "statement_id": "01f1dd87-fdcb-190f-96ec-f689f16c20f2",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 7,
+        "columns": [
+          {
+            "name": "object_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "first_failure_statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          },
+          {
+            "name": "parity_statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 3
+          },
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 4
+          },
+          {
+            "name": "job_run_ids",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          },
+          {
+            "name": "red_reason",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 6
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "spark:audit_daily_summary",
+          "green",
+          "01f1dd84-1cc3-1225-bf2a-84ed7af57330",
+          "01f1dd86-b135-131a-a11b-b44b581c91d0",
+          "891657763613522",
+          "[\"729010651237413\", \"761924419433112\"]",
+          ""
+        ]
+      ]
+    }
   }
 ]

@@ -1,0 +1,68 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "job_id": "718985920991406",
+  "run_id": "924222549327122",
+  "state": {
+    "life_cycle_state": "INTERNAL_ERROR",
+    "result_state": "FAILED",
+    "state_message": "Task audit_archive_resort failed with message: Workload failed, see run output for details.",
+    "user_cancelled_or_timedout": false
+  },
+  "tasks": [
+    {
+      "run_id": "555561218196935",
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "FAILED",
+        "state_message": "Workload failed, see run output for details",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "[CONFIG_NOT_AVAILABLE.WITHOUT_SUGGESTION] Configuration spark.sql.adaptive.enabled is not available.  SQLSTATE: 42K0I"
+    },
+    {
+      "run_id": "972295704267415",
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "FAILED",
+        "state_message": "Workload failed, see run output for details",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "[CONFIG_NOT_AVAILABLE.WITHOUT_SUGGESTION] Configuration spark.sql.adaptive.enabled is not available.  SQLSTATE: 42K0I"
+    },
+    {
+      "run_id": "394942303764598",
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "FAILED",
+        "state_message": "Workload failed, see run output for details",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "[CONFIG_NOT_AVAILABLE.WITHOUT_SUGGESTION] Configuration spark.sql.adaptive.enabled is not available.  SQLSTATE: 42K0I"
+    }
+  ],
+  "corrected_attempt_failures": [
+    {
+      "parent_run_id": "335490112883267",
+      "task_run_id": "978903424574765",
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "FAILED",
+        "state_message": "Workload failed, see run output for details",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "NameError: name '__file__' is not defined"
+    },
+    {
+      "parent_run_id": "335490112883267",
+      "task_run_id": "870739518771452",
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "FAILED",
+        "state_message": "Workload failed, see run output for details",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "NameError: name '__file__' is not defined"
+    }
+  ]
+}

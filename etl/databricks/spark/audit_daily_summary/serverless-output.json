@@ -1,0 +1,64 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "job_id": "891657763613522",
+  "tags": {
+    "act": "spark",
+    "expires": "2026-11-24",
+    "run_token": "dbx-d1111"
+  },
+  "schedule": null,
+  "serverless_settings_verified": true,
+  "runs": [
+    {
+      "run_id": "729010651237413",
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "tags_inherited_from_job": {
+        "act": "spark",
+        "expires": "2026-11-24",
+        "run_token": "dbx-d1111"
+      },
+      "tasks": [
+        {
+          "run_id": "445766677758261",
+          "state": {
+            "life_cycle_state": "TERMINATED",
+            "result_state": "SUCCESS",
+            "state_message": "",
+            "user_cancelled_or_timedout": false
+          }
+        }
+      ]
+    },
+    {
+      "run_id": "761924419433112",
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "tags_inherited_from_job": {
+        "act": "spark",
+        "expires": "2026-11-24",
+        "run_token": "dbx-d1111"
+      },
+      "tasks": [
+        {
+          "run_id": "288735269211661",
+          "state": {
+            "life_cycle_state": "TERMINATED",
+            "result_state": "SUCCESS",
+            "state_message": "",
+            "user_cancelled_or_timedout": false
+          }
+        }
+      ]
+    }
+  ]
+}

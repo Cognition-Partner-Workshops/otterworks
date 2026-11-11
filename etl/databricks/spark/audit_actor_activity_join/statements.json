@@ -1301,5 +1301,989 @@
         ]
       ]
     }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_actor_activity_join */\nDESCRIBE TABLE cpw.dbx_d1111_before.audit__audit_event",
+    "statement_id": "01f1dd86-3047-15d5-b267-0a27be6e1c58",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 9
+        }
+      ],
+      "total_row_count": 9,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 9,
+      "data_array": [
+        [
+          "event_id",
+          "bigint",
+          null
+        ],
+        [
+          "actor_user_id",
+          "bigint",
+          null
+        ],
+        [
+          "document_id",
+          "bigint",
+          null
+        ],
+        [
+          "customer_id",
+          "bigint",
+          null
+        ],
+        [
+          "event_ts",
+          "timestamp",
+          null
+        ],
+        [
+          "event_type",
+          "string",
+          null
+        ],
+        [
+          "details",
+          "string",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_actor_activity_join */\nSELECT count(*) row_count FROM cpw.dbx_d1111_before.audit__audit_event",
+    "statement_id": "01f1dd86-30a0-19be-b574-59fe33a1b922",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 1,
+        "columns": [
+          {
+            "name": "row_count",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "2000"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_actor_activity_join */\nDESCRIBE TABLE cpw.dbx_d1111_before.users__stg_login_event",
+    "statement_id": "01f1dd86-4bfd-134a-b133-3841daa7e940",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 7
+        }
+      ],
+      "total_row_count": 7,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 7,
+      "data_array": [
+        [
+          "login_id",
+          "bigint",
+          null
+        ],
+        [
+          "user_id",
+          "bigint",
+          null
+        ],
+        [
+          "login_ts",
+          "timestamp",
+          null
+        ],
+        [
+          "result_cd",
+          "string",
+          null
+        ],
+        [
+          "client_type",
+          "string",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_actor_activity_join */\nSELECT count(*) row_count FROM cpw.dbx_d1111_before.users__stg_login_event",
+    "statement_id": "01f1dd86-4c64-1dac-83cf-b6634f95fb39",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 1,
+        "columns": [
+          {
+            "name": "row_count",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "2000"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_actor_activity_join */\nDESCRIBE TABLE cpw.dbx_d1111_before.users__stg_user_activity_daily",
+    "statement_id": "01f1dd86-4cae-1004-a850-dd8361bc26c3",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 7
+        }
+      ],
+      "total_row_count": 7,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 7,
+      "data_array": [
+        [
+          "activity_id",
+          "bigint",
+          null
+        ],
+        [
+          "user_id",
+          "bigint",
+          null
+        ],
+        [
+          "activity_dt",
+          "date",
+          null
+        ],
+        [
+          "login_count",
+          "int",
+          null
+        ],
+        [
+          "document_count",
+          "int",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_actor_activity_join */\nSELECT count(*) row_count FROM cpw.dbx_d1111_before.users__stg_user_activity_daily",
+    "statement_id": "01f1dd86-4d11-18fe-82dd-8cefd882e90a",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 1,
+        "columns": [
+          {
+            "name": "row_count",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "200"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_actor_activity_join */\nSELECT ACTION_COUNT FROM cpw.dbx_d1111_before.users__user_activity_daily LIMIT 1",
+    "statement_id": "01f1dd86-611b-1a9e-b073-aef4999050a0",
+    "status": {
+      "state": "FAILED",
+      "error": {
+        "error_code": "BAD_REQUEST",
+        "message": "[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `ACTION_COUNT` cannot be resolved. Did you mean one of the following? [`user_id`, `login_count`, `activity_dt`, `activity_id`, `document_count`]. SQLSTATE: 42703; line 2 pos 7"
+      },
+      "sql_state": "42703"
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_actor_activity_join */\nSELECT USER_AGENT,RAW_LINE FROM cpw.dbx_d1111_before.users__login_event LIMIT 1",
+    "statement_id": "01f1dd86-6159-1b6e-adb0-ff19982f4c06",
+    "status": {
+      "state": "FAILED",
+      "error": {
+        "error_code": "BAD_REQUEST",
+        "message": "[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `USER_AGENT` cannot be resolved. Did you mean one of the following? [`login_id`, `login_ts`, `user_id`, `result_cd`, `client_type`]. SQLSTATE: 42703; line 2 pos 7"
+      },
+      "sql_state": "42703"
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "history",
+    "sql": "/* run=dbx-d1111 act=spark step=history consumer=audit_actor_activity_join */\nSELECT statement_id, start_time, total_duration_ms, read_rows, produced_rows, execution_status\nFROM system.query.history\nWHERE statement_text LIKE '/* run=dbx-d1111 act=spark step=%consumer=audit_actor_activity_join */%'\nORDER BY start_time",
+    "statement_id": "01f1dd87-e5a6-1947-9640-a358cca82d80",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 6,
+        "columns": [
+          {
+            "name": "statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "start_time",
+            "type_text": "TIMESTAMP",
+            "type_name": "TIMESTAMP",
+            "position": 1
+          },
+          {
+            "name": "total_duration_ms",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "read_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          },
+          {
+            "name": "produced_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 4
+          },
+          {
+            "name": "execution_status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 29
+        }
+      ],
+      "total_row_count": 29,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 29,
+      "data_array": [
+        [
+          "01f1dd84-1d40-1344-acb9-8789377f93a3",
+          "2026-11-11T03:58:12.143Z",
+          "108",
+          "0",
+          null,
+          "FAILED"
+        ],
+        [
+          "01f1dd84-1d6e-15f6-8138-ad5b797b9cd8",
+          "2026-11-11T03:58:12.445Z",
+          "294",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-333d-106c-a53b-92354c770963",
+          "2026-11-11T03:58:49.031Z",
+          "400",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-33a1-1a1c-a288-041669ed8aa8",
+          "2026-11-11T03:58:49.690Z",
+          "235",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-363a-1c23-a0bf-f7a364df8d0d",
+          "2026-11-11T03:58:54.050Z",
+          "384",
+          "0",
+          "7",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-36aa-10ab-a721-912b3a2c9745",
+          "2026-11-11T03:58:54.778Z",
+          "324",
+          "0",
+          "7",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-d18b-123e-b228-d216d9e0a5f4",
+          "2026-11-11T04:03:14.623Z",
+          "2243",
+          "249",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-d30e-1857-b82f-8febee914633",
+          "2026-11-11T04:03:17.160Z",
+          "2634",
+          "250",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-d4d1-1eee-861a-4037a312bb09",
+          "2026-11-11T04:03:20.120Z",
+          "2276",
+          "251",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-d662-116f-914a-636ddb976db6",
+          "2026-11-11T04:03:22.743Z",
+          "3043",
+          "252",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-d863-1c74-93e3-515fc7594967",
+          "2026-11-11T04:03:26.108Z",
+          "2140",
+          "253",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-d9db-1f16-bf96-9b1f6622011a",
+          "2026-11-11T04:03:28.575Z",
+          "2120",
+          "254",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-db53-16c1-a2f2-d0f7136d88d3",
+          "2026-11-11T04:03:31.035Z",
+          "2399",
+          "255",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-dcf5-1325-9677-6f43ce815833",
+          "2026-11-11T04:03:33.773Z",
+          "2229",
+          "256",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-de82-1e16-9e7d-d8f34c60d1e4",
+          "2026-11-11T04:03:36.380Z",
+          "2336",
+          "2",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-23c3-1860-a76f-f288697cfc20",
+          "2026-11-11T04:05:32.564Z",
+          "419",
+          "1",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-800d-156e-920d-10c3d712a3ff",
+          "2026-11-11T04:08:07.399Z",
+          "3032",
+          "6",
+          "6",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-8206-1af6-956c-89afc177ea42",
+          "2026-11-11T04:08:10.710Z",
+          "2871",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-c269-1eb6-86e1-dd1f8c62b69f",
+          "2026-11-11T04:09:58.736Z",
+          "1820",
+          "307",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-c3b3-1b34-9f18-5c3cc50c510b",
+          "2026-11-11T04:10:00.898Z",
+          "2011",
+          "308",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-c525-1516-a17c-d574339628e3",
+          "2026-11-11T04:10:03.320Z",
+          "3185",
+          "4",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-3047-15d5-b267-0a27be6e1c58",
+          "2026-11-11T04:13:03.059Z",
+          "268",
+          "0",
+          "9",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-30a0-19be-b574-59fe33a1b922",
+          "2026-11-11T04:13:03.643Z",
+          "184",
+          "0",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-4bfd-134a-b133-3841daa7e940",
+          "2026-11-11T04:13:49.551Z",
+          "327",
+          "0",
+          "7",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-4c64-1dac-83cf-b6634f95fb39",
+          "2026-11-11T04:13:50.229Z",
+          "176",
+          "0",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-4cae-1004-a850-dd8361bc26c3",
+          "2026-11-11T04:13:50.707Z",
+          "344",
+          "0",
+          "7",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-4d11-18fe-82dd-8cefd882e90a",
+          "2026-11-11T04:13:51.360Z",
+          "176",
+          "0",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-611b-1a9e-b073-aef4999050a0",
+          "2026-11-11T04:14:24.982Z",
+          "221",
+          "0",
+          null,
+          "FAILED"
+        ],
+        [
+          "01f1dd86-6159-1b6e-adb0-ff19982f4c06",
+          "2026-11-11T04:14:25.388Z",
+          "167",
+          "0",
+          null,
+          "FAILED"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "billing",
+    "sql": "/* run=dbx-d1111 act=spark step=billing consumer=audit_actor_activity_join */\nSELECT usage_metadata.job_id, usage_metadata.job_run_id, sum(usage_quantity) AS dbu\nFROM system.billing.usage\nWHERE usage_metadata.job_id='1091978784638813' AND usage_unit='DBU'\nGROUP BY usage_metadata.job_id, usage_metadata.job_run_id",
+    "statement_id": "01f1dd87-e7bd-1456-afcc-8db643320e00",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "job_run_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "dbu",
+            "type_text": "DECIMAL(38,18)",
+            "type_name": "DECIMAL",
+            "position": 2,
+            "type_precision": 38,
+            "type_scale": 18
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "evidence",
+    "sql": "/* run=dbx-d1111 act=spark step=evidence consumer=audit_actor_activity_join */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT * FROM VALUES ('spark-audit_actor_activity_join','spark:audit_actor_activity_join','first-failure','red','[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14','01f1dd84-1d40-1344-acb9-8789377f93a3'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','input-recheck','red','Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.','01f1dd86-6159-1b6e-adb0-ff19982f4c06'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','input-alternatives','red','Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.','01f1dd86-6159-1b6e-adb0-ff19982f4c06'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','input-equality','blocked','Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.','01f1dd86-6159-1b6e-adb0-ff19982f4c06'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','run1','blocked','Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.','01f1dd86-6159-1b6e-adb0-ff19982f4c06'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','counts','blocked','Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.','01f1dd86-6159-1b6e-adb0-ff19982f4c06'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','hash','blocked','Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.','01f1dd86-6159-1b6e-adb0-ff19982f4c06'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','except-all','blocked','Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.','01f1dd86-6159-1b6e-adb0-ff19982f4c06'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','run2-idempotence','blocked','Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.','01f1dd86-6159-1b6e-adb0-ff19982f4c06'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd84-1d40-1344-acb9-8789377f93a3','red','{\"step\": \"inputs\", \"status\": {\"state\": \"FAILED\", \"error\": {\"error_code\": \"BAD_REQUEST\", \"message\": \"[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\\\\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\\\\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\\\\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14\"}, \"sql_state\": \"42P01\"}, \"result\": {}}','01f1dd84-1d40-1344-acb9-8789377f93a3'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd84-1d6e-15f6-8138-ad5b797b9cd8','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-1d6e-15f6-8138-ad5b797b9cd8'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd84-333d-106c-a53b-92354c770963','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-333d-106c-a53b-92354c770963'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd84-33a1-1a1c-a288-041669ed8aa8','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-33a1-1a1c-a288-041669ed8aa8'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd84-363a-1c23-a0bf-f7a364df8d0d','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 7, \"data_array\": [[\"login_id\", \"bigint\", null], [\"user_id\", \"bigint\", null], [\"login_ts\", \"timestamp\", null], [\"result_cd\", \"string\", null], [\"client_type\", \"string\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd84-363a-1c23-a0bf-f7a364df8d0d'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd84-36aa-10ab-a721-912b3a2c9745','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 7, \"data_array\": [[\"activity_id\", \"bigint\", null], [\"user_id\", \"bigint\", null], [\"activity_dt\", \"date\", null], [\"login_count\", \"int\", null], [\"document_count\", \"int\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd84-36aa-10ab-a721-912b3a2c9745'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd85-800d-156e-920d-10c3d712a3ff','info','{\"step\": \"history\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 6, \"data_array\": [[\"01f1dd84-1d40-1344-acb9-8789377f93a3\", \"2026-11-11T03:58:12.143Z\", \"108\", \"0\", null, \"FAILED\"], [\"01f1dd84-1d6e-15f6-8138-ad5b797b9cd8\", \"2026-11-11T03:58:12.445Z\", \"294\", \"0\", \"0\", \"FINISHED\"], [\"01f1dd84-333d-106c-a53b-92354c770963\", \"2026-11-11T03:58:49.031Z\", \"400\", \"0\", \"0\", \"FINISHED\"], [\"01f1dd84-33a1-1a1c-a288-041669ed8aa8\", \"2026-11-11T03:58:49.690Z\", \"235\", \"0\", \"0\", \"FINISHED\"], [\"01f1dd84-363a-1c23-a0bf-f7a364df8d0d\", \"2026-11-11T03:58:54.050Z\", \"384\", \"0\", \"7\", \"FINISHED\"], [\"01f1dd84-36aa-10ab-a721-912b3a2c9745\", \"2026-11-11T03:58:54.778Z\", \"324\", \"0\", \"7\", \"FINISHED\"]]}}','01f1dd85-800d-156e-920d-10c3d712a3ff'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd85-8206-1af6-956c-89afc177ea42','info','{\"step\": \"billing\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd85-8206-1af6-956c-89afc177ea42'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd86-3047-15d5-b267-0a27be6e1c58','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 9, \"data_array\": [[\"event_id\", \"bigint\", null], [\"actor_user_id\", \"bigint\", null], [\"document_id\", \"bigint\", null], [\"customer_id\", \"bigint\", null], [\"event_ts\", \"timestamp\", null], [\"event_type\", \"string\", null], [\"details\", \"string\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd86-3047-15d5-b267-0a27be6e1c58'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd86-30a0-19be-b574-59fe33a1b922','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"2000\"]]}}','01f1dd86-30a0-19be-b574-59fe33a1b922'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd86-4bfd-134a-b133-3841daa7e940','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 7, \"data_array\": [[\"login_id\", \"bigint\", null], [\"user_id\", \"bigint\", null], [\"login_ts\", \"timestamp\", null], [\"result_cd\", \"string\", null], [\"client_type\", \"string\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd86-4bfd-134a-b133-3841daa7e940'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd86-4c64-1dac-83cf-b6634f95fb39','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"2000\"]]}}','01f1dd86-4c64-1dac-83cf-b6634f95fb39'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd86-4cae-1004-a850-dd8361bc26c3','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 7, \"data_array\": [[\"activity_id\", \"bigint\", null], [\"user_id\", \"bigint\", null], [\"activity_dt\", \"date\", null], [\"login_count\", \"int\", null], [\"document_count\", \"int\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd86-4cae-1004-a850-dd8361bc26c3'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd86-4d11-18fe-82dd-8cefd882e90a','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"200\"]]}}','01f1dd86-4d11-18fe-82dd-8cefd882e90a'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd86-611b-1a9e-b073-aef4999050a0','red','{\"step\": \"inputs\", \"status\": {\"state\": \"FAILED\", \"error\": {\"error_code\": \"BAD_REQUEST\", \"message\": \"[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `ACTION_COUNT` cannot be resolved. Did you mean one of the following? [`user_id`, `login_count`, `activity_dt`, `activity_id`, `document_count`]. SQLSTATE: 42703; line 2 pos 7\"}, \"sql_state\": \"42703\"}, \"result\": {}}','01f1dd86-611b-1a9e-b073-aef4999050a0'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd86-6159-1b6e-adb0-ff19982f4c06','red','{\"step\": \"inputs\", \"status\": {\"state\": \"FAILED\", \"error\": {\"error_code\": \"BAD_REQUEST\", \"message\": \"[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `USER_AGENT` cannot be resolved. Did you mean one of the following? [`login_id`, `login_ts`, `user_id`, `result_cd`, `client_type`]. SQLSTATE: 42703; line 2 pos 7\"}, \"sql_state\": \"42703\"}, \"result\": {}}','01f1dd86-6159-1b6e-adb0-ff19982f4c06'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd87-e5a6-1947-9640-a358cca82d80','info','{\"step\": \"history\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"row_count\": 29, \"note\": \"Full query result retained in statement evidence\"}}','01f1dd87-e5a6-1947-9640-a358cca82d80'),('spark-audit_actor_activity_join','spark:audit_actor_activity_join','statement:01f1dd87-e7bd-1456-afcc-8db643320e00','info','{\"step\": \"billing\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd87-e7bd-1456-afcc-8db643320e00') AS v(run_label,object,rung,status,detail,statement_id)) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd87-fe47-1a10-bad7-d3385dcf2937",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "27",
+          "7",
+          "0",
+          "20"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=audit_actor_activity_join */\nMERGE INTO cpw.dbx_d1111_control.migration_control t\nUSING (SELECT 'spark:audit_actor_activity_join' AS object_name,\n'audit' AS subject_area,\n'spark' AS source_system,\n'etl/spark/jobs/py/audit_actor_activity_join.py' AS source_path,\n'cpw.dbx_d1111_after.audit__spark_audit_actor_activity_join' AS target,\n'red' AS status,\n'BLOCKED: Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.' AS parity,\n'https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756' AS pr,\n'[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' AS first_failure,\n'01f1dd84-1d40-1344-acb9-8789377f93a3' AS first_failure_statement_id,\n'BLOCKED: Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.' AS corrected_parity,\nCAST(NULL AS STRING) AS parity_statement_id,\n'BLOCKED: no complete live input contract; no job run submitted' AS idempotence,\n'[]' AS idempotence_statement_ids,\n'0.004015278' AS executor_hours,\n'1091978784638813' AS job_id,\n'[]' AS job_run_ids,\n'Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent.' AS red_reason,\n'dbx-d1111' AS run_token,\n'2026-11-24' AS expires, current_timestamp() updated_at) s\nON t.object_name=s.object_name\nWHEN MATCHED THEN UPDATE SET t.subject_area=s.subject_area, t.source_system=s.source_system, t.source_path=s.source_path, t.target=s.target, t.status=s.status, t.parity=s.parity, t.pr=s.pr, t.first_failure=s.first_failure, t.first_failure_statement_id=s.first_failure_statement_id, t.corrected_parity=s.corrected_parity, t.parity_statement_id=s.parity_statement_id, t.idempotence=s.idempotence, t.idempotence_statement_ids=s.idempotence_statement_ids, t.executor_hours=s.executor_hours, t.job_id=s.job_id, t.job_run_ids=s.job_run_ids, t.red_reason=s.red_reason, t.run_token=s.run_token, t.expires=s.expires, t.updated_at=s.updated_at\nWHEN NOT MATCHED THEN INSERT (object_name, subject_area, source_system, source_path, target, status, parity, pr, first_failure, first_failure_statement_id, corrected_parity, parity_statement_id, idempotence, idempotence_statement_ids, executor_hours, job_id, job_run_ids, red_reason, run_token, expires, updated_at) VALUES (s.object_name, s.subject_area, s.source_system, s.source_path, s.target, s.status, s.parity, s.pr, s.first_failure, s.first_failure_statement_id, s.corrected_parity, s.parity_statement_id, s.idempotence, s.idempotence_statement_ids, s.executor_hours, s.job_id, s.job_run_ids, s.red_reason, s.run_token, s.expires, s.updated_at)",
+    "statement_id": "01f1dd88-004b-1ab7-a3b9-b7501a575c99",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_actor_activity_join",
+    "step": "verify",
+    "sql": "/* run=dbx-d1111 act=spark step=verify consumer=audit_actor_activity_join */\nSELECT object_name,status,first_failure_statement_id,parity_statement_id,job_id,job_run_ids,red_reason\nFROM cpw.dbx_d1111_control.migration_control WHERE object_name='spark:audit_actor_activity_join' ",
+    "statement_id": "01f1dd88-02b4-1e96-86f3-d3e3da8010a3",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 7,
+        "columns": [
+          {
+            "name": "object_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "first_failure_statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          },
+          {
+            "name": "parity_statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 3
+          },
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 4
+          },
+          {
+            "name": "job_run_ids",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          },
+          {
+            "name": "red_reason",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 6
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "spark:audit_actor_activity_join",
+          "red",
+          "01f1dd84-1d40-1344-acb9-8789377f93a3",
+          null,
+          "1091978784638813",
+          "[]",
+          "Missing ACTION_COUNT in users__user_activity_daily and users__stg_user_activity_daily; USER_AGENT, RAW_LINE and IP_ADDRESS absent from users__login_event and users__stg_login_event. DOCUMENT_COUNT and CLIENT_TYPE are not equivalent."
+        ]
+      ]
+    }
   }
 ]

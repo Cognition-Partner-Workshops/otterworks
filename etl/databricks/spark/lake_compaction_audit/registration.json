@@ -3,6 +3,9 @@
   "expires": "2026-11-24",
   "act": "spark",
   "job_id": 495078759320783,
-  "run_ids": [],
-  "run_status": "BLOCKED: missing live baseline; no fixture data uploaded"
+  "run_ids": [
+    "522129685846599",
+    "566170884712306"
+  ],
+  "run_status": "green"
 }

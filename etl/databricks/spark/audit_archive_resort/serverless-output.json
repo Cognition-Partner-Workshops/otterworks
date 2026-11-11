@@ -1,0 +1,141 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "job_id": "718985920991406",
+  "tags": {
+    "act": "spark",
+    "expires": "2026-11-24",
+    "run_token": "dbx-d1111"
+  },
+  "schedule": null,
+  "serverless_settings_verified": true,
+  "runs": [
+    {
+      "run_id": "924222549327122",
+      "state": {
+        "life_cycle_state": "INTERNAL_ERROR",
+        "result_state": "FAILED",
+        "state_message": "Task audit_archive_resort failed with message: Workload failed, see run output for details.",
+        "user_cancelled_or_timedout": false
+      },
+      "tags_inherited_from_job": {
+        "act": "spark",
+        "expires": "2026-11-24",
+        "run_token": "dbx-d1111"
+      },
+      "tasks": [
+        {
+          "run_id": "555561218196935",
+          "state": {
+            "life_cycle_state": "TERMINATED",
+            "result_state": "FAILED",
+            "state_message": "Workload failed, see run output for details",
+            "user_cancelled_or_timedout": false
+          }
+        },
+        {
+          "run_id": "972295704267415",
+          "state": {
+            "life_cycle_state": "TERMINATED",
+            "result_state": "FAILED",
+            "state_message": "Workload failed, see run output for details",
+            "user_cancelled_or_timedout": false
+          }
+        },
+        {
+          "run_id": "394942303764598",
+          "state": {
+            "life_cycle_state": "TERMINATED",
+            "result_state": "FAILED",
+            "state_message": "Workload failed, see run output for details",
+            "user_cancelled_or_timedout": false
+          }
+        }
+      ]
+    },
+    {
+      "run_id": "335490112883267",
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "tags_inherited_from_job": {
+        "act": "spark",
+        "expires": "2026-11-24",
+        "run_token": "dbx-d1111"
+      },
+      "tasks": [
+        {
+          "run_id": "978903424574765",
+          "state": {
+            "life_cycle_state": "TERMINATED",
+            "result_state": "FAILED",
+            "state_message": "Workload failed, see run output for details",
+            "user_cancelled_or_timedout": false
+          }
+        },
+        {
+          "run_id": "533441401533883",
+          "state": {
+            "life_cycle_state": "TERMINATED",
+            "result_state": "SUCCESS",
+            "state_message": "",
+            "user_cancelled_or_timedout": false
+          }
+        },
+        {
+          "run_id": "870739518771452",
+          "state": {
+            "life_cycle_state": "TERMINATED",
+            "result_state": "FAILED",
+            "state_message": "Workload failed, see run output for details",
+            "user_cancelled_or_timedout": false
+          }
+        }
+      ]
+    },
+    {
+      "run_id": "937972557074798",
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "tags_inherited_from_job": {
+        "act": "spark",
+        "expires": "2026-11-24",
+        "run_token": "dbx-d1111"
+      },
+      "tasks": [
+        {
+          "run_id": "286849995578268",
+          "state": {
+            "life_cycle_state": "TERMINATED",
+            "result_state": "SUCCESS",
+            "state_message": "",
+            "user_cancelled_or_timedout": false
+          }
+        }
+      ]
+    }
+  ],
+  "runtime_output": [
+    {
+      "run_id": "335490112883267",
+      "task_run_id": "533441401533883",
+      "logs": "spark.sql.adaptive.enabled=UNAVAILABLE (serverless-managed; CONFIG_NOT_AVAILABLE)\n",
+      "error": null,
+      "logs_truncated": false
+    },
+    {
+      "run_id": "937972557074798",
+      "task_run_id": "286849995578268",
+      "logs": "spark.sql.adaptive.enabled=UNAVAILABLE (serverless-managed; CONFIG_NOT_AVAILABLE)\n",
+      "error": null,
+      "logs_truncated": false
+    }
+  ]
+}

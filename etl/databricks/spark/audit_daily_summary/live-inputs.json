@@ -1,0 +1,23 @@
+{
+  "source_export_statement_id": "01f1dd86-6016-167c-9fd7-ad166a8782e8",
+  "source_equality_statement_id": "01f1dd86-60ab-1fde-8860-e539b85ed36b",
+  "source_count_hash": [
+    "2000",
+    "1150761524327518271109"
+  ],
+  "columns": [
+    "AUDIT_EVENT_ID",
+    "ACTOR_USER_ID",
+    "DOCUMENT_ID",
+    "EVENT_TYPE",
+    "EVENT_AT",
+    "DETAILS"
+  ],
+  "source_rows": 2000,
+  "landing": "audit/AUDIT_EVENT/20261109.psv",
+  "local_count_hash": [
+    "2000",
+    "1150761524327518271109"
+  ],
+  "equality": "PASS"
+}
