@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Overage Charges" inline='true' name='federated.527a3a14f4becefa1940a28e4caf' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='yd76133.us-east-2.aws.snowflakecomputing.com' name='snowflake.4370a005ff69a3fdf21918317fe6'>
+<connection authentication='Username Password' class='snowflake' dbname='OW_UBW_SFM_20261110_VK' odbc-connect-string-extras='' one-time-sql='' schema='MARTS' server='yd76133.us-east-2.aws.snowflakecomputing.com' service='OW_UBW_SFM_20261110_VK_READER' username='OW_UBW_SFM_20261110_VK_VIEWER' warehouse='OW_UBW_SFM_20261110_VK_WH' />
+</named-connection>
+</named-connections>
+<relation connection='snowflake.4370a005ff69a3fdf21918317fe6' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, tenant_name, plan_tier, bytes_used, included_bytes, overage_gb, overage_cents_per_gb, overage_cents FROM MARTS.BUILD_MART_OVERAGE WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY overage_cents DESC</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[bytes_used]' role='measure' type='quantitative' />
+<column datatype='integer' name='[included_bytes]' role='measure' type='quantitative' />
+<column datatype='integer' name='[overage_gb]' role='measure' type='quantitative' />
+<column datatype='integer' name='[overage_cents_per_gb]' role='measure' type='quantitative' />
+<column datatype='integer' name='[overage_cents]' role='measure' type='quantitative' />
+</datasource>
+<datasource caption="Overage by Tier" inline='true' name='federated.70298826a7ffcadb93966d62f009' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='yd76133.us-east-2.aws.snowflakecomputing.com' name='snowflake.fd5b9a2194552b939dc994084dc4'>
+<connection authentication='Username Password' class='snowflake' dbname='OW_UBW_SFM_20261110_VK' odbc-connect-string-extras='' one-time-sql='' schema='MARTS' server='yd76133.us-east-2.aws.snowflakecomputing.com' service='OW_UBW_SFM_20261110_VK_READER' username='OW_UBW_SFM_20261110_VK_VIEWER' warehouse='OW_UBW_SFM_20261110_VK_WH' />
+</named-connection>
+</named-connections>
+<relation connection='snowflake.fd5b9a2194552b939dc994084dc4' name='Custom SQL Query' type='text'>SELECT business_date, plan_tier, COUNT(*) AS tenant_count, SUM(overage_gb) AS overage_gb, SUM(overage_cents) AS overage_cents FROM MARTS.BUILD_MART_OVERAGE WHERE business_date = &lt;[Parameters].[Business Date]&gt; GROUP BY business_date, plan_tier ORDER BY plan_tier</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[tenant_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[overage_gb]' role='measure' type='quantitative' />
+<column datatype='integer' name='[overage_cents]' role='measure' type='quantitative' />
+</datasource>
+<datasource caption="Storage vs Included" inline='true' name='federated.8d4c389137f2fe77f7a346f70c47' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='yd76133.us-east-2.aws.snowflakecomputing.com' name='snowflake.50175d56e9a4ed81f5d246390390'>
+<connection authentication='Username Password' class='snowflake' dbname='OW_UBW_SFM_20261110_VK' odbc-connect-string-extras='' one-time-sql='' schema='MARTS' server='yd76133.us-east-2.aws.snowflakecomputing.com' service='OW_UBW_SFM_20261110_VK_READER' username='OW_UBW_SFM_20261110_VK_VIEWER' warehouse='OW_UBW_SFM_20261110_VK_WH' />
+</named-connection>
+</named-connections>
+<relation connection='snowflake.50175d56e9a4ed81f5d246390390' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, tenant_name, plan_tier, bytes_used, included_bytes, overage_gb FROM MARTS.BUILD_MART_OVERAGE WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY plan_tier, tenant_name</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[bytes_used]' role='measure' type='quantitative' />
+<column datatype='integer' name='[included_bytes]' role='measure' type='quantitative' />
+<column datatype='integer' name='[overage_gb]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Overage Revenue by Tenant">
+<table>
+<view>
+<datasources>
+<datasource caption="Overage Charges" name='federated.527a3a14f4becefa1940a28e4caf' />
+</datasources>
+<datasource-dependencies datasource='federated.527a3a14f4becefa1940a28e4caf'>
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='integer' name='[overage_cents]' role='measure' type='quantitative' />
+<column-instance column='[tenant_name]' derivation='None' name='[none:tenant_name:nk]' pivot='key' type='nominal' />
+<column-instance column='[overage_cents]' derivation='Sum' name='[sum:overage_cents:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.527a3a14f4becefa1940a28e4caf].[none:tenant_name:nk]" direction='DESC' using="[federated.527a3a14f4becefa1940a28e4caf].[sum:overage_cents:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.527a3a14f4becefa1940a28e4caf].[none:tenant_name:nk]</rows>
+<cols>[federated.527a3a14f4becefa1940a28e4caf].[sum:overage_cents:qk]</cols>
+</table>
+<simple-id uuid='{D50C66E3-3045-5870-8E68-4089DF24E0EF}' />
+</worksheet>
+<worksheet name="Overage GB by Plan Tier">
+<table>
+<view>
+<datasources>
+<datasource caption="Overage by Tier" name='federated.70298826a7ffcadb93966d62f009' />
+</datasources>
+<datasource-dependencies datasource='federated.70298826a7ffcadb93966d62f009'>
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[overage_gb]' role='measure' type='quantitative' />
+<column-instance column='[plan_tier]' derivation='None' name='[none:plan_tier:nk]' pivot='key' type='nominal' />
+<column-instance column='[overage_gb]' derivation='Sum' name='[sum:overage_gb:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.70298826a7ffcadb93966d62f009].[none:plan_tier:nk]" direction='DESC' using="[federated.70298826a7ffcadb93966d62f009].[sum:overage_gb:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.70298826a7ffcadb93966d62f009].[none:plan_tier:nk]</rows>
+<cols>[federated.70298826a7ffcadb93966d62f009].[sum:overage_gb:qk]</cols>
+</table>
+<simple-id uuid='{21B15AA4-2ED1-50FC-83D1-DF9AEF08DA18}' />
+</worksheet>
+<worksheet name="Storage vs Included">
+<table>
+<view>
+<datasources>
+<datasource caption="Storage vs Included" name='federated.8d4c389137f2fe77f7a346f70c47' />
+</datasources>
+<datasource-dependencies datasource='federated.8d4c389137f2fe77f7a346f70c47'>
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[bytes_used]' role='measure' type='quantitative' />
+<column datatype='integer' name='[included_bytes]' role='measure' type='quantitative' />
+<column datatype='integer' name='[overage_gb]' role='measure' type='quantitative' />
+<column-instance column='[tenant_name]' derivation='None' name='[none:tenant_name:nk]' pivot='key' type='nominal' />
+<column-instance column='[plan_tier]' derivation='None' name='[none:plan_tier:nk]' pivot='key' type='nominal' />
+<column-instance column='[bytes_used]' derivation='Sum' name='[sum:bytes_used:qk]' pivot='key' type='quantitative' />
+<column-instance column='[included_bytes]' derivation='Sum' name='[sum:included_bytes:qk]' pivot='key' type='quantitative' />
+<column-instance column='[overage_gb]' derivation='Sum' name='[sum:overage_gb:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<filter class='categorical' column='[federated.8d4c389137f2fe77f7a346f70c47].[:Measure Names]'>
+<groupfilter function='union' user:op='manual'>
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.8d4c389137f2fe77f7a346f70c47].[sum:bytes_used:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.8d4c389137f2fe77f7a346f70c47].[sum:included_bytes:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.8d4c389137f2fe77f7a346f70c47].[sum:overage_gb:qk]"' />
+</groupfilter>
+</filter>
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Text' />
+<encodings>
+<text column='[federated.8d4c389137f2fe77f7a346f70c47].[Multiple Values]' />
+</encodings>
+</pane>
+</panes>
+<rows>([federated.8d4c389137f2fe77f7a346f70c47].[none:tenant_name:nk] / [federated.8d4c389137f2fe77f7a346f70c47].[none:plan_tier:nk])</rows>
+<cols>[federated.8d4c389137f2fe77f7a346f70c47].[:Measure Names]</cols>
+</table>
+<simple-id uuid='{93691801-9155-5EA9-92A7-6E07A83DCC78}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Storage Overage">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='33333' id='2' name="Overage Revenue by Tenant" w='100000' x='0' y='0' />
+<zone h='33333' id='3' name="Overage GB by Plan Tier" w='100000' x='0' y='33333' />
+<zone h='33333' id='4' name="Storage vs Included" w='100000' x='0' y='66666' />
+</zone>
+</zones>
+<simple-id uuid='{4C7A76DB-4800-5D6E-86E3-C8BB49AC9AD9}' />
+</dashboard>
+</dashboards>
+</workbook>

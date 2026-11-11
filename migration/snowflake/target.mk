@@ -3,7 +3,7 @@ SFM_ROOT = migration/snowflake
 SFM_RUN_REQUIRED = @test -n "$(RUN)" || (echo "RUN is required, e.g. make sfm-bootstrap RUN=sfm-20261012-bd" >&2; exit 2)
 SFM_DATE_REQUIRED = @test -n "$(DATE)" || (echo "DATE is required, e.g. make sfm-gate RUN=sfm-20261012-bd DATE=2026-09-15" >&2; exit 2)
 
-.PHONY: sfm-require-run sfm-bootstrap sfm-load-raw sfm-dbt sfm-gate sfm-dual-run sfm-cutover sfm-teardown sfm-verify-clean sfm-tasks sfm-gate-test sfm-demo-reset sfm-bi-workbooks sfm-bi-parity sfm-bi-console
+.PHONY: sfm-require-run sfm-bootstrap sfm-load-raw sfm-dbt sfm-gate sfm-dual-run sfm-cutover sfm-teardown sfm-verify-clean sfm-tasks sfm-gate-test sfm-demo-reset sfm-bi-workbooks sfm-bi-parity sfm-bi-console sfm-metabase-up sfm-metabase
 
 sfm-require-run:
 	$(SFM_RUN_REQUIRED)
@@ -38,7 +38,7 @@ sfm-tasks: sfm-require-run ## Create the suspended Snowflake task graph
 	$(PY) $(SFM_ROOT)/target/tasks/tasks.py --run "$(RUN)" create
 
 sfm-gate-test: ## Run the in-memory parity gate tests
-	$(PY) -m pytest $(SFM_ROOT)/gate/tests $(SFM_ROOT)/gate/bi/tests -q
+	$(PY) -m pytest $(SFM_ROOT)/gate/tests $(SFM_ROOT)/gate/bi/tests $(SFM_ROOT)/consumers/metabase/tests -q
 
 sfm-bi-workbooks: ## Regenerate the 20 legacy Tableau workbooks from the SSRS reports (needs SQL Server)
 	$(PY) $(SFM_ROOT)/source/tableau/generate.py
@@ -49,6 +49,12 @@ sfm-bi-parity: sfm-require-run ## Report parity for every Tableau workbook, SQL 
 
 sfm-bi-console: ## Serve the report parity console on 127.0.0.1:$(or $(PORT),8050)
 	$(PY) -m http.server $(or $(PORT),8050) --bind 127.0.0.1 --directory $(SFM_ROOT)/gate/out/bi
+
+sfm-metabase-up: ## Start Metabase on 127.0.0.1:$(or $(MB_PORT),3000), on the SQL Server fixture's network
+	docker compose -f $(SFM_ROOT)/compose.yaml --profile metabase up -d --wait metabase
+
+sfm-metabase: sfm-require-run ## Build each workbook as a Metabase dashboard on SQL Server, and on Snowflake once migrated (WORKBOOK=name for one)
+	$(PY) $(SFM_ROOT)/consumers/metabase/dashboards.py --run "$(RUN)" $(if $(DATE),--date "$(DATE)",) $(if $(filter-out all,$(WORKBOOK)),--workbook "$(WORKBOOK)",)
 
 # Presenter reset: a fresh Snowflake build for the token, back to the 7-of-25 starting ledger.
 sfm-demo-reset: sfm-require-run

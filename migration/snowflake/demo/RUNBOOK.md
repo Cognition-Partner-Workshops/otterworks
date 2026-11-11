@@ -40,6 +40,19 @@ This is the short version of the demo: one BI workflow moves end to end and the 
 
 Snowflake keeps one business date per build, so run `make sfm-dual-run` for a date before `make sfm-bi-parity` for that date. Otherwise every row shows as missing in Snowflake. For the fallback, check out the reference branch and run `python migration/snowflake/demo/apply_reference_workbooks.py --run <token>`, which writes a Snowflake copy of all 20 workbooks. After the dual run for a date, `make sfm-bi-parity RUN=<token> DATE=<date>` showed 20 PASS on both dates on the build run.
 
+## Metabase side by side
+
+The same check as a BI user sees it: one Metabase window on SQL Server and one on Snowflake, with the same cards. `consumers/metabase/dashboards.py` builds each workbook as a Metabase dashboard through the API. Every worksheet becomes one card that runs the datasource's custom SQL with the worksheet's aggregation, sort and mark, so the two dashboards differ only in their connection. The legacy `.twb` goes to the "SQL Server" collection, and the copy in `target/tableau/` goes to the "Snowflake" collection, which connects as the read-only `<PREFIX>_VIEWER` user with the `<PREFIX>_READER` role.
+
+1. With `make sfm-up` running and the run built for the date, run `make sfm-metabase-up`. Metabase starts on `127.0.0.1:3000` and reaches SQL Server as `ubw-sql:1433` on the Compose network.
+2. Export `MB_ADMIN_PASSWORD` (the first run creates the admin user with it), the `UBW_SQL_*` values from the pre-flight, `SNOWFLAKE_ACCOUNT` and `UBW_VIEWER_PASSWORD`.
+3. Run `make sfm-metabase RUN=<token> DATE=2026-09-30 WORKBOOK="Storage Overage" PY=<venv>/bin/python`. It prints both dashboard URLs. Without `WORKBOOK` it builds all 20 SQL Server dashboards and a Snowflake dashboard for each workbook that has a target copy.
+4. Open the two URLs in windows side by side, then run `make sfm-bi-parity RUN=<token> DATE=2026-09-30 WORKBOOK="Storage Overage"` as the proof for every row and value, including the rows off screen.
+
+Reruns update the cards and dashboards in place, so the URLs stay the same. A 1280-pixel window on a 2x screen is only 632 CSS pixels wide, and Metabase drew it in its narrow layout with 10 tenant bars and an "Other" bar. Zoomed out to 67%, both windows showed all 60 tenant bars.
+
+To add a workbook, a worker writes `target/tableau/<workbook>.twb`, gets `make sfm-bi-parity` to PASS for it, then runs `make sfm-metabase RUN=<token> WORKBOOK="<workbook>"`. The Snowflake dashboard appears next to the existing SQL Server one, and nothing else changes.
+
 ## Fallback
 
 Branch `devin/1794295625-sfm-reference` holds a finished port of all 18 units. On the build run it gave 23 PASS on 2026-09-15 and 2026-09-30, and with the two explanations written, `make sfm-gate` exited 0. If the live run stalls, check that branch out, run `make sfm-dual-run RUN=<token> DATE=2026-09-15`, then `python migration/snowflake/demo/apply_reference_explanations.py` and `make sfm-gate RUN=<token> DATE=2026-09-15`, which should exit 0.
