@@ -124,17 +124,57 @@ def full_compare(before, after, keys):
             'strict_checks': ['decimal scale', 'timestamp timezone and precision', 'string whitespace', 'null versus empty']}
 
 
-def replay_gate(oracle, run1, run2, keys, sequence_columns):
+def reject_records(rejects):
+    return Counter(json.dumps([r['name'], line]) for r in rejects for line in (r['rows'] or []))
+
+
+def reject_compare(before, after):
+    b, a = reject_records(before), reject_records(after)
+    def differences(counter):
+        return [{'record': json.loads(r), 'multiplicity': n} for r, n in sorted(counter.items())]
+    return {'equal': b == a, 'before_count': sum(b.values()), 'after_count': sum(a.values()),
+            'only_before': differences(b - a), 'only_after': differences(a - b)}
+
+
+def replay_gate(oracle, run1, run2, keys, sequence_columns, rejects):
+    """rejects: (oracle, run1, run2) reject snapshots in the rejects.json format."""
     checks = {'oracle_run1': full_compare(oracle, run1, keys),
               'oracle_run2': full_compare(oracle, run2, keys),
               'run1_run2': full_compare(run1, run2, keys)}
+    oracle_rejects, run1_rejects, run2_rejects = rejects
+    reject_checks = {'oracle_run1': reject_compare(oracle_rejects, run1_rejects),
+                     'oracle_run2': reject_compare(oracle_rejects, run2_rejects),
+                     'run1_run2': reject_compare(run1_rejects, run2_rejects)}
     def ids(s):
         indexes = [s['columns'].index(c) for c in keys + sequence_columns]
         return Counter(json.dumps([r[i] for i in indexes]) for r in s['rows'])
     stable = ids(run1) == ids(run2)
     return {'passed': stable and all(c['equal'] and not c.get('duplicate_keys_before')
-                                    and not c.get('duplicate_keys_after') for c in checks.values()),
-            'sequence_ids_stable': stable, 'comparisons': checks}
+                                    and not c.get('duplicate_keys_after') for c in checks.values())
+            and all(c['equal'] for c in reject_checks.values()),
+            'sequence_ids_stable': stable, 'comparisons': checks, 'reject_comparisons': reject_checks}
+
+
+def determinism_failures(reports):
+    return sorted(m for m, r in reports.items() if not r['equal'] or not r['rejects_identical'])
+
+
+def provenance():
+    artifacts = [OUT / r['mapping'] / 'oracle1' / name for r in scope() for name in ('target.json', 'rejects.json')]
+    return {'manifest': sha(OUT / 'manifest.json'), 'scope': sorted(r['mapping'] for r in scope()),
+            'artifacts': {str(p.relative_to(OUT)): sha(p) for p in artifacts}}
+
+
+def verify_provenance():
+    path = OUT / 'oracle_provenance.json'
+    if not path.exists():
+        raise ValueError('No verified oracle capture; run the oracle command first')
+    try:
+        current = provenance()
+    except FileNotFoundError as error:
+        raise ValueError(f'Oracle artifact missing: {error.filename}') from error
+    if json.loads(path.read_text()) != current:
+        raise ValueError('Oracle artifacts differ from the verified paired capture')
 
 
 def local_params():
@@ -173,6 +213,8 @@ def capture(command):
     import psycopg
     params = local_params()
     captures = []
+    if command == 'oracle':
+        (OUT / 'oracle_provenance.json').unlink(missing_ok=True)
     for n in range(1, 3 if command == 'oracle' else 2):
         db = 'unt2_oracle_' + uuid.uuid4().hex[:12]
         runroot = (OUT / db).resolve()
@@ -255,13 +297,19 @@ def capture(command):
                         raise RuntimeError('PowerCenter command failed; retained logs: ' + str(runroot))
             finally:
                 admin.execute(f'DROP DATABASE {db} WITH (FORCE)')
+    reports = {}
     for r in scope():
         report = full_compare(captures[0][r['mapping']], captures[1][r['mapping']], r['key_columns'])
         rejects = [json.loads((OUT / r['mapping'] / f'oracle{n}' / 'rejects.json').read_text()) for n in (1, 2)]
         report['rejects_identical'] = rejects[0] == rejects[1]
         report['reject_counts'] = [{x['name']: len(x['rows']) if x['rows'] is not None else None for x in run} for run in rejects]
         dump(OUT / r['mapping'] / 'oracle_determinism.json', report)
-        print(r['mapping'], 'oracle deterministic:', report['equal'])
+        reports[r['mapping']] = report
+        print(r['mapping'], 'oracle deterministic:', report['equal'], 'rejects identical:', report['rejects_identical'])
+    failures = determinism_failures(reports)
+    if failures:
+        raise RuntimeError('Oracle captures differ; artifacts are not valid for upload: ' + ', '.join(failures))
+    dump(OUT / 'oracle_provenance.json', provenance())
 
 
 def main():
@@ -271,7 +319,12 @@ def main():
     parser.add_argument('--oracle', type=Path)
     parser.add_argument('--run1', type=Path)
     parser.add_argument('--run2', type=Path)
+    parser.add_argument('--oracle-rejects', type=Path)
+    parser.add_argument('--run1-rejects', type=Path)
+    parser.add_argument('--run2-rejects', type=Path)
     args = parser.parse_args()
+    if args.command == 'replay' and not (args.oracle_rejects and args.run1_rejects and args.run2_rejects):
+        parser.error('replay requires --oracle-rejects, --run1-rejects and --run2-rejects')
     if args.command.startswith('live'):
         from .evidence_live import live
         live(preflight_only=args.command == 'live-preflight')
@@ -285,7 +338,8 @@ def main():
         result = full_compare(load(args.oracle), load(args.run1), row['key_columns'])
         passed = result['equal']
     else:
-        result = replay_gate(load(args.oracle), load(args.run1), load(args.run2), row['key_columns'], row['sequence_columns'])
+        result = replay_gate(load(args.oracle), load(args.run1), load(args.run2), row['key_columns'], row['sequence_columns'],
+                             (load(args.oracle_rejects), load(args.run1_rejects), load(args.run2_rejects)))
         passed = result['passed']
     dump(OUT / row['mapping'] / (args.command + '.json'), result)
     raise SystemExit(0 if passed else 1)

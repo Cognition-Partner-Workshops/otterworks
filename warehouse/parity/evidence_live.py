@@ -11,7 +11,7 @@ import psycopg
 from .evidence import OUT, cell, dump, full_compare, scope, sha, local_params, snapshot
 from .harness import connection, control_table
 from .harness import COMMENT
-from .evidence import replay_gate
+from .evidence import replay_gate, verify_provenance
 from .inventory import table_definitions, target_relation
 
 LIVE = OUT / 'live'
@@ -141,6 +141,7 @@ def upload(q, table, snap):
 
 
 def baselines(q):
+    verify_provenance()
     names, tables = q.run('SHOW TABLES IN SCHEMA SFX_D1110_AFTER.PC_BEFORE')
     targets = {r['target_table'] for r in scope()}
     dump(LIVE / 'existing_baselines.json', [dict(zip(names, [cell(v) for v in r]))
@@ -176,7 +177,8 @@ def smoke(q):
             if mutation:
                 q.run(mutation)
             run2 = fetched(q, schema + '.RUN2', snap)
-            result = replay_gate(snap, run1, run2, ['ALERT_ID'], ['ALERT_ID'])
+            # Table-only harness smoke: no reject inputs are exercised here.
+            result = replay_gate(snap, run1, run2, ['ALERT_ID'], ['ALERT_ID'], ([], [], []))
             results[case] = result
             dump(LIVE / 'smoke.json', results)
             assert result['passed'] == (case == 'identical'), 'Smoke gate unexpected result: ' + case
