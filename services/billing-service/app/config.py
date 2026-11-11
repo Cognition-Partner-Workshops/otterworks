@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     app_name: str = "billing-service"
     schema_name: str = "billing_svc"
     database_url: str
+    db_password: str = ""
     cors_origins: list[str] = ["http://localhost:3000"]
     allow_internal_reset: bool = False
 

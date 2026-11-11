@@ -52,7 +52,8 @@ services:
       billing-service-db:
         condition: service_healthy
     environment:
-      BILLING_SVC_DATABASE_URL: postgresql://billing_svc:${BILLING_SVC_DB_PASSWORD:?set BILLING_SVC_DB_PASSWORD in .env (see .env.example)}@billing-service-db:5432/billing_svc_${NS:-dev}
+      BILLING_SVC_DB_PASSWORD: ${BILLING_SVC_DB_PASSWORD:?set BILLING_SVC_DB_PASSWORD in .env (see .env.example)}
+      BILLING_SVC_DATABASE_URL: postgresql://billing_svc@billing-service-db:5432/billing_svc_${NS:-dev}
       BILLING_SVC_ALLOW_INTERNAL_RESET: "true"
     ports:
       - "127.0.0.1:${PROCS_TARGET_PORT:-8097}:8097"

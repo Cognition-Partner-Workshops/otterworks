@@ -148,8 +148,12 @@ down: ## Stop all application services
 build: ## Build all service images
 	docker compose -f docker-compose.infra.yml -f docker-compose.yml build
 
+# Host-side DB tools use the same password as the compose stack (.env POSTGRES_PASSWORD).
+LOCAL_DB_ENV = set -a; [ ! -f .env ] || . ./.env; set +a; \
+	export DB_PASSWORD="$${DB_PASSWORD:-$${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (see .env.example)}}";
+
 seed: ## Seed development data (services must be running)
-	uv run scripts/seed.py
+	$(LOCAL_DB_ENV) uv run scripts/seed.py
 
 wait-for-db: ## Wait for Postgres to accept connections
 	@echo "Waiting for Postgres to be healthy..."
@@ -292,7 +296,7 @@ ifndef NS
 	$(error NS is required, e.g. make testdata-validate NS=dev)
 endif
 	$(call validate_ns)
-	uv run testdata/harness/validate.py --ns $(NS) $(if $(CRITERIA),--criteria $(CRITERIA),)
+	$(LOCAL_DB_ENV) uv run testdata/harness/validate.py --ns $(NS) $(if $(CRITERIA),--criteria $(CRITERIA),)
 
 testdata-clean: ## Drop a test-data namespace schema (NS=<namespace>)
 ifndef NS
@@ -300,7 +304,7 @@ ifndef NS
 endif
 	$(call validate_ns)
 	@echo "Dropping schema otterworks_$(NS)..."
-	PGPASSWORD=$${DB_PASSWORD:-otterworks_dev} psql \
+	$(LOCAL_DB_ENV) PGPASSWORD="$$DB_PASSWORD" psql \
 		-h $${DB_HOST:-localhost} -p $${DB_PORT:-5432} \
 		-U $${DB_USER:-otterworks} -d $${DB_NAME:-otterworks} \
 		-c "DROP SCHEMA IF EXISTS otterworks_$(NS) CASCADE;"
@@ -312,7 +316,7 @@ ifndef NS
 endif
 	$(call validate_ns)
 	@echo "Creating schema otterworks_$(NS)..."
-	PGPASSWORD=$${DB_PASSWORD:-otterworks_dev} psql \
+	$(LOCAL_DB_ENV) PGPASSWORD="$$DB_PASSWORD" psql \
 		-h $${DB_HOST:-localhost} -p $${DB_PORT:-5432} \
 		-U $${DB_USER:-otterworks} -d $${DB_NAME:-otterworks} \
 		-f testdata/harness/create_schema.sql \
