@@ -2,7 +2,7 @@ name: Consumer billing-service
 
 on:
   push:
-    branches: [demo-snowflake-dw-exit, 'devin/sfx-d1110-**']
+    branches: [demo-databricks-dw-exit, 'devin/dbx-d1111-consumer-billing-service']
     paths: ['services/billing-service/**', '.github/workflows/consumer-billing-service.yml']
   pull_request:
     paths: ['services/billing-service/**', '.github/workflows/consumer-billing-service.yml']
@@ -40,29 +40,27 @@ jobs:
           echo "$PWD/services/billing-service/.venv/bin" >> "$GITHUB_PATH"
       - run: "cd services/billing-service && pytest contract"
 
-  snowflake-secrets:
+  databricks-secrets:
     runs-on: ubuntu-latest
     outputs:
       present: ${{ steps.check.outputs.present }}
     steps:
       - id: check
         env:
-          PRESENT: ${{ secrets.SNOWFLAKE_ACCOUNT != '' && secrets.SNOWFLAKE_PRIVATE_KEY != '' }}
+          PRESENT: ${{ secrets.DATABRICKS_HOST != '' && secrets.DATABRICKS_TOKEN != '' && secrets.DATABRICKS_WAREHOUSE_ID != '' }}
         run: echo "present=$PRESENT" >> "$GITHUB_OUTPUT"
 
   contract:
-    needs: [unit, snowflake-secrets]
-    if: needs.snowflake-secrets.outputs.present == 'true'
+    needs: [unit, databricks-secrets]
+    if: needs.databricks-secrets.outputs.present == 'true'
     runs-on: ubuntu-latest
     env:
-      WAREHOUSE_CONTRACT_TARGET: ${{ vars.CONSUMER_CONTRACT_TARGET || 'teradata-emulator' }}
-      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
-      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
-      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
-      SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
-      SNOWFLAKE_QUERY_TAG: '{"run":"sfx-d1110","act":"consumers","consumer":"billing-service"}'
+      WAREHOUSE_CONTRACT_TARGET: databricks
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      DATABRICKS_WAREHOUSE_ID: ${{ secrets.DATABRICKS_WAREHOUSE_ID }}
+      DATABRICKS_CATALOG: cpw
+      DATABRICKS_RUN_TOKEN: dbx-d1111
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-python@v5
@@ -72,4 +70,9 @@ jobs:
           python -m pip install uv
           uv sync --frozen --dev --project services/billing-service
           echo "$PWD/services/billing-service/.venv/bin" >> "$GITHUB_PATH"
-      - run: "cd services/billing-service && pytest contract"
+      - run: make sfx-teradata-up NS=dbx-d1111-consumers-billing-service ROWS_PER_TABLE=2000 BUSINESS_DATE=20261109
+      - run: |
+          export CONTRACT_KIT_PYTHON="$PWD/warehouse/.venv/bin/python"
+          export TD_PG_PORT=54714
+          cd services/billing-service
+          pytest contract -s
