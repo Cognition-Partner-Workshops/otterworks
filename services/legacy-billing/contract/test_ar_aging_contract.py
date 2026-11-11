@@ -10,6 +10,13 @@ from finance_warehouse import COLUMNS, TeradataReceivablesWarehouse
 
 def test_ar_aging_contract():
     target = os.getenv("WAREHOUSE_CONTRACT_TARGET", "teradata-emulator")
+    if target == "databricks":
+        from live_databricks import REQUIRED, run_contract
+
+        if not all(os.getenv(key) for key in REQUIRED):
+            pytest.skip("Live Databricks environment not configured; no replay fallback")
+        run_contract()
+        return
     if target in {"teradata-emulator", "replay", "snowflake-semantics"}:
         adapter = EmulatorWarehouse()
     elif target == "snowflake":

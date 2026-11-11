@@ -1,0 +1,31 @@
+WITH receivables AS (
+    SELECT i.CUSTOMER_ID, date_add(i.INVOICE_DT, 30) AS DUE_DT,
+        rtrim(i.CURRENCY_CD) COLLATE UTF8_LCASE AS CURRENCY_CD, i.TOTAL_AMOUNT AS AMOUNT_DUE,
+        i.TOTAL_AMOUNT - coalesce(p.PAID, 0) AS OPEN_BALANCE
+    FROM cpw.dbx_d1111_after.billing__v_account_invoices i
+    LEFT JOIN (
+        SELECT INVOICE_ID, sum(AMOUNT) AS PAID
+        FROM cpw.dbx_d1111_after.billing__payment GROUP BY INVOICE_ID
+    ) p ON p.INVOICE_ID = i.INVOICE_ID
+    WHERE i.INVOICE_DT >= DATE '2020-01-01'
+        AND i.TOTAL_AMOUNT - coalesce(p.PAID, 0) > 0
+)
+SELECT rtrim(a.ACCOUNT_NUMBER) AS ACCOUNT_NO, rtrim(a.ACCOUNT_NAME) AS CUSTOMER_NAME,
+    i.CURRENCY_CD, min(i.DUE_DT) AS OLDEST_DUE_DATE,
+    sum(i.OPEN_BALANCE) AS OPEN_BALANCE,
+    coalesce(sum(CASE WHEN datediff(CAST(? AS DATE), i.DUE_DT) <= 0
+        THEN i.OPEN_BALANCE ELSE 0 END), 0) AS CURRENT_AMT,
+    coalesce(sum(CASE WHEN datediff(CAST(? AS DATE), i.DUE_DT) BETWEEN 1 AND 30
+        THEN i.OPEN_BALANCE ELSE 0 END), 0) AS DAYS_1_30,
+    coalesce(sum(CASE WHEN datediff(CAST(? AS DATE), i.DUE_DT) BETWEEN 31 AND 60
+        THEN i.OPEN_BALANCE ELSE 0 END), 0) AS DAYS_31_60,
+    coalesce(sum(CASE WHEN datediff(CAST(? AS DATE), i.DUE_DT) BETWEEN 61 AND 90
+        THEN i.OPEN_BALANCE ELSE 0 END), 0) AS DAYS_61_90,
+    coalesce(sum(CASE WHEN datediff(CAST(? AS DATE), i.DUE_DT) > 90
+        THEN i.OPEN_BALANCE ELSE 0 END), 0) AS DAYS_OVER_90,
+    sum(i.AMOUNT_DUE) AS AMOUNT_DUE
+FROM receivables i
+JOIN cpw.dbx_d1111_after.billing__customer_account a ON a.CUSTOMER_ID = i.CUSTOMER_ID
+GROUP BY rtrim(a.ACCOUNT_NUMBER), rtrim(a.ACCOUNT_NAME), i.CURRENCY_CD
+ORDER BY OPEN_BALANCE DESC NULLS FIRST, ACCOUNT_NO NULLS LAST, i.CURRENCY_CD NULLS LAST
+LIMIT 100
