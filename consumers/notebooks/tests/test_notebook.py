@@ -90,3 +90,33 @@ def test_no_query_cells_rejected(tmp_path):
     nbformat.write(nbformat.v4.new_notebook(), path)
     with pytest.raises(ValueError, match="no warehouse-query"):
         extract_queries(path)
+
+
+def test_native_rewrites_pin_as_of_and_cover_every_query():
+    from finance_nb.databricks_queries import NATIVE, native_sql, pin_teradata
+    assert set(NATIVE) == set(extract_queries())
+    for name in NATIVE:
+        assert "{as_of}" not in native_sql(name)
+        pinned = native_sql(name, "2026-11-09")
+        assert "current_date" not in pinned.lower() and "DATE '2026-11-09'" in pinned
+        assert not pinned.lstrip().upper().startswith("SEL ")
+    assert pin_teradata("SEL CURRENT_DATE - 90", "2026-11-09") == "SEL DATE '2026-11-09' - 90"
+    assert pin_teradata("SEL CURRENT_DATE") == "SEL CURRENT_DATE"
+    with pytest.raises(ValueError, match="YYYY-MM-DD"):
+        native_sql("revenue", "2026-11-09'; DROP")
+
+
+def test_databricks_target_runs_native_sql_without_secrets(monkeypatch):
+    from finance_nb import warehouse
+    from finance_nb.databricks_queries import native_sql
+    connection = connect(target="databricks", as_of="2026-11-09")
+    sent = []
+    monkeypatch.setattr(warehouse.DatabricksConnection, "cursor", lambda self: warehouse._ResultCursor(
+        lambda sql: sent.append(sql) or {"columns": ["MONTH_LABEL"], "rows": [["2026-11"]]}))
+    result = run_query(connection, extract_queries()["revenue"], "revenue")
+    assert sent == [native_sql("revenue", "2026-11-09")]
+    assert list(result.itertuples(index=False, name=None)) == [("2026-11",)]
+    with pytest.raises(ValueError, match="query name"):
+        run_query(connection, "SEL fake")
+    with pytest.raises(ValueError, match="unknown finance warehouse target"):
+        connect(target="oracle")

@@ -51,3 +51,33 @@ snowflake-semantics uses the shared live bridge. snowflake is an explicit
 placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE or PRIVATE_KEY skips;
 configured execution is unsupported. Metadata: SFX_D1110_AFTER.COMPAT, query tag
 `{"run":"sfx-d1110","act":"consumers","consumer":"finance-notebook"}`.
+
+## Databricks cutover (run dbx-d1111)
+`FINANCE_WAREHOUSE` selects the notebook read path: `teradata` (default, unchanged),
+`teradata-emulator` (old path: the literal Teradata SQL through ../contract-kit/bridge.py)
+or `databricks` (native rewrites in finance_nb/databricks_queries.py through
+finance_nb/databricks_warehouse.py; catalog cpw, schema dbx_d1111_after, every statement
+tagged `/* run=dbx-d1111 act=consumers step=... consumer=finance-notebook */`).
+`FINANCE_AS_OF=YYYY-MM-DD` pins CURRENT_DATE on both paths; contracts pin 2026-11-09
+(BUSINESS_DATE 20261109) via `CONTRACT_AS_OF`, defaulting to it for the live target.
+
+Decision: native Databricks rewrite, no compatibility view. Every Teradata construct here is
+query syntax (SEL, TOP, ZEROIFNULL/NULLIFZERO, FORMAT casts, ADD_MONTHS, integer date
+1200101, DATE +/- n), which a view cannot absorb; the columns read are ids, dates,
+DECIMAL(14,2) amounts and VARCHAR CASESPECIFIC account fields, so there is no CHAR padding or
+NOT CASESPECIFIC comparison to emulate; month labels are exactly 7 characters. The notebook is
+ad hoc / month-end and the only reader of these query shapes, while billing__* targets are
+shared, so nothing is added to dbx_d1111_after. DSO keeps the old path's division precision
+(16 significant digits, as the emulator's DECIMAL division); default Databricks DECIMAL
+division keeps only 6 decimals and broke the contract on the first live run.
+
+Old path inputs must equal cpw.dbx_d1111_before: seed with ROWS_PER_TABLE=2000 (INVOICE_HDR
+2100, PAYMENT 2000, CUSTOMER_ACCOUNT 300); the 800-row fixture behind contract/expected does
+not match the live baseline. contract/recorded/live-baseline holds the old path's output on
+that data (`CONTRACT_AS_OF=2026-11-09 python -m contract.record_baseline`).
+
+```sh
+WAREHOUSE_CONTRACT_TARGET=databricks python -m pytest contract   # skips without DATABRICKS_HOST/TOKEN/WAREHOUSE_ID
+```
+The live target checks row counts and keys against contract/expected and every value
+(including the expected sum columns) against the old read path on the same data.
