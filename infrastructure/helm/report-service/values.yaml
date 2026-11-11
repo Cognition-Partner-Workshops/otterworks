@@ -66,10 +66,14 @@ env:
 
 # Non-sensitive service configuration rendered into {{ .Release.Name }}-config
 # and injected via envFrom. Populate at deploy time (e.g. from Terraform outputs).
+# Finance warehouse (enabled by default): SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER,
+# SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE. Set FINANCE_WAREHOUSE_ENABLED=false to opt out.
+# Optional SNOWFLAKE_QUERY_TAG overrides the consumer session tag.
 config: {}
 
 # Sensitive configuration rendered into {{ .Release.Name }}-secrets (Opaque,
 # stringData) and injected via envFrom. Populate at deploy time; never commit values.
+# SNOWFLAKE_PRIVATE_KEY: required PKCS#8 RSA PEM when finance warehouse is enabled.
 secrets: {}
 
 # Legacy-data-migration archive read path (migration/CONTRACTS.md §10.4).

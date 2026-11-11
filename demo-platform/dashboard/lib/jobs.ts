@@ -26,6 +26,11 @@ const RUNNER_SECRET_ENV_KEYS = [
   "JWT_SECRET",
   "SECRET_KEY_BASE",
   "GITHUB_TOKEN",
+  "SNOWFLAKE_ACCOUNT",
+  "SNOWFLAKE_USER",
+  "SNOWFLAKE_ROLE",
+  "SNOWFLAKE_WAREHOUSE",
+  "SNOWFLAKE_PRIVATE_KEY",
 ] as const;
 
 function jobName(action: RunnerAction, id: string, epoch: number): string {

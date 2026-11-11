@@ -62,6 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: scripts/sync-incident-chart-files.sh --check
+      - run: python3 scripts/test-report-warehouse-wiring.py
 
   detect-changes:
     runs-on: ubuntu-latest

@@ -413,6 +413,12 @@ services:
       REDIS_PORT: 6379
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_SERVICE_NAME: report-service
+      FINANCE_WAREHOUSE_ENABLED: ${FINANCE_WAREHOUSE_ENABLED:-true}
+      SNOWFLAKE_ACCOUNT: ${SNOWFLAKE_ACCOUNT:-}
+      SNOWFLAKE_USER: ${SNOWFLAKE_USER:-}
+      SNOWFLAKE_ROLE: ${SNOWFLAKE_ROLE:-}
+      SNOWFLAKE_WAREHOUSE: ${SNOWFLAKE_WAREHOUSE:-}
+      SNOWFLAKE_PRIVATE_KEY: ${SNOWFLAKE_PRIVATE_KEY:-}
       DB_HOST: postgres
       JWT_SECRET: ${JWT_SECRET:-otterworks-local-dev-jwt-secret-change-me-in-production}
       DB_PORT: 5432

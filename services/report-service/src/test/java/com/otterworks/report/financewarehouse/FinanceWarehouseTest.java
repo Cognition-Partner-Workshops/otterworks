@@ -94,10 +94,10 @@ public class FinanceWarehouseTest {
     }
 
     @Test
-    public void flagDisablesBeansAndDefaultDoesNotConnect() {
+    public void flagDisablesBeansAndDefaultRequiresSettings() {
         new ApplicationContextRunner().withUserConfiguration(FinanceWarehouseConfig.class,
                 FinanceReconciliationController.class).run(context ->
-                        assertTrue(context.containsBean("financeWarehouse")));
+                        assertTrue(context.getStartupFailure() != null));
         new ApplicationContextRunner().withUserConfiguration(FinanceWarehouseConfig.class,
                 FinanceReconciliationController.class).withPropertyValues("finance.warehouse.enabled=false")
                 .run(context -> assertEquals(0, context.getBeansOfType(FinanceWarehouse.class).size()));

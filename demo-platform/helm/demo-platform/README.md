@@ -91,6 +91,15 @@ Set `--set secret.create=false` and create/rotate the `demo-ops-dashboard`
 Secret yourself (e.g. via External Secrets / SOPS). The chart will reference it
 by name.
 
+Runner Jobs deploying report-service also need `SNOWFLAKE_ACCOUNT`,
+`SNOWFLAKE_USER`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_WAREHOUSE`, and
+`SNOWFLAKE_PRIVATE_KEY` in that Secret. For a chart-managed Secret, supply
+`secret.snowflakeAccount`, `secret.snowflakeUser`, `secret.snowflakeRole`,
+`secret.snowflakeWarehouse`, and `secret.snowflakePrivateKey` via a locked-down
+values file or `--set-file`, never literal values on argv. These are injected
+into runner Jobs by Secret reference; GitHub Actions env does not propagate
+through the dashboard API to the runner.
+
 ## Validate before deploying
 
 ```bash
