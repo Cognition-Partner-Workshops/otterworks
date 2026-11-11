@@ -69,59 +69,41 @@ models the legacy application running with its own PostgreSQL database.
 
 ## Finance warehouse consumer
 
-This consumer is treated as a separate repository owned by
-**@otterworks/legacy-billing**. It reads TDPROD / FIN_DW on request with account
-`svc_legacy_billing`.
+Separate repository owned by **@otterworks/legacy-billing**. The default-on
+FINANCE_WAREHOUSE_ENABLED flag exposes /finance/ar-aging as JSON, or
+?format=html as an escaped table. Invalid formats return 400; disabled returns
+404, warehouse failures a sanitized 503. Startup opens no warehouse connection.
+The fake plaintext DSN in app/finance_warehouse.ini uses svc_legacy_billing
+against TDPROD / SFX_BILLING; FINANCE_WAREHOUSE_DSN can override it.
 
-- `GET /finance/ar-aging` returns JSON.
-- `GET /finance/ar-aging?format=html` renders an accounts-receivable table.
-- `FINANCE_WAREHOUSE_ENABLED=false` disables both representations (404).
-  It defaults on. Unsupported formats return 400; warehouse failures return a
-  sanitized 503 response.
-
-The report shows the top 100 outstanding account balances, separately by currency,
-with current/not-yet-due, 1–30, 31–60, 61–90 and over-90-day buckets.
-Aging is based on the warehouse's current date. Open balance subtracts all
-recorded payments; credit balances and fully paid invoices are excluded.
-The oldest due date and open-to-invoiced amount ratio are also included.
-Invoice dates before 2020-01-01 are excluded. No FX conversion is performed.
-The list is a top-account view, not a complete general-ledger reconciliation.
-Empty results are an empty JSON list or a table with an empty-state message.
-
-The DAL reads FIN_DW.INVOICE (INVOICE_ID, ACCOUNT_ID, INVOICE_DT, DUE_DT,
-CURRENCY_CD, AMOUNT_DUE), PAYMENT (INVOICE_ID, AMOUNT), ACCOUNT (ACCOUNT_ID,
-CUSTOMER_ID, ACCOUNT_NO) and CUSTOMER (CUSTOMER_ID, CUSTOMER_NAME).
-Teradata SQL is inline in `app/finance_warehouse.py`.
-Fake connection settings are adjacent in `app/finance_warehouse.ini`; override
-the DSN with `FINANCE_WAREHOUSE_DSN`. Driver import and connection creation happen
-only when the report is requested, never at application import/startup.
-The Flask warehouse dependency is injectable through
-`app.extensions["finance_warehouse"]`.
-
-### Checks
-
-From this service directory with Python 3.12:
+The query reads V_ACCOUNT_INVOICES (CUSTOMER_ID, INVOICE_ID, INVOICE_DT,
+CURRENCY_CD, TOTAL_AMOUNT), CUSTOMER_ACCOUNT (CUSTOMER_ID, ACCOUNT_NUMBER,
+ACCOUNT_NAME), and PAYMENT (INVOICE_ID, AMOUNT). All tables/views are in
+SFX_BILLING, overlapping the service account's DBQL view.
+There is no due-date column; net-30 terms derive DUE_DT = INVOICE_DT + 30.
+Open balance subtracts all payments from invoice totals, then groups by account
+and currency into current, 1–30, 31–60, 61–90 and over-90 buckets.
+Up to 100 accounts are ordered by open balance, account number and currency.
+Empty results are an empty list/table. No FX conversion is performed.
+SQL retains SEL, TOP 100, ZEROIFNULL, NULLIFZERO, integer date arithmetic,
+the 1200101 floor and DATE FORMAT cast. Driver import is lazy.
 
 ```sh
-python -m pip install -r requirements-dev.txt
+pip install -r requirements-dev.txt
 pytest
-python -m pyflakes app tests contract
-pytest contract
+WAREHOUSE_CONTRACT_TARGET=replay pytest contract
 ```
-
-Default pytest discovery runs only `tests/`, with fake warehouses and database
-connections. The separate contract command runs the actual DAL SQL through a
-warehouse adapter, then checks row count, ordered account keys, bucket totals
-and open-balance aggregates. The default
-`WAREHOUSE_CONTRACT_TARGET=teradata-emulator` replays the synthetic recorded
-result in `contract/recorded/teradata/ar-aging.json` against
-`contract/expected/ar-aging.json`. Recorded buckets reflect a fixed capture date.
-Setting TD_EMULATOR_URL selects a stub that explicitly raises
-"emulator endpoint not configured" pending the endpoint protocol.
-
-`WAREHOUSE_CONTRACT_TARGET=snowflake` reads SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER,
-SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE and SNOWFLAKE_PRIVATE_KEY. Missing values skip
-the contract; configured values currently raise an explicit unsupported-operation
-error until the adapter is implemented. Its destination constants are
-SFX_D1110_AFTER.COMPAT and session QUERY_TAG
+The contract directory is excluded from default discovery. The default
+teradata-emulator target runs the DAL's actual SQL through the shared kit at
+../../consumers/contract-kit. Follow its README for emulator setup, Python bridge
+dependencies, TD_PG_PORT and CONTRACT_KIT_PYTHON. TD_EMULATOR_HOME optionally
+overrides the runtime's default repository root.
+CONTRACT_RECORD=true pytest contract records live output, then checks expected
+counts, account keys, sums and bucket reconciliation. Fixtures use the seeded
+800-row estate (BUSINESS_DATE=20261109). Review expectations after changes.
+Replay requires neither a warehouse nor bridge dependencies and runs in CI.
+snowflake-semantics uses the same shared live bridge. snowflake remains an
+explicit placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE or
+PRIVATE_KEY skips, while configured execution is unsupported.
+Destination metadata: SFX_D1110_AFTER.COMPAT, query tag
 `{"run":"sfx-d1110","act":"consumers","consumer":"legacy-billing"}`.

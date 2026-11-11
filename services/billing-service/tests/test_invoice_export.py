@@ -122,7 +122,7 @@ def test_dal_executes_sql_and_maps_values(run_date, parameter):
         host="tdprod-fin.otterworks.internal",
         user="svc_billing_export",
         password="not-a-real-password",  # gitleaks:allow
-        database="FIN_DW",
+        database="SFX_BILLING",
     )
     assert connect.return_value.__exit__.called
 

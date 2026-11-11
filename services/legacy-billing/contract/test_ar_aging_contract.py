@@ -10,7 +10,7 @@ from finance_warehouse import COLUMNS, TeradataReceivablesWarehouse
 
 def test_ar_aging_contract():
     target = os.getenv("WAREHOUSE_CONTRACT_TARGET", "teradata-emulator")
-    if target == "teradata-emulator":
+    if target in {"teradata-emulator", "replay", "snowflake-semantics"}:
         adapter = EmulatorWarehouse()
     elif target == "snowflake":
         required = ("ACCOUNT", "USER", "ROLE", "WAREHOUSE", "PRIVATE_KEY")

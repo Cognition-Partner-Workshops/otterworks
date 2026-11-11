@@ -41,7 +41,7 @@ def test_connection_uses_fake_without_driver_import():
 def test_default_connection_config_and_disabled_flag(monkeypatch):
     connector = MagicMock()
     connect(connector=connector)
-    assert connector.call_args.kwargs["user"] == "nb_finance_analysis"
+    assert connector.call_args.kwargs["user"] == "nb_dsci_pkhan"
     connector.reset_mock()
     monkeypatch.setenv("FINANCE_WAREHOUSE_ENABLED", "false")
     with pytest.raises(RuntimeError, match="disabled"):

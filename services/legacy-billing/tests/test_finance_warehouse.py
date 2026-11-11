@@ -22,7 +22,7 @@ def test_dal_executes_query_maps_decimals_and_closes():
     cursor.execute.assert_called_once_with(SQL)
     connect.assert_called_once_with(
         host="tdprod-fin.otterworks.internal", user="svc_legacy_billing",
-        password="not-a-real-password", database="FIN_DW",  # gitleaks:allow
+        password="not-a-real-password", database="SFX_BILLING",  # gitleaks:allow
     )
     assert result == [dict(zip(COLUMNS, (
         "A000318274", "Bramblewood Outfitters", "USD", "2025-10-15",

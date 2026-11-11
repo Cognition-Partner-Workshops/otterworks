@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, Protocol
 
 ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT.parents[2] / "consumers" / "contract-kit"))
+from contract_client import execute as execute_contract
 
 
 class ContractWarehouse(Protocol):
@@ -14,16 +16,11 @@ class ContractWarehouse(Protocol):
 
 class EmulatorWarehouse:
     def execute(self, sql: str) -> dict[str, Any]:
-        if endpoint := os.getenv("TD_EMULATOR_URL"):
-            return self._execute_endpoint(endpoint, sql)
         from finance_warehouse import SQL
 
         if sql != SQL:
             raise ValueError("unknown receivables contract query")
-        return json.loads((ROOT / "recorded/teradata/ar-aging.json").read_text())
-
-    def _execute_endpoint(self, endpoint: str, sql: str) -> dict[str, Any]:
-        raise NotImplementedError("emulator endpoint not configured")
+        return execute_contract(sql, ROOT, "ar-aging")
 
 
 class SnowflakeWarehouse:

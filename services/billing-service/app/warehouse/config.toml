@@ -1,1 +1,1 @@
-dsn = "teradata://svc_billing_export:not-a-real-password@tdprod-fin.otterworks.internal/FIN_DW" # gitleaks:allow
+dsn = "teradata://svc_billing_export:not-a-real-password@tdprod-fin.otterworks.internal/SFX_BILLING" # gitleaks:allow

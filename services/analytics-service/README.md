@@ -124,53 +124,81 @@ unavailable it is cancelled (not failed), so Docker-less runners stay green.
 ## Finance warehouse consumer
 
 This consumer is operated as a separate repository owned by
-**@otterworks/analytics**, using TDPROD / FIN_DW account `svc_analytics_dash`.
-The dashboard requests trailing twelve calendar months (including the current
-month) on demand and caches successful results for 15 minutes per filter pair.
+**@otterworks/analytics**, using TDPROD / SFX_BILLING account `svc_analytics_dash`.
+It requests trailing twelve calendar months, including the current month, on
+demand and caches successful results for 15 minutes per filter pair.
 
-`GET /api/v1/analytics/finance/rollups?region=&plan=` returns monthly billed
-revenue, collected cash and active-account counts by region and plan.
-Omitted filters use the configured dashboard defaults. Invalid empty/oversized
-filters return 400; warehouse failures return a sanitized 503.
-Set `FINANCE_WAREHOUSE_ENABLED=false` or `finance.warehouse.enabled=false`
-to disable the route. It defaults on, without connecting at startup.
+`GET /api/v1/analytics/finance/rollups?status=&plan=` returns monthly billed
+revenue, collected cash and active-account counts by region and plan name.
+Filters select subscription STATUS_CD and PLAN_CODE. Omitted parameters use
+the dashboard configuration in teradata.conf. Invalid empty/oversized filters
+return 400; warehouse failures return a sanitized 503.
+Set FINANCE_WAREHOUSE_ENABLED=false or finance.warehouse.enabled=false to
+disable the route. It defaults on, without connecting at startup.
 
-The DAL reads FIN_DW.CUSTOMER (CUSTOMER_ID, REGION_CODE), ACCOUNT
-(ACCOUNT_ID, CUSTOMER_ID, PLAN_NAME, STATUS_CD, OPENED_DT), INVOICE
-(ACCOUNT_ID, INVOICE_DT, AMOUNT_DUE, TAX_AMT) and PAYMENT
-(ACCOUNT_ID, PAYMENT_DT, AMOUNT). Billed revenue excludes tax; cash is grouped by
-payment month independently of invoices. Active accounts use current status A
-and an opened date before the month's end; historical status changes are not
-available in this model. Months with matching accounts but no activity return
-zero amounts. No FX conversion is performed.
+Tables and columns in SFX_BILLING:
+- CUSTOMER_ACCOUNT: CUSTOMER_ID, REGION_CD, STATUS_CD, CREATED_DT.
+- SUBSCRIPTION: SUBSCRIPTION_ID, CUSTOMER_ID, STATUS_CD, PLAN_CODE.
+- PLAN_CATALOG: PLAN_CODE, PLAN_NAME.
+- INVOICE_HDR: INVOICE_ID, SUBSCRIPTION_ID, CUSTOMER_ID, INVOICE_DT, SUBTOTAL_AMOUNT.
+- PAYMENT: INVOICE_ID, CUSTOMER_ID, PAYMENT_DT, AMOUNT.
 
-Connection defaults are fake and live alongside the DAL in
+Revenue uses invoice subtotals for the selected subscriptions, excluding tax.
+Cash is grouped independently by payment month, attributed through each
+payment's invoice to its subscription. Both are aggregated before joining the
+month/account grid. Accounts are deduplicated within each plan; active counts
+use current account status ACTIVE and a creation date before the month's end.
+Historical status changes are unavailable. Matching accounts with no activity
+return zero amounts. No FX conversion is performed; totals assume a common
+reporting currency. Seeded multi-currency aggregates are mechanical control totals.
+The account's DBQL inventory also reads invoice revenue from this billing estate.
+
+SQL retains SEL, TOP 12, ZEROIFNULL, ADD_MONTHS, CURRENT_DATE integer date
+arithmetic, EXTRACT and FORMAT casts. The runtime driver is
+com.teradata.jdbc.TeraDriver. Fake connection defaults live beside the DAL in
 `src/main/resources/com/otterworks/analytics/finance/teradata.conf`.
-The runtime driver is `com.teradata.jdbc.TeraDriver`.
 
+### Checks
+From this directory with Java 17 and sbt:
 ```sh
 sbt compile test
-sbt "contract:test"
+WAREHOUSE_CONTRACT_TARGET=replay sbt "contract:test"
 ```
+The separate contract configuration is excluded from test. CI additionally runs
+the replay contract without credentials or a warehouse.
 
-The separate contract configuration is excluded from `test`. Its default
-`WAREHOUSE_CONTRACT_TARGET=teradata-emulator` replays the synthetic recorded
-result in `contract/recorded/teradata/finance-rollups.json` and checks non-zero
-row count and aggregates against `contract/expected/finance-rollups.json`.
-Setting TD_EMULATOR_URL selects an explicit stub raising
-"emulator endpoint not configured" until the endpoint protocol is available.
-The adapter receives the DAL's SQL constant and dashboard filters.
+For live execution, seed the emulator and install the shared Python bridge
+dependencies as documented in ../../consumers/contract-kit/README.md:
+```sh
+export TD_PG_PORT=54902
+export CONTRACT_KIT_PYTHON=/path/to/contract-venv/bin/python
+sbt "contract:test"
+CONTRACT_RECORD=true sbt "contract:test"
+```
+The default target teradata-emulator executes the actual DAL SQL through the
+shared bridge. Its runtime defaults to this repository's warehouse/teradata;
+TD_EMULATOR_HOME overrides the repository root for a separate worktree.
+CONTRACT_KIT_BRIDGE optionally overrides the bridge script path.
+The contract client substitutes escaped SQL string literals for the two
+parameters before invoking the bridge; production continues to use JDBC binds.
+CONTRACT_RECORD=true saves live output under contract/recorded/teradata/ while
+still checking expected row counts and sums. Review expected files after any
+intentional data or query change. The fixture was captured from the emulator
+seeded with ROWS_PER_TABLE=800 and BUSINESS_DATE=20261109.
 
-For `WAREHOUSE_CONTRACT_TARGET=snowflake`, the placeholder reads
-SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE, SNOWFLAKE_WAREHOUSE and
-SNOWFLAKE_PRIVATE_KEY. Missing values cancel the spec; a configured adapter
-currently raises an explicit unsupported-operation error pending implementation.
-Its target is SFX_D1110_AFTER.COMPAT, with session QUERY_TAG
+WAREHOUSE_CONTRACT_TARGET accepts teradata-emulator, replay,
+snowflake-semantics and snowflake. Replay reads recorded JSON locally without
+Python or a database. The Snowflake placeholder requires SNOWFLAKE_ACCOUNT,
+USER, ROLE, WAREHOUSE and PRIVATE_KEY; missing values cancel the spec, while a
+configured placeholder raises an explicit unsupported-operation error.
+Destination: SFX_D1110_AFTER.COMPAT; session QUERY_TAG:
 `{"run":"sfx-d1110","act":"consumers","consumer":"analytics-service"}`.
 
-Without local sbt, run each command through Docker (Java 17), for example:
+Without local sbt, unit/replay commands can use:
 ```sh
 docker run --rm -v "$PWD":/w -v "$HOME/.ivy2":/root/.ivy2 \
   -v "$HOME/.sbt":/root/.sbt -v "$HOME/.cache/coursier":/root/.cache/coursier \
   -w /w sbtscala/scala-sbt:eclipse-temurin-17.0.21_9_1.13.1_3.3.9 sbt compile test
 ```
+Live container runs additionally need Python with the bridge dependencies,
+the whole repository mounted at a stable path, and access to the emulator port.

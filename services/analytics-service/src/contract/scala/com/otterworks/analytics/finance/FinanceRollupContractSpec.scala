@@ -15,16 +15,38 @@ object ContractFixtures:
     try parser.parse(source.mkString).fold(throw _, identity)
     finally source.close()
 
-class EmulatorWarehouse extends ContractWarehouse:
-  def execute(sql: String, region: String, plan: String): Json =
-    sys.env.get("TD_EMULATOR_URL") match
-      case Some(url) => executeEndpoint(url, sql, region, plan)
-      case None =>
-        require(sql == TeradataFinanceRollupRepository.Sql, "Unknown contract query")
-        ContractFixtures.read("recorded/teradata/finance-rollups.json")
+class ReplayWarehouse extends ContractWarehouse:
+  def execute(sql: String, status: String, plan: String): Json =
+    require(sql == TeradataFinanceRollupRepository.Sql, "Unknown contract query")
+    ContractFixtures.read("recorded/teradata/finance-rollups.json")
 
-  private def executeEndpoint(url: String, sql: String, region: String, plan: String): Json =
-    throw new UnsupportedOperationException("emulator endpoint not configured")
+class EmulatorWarehouse(target: String) extends ContractWarehouse:
+  def execute(sql: String, status: String, plan: String): Json =
+    require(sql == TeradataFinanceRollupRepository.Sql, "Unknown contract query")
+    val literal = (value: String) => "'" + value.replace("'", "''") + "'"
+    val parts = sql.split("\\?", -1)
+    require(parts.length == 3, "Expected two query parameters")
+    val bound = parts(0) + literal(status) + parts(1) + literal(plan) + parts(2)
+    val python = sys.env.getOrElse("CONTRACT_KIT_PYTHON", "python3")
+    val bridge = sys.env.getOrElse("CONTRACT_KIT_BRIDGE", "../../consumers/contract-kit/bridge.py")
+    val command = List(python, bridge, "--target", target, "--query", "finance-rollups") ++
+      (if sys.env.get("CONTRACT_RECORD").contains("true") then
+        List("--record", "contract/recorded/teradata/finance-rollups.json") else Nil)
+    val output = java.nio.file.Files.createTempFile("analytics-contract-", ".json")
+    val error = java.nio.file.Files.createTempFile("analytics-contract-", ".log")
+    var process: Process = null
+    try
+      process = new ProcessBuilder(command*).redirectOutput(output.toFile).redirectError(error.toFile).start()
+      val input = process.getOutputStream
+      try input.write(bound.getBytes(java.nio.charset.StandardCharsets.UTF_8))
+      finally input.close()
+      require(process.waitFor(60, java.util.concurrent.TimeUnit.SECONDS), "Contract bridge timed out")
+      require(process.exitValue() == 0, java.nio.file.Files.readString(error))
+      parser.parse(java.nio.file.Files.readString(output)).fold(throw _, identity)
+    finally
+      if process != null && process.isAlive then process.destroyForcibly()
+      java.nio.file.Files.deleteIfExists(output)
+      java.nio.file.Files.deleteIfExists(error)
 
 class SnowflakeWarehouse extends ContractWarehouse:
   val database = "SFX_D1110_AFTER"
@@ -40,7 +62,9 @@ class SnowflakeWarehouse extends ContractWarehouse:
 class FinanceRollupContractSpec extends AnyFlatSpec with Matchers:
   "Finance rollups" should "match recorded row counts and aggregates" in {
     val warehouse: ContractWarehouse = sys.env.getOrElse("WAREHOUSE_CONTRACT_TARGET", "teradata-emulator") match
-      case "teradata-emulator" => new EmulatorWarehouse
+      case "teradata-emulator" => new EmulatorWarehouse("teradata-emulator")
+      case "snowflake-semantics" => new EmulatorWarehouse("snowflake-semantics")
+      case "replay" => new ReplayWarehouse
       case "snowflake" =>
         val keys = List("ACCOUNT", "USER", "ROLE", "WAREHOUSE", "PRIVATE_KEY")
         if !keys.forall(key => sys.env.get("SNOWFLAKE_" + key).exists(_.nonEmpty)) then
@@ -49,7 +73,7 @@ class FinanceRollupContractSpec extends AnyFlatSpec with Matchers:
       case other => fail(s"Unknown WAREHOUSE_CONTRACT_TARGET: $other")
     val settings = FinanceSettings.load(ConfigFactory.parseResources(
       "com/otterworks/analytics/finance/teradata.conf").resolve())
-    val actual = warehouse.execute(TeradataFinanceRollupRepository.Sql, settings.regions.head, settings.featuredPlan)
+    val actual = warehouse.execute(TeradataFinanceRollupRepository.Sql, settings.statuses.head, settings.featuredPlan)
     val expected = ContractFixtures.read("expected/finance-rollups.json")
     val rows = actual.hcursor.get[Vector[Vector[Json]]]("rows").toOption.get
     val columns = actual.hcursor.get[Vector[String]]("columns").toOption.get

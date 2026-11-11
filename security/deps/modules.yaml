@@ -104,6 +104,12 @@ modules:
     cases: null
 
 exempt:
+  - path: services/analytics-service
+    reason: >
+      Scala/sbt build. This harness resolves only Maven and Gradle dependency
+      trees; analytics is not measured here. Its consumer workflow runs sbt unit
+      tests and credential-free contract replay.
+
   - path: frontend/client-app/mobile/android
     reason: >
       Capacitor Android shell. Ships no server-side JVM dependencies and needs the

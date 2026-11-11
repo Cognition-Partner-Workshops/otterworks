@@ -1,6 +1,7 @@
 require 'rspec/core'
 require 'json'
 require 'bigdecimal'
+require 'open3'
 require_relative '../app/services/finance_warehouse/teradata_client'
 require_relative '../app/services/finance_warehouse/dashboard_queries'
 
@@ -13,16 +14,22 @@ module ContractWarehouse
 
   class EmulatorWarehouse
     def query(sql)
-      return execute_endpoint(ENV.fetch('TD_EMULATOR_URL'), sql) if ENV.key?('TD_EMULATOR_URL')
+      query = QUERIES.fetch(sql)
+      recorded = File.join(ROOT, 'recorded', 'teradata', "#{query}.json")
+      target = ENV.fetch('WAREHOUSE_CONTRACT_TARGET', 'teradata-emulator')
+      if target == 'replay'
+        data = JSON.parse(File.read(recorded))
+      else
+        bridge = File.expand_path('../../../consumers/contract-kit/bridge.py', ROOT)
+        command = [ENV.fetch('CONTRACT_KIT_PYTHON', 'python3'), bridge,
+                   '--target', target, '--query', query]
+        command += ['--record', recorded] if ENV['CONTRACT_RECORD'] == 'true'
+        output, error, status = Open3.capture3(*command, stdin_data: sql)
+        raise error unless status.success?
 
-      data = JSON.parse(File.read(File.join(ROOT, 'recorded', 'teradata', "#{QUERIES.fetch(sql)}.json")))
+        data = JSON.parse(output)
+      end
       data.fetch('rows').map { |row| data.fetch('columns').zip(row).to_h }
-    end
-
-    private
-
-    def execute_endpoint(_endpoint, _sql)
-      raise NotImplementedError, 'emulator endpoint not configured'
     end
   end
 

@@ -148,6 +148,10 @@ class ComplexityManifestTests(unittest.TestCase):
         entry = classes["DWX-01"]
         self.assertEqual(set(entry), set(classes["MIG-01"]))
         self.assertEqual(entry["expected_stage"], "CONTRACT")
+        self.assertEqual(entry["table"], "SFX_BILLING.SUBSCRIPTION")
+        self.assertEqual(entry["planted_keys"], ["Active", "Team"])
+        self.assertEqual(entry["expected_field"], "STATUS_CD")
+        self.assertEqual(entry["expected_rule"], "ROWCOUNT_MISMATCH")
         self.assertEqual(entry["expected_count"], 5)
         self.assertFalse(entry["headline"])
 

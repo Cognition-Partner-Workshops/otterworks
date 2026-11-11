@@ -1,3 +1,3 @@
 shared:
   enabled: <%= ENV.fetch('FINANCE_WAREHOUSE_ENABLED', 'true') %>
-  dsn: "DSN=TDPROD_FIN;DBCName=tdprod-fin.otterworks.internal;UID=svc_admin_fin;PWD=not-a-real-password;Database=FIN_DW" # gitleaks:allow
+  dsn: "DSN=TDPROD_FIN;DBCName=tdprod-fin.otterworks.internal;UID=svc_admin_fin;PWD=not-a-real-password;Database=SFX_BILLING" # gitleaks:allow
