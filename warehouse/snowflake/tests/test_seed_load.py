@@ -136,12 +136,14 @@ def test_seed_copy_repeat_and_date_isolation(tmp_path, monkeypatch, capsys):
                 assert stage.endswith('/' + filename[:8] + '/')
                 key = stage + filename
                 self.description = [('status',), ('rows_loaded',)]
-                if key in self.loaded:
+                if key in self.loaded and 'FORCE=TRUE' not in command:
                     self.result = [('LOAD_SKIPPED', 0)]
                 else:
                     self.loaded.add(key)
                     self.count += 3
                     self.result = [('LOADED', 3)]
+            elif command.startswith('DELETE'):
+                self.count -= 3 if command.split("'")[1] in {k.split('/', 1)[1] for k in self.loaded} else 0
 
         def fetchall(self):
             return self.result
@@ -156,7 +158,7 @@ def test_seed_copy_repeat_and_date_isolation(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv('SFX_RUN_ID', 'different-process')
     load_seed(cur, prepared)
     assert cur.count == 3
-    assert 'billing | INVOICE_HDR | 0 | 3' in capsys.readouterr().out
+    assert 'billing | INVOICE_HDR | 3 | 3' in capsys.readouterr().out
     load_seed(cur, [('billing', 'INVOICE_HDR', tmp_path / '20261110.psv.gz', 3)])
     assert cur.count == 6
     copies = [sql for sql in cur.commands if sql.startswith('COPY')]
@@ -164,15 +166,16 @@ def test_seed_copy_repeat_and_date_isolation(tmp_path, monkeypatch, capsys):
     assert '/seed/billing/INVOICE_HDR/20261109/' in copies[0]
     assert "FILES=('20261109.psv.gz')" in copies[0]
     assert '20261109' not in copies[2]
-    assert all('OVERWRITE=FALSE' in sql for sql in cur.commands if sql.startswith('PUT'))
+    assert all('OVERWRITE=TRUE' in sql for sql in cur.commands if sql.startswith('PUT'))
 
 
 @pytest.mark.parametrize('result', [[], [('Copy executed with 0 files processed.',)]])
-def test_seed_copy_history_noop(tmp_path, result):
+def test_seed_copy_rejects_history_noop(tmp_path, result):
     cur = Cursor()
     cur.description = [('status',)]
     cur.fetchall = lambda: result
-    load_seed(cur, [('billing', 'INVOICE_HDR', tmp_path / '20261109.psv.gz', 3)])
+    with pytest.raises(RuntimeError):
+        load_seed(cur, [('billing', 'INVOICE_HDR', tmp_path / '20261109.psv.gz', 3)])
 
 
 def test_seed_copy_rejects_bad_filename_and_unexplained_zero(tmp_path):

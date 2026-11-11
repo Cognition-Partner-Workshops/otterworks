@@ -1,7 +1,6 @@
 """Upload pipe-delimited landing files and invoke the COPY loaders."""
 import argparse
 import csv
-import json
 from pathlib import Path
 import re
 
@@ -49,29 +48,9 @@ def main():
         with connect('load', 'copy_fixtures_txn') as conn, conn.cursor() as cur:
             load_seed(cur, prepared, truncate=True, stage_prefix='fixtures')
         return
-    with connect("load", "copy") as conn:
-        with conn.cursor() as cur:
-            for area in areas:
-                for table in SPEC[area]:
-                    files = sorted((landing / area / table).glob(
-                        f"{args.date}.psv" if args.date else "*.psv"
-                    ))
-                    if not files:
-                        raise FileNotFoundError(f"No landing files for {area}/{table}")
-                    for path in files:
-                        uri = path.resolve().as_uri().replace("'", "''")
-                        cur.execute(
-                            f"PUT '{uri}' @LANDING.LANDING_STAGE/{area}/{table}/ "
-                            "AUTO_COMPRESS=FALSE OVERWRITE=FALSE"
-                        )
-                # Area is selected from the repository manifest; the date is bound separately.
-                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                cur.execute(f"CALL RAW_{area.upper()}.LOAD_{area.upper()}(%s)", (args.date,))
-                result = json.loads(cur.fetchone()[0])
-                if isinstance(result, dict) and "error" in result:
-                    raise RuntimeError(result["error"])
-                for row in result:
-                    print(f"{area}.{row['table']}: {row['rows_loaded']} rows loaded")
+    prepared = prepare_fixtures(landing, areas, args.date)
+    with connect('load', 'copy') as conn, conn.cursor() as cur:
+        load_seed(cur, prepared, stage_prefix=None)
 
 
 def prepare_fixtures(landing, areas, date=None):
@@ -96,7 +75,7 @@ def prepare_fixtures(landing, areas, date=None):
 def load_seed(cur, prepared, area='all', truncate=False, stage_prefix='seed'):
     uploads, plans = [], []
     labels = {}
-    if not re.fullmatch(r'[a-z0-9-]+', stage_prefix):
+    if stage_prefix is not None and not re.fullmatch(r'[a-z0-9-]+', stage_prefix):
         raise ValueError('Invalid stage prefix')
     for source_area, table, path, expected in prepared:
         if area != 'all' and source_area != area:
@@ -107,15 +86,19 @@ def load_seed(cur, prepared, area='all', truncate=False, stage_prefix='seed'):
         match = re.fullmatch(r'([0-9]{8})\.psv(?:\.gz)?', path.name)
         if not match:
             raise ValueError(f'Invalid prepared seed filename: {path.name}')
-        stage = f'@LANDING.LANDING_STAGE/{stage_prefix}/{source_area}/{table}/{match.group(1)}/'
+        stage = (f'@LANDING.LANDING_STAGE/{source_area}/{table}/' if stage_prefix is None else
+                 f'@LANDING.LANDING_STAGE/{stage_prefix}/{source_area}/{table}/{match.group(1)}/')
         uri = path.resolve().as_uri().replace("'", "''")
-        uploads.append(f"PUT '{uri}' {stage} AUTO_COMPRESS=FALSE OVERWRITE={'TRUE' if truncate else 'FALSE'}")
+        uploads.append(f"PUT '{uri}' {stage} AUTO_COMPRESS=FALSE OVERWRITE=TRUE")
         plans.append((relation, stage, path.name, expected))
-        labels[relation] = f'{source_area} | {table}'
+        labels[relation] = f'{source_area}.{table}' if stage_prefix is None else f'{source_area} | {table}'
     for upload in uploads:
         cur.execute(upload)
     for row in copy_tables(cur, plans, replace=truncate):
-        print(f"{labels[row['table']]} | {row['rows_loaded']} | {row['count']}")
+        if stage_prefix is None:
+            print(f"{labels[row['table']]}: {row['rows_loaded']} rows loaded")
+        else:
+            print(f"{labels[row['table']]} | {row['rows_loaded']} | {row['count']}")
 
 
 def copy_tables(cur, plans, replace=False):
@@ -131,7 +114,6 @@ def copy_tables(cur, plans, replace=False):
     if not plans:
         return []
     loaded_totals = dict.fromkeys(totals, 0)
-    skipped_statuses = {'LOAD_SKIPPED', 'SKIPPED', 'COPY EXECUTED WITH 0 FILES PROCESSED.'}
     summary = []
     cur.execute('BEGIN')
     try:
@@ -139,22 +121,22 @@ def copy_tables(cur, plans, replace=False):
             for relation in totals:
                 cur.execute(f'DELETE FROM {relation}')
         for relation, stage, filename, expected in plans:
+            if not replace:
+                source_file = stage.split('/', 1)[1] + filename
+                cur.execute(f"DELETE FROM {relation} WHERE _SRC_FILE='{source_file}'")
             cur.execute(f'COPY INTO {relation} FROM {stage}'
                         f" FILES=('{filename}')"
                         ' FILE_FORMAT=(FORMAT_NAME=LANDING.PSV_HEADER)'
                         ' MATCH_BY_COLUMN_NAME=CASE_INSENSITIVE'
                         ' INCLUDE_METADATA=(_SRC_FILE=METADATA$FILENAME,_LOADED_AT=METADATA$START_SCAN_TIME)'
-                        ' ON_ERROR=ABORT_STATEMENT'
-                        + (' FORCE=TRUE' if replace else ''))
+                        ' ON_ERROR=ABORT_STATEMENT FORCE=TRUE')
             columns = [c[0].lower() for c in cur.description]
             copied = [dict(zip(columns, row)) for row in cur.fetchall()]
             statuses = [str(row.get('status', '')).upper() for row in copied]
-            allowed = {'LOADED'} if replace else {'LOADED', *skipped_statuses}
-            if any(status not in allowed for status in statuses) or any(int(row.get('errors_seen') or 0) for row in copied):
+            if any(status != 'LOADED' for status in statuses) or any(int(row.get('errors_seen') or 0) for row in copied):
                 raise RuntimeError(f'{relation}: unsuccessful COPY status {statuses}')
             loaded = sum(int(row.get('rows_loaded') or 0) for row in copied)
-            skipped = not copied or all(status in skipped_statuses for status in statuses)
-            if (replace and not copied) or (loaded != expected and not (not replace and loaded == 0 and skipped)):
+            if not copied or loaded != expected:
                 raise RuntimeError(f'{relation}: expected {expected} rows, COPY loaded {loaded}')
             loaded_totals[relation] += loaded
         for relation, expected in totals.items():
