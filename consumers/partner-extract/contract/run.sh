@@ -4,8 +4,21 @@ ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 SNOWFLAKE_DATABASE=SFX_D1110_AFTER
 SNOWFLAKE_SCHEMA=COMPAT
 QUERY_TAG='{"run":"sfx-d1110","act":"consumers","consumer":"partner-extract"}'
-case "${WAREHOUSE_CONTRACT_TARGET:-teradata-emulator}" in
+target=${WAREHOUSE_CONTRACT_TARGET:-teradata-emulator}
+dataset=${CONTRACT_DATASET:-fixture}
+bteq_bin="$ROOT/contract/replay_bteq.sh"
+case "$target" in
   teradata-emulator|replay|snowflake-semantics)
+    ;;
+  databricks)
+    for variable in DATABRICKS_HOST DATABRICKS_TOKEN DATABRICKS_WAREHOUSE_ID; do
+      if [[ -z ${!variable:-} ]]; then
+        printf 'SKIP databricks contract: %s not set (live target needs Databricks secrets)\n' "$variable" >&2
+        exit 0
+      fi
+    done
+    dataset=dbx-baseline
+    bteq_bin="$ROOT/bin/databricks_bteq.sh"
     ;;
   snowflake)
     for key in ACCOUNT USER ROLE WAREHOUSE PRIVATE_KEY; do
@@ -24,12 +37,29 @@ case "${WAREHOUSE_CONTRACT_TARGET:-teradata-emulator}" in
     exit 2
     ;;
 esac
+case "$dataset" in
+  fixture)
+    expected="$ROOT/contract/expected"
+    export PARTNER_EXTRACT_QUERY=partner-invoices
+    ;;
+  dbx-baseline)
+    # Emulator seeded to equal cpw.dbx_d1111_before (ROWS_PER_TABLE=2000); CURRENT_DATE pinned on both paths.
+    expected="$ROOT/contract/expected/dbx-baseline"
+    export PARTNER_EXTRACT_QUERY=partner-invoices-dbx-baseline
+    export PARTNER_EXTRACT_AS_OF_DATE=${PARTNER_EXTRACT_AS_OF_DATE:-2026-11-10}
+    ;;
+  *)
+    printf '%s\n' 'unknown contract dataset' >&2
+    exit 2
+    ;;
+esac
 work=$(mktemp -d)
 trap 'rm -rf -- "$work"' EXIT
-BTEQ_BIN="$ROOT/contract/replay_bteq.sh" SFTP_DRY_RUN=1 FINANCE_WAREHOUSE_ENABLED=true \
+BTEQ_BIN="$bteq_bin" SFTP_DRY_RUN=1 FINANCE_WAREHOUSE_ENABLED=true \
   bash "$ROOT/bin/nightly_extract.sh" 2026-11-09 "$work/partner.csv" > "$work/run.log"
-cmp "$ROOT/contract/expected/partner-invoices.csv" "$work/partner.csv"
-python3 - "$ROOT/contract/expected/partner-invoices.json" "$work/partner.csv" <<'PY'
+if [[ -n ${CONTRACT_OUTPUT:-} ]]; then cp -- "$work/partner.csv" "$CONTRACT_OUTPUT"; fi
+cmp "$expected/partner-invoices.csv" "$work/partner.csv"
+python3 - "$expected/partner-invoices.json" "$work/partner.csv" <<'PY'
 import csv
 from decimal import Decimal
 import json
@@ -48,4 +78,4 @@ for column, total in expected["sums"].items():
 assert trailer == ["TRAILER", str(len(rows)), expected["sums"]["AMOUNT_DUE"]]
 print(f"PASS partner-invoices: rows={len(rows)} sums={expected['sums']}")
 PY
-printf '%s\n' 'PASS exact partner CSV and shared post-processing'
+printf 'PASS exact partner CSV and shared post-processing (target=%s dataset=%s)\n' "$target" "$dataset"

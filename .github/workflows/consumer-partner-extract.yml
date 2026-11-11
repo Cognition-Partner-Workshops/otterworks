@@ -2,7 +2,7 @@ name: Consumer partner-extract
 
 on:
   push:
-    branches: [demo-snowflake-dw-exit, 'devin/sfx-d1110-**']
+    branches: [demo-snowflake-dw-exit, demo-databricks-dw-exit, 'devin/sfx-d1110-**', 'devin/dbx-d1111-**']
     paths: ['consumers/partner-extract/**', '.github/workflows/consumer-partner-extract.yml']
   pull_request:
     paths: ['consumers/partner-extract/**', '.github/workflows/consumer-partner-extract.yml']
@@ -24,6 +24,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - run: "cd consumers/partner-extract && bash contract/run.sh"
+
+  databricks-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - id: check
+        env:
+          PRESENT: ${{ secrets.DATABRICKS_HOST != '' && secrets.DATABRICKS_TOKEN != '' && secrets.DATABRICKS_WAREHOUSE_ID != '' }}
+        run: echo "present=$PRESENT" >> "$GITHUB_OUTPUT"
+
+  contract-databricks:
+    needs: [unit, databricks-secrets]
+    if: needs.databricks-secrets.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    env:
+      WAREHOUSE_CONTRACT_TARGET: databricks
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      DATABRICKS_WAREHOUSE_ID: ${{ secrets.DATABRICKS_WAREHOUSE_ID }}
+      DATABRICKS_RUN_TOKEN: dbx-d1111
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - run: pip install -r consumers/contract-kit/requirements-databricks.txt
       - run: "cd consumers/partner-extract && bash contract/run.sh"
 
   snowflake-secrets:

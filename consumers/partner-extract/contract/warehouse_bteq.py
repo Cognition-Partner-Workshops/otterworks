@@ -1,4 +1,6 @@
 """Run the rendered extraction SQL through the shared contract target."""
+from datetime import date
+import os
 from pathlib import Path
 import re
 import sys
@@ -17,7 +19,10 @@ expected = template.replace("@EXTRACT_DATE_INT@", "1261109").replace("@EXPORT_FI
 if source != expected.rstrip():
     raise ValueError("contract received unexpected BTEQ query")
 sql = source[source.index("LOCKING ROW FOR ACCESS"):source.index(";", source.index("LOCKING ROW FOR ACCESS"))]
-result = execute(sql, ROOT, "partner-invoices")
+as_of = os.environ.get("PARTNER_EXTRACT_AS_OF_DATE")
+if as_of:
+    sql = sql.replace("CURRENT_DATE - 1", f"DATE '{date.fromisoformat(as_of).isoformat()}' - 1", 1)
+result = execute(sql, ROOT, os.environ.get("PARTNER_EXTRACT_QUERY", "partner-invoices"))
 if result["columns"] != ["REPORT_ROW"] or any(len(row) != 1 for row in result["rows"]):
     raise ValueError("unexpected report shape")
 with open(export, "w") as destination:
