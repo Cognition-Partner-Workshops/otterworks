@@ -197,6 +197,10 @@ def test_inventory_loader_and_act3_bytes():
     mapping = next(r for r in rows if r['mapping'] == u.MAPPING)
     assert mapping['after_table'] == 'PC_CONTENT.LOGIN_EVENT' and mapping['key_columns'] == ['LOGIN_ID']
     config = u.ROOT / 'warehouse/parity/mappings/sfx_content.yml'
+    ref = 'origin/devin/sfx-d1110-act3-content'
+    if subprocess.run(['git', 'rev-parse', '--verify', ref], cwd=u.ROOT,
+                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode:
+        pytest.skip('Sibling ref origin/devin/sfx-d1110-act3-content is unavailable in this checkout')
     original = subprocess.check_output(['git', 'show',
         'origin/devin/sfx-d1110-act3-content:warehouse/parity/mappings/sfx_content.yml'], cwd=u.ROOT)
     assert config.read_bytes().startswith(original)
