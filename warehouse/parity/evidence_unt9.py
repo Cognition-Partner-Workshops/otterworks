@@ -11,6 +11,7 @@ import subprocess
 import sys
 import uuid
 
+from . import evidence_live
 from .evidence import BOOTSTRAP, ESTATE, OUT, cell, dump, full_compare, sha, snapshot
 from .evidence_live import fetched
 from .evidence_unt3 import control_snapshot, load, queries, target_state
@@ -364,12 +365,122 @@ def compare():
         raise ValueError('Workflow parity/replay gate failed')
 
 
+def task_history(q, since):
+    names, rows = q.run(
+        "SELECT NAME,STATE,QUERY_ID,GRAPH_RUN_GROUP_ID,RUN_ID,ROOT_TASK_ID,ATTEMPT_NUMBER,SCHEDULED_TIME,"
+        "QUERY_START_TIME,COMPLETED_TIME,ERROR_CODE,ERROR_MESSAGE FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA."
+        f"TASK_HISTORY(SCHEDULED_TIME_RANGE_START=>TO_TIMESTAMP_LTZ('{since}'), RESULT_LIMIT=>10000)) "
+        f"WHERE DATABASE_NAME='SFX_D1110_AFTER' AND SCHEMA_NAME='PC_AUDIT' AND STARTSWITH(NAME,'{TASK_PREFIX}') "
+        "ORDER BY SCHEDULED_TIME")
+    return [dict(zip(names, [cell(v) for v in r])) for r in rows]
+
+
+def task_state(q, tasks, path, label):
+    names, rows = q.run(f"SHOW TASKS LIKE '{TASK_PREFIX}%' IN SCHEMA SFX_D1110_AFTER.PC_AUDIT")
+    shown = [dict(zip(names, [cell(v) for v in r])) for r in rows]
+    described = {}
+    for step in tasks.values():
+        columns, desc = q.run('DESCRIBE TASK SFX_D1110_AFTER.PC_AUDIT.' + step['task'])
+        described[step['task']] = [dict(zip(columns, [cell(v) for v in r])) for r in desc]
+    dump(path / f'show_tasks_{label}.json', shown)
+    dump(path / f'describe_tasks_{label}.json', described)
+    return {r['name'][1]: r['state'][1] for r in shown}
+
+
+def dag():
+    """The single authorised live execution of the suspended audit Task DAG, then suspension."""
+    import contextlib
+    import io
+    import yaml
+    sys.path.insert(0, str(ROOT / 'warehouse/snowflake'))
+    import pc_dag
+    from sfx_conn import connect
+    path = DEST / 'dag'
+    fresh(path)
+    cert = DEST / 'dag_generate/audit_unt9.yml'
+    committed = yaml.safe_load((ROOT / 'warehouse/snowflake/pc_dag/audit.yml').read_text())
+    if yaml.safe_load(cert.read_text().replace(SCHEMA, 'PC_AUDIT')) != committed:
+        raise ValueError('Certification DAG differs from the committed audit.yml beyond the target schema')
+    shutil.copy2(cert, path / 'audit_unt9.yml')
+    folder, root, tasks = pc_dag.load('audit', cert)
+    if set(tasks) != {'START', 'STG_AUDIT_EVENT', 'AUDIT_EVENT', 'AUDIT_DAILY_SUMMARY', 'SECURITY_ALERT'}:
+        raise ValueError('Unexpected audit DAG tasks')
+    (path / 'ddl.sql').write_text('\n\n'.join(pc_dag.create_sql(folder, t, tasks) + ';' for t in tasks.values()))
+    template = load(DEST / 'oracle/run1/targets.json')
+    evidence_live.LIVE = path
+    result = {'run_once': None}
+    with connect('transform', 'pc_dag', extra_tag=dict(run='sfx-d1110', act='scale', step='unt9-dag',
+                                                        folder=folder)) as conn, conn.cursor() as cur:
+        q = evidence_live.Queries(cur)
+        _, now = q.run('SELECT CURRENT_TIMESTAMP()::VARCHAR')
+        since = now[0][0]
+        prior = task_history(q, '2026-11-01 00:00:00 Z')
+        if prior:
+            raise ValueError('Audit tasks already have history; refusing a second DAG run')
+        try:
+            pc_dag.deploy(cur, folder, tasks)
+            result['deployed_states'] = task_state(q, tasks, path, 'deployed')
+            (path / 'EXECUTING').write_text(utc())
+            output = io.StringIO()
+            try:
+                with contextlib.redirect_stdout(output):
+                    pc_dag.run_once(cur, folder, root, tasks, timeout=600)
+                result['run_once'] = 'SUCCEEDED'
+            except Exception as error:
+                result['run_once'] = 'FAILED: ' + str(error)
+            (path / 'run_once_stdout.log').write_text(output.getvalue())
+        finally:
+            pc_dag.suspend(cur, folder, tasks)
+            history = task_history(q, since)
+            dump(path / 'task_history.json', history)
+            result['final_states'] = task_state(q, tasks, path, 'final')
+    names = {t['task'] for t in tasks.values()}
+    graphs = {h['GRAPH_RUN_GROUP_ID'][1] for h in history}
+    with queries(path / 'post', 'unt9-dag-post') as q:
+        after = targets(q, template)
+    dump(path / 'targets.json', after)
+    run2 = load(DEST / 'dbt/run2/targets.json')
+    checks = {s: full_compare(run2[s], after[s], TARGETS[s][3]) for s in TARGETS}
+    dump(path / 'run2_vs_dag.json', checks)
+    summary = {**result, 'graph_run_group_ids': sorted(graphs),
+               'history': [[h['NAME'][1], h['STATE'][1], h['QUERY_ID'][1], h['RUN_ID'][1]] for h in history],
+               'all_succeeded_once': sorted(h['NAME'][1] for h in history if h['STATE'][1] == 'SUCCEEDED') == sorted(names)
+               and len(history) == len(names) and len(graphs) == 1,
+               'all_suspended': set(result['final_states'].values()) == {'suspended'}
+               and set(result['final_states']) == names,
+               'targets_unchanged_vs_run2': {s: c['equal'] for s, c in checks.items()},
+               'duplicate_keys': {s: len(c['duplicate_keys_after']) for s, c in checks.items()},
+               'archive_task_present': any('ARCHIVE' in n for n in result['final_states'])}
+    dump(path / 'summary.json', summary)
+    print(json.dumps(summary, indent=2))
+    if not (summary['run_once'] == 'SUCCEEDED' and summary['all_succeeded_once'] and summary['all_suspended']
+            and all(summary['targets_unchanged_vs_run2'].values()) and not summary['archive_task_present']):
+        raise ValueError('Task DAG certification failed')
+
+
+def postflight():
+    path = DEST / 'postflight'
+    fresh(path)
+    with queries(path, 'unt9-postflight') as q:
+        state = {'control': controls(q, path), 'protected': protected(q, path), 'sources': sources(q, path)}
+    pre = load(DEST / 'preflight/summary.json')
+    state['unchanged'] = {'control': pre['control']['sha256'] == state['control']['sha256'],
+                          'protected': pre['protected']['sha256'] == state['protected']['sha256'],
+                          'protected_metadata': pre['protected']['metadata_sha256'] == state['protected']['metadata_sha256'],
+                          'sources': pre['sources'] == {k: {**v, 'qid': pre['sources'][k]['qid']}
+                                                        for k, v in state['sources'].items()}}
+    dump(path / 'summary.json', state)
+    print(json.dumps(state['unchanged'], indent=2))
+    if not all(state['unchanged'].values()):
+        raise ValueError('Protected state changed')
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('step', choices=['oracle', 'preflight', 'run1', 'run2', 'collect1', 'collect2', 'compare'])
+    parser.add_argument('step', choices=['oracle', 'preflight', 'run1', 'run2', 'collect1', 'collect2', 'compare', 'dag', 'postflight'])
     args = parser.parse_args(argv)
     {'oracle': oracle, 'preflight': preflight, 'run1': lambda: replay(1), 'run2': lambda: replay(2),
-     'collect1': lambda: collect(1), 'collect2': lambda: collect(2), 'compare': compare}[args.step]()
+     'collect1': lambda: collect(1), 'collect2': lambda: collect(2), 'compare': compare, 'dag': dag, 'postflight': postflight}[args.step]()
 
 
 if __name__ == '__main__':

@@ -21,8 +21,10 @@ def fake_run(tmp_path):
         path = tmp_path / session
         path.mkdir()
         (path / 'compiled.sql').write_text(f'select * from {FX}SOURCE_OF_{name}')
-        (path / 'run.sql').write_text(f'merge into {FX}{name} as DBT_INTERNAL_DEST using {FX}{name}__dbt_tmp '
-                                      'as DBT_INTERNAL_SOURCE on (1=1) when matched then update set X = 1')
+        # Shape of dbt-snowflake incremental run SQL: comment plus explicit transaction wrapper.
+        (path / 'run.sql').write_text(f'-- back compat for old kwarg name\n  begin;\n    merge into {FX}{name} as '
+                                      f'DBT_INTERNAL_DEST using {FX}{name}__dbt_tmp as DBT_INTERNAL_SOURCE on (1=1) '
+                                      'when matched then update set X = 1\n;\n    commit;')
     return tmp_path
 
 

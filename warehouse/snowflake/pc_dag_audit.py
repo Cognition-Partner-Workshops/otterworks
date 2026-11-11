@@ -27,9 +27,16 @@ def strip(sql):
     return sql.strip().rstrip(';').strip()
 
 
+def unwrap(sql):
+    """dbt run SQL without leading line comments or its explicit begin/commit transaction wrapper."""
+    sql = strip(re.sub(r'(?m)^\s*--[^\n]*$', '', sql))
+    match = re.fullmatch(r'(?is)begin\s*;\s*(.*?)\s*;\s*commit', sql)
+    return strip(match.group(1)) if match else sql
+
+
 def body(session_dir, schema, name):
     """Snowflake Scripting block replaying the session's dbt write: CTAS for tables, temp view + MERGE for incrementals."""
-    run_sql = strip((session_dir / 'run.sql').read_text())
+    run_sql = unwrap((session_dir / 'run.sql').read_text())
     target = relation(schema, name)
     if not re.search(re.escape(target), run_sql.replace('"', ''), re.I):
         raise ValueError(f'{session_dir.name}: run SQL does not write {target}')
