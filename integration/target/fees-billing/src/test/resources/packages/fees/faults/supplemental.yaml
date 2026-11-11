@@ -1,0 +1,13 @@
+version: 1
+flows:
+  fees-billing.fee-reversal:
+    source_sha256: 3808a15b7d48546ee5d82a1cf5baa7e1120d60e2c1fd310af2cf6419e2c95484
+    faults:
+      broker-kill:
+        after_message: 1
+        identity_header: requestId
+        container_env: REPLAY_BROKER_CONTAINER
+      ordering:
+        key_header: accountId
+        sequence_header: sequence
+        parallel_consumers: 2
