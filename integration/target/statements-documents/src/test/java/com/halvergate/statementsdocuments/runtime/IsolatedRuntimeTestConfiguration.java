@@ -12,11 +12,13 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory;
 import org.h2.jdbcx.JdbcDataSource;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.boot.jdbc.XADataSourceWrapper;
 import org.springframework.boot.jms.XAConnectionFactoryWrapper;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.io.FileSystemResource;
@@ -72,9 +74,16 @@ public class IsolatedRuntimeTestConfiguration {
     }
 
     @Bean
-    ConnectionFactory jmsConnectionFactory(EmbeddedActiveMQ isolatedTestBroker,
-            XAConnectionFactoryWrapper wrapper, ConfigurableEnvironment environment) throws Exception {
-        return wrapper.wrapConnectionFactory(new ActiveMQXAConnectionFactory(
-            environment.getRequiredProperty("spring.artemis.broker-url")));
+    @Primary
+    ConnectionFactory jmsConnectionFactory(
+            @Qualifier("nonXaJmsConnectionFactory") ActiveMQXAConnectionFactory nativeFactory,
+            XAConnectionFactoryWrapper wrapper) throws Exception {
+        return wrapper.wrapConnectionFactory(nativeFactory);
+    }
+
+    @Bean(destroyMethod = "close")
+    ActiveMQXAConnectionFactory nonXaJmsConnectionFactory(EmbeddedActiveMQ isolatedTestBroker,
+            ConfigurableEnvironment environment) {
+        return new ActiveMQXAConnectionFactory(environment.getRequiredProperty("spring.artemis.broker-url"));
     }
 }
