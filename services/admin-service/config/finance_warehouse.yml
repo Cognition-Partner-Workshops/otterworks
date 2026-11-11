@@ -1,3 +1,8 @@
 shared:
   enabled: <%= ENV.fetch('FINANCE_WAREHOUSE_ENABLED', 'true') %>
-  dsn: "DSN=TDPROD_FIN;DBCName=tdprod-fin.otterworks.internal;UID=svc_admin_fin;PWD=not-a-real-password;Database=SFX_BILLING" # gitleaks:allow
+  snowflake:
+    database: SFX_D1110_AFTER
+    schema: COMPAT
+    warehouse: SFX_D1110_PARITY_WH
+    query_tag: '{"run":"sfx-d1110","act":"consumers","consumer":"admin-service"}'
+    timeout: 120
