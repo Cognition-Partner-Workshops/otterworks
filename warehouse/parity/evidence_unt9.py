@@ -384,7 +384,7 @@ def task_state(q, tasks, path, label):
         described[step['task']] = [dict(zip(columns, [cell(v) for v in r])) for r in desc]
     dump(path / f'show_tasks_{label}.json', shown)
     dump(path / f'describe_tasks_{label}.json', described)
-    return {r['name'][1]: r['state'][1] for r in shown}
+    return {r['NAME'][1]: r['STATE'][1] for r in shown}
 
 
 def dag():
