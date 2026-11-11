@@ -24,6 +24,7 @@ lazy val root = project
       "io.circe" %% "circe-parser" % "0.14.6",
 
       // Database - Slick for PostgreSQL
+      "com.databricks" % "databricks-jdbc" % "2.6.40" % Runtime,
       "com.teradata.jdbc" % "terajdbc" % "20.00.00.33" % Runtime,
       "com.typesafe.slick" %% "slick" % "3.5.2" cross CrossVersion.for3Use2_13,
       "com.typesafe.slick" %% "slick-hikaricp" % "3.5.2" cross CrossVersion.for3Use2_13,

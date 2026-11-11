@@ -1,10 +1,13 @@
 from decimal import Decimal
+from datetime import date
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from warehouse.databricks.baseline import delta_type, load, macro_result, main
+
+RUN_DATE = date(2026, 11, 9)
 
 
 def test_precision_timestamp_and_unbounded_view_numeric():
@@ -40,8 +43,9 @@ def test_tables_views_and_macro_publish():
     target = target_fixture()
     with patch("warehouse.databricks.baseline.macro_result",
                return_value=([("id", "bigint")], deque([(1,)]))) as macro:
-        receipts = load(source_fixture(), target, "billing")
+        receipts = load(source_fixture(), target, "billing", run_date=RUN_DATE)
     macro.assert_called_once()
+    assert macro.call_args.args[-1] == RUN_DATE
     assert [r["source"] for r in receipts] == ["sfx_billing.base", "sfx_billing.v_report", "sfx_billing.m_totals"]
     assert all(r["rows"] == 1 and r["statement_id"] == "published" for r in receipts)
     statements = [c.args[0] for c in target.execute.call_args_list]
@@ -58,15 +62,15 @@ def test_empty_result_publishes_and_missing_objects_fails():
             cursor.fetchmany.side_effect = [[]]
         return cursor
     source.execute.side_effect = execute
-    assert load(source, target_fixture(0), "users")[0]["rows"] == 0
+    assert load(source, target_fixture(0), "users", run_date=RUN_DATE)[0]["rows"] == 0
     with pytest.raises(RuntimeError, match="no baseline tables"):
-        load(source_fixture(objects=(), macros=()), target_fixture(), "users")
+        load(source_fixture(objects=(), macros=()), target_fixture(), "users", run_date=RUN_DATE)
 
 
 def test_count_failure_cleans_stage_without_publish():
     target = target_fixture(9)
     with pytest.raises(RuntimeError, match="count mismatch"):
-        load(source_fixture(macros=()), target, "billing")
+        load(source_fixture(macros=()), target, "billing", run_date=RUN_DATE)
     statements = [c.args[0] for c in target.execute.call_args_list]
     assert statements[-1].startswith("DROP TABLE IF EXISTS")
     assert not any(s.startswith("CREATE OR REPLACE") for s in statements)
@@ -75,7 +79,7 @@ def test_count_failure_cleans_stage_without_publish():
 @pytest.mark.parametrize("kwargs", [{"catalog": "other"}, {"schema": "dbx_d1111_after"}, {"batch": 0}])
 def test_guardrails(kwargs):
     with pytest.raises(ValueError):
-        load(MagicMock(), MagicMock(), "billing", **kwargs)
+        load(MagicMock(), MagicMock(), "billing", run_date=RUN_DATE, **kwargs)
 
 
 @pytest.mark.parametrize("empty", [False, True])
@@ -93,7 +97,7 @@ def test_macro_exec_metadata_and_values(empty):
         runner.errorcode = 0
         cls.side_effect = lambda **kw: (setattr(runner, "conn", kw["connection"]) or runner)
         runner.execute.side_effect = execute
-        columns, rows = macro_result(source, "documents", "m_storage_totals")
+        columns, rows = macro_result(source, "documents", "m_storage_totals", RUN_DATE)
     runner.execute.assert_called_once_with("EXEC SFX_documents.m_storage_totals(DATE '2026-11-01', DATE '2026-12-01')")
     assert columns == [("amount", "numeric(38,18)" if empty else "numeric(38,2)")]
     assert list(rows) == ([] if empty else [(Decimal("12.30"),)])
@@ -103,13 +107,27 @@ def test_macro_failure_is_not_published():
     with patch("warehouse.teradata.bteq.runner.Runner") as cls:
         cls.return_value.errorcode = 3700
         with pytest.raises(RuntimeError, match="baseline macro"):
-            macro_result(MagicMock(), "billing", "m_currency_totals")
+            macro_result(MagicMock(), "billing", "m_currency_totals", RUN_DATE)
+
+
+@pytest.mark.parametrize("name,business_date,parameters", [
+    ("m_currency_totals", date(2026, 11, 10), "'20261110'"),
+    ("m_storage_totals", date(2026, 12, 31), "DATE '2026-12-01', DATE '2027-01-01'"),
+])
+def test_macro_uses_requested_business_date(name, business_date, parameters):
+    with patch("warehouse.teradata.bteq.runner.Runner") as cls:
+        cls.return_value.errorcode = 3700
+        with pytest.raises(RuntimeError, match="baseline macro"):
+            macro_result(MagicMock(), "billing", name, business_date)
+        cls.return_value.execute.assert_called_once_with(f"EXEC SFX_billing.{name}({parameters})")
 
 
 def test_repeatable_subject_cli(monkeypatch):
     monkeypatch.setenv("TD_DSN", "local-test")
-    monkeypatch.setattr("sys.argv", ["baseline", "--subject", "billing", "--subject", "users"])
+    monkeypatch.setattr("sys.argv", ["baseline", "--subject", "billing", "--subject", "users",
+                                  "--run-date", "2026-11-10"])
     with patch("psycopg.connect"), patch("warehouse.databricks.baseline.Warehouse") as warehouse, patch("warehouse.databricks.baseline.load", return_value=[]) as loader:
         main()
     assert [c.args[2] for c in loader.call_args_list] == ["billing", "users"]
+    assert all(c.kwargs["run_date"] == date(2026, 11, 10) for c in loader.call_args_list)
     warehouse.assert_called_once_with(act="prove", consumer="billing")
