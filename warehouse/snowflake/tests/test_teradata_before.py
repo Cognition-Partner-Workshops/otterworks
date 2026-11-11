@@ -54,7 +54,9 @@ def test_export_processed_values_headers_and_billing_only(tmp_path):
     cursor = Cursor(rows=1)
     load_seed(cursor, [(a, t, Path(p), n) for a, t, p, n in prepared],
               truncate=True, stage_prefix='teradata-before')
-    assert sum(sql.startswith('TRUNCATE') for sql in cursor.commands) == 3
+    assert sum(sql.startswith('DELETE FROM') for sql in cursor.commands) == 3
+    assert cursor.commands.count('BEGIN') == cursor.commands.count('COMMIT') == 1
+    assert not any('TRUNCATE' in sql for sql in cursor.commands)
     assert all('/teradata-before/billing/' in sql for sql in cursor.commands if sql.startswith('PUT'))
     assert all("FILES=('20261109.psv.gz')" in sql for sql in cursor.commands if sql.startswith('COPY'))
 

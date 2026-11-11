@@ -81,7 +81,7 @@ def test_prepare_seed_empty_and_error(tmp_path):
 
 
 class Cursor:
-    description = [('rows_loaded',)]
+    description = [('status',), ('rows_loaded',), ('errors_seen',)]
 
     def __init__(self, rows=3, fail=False):
         self.rows, self.fail, self.commands = rows, fail, []
@@ -92,7 +92,7 @@ class Cursor:
             raise RuntimeError('upload failed')
 
     def fetchall(self):
-        return [(self.rows,)]
+        return [('LOADED', self.rows, 0)]
 
     def fetchone(self):
         return (self.rows,)
@@ -103,14 +103,16 @@ def test_seed_copy_truncate_and_error(tmp_path, capsys):
     cur = Cursor()
     load_seed(cur, prepared, truncate=True)
     assert 'billing | INVOICE_HDR | 3 | 3' in capsys.readouterr().out
-    assert cur.commands[1] == 'TRUNCATE TABLE RAW_BILLING.INVOICE_HDR'
-    assert 'MATCH_BY_COLUMN_NAME=CASE_INSENSITIVE' in cur.commands[2]
-    assert 'ON_ERROR=ABORT_STATEMENT' in cur.commands[2]
+    assert cur.commands[1:3] == ['BEGIN', 'DELETE FROM RAW_BILLING.INVOICE_HDR']
+    assert 'MATCH_BY_COLUMN_NAME=CASE_INSENSITIVE' in cur.commands[3]
+    assert 'ON_ERROR=ABORT_STATEMENT' in cur.commands[3]
+    assert 'FORCE=TRUE' in cur.commands[3]
+    assert cur.commands[-1] == 'COMMIT'
     assert '/seed/' in cur.commands[0]
     cur = Cursor(fail=True)
     with pytest.raises(RuntimeError, match='upload failed'):
         load_seed(cur, prepared, truncate=True)
-    assert not any('TRUNCATE' in command for command in cur.commands)
+    assert not any(command in ('BEGIN', 'COMMIT') for command in cur.commands)
     with pytest.raises(RuntimeError, match='expected 3 rows'):
         load_seed(Cursor(rows=0), prepared, truncate=True)
     cur = Cursor()

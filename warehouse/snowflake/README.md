@@ -17,8 +17,8 @@ mode exports processed SFX_BILLING.INVOICE_HDR, INVOICE_LINE and GL_JOURNAL_LINE
 using the separate Teradata interpreter (`--teradata-python`). Headered,
 pipe-delimited gzip files remain under ignored warehouse/landing/.teradata-before.
 All exports must be nonempty and match the RAW contract before connecting to
-Snowflake. This mode always TRUNCATEs and COPYs exactly those three tables with
-explicit date filenames, replacing rather than appending. Other RAW data stays
+Snowflake. This mode atomically DELETEs and COPYs exactly those three tables with
+explicit date filenames and FORCE=TRUE, replacing rather than appending. Other RAW data stays
 on the shared seed. Fixture and seed loading, including seed-derived journals,
 are unchanged. Journal IDs and fixture column aliases are naming adapters;
 invoice amounts and journal debits/credits come unchanged from the emulator.
@@ -105,8 +105,14 @@ APP_USER.DISPLAY_NAME is VARCHAR(256) to preserve the generator's overlength nam
 Uploads use a stable area/table/date seed stage prefix and COPY selects only that
 date's filename. Reruns preserve the staged file and COPY history, so they are
 no-ops; use --truncate to replace a date's staged data and RAW rows.
---truncate explicitly replaces RAW
-data and COPY history; each output row reports area, table, COPY rows and COUNT(*).
+The --truncate flag retains its name but uses transactional DELETE, never TRUNCATE.
+All selected tables are replaced in one BEGIN/COMMIT; COPY exceptions, unsuccessful
+statuses, reported errors or row-count mismatches trigger ROLLBACK for the whole
+batch. Uploads and local validation precede BEGIN, and the transaction contains no
+DDL or session changes. Replacement COPYs use FORCE=TRUE to reload existing files
+despite retained COPY history. Fixture --truncate uses this same helper with explicit
+date files; non-replacement fixture procedure loading is unchanged. Each committed
+output row reports area, table, COPY rows and COUNT(*).
 Without --truncate, existing RAW rows are not removed. --landing-dir overrides
 the input directory; --source seed requires --date. No generated files are committed.
 
