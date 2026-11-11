@@ -63,7 +63,7 @@ def frozen_inputs():
     for name in LANDING:
         path = ESTATE / 'tests/fixture/landing/audit' / name / '20261109.psv'
         checks[name] = files[name]['sha256'] == sha(path) and \
-            files[name]['row_count'] == len(path.read_text().splitlines()) - 1
+            files[name]['row_count'] == len(path.read_text().splitlines())
     if not all(checks.values()):
         raise ValueError('Frozen input manifest mismatch: ' + json.dumps(checks))
     return {'manifest_sha256': sha(MANIFEST), 'business_date': manifest['business_date'], 'checks': checks,
