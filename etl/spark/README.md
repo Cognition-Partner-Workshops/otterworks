@@ -55,7 +55,7 @@ and mount source is `etl/spark/.data/<NS>/landing`.
 Both layouts use `<area>/<TABLE>/<yyyymmdd>.psv`, with a header and pipe separator.
 Table definitions are in `jobs/py/common/schemas.py`.
 
-`SFX_SPARK_LANDING=/absolute/path` selects the generator output, Compose landing
+`SFX_SPARK_LANDING=/absolute/path` (environment or `make` argument) selects the generator output, Compose landing
 mount and PostgreSQL loader input together. A replacement generator must accept
 the same arguments and produce the same table layout. In container jobs,
 `LANDING_DIR` defaults to `/opt/landing` and
