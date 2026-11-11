@@ -106,6 +106,87 @@
       "statement_id": "01f1dd85-7d19-1b14-8c18-e5207a303521",
       "execution_status": "SUCCEEDED",
       "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-812a-1a8a-ba1f-c29043fc18cf",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "evidence",
+      "statement_id": "01f1dd85-81b7-17f0-8c96-f3afdae84f3c",
+      "execution_status": "SUCCEEDED",
+      "error": null
     }
-  ]
+  ],
+  "query_history": {
+    "statement_id": "01f1dd85-70b7-1557-aa48-136de2e1d268",
+    "rows": [
+      [
+        "01f1dd84-1cfc-1785-bca6-effc271ce1c3",
+        "2026-11-11T03:58:11.700Z",
+        "455",
+        "0",
+        "8",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-1d76-1535-a4cd-2a7ff8717dcd",
+        "2026-11-11T03:58:12.496Z",
+        "591",
+        "450",
+        "3",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-2f44-106e-a159-f2cd6c96d47b",
+        "2026-11-11T03:58:42.365Z",
+        "152",
+        "0",
+        null,
+        "FAILED"
+      ],
+      [
+        "01f1dd84-3251-166f-ac8d-da2be17604bf",
+        "2026-11-11T03:58:47.486Z",
+        "291",
+        "0",
+        "8",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-32aa-10f5-bbb1-ce3957ef09f6",
+        "2026-11-11T03:58:48.067Z",
+        "243",
+        "0",
+        "1",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-32f9-17bd-84e7-1c3d1eee7497",
+        "2026-11-11T03:58:48.587Z",
+        "317",
+        "0",
+        "10",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-335d-14df-8fcf-eee5b27f7d0d",
+        "2026-11-11T03:58:49.242Z",
+        "263",
+        "0",
+        "1",
+        "FINISHED"
+      ]
+    ],
+    "columns": [
+      "statement_id",
+      "start_time",
+      "total_duration_ms",
+      "read_rows",
+      "produced_rows",
+      "execution_status"
+    ]
+  }
 }

@@ -100,8 +100,9 @@ ORDER BY start_time;
 ```
 
 The latest history check (01f1dd85-6e8c-17c3-9666-cb7b0318a094) returned
-5 rows. Ingestion is PENDING, not evidence of absent execution; history can lag
-30–40 minutes. Re-run the exact query after ingestion catches up.
+5 rows; selected statement IDs, start times, durations, read/produced rows and
+execution statuses are retained in `evidence.json`. Ingestion can lag 30–40
+minutes; this is an observed partial snapshot, not proof of absent newer queries.
 
 ```sql
 /* run=dbx-d1111 act=spark step=billing consumer=users_risk_score */
