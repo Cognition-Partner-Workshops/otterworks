@@ -25,5 +25,12 @@ files:
 screening:
   url: http://screening:8080/v1/screen
 camel:
+  component:
+    jms:
+      transacted: true
+      cache-level-name: CACHE_NONE
+      expose-listener-session: true
+      recovery-interval: 100
+      delivery-persistent: true
   springboot:
     main-run-controller: true

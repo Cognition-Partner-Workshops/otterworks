@@ -3,7 +3,10 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-TIBCO_COMPOSE = NS=$(NS) REPLAY_UID=$$(id -u) REPLAY_GID=$$(id -g) DOCKER_GID=$$(stat -c %g /var/run/docker.sock 2>/dev/null || stat -f %g /var/run/docker.sock) docker compose -f docker-compose.yml -f docker-compose.tibco.yml -f docker-compose.tibco.runtime.yml -p otterworks-tibco-$(NS)
+REPLAY_UID ?= $(shell id -u)
+REPLAY_GID ?= $(shell gid=$$(id -g); if [ "$$(uname -s)" = Darwin ] && [ "$$gid" -lt 1000 ]; then echo 1000; else echo "$$gid"; fi)
+DOCKER_GID ?= $(shell socket="$(if $(filter unix://%,$(DOCKER_HOST)),$(patsubst unix://%,%,$(DOCKER_HOST)),/var/run/docker.sock)"; if test -S "$$socket"; then stat -c %g "$$socket" 2>/dev/null || stat -f %g "$$socket" 2>/dev/null; else echo 0; fi)
+TIBCO_COMPOSE = NS=$(NS) REPLAY_UID=$(REPLAY_UID) REPLAY_GID=$(REPLAY_GID) DOCKER_GID=$(DOCKER_GID) docker compose -f docker-compose.yml -f docker-compose.tibco.yml -f docker-compose.tibco.runtime.yml -p otterworks-tibco-$(NS)
 
 .PHONY: tibco-validate tibco-up tibco-replay tibco-parity tibco-fault tibco-fault-smoke tibco-down
 tibco-validate:
