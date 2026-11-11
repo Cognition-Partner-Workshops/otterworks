@@ -21,8 +21,7 @@ namespace OtterWorks.Desktop.Services
             "API base URL is correct.";
 
         internal const string ServiceUnavailableMessage =
-            "The OtterWorks service is temporarily unavailable. Your data has not been changed; " +
-            "try again in a moment.";
+            "The OtterWorks service is temporarily unavailable. Try again in a moment.";
 
         private readonly HttpClient _http;
         private readonly SessionState _session;
