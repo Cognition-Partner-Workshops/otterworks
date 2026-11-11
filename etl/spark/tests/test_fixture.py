@@ -4,6 +4,7 @@ from decimal import Decimal
 import importlib.util
 import io
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -17,6 +18,23 @@ spec.loader.exec_module(fixture)
 
 
 class FixtureTest(unittest.TestCase):
+    def test_startup_uses_spark_fixture(self):
+        root = Path(__file__).resolve().parents[3]
+        for landing in ("etl/spark/.data/landing", "/custom/landing"):
+            with self.subTest(landing=landing):
+                result = subprocess.run(
+                    ["make", "-n", "sfx-spark-up", f"SFX_SPARK_LANDING={landing}"],
+                    cwd=root, capture_output=True, text=True, check=True,
+                )
+                output = str((root / landing).resolve())
+                self.assertIn(
+                    f"python3 etl/spark/fixture/generate_fixture.py --rows 200000 --seed 1110 --output {output}",
+                    result.stdout,
+                )
+                self.assertIn(f"LANDING_DIR={output}", result.stdout)
+                self.assertNotIn("warehouse/seed/generate.py", result.stdout)
+                self.assertNotIn("warehouse/landing", result.stdout)
+
     def generate(self, path, rows):
         with contextlib.redirect_stdout(io.StringIO()):
             fixture.generate(path, rows, 1110)

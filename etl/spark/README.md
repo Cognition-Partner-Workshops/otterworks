@@ -43,13 +43,12 @@ These two directories are not versioned.
 
 ## Input and database configuration
 
-If `warehouse/seed/generate.py` exists, up invokes it with `--rows` and
-`--seed 1110` and mounts `warehouse/landing`. Otherwise it invokes
-`fixture/generate_fixture.py` and mounts `etl/spark/.data/landing`.
-Both layouts use `<area>/<TABLE>/<yyyymmdd>.psv`, with a header and pipe separator.
+Up invokes `fixture/generate_fixture.py` with `--rows` and `--seed 1110`
+and mounts `etl/spark/.data/landing`. Files use
+`<area>/<TABLE>/<yyyymmdd>.psv`, with a header and pipe separator.
 Table definitions are in `jobs/py/common/schemas.py`.
 
-`SFX_SPARK_LANDING=/absolute/path` overrides the directory mounted by Make.
+`SFX_SPARK_LANDING=/absolute/path` overrides the directory generated and mounted by Make.
 When using a different generator, populate that directory with the same table
 layout. In container jobs, `LANDING_DIR` defaults to `/opt/landing` and
 `LAKE_DIR` defaults to `/opt/lake`; these variables also support local-mode runs.

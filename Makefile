@@ -48,7 +48,7 @@ sfx-teradata-snowconvert: sfx-teradata-validate warehouse/.venv/.requirements ##
 ROWS_PER_TABLE ?= 200000
 SPARK_JOBS ?= 30
 SFX_SPARK_NS = $(or $(NS),sfx-d1110-before)
-SFX_SPARK_LANDING = $(if $(wildcard warehouse/seed/generate.py),warehouse/landing,etl/spark/.data/landing)
+SFX_SPARK_LANDING = etl/spark/.data/landing
 SFX_SPARK_ENV = NS=$(SFX_SPARK_NS) LANDING_DIR=$(abspath $(SFX_SPARK_LANDING))
 SFX_SPARK_COMPOSE = docker compose -f docker-compose.spark.yml -p sfx-d1110-spark-$(SFX_SPARK_NS)
 SFX_SPARK_UV = uv run --python 3.11 --with pyspark==3.5.3 --with pyyaml==6.0.2
@@ -57,7 +57,7 @@ sfx-spark-up: ## Start the local Spark estate and load its fixture
 	bash etl/spark/fixture/fetch_jars.sh
 	mkdir -p etl/spark/.data/{landing,lake,eventlogs,logs}
 	chmod 777 etl/spark/.data/lake etl/spark/.data/eventlogs etl/spark/.cache
-	python3 $(if $(wildcard warehouse/seed/generate.py),warehouse/seed/generate.py,etl/spark/fixture/generate_fixture.py) --rows $(ROWS_PER_TABLE) --seed 1110
+	python3 etl/spark/fixture/generate_fixture.py --rows $(ROWS_PER_TABLE) --seed 1110 --output $(abspath $(SFX_SPARK_LANDING))
 	$(SFX_SPARK_ENV) $(SFX_SPARK_COMPOSE) up -d --wait --wait-timeout 120 --pull never
 	$(SFX_SPARK_ENV) bash etl/spark/fixture/load_tdemu.sh
 	$(SFX_SPARK_ENV) bash etl/spark/scala/build.sh
