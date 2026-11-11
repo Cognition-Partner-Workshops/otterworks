@@ -60,3 +60,11 @@ def test_json_amount_keeps_sub_cent_precision(tmp_path):
     schema = json.loads((ROOT / "schema.json").read_text())
     with pytest.raises(SchemaDrift, match="cent"):
         validate(read_rows(landing), schema)
+
+
+def test_repeated_json_fields_are_rejected_before_values_are_lost(tmp_path):
+    landing = tmp_path / "duplicate.jsonl"
+    landing.write_text('{"invoice_id":1,"customer_id":10,"amount":"120.00",'
+                       '"currency":"USD","amount":"1.00"}\n')
+    with pytest.raises(SchemaDrift, match="duplicate field: amount"):
+        read_rows(landing)

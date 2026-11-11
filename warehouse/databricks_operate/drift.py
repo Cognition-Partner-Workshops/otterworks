@@ -16,13 +16,22 @@ class SchemaDrift(ValueError):
     pass
 
 
+def unique_fields(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise SchemaDrift("duplicate field: " + key)
+        result[key] = value
+    return result
+
+
 def read_rows(path):
     rows = []
     for index, line in enumerate(Path(path).read_text().splitlines(), 1):
         if not line.strip():
             continue
         try:
-            row = json.loads(line, parse_float=Decimal)
+            row = json.loads(line, parse_float=Decimal, object_pairs_hook=unique_fields)
         except json.JSONDecodeError:
             raise SchemaDrift(f"line {index}: invalid JSON") from None
         if not isinstance(row, dict):
