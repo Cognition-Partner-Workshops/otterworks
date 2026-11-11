@@ -74,13 +74,17 @@ and its fault test passes, both shown as command output, never by reading code.
    literal names, send through an Artemis core XA session enlisted in the current
    transaction and set the properties literally (see `XaStatusPublisher`). Strip all
    other headers before the send (`removeHeaders("*", <contract headers>)`).
-7. Declare every output queue the route writes to as durable, non auto-delete, before
-   consuming. Artemis auto-delete removed `HB.PAYMENT.STATUS` during a broker restart
+7. Force and verify every output queue as durable, non auto-delete and ANYCAST before
+   consuming, even if it already exists. Predeclare it at the broker; fail startup if
+   incompatible existing settings cannot be changed safely. Artemis auto-delete removed `HB.PAYMENT.STATUS` during a broker restart
    in the pilot and the send committed into nothing: a silent loss.
 8. Start the route only after the broker, DB and transformer are ready (`autoStartup(false)` + readiness start).
 9. Log `in-tx receive / inserted / published` and the transaction outcome
    (`COMMIT`/`ROLLBACK` via a transaction synchronization) with the request id; the
    fault evidence relies on these lines.
+10. Register every XA resource (including raw publisher sessions and the XA datasource)
+    with Narayana recovery. Use a fixed node identifier across restarts and test that
+    a fresh recovery connection discovers and commits a prepared branch.
 
 ## tib: XPath functions
 
@@ -134,6 +138,10 @@ Live, on the compose stack, with outputs pasted in the timeline before and after
    receive -> writes -> publish -> hold -> ROLLBACK -> redelivery -> COMMIT at least once.
 7. After the fault: one row per id in each table, `pg_prepared_xacts` = 0, input,
    output and DLQ queues empty.
+   Also SIGKILL the process between prepare and status commit using a default-off,
+   first-publish-only XA commit hold. Restart with the same node id/object store;
+   require exactly one row per id in each table, one output per id, and zero PG/Artemis
+   prepared branches. Capture state at the hold and after recovery; run three clean times.
 8. Also run `consumer-restart`, `poison` or `ordering` when the flow has a durable
    subscriber, a redelivery limit, or a sequencing key (one child session per fault,
    skill `tibco-fault-test`).

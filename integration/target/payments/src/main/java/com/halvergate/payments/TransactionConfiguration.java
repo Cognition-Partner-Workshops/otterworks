@@ -14,9 +14,13 @@ import org.apache.camel.component.jms.MessageListenerContainerFactory;
 import jakarta.jms.Message;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.JMSException;
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Configuration
 public class TransactionConfiguration {
+    private static final Logger LOG = LoggerFactory.getLogger(TransactionConfiguration.class);
     @Bean
     CamelContextConfiguration paymentsReadiness(JdbcTemplate jdbc, XaStatusPublisher publisher) {
         return new CamelContextConfiguration() {
@@ -25,6 +29,7 @@ public class TransactionConfiguration {
                 try {
                     jdbc.queryForObject("SELECT 1", Integer.class);
                     publisher.connect();
+                    LOG.info("Narayana node identifier={}", arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier());
                 } catch (Exception e) {
                     throw new IllegalStateException("Payment resources are not ready", e);
                 }

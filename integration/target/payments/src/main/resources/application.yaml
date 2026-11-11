@@ -24,6 +24,7 @@ narayana:
   recovery-backoff-period: 2
 payments:
   tx-hold-ms: ${PAYMENTS_TX_HOLD_MS:0}
+  commit-hold-ms: ${PAYMENTS_COMMIT_HOLD_MS:0}
 camel:
   springboot:
     main-run-controller: true

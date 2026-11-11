@@ -11,6 +11,13 @@ import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.jms.Message;
 import javax.sql.DataSource;
+import javax.transaction.xa.XAResource;
+import com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule;
+import com.arjuna.ats.jta.xa.XidImple;
+import com.arjuna.ats.arjuna.common.Uid;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory;
 import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.SimpleString;
@@ -51,6 +58,10 @@ class InstructionTransactionTest {
     @Autowired JtaTransactionManager transactionManager;
     @Autowired DataSource dataSource;
     @Autowired ActiveMQServer broker;
+    @Autowired XaStatusPublisher publisher;
+    @Autowired StatusXaRecovery recovery;
+    @Autowired XARecoveryModule recoveryModule;
+    @Autowired @Qualifier("nonXaJmsConnectionFactory") ActiveMQXAConnectionFactory rawFactory;
     private final ListAppender<ILoggingEvent> events = new ListAppender<>();
     private final ListAppender<ILoggingEvent> xaEvents = new ListAppender<>();
 
@@ -58,11 +69,14 @@ class InstructionTransactionTest {
     static class BrokerConfiguration {
         @Bean(destroyMethod = "stop")
         ActiveMQServer embeddedBroker() throws Exception {
-            var config = new ConfigurationImpl().setPersistenceEnabled(false).setSecurityEnabled(false);
+            var config = new ConfigurationImpl().setPersistenceEnabled(false).setSecurityEnabled(false)
+                .setAddressQueueScanPeriod(20);
             config.addAcceptorConfiguration("in-vm", "vm://0");
             config.addAddressSetting("#", new AddressSettings()
                 .setDeadLetterAddress(SimpleString.of("HB.UNDLV")).setMaxDeliveryAttempts(4).setRedeliveryDelay(10)
                 .setDefaultAddressRoutingType(RoutingType.ANYCAST).setDefaultQueueRoutingType(RoutingType.ANYCAST));
+            config.addAddressSetting("HB.PAYMENT.STATUS", new AddressSettings()
+                .setAutoDeleteQueues(false).setAutoDeleteAddresses(false));
             for (String queue : new String[]{"HB.PAYMENT.INSTRUCTIONS", "HB.PAYMENT.STATUS", "HB.UNDLV"}) {
                 config.addQueueConfiguration(QueueConfiguration.of(queue).setAddress(queue).setRoutingType(RoutingType.ANYCAST));
             }
@@ -102,8 +116,61 @@ class InstructionTransactionTest {
             .noneMatch(line -> line.contains("XAER_PROTO") || line.contains("ARJUNA016129"));
     }
 
+    @Test
+    void configuredQueueSurvivesEmptySubscriberDisconnect() throws Exception {
+        var core = ((org.apache.activemq.artemis.jms.client.ActiveMQConnection) publisher.connect()).getInitialSession();
+        var queue = core.queueQuery(SimpleString.of("HB.PAYMENT.STATUS"));
+        assertThat(queue.isDurable()).isTrue();
+        assertThat(queue.isAutoDelete()).isFalse();
+        assertThat(queue.getRoutingType()).isEqualTo(RoutingType.ANYCAST);
+        try (var factory = new ActiveMQConnectionFactory("vm://0");
+             var connection = factory.createConnection();
+             var session = connection.createSession();
+             var subscriber = session.createConsumer(session.createQueue("HB.PAYMENT.STATUS"))) {
+            connection.start();
+            assertThat(subscriber.receiveNoWait()).isNull();
+        }
+        await().during(Duration.ofMillis(250)).atMost(Duration.ofSeconds(2)).untilAsserted(() -> {
+            assertThat(core.queueQuery(SimpleString.of("HB.PAYMENT.STATUS")).isExists()).isTrue();
+            assertThat(broker.locateQueue(SimpleString.of("HB.PAYMENT.STATUS")).getConsumerCount()).isZero();
+        });
+    }
+
     private void sendFirstInput() throws Exception {
         sendInput(0);
+    }
+
+    @Test
+    void registeredHelperRecoversAndCommitsPreparedSendAfterOriginalConnectionCloses() throws Exception {
+        assertThat((java.util.Set<?>) ReflectionTestUtils.getField(recoveryModule, "_xaResourceRecoveryHelpers"))
+            .anyMatch(helper -> helper == recovery)
+            .anyMatch(helper -> helper.getClass().getName().contains("DataSourceXAResourceRecoveryHelper"));
+        var xid = new XidImple(new Uid());
+        try (var connection = rawFactory.createXAConnection(); var session = connection.createXASession()) {
+            var resource = session.getXAResource();
+            resource.start(xid, XAResource.TMNOFLAGS);
+            try (var producer = session.createProducer(session.createQueue("HB.PAYMENT.STATUS"))) {
+                producer.send(session.createTextMessage("prepared status"));
+            }
+            resource.end(xid, XAResource.TMSUCCESS);
+            assertThat(resource.prepare(xid)).isEqualTo(XAResource.XA_OK);
+        }
+        assertThat(broker.locateQueue(SimpleString.of("HB.PAYMENT.STATUS")).getMessageCount()).isZero();
+        var resource = recovery.getXAResources()[0];
+        var recovered = resource.recover(XAResource.TMSTARTRSCAN);
+        resource.recover(XAResource.TMENDRSCAN);
+        assertThat(recovered).anySatisfy(branch -> {
+            assertThat(branch.getFormatId()).isEqualTo(xid.getFormatId());
+            assertThat(branch.getGlobalTransactionId()).isEqualTo(xid.getGlobalTransactionId());
+            assertThat(branch.getBranchQualifier()).isEqualTo(xid.getBranchQualifier());
+        });
+        resource.commit(xid, false);
+        assertThat(jms.receiveAndConvert("HB.PAYMENT.STATUS")).isEqualTo("prepared status");
+        assertThat(resource.recover(XAResource.TMSTARTRSCAN)).isEmpty();
+        resource.recover(XAResource.TMENDRSCAN);
+        recovery.close();
+        assertThat((java.util.Set<?>) ReflectionTestUtils.getField(recoveryModule, "_xaResourceRecoveryHelpers"))
+            .noneMatch(helper -> helper == recovery);
     }
 
     private void sendInput(int index) throws Exception {
@@ -125,9 +192,6 @@ class InstructionTransactionTest {
     void commitsBothRowsAndOnePersistentOutputPerInputAndHoldsOnlyFirstTransaction() throws Exception {
         assertThat(transactionManager.getTransactionManager()).isNotNull();
         assertThat(dataSource.getClass().getName()).contains("Narayana");
-        camel.getRouteController().stopRoute("payments.instruction-intake");
-        broker.destroyQueue(SimpleString.of("HB.PAYMENT.STATUS"));
-        camel.getRouteController().startRoute("payments.instruction-intake");
         sendFirstInput();
         sendInput(1);
         await().atMost(Duration.ofSeconds(15)).untilAsserted(() -> {

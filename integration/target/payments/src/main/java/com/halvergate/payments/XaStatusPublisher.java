@@ -7,6 +7,9 @@ import jakarta.transaction.Synchronization;
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.Transaction;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.springframework.beans.factory.annotation.Value;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.QueueConfiguration;
@@ -20,27 +23,40 @@ import org.apache.activemq.artemis.reader.TextMessageUtil;
 import org.apache.camel.Exchange;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.DependsOn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
+@DependsOn("statusXaRecovery")
 public class XaStatusPublisher {
     private static final Logger LOG = LoggerFactory.getLogger(XaStatusPublisher.class);
     private final ActiveMQXAConnectionFactory factory;
     private final TransactionManager transactions;
+    private final long commitHoldMs;
+    private final AtomicBoolean commitHeld = new AtomicBoolean();
+    private final Set<Transaction> published = ConcurrentHashMap.newKeySet();
     private XAConnection connection;
     private final ConcurrentHashMap<Transaction, XASession> sessions = new ConcurrentHashMap<>();
 
     public XaStatusPublisher(@Qualifier("nonXaJmsConnectionFactory") ActiveMQXAConnectionFactory factory,
-                             TransactionManager transactions) {
+                             TransactionManager transactions,
+                             @Value("${payments.commit-hold-ms:0}") long commitHoldMs) {
         this.factory = factory;
         this.transactions = transactions;
+        this.commitHoldMs = commitHoldMs;
     }
 
     synchronized XAConnection connect() throws Exception {
         if (connection == null || ((ActiveMQConnection) connection).getInitialSession().isClosed()) {
             close();
             connection = factory.createXAConnection();
+            try {
+                ensureStatusQueue(((ActiveMQConnection) connection).getInitialSession());
+            } catch (Exception e) {
+                close();
+                throw e;
+            }
         }
         return connection;
     }
@@ -79,6 +95,7 @@ public class XaStatusPublisher {
                 @Override
                 public void afterCompletion(int status) {
                     sessions.remove(transaction);
+                    published.remove(transaction);
                     try {
                         sessionToClose.close();
                     } catch (Exception e) {
@@ -87,7 +104,11 @@ public class XaStatusPublisher {
                 }
             });
             registered = true;
-            if (!transaction.enlistResource(xaSession.getXAResource())) {
+            var resource = xaSession.getXAResource();
+            if (commitHoldMs > 0) {
+                resource = new CommitHoldXAResource(resource, commitHoldMs, commitHeld, () -> published.contains(transaction));
+            }
+            if (!transaction.enlistResource(resource)) {
                 throw new IllegalStateException("Could not enlist status publish");
             }
             ensureStatusQueue(((ActiveMQSession) xaSession).getCoreSession());
@@ -109,6 +130,11 @@ public class XaStatusPublisher {
                     .setRoutingType(RoutingType.ANYCAST).setDurable(true).setAutoCreated(false).setAutoDelete(false));
             } catch (ActiveMQQueueExistsException ignored) { }
         }
+        var queue = core.queueQuery(SimpleString.of("HB.PAYMENT.STATUS"));
+        if (!queue.isExists() || !queue.isDurable() || queue.isAutoDelete()
+                || queue.getRoutingType() != RoutingType.ANYCAST) {
+            throw new IllegalStateException("HB.PAYMENT.STATUS must be durable, non-auto-delete and ANYCAST");
+        }
     }
 
     public void publish(Exchange exchange) throws Exception {
@@ -121,6 +147,9 @@ public class XaStatusPublisher {
         }
         try (var producer = core.createProducer("HB.PAYMENT.STATUS")) {
             producer.send(message);
+            if (commitHoldMs > 0) {
+                published.add(transactions.getTransaction());
+            }
         }
     }
 }
