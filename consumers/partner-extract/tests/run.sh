@@ -67,4 +67,24 @@ done
 cat "$RAW_FIXTURE" "$RAW_FIXTURE" > "$work/duplicates.csv"
 if bash "$ROOT/bin/postprocess.sh" "$work/duplicates.csv" "$work/rejected.csv" > /dev/null 2>&1; then exit 1; fi
 printf '%s\n' 'PASS credits, decimal validation, overflow guard and duplicate rejection'
+
+python3 - "$ROOT" <<'PY'
+import sys
+sys.path.insert(0, sys.argv[1] + "/bin")
+from pathlib import Path
+from databricks_export import parse
+template = (Path(sys.argv[1]) / "sql" / "partner_invoice_extract.bteq").read_text()
+rendered = template.replace("@EXTRACT_DATE_INT@", "1240229").replace("@EXPORT_FILE@", "/tmp/x/rows.csv")
+assert parse(rendered) == ("/tmp/x/rows.csv", "2024-02-29")
+try:
+    parse(rendered.replace("ORDER BY INVOICE_NUMBER", "ORDER BY 1"))
+except ValueError:
+    pass
+else:
+    raise SystemExit("unexpected BTEQ accepted")
+PY
+skip=$(env -u DATABRICKS_HOST -u DATABRICKS_TOKEN -u DATABRICKS_WAREHOUSE_ID \
+  WAREHOUSE_CONTRACT_TARGET=databricks bash "$ROOT/contract/run.sh" 2>&1)
+[[ $skip == 'SKIP databricks contract: DATABRICKS_HOST not set'* ]]
+printf '%s\n' 'PASS Databricks BTEQ parsing and secret-free live-target skip'
 printf '%s\n' 'All partner-extract unit tests passed'

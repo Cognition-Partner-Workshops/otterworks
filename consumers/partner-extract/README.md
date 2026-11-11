@@ -83,3 +83,21 @@ the BTEQ template against SFX_D1110_AFTER.COMPAT with QUERY_TAG
 `{"run":"sfx-d1110","act":"consumers","consumer":"partner-extract"}`.
 Live contracts exercise the local emulator, not a Teradata ODBC/native BTEQ driver.
 No Snowflake or SFTP network execution is performed.
+
+## Databricks target (run dbx-d1111)
+`WAREHOUSE_CONTRACT_TARGET=databricks bash contract/run.sh` runs the real nightly
+pipeline with `BTEQ_BIN=bin/databricks_bteq.sh`: the rendered BTEQ script is
+validated against the template, then `sql/partner_invoice_extract.databricks.sql`
+(native Databricks rewrite) reads cpw.dbx_d1111_after through
+`databricks_warehouse.py` and writes the same report rows into the shared
+post-processor. Needs DATABRICKS_HOST, DATABRICKS_TOKEN, DATABRICKS_WAREHOUSE_ID
+and the connector from ../contract-kit/requirements-databricks.txt; without
+them it prints `SKIP databricks contract: ...` and exits 0.
+It compares byte-for-byte with `contract/expected/dbx-baseline`, the old
+Teradata path recorded on an emulator seeded to equal cpw.dbx_d1111_before
+(`make sfx-teradata-up NS=dbx-d1111-consumers-partner-extract ROWS_PER_TABLE=2000`,
+then `CONTRACT_DATASET=dbx-baseline bash contract/run.sh`).
+`python contract/input_equality.py` proves those inputs equal (count + sorted-row
+sha256 per table). CURRENT_DATE is pinned on both paths with
+PARTNER_EXTRACT_AS_OF_DATE (default 2026-11-10 for billing date 2026-11-09);
+production leaves it unset so Databricks uses current_date().
