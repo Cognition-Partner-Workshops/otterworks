@@ -1,0 +1,163 @@
+[
+  {
+    "name": "CUSTOMER_ACCOUNT",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.CUSTOMER_ACCOUNT",
+    "after": "SFX_D1110_AFTER.BILLING.CUSTOMER_ACCOUNT",
+    "keys": [
+      "CUSTOMER_ID"
+    ]
+  },
+  {
+    "name": "PLAN_CATALOG",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.PLAN_CATALOG",
+    "after": "SFX_D1110_AFTER.BILLING.PLAN_CATALOG",
+    "keys": [
+      "PLAN_ID"
+    ]
+  },
+  {
+    "name": "SUBSCRIPTION",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.SUBSCRIPTION",
+    "after": "SFX_D1110_AFTER.BILLING.SUBSCRIPTION",
+    "keys": [
+      "SUBSCRIPTION_ID"
+    ]
+  },
+  {
+    "name": "INVOICE_HDR",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.INVOICE_HDR",
+    "after": "SFX_D1110_AFTER.BILLING.INVOICE_HDR",
+    "keys": [
+      "INVOICE_ID"
+    ]
+  },
+  {
+    "name": "INVOICE_LINE",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.INVOICE_LINE",
+    "after": "SFX_D1110_AFTER.BILLING.INVOICE_LINE",
+    "keys": [
+      "INVOICE_LINE_ID"
+    ]
+  },
+  {
+    "name": "PAYMENT",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.PAYMENT",
+    "after": "SFX_D1110_AFTER.BILLING.PAYMENT",
+    "keys": [
+      "PAYMENT_ID"
+    ]
+  },
+  {
+    "name": "CREDIT_NOTE",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.CREDIT_NOTE",
+    "after": "SFX_D1110_AFTER.BILLING.CREDIT_NOTE",
+    "keys": [
+      "CREDIT_NOTE_ID"
+    ]
+  },
+  {
+    "name": "TAX_RATE",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.TAX_RATE",
+    "after": "SFX_D1110_AFTER.BILLING.TAX_RATE",
+    "keys": [
+      "TAX_RATE_ID"
+    ]
+  },
+  {
+    "name": "USAGE_DAILY",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.USAGE_DAILY",
+    "after": "SFX_D1110_AFTER.BILLING.USAGE_DAILY",
+    "keys": [
+      "USAGE_ID"
+    ]
+  },
+  {
+    "name": "BILLING_ADJ",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.BILLING_ADJ",
+    "after": "SFX_D1110_AFTER.BILLING.BILLING_ADJ",
+    "keys": [
+      "ADJUSTMENT_ID"
+    ]
+  },
+  {
+    "name": "GL_ACCOUNT",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.GL_ACCOUNT",
+    "after": "SFX_D1110_AFTER.BILLING.GL_ACCOUNT",
+    "keys": [
+      "GL_ACCOUNT_ID"
+    ]
+  },
+  {
+    "name": "GL_JOURNAL_LINE",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.GL_JOURNAL_LINE",
+    "after": "SFX_D1110_AFTER.BILLING.GL_JOURNAL_LINE",
+    "keys": [
+      "JOURNAL_LINE_ID"
+    ]
+  },
+  {
+    "name": "V_ACCOUNT_INVOICES",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.V_ACCOUNT_INVOICES",
+    "after": "SFX_D1110_AFTER.BILLING.V_ACCOUNT_INVOICES",
+    "keys": [
+      "INVOICE_ID"
+    ]
+  },
+  {
+    "name": "V_SUBSCRIPTION_PLANS",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.V_SUBSCRIPTION_PLANS",
+    "after": "SFX_D1110_AFTER.BILLING.V_SUBSCRIPTION_PLANS",
+    "keys": [
+      "SUBSCRIPTION_ID"
+    ]
+  },
+  {
+    "name": "V_INVOICE_BASE",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.V_INVOICE_BASE",
+    "after": "SFX_D1110_AFTER.BILLING.V_INVOICE_BASE",
+    "keys": [
+      "INVOICE_ID"
+    ]
+  },
+  {
+    "name": "V_INVOICE_REVENUE",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.V_INVOICE_REVENUE",
+    "after": "SFX_D1110_AFTER.BILLING.V_INVOICE_REVENUE",
+    "keys": [
+      "CURRENCY_CD",
+      "INVOICE_PERIOD"
+    ]
+  },
+  {
+    "name": "M_SUBSCRIPTION_PLANS",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.M_SUBSCRIPTION_PLANS",
+    "after": "SFX_D1110_AFTER.BILLING.M_SUBSCRIPTION_PLANS_OUTPUT",
+    "keys": [
+      "SUBSCRIPTION_ID"
+    ]
+  },
+  {
+    "name": "M_CURRENCY_TOTALS",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.M_CURRENCY_TOTALS",
+    "after": "SFX_D1110_AFTER.BILLING.M_CURRENCY_TOTALS_OUTPUT",
+    "keys": [
+      "CURRENCY_CD"
+    ]
+  },
+  {
+    "name": "INVOICE_PERIODS",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.INVOICE_PERIODS",
+    "after": "SFX_D1110_AFTER.BILLING.INVOICE_PERIODS",
+    "keys": [
+      "INVOICE_ID"
+    ]
+  },
+  {
+    "name": "PERIOD_CLOSE",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.PERIOD_CLOSE",
+    "after": "SFX_D1110_AFTER.BILLING.PERIOD_CLOSE",
+    "keys": [
+      "CURRENCY_CD"
+    ]
+  }
+]
