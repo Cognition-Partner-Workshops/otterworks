@@ -227,6 +227,11 @@ scrape_configs:
           service: otel-collector
           tier: infrastructure
 
+  - job_name: sfx-pipeline
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["host.docker.internal:9471"]
+
   - job_name: redis
     scrape_interval: 30s
     metrics_path: /metrics
