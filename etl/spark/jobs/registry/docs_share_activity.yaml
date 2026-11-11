@@ -5,5 +5,6 @@
   "status": "snowflake",
   "schedule": "5 1 * * *",
   "profile": "small",
+  "ingest": ["documents.DOCUMENT", "documents.DOC_SHARE"],
   "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job docs_share_activity --select path:models/spark/docs_share_activity"
 }
