@@ -9,7 +9,9 @@ SELECT folder_id AS FOLDER_ID, owner_user_id AS OWNER_USER_ID, CAST(NULL AS BIGI
 FROM cpw.dbx_d1111_before.documents__folder;
 
 -- landing: documents/DOCUMENT
--- TITLE=document_name, STATUS=status_cd (warehouse/teradata/ddl/documents/00_tables.sql). CREATED_AT is TIMESTAMP in landing but live has DATE only: NULL (unused by job).
+-- Shared DOCUMENT mapping (same as ../docs_event_export_hourly/inputs.sql): TITLE=document_name,
+-- CREATED_AT=CAST(created_dt AS TIMESTAMP) (DATE at midnight), STATUS=rtrim(status_cd) (CHAR(12) pad is not data).
+-- CREATED_AT and STATUS are not read by this job.
 SELECT document_id AS DOCUMENT_ID, owner_user_id AS OWNER_USER_ID, folder_id AS FOLDER_ID, document_name AS TITLE,
-       CAST(NULL AS TIMESTAMP) AS CREATED_AT, status_cd AS STATUS
+       CAST(created_dt AS TIMESTAMP) AS CREATED_AT, rtrim(status_cd) AS STATUS
 FROM cpw.dbx_d1111_before.documents__document;
