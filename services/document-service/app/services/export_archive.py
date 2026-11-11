@@ -33,7 +33,7 @@ class ExportArchive:
         """
         root = os.path.realpath(self.base_dir)
         resolved = os.path.realpath(os.path.join(root, name))
-        if not resolved.startswith(root + os.sep):
+        if not resolved.startswith(os.path.join(root, "")):
             logger.warning("export_read_outside_archive", name=name)
             raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), name)
         logger.debug("export_read", name=name)
