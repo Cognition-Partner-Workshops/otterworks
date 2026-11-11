@@ -1,0 +1,11 @@
+version: 2
+models:
+- name: billing_payment_aging
+  description: sfx-d1110 Spark billing_payment_aging days late and paid amount per invoice payment
+  columns:
+  - name: CUSTOMER_ID
+    tests: [not_null]
+  - name: INVOICE_ID
+    tests: [not_null]
+  - name: TOTAL_AMOUNT
+    tests: [not_null]
