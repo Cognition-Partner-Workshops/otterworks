@@ -1,9 +1,9 @@
+/* run=dbx-d1111 act=spark step=run consumer=billing_payment_aging */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Migrated from etl/spark/jobs/py/billing_payment_aging.py (Databricks SQL, serverless warehouse).
 -- NOT EXECUTED: live billing__invoice_hdr / billing__stg_invoice_hdr have no due_date (see inputs.sql), so this
 -- statement fails with UNRESOLVED_COLUMN against the live baseline. Kept as the target logic once a due date exists.
 -- Full rebuild: CREATE OR REPLACE TABLE ... AS (Spark used mode=overwrite). LEFT JOIN keeps unpaid invoices (NULLs).
-/* run=dbx-d1111 act=spark step=run consumer=billing_payment_aging */
 CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__spark_billing_payment_aging
 COMMENT 'run_token=dbx-d1111 expires=2026-11-24 source=etl/spark/jobs/py/billing_payment_aging.py'
 TBLPROPERTIES ('run_token'='dbx-d1111','expires'='2026-11-24','act'='spark')

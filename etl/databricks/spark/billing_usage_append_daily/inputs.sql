@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=billing_usage_append_daily */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Input adapter: live cpw.dbx_d1111_before (Teradata-style names) -> Spark landing layout
 -- (etl/spark/jobs/py/common/schemas.py). One SELECT per landing table; "-- landing:" names the PSV dir.
@@ -7,7 +8,6 @@
 -- AMOUNT is left NULL (not derived) so the row/date-slice and rerun behaviour can still be measured.
 
 -- landing: billing/USAGE_DAILY
-/* run=dbx-d1111 act=spark step=inputs consumer=billing_usage_append_daily */
 SELECT usage_id AS USAGE_ID, customer_id AS CUSTOMER_ID, usage_dt AS USAGE_DATE, units AS UNITS,
        CAST(NULL AS DECIMAL(18,2)) AS AMOUNT    -- unmapped: no usage amount live
 FROM cpw.dbx_d1111_before.billing__usage_daily;

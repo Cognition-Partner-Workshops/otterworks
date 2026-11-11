@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=billing_gl_trial_balance */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Input adapter: live cpw.dbx_d1111_before (Teradata-style names) -> Spark landing layout
 -- (etl/spark/jobs/py/common/schemas.py). One SELECT per landing table; "-- landing:" names the PSV dir.
@@ -8,12 +9,11 @@
 -- Failing statements: 01f1dd84-6ab0-109a-86d0-5ae28572a958, 01f1dd84-6b1a-15ac-8cca-5ac2f821ae5c.
 
 -- landing: billing/GL_ACCOUNT
-/* run=dbx-d1111 act=spark step=inputs consumer=billing_gl_trial_balance */
 SELECT gl_account_id AS GL_ACCOUNT_ID, account_number AS ACCOUNT_CODE, account_name AS ACCOUNT_NAME, account_type AS ACCOUNT_TYPE
 FROM cpw.dbx_d1111_before.billing__gl_account;
 
--- landing: billing/GL_JOURNAL_LINE
 /* run=dbx-d1111 act=spark step=inputs consumer=billing_gl_trial_balance */
+-- landing: billing/GL_JOURNAL_LINE
 SELECT journal_line_id AS GL_JOURNAL_LINE_ID, CAST(NULL AS BIGINT) AS JOURNAL_ID, CAST(NULL AS BIGINT) AS LINE_NO,
        gl_account_id AS GL_ACCOUNT_ID, CAST(debit_amount AS DECIMAL(18,2)) AS DEBIT_AMT,
        CAST(credit_amount AS DECIMAL(18,2)) AS CREDIT_AMT, currency_cd AS CURRENCY_CODE, posting_dt AS POSTING_DATE,

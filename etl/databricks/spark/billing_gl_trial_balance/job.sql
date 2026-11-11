@@ -1,9 +1,9 @@
+/* run=dbx-d1111 act=spark step=run consumer=billing_gl_trial_balance */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Migrated from etl/spark/jobs/py/billing_gl_trial_balance.py (Databricks SQL, serverless warehouse).
 -- NOT EXECUTED: live billing__credit_note / billing__stg_credit_note have no gl_account_id or currency code
 -- (see inputs.sql), so the adjustments CTE cannot be sourced. Kept as the target logic once they exist.
 -- Full rebuild: CREATE OR REPLACE TABLE ... AS (Spark used mode=overwrite).
-/* run=dbx-d1111 act=spark step=run consumer=billing_gl_trial_balance */
 CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__spark_billing_gl_trial_balance
 COMMENT 'run_token=dbx-d1111 expires=2026-11-24 source=etl/spark/jobs/py/billing_gl_trial_balance.py'
 TBLPROPERTIES ('run_token'='dbx-d1111','expires'='2026-11-24','act'='spark')

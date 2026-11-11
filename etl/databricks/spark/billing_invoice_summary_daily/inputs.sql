@@ -1,10 +1,10 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=billing_invoice_summary_daily */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Input adapter: live cpw.dbx_d1111_before (Teradata-style names) -> Spark landing layout
 -- (etl/spark/jobs/py/common/schemas.py). One SELECT per landing table; "-- landing:" names the PSV dir.
 -- Columns without a defensible live equivalent are NULL and listed as unmapped.
 
 -- landing: billing/INVOICE_HDR
-/* run=dbx-d1111 act=spark step=inputs consumer=billing_invoice_summary_daily */
 SELECT invoice_id AS INVOICE_ID, customer_id AS CUSTOMER_ID, invoice_number AS INVOICE_NUMBER,
        invoice_dt AS INVOICE_DATE,
        CAST(NULL AS DATE) AS DUE_DATE,          -- unmapped: live invoice_hdr has no due date
@@ -12,8 +12,9 @@ SELECT invoice_id AS INVOICE_ID, customer_id AS CUSTOMER_ID, invoice_number AS I
        CAST(NULL AS STRING) AS STATUS            -- unmapped: no invoice status column live
 FROM cpw.dbx_d1111_before.billing__invoice_hdr;
 
--- landing: billing/INVOICE_LINE
 /* run=dbx-d1111 act=spark step=inputs consumer=billing_invoice_summary_daily */
+-- landing: billing/INVOICE_LINE
+
 -- PLAN_ID: live invoice_line has no plan_id. warehouse/teradata/procedures/monthly_invoice.sql creates the
 -- 'Monthly subscription' line from invoice_hdr.subscription_id -> subscription.plan_code -> plan_catalog.plan_code,
 -- so only those lines carry a plan, usage/storage/adjustment lines get NULL (no plan).
