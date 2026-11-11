@@ -1,0 +1,18 @@
+{
+  "account": "000000000000",
+  "detail": {
+    "eventType": "file_shared",
+    "fileId": "6f1c9d2e-0000-4000-8000-000000000002",
+    "folderId": null,
+    "ownerId": "6f1c9d2e-0000-4000-8000-0000000000aa",
+    "sharedWithUserId": "6f1c9d2e-0000-4000-8000-0000000000bb",
+    "timestamp": "2026-11-11T18:00:00+00:00"
+  },
+  "detail-type": "file_shared",
+  "id": "00b6f1a0-fb78-4125-8ff7-893775e28ce8",
+  "region": "us-east-1",
+  "resources": [],
+  "source": "otterworks.file-service",
+  "time": "2026-11-11T18:55:20Z",
+  "version": "0"
+}

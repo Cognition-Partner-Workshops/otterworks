@@ -36,6 +36,9 @@ pub enum ServiceError {
     #[error("SNS error: {0}")]
     SnsError(String),
 
+    #[error("EventBridge error: {0}")]
+    EventBridgeError(String),
+
     #[error("Internal error: {0}")]
     Internal(String),
 }
@@ -74,7 +77,7 @@ impl ResponseError for ServiceError {
                 actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "metadata_error",
             ),
-            ServiceError::SnsError(_) => (
+            ServiceError::SnsError(_) | ServiceError::EventBridgeError(_) => (
                 actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
                 "event_error",
             ),

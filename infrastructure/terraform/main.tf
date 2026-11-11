@@ -200,6 +200,16 @@ module "irsa" {
             "${module.database.file_shares_table_arn}/index/*",
           ]
         },
+        {
+          Effect   = "Allow"
+          Action   = ["sns:Publish"]
+          Resource = [module.messaging.events_topic_arn]
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["events:PutEvents"]
+          Resource = [module.messaging.event_bus_arn]
+        },
       ]
     })
 
@@ -221,6 +231,11 @@ module "irsa" {
           Effect   = "Allow"
           Action   = ["sns:Publish"]
           Resource = [module.messaging.events_topic_arn]
+        },
+        {
+          Effect   = "Allow"
+          Action   = ["events:PutEvents"]
+          Resource = [module.messaging.event_bus_arn]
         },
       ]
     })
@@ -314,6 +329,16 @@ module "irsa" {
     "audit-service" = jsonencode({
       Version = "2012-10-17"
       Statement = [
+        {
+          Effect = "Allow"
+          Action = [
+            "sqs:ReceiveMessage",
+            "sqs:DeleteMessage",
+            "sqs:GetQueueAttributes",
+            "sqs:GetQueueUrl",
+          ]
+          Resource = [module.messaging.audit_queue_arn]
+        },
         {
           Effect = "Allow"
           Action = [

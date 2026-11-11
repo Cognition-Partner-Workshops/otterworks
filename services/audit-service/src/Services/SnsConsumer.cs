@@ -77,7 +77,7 @@ public class SnsConsumer : BackgroundService
 
     private async Task<string> GetOrCreateQueueUrlAsync(CancellationToken ct)
     {
-        const string queueName = "otterworks-audit-events-queue";
+        var queueName = _settings.AuditQueueName;
         try
         {
             var response = await _sqsClient.GetQueueUrlAsync(queueName, ct);
@@ -97,8 +97,7 @@ public class SnsConsumer : BackgroundService
     {
         try
         {
-            var snsMessage = TryParseSnsEnvelope(message.Body);
-            var eventBody = snsMessage ?? message.Body;
+            var eventBody = MessageEnvelope.Unwrap(message.Body);
 
             var fileEvent = JsonSerializer.Deserialize<FileEventMessage>(eventBody, new JsonSerializerOptions
             {
@@ -161,24 +160,6 @@ public class SnsConsumer : BackgroundService
         {
             _logger.LogError(ex, "Failed to process message {MessageId}", message.MessageId);
         }
-    }
-
-    private static string? TryParseSnsEnvelope(string body)
-    {
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("Message", out var messageElement))
-            {
-                return messageElement.GetString();
-            }
-        }
-        catch (JsonException)
-        {
-            // Not an SNS envelope
-        }
-
-        return null;
     }
 
     private sealed class AuditEventMessage

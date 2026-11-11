@@ -64,6 +64,26 @@ output "sns_events_topic_arn" {
   value       = module.messaging.events_topic_arn
 }
 
+output "event_bus_name" {
+  description = "EventBridge bus name for domain events"
+  value       = module.messaging.event_bus_name
+}
+
+output "sqs_search_queue_url" {
+  description = "SQS queue URL for search indexing"
+  value       = module.messaging.search_indexing_queue_url
+}
+
+output "sqs_analytics_queue_url" {
+  description = "SQS queue URL for analytics events"
+  value       = module.messaging.analytics_queue_url
+}
+
+output "sqs_audit_queue_url" {
+  description = "SQS queue URL for audit events"
+  value       = module.messaging.audit_queue_url
+}
+
 # --- Search ---
 
 output "meilisearch_ecs_cluster_arn" {

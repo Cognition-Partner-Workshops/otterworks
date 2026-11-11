@@ -1,0 +1,91 @@
+{
+  "envelopes": {
+    "otterworks-analytics-events": [
+      "eventbridge"
+    ],
+    "otterworks-audit-events-queue": [
+      "eventbridge"
+    ],
+    "otterworks-notifications": [
+      "eventbridge"
+    ],
+    "otterworks-search-events": [
+      "eventbridge"
+    ]
+  },
+  "matrix": {
+    "comment_added": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 0
+    },
+    "document_created": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 0,
+      "otterworks-search-events": 1
+    },
+    "document_deleted": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 0,
+      "otterworks-search-events": 1
+    },
+    "document_updated": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 0,
+      "otterworks-search-events": 1
+    },
+    "file_deleted": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 0,
+      "otterworks-search-events": 1
+    },
+    "file_moved": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 0,
+      "otterworks-search-events": 0
+    },
+    "file_restored": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 0,
+      "otterworks-search-events": 1
+    },
+    "file_shared": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 1,
+      "otterworks-search-events": 0
+    },
+    "file_trashed": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 0,
+      "otterworks-search-events": 1
+    },
+    "file_updated": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 0,
+      "otterworks-search-events": 1
+    },
+    "file_uploaded": {
+      "otterworks-analytics-events": 1,
+      "otterworks-audit-events-queue": 1,
+      "otterworks-notifications": 0,
+      "otterworks-search-events": 1
+    }
+  },
+  "queues": [
+    "otterworks-analytics-events",
+    "otterworks-audit-events-queue",
+    "otterworks-notifications",
+    "otterworks-search-events"
+  ],
+  "transport": "eventbridge"
+}

@@ -1,0 +1,23 @@
+{
+  "account": "000000000000",
+  "detail": {
+    "event_type": "document_updated",
+    "payload": {
+      "content": "draft",
+      "created_at": "2026-11-11T18:00:00+00:00",
+      "id": "6f1c9d2e-0000-4000-8000-000000000001",
+      "owner_id": "6f1c9d2e-0000-4000-8000-0000000000aa",
+      "tags": [],
+      "title": "Q3 plan",
+      "updated_at": "2026-11-11T18:00:00+00:00"
+    },
+    "timestamp": "2026-11-11T18:00:00+00:00"
+  },
+  "detail-type": "document_updated",
+  "id": "da5c71e8-38df-4684-a6b2-ecfa62dd0219",
+  "region": "us-east-1",
+  "resources": [],
+  "source": "otterworks.document-service",
+  "time": "2026-11-11T18:55:20Z",
+  "version": "0"
+}

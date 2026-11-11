@@ -1,0 +1,18 @@
+{
+  "account": "000000000000",
+  "detail": {
+    "eventType": "file_deleted",
+    "fileId": "6f1c9d2e-0000-4000-8000-000000000002",
+    "folderId": null,
+    "ownerId": "6f1c9d2e-0000-4000-8000-0000000000aa",
+    "sharedWithUserId": null,
+    "timestamp": "2026-11-11T18:00:00+00:00"
+  },
+  "detail-type": "file_deleted",
+  "id": "f7aa52cd-7e8d-49ae-9084-d701afbcfc0b",
+  "region": "us-east-1",
+  "resources": [],
+  "source": "otterworks.file-service",
+  "time": "2026-11-11T18:55:20Z",
+  "version": "0"
+}

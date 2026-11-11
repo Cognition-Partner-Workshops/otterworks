@@ -1,0 +1,18 @@
+{
+  "account": "000000000000",
+  "detail": {
+    "eventType": "file_restored",
+    "fileId": "6f1c9d2e-0000-4000-8000-000000000002",
+    "folderId": null,
+    "ownerId": "6f1c9d2e-0000-4000-8000-0000000000aa",
+    "sharedWithUserId": null,
+    "timestamp": "2026-11-11T18:00:00+00:00"
+  },
+  "detail-type": "file_restored",
+  "id": "25a639e9-260a-4b25-abf4-8119d93f46fd",
+  "region": "us-east-1",
+  "resources": [],
+  "source": "otterworks.file-service",
+  "time": "2026-11-11T18:55:20Z",
+  "version": "0"
+}
