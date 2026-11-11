@@ -25,16 +25,29 @@ def git(*args, **kw):
     return subprocess.run(['git', '-C', str(ROOT), *args], check=True, capture_output=True, **kw).stdout
 
 
+class SnapshotUnavailable(RuntimeError):
+    pass
+
+
 def before_state_root(commit=BEFORE_STATE):
     """Materialize the pinned BEFORE inputs once (fetching the commit into shallow clones)."""
     if subprocess.run(['git', '-C', str(ROOT), 'cat-file', '-e', commit + '^{commit}'], capture_output=True).returncode:
-        git('fetch', '--quiet', '--depth=1', 'origin', commit)
+        try:
+            git('fetch', '--quiet', '--depth=1', 'origin', commit)
+        except subprocess.CalledProcessError as error:
+            raise SnapshotUnavailable(
+                f'act 1 reads its BEFORE-state inputs from commit {commit}, which is not in this clone '
+                f'and could not be fetched ({error.stderr.decode(errors="replace").strip() or "no origin"}). '
+                f'While online, run: git fetch --depth=1 origin {commit}'
+            ) from error
     root = OUT / '.before' / commit
     if not (root / '.complete').exists():
         root.mkdir(parents=True, exist_ok=True)
         subprocess.run(['tar', '-x', '-C', str(root)], input=git('archive', commit, '--', *BEFORE_INPUTS), check=True)
         (root / '.complete').touch()
     return root
+
+
 FIELDS = 'id system kind name file loc complexity constructs dbql_reads_90d last_read'.split()
 OBJ = r'[A-Za-z_][\w]*\.[A-Za-z_][\w]*'
 

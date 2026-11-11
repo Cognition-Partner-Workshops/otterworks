@@ -7,7 +7,7 @@ from contextlib import contextmanager
 
 import yaml
 
-from assess import OUT, ROOT, build
+from assess import OUT, before_state_root, build
 
 DATABASE = 'SFX_D1110_AFTER'
 WAREHOUSE = 'SFX_D1110_OPS_WH'
@@ -115,8 +115,9 @@ def load(cursor):
     create_table(cursor, 'CONSUMERS', CONSUMER_FIELDS)
     create_table(cursor, 'CODE_PRINCIPALS', ['principal', 'source', 'scope'])
     csv_data = {}
+    dbql = before_state_root() / 'warehouse/teradata/dbql'
     for table, filename in [('DBQL_QRYLOG', 'qrylog.csv'), ('DBQL_OBJECTUSAGE', 'objectusage.csv'), ('DBQL_TABLESV', 'tablesv.csv')]:
-        with (ROOT / 'warehouse/teradata/dbql' / filename).open() as stream:
+        with (dbql / filename).open() as stream:
             reader = csv.DictReader(stream)
             fields = reader.fieldnames
             records = list(reader)
