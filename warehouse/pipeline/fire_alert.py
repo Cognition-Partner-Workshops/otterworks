@@ -6,7 +6,8 @@ import json
 import os
 import sys
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.parse import urlsplit
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from checks import MODEL, RUN, add_arguments, run_checks, thresholds
 
@@ -37,25 +38,46 @@ def payload(result, now=None):
             "title": message, "state": "alerting" if firing else "ok", "message": message}
 
 
-def deliver(body, url=None, secret=None, opener=urlopen):
+class RejectRedirects(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        # Never replay a bearer credential to a redirect destination.
+        return None
+
+
+def open_webhook(request, timeout):
+    return build_opener(RejectRedirects()).open(request, timeout=timeout)
+
+
+def deliver(body, url=None, secret=None, opener=open_webhook):
     url = os.getenv("DEVIN_PIPELINE_WEBHOOK_URL", "") if url is None else url
     if not url or not body["alerts"]:
         print(json.dumps(body, indent=2))
         return 0
+    try:
+        target = urlsplit(url)
+        if (target.scheme != "https" or not target.hostname
+                or target.username is not None or target.password is not None
+                or target.fragment or any(ord(char) <= 32 or ord(char) == 127 for char in url)):
+            raise ValueError("Invalid webhook URL")
+        # Accessing port also validates numeric syntax and its range.
+        target.port
+    except ValueError:
+        print("Webhook URL must use HTTPS without credentials or a fragment", file=sys.stderr)
+        return 1
     secret = os.getenv("DEVIN_PIPELINE_WEBHOOK_SECRET", "") if secret is None else secret
     if not secret:
         print("Webhook secret is required when URL is set", file=sys.stderr)
         return 1
-    request = Request(url, data=json.dumps(body).encode(), method="POST",
-                      headers={"Content-Type": "application/json", "Authorization": "Bearer " + secret})
     try:
+        request = Request(url, data=json.dumps(body).encode(), method="POST",
+                          headers={"Content-Type": "application/json", "Authorization": "Bearer " + secret})
         with opener(request, timeout=30) as response:
             if not 200 <= response.status < 300:
                 print(f"Webhook HTTP failure: {response.status}", file=sys.stderr)
                 return 1
         print("Pipeline notification sent")
         return 0
-    except (HTTPError, URLError, TimeoutError):
+    except (HTTPError, URLError, TimeoutError, ValueError):
         print("Webhook HTTP request failed", file=sys.stderr)
         return 1
 
