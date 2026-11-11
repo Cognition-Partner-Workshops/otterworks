@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from build_inventory import INVENTORY, inventory_data, parse_decisions, readme, wave_plan
+from build_inventory import INVENTORY, classification, inventory_data, parse_decisions, readme, wave_plan
 
 
 class InventoryTests(unittest.TestCase):
@@ -33,7 +33,11 @@ class InventoryTests(unittest.TestCase):
             name = process['label']
             expected = [d for d, value in self.decisions.items() if name in value['processes'] and value['open']]
             self.assertEqual(blockers[name], expected)
-            self.assertTrue({'D-09', 'D-11', 'D-23', 'D-24', 'D-25'} <= set(blockers[name]))
+            expected_class = 'needs-human-decision' if expected else 'straight-conversion'
+            self.assertEqual(classification(process, blockers), expected_class)
+            self.assertEqual(process['classification'], expected_class)
+            self.assertEqual(process['decision_ids'], expected)
+            self.assertEqual(process['wave'], waves[process['id']])
         for edge in self.graph['edges']:
             if edge['kind'] == 'call_process':
                 self.assertEqual(waves[edge['from']], 3)
@@ -49,9 +53,30 @@ class InventoryTests(unittest.TestCase):
             self.assertIn(target, plan)
             self.assertIn(target, index)
             self.assertTrue(decision['slug'].startswith(identifier.lower() + '-'))
-        self.assertIn('decisions.md#d-09-transaction-and-acknowledgement-boundary', plan)
-        self.assertEqual(plan.count('| needs-human-decision |'), 24)
-        self.assertEqual(index.count('| needs-human-decision |'), 24)
+        self.assertIn('decisions.md#d-12-instruction-intake-xa-scope-ends-before-calls', plan)
+        self.assertEqual(plan.count('| needs-human-decision |'), 16)
+        self.assertEqual(index.count('| needs-human-decision |'), 16)
+        self.assertEqual(plan.count('| straight-conversion |'), 8)
+        self.assertEqual(index.count('| straight-conversion |'), 8)
+        held = plan.split('## Held for decision')[1].split('## Wave summary')[0]
+        self.assertNotIn('straight-conversion', held)
+        self.assertNotIn('payments.currency-routing', held)
+
+    def test_empty_decisions_release_all_without_changing_waves(self):
+        processes, blockers, waves = inventory_data(self.graph, {})
+        self.assertTrue(all(not ids for ids in blockers.values()))
+        self.assertTrue(all(classification(p, blockers) == 'straight-conversion' for p in processes))
+        self.assertEqual(list(waves.values()).count(3), 3)
+        plan = wave_plan(self.graph, {})
+        self.assertEqual(plan.count('| straight-conversion |'), 24)
+        self.assertNotIn('| needs-human-decision |', plan)
+
+    def test_groundwork_is_not_a_flow_blocker(self):
+        plan = wave_plan(self.graph, self.decisions)
+        for title in ('Environment credentials', 'Call-process binding', 'HTTP side effects',
+                      'Dead-letter ownership', 'Durable subscriber', 'Request schema namespace'):
+            self.assertIn('### ' + title, plan)
+        self.assertEqual(len(self.decisions), 12)
 
 
 if __name__ == '__main__':

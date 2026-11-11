@@ -10,7 +10,10 @@
       "domain": "account-events",
       "file": "integration/legacy-bw6/Processes/account-events/account-closed.bwp",
       "starter_activity_type": "bw.jms.JMSTopicSubscriber",
-      "starter_destination": "HB.ACCOUNT.CLOSED"
+      "starter_destination": "HB.ACCOUNT.CLOSED",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
     },
     {
       "id": "halvergate.account-events.account-opened",
@@ -20,7 +23,10 @@
       "domain": "account-events",
       "file": "integration/legacy-bw6/Processes/account-events/account-opened.bwp",
       "starter_activity_type": "bw.jms.JMSTopicSubscriber",
-      "starter_destination": "HB.ACCOUNT.OPENED"
+      "starter_destination": "HB.ACCOUNT.OPENED",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
     },
     {
       "id": "halvergate.account-events.address-changed",
@@ -30,7 +36,10 @@
       "domain": "account-events",
       "file": "integration/legacy-bw6/Processes/account-events/address-changed.bwp",
       "starter_activity_type": "bw.jms.JMSTopicSubscriber",
-      "starter_destination": "HB.ADDRESS.CHANGED"
+      "starter_destination": "HB.ADDRESS.CHANGED",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
     },
     {
       "id": "halvergate.account-events.event-fanout",
@@ -40,7 +49,13 @@
       "domain": "account-events",
       "file": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.ACCOUNT.EVENTS.IN"
+      "starter_destination": "HB.ACCOUNT.EVENTS.IN",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03",
+        "D-07"
+      ],
+      "wave": 3
     },
     {
       "id": "halvergate.account-events.limit-changed",
@@ -50,7 +65,10 @@
       "domain": "account-events",
       "file": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp",
       "starter_activity_type": "bw.jms.JMSTopicSubscriber",
-      "starter_destination": "HB.LIMIT.CHANGED"
+      "starter_destination": "HB.LIMIT.CHANGED",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
     },
     {
       "id": "halvergate.customer-alerts.card-dispute",
@@ -60,7 +78,12 @@
       "domain": "customer-alerts",
       "file": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.ALERTS.CARD.DISPUTE"
+      "starter_destination": "HB.ALERTS.CARD.DISPUTE",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
     },
     {
       "id": "halvergate.customer-alerts.large-transaction",
@@ -70,7 +93,12 @@
       "domain": "customer-alerts",
       "file": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.ALERTS.LARGE.TRANSACTION"
+      "starter_destination": "HB.ALERTS.LARGE.TRANSACTION",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
     },
     {
       "id": "halvergate.customer-alerts.low-balance",
@@ -80,7 +108,12 @@
       "domain": "customer-alerts",
       "file": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.ALERTS.LOW.BALANCE"
+      "starter_destination": "HB.ALERTS.LOW.BALANCE",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
     },
     {
       "id": "halvergate.customer-alerts.preference-sync",
@@ -90,7 +123,12 @@
       "domain": "customer-alerts",
       "file": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.ALERT.PREFERENCES"
+      "starter_destination": "HB.ALERT.PREFERENCES",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
     },
     {
       "id": "halvergate.fees-billing.daily-fee",
@@ -100,7 +138,14 @@
       "domain": "fees-billing",
       "file": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp",
       "starter_activity_type": "bw.jms.Timer",
-      "starter_destination": "HB.DAILY.FEES"
+      "starter_destination": "HB.DAILY.FEES",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03",
+        "D-05",
+        "D-10"
+      ],
+      "wave": 1
     },
     {
       "id": "halvergate.fees-billing.fee-posting",
@@ -110,7 +155,12 @@
       "domain": "fees-billing",
       "file": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.FEE.POSTING"
+      "starter_destination": "HB.FEE.POSTING",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
     },
     {
       "id": "halvergate.fees-billing.fee-reversal",
@@ -120,7 +170,13 @@
       "domain": "fees-billing",
       "file": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.FEE.REVERSAL"
+      "starter_destination": "HB.FEE.REVERSAL",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03",
+        "D-11"
+      ],
+      "wave": 1
     },
     {
       "id": "halvergate.fees-billing.month-end-summary",
@@ -130,7 +186,12 @@
       "domain": "fees-billing",
       "file": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp",
       "starter_activity_type": "bw.internal.start",
-      "starter_destination": "HB.MONTH.END.SUMMARY"
+      "starter_destination": "HB.MONTH.END.SUMMARY",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-04"
+      ],
+      "wave": 1
     },
     {
       "id": "halvergate.payments.currency-routing",
@@ -140,7 +201,10 @@
       "domain": "payments",
       "file": "integration/legacy-bw6/Processes/payments/currency-routing.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.CURRENCY.ROUTING"
+      "starter_destination": "HB.CURRENCY.ROUTING",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
     },
     {
       "id": "halvergate.payments.instruction-intake",
@@ -150,7 +214,15 @@
       "domain": "payments",
       "file": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.PAYMENT.INSTRUCTIONS"
+      "starter_destination": "HB.PAYMENT.INSTRUCTIONS",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-01",
+        "D-03",
+        "D-08",
+        "D-12"
+      ],
+      "wave": 3
     },
     {
       "id": "halvergate.payments.payment-returns",
@@ -160,7 +232,12 @@
       "domain": "payments",
       "file": "integration/legacy-bw6/Processes/payments/payment-returns.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.PAYMENT.RETURNS"
+      "starter_destination": "HB.PAYMENT.RETURNS",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
     },
     {
       "id": "halvergate.payments.sanctions-screening",
@@ -170,7 +247,13 @@
       "domain": "payments",
       "file": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.SANCTIONS.REQUEST"
+      "starter_destination": "HB.SANCTIONS.REQUEST",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-01",
+        "D-02"
+      ],
+      "wave": 2
     },
     {
       "id": "halvergate.payments.status-update",
@@ -180,7 +263,12 @@
       "domain": "payments",
       "file": "integration/legacy-bw6/Processes/payments/status-update.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.STATUS.UPDATE"
+      "starter_destination": "HB.STATUS.UPDATE",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-08"
+      ],
+      "wave": 2
     },
     {
       "id": "halvergate.payments.validation-enrichment",
@@ -190,7 +278,10 @@
       "domain": "payments",
       "file": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.PAYMENT.VALIDATION"
+      "starter_destination": "HB.PAYMENT.VALIDATION",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
     },
     {
       "id": "halvergate.statements-documents.delivery-notice",
@@ -200,7 +291,10 @@
       "domain": "statements-documents",
       "file": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.DELIVERY.NOTICE"
+      "starter_destination": "HB.DELIVERY.NOTICE",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
     },
     {
       "id": "halvergate.statements-documents.document-store",
@@ -210,7 +304,12 @@
       "domain": "statements-documents",
       "file": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.DOCUMENT.STORE"
+      "starter_destination": "HB.DOCUMENT.STORE",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-09"
+      ],
+      "wave": 2
     },
     {
       "id": "halvergate.statements-documents.pdf-request",
@@ -220,7 +319,13 @@
       "domain": "statements-documents",
       "file": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.PDF.REQUEST"
+      "starter_destination": "HB.PDF.REQUEST",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-01",
+        "D-02"
+      ],
+      "wave": 2
     },
     {
       "id": "halvergate.statements-documents.split-enrich",
@@ -230,7 +335,10 @@
       "domain": "statements-documents",
       "file": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp",
       "starter_activity_type": "bw.jms.JMSQueueReceiver",
-      "starter_destination": "HB.STATEMENT.SPLIT"
+      "starter_destination": "HB.STATEMENT.SPLIT",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
     },
     {
       "id": "halvergate.statements-documents.statement-drop",
@@ -240,7 +348,14 @@
       "domain": "statements-documents",
       "file": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp",
       "starter_activity_type": "bw.sftp.SFTPGet",
-      "starter_destination": "HB.STATEMENT.DROP"
+      "starter_destination": "HB.STATEMENT.DROP",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-01",
+        "D-03",
+        "D-06"
+      ],
+      "wave": 3
     },
     {
       "id": "http:${billing.url}",

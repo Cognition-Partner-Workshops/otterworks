@@ -97,15 +97,27 @@ No profile global variable is referenced directly by this process.
 
 ## 11. Conversion notes
 
-**Proposed classification: `needs-human-decision`** (corrected in round 2 from `straight-conversion`; see Cross-domain check).
+**Classification: `needs-human-decision`.**
 
-The mapping itself is simple — JMS queue in → one XSLT (status override only) → one insert → one publish; no Java, no HTTP, no profile-dependent values; output covered by the corpus [`integration/corpus/fees-billing.fee-reversal/flow.json:L56-L99`](../../../../corpus/fees-billing.fee-reversal/flow.json#L56-L99). The decisions are about delivery and transaction semantics, and are the same ones raised for equivalent flows in the other domains.
+Human decisions: [D-03](../../decisions.md#d-03-uncalled-or-unfed-entry-flows), [D-11](../../decisions.md#d-11-fee-reversal-amount-sign). Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
 
-Decision candidates:
-1. **Transaction gap / redelivery** — `AUTO_COMMIT` insert before publish, no XA scope despite XA resources [`integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L24`](../../../../legacy-bw6/Processes/fees-billing/fee-reversal.bwp#L24) [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2); a `Publish` failure leaves the row committed and redelivery (`maxRedelivery 3`) [`integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L7`](../../../../legacy-bw6/Processes/fees-billing/fee-reversal.bwp#L7) hits the primary key [`integration/legacy-bw6/Database/schema.sql:L138`](../../../../legacy-bw6/Database/schema.sql#L138) until `HB.UNDLV`. Decide: preserve, single local transaction, outbox, or idempotent insert.
-2. **Success-path acknowledgement** — `CLIENT_ACKNOWLEDGE` [`integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L14`](../../../../legacy-bw6/Processes/fees-billing/fee-reversal.bwp#L14) with only a negative `JMSConfirm` [`integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L7`](../../../../legacy-bw6/Processes/fees-billing/fee-reversal.bwp#L7). Decide when the target acknowledges.
-3. **Orphan endpoints** — no in-project producer for `HB.FEE.REVERSAL` / consumer for `HB.FEE.REVERSED` [`integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L14`](../../../../legacy-bw6/Processes/fees-billing/fee-reversal.bwp#L14) [`integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L29`](../../../../legacy-bw6/Processes/fees-billing/fee-reversal.bwp#L29); confirm the external parties.
-4. **Reversal semantics** — amount is not negated and not validated against an existing posting [`integration/legacy-bw6/Transforms/fee-reversal.xsl:L4`](../../../../legacy-bw6/Transforms/fee-reversal.xsl#L4) [`integration/corpus/fees-billing.fee-reversal/flow.json:L60`](../../../../corpus/fees-billing.fee-reversal/flow.json#L60); legacy behaviour is unambiguous, but confirm it is intended.
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## Cross-domain check
 

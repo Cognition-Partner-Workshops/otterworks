@@ -117,17 +117,27 @@ The profiles define only `screening.url`, `billing.url`, `files.url`, `notificat
 
 ## 11. Conversion notes
 
-Proposed classification: **needs-human-decision**.
+**Classification: `needs-human-decision`.**
 
-Decision candidates:
-1. **Queue vs durable topic on input**: `JMSQueueReceiver` with empty durable name [`integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L14`](../../../../legacy-bw6/Processes/account-events/event-fanout.bwp#L14) vs multicast address + durable `records-event-fanout` in fixture/corpus/resource [`integration/fixture/broker.xml:L28`](../../../../fixture/broker.xml#L28) [`integration/corpus/account-events.event-fanout/flow.json:L111`](../../../../corpus/account-events.event-fanout/flow.json#L111) [`integration/legacy-bw6/SharedResources/EmsConnection.sharedresource:L2`](../../../../legacy-bw6/SharedResources/EmsConnection.sharedresource#L2).
-2. **Fan-out semantics**: unconditional sequential calls to all four callees [`integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L33`](../../../../legacy-bw6/Processes/account-events/event-fanout.bwp#L33) [`integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L48`](../../../../legacy-bw6/Processes/account-events/event-fanout.bwp#L48); no routing on event type, no input binding — decide whether to route by type, call all, or drop the calls.
-3. **Unresolvable call names**: `account-events.*` vs declared `halvergate.account-events.*` [`integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L34`](../../../../legacy-bw6/Processes/account-events/event-fanout.bwp#L34) [`integration/legacy-bw6/Processes/account-events/account-opened.bwp:L2`](../../../../legacy-bw6/Processes/account-events/account-opened.bwp#L2).
-4. **Transaction gap**: XA resources, `AUTO_COMMIT`, no scope; callees run after commit and publish [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2) [`integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L24`](../../../../legacy-bw6/Processes/account-events/event-fanout.bwp#L24) [`integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L33`](../../../../legacy-bw6/Processes/account-events/event-fanout.bwp#L33).
-5. **Success-path acknowledgement** missing with `CLIENT_ACKNOWLEDGE` [`integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L14`](../../../../legacy-bw6/Processes/account-events/event-fanout.bwp#L14).
-6. **No recorded evidence for callee effects** [`integration/corpus/account-events.event-fanout/flow.json:L37-L102`](../../../../corpus/account-events.event-fanout/flow.json#L37-L102).
-7. **No caller / producer / consumer in the project** for this entry point and its topic ([`integration/legacy-bw6/reference/cases.json:L399`](../../../../legacy-bw6/reference/cases.json#L399)).
-8. **Transform payload mismatch** (`pain.001` ignored) [`integration/legacy-bw6/reference/inputs/account-events.event-fanout/event-fanout-01.xml:L2`](../../../../legacy-bw6/reference/inputs/account-events.event-fanout/event-fanout-01.xml#L2).
+Human decisions: [D-03](../../decisions.md#d-03-uncalled-or-unfed-entry-flows), [D-07](../../decisions.md#d-07-event-fanout-queue-versus-durable-topic). Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
+
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## 12. Cross-domain check
 

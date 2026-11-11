@@ -104,17 +104,27 @@ Message-level:
 
 ## 11. Conversion notes
 
-Proposed classification: **needs-human-decision**.
+**Classification: `straight-conversion`.**
 
-Decision candidates:
-1. **Success-path acknowledgement**: `CLIENT_ACKNOWLEDGE` with no success-path Confirm [`integration/legacy-bw6/Processes/account-events/address-changed.bwp:L14`](../../../../legacy-bw6/Processes/account-events/address-changed.bwp#L14) [`integration/legacy-bw6/Processes/account-events/address-changed.bwp:L7`](../../../../legacy-bw6/Processes/account-events/address-changed.bwp#L7).
-2. **Transaction gap**: XA resources but `AUTO_COMMIT` and no scope [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2) [`integration/legacy-bw6/Processes/account-events/address-changed.bwp:L24`](../../../../legacy-bw6/Processes/account-events/address-changed.bwp#L24); redelivery after a failed publish collides with the PK [`integration/legacy-bw6/Database/schema.sql:L71-L78`](../../../../legacy-bw6/Database/schema.sql#L71-L78). Decide: one local transaction, outbox, or idempotent insert.
-3. **Durable subscription name**: activity `records-address-changed` vs connection `records-event-fanout` [`integration/legacy-bw6/Processes/account-events/address-changed.bwp:L14`](../../../../legacy-bw6/Processes/account-events/address-changed.bwp#L14) [`integration/legacy-bw6/SharedResources/EmsConnection.sharedresource:L2`](../../../../legacy-bw6/SharedResources/EmsConnection.sharedresource#L2).
-4. **Call-process reference**: called by `event-fanout` as `account-events.address-changed` while declared `halvergate.account-events.address-changed` [`integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L39`](../../../../legacy-bw6/Processes/account-events/event-fanout.bwp#L39) [`integration/legacy-bw6/Processes/account-events/address-changed.bwp:L2`](../../../../legacy-bw6/Processes/account-events/address-changed.bwp#L2); also a process with its own JMS starter being called as a subprocess is ambiguous — decide whether it remains an independent subscriber, a subprocess of event-fanout, or both.
-5. **No in-project producer/consumer** for `HB.ADDRESS.CHANGED` / `HB.ADDRESS.UPDATED` ([`integration/legacy-bw6/reference/cases.json:L266`](../../../../legacy-bw6/reference/cases.json#L266)); confirm external parties before choosing destination types (output is a QUEUE [`integration/legacy-bw6/Processes/account-events/address-changed.bwp:L29`](../../../../legacy-bw6/Processes/account-events/address-changed.bwp#L29)).
-6. **Transform payload mismatch**: `pain.001` content ignored by the receipt template [`integration/legacy-bw6/reference/inputs/account-events.address-changed/address-changed-01.xml:L2`](../../../../legacy-bw6/reference/inputs/account-events.address-changed/address-changed-01.xml#L2) [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10).
+No remaining flow-specific human decision. Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
 
-Straight parts (no decision needed): the transform itself is deterministic and attribute-only [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9); no environment-specific values are used (§8).
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## 12. Cross-domain check
 

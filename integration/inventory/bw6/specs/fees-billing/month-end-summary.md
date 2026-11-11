@@ -104,14 +104,43 @@ No profile global variable is referenced directly by this process.
 
 ## 11. Conversion notes
 
-**Proposed classification: `needs-human-decision`.**
+**Classification: `needs-human-decision`.**
 
-Decision candidates:
-1. **Ambiguous rounding semantics** — same amount rounds to `2.35` or `2.34` depending on `@channel` [`integration/legacy-bw6/Transforms/fee-rounding.xsl:L5`](../../../../legacy-bw6/Transforms/fee-rounding.xsl#L5) [`integration/legacy-bw6/src/com/halvergate/integration/FeeActivities.java:L19`](../../../../legacy-bw6/src/com/halvergate/integration/FeeActivities.java#L19) [`integration/corpus/fees-billing.month-end-summary/flow.json:L85`](../../../../corpus/fees-billing.month-end-summary/flow.json#L85). Business must decide: preserve channel-dependent rounding (corpus parity) or unify on one rule (corpus re-record).
-2. **Orphan / dead start** — `bw.internal.start` with no caller anywhere in the project [`integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L14`](../../../../legacy-bw6/Processes/fees-billing/month-end-summary.bwp#L14) [`integration/fixture/tests/test_estate.py:L95-L96`](../../../../fixture/tests/test_estate.py#L95-L96). Decide whether to convert as a queue listener (as the corpus does), as an internal callable, or retire it.
-3. **Mismatched transform/naming** — `fee-rounding.xsl` and activity `CalculateFee` on a "summary" process; no aggregation is performed [`integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L19`](../../../../legacy-bw6/Processes/fees-billing/month-end-summary.bwp#L19) [`integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L24`](../../../../legacy-bw6/Processes/fees-billing/month-end-summary.bwp#L24).
-4. **Undeclared Java→XSLT wiring** — `@javaAmount` required but not mapped onto `Receive` [`integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L24`](../../../../legacy-bw6/Processes/fees-billing/month-end-summary.bwp#L24) [`integration/legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java:L28`](../../../../legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java#L28).
-5. **Transaction gap** — `AUTO_COMMIT` insert before publish, no XA scope [`integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L29`](../../../../legacy-bw6/Processes/fees-billing/month-end-summary.bwp#L29) [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2).
+Human decisions: [D-04](../../decisions.md#d-04-month-end-summary-entry-and-scope). Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
+
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Channel-dependent month-end rounding
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L19`](../../../../legacy-bw6/Processes/fees-billing/month-end-summary.bwp#L19) — `"roundHalfEven"`.
+- [`integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L24`](../../../../legacy-bw6/Processes/fees-billing/month-end-summary.bwp#L24) — `"Transforms/fee-rounding.xsl"`.
+- [`integration/legacy-bw6/Transforms/fee-rounding.xsl:L5`](../../../../legacy-bw6/Transforms/fee-rounding.xsl#L5) — `"@channel = 'JAVA'"`.
+- [`integration/legacy-bw6/Transforms/fee-rounding.xsl:L5`](../../../../legacy-bw6/Transforms/fee-rounding.xsl#L5) — `"round(xs:decimal(@amount) * 100)"`.
+- [`integration/legacy-bw6/src/com/halvergate/integration/FeeActivities.java:L19`](../../../../legacy-bw6/src/com/halvergate/integration/FeeActivities.java#L19) — `"RoundingMode.HALF_EVEN"`.
+- [`integration/corpus/fees-billing.month-end-summary/flow.json:L75`](../../../../corpus/fees-billing.month-end-summary/flow.json#L75) — `"MONTH_END|2.35|"`.
+- [`integration/corpus/fees-billing.month-end-summary/flow.json:L85`](../../../../corpus/fees-billing.month-end-summary/flow.json#L85) — `"MONTH_END|2.34|"`.
+- [`integration/fixture/tests/test_estate.py:L60`](../../../../fixture/tests/test_estate.py#L60) — `""2.345""`.
+- [`integration/fixture/tests/test_estate.py:L61`](../../../../fixture/tests/test_estate.py#L61) — `"["XSLT", "JAVA"]"`.
+
+**Inference:** name mismatch alone does not prove a mapping defect; the two amounts are explicit corpus expectations. Secondary pointer: [spec](../../specs/fees-billing/month-end-summary.md).
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## Cross-domain check
 

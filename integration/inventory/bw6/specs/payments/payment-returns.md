@@ -96,13 +96,27 @@ No `%%…%%` variables are used: a grep for `%%` across `integration/legacy-bw6/
 
 ## 11. Conversion notes
 
-**Proposed classification: `needs-human-decision`.**
+**Classification: `needs-human-decision`.**
 
-Decision candidates:
-1. **Nothing calls it / orphan:** no call-process names it and no project process produces to `HB.PAYMENT.RETURNS` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14). **Inference:** it is either fed externally or dead. Confirm that an external producer exists.
-2. **Insert-then-publish gap:** `AUTO_COMMIT` insert [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L24`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L24) before the publish [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L29`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L29), with the primary key `(flow, request_id)` [`integration/legacy-bw6/Database/schema.sql:L51-L59`](../../../../legacy-bw6/Database/schema.sql#L51-L59). Decide on idempotency and outbox semantics, or a deliberate move to an XA/local transaction.
+Human decisions: [D-03](../../decisions.md#d-03-uncalled-or-unfed-entry-flows). Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
 
-Straight-conversion parts: queue receive with `accountId` sequencing [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14), a constant-status receipt transform [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14), a single insert and a single publish.
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## 12. Cross-domain check
 

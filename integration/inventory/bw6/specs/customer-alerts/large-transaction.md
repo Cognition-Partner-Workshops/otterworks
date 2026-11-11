@@ -85,13 +85,38 @@ Frozen `flow.json`: three input messages (two RETAIL and one COMMERCIAL), but on
 
 ## 11. Conversion notes
 
-Proposed classification: **`needs-human-decision`**. The following are proposed decisions, not claims of business intent:
+**Classification: `needs-human-decision`.**
 
-- **Transaction/ack contract:** preserve auto-commit-before-publish and possible partial work, or explicitly approve a transaction/outbox/idempotency change; decide success-ack timing because a positive confirm is not declared. **Inference** from the ordered sequence, `AUTO_COMMIT`, negative confirm and primary key. [`integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L11-L33`](../../../../legacy-bw6/Processes/customer-alerts/large-transaction.bwp#L11-L33) [`integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L5-L10`](../../../../legacy-bw6/Processes/customer-alerts/large-transaction.bwp#L5-L10) [`integration/legacy-bw6/Database/schema.sql:L201-L209`](../../../../legacy-bw6/Database/schema.sql#L201-L209)
-- **Binding/namespace contract:** decide how JDBC parameters and JMS body are bound, since the activity configs declare SQL/placeholders and property names but no explicit parameter/body mapping. The recorder constructs bodies/rows from XSLT independently. Preserve unnamespaced replay input or approve namespace adaptation to the imported XSD. **Inference** from these omissions and the namespace difference. [`integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L24`](../../../../legacy-bw6/Processes/customer-alerts/large-transaction.bwp#L24) [`integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L29`](../../../../legacy-bw6/Processes/customer-alerts/large-transaction.bwp#L29) [`integration/legacy-bw6/reference/record.py:L55-L68`](../../../../legacy-bw6/reference/record.py#L55-L68) [`integration/legacy-bw6/Transforms/common/receipt.xsl:L8-L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L8-L14) [`integration/legacy-bw6/Schemas/request.xsd:L2`](../../../../legacy-bw6/Schemas/request.xsd#L2) [`integration/legacy-bw6/reference/inputs/customer-alerts.large-transaction/large-transaction-01.xml:L2`](../../../../legacy-bw6/reference/inputs/customer-alerts.large-transaction/large-transaction-01.xml#L2)
-- **Filtering contract:** keep the JMS property selector and XML-attribute filter distinct, or choose an approved rule for missing/conflicting values. The replay examples align both representations and cover a COMMERCIAL exclusion; they do not resolve divergence. **Inference** from the two filters and corpus cases. [`integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L14`](../../../../legacy-bw6/Processes/customer-alerts/large-transaction.bwp#L14) [`integration/legacy-bw6/Transforms/large-transaction.xsl:L5`](../../../../legacy-bw6/Transforms/large-transaction.xsl#L5) [`integration/corpus/customer-alerts.large-transaction/flow.json:L6-L12`](../../../../corpus/customer-alerts.large-transaction/flow.json#L6-L12) [`integration/corpus/customer-alerts.large-transaction/flow.json:L36-L42`](../../../../corpus/customer-alerts.large-transaction/flow.json#L36-L42) [`integration/corpus/customer-alerts.large-transaction/flow.json:L71-L112`](../../../../corpus/customer-alerts.large-transaction/flow.json#L71-L112)
+Human decisions: [D-03](../../decisions.md#d-03-uncalled-or-unfed-entry-flows). Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
 
-No used module-property environment difference is established: credential values are external/unspecified. This does not remove the decisions above. [`integration/legacy-bw6/SharedResources/EmsConnection.sharedresource:L2`](../../../../legacy-bw6/SharedResources/EmsConnection.sharedresource#L2) [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2) [`integration/legacy-bw6/Profiles/dev.substvar:L2`](../../../../legacy-bw6/Profiles/dev.substvar#L2) [`integration/legacy-bw6/Profiles/prod.substvar:L2`](../../../../legacy-bw6/Profiles/prod.substvar#L2) Stateful Java and an obviously wrong stylesheet name are not indicated by this flow’s declared activity/transform chain; no dead/orphan conclusion follows merely from missing call-process callers. [`integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L11-L33`](../../../../legacy-bw6/Processes/customer-alerts/large-transaction.bwp#L11-L33) [`integration/legacy-bw6/Transforms/large-transaction.xsl:L3-L4`](../../../../legacy-bw6/Transforms/large-transaction.xsl#L3-L4) [`integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L14`](../../../../legacy-bw6/Processes/customer-alerts/large-transaction.bwp#L14)
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Retail selector versus payload filtering
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L14`](../../../../legacy-bw6/Processes/customer-alerts/large-transaction.bwp#L14) — `"customerType = &apos;RETAIL&apos;"`.
+- [`integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L14`](../../../../legacy-bw6/Processes/customer-alerts/low-balance.bwp#L14) — `"customerType = &apos;RETAIL&apos;"`.
+- [`integration/legacy-bw6/Transforms/large-transaction.xsl:L5`](../../../../legacy-bw6/Transforms/large-transaction.xsl#L5) — `"request[@customerType != 'RETAIL']"`.
+- [`integration/legacy-bw6/Transforms/low-balance.xsl:L5`](../../../../legacy-bw6/Transforms/low-balance.xsl#L5) — `"request[@customerType != 'RETAIL']"`.
+
+**Inference:** XML decoding makes the selector customerType = 'RETAIL'. Missing/conflicting representations can be treated differently by selector evaluation and XSLT matching; business precedence is undeclared. Secondary pointer: [spec](../../specs/customer-alerts/large-transaction.md).
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## 12. Cross-domain check
 

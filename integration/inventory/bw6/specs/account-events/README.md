@@ -1,6 +1,6 @@
 # account-events — BW6 process inventory
 
-Run tib-d1111, base commit `5c2ba511babbfacaba94c93a10d3e6b0542a7c4c`. All five processes share `EmsConnection` and `LedgerJdbc` and the `common/receipt.xsl` transform; all are proposed **needs-human-decision**.
+Run tib-d1111, base commit `5c2ba511babbfacaba94c93a10d3e6b0542a7c4c`. All five processes share `EmsConnection` and `LedgerJdbc` and the `common/receipt.xsl` transform; classification follows the remaining flow-specific decisions in the [index](../../README.md#process-index).
 
 | Process | Spec | One line |
 |---|---|---|

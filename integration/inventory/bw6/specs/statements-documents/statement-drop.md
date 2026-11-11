@@ -122,16 +122,27 @@ Hard-coded resource settings, the same in every profile: SFTP host `sftp:22` [`i
 
 ## 11. Conversion notes
 
-**Proposed classification: `needs-human-decision`.**
+**Classification: `needs-human-decision`.**
 
-Decision candidates:
-1. **Ambiguous trigger semantics.** The SFTP get carries JMS fields (`destination=HB.STATEMENT.DROP`, `CLIENT_ACKNOWLEDGE`, `sequencingKey=accountId`), and the project configures no file pattern, poll interval or post-pickup action [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L14`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L14) [`integration/legacy-bw6/SharedResources/StatementSftp.sharedresource:L2`](../../../../legacy-bw6/SharedResources/StatementSftp.sharedresource#L2). Decide whether the target polls `/upload/in`, consumes a queue, or both, and how it excludes `.replay-part` files [`integration/harness/README.md:L148-L149`](../../../../harness/README.md#L148-L149).
-2. **Call-process semantics.** Four callees are invoked with no data mapping after `Publish`, and each callee has its own JMS starter [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L39-L54`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L39-L54) [`integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L14`](../../../../legacy-bw6/Processes/statements-documents/split-enrich.bwp#L14). Decide whether these become in-process calls carrying the statement, sends to the callee queues, or are dropped. The corpus holds no evidence for these side effects [`integration/corpus/statements-documents.statement-drop/flow.json:L15-L35`](../../../../corpus/statements-documents.statement-drop/flow.json#L15-L35).
-3. **Transaction gap.** There is no scope, the insert uses AUTO_COMMIT on an XA data source, and the SFTP put, publish and callees all sit outside any boundary [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L24`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L24) [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2). After a partial failure, retries hit the primary key [`integration/legacy-bw6/Database/schema.sql:L158`](../../../../legacy-bw6/Database/schema.sql#L158) or `overwrite=false` [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L29`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L29).
-4. **Error routing on a non-JMS trigger.** The `JMSConfirm`, `maxRedelivery` and `HB.UNDLV` handler applies to a file pickup [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L7`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L7).
-5. **Timezone functions.** Project-local `tib:` functions convert to UTC and `error()` on any other zone [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L4-L5`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L4-L5). The DST-date sample must keep producing `00:30:00Z` [`integration/corpus/statements-documents.statement-drop/flow.json:L42`](../../../../corpus/statements-documents.statement-drop/flow.json#L42).
-6. **Call-process name resolution.** All four call names lack the declared `halvergate.` prefix [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L39`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L39) [`integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L2`](../../../../legacy-bw6/Processes/statements-documents/split-enrich.bwp#L2); decide how calls are bound in the target.
-7. **Environment difference (indirect).** Via `pdf-request`, `screening.url` is `/v1/screen` in dev and `/v2/screen` in prod [`integration/legacy-bw6/Profiles/dev.substvar:L2`](../../../../legacy-bw6/Profiles/dev.substvar#L2) [`integration/legacy-bw6/Profiles/prod.substvar:L2`](../../../../legacy-bw6/Profiles/prod.substvar#L2).
+Human decisions: [D-01](../../decisions.md#d-01-screening-api-version-by-environment), [D-03](../../decisions.md#d-03-uncalled-or-unfed-entry-flows), [D-06](../../decisions.md#d-06-statement-drop-transport-and-file-rejection). Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
+
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## 12. Cross-domain check
 

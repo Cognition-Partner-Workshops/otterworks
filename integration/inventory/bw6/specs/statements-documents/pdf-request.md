@@ -36,13 +36,13 @@ JDBC: not present in this process; the corpus captures no table for it [`integra
 
 SFTP: no SFTP activity in this process (searched [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L11`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L11)).
 
-No input bindings are configured on any activity (configs hold only connection/destination/SQL) [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L29`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L29). **Inference** from the recorder: the message body is the transform result `<body>` [`integration/legacy-bw6/reference/record.py:L56-L70`](../../../../legacy-bw6/reference/record.py#L56-L70).
+No request-body or message-body binding is declared on the HTTP POST or JMS publish [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L24-L29`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L24-L29). **Inference** from the recorder: the message body is the transform result `<body>` [`integration/legacy-bw6/reference/record.py:L56-L70`](../../../../legacy-bw6/reference/record.py#L56-L70).
 
 ## 4. Transaction boundaries
 
 - No `bpws:scope` / `transactionType`: activities sit directly in the `Execute` sequence [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L11`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L11) (contrast the XA scope in `payments/instruction-intake` [`integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L12`](../../../../legacy-bw6/Processes/payments/instruction-intake.bwp#L12)).
-- Everything (HTTP `POST` to `${screening.url}`, JMS send to `HB.PDF.REQUESTED`) is outside any boundary; no timeout is configured. **Inference:** the input message's CLIENT_ACKNOWLEDGE [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L14`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L14) is the only unit-of-work control.
-- When run via call-process from `statement-drop` [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L44`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L44) it also runs after that caller's auto-committed insert and publish [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L24`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L24) [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L34`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L34), with no enclosing transaction.
+- Everything (HTTP `POST` to `${screening.url}`, JMS send to `HB.PDF.REQUESTED`) is outside any boundary; no activity-level timeout is configured; ServiceHttp declares connectionTimeout `15000` and socketTimeout `30000` [`integration/legacy-bw6/SharedResources/ServiceHttp.sharedresource:L2`](../../../../legacy-bw6/SharedResources/ServiceHttp.sharedresource#L2). **Inference:** the input message's CLIENT_ACKNOWLEDGE [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L14`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L14) is the only unit-of-work control.
+- When run via call-process from `statement-drop` [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L44`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L44) it also runs after that caller's auto-committed insert and publish [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L24`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L24) [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L29-L34`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L29-L34), with no enclosing transaction.
 
 ## 5. XSLT chain
 
@@ -89,14 +89,27 @@ No `%%property%%` tokens are used. Profiles define only `screening.url`, `billin
 
 ## 11. Conversion notes
 
-**Proposed classification: `needs-human-decision`.**
+**Classification: `needs-human-decision`.**
 
-Decision candidates:
-1. **Environment difference:** `${screening.url}` is `/v1/screen` in dev and `/v2/screen` in prod [`integration/legacy-bw6/Profiles/dev.substvar:L2`](../../../../legacy-bw6/Profiles/dev.substvar#L2) [`integration/legacy-bw6/Profiles/prod.substvar:L2`](../../../../legacy-bw6/Profiles/prod.substvar#L2).
-2. **Mismatched endpoint (Inference):** a process named `pdf-request` POSTs to the screening service property [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L24`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L24), the same property used by `payments/sanctions-screening` [`integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L24`](../../../../legacy-bw6/Processes/payments/sanctions-screening.bwp#L24); no PDF/document URL exists in the profiles [`integration/legacy-bw6/Profiles/dev.substvar:L2`](../../../../legacy-bw6/Profiles/dev.substvar#L2). Confirm the intended endpoint.
-3. **Unmodelled HTTP side effect:** POST response `DispatchResponse` is not used by later steps and the call is not in the replay capture or reference model [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L24`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L24) [`integration/corpus/statements-documents.pdf-request/flow.json:L37-L45`](../../../../corpus/statements-documents.pdf-request/flow.json#L37-L45) [`integration/legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java:L24-L30`](../../../../legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java#L24-L30); redelivery repeats the POST.
-4. **Dual entry / orphan queue:** the JMS trigger `HB.PDF.REQUEST` has no producer in the project and `HB.PDF.REQUESTED` has no consumer [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L14`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L14) [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L29`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L29); the process is also call-processed by `statement-drop` without mapping [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L44`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L44). Decide which entry point the target keeps.
-5. **Call-process name resolution.** `statement-drop` calls `statements-documents.pdf-request` [`integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L44`](../../../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L44) but the declared name is `halvergate.statements-documents.pdf-request` [`integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L2`](../../../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L2); decide how the call is bound in the target.
+Human decisions: [D-01](../../decisions.md#d-01-screening-api-version-by-environment), [D-02](../../decisions.md#d-02-pdf-request-endpoint-ownership). Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
+
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## 12. Cross-domain check
 

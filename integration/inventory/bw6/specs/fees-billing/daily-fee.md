@@ -112,14 +112,27 @@ This process uses no profile global variable directly (no `%%…%%` or `${…}` 
 
 ## 11. Conversion notes
 
-**Proposed classification: `needs-human-decision`.**
+**Classification: `needs-human-decision`.**
 
-Decision candidates:
-1. **Stateful / non-deterministic Java** — static `HashMap` rate cache keyed by account type; the first rate wins for the JVM lifetime and concurrent access is unsafe [`integration/legacy-bw6/src/com/halvergate/integration/FeeActivities.java:L9`](../../../../legacy-bw6/src/com/halvergate/integration/FeeActivities.java#L9) [`integration/legacy-bw6/src/com/halvergate/integration/FeeActivities.java:L14`](../../../../legacy-bw6/src/com/halvergate/integration/FeeActivities.java#L14); the corpus freezes the cached behaviour (`15.00` for rate `0.025`) [`integration/corpus/fees-billing.daily-fee/flow.json:L85`](../../../../corpus/fees-billing.daily-fee/flow.json#L85). Decide: reproduce the cache (parity with corpus) or use the per-message rate (behaviour change, corpus re-record).
-2. **Ambiguous trigger** — `bw.jms.Timer` configured like a JMS receiver, with no schedule [`integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L14`](../../../../legacy-bw6/Processes/fees-billing/daily-fee.bwp#L14). Decide whether the target is a scheduled job or a queue listener on `HB.DAILY.FEES`.
-3. **Undeclared Java→XSLT wiring / input name** — stylesheet needs `@javaAmount` [`integration/legacy-bw6/Transforms/daily-fee.xsl:L5`](../../../../legacy-bw6/Transforms/daily-fee.xsl#L5) but the transform reads `Receive` [`integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L24`](../../../../legacy-bw6/Processes/fees-billing/daily-fee.bwp#L24); Java input `accountType` vs request attribute `type` [`integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L19`](../../../../legacy-bw6/Processes/fees-billing/daily-fee.bwp#L19) [`integration/legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java:L26`](../../../../legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java#L26). Confirm the binding against the running BW engine.
-4. **Transaction gap** — `AUTO_COMMIT` insert before publish, no XA scope although the resources are XA-capable [`integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L29`](../../../../legacy-bw6/Processes/fees-billing/daily-fee.bwp#L29) [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2).
-5. **Orphan endpoints** — no in-project producer for `HB.DAILY.FEES` and no consumer for `HB.FEE.CALCULATED` (§9).
+Human decisions: [D-03](../../decisions.md#d-03-uncalled-or-unfed-entry-flows), [D-05](../../decisions.md#d-05-daily-fee-timer-or-queue-listener), [D-10](../../decisions.md#d-10-daily-fee-static-rate-cache). Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
+
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## Cross-domain check
 

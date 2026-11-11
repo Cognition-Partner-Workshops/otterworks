@@ -85,13 +85,43 @@ Frozen `flow.json`: two JMS inputs, ordinary receipt only for `card-dispute-01` 
 
 ## 11. Conversion notes
 
-Proposed classification: **`needs-human-decision`**. The following are proposed decisions, not claims of business intent:
+**Classification: `needs-human-decision`.**
 
-- **Transaction/ack contract:** preserve auto-commit-before-publish and possible partial work, or explicitly approve a transaction/outbox/idempotency change; decide success-ack timing because a positive confirm is not declared. **Inference** from the ordered sequence, `AUTO_COMMIT`, negative confirm and primary key. [`integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L11-L33`](../../../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L11-L33) [`integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L5-L10`](../../../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L5-L10) [`integration/legacy-bw6/Database/schema.sql:L211-L219`](../../../../legacy-bw6/Database/schema.sql#L211-L219)
-- **Binding/namespace contract:** decide how JDBC parameters and JMS body are bound, since the activity configs declare SQL/placeholders and property names but no explicit parameter/body mapping. The recorder constructs bodies/rows from XSLT independently. Preserve unnamespaced replay input or approve namespace adaptation to the imported XSD. **Inference** from these omissions and the namespace difference. [`integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L24`](../../../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L24) [`integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L29`](../../../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L29) [`integration/legacy-bw6/reference/record.py:L55-L68`](../../../../legacy-bw6/reference/record.py#L55-L68) [`integration/legacy-bw6/Transforms/common/receipt.xsl:L8-L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L8-L14) [`integration/legacy-bw6/Schemas/request.xsd:L2`](../../../../legacy-bw6/Schemas/request.xsd#L2) [`integration/legacy-bw6/reference/inputs/customer-alerts.card-dispute/card-dispute-01.xml:L2`](../../../../legacy-bw6/reference/inputs/customer-alerts.card-dispute/card-dispute-01.xml#L2)
-- **Poison/audit gap:** choose where poison detection and one-per-attempt audit emission belong. The corpus expects counts 1–4 plus one DLQ message and excludes the poison DB row; no corresponding predicate/audit activity is declared. **Inference:** converting only the sequence will not establish that behaviour. [`integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L11-L33`](../../../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L11-L33) [`integration/legacy-bw6/Transforms/card-dispute.xsl:L1-L5`](../../../../legacy-bw6/Transforms/card-dispute.xsl#L1-L5) [`integration/legacy-bw6/Transforms/common/receipt.xsl:L1-L17`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L1-L17) [`integration/corpus/customer-alerts.card-dispute/flow.json:L76-L153`](../../../../corpus/customer-alerts.card-dispute/flow.json#L76-L153) [`integration/legacy-bw6/reference/record.py:L57-L63`](../../../../legacy-bw6/reference/record.py#L57-L63) [`integration/harness/README.md:L231-L236`](../../../../harness/README.md#L231-L236)
+Human decisions: [D-03](../../decisions.md#d-03-uncalled-or-unfed-entry-flows). Wave placement is independent of classification; [Wave 0](../../wave-plan.md#wave-0--groundwork-no-processes) applies programme-wide.
 
-No used module-property environment difference is established: credential values are external/unspecified. This does not remove the decisions above. [`integration/legacy-bw6/SharedResources/EmsConnection.sharedresource:L2`](../../../../legacy-bw6/SharedResources/EmsConnection.sharedresource#L2) [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2) [`integration/legacy-bw6/Profiles/dev.substvar:L2`](../../../../legacy-bw6/Profiles/dev.substvar#L2) [`integration/legacy-bw6/Profiles/prod.substvar:L2`](../../../../legacy-bw6/Profiles/prod.substvar#L2) Stateful Java and an obviously wrong stylesheet name are not indicated by this flow’s declared activity/transform chain; no dead/orphan conclusion follows merely from missing call-process callers. [`integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L11-L33`](../../../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L11-L33) [`integration/legacy-bw6/Transforms/card-dispute.xsl:L3-L4`](../../../../legacy-bw6/Transforms/card-dispute.xsl#L3-L4) [`integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L14`](../../../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L14)
+**Preservation requirements:** retain the declared activity order, transport settings, fault handling and transform import precedence documented above; do not silently repair behaviour during conversion.
+
+### Card-dispute poison audit behavior
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/corpus/customer-alerts.card-dispute/flow.json:L149`](../../../../corpus/customer-alerts.card-dispute/flow.json#L149) — `""audit_destination": "HB.DELIVERY.AUDIT""`.
+- [`integration/corpus/customer-alerts.card-dispute/flow.json:L151`](../../../../corpus/customer-alerts.card-dispute/flow.json#L151) — `""redeliveries": 3"`.
+- [`integration/corpus/customer-alerts.card-dispute/flow.json:L152`](../../../../corpus/customer-alerts.card-dispute/flow.json#L152) — `""dlq": "HB.UNDLV""`.
+- [`integration/legacy-bw6/reference/record.py:L57`](../../../../legacy-bw6/reference/record.py#L57) — `"request.get("poison") == "true""`.
+- [`integration/legacy-bw6/reference/record.py:L60`](../../../../legacy-bw6/reference/record.py#L60) — `""HB.DELIVERY.AUDIT""`.
+- [`integration/legacy-bw6/reference/record.py:L75`](../../../../legacy-bw6/reference/record.py#L75) — `""HB.DELIVERY.AUDIT""`.
+- [`integration/legacy-bw6/reference/record.py:L76`](../../../../legacy-bw6/reference/record.py#L76) — `""HB.UNDLV""`.
+- [`integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L7`](../../../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L7) — `"HB.UNDLV"`.
+- [`integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L29`](../../../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L29) — `"HB.DISPUTE.RECEIVED"`.
+
+**Inference (all activities inspected):** no declared activity emits HB.DELIVERY.AUDIT or tests poison. Recorder lines 57–63 construct synthetic expectations; lines 75–76 configure audit/DLQ capture. This does not prove BW audit emission. Secondary pointer: [spec](../../specs/customer-alerts/card-dispute.md).
+
+### Shared receipt projection and byte parity
+
+Preserve the source behaviour and distinguish corpus/reference expectations from actual BW execution.
+
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3) — `"omit-xml-declaration="yes""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9) — `"match="request""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L10`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L10) — `"currency="{@currency}""`.
+- [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14) — `"concat(@flow,'|',@id,'|',@account,'|')"`.
+- [`integration/legacy-bw6/Transforms/statement.xsl:L3`](../../../../legacy-bw6/Transforms/statement.xsl#L3) — `"statements/layout.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/layout.xsl:L3`](../../../../legacy-bw6/Transforms/statements/layout.xsl#L3) — `"base/timezone.xsl"`.
+- [`integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3`](../../../../legacy-bw6/Transforms/statements/base/timezone.xsl#L3) — `"../../common/receipt.xsl"`.
+- [`integration/legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.instruction-intake/instruction-intake-01.xml#L2) — `"urn:iso:std:iso:20022:tech:xsd:pain.001.001.03"`.
+- [`integration/harness/README.md:L124`](../../../../harness/README.md#L124) — `"Message bodies are UTF-8 strings compared byte-for-byte as decoded text."`.
+
+**Inference (import graph/templates inspected):** all 24 processes reach receipt.xsl through 23 distinct top-level referenced stylesheets (payment-status is shared). There are 23 direct receipt importers across the tree: 21 top-level stylesheets and two deeper base sheets, not 23 direct top-level importers. Statement uses layout/timezone; payment-status uses policy/clearing. The common receipt reads request attributes, not nested Document content; overrides add specialized attribute-based logic. Preserve the frozen byte-level output contract; do not introduce nested-payment mapping as part of faithful conversion. Secondary pointer: [spec](../../specs/payments/instruction-intake.md).
 
 ## 12. Cross-domain check
 
