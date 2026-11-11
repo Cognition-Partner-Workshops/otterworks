@@ -1,6 +1,7 @@
 """Land completed Teradata emulator tables as Delta without changing values.
 
-python -m warehouse.databricks.baseline --source-dsn "$TD_DSN" --subject billing
+TD_DSN is read from the environment; never pass source credentials as arguments.
+python -m warehouse.databricks.baseline --subject billing
 The caller runs the BTEQ daily chain before invoking the loader.
 """
 import argparse
@@ -88,12 +89,12 @@ def main():
     import psycopg
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source-dsn", default=os.getenv("TD_DSN"))
     parser.add_argument("--subject", choices=["billing", "users", "documents", "audit"], required=True)
     args = parser.parse_args()
-    if not args.source_dsn:
-        parser.error("TD_DSN or --source-dsn is required")
-    with psycopg.connect(args.source_dsn) as source:
+    source_dsn = os.getenv("TD_DSN")
+    if not source_dsn:
+        parser.error("TD_DSN is required in the environment")
+    with psycopg.connect(source_dsn) as source:
         print(json.dumps(load(source, Warehouse(act="prove"), args.subject), indent=2))
 
 
