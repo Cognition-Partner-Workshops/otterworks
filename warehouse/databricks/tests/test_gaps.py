@@ -13,8 +13,8 @@ def client_fixture(different=False):
         if step == 'gap-qualify_ties':
             rows = [['1' if different else '0','50','49','0','0',
                      '50' if 'GROUP BY document_id,VERSION_TS HAVING' in query else '0']]
-        elif step == 'gap-format-history':
-            rows = [['literal-failed-id','FAILED','YYYY-MM rejected']]
+        elif step == 'gap-format-literal':
+            raise RuntimeError('statement literal-failed-id: INCONSISTENT_BEHAVIOR_CROSS_VERSION.DATETIME_PATTERN_RECOGNITION: YYYY-MM rejected')
         elif step.startswith('gap-') and different:
             rows = [['9000000001','["ACTIVE      "]','["ACTIVE"]','1']]
         return {'statement_id':step+'-id','rows':rows}
@@ -54,15 +54,27 @@ def test_no_value_diffs_does_not_hide_unresolved_direct_ordering(tmp_path):
     assert [r['rung'] for r in results if r['status']=='fail']==['qualify_ties','format_period_key']
 
 
-def test_missing_history_and_transport_errors_fail_closed(tmp_path):
+def test_fresh_warehouse_needs_no_query_history(tmp_path):
+    client=client_fixture()
+    results=run_gaps(client,'v2-fixed',tmp_path,rungs=['format_period_key'])
+    assert results[0]['status']=='pass'
+    assert results[0]['detail']['literal_format_failure']['statement_id']=='literal-failed-id'
+    assert all('system.query.history' not in c.args[0] for c in client.execute.call_args_list)
+
+
+@pytest.mark.parametrize('error',[None,RuntimeError('network unavailable')])
+def test_literal_unexpected_success_and_transport_errors_fail_closed(tmp_path,error):
     client=client_fixture()
     original=client.execute.side_effect
-    client.execute.side_effect=lambda q,**kw: {'statement_id':'s','rows':[]} if kw['step']=='gap-format-history' else original(q,**kw)
-    with pytest.raises(RuntimeError,match='missing tagged'):
-        run_gaps(client,'v1-direct',tmp_path)
-    client.execute.side_effect=RuntimeError('network unavailable')
-    with pytest.raises(RuntimeError,match='network unavailable'):
-        run_gaps(client,'v2-fixed',tmp_path)
+    def execute(query,**kwargs):
+        if kwargs['step']=='gap-format-literal':
+            if error:
+                raise error
+            return {'statement_id':'s','rows':[]}
+        return original(query,**kwargs)
+    client.execute.side_effect=execute
+    with pytest.raises(RuntimeError,match='network unavailable' if error else 'unexpectedly succeeded'):
+        run_gaps(client,'v2-fixed',tmp_path,rungs=['format_period_key'])
 
 
 def test_document_scope_preserves_unrelated_gap_receipts(tmp_path):

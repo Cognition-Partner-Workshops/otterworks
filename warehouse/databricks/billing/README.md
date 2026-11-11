@@ -73,8 +73,9 @@ The explicit `untied_exact` rung compares all stored columns with EXCEPT ALL in
 both directions for documents having a unique maximal timestamp.
 
 Eight probes persist independent receipts in the same results table.
-The FORMAT probe also retrieves the original tagged YYYY-MM failure from
-system.query.history. Replacement is scoped to the label/object/rung; the
+The FORMAT probe executes the literal YYYY-MM translation and records its
+tagged DATETIME_PATTERN failure, without requiring any prior query history.
+Replacement is scoped to the label/object/rung; the
 baseline and migration_control are never written.
 
 ## Lineage evidence

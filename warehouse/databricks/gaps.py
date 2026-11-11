@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 
 import sqlglot
 from sqlglot import exp
@@ -119,12 +120,18 @@ def run_gaps(client, label, evidence_dir=None, *, objects=None, rungs=None):
             passed = not response['rows']
             detail = {'differences':response['rows']}
         if name=='format_period_key':
-            history = client.execute("SELECT statement_id,execution_status,error_message FROM system.query.history "
-                "WHERE statement_text LIKE '/* run=dbx-d1111 act=prove step=direct-% consumer=billing */%' "
-                "AND execution_status='FAILED' AND error_message LIKE '%YYYY-MM%' ORDER BY start_time LIMIT 1",step='gap-format-history')
-            if not history['rows']:
-                raise RuntimeError('missing tagged YYYY-MM failure evidence in query history')
-            detail['literal_format_failure'] = history
+            try:
+                client.execute("SELECT date_format(DATE '2026-11-09','YYYY-MM')",step='gap-format-literal')
+            except RuntimeError as error:
+                match = re.match(r'statement ([\w-]+):', str(error))
+                if not match or 'DATETIME_PATTERN_RECOGNITION' not in str(error):
+                    raise
+                detail['literal_format_failure'] = {
+                    'statement_id': match[1],
+                    'rows': [[match[1], 'FAILED', str(error)]],
+                }
+            else:
+                raise RuntimeError('literal YYYY-MM unexpectedly succeeded; expected DATETIME_PATTERN_RECOGNITION')
             if label=='v1-direct':
                 passed = False
         row = {'object':obj,'rung':name,'status':'pass' if passed else 'fail','detail':detail,
