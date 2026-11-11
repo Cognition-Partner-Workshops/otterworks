@@ -67,6 +67,17 @@ def test_missing_variables_are_names_only(tmp_path):
     assert not any(value in result.stderr for key, value in values.items() if key.startswith('SNOWFLAKE_'))
 
 
+def test_session_query_tag(tmp_path):
+    values = environment(tmp_path)
+    tag = '{"run":"sfx-d1110","act":"prove","step":"snowconvert"}'
+    values['SNOWFLAKE_QUERY_TAG'] = tag
+    assert invoke(values).returncode == 0
+    text = (tmp_path / '.snowflake/connections.toml').read_text()
+    if tomllib:
+        assert tomllib.loads(text)['sfx_d1110']['session_parameters']['QUERY_TAG'] == tag
+    assert 'session_parameters = { QUERY_TAG = ' in text
+
+
 def test_configuration_errors_do_not_echo_values(tmp_path):
     (tmp_path/'.snowflake').write_text('not a directory')
     values = environment(tmp_path)

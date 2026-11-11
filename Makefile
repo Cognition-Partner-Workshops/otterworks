@@ -48,6 +48,37 @@ sfx-teradata-down: sfx-teradata-validate ## Stop the warehouse and remove its vo
 sfx-teradata-snowconvert: sfx-teradata-validate warehouse/.venv/.requirements ## Run offline SnowConvert into ignored output (NS required; SCAI executable optional)
 	$(SFX_TD_PY) warehouse/teradata/jobs/snowconvert.py --scai "$(SCAI)" --namespace "$(NS)"
 
+# Billing proof is deliberately independent of the target scaffold and other subject areas.
+PARITY_OUT ?= migration/dw-exit/.runs
+CANDIDATE ?= fixed
+SFX_BILLING = migration/dw-exit/billing
+
+warehouse/.venv/.billing-requirements: migration/dw-exit/requirements.txt warehouse/requirements.txt
+	@test -x $(SFX_TD_PY) || $(SFX_TD_PYTHON) -m venv warehouse/.venv
+	$(SFX_TD_PY) -m pip install -r migration/dw-exit/requirements.txt
+	@touch $@
+
+.PHONY: sfx-billing-capture sfx-billing-prove sfx-billing-promote sfx-billing-test
+sfx-billing-capture: sfx-teradata-validate warehouse/.venv/.billing-requirements ## Freeze the post-chain BEFORE, once per fresh baseline schema
+	@mkdir -p "$(PARITY_OUT)"
+	$(SFX_TD_ENV) $(SFX_TD_PY) $(SFX_BILLING)/capture.py --business-date "$(BUSINESS_DATE)" --output "$(PARITY_OUT)/capture.json"
+	$(SFX_TD_ENV) $(SFX_TD_PY) $(SFX_BILLING)/reports.py --capture --business-date "$(BUSINESS_DATE)"
+	$(SFX_TD_ENV) $(SFX_TD_PY) $(SFX_BILLING)/probes.py --capture --initial
+
+sfx-billing-prove: warehouse/.venv/.billing-requirements ## Load converted billing and fail on live mismatch (CANDIDATE=initial|fixed)
+	@test "$(CANDIDATE)" = initial -o "$(CANDIDATE)" = fixed
+	@mkdir -p "$(PARITY_OUT)"
+	$(SFX_TD_PY) $(SFX_BILLING)/deploy.py $(if $(filter initial,$(CANDIDATE)),--initial,) --business-date "$(BUSINESS_DATE)" --output "$(PARITY_OUT)/deploy-$(CANDIDATE).json"
+	$(SFX_TD_PY) $(SFX_BILLING)/reports.py --business-date "$(BUSINESS_DATE)"
+	SFX_LIVE_PARITY=1 SFX_PARITY_STEP=billing_$(CANDIDATE) SFX_PARITY_OUTPUT="$(PARITY_OUT)/billing-$(CANDIDATE).json" $(SFX_TD_PY) -m pytest -q migration/dw-exit/tests -k test_live_parity
+
+sfx-billing-promote: warehouse/.venv/.billing-requirements ## Recheck live parity, then mark billing migrated/verified
+	@mkdir -p "$(PARITY_OUT)"
+	$(SFX_TD_PY) $(SFX_BILLING)/promote.py --output "$(PARITY_OUT)/migration-control.json"
+
+sfx-billing-test: warehouse/.venv/.billing-requirements ## Offline parity tool regression tests (no Snowflake credentials)
+	$(SFX_TD_PY) -m pytest -q migration/dw-exit/tests
+
 
 .PHONY: sfx-airflow-test
 sfx-airflow-test: ## Parse generated DAGs and verify routing and retry policy

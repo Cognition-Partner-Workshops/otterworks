@@ -52,6 +52,7 @@ def test_conversion_command_log(tmp_path, monkeypatch):
     assert calls[-1] == ['/opt/scai', 'code', 'convert', '--show-ewis']
     assert calls[1][1:] == ['init', 'project', '-n', 'sfx-d1110-teradata-test', '-l', 'Teradata', '-c', 'sfx_d1110']
     assert calls[0][1].endswith('/bin/snowflake_connection.py')
+    assert calls[1][-2:] == ['-c', 'sfx_d1110']
     assert calls[2][1:4] == ['code', 'add', '-i']
     logs = list((tmp_path/'.snowconvert').glob('*/command.log'))
     assert len(logs) == 1 and logs[0].read_text().count('EXIT 0') == 3

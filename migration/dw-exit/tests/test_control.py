@@ -95,3 +95,18 @@ def test_load_uses_pinned_dbql(monkeypatch):
     with pinned.open() as stream:
         expected = sum(1 for _ in stream) - 1
     assert loaded['DBQL_QRYLOG'] == expected == 7990
+
+
+def test_history_preserves_assessment_scope():
+    class HistoryCursor(Cursor):
+        description = [('STEP',), ('EXECUTION_STATUS',), ('QUERY_COUNT',)]
+
+        def fetchall(self):
+            return []
+
+    cursor = HistoryCursor()
+    control.history(cursor)
+    sql = cursor.calls[-1][0]
+    assert sql == (control.OUT / 'query_history_assess.sql').read_text()
+    assert 'assess' in sql
+    assert 'prove' not in sql

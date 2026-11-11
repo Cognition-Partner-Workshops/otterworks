@@ -1,0 +1,34 @@
+[
+  {
+    "name": "SUPPLEMENTAL_SET_ROWS",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.PROBE_SET_ROWS",
+    "after": "SFX_D1110_AFTER.BILLING_PROBES.SET_ROWS",
+    "keys": [
+      "ID"
+    ]
+  },
+  {
+    "name": "SUPPLEMENTAL_MULTISET_ROWS",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.PROBE_MULTISET_ROWS",
+    "after": "SFX_D1110_AFTER.BILLING_PROBES.MULTISET_ROWS",
+    "keys": [
+      "ID"
+    ]
+  },
+  {
+    "name": "SUPPLEMENTAL_TRUNCATION",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.PROBE_TRUNCATION",
+    "after": "SFX_D1110_AFTER.BILLING_PROBES.TRUNCATION",
+    "keys": [
+      "ID"
+    ]
+  },
+  {
+    "name": "SUPPLEMENTAL_QUALIFY_TIES",
+    "before": "SFX_D1110_AFTER.TD_BASELINE.PROBE_QUALIFY_TIES",
+    "after": "SFX_D1110_AFTER.BILLING_PROBES.QUALIFY_TIES",
+    "keys": [
+      "ID"
+    ]
+  }
+]

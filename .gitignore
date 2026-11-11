@@ -133,3 +133,4 @@ services/legacy-portal-lambda/*/target/
 etl/informatica/.venv/
 etl/informatica/infa_shared/
 etl/informatica/snowconvert/
+migration/dw-exit/.runs/

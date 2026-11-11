@@ -82,6 +82,8 @@ def configure():
     key = directory / 'sfx_d1110.p8'
     section = '[sfx_d1110]\n'+''.join(name.lower()+' = '+quote(os.environ['SNOWFLAKE_'+name])+'\n' for name in FIELDS)
     section += 'authenticator = "SNOWFLAKE_JWT"\nprivate_key_file = '+quote(str(key))+'\n\n'
+    if os.environ.get('SNOWFLAKE_QUERY_TAG'):
+        section += 'session_parameters = { QUERY_TAG = '+quote(os.environ['SNOWFLAKE_QUERY_TAG'])+' }\n\n'
     previous_mask = os.umask(0o077)
     temporary = []
     try:

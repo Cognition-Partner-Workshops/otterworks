@@ -190,6 +190,16 @@ def report(cursor):
             print(' | '.join(str(v) for v in row))
 
 
+def history(cursor):
+    tag(cursor, 'verify')
+    sql = (OUT / 'query_history_assess.sql').read_text()
+    print(sql)
+    cursor.execute(sql)
+    print(' | '.join(c[0] for c in cursor.description))
+    for row in cursor.fetchall():
+        print(' | '.join(str(v) for v in row))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['load', 'verify', 'report', 'history'])
@@ -203,13 +213,7 @@ def main():
         elif args.command == 'report':
             report(cursor)
         else:
-            tag(cursor, 'verify')
-            sql = (OUT / 'query_history.sql').read_text()
-            print(sql)
-            cursor.execute(sql)
-            print(' | '.join(c[0] for c in cursor.description))
-            for row in cursor.fetchall():
-                print(' | '.join(str(v) for v in row))
+            history(cursor)
     return 0
 
 
