@@ -13,7 +13,7 @@ import os
 import sys
 
 from .repo import Repository
-from .workflow import ESTATE, Integration, select_mappings, workflow_mappings
+from .workflow import ESTATE, Integration, listed_sessions, select_mappings, workflow_mappings
 
 
 def _parser():
@@ -57,10 +57,8 @@ def main(argv=None):
             if args.folder and folder != args.folder:
                 continue
             print(f"workflow {folder}/{name}")
-            for t in wf.tasks.values():
-                if t.tasktype == "Session":
-                    s = repo.sessions[(folder, t.taskname)]
-                    print(f"  session {t.name} -> mapping {s.mapping}{'' if t.enabled else ' (disabled)'}")
+            for path, s, on in listed_sessions(repo, folder, wf):
+                print(f"  session {path} -> mapping {s.mapping}{'' if on else ' (disabled)'}")
         return 0
     param_files = default_param_files() + (args.paramfile or [])
     try:
@@ -73,10 +71,16 @@ def main(argv=None):
         if (args.folder, args.workflow) not in repo.workflows:
             print(f"ERROR: Workflow [{args.folder}:{args.workflow}] not found in repository.", file=sys.stderr)
             return 3
-        wf_maps = workflow_mappings(repo, args.folder, repo.workflows[(args.folder, args.workflow)])
-        if selected is not None and not selected.intersection(wf_maps):
-            print(f"Workflow {args.workflow}: no mapping selected by MAPPINGS [{args.mappings}]; not started.")
-            return 0
+        if selected is not None:
+            wf = repo.workflows[(args.folder, args.workflow)]
+            hit = selected.intersection(workflow_mappings(repo, args.folder, wf))
+            if not hit:
+                print(f"Workflow {args.workflow}: no mapping selected by MAPPINGS [{args.mappings}]; not started.")
+                return 0
+            if not hit.intersection(workflow_mappings(repo, args.folder, wf, enabled_only=True)):
+                print(f"ERROR: Workflow [{args.folder}:{args.workflow}]: MAPPINGS [{args.mappings}] selects only disabled "
+                      f"sessions ({', '.join(sorted(hit))}); not started.", file=sys.stderr)
+                return 1
         status, results = svc.run_workflow(args.folder, args.workflow)
         print(f"Workflow {args.workflow} completed with status [{status}] "
               f"({sum(1 for r in results.values() if r['RUN_STATUS'] == 'SUCCEEDED')}/{len(results)} sessions succeeded).")

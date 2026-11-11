@@ -33,7 +33,8 @@ make sfx-informatica-down NS=sfx-d1110-before
 - `MAPPINGS` selects what `sfx-informatica-run` executes: `all` or a count `N` (the first N mappings in
   `listobjects` order; 20 or more means all), or comma-separated mapping names or globs, e.g.
   `MAPPINGS=m_SFX_GL_JOURNAL_LINE` or `MAPPINGS='m_SFX_*INVOICE*,m_SFX_PAYMENT'`. Sessions of unselected mappings are
-  logged as skipped and their links still fire; a workflow with no selected mapping is not started. `INFA_WORKFLOWS`
+  logged as skipped and their links still fire; a workflow with no selected mapping is not started, and one whose selected
+  mappings are all on disabled sessions is not started and exits with an error. `INFA_WORKFLOWS`
   narrows the workflow list (`FOLDER:workflow ...`). The runner reads the same selection from `-mappings` or `$MAPPINGS`.
 - Against the seeded warehouse: `make sfx-teradata-up NS=...` then
   `make sfx-informatica-run NS=... INFA_DB=teradata` (source and target columns match `warehouse/seed/columns.py`).

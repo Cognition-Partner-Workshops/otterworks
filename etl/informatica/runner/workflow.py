@@ -39,15 +39,19 @@ def process_variables(root=None):
     return pv
 
 
-def workflow_mappings(repo, folder, flow):
-    """Mapping names a workflow or worklet runs, in task order (worklets expanded)."""
-    out = []
+def listed_sessions(repo, folder, flow, prefix="", enabled=True):
+    """(instance path, session, enabled) in task order with worklets expanded: the order listobjects prints."""
     for t in flow.tasks.values():
+        on = enabled and t.enabled
         if t.tasktype == "Session":
-            out.append(repo.sessions[(folder, t.taskname)].mapping)
+            yield prefix + t.name, repo.sessions[(folder, t.taskname)], on
         elif t.tasktype == "Worklet":
-            out += workflow_mappings(repo, folder, repo.worklets[(folder, t.taskname)])
-    return out
+            yield from listed_sessions(repo, folder, repo.worklets[(folder, t.taskname)], f"{prefix}{t.name}.", on)
+
+
+def workflow_mappings(repo, folder, flow, enabled_only=False):
+    """Mapping names a workflow or worklet runs, in listobjects order; disabled tasks only when enabled_only is false."""
+    return [s.mapping for _, s, on in listed_sessions(repo, folder, flow) if on or not enabled_only]
 
 
 def select_mappings(repo, spec):
