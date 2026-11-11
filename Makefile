@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-TIBCO_COMPOSE = NS=$(NS) DOCKER_GID=$$(stat -c %g /var/run/docker.sock) docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-$(NS)
+TIBCO_COMPOSE = NS=$(NS) REPLAY_UID=$$(id -u) REPLAY_GID=$$(id -g) DOCKER_GID=$$(stat -c %g /var/run/docker.sock) docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-$(NS)
 
 .PHONY: tibco-validate tibco-up tibco-replay tibco-parity tibco-fault tibco-fault-smoke tibco-down
 tibco-validate:

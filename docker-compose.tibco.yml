@@ -60,6 +60,9 @@ services:
     build:
       context: .
       dockerfile: integration/fixture/Dockerfile
+      args:
+        REPLAY_UID: ${REPLAY_UID:-1000}
+        REPLAY_GID: ${REPLAY_GID:-1000}
     environment: &replay-env
       REPLAY_BROKER_URL: stomp://broker:61613
       REPLAY_BROKER_USER: replay
