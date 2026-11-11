@@ -10,6 +10,15 @@ from string import Template
 
 
 class RunnerTests(unittest.TestCase):
+    def test_host_requires_https(self):
+        for host in ("http://example.invalid", "HTTP://example.invalid", "ftp://example.invalid", "https://example.invalid", "example.invalid"):
+            with self.subTest(host=host), tempfile.TemporaryDirectory() as directory, patch.dict("os.environ", {"DATABRICKS_HOST": host}):
+                if host in ("https://example.invalid", "example.invalid"):
+                    self.assertEqual(Runner("parity", Path(directory), Path(directory) / "ledger").host, "https://example.invalid")
+                else:
+                    with self.assertRaisesRegex(ValueError, "must use https"):
+                        Runner("parity", Path(directory), Path(directory) / "ledger")
+
     @patch.dict("os.environ", {"DATABRICKS_HOST": "https://example.invalid"})
     def test_parity_mismatch_exits_with_error(self):
         for counts, differences in ((["1", "1"], []), (["1", "2"], []), (["1", "1"], [["extra"]]), (["0", "0"], [])):

@@ -26,8 +26,12 @@ class Runner:
         self.output.mkdir(parents=True, exist_ok=True)
         self.results = []
         self.host = os.environ["DATABRICKS_HOST"].rstrip("/")
-        if not self.host.startswith("http"):
+        if self.host.lower().startswith("http://"):
+            raise ValueError("DATABRICKS_HOST must use https")
+        if "://" not in self.host:
             self.host = "https://" + self.host
+        if not self.host.startswith("https://"):
+            raise ValueError("DATABRICKS_HOST must use https")
 
     def api(self, method, path, body=None):
         request = urllib.request.Request(
