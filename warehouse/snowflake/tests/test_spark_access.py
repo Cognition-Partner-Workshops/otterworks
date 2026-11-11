@@ -2,6 +2,8 @@
 import importlib.util
 from pathlib import Path
 import re
+import ast
+import yaml
 from unittest.mock import MagicMock
 
 import pytest
@@ -13,6 +15,18 @@ spec = importlib.util.spec_from_file_location('spark_roles', ROOT / 'roles/dry_r
 roles = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(roles)
 RAW = {'SPARK_RAW_' + area.upper() for area in spark_landing.TABLES}
+
+
+def test_spark_replacements_keep_consumer_grants():
+    project = yaml.safe_load((ROOT.parent / 'dbt/dbt_project.yml').read_text())
+    assert project['models']['sfx_warehouse']['spark'].get('+copy_grants') is True
+    for path in (ROOT.parent / 'snowpark').glob('*.py'):
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == 'save_as_table':
+                options = {kw.arg: kw.value for kw in node.keywords}
+                if isinstance(options.get('mode'), ast.Constant) and options['mode'].value == 'overwrite':
+                    value = options.get('copy_grants')
+                    assert isinstance(value, ast.Constant) and value.value is True, path
 
 
 def test_spark_schemas_and_scoped_grants():

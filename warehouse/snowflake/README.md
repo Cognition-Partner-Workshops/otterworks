@@ -226,8 +226,22 @@ pause/resume use.
 
 V010 provisions `SPARK_RAW_BILLING`, `SPARK_RAW_DOCUMENTS`, `SPARK_RAW_USERS`,
 `SPARK_RAW_AUDIT` and `MART_SPARK` before any Spark landing or migrated job runs.
-After deploying migrations, apply the role plan (including `06_spark_grants.sql`)
-with the role administrator via `roles/dry_run.py --apply`. The loader only creates
+V011 creates database roles `SFX_D1110_AFTER.SFX_D1110_TRANSFORMER` and
+`SFX_D1110_AFTER.SFX_D1110_ANALYST`, and grants them to `SFX_D1110_ROLE`.
+The database owner can apply both migrations without account-level role admin.
+The transformer database role reads only the four Spark raw schemas, creates
+tables, views and functions only in `MART_SPARK`, and applies only
+`GOVERNANCE.SFX_RUN`. The analyst database role has only `MART_SPARK` schema
+USAGE and SELECT on existing/future output tables and views.
+
+For the separate account-role deployment, requester action is required: have a
+role administrator apply `roles/01_roles.sql` through `roles/06_spark_grants.sql`
+using `roles/dry_run.py --apply`. This additionally sets up the account-level
+loader, parity and Snowpark roles and their warehouse access. The database-role
+deployment inherits warehouse access from `SFX_D1110_ROLE`; database roles cannot
+hold warehouse privileges or be activated with USE ROLE.
+
+The loader only creates
 and refreshes tables in the provisioned landing schemas; it needs no database
 CREATE SCHEMA privilege. Transformer and Snowpark roles read the landing tables
 and create tables, views and Python functions in `MART_SPARK`. Parity and analyst
@@ -238,6 +252,8 @@ V006's allowed value. A scoped `SNOWFLAKE_RUN_TOKEN` remains in query attributio
 and object comments. Both the dbt hook and the Snowpark runner restore this tag
 after publishing; their roles receive APPLY on this single tag. Snowpark table
 replacements must use `copy_grants=True` to preserve explicit consumer grants.
+Spark dbt tables likewise have `+copy_grants: true` so full refreshes retain
+explicit grants as well as the schema's future grants.
 
 Deploy V006 before running dbt. `deploy.py` restores `GOVERNANCE.SFX_RUN='sfx-d1110'`
 and token comments on the V003/V005 tasks and procedures after every deployment,
