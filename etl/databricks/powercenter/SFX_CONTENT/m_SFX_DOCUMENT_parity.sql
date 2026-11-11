@@ -1,0 +1,14 @@
+/* run=dbx-d1111 act=scale step=parity consumer=m_SFX_DOCUMENT */
+WITH p AS (SELECT document_id,folder_id,owner_user_id,customer_id,document_name,created_dt,status_cd,file_type FROM cpw.dbx_d1111_parity.documents__document__pc_before),
+    a AS (SELECT document_id,folder_id,owner_user_id,customer_id,document_name,created_dt,status_cd,file_type FROM cpw.dbx_d1111_after.documents__document),
+    p_minus_a AS (SELECT * FROM p EXCEPT ALL SELECT * FROM a),
+    a_minus_p AS (SELECT * FROM a EXCEPT ALL SELECT * FROM p),
+    ps AS (SELECT count(*) AS count, coalesce(sum(cast(conv(substr(md5(concat_ws('|',coalesce(cast(document_id as string),'<NULL>'),coalesce(cast(folder_id as string),'<NULL>'),coalesce(cast(owner_user_id as string),'<NULL>'),coalesce(cast(customer_id as string),'<NULL>'),coalesce(cast(document_name as string),'<NULL>'),coalesce(cast(created_dt as string),'<NULL>'),coalesce(cast(status_cd as string),'<NULL>'),coalesce(cast(file_type as string),'<NULL>'))),1,15),16,10) AS DECIMAL(38,0))),0) AS hash FROM p), ats AS (SELECT count(*) AS count, coalesce(sum(cast(conv(substr(md5(concat_ws('|',coalesce(cast(document_id as string),'<NULL>'),coalesce(cast(folder_id as string),'<NULL>'),coalesce(cast(owner_user_id as string),'<NULL>'),coalesce(cast(customer_id as string),'<NULL>'),coalesce(cast(document_name as string),'<NULL>'),coalesce(cast(created_dt as string),'<NULL>'),coalesce(cast(status_cd as string),'<NULL>'),coalesce(cast(file_type as string),'<NULL>'))),1,15),16,10) AS DECIMAL(38,0))),0) AS hash FROM a)
+    SELECT ps.count AS pc_count,ats.count AS after_count,ps.hash AS pc_hash,ats.hash AS after_hash,
+      (SELECT count(*) FROM p_minus_a) AS pc_minus_after,
+      (SELECT count(*) FROM a_minus_p) AS after_minus_pc,
+      (SELECT to_json(collect_list(named_struct('row',canonical))) FROM
+        (SELECT concat_ws('|',coalesce(cast(document_id AS STRING),'<NULL>'),coalesce(cast(folder_id AS STRING),'<NULL>'),coalesce(cast(owner_user_id AS STRING),'<NULL>'),coalesce(cast(customer_id AS STRING),'<NULL>'),coalesce(cast(document_name AS STRING),'<NULL>'),coalesce(cast(created_dt AS STRING),'<NULL>'),coalesce(cast(status_cd AS STRING),'<NULL>'),coalesce(cast(file_type AS STRING),'<NULL>')) AS canonical FROM p_minus_a LIMIT 20)) AS pc_sample,
+      (SELECT to_json(collect_list(named_struct('row',canonical))) FROM
+        (SELECT concat_ws('|',coalesce(cast(document_id AS STRING),'<NULL>'),coalesce(cast(folder_id AS STRING),'<NULL>'),coalesce(cast(owner_user_id AS STRING),'<NULL>'),coalesce(cast(customer_id AS STRING),'<NULL>'),coalesce(cast(document_name AS STRING),'<NULL>'),coalesce(cast(created_dt AS STRING),'<NULL>'),coalesce(cast(status_cd AS STRING),'<NULL>'),coalesce(cast(file_type AS STRING),'<NULL>')) AS canonical FROM a_minus_p LIMIT 20)) AS after_sample
+    FROM ps CROSS JOIN ats;
