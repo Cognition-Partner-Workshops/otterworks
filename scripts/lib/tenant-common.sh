@@ -254,6 +254,13 @@ YAML
 # locked-down temp values file passed to helm via -f, so secret values never
 # appear in the process argument list (ps / /proc/*/cmdline). Mirrors deploy-dev.sh.
 add_secret() { SECRET_KV+=("$1" "$2"); }
+# Reuse the namespace's existing share-link key so links survive redeploys and DB password rotation.
+share_link_secret() {
+  local existing
+  existing="$(kubectl -n "$1" get secret document-service-secrets \
+    -o jsonpath='{.data.SHARE_LINK_SECRET}' 2>/dev/null | base64 -d 2>/dev/null || true)"
+  printf '%s' "${SHARE_LINK_SECRET:-${existing:-$(openssl rand -hex 32)}}"
+}
 urlencode()  { jq -rn --arg s "$1" '$s|@uri'; }
 
 # Build per-service Helm --set flags (EXTRA_ARGS) + secret pairs (SECRET_KV) for
@@ -330,8 +337,7 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.DOC_SVC_AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.DOC_SVC_SNS_TOPIC_ARN=${sns_topic}")
       add_secret DOC_SVC_DATABASE_URL "postgresql+asyncpg://$(urlencode "${DB_USER}"):$(urlencode "${DB_PASSWORD}")@${DB_ENDPOINT_HOST}:${DB_ENDPOINT_PORT}/${T_DB_NAME}"
-      # Stable per tenant (derived from its DB credential) so share links survive redeploys.
-      add_secret SHARE_LINK_SECRET "${SHARE_LINK_SECRET:-$(printf 'share-link:%s:%s' "${T_DB_NAME}" "${DB_PASSWORD}" | sha256sum | cut -d' ' -f1)}" ;;
+      add_secret SHARE_LINK_SECRET "$(share_link_secret "${NS:-}")" ;;
     collab-service)
       EXTRA_ARGS+=(--set-string "config.HTTP_PORT=8084" --set-string "config.NODE_ENV=production")
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${T_REDIS_HOST}" --set-string "config.REDIS_PORT=6379") ;;

@@ -256,6 +256,13 @@ irsa_arn() { echo "${IRSA_JSON:-{}}" | jq -r --arg s "$1" '.[$s] // empty' 2>/de
 # --set-string, so secret values never appear in the process argument list
 # (visible via ps / /proc/*/cmdline).
 add_secret() { SECRET_KV+=("$1" "$2"); }
+# Reuse the namespace's existing share-link key so links survive redeploys and DB password rotation.
+share_link_secret() {
+  local existing
+  existing="$(kubectl -n "$1" get secret document-service-secrets \
+    -o jsonpath='{.data.SHARE_LINK_SECRET}' 2>/dev/null | base64 -d 2>/dev/null || true)"
+  printf '%s' "${SHARE_LINK_SECRET:-${existing:-$(openssl rand -hex 32)}}"
+}
 
 # URL-encode a string for safe use inside a URI (e.g. a DB password that may
 # contain @ : / # % ? in a connection string). Uses jq's @uri filter.
@@ -364,7 +371,7 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.DOC_SVC_AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.DOC_SVC_SNS_TOPIC_ARN=${SNS_TOPIC}")
       add_secret DOC_SVC_DATABASE_URL "postgresql+asyncpg://$(urlencode "${DB_USER}"):$(urlencode "${DB_PASSWORD}")@${DB_ENDPOINT_HOST}:${DB_ENDPOINT_PORT}/${DB_NAME}"
-      add_secret SHARE_LINK_SECRET "${SHARE_LINK_SECRET:-$(printf 'share-link:%s:%s' "${DB_NAME}" "${DB_PASSWORD}" | sha256sum | cut -d' ' -f1)}" ;;
+      add_secret SHARE_LINK_SECRET "$(share_link_secret "${NAMESPACE}")" ;;
     collab-service)
       EXTRA_ARGS+=(--set-string "config.HTTP_PORT=8084" --set-string "config.NODE_ENV=production")
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${REDIS_HOST}" --set-string "config.REDIS_PORT=6379") ;;
