@@ -12,6 +12,7 @@ def test_normalisation():
     assert normal(Decimal('1.00')) == normal(1)
     assert normal(Decimal('123456789012345678901234567890.10'))[1] == '123456789012345678901234567890.1'
     assert normal(' a ') == normal('a')
+    assert normal('\ta') != normal('a')
     assert normal(None) != normal('null')
     assert normal(date(2026, 11, 9)) == ['date', '2026-11-09']
     assert normal(datetime(2026, 11, 9, tzinfo=timezone.utc))[1].startswith('2026-11-09T')

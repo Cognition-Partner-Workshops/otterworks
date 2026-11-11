@@ -23,7 +23,7 @@ def normal(value):
         return ['timestamp', value.isoformat(timespec='microseconds')]
     if isinstance(value, date):
         return ['date', value.isoformat()]
-    return ['string', str(value).strip()]
+    return ['string', str(value).strip(' ')]
 
 
 def digest(values):
