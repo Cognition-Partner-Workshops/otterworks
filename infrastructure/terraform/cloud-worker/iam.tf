@@ -236,6 +236,20 @@ resource "aws_iam_role_policy" "devin_engineer_iam" {
       },
       {
         Effect = "Allow"
+        Action = [
+          "iam:GetAccountSummary",
+          "iam:ListAccountAliases",
+          "iam:ListGroups",
+          "iam:ListInstanceProfiles",
+          "iam:ListOpenIDConnectProviders",
+          "iam:ListPolicies",
+          "iam:ListRoles",
+          "iam:ListUsers",
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
         Action = [ # nosemgrep: terraform.lang.security.iam.no-iam-priv-esc-funcs.no-iam-priv-esc-funcs, terraform.lang.security.iam.no-iam-resource-exposure.no-iam-resource-exposure
           "iam:CreateRole",
           "iam:DeleteRole",

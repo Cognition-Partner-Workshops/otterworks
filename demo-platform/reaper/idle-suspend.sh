@@ -127,6 +127,10 @@ running_deployments() {
 # Does the tenant have an injected chaos scenario running? Such a tenant is a
 # lab in progress: its Redis holds the bug, and Redis has no persistence, so
 # suspending would quietly un-inject the scenario the attendee is debugging.
+# Loaded at top level so reaper.sh, which sources this file, gets it too.
+# shellcheck source=/dev/null
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/scripts/lib/tenant-redis.sh"
+
 tenant_has_chaos() {
   local ns="$1"
   # Same access path inject-bug.sh uses, so the two agree on what "injected" means.
@@ -270,7 +274,5 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
   REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
   # shellcheck source=/dev/null
   source "${REPO_ROOT}/demo-platform/lib/control-common.sh"
-  # shellcheck source=/dev/null
-  source "${REPO_ROOT}/scripts/lib/tenant-redis.sh"
   suspend_idle_tenants
 fi

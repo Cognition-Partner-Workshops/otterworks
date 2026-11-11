@@ -300,5 +300,12 @@ CURL_RC=7; CURL_BODY=""
 real_counts >/dev/null 2>&1
 check "still reports failure when the scrape cannot be made" "$?" "1"
 
+echo "sourced by the reaper:"
+if (cd / && bash -c 'source "$1" && declare -F tenant_redis >/dev/null' _ "${SCRIPT_DIR}/idle-suspend.sh"); then
+  ok "sourcing idle-suspend.sh defines tenant_redis for tenant_has_chaos"
+else
+  nope "sourcing idle-suspend.sh defines tenant_redis for tenant_has_chaos"
+fi
+
 echo "${PASS} passed, ${FAIL} failed"
 [ "${FAIL}" -eq 0 ]
