@@ -121,7 +121,15 @@ columns and only widens existing types where necessary. V001–V003 and V005–V
 remain unchanged; V004 codifies the initial COMPAT contract in place, with live
 replacements supplied by V008/V009 rather than replaying the applied V004.
 tools/render_seed.py renders V007/the superset; render_raw.py remains bound to the
-frozen fixture/V002 contract. dbt exposes both column sets and tests the shared
+frozen fixture/V002 contract. V012 restores RAW_BILLING.USAGE_DAILY.CURRENCY_CODE to
+CHAR(3) after the nightly drift sweep found it widened to VARCHAR(10) outside the
+migration history. Snowflake cannot narrow a column in place, so V012 rebuilds it
+through a temporary column; the table, its COPY history and Time Travel are kept,
+and CURRENCY_CODE becomes the last column (every load here maps by name). V012 is a
+no-op when the column is already three characters wide and refuses to run while any
+row holds a longer value: such rows come from an out-of-contract load and must be
+removed or replayed first. Each DDL statement autocommits, so V012 inspects the
+column layout first and a rerun resumes from wherever an interrupted run stopped. dbt exposes both column sets and tests the shared
 primary/foreign keys, using legacy fixture IDs as fallbacks. Legacy-only fields
 absent from shared RAW seed data remain NULL; the approved COMPAT/staging date
 fallbacks above are explicit exceptions at projection time. Catalog, chart and
