@@ -28,6 +28,33 @@ RSpec.describe 'Finance dashboard', type: :request do
     )
   end
 
+  it 'allows the admin role to read the dashboard' do
+    get path, headers: auth_headers(role: 'admin')
+    expect(response).to have_http_status(:ok)
+  end
+
+  %w[user editor viewer unknown].each do |role|
+    it "rejects the #{role} role before reading the warehouse" do
+      get path, headers: auth_headers(role: role)
+      expect(response).to have_http_status(:forbidden)
+      expect(client).not_to have_received(:query)
+    end
+  end
+
+  it 'rejects a token without a role before reading the warehouse' do
+    get path, headers: auth_headers(role: nil)
+    expect(response).to have_http_status(:forbidden)
+    expect(client).not_to have_received(:query)
+  end
+
+  [nil, '', ' ', 42].each do |subject|
+    it "rejects an admin token with invalid subject #{subject.inspect}" do
+      get path, headers: auth_headers(user_id: subject)
+      expect(response).to have_http_status(:unauthorized)
+      expect(client).not_to have_received(:query)
+    end
+  end
+
   it 'returns 404 when disabled' do
     allow(FinanceWarehouse::DashboardQueries).to receive(:enabled?).and_return(false)
     get path, headers: auth_headers
