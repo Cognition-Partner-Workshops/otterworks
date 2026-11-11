@@ -231,7 +231,7 @@ def targets(q, template):
 def history(q, start, path):
     names, rows = q.run(
         "SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS,ROWS_INSERTED,"
-        "ROWS_UPDATED,ROWS_DELETED,SESSION_ID FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
+        "ROWS_PRODUCED,SESSION_ID FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
         f"USER_NAME=>CURRENT_USER(), END_TIME_RANGE_START=>TO_TIMESTAMP_LTZ('{start}'), RESULT_LIMIT=>10000)) "
         "ORDER BY START_TIME")
     dump(path / 'query_history.json', {'columns': names, 'rows': [[cell(v) for v in r] for r in rows],
