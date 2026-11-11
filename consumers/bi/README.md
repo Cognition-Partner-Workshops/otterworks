@@ -49,3 +49,31 @@ snowflake-semantics invokes the shared live bridge. snowflake is an explicit
 placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE or PRIVATE_KEY skips;
 configured execution is unsupported. Metadata: SFX_D1110_AFTER.COMPAT, query tag
 `{"run":"sfx-d1110","act":"consumers","consumer":"bi-semantic"}`.
+
+## Databricks target (run dbx-d1111)
+`databricks/` holds the Databricks-dialect model (connection `dbx_fin`, catalog `cpw`,
+schema `dbx_d1111_after`). It mirrors `finance.model.lkml` explore-for-explore; only the
+SQL dialect and table names change (native rewrite, no compatibility views). Snapshots
+live in `contract/queries/databricks/` and are checked by `python -m pytest`.
+
+```sh
+pip install -r requirements-dev.txt -r ../contract-kit/requirements-databricks.txt
+# old read path: emulator seeded to match the live baseline
+make -C ../.. sfx-teradata-up NS=dbx-d1111-consumers-bi-semantic ROWS_PER_TABLE=2000 BUSINESS_DATE=20261109
+export TD_PG_PORT=55203
+python -m contract.input_equality      # emulator inputs == cpw.dbx_d1111_before (count + hash)
+python -m contract.old_path            # records recorded/teradata-baseline + expected/baseline
+# new read path (needs DATABRICKS_HOST, DATABRICKS_TOKEN, DATABRICKS_WAREHOUSE_ID)
+WAREHOUSE_CONTRACT_TARGET=databricks python -m pytest contract -v
+```
+Without the Databricks variables the `databricks` target skips with a clear reason.
+`CURRENT_DATE` / `current_date()` is pinned to `CONTRACT_AS_OF_DATE` (default 2026-11-09,
+the seeded business date) on both paths. The `databricks` target asserts the team contract
+(row count, sums, ordered keys) against `expected/baseline/` and exact row equality with the
+old path in `recorded/teradata-baseline/`. `expected/` and `recorded/teradata/` stay the
+800-row emulator/replay contract.
+
+Cutover status is **red**: successful DBQL reads of `SFX_USERS.V_TEAM_MEMBERS`
+are outside the five billing queries and have no complete after target. See
+[shared_changes_needed.md](shared_changes_needed.md). The live contract includes
+an explicit users dependency check; billing parity alone cannot certify cutover.

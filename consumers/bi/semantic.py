@@ -7,17 +7,21 @@ import lkml
 ROOT = Path(__file__).parent
 
 
-def project():
-    model = lkml.load((ROOT / "finance.model.lkml").read_text())
+DATABRICKS = ROOT / "databricks"
+
+
+def project(root=ROOT):
+    model = lkml.load((root / "finance.model.lkml").read_text())
     views = {}
-    for path in sorted((ROOT / "views").glob("*.lkml")):
+    for path in sorted((root / "views").glob("*.lkml")):
         for view in lkml.load(path.read_text())["views"]:
             views[view["name"]] = view
     return model, views
 
 
-def queries():
-    model, views = project()
+def queries(root=ROOT):
+    model, views = project(root)
+    select = "SEL" if root == ROOT else "SELECT"
 
     def expand(sql, view_name):
         def field(match):
@@ -41,7 +45,7 @@ def queries():
         metric = next(m for m in view["measures"] if m["name"] == measure)
         explore = next(e for e in model["explores"] if e["name"] == name)
         sql = (
-            f"SEL {expand(dim['sql'], name)} AS LABEL,\n"
+            f"{select} {expand(dim['sql'], name)} AS LABEL,\n"
             f"  SUM({expand(metric['sql'], name)}) AS AMOUNT\n"
             f"FROM {view['sql_table_name']} AS {name}"
         )

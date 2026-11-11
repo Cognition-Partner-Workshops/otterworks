@@ -1,0 +1,11 @@
+{
+  "query": "payments",
+  "row_count": 1,
+  "sums": {
+    "AMOUNT": "268853.38"
+  },
+  "key_column": "LABEL",
+  "keys": [
+    "2026-11"
+  ]
+}
