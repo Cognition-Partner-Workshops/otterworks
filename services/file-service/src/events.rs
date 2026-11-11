@@ -74,7 +74,11 @@ impl EventPublisher {
         sns.and(eventbridge)
     }
 
-    async fn publish_eventbridge(&self, event: &FileEvent, message: &str) -> Result<(), ServiceError> {
+    async fn publish_eventbridge(
+        &self,
+        event: &FileEvent,
+        message: &str,
+    ) -> Result<(), ServiceError> {
         let entry = eventbridge_entry(&self.event_bus_name, event, message);
         let out = self
             .eventbridge
@@ -88,7 +92,13 @@ impl EventPublisher {
             let detail = out
                 .entries()
                 .first()
-                .map(|e| format!("{}: {}", e.error_code().unwrap_or("?"), e.error_message().unwrap_or("?")))
+                .map(|e| {
+                    format!(
+                        "{}: {}",
+                        e.error_code().unwrap_or("?"),
+                        e.error_message().unwrap_or("?")
+                    )
+                })
                 .unwrap_or_default();
             return Err(ServiceError::EventBridgeError(detail));
         }
@@ -314,7 +324,10 @@ mod tests {
     fn test_event_transport_parse() {
         assert_eq!(EventTransport::parse(""), EventTransport::Sns);
         assert_eq!(EventTransport::parse("sns"), EventTransport::Sns);
-        assert_eq!(EventTransport::parse("EventBridge"), EventTransport::EventBridge);
+        assert_eq!(
+            EventTransport::parse("EventBridge"),
+            EventTransport::EventBridge
+        );
         assert_eq!(EventTransport::parse("dual"), EventTransport::Dual);
         assert_eq!(EventTransport::parse("kafka"), EventTransport::Sns);
         assert!(EventTransport::Dual.uses_sns() && EventTransport::Dual.uses_eventbridge());
