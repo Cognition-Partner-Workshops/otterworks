@@ -96,8 +96,8 @@
   reason: "Walks parent pointers iteratively with RDDs and a broadcast parent lookup."
 - job: team_graph_components
   language: scala
-  target: dbt
-  reason: "Six fixed label-propagation rounds are joins and MIN aggregates, generated as relational SQL CTEs without Python."
+  target: snowpark_python
+  reason: "Propagates component labels iteratively across a team-membership graph."
 - job: doc_share_graph_reach
   language: python
   target: snowpark_python

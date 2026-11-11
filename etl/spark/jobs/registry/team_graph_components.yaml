@@ -1,9 +1,9 @@
 {
   "job": "team_graph_components",
   "language": "scala",
-  "target": "dbt",
+  "target": "snowpark_python",
   "status": "snowflake",
-  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job team_graph_components --select path:models/spark/team_graph_components",
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job team_graph_components",
   "schedule": "22 3 * * *",
   "profile": "small",
   "class": "sfx.TeamGraphComponents"
