@@ -20,9 +20,9 @@ def execute(statement, parameters=(), *, step="contract"):
     with sql.connect(server_hostname=host,
                      http_path="/sql/1.0/warehouses/" + warehouse,
                      access_token=os.environ["DATABRICKS_TOKEN"],
-                     catalog="cpw", schema="dbx_d1111_after") as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(f"/* run={run} act=consumers step={step} consumer={consumer} */\n"
-                           + statement, parameters)
-            return {"columns": [column[0].upper() for column in cursor.description],
-                    "rows": [list(row) for row in cursor.fetchall()]}
+                     catalog="cpw", schema="dbx_d1111_after") as connection, \
+            connection.cursor() as cursor:
+        cursor.execute(f"/* run={run} act=consumers step={step} consumer={consumer} */\n"
+                       + statement, parameters)
+        return {"columns": [column[0].upper() for column in cursor.description],
+                "rows": [list(row) for row in cursor.fetchall()]}
