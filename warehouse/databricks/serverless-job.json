@@ -1,0 +1,7 @@
+{
+  "name": "dbx-d1111-billing",
+  "tags": {"run_token": "dbx-d1111", "expires": "2026-11-24", "act": "prove", "step": "billing", "consumer": "billing"},
+  "max_concurrent_runs": 1,
+  "tasks": [{"task_key": "billing", "notebook_task": {"notebook_path": "/Shared/dbx-d1111/billing", "source": "WORKSPACE"}}],
+  "queue": {"enabled": true}
+}
