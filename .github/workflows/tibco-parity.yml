@@ -47,6 +47,30 @@ jobs:
               exit 1
             fi
             python -m integration.fixture.summary integration/reports/ci/parity.json --expect-empty
+            payments_ready() {
+              for attempt in $(seq 1 60); do
+                if docker logs otterworks-tibco-ci-payments 2>&1 | grep -q 'Started PaymentsApplication'; then
+                  return 0
+                fi
+                sleep 1
+              done
+              docker logs otterworks-tibco-ci-payments
+              return 1
+            }
+            for queue in HB.PAYMENT.INSTRUCTIONS HB.PAYMENT.STATUS HB.UNDLV; do
+              NS=ci docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-ci exec -T broker sh -c './bin/artemis queue purge --url tcp://localhost:61616 --user replay --password "$ARTEMIS_PASSWORD" --name "$1"' sh "$queue"
+            done
+            NS=ci docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-ci --profile targets up -d payments
+            payments_ready
+            make tibco-replay NS=ci FLOW=payments.instruction-intake
+            NS=ci docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-ci exec -T integration-db psql -U replay -d integration -c "DELETE FROM payment_inbox WHERE flow='payments.instruction-intake'; DELETE FROM payment_ledger WHERE flow='payments.instruction-intake';"
+            for queue in HB.PAYMENT.INSTRUCTIONS HB.PAYMENT.STATUS HB.UNDLV; do
+              NS=ci docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-ci exec -T broker sh -c './bin/artemis queue purge --url tcp://localhost:61616 --user replay --password "$ARTEMIS_PASSWORD" --name "$1"' sh "$queue"
+            done
+            NS=ci PAYMENTS_TX_HOLD_MS=150 docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-ci --profile targets up -d --force-recreate payments
+            payments_ready
+            make tibco-fault NS=ci TEST=broker-kill
+            NS=ci docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-ci logs --no-color payments > integration/reports/ci/broker-kill/payments.log
           else
             NS=ci docker compose -f docker-compose.yml -f docker-compose.tibco.yml -p otterworks-tibco-ci --profile targets up -d payments account-events fees-billing statements-documents customer-alerts
             make tibco-parity NS=ci
