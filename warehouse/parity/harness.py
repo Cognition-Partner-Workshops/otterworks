@@ -30,11 +30,13 @@ def owner_effort(row):
             row['mapping'] in ACT3_CONTENT else 'migrations-page')
 
 
-def require_owner(cursor, mapping, owner='act3-workflow'):
-    cursor.execute(f'SELECT OWNER_EFFORT FROM {control_table()} WHERE MAPPING=%s', (mapping,))
+def require_owner(cursor, mapping, owner='act3-workflow', folder=None):
+    cursor.execute(f'SELECT FOLDER, OWNER_EFFORT FROM {control_table()} WHERE MAPPING=%s', (mapping,))
     rows = cursor.fetchall()
-    if len(rows) != 1 or rows[0][0] != owner:
+    if len(rows) != 1 or rows[0][-1] != owner:
         raise ValueError(f'Mapping ownership mismatch: {mapping} (requested {owner})')
+    if folder is not None and rows[0][0] != folder:
+        raise ValueError(f'Mapping folder mismatch: {mapping} (requested {folder})')
 
 
 def tag(step, mapping=None):

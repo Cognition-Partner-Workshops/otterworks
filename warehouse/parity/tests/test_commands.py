@@ -51,6 +51,9 @@ def test_sql_scope_and_owner(monkeypatch):
     assert control_table() == 'SFX_D1110_AFTER.PC_CONTROL.CUSTOM_MAPPINGS'
     assert 't.OWNER_EFFORT=s.OWNER_EFFORT' in mark_sql()
     assert 'WHEN NOT MATCHED' not in mark_sql()
+    assert 'ON t.FOLDER=s.FOLDER AND t.MAPPING=s.MAPPING' in mark_sql()
+    assert mark_sql().count('%s') == 16
+    assert "IFF(t.STATUS='VERIFIED',COALESCE(t.VERIFIED_AT" in mark_sql()
     assert relation('PC_BILLING.PAYMENT') == 'SFX_D1110_AFTER.PC_BILLING.PAYMENT'
     with pytest.raises(ValueError):
         relation('OTHER.PC_BILLING.PAYMENT')
@@ -73,10 +76,12 @@ def test_mark_rejects_other_owner_before_reading_evidence(monkeypatch):
         def execute(self, sql, params):
             statements.append(sql)
         def fetchall(self):
-            return [('migrations-page',)]
+            return [('SFX_CONTENT', 'migrations-page')]
 
     monkeypatch.setattr(commands, 'connection', lambda *args: Cursor())
     with pytest.raises(ValueError, match='ownership mismatch'):
-        commands.mark({'mapping': 'm_SFX_LOGIN_EVENT'}, SimpleNamespace(owner='act3-workflow'))
-    assert len(statements) == 1
-    assert statements[0].startswith('SELECT OWNER_EFFORT')
+        commands.mark({'folder': 'SFX_CONTENT', 'mapping': 'm_SFX_LOGIN_EVENT'}, SimpleNamespace(owner='act3-workflow'))
+    with pytest.raises(ValueError, match='folder mismatch'):
+        commands.mark({'folder': 'SFX_AUDIT', 'mapping': 'm_SFX_LOGIN_EVENT'}, SimpleNamespace(owner='migrations-page'))
+    assert len(statements) == 2
+    assert all(s.startswith('SELECT FOLDER, OWNER_EFFORT') for s in statements)

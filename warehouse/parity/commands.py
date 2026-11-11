@@ -204,23 +204,23 @@ def idempotence(row):
 
 
 def mark_sql():
-    return f'''MERGE INTO {control_table()} t USING (SELECT %s MAPPING, %s OWNER_EFFORT) s
-        ON t.MAPPING=s.MAPPING
+    return f'''MERGE INTO {control_table()} t USING (SELECT %s FOLDER, %s MAPPING, %s OWNER_EFFORT) s
+        ON t.FOLDER=s.FOLDER AND t.MAPPING=s.MAPPING
         WHEN MATCHED AND t.OWNER_EFFORT=s.OWNER_EFFORT THEN UPDATE SET
         BEFORE_ROWS=%s, AFTER_ROWS=%s, ROWCOUNT_MATCH=%s, KEYED_HASH_MATCH=%s,
         SAMPLED_DIFFS=PARSE_JSON(%s), RUN1_ROWS=%s, RUN2_ROWS=%s, RERUN_DUPLICATES=%s,
         STATUS=%s, AMBER_REASON=%s, PR_URL=COALESCE(%s,t.PR_URL), PARITY_QUERY_TAG=%s,
-        VERIFIED_AT=IFF(%s='VERIFIED',CURRENT_TIMESTAMP(),NULL)'''
+        VERIFIED_AT=IFF(%s='VERIFIED',IFF(t.STATUS='VERIFIED',COALESCE(t.VERIFIED_AT,CURRENT_TIMESTAMP()),CURRENT_TIMESTAMP()),NULL)'''
 
 
 def mark(row, args):
     with connection('ops', 'mark', row['mapping']) as conn, conn.cursor() as cur:
-        require_owner(cur, row['mapping'], args.owner)
+        require_owner(cur, row['mapping'], args.owner, row['folder'])
         result = json.loads((OUT / (row['mapping'] + '.json')).read_text())
         if result.get('config') != row:
             raise ValueError('Mapping configuration changed; regenerate evidence')
         decision = status(result, args.amber)
-        cur.execute(mark_sql(), (row['mapping'], args.owner, result.get('before_rows'),
+        cur.execute(mark_sql(), (row['folder'], row['mapping'], args.owner, result.get('before_rows'),
                     result.get('after_rows'), result.get('rowcount_match'), result.get('keyed_hash_match'),
                     json.dumps(result.get('sampled_diffs', [])), result.get('run1_rows'),
                     result.get('run2_rows'), result.get('rerun_duplicates'), decision,
