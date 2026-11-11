@@ -21,7 +21,7 @@ TABLES = ["INVOICE_HDR", "V_INVOICE_REVENUE", "CUSTOMER_ACCOUNT", "PAYMENT", "GL
 
 def canonical(value):
     if value is None:
-        return ""
+        return "\\N"
     if isinstance(value, (date, datetime)):
         return value.isoformat()[:10]
     try:
