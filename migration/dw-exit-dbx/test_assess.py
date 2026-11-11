@@ -2,12 +2,13 @@ import unittest
 import os
 import copy
 import subprocess
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from assess import area, loc, mask
 import assess
 from check import live_differences, manifest_differences
 from load_control import connect
+import load_control
 
 
 class AssessmentHelpers(unittest.TestCase):
@@ -90,6 +91,16 @@ class AssessmentHelpers(unittest.TestCase):
         self.assertEqual(assess.lineage_node(path, 'audit'), assess.lineage_node(path, 'data-platform'))
         self.assertNotEqual(assess.lineage_node(path, 'audit'), assess.lineage_node(path + '_other', 'audit'))
         self.assertTrue(assess.lineage_node(path, 'audit').startswith('d'))
+
+    def test_loader_preserves_demo_fields_and_rows(self):
+        with patch.object(load_control, 'connect', return_value=MagicMock()), patch.object(load_control, 'execute', return_value=MagicMock()) as execute:
+            load_control.main()
+        statement = next(call.args[2] for call in execute.call_args_list if call.args[1] == 'load')
+        matched = statement.split('WHEN MATCHED THEN UPDATE SET ')[1].split(' WHEN NOT MATCHED')[0]
+        for field in ('status', 'parity', 'pr', 'updated_at'):
+            self.assertNotIn('t.' + field + '=', matched)
+        self.assertNotIn('DELETE', statement)
+        self.assertNotIn('NOT MATCHED BY SOURCE', statement)
 
 
 if __name__ == '__main__':

@@ -77,17 +77,19 @@ def main():
             print(f'SPARK jobs={len(jobs)} executor_hours={hours} baseline={baseline["totals"]["executor_hours"]}')
     try:
         with connect() as connection, connection.cursor() as cursor:
-            rows = execute(cursor, 'check', f'SELECT wave, count(*) FROM {TABLE} GROUP BY wave ORDER BY wave').fetchall()
+            ids = [e['id'] for e in entries]
+            scope = 'object_name IN (' + ','.join('?' for _ in ids) + ')' if ids else 'FALSE'
+            rows = execute(cursor, 'check', f'SELECT wave, count(*) FROM {TABLE} WHERE {scope} GROUP BY wave ORDER BY wave', ids).fetchall()
             actual = {int(r[0]): int(r[1]) for r in rows}
             print(f'LIVE count={sum(actual.values())} waves={actual}')
             if actual != dict(sorted(Counter(e['wave'] for e in entries).items())):
                 failures.append('live counts differ from manifest')
-            details = execute(cursor, 'check_fields', f'SELECT object_name, target, wave, owner, risk FROM {TABLE} ORDER BY object_name').fetchall()
+            details = execute(cursor, 'check_fields', f'SELECT object_name, target, wave, owner, risk FROM {TABLE} WHERE {scope} ORDER BY object_name', ids).fetchall()
             differences = live_differences(entries, details)
             print(f'LIVE field_mismatches={len(differences)}')
             if differences:
                 failures.append('live target/wave/owner/risk mismatch: ' + ', '.join(differences))
-            measured = execute(cursor, 'check_hours', f'SELECT sum(executor_hours) FROM {TABLE}').fetchone()[0]
+            measured = execute(cursor, 'check_hours', f'SELECT sum(executor_hours) FROM {TABLE} WHERE {scope}', ids).fetchone()[0]
             print(f'LIVE executor_hours={measured}')
             expected_hours = sum(Decimal(str(e['executor_hours'])) for e in entries if e['executor_hours'] is not None)
             if (measured or Decimal(0)) != expected_hours:

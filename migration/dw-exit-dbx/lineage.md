@@ -1,6 +1,6 @@
 # Lineage
 
-{'spark_ref': 'pr-2740', 'spark_commit': '40a2465c7eb30777a634abfa698d3a2e7ca17e47'}
+{'spark_ref': 'working tree', 'spark_commit': 'b870c4f1126ffe2de449b0291c630456bfa7b4ab'}
 
 Area-level overview; arrows represent feed/processing flow, not execution order. Detailed Spark reads/writes below are extracted from code literals.
 

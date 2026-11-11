@@ -9,7 +9,7 @@ or warehouses are created. All new files stay in this directory.
 ```sh
 python3 -m venv migration/dw-exit-dbx/.venv
 migration/dw-exit-dbx/.venv/bin/pip install -r migration/dw-exit-dbx/requirements.txt
-migration/dw-exit-dbx/.venv/bin/python migration/dw-exit-dbx/assess.py --spark-ref pr-2740
+migration/dw-exit-dbx/.venv/bin/python migration/dw-exit-dbx/assess.py
 # Set DATABRICKS_HOST, DATABRICKS_TOKEN, DATABRICKS_WAREHOUSE_ID,
 # DATABRICKS_CATALOG=cpw in the environment, never in tracked files.
 migration/dw-exit-dbx/.venv/bin/python migration/dw-exit-dbx/load_control.py
@@ -17,8 +17,9 @@ migration/dw-exit-dbx/.venv/bin/python migration/dw-exit-dbx/check.py
 migration/dw-exit-dbx/.venv/bin/python -m unittest discover -s migration/dw-exit-dbx -p 'test_*.py'
 ```
 
-After the Spark parent PR merges, rebase and rerun assess.py without --spark-ref.
-The flag reads only etl/spark from git; it does not merge or check out that ref.
+Spark is now merged into demo-databricks-dw-exit and assessed from etl/spark in
+the working tree. Optional --spark-ref reads only etl/spark from a historical git
+ref; it does not merge or check out that ref.
 Source paths and stable IDs are identical in either mode. Metadata records the
 Spark ref and commit; working-tree mode records HEAD (uncommitted edits are not
 claimed to be part of that commit). check.py reuses the recorded ref.
@@ -106,9 +107,11 @@ manifest id; subject_area and source_system are explicit manifest fields. Loader
 adds missing manifest columns using guarded ALTER, then MERGEs on object_name.
 New rows have status planned, parity NULL, pr NULL; matched rows retain these
 three demo-managed fields. Retirement targets remain planned until actually
-retired. updated_at changes on reload. No DELETE or replacement is performed.
+retired. Existing status, parity, pr and updated_at never change on reload.
+No DELETE or replacement is performed; unrelated demo rows are preserved.
 Changing the inventory to remove entries requires explicit operator reconciliation;
-check.py rejects stale row counts rather than deleting demo-owned state.
+check.py scopes live counts, field comparisons and executor-hours to manifest
+object_names; unrelated demo rows never cause a mismatch or get deleted.
 It regenerates the complete manifest document in memory and compares every field,
 except the HEAD-derived spark_commit in working-tree mode: that recorded commit
 must exist and all assessed source paths must be unchanged through HEAD and the

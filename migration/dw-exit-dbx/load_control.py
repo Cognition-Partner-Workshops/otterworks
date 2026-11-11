@@ -42,7 +42,7 @@ def main():
             row = dict(entry, object_name=entry['id'], source_path=';'.join(entry['source_paths']), code_readers=';'.join(entry['code_readers']))
             parameters.extend(row[c] for c in columns)
         updates = ', '.join(f't.{c}=s.{c}' for c in columns if c != 'object_name')
-        execute(cursor, 'load', f"MERGE INTO {TABLE} t USING (SELECT * FROM VALUES {values} AS v({','.join(columns)})) s ON t.object_name=s.object_name WHEN MATCHED THEN UPDATE SET {updates}, t.updated_at=current_timestamp() WHEN NOT MATCHED THEN INSERT ({','.join(columns)},status,parity,pr,updated_at) VALUES ({','.join('s.' + c for c in columns)},'planned',NULL,NULL,current_timestamp())", parameters)
+        execute(cursor, 'load', f"MERGE INTO {TABLE} t USING (SELECT * FROM VALUES {values} AS v({','.join(columns)})) s ON t.object_name=s.object_name WHEN MATCHED THEN UPDATE SET {updates} WHEN NOT MATCHED THEN INSERT ({','.join(columns)},status,parity,pr,updated_at) VALUES ({','.join('s.' + c for c in columns)},'planned',NULL,NULL,current_timestamp())", parameters)
         print(f'LOADED {len(entries)} entries')
 
 

@@ -2,8 +2,8 @@
 
 25 unread in 90 days: 6 dormant (AccessCount 0, last access 2026-07-01); 19 write-only (recent writes, no reads). Only objects without static code readers are proposed for retirement. Spark landing-feed reads are conservatively treated as logical object readers, not observed JDBC reads.
 
-spark_ref: pr-2740
-spark_commit: 40a2465c7eb30777a634abfa698d3a2e7ca17e47
+spark_ref: working tree
+spark_commit: b870c4f1126ffe2de449b0291c630456bfa7b4ab
 as_of: '2026-11-10'
 dead:
   SFX_AUDIT.ACCESS_REVIEW:
