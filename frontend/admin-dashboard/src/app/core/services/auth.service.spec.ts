@@ -119,6 +119,41 @@ describe('AuthService', () => {
     expect(service.isAuthenticated).toBeFalse();
   }));
 
+  it('should pass through the gateway message for wrong credentials (400)', fakeAsync(() => {
+    let error: Error | undefined;
+    service.login('admin@otterworks.io', 'wrong').subscribe({
+      error: (e: Error) => { error = e; },
+    });
+    httpMock.expectOne('/api/v1/auth/login')
+      .flush({ status: 400, message: 'Invalid credentials' }, { status: 400, statusText: 'Bad Request' });
+    tick();
+    expect(error!.message).toBe('Invalid credentials');
+    expect(service.getToken()).toBeNull();
+  }));
+
+  it('should not label a request-validation 400 as invalid credentials', fakeAsync(() => {
+    let error: Error | undefined;
+    service.login('not-an-email', 'admin123').subscribe({
+      error: (e: Error) => { error = e; },
+    });
+    httpMock.expectOne('/api/v1/auth/login')
+      .flush({ status: 400, message: 'email: must be a well-formed email address' }, { status: 400, statusText: 'Bad Request' });
+    tick();
+    expect(error!.message).toBe('email: must be a well-formed email address');
+    expect(service.getToken()).toBeNull();
+  }));
+
+  it('should use a generic rejection message for a 400 without a message body', fakeAsync(() => {
+    let error: Error | undefined;
+    service.login('admin@otterworks.io', 'admin123').subscribe({
+      error: (e: Error) => { error = e; },
+    });
+    httpMock.expectOne('/api/v1/auth/login').flush(null, { status: 400, statusText: 'Bad Request' });
+    tick();
+    expect(error!.message).toBe('Login request was rejected.');
+    expect(service.isAuthenticated).toBeFalse();
+  }));
+
   it('should fail login without storing a token when the gateway is unreachable', fakeAsync(() => {
     let error: Error | undefined;
     service.login('admin@otterworks.io', 'admin123').subscribe({

@@ -47,11 +47,7 @@ export class AuthService {
   /** Signs in against the tenant gateway so the stored bearer token is one the backends accept. */
   login(email: string, password: string): Observable<AuthUser> {
     return this.gatewayLogin(email, password).pipe(
-      catchError((err: HttpErrorResponse) => throwError(() => new Error(
-        err.status === 400 || err.status === 401
-          ? 'Invalid credentials'
-          : 'Login service unavailable. Please try again.'
-      ))),
+      catchError((err: HttpErrorResponse) => throwError(() => new Error(this.loginErrorMessage(err)))),
       tap(user => {
         localStorage.setItem(this.TOKEN_KEY, user.token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
@@ -77,6 +73,18 @@ export class AuthService {
       }
     }
     return null;
+  }
+
+  /** auth-service answers 400 for both wrong credentials and request validation, with the reason in `message`. */
+  private loginErrorMessage(err: HttpErrorResponse): string {
+    if (err.status === 401) {
+      return 'Invalid credentials';
+    }
+    if (err.status === 400) {
+      const message = err.error?.message;
+      return typeof message === 'string' && message ? message : 'Login request was rejected.';
+    }
+    return 'Login service unavailable. Please try again.';
   }
 
   private gatewayLogin(email: string, password: string): Observable<AuthUser> {
