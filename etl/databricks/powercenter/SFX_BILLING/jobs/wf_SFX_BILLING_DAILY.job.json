@@ -1,0 +1,21 @@
+{
+  "name": "dbx-d1111-sfx-billing-daily",
+  "tags": {"run_token": "dbx-d1111", "expires": "2026-11-24", "act": "scale"},
+  "max_concurrent_runs": 1,
+  "parameters": [
+    {"name": "run_token", "default": "dbx-d1111"},
+    {"name": "expires", "default": "2026-11-24"},
+    {"name": "act", "default": "scale"}
+  ],
+  "tasks": [
+    {"task_key": "s_STG_CUSTOMER_ACCOUNT", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"path": "${WORKSPACE_DIR}/m_SFX_STG_CUSTOMER_ACCOUNT.sql", "source": "WORKSPACE"}}},
+    {"task_key": "s_STG_INVOICE_HDR", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"path": "${WORKSPACE_DIR}/m_SFX_STG_INVOICE_HDR.sql", "source": "WORKSPACE"}}},
+    {"task_key": "s_CUSTOMER_ACCOUNT", "depends_on": [{"task_key": "s_STG_CUSTOMER_ACCOUNT"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"path": "${WORKSPACE_DIR}/m_SFX_CUSTOMER_ACCOUNT.sql", "source": "WORKSPACE"}}},
+    {"task_key": "s_INVOICE_HDR", "depends_on": [{"task_key": "s_CUSTOMER_ACCOUNT"}, {"task_key": "s_STG_INVOICE_HDR"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"path": "${WORKSPACE_DIR}/m_SFX_INVOICE_HDR.sql", "source": "WORKSPACE"}}},
+    {"task_key": "s_INVOICE_LINE", "depends_on": [{"task_key": "s_CUSTOMER_ACCOUNT"}, {"task_key": "s_STG_INVOICE_HDR"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"path": "${WORKSPACE_DIR}/m_SFX_INVOICE_LINE.sql", "source": "WORKSPACE"}}},
+    {"task_key": "s_GL_JOURNAL_LINE", "depends_on": [{"task_key": "s_INVOICE_HDR"}, {"task_key": "s_INVOICE_LINE"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"path": "${WORKSPACE_DIR}/m_SFX_GL_JOURNAL_LINE.sql", "source": "WORKSPACE"}}},
+    {"task_key": "dec_GL_POSTED", "depends_on": [{"task_key": "s_GL_JOURNAL_LINE"}], "run_if": "ALL_DONE", "condition_task": {"left": "{{tasks.s_GL_JOURNAL_LINE.result_state}}", "op": "EQUAL_TO", "right": "success"}},
+    {"task_key": "s_PAYMENT", "depends_on": [{"task_key": "dec_GL_POSTED", "outcome": "true"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"path": "${WORKSPACE_DIR}/m_SFX_PAYMENT.sql", "source": "WORKSPACE"}}},
+    {"task_key": "em_GL_POSTING_ALERT", "depends_on": [{"task_key": "dec_GL_POSTED", "outcome": "false"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"path": "${WORKSPACE_DIR}/em_GL_POSTING_ALERT.sql", "source": "WORKSPACE"}}}
+  ]
+}

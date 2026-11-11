@@ -1,5 +1,55 @@
 # SFX_BILLING PowerCenter → Databricks SQL
 
+## Serverless workflow Job
+
+The Job requires the eight `sfx_` target tables already initialized by `00_ddl.sql`.
+It creates no compute: every SQL task uses the existing serverless warehouse supplied
+in `DATABRICKS_WAREHOUSE_ID`; deployment rejects a non-serverless warehouse.
+With `DATABRICKS_HOST`, `DATABRICKS_TOKEN`, and `DATABRICKS_WAREHOUSE_ID` in the
+environment (never committed), run from this directory:
+
+```sh
+python3 job.py deploy --output /home/ubuntu/dbx/sfx-job
+python3 job.py run --output /home/ubuntu/dbx/sfx-job
+python3 job.py run --output /home/ubuntu/dbx/sfx-job
+python3 job.py parity --output /home/ubuntu/dbx/sfx-job
+```
+
+`deploy` creates one unscheduled Job named `dbx-d1111-sfx-billing-daily` using
+Jobs API 2.1, refusing an existing same-name Job. It uploads rendered plain SQL
+workspace files to `/Users/<current-user>/dbx-d1111/SFX_BILLING/`, with concrete
+`step=job-run` headers. Files are overwritten only inside that run-specific folder.
+Job tags are `run_token=dbx-d1111`, `expires=2026-11-24`, `act=scale`; runs inherit
+the Job tags. API 2.1 `run-now` has no separate run-tags field, so those values are
+also supplied explicitly as run-level Job parameters. No cluster configuration,
+email recipients, or credentials are present in the definition.
+
+Each `run` waits for completion before returning and persists its ID immediately.
+`max_concurrent_runs=1` and the script's unfinished-run guard prevent overlap.
+If interrupted, use `python3 job.py collect --output /home/ubuntu/dbx/sfx-job` to
+resume waiting and capture outputs without triggering another run. Job settings,
+task states, SQL outputs, and statement IDs are saved in that output directory;
+statement IDs are appended to `/home/ubuntu/dbx/statements.tsv` by default.
+`parity` uses `step=job-parity`, compares business columns against the PC run-2
+references (corrected GL), and fails on missing results or any business difference.
+The original GL comparison and identity statistics remain evidence, not assertions:
+subsequent Job runs deliberately advance identity beyond the two PC snapshots.
+
+The XML worklet starts both staging sessions independently. CUSTOMER_ACCOUNT
+requires STG_CUSTOMER_ACCOUNT success. All three members fail the parent on
+failure; both terminal members (CUSTOMER_ACCOUNT and STG_INVOICE_HDR) must succeed
+before INVOICE_HDR and INVOICE_LINE. Both must succeed before GL. These gates
+flatten the worklet without bypassing either branch.
+
+The XML decision is GL `Status=SUCCEEDED AND TgtFailedRows=0`. SQL GL has no
+row-level reject path: any target failure aborts the statement and fails the task.
+Thus the `ALL_DONE` condition task tests GL's result state for `success`, which
+implies zero target failures under this SQL error model. PAYMENT takes its true
+outcome; the false outcome runs a read-only SELECT alert marker. **No email is
+sent.** This preserves branching, not PowerCenter's partial-row error recovery.
+
+## Conversion
+
 This conversion is scoped to run `dbx-d1111`, act `scale`, and the seven billing
 mappings. Targets use `cpw.dbx_d1111_after.billing__sfx_<table>` because the
 `area__table` names are held by a prior act (`act=prove`, `consumer=billing`)
