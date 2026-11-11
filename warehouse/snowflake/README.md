@@ -229,10 +229,12 @@ V010 provisions `SPARK_RAW_BILLING`, `SPARK_RAW_DOCUMENTS`, `SPARK_RAW_USERS`,
 V011 creates database roles `SFX_D1110_AFTER.SFX_D1110_TRANSFORMER` and
 `SFX_D1110_AFTER.SFX_D1110_ANALYST`, and grants them to `SFX_D1110_ROLE`.
 The database owner can apply both migrations without account-level role admin.
-V011 enables managed access on the five Spark schemas so their owner can grant
-future privileges without the account-level MANAGE GRANTS privilege. Existing
-schema owners must apply this migration; table owners then leave grant decisions
-to the schema owner.
+V010 creates the five Spark schemas WITH MANAGED ACCESS so their owner can grant
+future privileges without the account-level MANAGE GRANTS privilege. Creating
+them managed initially avoids ALTER SCHEMA ENABLE MANAGED ACCESS, which itself
+requires account-level MANAGE GRANTS. Existing standard schemas require a
+requester-managed conversion or a backed-up managed schema clone before V011.
+Table owners leave grant decisions to the schema owner.
 The transformer database role reads only the four Spark raw schemas, creates
 tables, views and functions only in `MART_SPARK`, and applies only
 `GOVERNANCE.SFX_RUN`. The analyst database role has only `MART_SPARK` schema
