@@ -15,7 +15,10 @@ module FinanceWarehouse
                                            stdin_data: JSON.generate(sql: sql, parameters: parameters))
       raise "Databricks query failed: #{error}" unless status.success?
 
-      JSON.parse(output)
+      result = JSON.parse(output)
+      result.fetch('rows').map do |row|
+        result.fetch('columns').zip(row).to_h
+      end
     end
   end
 end
