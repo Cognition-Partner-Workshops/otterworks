@@ -49,7 +49,7 @@ class SkeletonTest {
     private RouteConfigurationBuilder brokerRedelivery;
 
     @Test
-    void startsWithPackageOwnedRoutesAndSharedRuntime() {
+    void startsWithPackageOwnedRoutesAndSharedRuntime() throws Exception {
         assertThat(applicationContext.isActive()).isTrue();
         assertThat(camelContext.isStarted()).isTrue();
         assertThat(dataSource).isInstanceOf(NarayanaDataSource.class);
@@ -71,7 +71,8 @@ class SkeletonTest {
         String packagePrefix = "com.halvergate.accountevents.packages.";
         List<RouteBuilder> packages = applicationContext.getBeansOfType(RouteBuilder.class).values().stream()
             .filter(builder -> ClassUtils.getUserClass(builder).getName().startsWith(packagePrefix)).toList();
-        boolean installed = java.util.Arrays.stream(applicationContext.getBeanDefinitionNames())
+        boolean installed = applicationContext.getResources("classpath*:packages/*/package.yaml").length > 0
+            || java.util.Arrays.stream(applicationContext.getBeanDefinitionNames())
             .map(applicationContext::getType).filter(java.util.Objects::nonNull)
             .anyMatch(type -> ClassUtils.getUserClass(type).getName().startsWith(packagePrefix));
         if (installed) {
