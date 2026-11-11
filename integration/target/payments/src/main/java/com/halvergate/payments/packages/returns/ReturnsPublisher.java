@@ -42,7 +42,12 @@ public class ReturnsPublisher implements AutoCloseable {
             connection = (ActiveMQConnection) factory.createConnection();
             var session = (ActiveMQSession) connection.createSession(false, jakarta.jms.Session.AUTO_ACKNOWLEDGE);
             core = session.getCoreSession();
-            ensureQueue(core);
+            try {
+                ensureQueue(core);
+            } catch (Exception e) {
+                close();
+                throw e;
+            }
         }
         return core;
     }
@@ -71,6 +76,11 @@ public class ReturnsPublisher implements AutoCloseable {
                 session.createQueue(QueueConfiguration.of(destination).setAddress(destination)
                     .setRoutingType(RoutingType.ANYCAST).setDurable(true).setAutoCreated(false).setAutoDelete(false));
             } catch (ActiveMQQueueExistsException ignored) { }
+        }
+        var queue = session.queueQuery(SimpleString.of(destination));
+        if (!queue.isExists() || !queue.isDurable() || queue.isAutoDelete()
+                || queue.getRoutingType() != RoutingType.ANYCAST) {
+            throw new IllegalStateException(destination + " must be durable, non-auto-delete and ANYCAST");
         }
     }
 
