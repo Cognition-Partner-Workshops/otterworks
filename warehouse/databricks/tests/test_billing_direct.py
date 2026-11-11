@@ -1,8 +1,11 @@
 from pathlib import Path
 import re
+import sqlite3
 from unittest.mock import MagicMock
 
 import pytest
+import sqlglot
+from sqlglot import exp
 
 from warehouse.databricks.billing.run import run
 
@@ -66,3 +69,21 @@ def test_fixed_semantics_and_final_tie_policy():
     assert 'substring(DISPLAY_NAME,1,60)' in sql
     assert 'upper(rtrim(s.PLAN_CODE))' in sql
     assert 'billing__td_date_int' in sql and 'billing__td_int_date' in sql
+
+
+@pytest.mark.parametrize('value,expected',[
+    ('STORAGE',1),('storage',1),('Storage     ',1),('sToRaGe     ',1),
+    ('OCR_PAGE    ',0),('STORAGE_X   ',0),(' STORAGE',0),('',0),(None,None),
+])
+def test_fixed_storage_predicates_ignore_case_and_trailing_char_padding(value,expected):
+    sql=(Path(__file__).parents[1]/'billing/fixed.sql').read_text()
+    statements=sqlglot.parse(sql,read='databricks')
+    delete=next(s for s in statements if isinstance(s,exp.Delete) and s.this.name=='billing__usage_daily')
+    insert=next(s for s in statements if isinstance(s,exp.Insert) and "u.USAGE_TYPE" in s.sql())
+    with sqlite3.connect(':memory:') as connection:
+        for statement in [delete,insert]:
+            predicate=statement.find(exp.Where).this.copy()
+            for column in predicate.find_all(exp.Column):
+                column.set('table',None)
+            result=connection.execute('SELECT '+predicate.sql(dialect='sqlite')+' FROM (SELECT ? AS USAGE_TYPE)',(value,)).fetchone()[0]
+            assert result==expected
