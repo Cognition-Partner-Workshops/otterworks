@@ -67,6 +67,7 @@ object SnowflakeFinanceRollupRepository:
        |GROUP BY 1, 2, 3 ORDER BY 1, 2, 3""".stripMargin
 
 
+  val RetainedQueryIds = 32
   val QueryTag = """{"run":"sfx-d1110","act":"consumers","consumer":"analytics-service"}"""
   def connect(settings: FinanceSettings): Connection =
     val pem = settings.privateKey.replace("-----BEGIN PRIVATE KEY-----", "")
@@ -86,11 +87,22 @@ object SnowflakeFinanceRollupRepository:
     properties.setProperty("JDBC_QUERY_RESULT_FORMAT", "JSON")
     DriverManager.getConnection(s"jdbc:snowflake://${settings.account}.snowflakecomputing.com", properties)
 
-class SnowflakeFinanceRollupRepository(connect: () => Connection)(using ec: ExecutionContext)
+class SnowflakeFinanceRollupRepository(connect: () => Connection,
+                                       retainedQueryIds: Int = SnowflakeFinanceRollupRepository.RetainedQueryIds)
+                                      (using ec: ExecutionContext)
     extends FinanceRollupRepository:
-  @volatile var queryIds: List[String] = Nil
+  require(retainedQueryIds > 0, "retainedQueryIds must be positive")
+  private val recentQueryIds = scala.collection.mutable.ArrayDeque.empty[String]
   def this(settings: FinanceSettings)(using ExecutionContext) =
     this(() => SnowflakeFinanceRollupRepository.connect(settings))
+
+  /** The most recent Snowflake query IDs, oldest first. */
+  def queryIds: List[String] = recentQueryIds.synchronized(recentQueryIds.toList)
+
+  private def rememberQueryId(id: String): Unit = recentQueryIds.synchronized {
+    recentQueryIds.append(id)
+    while recentQueryIds.size > retainedQueryIds do recentQueryIds.removeHead()
+  }
 
   override def rollups(status: String, plan: String): Future[List[FinanceRollup]] = Future {
     blocking {
@@ -102,7 +114,7 @@ class SnowflakeFinanceRollupRepository(connect: () => Connection)(using ec: Exec
           statement.setString(2, plan)
           val rs = statement.executeQuery()
           if rs.isWrapperFor(classOf[net.snowflake.client.jdbc.SnowflakeResultSet]) then
-            queryIds = queryIds :+ rs.unwrap(classOf[net.snowflake.client.jdbc.SnowflakeResultSet]).getQueryID
+            rememberQueryId(rs.unwrap(classOf[net.snowflake.client.jdbc.SnowflakeResultSet]).getQueryID)
           try
             val rows = ListBuffer.empty[FinanceRollup]
             while rs.next() do
