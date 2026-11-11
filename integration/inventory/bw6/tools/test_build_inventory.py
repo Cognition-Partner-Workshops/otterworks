@@ -25,6 +25,35 @@ class InventoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'unknown affected process'):
             inventory_data(self.graph, parsed)
 
+    def test_decision_answer_layouts(self):
+        prefix = '## D-01 Example question\n\n**Affected processes:** `payments.sanctions-screening`.\n\n**Decision:**'
+        for answer in (' A. Keep dev v1 and prod v2.\n',
+                       '\nA. Keep dev v1 and prod v2.\n',
+                       '\n\n  A. Keep dev v1 and prod v2.\n\n'):
+            with self.subTest(answer=answer):
+                decisions = parse_decisions(prefix + answer)
+                self.assertFalse(decisions['D-01']['open'])
+                _, blockers, _ = inventory_data(self.graph, decisions)
+                self.assertEqual(blockers['payments.sanctions-screening'], [])
+        for whitespace in ('', '\n', ' \n\n \t\n'):
+            with self.subTest(whitespace=whitespace):
+                decisions = parse_decisions(prefix + whitespace)
+                self.assertTrue(decisions['D-01']['open'])
+                _, blockers, _ = inventory_data(self.graph, decisions)
+                self.assertEqual(blockers['payments.sanctions-screening'], ['D-01'])
+
+    def test_decision_answer_stops_at_fields_and_sections(self):
+        prefix = '## D-01 Example question\n\n**Affected processes:** `payments.example`.\n\n**Decision:**'
+        boundaries = ('**Owner:** Assigned\n', '**Evidence**\nSupporting text\n',
+                      '### Follow-up\nSupporting text\n', '# Appendix\nSupporting text\n',
+                      '## D-02 Another question\n\n**Affected processes:** `payments.other`.\n\n**Decision:** approved\n')
+        for boundary in boundaries:
+            for answer, is_open in (('\n\n', True), (' approved\n\n', False),
+                                    ('\nApproved on the next line.\n\n', False)):
+                with self.subTest(boundary=boundary, answer=answer):
+                    decisions = parse_decisions(prefix + answer + boundary)
+                    self.assertEqual(decisions['D-01']['open'], is_open)
+
     def test_source_derived_wave_slots_and_blockers(self):
         processes, blockers, waves = inventory_data(self.graph, self.decisions)
         self.assertEqual(len(processes), 24)

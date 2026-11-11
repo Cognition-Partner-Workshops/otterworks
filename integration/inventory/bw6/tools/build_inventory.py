@@ -151,7 +151,10 @@ def parse_decisions(text):
     for match in re.finditer(pattern, text, re.M | re.S):
         identifier, title, body = match.groups()
         affected = re.search(r'^\*\*Affected processes:\*\* (.+)$', body, re.M)
-        decision = re.search(r'^\*\*Decision:\*\*[^\S\n]*(.*)$', body, re.M)
+        decision = re.search(
+            r'^\*\*Decision:\*\*(.*?)(?=^\*\*[^*\n]+\*\*|^#{1,6}[ \t]|\Z)',
+            body, re.M | re.S,
+        )
         if not affected or not decision:
             raise ValueError(f'{identifier}: missing affected processes or decision field')
         if identifier in decisions:
