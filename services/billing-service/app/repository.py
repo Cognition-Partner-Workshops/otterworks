@@ -167,6 +167,7 @@ class PostgresRatingRepository:
         ]
 
     def list_prior_rollovers(self, tenant_id: UUID, before: date) -> list[PriorRollover]:
+        lower = before - timedelta(days=124)
         rows = self.connection.execute(
             """
             SELECT rp.period_start, rr.rollover_units
@@ -174,9 +175,9 @@ class PostgresRatingRepository:
             JOIN billing_svc.rating_periods rp ON rp.id = rr.period_id
             WHERE rp.tenant_id = %s
               AND rp.period_start < %s
-              AND rp.period_start >= %s::date - interval '3 months'
+              AND rp.period_start >= %s
             """,
-            (tenant_id, before, before),
+            (tenant_id, before, lower),
         ).fetchall()
         return [
             PriorRollover(period_start=row["period_start"], rollover_units=row["rollover_units"])
