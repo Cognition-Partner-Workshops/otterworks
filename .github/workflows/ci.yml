@@ -235,6 +235,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.document-service == 'true'
     runs-on: ubuntu-latest
+    env:
+      DOC_SVC_DATABASE_URL: postgresql+asyncpg://test@localhost/otterworks_test
     defaults:
       run:
         working-directory: services/document-service

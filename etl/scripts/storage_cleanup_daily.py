@@ -9,23 +9,20 @@
 # TODO ETL-156: Parallelize S3 listing for large buckets (deferred Q1 2020)
 # TODO ETL-203: Add dry-run mode for testing (never implemented)
 
-import configparser
 import json
 import sys
 from datetime import datetime, timezone
 
 import boto3
 
+from runtime_config import load_config
+
 
 def main():
     print("[%s] storage_cleanup_daily.py starting..." % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     # ---- Load config ----
-    config = configparser.ConfigParser()
-    config.read("/opt/etl/config.ini")
-
-    aws_access_key = config.get("aws", "access_key")
-    aws_secret_key = config.get("aws", "secret_key")
+    config = load_config()
     aws_region = config.get("aws", "region")
 
     file_storage_bucket = config.get("s3", "file_storage_bucket")
@@ -45,8 +42,6 @@ def main():
 
     s3_client = boto3.client(
         "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
 
@@ -75,8 +70,6 @@ def main():
 
     dynamodb = boto3.resource(
         "dynamodb",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
     table = dynamodb.Table(dynamodb_table_name)
@@ -192,8 +185,6 @@ def main():
     report_key = "reports/storage-cleanup/%s/report.json" % ds
     s3_client_report = boto3.client(
         "s3",
-        aws_access_key_id=aws_access_key,
-        aws_secret_access_key=aws_secret_key,
         region_name=aws_region,
     )
     s3_client_report.put_object(

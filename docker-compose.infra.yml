@@ -5,7 +5,7 @@ services:
     container_name: otterworks-postgres
     environment:
       POSTGRES_USER: otterworks
-      POSTGRES_PASSWORD: otterworks_dev
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Generate .env with python3 scripts/local-env.py}
       POSTGRES_DB: otterworks
     ports:
     - 5432:5432

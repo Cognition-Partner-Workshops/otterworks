@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: billing_${NS:-dev}
       POSTGRES_USER: billing
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-billing}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Generate .env with python3 scripts/local-env.py}
     ports:
       - "127.0.0.1:${PROCS_DB_PORT:-55432}:5432"
     volumes:
@@ -35,7 +35,7 @@ services:
       DB_PORT: 5432
       DB_NAME: billing_${NS:-dev}
       DB_USER: billing
-      DB_PASSWORD: ${DB_PASSWORD:-billing}
+      DB_PASSWORD: ${DB_PASSWORD:?Generate .env with python3 scripts/local-env.py}
     ports:
       - "127.0.0.1:${PROCS_APP_PORT:-8096}:8096"
     healthcheck:
@@ -52,7 +52,7 @@ services:
       billing-service-db:
         condition: service_healthy
     environment:
-      BILLING_SVC_DATABASE_URL: postgresql://billing_svc:billing_svc@billing-service-db:5432/billing_svc_${NS:-dev}
+      BILLING_SVC_DATABASE_URL: postgresql://billing_svc:${BILLING_SVC_DB_PASSWORD:?Generate .env with python3 scripts/local-env.py}@billing-service-db:5432/billing_svc_${NS:-dev}
       BILLING_SVC_ALLOW_INTERNAL_RESET: "true"
     ports:
       - "127.0.0.1:${PROCS_TARGET_PORT:-8097}:8097"
@@ -67,7 +67,7 @@ services:
     environment:
       POSTGRES_DB: billing_svc_${NS:-dev}
       POSTGRES_USER: billing_svc
-      POSTGRES_PASSWORD: billing_svc
+      POSTGRES_PASSWORD: ${BILLING_SVC_DB_PASSWORD:?Generate .env with python3 scripts/local-env.py}
     ports:
       - "127.0.0.1:${PROCS_TARGET_DB_PORT:-56432}:5432"
     volumes:
