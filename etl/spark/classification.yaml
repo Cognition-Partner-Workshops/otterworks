@@ -44,8 +44,10 @@
   reason: "Aggregates journal debits, credits and net by account, period and currency, then joins credit-note adjustments."
 - job: docs_folder_legacy_report
   language: python
-  target: dbt
-  reason: "Counts documents per folder with a left join and grouped folder attributes."
+  target: retired
+  reason: "Retires the folder-count report because its cron was already disabled and no in-repository reader consumes its lake output."
+  original_target: dbt
+  change_reason: "Although the left-join folder count is SQL-shaped, the disabled cron and absence of in-repository output readers make retirement preferable to creating a replacement model."
 - job: docs_search_log_parse
   language: python
   target: snowpark_python
@@ -72,16 +74,22 @@
   reason: "Computes distributed score moments and applies a z-score function through RDD transformations."
 - job: docs_event_export_hourly
   language: python
-  target: spark_standard_template
-  reason: "Produces a physical high-cardinality directory and parquet-file layout for document exports."
+  target: dbt
+  reason: "Selects document rows and computes EXPORT_BUCKET with modulo arithmetic, which can be materialized as one Snowflake table."
+  original_target: spark_standard_template
+  change_reason: "The only in-repository reader of the bucketed parquet export is lake_compaction_documents, which is retired, so no retained consumer requires its physical directory layout."
 - job: lake_compaction_documents
   language: scala
-  target: spark_standard_template
-  reason: "Reads partitioned parquet directories and rewrites their physical file layout into fewer files."
+  target: retired
+  reason: "Retires a parquet-only compactor whose sole input is the lake export replaced by the docs_event_export_hourly Snowflake table and whose output has no in-repository reader."
+  original_target: spark_standard_template
+  change_reason: "Moving its sole producer docs_event_export_hourly to one Snowflake table removes the active lake-layout dependency, so compaction no longer needs a replacement job."
 - job: lake_compaction_audit
   language: python
-  target: spark_standard_template
-  reason: "Coalesces audit parquet files to maintain a physical lake file layout."
+  target: retired
+  reason: "Retires a coalesce-only parquet compactor whose sole input comes from audit_daily_summary, now assigned to dbt, and whose output has no in-repository reader."
+  original_target: spark_standard_template
+  change_reason: "The audit_daily_summary Snowflake table replaces the compactor's sole active lake input, and Snowflake manages its own physical storage without a separate compaction job."
 - job: docs_folder_tree_walk
   language: python
   target: snowpark_python
@@ -96,8 +104,10 @@
   reason: "Performs bounded breadth-first expansion over document-sharing edges with visited-node tracking."
 - job: collab_session_sessionize
   language: python
-  target: snowpark_python
-  reason: "Groups and orders collaboration timestamps to split sessions at inactivity boundaries."
+  target: dbt
+  reason: "Splits timestamps per user and document only when the gap exceeds 1800 seconds, expressible with LAG, a cumulative session number and grouped MIN/MAX."
+  original_target: snowpark_python
+  change_reason: "The Python loop only sorts timestamps and detects strict inactivity gaps, with no other state or business rules, so equivalent SQL windows preserve its session boundaries."
 - job: doc_version_diff_stats
   language: python
   target: snowpark_python
@@ -105,11 +115,13 @@
 - job: file_object_binary_extract
   language: python
   target: spark_standard_template
-  reason: "Uses the binaryFile source to distribute PDF, DOCX and ZIP content extraction, page counting and checksums over a blob store."
+  reason: "Keeps Spark binaryFile ingestion and distributed Python PDF, DOCX and ZIP decoding, page counting, checksums and malformed-content handling over external blobs rather than relational SQL."
 - job: audit_archive_resort
   language: python
-  target: snowpark_python
-  reason: "Sorts keyed archived-event records through the legacy RDD interface."
+  target: dbt
+  reason: "Preserves archived-event rows and sorts only by EVENT_TYPE, EVENT_AT and AUDIT_EVENT_ARCHIVE_ID, without record-level transformation logic."
+  original_target: snowpark_python
+  change_reason: "The RDD map/sortByKey/values chain and sortWithinPartitions only impose physical ordering, so dbt can retain the rows and downstream SQL can order explicitly without a Python sorting job."
 - job: user_pref_json_flatten
   language: python
   target: snowpark_python

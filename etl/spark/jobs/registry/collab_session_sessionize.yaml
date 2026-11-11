@@ -1,0 +1,8 @@
+{
+  "job": "collab_session_sessionize",
+  "language": "python",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "24 3 * * *",
+  "profile": "small"
+}

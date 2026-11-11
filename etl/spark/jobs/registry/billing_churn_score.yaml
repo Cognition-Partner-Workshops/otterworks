@@ -1,0 +1,8 @@
+{
+  "job": "billing_churn_score",
+  "language": "python",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "15 2 * * *",
+  "profile": "small"
+}

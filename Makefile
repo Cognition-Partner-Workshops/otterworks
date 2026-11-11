@@ -48,6 +48,15 @@ sfx-teradata-down: sfx-teradata-validate ## Stop the warehouse and remove its vo
 sfx-teradata-snowconvert: sfx-teradata-validate warehouse/.venv/.requirements ## Run offline SnowConvert into ignored output (NS required; SCAI executable optional)
 	$(SFX_TD_PY) warehouse/teradata/jobs/snowconvert.py --scai "$(SCAI)" --namespace "$(NS)"
 
+
+.PHONY: sfx-airflow-test
+sfx-airflow-test: ## Parse generated DAGs and verify routing and retry policy
+	AIRFLOW_HOME=$(HOME)/.sfx-airflow AIRFLOW__CORE__LOAD_EXAMPLES=False uv run --python 3.11 --with-requirements etl/airflow/requirements.txt python -m unittest discover -s etl/airflow/tests -v
+
+.PHONY: sfx-spark-snowflake
+sfx-spark-snowflake: warehouse/.venv/.sfx-installed ## Run a migrated registry command (JOB=<job>)
+	warehouse/.venv/bin/python warehouse/snowflake/run_spark_job.py --job "$(JOB)"
+
 .PHONY: sfx-snowflake-deploy sfx-snowflake-load sfx-snowflake-test sfx-snowflake-dbt
 .PHONY: sfx-snowflake-dag sfx-snowflake-consumers
 .PHONY: sfx-snowflake-ledger sfx-snowflake-teardown sfx-snowflake-roles-dry-run sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down
@@ -164,7 +173,7 @@ SPARK_JOBS ?= 30
 SFX_SPARK_NS = $(or $(NS),sfx-d1110-before)
 SFX_SPARK_DATA = etl/spark/.data/$(SFX_SPARK_NS)
 SFX_SPARK_CACHE = etl/spark/.cache/$(SFX_SPARK_NS)
-SFX_SPARK_LANDING = $(SFX_SPARK_DATA)/landing
+SFX_SPARK_LANDING ?= $(SFX_SPARK_DATA)/landing
 SFX_SPARK_ENV = NS=$(SFX_SPARK_NS) LANDING_DIR=$(abspath $(SFX_SPARK_LANDING))
 SFX_SPARK_COMPOSE = docker compose -f docker-compose.spark.yml -p sfx-d1110-spark-$(SFX_SPARK_NS)
 SFX_SPARK_UV = uv run --python 3.11 --with pyspark==3.5.3 --with pyyaml==6.0.2
@@ -173,7 +182,7 @@ sfx-spark-up: ## Start the local Spark estate and load its fixture
 	$(SFX_SPARK_ENV) bash etl/spark/fixture/fetch_jars.sh
 	mkdir -p $(SFX_SPARK_DATA)/{landing,lake,eventlogs,logs} "$(abspath $(SFX_SPARK_LANDING))"
 	chmod 777 $(SFX_SPARK_DATA)/lake $(SFX_SPARK_DATA)/eventlogs $(SFX_SPARK_CACHE)
-	$(SFX_SPARK_ENV) python3 $(if $(wildcard warehouse/seed/generate.py),warehouse/seed/generate.py,etl/spark/fixture/generate_fixture.py) --rows $(ROWS_PER_TABLE) --seed 1110 --output "$(abspath $(SFX_SPARK_LANDING))"
+	$(SFX_SPARK_ENV) python3 $(if $(wildcard warehouse/seed/generate.py),warehouse/seed/generate.py,etl/spark/fixture/generate_fixture.py) --rows $(ROWS_PER_TABLE) --seed 1110 $(if $(wildcard warehouse/seed/generate.py),--out,--output) "$(abspath $(SFX_SPARK_LANDING))"
 	$(SFX_SPARK_ENV) $(SFX_SPARK_COMPOSE) up -d --wait --wait-timeout 120 --pull never
 	$(SFX_SPARK_ENV) bash etl/spark/fixture/load_tdemu.sh
 	$(SFX_SPARK_ENV) bash etl/spark/scala/build.sh

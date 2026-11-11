@@ -1,0 +1,8 @@
+{
+  "job": "docs_folder_tree_walk",
+  "language": "python",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "21 3 * * *",
+  "profile": "small"
+}

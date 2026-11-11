@@ -104,16 +104,16 @@ modules:
     cases: null
 
 exempt:
+  - path: etl/spark/scala
+    reason: >
+      sbt build compiled with scalac inside the Spark image.
+      There is no Maven or Gradle dependency graph.
+
   - path: services/analytics-service
     reason: >
       Scala/sbt build. This harness resolves only Maven and Gradle dependency
       trees; analytics is not measured here. Its consumer workflow runs sbt unit
       tests and credential-free contract replay.
-
-  - path: etl/spark/scala
-    reason: >
-      sbt build compiled with scalac inside the Spark image.
-      There is no Maven or Gradle dependency graph.
 
   - path: frontend/client-app/mobile/android
     reason: >

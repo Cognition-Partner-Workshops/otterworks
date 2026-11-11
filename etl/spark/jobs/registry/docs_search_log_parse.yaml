@@ -1,0 +1,8 @@
+{
+  "job": "docs_search_log_parse",
+  "language": "python",
+  "target": "snowpark_python",
+  "status": "legacy",
+  "schedule": "12 2 * * *",
+  "profile": "small"
+}

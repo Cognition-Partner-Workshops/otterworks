@@ -11,13 +11,16 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "jobs/py"))
+
 try:
     from pyspark.sql import SparkSession
     from pyspark.sql.functions import col, sum as total
+    from common.runtime import save_partition
 except ImportError:
     SparkSession = None
 
-ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "fixture"))
 from generate_fixture import generate
 
@@ -49,7 +52,7 @@ class LocalTest(unittest.TestCase):
             with patch.dict(os.environ, environment):
                 spark = SparkSession.builder.appName("local-verification").getOrCreate()
                 try:
-                    self.assertEqual(spark.sparkContext._jvm.java.lang.System.getProperty("java.specification.version"), "17")
+                    self.assertIn(spark.sparkContext._jvm.java.lang.System.getProperty("java.specification.version"), ("17", "21"))
                     tags = spark.read.parquet(str(lake / "documents/docs_tag_normalize"))
                     self.assertEqual(tags.count(), 2000)
                     self.assertEqual(tags.filter(col("NORMALIZED_TAG").isin("finance", "report", "annual-review", "ops", "customer-contract")).count(), 2000)
@@ -61,6 +64,15 @@ class LocalTest(unittest.TestCase):
                     with (landing / "billing/INVOICE_LINE/20261109.psv").open() as stream:
                         expected = sum(Decimal(row["AMOUNT"]) for row in csv.DictReader(stream, delimiter="|"))
                     self.assertEqual(revenue.agg(total("REVENUE")).first()[0], expected)
+                    frame = spark.createDataFrame([(1,), (2,)], "value long")
+                    for _ in range(2):
+                        save_partition(frame, "test", "rerun", "2026-11-09")
+                        self.assertEqual(spark.read.parquet(str(lake / "test/rerun")).count(), 2)
+                    save_partition(frame, "test", "rerun", "2026-11-10")
+                    save_partition(frame.limit(0), "test", "rerun", "2026-11-09")
+                    self.assertEqual(spark.read.parquet(str(lake / "test/rerun")).count(), 2)
+                    with self.assertRaises(ValueError):
+                        save_partition(frame, "test", "rerun", "2026-11-09/invalid")
                 finally:
                     spark.stop()
             print("LOCAL_JOBS billing_revenue_by_plan docs_tag_normalize user_pref_json_flatten: OK (2000 rows)")

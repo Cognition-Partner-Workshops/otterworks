@@ -7,33 +7,4 @@
 0 5 * * * /opt/etl/run.sh user_activity_daily.py >> /var/log/etl/activity.log 2>&1
 
 # Spark schedules
-0 1 * * * /opt/etl/spark/submit/billing_invoice_summary_daily.sh >> /var/log/etl/spark-billing_invoice_summary_daily.log 2>&1
-1 1 * * * /opt/etl/spark/submit/billing_revenue_by_plan.sh >> /var/log/etl/spark-billing_revenue_by_plan.log 2>&1
-2 1 * * * /opt/etl/spark/submit/billing_payment_aging.sh >> /var/log/etl/spark-billing_payment_aging.log 2>&1
-3 1 * * * /opt/etl/spark/submit/billing_usage_append_daily.sh >> /var/log/etl/spark-billing_usage_append_daily.log 2>&1
-4 1 * * * /opt/etl/spark/submit/docs_storage_by_owner.sh >> /var/log/etl/spark-docs_storage_by_owner.log 2>&1
-5 1 * * * /opt/etl/spark/submit/docs_share_activity.sh >> /var/log/etl/spark-docs_share_activity.log 2>&1
-6 1 * * * /opt/etl/spark/submit/users_active_daily.sh >> /var/log/etl/spark-users_active_daily.log 2>&1
-7 1 * * * /opt/etl/spark/submit/users_team_rollup.sh >> /var/log/etl/spark-users_team_rollup.log 2>&1
-8 1 * * * /opt/etl/spark/submit/audit_daily_summary.sh >> /var/log/etl/spark-audit_daily_summary.log 2>&1
-9 1 * * * /opt/etl/spark/submit/audit_actor_activity_join.sh >> /var/log/etl/spark-audit_actor_activity_join.log 2>&1
-10 2 * * * /opt/etl/spark/submit/billing_gl_trial_balance.sh >> /var/log/etl/spark-billing_gl_trial_balance.log 2>&1
-# 11 2 * * * /opt/etl/spark/submit/docs_folder_legacy_report.sh >> /var/log/etl/spark-docs_folder_legacy_report.log 2>&1
-12 2 * * * /opt/etl/spark/submit/docs_search_log_parse.sh >> /var/log/etl/spark-docs_search_log_parse.log 2>&1
-13 2 * * * /opt/etl/spark/submit/users_login_useragent_parse.sh >> /var/log/etl/spark-users_login_useragent_parse.log 2>&1
-14 2 * * * /opt/etl/spark/submit/docs_tag_normalize.sh >> /var/log/etl/spark-docs_tag_normalize.log 2>&1
-15 2 * * * /opt/etl/spark/submit/billing_churn_score.sh >> /var/log/etl/spark-billing_churn_score.log 2>&1
-16 2 * * * /opt/etl/spark/submit/users_risk_score.sh >> /var/log/etl/spark-users_risk_score.log 2>&1
-17 2 * * * /opt/etl/spark/submit/security_alert_anomaly.sh >> /var/log/etl/spark-security_alert_anomaly.log 2>&1
-18 * * * * /opt/etl/spark/submit/docs_event_export_hourly.sh >> /var/log/etl/spark-docs_event_export_hourly.log 2>&1
-19 2 * * * /opt/etl/spark/submit/lake_compaction_documents.sh >> /var/log/etl/spark-lake_compaction_documents.log 2>&1
-20 3 * * * /opt/etl/spark/submit/lake_compaction_audit.sh >> /var/log/etl/spark-lake_compaction_audit.log 2>&1
-21 3 * * * /opt/etl/spark/submit/docs_folder_tree_walk.sh >> /var/log/etl/spark-docs_folder_tree_walk.log 2>&1
-22 3 * * * /opt/etl/spark/submit/team_graph_components.sh >> /var/log/etl/spark-team_graph_components.log 2>&1
-23 3 * * * /opt/etl/spark/submit/doc_share_graph_reach.sh >> /var/log/etl/spark-doc_share_graph_reach.log 2>&1
-24 3 * * * /opt/etl/spark/submit/collab_session_sessionize.sh >> /var/log/etl/spark-collab_session_sessionize.log 2>&1
-25 3 * * * /opt/etl/spark/submit/doc_version_diff_stats.sh >> /var/log/etl/spark-doc_version_diff_stats.log 2>&1
-26 3 * * * /opt/etl/spark/submit/file_object_binary_extract.sh >> /var/log/etl/spark-file_object_binary_extract.log 2>&1
-27 3 * * * /opt/etl/spark/submit/audit_archive_resort.sh >> /var/log/etl/spark-audit_archive_resort.log 2>&1
-28 3 * * * /opt/etl/spark/submit/user_pref_json_flatten.sh >> /var/log/etl/spark-user_pref_json_flatten.log 2>&1
-29 3 * * * /opt/etl/spark/submit/compliance_flag_rules.sh >> /var/log/etl/spark-compliance_flag_rules.log 2>&1
+# Spark schedules live in spark/cron.d/ (legacy jobs only).

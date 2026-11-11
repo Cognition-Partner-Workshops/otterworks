@@ -64,6 +64,8 @@ def main():
                             f"PUT '{uri}' @LANDING.LANDING_STAGE/{area}/{table}/ "
                             "AUTO_COMPRESS=FALSE OVERWRITE=FALSE"
                         )
+                # Area is selected from the repository manifest; the date is bound separately.
+                # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 cur.execute(f"CALL RAW_{area.upper()}.LOAD_{area.upper()}(%s)", (args.date,))
                 result = json.loads(cur.fetchone()[0])
                 if isinstance(result, dict) and "error" in result:

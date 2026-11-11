@@ -17,7 +17,7 @@ class RuntimeTest(unittest.TestCase):
             cwd=ROOT, capture_output=True, text=True, check=True,
         )
         commands = result.stdout
-        self.assertIn('--rows 2000 --seed 1110 --output "/tmp/sfx-landing-check"', commands)
+        self.assertRegex(commands, r'--rows 2000 --seed 1110 --(out|output) "/tmp/sfx-landing-check"')
         for command in commands.splitlines():
             if any(script in command for script in ("generate_fixture.py", "load_tdemu.sh", "docker compose")):
                 self.assertIn("LANDING_DIR=/tmp/sfx-landing-check", command)

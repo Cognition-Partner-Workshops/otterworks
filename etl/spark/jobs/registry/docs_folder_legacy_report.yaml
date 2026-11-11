@@ -1,0 +1,8 @@
+{
+  "job": "docs_folder_legacy_report",
+  "language": "python",
+  "target": "dbt",
+  "status": "legacy",
+  "schedule": "11 2 * * *",
+  "profile": "small"
+}
