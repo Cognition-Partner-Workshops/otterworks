@@ -22,6 +22,8 @@ def test_custom_certificate_base_url_uses_its_domain():
 def test_plain_http_writes_are_refused_not_redirected():
     rule = block((TF / 'alb.tf').read_text(), 'resource "aws_lb_listener_rule" "http_writes"')
     assert 'aws_lb_listener.http_redirect.arn' in rule
-    for method in ('POST', 'PUT', 'PATCH', 'DELETE'):
-        assert f'"{method}"' in rule
+    groups = [re.findall(r'"([A-Z]+)"', g) for g in re.findall(r'"\d+" = \[([^\]]*)\]', rule)]
+    assert groups and all(1 <= len(g) <= 3 for g in groups), 'ALB allows at most 3 values per condition'
+    assert sorted(m for g in groups for m in g) == sorted(['POST', 'PUT', 'PATCH', 'DELETE'])
+    assert 'values = each.value' in rule
     assert 'fixed-response' in rule and 'status_code  = "426"' in rule

@@ -98,14 +98,20 @@ resource "aws_lb_listener" "http_redirect" {
 }
 
 # ALB redirects are 301/302 only, and clients replay those as GET, so a write
-# sent to port 80 would be silently dropped. Refuse it instead.
+# sent to port 80 would be silently dropped. Refuse it instead. ALB allows at
+# most three values per condition, so the methods are split across two rules.
 resource "aws_lb_listener_rule" "http_writes" {
+  for_each = {
+    "1" = ["POST", "PUT", "PATCH"]
+    "2" = ["DELETE"]
+  }
+
   listener_arn = aws_lb_listener.http_redirect.arn
-  priority     = 1
+  priority     = tonumber(each.key)
 
   condition {
     http_request_method {
-      values = ["POST", "PUT", "PATCH", "DELETE"]
+      values = each.value
     }
   }
 
