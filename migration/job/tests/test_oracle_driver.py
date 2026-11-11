@@ -159,7 +159,7 @@ def test_timestamp_literal_rejects_non_zero_picoseconds_and_bad_length() -> None
         timestamp_literal("2019-01-01")
 
 
-@pytest.mark.parametrize("bad", ["arch_key", "1KEY", 'A"B', "A;DROP", "A B", "A" * 129])
+@pytest.mark.parametrize("bad", ["arch_key", "1KEY", 'A"B', "A;DROP", "A B", "A" * 129, "A\n"])
 def test_unsafe_identifiers_are_refused(bad: str) -> None:
     sel = SelectionSpec(key_columns=(bad,), all_rows=True)
     with pytest.raises(ConfigError, match="unsafe SQL identifier"):

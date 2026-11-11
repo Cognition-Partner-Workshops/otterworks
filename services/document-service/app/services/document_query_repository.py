@@ -10,8 +10,9 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-from sqlalchemy import text
+from sqlalchemy import and_, bindparam, column, func, select, table
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.types import NullType
 
 logger = structlog.get_logger()
 
@@ -29,6 +30,7 @@ COLUMNS = (
     "created_at",
     "updated_at",
 )
+DOCUMENTS = table("documents", *(column(name) for name in COLUMNS))
 
 
 class DocumentQueryRepository:
@@ -43,17 +45,21 @@ class DocumentQueryRepository:
         title_contains: str | None,
         content_type: str | None,
         folder_id: str | None = None,
-    ) -> str:
-        clauses = ["is_deleted = false", "is_template = false"]
+    ):
+        clauses = [DOCUMENTS.c.is_deleted == False, DOCUMENTS.c.is_template == False]  # noqa: E712
         if owner_id:
-            clauses.append(f"owner_id = '{owner_id}'")
+            clauses.append(
+                DOCUMENTS.c.owner_id == bindparam("owner_id", owner_id, type_=NullType())
+            )
         if folder_id:
-            clauses.append(f"folder_id = '{folder_id}'")
+            clauses.append(
+                DOCUMENTS.c.folder_id == bindparam("folder_id", folder_id, type_=NullType())
+            )
         if title_contains:
-            clauses.append(f"lower(title) LIKE lower('%{title_contains}%')")
+            clauses.append(func.lower(DOCUMENTS.c.title).like(func.lower(f"%{title_contains}%")))
         if content_type:
-            clauses.append(f"content_type = '{content_type}'")
-        return " AND ".join(clauses)
+            clauses.append(DOCUMENTS.c.content_type == content_type)
+        return and_(*clauses)
 
     async def count_documents(
         self,
@@ -64,15 +70,11 @@ class DocumentQueryRepository:
         folder_id: str | None = None,
     ) -> int:
         """Count documents matching the metadata filters."""
-        sql = (
-            "SELECT count(*) FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
+        query = (
+            select(func.count()).select_from(DOCUMENTS)
+            .where(self._where(owner_id, title_contains, content_type, folder_id))
         )
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
+        result = await self.db.execute(query)
         return int(result.scalar_one())
 
     async def search_documents(
@@ -88,15 +90,15 @@ class DocumentQueryRepository:
         offset: int = 0,
     ) -> list[dict[str, Any]]:
         """Return document rows matching the metadata filters, newest first."""
-        sql = (
-            f"SELECT {', '.join(COLUMNS)} FROM documents WHERE "
-            + self._where(owner_id, title_contains, content_type, folder_id)
-            + f" ORDER BY {sort} {direction} LIMIT {limit} OFFSET {offset}"
+        if sort not in COLUMNS or direction.lower() not in ("asc", "desc"):
+            raise ValueError("Invalid document ordering")
+        order = DOCUMENTS.c[sort]
+        query = (
+            select(DOCUMENTS)
+            .where(self._where(owner_id, title_contains, content_type, folder_id))
+            .order_by(order.asc() if direction.lower() == "asc" else order.desc())
+            .limit(limit).offset(offset)
         )
         logger.debug("document_filter_query", sort=sort, direction=direction)
-        # The interpolated statement is the OW-SEC-401 lab fixture (see
-        # security/equivalence/findings.yaml); the refactor removes the
-        # interpolation and this suppression together.
-        # nosemgrep: python.sqlalchemy.security.audit.avoid-sqlalchemy-text.avoid-sqlalchemy-text
-        result = await self.db.execute(text(sql))
+        result = await self.db.execute(query)
         return [dict(row._mapping) for row in result]

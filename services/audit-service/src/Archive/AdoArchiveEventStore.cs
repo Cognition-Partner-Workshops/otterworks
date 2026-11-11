@@ -31,7 +31,7 @@ public abstract class AdoArchiveEventStore : IArchiveEventStore
             await using var connection = CreateConnection();
             await connection.OpenAsync(cancellationToken);
             await using var command = connection.CreateCommand();
-            command.CommandText = EventsSql; // nosemgrep: csharp.lang.security.sqli.csharp-sqli.csharp-sqli -- constant SQL, docId bound as @docId
+            SetCommandText(command, EventsSql);
             var parameter = command.CreateParameter();
             parameter.ParameterName = "@docId";
             parameter.DbType = DbType.String;
@@ -111,7 +111,7 @@ public abstract class AdoArchiveEventStore : IArchiveEventStore
     private static DbCommand CreateDocCommand(DbConnection connection, string sql, string docId)
     {
         var command = connection.CreateCommand();
-        command.CommandText = sql; // nosemgrep: csharp.lang.security.sqli.csharp-sqli.csharp-sqli -- callers pass const SQL, docId bound as @docId
+        SetCommandText(command, sql);
         var parameter = command.CreateParameter();
         parameter.ParameterName = "@docId";
         parameter.DbType = DbType.String;
@@ -127,13 +127,29 @@ public abstract class AdoArchiveEventStore : IArchiveEventStore
             await using var connection = CreateConnection();
             await connection.OpenAsync(cancellationToken);
             await using var command = connection.CreateCommand();
-            command.CommandText = PingSql; // nosemgrep: csharp.lang.security.sqli.csharp-sqli.csharp-sqli -- constant SQL
+            SetCommandText(command, PingSql);
             await command.ExecuteScalarAsync(cancellationToken);
         }
         catch (DbException ex)
         {
             throw new ArchiveStoreUnavailableException($"{StoreName} archive store unreachable: {ex.Message}", ex);
         }
+    }
+
+    private static void SetCommandText(DbCommand command, string sql)
+    {
+        command.CommandText = sql switch
+        {
+            Db2ArchiveEventStore.Sql => Db2ArchiveEventStore.Sql,
+            Db2ArchiveEventStore.VersionsSqlText => Db2ArchiveEventStore.VersionsSqlText,
+            PostgresArchiveEventStore.Sql => PostgresArchiveEventStore.Sql,
+            PostgresArchiveEventStore.VersionsSqlText => PostgresArchiveEventStore.VersionsSqlText,
+            AzureSqlArchiveEventStore.Sql => AzureSqlArchiveEventStore.Sql,
+            AzureSqlArchiveEventStore.VersionsSqlText => AzureSqlArchiveEventStore.VersionsSqlText,
+            "SELECT 1" => "SELECT 1",
+            "SELECT 1 FROM SYSIBM.SYSDUMMY1" => "SELECT 1 FROM SYSIBM.SYSDUMMY1",
+            _ => throw new ArgumentException("Unsupported archive query", nameof(sql)),
+        };
     }
 
     protected static byte[] Bytes(DbDataReader reader, string column)

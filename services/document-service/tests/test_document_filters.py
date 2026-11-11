@@ -86,3 +86,17 @@ async def test_unfiltered_list_is_unchanged(client: AsyncClient, owner_id: uuid.
 
     assert resp.status_code == 200
     assert resp.json()["total"] == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "params", [{"sort": "unknown"}, {"sort": "title", "direction": "sideways"}]
+)
+async def test_filter_rejects_invalid_ordering(
+    client: AsyncClient, owner_id: uuid.UUID, params: dict[str, str]
+):
+    resp = await client.get(
+        "/api/v1/documents/", params={"owner_id": str(owner_id), "title": "plan", **params}
+    )
+    assert resp.status_code == 400
+    assert resp.json()["detail"].startswith("Invalid filter:")

@@ -5,6 +5,7 @@ python3.12 -m unittest seed.test_oracle_seed -v
 
 from __future__ import annotations
 
+import json
 import re
 import unittest
 from collections import Counter
@@ -32,7 +33,8 @@ class FakeCursor:
         if col is None:
             self._result = (len(rows),)
         else:
-            self._result = (sum(1 for k in params if k in rows),)
+            keys = json.loads(params[0]) if "JSON_TABLE" in sql else params
+            self._result = (sum(1 for k in keys if k in rows),)
 
     def executemany(self, sql: str, params):
         m = _TABLE_RE.search(sql)
