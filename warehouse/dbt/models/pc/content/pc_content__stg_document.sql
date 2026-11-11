@@ -7,5 +7,6 @@ select
     cast(CUSTOMER_ID as bigint) as CUSTOMER_ID,
     cast(left(trim(DOCUMENT_NAME, ' '), 200) as varchar(200)) as DOCUMENT_NAME,
     cast(CREATED_DT as date) as CREATED_DT,
-    cast(left(upper(trim(STATUS_CD, ' ')), 200) as varchar(200)) as STATUS_CD
+    cast(left(upper(trim(STATUS_CD, ' ')), 200) as varchar(200)) as STATUS_CD,
+    cast(left(trim(FILE_TYPE, ' '), 200) as varchar(200)) as FILE_TYPE
 from {{ source('pc_content_src', 'DOCUMENT') }}
