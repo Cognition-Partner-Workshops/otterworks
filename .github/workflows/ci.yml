@@ -152,6 +152,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: make sfx-snowflake-test SFX_PYTHON=python
+      - run: make sfx-pc-test SFX_PYTHON=python
 
   # Go - API Gateway
   api-gateway:
