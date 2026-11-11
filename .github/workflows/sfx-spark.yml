@@ -44,7 +44,7 @@ jobs:
           tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
       - name: Check pull request commits
         env:
-          BASE_REF: ${{ github.base_ref || 'demo-snowflake-dw-exit' }}
+          BASE_REF: ${{ github.base_ref || 'demo-databricks-dw-exit' }}
         run: |
           git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
           "$RUNNER_TEMP/gitleaks" detect --redact --log-opts "origin/$BASE_REF..HEAD"
@@ -58,7 +58,7 @@ jobs:
       - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
       - name: Check pull request changes
         env:
-          BASE_REF: ${{ github.base_ref || 'demo-snowflake-dw-exit' }}
+          BASE_REF: ${{ github.base_ref || 'demo-databricks-dw-exit' }}
         run: |
           git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
           base="$(git merge-base "origin/$BASE_REF" HEAD)"
