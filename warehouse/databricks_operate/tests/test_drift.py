@@ -68,3 +68,15 @@ def test_repeated_json_fields_are_rejected_before_values_are_lost(tmp_path):
                        '"currency":"USD","amount":"1.00"}\n')
     with pytest.raises(SchemaDrift, match="duplicate field: amount"):
         read_rows(landing)
+
+
+def test_seed_preserves_numeric_amounts_and_rejects_repeat_seeding(tmp_path):
+    landing = tmp_path / "numeric.jsonl"
+    landing.write_text('{"invoice_id":1,"customer_id":10,"amount":120.00,"currency":"USD"}\n')
+    before = read_rows(landing)
+    seed(landing)
+    after = read_rows(landing)
+    assert [{k: v for k, v in row.items() if k != "tax_region"} for row in after] == before
+    assert '"amount":120.00' in landing.read_text()
+    with pytest.raises(ValueError, match="already seeded"):
+        seed(landing)

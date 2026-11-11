@@ -76,9 +76,15 @@ def seed(path):
     if path.is_relative_to(ROOT):
         raise ValueError("copy the landing fixture outside the source directory before seeding")
     rows = read_rows(path)
-    for row in rows:
-        row["tax_region"] = "domestic" if row["currency"] == "USD" else "export"
-    path.write_text("".join(json.dumps(row, default=str) + "\n" for row in rows))
+    lines = [line.rstrip() for line in path.read_text().splitlines() if line.strip()]
+    changed = []
+    for line, row in zip(lines, rows):
+        if "tax_region" in row:
+            raise ValueError("landing feed is already seeded")
+        region = "domestic" if row["currency"] == "USD" else "export"
+        # Append one field without serializing existing decimal literals or changing their types.
+        changed.append(line[:-1] + ',"tax_region":' + json.dumps(region) + "}\n")
+    path.write_text("".join(changed))
 
 
 def main():
