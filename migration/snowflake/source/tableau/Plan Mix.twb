@@ -1,0 +1,175 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Plan Mix" inline='true' name='federated.e0b95903a37a79db287ab5a0b8cc' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.b6059ec1a1afa35ba6caecceeb04'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.b6059ec1a1afa35ba6caecceeb04' name='Custom SQL Query' type='text'>SELECT business_date, plan_tier, tenant_count, seat_count, seat_limit_total FROM mart.mart_plan_seat_summary WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY plan_tier</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[tenant_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_limit_total]' role='measure' type='quantitative' />
+</datasource>
+<datasource caption="Plan Tier Summary" inline='true' name='federated.73502652956d8cacadd8cd24d95e' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.152359e9341fc9ccca5a6a5f5168'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.152359e9341fc9ccca5a6a5f5168' name='Custom SQL Query' type='text'>SELECT business_date, plan_tier, tenant_count, seat_count, seat_limit_total, tenants_over_limit, avg_seats_per_tenant FROM mart.mart_plan_seat_summary WHERE business_date = &lt;[Parameters].[Business Date]&gt; AND plan_tier = &lt;[Parameters].[Plan Tier]&gt; ORDER BY plan_tier</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[tenant_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_limit_total]' role='measure' type='quantitative' />
+<column datatype='integer' name='[tenants_over_limit]' role='measure' type='quantitative' />
+<column datatype='real' name='[avg_seats_per_tenant]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Tenants by Plan Tier">
+<table>
+<view>
+<datasources>
+<datasource caption="Plan Mix" name='federated.e0b95903a37a79db287ab5a0b8cc' />
+</datasources>
+<datasource-dependencies datasource='federated.e0b95903a37a79db287ab5a0b8cc'>
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[tenant_count]' role='measure' type='quantitative' />
+<column-instance column='[plan_tier]' derivation='None' name='[none:plan_tier:nk]' pivot='key' type='nominal' />
+<column-instance column='[tenant_count]' derivation='Sum' name='[sum:tenant_count:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.e0b95903a37a79db287ab5a0b8cc].[none:plan_tier:nk]" direction='DESC' using="[federated.e0b95903a37a79db287ab5a0b8cc].[sum:tenant_count:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.e0b95903a37a79db287ab5a0b8cc].[none:plan_tier:nk]</rows>
+<cols>[federated.e0b95903a37a79db287ab5a0b8cc].[sum:tenant_count:qk]</cols>
+</table>
+<simple-id uuid='{D0233D18-BC0F-5698-B2A2-4E152B7CEC18}' />
+</worksheet>
+<worksheet name="Seats by Plan Tier">
+<table>
+<view>
+<datasources>
+<datasource caption="Plan Mix" name='federated.e0b95903a37a79db287ab5a0b8cc' />
+</datasources>
+<datasource-dependencies datasource='federated.e0b95903a37a79db287ab5a0b8cc'>
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column-instance column='[plan_tier]' derivation='None' name='[none:plan_tier:nk]' pivot='key' type='nominal' />
+<column-instance column='[seat_count]' derivation='Sum' name='[sum:seat_count:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.e0b95903a37a79db287ab5a0b8cc].[none:plan_tier:nk]" direction='DESC' using="[federated.e0b95903a37a79db287ab5a0b8cc].[sum:seat_count:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.e0b95903a37a79db287ab5a0b8cc].[none:plan_tier:nk]</rows>
+<cols>[federated.e0b95903a37a79db287ab5a0b8cc].[sum:seat_count:qk]</cols>
+</table>
+<simple-id uuid='{4F421604-135E-596F-B3B2-B1C14866B715}' />
+</worksheet>
+<worksheet name="Selected Tier">
+<table>
+<view>
+<datasources>
+<datasource caption="Plan Tier Summary" name='federated.73502652956d8cacadd8cd24d95e' />
+</datasources>
+<datasource-dependencies datasource='federated.73502652956d8cacadd8cd24d95e'>
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[tenant_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[tenants_over_limit]' role='measure' type='quantitative' />
+<column datatype='real' name='[avg_seats_per_tenant]' role='measure' type='quantitative' />
+<column-instance column='[plan_tier]' derivation='None' name='[none:plan_tier:nk]' pivot='key' type='nominal' />
+<column-instance column='[tenant_count]' derivation='Sum' name='[sum:tenant_count:qk]' pivot='key' type='quantitative' />
+<column-instance column='[seat_count]' derivation='Sum' name='[sum:seat_count:qk]' pivot='key' type='quantitative' />
+<column-instance column='[tenants_over_limit]' derivation='Sum' name='[sum:tenants_over_limit:qk]' pivot='key' type='quantitative' />
+<column-instance column='[avg_seats_per_tenant]' derivation='Sum' name='[sum:avg_seats_per_tenant:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<filter class='categorical' column='[federated.73502652956d8cacadd8cd24d95e].[:Measure Names]'>
+<groupfilter function='union' user:op='manual'>
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.73502652956d8cacadd8cd24d95e].[sum:tenant_count:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.73502652956d8cacadd8cd24d95e].[sum:seat_count:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.73502652956d8cacadd8cd24d95e].[sum:tenants_over_limit:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.73502652956d8cacadd8cd24d95e].[sum:avg_seats_per_tenant:qk]"' />
+</groupfilter>
+</filter>
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Text' />
+<encodings>
+<text column='[federated.73502652956d8cacadd8cd24d95e].[Multiple Values]' />
+</encodings>
+</pane>
+</panes>
+<rows>[federated.73502652956d8cacadd8cd24d95e].[none:plan_tier:nk]</rows>
+<cols>[federated.73502652956d8cacadd8cd24d95e].[:Measure Names]</cols>
+</table>
+<simple-id uuid='{9D8EF4C8-7F70-5801-A40B-DABB110B4E44}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Plan Mix">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='33333' id='2' name="Tenants by Plan Tier" w='100000' x='0' y='0' />
+<zone h='33333' id='3' name="Seats by Plan Tier" w='100000' x='0' y='33333' />
+<zone h='33333' id='4' name="Selected Tier" w='100000' x='0' y='66666' />
+</zone>
+</zones>
+<simple-id uuid='{AEE1C3DA-ADE5-5535-AA34-0F2EA0EA7D9A}' />
+</dashboard>
+</dashboards>
+</workbook>

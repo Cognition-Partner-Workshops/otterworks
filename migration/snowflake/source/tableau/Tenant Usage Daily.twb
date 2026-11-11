@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Tenant Usage" inline='true' name='federated.096cb57fadf5a6066b65ebab6e0f' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.9ed47817a61c857003784ebf7af3'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.9ed47817a61c857003784ebf7af3' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, tenant_name, plan_tier, region_code, api_units, compute_units, storage_peak_mb, bytes_used, active_users, document_count, file_count FROM mart.mart_tenant_usage_daily WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY tenant_name</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='string' name='[region_code]' role='dimension' type='nominal' />
+<column datatype='integer' name='[api_units]' role='measure' type='quantitative' />
+<column datatype='integer' name='[compute_units]' role='measure' type='quantitative' />
+<column datatype='integer' name='[storage_peak_mb]' role='measure' type='quantitative' />
+<column datatype='integer' name='[bytes_used]' role='measure' type='quantitative' />
+<column datatype='integer' name='[active_users]' role='measure' type='quantitative' />
+<column datatype='integer' name='[document_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[file_count]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="API Units by Tenant">
+<table>
+<view>
+<datasources>
+<datasource caption="Tenant Usage" name='federated.096cb57fadf5a6066b65ebab6e0f' />
+</datasources>
+<datasource-dependencies datasource='federated.096cb57fadf5a6066b65ebab6e0f'>
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='integer' name='[api_units]' role='measure' type='quantitative' />
+<column-instance column='[tenant_name]' derivation='None' name='[none:tenant_name:nk]' pivot='key' type='nominal' />
+<column-instance column='[api_units]' derivation='Sum' name='[sum:api_units:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.096cb57fadf5a6066b65ebab6e0f].[none:tenant_name:nk]" direction='DESC' using="[federated.096cb57fadf5a6066b65ebab6e0f].[sum:api_units:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.096cb57fadf5a6066b65ebab6e0f].[none:tenant_name:nk]</rows>
+<cols>[federated.096cb57fadf5a6066b65ebab6e0f].[sum:api_units:qk]</cols>
+</table>
+<simple-id uuid='{629BECFB-0918-5410-9D05-98900DBFC3A3}' />
+</worksheet>
+<worksheet name="Usage Detail">
+<table>
+<view>
+<datasources>
+<datasource caption="Tenant Usage" name='federated.096cb57fadf5a6066b65ebab6e0f' />
+</datasources>
+<datasource-dependencies datasource='federated.096cb57fadf5a6066b65ebab6e0f'>
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='string' name='[region_code]' role='dimension' type='nominal' />
+<column datatype='integer' name='[api_units]' role='measure' type='quantitative' />
+<column datatype='integer' name='[compute_units]' role='measure' type='quantitative' />
+<column datatype='integer' name='[active_users]' role='measure' type='quantitative' />
+<column-instance column='[tenant_name]' derivation='None' name='[none:tenant_name:nk]' pivot='key' type='nominal' />
+<column-instance column='[region_code]' derivation='None' name='[none:region_code:nk]' pivot='key' type='nominal' />
+<column-instance column='[api_units]' derivation='Sum' name='[sum:api_units:qk]' pivot='key' type='quantitative' />
+<column-instance column='[compute_units]' derivation='Sum' name='[sum:compute_units:qk]' pivot='key' type='quantitative' />
+<column-instance column='[active_users]' derivation='Sum' name='[sum:active_users:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<filter class='categorical' column='[federated.096cb57fadf5a6066b65ebab6e0f].[:Measure Names]'>
+<groupfilter function='union' user:op='manual'>
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.096cb57fadf5a6066b65ebab6e0f].[sum:api_units:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.096cb57fadf5a6066b65ebab6e0f].[sum:compute_units:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.096cb57fadf5a6066b65ebab6e0f].[sum:active_users:qk]"' />
+</groupfilter>
+</filter>
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Text' />
+<encodings>
+<text column='[federated.096cb57fadf5a6066b65ebab6e0f].[Multiple Values]' />
+</encodings>
+</pane>
+</panes>
+<rows>([federated.096cb57fadf5a6066b65ebab6e0f].[none:tenant_name:nk] / [federated.096cb57fadf5a6066b65ebab6e0f].[none:region_code:nk])</rows>
+<cols>[federated.096cb57fadf5a6066b65ebab6e0f].[:Measure Names]</cols>
+</table>
+<simple-id uuid='{E811E10E-F1CE-51DB-B24D-AB612A8862B0}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Tenant Usage Daily">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='50000' id='2' name="API Units by Tenant" w='100000' x='0' y='0' />
+<zone h='50000' id='3' name="Usage Detail" w='100000' x='0' y='50000' />
+</zone>
+</zones>
+<simple-id uuid='{225AE698-EE22-5475-A0EC-1F47DC59E85F}' />
+</dashboard>
+</dashboards>
+</workbook>

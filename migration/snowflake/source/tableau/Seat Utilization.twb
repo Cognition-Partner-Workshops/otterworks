@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Seat Utilization" inline='true' name='federated.9b4408e20c9d715ccfb639f5de22' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.2b6c287317398bcc48c1bb29f767'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.2b6c287317398bcc48c1bb29f767' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, plan_tier, seat_count, seat_limit, CAST(seat_count AS decimal(18,4)) / NULLIF(seat_limit, 0) AS utilization FROM fact.fact_seat_assignments WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY utilization DESC</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_limit]' role='measure' type='quantitative' />
+<column datatype='real' name='[utilization]' role='measure' type='quantitative' />
+</datasource>
+<datasource caption="Seat Counts" inline='true' name='federated.b1574e084aff296a3d4f6daaf3d2' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.e19843679c67a5c4c015fb9a4320'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.e19843679c67a5c4c015fb9a4320' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, plan_tier, seat_count, seat_limit FROM fact.fact_seat_assignments WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY tenant_id</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_limit]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Utilization by Tenant">
+<table>
+<view>
+<datasources>
+<datasource caption="Seat Utilization" name='federated.9b4408e20c9d715ccfb639f5de22' />
+</datasources>
+<datasource-dependencies datasource='federated.9b4408e20c9d715ccfb639f5de22'>
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='real' name='[utilization]' role='measure' type='quantitative' />
+<column-instance column='[tenant_id]' derivation='None' name='[none:tenant_id:nk]' pivot='key' type='nominal' />
+<column-instance column='[utilization]' derivation='Sum' name='[sum:utilization:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.9b4408e20c9d715ccfb639f5de22].[none:tenant_id:nk]" direction='DESC' using="[federated.9b4408e20c9d715ccfb639f5de22].[sum:utilization:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.9b4408e20c9d715ccfb639f5de22].[none:tenant_id:nk]</rows>
+<cols>[federated.9b4408e20c9d715ccfb639f5de22].[sum:utilization:qk]</cols>
+</table>
+<simple-id uuid='{22DA82A9-0F5F-5CAE-B646-527EABC68356}' />
+</worksheet>
+<worksheet name="Seats by Plan Tier">
+<table>
+<view>
+<datasources>
+<datasource caption="Seat Counts" name='federated.b1574e084aff296a3d4f6daaf3d2' />
+</datasources>
+<datasource-dependencies datasource='federated.b1574e084aff296a3d4f6daaf3d2'>
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column-instance column='[plan_tier]' derivation='None' name='[none:plan_tier:nk]' pivot='key' type='nominal' />
+<column-instance column='[seat_count]' derivation='Sum' name='[sum:seat_count:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.b1574e084aff296a3d4f6daaf3d2].[none:plan_tier:nk]" direction='DESC' using="[federated.b1574e084aff296a3d4f6daaf3d2].[sum:seat_count:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.b1574e084aff296a3d4f6daaf3d2].[none:plan_tier:nk]</rows>
+<cols>[federated.b1574e084aff296a3d4f6daaf3d2].[sum:seat_count:qk]</cols>
+</table>
+<simple-id uuid='{9EBCCBF8-5395-5923-97FE-4F45602C5596}' />
+</worksheet>
+<worksheet name="Seat Limits by Plan Tier">
+<table>
+<view>
+<datasources>
+<datasource caption="Seat Counts" name='federated.b1574e084aff296a3d4f6daaf3d2' />
+</datasources>
+<datasource-dependencies datasource='federated.b1574e084aff296a3d4f6daaf3d2'>
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[seat_limit]' role='measure' type='quantitative' />
+<column-instance column='[plan_tier]' derivation='None' name='[none:plan_tier:nk]' pivot='key' type='nominal' />
+<column-instance column='[seat_limit]' derivation='Sum' name='[sum:seat_limit:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.b1574e084aff296a3d4f6daaf3d2].[none:plan_tier:nk]" direction='DESC' using="[federated.b1574e084aff296a3d4f6daaf3d2].[sum:seat_limit:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.b1574e084aff296a3d4f6daaf3d2].[none:plan_tier:nk]</rows>
+<cols>[federated.b1574e084aff296a3d4f6daaf3d2].[sum:seat_limit:qk]</cols>
+</table>
+<simple-id uuid='{DFB011B9-212F-5FBF-8A54-398E618314AF}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Seat Utilization">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='33333' id='2' name="Utilization by Tenant" w='100000' x='0' y='0' />
+<zone h='33333' id='3' name="Seats by Plan Tier" w='100000' x='0' y='33333' />
+<zone h='33333' id='4' name="Seat Limits by Plan Tier" w='100000' x='0' y='66666' />
+</zone>
+</zones>
+<simple-id uuid='{C4B86666-D5BA-588E-A077-01AB72BE71A2}' />
+</dashboard>
+</dashboards>
+</workbook>

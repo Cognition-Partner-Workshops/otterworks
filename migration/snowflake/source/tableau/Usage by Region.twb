@@ -1,0 +1,152 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Region Usage" inline='true' name='federated.982d2f6b18970e02b20be7ad8eb9' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.95a8fb969f092621a8863a819aac'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.95a8fb969f092621a8863a819aac' name='Custom SQL Query' type='text'>SELECT business_date, region_code, COUNT_BIG(*) AS tenant_count, SUM(api_units) AS api_units, SUM(compute_units) AS compute_units, SUM(bytes_used) AS bytes_used FROM mart.mart_tenant_usage_daily WHERE business_date = &lt;[Parameters].[Business Date]&gt; GROUP BY business_date, region_code ORDER BY region_code</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[region_code]' role='dimension' type='nominal' />
+<column datatype='integer' name='[tenant_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[api_units]' role='measure' type='quantitative' />
+<column datatype='integer' name='[compute_units]' role='measure' type='quantitative' />
+<column datatype='integer' name='[bytes_used]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="API Units by Region">
+<table>
+<view>
+<datasources>
+<datasource caption="Region Usage" name='federated.982d2f6b18970e02b20be7ad8eb9' />
+</datasources>
+<datasource-dependencies datasource='federated.982d2f6b18970e02b20be7ad8eb9'>
+<column datatype='string' name='[region_code]' role='dimension' type='nominal' />
+<column datatype='integer' name='[api_units]' role='measure' type='quantitative' />
+<column-instance column='[region_code]' derivation='None' name='[none:region_code:nk]' pivot='key' type='nominal' />
+<column-instance column='[api_units]' derivation='Sum' name='[sum:api_units:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.982d2f6b18970e02b20be7ad8eb9].[none:region_code:nk]" direction='DESC' using="[federated.982d2f6b18970e02b20be7ad8eb9].[sum:api_units:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.982d2f6b18970e02b20be7ad8eb9].[none:region_code:nk]</rows>
+<cols>[federated.982d2f6b18970e02b20be7ad8eb9].[sum:api_units:qk]</cols>
+</table>
+<simple-id uuid='{C4CCE924-D5D0-598C-AC92-397158AD22E1}' />
+</worksheet>
+<worksheet name="Bytes Used by Region">
+<table>
+<view>
+<datasources>
+<datasource caption="Region Usage" name='federated.982d2f6b18970e02b20be7ad8eb9' />
+</datasources>
+<datasource-dependencies datasource='federated.982d2f6b18970e02b20be7ad8eb9'>
+<column datatype='string' name='[region_code]' role='dimension' type='nominal' />
+<column datatype='integer' name='[bytes_used]' role='measure' type='quantitative' />
+<column-instance column='[region_code]' derivation='None' name='[none:region_code:nk]' pivot='key' type='nominal' />
+<column-instance column='[bytes_used]' derivation='Sum' name='[sum:bytes_used:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.982d2f6b18970e02b20be7ad8eb9].[none:region_code:nk]" direction='DESC' using="[federated.982d2f6b18970e02b20be7ad8eb9].[sum:bytes_used:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.982d2f6b18970e02b20be7ad8eb9].[none:region_code:nk]</rows>
+<cols>[federated.982d2f6b18970e02b20be7ad8eb9].[sum:bytes_used:qk]</cols>
+</table>
+<simple-id uuid='{0CA2C06F-D9F6-5162-84D6-F45A4509A41D}' />
+</worksheet>
+<worksheet name="Region Detail">
+<table>
+<view>
+<datasources>
+<datasource caption="Region Usage" name='federated.982d2f6b18970e02b20be7ad8eb9' />
+</datasources>
+<datasource-dependencies datasource='federated.982d2f6b18970e02b20be7ad8eb9'>
+<column datatype='string' name='[region_code]' role='dimension' type='nominal' />
+<column datatype='integer' name='[tenant_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[compute_units]' role='measure' type='quantitative' />
+<column-instance column='[region_code]' derivation='None' name='[none:region_code:nk]' pivot='key' type='nominal' />
+<column-instance column='[tenant_count]' derivation='Sum' name='[sum:tenant_count:qk]' pivot='key' type='quantitative' />
+<column-instance column='[compute_units]' derivation='Sum' name='[sum:compute_units:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<filter class='categorical' column='[federated.982d2f6b18970e02b20be7ad8eb9].[:Measure Names]'>
+<groupfilter function='union' user:op='manual'>
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.982d2f6b18970e02b20be7ad8eb9].[sum:tenant_count:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.982d2f6b18970e02b20be7ad8eb9].[sum:compute_units:qk]"' />
+</groupfilter>
+</filter>
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Text' />
+<encodings>
+<text column='[federated.982d2f6b18970e02b20be7ad8eb9].[Multiple Values]' />
+</encodings>
+</pane>
+</panes>
+<rows>[federated.982d2f6b18970e02b20be7ad8eb9].[none:region_code:nk]</rows>
+<cols>[federated.982d2f6b18970e02b20be7ad8eb9].[:Measure Names]</cols>
+</table>
+<simple-id uuid='{2CC33880-8E77-5A8B-9E65-D6236C7F351F}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Usage by Region">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='33333' id='2' name="API Units by Region" w='100000' x='0' y='0' />
+<zone h='33333' id='3' name="Bytes Used by Region" w='100000' x='0' y='33333' />
+<zone h='33333' id='4' name="Region Detail" w='100000' x='0' y='66666' />
+</zone>
+</zones>
+<simple-id uuid='{A03B2E1D-EDDE-5B63-8486-0D5DED6E6450}' />
+</dashboard>
+</dashboards>
+</workbook>

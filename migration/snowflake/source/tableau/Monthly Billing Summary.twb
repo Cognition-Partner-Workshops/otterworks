@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Billing Summary" inline='true' name='federated.5d3a8b43c2c7081fa3526f26688d' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.0ba3c0af97b5509f4139a2196de4'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.0ba3c0af97b5509f4139a2196de4' name='Custom SQL Query' type='text'>SELECT business_date, line_type, invoice_status, COUNT_BIG(*) AS line_count, SUM(amount_cents) AS amount_cents FROM fact.fact_invoice_lines WHERE business_date = &lt;[Parameters].[Business Date]&gt; GROUP BY business_date, line_type, invoice_status ORDER BY line_type, invoice_status</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[line_type]' role='dimension' type='nominal' />
+<column datatype='string' name='[invoice_status]' role='dimension' type='nominal' />
+<column datatype='integer' name='[line_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[amount_cents]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Amount by Invoice Status">
+<table>
+<view>
+<datasources>
+<datasource caption="Billing Summary" name='federated.5d3a8b43c2c7081fa3526f26688d' />
+</datasources>
+<datasource-dependencies datasource='federated.5d3a8b43c2c7081fa3526f26688d'>
+<column datatype='string' name='[invoice_status]' role='dimension' type='nominal' />
+<column datatype='integer' name='[amount_cents]' role='measure' type='quantitative' />
+<column-instance column='[invoice_status]' derivation='None' name='[none:invoice_status:nk]' pivot='key' type='nominal' />
+<column-instance column='[amount_cents]' derivation='Sum' name='[sum:amount_cents:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.5d3a8b43c2c7081fa3526f26688d].[none:invoice_status:nk]" direction='DESC' using="[federated.5d3a8b43c2c7081fa3526f26688d].[sum:amount_cents:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.5d3a8b43c2c7081fa3526f26688d].[none:invoice_status:nk]</rows>
+<cols>[federated.5d3a8b43c2c7081fa3526f26688d].[sum:amount_cents:qk]</cols>
+</table>
+<simple-id uuid='{4D69356E-5172-54AF-90A5-98A24938574B}' />
+</worksheet>
+<worksheet name="Lines by Type and Status">
+<table>
+<view>
+<datasources>
+<datasource caption="Billing Summary" name='federated.5d3a8b43c2c7081fa3526f26688d' />
+</datasources>
+<datasource-dependencies datasource='federated.5d3a8b43c2c7081fa3526f26688d'>
+<column datatype='string' name='[line_type]' role='dimension' type='nominal' />
+<column datatype='string' name='[invoice_status]' role='dimension' type='nominal' />
+<column datatype='integer' name='[line_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[amount_cents]' role='measure' type='quantitative' />
+<column-instance column='[line_type]' derivation='None' name='[none:line_type:nk]' pivot='key' type='nominal' />
+<column-instance column='[invoice_status]' derivation='None' name='[none:invoice_status:nk]' pivot='key' type='nominal' />
+<column-instance column='[line_count]' derivation='Sum' name='[sum:line_count:qk]' pivot='key' type='quantitative' />
+<column-instance column='[amount_cents]' derivation='Sum' name='[sum:amount_cents:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<filter class='categorical' column='[federated.5d3a8b43c2c7081fa3526f26688d].[:Measure Names]'>
+<groupfilter function='union' user:op='manual'>
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.5d3a8b43c2c7081fa3526f26688d].[sum:line_count:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.5d3a8b43c2c7081fa3526f26688d].[sum:amount_cents:qk]"' />
+</groupfilter>
+</filter>
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Text' />
+<encodings>
+<text column='[federated.5d3a8b43c2c7081fa3526f26688d].[Multiple Values]' />
+</encodings>
+</pane>
+</panes>
+<rows>([federated.5d3a8b43c2c7081fa3526f26688d].[none:line_type:nk] / [federated.5d3a8b43c2c7081fa3526f26688d].[none:invoice_status:nk])</rows>
+<cols>[federated.5d3a8b43c2c7081fa3526f26688d].[:Measure Names]</cols>
+</table>
+<simple-id uuid='{71C09397-31BE-54C2-B366-3A1A70627C04}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Monthly Billing Summary">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='50000' id='2' name="Amount by Invoice Status" w='100000' x='0' y='0' />
+<zone h='50000' id='3' name="Lines by Type and Status" w='100000' x='0' y='50000' />
+</zone>
+</zones>
+<simple-id uuid='{1C0EC928-55DB-5D21-9FEB-A81BF7032596}' />
+</dashboard>
+</dashboards>
+</workbook>
