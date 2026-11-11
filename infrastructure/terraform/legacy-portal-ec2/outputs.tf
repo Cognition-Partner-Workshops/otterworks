@@ -1,6 +1,16 @@
 output "base_url" {
-  description = "HTTP URL of the internet-facing ALB. lp-ec2-replay uses it as the target base URL."
-  value       = "http://${aws_lb.this.dns_name}"
+  description = "HTTPS URL of the internet-facing ALB. lp-ec2-replay uses it as the target base URL."
+  value       = "https://${coalesce(var.domain_name, aws_lb.this.dns_name)}"
+
+  precondition {
+    condition     = var.certificate_arn == null || var.domain_name != null
+    error_message = "CERTIFICATE_ARN needs DOMAIN_NAME: the certificate's hostname, pointed (CNAME/alias) at the ALB."
+  }
+}
+
+output "alb_ca_cert_pem" {
+  description = "Self-signed certificate on the HTTPS listener, empty when var.certificate_arn is set. lp-ec2.sh trusts it for curl and replay.py."
+  value       = try(tls_self_signed_cert.alb[0].cert_pem, "")
 }
 
 output "instance_id" {
