@@ -3,13 +3,27 @@ spring:
     name: payments
   artemis:
     mode: native
-    broker-url: ${BROKER_URL:tcp://broker:61616}
+    broker-url: ${BROKER_URL:tcp://broker:61616?reconnectAttempts=0&initialConnectAttempts=1&retryInterval=100&callTimeout=1000&consumerWindowSize=0}
     user: ${BROKER_USER:replay}
     password: ${BROKER_PASSWORD}
   datasource:
     url: ${DB_URL:jdbc:postgresql://integration-db:5432/integration}
     username: ${DB_USER:replay}
     password: ${DB_PASSWORD}
+    xa:
+      data-source-class-name: org.postgresql.xa.PGXADataSource
+      properties:
+        url: ${DB_URL:jdbc:postgresql://integration-db:5432/integration}
+        user: ${DB_USER:replay}
+        password: ${DB_PASSWORD}
+narayana:
+  log-dir: ${PAYMENTS_TX_LOG_DIR:/app/transaction-logs}
+  node-identifier: payments
+  default-timeout: 60
+  periodic-recovery-period: 10
+  recovery-backoff-period: 2
+payments:
+  tx-hold-ms: ${PAYMENTS_TX_HOLD_MS:0}
 camel:
   springboot:
     main-run-controller: true
