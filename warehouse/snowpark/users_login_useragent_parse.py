@@ -27,5 +27,6 @@ $$
     result.write.save_as_table(
         [database, "MART_SPARK", "USERS_LOGIN_USERAGENT_PARSE"],
         mode="overwrite",
+        copy_grants=True,
         comment="sfx-d1110 Python parsing output for users_login_useragent_parse.",
     )
