@@ -36,13 +36,77 @@ sfx-teradata-run: sfx-teradata-validate warehouse/.venv/.requirements ## Rerun t
 	$(SFX_TD_ENV) $(SFX_TD_PY) warehouse/teradata/jobs/daily_chain --reuse-landing --business-date "$(BUSINESS_DATE)"
 
 sfx-teradata-test: sfx-teradata-validate warehouse/.venv/.requirements ## Test the warehouse against its PostgreSQL instance (NS required)
-	$(SFX_TD_ENV) $(SFX_TD_PY) -m pytest -q warehouse
+	$(SFX_TD_ENV) $(SFX_TD_PY) -m pytest -q warehouse/seed/tests warehouse/teradata/tests
 
 sfx-teradata-down: sfx-teradata-validate ## Stop the warehouse and remove its volume (NS required)
 	$(SFX_TD_ENV) warehouse/teradata/bin/compose down -v
 
 sfx-teradata-snowconvert: sfx-teradata-validate warehouse/.venv/.requirements ## Run offline SnowConvert into ignored output (NS required; SCAI executable optional)
 	$(SFX_TD_PY) warehouse/teradata/jobs/snowconvert.py --scai "$(SCAI)" --namespace "$(NS)"
+
+.PHONY: sfx-snowflake-deploy sfx-snowflake-load sfx-snowflake-test sfx-snowflake-dbt
+.PHONY: sfx-snowflake-dag sfx-snowflake-consumers
+.PHONY: sfx-snowflake-ledger sfx-snowflake-teardown sfx-snowflake-roles-dry-run sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down
+
+SFX_PYTHON ?= python3.10
+SFX_VENV ?= warehouse/snowflake/.venv
+SFX_TEST_PYTHON ?= $(SFX_VENV)/bin/python
+
+$(SFX_VENV)/.sfx-installed: warehouse/snowflake/requirements.txt
+	$(SFX_PYTHON) -m venv $(SFX_VENV)
+	$(SFX_VENV)/bin/pip install -r warehouse/snowflake/requirements.txt
+	@touch $@
+
+sfx-snowflake-deploy: $(SFX_VENV)/.sfx-installed ## Deploy Snowflake scaffold migrations
+	$(SFX_VENV)/bin/python warehouse/snowflake/deploy.py
+
+sfx-snowflake-load: $(SFX_VENV)/.sfx-installed ## Load Snowflake landing files
+	$(SFX_VENV)/bin/python warehouse/snowflake/load.py --area all
+
+.PHONY: sfx-snowflake-load-before
+sfx-snowflake-load-before: sfx-teradata-validate $(SFX_VENV)/.sfx-installed warehouse/.venv/.requirements ## Land processed billing after sfx-teradata-run
+	$(SFX_TD_ENV) $(SFX_VENV)/bin/python warehouse/snowflake/load.py --source teradata-before --area billing --date "$(BUSINESS_DATE)" --teradata-python "$(SFX_TD_PY)"
+
+sfx-snowflake-test: $(SFX_VENV)/.sfx-installed ## Run offline Snowflake scaffold tests
+	$(SFX_TEST_PYTHON) -m pytest warehouse/snowflake/tests -q
+	$(SFX_TEST_PYTHON) warehouse/snowflake/run_dbt.py parse
+
+sfx-snowflake-dbt: $(SFX_VENV)/.sfx-installed ## Build and test billing staging views
+	$(SFX_VENV)/bin/python warehouse/snowflake/run_dbt.py build
+
+sfx-snowflake-dag: $(SFX_VENV)/.sfx-installed ## Execute the log-only DAG once and suspend its tasks
+	$(SFX_VENV)/bin/python warehouse/snowflake/task_dag.py --run-once
+
+sfx-snowflake-consumers: $(SFX_VENV)/.sfx-installed ## Report observed tagged consumer reads
+	$(SFX_VENV)/bin/python warehouse/snowflake/consumer_reads.py
+
+.PHONY: sfx-snowflake-snowconvert
+sfx-snowflake-snowconvert: $(SFX_VENV)/.sfx-installed ## Run SnowConvert CLI into ignored raw output
+	$(SFX_VENV)/bin/python warehouse/snowflake/snowconvert.py
+
+sfx-snowflake-ledger: $(SFX_VENV)/.sfx-installed ## Report lag-aware Snowflake credits
+	$(SFX_VENV)/bin/python warehouse/snowflake/ledger.py
+
+sfx-snowflake-teardown: $(SFX_VENV)/.sfx-installed ## Drop token-scoped objects (TEARDOWN_ARGS=--dry-run to preview)
+	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 $(TEARDOWN_ARGS)
+
+sfx-snowflake-roles-dry-run: $(SFX_VENV)/.sfx-installed ## Validate roles and check live CREATE ROLE privilege
+	$(SFX_VENV)/bin/python warehouse/snowflake/roles/dry_run.py --check-live
+
+ifeq ($(NS),sfx-d1110-before)
+sfx-snowflake-up sfx-snowflake-run sfx-snowflake-down:
+	@echo "The Snowflake target is not part of namespace sfx-d1110-before"
+else
+sfx-snowflake-up: sfx-snowflake-deploy ## Deploy the Snowflake target
+
+sfx-snowflake-run: ## Load, build billing staging, and report credits
+	$(MAKE) sfx-snowflake-load
+	$(MAKE) sfx-snowflake-dbt
+	$(MAKE) sfx-snowflake-ledger
+
+sfx-snowflake-down: $(SFX_VENV)/.sfx-installed ## Suspend tasks and warehouses without dropping objects
+	$(SFX_VENV)/bin/python warehouse/snowflake/teardown.py --token sfx-d1110 --suspend-only
+endif
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

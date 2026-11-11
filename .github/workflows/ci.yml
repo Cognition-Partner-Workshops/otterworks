@@ -46,7 +46,7 @@ jobs:
       - if: steps.changes.outputs.warehouse == 'true'
         run: python -m pip install -r warehouse/requirements.txt
       - if: steps.changes.outputs.warehouse == 'true'
-        run: python -m pytest -q warehouse
+        run: python -m pytest -q warehouse/seed/tests warehouse/teradata/tests
       - if: steps.changes.outputs.warehouse == 'true'
         name: Warehouse smoke
         run: |
@@ -84,12 +84,17 @@ jobs:
       report-service: ${{ steps.changes.outputs.report-service }}
       legacy-portal: ${{ steps.changes.outputs.legacy-portal }}
       api-tests: ${{ steps.changes.outputs.api-tests }}
+      sfx-snowflake: ${{ steps.changes.outputs.sfx-snowflake }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: dorny/paths-filter@d1c1ffe0248fe513906c8e24db8ea791d46f8590 # v3
         id: changes
         with:
           filters: |
+            sfx-snowflake:
+              - 'warehouse/**'
+              - 'Makefile'
+              - '.github/workflows/ci.yml'
             api-gateway:
               - 'services/api-gateway/**'
             auth-service:
@@ -133,6 +138,20 @@ jobs:
               - 'services/api-gateway/internal/config/**'
               - 'docker-compose*.yml'
               - 'Makefile'
+
+  sfx-snowflake:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.sfx-snowflake == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: make sfx-snowflake-test SFX_PYTHON=python
 
   # Go - API Gateway
   api-gateway:

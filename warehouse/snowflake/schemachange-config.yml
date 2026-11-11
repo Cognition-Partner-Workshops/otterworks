@@ -1,0 +1,6 @@
+config-version: 1
+root-folder: .
+snowflake-database: SFX_D1110_AFTER
+snowflake-schema: SCHEMACHANGE
+change-history-table: SFX_D1110_AFTER.SCHEMACHANGE.CHANGE_HISTORY
+create-change-history-table: false

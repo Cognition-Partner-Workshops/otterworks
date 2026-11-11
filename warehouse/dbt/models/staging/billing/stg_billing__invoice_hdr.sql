@@ -1,0 +1,29 @@
+select
+    cast(INVOICE_HDR_ID as BIGINT) as invoice_hdr_id,
+    cast(CUSTOMER_ID as BIGINT) as customer_id,
+    cast(INVOICE_NUMBER as VARCHAR(32)) as invoice_number,
+    cast(INVOICE_DATE as DATE) as invoice_date,
+    cast(coalesce(DUE_DATE, dateadd(day,
+        coalesce((select max(c.PAYMENT_TERMS_DAYS)
+                  from {{ source('billing', 'CUSTOMER_ACCOUNT') }} c
+                  where c.CUSTOMER_ID = i.CUSTOMER_ID), 30),
+        coalesce(INVOICE_DATE, INVOICE_DT))) as DATE) as due_date,
+    cast(SUBTOTAL_AMOUNT as NUMBER(12,2)) as subtotal_amount,
+    cast(TAX_AMOUNT as NUMBER(12,2)) as tax_amount,
+    cast(TOTAL_AMOUNT as NUMBER(12,2)) as total_amount,
+    cast(CURRENCY_CODE as CHAR(3)) as currency_code,
+    cast(STATUS as VARCHAR(20)) as status,
+    cast(coalesce(INVOICE_ID, INVOICE_HDR_ID) as BIGINT) as invoice_id,
+    cast(SUBSCRIPTION_ID as BIGINT) as subscription_id,
+    cast(INVOICE_DT as DATE) as invoice_dt,
+    cast(BILL_DT as DATE) as bill_dt,
+    cast(PERIOD_START_DT as DATE) as period_start_dt,
+    cast(CURRENCY_CD as VARCHAR(3)) as currency_cd,
+    cast(TAX_RATE_ID as BIGINT) as tax_rate_id,
+    cast(INVOICE_PERIOD as VARCHAR(7)) as invoice_period,
+    cast(PERIOD_KEY as INTEGER) as period_key,
+    cast(PRIOR_PERIOD_END_DT as DATE) as prior_period_end_dt,
+    cast(INVOICE_MONTH as INTEGER) as invoice_month,
+    cast(PERIOD_CLOSED_CD as VARCHAR(1)) as period_closed_cd,
+    cast(CURRENCY_CONTROL_TOTAL as NUMBER(12,2)) as currency_control_total
+from {{ source('billing', 'INVOICE_HDR') }} i

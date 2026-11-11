@@ -1,0 +1,21 @@
+FILE_OBJECT_ID|DOCUMENT_ID|OBJECT_KEY|MIME_TYPE|SIZE_BYTES|CHECKSUM|CREATED_AT|IS_ACTIVE
+1|1|reviews/alderquay/operating-review.pdf|application/pdf|779310|3c623132e47986d87ce9f5e7f22312cf803c6187e49d864aba360fee1a16f275|2026-01-08 11:17:00|Y
+2|2|reviews/brindlehaven/operating-review.pdf|application/pdf|744195|bd2b88450b071084abfa61285ac9dc44e6a347119f0ed38156264b69ebf46d26|2026-01-11 10:56:00|Y
+3|3|reviews/cindermere/operating-review.pdf|application/pdf|748146|7e27c7cb8607e91ca6ecf6aebd49545468b2b4e3458f7a385538a6f29e14dad5|2026-01-14 10:19:00|Y
+4|4|reviews/dovewick/operating-review.pdf|application/pdf|752623|07837339a11d02b8d63d5f22b5c1e65fa45fa47dfa8f0c96533517c5d59a4358|2026-01-17 09:20:00|Y
+5|5|reviews/elmspire/operating-review.pdf|application/pdf|302889|2d9977044dc67a234cde4205422bf055ed1e763e51c7b8502fcd7bf6147a860f|2026-01-20 11:11:00|Y
+6|6|reviews/ferncrest/operating-review.pdf|application/pdf|699383|e2aec9a030413971bf96366ddebf1f64a5c715ba2fe4d5e6bcdc7384a61b084e|2026-01-23 10:24:00|Y
+7|7|reviews/glenmarsh/operating-review.pdf|application/pdf|457160|0b52d6e87e0609c7d98c8faea990b84518f6b0594d5fa0a45455782d79f8e00b|2026-01-26 09:21:00|Y
+8|8|reviews/hearthvale/operating-review.pdf|application/pdf|632011|7f2c092b6481c6f6eb8ec5ea8974f763de79f7861796914a16b200dbfbfa733f|2026-01-29 11:55:00|Y
+9|9|reviews/ironwillow/operating-review.pdf|application/pdf|671190|04b79a97de0d159459062eae027f1b060e652f36569ed3d3c078345d9db75bfb|2026-02-01 10:22:00|Y
+10|10|reviews/juniperquay/operating-review.pdf|application/pdf|120130|236c6e78b82a2d8d73fb154d1aed6a3bf4918e989e3bfd414c35f2bbd9a6b565|2026-02-04 13:05:00|Y
+11|11|reviews/kestrelford/operating-review.pdf|application/pdf|632917|0d180b4ef853f47a47c92c4699737d66342ed50848c365da5cb229d1f66cb0a5|2026-02-07 13:02:00|Y
+12|12|reviews/larkbridge/operating-review.pdf|application/pdf|606498|6199e43028dc84a4cc4375b3af1f1069efb85f032627bbb14948d719ee360e78|2026-02-10 11:34:00|Y
+13|13|reviews/mosscairn/operating-review.pdf|application/pdf|844094|429c9f54d37235e507e9aa29eb383e2519613f17f2d000cbf07860470849ffa5|2026-02-13 11:54:00|Y
+14|14|reviews/northfen/operating-review.pdf|application/pdf|640415|346374070c73508ff8f5f08939ecab47bbd01924b25363a1227aced6a8a82ec3|2026-02-16 11:19:00|Y
+15|15|reviews/oakhollow/operating-review.pdf|application/pdf|834478|86c482983cf82f0c4f3dfec6f5f29867c57d8d099fb9a46613f424ac2a5d82a5|2026-02-19 10:32:00|Y
+16|16|reviews/pebblewick/operating-review.pdf|application/pdf|200230|72b29eaed8d0df43d953a2b5b76aa0c27fb19c58f3159f5cb29150ad917ecae4|2026-02-22 09:31:00|Y
+17|17|reviews/quillhaven/operating-review.pdf|application/pdf|622327|fd69a6b739af683922a14c288c0e21bc35caabae3da51a0b7494293d2974f80e|2026-02-25 09:33:00|Y
+18|18|reviews/reedspire/operating-review.pdf|application/pdf|341970|2d4a1c22b61f1da675eb7c23535f503d8c2b757ed61afd2966bbf2a9d06562eb|2026-02-28 11:48:00|Y
+19|19|reviews/silverfen/operating-review.pdf|application/pdf|303266|f3c17003476105ba1e13f083f2c8d53f37976d8b19631ac7f0723c38c0f0f6d3|2026-03-03 11:41:00|Y
+20|20|reviews/thistlequay/operating-review.pdf|application/pdf|613054|e3db601d7292d84dbad943f86612d5b6ab4a8e26e6be8e929bd6618bc84fffd0|2026-03-06 12:52:00|Y

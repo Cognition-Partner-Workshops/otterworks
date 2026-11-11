@@ -1,0 +1,21 @@
+ROLE_GRANT_ID|USER_ID|ROLE_NAME|SCOPE_NAME|GRANTED_AT|CREATED_AT|IS_ACTIVE
+1|1|Workspace Editor|Alderquay Works Ltd|2026-01-08 11:17:00|2026-01-08 11:17:00|Y
+2|2|Workspace Editor|Brindlehaven Works Ltd|2026-01-11 10:56:00|2026-01-11 10:56:00|Y
+3|3|Workspace Editor|Cindermere Works Ltd|2026-01-14 10:19:00|2026-01-14 10:19:00|Y
+4|4|Workspace Editor|Dovewick Works Ltd|2026-01-17 09:20:00|2026-01-17 09:20:00|Y
+5|5|Workspace Editor|Elmspire Works Ltd|2026-01-20 11:11:00|2026-01-20 11:11:00|Y
+6|6|Workspace Editor|Ferncrest Works Ltd|2026-01-23 10:24:00|2026-01-23 10:24:00|Y
+7|7|Workspace Editor|Glenmarsh Works Ltd|2026-01-26 09:21:00|2026-01-26 09:21:00|Y
+8|8|Workspace Editor|Hearthvale Works Ltd|2026-01-29 11:55:00|2026-01-29 11:55:00|Y
+9|9|Workspace Editor|Ironwillow Works Ltd|2026-02-01 10:22:00|2026-02-01 10:22:00|Y
+10|10|Workspace Editor|Juniperquay Works Ltd|2026-02-04 13:05:00|2026-02-04 13:05:00|Y
+11|11|Workspace Editor|Kestrelford Works Ltd|2026-02-07 13:02:00|2026-02-07 13:02:00|Y
+12|12|Workspace Editor|Larkbridge Works Ltd|2026-02-10 11:34:00|2026-02-10 11:34:00|Y
+13|13|Workspace Editor|Mosscairn Works Ltd|2026-02-13 11:54:00|2026-02-13 11:54:00|Y
+14|14|Workspace Editor|Northfen Works Ltd|2026-02-16 11:19:00|2026-02-16 11:19:00|Y
+15|15|Workspace Editor|Oakhollow Works Ltd|2026-02-19 10:32:00|2026-02-19 10:32:00|Y
+16|16|Workspace Editor|Pebblewick Works Ltd|2026-02-22 09:31:00|2026-02-22 09:31:00|Y
+17|17|Workspace Editor|Quillhaven Works Ltd|2026-02-25 09:33:00|2026-02-25 09:33:00|Y
+18|18|Workspace Editor|Reedspire Works Ltd|2026-02-28 11:48:00|2026-02-28 11:48:00|Y
+19|19|Workspace Editor|Silverfen Works Ltd|2026-03-03 11:41:00|2026-03-03 11:41:00|Y
+20|20|Workspace Editor|Thistlequay Works Ltd|2026-03-06 12:52:00|2026-03-06 12:52:00|Y
