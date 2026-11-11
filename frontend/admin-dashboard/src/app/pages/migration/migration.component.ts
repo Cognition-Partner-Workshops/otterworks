@@ -403,8 +403,8 @@ export class MigrationComponent implements OnInit, OnDestroy {
         counts[f.issue] = (counts[f.issue] || 0) + 1;
       }
     }
-    this.rules = [...ruleSet].sort();
-    this.issues = [...issueSet].sort();
+    this.rules = [...ruleSet].sort((a, b) => a.localeCompare(b));
+    this.issues = [...issueSet].sort((a, b) => a.localeCompare(b));
     this.issueCounts = counts;
   }
 }

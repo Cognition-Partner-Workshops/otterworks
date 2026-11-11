@@ -24,16 +24,17 @@ import java.util.TimeZone;
  */
 public final class ReportDateUtils {
 
-    // LEGACY: SimpleDateFormat is NOT thread-safe — shared instance is a bug
-    // in multithreaded environments. java.time.DateTimeFormatter is immutable and thread-safe.
-    private static final SimpleDateFormat ISO_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    private static final SimpleDateFormat DISPLAY_FORMAT = new SimpleDateFormat("MMM dd, yyyy HH:mm");
-    private static final SimpleDateFormat FILE_NAME_FORMAT = new SimpleDateFormat("yyyyMMdd_HHmmss");
+    // One SimpleDateFormat per thread: thread-safe, and keeps the locale's calendar
+    // and digits (e.g. Buddhist years under th_TH) that DateTimeFormatter would drop.
+    private static final ThreadLocal<SimpleDateFormat> DISPLAY_FORMAT = utcFormat("MMM dd, yyyy HH:mm");
+    private static final ThreadLocal<SimpleDateFormat> FILE_NAME_FORMAT = utcFormat("yyyyMMdd_HHmmss");
 
-    static {
-        ISO_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-        DISPLAY_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-        FILE_NAME_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+    private static ThreadLocal<SimpleDateFormat> utcFormat(String pattern) {
+        return ThreadLocal.withInitial(() -> {
+            SimpleDateFormat format = new SimpleDateFormat(pattern);
+            format.setTimeZone(TimeZone.getTimeZone("UTC"));
+            return format;
+        });
     }
 
     private ReportDateUtils() {
@@ -59,9 +60,7 @@ public final class ReportDateUtils {
         if (date == null) {
             return "N/A";
         }
-        synchronized (DISPLAY_FORMAT) {
-            return DISPLAY_FORMAT.format(date);
-        }
+        return DISPLAY_FORMAT.get().format(date);
     }
 
     /**
@@ -71,9 +70,7 @@ public final class ReportDateUtils {
         if (date == null) {
             date = new Date();
         }
-        synchronized (FILE_NAME_FORMAT) {
-            return FILE_NAME_FORMAT.format(date);
-        }
+        return FILE_NAME_FORMAT.get().format(date);
     }
 
     /**

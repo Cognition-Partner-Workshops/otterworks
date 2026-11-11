@@ -81,7 +81,7 @@ function MarginsContent() {
   const [sortAsc, setSortAsc] = useState(true);
 
   const categories = useMemo(
-    () => Array.from(new Set(margins?.rows.map((r) => r.category) ?? [])).sort(),
+    () => Array.from(new Set(margins?.rows.map((r) => r.category) ?? [])).sort((a, b) => a.localeCompare(b)),
     [margins],
   );
 
