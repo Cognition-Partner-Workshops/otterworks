@@ -1,11 +1,11 @@
 {
   "sample_size": 10,
   "objects": [
-    {"object": "users__app_user", "keys": ["user_id"]},
-    {"object": "users__user_profile", "keys": ["profile_id"]},
-    {"object": "documents__doc_version", "keys": ["version_id"]},
-    {"object": "documents__collab_session", "keys": ["session_id"]},
-    {"object": "documents__storage_usage_daily", "keys": ["storage_usage_id"]},
+    {"object": "billing__in_users_app_user", "keys": ["user_id"], "before": "users__app_user"},
+    {"object": "billing__in_users_user_profile", "keys": ["profile_id"], "before": "users__user_profile"},
+    {"object": "billing__in_documents_doc_version", "keys": ["version_id"], "before": "documents__doc_version"},
+    {"object": "billing__in_documents_collab_session", "keys": ["session_id"], "before": "documents__collab_session"},
+    {"object": "billing__in_documents_storage_usage_daily", "keys": ["storage_usage_id"], "before": "documents__storage_usage_daily"},
     {"object": "billing__customer_account", "keys": ["customer_id"]},
     {"object": "billing__plan_catalog", "keys": ["plan_id"]},
     {"object": "billing__tax_rate", "keys": ["tax_rate_id"]},
@@ -24,6 +24,6 @@
     {"object": "billing__v_subscription_plans", "keys": ["subscription_id"]},
     {"object": "billing__m_subscription_plans", "keys": ["subscription_id"]},
     {"object": "billing__m_currency_totals", "keys": ["currency_cd"]},
-    {"object": "documents__m_storage_totals", "keys": ["customer_id"]}
+    {"object": "billing__in_documents_m_storage_totals", "keys": ["customer_id"], "before": "documents__m_storage_totals"}
   ]
 }

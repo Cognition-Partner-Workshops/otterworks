@@ -1,14 +1,14 @@
 CREATE SCHEMA IF NOT EXISTS cpw.dbx_d1111_after COMMENT 'run_token=dbx-d1111 expires=2026-11-24';
 
-CREATE OR REPLACE TABLE cpw.dbx_d1111_after.users__app_user USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.users__stg_app_user;
+CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__in_users_app_user USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.users__stg_app_user;
 
-CREATE OR REPLACE TABLE cpw.dbx_d1111_after.users__user_profile USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.users__stg_user_profile;
+CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__in_users_user_profile USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.users__stg_user_profile;
 
-CREATE OR REPLACE TABLE cpw.dbx_d1111_after.documents__doc_version USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.documents__stg_doc_version QUALIFY ROW_NUMBER() OVER (PARTITION BY DOCUMENT_ID ORDER BY VERSION_TS DESC) = 1;
+CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__in_documents_doc_version USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.documents__stg_doc_version QUALIFY ROW_NUMBER() OVER (PARTITION BY DOCUMENT_ID ORDER BY VERSION_TS DESC) = 1;
 
-CREATE OR REPLACE TABLE cpw.dbx_d1111_after.documents__collab_session USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.documents__stg_collab_session;
+CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__in_documents_collab_session USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.documents__stg_collab_session;
 
-CREATE OR REPLACE TABLE cpw.dbx_d1111_after.documents__storage_usage_daily USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.documents__stg_storage_usage_daily;
+CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__in_documents_storage_usage_daily USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.documents__stg_storage_usage_daily;
 
 CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__customer_account USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_before.billing__stg_customer_account;
 
@@ -40,7 +40,7 @@ INSERT INTO cpw.dbx_d1111_after.billing__usage_daily (USAGE_ID, CUSTOMER_ID, SUB
 SELECT 10000000000 + u.CUSTOMER_ID, u.CUSTOMER_ID, s.SUBSCRIPTION_ID,
 DATE '2026-11-09', u.BYTES_USED, 'STORAGE'
 FROM (
-SELECT CUSTOMER_ID, SUM(BYTES_USED) AS BYTES_USED FROM cpw.dbx_d1111_after.documents__storage_usage_daily
+SELECT CUSTOMER_ID, SUM(BYTES_USED) AS BYTES_USED FROM cpw.dbx_d1111_after.billing__in_documents_storage_usage_daily
 WHERE USAGE_DT >= DATE '2026-11-01'
 AND USAGE_DT < DATE '2026-12-01'
 GROUP BY CUSTOMER_ID
@@ -178,9 +178,9 @@ GROUP BY CURRENCY_CD;
 
 CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__m_currency_totals USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_after.billing__m_currency_totals_fn('20261109');
 
-CREATE OR REPLACE FUNCTION cpw.dbx_d1111_after.documents__m_storage_totals_fn(p_start DATE, p_end DATE) RETURNS TABLE COMMENT 'run_token=dbx-d1111 expires=2026-11-24' RETURN SELECT CUSTOMER_ID, SUM(BYTES_USED) AS BYTES_USED, SUM(OBJECT_COUNT) AS OBJECT_COUNT
-FROM cpw.dbx_d1111_after.documents__storage_usage_daily
+CREATE OR REPLACE FUNCTION cpw.dbx_d1111_after.billing__in_documents_m_storage_totals_fn(p_start DATE, p_end DATE) RETURNS TABLE COMMENT 'run_token=dbx-d1111 expires=2026-11-24' RETURN SELECT CUSTOMER_ID, SUM(BYTES_USED) AS BYTES_USED, SUM(OBJECT_COUNT) AS OBJECT_COUNT
+FROM cpw.dbx_d1111_after.billing__in_documents_storage_usage_daily
 WHERE USAGE_DT >= p_start AND USAGE_DT < p_end
 GROUP BY CUSTOMER_ID;
 
-CREATE OR REPLACE TABLE cpw.dbx_d1111_after.documents__m_storage_totals USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_after.documents__m_storage_totals_fn(DATE '2026-11-01', DATE '2026-12-01');
+CREATE OR REPLACE TABLE cpw.dbx_d1111_after.billing__in_documents_m_storage_totals USING DELTA COMMENT 'run_token=dbx-d1111 expires=2026-11-24' AS SELECT * FROM cpw.dbx_d1111_after.billing__in_documents_m_storage_totals_fn(DATE '2026-11-01', DATE '2026-12-01');

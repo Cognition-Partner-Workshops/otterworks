@@ -48,6 +48,16 @@ def test_differences_preserve_padding_case_and_column_details():
     assert result[3]['detail'][0]['columns'] == {'value': {'before': ['a '], 'after': ['A']}}
 
 
+def test_renamed_target_keeps_original_baseline_and_scoped_replacement(tmp_path):
+    client = client_fixture()
+    spec = {**SPEC, 'object':'billing__in_users_app_user','before':'users__app_user'}
+    run(client,'v1-direct',{'objects':[spec]},tmp_path,replace=True)
+    sql = [c.args[0] for c in client.execute.call_args_list]
+    assert any('DESCRIBE TABLE cpw.dbx_d1111_before.`users__app_user`'==s for s in sql)
+    deletes = [s for s in sql if s.startswith('DELETE')]
+    assert len(deletes)==1 and "object='billing__in_users_app_user'" in deletes[0]
+
+
 def test_missing_keys_and_duplicate_rows_are_not_collapsed():
     query = hash_join('b', 'a', ['id','value'], ['id'], {'id':'bigint','value':'string'})
     assert 'FULL OUTER JOIN' in query

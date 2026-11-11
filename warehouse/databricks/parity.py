@@ -103,7 +103,7 @@ def compare(client, spec, sample_size=10):
     name, keys = spec["object"], spec["keys"]
     if not keys or sample_size < 1:
         raise ValueError("nonempty keys and positive sample_size are required")
-    before = relation("dbx_d1111_before", name)
+    before = relation("dbx_d1111_before", spec.get("before", name))
     after = relation("dbx_d1111_after", name)
     types, after_types = describe(client, before), describe(client, after)
     columns = spec.get("columns", list(types))
@@ -133,7 +133,7 @@ def compare(client, spec, sample_size=10):
     return results
 
 
-def run(client, label, spec, evidence_dir=None):
+def run(client, label, spec, evidence_dir=None, *, replace=False):
     directory = Path(evidence_dir or Path.home() / "dbx-evidence")
     if not re.fullmatch(r"[A-Za-z0-9_-]+", label):
         raise ValueError("invalid run label")
@@ -141,9 +141,19 @@ def run(client, label, spec, evidence_dir=None):
     client.execute(f"CREATE TABLE IF NOT EXISTS {RESULTS} (run_label STRING, object STRING, rung STRING, "
                    f"status STRING, detail STRING, statement_id STRING, measured_at TIMESTAMP) USING DELTA COMMENT '{COMMENT}'", step="parity-results")
     directory.mkdir(parents=True, exist_ok=True)
-    results = []
     path = directory / f"parity_{label}.json"
+    results = json.loads(path.read_text()) if path.exists() else []
     for obj in spec["objects"]:
+        if replace:
+            legacy = [r for r in results if obj.get('before') == r['object'] and r['rung'] in {'count','profile','hash','sample'}]
+            if legacy and label == 'v1-direct':
+                ids = ','.join(literal(r['statement_id']) for r in legacy)
+                client.execute(f"DELETE FROM {RESULTS} WHERE run_label={literal(label)} AND object={literal(obj['before'])} "
+                               f"AND statement_id IN ({ids})", step="parity-results")
+                results = [r for r in results if r not in legacy]
+            client.execute(f"DELETE FROM {RESULTS} WHERE run_label={literal(label)} AND object={literal(obj['object'])} "
+                           "AND rung IN ('count','profile','hash','sample')", step="parity-results")
+            results = [r for r in results if not (r['object'] == obj['object'] and r['rung'] in {'count','profile','hash','sample'})]
         for row in compare(client, obj, spec.get("sample_size", 10)):
             row.update(run_label=label, measured_at=datetime.now(timezone.utc).isoformat())
             detail = json.dumps(row["detail"], default=str)
@@ -159,8 +169,18 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--label", required=True)
     parser.add_argument("--spec", type=Path, required=True)
+    parser.add_argument("--object", action="append")
+    parser.add_argument("--replace", action="store_true")
+    parser.add_argument("--gaps", action="store_true")
     args = parser.parse_args()
-    results = run(Warehouse(act="prove", consumer="billing"), args.label, json.loads(args.spec.read_text()))
+    client = Warehouse(act="prove", consumer="billing")
+    spec = json.loads(args.spec.read_text())
+    if args.object:
+        spec['objects'] = [o for o in spec['objects'] if o['object'] in args.object]
+    results = run(client, args.label, spec, replace=args.replace)
+    if args.gaps:
+        from .gaps import run_gaps
+        results.extend(run_gaps(client, args.label))
     for row in results:
         print(row["object"], row["rung"], row["status"], row["statement_id"])
 
