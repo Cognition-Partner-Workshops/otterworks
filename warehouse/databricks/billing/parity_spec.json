@@ -1,0 +1,29 @@
+{
+  "sample_size": 10,
+  "objects": [
+    {"object": "users__app_user", "keys": ["user_id"]},
+    {"object": "users__user_profile", "keys": ["profile_id"]},
+    {"object": "documents__doc_version", "keys": ["version_id"]},
+    {"object": "documents__collab_session", "keys": ["session_id"]},
+    {"object": "documents__storage_usage_daily", "keys": ["storage_usage_id"]},
+    {"object": "billing__customer_account", "keys": ["customer_id"]},
+    {"object": "billing__plan_catalog", "keys": ["plan_id"]},
+    {"object": "billing__tax_rate", "keys": ["tax_rate_id"]},
+    {"object": "billing__gl_account", "keys": ["gl_account_id"]},
+    {"object": "billing__subscription", "keys": ["subscription_id"]},
+    {"object": "billing__invoice_hdr", "keys": ["invoice_id"]},
+    {"object": "billing__invoice_line", "keys": ["invoice_line_id"]},
+    {"object": "billing__payment", "keys": ["payment_id"]},
+    {"object": "billing__credit_note", "keys": ["credit_note_id"]},
+    {"object": "billing__billing_adj", "keys": ["adjustment_id"]},
+    {"object": "billing__usage_daily", "keys": ["usage_id"]},
+    {"object": "billing__gl_journal_line", "keys": ["journal_line_id"]},
+    {"object": "billing__v_account_invoices", "keys": ["invoice_id"]},
+    {"object": "billing__v_invoice_base", "keys": ["invoice_id"]},
+    {"object": "billing__v_invoice_revenue", "keys": ["currency_cd", "invoice_period"]},
+    {"object": "billing__v_subscription_plans", "keys": ["subscription_id"]},
+    {"object": "billing__m_subscription_plans", "keys": ["subscription_id"]},
+    {"object": "billing__m_currency_totals", "keys": ["currency_cd"]},
+    {"object": "documents__m_storage_totals", "keys": ["customer_id"]}
+  ]
+}
