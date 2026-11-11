@@ -34,7 +34,8 @@ def publish(pr):
                   'status': row['status'], 'parity': row['corrected_parity'], 'pr': pr,
                   'target': row['target'], **{f: row[f] for f in FIELDS if f in row},
                   'run_token': 'dbx-d1111', 'expires': '2026-11-24', 'job_id': evidence['job']['job_id'],
-                  'job_run_ids': [r['run_id'] for r in evidence['job']['runs']], 'cross_folder_dependencies': []}
+                  'job_run_ids': [r['run_id'] for r in evidence['job']['runs']],
+                  'cross_folder_dependencies': row.get('cross_folder_dependencies', evidence['cross_folder_dependencies'])}
         records.append('SELECT ' + ','.join(
             literal(json.dumps(values[c]) if isinstance(values[c], list) else values[c]) + ' AS ' + c
             for c in columns))
