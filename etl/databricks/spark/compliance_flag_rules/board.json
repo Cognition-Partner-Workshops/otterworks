@@ -14,5 +14,7 @@
   "executor_hours": 0.010249167,
   "baseline_app_id": "app-20261110202929-0029",
   "dbu_after": "PENDING: no live run; no zero-cost claim",
-  "pr": ""
+  "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756",
+  "local_fixture_exact_parity": true,
+  "local_fixture_idempotence": true
 }

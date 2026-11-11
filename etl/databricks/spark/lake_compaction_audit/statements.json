@@ -129,5 +129,1001 @@
       "truncated": false
     },
     "result": {}
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'inputs' rung, 'red' status, '[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_daily_summary` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' detail, '01f1dd84-1dc1-1edd-a61b-c08fc01c5233' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd84-e01c-1ff4-9b55-889ba0e6c2d5",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'input-alternatives' rung, 'red' status, 'No audit baseline or staging alternatives in allowed before/after/parity schemas' detail, '01f1dd84-1dc1-1edd-a61b-c08fc01c5233' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd84-e1ce-1bf3-993f-01fbe3c69a4f",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'input-equality' rung, 'blocked' status, 'Cannot export missing live inputs; default fixture is not live data' detail, '01f1dd84-1dc1-1edd-a61b-c08fc01c5233' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd84-e34b-1fba-ba04-281ac74aea5b",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'run1' rung, 'blocked' status, 'Job registered without schedule; not run with missing live inputs' detail, '01f1dd84-1dc1-1edd-a61b-c08fc01c5233' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd84-e4b4-153c-ba5a-e0310b869fee",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'counts' rung, 'blocked' status, 'No genuine live Spark before-result or migrated target' detail, '01f1dd84-1dc1-1edd-a61b-c08fc01c5233' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd84-e626-196a-a70b-bd6c578686ae",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'hash' rung, 'blocked' status, 'Canonical MD5 comparison blocked by missing live baseline' detail, '01f1dd84-1dc1-1edd-a61b-c08fc01c5233' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd84-e842-17f2-8d95-a00d49598a6c",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'except-all' rung, 'blocked' status, 'Both sampled differences blocked by missing live baseline' detail, '01f1dd84-1dc1-1edd-a61b-c08fc01c5233' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd84-e9d8-190a-8822-586b30739905",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'run2-idempotence' rung, 'blocked' status, 'No successful live runs to compare; no MERGE metric claim' detail, '01f1dd84-1dc1-1edd-a61b-c08fc01c5233' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd84-eb5f-1a6d-9e89-978f258cda76",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_control.migration_control t\nUSING (SELECT 'spark:lake_compaction_audit' AS object_name,\n'audit' AS subject_area,\n'spark' AS source_system,\n'etl/spark/jobs/py/lake_compaction_audit.py' AS source_path,\n'cpw.dbx_d1111_after.audit__spark_lake_compaction_audit' AS target,\n'red' AS status,\n'BLOCKED: missing live baseline' AS parity,\n'https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756' AS pr,\n'[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_daily_summary` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' AS first_failure,\n'01f1dd84-1dc1-1edd-a61b-c08fc01c5233' AS first_failure_statement_id,\n'BLOCKED: no live-adapted original result; fixture evidence is not live parity' AS corrected_parity,\nCAST(NULL AS STRING) AS parity_statement_id,\n'BLOCKED: no successful live runs' AS idempotence,\n'[]' AS idempotence_statement_ids,\n'0.001205833' AS executor_hours,\n'495078759320783' AS job_id,\n'[]' AS job_run_ids,\n'missing live baseline' AS red_reason,\n'dbx-d1111' AS run_token,\n'2026-11-24' AS expires, current_timestamp() updated_at) s\nON t.object_name=s.object_name\nWHEN MATCHED THEN UPDATE SET t.subject_area=s.subject_area, t.source_system=s.source_system, t.source_path=s.source_path, t.target=s.target, t.status=s.status, t.parity=s.parity, t.pr=s.pr, t.first_failure=s.first_failure, t.first_failure_statement_id=s.first_failure_statement_id, t.corrected_parity=s.corrected_parity, t.parity_statement_id=s.parity_statement_id, t.idempotence=s.idempotence, t.idempotence_statement_ids=s.idempotence_statement_ids, t.executor_hours=s.executor_hours, t.job_id=s.job_id, t.job_run_ids=s.job_run_ids, t.red_reason=s.red_reason, t.run_token=s.run_token, t.expires=s.expires, t.updated_at=s.updated_at\nWHEN NOT MATCHED THEN INSERT (object_name, subject_area, source_system, source_path, target, status, parity, pr, first_failure, first_failure_statement_id, corrected_parity, parity_statement_id, idempotence, idempotence_statement_ids, executor_hours, job_id, job_run_ids, red_reason, run_token, expires, updated_at) VALUES (s.object_name, s.subject_area, s.source_system, s.source_path, s.target, s.status, s.parity, s.pr, s.first_failure, s.first_failure_statement_id, s.corrected_parity, s.parity_statement_id, s.idempotence, s.idempotence_statement_ids, s.executor_hours, s.job_id, s.job_run_ids, s.red_reason, s.run_token, s.expires, s.updated_at)",
+    "statement_id": "01f1dd84-ece8-1720-a833-8b39892c0c66",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=lake_compaction_audit */\nSELECT EVENT_DATE, EVENT_TYPE, EVENT_COUNT, ACTORS FROM cpw.dbx_d1111_after.audit__spark_audit_daily_summary LIMIT 1",
+    "statement_id": "01f1dd84-f44f-132c-89c4-eb40c28b47cd",
+    "status": {
+      "state": "FAILED",
+      "error": {
+        "error_code": "BAD_REQUEST",
+        "message": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_after`.`audit__spark_audit_daily_summary` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 56"
+      },
+      "sql_state": "42P01"
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=lake_compaction_audit */\nSELECT object_name,status,red_reason,job_id,job_run_ids FROM cpw.dbx_d1111_control.migration_control WHERE object_name='spark:lake_compaction_audit'",
+    "statement_id": "01f1dd85-2433-1d4e-b7c7-cefe6a18aea9",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 5,
+        "columns": [
+          {
+            "name": "object_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "red_reason",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          },
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 3
+          },
+          {
+            "name": "job_run_ids",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 4
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "spark:lake_compaction_audit",
+          "red",
+          "missing live baseline",
+          "495078759320783",
+          "[]"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "history",
+    "sql": "/* run=dbx-d1111 act=spark step=history consumer=lake_compaction_audit */\nSELECT statement_id, start_time, total_duration_ms, read_rows, produced_rows, execution_status\nFROM system.query.history\nWHERE statement_text LIKE '/* run=dbx-d1111 act=spark step=%consumer=lake_compaction_audit */%'\nORDER BY start_time",
+    "statement_id": "01f1dd85-83d9-1665-94c3-5cbd0ef84102",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 6,
+        "columns": [
+          {
+            "name": "statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "start_time",
+            "type_text": "TIMESTAMP",
+            "type_name": "TIMESTAMP",
+            "position": 1
+          },
+          {
+            "name": "total_duration_ms",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "read_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          },
+          {
+            "name": "produced_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 4
+          },
+          {
+            "name": "execution_status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 4
+        }
+      ],
+      "total_row_count": 4,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 4,
+      "data_array": [
+        [
+          "01f1dd84-1dc1-1edd-a61b-c08fc01c5233",
+          "2026-11-11T03:58:12.991Z",
+          "108",
+          "0",
+          null,
+          "FAILED"
+        ],
+        [
+          "01f1dd84-1df7-179e-825a-43cec72fa232",
+          "2026-11-11T03:58:13.342Z",
+          "271",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-33e4-181e-af2f-d1e3d1c3d53d",
+          "2026-11-11T03:58:50.130Z",
+          "244",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-3427-1b5a-a251-ec3d5ee76a64",
+          "2026-11-11T03:58:50.569Z",
+          "387",
+          "0",
+          "0",
+          "FINISHED"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "billing",
+    "sql": "/* run=dbx-d1111 act=spark step=billing consumer=lake_compaction_audit */\nSELECT usage_metadata.job_id, usage_metadata.job_run_id, sum(usage_quantity) AS dbu\nFROM system.billing.usage\nWHERE usage_metadata.job_id='495078759320783' AND usage_unit='DBU'\nGROUP BY usage_metadata.job_id, usage_metadata.job_run_id",
+    "statement_id": "01f1dd85-85ee-166a-a0cc-0ec3f7c27b13",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "job_run_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "dbu",
+            "type_text": "DECIMAL(38,18)",
+            "type_name": "DECIMAL",
+            "position": 2,
+            "type_precision": 38,
+            "type_scale": 18
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'local-fixture' rung, 'pass' status, '{\n  \"scope\": \"default local fixture ONLY; not live parity\",\n  \"aqe\": \"true\",\n  \"edge_tests\": \"passed\",\n  \"before_schema\": \"struct<EVENT_DATE:date,EVENT_TYPE:string,EVENT_COUNT:bigint,ACTORS:bigint>\",\n  \"after_schema\": \"struct<EVENT_DATE:date,EVENT_TYPE:string,EVENT_COUNT:bigint,ACTORS:bigint>\",\n  \"before\": {\n    \"count\": 42,\n    \"hash\": \"22811971466482165729\"\n  },\n  \"run1\": {\n    \"count\": 42,\n    \"hash\": \"22811971466482165729\"\n  },\n  \"run2\": {\n    \"count\": 42,\n    \"hash\": \"22811971466482165729\"\n  },\n  \"before_minus_after\": [],\n  \"after_minus_before\": [],\n  \"exact_parity\": true,\n  \"idempotent\": true\n}\n' detail, CAST(NULL AS STRING) statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-c742-145e-abba-362c02c0140c",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-lake_compaction_audit' run_label, 'spark:lake_compaction_audit' object,\n 'local-history' rung, 'info' status, '{\n  \"run_token\": \"dbx-d1111\",\n  \"expires\": \"2026-11-24\",\n  \"baseline\": {\n    \"app_id\": \"app-20261110202735-0020\",\n    \"start\": \"2026-11-10T20:27:35.087Z\",\n    \"end\": \"2026-11-10T20:27:39.462Z\",\n    \"runtime_seconds\": 4.375,\n    \"executor_count\": 2,\n    \"executor_hours\": 0.001205833,\n    \"core_hours\": 0.001205833,\n    \"failed_tasks\": 0,\n    \"memory_bytes_spilled\": 0,\n    \"disk_bytes_spilled\": 0,\n    \"output_files_written\": 1\n  },\n  \"baseline_is_packaged\": true,\n  \"local_fixture_applications\": [\n    {\n      \"application\": {\n        \"id\": \"app-20261111040628-0002\",\n        \"name\": \"lake_compaction_audit\",\n        \"attempts\": [\n          {\n            \"startTime\": \"2026-11-11T04:06:27.833GMT\",\n            \"endTime\": \"2026-11-11T04:06:34.578GMT\",\n            \"lastUpdated\": \"2026-11-11T04:06:34.602GMT\",\n            \"duration\": 6745,\n            \"sparkUser\": \"spark\",\n            \"completed\": true,\n            \"appSparkVersion\": \"3.5.3\",\n            \"startTimeEpoch\": 1794369987833,\n            \"endTimeEpoch\": 1794369994578,\n            \"lastUpdatedEpoch\": 1794369994602\n          }\n        ]\n      },\n      \"executors\": [\n        {\n          \"id\": \"0\",\n          \"hostPort\": \"172.18.0.5:41563\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 1,\n          \"maxTasks\": 1,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 2,\n          \"totalTasks\": 2,\n          \"totalDuration\": 1821,\n          \"totalGCTime\": 31,\n          \"totalInputBytes\": 3712,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 294440140,\n          \"addTime\": \"2026-11-11T04:06:31.361GMT\",\n          \"executorLogs\": {\n            \"stdout\": \"http://172.18.0.5:8081/logPage/?appId=app-20261111040628-0002&executorId=0&logType=stdout\",\n            \"stderr\": \"http://172.18.0.5:8081/logPage/?appId=app-20261111040628-0002&executorId=0&logType=stderr\"\n          },\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 294440140,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"peakMemoryMetrics\": {\n            \"JVMHeapMemory\": 0,\n            \"JVMOffHeapMemory\": 0,\n            \"OnHeapExecutionMemory\": 0,\n            \"OffHeapExecutionMemory\": 0,\n            \"OnHeapStorageMemory\": 0,\n            \"OffHeapStorageMemory\": 0,\n            \"OnHeapUnifiedMemory\": 0,\n            \"OffHeapUnifiedMemory\": 0,\n            \"DirectPoolMemory\": 0,\n            \"MappedPoolMemory\": 0,\n            \"ProcessTreeJVMVMemory\": 0,\n            \"ProcessTreeJVMRSSMemory\": 0,\n            \"ProcessTreePythonVMemory\": 0,\n            \"ProcessTreePythonRSSMemory\": 0,\n            \"ProcessTreeOtherVMemory\": 0,\n            \"ProcessTreeOtherRSSMemory\": 0,\n            \"MinorGCCount\": 0,\n            \"MinorGCTime\": 0,\n            \"MajorGCCount\": 0,\n            \"MajorGCTime\": 0,\n            \"TotalGCTime\": 0\n          },\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        },\n        {\n          \"id\": \"1\",\n          \"hostPort\": \"172.18.0.6:38219\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 1,\n          \"maxTasks\": 1,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 0,\n          \"totalTasks\": 0,\n          \"totalDuration\": 0,\n          \"totalGCTime\": 0,\n          \"totalInputBytes\": 0,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 294440140,\n          \"addTime\": \"2026-11-11T04:06:31.398GMT\",\n          \"executorLogs\": {\n            \"stdout\": \"http://172.18.0.6:8081/logPage/?appId=app-20261111040628-0002&executorId=1&logType=stdout\",\n            \"stderr\": \"http://172.18.0.6:8081/logPage/?appId=app-20261111040628-0002&executorId=1&logType=stderr\"\n          },\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 294440140,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        },\n        {\n          \"id\": \"driver\",\n          \"hostPort\": \"spark-master:36953\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 0,\n          \"maxTasks\": 0,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 0,\n          \"totalTasks\": 0,\n          \"totalDuration\": 6745,\n          \"totalGCTime\": 0,\n          \"totalInputBytes\": 0,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 455501414,\n          \"addTime\": \"2026-11-11T04:06:28.730GMT\",\n          \"executorLogs\": {},\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 455501414,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        }\n      ],\n      \"failed_tasks\": 0,\n      \"memory_bytes_spilled\": 0,\n      \"disk_bytes_spilled\": 0,\n      \"stage_skew\": [\n        {\n          \"stage_id\": 1,\n          \"quantiles\": [\n            0.0,\n            0.5,\n            0.95,\n            1.0\n          ],\n          \"executor_run_time_ms\": [\n            953.0,\n            953.0,\n            953.0,\n            953.0\n          ],\n          \"memory_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ],\n          \"disk_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ]\n        },\n        {\n          \"stage_id\": 0,\n          \"quantiles\": [\n            0.0,\n            0.5,\n            0.95,\n            1.0\n          ],\n          \"executor_run_time_ms\": [\n            345.0,\n            345.0,\n            345.0,\n            345.0\n          ],\n          \"memory_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ],\n          \"disk_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ]\n        }\n      ]\n    }\n  ],\n  \"packaged_history_rest\": {\n    \"application\": {\n      \"id\": \"app-20261110202735-0020\",\n      \"name\": \"lake_compaction_audit\",\n      \"attempts\": [\n        {\n          \"startTime\": \"2026-11-10T20:27:35.087GMT\",\n          \"endTime\": \"2026-11-10T20:27:39.462GMT\",\n          \"lastUpdated\": \"2026-11-11T03:57:44.852GMT\",\n          \"duration\": 4375,\n          \"sparkUser\": \"spark\",\n          \"completed\": true,\n          \"appSparkVersion\": \"3.5.3\",\n          \"startTimeEpoch\": 1794342455087,\n          \"endTimeEpoch\": 1794342459462,\n          \"lastUpdatedEpoch\": 1794369464852\n        }\n      ]\n    },\n    \"executors\": [\n      {\n        \"id\": \"0\",\n        \"hostPort\": \"172.18.0.5:36659\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 1,\n        \"maxTasks\": 1,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 2,\n        \"totalTasks\": 2,\n        \"totalDuration\": 1136,\n        \"totalGCTime\": 18,\n        \"totalInputBytes\": 3709,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 294440140,\n        \"addTime\": \"2026-11-10T20:27:37.298GMT\",\n        \"executorLogs\": {\n          \"stdout\": \"http://172.18.0.5:8081/logPage/?appId=app-20261110202735-0020&executorId=0&logType=stdout\",\n          \"stderr\": \"http://172.18.0.5:8081/logPage/?appId=app-20261110202735-0020&executorId=0&logType=stderr\"\n        },\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 294440140,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"peakMemoryMetrics\": {\n          \"JVMHeapMemory\": 0,\n          \"JVMOffHeapMemory\": 0,\n          \"OnHeapExecutionMemory\": 0,\n          \"OffHeapExecutionMemory\": 0,\n          \"OnHeapStorageMemory\": 0,\n          \"OffHeapStorageMemory\": 0,\n          \"OnHeapUnifiedMemory\": 0,\n          \"OffHeapUnifiedMemory\": 0,\n          \"DirectPoolMemory\": 0,\n          \"MappedPoolMemory\": 0,\n          \"ProcessTreeJVMVMemory\": 0,\n          \"ProcessTreeJVMRSSMemory\": 0,\n          \"ProcessTreePythonVMemory\": 0,\n          \"ProcessTreePythonRSSMemory\": 0,\n          \"ProcessTreeOtherVMemory\": 0,\n          \"ProcessTreeOtherRSSMemory\": 0,\n          \"MinorGCCount\": 0,\n          \"MinorGCTime\": 0,\n          \"MajorGCCount\": 0,\n          \"MajorGCTime\": 0,\n          \"TotalGCTime\": 0\n        },\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      },\n      {\n        \"id\": \"1\",\n        \"hostPort\": \"172.18.0.6:46041\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 1,\n        \"maxTasks\": 1,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 0,\n        \"totalTasks\": 0,\n        \"totalDuration\": 0,\n        \"totalGCTime\": 0,\n        \"totalInputBytes\": 0,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 294440140,\n        \"addTime\": \"2026-11-10T20:27:37.285GMT\",\n        \"executorLogs\": {\n          \"stdout\": \"http://172.18.0.6:8081/logPage/?appId=app-20261110202735-0020&executorId=1&logType=stdout\",\n          \"stderr\": \"http://172.18.0.6:8081/logPage/?appId=app-20261110202735-0020&executorId=1&logType=stderr\"\n        },\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 294440140,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      },\n      {\n        \"id\": \"driver\",\n        \"hostPort\": \"spark-master:36781\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 0,\n        \"maxTasks\": 0,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 0,\n        \"totalTasks\": 0,\n        \"totalDuration\": 4375,\n        \"totalGCTime\": 0,\n        \"totalInputBytes\": 0,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 455501414,\n        \"addTime\": \"2026-11-10T20:27:35.594GMT\",\n        \"executorLogs\": {},\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 455501414,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      }\n    ],\n    \"failed_tasks\": 0,\n    \"memory_bytes_spilled\": 0,\n    \"disk_bytes_spilled\": 0,\n    \"stage_skew\": [\n      {\n        \"stage_id\": 1,\n        \"quantiles\": [\n          0.0,\n          0.5,\n          0.95,\n          1.0\n        ],\n        \"executor_run_time_ms\": [\n          558.0,\n          558.0,\n          558.0,\n          558.0\n        ],\n        \"memory_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ],\n        \"disk_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ]\n      },\n      {\n        \"stage_id\": 0,\n        \"quantiles\": [\n          0.0,\n          0.5,\n          0.95,\n          1.0\n        ],\n        \"executor_run_time_ms\": [\n          209.0,\n          209.0,\n          209.0,\n          209.0\n        ],\n        \"memory_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ],\n        \"disk_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ]\n      }\n    ]\n  }\n}\n' detail, CAST(NULL AS STRING) statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-c899-1431-89fe-b12be59ca14e",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "lake_compaction_audit",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=lake_compaction_audit */\nMERGE INTO cpw.dbx_d1111_control.migration_control t\nUSING (SELECT 'spark:lake_compaction_audit' AS object_name,\n'audit' AS subject_area,\n'spark' AS source_system,\n'etl/spark/jobs/py/lake_compaction_audit.py' AS source_path,\n'cpw.dbx_d1111_after.audit__spark_lake_compaction_audit' AS target,\n'red' AS status,\n'BLOCKED: missing live baseline; local exact parity=True' AS parity,\n'https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756' AS pr,\n'[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_daily_summary` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' AS first_failure,\n'01f1dd84-1dc1-1edd-a61b-c08fc01c5233' AS first_failure_statement_id,\n'BLOCKED: no live-adapted original result; fixture evidence is not live parity' AS corrected_parity,\nCAST(NULL AS STRING) AS parity_statement_id,\n'BLOCKED: no successful live runs' AS idempotence,\n'[]' AS idempotence_statement_ids,\n'0.001205833' AS executor_hours,\n'495078759320783' AS job_id,\n'[]' AS job_run_ids,\n'missing live baseline' AS red_reason,\n'dbx-d1111' AS run_token,\n'2026-11-24' AS expires, current_timestamp() updated_at) s\nON t.object_name=s.object_name\nWHEN MATCHED THEN UPDATE SET t.subject_area=s.subject_area, t.source_system=s.source_system, t.source_path=s.source_path, t.target=s.target, t.status=s.status, t.parity=s.parity, t.pr=s.pr, t.first_failure=s.first_failure, t.first_failure_statement_id=s.first_failure_statement_id, t.corrected_parity=s.corrected_parity, t.parity_statement_id=s.parity_statement_id, t.idempotence=s.idempotence, t.idempotence_statement_ids=s.idempotence_statement_ids, t.executor_hours=s.executor_hours, t.job_id=s.job_id, t.job_run_ids=s.job_run_ids, t.red_reason=s.red_reason, t.run_token=s.run_token, t.expires=s.expires, t.updated_at=s.updated_at\nWHEN NOT MATCHED THEN INSERT (object_name, subject_area, source_system, source_path, target, status, parity, pr, first_failure, first_failure_statement_id, corrected_parity, parity_statement_id, idempotence, idempotence_statement_ids, executor_hours, job_id, job_run_ids, red_reason, run_token, expires, updated_at) VALUES (s.object_name, s.subject_area, s.source_system, s.source_path, s.target, s.status, s.parity, s.pr, s.first_failure, s.first_failure_statement_id, s.corrected_parity, s.parity_statement_id, s.idempotence, s.idempotence_statement_ids, s.executor_hours, s.job_id, s.job_run_ids, s.red_reason, s.run_token, s.expires, s.updated_at)",
+    "statement_id": "01f1dd85-c9f0-1e27-ae59-387c211f676c",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    }
   }
 ]

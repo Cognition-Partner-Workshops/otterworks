@@ -18,7 +18,7 @@ Local fixture results below are explicitly not live parity. No corrected live co
 Scala aggregate re-expressed in SQL. COUNT(*) retains null-actor events; COUNT(DISTINCT ACTOR_USER_ID) excludes null. This job must succeed before lake_compaction_audit. EVENT_DATE is derived by to_date, not a rolling window.
 
 inputs.sql contains one SELECT per input and only defensible mappings from
-warehouse/teradata/ddl/audit/01_tables.sql and users/01_tables.sql
+warehouse/teradata/ddl/audit/00_tables.sql and users/00_tables.sql
 (column aliases are explicit). Comments list unmappable required columns.
 Missing columns are intentionally not supplied as NULL/zero/constants. The production
 transform fails on incomplete adapters rather than fabricating results.
@@ -65,14 +65,37 @@ and checks edge cases. No local fixture is represented as an adapted live input.
 
 ```json
 {
-  "history": {
-    "status": "pending local execution"
+  "fixture_exact_parity": true,
+  "fixture_idempotence": true,
+  "edge_tests": "passed",
+  "aqe_local": "true",
+  "fixture_before": {
+    "count": 42,
+    "hash": "22811971466482165729"
   },
-  "fixture": {
-    "status": "pending local execution"
-  }
+  "fixture_run1": {
+    "count": 42,
+    "hash": "22811971466482165729"
+  },
+  "fixture_run2": {
+    "count": 42,
+    "hash": "22811971466482165729"
+  },
+  "local_apps": [
+    {
+      "app_id": "app-20261111040536-0000",
+      "duration_ms": 19785,
+      "failed_tasks": 0,
+      "memory_bytes_spilled": 0,
+      "disk_bytes_spilled": 0
+    }
+  ]
 }
 ```
+Raw local applications, executor summaries, spill/failure totals and task duration
+quantiles are in history-evidence.json; exact comparison samples are in fixture-evidence.json.
+Packaged baseline metrics and current local reruns are separate: a rerun need not
+reproduce a packaged failure or exactly the same spill volume.
 
 ## Board row
 
@@ -93,7 +116,9 @@ and checks edge cases. No local fixture is represented as an adapted live input.
   "executor_hours": 0.015961667,
   "baseline_app_id": "app-20261110202448-0008",
   "dbu_after": "PENDING: no live run; no zero-cost claim",
-  "pr": ""
+  "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756",
+  "local_fixture_exact_parity": true,
+  "local_fixture_idempotence": true
 }
 ```
 
@@ -108,6 +133,66 @@ ORDER BY start_time;
 ```
 Ingestion may lag 30–40 minutes; statements.json records the end-of-session result,
 not an inference that empty history means no execution.
+Latest query result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-7c20-1459-8540-abdc7827a846",
+    "state": "SUCCEEDED",
+    "rows": [
+      [
+        "01f1dd84-1cc3-1225-bf2a-84ed7af57330",
+        "2026-11-11T03:58:11.321Z",
+        "142",
+        "0",
+        null,
+        "FAILED"
+      ],
+      [
+        "01f1dd84-1cfd-1209-9dcc-ada0ac31906d",
+        "2026-11-11T03:58:11.702Z",
+        "232",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-201e-1d86-a9b2-a7e373b8678f",
+        "2026-11-11T03:58:16.956Z",
+        "338",
+        "0",
+        "32",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-208c-1570-a734-4c10790f20f9",
+        "2026-11-11T03:58:17.672Z",
+        "334",
+        "0",
+        "9",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-32c1-1db9-bdca-bff7ae453b85",
+        "2026-11-11T03:58:48.223Z",
+        "231",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-3301-10b8-95e4-5b690988be18",
+        "2026-11-11T03:58:48.636Z",
+        "218",
+        "0",
+        "0",
+        "FINISHED"
+      ]
+    ]
+  }
+]
+```
+Empty results before that lag window are PENDING ingestion, not missing evidence.
 
 ## Billing
 
@@ -122,3 +207,13 @@ GROUP BY usage_metadata.job_id, usage_metadata.job_run_id;
 Filter by actual job_run_id as well once runs exist. Serverless custom_tags do not
 inherit job tags. Missing usage is PENDING, never zero; executor-hours from packaged
 History Server baseline and DBUs are different units and no savings ratio is computed.
+Latest billing result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-7e5d-1c21-8a12-21937792545d",
+    "state": "SUCCEEDED",
+    "rows": []
+  }
+]
+```

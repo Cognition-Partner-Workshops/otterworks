@@ -1,0 +1,23 @@
+{
+  "scope": "default local fixture ONLY; not live parity",
+  "aqe": "true",
+  "edge_tests": "passed",
+  "before_schema": "struct<FLAG_ID:bigint,DOCUMENT_ID:bigint,SEVERITY:int,DISPOSITION:string>",
+  "after_schema": "struct<FLAG_ID:bigint,DOCUMENT_ID:bigint,SEVERITY:int,DISPOSITION:string>",
+  "before": {
+    "count": 200000,
+    "hash": "115260492655033151445541"
+  },
+  "run1": {
+    "count": 200000,
+    "hash": "115260492655033151445541"
+  },
+  "run2": {
+    "count": 200000,
+    "hash": "115260492655033151445541"
+  },
+  "before_minus_after": [],
+  "after_minus_before": [],
+  "exact_parity": true,
+  "idempotent": true
+}

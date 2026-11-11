@@ -18,7 +18,7 @@ Local fixture results below are explicitly not live parity. No corrected live co
 RDD sortByKey re-expressed as DataFrame orderBy(EVENT_TYPE, EVENT_AT, AUDIT_EVENT_ARCHIVE_ID), no fixed partition count. Null keys sort first in Spark SQL; original Python tuple sorting with null keys is not verified and must remain RED if encountered. Delta has no intrinsic read ordering: consumers needing order must ORDER BY these keys; physical file count is not a contract.
 
 inputs.sql contains one SELECT per input and only defensible mappings from
-warehouse/teradata/ddl/audit/01_tables.sql and users/01_tables.sql
+warehouse/teradata/ddl/audit/00_tables.sql and users/00_tables.sql
 (column aliases are explicit). Comments list unmappable required columns.
 Missing columns are intentionally not supplied as NULL/zero/constants. The production
 transform fails on incomplete adapters rather than fabricating results.
@@ -65,14 +65,37 @@ and checks edge cases. No local fixture is represented as an adapted live input.
 
 ```json
 {
-  "history": {
-    "status": "pending local execution"
+  "fixture_exact_parity": true,
+  "fixture_idempotence": true,
+  "edge_tests": "passed",
+  "aqe_local": "true",
+  "fixture_before": {
+    "count": 200000,
+    "hash": "115355956684154325017052"
   },
-  "fixture": {
-    "status": "pending local execution"
-  }
+  "fixture_run1": {
+    "count": 200000,
+    "hash": "115355956684154325017052"
+  },
+  "fixture_run2": {
+    "count": 200000,
+    "hash": "115355956684154325017052"
+  },
+  "local_apps": [
+    {
+      "app_id": "app-20261111040710-0004",
+      "duration_ms": 15250,
+      "failed_tasks": 0,
+      "memory_bytes_spilled": 50330880,
+      "disk_bytes_spilled": 10271314
+    }
+  ]
 }
 ```
+Raw local applications, executor summaries, spill/failure totals and task duration
+quantiles are in history-evidence.json; exact comparison samples are in fixture-evidence.json.
+Packaged baseline metrics and current local reruns are separate: a rerun need not
+reproduce a packaged failure or exactly the same spill volume.
 
 ## Board row
 
@@ -93,7 +116,9 @@ and checks edge cases. No local fixture is represented as an adapted live input.
   "executor_hours": 0.003700556,
   "baseline_app_id": "app-20261110202911-0027",
   "dbu_after": "PENDING: no live run; no zero-cost claim",
-  "pr": ""
+  "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756",
+  "local_fixture_exact_parity": true,
+  "local_fixture_idempotence": true
 }
 ```
 
@@ -108,6 +133,50 @@ ORDER BY start_time;
 ```
 Ingestion may lag 30–40 minutes; statements.json records the end-of-session result,
 not an inference that empty history means no execution.
+Latest query result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-8c25-1d04-a224-48bbd66c6e04",
+    "state": "SUCCEEDED",
+    "rows": [
+      [
+        "01f1dd84-1ecb-1326-a1f6-6c7eaefcc15a",
+        "2026-11-11T03:58:14.731Z",
+        "170",
+        "0",
+        null,
+        "FAILED"
+      ],
+      [
+        "01f1dd84-1f16-1232-ba43-840c8337b1c3",
+        "2026-11-11T03:58:15.222Z",
+        "374",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-3522-190d-b0ba-165f564a1b2e",
+        "2026-11-11T03:58:52.212Z",
+        "258",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-3568-1148-b7d1-f4cd03a0b3c3",
+        "2026-11-11T03:58:52.669Z",
+        "232",
+        "0",
+        "0",
+        "FINISHED"
+      ]
+    ]
+  }
+]
+```
+Empty results before that lag window are PENDING ingestion, not missing evidence.
 
 ## Billing
 
@@ -122,3 +191,13 @@ GROUP BY usage_metadata.job_id, usage_metadata.job_run_id;
 Filter by actual job_run_id as well once runs exist. Serverless custom_tags do not
 inherit job tags. Missing usage is PENDING, never zero; executor-hours from packaged
 History Server baseline and DBUs are different units and no savings ratio is computed.
+Latest billing result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-8e23-1ac4-b741-4d91739c9ac2",
+    "state": "SUCCEEDED",
+    "rows": []
+  }
+]
+```

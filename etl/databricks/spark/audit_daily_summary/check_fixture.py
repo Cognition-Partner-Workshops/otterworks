@@ -49,6 +49,11 @@ def check_edges(spark):
             raise AssertionError("missing field accepted")
         except ValueError:
             pass
+    archive = module("audit_archive_resort")
+    records = spark.createDataFrame([("b", "2026-01-01", 1), ("a", "2026-01-02", 3),
+                                     ("a", "2026-01-01", 2)],
+                                    "EVENT_TYPE string, EVENT_AT string, AUDIT_EVENT_ARCHIVE_ID long")
+    assert [r.AUDIT_EVENT_ARCHIVE_ID for r in archive.transform(records).collect()] == [2, 3, 1]
 
 
 def main():

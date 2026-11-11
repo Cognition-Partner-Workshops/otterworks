@@ -18,7 +18,7 @@ Local fixture results below are explicitly not live parity. No corrected live co
 Depends on the OUTPUT of audit_daily_summary, not the legacy AUDIT_DAILY_SUMMARY landing table. Order: run audit_daily_summary successfully, then this job. INSERT/CTAS copies its four output columns; coalesce(2) is intentionally removed. Job has no active schedule; combined cross-job orchestration must enforce this dependency.
 
 inputs.sql contains one SELECT per input and only defensible mappings from
-warehouse/teradata/ddl/audit/01_tables.sql and users/01_tables.sql
+warehouse/teradata/ddl/audit/00_tables.sql and users/00_tables.sql
 (column aliases are explicit). Comments list unmappable required columns.
 Missing columns are intentionally not supplied as NULL/zero/constants. The production
 transform fails on incomplete adapters rather than fabricating results.
@@ -65,14 +65,37 @@ and checks edge cases. No local fixture is represented as an adapted live input.
 
 ```json
 {
-  "history": {
-    "status": "pending local execution"
+  "fixture_exact_parity": true,
+  "fixture_idempotence": true,
+  "edge_tests": "passed",
+  "aqe_local": "true",
+  "fixture_before": {
+    "count": 42,
+    "hash": "22811971466482165729"
   },
-  "fixture": {
-    "status": "pending local execution"
-  }
+  "fixture_run1": {
+    "count": 42,
+    "hash": "22811971466482165729"
+  },
+  "fixture_run2": {
+    "count": 42,
+    "hash": "22811971466482165729"
+  },
+  "local_apps": [
+    {
+      "app_id": "app-20261111040628-0002",
+      "duration_ms": 6745,
+      "failed_tasks": 0,
+      "memory_bytes_spilled": 0,
+      "disk_bytes_spilled": 0
+    }
+  ]
 }
 ```
+Raw local applications, executor summaries, spill/failure totals and task duration
+quantiles are in history-evidence.json; exact comparison samples are in fixture-evidence.json.
+Packaged baseline metrics and current local reruns are separate: a rerun need not
+reproduce a packaged failure or exactly the same spill volume.
 
 ## Board row
 
@@ -93,7 +116,9 @@ and checks edge cases. No local fixture is represented as an adapted live input.
   "executor_hours": 0.001205833,
   "baseline_app_id": "app-20261110202735-0020",
   "dbu_after": "PENDING: no live run; no zero-cost claim",
-  "pr": ""
+  "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756",
+  "local_fixture_exact_parity": true,
+  "local_fixture_idempotence": true
 }
 ```
 
@@ -108,6 +133,50 @@ ORDER BY start_time;
 ```
 Ingestion may lag 30–40 minutes; statements.json records the end-of-session result,
 not an inference that empty history means no execution.
+Latest query result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-83d9-1665-94c3-5cbd0ef84102",
+    "state": "SUCCEEDED",
+    "rows": [
+      [
+        "01f1dd84-1dc1-1edd-a61b-c08fc01c5233",
+        "2026-11-11T03:58:12.991Z",
+        "108",
+        "0",
+        null,
+        "FAILED"
+      ],
+      [
+        "01f1dd84-1df7-179e-825a-43cec72fa232",
+        "2026-11-11T03:58:13.342Z",
+        "271",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-33e4-181e-af2f-d1e3d1c3d53d",
+        "2026-11-11T03:58:50.130Z",
+        "244",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-3427-1b5a-a251-ec3d5ee76a64",
+        "2026-11-11T03:58:50.569Z",
+        "387",
+        "0",
+        "0",
+        "FINISHED"
+      ]
+    ]
+  }
+]
+```
+Empty results before that lag window are PENDING ingestion, not missing evidence.
 
 ## Billing
 
@@ -122,3 +191,13 @@ GROUP BY usage_metadata.job_id, usage_metadata.job_run_id;
 Filter by actual job_run_id as well once runs exist. Serverless custom_tags do not
 inherit job tags. Missing usage is PENDING, never zero; executor-hours from packaged
 History Server baseline and DBUs are different units and no savings ratio is computed.
+Latest billing result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-85ee-166a-a0cc-0ec3f7c27b13",
+    "state": "SUCCEEDED",
+    "rows": []
+  }
+]
+```

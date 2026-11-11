@@ -18,7 +18,7 @@ Local fixture results below are explicitly not live parity. No corrected live co
 Scala mapPartitions re-expressed in PySpark. Status is case-sensitive: only literal closed is resolved, otherwise severity >= 7000 is review, else monitor. SEVERITY output is INT; IDs LONG. Scala primitive null getters unbox to zero. SEVERITY and USER_ID have no equivalent in audit DDL; no fabricated severity or status lowercasing.
 
 inputs.sql contains one SELECT per input and only defensible mappings from
-warehouse/teradata/ddl/audit/01_tables.sql and users/01_tables.sql
+warehouse/teradata/ddl/audit/00_tables.sql and users/00_tables.sql
 (column aliases are explicit). Comments list unmappable required columns.
 Missing columns are intentionally not supplied as NULL/zero/constants. The production
 transform fails on incomplete adapters rather than fabricating results.
@@ -65,14 +65,37 @@ and checks edge cases. No local fixture is represented as an adapted live input.
 
 ```json
 {
-  "history": {
-    "status": "pending local execution"
+  "fixture_exact_parity": true,
+  "fixture_idempotence": true,
+  "edge_tests": "passed",
+  "aqe_local": "true",
+  "fixture_before": {
+    "count": 200000,
+    "hash": "115260492655033151445541"
   },
-  "fixture": {
-    "status": "pending local execution"
-  }
+  "fixture_run1": {
+    "count": 200000,
+    "hash": "115260492655033151445541"
+  },
+  "fixture_run2": {
+    "count": 200000,
+    "hash": "115260492655033151445541"
+  },
+  "local_apps": [
+    {
+      "app_id": "app-20261111040734-0005",
+      "duration_ms": 0,
+      "failed_tasks": 0,
+      "memory_bytes_spilled": 0,
+      "disk_bytes_spilled": 0
+    }
+  ]
 }
 ```
+Raw local applications, executor summaries, spill/failure totals and task duration
+quantiles are in history-evidence.json; exact comparison samples are in fixture-evidence.json.
+Packaged baseline metrics and current local reruns are separate: a rerun need not
+reproduce a packaged failure or exactly the same spill volume.
 
 ## Board row
 
@@ -93,7 +116,9 @@ and checks edge cases. No local fixture is represented as an adapted live input.
   "executor_hours": 0.010249167,
   "baseline_app_id": "app-20261110202929-0029",
   "dbu_after": "PENDING: no live run; no zero-cost claim",
-  "pr": ""
+  "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756",
+  "local_fixture_exact_parity": true,
+  "local_fixture_idempotence": true
 }
 ```
 
@@ -108,6 +133,50 @@ ORDER BY start_time;
 ```
 Ingestion may lag 30–40 minutes; statements.json records the end-of-session result,
 not an inference that empty history means no execution.
+Latest query result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-8fdf-10e1-8f79-caf943c91c6a",
+    "state": "SUCCEEDED",
+    "rows": [
+      [
+        "01f1dd84-1f73-1d90-b5cf-bf3587046203",
+        "2026-11-11T03:58:15.835Z",
+        "190",
+        "0",
+        null,
+        "FAILED"
+      ],
+      [
+        "01f1dd84-1fc7-1afb-a492-7375438f64b3",
+        "2026-11-11T03:58:16.384Z",
+        "319",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-35a9-165f-ac01-65694ae7df7d",
+        "2026-11-11T03:58:53.095Z",
+        "231",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-35ef-1584-8b09-0d11c5588c2e",
+        "2026-11-11T03:58:53.553Z",
+        "233",
+        "0",
+        "0",
+        "FINISHED"
+      ]
+    ]
+  }
+]
+```
+Empty results before that lag window are PENDING ingestion, not missing evidence.
 
 ## Billing
 
@@ -122,3 +191,13 @@ GROUP BY usage_metadata.job_id, usage_metadata.job_run_id;
 Filter by actual job_run_id as well once runs exist. Serverless custom_tags do not
 inherit job tags. Missing usage is PENDING, never zero; executor-hours from packaged
 History Server baseline and DBUs are different units and no savings ratio is computed.
+Latest billing result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-91df-18f3-95f9-455f514454b1",
+    "state": "SUCCEEDED",
+    "rows": []
+  }
+]
+```

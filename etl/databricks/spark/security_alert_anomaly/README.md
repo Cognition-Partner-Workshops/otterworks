@@ -18,7 +18,7 @@ Local fixture results below are explicitly not live parity. No corrected live co
 Python scoring is re-expressed with DataFrame reductions (no RDD API on serverless), population variance max(sum(x*x)/n-mean*mean,0), and stddev fallback 1.0. Null SCORE fails just as float(None) fails. Double reduction order can alter low bits: exact parity must be checked, never silently rounded. SCORE and ALERT_TYPE have no defensible live equivalents; SEVERITY_CD is not numeric SCORE. No scoring data is fabricated.
 
 inputs.sql contains one SELECT per input and only defensible mappings from
-warehouse/teradata/ddl/audit/01_tables.sql and users/01_tables.sql
+warehouse/teradata/ddl/audit/00_tables.sql and users/00_tables.sql
 (column aliases are explicit). Comments list unmappable required columns.
 Missing columns are intentionally not supplied as NULL/zero/constants. The production
 transform fails on incomplete adapters rather than fabricating results.
@@ -65,14 +65,43 @@ and checks edge cases. No local fixture is represented as an adapted live input.
 
 ```json
 {
-  "history": {
-    "status": "pending local execution"
+  "fixture_exact_parity": false,
+  "fixture_idempotence": true,
+  "edge_tests": "passed",
+  "aqe_local": "true",
+  "fixture_before": {
+    "count": 200000,
+    "hash": "115319834002649889538599"
   },
-  "fixture": {
-    "status": "pending local execution"
+  "fixture_run1": {
+    "count": 200000,
+    "hash": "115430313183348309472891"
+  },
+  "fixture_run2": {
+    "count": 200000,
+    "hash": "115430313183348309472891"
+  },
+  "local_apps": [
+    {
+      "app_id": "app-20261111040644-0003",
+      "duration_ms": 19129,
+      "failed_tasks": 0,
+      "memory_bytes_spilled": 0,
+      "disk_bytes_spilled": 0
+    }
+  ],
+  "numeric_diagnostic": {
+    "paired_rows": 200000,
+    "max_abs_delta": 1.5720758028692217e-13,
+    "different_rows": 199859,
+    "verdict": "FAIL: exact comparison; no tolerance applied and no correction claimed"
   }
 }
 ```
+Raw local applications, executor summaries, spill/failure totals and task duration
+quantiles are in history-evidence.json; exact comparison samples are in fixture-evidence.json.
+Packaged baseline metrics and current local reruns are separate: a rerun need not
+reproduce a packaged failure or exactly the same spill volume.
 
 ## Board row
 
@@ -93,7 +122,10 @@ and checks edge cases. No local fixture is represented as an adapted live input.
   "executor_hours": 0.013226667,
   "baseline_app_id": "app-20261110202626-0017",
   "dbu_after": "PENDING: no live run; no zero-cost claim",
-  "pr": ""
+  "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756",
+  "local_fixture_exact_parity": false,
+  "local_fixture_idempotence": true,
+  "additional_blocker": "Exact local Z_SCORE mismatch: distributed floating reduction changed low bits; no rounding, tolerance, or correction accepted"
 }
 ```
 
@@ -108,6 +140,50 @@ ORDER BY start_time;
 ```
 Ingestion may lag 30–40 minutes; statements.json records the end-of-session result,
 not an inference that empty history means no execution.
+Latest query result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-87ea-1393-b6f4-2cdf07d06f7f",
+    "state": "SUCCEEDED",
+    "rows": [
+      [
+        "01f1dd84-1e40-1a8d-9f85-0467d72f7a49",
+        "2026-11-11T03:58:13.823Z",
+        "95",
+        "0",
+        null,
+        "FAILED"
+      ],
+      [
+        "01f1dd84-1e74-16ca-aef3-acdbc1987c3b",
+        "2026-11-11T03:58:14.162Z",
+        "328",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-3480-1080-aff1-fb45780d0f0b",
+        "2026-11-11T03:58:51.148Z",
+        "364",
+        "0",
+        "0",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-34d5-161b-a2f9-05d100ade666",
+        "2026-11-11T03:58:51.706Z",
+        "314",
+        "0",
+        "0",
+        "FINISHED"
+      ]
+    ]
+  }
+]
+```
+Empty results before that lag window are PENDING ingestion, not missing evidence.
 
 ## Billing
 
@@ -122,3 +198,13 @@ GROUP BY usage_metadata.job_id, usage_metadata.job_run_id;
 Filter by actual job_run_id as well once runs exist. Serverless custom_tags do not
 inherit job tags. Missing usage is PENDING, never zero; executor-hours from packaged
 History Server baseline and DBUs are different units and no savings ratio is computed.
+Latest billing result(s):
+```json
+[
+  {
+    "statement_id": "01f1dd85-8a1f-18ba-98e9-531f89742401",
+    "state": "SUCCEEDED",
+    "rows": []
+  }
+]
+```

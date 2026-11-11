@@ -14,5 +14,8 @@
   "executor_hours": 0.013226667,
   "baseline_app_id": "app-20261110202626-0017",
   "dbu_after": "PENDING: no live run; no zero-cost claim",
-  "pr": ""
+  "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756",
+  "local_fixture_exact_parity": false,
+  "local_fixture_idempotence": true,
+  "additional_blocker": "Exact local Z_SCORE mismatch: distributed floating reduction changed low bits; no rounding, tolerance, or correction accepted"
 }
