@@ -22,6 +22,8 @@ databricks jobs run-now 822926870681999             # run2 672280075759296
 Inputs: INVOICE_HDR 2100 rows hash 01f1dd84-a50d-1490-a341-31f521132ea2; INVOICE_LINE 4434 rows hash 01f1dd84-a5ce-1012-8028-54b959442b82; equal to Spark-side counts/hashes.
 Local Spark run (History Server): app-20261111040235-0000 (10671 ms, 3 executors, 0 failed tasks, 0 spill).
 
+Crosscheck: job.sql now starts with the `/* run=dbx-d1111 act=spark ... */` prefix (the leading `-- run_token` comment had made system.query.history statement_text miss the prefix). Same SQL otherwise; run3 984031569498879, 01f1dd8b-9812-125b-a5bf-45ffdf39ceed: 692 rows, hash 396927275775047228202 unchanged.
+
 ## Query history
 ```sql
 SELECT statement_id, start_time, total_duration_ms, read_rows, produced_rows, execution_status FROM system.query.history WHERE statement_text LIKE '/* run=dbx-d1111 act=spark step=%consumer=billing_invoice_summary_daily */%' ORDER BY start_time

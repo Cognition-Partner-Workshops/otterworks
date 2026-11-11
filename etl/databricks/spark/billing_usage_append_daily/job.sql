@@ -1,9 +1,9 @@
+/* run=dbx-d1111 act=spark step=ddl consumer=billing_usage_append_daily */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Migrated from etl/spark/jobs/py/billing_usage_append_daily.py (Databricks SQL, serverless warehouse).
 -- The Spark job appended the latest USAGE_DATE slice (lake + JDBC mode=append), so every rerun duplicated it.
 -- Here the slice is MERGEd on the business key USAGE_ID: history accumulates across days like the append,
 -- a rerun inserts and updates nothing. AMOUNT has no live source and stays NULL (see inputs.sql).
-/* run=dbx-d1111 act=spark step=ddl consumer=billing_usage_append_daily */
 CREATE TABLE IF NOT EXISTS cpw.dbx_d1111_after.billing__spark_billing_usage_append_daily (
   USAGE_ID BIGINT, CUSTOMER_ID BIGINT, USAGE_DATE DATE, UNITS BIGINT, AMOUNT DECIMAL(18,2))
 COMMENT 'run_token=dbx-d1111 expires=2026-11-24 source=etl/spark/jobs/py/billing_usage_append_daily.py'
