@@ -87,7 +87,7 @@ def test_source_has_no_ordinal():
 
 def test_mapping_change_is_pure_append():
     path = 'warehouse/parity/mappings/sfx_content.yml'
-    original = subprocess.check_output(['git', 'show', 'f0b4b995d471c24b012c5804823edcbb8aed870a:' + path], cwd=u.ROOT)
+    original = subprocess.check_output(['git', 'show', '47bea1ddf5f834f15285aa3593ec22bfdb714212:' + path], cwd=u.ROOT)
     current = (u.ROOT / path).read_bytes()
     assert current.startswith(original)
     assert current[len(original):].count(b'm_SFX_TEAM_MEMBER:') == 1
