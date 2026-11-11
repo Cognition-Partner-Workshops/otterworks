@@ -4,7 +4,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-V008 = ROOT / 'migrations/V008__restore_usage_daily_currency_code.sql'
+V012 = ROOT / 'migrations/V012__restore_usage_daily_currency_code.sql'
 
 
 def test_usage_daily_currency_code_contract_is_three_characters():
@@ -15,8 +15,8 @@ def test_usage_daily_currency_code_contract_is_three_characters():
     assert not re.search(r'USAGE_DAILY ALTER COLUMN CURRENCY_CODE', v007)
 
 
-def test_v008_restores_currency_code_without_replacing_the_table():
-    sql = V008.read_text()
+def test_v012_restores_currency_code_without_replacing_the_table():
+    sql = V012.read_text()
     body = sql.split('$$')[1]
     assert 'ADD COLUMN IF NOT EXISTS CURRENCY_CODE_SFX_D1110 CHAR(3)' in body
     assert 'RENAME COLUMN CURRENCY_CODE_SFX_D1110 TO CURRENCY_CODE' in body
@@ -32,3 +32,8 @@ def test_v008_restores_currency_code_without_replacing_the_table():
         assert forbidden not in sql.upper()
     assert sql.count('$$') == 2 and sql.rstrip().endswith('$$;')
     assert re.search(r"COMMENT 'sfx-d1110[^']*'", body)
+
+
+def test_migration_versions_are_unique():
+    versions = [p.name.split('__')[0] for p in (ROOT / 'migrations').glob('V*__*.sql')]
+    assert sorted(v for v in versions if versions.count(v) > 1) == []
