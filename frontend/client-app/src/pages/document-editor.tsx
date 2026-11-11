@@ -270,9 +270,13 @@ function DocumentEditorContent() {
           <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
             <button
               onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setShareCopied(true);
-                setTimeout(() => setShareCopied(false), 2000);
+                navigator.clipboard
+                  .writeText(window.location.href)
+                  .then(() => {
+                    setShareCopied(true);
+                    setTimeout(() => setShareCopied(false), 2000);
+                  })
+                  .catch(() => setShareCopied(false));
               }}
               className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
             >

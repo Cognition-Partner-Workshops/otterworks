@@ -80,6 +80,8 @@ function FileDetailContent() {
       if (Object.keys(newUsers).length > 0) {
         setResolvedUsers((prev) => ({ ...prev, ...newUsers }));
       }
+    }).catch(() => {
+      // Names stay unresolved; the share list falls back to user ids.
     });
   }, [file?.sharedWith]);
 
