@@ -265,6 +265,32 @@ def test_report_and_cli(corpus, tmp_path):
     assert main(["verify-lock", "--corpus", str(corpus)]) == 0
 
 
+def test_cli_report_permission_names_operation_without_exception_details(tmp_path, monkeypatch, capsys):
+    source = tmp_path / "input.json"
+    source.write_text('{"flows": []}')
+    destination = tmp_path / "reports"
+
+    def denied(*args):
+        raise PermissionError("password=do-not-log")
+
+    monkeypatch.setattr("integration.harness.__main__.write_report", denied)
+    assert main(["report", "--input", str(source), "--report-dir", str(destination)]) == 2
+    error = capsys.readouterr().err
+    assert f"write reports in {str(destination)!r} (PermissionError)" in error
+    assert "do-not-log" not in error
+
+
+def test_cli_missing_input_names_read_path(tmp_path, capsys):
+    source = tmp_path / "missing.json"
+    assert main(["report", "--input", str(source), "--report-dir", str(tmp_path / "out")]) == 2
+    assert f"read report {str(source)!r} (FileNotFoundError)" in capsys.readouterr().err
+
+
+def test_cli_missing_lock_names_corpus_path(tmp_path, capsys):
+    assert main(["verify-lock", "--corpus", str(tmp_path)]) == 2
+    assert f"verify-lock corpus {str(tmp_path)!r} (FileNotFoundError)" in capsys.readouterr().err
+
+
 def test_sftp_open_failure_closes_client(monkeypatch):
     closed = []
 
