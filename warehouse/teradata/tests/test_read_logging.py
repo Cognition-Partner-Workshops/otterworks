@@ -68,3 +68,19 @@ def test_logging_survives_rollback(td):
     td.execute('SELECT 1')
     td.conn.execute('ROLLBACK')
     assert td.conn.execute("SELECT count(*) FROM dbc.qrylogv WHERE username='svc_rollback_reader'").fetchone()[0] == 2
+
+
+@pytest.mark.parametrize('source', ['', ' ', '\n'])
+def test_empty_request_logging_offline(monkeypatch, source):
+    connect = MagicMock()
+    monkeypatch.setattr('bteq.runner.psycopg.connect', connect)
+    runner = object.__new__(Runner)
+    runner.log_statement(source, dt.datetime.now(dt.timezone.utc))
+    connect.assert_not_called()
+
+
+def test_adjacent_semicolons_continue(td):
+    td.logon_user = 'svc_empty_request_test'
+    td.run('SELECT 1;;SELECT 2;')
+    rows = td.conn.execute("SELECT querytext FROM dbc.qrylogv WHERE username='svc_empty_request_test' ORDER BY queryid").fetchall()
+    assert [row[0].strip() for row in rows] == ['SELECT 1', 'SELECT 2']

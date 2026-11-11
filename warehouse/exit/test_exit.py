@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import sys
 import subprocess
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -134,3 +135,46 @@ def test_nonzero_gate_cli(tmp_path):
                              '--csv', str(reads.ROOT / 'warehouse/teradata/dbql/qrylog.csv'),
                              '--snowflake-json', str(sf)], capture_output=True, text=True)
     assert result.returncode == 1 and 'BLOCKED' in result.stdout
+
+
+def test_current_registry_accounts_are_authoritative():
+    consumers = reads.registry()
+    for consumer in consumers:
+        row = td(consumer['teradata_service_account'])
+        data = reads.summarize([row], [], consumers, '2026-11-09', '2026-11-10')
+        assert data[consumer['name']]['teradata'] == 1
+        assert data['unmanaged']['teradata'] == 0
+
+
+@pytest.mark.parametrize('size', [0, 1, 10000])
+def test_recent_history_checks_unfiltered_capacity(monkeypatch, size):
+    import datetime as dt
+    import snowflake.connector
+    from cryptography.hazmat.primitives import serialization
+
+    now = dt.datetime.now(dt.timezone.utc)
+    since, until = now - dt.timedelta(hours=1), now
+    outside = now - dt.timedelta(hours=2)
+    batch = [(str(i), outside, '{}', 'SELECT', 'SUCCESS') for i in range(size)]
+    cursor = MagicMock()
+    cursor.fetchall.side_effect = [[], batch]
+    connection = MagicMock()
+    connection.cursor.return_value.__enter__.return_value = cursor
+    connect = MagicMock()
+    connect.return_value.__enter__.return_value = connection
+    monkeypatch.setattr(snowflake.connector, 'connect', connect)
+    monkeypatch.setattr(serialization, 'load_pem_private_key', MagicMock())
+    for name in ['ACCOUNT', 'USER', 'ROLE', 'PRIVATE_KEY']:
+        monkeypatch.setenv('SNOWFLAKE_' + name, 'offline')
+
+    if size == 10000:
+        with pytest.raises(RuntimeError, match='10000'):
+            reads.snowflake(since, until)
+    else:
+        rows = reads.snowflake(since, until)
+        assert len(rows) == size
+        assert summary([], rows)['reader']['snowflake'] == 0
+    query, params = cursor.execute.call_args_list[1].args
+    assert 'INFORMATION_SCHEMA.QUERY_HISTORY' in query
+    assert ' WHERE ' not in query
+    assert len(params) == 2

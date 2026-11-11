@@ -194,7 +194,10 @@ class Runner:
             if unlocked == request:
                 break
             request = unlocked
-        kind = request.strip().split()[0].upper()
+        tokens = request.split()
+        if not tokens:
+            return
+        kind = tokens[0].upper()
         kind = {'SEL': 'SELECT', 'INS': 'INSERT', 'UPD': 'UPDATE', 'DEL': 'DELETE'}.get(kind, kind)
         objects = []
         try:

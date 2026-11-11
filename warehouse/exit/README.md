@@ -18,6 +18,10 @@ Parity/contract comparison tooling must log on as `svc_exit_parity`. Its reads
 are shown separately as `parity tooling (out of scope)` in side-by-side reports
 and on the board, but do not block decommissioning. This account is reserved for
 migration tooling: clients' own production read paths must never use it.
+The local emulator trusts caller-supplied logical accounts; `.LOGON` is attribution,
+not authentication. This gate is evidence for trusted local runs, not a security
+boundary against clients impersonating parity or ETL accounts. Production retirement
+requires authenticated production DBQL and separately controlled tooling identities.
 Every other unknown account blocks decommissioning and is reported as unmanaged,
 including the runner's `unknown` fallback when `TD_USER` is unset. Notebook
 aliases are recognized by JupyterLab AppID or notebook ClientID; registry account

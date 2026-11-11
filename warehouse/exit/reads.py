@@ -71,8 +71,11 @@ def snowflake(since, until, phase='reads'):
                 sources.append(('TABLE(INFORMATION_SCHEMA.QUERY_HISTORY(END_TIME_RANGE_START => %s::TIMESTAMP_LTZ, END_TIME_RANGE_END => %s::TIMESTAMP_LTZ, RESULT_LIMIT => 10000))', recent))
             for source, start in sources:
                 params = (start, min(timestamp(until), now)) if source.startswith('TABLE') else ()
-                cur.execute('SELECT QUERY_ID,START_TIME,QUERY_TAG,QUERY_TYPE,EXECUTION_STATUS FROM ' + source +
-                            ' WHERE START_TIME >= %s AND START_TIME < %s', params + (timestamp(since), timestamp(until)))
+                query = 'SELECT QUERY_ID,START_TIME,QUERY_TAG,QUERY_TYPE,EXECUTION_STATUS FROM ' + source
+                if not source.startswith('TABLE'):
+                    query += ' WHERE START_TIME >= %s AND START_TIME < %s'
+                    params = (timestamp(since), timestamp(until))
+                cur.execute(query, params)
                 batch = cur.fetchall()
                 if source.startswith('TABLE') and len(batch) >= 10000:
                     raise RuntimeError('Recent QUERY_HISTORY reached 10000 rows; narrow the reporting window')
