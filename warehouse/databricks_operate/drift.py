@@ -70,7 +70,8 @@ def validate(rows, schema):
         if key in seen:
             raise SchemaDrift(f"duplicate invoice_id {key}")
         seen.add(key)
-        total = EXACT.add(total, Decimal(str(row["amount"])))
+        # Quantized addends keep a compact zero such as 0E-1000000000 from widening the total.
+        total = EXACT.add(total, Decimal(str(row["amount"])).quantize(Decimal("0.01")))
     return {"rows": len(rows), "invoice_ids": sorted(seen), "amount": str(total)}
 
 
