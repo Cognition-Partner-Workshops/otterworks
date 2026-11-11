@@ -2,4 +2,12 @@
   <modelVersion>4.0.0</modelVersion>
   <parent><groupId>com.halvergate.integration</groupId><artifactId>integration-targets</artifactId><version>1.0.0</version></parent>
   <artifactId>fees-billing</artifactId>
+  <dependencies>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-jdbc</artifactId></dependency>
+    <dependency><groupId>dev.snowdrop</groupId><artifactId>narayana-spring-boot-starter</artifactId><version>3.5.0</version></dependency>
+    <dependency><groupId>org.apache.camel.springboot</groupId><artifactId>camel-xslt-saxon-starter</artifactId></dependency>
+    <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><scope>compile</scope></dependency>
+    <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.apache.activemq</groupId><artifactId>artemis-jakarta-server</artifactId><scope>test</scope></dependency>
+  </dependencies>
 </project>
