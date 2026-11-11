@@ -73,7 +73,7 @@ RUN leaked="$(find /workspace \
                ! -name '.env.example' ! -path '/workspace/infrastructure/helm/tenant-values/*/eventing.env' \) \
         -o -name 'secrets.yaml' -o -name 'secrets.yml' -o -name '*-secrets.yaml' \
         -o \( \( -name '*.tfvars' -o -name '*.tfvars.json' \) \
-               ! -path '/workspace/platform/terraform/environments/*.tfvars' \) \
+               ! -path '/workspace/platform/terraform/environments/dev.tfvars' \) \
         -o -name '*.pem' -o -name '*.key' -o -name '*.p12' -o -name '*.pfx' \
         -o -name 'id_rsa*' -o -name 'id_ed25519*' \
         -o -name '.npmrc' -o -name '.netrc' -o -name '.pgpass' \

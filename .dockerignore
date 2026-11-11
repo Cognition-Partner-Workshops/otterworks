@@ -29,7 +29,7 @@ etl/config.ini
 **/*.tfvars
 **/*.tfvars.json
 !**/*.tfvars.example
-!platform/terraform/environments/*.tfvars
+!platform/terraform/environments/dev.tfvars
 **/*.pem
 **/*.key
 **/*.p12
