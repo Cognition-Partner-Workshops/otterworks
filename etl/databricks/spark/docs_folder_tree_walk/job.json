@@ -1,0 +1,46 @@
+{
+  "name": "dbx-d1111-spark-docs_folder_tree_walk",
+  "description": "run_token=dbx-d1111 expires=2026-11-24",
+  "tags": {
+    "run_token": "dbx-d1111",
+    "expires": "2026-11-24",
+    "act": "spark"
+  },
+  "max_concurrent_runs": 1,
+  "timeout_seconds": 3600,
+  "parameters": [
+    {
+      "name": "step",
+      "default": "run"
+    }
+  ],
+  "tasks": [
+    {
+      "task_key": "docs_folder_tree_walk",
+      "environment_key": "default",
+      "spark_python_task": {
+        "python_file": "/Workspace/Shared/dbx-d1111-spark/docs_folder_tree_walk/docs_folder_tree_walk.py",
+        "parameters": [
+          "--catalog",
+          "cpw",
+          "--inputs",
+          "/Workspace/Shared/dbx-d1111-spark/docs_folder_tree_walk/inputs.sql",
+          "--step",
+          "{{job.parameters.step}}"
+        ]
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    }
+  ],
+  "environments": [
+    {
+      "environment_key": "default",
+      "spec": {
+        "client": "2"
+      }
+    }
+  ]
+}

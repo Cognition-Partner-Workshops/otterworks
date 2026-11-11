@@ -1,0 +1,9 @@
+{
+  "pr": 2770,
+  "job": "team_graph_components",
+  "file": "etl/databricks/spark/team_graph_components/parity.sql",
+  "table": "cpw.dbx_d1111_after.users__spark_team_graph_components",
+  "statement": "/* run=dbx-d1111 act=spark step=idempotence consumer=team_graph_components */\nDESCRIBE HISTORY cpw.dbx_d1111_after.users__spark_team_graph_components LIMIT 2;",
+  "statement_id": "01f1dd8d-ac35-1993-bc28-5da8166c9fc4",
+  "state": "SUCCEEDED"
+}
