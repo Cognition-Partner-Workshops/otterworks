@@ -2,7 +2,9 @@
   "job": "billing_revenue_by_plan",
   "language": "python",
   "target": "dbt",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "1 1 * * *",
-  "profile": "small"
+  "profile": "small",
+  "ingest": ["billing.INVOICE_LINE", "billing.PLAN_CATALOG"],
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job billing_revenue_by_plan --select path:models/spark/billing_revenue_by_plan"
 }

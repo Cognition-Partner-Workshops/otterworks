@@ -1,0 +1,12 @@
+version: 2
+models:
+- name: billing_revenue_by_plan
+  description: sfx-d1110 Spark billing_revenue_by_plan invoice-line revenue per plan
+  tests:
+  - unique:
+      column_name: "PLAN_ID || '|' || PLAN_NAME"
+  columns:
+  - name: PLAN_ID
+    tests: [not_null]
+  - name: REVENUE
+    tests: [not_null]
