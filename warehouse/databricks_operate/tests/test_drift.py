@@ -87,3 +87,10 @@ def test_total_of_valid_cent_amounts_is_exact():
     rows = [{"invoice_id": i, "customer_id": 10, "amount": "99999999999999999999999999.99",
              "currency": "USD"} for i in (1, 2)]
     assert validate(rows, schema)["amount"] == "199999999999999999999999999.98"
+
+
+def test_compact_zero_exponent_does_not_widen_the_total():
+    schema = json.loads((ROOT / "schema.json").read_text())
+    rows = [{"invoice_id": 1, "customer_id": 10, "amount": "1.00", "currency": "USD"},
+            {"invoice_id": 2, "customer_id": 10, "amount": "0E-1000000000", "currency": "USD"}]
+    assert validate(rows, schema)["amount"] == "1.00"

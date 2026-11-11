@@ -72,7 +72,8 @@ def validate(rows, schema):
         ctx.prec += len(str(len(rows)))
         ctx.traps[Inexact] = True
         try:
-            total = sum(Decimal(str(row["amount"])) for row in rows)
+            # Quantized addends keep a zero such as 0E-30 from padding the total with digits.
+            total = sum(Decimal(str(row["amount"])).quantize(Decimal("0.01")) for row in rows)
         except Inexact:
             raise SchemaDrift("amount total exceeds supported precision") from None
     return {"rows": len(rows), "invoice_ids": sorted(seen), "amount": str(total)}
