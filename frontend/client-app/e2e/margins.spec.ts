@@ -171,7 +171,6 @@ test.describe("Margins rendering", () => {
 
     await page.goto("/margins");
     const firstRow = page.getByTestId("margins-grid").locator("tbody tr").first();
-    await page.waitForTimeout(600);
-    expect(await firstRow.isVisible()).toBe(true);
+    await expect(firstRow).toBeVisible();
   });
 });
