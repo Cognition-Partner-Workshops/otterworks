@@ -28,6 +28,7 @@ def main(argv=None):
     report.add_argument("--input", type=Path, required=True)
     report.add_argument("--report-dir", type=Path, required=True)
     args = parser.parse_args(argv)
+    operation = f"{args.command} corpus {str(args.corpus)!r}" if hasattr(args, "corpus") else "report"
     try:
         if args.command == "record-lock":
             record_lock(args.corpus, args.reason)
@@ -36,6 +37,7 @@ def main(argv=None):
             print("Corpus lock verified")
         else:
             if args.command == "report":
+                operation = f"read report {str(args.input)!r}"
                 target = args.report_dir.resolve()
                 if any((parent / LOCK).exists() for parent in (target, *target.parents)):
                     raise ValueError("Reports must be outside the frozen corpus")
@@ -44,11 +46,12 @@ def main(argv=None):
                 if args.report_dir.resolve().is_relative_to(args.corpus.resolve()):
                     raise ValueError("Reports must be outside the frozen corpus")
                 result = replay(args.corpus, args.flow, getattr(args, "test", None))
+            operation = f"write reports in {str(args.report_dir)!r}"
             write_report(result, args.report_dir)
             print(f"Wrote parity.json, parity.html and parity.md to {args.report_dir}")
             return int(any(row["status"] != "matched" for row in result["flows"]))
     except (ValueError, OSError, KeyError) as exc:
-        print(f"Harness refused operation ({type(exc).__name__}); check corpus and configuration", file=sys.stderr)
+        print(f"Harness refused operation {operation} ({type(exc).__name__}); check paths and configuration", file=sys.stderr)
         return 2
     return 0
 
