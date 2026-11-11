@@ -2,7 +2,9 @@
   "job": "security_alert_anomaly",
   "language": "python",
   "target": "snowpark_python",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "17 2 * * *",
-  "profile": "small"
+  "profile": "small",
+  "ingest": ["audit.SECURITY_ALERT"],
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job security_alert_anomaly"
 }
