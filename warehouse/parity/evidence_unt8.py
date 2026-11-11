@@ -178,6 +178,7 @@ def equal(a, b, path):
 
 def oracle(subject):
     import psycopg
+    from psycopg import sql as pgsql
     path = DEST / 'oracle' / subject
     fresh(path)
     db = 'unt8_' + subject + '_' + uuid.uuid4().hex[:12]
@@ -192,7 +193,7 @@ def oracle(subject):
     env.update(TD_HOST=params['host'], TD_PORT=str(params['port']), TD_USER='postgres', TD_PASSWORD='',
                TD_DB=db, PMROOTDIR=str(root), LANDING_DIR=str(root / 'landing'))
     with psycopg.connect(dbname='postgres', autocommit=True, **params) as admin:
-        admin.execute('CREATE DATABASE ' + db)
+        admin.execute(pgsql.Composed([pgsql.SQL('CREATE DATABASE '), pgsql.Identifier(db)]))
         try:
             with psycopg.connect(dbname=db, autocommit=True, **params) as pg:
                 pg.execute(BOOTSTRAP.read_text())
@@ -243,7 +244,7 @@ def oracle(subject):
                 dump(path / 'summary.json', {'runs': summaries, 'run1_equals_run2': True})
                 print(json.dumps({'runs': summaries, 'run1_equals_run2': True}))
         finally:
-            admin.execute('DROP DATABASE ' + db + ' WITH (FORCE)')
+            admin.execute(pgsql.Composed([pgsql.SQL('DROP DATABASE '), pgsql.Identifier(db), pgsql.SQL(' WITH (FORCE)')]))
 
 
 @contextmanager

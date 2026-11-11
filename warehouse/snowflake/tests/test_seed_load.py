@@ -87,7 +87,7 @@ class Cursor:
     def __init__(self, rows=3, fail=False):
         self.rows, self.fail, self.commands = rows, fail, []
 
-    def execute(self, command):
+    def execute(self, command, params=None):
         self.commands.append(command)
         if self.fail and command.startswith('PUT'):
             raise RuntimeError('upload failed')
@@ -129,7 +129,7 @@ def test_seed_copy_repeat_and_date_isolation(tmp_path, monkeypatch, capsys):
             self.loaded = set()
             self.count = 0
 
-        def execute(self, command):
+        def execute(self, command, params=None):
             super().execute(command)
             if command.startswith('COPY'):
                 stage, filename = re.search(r"FROM (\S+) FILES=\('([^']+)'\)", command).groups()
@@ -143,7 +143,8 @@ def test_seed_copy_repeat_and_date_isolation(tmp_path, monkeypatch, capsys):
                     self.count += 3
                     self.result = [('LOADED', 3)]
             elif command.startswith('DELETE'):
-                self.count -= 3 if command.split("'")[1] in {k.split('/', 1)[1] for k in self.loaded} else 0
+                assert command == 'DELETE FROM IDENTIFIER(%s) WHERE _SRC_FILE=%s'
+                self.count -= 3 if params[1] in {k.split('/', 1)[1] for k in self.loaded} else 0
 
         def fetchall(self):
             return self.result

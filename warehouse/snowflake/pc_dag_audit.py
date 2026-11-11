@@ -4,7 +4,8 @@ from pathlib import Path
 import re
 import sys
 
-from jinja2 import Environment
+from jinja2 import select_autoescape
+from jinja2.sandbox import SandboxedEnvironment
 import yaml
 
 ROOT = Path(__file__).resolve().parent
@@ -38,7 +39,9 @@ def unwrap(sql):
 def summary_hooks(schema):
     model = ROOT.parent / 'dbt/models/pc/audit/pc_audit__audit_daily_summary.sql'
     config = {}
-    Environment().from_string(model.read_text()).render(
+    # Renders the repository's own dbt SQL model, not HTML: autoescape stays off for strings.
+    env = SandboxedEnvironment(autoescape=select_autoescape(default_for_string=False, default=False))
+    env.from_string(model.read_text()).render(
         config=lambda **kw: config.update(kw) or '',
         this=relation(schema, 'AUDIT_DAILY_SUMMARY'),
         ref=lambda name: relation(schema, name.split('__', 1)[1].upper()),

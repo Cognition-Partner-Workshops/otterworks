@@ -31,7 +31,7 @@ def owner_effort(row):
 
 
 def require_owner(cursor, mapping, owner='act3-workflow', folder=None):
-    cursor.execute(f'SELECT FOLDER, OWNER_EFFORT FROM {control_table()} WHERE MAPPING=%s', (mapping,))
+    cursor.execute('SELECT FOLDER, OWNER_EFFORT FROM IDENTIFIER(%s) WHERE MAPPING=%s', (control_table(), mapping))
     rows = cursor.fetchall()
     if len(rows) != 1 or rows[0][-1] != owner:
         raise ValueError(f'Mapping ownership mismatch: {mapping} (requested {owner})')

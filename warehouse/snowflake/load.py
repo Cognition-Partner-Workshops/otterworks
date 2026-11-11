@@ -123,7 +123,7 @@ def copy_tables(cur, plans, replace=False):
         for relation, stage, filename, expected in plans:
             if not replace:
                 source_file = stage.split('/', 1)[1] + filename
-                cur.execute(f"DELETE FROM {relation} WHERE _SRC_FILE='{source_file}'")
+                cur.execute('DELETE FROM IDENTIFIER(%s) WHERE _SRC_FILE=%s', (relation, source_file))
             cur.execute(f'COPY INTO {relation} FROM {stage}'
                         f" FILES=('{filename}')"
                         ' FILE_FORMAT=(FORMAT_NAME=LANDING.PSV_HEADER)'

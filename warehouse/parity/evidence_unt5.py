@@ -236,6 +236,7 @@ def fresh(path):
 
 def oracle(name):
     import psycopg
+    from psycopg import sql as pgsql
     path = DEST / 'oracle' / name
     fresh(path)
     params = local_params()
@@ -252,7 +253,7 @@ def oracle(name):
                TD_PASSWORD=params['password'], TD_DB=db, PMROOTDIR=str(runroot),
                LANDING_DIR=str(runroot / 'landing'))
     with psycopg.connect(dbname='postgres', **params) as admin:
-        admin.execute(f'CREATE DATABASE {db}')
+        admin.execute(pgsql.Composed([pgsql.SQL('CREATE DATABASE '), pgsql.Identifier(db)]))
         try:
             with psycopg.connect(dbname=db, **params) as pg:
                 pg.execute(BOOTSTRAP.read_text())
@@ -302,7 +303,7 @@ def oracle(name):
                     if rc:
                         raise RuntimeError('Runner failed; capture retained')
         finally:
-            admin.execute(f'DROP DATABASE {db} WITH (FORCE)')
+            admin.execute(pgsql.Composed([pgsql.SQL('DROP DATABASE '), pgsql.Identifier(db), pgsql.SQL(' WITH (FORCE)')]))
 
 
 def parse_stats(text):

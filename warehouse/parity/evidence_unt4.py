@@ -114,6 +114,7 @@ def fixture_rows(today):
 
 def runner_fixture(scenario):
     import psycopg
+    from psycopg import sql as pgsql
     path = DEST / 'fixture' / scenario / 'runner'
     if path.exists():
         raise ValueError('Never overwrite a runner fixture capture')
@@ -122,7 +123,7 @@ def runner_fixture(scenario):
     runroot = (path / db).resolve()
     runroot.mkdir(parents=True)
     with psycopg.connect(dbname='postgres', **params) as admin:
-        admin.execute(f'CREATE DATABASE {db}')
+        admin.execute(pgsql.Composed([pgsql.SQL('CREATE DATABASE '), pgsql.Identifier(db)]))
         try:
             with psycopg.connect(dbname=db, **params) as pg:
                 pg.execute(BOOTSTRAP.read_text())
@@ -166,7 +167,7 @@ def runner_fixture(scenario):
                         raise RuntimeError('Runner failed; logs retained in ' + str(runroot))
                 dump(path / 'commands.json', runs)
         finally:
-            admin.execute(f'DROP DATABASE {db} WITH (FORCE)')
+            admin.execute(pgsql.Composed([pgsql.SQL('DROP DATABASE '), pgsql.Identifier(db), pgsql.SQL(' WITH (FORCE)')]))
     print(json.dumps(runs))
 
 

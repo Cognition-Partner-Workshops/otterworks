@@ -83,6 +83,7 @@ def sessions(root, run_id=None):
 def oracle():
     """Run the PowerCenter emulator's wf_SFX_AUDIT_DAILY twice on a fresh PostgreSQL database."""
     import psycopg
+    from psycopg import sql as pgsql
     path = DEST / 'oracle'
     fresh(path)
     dump(path / 'frozen_inputs.json', frozen_inputs())
@@ -98,7 +99,7 @@ def oracle():
     env.update(TD_HOST=params['host'], TD_PORT=str(params['port']), TD_USER='postgres', TD_PASSWORD='',
                TD_DB=db, PMROOTDIR=str(root), LANDING_DIR=str(root / 'landing'))
     with psycopg.connect(dbname='postgres', autocommit=True, **params) as admin:
-        admin.execute('CREATE DATABASE ' + db)
+        admin.execute(pgsql.Composed([pgsql.SQL('CREATE DATABASE '), pgsql.Identifier(db)]))
     with psycopg.connect(dbname=db, autocommit=True, **params) as pg:
         pg.execute(BOOTSTRAP.read_text())
         initial = {s: snapshot(pg, t[1]) for s, t in TARGETS.items()}

@@ -33,7 +33,9 @@ class FileCursor:
         elif sql == 'ROLLBACK':
             self.data = self.original
         elif sql.startswith('DELETE'):
-            key = re.search(r"_SRC_FILE\s*=\s*'([^']+)'", sql).group(1)
+            # The staged file name is a bind value, never part of the SQL text.
+            assert sql == 'DELETE FROM IDENTIFIER(%s) WHERE _SRC_FILE=%s', sql
+            key = params[1]
             self.data.pop(key, None)
         elif sql.startswith('COPY'):
             stage, name = re.search(r"FROM (@\S+) FILES=\('([^']+)'\)", sql).groups()
