@@ -89,4 +89,5 @@ grep -Fq 'missing SNOWFLAKE_ACCOUNT' "$work/no-env.log"
 env -u SNOWFLAKE_ACCOUNT WAREHOUSE_CONTRACT_TARGET=snowflake bash "$ROOT/contract/run.sh" > "$work/skip.log"
 grep -Fxq 'SKIP snowflake contract: missing SNOWFLAKE_ACCOUNT' "$work/skip.log"
 printf '%s\n' 'PASS Snowflake SQL scope, missing credentials and contract skip'
+python3 "$ROOT/tests/test_snowflake_export.py"
 printf '%s\n' 'All partner-extract unit tests passed'

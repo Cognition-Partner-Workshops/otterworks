@@ -8,8 +8,9 @@ prepares a dry-run SFTP batch. Scheduling is external.
 Requires Linux, Bash, GNU date/coreutils, awk and Python 3.
 Install `python3 -m pip install -r requirements.txt`.
 Set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE,
-SNOWFLAKE_PRIVATE_KEY (unencrypted PEM, never enable shell tracing), and
-SNOWFLAKE_WAREHOUSE. JWT key-pair authentication uses database SFX_D1110_AFTER,
+SNOWFLAKE_PRIVATE_KEY (unencrypted PEM, never enable shell tracing).
+JWT key-pair authentication pins warehouse SFX_D1110_PARITY_WH (ignoring
+SNOWFLAKE_WAREHOUSE) and database SFX_D1110_AFTER,
 schema COMPAT, session TIMEZONE UTC, and exactly this QUERY_TAG:
 `{"run":"sfx-d1110","act":"consumers","consumer":"partner-extract"}`.
 

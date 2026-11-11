@@ -10,7 +10,7 @@ QUERY_TAG = '{"run":"sfx-d1110","act":"consumers","consumer":"partner-extract"}'
 
 
 def connect():
-    required = ("ACCOUNT", "USER", "ROLE", "PRIVATE_KEY", "WAREHOUSE")
+    required = ("ACCOUNT", "USER", "ROLE", "PRIVATE_KEY")
     for key in required:
         if not os.environ.get("SNOWFLAKE_" + key):
             raise ValueError("missing SNOWFLAKE_" + key)
@@ -24,7 +24,7 @@ def connect():
         account=os.environ["SNOWFLAKE_ACCOUNT"],
         user=os.environ["SNOWFLAKE_USER"],
         role=os.environ["SNOWFLAKE_ROLE"],
-        warehouse=os.environ["SNOWFLAKE_WAREHOUSE"],
+        warehouse="SFX_D1110_PARITY_WH",
         private_key=key.private_bytes(
             serialization.Encoding.DER, serialization.PrivateFormat.PKCS8,
             serialization.NoEncryption(),
