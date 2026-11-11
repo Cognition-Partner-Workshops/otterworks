@@ -5,6 +5,8 @@ from datetime import date, datetime, timedelta
 import pytest
 
 from parity.evidence import cell, full_compare, replay_gate
+
+NO_REJECTS = ([], [], [])
 from parity import evidence_unt4 as unt4
 
 KEYS = ['ACTOR_USER_ID', 'DOCUMENT_ID', 'EVENT_TS', 'EVENT_TYPE', 'DETAILS']
@@ -77,12 +79,12 @@ def test_archive_negative_controls(case):
     elif case == 'missing':
         after['rows'] = after['rows'][:1]
     assert not full_compare(before, after, KEYS)['equal']
-    assert not replay_gate(before, before, after, KEYS, ['ARCHIVE_ID'])['passed']
+    assert not replay_gate(before, before, after, KEYS, ['ARCHIVE_ID'], NO_REJECTS)['passed']
 
 
 def test_archive_positive():
     snap = archive()
-    assert replay_gate(snap, snap, deepcopy(snap), KEYS, ['ARCHIVE_ID'])['passed']
+    assert replay_gate(snap, snap, deepcopy(snap), KEYS, ['ARCHIVE_ID'], NO_REJECTS)['passed']
 
 
 def test_python_value_roundtrip():

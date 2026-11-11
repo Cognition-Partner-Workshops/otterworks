@@ -348,7 +348,9 @@ def replay(name):
     path = s['path']
     run1, run2 = load(path / 'run1/target.json'), load(path / 'run2/target.json')
     seq = owned(s['mapping'])['sequence_columns']
-    result = replay_gate(s['oracle'], run1, run2, s['keys'], seq)
+    # UNT-4 gates rejects below (no dbt reject path, runner FAILED_ROWS=0), so the shared
+    # runner-reject comparison gets empty snapshots.
+    result = replay_gate(s['oracle'], run1, run2, s['keys'], seq, ([], [], []))
     raw_rejects = [r for f in s['rejects'] for r in f['rows']]
     result['rejects'] = {'oracle_raw_rows': raw_rejects,
                          'oracle_sessions': s['sessions'],
