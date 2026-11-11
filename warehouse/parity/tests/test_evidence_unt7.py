@@ -203,7 +203,7 @@ def test_inventory_append_only_and_hash_coverage():
     assert mapping['after_table'] == 'PC_CONTENT.ROLE_GRANT'
     assert mapping['key_columns'] == ['GRANT_ID']
     original = subprocess.check_output(['git', 'show',
-        'ed22934c:warehouse/parity/mappings/sfx_content.yml'], cwd=u.ROOT)
+        '0d402bba999352b28094ecf356845f5978ec7f65:warehouse/parity/mappings/sfx_content.yml'], cwd=u.ROOT)
     assert (u.ROOT / 'warehouse/parity/mappings/sfx_content.yml').read_bytes().startswith(original)
     hashed = u.hashes()
     assert 'warehouse/parity/evidence_unt7.py' in hashed
