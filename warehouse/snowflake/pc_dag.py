@@ -2,7 +2,10 @@
 import argparse
 import json
 import os
+from pathlib import Path
 import re
+import subprocess
+import sys
 import time
 
 import yaml
@@ -108,12 +111,17 @@ def deploy(cursor, folder, tasks):
         suspend(cursor, folder, tasks)
 
 
-def run_once(cursor, folder, root, tasks, timeout=180):
+def run_once(cursor, folder, root, tasks, timeout=180, load_date=None, build=None):
     schema = 'SFX_D1110_AFTER.PC_' + folder
     names = {t['task'] for t in tasks.values()}
     complete = False
     try:
         suspend(cursor, folder, tasks)
+        if build:
+            build()
+        if load_date:
+            cursor.execute(f"ALTER TASK {schema}.{tasks[root]['task']} SET CONFIG=%s",
+                           (json.dumps({'load_date': load_date}),))
         for name, step in reversed(list(tasks.items())):
             if name != root:
                 cursor.execute(f"ALTER TASK {schema}.{step['task']} RESUME")
@@ -150,12 +158,21 @@ def run_once(cursor, folder, root, tasks, timeout=180):
         suspend(cursor, folder, tasks)
 
 
+def build_folder(folder, load_date):
+    subprocess.run([sys.executable, str(Path(__file__).with_name('run_dbt.py')), 'build',
+                    '--select', 'path:models/pc/' + folder.lower(), '--step', 'dbt',
+                    '--load-date', load_date], check=True)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--folder', required=True)
     parser.add_argument('--run-once', action='store_true')
     parser.add_argument('--timeout', type=int, default=180)
+    parser.add_argument('--load-date', default='20261109')
     args = parser.parse_args()
+    if not re.fullmatch(r'[0-9]{8}', args.load_date):
+        parser.error('--load-date must be YYYYMMDD')
     if not 1 <= args.timeout <= 600:
         parser.error('--timeout must be 1..600')
     if os.environ.get('SNOWFLAKE_DATABASE') != 'SFX_D1110_AFTER':
@@ -164,7 +181,8 @@ def main():
     with connect('transform', 'pc_dag', extra_tag=dict(run='sfx-d1110', act='scale', step='dag', folder=folder)) as conn, conn.cursor() as cur:
         deploy(cur, folder, tasks)
         if args.run_once:
-            run_once(cur, folder, root, tasks, args.timeout)
+            run_once(cur, folder, root, tasks, args.timeout, args.load_date,
+                     lambda: build_folder(folder, args.load_date))
 
 
 if __name__ == '__main__':

@@ -56,3 +56,70 @@ def test_run_failure_suspends(monkeypatch):
         pc_dag.run_once(Cursor(), folder, root, tasks)
     assert calls[-1] == 'SUSPEND VERIFIED'
     assert sum('CANCEL_ONGOING' in c for c in calls) == 3
+
+
+class RecordingCursor:
+    def __init__(self, calls):
+        self.calls = calls
+
+    def execute(self, sql, params=None):
+        self.calls.append((sql, params))
+        if sql.startswith('EXECUTE TASK'):
+            raise RuntimeError('graph started')
+
+    def fetchone(self):
+        return [None]
+
+
+def test_run_once_builds_then_sets_batch_date(monkeypatch):
+    folder, root, tasks = pc_dag.load('billing', FIXTURE)
+    calls = []
+    monkeypatch.setattr(pc_dag, 'suspend', lambda *a: None)
+    with pytest.raises(RuntimeError, match='graph started'):
+        pc_dag.run_once(RecordingCursor(calls), folder, root, tasks, load_date='20261110',
+                        build=lambda: calls.append(('BUILD', None)))
+    names = [sql for sql, _ in calls]
+    config = next(i for i, sql in enumerate(names) if 'SET CONFIG' in sql)
+    started = next(i for i, sql in enumerate(names) if sql.startswith('EXECUTE TASK'))
+    assert names.index('BUILD') < config < started
+    assert names[config].startswith('ALTER TASK SFX_D1110_AFTER.PC_BILLING.SFX_D1110_PC_BILLING_START ')
+    assert json.loads(calls[config][1][0]) == {'load_date': '20261110'}
+
+
+def test_failed_build_skips_graph(monkeypatch):
+    folder, root, tasks = pc_dag.load('billing', FIXTURE)
+    calls = []
+    monkeypatch.setattr(pc_dag, 'suspend', lambda *a: None)
+
+    def build():
+        raise RuntimeError('dbt build failed')
+    with pytest.raises(RuntimeError, match='dbt build failed'):
+        pc_dag.run_once(RecordingCursor(calls), folder, root, tasks, load_date='20261110', build=build)
+    assert not any(sql.startswith('EXECUTE TASK') for sql, _ in calls)
+
+
+def test_billing_decision_checks_batch_date():
+    _, _, tasks = pc_dag.load('billing')
+    sql = tasks['DEC_GL_POSTED']['sql']
+    assert "SYSTEM$GET_TASK_GRAPH_CONFIG('load_date')" in sql
+    assert 'MAX(REGEXP_SUBSTR' not in sql
+
+
+def test_dbt_build_receives_load_date(monkeypatch):
+    import run_dbt
+    seen = []
+    monkeypatch.setattr(run_dbt.subprocess, 'run', lambda command, **kw: seen.append(command))
+    monkeypatch.setenv('SNOWFLAKE_PRIVATE_KEY', 'test-only')
+    monkeypatch.setenv('SFX_COMMIT', 'test')
+    monkeypatch.setattr(sys, 'argv', ['run_dbt.py', 'build', '--select', 'path:models/pc/billing',
+                                      '--load-date', '20261110'])
+    run_dbt.main()
+    variables = json.loads(seen[0][seen[0].index('--vars') + 1])
+    assert variables == {'phase': 'dbt', 'load_date': '20261110'}
+
+
+def test_gl_journal_reuses_batch_keys():
+    model = (Path(__file__).resolve().parents[2] / 'dbt/models/pc/billing/pc_billing__gl_journal_line.sql').read_text()
+    assert model.index('{% set prior_keys') < model.index('{% set delete_load')
+    assert 'pre_hook=[prior_keys, delete_load]' in model
+    assert 'coalesce(PRIOR_ID' in model

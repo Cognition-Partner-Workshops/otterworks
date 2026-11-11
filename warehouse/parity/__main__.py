@@ -12,6 +12,7 @@ parser.add_argument('--control-schema')
 parser.add_argument('--control-table')
 parser.add_argument('--mapping')
 parser.add_argument('--folder')
+parser.add_argument('--load-date')
 parser.add_argument('--sample', type=int, default=10)
 parser.add_argument('--owner', default='act3-workflow')
 parser.add_argument('--amber')
@@ -27,7 +28,7 @@ elif args.command == 'licence':
     licence()
 elif args.command == 'dbt':
     from .commands import build
-    build(args.mapping, args.folder)
+    build(args.mapping, args.folder, args.load_date)
 else:
     from .commands import dispatch
     if not args.mapping or args.sample < 0:
