@@ -96,6 +96,32 @@ class SnowflakeWarehouse extends ContractWarehouse:
               println(s"Snowflake session $name=$value (assertion passed)")
             finally result.close()
           }
+          // Both instants are still in the previous month in Pacific time.
+          // Cover daylight and standard time without waiting for a real month boundary.
+          val boundaries = statement.executeQuery("""WITH boundaries AS (
+            | SELECT column1 AS EXPECTED_MONTH,
+            | TO_TIMESTAMP_LTZ(column2, 'YYYY-MM-DD HH24:MI:SS TZH:TZM')::DATE AS CALENDAR_DATE
+            | FROM VALUES ('2026-07', '2026-07-01 00:30:00 +00:00'),
+            |             ('2026-12', '2026-12-01 00:30:00 +00:00')
+            |)
+            |SELECT EXPECTED_MONTH,
+            | TO_CHAR(DATE_TRUNC('MONTH', CALENDAR_DATE), 'YYYY-MM') AS MONTH_LABEL,
+            | TO_CHAR(ADD_MONTHS(DATE_TRUNC('MONTH', CALENDAR_DATE), -11), 'YYYY-MM') AS FIRST_MONTH,
+            | TO_CHAR(ADD_MONTHS(DATE_TRUNC('MONTH', CALENDAR_DATE), 1), 'YYYY-MM') AS END_MONTH
+            |FROM boundaries ORDER BY EXPECTED_MONTH""".stripMargin)
+          try
+            var checked = 0
+            while boundaries.next() do
+              val month = java.time.YearMonth.parse(boundaries.getString("EXPECTED_MONTH"))
+              require(boundaries.getString("MONTH_LABEL") == month.toString, "Month label must use UTC")
+              require(boundaries.getString("FIRST_MONTH") == month.minusMonths(11).toString,
+                "Trailing twelve-month window must start in UTC")
+              require(boundaries.getString("END_MONTH") == month.plusMonths(1).toString,
+                "Exclusive window end must use UTC")
+              checked += 1
+            require(checked == 2, "Expected daylight and standard time boundary checks")
+            println("Snowflake UTC month boundaries: daylight and standard time labels and twelve-month windows passed")
+          finally boundaries.close()
         finally statement.close()
         connection
       catch

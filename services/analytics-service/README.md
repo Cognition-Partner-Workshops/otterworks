@@ -171,7 +171,11 @@ WAREHOUSE_CONTRACT_TARGET=snowflake sbt "contract:test"
 ```
 
 Missing Snowflake credentials cancel the live test. It executes the production
-repository SQL and prints query IDs. The live contract compares columns, month
+repository SQL and prints query IDs. On that same connection it asserts
+TIMEZONE=UTC and the exact QUERY_TAG, then checks month labels and both ends of
+the twelve-month window at 00:30 UTC on July 1 and December 1. These instants
+are still in the previous month in Pacific daylight and standard time.
+The live contract compares columns, month
 labels and plan names to replay. Counts and monetary totals intentionally are
 not compared: the live seed has 200,000 rows per table versus 800 in replay.
 
