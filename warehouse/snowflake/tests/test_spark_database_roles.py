@@ -10,6 +10,8 @@ def test_database_roles_are_scoped_and_inherited():
     statements = {s.strip() + ';' for s in sql.split(';') if s.strip()}
     transformer = 'SFX_D1110_AFTER.SFX_D1110_TRANSFORMER'
     analyst = 'SFX_D1110_AFTER.SFX_D1110_ANALYST'
+    for schema in ('SPARK_RAW_BILLING', 'SPARK_RAW_DOCUMENTS', 'SPARK_RAW_USERS', 'SPARK_RAW_AUDIT', 'MART_SPARK'):
+        assert f'ALTER SCHEMA SFX_D1110_AFTER.{schema} ENABLE MANAGED ACCESS;' in statements
     for role in (transformer, analyst):
         assert f"CREATE DATABASE ROLE IF NOT EXISTS {role} COMMENT='sfx-d1110 spark access';" in statements
         assert f'GRANT DATABASE ROLE {role} TO ROLE SFX_D1110_ROLE;' in statements
