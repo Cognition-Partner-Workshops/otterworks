@@ -202,3 +202,19 @@ resource "aws_iam_role_policy" "job_s3" {
   role   = aws_iam_role.job.id
   policy = data.aws_iam_policy_document.job_s3.json
 }
+
+# Deny any request to the demo bucket that does not arrive over TLS.
+resource "aws_s3_bucket_policy" "demo_tls" {
+  bucket = aws_s3_bucket.demo.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid       = "DenyInsecureTransport"
+      Effect    = "Deny"
+      Principal = "*"
+      Action    = "s3:*"
+      Resource  = [aws_s3_bucket.demo.arn, "${aws_s3_bucket.demo.arn}/*"]
+      Condition = { Bool = { "aws:SecureTransport" = "false" } }
+    }]
+  })
+}
