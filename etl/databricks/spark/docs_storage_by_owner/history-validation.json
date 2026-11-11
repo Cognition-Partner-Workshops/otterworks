@@ -1,0 +1,9 @@
+{
+  "pr": 2758,
+  "job": "docs_storage_by_owner",
+  "file": "etl/databricks/spark/docs_storage_by_owner/parity.sql",
+  "table": "cpw.dbx_d1111_after.documents__spark_docs_storage_by_owner",
+  "statement": "/* run=dbx-d1111 act=spark step=idempotence consumer=docs_storage_by_owner */\nDESCRIBE HISTORY cpw.dbx_d1111_after.documents__spark_docs_storage_by_owner LIMIT 2;",
+  "statement_id": "01f1dd8d-a396-1020-a31e-fe3e4a4ec750",
+  "state": "SUCCEEDED"
+}

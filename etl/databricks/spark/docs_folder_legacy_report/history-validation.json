@@ -1,0 +1,9 @@
+{
+  "pr": 2758,
+  "job": "docs_folder_legacy_report",
+  "file": "etl/databricks/spark/docs_folder_legacy_report/parity.sql",
+  "table": "cpw.dbx_d1111_after.documents__spark_docs_folder_legacy_report",
+  "statement": "/* run=dbx-d1111 act=spark step=idempotence consumer=docs_folder_legacy_report */\nDESCRIBE HISTORY cpw.dbx_d1111_after.documents__spark_docs_folder_legacy_report LIMIT 2;",
+  "statement_id": "01f1dd8d-a10d-1b0a-ad4a-d1e8d816c9c5",
+  "state": "SUCCEEDED"
+}
