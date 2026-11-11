@@ -50,10 +50,14 @@ The standalone DOC_SHARE parity uses the proven frozen ROLE_GRANT lookup, withou
 Reserved LOGIN_EVENT is an excluded sibling; TEAM_MEMBER is disabled and excluded. No worklet,
 decision or email task appears in this workflow.
 
-Cross-folder dependencies: none. All five mappings, lookup owners and workflow callers are
-inside SFX_CONTENT. There is no billing/customer lookup despite DOCUMENT.CUSTOMER_ID.
-The shared warehouse seed and runner are execution dependencies, not converted mappings.
-SFX_AUDIT reads its own staging inputs and has no caller or lookup into these five mappings.
+Cross-folder dependencies (see `evidence.json`): no mapping in SFX_AUDIT or SFX_BILLING looks up these
+targets, but they have callers outside SFX_CONTENT. Reserved SFX_AUDIT reads APP_USER through
+V_EVENT_ACTORS and reconciles STG_APP_USER/APP_USER, STG_DOCUMENT/DOCUMENT and STG_DOC_SHARE/DOC_SHARE
+counts. The SFX_USERS and SFX_DOCUMENTS views read APP_USER and DOCUMENT. DBQL shows unregistered reads
+by the analytics, BI semantic and finance notebook service accounts. Those consumers need their
+own repoint and sign-off before cutover. The separate billing program replaced
+`dbx_d1111_after.users__app_user` from raw staging before validation; validation setup resets it
+from the proven before target. The billing program keeps its own copy, which matches the converted target.
 
 `collect_evidence.py` publishes aggregate evidence without source rows. DOC_SHARE is red for
 workflow release even though its standalone parity passes: its reserved predecessor remains

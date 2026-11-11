@@ -1130,7 +1130,57 @@
       }
     ]
   },
-  "cross_folder_dependencies": [],
+  "cross_folder_dependencies": [
+    {
+      "kind": "caller",
+      "folder": "SFX_AUDIT (reserved)",
+      "object": "warehouse/teradata/ddl/audit/10_views.sql SFX_AUDIT.V_EVENT_ACTORS",
+      "reads": "SFX_USERS.APP_USER",
+      "mapping": "m_SFX_APP_USER"
+    },
+    {
+      "kind": "caller",
+      "folder": "SFX_AUDIT (reserved)",
+      "object": "warehouse/teradata/scripts/audit/11_reconciliation.bteq RECON_ID 20000000001",
+      "reads": "SFX_USERS.STG_APP_USER, SFX_USERS.APP_USER",
+      "mapping": "m_SFX_STG_APP_USER, m_SFX_APP_USER"
+    },
+    {
+      "kind": "caller",
+      "folder": "SFX_AUDIT (reserved)",
+      "object": "warehouse/teradata/scripts/audit/11_reconciliation.bteq STG_DOCUMENT/DOCUMENT and STG_DOC_SHARE/DOC_SHARE counts",
+      "reads": "SFX_DOCUMENTS.STG_DOCUMENT, DOCUMENT, DOC_SHARE",
+      "mapping": "m_SFX_STG_DOCUMENT, m_SFX_DOCUMENT, m_SFX_DOC_SHARE"
+    },
+    {
+      "kind": "caller",
+      "folder": "warehouse views",
+      "object": "SFX_USERS.V_TEAM_MEMBERS, V_USER_SETTINGS; SFX_DOCUMENTS.V_DOCUMENT_VERSIONS, V_WORKSPACE_STORAGE",
+      "reads": "APP_USER, DOCUMENT",
+      "mapping": "m_SFX_APP_USER, m_SFX_DOCUMENT"
+    },
+    {
+      "kind": "caller",
+      "folder": "consumers (DBQL, not in registry tables)",
+      "object": "svc_analytics_dash (analytics-service), svc_bi_semantic (bi-semantic), nb_dsci_pkhan (finance-notebook)",
+      "reads": "APP_USER, DOCUMENT, V_TEAM_MEMBERS, V_DOCUMENT_VERSIONS, V_WORKSPACE_STORAGE, V_EVENT_ACTORS",
+      "mapping": "m_SFX_APP_USER, m_SFX_DOCUMENT"
+    },
+    {
+      "kind": "shared_data",
+      "folder": "SFX_BILLING program (act=prove)",
+      "object": "cpw.dbx_d1111_after.users__app_user",
+      "reads": "replaced twice from before.users__stg_app_user (statements 01f1dd80-cc2d-1489-a11b-575bb4d94179, 01f1dd81-0300-13d5-9a6a-a6e81241be3b) before this conversion reset it; billing keeps its own copy billing__in_users_app_user (hash equal to the converted target)",
+      "mapping": "m_SFX_APP_USER"
+    },
+    {
+      "kind": "shared_data",
+      "folder": "SFX_CONTENT reserved",
+      "object": "m_SFX_ROLE_GRANT target cpw.dbx_d1111_before.users__role_grant",
+      "reads": "DOC_SHARE lookup",
+      "mapping": "m_SFX_DOC_SHARE"
+    }
+  ],
   "query_history_statement_id": "01f1dd82-aeac-1b79-b69f-4f4f9bc6bb7e",
   "query_history_note": "Entries without query_history have Statement Execution API evidence; history ingestion is pending (30-40 minute lag). Re-run query_history.sql.",
   "statements": [
