@@ -42,12 +42,24 @@ jobs:
         run: |
           curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz -o "$RUNNER_TEMP/gitleaks.tar.gz"
           tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
-      - name: Check pull request commits
+      - name: Check commits
         env:
           BASE_REF: ${{ github.base_ref || 'demo-databricks-dw-exit' }}
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
         run: |
-          git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
-          "$RUNNER_TEMP/gitleaks" detect --redact --log-opts "origin/$BASE_REF..HEAD"
+          if [ "$EVENT_NAME" = push ]; then
+            if [ "$BEFORE_SHA" = 0000000000000000000000000000000000000000 ]; then
+              "$RUNNER_TEMP/gitleaks" detect --redact
+            else
+              git fetch --no-tags origin "$BEFORE_SHA"
+              "$RUNNER_TEMP/gitleaks" detect --redact --log-opts "$BEFORE_SHA..$HEAD_SHA"
+            fi
+          else
+            git fetch --no-tags origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
+            "$RUNNER_TEMP/gitleaks" detect --redact --log-opts "origin/$BASE_REF..HEAD"
+          fi
 
   semgrep:
     runs-on: ubuntu-latest
