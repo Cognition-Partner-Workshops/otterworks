@@ -11,14 +11,20 @@ def read(name):
     return json.loads((EVIDENCE / name).read_text())
 
 
+def read_optional(name, default):
+    return read(name) if (EVIDENCE / name).exists() else default
+
+
 def metrics(item):
     return {'statement_id': item['statement_id'],
             'metrics': {k: v for k, v in item['rows'][0].items() if 'sample' not in k}}
 
 
 def collect():
-    inputs, first_inputs = read('inputs.json'), read('inputs-first-failure.json')
-    validation, initial = read('validation.json'), read('validation-first.json')
+    inputs = read('inputs.json')
+    first_inputs = read_optional('inputs-first-failure.json', inputs)
+    validation = read('validation.json')
+    initial = read_optional('validation-first.json', validation)
     features = yaml.safe_load((REPO / 'etl/informatica/licence.yaml').read_text())['mapping_features']['SFX_CONTENT']
     history = read('query-history.json')
     indexed = {r['statement_id']: r for r in history['rows']}
@@ -45,11 +51,13 @@ def collect():
             first_sid = f['statement_id']
             first = (f"Input CHAR-padding mismatch: local {f['local']['count']}/{f['local']['hash']}; "
                      f"live {f['live']['count']}/{f['live']['hash']}. Corrected using runner CHAR trimming.")
-        if mapping == 'm_SFX_APP_USER':
-            f = initial[mapping]['parity'][0]
-            first += (f" Initial target comparison {f['statement_id']}: 100 rows differ each way; "
-                      'existing after target contained overlength names. Reset to verified before target; '
-                      '100 source-width rejects retained and compared separately.')
+        f = initial.get(mapping, result)['parity'][0]
+        if mapping == 'm_SFX_APP_USER' and f['rows'][0]['pc_minus_after'] != '0':
+            first += (f" Initial target comparison {f['statement_id']}: "
+                      f"{f['rows'][0]['pc_minus_after']} PC-minus-after and "
+                      f"{f['rows'][0]['after_minus_pc']} after-minus-PC rows. "
+                      'The recorded correction initializes the after target from the verified before target; '
+                      'source-width rejects are retained and compared separately.')
         red = mapping == 'm_SFX_DOC_SHARE'
         reason = ('Standalone parity and idempotence pass, but the workflow requires reserved '
                   's_m_SFX_ROLE_GRANT=SUCCEEDED. Both runs leave DOC_SHARE UPSTREAM_FAILED; '
@@ -67,13 +75,15 @@ def collect():
     output = {'run_token': 'dbx-d1111', 'expires': '2026-11-24', 'act': 'scale', 'subject_area': 'documents',
               'rows': board, 'inputs': inputs, 'initial_input_failures': first_inputs,
               'oracle': read('oracle.json'), 'validation': public_validation,
-              'initial_app_user_parity': metrics(initial['m_SFX_APP_USER']['parity'][0]),
+              'initial_app_user_parity': metrics(initial.get('m_SFX_APP_USER', validation['m_SFX_APP_USER'])['parity'][0]),
               'reject_parity': {m: metrics(v) for m, v in read('reject-parity.json').items()},
               'job': read('job-summary.json'), 'job_metadata': read('job-metadata.json'),
               'cross_folder_dependencies': [], 'query_history_statement_id': history['statement_id'],
               'query_history_note': 'Entries without query_history have Statement Execution API evidence; history ingestion is pending (30-40 minute lag). Re-run query_history.sql.',
               'statements': statements,
               'licence_note': 'Four green mappings in this scoped PR. Global counter must be computed from all 20 mapping rows; DOC_SHARE remains red due to its reserved workflow predecessor.'}
+    if (EVIDENCE / 'control.json').exists():
+        output['control'] = read('control.json')
     (ROOT / 'evidence.json').write_text(json.dumps(output, indent=2) + '\n')
     print('Published five board rows; four green and one reserved-dependency red.')
 

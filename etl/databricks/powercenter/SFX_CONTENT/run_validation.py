@@ -104,6 +104,13 @@ def execute(only=None):
             result['rejects']={'statement_id':r['statement_id'],'rows':rows(r)}
         results[mapping]=result
         (EVIDENCE / 'validation.json').write_text(json.dumps(results,indent=2))
+        first_path = EVIDENCE / 'validation-first.json'
+        first = json.loads(first_path.read_text()) if first_path.exists() else {}
+        failed = any(p['rows'][0]['pc_minus_after'] != '0' or p['rows'][0]['after_minus_pc'] != '0'
+                     for p in result['parity'])
+        if failed and mapping not in first:
+            first[mapping] = result
+            first_path.write_text(json.dumps(first, indent=2))
         print(mapping,json.dumps({'parity': [{k:v for k,v in p['rows'][0].items() if 'sample' not in k} for p in result['parity']],
              'idempotence':result['idempotence']['statement_id']}),flush=True)
 

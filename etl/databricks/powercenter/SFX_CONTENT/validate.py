@@ -92,6 +92,9 @@ def input_checks(conn):
             "statement_id": checks[table]["statement_id"]}
         print(feed, checks[feed + "_flatfile"], flush=True)
     (EVIDENCE / "inputs.json").write_text(json.dumps(checks, indent=2))
+    first = EVIDENCE / 'inputs-first-failure.json'
+    if not all(x['equal'] for x in checks.values()) and not first.exists():
+        first.write_text(json.dumps(checks, indent=2))
     return checks
 
 
