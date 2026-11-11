@@ -16,11 +16,23 @@ namespace OtterWorks.Desktop.Services
     /// </summary>
     public class OtterWorksApiClient
     {
+        internal const string BackendUnreachableMessage =
+            "Could not reach the OtterWorks backend. Verify it is running and that the " +
+            "API base URL is correct.";
+
+        internal const string ServiceUnavailableMessage =
+            "The OtterWorks service is temporarily unavailable. Try again in a moment.";
+
         private readonly HttpClient _http;
         private readonly SessionState _session;
         private readonly string _baseUrl;
 
         public OtterWorksApiClient(AppSettings settings, SessionState session)
+            : this(settings, session, new HttpClientHandler())
+        {
+        }
+
+        internal OtterWorksApiClient(AppSettings settings, SessionState session, HttpMessageHandler handler)
         {
             if (settings == null)
             {
@@ -30,7 +42,7 @@ namespace OtterWorks.Desktop.Services
             _session = session ?? throw new ArgumentNullException(nameof(session));
             _baseUrl = settings.ApiBaseUrl.TrimEnd('/');
 
-            _http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            _http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(30) };
         }
 
         public async Task<AuthResponse> RegisterAsync(string displayName, string email, string password)
@@ -97,12 +109,9 @@ namespace OtterWorks.Desktop.Services
             {
                 response = await _http.SendAsync(request).ConfigureAwait(false);
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException)
             {
-                throw new ApiException(
-                    0,
-                    "Could not reach the OtterWorks backend. Verify it is running and that the " +
-                    "API base URL is correct.\n\n" + ex.Message);
+                throw new ApiException(0, BackendUnreachableMessage);
             }
             catch (TaskCanceledException)
             {
@@ -117,6 +126,11 @@ namespace OtterWorks.Desktop.Services
                 string content = response.Content == null
                     ? string.Empty
                     : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                if (IsServiceUnavailable(response.StatusCode))
+                {
+                    throw new ApiException(response.StatusCode, ServiceUnavailableMessage);
+                }
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -152,6 +166,13 @@ namespace OtterWorks.Desktop.Services
         private Uri BuildUri(string path)
         {
             return new Uri(_baseUrl + "/" + path.TrimStart('/'));
+        }
+
+        private static bool IsServiceUnavailable(HttpStatusCode statusCode)
+        {
+            return statusCode == HttpStatusCode.BadGateway
+                || statusCode == HttpStatusCode.ServiceUnavailable
+                || statusCode == HttpStatusCode.GatewayTimeout;
         }
 
         private static string ExtractError(string content, HttpStatusCode statusCode)
