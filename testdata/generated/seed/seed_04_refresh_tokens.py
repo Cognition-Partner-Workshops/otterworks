@@ -71,5 +71,6 @@ def seed(cur, ns: str) -> int:
 
     return bulk_insert(
         cur, "refresh_tokens", columns, rows,
-        on_conflict="(token_id) DO NOTHING",
+        # No conflict target: a reseed keeps existing rows on either the stable id or token_id.
+        on_conflict="DO NOTHING",
     )

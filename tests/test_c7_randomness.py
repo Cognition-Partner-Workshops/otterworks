@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -82,3 +83,37 @@ def test_empty_refresh_population_does_not_generate_credentials(monkeypatch):
     monkeypatch.setattr(module, 'NUM_AUTH_USERS', 0)
     monkeypatch.setattr(module.secrets, 'token_hex', Mock(side_effect=AssertionError('unexpected credential')))
     assert module.seed(Mock(), 'c7') == 0
+
+
+@pytest.mark.skipif(not os.environ.get('C7_PG_DSN'), reason='set C7_PG_DSN to a disposable Postgres database')
+def test_refresh_token_reseed_keeps_existing_rows():
+    import psycopg2
+
+    saved = sys.modules.get('helpers')
+    conn = psycopg2.connect(os.environ['C7_PG_DSN'])
+    try:
+        spec = importlib.util.spec_from_file_location('helpers', SEED_DIR / 'helpers.py')
+        helpers = importlib.util.module_from_spec(spec)
+        sys.modules['helpers'] = helpers
+        spec.loader.exec_module(helpers)
+        spec = importlib.util.spec_from_file_location('seed_04_refresh_tokens', SEED_DIR / 'seed_04_refresh_tokens.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        with conn.cursor() as cur:
+            cur.execute('DROP SCHEMA IF EXISTS c7_reseed CASCADE; CREATE SCHEMA c7_reseed; SET search_path TO c7_reseed')
+            cur.execute('CREATE TABLE refresh_tokens (id UUID PRIMARY KEY, user_id UUID NOT NULL, '
+                        'token_id VARCHAR(255) NOT NULL UNIQUE, expires_at TIMESTAMPTZ NOT NULL, '
+                        'revoked BOOLEAN NOT NULL, created_at TIMESTAMPTZ NOT NULL)')
+            module.seed(cur, 'c7')
+            cur.execute('SELECT id, token_id FROM refresh_tokens ORDER BY id')
+            first = cur.fetchall()
+            module.seed(cur, 'c7')
+            cur.execute('SELECT id, token_id FROM refresh_tokens ORDER BY id')
+            assert first and cur.fetchall() == first
+    finally:
+        conn.rollback()
+        conn.close()
+        if saved is None:
+            sys.modules.pop('helpers', None)
+        else:
+            sys.modules['helpers'] = saved
