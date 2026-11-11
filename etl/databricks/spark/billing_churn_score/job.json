@@ -1,0 +1,32 @@
+{
+  "name": "dbx-d1111-spark-billing_churn_score",
+  "description": "run_token=dbx-d1111 expires=2026-11-24",
+  "tags": {
+    "run_token": "dbx-d1111",
+    "expires": "2026-11-24",
+    "act": "spark"
+  },
+  "max_concurrent_runs": 1,
+  "environments": [
+    {
+      "environment_key": "serverless",
+      "spec": {
+        "client": "2"
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "task_key": "billing_churn_score",
+      "spark_python_task": {
+        "python_file": "/Workspace/Shared/dbx-d1111-spark/billing_churn_score/job.py",
+        "source": "WORKSPACE"
+      },
+      "environment_key": "serverless",
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}

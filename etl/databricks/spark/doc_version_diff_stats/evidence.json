@@ -1,0 +1,192 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "board": {
+    "job": "doc_version_diff_stats",
+    "status": "red",
+    "target_kind": "PySpark serverless",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.documents__doc_version"
+    ],
+    "after_object": "cpw.dbx_d1111_after.documents__spark_doc_version_diff_stats",
+    "first_failure": "BODY absent from live/staging DOC_VERSION and DOCUMENT. CONTENT_HASH and FILE_SIZE cannot reconstruct document text.",
+    "first_failure_statement_id": "01f1dd84-2f44-106e-a159-f2cd6c96d47b",
+    "parity": "NOT RUN: missing required live input",
+    "parity_statement_id": "",
+    "idempotence_statement_ids": [],
+    "executor_hours_before": 0.030714722,
+    "local_history_app_id": "",
+    "databricks_job_id": "1071117012399528",
+    "run_ids": [],
+    "dbu_after": "NOT RUN",
+    "red_reason": "BODY absent from live/staging DOC_VERSION and DOCUMENT. CONTENT_HASH and FILE_SIZE cannot reconstruct document text.",
+    "outputs": [
+      "etl/databricks/spark/doc_version_diff_stats/"
+    ],
+    "source_path": "etl/spark/jobs/py/doc_version_diff_stats.py",
+    "baseline_app_id": "app-20261110202830-0025",
+    "area": "documents",
+    "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757"
+  },
+  "statements": [
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-1cfc-1785-bca6-effc271ce1c3",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-1d76-1535-a4cd-2a7ff8717dcd",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-2f44-106e-a159-f2cd6c96d47b",
+      "execution_status": "FAILED",
+      "error": "[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `body` cannot be resolved. Did you mean one of the following? [`version_id`, `document_id`, `file_size`, `version_no`, `version_ts`]. SQLSTATE: 42703; line 2 pos 44"
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-3251-166f-ac8d-da2be17604bf",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-32aa-10f5-bbb1-ce3957ef09f6",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-32f9-17bd-84e7-1c3d1eee7497",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-335d-14df-8fcf-eee5b27f7d0d",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "history",
+      "statement_id": "01f1dd84-eda7-1371-9c62-ab31f922ce4c",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "billing",
+      "statement_id": "01f1dd85-2292-1fdb-815f-9839a062b7f5",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-4d05-1538-98dd-c60da7ba5850",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "history",
+      "statement_id": "01f1dd85-70b7-1557-aa48-136de2e1d268",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-77b3-19b7-bc13-6ac8a0838ec1",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "evidence",
+      "statement_id": "01f1dd85-7d19-1b14-8c18-e5207a303521",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-812a-1a8a-ba1f-c29043fc18cf",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "evidence",
+      "statement_id": "01f1dd85-81b7-17f0-8c96-f3afdae84f3c",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    }
+  ],
+  "query_history": {
+    "statement_id": "01f1dd85-70b7-1557-aa48-136de2e1d268",
+    "rows": [
+      [
+        "01f1dd84-1cfc-1785-bca6-effc271ce1c3",
+        "2026-11-11T03:58:11.700Z",
+        "455",
+        "0",
+        "8",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-1d76-1535-a4cd-2a7ff8717dcd",
+        "2026-11-11T03:58:12.496Z",
+        "591",
+        "450",
+        "3",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-2f44-106e-a159-f2cd6c96d47b",
+        "2026-11-11T03:58:42.365Z",
+        "152",
+        "0",
+        null,
+        "FAILED"
+      ],
+      [
+        "01f1dd84-3251-166f-ac8d-da2be17604bf",
+        "2026-11-11T03:58:47.486Z",
+        "291",
+        "0",
+        "8",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-32aa-10f5-bbb1-ce3957ef09f6",
+        "2026-11-11T03:58:48.067Z",
+        "243",
+        "0",
+        "1",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-32f9-17bd-84e7-1c3d1eee7497",
+        "2026-11-11T03:58:48.587Z",
+        "317",
+        "0",
+        "10",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-335d-14df-8fcf-eee5b27f7d0d",
+        "2026-11-11T03:58:49.242Z",
+        "263",
+        "0",
+        "1",
+        "FINISHED"
+      ]
+    ],
+    "columns": [
+      "statement_id",
+      "start_time",
+      "total_duration_ms",
+      "read_rows",
+      "produced_rows",
+      "execution_status"
+    ]
+  }
+}

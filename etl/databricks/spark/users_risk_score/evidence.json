@@ -1,0 +1,164 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "board": {
+    "job": "users_risk_score",
+    "status": "red",
+    "target_kind": "PySpark serverless",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.users__user_activity_daily"
+    ],
+    "after_object": "cpw.dbx_d1111_after.users__spark_users_risk_score",
+    "first_failure": "ACTION_COUNT absent from live and staging USER_ACTIVITY_DAILY. Fixture generates DOCUMENT_COUNT and ACTION_COUNT independently; they are not interchangeable.",
+    "first_failure_statement_id": "01f1dd84-2f0a-1459-9c76-a3402b795f6a",
+    "parity": "NOT RUN: missing required live input",
+    "parity_statement_id": "",
+    "idempotence_statement_ids": [],
+    "executor_hours_before": 0.004293889,
+    "local_history_app_id": "",
+    "databricks_job_id": "122351353434587",
+    "run_ids": [],
+    "dbu_after": "NOT RUN",
+    "red_reason": "ACTION_COUNT absent from live and staging USER_ACTIVITY_DAILY. Fixture generates DOCUMENT_COUNT and ACTION_COUNT independently; they are not interchangeable.",
+    "outputs": [
+      "etl/databricks/spark/users_risk_score/"
+    ],
+    "source_path": "etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala",
+    "baseline_app_id": "app-20261110202613-0016",
+    "area": "users",
+    "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2757"
+  },
+  "statements": [
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-1c06-1dc5-8c2b-1c333def6e58",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-1c6e-175b-bdc1-40bee4edfef1",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-2f0a-1459-9c76-a3402b795f6a",
+      "execution_status": "FAILED",
+      "error": "[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `action_count` cannot be resolved. Did you mean one of the following? [`login_count`, `document_count`, `activity_dt`, `activity_id`, `user_id`]. SQLSTATE: 42703; line 2 pos 55"
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-31a5-1276-9a94-b516be067364",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-3207-15b0-8012-c235fe45f403",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "history",
+      "statement_id": "01f1dd84-ebb4-15da-81bb-275ebe848ccc",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "billing",
+      "statement_id": "01f1dd85-20e8-1497-93b9-f6dcde30b368",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-4b87-141f-b971-9785d2e422f6",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "history",
+      "statement_id": "01f1dd85-6e8c-17c3-9666-cb7b0318a094",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-7575-1c44-b29f-fa8fb222d5b2",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "evidence",
+      "statement_id": "01f1dd85-7bde-1801-bc7c-7d3fd92ae404",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-8022-1b53-973e-4685e51f9448",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "evidence",
+      "statement_id": "01f1dd85-80a1-1dcb-9dcf-55272b6eca73",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    }
+  ],
+  "query_history": {
+    "statement_id": "01f1dd85-6e8c-17c3-9666-cb7b0318a094",
+    "rows": [
+      [
+        "01f1dd84-1c06-1dc5-8c2b-1c333def6e58",
+        "2026-11-11T03:58:10.088Z",
+        "361",
+        "0",
+        "7",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-1c6e-175b-bdc1-40bee4edfef1",
+        "2026-11-11T03:58:10.766Z",
+        "634",
+        "400",
+        "3",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-2f0a-1459-9c76-a3402b795f6a",
+        "2026-11-11T03:58:41.988Z",
+        "164",
+        "0",
+        null,
+        "FAILED"
+      ],
+      [
+        "01f1dd84-31a5-1276-9a94-b516be067364",
+        "2026-11-11T03:58:46.357Z",
+        "350",
+        "0",
+        "7",
+        "FINISHED"
+      ],
+      [
+        "01f1dd84-3207-15b0-8012-c235fe45f403",
+        "2026-11-11T03:58:47.000Z",
+        "188",
+        "0",
+        "1",
+        "FINISHED"
+      ]
+    ],
+    "columns": [
+      "statement_id",
+      "start_time",
+      "total_duration_ms",
+      "read_rows",
+      "produced_rows",
+      "execution_status"
+    ]
+  }
+}
