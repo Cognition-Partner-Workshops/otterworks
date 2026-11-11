@@ -188,11 +188,17 @@ class Runner:
             self.log_statement(source, started)
 
     def log_statement(self, source, started):
-        kind = source.strip().split()[0].upper()
+        request = source
+        while True:
+            unlocked = re.sub(r'^\s*LOCKING\s+.+?\s+(?:FOR|IN)\s+(?:ACCESS|READ|WRITE|EXCLUSIVE|CHECKSUM|LOAD\s+COMMITTED)\b(?:\s+NOWAIT\b)?\s*', '', request, count=1, flags=re.I | re.S)
+            if unlocked == request:
+                break
+            request = unlocked
+        kind = request.strip().split()[0].upper()
         kind = {'SEL': 'SELECT', 'INS': 'INSERT', 'UPD': 'UPDATE', 'DEL': 'DELETE'}.get(kind, kind)
         objects = []
         try:
-            tree = sqlglot.parse_one(source, read='teradata')
+            tree = sqlglot.parse_one(request, read='teradata')
             if isinstance(tree, exp.Select) or isinstance(tree, exp.Union):
                 kind = 'SELECT'
             objects = [(t.db or 'public', t.name) for t in tree.find_all(exp.Table)]
