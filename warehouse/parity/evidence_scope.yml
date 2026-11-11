@@ -1,0 +1,17 @@
+owner: migrations-page
+control_table: SFX_D1110_AFTER.MIGRATION_CONTROL.MAPPINGS
+mappings:
+  m_SFX_AUDIT_EVENT: {key_columns: [EVENT_ID]}
+  m_SFX_STG_AUDIT_EVENT:
+    key_columns: [EVENT_ID]
+    key_reason: Feed event identity matches downstream AUDIT_EVENT primary key; duplicates are reported, not removed.
+  m_SFX_AUDIT_EVENT_ARCHIVE:
+    key_columns: [ACTOR_USER_ID, DOCUMENT_ID, EVENT_TS, EVENT_TYPE, DETAILS]
+    key_reason: Archive has no source event ID; complete retained source tuple identifies an event independently of generated ARCHIVE_ID. Collisions fail the gate.
+  m_SFX_AUDIT_DAILY_SUMMARY:
+    key_columns: [SUMMARY_DT, CUSTOMER_ID]
+    key_reason: Aggregator group ports, independent of generated SUMMARY_ID.
+  m_SFX_SECURITY_ALERT: {key_columns: [ALERT_ID]}
+  m_SFX_LOGIN_EVENT: {key_columns: [LOGIN_ID]}
+  m_SFX_ROLE_GRANT: {key_columns: [GRANT_ID]}
+  m_SFX_TEAM_MEMBER: {key_columns: [TEAM_MEMBER_ID]}
