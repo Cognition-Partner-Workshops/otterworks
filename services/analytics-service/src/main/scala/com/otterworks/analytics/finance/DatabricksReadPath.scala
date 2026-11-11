@@ -16,6 +16,7 @@ object DatabricksReadPath:
     val properties = new Properties()
     properties.setProperty("UID", "token")
     properties.setProperty("PWD", sys.env("DATABRICKS_TOKEN"))
+    properties.setProperty("EnableArrow", "0")
     DriverManager.getConnection(s"jdbc:databricks://$host:443/default;transportMode=http;ssl=1;AuthMech=3;httpPath=/sql/1.0/warehouses/$warehouse;ConnCatalog=cpw;ConnSchema=dbx_d1111_after", properties)
 
   def tagged(nativeSql: String, step: String = "contract"): String =
@@ -24,15 +25,18 @@ object DatabricksReadPath:
 
 /** Native Databricks SQL for the finance rollups (port of TeradataFinanceRollupRepository.Sql). */
 object DatabricksFinanceRollupRepository:
+  /** Teradata NOT CASESPECIFIC CHAR/VARCHAR equality: case-insensitive, trailing pads ignored. */
+  private def teradataEquals(left: String, right: String): String = s"upper(rtrim($left)) = upper(rtrim($right))"
+
   val Sql: String =
-    """WITH bounds AS (
+    s"""WITH bounds AS (
       | SELECT trunc(CAST(? AS DATE), 'MM') AS M0
       |), months AS (
       | SELECT add_months(b.M0, -t.N) AS MONTH_START FROM bounds b LATERAL VIEW explode(sequence(0, 11)) t AS N
       |), selected_subscriptions AS (
       | SELECT DISTINCT s.SUBSCRIPTION_ID, s.CUSTOMER_ID, p.PLAN_NAME
-      | FROM billing__subscription s JOIN billing__plan_catalog p ON p.PLAN_CODE = s.PLAN_CODE
-      | WHERE s.STATUS_CD = ? AND s.PLAN_CODE = ?
+      | FROM billing__subscription s JOIN billing__plan_catalog p ON ${teradataEquals("p.PLAN_CODE", "s.PLAN_CODE")}
+      | WHERE ${teradataEquals("s.STATUS_CD", "?")} AND ${teradataEquals("s.PLAN_CODE", "?")}
       |), accounts AS (
       | SELECT DISTINCT c.CUSTOMER_ID, c.REGION_CD, c.STATUS_CD, c.CREATED_DT, s.PLAN_NAME
       | FROM billing__customer_account c JOIN selected_subscriptions s ON s.CUSTOMER_ID = c.CUSTOMER_ID
@@ -52,7 +56,7 @@ object DatabricksFinanceRollupRepository:
       |)
       |SELECT date_format(m.MONTH_START, 'yyyy-MM') AS MONTH_LABEL, a.REGION_CD, a.PLAN_NAME,
       | coalesce(SUM(b.REVENUE), 0) AS BILLED_REVENUE, coalesce(SUM(p.COLLECTED), 0) AS COLLECTED_CASH,
-      | SUM(CASE WHEN a.STATUS_CD = 'ACTIVE' AND a.CREATED_DT < add_months(m.MONTH_START, 1)
+      | SUM(CASE WHEN ${teradataEquals("a.STATUS_CD", "'ACTIVE'")} AND a.CREATED_DT < add_months(m.MONTH_START, 1)
       | THEN 1 ELSE 0 END) AS ACTIVE_ACCOUNTS
       |FROM months m CROSS JOIN accounts a
       |LEFT JOIN billed b ON b.CUSTOMER_ID = a.CUSTOMER_ID
