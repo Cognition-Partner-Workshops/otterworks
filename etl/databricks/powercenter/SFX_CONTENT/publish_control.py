@@ -13,6 +13,11 @@ FIELDS = ['first_failure', 'first_failure_statement_id', 'corrected_parity', 'pa
 
 def publish(pr):
     evidence = json.loads((ROOT / 'evidence.json').read_text())
+    board = evidence['rows']
+    if (len(board) != 5 or len({row['source'] for row in board}) != 5
+            or any(row['status'] not in ('green', 'red') for row in board)):
+        raise ValueError('Expected five unique mapping rows with green/red statuses')
+    expected_statuses = sorted(row['status'] for row in board)
     schema = rows(sql(f'DESCRIBE TABLE {TABLE}', 'SFX_CONTENT', 'control', 'control-schema'))
     existing = {r['col_name'] for r in schema}
     missing = [f for f in FIELDS if f not in existing]
@@ -50,7 +55,7 @@ def publish(pr):
     verify = sql(f'SELECT object_name,source_path,status,parity,pr FROM {TABLE} WHERE source_path IN ({paths})',
                  'SFX_CONTENT', 'control', 'verify-control')
     assert len(rows(verify)) == 5 and all(r['pr'] == pr for r in rows(verify))
-    assert sorted(r['status'] for r in rows(verify)) == ['green'] * 4 + ['red']
+    assert sorted(r['status'] for r in rows(verify)) == expected_statuses
     (EVIDENCE / 'control.json').write_text(json.dumps({'merge_statement_id': result['statement_id'],
         'verify_statement_id': verify['statement_id'], 'rows': rows(verify)}, indent=2))
     print(json.dumps({'merge_statement_id': result['statement_id'], 'verify_statement_id': verify['statement_id'],
