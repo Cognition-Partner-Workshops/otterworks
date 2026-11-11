@@ -11,7 +11,7 @@ import zlib
 
 from .compare import compare, status
 from .harness import COMMENT, DATABASE, connection, control_table, require_owner, tag, query_tag
-from .inventory import BOOTSTRAP, ESTATE, ROOT, inventory, target_relation
+from .inventory import BOOTSTRAP, ESTATE, ROOT, inventory, table_definitions, target_relation
 
 OUT = Path(__file__).parent / 'out'
 
@@ -133,7 +133,8 @@ def before(row):
                     count = cur.fetchone()[0]
                     if count != len(data):
                         raise RuntimeError('BEFORE upload rowcount mismatch')
-                save(row, dict(before_rows=count, rowcount_match=False, keyed_hash_match=False,
+                save(row, dict(source_types={identifier(c[0]): c[1] for c in cols},
+                               before_rows=count, rowcount_match=False, keyed_hash_match=False,
                                rerun_duplicates=None, parity_query_tag=None))
                 print(f"BEFORE {row['mapping']}: {count} rows -> {table}")
         finally:
@@ -144,6 +145,14 @@ def fetch(cur, table):
     cur.execute(f'SELECT * FROM {relation(table)}')
     columns = [c[0].upper() for c in cur.description]
     return columns, [dict(zip(columns, r)) for r in cur.fetchall()]
+
+
+def source_types(row, captured):
+    if 'source_types' in captured:
+        return captured['source_types']
+    definition = table_definitions()[target_relation(row['target_table'])]
+    return {identifier(name): dtype for name, dtype in re.findall(
+        r'^\s*(\w+)\s+([A-Za-z]+(?:\([^)]*\))?)', definition, re.M)}
 
 
 def parity(row, sample):
@@ -170,7 +179,8 @@ def parity(row, sample):
             save(row, dict(rowcount_match=False, keyed_hash_match=False, rerun_duplicates=None,
                            parity_error='Missing comparison/key columns'))
             raise SystemExit(f'Missing comparison/key columns: {sorted(missing)}')
-        result = compare(b, a, columns, keys, sample)
+        captured = json.loads((OUT / (row['mapping'] + '.json')).read_text())
+        result = compare(b, a, columns, keys, sample, types=source_types(row, captured))
         result['parity_query_tag'] = query_tag('parity', 'parity_parity', tag('parity', row['mapping']))
         result['parity_error'] = None
         result['rerun_duplicates'] = None
