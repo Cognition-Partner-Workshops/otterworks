@@ -16,6 +16,9 @@ services:
   broker:
     image: apache/activemq-artemis:2.40.0-alpine
     container_name: otterworks-tibco-${NS:?NS required}-broker
+    # The image copies etc-override only when it creates the instance; resync on every start.
+    entrypoint: [/bin/sh, -c, 'if [ -f etc/broker.xml ]; then cp etc-override/broker.xml etc/broker.xml; fi; exec /docker-run.sh "$$@"', docker-run]
+    command: [run]
     environment:
       ARTEMIS_USER: replay
       ARTEMIS_PASSWORD: ${TIBCO_LOCAL_PASSWORD:-integration-local-only}

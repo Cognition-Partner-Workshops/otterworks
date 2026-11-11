@@ -5,6 +5,8 @@ from pathlib import Path
 
 import paramiko
 
+from integration.fixture.reconcile import reconcile
+
 
 def prepare():
     for attempt in range(40):
@@ -38,3 +40,4 @@ def prepare():
 
 if __name__ == "__main__":
     prepare()
+    reconcile()

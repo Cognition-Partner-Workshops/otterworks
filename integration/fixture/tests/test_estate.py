@@ -5,8 +5,10 @@ from collections import Counter
 from pathlib import Path
 
 import pytest
+import yaml
 
 from integration.fixture.summary import summarize
+from integration.fixture.reconcile import reconcile
 from integration.fixture.smoke import create
 from integration.harness.faults import FaultHook
 from integration.harness.fingerprints import verify_lock
@@ -152,3 +154,36 @@ def test_topic_addresses_create_multicast_subscription_queues():
                for s in core.findall("a:address-settings/a:address-setting", ns)}
     assert topics
     assert {t: routing.get(t) for t in topics} == {t: "MULTICAST" for t in topics}
+
+
+def test_reconcile_converts_only_anycast_queues_and_routing_on_topics(capsys):
+    def queue(name, address, routing, count="0"):
+        return {"name": name, "address": address, "routingType": routing, "messageCount": count}
+    stat = [queue("replay-observer.replay-account-evidence", "HB.ACCOUNT.EVENTS", "ANYCAST", "3"),
+            queue("records-event-fanout", "HB.ACCOUNT.EVENTS.IN", "MULTICAST"),
+            queue("HB.UNDLV", "HB.UNDLV", "ANYCAST")]
+    calls = []
+
+    def run(container, *args):
+        calls.append(args)
+        if args[:2] == ("queue", "stat"):
+            return "Connection brokerURL = tcp://localhost:61616\n" + json.dumps({"data": stat})
+        if args[:2] == ("address", "show"):
+            types = "MULTICAST,ANYCAST" if args[3] == "HB.ACCOUNT.EVENTS" else "MULTICAST"
+            return f"Address [name={args[3]}, routingTypes={{{types}}}, autoCreated=false]"
+        return ""
+
+    assert reconcile("isolated-broker", run, ROOT / "integration/fixture/broker.xml") == (
+        ["replay-observer.replay-account-evidence"], ["HB.ACCOUNT.EVENTS"])
+    changes = [c for c in calls if c[1] == "update"]
+    assert changes == [("queue", "update", "--name", "replay-observer.replay-account-evidence",
+                        "--address", "HB.ACCOUNT.EVENTS", "--multicast", "--silent"),
+                       ("address", "update", "--name", "HB.ACCOUNT.EVENTS", "--multicast", "--no-anycast")]
+    assert "HB.UNDLV" not in {c[3] for c in calls if c[0] == "address"}
+    assert "3 messages kept" in capsys.readouterr().out
+
+
+def test_broker_resyncs_fixture_config_on_existing_volume():
+    broker = yaml.safe_load((ROOT / "docker-compose.tibco.yml").read_text())["services"]["broker"]
+    assert "cp etc-override/broker.xml etc/broker.xml" in broker["entrypoint"][2]
+    assert broker["command"] == ["run"]
