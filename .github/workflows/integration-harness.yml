@@ -1,0 +1,27 @@
+name: Integration replay harness
+
+on:
+  pull_request:
+    paths:
+      - "integration/harness/**"
+      - "integration/__init__.py"
+      - ".github/workflows/integration-harness.yml"
+  push:
+    paths:
+      - "integration/harness/**"
+      - "integration/__init__.py"
+      - ".github/workflows/integration-harness.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        with:
+          version: latest
+      - run: uv run --with ruff==0.9.10 ruff check integration/harness
+      - run: uv run --with pyyaml==6.0.2 --with pytest==8.3.5 python -m pytest integration/harness/tests
