@@ -1,0 +1,6 @@
+runtime:
+  output-queues:
+    alerts:
+      - HB.DISPUTE.RECEIVED
+      - HB.LARGE.TRANSACTION.ALERTED
+      - HB.LOW.BALANCE.ALERTED
