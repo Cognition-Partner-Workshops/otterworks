@@ -53,7 +53,8 @@ Full matrix and raw QIDs: `UNT10.md`. Bundles: UNT-10 `8342b607…` and addendum
 Per mapping, follow the owning UNT doc (UNT5–UNT9.md, EVIDENCE.md for UNT-3/4): dbt build with
 `--select` limited to that mapping's models, twice on unchanged input, then the parity comparison against
 the PowerCenter runner output in `PC_BEFORE`. Mark only with the shared command and the owner guard:
-`python -m parity mark <mapping> --owner migrations-page`. Never use the default owner, global setup/seed/load
+`python -m parity mark --folder <FOLDER> --mapping <MAPPING> --owner migrations-page --pr-url <PR>`
+(it reads the gitignored evidence JSON and updates one row only if FOLDER+MAPPING and owner match). Never use the default owner, global setup/seed/load
 or all-folder Make targets. Read-only checks:
 
 ```sh
