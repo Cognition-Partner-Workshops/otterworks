@@ -3,6 +3,7 @@ name: Stored procedure parity
 on:
   push:
     paths:
+      - ".github/workflows/procs-parity.yml"
       - "procs/**"
       - "services/legacy-billing/**"
       - "services/billing-service/**"
