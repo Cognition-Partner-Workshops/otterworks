@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Content Counts" inline='true' name='federated.c0aa81aced30ce98c5303b4ce744' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.cbea29d9c74bffcf77590c1b24ad'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.cbea29d9c74bffcf77590c1b24ad' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, tenant_name, document_count, file_count FROM mart.mart_tenant_usage_daily WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY tenant_name</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='integer' name='[document_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[file_count]' role='measure' type='quantitative' />
+</datasource>
+<datasource caption="Document Status" inline='true' name='federated.5eedfc7e39afda6d1874a6764654' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.1615f81af7ed2cb18b11e576acb4'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.1615f81af7ed2cb18b11e576acb4' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, workspace_id, status_label, document_count, word_count FROM fact.fact_document_status_daily WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY tenant_id, workspace_id, status_label</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[workspace_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[status_label]' role='dimension' type='nominal' />
+<column datatype='integer' name='[document_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[word_count]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Documents by Tenant">
+<table>
+<view>
+<datasources>
+<datasource caption="Content Counts" name='federated.c0aa81aced30ce98c5303b4ce744' />
+</datasources>
+<datasource-dependencies datasource='federated.c0aa81aced30ce98c5303b4ce744'>
+<column datatype='string' name='[tenant_name]' role='dimension' type='nominal' />
+<column datatype='integer' name='[document_count]' role='measure' type='quantitative' />
+<column-instance column='[tenant_name]' derivation='None' name='[none:tenant_name:nk]' pivot='key' type='nominal' />
+<column-instance column='[document_count]' derivation='Sum' name='[sum:document_count:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.c0aa81aced30ce98c5303b4ce744].[none:tenant_name:nk]" direction='DESC' using="[federated.c0aa81aced30ce98c5303b4ce744].[sum:document_count:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.c0aa81aced30ce98c5303b4ce744].[none:tenant_name:nk]</rows>
+<cols>[federated.c0aa81aced30ce98c5303b4ce744].[sum:document_count:qk]</cols>
+</table>
+<simple-id uuid='{D539D987-9BAB-5484-B607-C28F8BB77816}' />
+</worksheet>
+<worksheet name="Documents by Status">
+<table>
+<view>
+<datasources>
+<datasource caption="Document Status" name='federated.5eedfc7e39afda6d1874a6764654' />
+</datasources>
+<datasource-dependencies datasource='federated.5eedfc7e39afda6d1874a6764654'>
+<column datatype='string' name='[status_label]' role='dimension' type='nominal' />
+<column datatype='integer' name='[document_count]' role='measure' type='quantitative' />
+<column-instance column='[status_label]' derivation='None' name='[none:status_label:nk]' pivot='key' type='nominal' />
+<column-instance column='[document_count]' derivation='Sum' name='[sum:document_count:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.5eedfc7e39afda6d1874a6764654].[none:status_label:nk]" direction='DESC' using="[federated.5eedfc7e39afda6d1874a6764654].[sum:document_count:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.5eedfc7e39afda6d1874a6764654].[none:status_label:nk]</rows>
+<cols>[federated.5eedfc7e39afda6d1874a6764654].[sum:document_count:qk]</cols>
+</table>
+<simple-id uuid='{7047AFE5-5849-5BC1-94BC-2D91CCA2CC03}' />
+</worksheet>
+<worksheet name="Words by Status">
+<table>
+<view>
+<datasources>
+<datasource caption="Document Status" name='federated.5eedfc7e39afda6d1874a6764654' />
+</datasources>
+<datasource-dependencies datasource='federated.5eedfc7e39afda6d1874a6764654'>
+<column datatype='string' name='[status_label]' role='dimension' type='nominal' />
+<column datatype='integer' name='[word_count]' role='measure' type='quantitative' />
+<column-instance column='[status_label]' derivation='None' name='[none:status_label:nk]' pivot='key' type='nominal' />
+<column-instance column='[word_count]' derivation='Sum' name='[sum:word_count:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.5eedfc7e39afda6d1874a6764654].[none:status_label:nk]" direction='DESC' using="[federated.5eedfc7e39afda6d1874a6764654].[sum:word_count:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.5eedfc7e39afda6d1874a6764654].[none:status_label:nk]</rows>
+<cols>[federated.5eedfc7e39afda6d1874a6764654].[sum:word_count:qk]</cols>
+</table>
+<simple-id uuid='{E766B5E6-7C44-5EE6-8FC5-651B4DD6319D}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Content Inventory">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='33333' id='2' name="Documents by Tenant" w='100000' x='0' y='0' />
+<zone h='33333' id='3' name="Documents by Status" w='100000' x='0' y='33333' />
+<zone h='33333' id='4' name="Words by Status" w='100000' x='0' y='66666' />
+</zone>
+</zones>
+<simple-id uuid='{49940E05-D7C7-5EC8-BE07-7898F46ACC5B}' />
+</dashboard>
+</dashboards>
+</workbook>

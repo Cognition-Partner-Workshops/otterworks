@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Seat Headroom" inline='true' name='federated.bdcf43a91f6d24836c9c25bddeb3' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.2a0b85ccc1907fb68104b27f61dc'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.2a0b85ccc1907fb68104b27f61dc' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, plan_tier, seat_count, seat_limit, seat_limit - seat_count AS seat_headroom FROM fact.fact_seat_assignments WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY seat_headroom</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_limit]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_headroom]' role='measure' type='quantitative' />
+</datasource>
+<datasource caption="Seats Over Limit" inline='true' name='federated.467a3f1ace91448a3ba250a87746' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.e4eb98d0e24dd961baf7ef8fbf49'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.e4eb98d0e24dd961baf7ef8fbf49' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, plan_id, plan_tier, seat_count, seat_limit, over_limit FROM fact.fact_seat_assignments WHERE business_date = &lt;[Parameters].[Business Date]&gt; AND over_limit = 1 ORDER BY plan_tier, tenant_id</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_limit]' role='measure' type='quantitative' />
+<column datatype='integer' name='[over_limit]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Headroom by Tenant">
+<table>
+<view>
+<datasources>
+<datasource caption="Seat Headroom" name='federated.bdcf43a91f6d24836c9c25bddeb3' />
+</datasources>
+<datasource-dependencies datasource='federated.bdcf43a91f6d24836c9c25bddeb3'>
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='integer' name='[seat_headroom]' role='measure' type='quantitative' />
+<column-instance column='[tenant_id]' derivation='None' name='[none:tenant_id:nk]' pivot='key' type='nominal' />
+<column-instance column='[seat_headroom]' derivation='Sum' name='[sum:seat_headroom:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.bdcf43a91f6d24836c9c25bddeb3].[none:tenant_id:nk]" direction='DESC' using="[federated.bdcf43a91f6d24836c9c25bddeb3].[sum:seat_headroom:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.bdcf43a91f6d24836c9c25bddeb3].[none:tenant_id:nk]</rows>
+<cols>[federated.bdcf43a91f6d24836c9c25bddeb3].[sum:seat_headroom:qk]</cols>
+</table>
+<simple-id uuid='{E0F41569-BDB8-50D7-AC7D-20AB6865C6A7}' />
+</worksheet>
+<worksheet name="Tenants Over Limit">
+<table>
+<view>
+<datasources>
+<datasource caption="Seats Over Limit" name='federated.467a3f1ace91448a3ba250a87746' />
+</datasources>
+<datasource-dependencies datasource='federated.467a3f1ace91448a3ba250a87746'>
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[plan_tier]' role='dimension' type='nominal' />
+<column datatype='integer' name='[seat_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[seat_limit]' role='measure' type='quantitative' />
+<column-instance column='[tenant_id]' derivation='None' name='[none:tenant_id:nk]' pivot='key' type='nominal' />
+<column-instance column='[plan_tier]' derivation='None' name='[none:plan_tier:nk]' pivot='key' type='nominal' />
+<column-instance column='[seat_count]' derivation='Sum' name='[sum:seat_count:qk]' pivot='key' type='quantitative' />
+<column-instance column='[seat_limit]' derivation='Sum' name='[sum:seat_limit:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<filter class='categorical' column='[federated.467a3f1ace91448a3ba250a87746].[:Measure Names]'>
+<groupfilter function='union' user:op='manual'>
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.467a3f1ace91448a3ba250a87746].[sum:seat_count:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.467a3f1ace91448a3ba250a87746].[sum:seat_limit:qk]"' />
+</groupfilter>
+</filter>
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Text' />
+<encodings>
+<text column='[federated.467a3f1ace91448a3ba250a87746].[Multiple Values]' />
+</encodings>
+</pane>
+</panes>
+<rows>([federated.467a3f1ace91448a3ba250a87746].[none:tenant_id:nk] / [federated.467a3f1ace91448a3ba250a87746].[none:plan_tier:nk])</rows>
+<cols>[federated.467a3f1ace91448a3ba250a87746].[:Measure Names]</cols>
+</table>
+<simple-id uuid='{4622E3E1-0668-5521-86E8-F3779E3B1E25}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Seat Headroom">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='50000' id='2' name="Headroom by Tenant" w='100000' x='0' y='0' />
+<zone h='50000' id='3' name="Tenants Over Limit" w='100000' x='0' y='50000' />
+</zone>
+</zones>
+<simple-id uuid='{D7B844CB-57D1-5C9B-B8AB-19FC189C5ADE}' />
+</dashboard>
+</dashboards>
+</workbook>

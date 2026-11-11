@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Retention Candidates" inline='true' name='federated.a32ee119292782359399ecc7ff93' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.b4bd294027e6148d6513f7cc5cbd'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.b4bd294027e6148d6513f7cc5cbd' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, resource_type, resource_id, retention_action, days_since_update FROM fact.fact_retention_actions WHERE business_date = &lt;[Parameters].[Business Date]&gt; ORDER BY days_since_update DESC</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_type]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[retention_action]' role='dimension' type='nominal' />
+<column datatype='integer' name='[days_since_update]' role='measure' type='quantitative' />
+</datasource>
+<datasource caption="Purge Candidates" inline='true' name='federated.b49d8196b949d58f3ea4fa33b5f5' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.d6771cbc16f479703d90cf38dc14'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.d6771cbc16f479703d90cf38dc14' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, resource_type, resource_id, retention_action, days_since_update FROM fact.fact_retention_actions WHERE business_date = &lt;[Parameters].[Business Date]&gt; AND retention_action = 'purge' ORDER BY days_since_update DESC</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_type]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_id]' role='dimension' type='nominal' />
+<column datatype='string' name='[retention_action]' role='dimension' type='nominal' />
+<column datatype='integer' name='[days_since_update]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Candidates by Action">
+<table>
+<view>
+<datasources>
+<datasource caption="Retention Candidates" name='federated.a32ee119292782359399ecc7ff93' />
+</datasources>
+<datasource-dependencies datasource='federated.a32ee119292782359399ecc7ff93'>
+<column datatype='string' name='[retention_action]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_id]' role='dimension' type='nominal' />
+<column-instance column='[retention_action]' derivation='None' name='[none:retention_action:nk]' pivot='key' type='nominal' />
+<column-instance column='[resource_id]' derivation='Count' name='[cnt:resource_id:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.a32ee119292782359399ecc7ff93].[none:retention_action:nk]" direction='DESC' using="[federated.a32ee119292782359399ecc7ff93].[cnt:resource_id:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.a32ee119292782359399ecc7ff93].[none:retention_action:nk]</rows>
+<cols>[federated.a32ee119292782359399ecc7ff93].[cnt:resource_id:qk]</cols>
+</table>
+<simple-id uuid='{92344B13-2568-5207-B641-1BB0E92C95E9}' />
+</worksheet>
+<worksheet name="Purge Candidates by Type">
+<table>
+<view>
+<datasources>
+<datasource caption="Purge Candidates" name='federated.b49d8196b949d58f3ea4fa33b5f5' />
+</datasources>
+<datasource-dependencies datasource='federated.b49d8196b949d58f3ea4fa33b5f5'>
+<column datatype='string' name='[resource_type]' role='dimension' type='nominal' />
+<column datatype='string' name='[resource_id]' role='dimension' type='nominal' />
+<column-instance column='[resource_type]' derivation='None' name='[none:resource_type:nk]' pivot='key' type='nominal' />
+<column-instance column='[resource_id]' derivation='Count' name='[cnt:resource_id:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.b49d8196b949d58f3ea4fa33b5f5].[none:resource_type:nk]" direction='DESC' using="[federated.b49d8196b949d58f3ea4fa33b5f5].[cnt:resource_id:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.b49d8196b949d58f3ea4fa33b5f5].[none:resource_type:nk]</rows>
+<cols>[federated.b49d8196b949d58f3ea4fa33b5f5].[cnt:resource_id:qk]</cols>
+</table>
+<simple-id uuid='{A2507165-F2BB-5352-9E28-47D02A6C84BD}' />
+</worksheet>
+<worksheet name="Average Age by Action">
+<table>
+<view>
+<datasources>
+<datasource caption="Retention Candidates" name='federated.a32ee119292782359399ecc7ff93' />
+</datasources>
+<datasource-dependencies datasource='federated.a32ee119292782359399ecc7ff93'>
+<column datatype='string' name='[retention_action]' role='dimension' type='nominal' />
+<column datatype='integer' name='[days_since_update]' role='measure' type='quantitative' />
+<column-instance column='[retention_action]' derivation='None' name='[none:retention_action:nk]' pivot='key' type='nominal' />
+<column-instance column='[days_since_update]' derivation='Avg' name='[avg:days_since_update:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.a32ee119292782359399ecc7ff93].[none:retention_action:nk]" direction='DESC' using="[federated.a32ee119292782359399ecc7ff93].[avg:days_since_update:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.a32ee119292782359399ecc7ff93].[none:retention_action:nk]</rows>
+<cols>[federated.a32ee119292782359399ecc7ff93].[avg:days_since_update:qk]</cols>
+</table>
+<simple-id uuid='{6C6637ED-DF45-59D4-996E-B215C9A15C48}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Retention Candidates">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='33333' id='2' name="Candidates by Action" w='100000' x='0' y='0' />
+<zone h='33333' id='3' name="Purge Candidates by Type" w='100000' x='0' y='33333' />
+<zone h='33333' id='4' name="Average Age by Action" w='100000' x='0' y='66666' />
+</zone>
+</zones>
+<simple-id uuid='{9B023ABC-E893-50C6-BBF4-147AEAB02192}' />
+</dashboard>
+</dashboards>
+</workbook>

@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<workbook original-version='18.1' source-build='2023.3.0 (20233.23.1017.0948)' source-platform='win' version='18.1' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<preferences>
+<preference name='ui.encoding.shelf.height' value='24' />
+</preferences>
+<datasources>
+<datasource hasconnection='false' inline='true' name='Parameters' version='18.1'>
+<aliases enabled='yes' />
+<column caption='Business Date' datatype='date' name='[Business Date]' param-domain-type='any' role='measure' type='quantitative' value='#2026-09-15#'>
+<calculation class='tableau' formula='#2026-09-15#' />
+</column>
+<column caption='Plan Tier' datatype='string' name='[Plan Tier]' param-domain-type='list' role='measure' type='nominal' value='&quot;growth&quot;'>
+<calculation class='tableau' formula='&quot;growth&quot;' />
+<members>
+<member value='&quot;starter&quot;' />
+<member value='&quot;growth&quot;' />
+<member value='&quot;scale&quot;' />
+</members>
+</column>
+</datasource>
+<datasource caption="Invoice Totals" inline='true' name='federated.88ee7ab23d96dbd253b5d9fe158a' version='18.1'>
+<connection class='federated'>
+<named-connections>
+<named-connection caption='127.0.0.1' name='sqlserver.f861d9eadbbd09e57fb2087ee731'>
+<connection authentication='sqlserver' class='sqlserver' dbname='OtterWorksUBW' odbc-native-protocol='' one-time-sql='' port='14333' server='127.0.0.1' username='sa' />
+</named-connection>
+</named-connections>
+<relation connection='sqlserver.f861d9eadbbd09e57fb2087ee731' name='Custom SQL Query' type='text'>SELECT business_date, tenant_id, SUM(amount_cents) AS amount_cents, COUNT(DISTINCT invoice_id) AS invoice_count FROM fact.fact_invoice_lines WHERE business_date = &lt;[Parameters].[Business Date]&gt; GROUP BY business_date, tenant_id ORDER BY amount_cents DESC</relation>
+</connection>
+<aliases enabled='yes' />
+<column datatype='date' name='[business_date]' role='dimension' type='ordinal' />
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='integer' name='[amount_cents]' role='measure' type='quantitative' />
+<column datatype='integer' name='[invoice_count]' role='measure' type='quantitative' />
+</datasource>
+</datasources>
+<worksheets>
+<worksheet name="Billed Amount by Tenant">
+<table>
+<view>
+<datasources>
+<datasource caption="Invoice Totals" name='federated.88ee7ab23d96dbd253b5d9fe158a' />
+</datasources>
+<datasource-dependencies datasource='federated.88ee7ab23d96dbd253b5d9fe158a'>
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='integer' name='[amount_cents]' role='measure' type='quantitative' />
+<column-instance column='[tenant_id]' derivation='None' name='[none:tenant_id:nk]' pivot='key' type='nominal' />
+<column-instance column='[amount_cents]' derivation='Sum' name='[sum:amount_cents:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<sort class='computed' column="[federated.88ee7ab23d96dbd253b5d9fe158a].[none:tenant_id:nk]" direction='DESC' using="[federated.88ee7ab23d96dbd253b5d9fe158a].[sum:amount_cents:qk]" />
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Bar' />
+</pane>
+</panes>
+<rows>[federated.88ee7ab23d96dbd253b5d9fe158a].[none:tenant_id:nk]</rows>
+<cols>[federated.88ee7ab23d96dbd253b5d9fe158a].[sum:amount_cents:qk]</cols>
+</table>
+<simple-id uuid='{00573186-8DB4-58B7-977A-C20F3BB55633}' />
+</worksheet>
+<worksheet name="Invoices per Tenant">
+<table>
+<view>
+<datasources>
+<datasource caption="Invoice Totals" name='federated.88ee7ab23d96dbd253b5d9fe158a' />
+</datasources>
+<datasource-dependencies datasource='federated.88ee7ab23d96dbd253b5d9fe158a'>
+<column datatype='string' name='[tenant_id]' role='dimension' type='nominal' />
+<column datatype='integer' name='[invoice_count]' role='measure' type='quantitative' />
+<column datatype='integer' name='[amount_cents]' role='measure' type='quantitative' />
+<column-instance column='[tenant_id]' derivation='None' name='[none:tenant_id:nk]' pivot='key' type='nominal' />
+<column-instance column='[invoice_count]' derivation='Sum' name='[sum:invoice_count:qk]' pivot='key' type='quantitative' />
+<column-instance column='[amount_cents]' derivation='Sum' name='[sum:amount_cents:qk]' pivot='key' type='quantitative' />
+</datasource-dependencies>
+<filter class='categorical' column='[federated.88ee7ab23d96dbd253b5d9fe158a].[:Measure Names]'>
+<groupfilter function='union' user:op='manual'>
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.88ee7ab23d96dbd253b5d9fe158a].[sum:invoice_count:qk]"' />
+<groupfilter function='member' level='[:Measure Names]' member='"[federated.88ee7ab23d96dbd253b5d9fe158a].[sum:amount_cents:qk]"' />
+</groupfilter>
+</filter>
+<aggregation value='true' />
+</view>
+<style />
+<panes>
+<pane selection-relaxation-option='selection-relaxation-allow'>
+<view>
+<breakdown value='auto' />
+</view>
+<mark class='Text' />
+<encodings>
+<text column='[federated.88ee7ab23d96dbd253b5d9fe158a].[Multiple Values]' />
+</encodings>
+</pane>
+</panes>
+<rows>[federated.88ee7ab23d96dbd253b5d9fe158a].[none:tenant_id:nk]</rows>
+<cols>[federated.88ee7ab23d96dbd253b5d9fe158a].[:Measure Names]</cols>
+</table>
+<simple-id uuid='{56053EBB-8A8F-596E-A491-6CCA28B29766}' />
+</worksheet>
+</worksheets>
+<dashboards>
+<dashboard name="Invoice Totals by Tenant">
+<style />
+<size maxheight='900' maxwidth='1200' minheight='900' minwidth='1200' />
+<zones>
+<zone h='100000' id='1' type-v2='layout-basic' w='100000' x='0' y='0'>
+<zone h='50000' id='2' name="Billed Amount by Tenant" w='100000' x='0' y='0' />
+<zone h='50000' id='3' name="Invoices per Tenant" w='100000' x='0' y='50000' />
+</zone>
+</zones>
+<simple-id uuid='{BB7B4373-41DA-5DEE-B75C-4190FEE32E19}' />
+</dashboard>
+</dashboards>
+</workbook>
