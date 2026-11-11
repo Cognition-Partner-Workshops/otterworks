@@ -30,11 +30,13 @@ class AdminAuthorization
     'StorageQuota' => 'quotas'
   }.freeze
 
+  AUTH_SERVICE_ROLES = { 'owner' => 'super_admin' }.freeze
+
   def self.role_from(payload)
     claims = []
     claims << payload['role'] if payload['role'].is_a?(String)
     claims.concat(payload['roles']) if payload['roles'].is_a?(Array)
-    roles = claims.grep(String).map(&:downcase)
+    roles = claims.grep(String).map(&:downcase).map { |role| AUTH_SERVICE_ROLES.fetch(role, role) }
     AdminUser::ROLES.find { |role| roles.include?(role) }
   end
 

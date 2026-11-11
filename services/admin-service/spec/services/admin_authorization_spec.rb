@@ -7,8 +7,14 @@ RSpec.describe AdminAuthorization do
       expect(described_class.role_from('role' => 'ADMIN', 'roles' => %w[SUPER_ADMIN VIEWER])).to eq('super_admin')
     end
 
+    it 'maps the auth-service OWNER role to super_admin' do
+      expect(described_class.role_from('roles' => %w[OWNER])).to eq('super_admin')
+      expect(described_class.role_from('role' => 'owner')).to eq('super_admin')
+      expect(described_class.role_from('roles' => %w[OWNER ADMIN])).to eq('super_admin')
+    end
+
     it 'denies unknown, missing and malformed role claims' do
-      [{}, { 'role' => 'owner' }, { 'roles' => 'SUPER_ADMIN' },
+      [{}, { 'role' => 'member' }, { 'roles' => 'SUPER_ADMIN' }, { 'roles' => 'OWNER' },
        { 'role' => ['super_admin'], 'roles' => [nil, 1, 'USER'] }].each do |payload|
         expect(described_class.role_from(payload)).to be_nil
       end
