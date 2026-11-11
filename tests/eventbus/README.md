@@ -11,6 +11,15 @@ side by side. Each publisher picks a transport with `EVENT_TRANSPORT`
 | `dual` | publish to SNS and EventBridge |
 | `eventbridge` | publish to EventBridge only |
 
+The EventBridge rules deliver to the same consumer queues the SNS topic
+feeds, so `dual` delivers every event twice to a queue that is subscribed to
+both. Locally that is all four queues; on AWS it is analytics, whose SNS
+subscription is unfiltered. Use `dual` only to check the bus against probe
+queues. To cut over a publisher, switch it from `sns` to `eventbridge`, and
+switch it back to roll back. document-service publishes only when
+`DOC_SVC_SNS_ENABLED=true`, whatever the transport; `deploy-dev.sh` sets it
+when `EVENT_TRANSPORT` is given.
+
 On EventBridge, `source` is `otterworks.<service>`, `detail-type` is the event
 type, and `detail` is the same JSON body the publisher sends to SNS. Consumers
 (search, notification, audit, analytics) unwrap the EventBridge envelope as
@@ -94,3 +103,11 @@ Evidence is in `evidence/`. `before` is `main` with the original LocalStack setu
   domain events carry neither the camelCase fields nor `userId/resourceId`, so
   analytics now receives the events but does not record them. That needs a
   mapping decision.
+- notification-service decodes camelCase fields (`eventType`, `fileId`, ...).
+  document-service's `comment_added` is snake_case with a nested `payload`, so
+  it fails to decode over SNS today and over EventBridge alike.
+- audit-service records document events and file events other than
+  `file_shared` with type `unknown` and empty resource IDs. The behaviour is
+  the same over SNS and EventBridge.
+- search-service stays `SQS_ENABLED=false` in `deploy-dev.sh` as on `main`.
+  Its queue URL is now wired, so turning indexing on is a single flag.
