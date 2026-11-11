@@ -6,7 +6,8 @@ import hashlib
 import json
 import re
 import subprocess
-import xml.etree.ElementTree as ET
+# Entity declarations are rejected by parse_xml; ElementTree never loads external DTDs.
+import xml.etree.ElementTree as ET  # nosemgrep: python.lang.security.use-defused-xml.use-defused-xml
 from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -28,6 +29,12 @@ def read(path):
     if SPARK_REF and path.startswith('etl/spark/'):
         return git('show', f'{SPARK_REF}:{path}')
     return (ROOT / path).read_text()
+
+
+def parse_xml(text):
+    if re.search(r'<!\s*ENTITY\b', text, re.I):
+        raise ValueError('XML entity declarations are not permitted')
+    return ET.fromstring(text)
 
 
 def spark_files():
@@ -100,7 +107,7 @@ def code_readers(names):
         text = re.sub(r'/\*.*?\*/|<!--.*?-->|--[^\n]*|#[^\n]*', '', text, flags=re.S)
         reads = set(re.findall(r'\b(?:FROM|JOIN|CALL|EXEC(?:UTE)?)\s+(' + OBJECT.replace(r'\b', '') + ')', text, re.I))
         if path.endswith('.XML'):
-            tree = ET.fromstring(read(path))
+            tree = parse_xml(read(path))
             reads.update(e.attrib['OWNERNAME'] + '.' + e.attrib['NAME'] for e in tree.iter('SOURCE') if e.attrib.get('DATABASETYPE') == 'Teradata')
             for e in tree.iter('TABLEATTRIBUTE'):
                 if e.attrib.get('NAME') in ('Lookup table name', 'Lookup Sql Override', 'Sql Query'):
@@ -292,7 +299,7 @@ def build():
             for i, match in enumerate(matches):
                 add(path, match[2].upper(), match[1].lower(), text[match.start():matches[i + 1].start() if i + 1 < len(matches) else len(text)])
         elif path.endswith('.XML'):
-            tree = ET.fromstring(text)
+            tree = parse_xml(text)
             tags = ('MAPPING',) if '/mappings/' in path else ('SESSION', 'WORKFLOW')
             for tag in tags:
                 for element in tree.iter(tag):

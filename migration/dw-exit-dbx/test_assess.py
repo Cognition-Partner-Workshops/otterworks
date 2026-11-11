@@ -12,6 +12,26 @@ import load_control
 
 
 class AssessmentHelpers(unittest.TestCase):
+    def test_xml_parsing(self):
+        text = '<!DOCTYPE POWERMART SYSTEM "powrmart.dtd"><POWERMART><SOURCE NAME="EXAMPLE"/></POWERMART>'
+        self.assertEqual(assess.parse_xml(text).find('SOURCE').attrib['NAME'], 'EXAMPLE')
+        with self.assertRaises(assess.ET.ParseError):
+            assess.parse_xml('')
+        with self.assertRaisesRegex(ValueError, 'entity declarations'):
+            assess.parse_xml('<!DOCTYPE root [<!ENTITY example "value">]><root>&example;</root>')
+        with self.assertRaises(assess.ET.ParseError):
+            assess.parse_xml('<root>')
+
+    def test_sql_tag_and_bound_values(self):
+        cursor = MagicMock()
+        values = ["example'); DROP TABLE example; --"]
+        load_control.execute(cursor, 'check', 'SELECT ?', values)
+        cursor.execute.assert_called_once_with('/* run=dbx-d1111 act=assess step=check */ SELECT ?', values)
+        for step in ('', 'check */ DELETE FROM example; /*'):
+            with self.assertRaises(ValueError):
+                load_control.execute(cursor, step, 'SELECT 1')
+        self.assertEqual(cursor.execute.call_count, 1)
+
     def test_loc(self):
         self.assertEqual(loc('-- comment\nSELECT 1;\n/* block\ncomment */\n'), 1)
 

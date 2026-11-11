@@ -1,5 +1,6 @@
 """Scoped, tagged Databricks SQL control-table loader."""
 import os
+import re
 from pathlib import Path
 
 import yaml
@@ -20,7 +21,10 @@ def connect():
 
 
 def execute(cursor, step, statement, parameters=None):
-    cursor.execute(f'/* run=dbx-d1111 act=assess step={step} */ ' + statement, parameters)
+    if not re.fullmatch(r'[a-z_]+', step):
+        raise ValueError('SQL step must contain only lowercase letters and underscores')
+    # Statements contain code-owned SQL/identifiers; manifest values stay bound parameters.
+    cursor.execute(f'/* run=dbx-d1111 act=assess step={step} */ ' + statement, parameters)  # nosemgrep: python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
     print(f'SQL step={step} statement_id={getattr(cursor, "query_id", None) or "unavailable"}')
     return cursor
 
