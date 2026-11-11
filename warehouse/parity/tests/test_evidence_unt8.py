@@ -1,6 +1,7 @@
 from collections import Counter
 from datetime import date
 import importlib.util
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -101,8 +102,21 @@ def test_generated_unicode_is_reproducible():
     actual = (u.ROOT / 'warehouse/dbt/macros/unt8_python_unicode.sql').read_text()
     recorded_version = re.search(r'; Unicode ([0-9.]+)\. #}', actual.splitlines()[0]).group(1)
     if unicodedata.unidata_version != recorded_version:
-        pytest.skip(f'Committed macro uses Unicode {recorded_version}; runtime uses Unicode {unicodedata.unidata_version}')
-    assert actual == module.macro()
+        interpreter = os.environ.get('UNT8_UNICODE_PYTHON')
+        assert interpreter, (
+            f'Committed macro uses Unicode {recorded_version}; runtime uses Unicode '
+            f'{unicodedata.unidata_version}; set UNT8_UNICODE_PYTHON to a matching interpreter')
+        version = subprocess.check_output(
+            [interpreter, '-c', 'import unicodedata; print(unicodedata.unidata_version)'], text=True).strip()
+        assert version == recorded_version, (
+            f'UNT8_UNICODE_PYTHON uses Unicode {version}; committed macro requires {recorded_version}')
+        generated = subprocess.check_output([
+            interpreter, '-c',
+            'import runpy, sys; sys.stdout.buffer.write(runpy.run_path(sys.argv[1])["macro"]().encode("utf-8"))',
+            str(u.FIXTURES / 'generate_unicode.py')])
+        assert (u.ROOT / 'warehouse/dbt/macros/unt8_python_unicode.sql').read_bytes() == generated
+    else:
+        assert actual == module.macro()
     assert 'chr(28)' in actual and 'chr(133)' in actual and 'chr(12288)' in actual
     assert '"\\u00df":"SS"' in actual
 

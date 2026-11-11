@@ -154,9 +154,15 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           fetch-depth: 0
+      - name: Fetch parity sibling reference
+        run: git fetch origin refs/heads/devin/sfx-d1110-act3-content:refs/remotes/origin/devin/sfx-d1110-act3-content
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: |
+            3.10
+            ${{ matrix.python-version }}
+      - name: Select provenance Unicode interpreter
+        run: echo "UNT8_UNICODE_PYTHON=$(command -v python3.10)" >> "$GITHUB_ENV"
       - run: make sfx-snowflake-test SFX_PYTHON=python
       - run: make sfx-pc-test SFX_PYTHON=python
 
