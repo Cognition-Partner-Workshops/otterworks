@@ -2,7 +2,7 @@
   "job": "file_object_binary_extract",
   "language": "python",
   "target": "spark_standard_template",
-  "status": "legacy",
+  "status": "template",
   "schedule": "26 3 * * *",
   "profile": "small"
 }
