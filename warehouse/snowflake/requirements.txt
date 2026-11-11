@@ -10,4 +10,5 @@ cryptography==44.0.3
 snowflake-snowpark-python==1.27.0
 prometheus_client==0.21.1
 psycopg[binary]==3.2.12
+sqlglot==28.0.0
 defusedxml==0.7.1
