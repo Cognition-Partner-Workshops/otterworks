@@ -1,0 +1,9 @@
+{
+  "pr": 2770,
+  "job": "doc_share_graph_reach",
+  "file": "etl/databricks/spark/doc_share_graph_reach/parity.sql",
+  "table": "cpw.dbx_d1111_after.documents__spark_doc_share_graph_reach",
+  "statement": "/* run=dbx-d1111 act=spark step=idempotence consumer=doc_share_graph_reach */\nDESCRIBE HISTORY cpw.dbx_d1111_after.documents__spark_doc_share_graph_reach LIMIT 2;",
+  "statement_id": "01f1dd8d-ab0c-1956-92f2-2b218cabef64",
+  "state": "SUCCEEDED"
+}

@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=team_graph_components */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Landing users/TEAM_MEMBER (TEAM_MEMBER_ID, TEAM_ID, USER_ID, ROLE) from the live baseline.
 -- ROLE <- role_cd (CHAR(12) in warehouse/teradata/ddl/users/00_tables.sql, trailing pad trimmed). joined_dt has no landing column.

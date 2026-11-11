@@ -1,0 +1,9 @@
+{
+  "pr": 2770,
+  "job": "collab_session_sessionize",
+  "file": "etl/databricks/spark/collab_session_sessionize/parity.sql",
+  "table": "cpw.dbx_d1111_after.documents__spark_collab_session_sessionize",
+  "statement": "/* run=dbx-d1111 act=spark step=idempotence consumer=collab_session_sessionize */\nDESCRIBE HISTORY cpw.dbx_d1111_after.documents__spark_collab_session_sessionize LIMIT 2;",
+  "statement_id": "01f1dd8d-a9b2-17a7-8022-05cb6328c115",
+  "state": "SUCCEEDED"
+}

@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=doc_share_graph_reach */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Landing documents/DOC_SHARE (DOC_SHARE_ID, DOCUMENT_ID, OWNER_USER_ID, SHARED_WITH_USER_ID, PERMISSION).
 -- Live documents__doc_share has no owner column (first failing result). OWNER_USER_ID is resolved through

@@ -1,3 +1,4 @@
+/* run=dbx-d1111 act=spark step=inputs consumer=collab_session_sessionize */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Landing documents/COLLAB_SESSION (COLLAB_SESSION_ID, DOCUMENT_ID, USER_ID, SESSION_ID, EVENT_AT).
 -- COLLAB_SESSION_ID <- session_id (UNIQUE PRIMARY INDEX, one row per event); EVENT_AT <- start_ts.
