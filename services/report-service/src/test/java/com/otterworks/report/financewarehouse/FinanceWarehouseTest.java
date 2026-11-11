@@ -56,6 +56,23 @@ public class FinanceWarehouseTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    public void databricksPathBindsPeriodAndAsOfDate() {
+        JdbcTemplate jdbc = mock(JdbcTemplate.class);
+        java.sql.Date asOf = java.sql.Date.valueOf("2026-11-09");
+        when(jdbc.queryForObject(eq(DatabricksReadPath.tagged(DatabricksFinanceWarehouse.SQL)), any(RowMapper.class),
+                eq(202601), eq(202601), eq(202601), eq(202601)))
+                .thenReturn(new FinanceReconciliation(202601, BigDecimal.ONE, BigDecimal.ZERO, BigDecimal.ZERO));
+        when(jdbc.query(eq(DatabricksReadPath.tagged(DatabricksFinanceWarehouse.UNRECONCILED_SQL)),
+                any(RowMapper.class), eq(asOf), eq(asOf), eq(202601))).thenReturn(Collections.emptyList());
+        FinanceReconciliation result = new DatabricksFinanceWarehouse(jdbc,
+                () -> java.time.LocalDate.of(2026, 11, 9)).reconcile(202601);
+        assertEquals(BigDecimal.ONE, result.variance);
+        assertEquals(0, result.unreconciledInvoices.size());
+        org.junit.Assert.assertFalse(DatabricksFinanceWarehouse.UNRECONCILED_SQL.contains("CURRENT_DATE"));
+    }
+
+    @Test
     public void endpointReturnsReportAndEmptyPeriod() throws Exception {
         MockMvc mvc = mvc(period -> new FinanceReconciliation(period,
                 new BigDecimal("0.00"), new BigDecimal("0.00"), new BigDecimal("0.00")));

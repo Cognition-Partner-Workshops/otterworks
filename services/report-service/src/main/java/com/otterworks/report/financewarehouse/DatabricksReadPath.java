@@ -24,7 +24,14 @@ public final class DatabricksReadPath {
     }
 
     public static String tagged(String nativeSql) {
-        return "/* run=dbx-d1111 act=consumers step=contract consumer=report-service */\n" + nativeSql;
+        return tagged("contract", nativeSql);
+    }
+
+    public static String tagged(String step, String nativeSql) {
+        if (!step.matches("[a-z0-9-]+")) {
+            throw new IllegalArgumentException("Invalid step tag");
+        }
+        return "/* run=dbx-d1111 act=consumers step=" + step + " consumer=report-service */\n" + nativeSql;
     }
 
     private static String required(String key) {
