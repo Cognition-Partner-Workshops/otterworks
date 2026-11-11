@@ -138,6 +138,7 @@ class Job(Runner):
         by_key = {r["lookup_key"]: r for r in history if r.get("lookup_key")}
         rows = []
         evidence = []
+        resolved = {}
         for task_key, output in outputs.items():
             file_output = output.get("sql_output", {}).get("file_output", {})
             sql = statements(file_output.get("query_text", ""))
@@ -150,32 +151,44 @@ class Job(Runner):
                     raise ValueError("Invalid statement header: " + task_key)
                 result = executed[index] if index < len(executed) else {}
                 query = by_key.get(result.get("lookup_key"))
+                executed_id = result.get("statement_id") or result.get("query_id") or result.get("lookup_key")
                 item = {"task_key": task_key, "sql": text, "lookup_key": result.get("lookup_key"),
-                        "statement_id": query["query_id"] if query else None,
+                        "statement_id": query["query_id"] if query else executed_id,
                         "state": "PENDING", "query_history": "available" if query else "missing"}
                 evidence.append(item)
+                purpose = f"job {run['run_id']} {task_key}"
                 if query is None:
+                    if executed_id:
+                        rows.append(["job-run", match[1], purpose, executed_id, "PENDING"])
                     continue
+                if executed_id:
+                    resolved[executed_id] = query["query_id"]
                 if not query["query_text"].startswith(match[0]):
                     raise ValueError("Query history header mismatch: " + task_key)
                 state = {"FINISHED": "SUCCEEDED", "FAILED": "FAILED", "CANCELED": "CANCELED"}.get(query["status"])
                 if state is None:
+                    rows.append(["job-run", match[1], purpose, query["query_id"], "PENDING"])
                     continue
                 item["state"] = state
                 rows.append(["job-run", match[1], f"job {run['run_id']} {task_key}", query["query_id"], state])
         (self.output / (str(run["run_id"]) + "-statements.json")).write_text(json.dumps(evidence, indent=2))
         if not evidence:
             raise ValueError("No SQL statements found")
-        prior = set()
+        fields = ["step", "consumer", "purpose", "statement_id", "state"]
+        prior = {}
         if self.ledger.exists():
             with self.ledger.open() as f:
-                prior = {r["statement_id"] for r in csv.DictReader(f, delimiter="\t")}
-        new = not self.ledger.exists()
-        with self.ledger.open("a", newline="") as f:
+                prior = {r["statement_id"]: [r[field] for field in fields] for r in csv.DictReader(f, delimiter="\t")}
+        for executed_id, statement_id in resolved.items():
+            if executed_id != statement_id and executed_id in prior and prior[executed_id][4] == "PENDING":
+                del prior[executed_id]
+        for row in rows:
+            if row[4] != "PENDING" or row[3] not in prior:
+                prior[row[3]] = row
+        with self.ledger.open("w", newline="") as f:
             writer = csv.writer(f, delimiter="\t", lineterminator="\n")
-            if new:
-                writer.writerow(["step", "consumer", "purpose", "statement_id", "state"])
-            writer.writerows(r for r in rows if r[3] not in prior)
+            writer.writerow(fields)
+            writer.writerows(prior.values())
         print("Recorded", len(rows), "Job SQL statement IDs for run", run["run_id"], flush=True)
 
 

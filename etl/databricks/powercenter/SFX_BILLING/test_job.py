@@ -110,6 +110,14 @@ class JobTests(unittest.TestCase):
             pending = json.loads((path / "1-statements.json").read_text())
             self.assertEqual(pending[0]["state"], "PENDING")
             self.assertEqual(pending[0]["query_history"], "missing")
+            self.assertEqual(pending[0]["statement_id"], "opaque")
+            with (path / "ledger.tsv").open() as f:
+                pending_rows = list(csv.DictReader(f, delimiter="\t"))
+            self.assertEqual([(r["statement_id"], r["state"]) for r in pending_rows], [("opaque", "PENDING")])
+            with patch.object(job, "api", return_value={"res": []}):
+                job.record_statements(run)
+            with (path / "ledger.tsv").open() as f:
+                self.assertEqual(len(list(csv.DictReader(f, delimiter="\t"))), 1)
             output["s_PAYMENT"]["sql_output"]["file_output"]["sql_statements"] = []
             (path / "1-outputs.json").write_text(json.dumps(output))
             with patch.object(job, "api", return_value={"res": []}):
@@ -126,6 +134,7 @@ class JobTests(unittest.TestCase):
                 rows = list(csv.DictReader(f, delimiter="\t"))
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["state"], "SUCCEEDED")
+            self.assertEqual(rows[0]["statement_id"], "statement-id")
             history["res"][0].update(query_id="failed-id", status="FAILED")
             with patch.object(job, "api", return_value=history):
                 job.record_statements(run)
