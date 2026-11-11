@@ -15,6 +15,32 @@ object BatchSupport {
     }
   }
 
+  private def quote(name: String): String = "\"" + name.replace("\"", "\"\"") + "\""
+
+  private def targetColumns(connection: java.sql.Connection, table: String): Seq[String] = {
+    val query = connection.prepareStatement(
+      "SELECT attname FROM pg_attribute WHERE attrelid = CAST(? AS regclass) AND attnum > 0 " +
+        "AND NOT attisdropped ORDER BY attnum")
+    try {
+      query.setString(1, table)
+      val rows = query.executeQuery()
+      val names = scala.collection.mutable.ArrayBuffer.empty[String]
+      while (rows.next()) names += rows.getString(1)
+      names.toList
+    } finally query.close()
+  }
+
+  def refreshColumns(source: Seq[String], target: Seq[String]): Seq[(String, String)] = {
+    val folded = target.groupBy(_.toLowerCase)
+    source.map { column =>
+      if (target.contains(column)) (column, column)
+      else folded.getOrElse(column.toLowerCase, Nil) match {
+        case Seq(name) => (name, column)
+        case _ => throw new IllegalArgumentException(s"Target has no unique column for $column")
+      }
+    }
+  }
+
   def saveJdbcRefresh(frame: DataFrame, table: String): Unit = {
     require(table.matches("[a-zA-Z_][a-zA-Z_0-9]*\\.[a-zA-Z_][a-zA-Z_0-9]*"), "Expected schema.table identifier")
     val url = sys.env.getOrElse("TD_JDBC_URL", "jdbc:postgresql://sfx-tdemu:5432/sfx_teradata")
@@ -33,9 +59,11 @@ object BatchSupport {
       statement.execute(s"LOCK TABLE $table IN ACCESS EXCLUSIVE MODE")
       // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
       statement.executeUpdate(s"DELETE FROM $table")
-      val columns = frame.columns.map(column => "\"" + column.replace("\"", "\"\"") + "\"").mkString(", ")
+      val pairs = refreshColumns(frame.columns.toSeq, targetColumns(connection, table))
+      val targets = pairs.map(pair => quote(pair._1)).mkString(", ")
+      val sources = pairs.map(pair => quote(pair._2)).mkString(", ")
       // nosemgrep: scala.lang.security.audit.tainted-sql-string.tainted-sql-string
-      statement.executeUpdate(s"INSERT INTO $table ($columns) SELECT $columns FROM $stage")
+      statement.executeUpdate(s"INSERT INTO $table ($targets) SELECT $sources FROM $stage")
       connection.commit()
     } catch {
       case error: Exception => connection.rollback(); throw error
