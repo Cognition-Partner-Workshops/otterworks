@@ -1,8 +1,10 @@
 {
   "job": "audit_archive_resort",
   "language": "python",
-  "target": "snowpark_python",
-  "status": "legacy",
+  "target": "dbt",
+  "status": "snowflake",
   "schedule": "27 3 * * *",
-  "profile": "small"
+  "profile": "small",
+  "ingest": ["audit.AUDIT_EVENT_ARCHIVE"],
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job audit_archive_resort --select path:models/spark/audit_archive_resort"
 }
