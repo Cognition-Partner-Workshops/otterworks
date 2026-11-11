@@ -7,6 +7,7 @@ from datetime import date, timedelta
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import random
 import sys
@@ -214,6 +215,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--rows", type=int, default=200000)
     parser.add_argument("--seed", type=int, default=1110)
-    parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[1] / ".data" / "landing")
+    parser.add_argument("--output", type=Path, default=Path(os.environ.get("LANDING_DIR", Path(__file__).resolve().parents[1] / ".data" / os.environ.get("NS", "sfx-d1110-before") / "landing")))
     args = parser.parse_args()
     generate(args.output, args.rows, args.seed)
