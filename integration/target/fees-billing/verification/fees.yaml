@@ -1,0 +1,24 @@
+version: 1
+package: fees
+module: fees-billing
+flows:
+  - id: fees-billing.fee-reversal
+    status: matched-required
+    evidence:
+      - Processes/fees-billing/fee-reversal.bwp:14 JMSQueueReceiver HB.FEE.REVERSAL; AUTO_COMMIT insert at line 24; persistent publish at line 29.
+  - id: fees-billing.fee-posting
+    status: held
+    evidence:
+      - Processes/fees-billing/fee-posting.bwp:24 bw.http.SendHTTPRequest ${billing.url} before AUTO_COMMIT insert at line 29; downstream HTTP contract missing; human declined invented fixture/response.
+  - id: fees-billing.daily-fee
+    status: held
+    evidence:
+      - Processes/fees-billing/daily-fee.bwp:14 bw.jms.Timer without schedule; no deployed producer on HB.DAILY.FEES proven; record.py synthesized inputs are not runtime entry proof.
+  - id: fees-billing.month-end-summary
+    status: held
+    evidence:
+      - Processes/fees-billing/month-end-summary.bwp:14 bw.internal.start with zero callers; fixture test_profile_difference_and_orphan is not runtime entry proof.
+      - 'Future rounding amber: input 2.345 gives XSLT 2.35 versus JAVA 2.34; month-end-summary cases 01 versus 02 amount; fee-rounding.xsl and FeeActivities.roundHalfEven remain unchanged.'
+faults:
+  definitions: supplemental.yaml
+  lock: sha256.json

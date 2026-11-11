@@ -1,0 +1,4 @@
+runtime:
+  output-queues:
+    fees:
+      - HB.FEE.REVERSED
