@@ -2,7 +2,8 @@
   "job": "billing_usage_append_daily",
   "language": "python",
   "target": "dbt",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "3 1 * * *",
-  "profile": "small"
+  "profile": "small",
+  "command": "warehouse/.venv/bin/python warehouse/snowflake/run_dbt.py build --job billing_usage_append_daily --select path:models/spark/billing_usage_append_daily"
 }

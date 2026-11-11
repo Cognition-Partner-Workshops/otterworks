@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: billing_usage_append_daily
+    description: >-
+      Latest-date usage retained across days with rerun-safe replacement by usage date.
+      Replaces lake parquet billing/billing_usage_append_daily and JDBC
+      sfx_billing.SPARK_USAGE_DAILY.
+    columns:
+      - name: USAGE_ID
+        tests:
+          - unique
+          - not_null
+      - name: USAGE_DATE
+        tests:
+          - not_null
