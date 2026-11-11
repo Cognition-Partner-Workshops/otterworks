@@ -2,7 +2,9 @@
   "job": "docs_tag_normalize",
   "language": "python",
   "target": "snowpark_python",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "14 2 * * *",
-  "profile": "small"
+  "profile": "small",
+  "ingest": ["documents.DOC_TAG"],
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job docs_tag_normalize"
 }
