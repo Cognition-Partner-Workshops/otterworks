@@ -45,7 +45,7 @@ class ReturnsQueueContractTest {
     }
 
     private void assertRejectedUnchanged(Queue queue) throws Exception {
-        var publisher = new ReturnsPublisher(factory, OUTPUT);
+        var publisher = new ReturnsPublisher(factory, OUTPUT, 2_000);
         try {
             assertThatThrownBy(publisher::connect).isInstanceOf(IllegalStateException.class)
                 .hasMessage(OUTPUT + " must be durable, non-auto-delete and ANYCAST");
@@ -66,6 +66,58 @@ class ReturnsQueueContractTest {
     }
 
     @Test
+    void existingAutoDeleteQueueWithConsumerFailsReadinessUnchanged() throws Exception {
+        var queue = broker.createQueue(QueueConfiguration.of(NAME).setRoutingType(RoutingType.ANYCAST)
+            .setDurable(true).setAutoCreated(true).setAutoDelete(true).setAutoDeleteDelay(0L));
+        sendExisting("pre-existing");
+        try (var connection = factory.createConnection(); var session = connection.createSession();
+             var observer = session.createConsumer(session.createQueue(OUTPUT))) {
+            assertRejectedUnchanged(queue);
+            assertThat(queue.getConsumerCount()).isEqualTo(1);
+        }
+    }
+
+    @Test
+    void emptyAbandonedAutoDeleteQueueIsReapedByBrokerThenDeclaredDurable() throws Exception {
+        var queue = broker.createQueue(QueueConfiguration.of(NAME).setRoutingType(RoutingType.ANYCAST)
+            .setDurable(true).setAutoCreated(true).setAutoDelete(true).setAutoDeleteDelay(500L));
+        try (var connection = factory.createConnection(); var session = connection.createSession()) {
+            session.createConsumer(session.createQueue(OUTPUT)).close();
+        }
+        assertThat(broker.locateQueue(NAME)).isSameAs(queue);
+        assertThat(queue.isAutoDelete()).isTrue();
+        var publisher = new ReturnsPublisher(factory, OUTPUT, 5_000);
+        try {
+            publisher.connect();
+        } finally {
+            publisher.close();
+        }
+        var declared = broker.locateQueue(NAME);
+        assertThat(declared).isNotSameAs(queue);
+        assertThat(declared.isDurable()).isTrue();
+        assertThat(declared.isAutoDelete()).isFalse();
+        assertThat(declared.getRoutingType()).isEqualTo(RoutingType.ANYCAST);
+    }
+
+    @Test
+    void emptyAutoDeleteQueueNotReapedWithinTimeoutFailsReadinessUnchanged() throws Exception {
+        var queue = broker.createQueue(QueueConfiguration.of(NAME).setRoutingType(RoutingType.ANYCAST)
+            .setDurable(true).setAutoCreated(true).setAutoDelete(true).setAutoDeleteDelay(60_000L));
+        try (var connection = factory.createConnection(); var session = connection.createSession()) {
+            session.createConsumer(session.createQueue(OUTPUT)).close();
+        }
+        var publisher = new ReturnsPublisher(factory, OUTPUT, 500);
+        try {
+            assertThatThrownBy(publisher::connect).isInstanceOf(IllegalStateException.class)
+                .hasMessage(OUTPUT + " must be durable, non-auto-delete and ANYCAST");
+        } finally {
+            publisher.close();
+        }
+        assertThat(broker.locateQueue(NAME)).isSameAs(queue);
+        assertThat(queue.isAutoDelete()).isTrue();
+    }
+
+    @Test
     void existingNonDurableQueueFailsReadinessWithoutDroppingMessages() throws Exception {
         var queue = broker.createQueue(QueueConfiguration.of(NAME).setRoutingType(RoutingType.ANYCAST)
             .setDurable(false).setAutoDelete(false));
@@ -79,7 +131,7 @@ class ReturnsQueueContractTest {
         var queue = broker.createQueue(QueueConfiguration.of(NAME).setRoutingType(RoutingType.ANYCAST)
             .setDurable(true).setAutoCreated(false).setAutoDelete(false));
         sendExisting("pre-existing");
-        var publisher = new ReturnsPublisher(factory, OUTPUT);
+        var publisher = new ReturnsPublisher(factory, OUTPUT, 2_000);
         try {
             assertThat(publisher.connect().isClosed()).isFalse();
         } finally {
@@ -91,7 +143,7 @@ class ReturnsQueueContractTest {
 
     @Test
     void absentQueueIsDeclaredDurableNonAutoDeleteAnycast() throws Exception {
-        var publisher = new ReturnsPublisher(factory, OUTPUT);
+        var publisher = new ReturnsPublisher(factory, OUTPUT, 2_000);
         try {
             publisher.connect();
         } finally {

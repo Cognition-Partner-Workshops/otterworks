@@ -30,8 +30,10 @@ public class ReturnsConfiguration {
     ReturnsPublisher returnsPublisher(@Value("${spring.artemis.broker-url}") String brokerUrl,
                                       @Value("${spring.artemis.user:}") String user,
                                       @Value("${spring.artemis.password:}") String password,
-                                      @Value("${payments.returns.output-queue}") String outputQueue) {
-        return new ReturnsPublisher(new ActiveMQConnectionFactory(brokerUrl, user, password), outputQueue);
+                                      @Value("${payments.returns.output-queue}") String outputQueue,
+                                      @Value("${payments.returns.output-queue-ready-timeout-ms}") long readyTimeoutMs) {
+        return new ReturnsPublisher(new ActiveMQConnectionFactory(brokerUrl, user, password), outputQueue,
+            readyTimeoutMs);
     }
 
     /** Holds the consumer factory without exposing a second ConnectionFactory bean to the module. */
