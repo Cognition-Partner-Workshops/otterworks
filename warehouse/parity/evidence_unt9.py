@@ -4,14 +4,16 @@ import csv
 from datetime import datetime, timezone
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
 import sys
 import uuid
 
-from .evidence import BOOTSTRAP, ESTATE, OUT, dump, full_compare, sha, snapshot
-from .evidence_unt3 import load
+from .evidence import BOOTSTRAP, ESTATE, OUT, cell, dump, full_compare, sha, snapshot
+from .evidence_live import fetched
+from .evidence_unt3 import control_snapshot, load, queries, target_state
 from .inventory import ROOT
 
 DEST = OUT / 'unt9'
@@ -143,11 +145,220 @@ def oracle():
         raise ValueError('Oracle does not match the accepted UNT-2 workflow oracle')
 
 
+
+WRITE_TYPES = ('SELECT', 'SHOW', 'DESCRIBE', 'USE', 'ALTER_SESSION', 'BEGIN_TRANSACTION', 'COMMIT', 'ROLLBACK')
+TASK_PREFIX = 'SFX_D1110_PC_AUDIT_'
+
+
+def controls(q, path):
+    result = control_snapshot(q, path)
+    if result['row_count'] != 20:
+        raise ValueError('Expected 20 control rows')
+    dump(path / 'control_sha256.json', result)
+    return result
+
+
+def protected(q, path):
+    _, relations = q.run("SELECT TABLE_SCHEMA,TABLE_NAME FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES "
+                         "WHERE TABLE_SCHEMA IN ('PC_CONTENT','PC_AUDIT','PC_BILLING') "
+                         "OR (STARTSWITH(TABLE_SCHEMA,'PC_FX_') AND TABLE_SCHEMA<>'" + SCHEMA + "') "
+                         "OR TABLE_SCHEMA LIKE '%FIXTURE%' "
+                         "OR (TABLE_SCHEMA IN ('PC_SRC','PC_BEFORE') AND TABLE_NAME IN "
+                         "('AUDIT_EVENT','SECURITY_ALERT','STG_AUDIT_EVENT','AUDIT_DAILY_SUMMARY','AUDIT_EVENT_ARCHIVE'))")
+    values = {}
+    for schema, name in sorted(relations):
+        if not (schema + name).replace('_', '').isalnum():
+            raise ValueError('Unsafe protected identifier')
+        relation = 'SFX_D1110_AFTER.' + schema + '.' + name
+        columns, rows = q.run('SELECT * FROM ' + relation)
+        _, types = q.run('DESCRIBE TABLE ' + relation)
+        values[relation] = {'columns': columns, 'types': [[cell(v) for v in r] for r in types],
+                            'rows': sorted([[cell(v) for v in r] for r in rows], key=json.dumps)}
+    names, meta = q.run("SELECT TABLE_SCHEMA,TABLE_NAME,TABLE_TYPE,ROW_COUNT,BYTES,LAST_ALTERED "
+                        "FROM SFX_D1110_AFTER.INFORMATION_SCHEMA.TABLES "
+                        "WHERE TABLE_SCHEMA IN ('PC_SRC','PC_BEFORE','MIGRATION_CONTROL') ORDER BY 1,2")
+    metadata = [dict(zip(names, [cell(v) for v in r])) for r in meta]
+    dump(path / 'protected.json', values)
+    dump(path / 'protected_metadata.json', metadata)
+    result = {'sha256': sha(path / 'protected.json'), 'metadata_sha256': sha(path / 'protected_metadata.json'),
+              'relations': list(values)}
+    dump(path / 'protected_sha256.json', result)
+    return result
+
+
+def isolation(q):
+    _, schemas = q.run(f"SHOW SCHEMAS LIKE '{SCHEMA}' IN DATABASE SFX_D1110_AFTER")
+    names, tasks = q.run(f"SHOW TASKS LIKE '{TASK_PREFIX}%' IN DATABASE SFX_D1110_AFTER")
+    return {'schema_exists': bool(schemas), 'tasks': [dict(zip(names, [cell(v) for v in r])) for r in tasks],
+            'show_tasks_qid': q.records[-1]['qid']}
+
+
+def sources(q, path):
+    """Identity/read-order preconditions: frozen PC_SRC rows match the landing files key-for-key."""
+    result = {}
+    for name, key in (('AUDIT_EVENT', 'EVENT_ID'), ('SECURITY_ALERT', 'ALERT_ID')):
+        columns, rows = q.run(f'SELECT * FROM SFX_D1110_AFTER.PC_SRC.{name}')
+        landing = ESTATE / 'tests/fixture/landing/audit' / name / '20261109.psv'
+        expected = sorted(int(line.split('|')[0]) for line in landing.read_text().splitlines())
+        actual = sorted(int(r[columns.index(key)]) for r in rows)
+        result[name] = {'rows': len(rows), 'qid': q.records[-1]['qid'], 'keys_match_landing': actual == expected,
+                        'distinct_keys': len(set(actual)) == len(actual)}
+        dump(path / f'source_{name}.json', {'columns': columns,
+                                             'rows': sorted([[cell(v) for v in r] for r in rows], key=json.dumps)})
+    if not all(v['keys_match_landing'] and v['distinct_keys'] for v in result.values()):
+        raise ValueError('PC_SRC does not match the frozen landing keys')
+    return result
+
+
+def preflight():
+    path = DEST / 'preflight'
+    fresh(path)
+    with queries(path, 'unt9-preflight') as q:
+        state = {'control': controls(q, path), 'protected': protected(q, path), 'sources': sources(q, path),
+                 'isolation': isolation(q)}
+    dump(path / 'summary.json', state)
+    print(json.dumps({k: state[k] for k in ('control', 'sources', 'isolation')}, indent=2))
+    if state['isolation']['schema_exists'] or state['isolation']['tasks']:
+        raise ValueError('Isolated workflow schema or audit tasks already exist')
+
+
+def targets(q, template):
+    return {s: fetched(q, f'{FQ_SCHEMA}.{t[2]}', template[s]) for s, t in TARGETS.items()}
+
+
+def history(q, start, path):
+    names, rows = q.run(
+        "SELECT QUERY_ID,QUERY_TEXT,QUERY_TYPE,QUERY_TAG,START_TIME,END_TIME,EXECUTION_STATUS,ROWS_INSERTED,"
+        "ROWS_UPDATED,ROWS_DELETED,SESSION_ID FROM TABLE(SFX_D1110_AFTER.INFORMATION_SCHEMA.QUERY_HISTORY_BY_USER("
+        f"USER_NAME=>CURRENT_USER(), END_TIME_RANGE_START=>TO_TIMESTAMP_LTZ('{start}'), RESULT_LIMIT=>10000)) "
+        "ORDER BY START_TIME")
+    dump(path / 'query_history.json', {'columns': names, 'rows': [[cell(v) for v in r] for r in rows],
+                                        'qid': q.records[-1]['qid']})
+    return rows
+
+
+def write_scope(rows):
+    writes, failed, unparsed = [], [], []
+    for row in rows:
+        if row[6] != 'SUCCESS':
+            failed.append(row)
+            continue
+        if row[2] in WRITE_TYPES:
+            continue
+        sql = re.sub(r'/\*.*?\*/', ' ', row[1] or '', flags=re.S).replace('"', '')
+        sql = ' '.join(sql.split()).upper()
+        if re.match(r'^(USE |ALTER SESSION |BEGIN|COMMIT|ROLLBACK|SELECT |SHOW |DESCRIBE |WITH )', sql):
+            continue
+        match = re.match(r'(?:MERGE INTO|INSERT INTO|UPDATE|DELETE FROM|COMMENT ON (?:TABLE|VIEW)|'
+                         r'(?:CREATE(?: OR REPLACE)?(?: TEMPORARY| TEMP| TRANSIENT)?|ALTER|DROP) (?:TABLE|VIEW|SCHEMA))'
+                         r'\s+(?:IF (?:NOT )?EXISTS\s+)?([A-Z0-9_.]+)', sql)
+        if not match:
+            unparsed.append(row)
+            continue
+        relation = match.group(1)
+        writes.append({'qid': row[0], 'relation': relation,
+                       'allowed': relation == FQ_SCHEMA or relation.startswith(FQ_SCHEMA + '.')})
+    return {'writes': writes, 'failed_statements': [[cell(v) for v in r] for r in failed],
+            'unparsed_successful_statements': [[cell(v) for v in r] for r in unparsed],
+            'passed': not unparsed and all(r['allowed'] for r in writes),
+            'limitation': 'Current-user unfiltered history since run start; not an account-wide audit'}
+
+
+def replay(number):
+    """One unchanged-input dbt workflow run into the isolated schema: no reset, no --full-refresh."""
+    path = DEST / 'dbt' / f'run{number}'
+    previous = DEST / 'dbt' / f'run{number - 1}'
+    if number == 2 and not (previous / 'execution.json').exists():
+        raise ValueError('run1 must complete first')
+    fresh(path)
+    template = load(DEST / 'oracle/run1/targets.json')
+    with queries(path / 'pre', f'unt9-run{number}-pre') as q:
+        before = {'isolation': isolation(q),
+                  'targets': {s: target_state(q, f'{FQ_SCHEMA}.{t[2]}') for s, t in TARGETS.items()}}
+        _, now = q.run('SELECT CURRENT_TIMESTAMP()::VARCHAR')
+        start = now[0][0]
+    dump(path / 'pre/state.json', before)
+    command = [sys.executable, '-m', 'parity.workflow', '--schema', SCHEMA, '--step', f'unt9-run{number}',
+               '--out', str(path / 'sessions')]
+    result = subprocess.run(command, cwd=ROOT / 'warehouse', capture_output=True, text=True)
+    (path / 'stdout_stderr.log').write_text(result.stdout + result.stderr)
+    dump(path / 'execution.json', {'argv': command, 'returncode': result.returncode, 'history_start': start,
+                                   'end_utc': utc()})
+    with queries(path / 'post', f'unt9-run{number}-post') as q:
+        after = {'targets': {s: target_state(q, f'{FQ_SCHEMA}.{t[2]}') for s, t in TARGETS.items()}}
+        dump(path / 'post/state.json', after)
+        dump(path / 'targets.json', targets(q, template))
+        dump(path / 'write_scope.json', write_scope(history(q, start, path)))
+    print(json.dumps({'returncode': result.returncode, 'write_scope_passed': load(path / 'write_scope.json')['passed'],
+                      'rows': {s: len(v['rows']) for s, v in load(path / 'targets.json').items()}}, indent=2))
+    if result.returncode:
+        raise ValueError('dbt workflow run failed')
+
+
+def session_status(path):
+    result = load(path / 'sessions/workflow_result.json')
+    return result
+
+
+def compare():
+    path = DEST / 'compare'
+    fresh(path)
+    oracle1 = load(DEST / 'oracle/run1/targets.json')
+    oracle2 = load(DEST / 'oracle/run2/targets.json')
+    runs = {n: load(DEST / f'dbt/run{n}/targets.json') for n in (1, 2)}
+    tables = {}
+    for session, (mapping, _, _, keys) in TARGETS.items():
+        checks = {'oracle_dbt_run1': full_compare(oracle1[session], runs[1][session], keys),
+                  'dbt_run1_run2': full_compare(runs[1][session], runs[2][session], keys),
+                  'oracle_run2_dbt_run2': full_compare(oracle2[session], runs[2][session], keys)}
+        dump(path / f'{mapping}.json', checks)
+        tables[session] = {
+            'first_load_parity': checks['oracle_dbt_run1']['equal'],
+            'replay_stable': checks['dbt_run1_run2']['equal'],
+            'rows': [checks['oracle_dbt_run1']['before_rows'], runs[1][session] and len(runs[1][session]['rows']),
+                     len(runs[2][session]['rows'])],
+            'duplicate_keys_run1': len(checks['oracle_dbt_run1']['duplicate_keys_after']),
+            'duplicate_keys_run2': len(checks['dbt_run1_run2']['duplicate_keys_after']),
+            'legacy_run2_equal_dbt_run2': checks['oracle_run2_dbt_run2']['equal'],
+            'legacy_run2_rows': len(oracle2[session]['rows'])}
+    oracle_sessions = {r['SESSION_INSTANCE_NAME']: r for r in load(DEST / 'oracle/run1/session_results.json')}
+    dbt_sessions = {n: load(DEST / f'dbt/run{n}/sessions/workflow_result.json') for n in (1, 2)}
+    alert_source = load(DEST / 'preflight/source_SECURITY_ALERT.json')
+    severity = alert_source['columns'].index('SEVERITY_CD')
+    key = alert_source['columns'].index('ALERT_ID')
+    written = {r[0][1] for r in runs[2]['s_m_SFX_SECURITY_ALERT']['rows']}
+    unrouted = [r for r in alert_source['rows'] if r[key][1] not in written]
+    rejects = {'oracle_failed_rows': int(oracle_sessions['s_m_SFX_SECURITY_ALERT']['FAILED_ROWS']),
+               'oracle_bad_lines': sum(len(v) for v in load(DEST / 'oracle/run1/rejects.json').values()),
+               'dbt_unwritten_source_rows': len(unrouted),
+               'dbt_unwritten_severities': sorted({r[severity][1] for r in unrouted})}
+    scopes = {n: load(DEST / f'dbt/run{n}/write_scope.json')['passed'] for n in (1, 2)}
+    summary = {'tables': tables, 'rejects': rejects, 'write_scope_passed': scopes,
+               'oracle_sessions': {k: [v['RUN_STATUS'], v['SUCCESSFUL_ROWS'], v['FAILED_ROWS']]
+                                   for k, v in oracle_sessions.items()},
+               'dbt_sessions': {n: v['sessions'] for n, v in dbt_sessions.items()},
+               'summary_replay_contract': 'd-summary-replay: first-load legacy parity plus approved idempotent '
+                                          'replay; legacy second run appends and is not claimed',
+               'archive': 'excluded: disabled in the canonical PowerCenter workflow, so daily enablement is not '
+                          'authorized'}
+    passed = (all(t['first_load_parity'] and t['replay_stable'] and not t['duplicate_keys_run1']
+                  and not t['duplicate_keys_run2'] for t in tables.values())
+              and rejects['oracle_failed_rows'] == rejects['dbt_unwritten_source_rows'] == 3
+              and all(scopes.values())
+              and all(v['status'] == 'SUCCEEDED' for v in dbt_sessions.values()))
+    summary['passed'] = passed
+    dump(path / 'summary.json', summary)
+    print(json.dumps(summary, indent=2))
+    if not passed:
+        raise ValueError('Workflow parity/replay gate failed')
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('step', choices=['oracle'])
+    parser.add_argument('step', choices=['oracle', 'preflight', 'run1', 'run2', 'compare'])
     args = parser.parse_args(argv)
-    {'oracle': oracle}[args.step]()
+    {'oracle': oracle, 'preflight': preflight, 'run1': lambda: replay(1), 'run2': lambda: replay(2),
+     'compare': compare}[args.step]()
 
 
 if __name__ == '__main__':
