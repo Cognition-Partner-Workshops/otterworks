@@ -6,6 +6,9 @@ warehouse/exports/
 Thumbs.db
 
 # IDEs
+etl/spark/.data/
+etl/spark/.cache/
+
 .idea/
 .vscode/
 *.swp
