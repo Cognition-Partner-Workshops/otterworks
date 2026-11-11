@@ -5,5 +5,6 @@
   "status": "snowflake",
   "schedule": "29 3 * * *",
   "profile": "small",
+  "ingest": ["audit.COMPLIANCE_FLAG"],
   "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job compliance_flag_rules"
 }
