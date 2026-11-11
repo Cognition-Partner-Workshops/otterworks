@@ -1,0 +1,19 @@
+{
+  "name": "dbx-d1111-content-daily",
+  "description": "run_token=dbx-d1111 expires=2026-11-24 act=scale; reserved ROLE_GRANT success remains an external dependency",
+  "max_concurrent_runs": 1,
+  "tags": {"run_token": "dbx-d1111", "expires": "2026-11-24", "act": "scale"},
+  "parameters": [
+    {"name": "run_token", "default": "dbx-d1111"},
+    {"name": "expires", "default": "2026-11-24"},
+    {"name": "act", "default": "scale"}
+  ],
+  "tasks": [
+    {"task_key": "s_m_SFX_STG_APP_USER", "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"source": "WORKSPACE", "path": "/Shared/dbx-d1111-expires-2026-11-24/SFX_CONTENT/m_SFX_STG_APP_USER.sql"}}},
+    {"task_key": "s_m_SFX_APP_USER", "depends_on": [{"task_key": "s_m_SFX_STG_APP_USER"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"source": "WORKSPACE", "path": "/Shared/dbx-d1111-expires-2026-11-24/SFX_CONTENT/m_SFX_APP_USER.sql"}}},
+    {"task_key": "s_m_SFX_STG_DOCUMENT", "depends_on": [{"task_key": "s_m_SFX_APP_USER"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"source": "WORKSPACE", "path": "/Shared/dbx-d1111-expires-2026-11-24/SFX_CONTENT/m_SFX_STG_DOCUMENT.sql"}}},
+    {"task_key": "s_m_SFX_DOCUMENT", "depends_on": [{"task_key": "s_m_SFX_STG_DOCUMENT"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"source": "WORKSPACE", "path": "/Shared/dbx-d1111-expires-2026-11-24/SFX_CONTENT/m_SFX_DOCUMENT.sql"}}},
+    {"task_key": "reserved_role_grant_dependency", "depends_on": [{"task_key": "s_m_SFX_APP_USER"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"source": "WORKSPACE", "path": "/Shared/dbx-d1111-expires-2026-11-24/SFX_CONTENT/reserved_role_grant_dependency.sql"}}},
+    {"task_key": "s_m_SFX_DOC_SHARE", "depends_on": [{"task_key": "s_m_SFX_DOCUMENT"}, {"task_key": "reserved_role_grant_dependency"}], "run_if": "ALL_SUCCESS", "sql_task": {"warehouse_id": "${DATABRICKS_WAREHOUSE_ID}", "file": {"source": "WORKSPACE", "path": "/Shared/dbx-d1111-expires-2026-11-24/SFX_CONTENT/m_SFX_DOC_SHARE.sql"}}}
+  ]
+}
