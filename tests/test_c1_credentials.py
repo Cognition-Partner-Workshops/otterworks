@@ -33,3 +33,22 @@ def test_local_env_creation_and_no_overwrite(tmp_path):
     with pytest.raises(RuntimeError, match="already exists"):
         module.initialize(path)
     assert path.read_text() == content
+
+
+def test_compose_services_use_generated_database_password():
+    import yaml
+    compose = yaml.safe_load((ROOT / "docker-compose.yml").read_text())
+    fields = {
+        "auth-service": "SPRING_DATASOURCE_PASSWORD",
+        "admin-service": "DATABASE_PASSWORD",
+        "report-service": "DB_PASSWORD",
+    }
+    for service, field in fields.items():
+        assert compose["services"][service]["environment"][field].startswith("${DB_PASSWORD:?")
+
+
+@pytest.mark.parametrize("target", ["seed", "procs-record"])
+def test_host_recipes_load_generated_env(target, tmp_path):
+    import subprocess
+    out = subprocess.run(["make", "-n", "-C", str(ROOT), target, "NS=t"], capture_output=True, text=True).stdout
+    assert "set -a; [ ! -f .env ] || . ./.env; set +a;" in out
