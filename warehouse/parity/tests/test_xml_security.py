@@ -52,6 +52,8 @@ def test_normal_exports_and_external_doctype_still_work(exports):
     doctype = '<!DOCTYPE POWERMART SYSTEM "file:///nonexistent/pmrep.dtd">'
     for path in (workflow, mapping):
         path.write_text(doctype + path.read_text())
-    rows = inventory_module.inventory(repository=root / "repository")
+    overrides = root / "overrides"
+    overrides.mkdir()
+    rows = inventory_module.inventory(repository=root / "repository", overrides=overrides)
     assert [row["mapping"] for row in rows] == ["m_demo"]
     assert inventory_module.landing_sources() == {"payment": ("billing", "billing/payment/20261109.psv")}
