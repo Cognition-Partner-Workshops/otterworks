@@ -17,7 +17,18 @@ class SchemaDrift(ValueError):
 
 
 def read_rows(path):
-    return [json.loads(line) for line in Path(path).read_text().splitlines() if line.strip()]
+    rows = []
+    for index, line in enumerate(Path(path).read_text().splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            raise SchemaDrift(f"line {index}: invalid JSON") from None
+        if not isinstance(row, dict):
+            raise SchemaDrift(f"line {index}: record must be an object")
+        rows.append(row)
+    return rows
 
 
 def validate(rows, schema):

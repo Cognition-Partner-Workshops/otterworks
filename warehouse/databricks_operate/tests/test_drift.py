@@ -1,5 +1,7 @@
 from copy import deepcopy
 import json
+import subprocess
+import sys
 
 import pytest
 
@@ -37,3 +39,15 @@ def test_duplicate_and_cent_changes_fail():
 def test_seed_refuses_source_fixture():
     with pytest.raises(ValueError, match="outside"):
         seed(ROOT / "landing/invoices.jsonl")
+
+
+@pytest.mark.parametrize("record", ['{"amount":', 'null', '[]'])
+def test_invalid_record_emits_alert(tmp_path, record):
+    landing = tmp_path / "bad.jsonl"
+    landing.write_text(record + "\n")
+    result = subprocess.run([sys.executable, "-m", "warehouse.databricks_operate.drift",
+                             "event", "--landing", str(landing)], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    event = json.loads(result.stdout)
+    assert event["status"] == "firing"
+    assert event["alerts"][0]["labels"]["alertname"] == "LandingSchemaDrift"
