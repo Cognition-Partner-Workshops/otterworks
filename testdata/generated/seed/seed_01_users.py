@@ -1,6 +1,7 @@
 """Seed module 01: Auth service users (250 engineers)."""
 
 import random
+import secrets
 from datetime import timedelta
 
 from helpers import (
@@ -96,7 +97,7 @@ def seed(cur, ns: str) -> int:
     """Insert 250 auth users. Returns row count."""
     rng = random.Random(42)
 
-    pw_hash = hash_password("seed-password")
+    pw_hash = hash_password(secrets.token_urlsafe(32))
     ref_now = now()
 
     columns = [
@@ -127,7 +128,9 @@ def seed(cur, ns: str) -> int:
         mfa_enabled = rng.random() < 0.15
         mfa_secret = None
         if mfa_enabled:
-            mfa_secret = "".join(rng.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", k=32))
+            # Preserve the seeded stream for subsequent synthetic fields.
+            rng.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", k=32)
+            mfa_secret = "".join(secrets.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567") for _ in range(32))
 
         # created_at spread over last 365 days
         created_at = ref_now - timedelta(days=rng.uniform(1, 365))

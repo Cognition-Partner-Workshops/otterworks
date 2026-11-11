@@ -1,5 +1,6 @@
 """Seed module 04: Refresh tokens for auth users."""
 import random
+import secrets
 from datetime import timedelta
 
 from helpers import (
@@ -35,7 +36,9 @@ def seed(cur, ns: str) -> int:
         user_id = AUTH_USER_IDS[user_idx]
         for _ in range(count):
             row_id = stable_id("refresh-token", idx)
-            token_id = f"rt_{rng.getrandbits(128):032x}"
+            # Preserve the seeded stream for subsequent synthetic fields.
+            rng.getrandbits(128)
+            token_id = f"rt_{secrets.token_hex(16)}"
 
             created_days_ago = rng.uniform(0, 90)
             created_at = current - timedelta(days=created_days_ago)
@@ -68,5 +71,6 @@ def seed(cur, ns: str) -> int:
 
     return bulk_insert(
         cur, "refresh_tokens", columns, rows,
-        on_conflict="(token_id) DO NOTHING",
+        # No conflict target: a reseed keeps existing rows on either the stable id or token_id.
+        on_conflict="DO NOTHING",
     )
