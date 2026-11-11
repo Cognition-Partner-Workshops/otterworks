@@ -141,3 +141,14 @@ def test_summary_accepts_exact_red_baseline(tmp_path, capsys):
                                              "replayed": 2, "differing": 2} for n in range(24)]}))
     summarize(report, expect_empty=True)
     assert "24 flows; 0 matched; 24 differing; 0 errors" in capsys.readouterr().out
+
+
+def test_topic_addresses_create_multicast_subscription_queues():
+    ns = {"a": "urn:activemq:core"}
+    core = ET.parse(ROOT / "integration/fixture/broker.xml").getroot().find("a:core", ns)
+    topics = {a.get("name") for a in core.findall("a:addresses/a:address", ns)
+              if a.find("a:multicast", ns) is not None and a.find("a:anycast", ns) is None}
+    routing = {s.get("match"): s.findtext("a:default-queue-routing-type", namespaces=ns)
+               for s in core.findall("a:address-settings/a:address-setting", ns)}
+    assert topics
+    assert {t: routing.get(t) for t in topics} == {t: "MULTICAST" for t in topics}
