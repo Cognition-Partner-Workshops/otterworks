@@ -170,3 +170,30 @@ resource "aws_s3_bucket_policy" "audit_archive_tls" {
     }]
   })
 }
+
+# --- Server access logging ---
+
+module "access_logs" {
+  source        = "../access-log-bucket"
+  bucket        = "${var.project}-access-logs-${var.environment}"
+  force_destroy = var.force_destroy
+  tags          = local.common_tags
+}
+
+resource "aws_s3_bucket_logging" "files" {
+  bucket        = aws_s3_bucket.files.id
+  target_bucket = module.access_logs.id
+  target_prefix = "s3/files/"
+}
+
+resource "aws_s3_bucket_logging" "data_lake" {
+  bucket        = aws_s3_bucket.data_lake.id
+  target_bucket = module.access_logs.id
+  target_prefix = "s3/data-lake/"
+}
+
+resource "aws_s3_bucket_logging" "audit_archive" {
+  bucket        = aws_s3_bucket.audit_archive.id
+  target_bucket = module.access_logs.id
+  target_prefix = "s3/audit-archive/"
+}

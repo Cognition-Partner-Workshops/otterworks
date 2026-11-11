@@ -83,3 +83,18 @@ resource "aws_s3_bucket_policy" "artifacts_tls" {
     }]
   })
 }
+
+module "access_logs" {
+  source             = "../modules/access-log-bucket"
+  bucket             = "${local.artifact_bucket}-logs"
+  force_destroy      = true
+  allow_elb_delivery = true
+  retention_days     = 14
+  tags               = local.tags
+}
+
+resource "aws_s3_bucket_logging" "artifacts" {
+  bucket        = aws_s3_bucket.artifacts.id
+  target_bucket = module.access_logs.id
+  target_prefix = "s3/artifacts/"
+}

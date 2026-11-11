@@ -46,7 +46,7 @@ resource "aws_rds_cluster" "this" {
   storage_encrypted           = true
   skip_final_snapshot         = true
   deletion_protection         = false
-  backup_retention_period     = 1
+  backup_retention_period     = 7
   copy_tags_to_snapshot       = true
   apply_immediately           = true
   allow_major_version_upgrade = false

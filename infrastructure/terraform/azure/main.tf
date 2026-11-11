@@ -46,6 +46,11 @@ resource "azurerm_storage_account" "staging" { # nosemgrep: terraform.azure.secu
   public_network_access_enabled   = !var.private_networking
   tags                            = local.tags
 
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.this.id]
+  }
+
   blob_properties {
     delete_retention_policy {
       days = 7
@@ -69,17 +74,17 @@ resource "azurerm_role_assignment" "identity_blob_reader" {
 
 # ---- key vault --------------------------------------------------------------
 
-# Purge protection stays off on purpose: namespaces are throwaway and `make demo-destroy` must be able to
-# purge the vault so a re-run can reuse the name. Network ACLs exist only when private_networking is on:
+# Purge protection is on: a deleted vault stays recoverable for soft_delete_retention_days, so a re-run in
+# the same namespace within that window must recover the vault or use a new namespace. Network ACLs exist only when private_networking is on:
 # secrets are written by the deployer over the public data plane (see CONTRACTS networking decision).
-resource "azurerm_key_vault" "this" { # nosemgrep: terraform.azure.security.keyvault.keyvault-purge-enabled.keyvault-purge-enabled, terraform.azure.security.keyvault.keyvault-specify-network-acl.keyvault-specify-network-acl
+resource "azurerm_key_vault" "this" { # nosemgrep: terraform.azure.security.keyvault.keyvault-specify-network-acl.keyvault-specify-network-acl
   name                       = local.key_vault_name
   location                   = azurerm_resource_group.this.location
   resource_group_name        = azurerm_resource_group.this.name
   tenant_id                  = data.azurerm_client_config.current.tenant_id
   sku_name                   = "standard"
   rbac_authorization_enabled = var.manage_rbac
-  purge_protection_enabled   = false
+  purge_protection_enabled   = true
   soft_delete_retention_days = 7
   # Secrets are written over the data plane by the machine running apply, so in private mode the
   # vault keeps a public endpoint locked to the deployer CIDRs (plus the private endpoint).
