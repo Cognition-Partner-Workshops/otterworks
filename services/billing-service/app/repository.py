@@ -172,9 +172,11 @@ class PostgresRatingRepository:
             SELECT rp.period_start, rr.rollover_units
             FROM billing_svc.rating_results rr
             JOIN billing_svc.rating_periods rp ON rp.id = rr.period_id
-            WHERE rp.tenant_id = %s AND rp.period_start < %s
+            WHERE rp.tenant_id = %s
+              AND rp.period_start < %s
+              AND rp.period_start >= %s::date - interval '3 months'
             """,
-            (tenant_id, before),
+            (tenant_id, before, before),
         ).fetchall()
         return [
             PriorRollover(period_start=row["period_start"], rollover_units=row["rollover_units"])
