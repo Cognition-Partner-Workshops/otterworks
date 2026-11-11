@@ -11,7 +11,7 @@ Inputs (`inputs.sql`): documents__collab_session → COLLAB_SESSION (session_id 
 | --- | --- |
 | source | `etl/spark/jobs/py/collab_session_sessionize.py` |
 | target | `cpw.dbx_d1111_after.documents__spark_collab_session_sessionize` |
-| first failure | Job run 24104497103694 FAILED: column list not allowed in CREATE OR REPLACE TABLE AS SELECT (RTAS); fixed with typed CASTs in the SELECT (`see query history`) |
+| first failure | Job run 24104497103694 FAILED: column list not allowed in CREATE OR REPLACE TABLE AS SELECT (RTAS); fixed with typed CASTs in the SELECT (`01f1dd85-4ead-1ae0-a040-77af0fe62fef`; retries `01f1dd85-73a1-1672-9f7f-f848c6ddf5e8`, `01f1dd85-984e-10a9-986f-34bbf746fc03`) |
 | corrected parity | 1200 = 1200 rows, hash 669533277108376373710 both sides, EXCEPT ALL 0/0 — `01f1dd87-1212-1683-8c40-764d49599a76` (diffs `01f1dd87-12c9-1229-97bf-b6bb56aa5be3`, `01f1dd87-1325-118b-bd56-4b41adcec711`) |
 | idempotence | run2: 1200 rows, same hash, numOutputRows 1200 → 1200 — `01f1dd87-9847-1052-89dd-d5f7640248e1`, `01f1dd87-99c0-1f93-9a74-516d025812a8` |
 | job_id / run_ids | 514823186668830 / 24104497103694 (failed), 856828463402524, 1049890104400595 |

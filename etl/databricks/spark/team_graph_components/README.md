@@ -11,7 +11,7 @@ Inputs (`inputs.sql`): users__team_member → TEAM_MEMBER (team_member_id, team_
 | --- | --- |
 | source | `etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala` |
 | target | `cpw.dbx_d1111_after.users__spark_team_graph_components` |
-| first failure | Job run 182373249747779 FAILED: `spark.conf.get('spark.sql.adaptive.enabled')` → CONFIG_NOT_AVAILABLE on serverless (no comparison produced); fixed by logging the conf as not readable (`see query history`) |
+| first failure | Job run 182373249747779 FAILED: `spark.conf.get('spark.sql.adaptive.enabled')` → CONFIG_NOT_AVAILABLE on serverless (no comparison produced); fixed by logging the conf as not readable (no SQL statement: the failure is a Spark Connect config read; evidence is the run output) |
 | corrected parity | 200 = 200 rows, hash 110590925637088257858 both sides, EXCEPT ALL 0/0 — `01f1dd87-0d35-11fa-b87c-4e266ad317de` (diffs `01f1dd87-0de7-1a4c-a49e-a92dbeddb00f`, `01f1dd87-0e3f-1d8f-8951-36bbbd370fc6`) |
 | idempotence | run2: 200 rows, same hash, CRTAS numOutputRows 200 → 200 — `01f1dd87-93ab-199b-b3bc-aa79ae62faff`, `01f1dd87-950e-15fa-9334-ab329b5fc703` |
 | job_id / run_ids | 296844896049163 / 182373249747779 (failed), 23863445904315, 169354815327145 |
