@@ -1,6 +1,6 @@
 package com.halvergate.statementsdocuments.runtime;
 
-import jakarta.jms.ConnectionFactory;
+import jakarta.annotation.PreDestroy;
 import java.util.List;
 import java.util.Map;
 import org.apache.activemq.artemis.api.core.ActiveMQQueueExistsException;
@@ -8,6 +8,9 @@ import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.jms.client.ActiveMQSession;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -15,10 +18,17 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableConfigurationProperties(OutputQueueDeclarer.Destinations.class)
 public class OutputQueueDeclarer {
-    private final ConnectionFactory factory;
+    private final ActiveMQConnectionFactory factory;
     private final Destinations destinations;
 
-    public OutputQueueDeclarer(ConnectionFactory factory, Destinations destinations) {
+    @Autowired
+    public OutputQueueDeclarer(@Value("${spring.artemis.broker-url}") String brokerUrl,
+            @Value("${spring.artemis.user}") String user,
+            @Value("${spring.artemis.password}") String password, Destinations destinations) {
+        this(new ActiveMQConnectionFactory(brokerUrl, user, password), destinations);
+    }
+
+    OutputQueueDeclarer(ActiveMQConnectionFactory factory, Destinations destinations) {
         this.factory = factory;
         this.destinations = destinations;
     }
@@ -40,8 +50,18 @@ public class OutputQueueDeclarer {
                             .setAutoCreated(false).setAutoDelete(false));
                     } catch (ActiveMQQueueExistsException ignored) { }
                 }
+                var configuration = core.queueQuery(SimpleString.of(queue));
+                if (!configuration.isExists() || !configuration.isDurable() || configuration.isAutoDelete()
+                        || configuration.getRoutingType() != RoutingType.ANYCAST) {
+                    throw new IllegalStateException(queue + " must be durable, non-auto-delete and ANYCAST");
+                }
             }
         }
+    }
+
+    @PreDestroy
+    public void close() {
+        factory.close();
     }
 
     @ConfigurationProperties("runtime")

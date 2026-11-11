@@ -33,7 +33,7 @@ class RuntimeTest {
 
     @Test
     void noDestinationsDoesNotConnect() throws Exception {
-        var factory = mock(ConnectionFactory.class);
+        var factory = mock(ActiveMQConnectionFactory.class);
         new OutputQueueDeclarer(factory, new OutputQueueDeclarer.Destinations()).declare();
         verifyNoInteractions(factory);
     }
@@ -66,7 +66,7 @@ class RuntimeTest {
 
     @Test
     void unavailableBrokerFailsReadiness() throws Exception {
-        var factory = mock(ConnectionFactory.class);
+        var factory = mock(ActiveMQConnectionFactory.class);
         var destinations = new OutputQueueDeclarer.Destinations();
         destinations.setOutputQueues(Map.of("test", List.of("OUTPUT")));
         org.mockito.Mockito.when(factory.createConnection())
