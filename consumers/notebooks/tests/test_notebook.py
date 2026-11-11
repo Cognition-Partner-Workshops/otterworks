@@ -47,25 +47,61 @@ def test_notebook_valid_clear_and_every_query_is_extractable():
 def test_notebook_has_no_teradata_logon():
     text = NOTEBOOK.read_text()
     assert not any(marker in text.lower() for marker in (".logon", "tdprod", "teradatasql", "td_host", "td_user", "password"))
+    notebook = nbformat.read(NOTEBOOK, as_version=4)
+    connections = [
+        node for cell in notebook.cells if cell.cell_type == "code"
+        for node in ast.walk(ast.parse(cell.source))
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "connect"
+    ]
+    assert len(connections) == 1
+    assert not connections[0].args and not connections[0].keywords
 
 
-def test_contract_warehouse_ignores_environment_override(monkeypatch):
+@pytest.mark.parametrize("contract_override", [None, "", "other-wh"])
+@pytest.mark.parametrize("warehouse_override", [None, "", "fake-wh"])
+def test_contract_warehouse_ignores_environment_override(monkeypatch, contract_override, warehouse_override):
     for name, value in SNOWFLAKE_ENV.items():
         monkeypatch.setenv(name, value)
-    monkeypatch.setenv("SNOWFLAKE_CONTRACT_WAREHOUSE", "other-wh")
+    for name, value in (
+        ("SNOWFLAKE_CONTRACT_WAREHOUSE", contract_override),
+        ("SNOWFLAKE_WAREHOUSE", warehouse_override),
+    ):
+        if value is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, value)
     connector = MagicMock()
-    monkeypatch.setattr("contract.warehouse.connect", connector)
+    monkeypatch.setattr("contract.warehouse.connect", lambda config: connect(config, connector=connector))
     monkeypatch.setattr("finance_nb.warehouse._der_private_key", lambda key: b"der")
     warehouse = SnowflakeWarehouse({})
     assert warehouse.connection is connector.return_value
-    assert connector.call_args.args[0]["warehouse"] == "SFX_D1110_PARITY_WH"
+    assert warehouse.connection is connector.return_value
+    connector.assert_called_once()
+    assert connector.call_args.kwargs["warehouse"] == "SFX_D1110_PARITY_WH"
+    assert connector.call_args.kwargs["database"] == "SFX_D1110_AFTER"
+    assert connector.call_args.kwargs["session_parameters"] == {"QUERY_TAG": QUERY_TAG, "TIMEZONE": "UTC"}
 
 
 def test_connection_uses_fake_without_driver_import():
     connector = MagicMock()
     config = {"account": "fake-account", "user": "fake-user", "private_key": b"fake-der"}
     assert connect(config, connector=connector) is connector.return_value
-    connector.assert_called_once_with(**config, session_parameters={"QUERY_TAG": QUERY_TAG})
+    connector.assert_called_once_with(**config, session_parameters={"QUERY_TAG": QUERY_TAG, "TIMEZONE": "UTC"})
+
+
+@pytest.mark.parametrize("parameters", [{}, {
+    "QUERY_TAG": "other-tag", "TIMEZONE": "America/Los_Angeles", "STATEMENT_TIMEOUT_IN_SECONDS": 30,
+}])
+def test_custom_connection_forces_tag_and_utc_without_mutating_config(parameters):
+    original = dict(parameters)
+    config = {"account": "fake-account", "private_key": b"der", "session_parameters": parameters}
+    connector = MagicMock()
+    connect(config, connector=connector)
+    assert connector.call_args.kwargs["session_parameters"] == {
+        **original, "QUERY_TAG": QUERY_TAG, "TIMEZONE": "UTC",
+    }
+    assert config["session_parameters"] == original
+    assert parameters == original
 
 
 def test_default_connection_config_and_disabled_flag(monkeypatch):

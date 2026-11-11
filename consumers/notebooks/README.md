@@ -24,16 +24,38 @@ All warehouse-query tagged cells contain literal inline Snowflake SQL over COMPA
 - Overdue accounts: INVOICE_HDR (INVOICE_ID, CUSTOMER_ID, INVOICE_DT, TOTAL_AMOUNT)
   joined to CUSTOMER_ACCOUNT (CUSTOMER_ID, ACCOUNT_NUMBER, ACCOUNT_NAME) and summed
   payments; top ten positive balances more than 30 days overdue.
-  Due dates derive net-30 terms (INVOICE_DT + 30); the schema has no DUE_DT.
+  Due dates derive net-30 terms (INVOICE_DT + 30), not the COMPAT DUE_DATE field.
 
 Teradata constructs were translated: SEL/TOP 10 -> SELECT/LIMIT 10, FORMAT casts
 -> TO_CHAR/DATE, ZEROIFNULL/NULLIFZERO -> COALESCE/NULLIF, DATE +/- n -> DATEADD,
-1200101 -> DATE '2020-01-01'. Overdue ties order by UPPER(ACCOUNT_NUMBER) to keep
-the Teradata NOT CASESPECIFIC ordering. The pre-migration statements are frozen in
+1200101 -> DATE '2020-01-01'. Overdue ties order by UPPER(ACCOUNT_NUMBER), then the
+raw account number, to approximate Teradata NOT CASESPECIFIC ordering; trailing
+padding is not removed. The pre-migration statements are frozen in
 contract/teradata/*.sql for parity tooling only. Historical invoices start in 2020.
 No FX conversion or credit-note allocation is performed. Currency aggregates are
 not a currency-normalized financial statement. All-time payments offset the
 overdue list; the DSO trend instead uses historical cutoffs.
+
+### Retained semantics and shared-data limitations
+This client-only port preserves the frozen notebook's formulas; it does not
+redefine other clients' metrics or change shared warehouse objects.
+
+- The notebook keeps legacy COMPAT INVOICE_ID, PAYMENT_DT and INVOICE_DT columns.
+  V007 passes these through raw; only INVOICE_HDR_ID, PAYMENT_DATE and INVOICE_DATE
+  are coalesced. The cross-client live review found no differences today, but
+  normalized-only rows would be omitted from these legacy joins/date filters.
+- COMPAT INVOICE_HDR.TOTAL_AMOUNT is the pre-invoicing amount, whereas the
+  Teradata P_MONTHLY_INVOICE procedure recalculates SUBTOTAL_AMOUNT + TAX_AMOUNT.
+  Revenue (TOTAL_AMOUNT - COALESCE(TAX_AMOUNT, 0)), DSO open AR and overdue balances
+  inherit that shared-data gap. Seed size alone does not explain amount differences.
+  Revenue is net of tax, not the tax-inclusive metric used by some other clients.
+- Overdue means INVOICE_DT + 30 < CURRENT_DATE() - 30, not merely past net-30 due
+  today. The cross-client review found COMPAT DUE_DATE NULL throughout the live
+  seed; the notebook intentionally derives its cutoff instead.
+- DSO is invoices less payments divided by monthly billed, times 30. It is not
+  the GL account 1200 balance divided by net billed metric used elsewhere.
+- Account ordering folds case but does not trim trailing spaces. Currency case
+  variants are summed together, as before; no FX conversion is introduced.
 
 ## Checks and contracts
 ```sh
@@ -61,6 +83,7 @@ recorded Teradata fixtures on column names and order, row counts, month keys
 (revenue, DSO, collections), zero/non-zero billed and collected months, and, for
 overdue accounts present in both, name and oldest due date; overdue rows are the
 reserved edge-case accounts with positive balances sorted descending.
-Intended differences: amounts and sums are not compared because Snowflake holds
-the full shared seed (200,000 invoices) while the fixtures were recorded on the
-800-row emulator seed, and DSO precision follows Snowflake NUMBER division.
+Amounts and sums are not compared: Snowflake holds the full shared seed while the
+fixtures were recorded on the 800-row emulator seed, and the pre-invoicing
+TOTAL_AMOUNT gap above is unresolved. These checks prove structure and selected
+invariants, not monetary parity. DSO precision follows Snowflake NUMBER division.

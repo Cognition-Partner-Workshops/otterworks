@@ -51,7 +51,9 @@ def connect(config: Mapping[str, Any] | None = None, *,
     if os.getenv("FINANCE_WAREHOUSE_ENABLED", "true").lower() not in {"true", "1", "yes"}:
         raise RuntimeError("finance warehouse is disabled")
     config = default_config() if config is None else dict(config)
-    config["session_parameters"] = {**config.get("session_parameters", {}), "QUERY_TAG": QUERY_TAG}
+    config["session_parameters"] = {
+        **config.get("session_parameters", {}), "QUERY_TAG": QUERY_TAG, "TIMEZONE": "UTC",
+    }
     try:
         if "private_key" in config:
             config["private_key"] = _der_private_key(config["private_key"])
