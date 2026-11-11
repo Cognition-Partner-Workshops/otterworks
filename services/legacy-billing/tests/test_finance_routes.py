@@ -87,7 +87,7 @@ def test_warehouse_error_is_sanitized(client, monkeypatch):
 
 
 def test_import_and_env_flag_without_driver_or_connection(monkeypatch):
-    monkeypatch.setitem(sys.modules, "teradatasql", None)
+    monkeypatch.setitem(sys.modules, "snowflake.connector", None)
     monkeypatch.setenv("FINANCE_WAREHOUSE_ENABLED", "false")
     importlib.reload(module)
     assert module.app.config["FINANCE_WAREHOUSE_ENABLED"] is False

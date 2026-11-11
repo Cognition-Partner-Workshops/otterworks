@@ -5,13 +5,13 @@ from decimal import Decimal
 
 import psycopg
 from flask import Flask, jsonify, redirect, render_template, request, url_for
-from finance_warehouse import COLUMNS, ReceivablesWarehouse, TeradataReceivablesWarehouse
+from finance_warehouse import COLUMNS, ReceivablesWarehouse, SnowflakeReceivablesWarehouse
 
 app = Flask(__name__)
 app.config["FINANCE_WAREHOUSE_ENABLED"] = (
     os.getenv("FINANCE_WAREHOUSE_ENABLED", "true").lower() not in {"false", "0", "no", "off"}
 )
-app.extensions["finance_warehouse"] = TeradataReceivablesWarehouse()
+app.extensions["finance_warehouse"] = SnowflakeReceivablesWarehouse()
 
 
 @app.get("/finance/ar-aging")

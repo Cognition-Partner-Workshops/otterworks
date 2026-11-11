@@ -73,37 +73,26 @@ Separate repository owned by **@otterworks/legacy-billing**. The default-on
 FINANCE_WAREHOUSE_ENABLED flag exposes /finance/ar-aging as JSON, or
 ?format=html as an escaped table. Invalid formats return 400; disabled returns
 404, warehouse failures a sanitized 503. Startup opens no warehouse connection.
-The fake plaintext DSN in app/finance_warehouse.ini uses svc_legacy_billing
-against TDPROD / SFX_BILLING; FINANCE_WAREHOUSE_DSN can override it.
-
-The query reads V_ACCOUNT_INVOICES (CUSTOMER_ID, INVOICE_ID, INVOICE_DT,
-CURRENCY_CD, TOTAL_AMOUNT), CUSTOMER_ACCOUNT (CUSTOMER_ID, ACCOUNT_NUMBER,
-ACCOUNT_NAME), and PAYMENT (INVOICE_ID, AMOUNT). All tables/views are in
-SFX_BILLING, overlapping the service account's DBQL view.
-There is no due-date column; net-30 terms derive DUE_DT = INVOICE_DT + 30.
-Open balance subtracts all payments from invoice totals, then groups by account
-and currency into current, 1–30, 31–60, 61–90 and over-90 buckets.
-Up to 100 accounts are ordered by open balance, account number and currency.
-Empty results are an empty list/table. No FX conversion is performed.
-SQL retains SEL, TOP 100, ZEROIFNULL, NULLIFZERO, integer date arithmetic,
-the 1200101 floor and DATE FORMAT cast. Driver import is lazy.
+AR aging reads Snowflake SFX_D1110_AFTER.COMPAT with net-30 aging, returning
+up to 100 account/currency balances. Set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER,
+SNOWFLAKE_ROLE and SNOWFLAKE_PRIVATE_KEY (unencrypted PEM) for JWT key-pair
+authentication, plus SNOWFLAKE_WAREHOUSE. SNOWFLAKE_DATABASE overrides the
+default session database SFX_D1110_AFTER; the query uses fully qualified tables.
+Sessions use UTC and query tag
+`{"run":"sfx-d1110","act":"consumers","consumer":"legacy-billing"}`.
 
 ```sh
 pip install -r requirements-dev.txt
 pytest
-WAREHOUSE_CONTRACT_TARGET=replay pytest contract
+WAREHOUSE_CONTRACT_TARGET=replay pytest contract -rs
+WAREHOUSE_CONTRACT_TARGET=snowflake pytest contract -s
 ```
-The contract directory is excluded from default discovery. The default
-teradata-emulator target runs the DAL's actual SQL through the shared kit at
-../../consumers/contract-kit. Follow its README for emulator setup, Python bridge
-dependencies, TD_PG_PORT and CONTRACT_KIT_PYTHON. TD_EMULATOR_HOME optionally
-overrides the runtime's default repository root.
-CONTRACT_RECORD=true pytest contract records live output, then checks expected
-counts, account keys, sums and bucket reconciliation. Fixtures use the seeded
-800-row estate (BUSINESS_DATE=20261109). Review expectations after changes.
-Replay requires neither a warehouse nor bridge dependencies and runs in CI.
-snowflake-semantics uses the same shared live bridge. snowflake remains an
-explicit placeholder: missing SNOWFLAKE_ACCOUNT, USER, ROLE, WAREHOUSE or
-PRIVATE_KEY skips, while configured execution is unsupported.
-Destination metadata: SFX_D1110_AFTER.COMPAT, query tag
-`{"run":"sfx-d1110","act":"consumers","consumer":"legacy-billing"}`.
+
+Contract tests are excluded from default discovery. Replay, teradata-emulator
+(the default), and snowflake-semantics retain the contract-only legacy SQL and
+the shared kit at ../../consumers/contract-kit. Recorded/expected fixtures cover
+the original 800-row estate and remain unchanged. The live Snowflake contract
+uses the production client, SFX_D1110_PARITY_WH and SFX_D1110_AFTER, checking
+columns, formatting, ordering and reconciliation rather than exact fixture sums
+or keys. It skips without the four authentication variables, regardless of
+target, and prints the query id with pytest -s.
