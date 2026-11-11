@@ -50,7 +50,7 @@ def validate(plan):
                 raise ValueError("Analyst cannot inherit functional roles")
             continue
         match = re.fullmatch(
-            r"GRANT ([A-Z, ]+) ON (WAREHOUSE|DATABASE|SCHEMA|(?:ALL|FUTURE) (?:STAGES|TABLES|VIEWS|PROCEDURES|FILE FORMATS) IN SCHEMA|FUTURE SCHEMAS IN DATABASE) ([A-Z0-9_.]+) TO ROLE (SFX_D1110_\w+);",
+            r"GRANT ([A-Z, ]+) ON (WAREHOUSE|DATABASE|SCHEMA|TAG|(?:ALL|FUTURE) (?:STAGES|TABLES|VIEWS|PROCEDURES|FILE FORMATS) IN SCHEMA|FUTURE SCHEMAS IN DATABASE) ([A-Z0-9_.]+) TO ROLE (SFX_D1110_\w+);",
             upper,
         )
         if not match:
@@ -61,7 +61,7 @@ def validate(plan):
                 allowed = privileges == "USAGE"
             else:
                 schema = obj.split(".")[-1]
-                curated = schema in {"MART", "COMPAT"} or schema.startswith("CORE_")
+                curated = schema in {"MART", "MART_SPARK", "COMPAT"} or schema.startswith("CORE_")
                 allowed = curated and (
                     (kind == "SCHEMA" and privileges == "USAGE") or
                     (kind in ("ALL TABLES IN SCHEMA", "FUTURE TABLES IN SCHEMA",
@@ -74,6 +74,9 @@ def validate(plan):
             valid = obj in WORKLOADS.values()
         elif kind in ("DATABASE", "FUTURE SCHEMAS IN DATABASE"):
             valid = obj == "SFX_D1110_AFTER"
+        elif kind == "TAG":
+            valid = (obj == "SFX_D1110_AFTER.GOVERNANCE.SFX_RUN" and privileges == "APPLY"
+                     and role in {"SFX_D1110_TRANSFORMER", "SFX_D1110_SNOWPARK"})
         else:
             valid = obj.startswith("SFX_D1110_AFTER.") and obj.split(".")[1] in schemas and obj.count(".") == 1
         if not valid:

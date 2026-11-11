@@ -54,9 +54,8 @@ def load(landing, tables=None):
                 target = f"{schema}.{table}"
                 stage_table = f"{schema}._SFX_STAGE_{uuid.uuid4().hex.upper()}"
                 columns = ", ".join(f'"{name}" {snowflake_type(kind)}' for name, kind in SCHEMAS[table])
+                # Schemas are provisioned by V010; the loader has no database CREATE SCHEMA.
                 # DDL identifiers/types come from the repository schema map; stage adds a UUID.
-                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
-                cur.execute(f"CREATE SCHEMA IF NOT EXISTS {schema} COMMENT='sfx-d1110 spark landing'")
                 # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
                 cur.execute(f"CREATE TABLE IF NOT EXISTS {target} ({columns}) COMMENT='sfx-d1110 spark landing'")
                 # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query

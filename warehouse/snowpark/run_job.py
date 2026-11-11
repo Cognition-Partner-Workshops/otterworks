@@ -1,6 +1,7 @@
 """Run one job module with the shared, tagged Snowpark session."""
 import argparse
 import importlib.util
+import os
 from pathlib import Path
 import re
 import sys
@@ -24,7 +25,19 @@ def run(job):
     with connect("snowpark", "spark-job", job=job) as connection:
         with Session.builder.configs({"connection": connection}).create() as session:
             session.query_tag = query_tag("snowpark", "spark-job", job=job)
-            return module.run(session)
+            result = module.run(session)
+            database = session.get_current_database()
+            relation = f'{database}."MART_SPARK"."{job.upper()}"'
+            # Database comes from Snowpark (quoted); job is validated above.
+            # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+            session.sql(f"ALTER TABLE {relation} SET TAG {database}.GOVERNANCE.SFX_RUN = 'sfx-d1110'").collect()
+            token = os.environ.get("SNOWFLAKE_RUN_TOKEN", "sfx-d1110")
+            # The shared connector uses pyformat, while Session.sql params require qmark.
+            with connection.cursor() as cursor:
+                # nosemgrep: python.lang.security.audit.formatted-sql-query.formatted-sql-query, python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+                cursor.execute(f"COMMENT ON TABLE {relation} IS %s",
+                               (token + ' Spark output ' + job,))
+            return result
 
 
 if __name__ == "__main__":

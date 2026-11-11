@@ -1,1 +1,0 @@
-7 1 * * * /opt/etl/spark/submit/users_team_rollup.sh >> /var/log/etl/spark-users_team_rollup.log 2>&1

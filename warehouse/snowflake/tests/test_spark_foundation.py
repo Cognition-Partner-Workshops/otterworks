@@ -142,6 +142,7 @@ def test_registry_dispatch(tmp_path, monkeypatch):
 
 
 def test_snowpark_runner(tmp_path, monkeypatch):
+    monkeypatch.setenv('SNOWFLAKE_RUN_TOKEN', "sfx-d1110-test'quote")
     spec = importlib.util.spec_from_file_location("spark_runner", ROOT.parent / "snowpark/run_job.py")
     runner = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(runner)
@@ -156,6 +157,13 @@ def test_snowpark_runner(tmp_path, monkeypatch):
     active = session.configs.return_value.create.return_value.__enter__.return_value
     assert json.loads(active.query_tag)["job"] == "example"
     assert json.loads(active.query_tag)["act"] == "spark"
+    assert any('SET TAG' in call.args[0] and "= 'sfx-d1110'" in call.args[0]
+               for call in active.sql.call_args_list)
+    cursor = connect.return_value.__enter__.return_value.cursor.return_value.__enter__.return_value
+    statement, params = cursor.execute.call_args.args
+    assert statement.startswith('COMMENT ON TABLE ')
+    assert statement.endswith(' IS %s')
+    assert params == ("sfx-d1110-test'quote Spark output example",)
     with pytest.raises(FileNotFoundError):
         runner.run("missing")
     with pytest.raises(ValueError):

@@ -24,6 +24,7 @@ models:
     spark:
       +schema: MART_SPARK
       +materialized: table
+      +copy_grants: true
     pc:
       +post-hook: "{{ pc_relation_comment() }}"
       billing:
