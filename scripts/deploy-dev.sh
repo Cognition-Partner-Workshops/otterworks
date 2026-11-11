@@ -351,6 +351,12 @@ build_helm_args() {
       add_secret SPRING_FLYWAY_PASSWORD "${DB_PASSWORD}"
       add_secret SPRING_DATASOURCE_PASSWORD "${DB_PASSWORD}" ;;
     file-service)
+      # An empty bucket name ships a pod that passes /health and fails every
+      # upload with NoSuchBucket. Stop here instead (alert FileUploadHighErrorRate).
+      if [ -z "${S3_FILE_BUCKET}" ]; then
+        err "file-service: Terraform output s3_file_bucket is empty; refusing to deploy with no S3_BUCKET (apply infrastructure/terraform or export S3_FILE_BUCKET)"
+        return 1
+      fi
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.S3_BUCKET=${S3_FILE_BUCKET}")
       EXTRA_ARGS+=(--set-string "config.DYNAMODB_TABLE=${DDB_FILE_META}")
@@ -418,7 +424,7 @@ deploy_service() {
   fi
 
   local image="${ECR_REGISTRY}/${ECR_PREFIX}${service}"
-  build_helm_args "${service}"
+  build_helm_args "${service}" || return 1
 
   # Write secrets to a locked-down temp values file passed via -f, so the values
   # are never exposed in the process argument list (ps / /proc/*/cmdline).
