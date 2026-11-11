@@ -276,8 +276,10 @@ def run(mapping, number):
 
 def replay(mapping):
     path = DEST / mapping
+    # UNT-3 gates rejects below against its own empty reject template, so the shared
+    # runner-reject comparison gets empty snapshots.
     result = replay_gate(oracle(mapping), load(path / 'run1/target.json'),
-                         load(path / 'run2/target.json'), ['EVENT_ID'], ['EVENT_ID'])
+                         load(path / 'run2/target.json'), ['EVENT_ID'], ['EVENT_ID'], ([], [], []))
     template = reject_template(mapping, oracle(MAPPINGS[0]))
     result['rejects'] = {f'run{n}': full_compare(template, load(path / f'run{n}/rejects.json'), ['EVENT_ID'])
                          for n in (1, 2)}

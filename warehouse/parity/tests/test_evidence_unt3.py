@@ -7,6 +7,8 @@ import pytest
 
 from parity.evidence import cell, full_compare, replay_gate
 from parity import evidence_unt3 as unt3
+
+NO_REJECTS = ([], [], [])
 from runner import expr
 
 
@@ -22,9 +24,9 @@ def fixture():
 
 def test_positive_empty_and_order_independent():
     snap = fixture()
-    assert replay_gate(snap, snap, snap, ['EVENT_ID'], ['EVENT_ID'])['passed']
+    assert replay_gate(snap, snap, snap, ['EVENT_ID'], ['EVENT_ID'], NO_REJECTS)['passed']
     snap['rows'] = []
-    assert replay_gate(snap, snap, snap, ['EVENT_ID'], ['EVENT_ID'])['passed']
+    assert replay_gate(snap, snap, snap, ['EVENT_ID'], ['EVENT_ID'], NO_REJECTS)['passed']
 
 
 @pytest.mark.parametrize('case', ['unpadded', 'null', 'null_instead_of_zero', 'timestamp',
@@ -49,7 +51,7 @@ def test_negative_controls(case):
     elif case == 'id':
         after['rows'][0][0] = cell(2)
     assert not full_compare(before, after, ['EVENT_ID'])['equal']
-    assert not replay_gate(before, before, after, ['EVENT_ID'], ['EVENT_ID'])['passed']
+    assert not replay_gate(before, before, after, ['EVENT_ID'], ['EVENT_ID'], NO_REJECTS)['passed']
 
 
 def test_nonempty_rejects_fail():
