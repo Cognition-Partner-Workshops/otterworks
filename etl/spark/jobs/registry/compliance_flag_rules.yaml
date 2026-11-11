@@ -2,8 +2,9 @@
   "job": "compliance_flag_rules",
   "language": "scala",
   "target": "snowpark_python",
-  "status": "legacy",
+  "status": "snowflake",
   "schedule": "29 3 * * *",
   "profile": "small",
-  "class": "sfx.ComplianceFlagRules"
+  "ingest": ["audit.COMPLIANCE_FLAG"],
+  "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job compliance_flag_rules"
 }
