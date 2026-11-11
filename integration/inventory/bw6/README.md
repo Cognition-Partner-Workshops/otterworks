@@ -1,0 +1,76 @@
+# BW6 source inventory
+
+Run **tib-d1111**; base commit **5c2ba511babbfacaba94c93a10d3e6b0542a7c4c**. This is a read-only inventory of the legacy export, not a conversion or a runtime certification. The export contains **24 .bwp files**. Classification and decision IDs are indexed below.
+
+## What is here
+
+- `specs/`: 24 per-process source inventories grouped by domain, plus domain READMEs; use the index below.
+- [graph.json](graph.json): source-derived nodes, edges, citations and computed dependency summary.
+- [dependency-graph.md](dependency-graph.md): generated Mermaid view, edge tables and graph findings.
+- [decisions.md](decisions.md): open questions, affected-process lists, source evidence and neutral options.
+- [wave-plan.md](wave-plan.md): programme-wide groundwork, straight-conversion lanes and held flows.
+- `tools/`: stdlib Python 3.10 generators, citation checks and unit tests. The README index and wave blockers are generated from graph.json and decisions.md.
+
+Run from the repository root:
+
+```sh
+python integration/inventory/bw6/tools/build_graph.py
+python integration/inventory/bw6/tools/build_inventory.py
+python integration/inventory/bw6/tools/check_citations.py
+python -m unittest discover -s integration/inventory/bw6/tools -p 'test_*.py'
+uv run --with ruff==0.9.10 ruff check integration
+```
+
+build_graph.py reads only the source estate and regenerates graph.json and dependency-graph.md. build_inventory.py reads graph.json and decisions.md, annotates process classification/decision IDs/waves in graph.json and regenerates this README and wave-plan.md; rerun it after affected-process lists change. Generated outputs stay under integration/inventory/bw6/. The tools do not change legacy source, corpus, target, harness or fixture files.
+
+## Reading a spec beside its source
+
+Open the spec and its .bwp from the index together, then follow the evidence #L anchors. Activity configurations occupy one line per activity: the starter is usually near L14 (instruction-intake uses L16); the fault-handler JMSConfirm is at L7. Do not infer execution order from the first activity declaration: the fault handler precedes the success sequence in the file.
+
+The section order is:
+
+1. Summary
+2. Trigger / starter activity
+3. Transports
+4. Transaction boundaries
+5. XSLT chain
+6. Custom Java activities
+7. Error paths
+8. Module properties per environment
+9. Callers and callees
+10. Reference evidence
+11. Conversion notes
+12. Cross-domain check (some specs use the unnumbered heading “Cross-domain check”).
+
+A citation label is a repo-root path plus one-based line or inclusive range: `path:L<n>` or `path:L<n>-L<m>`. The link target is relative to the containing Markdown file and repeats the line range in its fragment. Example: [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../legacy-bw6/Processes/payments/payment-returns.bwp#L14). Specs are two directories deeper, so their relative targets differ. The checker validates files and line ranges; it does not prove business intent or runtime behavior. Read **Inference** statements and [open decisions](decisions.md) alongside the quoted source.
+
+## Process index
+
+Blocking IDs are derived from each decision’s Affected processes list; all decisions remain open.
+
+| Process (declared name) | Domain | Spec link | .bwp link | Classification | Blocking decisions |
+| --- | --- | --- | --- | --- | --- |
+| `halvergate.account-events.account-closed` | account-events | [spec](specs/account-events/account-closed.md) | [.bwp](../../legacy-bw6/Processes/account-events/account-closed.bwp#L2) | straight-conversion |  |
+| `halvergate.account-events.account-opened` | account-events | [spec](specs/account-events/account-opened.md) | [.bwp](../../legacy-bw6/Processes/account-events/account-opened.bwp#L2) | straight-conversion |  |
+| `halvergate.account-events.address-changed` | account-events | [spec](specs/account-events/address-changed.md) | [.bwp](../../legacy-bw6/Processes/account-events/address-changed.bwp#L2) | straight-conversion |  |
+| `halvergate.account-events.event-fanout` | account-events | [spec](specs/account-events/event-fanout.md) | [.bwp](../../legacy-bw6/Processes/account-events/event-fanout.bwp#L2) | needs-human-decision | [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows), [D-07](decisions.md#d-07-event-fanout-queue-versus-durable-topic) |
+| `halvergate.account-events.limit-changed` | account-events | [spec](specs/account-events/limit-changed.md) | [.bwp](../../legacy-bw6/Processes/account-events/limit-changed.bwp#L2) | straight-conversion |  |
+| `halvergate.customer-alerts.card-dispute` | customer-alerts | [spec](specs/customer-alerts/card-dispute.md) | [.bwp](../../legacy-bw6/Processes/customer-alerts/card-dispute.bwp#L2) | needs-human-decision | [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows) |
+| `halvergate.customer-alerts.large-transaction` | customer-alerts | [spec](specs/customer-alerts/large-transaction.md) | [.bwp](../../legacy-bw6/Processes/customer-alerts/large-transaction.bwp#L2) | needs-human-decision | [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows) |
+| `halvergate.customer-alerts.low-balance` | customer-alerts | [spec](specs/customer-alerts/low-balance.md) | [.bwp](../../legacy-bw6/Processes/customer-alerts/low-balance.bwp#L2) | needs-human-decision | [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows) |
+| `halvergate.customer-alerts.preference-sync` | customer-alerts | [spec](specs/customer-alerts/preference-sync.md) | [.bwp](../../legacy-bw6/Processes/customer-alerts/preference-sync.bwp#L2) | needs-human-decision | [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows) |
+| `halvergate.fees-billing.daily-fee` | fees-billing | [spec](specs/fees-billing/daily-fee.md) | [.bwp](../../legacy-bw6/Processes/fees-billing/daily-fee.bwp#L2) | needs-human-decision | [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows), [D-05](decisions.md#d-05-daily-fee-timer-or-queue-listener), [D-10](decisions.md#d-10-daily-fee-static-rate-cache) |
+| `halvergate.fees-billing.fee-posting` | fees-billing | [spec](specs/fees-billing/fee-posting.md) | [.bwp](../../legacy-bw6/Processes/fees-billing/fee-posting.bwp#L2) | needs-human-decision | [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows) |
+| `halvergate.fees-billing.fee-reversal` | fees-billing | [spec](specs/fees-billing/fee-reversal.md) | [.bwp](../../legacy-bw6/Processes/fees-billing/fee-reversal.bwp#L2) | needs-human-decision | [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows), [D-11](decisions.md#d-11-fee-reversal-amount-sign) |
+| `halvergate.fees-billing.month-end-summary` | fees-billing | [spec](specs/fees-billing/month-end-summary.md) | [.bwp](../../legacy-bw6/Processes/fees-billing/month-end-summary.bwp#L2) | needs-human-decision | [D-04](decisions.md#d-04-month-end-summary-entry-and-scope) |
+| `halvergate.payments.currency-routing` | payments | [spec](specs/payments/currency-routing.md) | [.bwp](../../legacy-bw6/Processes/payments/currency-routing.bwp#L2) | straight-conversion |  |
+| `halvergate.payments.instruction-intake` | payments | [spec](specs/payments/instruction-intake.md) | [.bwp](../../legacy-bw6/Processes/payments/instruction-intake.bwp#L2) | needs-human-decision | [D-01](decisions.md#d-01-screening-api-version-by-environment), [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows), [D-08](decisions.md#d-08-payment-status-import-precedence), [D-12](decisions.md#d-12-instruction-intake-xa-scope-ends-before-calls) |
+| `halvergate.payments.payment-returns` | payments | [spec](specs/payments/payment-returns.md) | [.bwp](../../legacy-bw6/Processes/payments/payment-returns.bwp#L2) | needs-human-decision | [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows) |
+| `halvergate.payments.sanctions-screening` | payments | [spec](specs/payments/sanctions-screening.md) | [.bwp](../../legacy-bw6/Processes/payments/sanctions-screening.bwp#L2) | needs-human-decision | [D-01](decisions.md#d-01-screening-api-version-by-environment), [D-02](decisions.md#d-02-pdf-request-endpoint-ownership) |
+| `halvergate.payments.status-update` | payments | [spec](specs/payments/status-update.md) | [.bwp](../../legacy-bw6/Processes/payments/status-update.bwp#L2) | needs-human-decision | [D-08](decisions.md#d-08-payment-status-import-precedence) |
+| `halvergate.payments.validation-enrichment` | payments | [spec](specs/payments/validation-enrichment.md) | [.bwp](../../legacy-bw6/Processes/payments/validation-enrichment.bwp#L2) | straight-conversion |  |
+| `halvergate.statements-documents.delivery-notice` | statements-documents | [spec](specs/statements-documents/delivery-notice.md) | [.bwp](../../legacy-bw6/Processes/statements-documents/delivery-notice.bwp#L2) | straight-conversion |  |
+| `halvergate.statements-documents.document-store` | statements-documents | [spec](specs/statements-documents/document-store.md) | [.bwp](../../legacy-bw6/Processes/statements-documents/document-store.bwp#L2) | needs-human-decision | [D-09](decisions.md#d-09-document-store-file-side-effect) |
+| `halvergate.statements-documents.pdf-request` | statements-documents | [spec](specs/statements-documents/pdf-request.md) | [.bwp](../../legacy-bw6/Processes/statements-documents/pdf-request.bwp#L2) | needs-human-decision | [D-01](decisions.md#d-01-screening-api-version-by-environment), [D-02](decisions.md#d-02-pdf-request-endpoint-ownership) |
+| `halvergate.statements-documents.split-enrich` | statements-documents | [spec](specs/statements-documents/split-enrich.md) | [.bwp](../../legacy-bw6/Processes/statements-documents/split-enrich.bwp#L2) | straight-conversion |  |
+| `halvergate.statements-documents.statement-drop` | statements-documents | [spec](specs/statements-documents/statement-drop.md) | [.bwp](../../legacy-bw6/Processes/statements-documents/statement-drop.bwp#L2) | needs-human-decision | [D-01](decisions.md#d-01-screening-api-version-by-environment), [D-03](decisions.md#d-03-uncalled-or-unfed-entry-flows), [D-06](decisions.md#d-06-statement-drop-transport-and-file-rejection) |

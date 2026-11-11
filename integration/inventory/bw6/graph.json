@@ -1,0 +1,2885 @@
+{
+  "run": "tib-d1111",
+  "base_commit": "5c2ba511babbfacaba94c93a10d3e6b0542a7c4c",
+  "nodes": [
+    {
+      "id": "halvergate.account-events.account-closed",
+      "type": "process",
+      "label": "account-events.account-closed",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L2",
+      "domain": "account-events",
+      "file": "integration/legacy-bw6/Processes/account-events/account-closed.bwp",
+      "starter_activity_type": "bw.jms.JMSTopicSubscriber",
+      "starter_destination": "HB.ACCOUNT.CLOSED",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.account-events.account-opened",
+      "type": "process",
+      "label": "account-events.account-opened",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L2",
+      "domain": "account-events",
+      "file": "integration/legacy-bw6/Processes/account-events/account-opened.bwp",
+      "starter_activity_type": "bw.jms.JMSTopicSubscriber",
+      "starter_destination": "HB.ACCOUNT.OPENED",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.account-events.address-changed",
+      "type": "process",
+      "label": "account-events.address-changed",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L2",
+      "domain": "account-events",
+      "file": "integration/legacy-bw6/Processes/account-events/address-changed.bwp",
+      "starter_activity_type": "bw.jms.JMSTopicSubscriber",
+      "starter_destination": "HB.ADDRESS.CHANGED",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.account-events.event-fanout",
+      "type": "process",
+      "label": "account-events.event-fanout",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L2",
+      "domain": "account-events",
+      "file": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.ACCOUNT.EVENTS.IN",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03",
+        "D-07"
+      ],
+      "wave": 3
+    },
+    {
+      "id": "halvergate.account-events.limit-changed",
+      "type": "process",
+      "label": "account-events.limit-changed",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L2",
+      "domain": "account-events",
+      "file": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp",
+      "starter_activity_type": "bw.jms.JMSTopicSubscriber",
+      "starter_destination": "HB.LIMIT.CHANGED",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.customer-alerts.card-dispute",
+      "type": "process",
+      "label": "customer-alerts.card-dispute",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L2",
+      "domain": "customer-alerts",
+      "file": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.ALERTS.CARD.DISPUTE",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
+    },
+    {
+      "id": "halvergate.customer-alerts.large-transaction",
+      "type": "process",
+      "label": "customer-alerts.large-transaction",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L2",
+      "domain": "customer-alerts",
+      "file": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.ALERTS.LARGE.TRANSACTION",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
+    },
+    {
+      "id": "halvergate.customer-alerts.low-balance",
+      "type": "process",
+      "label": "customer-alerts.low-balance",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L2",
+      "domain": "customer-alerts",
+      "file": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.ALERTS.LOW.BALANCE",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
+    },
+    {
+      "id": "halvergate.customer-alerts.preference-sync",
+      "type": "process",
+      "label": "customer-alerts.preference-sync",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L2",
+      "domain": "customer-alerts",
+      "file": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.ALERT.PREFERENCES",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
+    },
+    {
+      "id": "halvergate.fees-billing.daily-fee",
+      "type": "process",
+      "label": "fees-billing.daily-fee",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L2",
+      "domain": "fees-billing",
+      "file": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp",
+      "starter_activity_type": "bw.jms.Timer",
+      "starter_destination": "HB.DAILY.FEES",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03",
+        "D-05",
+        "D-10"
+      ],
+      "wave": 1
+    },
+    {
+      "id": "halvergate.fees-billing.fee-posting",
+      "type": "process",
+      "label": "fees-billing.fee-posting",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L2",
+      "domain": "fees-billing",
+      "file": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.FEE.POSTING",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
+    },
+    {
+      "id": "halvergate.fees-billing.fee-reversal",
+      "type": "process",
+      "label": "fees-billing.fee-reversal",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L2",
+      "domain": "fees-billing",
+      "file": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.FEE.REVERSAL",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03",
+        "D-11"
+      ],
+      "wave": 1
+    },
+    {
+      "id": "halvergate.fees-billing.month-end-summary",
+      "type": "process",
+      "label": "fees-billing.month-end-summary",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L2",
+      "domain": "fees-billing",
+      "file": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp",
+      "starter_activity_type": "bw.internal.start",
+      "starter_destination": "HB.MONTH.END.SUMMARY",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-04"
+      ],
+      "wave": 1
+    },
+    {
+      "id": "halvergate.payments.currency-routing",
+      "type": "process",
+      "label": "payments.currency-routing",
+      "citation": "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L2",
+      "domain": "payments",
+      "file": "integration/legacy-bw6/Processes/payments/currency-routing.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.CURRENCY.ROUTING",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.payments.instruction-intake",
+      "type": "process",
+      "label": "payments.instruction-intake",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L2",
+      "domain": "payments",
+      "file": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.PAYMENT.INSTRUCTIONS",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-01",
+        "D-03",
+        "D-08",
+        "D-12"
+      ],
+      "wave": 3
+    },
+    {
+      "id": "halvergate.payments.payment-returns",
+      "type": "process",
+      "label": "payments.payment-returns",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L2",
+      "domain": "payments",
+      "file": "integration/legacy-bw6/Processes/payments/payment-returns.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.PAYMENT.RETURNS",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-03"
+      ],
+      "wave": 1
+    },
+    {
+      "id": "halvergate.payments.sanctions-screening",
+      "type": "process",
+      "label": "payments.sanctions-screening",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L2",
+      "domain": "payments",
+      "file": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.SANCTIONS.REQUEST",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-01",
+        "D-02"
+      ],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.payments.status-update",
+      "type": "process",
+      "label": "payments.status-update",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L2",
+      "domain": "payments",
+      "file": "integration/legacy-bw6/Processes/payments/status-update.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.STATUS.UPDATE",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-08"
+      ],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.payments.validation-enrichment",
+      "type": "process",
+      "label": "payments.validation-enrichment",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L2",
+      "domain": "payments",
+      "file": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.PAYMENT.VALIDATION",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.statements-documents.delivery-notice",
+      "type": "process",
+      "label": "statements-documents.delivery-notice",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L2",
+      "domain": "statements-documents",
+      "file": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.DELIVERY.NOTICE",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.statements-documents.document-store",
+      "type": "process",
+      "label": "statements-documents.document-store",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L2",
+      "domain": "statements-documents",
+      "file": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.DOCUMENT.STORE",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-09"
+      ],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.statements-documents.pdf-request",
+      "type": "process",
+      "label": "statements-documents.pdf-request",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L2",
+      "domain": "statements-documents",
+      "file": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.PDF.REQUEST",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-01",
+        "D-02"
+      ],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.statements-documents.split-enrich",
+      "type": "process",
+      "label": "statements-documents.split-enrich",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L2",
+      "domain": "statements-documents",
+      "file": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp",
+      "starter_activity_type": "bw.jms.JMSQueueReceiver",
+      "starter_destination": "HB.STATEMENT.SPLIT",
+      "classification": "straight-conversion",
+      "decision_ids": [],
+      "wave": 2
+    },
+    {
+      "id": "halvergate.statements-documents.statement-drop",
+      "type": "process",
+      "label": "statements-documents.statement-drop",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L2",
+      "domain": "statements-documents",
+      "file": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp",
+      "starter_activity_type": "bw.sftp.SFTPGet",
+      "starter_destination": "HB.STATEMENT.DROP",
+      "classification": "needs-human-decision",
+      "decision_ids": [
+        "D-01",
+        "D-03",
+        "D-06"
+      ],
+      "wave": 3
+    },
+    {
+      "id": "http:${billing.url}",
+      "type": "http_endpoint",
+      "label": "${billing.url}",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L24",
+      "dev_value": "http://billing-service:8092/api/fees",
+      "prod_value": "http://billing-service:8092/api/fees",
+      "differs": false,
+      "citations": [
+        "integration/legacy-bw6/Profiles/dev.substvar:L2",
+        "integration/legacy-bw6/Profiles/prod.substvar:L2"
+      ]
+    },
+    {
+      "id": "http:${files.url}",
+      "type": "http_endpoint",
+      "label": "${files.url}",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L24",
+      "dev_value": "http://file-service:8082/api/files",
+      "prod_value": "http://file-service:8082/api/files",
+      "differs": false,
+      "citations": [
+        "integration/legacy-bw6/Profiles/dev.substvar:L2",
+        "integration/legacy-bw6/Profiles/prod.substvar:L2"
+      ]
+    },
+    {
+      "id": "http:${notifications.url}",
+      "type": "http_endpoint",
+      "label": "${notifications.url}",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L24",
+      "dev_value": "http://notification-service:8086/api/notifications",
+      "prod_value": "http://notification-service:8086/api/notifications",
+      "differs": false,
+      "citations": [
+        "integration/legacy-bw6/Profiles/dev.substvar:L2",
+        "integration/legacy-bw6/Profiles/prod.substvar:L2"
+      ]
+    },
+    {
+      "id": "http:${screening.url}",
+      "type": "http_endpoint",
+      "label": "${screening.url}",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L24",
+      "dev_value": "http://screening:8080/v1/screen",
+      "prod_value": "http://screening:8080/v2/screen",
+      "differs": true,
+      "citations": [
+        "integration/legacy-bw6/Profiles/dev.substvar:L2",
+        "integration/legacy-bw6/Profiles/prod.substvar:L2"
+      ]
+    },
+    {
+      "id": "jms:HB.ACCOUNT.ARCHIVED",
+      "type": "destination",
+      "label": "HB.ACCOUNT.ARCHIVED",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ACCOUNT.CLOSED",
+      "type": "destination",
+      "label": "HB.ACCOUNT.CLOSED",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L14",
+      "destination_type": "TOPIC",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ACCOUNT.CREATED",
+      "type": "destination",
+      "label": "HB.ACCOUNT.CREATED",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ACCOUNT.EVENTS",
+      "type": "destination",
+      "label": "HB.ACCOUNT.EVENTS",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L29",
+      "destination_type": "TOPIC",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ACCOUNT.EVENTS.IN",
+      "type": "destination",
+      "label": "HB.ACCOUNT.EVENTS.IN",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ACCOUNT.OPENED",
+      "type": "destination",
+      "label": "HB.ACCOUNT.OPENED",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L14",
+      "destination_type": "TOPIC",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ADDRESS.CHANGED",
+      "type": "destination",
+      "label": "HB.ADDRESS.CHANGED",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L14",
+      "destination_type": "TOPIC",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ADDRESS.UPDATED",
+      "type": "destination",
+      "label": "HB.ADDRESS.UPDATED",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ALERT.PREFERENCES",
+      "type": "destination",
+      "label": "HB.ALERT.PREFERENCES",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ALERTS.CARD.DISPUTE",
+      "type": "destination",
+      "label": "HB.ALERTS.CARD.DISPUTE",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ALERTS.LARGE.TRANSACTION",
+      "type": "destination",
+      "label": "HB.ALERTS.LARGE.TRANSACTION",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.ALERTS.LOW.BALANCE",
+      "type": "destination",
+      "label": "HB.ALERTS.LOW.BALANCE",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.CURRENCY.ROUTED",
+      "type": "destination",
+      "label": "HB.CURRENCY.ROUTED",
+      "citation": "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L25",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.CURRENCY.ROUTING",
+      "type": "destination",
+      "label": "HB.CURRENCY.ROUTING",
+      "citation": "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.DAILY.FEES",
+      "type": "destination",
+      "label": "HB.DAILY.FEES",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L14",
+      "destination_type": null,
+      "destination_type_basis": "not declared",
+      "starter_destination_field": true,
+      "non_jms_starter": true
+    },
+    {
+      "id": "jms:HB.DELIVERY.CONFIRMED",
+      "type": "destination",
+      "label": "HB.DELIVERY.CONFIRMED",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.DELIVERY.NOTICE",
+      "type": "destination",
+      "label": "HB.DELIVERY.NOTICE",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.DISPUTE.RECEIVED",
+      "type": "destination",
+      "label": "HB.DISPUTE.RECEIVED",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.DOCUMENT.STORE",
+      "type": "destination",
+      "label": "HB.DOCUMENT.STORE",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.DOCUMENT.STORED",
+      "type": "destination",
+      "label": "HB.DOCUMENT.STORED",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L34",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.FEE.CALCULATED",
+      "type": "destination",
+      "label": "HB.FEE.CALCULATED",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L34",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.FEE.POSTED",
+      "type": "destination",
+      "label": "HB.FEE.POSTED",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L34",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.FEE.POSTING",
+      "type": "destination",
+      "label": "HB.FEE.POSTING",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.FEE.REVERSAL",
+      "type": "destination",
+      "label": "HB.FEE.REVERSAL",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.FEE.REVERSED",
+      "type": "destination",
+      "label": "HB.FEE.REVERSED",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.FEE.SUMMARY",
+      "type": "destination",
+      "label": "HB.FEE.SUMMARY",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L34",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.LARGE.TRANSACTION.ALERTED",
+      "type": "destination",
+      "label": "HB.LARGE.TRANSACTION.ALERTED",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.LIMIT.CHANGED",
+      "type": "destination",
+      "label": "HB.LIMIT.CHANGED",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L14",
+      "destination_type": "TOPIC",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.LIMIT.UPDATED",
+      "type": "destination",
+      "label": "HB.LIMIT.UPDATED",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.LOW.BALANCE.ALERTED",
+      "type": "destination",
+      "label": "HB.LOW.BALANCE.ALERTED",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.MONTH.END.SUMMARY",
+      "type": "destination",
+      "label": "HB.MONTH.END.SUMMARY",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L14",
+      "destination_type": null,
+      "destination_type_basis": "not declared",
+      "starter_destination_field": true,
+      "non_jms_starter": true
+    },
+    {
+      "id": "jms:HB.PAYMENT.ENRICHED",
+      "type": "destination",
+      "label": "HB.PAYMENT.ENRICHED",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.PAYMENT.INSTRUCTIONS",
+      "type": "destination",
+      "label": "HB.PAYMENT.INSTRUCTIONS",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L16",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.PAYMENT.RETURNS",
+      "type": "destination",
+      "label": "HB.PAYMENT.RETURNS",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.PAYMENT.STATUS",
+      "type": "destination",
+      "label": "HB.PAYMENT.STATUS",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L36",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.PAYMENT.VALIDATION",
+      "type": "destination",
+      "label": "HB.PAYMENT.VALIDATION",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.PDF.REQUEST",
+      "type": "destination",
+      "label": "HB.PDF.REQUEST",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.PDF.REQUESTED",
+      "type": "destination",
+      "label": "HB.PDF.REQUESTED",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.PREFERENCES.SYNCED",
+      "type": "destination",
+      "label": "HB.PREFERENCES.SYNCED",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L34",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.RETURN.POSTED",
+      "type": "destination",
+      "label": "HB.RETURN.POSTED",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.SANCTIONS.REQUEST",
+      "type": "destination",
+      "label": "HB.SANCTIONS.REQUEST",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.SANCTIONS.RESPONSE",
+      "type": "destination",
+      "label": "HB.SANCTIONS.RESPONSE",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L34",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.STATEMENT.DROP",
+      "type": "destination",
+      "label": "HB.STATEMENT.DROP",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L14",
+      "destination_type": null,
+      "destination_type_basis": "not declared",
+      "starter_destination_field": true,
+      "non_jms_starter": true
+    },
+    {
+      "id": "jms:HB.STATEMENT.ENRICHED",
+      "type": "destination",
+      "label": "HB.STATEMENT.ENRICHED",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L34",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.STATEMENT.READY",
+      "type": "destination",
+      "label": "HB.STATEMENT.READY",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L34",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.STATEMENT.SPLIT",
+      "type": "destination",
+      "label": "HB.STATEMENT.SPLIT",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.STATUS.PUBLISHED",
+      "type": "destination",
+      "label": "HB.STATUS.PUBLISHED",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L29",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "destinationType",
+      "starter_destination_field": false,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.STATUS.UPDATE",
+      "type": "destination",
+      "label": "HB.STATUS.UPDATE",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L14",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "activity type",
+      "starter_destination_field": true,
+      "non_jms_starter": false
+    },
+    {
+      "id": "jms:HB.UNDLV",
+      "type": "destination",
+      "label": "HB.UNDLV",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L7",
+      "destination_type": "QUEUE",
+      "destination_type_basis": "undeliveredQueue field"
+    },
+    {
+      "id": "resource:EmsConnection",
+      "type": "shared_resource",
+      "label": "EmsConnection",
+      "citation": "integration/legacy-bw6/SharedResources/EmsConnection.sharedresource:L2"
+    },
+    {
+      "id": "resource:LedgerJdbc",
+      "type": "shared_resource",
+      "label": "LedgerJdbc",
+      "citation": "integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2"
+    },
+    {
+      "id": "resource:ServiceHttp",
+      "type": "shared_resource",
+      "label": "ServiceHttp",
+      "citation": "integration/legacy-bw6/SharedResources/ServiceHttp.sharedresource:L2"
+    },
+    {
+      "id": "resource:StatementSftp",
+      "type": "shared_resource",
+      "label": "StatementSftp",
+      "citation": "integration/legacy-bw6/SharedResources/StatementSftp.sharedresource:L2"
+    },
+    {
+      "id": "sftp:/upload/in",
+      "type": "sftp_path",
+      "label": "/upload/in",
+      "citation": "integration/legacy-bw6/SharedResources/StatementSftp.sharedresource:L2"
+    },
+    {
+      "id": "sftp:/upload/out/statements-documents.split-enrich",
+      "type": "sftp_path",
+      "label": "/upload/out/statements-documents.split-enrich",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L29"
+    },
+    {
+      "id": "sftp:/upload/out/statements-documents.statement-drop",
+      "type": "sftp_path",
+      "label": "/upload/out/statements-documents.statement-drop",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L29"
+    },
+    {
+      "id": "table:account_addresses",
+      "type": "table",
+      "label": "account_addresses",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L71"
+    },
+    {
+      "id": "table:account_closures",
+      "type": "table",
+      "label": "account_closures",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L91"
+    },
+    {
+      "id": "table:account_events",
+      "type": "table",
+      "label": "account_events",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L101"
+    },
+    {
+      "id": "table:account_limits",
+      "type": "table",
+      "label": "account_limits",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L81"
+    },
+    {
+      "id": "table:account_registry",
+      "type": "table",
+      "label": "account_registry",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L61"
+    },
+    {
+      "id": "table:alert_dispatch",
+      "type": "table",
+      "label": "alert_dispatch",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L191"
+    },
+    {
+      "id": "table:alert_preferences",
+      "type": "table",
+      "label": "alert_preferences",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L221"
+    },
+    {
+      "id": "table:dispute_cases",
+      "type": "table",
+      "label": "dispute_cases",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L211"
+    },
+    {
+      "id": "table:document_registry",
+      "type": "table",
+      "label": "document_registry",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L171"
+    },
+    {
+      "id": "table:fee_assessments",
+      "type": "table",
+      "label": "fee_assessments",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L111"
+    },
+    {
+      "id": "table:fee_postings",
+      "type": "table",
+      "label": "fee_postings",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L121"
+    },
+    {
+      "id": "table:fee_reversals",
+      "type": "table",
+      "label": "fee_reversals",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L131"
+    },
+    {
+      "id": "table:fee_summaries",
+      "type": "table",
+      "label": "fee_summaries",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L141"
+    },
+    {
+      "id": "table:large_alert_dispatch",
+      "type": "table",
+      "label": "large_alert_dispatch",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L201"
+    },
+    {
+      "id": "table:payment_inbox",
+      "type": "table",
+      "label": "payment_inbox",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L1"
+    },
+    {
+      "id": "table:payment_ledger",
+      "type": "table",
+      "label": "payment_ledger",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L11"
+    },
+    {
+      "id": "table:payment_returns",
+      "type": "table",
+      "label": "payment_returns",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L51"
+    },
+    {
+      "id": "table:payment_status",
+      "type": "table",
+      "label": "payment_status",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L41"
+    },
+    {
+      "id": "table:payment_validation",
+      "type": "table",
+      "label": "payment_validation",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L21"
+    },
+    {
+      "id": "table:screening_results",
+      "type": "table",
+      "label": "screening_results",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L31"
+    },
+    {
+      "id": "table:statement_deliveries",
+      "type": "table",
+      "label": "statement_deliveries",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L181"
+    },
+    {
+      "id": "table:statement_items",
+      "type": "table",
+      "label": "statement_items",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L161"
+    },
+    {
+      "id": "table:statement_jobs",
+      "type": "table",
+      "label": "statement_jobs",
+      "citation": "integration/legacy-bw6/Database/schema.sql:L151"
+    },
+    {
+      "id": "xsl:Transforms/account-closed.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/account-closed.xsl",
+      "citation": "integration/legacy-bw6/Transforms/account-closed.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/account-opened.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/account-opened.xsl",
+      "citation": "integration/legacy-bw6/Transforms/account-opened.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/address-changed.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/address-changed.xsl",
+      "citation": "integration/legacy-bw6/Transforms/address-changed.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/card-dispute.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/card-dispute.xsl",
+      "citation": "integration/legacy-bw6/Transforms/card-dispute.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/common/receipt.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/common/receipt.xsl",
+      "citation": "integration/legacy-bw6/Transforms/common/receipt.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/currency-routing.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/currency-routing.xsl",
+      "citation": "integration/legacy-bw6/Transforms/currency-routing.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/daily-fee.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/daily-fee.xsl",
+      "citation": "integration/legacy-bw6/Transforms/daily-fee.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/delivery-notice.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/delivery-notice.xsl",
+      "citation": "integration/legacy-bw6/Transforms/delivery-notice.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/document-store.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/document-store.xsl",
+      "citation": "integration/legacy-bw6/Transforms/document-store.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/event-fanout.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/event-fanout.xsl",
+      "citation": "integration/legacy-bw6/Transforms/event-fanout.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/fee-posting.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/fee-posting.xsl",
+      "citation": "integration/legacy-bw6/Transforms/fee-posting.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/fee-reversal.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/fee-reversal.xsl",
+      "citation": "integration/legacy-bw6/Transforms/fee-reversal.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/fee-rounding.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/fee-rounding.xsl",
+      "citation": "integration/legacy-bw6/Transforms/fee-rounding.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/large-transaction.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/large-transaction.xsl",
+      "citation": "integration/legacy-bw6/Transforms/large-transaction.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/limit-changed.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/limit-changed.xsl",
+      "citation": "integration/legacy-bw6/Transforms/limit-changed.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/low-balance.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/low-balance.xsl",
+      "citation": "integration/legacy-bw6/Transforms/low-balance.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/payment-returns.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/payment-returns.xsl",
+      "citation": "integration/legacy-bw6/Transforms/payment-returns.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/payment-status.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/payment-status.xsl",
+      "citation": "integration/legacy-bw6/Transforms/payment-status.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/payments/base/clearing-policy.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/payments/base/clearing-policy.xsl",
+      "citation": "integration/legacy-bw6/Transforms/payments/base/clearing-policy.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/payments/status-policy.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/payments/status-policy.xsl",
+      "citation": "integration/legacy-bw6/Transforms/payments/status-policy.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/pdf-request.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/pdf-request.xsl",
+      "citation": "integration/legacy-bw6/Transforms/pdf-request.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/preference-sync.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/preference-sync.xsl",
+      "citation": "integration/legacy-bw6/Transforms/preference-sync.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/sanctions-screening.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/sanctions-screening.xsl",
+      "citation": "integration/legacy-bw6/Transforms/sanctions-screening.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/split-enrich.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/split-enrich.xsl",
+      "citation": "integration/legacy-bw6/Transforms/split-enrich.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/statement.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/statement.xsl",
+      "citation": "integration/legacy-bw6/Transforms/statement.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/statements/base/timezone.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/statements/base/timezone.xsl",
+      "citation": "integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/statements/layout.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/statements/layout.xsl",
+      "citation": "integration/legacy-bw6/Transforms/statements/layout.xsl:L2"
+    },
+    {
+      "id": "xsl:Transforms/validation-enrichment.xsl",
+      "type": "stylesheet",
+      "label": "Transforms/validation-enrichment.xsl",
+      "citation": "integration/legacy-bw6/Transforms/validation-enrichment.xsl:L2"
+    }
+  ],
+  "edges": [
+    {
+      "from": "halvergate.account-events.account-closed",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L7"
+    },
+    {
+      "from": "halvergate.account-events.account-closed",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L14"
+    },
+    {
+      "from": "jms:HB.ACCOUNT.CLOSED",
+      "to": "halvergate.account-events.account-closed",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/account-closed.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/account-closed.xsl:L3"
+    },
+    {
+      "from": "halvergate.account-events.account-closed",
+      "to": "xsl:Transforms/account-closed.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L19"
+    },
+    {
+      "from": "halvergate.account-events.account-closed",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L24"
+    },
+    {
+      "from": "halvergate.account-events.account-closed",
+      "to": "table:account_closures",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.account-events.account-closed",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L29"
+    },
+    {
+      "from": "halvergate.account-events.account-closed",
+      "to": "jms:HB.ACCOUNT.ARCHIVED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L29"
+    },
+    {
+      "from": "halvergate.account-events.account-opened",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L7"
+    },
+    {
+      "from": "halvergate.account-events.account-opened",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L14"
+    },
+    {
+      "from": "jms:HB.ACCOUNT.OPENED",
+      "to": "halvergate.account-events.account-opened",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/account-opened.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/account-opened.xsl:L3"
+    },
+    {
+      "from": "halvergate.account-events.account-opened",
+      "to": "xsl:Transforms/account-opened.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L19"
+    },
+    {
+      "from": "halvergate.account-events.account-opened",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L24"
+    },
+    {
+      "from": "halvergate.account-events.account-opened",
+      "to": "table:account_registry",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.account-events.account-opened",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L29"
+    },
+    {
+      "from": "halvergate.account-events.account-opened",
+      "to": "jms:HB.ACCOUNT.CREATED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L29"
+    },
+    {
+      "from": "halvergate.account-events.address-changed",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L7"
+    },
+    {
+      "from": "halvergate.account-events.address-changed",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L14"
+    },
+    {
+      "from": "jms:HB.ADDRESS.CHANGED",
+      "to": "halvergate.account-events.address-changed",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/address-changed.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/address-changed.xsl:L3"
+    },
+    {
+      "from": "halvergate.account-events.address-changed",
+      "to": "xsl:Transforms/address-changed.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L19"
+    },
+    {
+      "from": "halvergate.account-events.address-changed",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L24"
+    },
+    {
+      "from": "halvergate.account-events.address-changed",
+      "to": "table:account_addresses",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.account-events.address-changed",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L29"
+    },
+    {
+      "from": "halvergate.account-events.address-changed",
+      "to": "jms:HB.ADDRESS.UPDATED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L29"
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L7"
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L14"
+    },
+    {
+      "from": "jms:HB.ACCOUNT.EVENTS.IN",
+      "to": "halvergate.account-events.event-fanout",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/event-fanout.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/event-fanout.xsl:L3"
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "xsl:Transforms/event-fanout.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L19"
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L24"
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "table:account_events",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L29"
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "jms:HB.ACCOUNT.EVENTS",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L29"
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "halvergate.account-events.account-opened",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L34",
+      "called_name": "account-events.account-opened",
+      "declared_name": "halvergate.account-events.account-opened",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/account-events/account-opened.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "halvergate.account-events.address-changed",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L39",
+      "called_name": "account-events.address-changed",
+      "declared_name": "halvergate.account-events.address-changed",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/account-events/address-changed.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "halvergate.account-events.limit-changed",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L44",
+      "called_name": "account-events.limit-changed",
+      "declared_name": "halvergate.account-events.limit-changed",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.account-events.event-fanout",
+      "to": "halvergate.account-events.account-closed",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/account-events/event-fanout.bwp:L49",
+      "called_name": "account-events.account-closed",
+      "declared_name": "halvergate.account-events.account-closed",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/account-events/account-closed.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.account-events.limit-changed",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L7"
+    },
+    {
+      "from": "halvergate.account-events.limit-changed",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L14"
+    },
+    {
+      "from": "jms:HB.LIMIT.CHANGED",
+      "to": "halvergate.account-events.limit-changed",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/limit-changed.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/limit-changed.xsl:L3"
+    },
+    {
+      "from": "halvergate.account-events.limit-changed",
+      "to": "xsl:Transforms/limit-changed.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L19"
+    },
+    {
+      "from": "halvergate.account-events.limit-changed",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L24"
+    },
+    {
+      "from": "halvergate.account-events.limit-changed",
+      "to": "table:account_limits",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.account-events.limit-changed",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L29"
+    },
+    {
+      "from": "halvergate.account-events.limit-changed",
+      "to": "jms:HB.LIMIT.UPDATED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/account-events/limit-changed.bwp:L29"
+    },
+    {
+      "from": "halvergate.customer-alerts.card-dispute",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L7"
+    },
+    {
+      "from": "halvergate.customer-alerts.card-dispute",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L14"
+    },
+    {
+      "from": "jms:HB.ALERTS.CARD.DISPUTE",
+      "to": "halvergate.customer-alerts.card-dispute",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/card-dispute.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/card-dispute.xsl:L3"
+    },
+    {
+      "from": "halvergate.customer-alerts.card-dispute",
+      "to": "xsl:Transforms/card-dispute.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L19"
+    },
+    {
+      "from": "halvergate.customer-alerts.card-dispute",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L24"
+    },
+    {
+      "from": "halvergate.customer-alerts.card-dispute",
+      "to": "table:dispute_cases",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.customer-alerts.card-dispute",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L29"
+    },
+    {
+      "from": "halvergate.customer-alerts.card-dispute",
+      "to": "jms:HB.DISPUTE.RECEIVED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/card-dispute.bwp:L29"
+    },
+    {
+      "from": "halvergate.customer-alerts.large-transaction",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L7"
+    },
+    {
+      "from": "halvergate.customer-alerts.large-transaction",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L14"
+    },
+    {
+      "from": "jms:HB.ALERTS.LARGE.TRANSACTION",
+      "to": "halvergate.customer-alerts.large-transaction",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/large-transaction.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/large-transaction.xsl:L3"
+    },
+    {
+      "from": "halvergate.customer-alerts.large-transaction",
+      "to": "xsl:Transforms/large-transaction.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L19"
+    },
+    {
+      "from": "halvergate.customer-alerts.large-transaction",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L24"
+    },
+    {
+      "from": "halvergate.customer-alerts.large-transaction",
+      "to": "table:large_alert_dispatch",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.customer-alerts.large-transaction",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L29"
+    },
+    {
+      "from": "halvergate.customer-alerts.large-transaction",
+      "to": "jms:HB.LARGE.TRANSACTION.ALERTED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/large-transaction.bwp:L29"
+    },
+    {
+      "from": "halvergate.customer-alerts.low-balance",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L7"
+    },
+    {
+      "from": "halvergate.customer-alerts.low-balance",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L14"
+    },
+    {
+      "from": "jms:HB.ALERTS.LOW.BALANCE",
+      "to": "halvergate.customer-alerts.low-balance",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/low-balance.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/low-balance.xsl:L3"
+    },
+    {
+      "from": "halvergate.customer-alerts.low-balance",
+      "to": "xsl:Transforms/low-balance.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L19"
+    },
+    {
+      "from": "halvergate.customer-alerts.low-balance",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L24"
+    },
+    {
+      "from": "halvergate.customer-alerts.low-balance",
+      "to": "table:alert_dispatch",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.customer-alerts.low-balance",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L29"
+    },
+    {
+      "from": "halvergate.customer-alerts.low-balance",
+      "to": "jms:HB.LOW.BALANCE.ALERTED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/low-balance.bwp:L29"
+    },
+    {
+      "from": "halvergate.customer-alerts.preference-sync",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L7"
+    },
+    {
+      "from": "halvergate.customer-alerts.preference-sync",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L14"
+    },
+    {
+      "from": "jms:HB.ALERT.PREFERENCES",
+      "to": "halvergate.customer-alerts.preference-sync",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/preference-sync.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/preference-sync.xsl:L3"
+    },
+    {
+      "from": "halvergate.customer-alerts.preference-sync",
+      "to": "xsl:Transforms/preference-sync.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L19"
+    },
+    {
+      "from": "halvergate.customer-alerts.preference-sync",
+      "to": "resource:ServiceHttp",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L24"
+    },
+    {
+      "from": "halvergate.customer-alerts.preference-sync",
+      "to": "http:${notifications.url}",
+      "kind": "http_post",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L24"
+    },
+    {
+      "from": "halvergate.customer-alerts.preference-sync",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L29"
+    },
+    {
+      "from": "halvergate.customer-alerts.preference-sync",
+      "to": "table:alert_preferences",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L29",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.customer-alerts.preference-sync",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L34"
+    },
+    {
+      "from": "halvergate.customer-alerts.preference-sync",
+      "to": "jms:HB.PREFERENCES.SYNCED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/customer-alerts/preference-sync.bwp:L34"
+    },
+    {
+      "from": "halvergate.fees-billing.daily-fee",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L7"
+    },
+    {
+      "from": "halvergate.fees-billing.daily-fee",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L14"
+    },
+    {
+      "from": "jms:HB.DAILY.FEES",
+      "to": "halvergate.fees-billing.daily-fee",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L14",
+      "note": "destination field on bw.jms.Timer; not evidence of a JMS receiver"
+    },
+    {
+      "from": "xsl:Transforms/daily-fee.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/daily-fee.xsl:L3"
+    },
+    {
+      "from": "halvergate.fees-billing.daily-fee",
+      "to": "xsl:Transforms/daily-fee.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L24"
+    },
+    {
+      "from": "halvergate.fees-billing.daily-fee",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L29"
+    },
+    {
+      "from": "halvergate.fees-billing.daily-fee",
+      "to": "table:fee_assessments",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L29",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.fees-billing.daily-fee",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L34"
+    },
+    {
+      "from": "halvergate.fees-billing.daily-fee",
+      "to": "jms:HB.FEE.CALCULATED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/daily-fee.bwp:L34"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-posting",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L7"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-posting",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L14"
+    },
+    {
+      "from": "jms:HB.FEE.POSTING",
+      "to": "halvergate.fees-billing.fee-posting",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/fee-posting.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/fee-posting.xsl:L3"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-posting",
+      "to": "xsl:Transforms/fee-posting.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L19"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-posting",
+      "to": "resource:ServiceHttp",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L24"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-posting",
+      "to": "http:${billing.url}",
+      "kind": "http_post",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L24"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-posting",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L29"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-posting",
+      "to": "table:fee_postings",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L29",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-posting",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L34"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-posting",
+      "to": "jms:HB.FEE.POSTED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-posting.bwp:L34"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-reversal",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L7"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-reversal",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L14"
+    },
+    {
+      "from": "jms:HB.FEE.REVERSAL",
+      "to": "halvergate.fees-billing.fee-reversal",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/fee-reversal.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/fee-reversal.xsl:L3"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-reversal",
+      "to": "xsl:Transforms/fee-reversal.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L19"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-reversal",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L24"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-reversal",
+      "to": "table:fee_reversals",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-reversal",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L29"
+    },
+    {
+      "from": "halvergate.fees-billing.fee-reversal",
+      "to": "jms:HB.FEE.REVERSED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/fee-reversal.bwp:L29"
+    },
+    {
+      "from": "halvergate.fees-billing.month-end-summary",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L7"
+    },
+    {
+      "from": "halvergate.fees-billing.month-end-summary",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L14"
+    },
+    {
+      "from": "jms:HB.MONTH.END.SUMMARY",
+      "to": "halvergate.fees-billing.month-end-summary",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L14",
+      "note": "destination field on bw.internal.start; not evidence of a JMS receiver"
+    },
+    {
+      "from": "xsl:Transforms/fee-rounding.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/fee-rounding.xsl:L3"
+    },
+    {
+      "from": "halvergate.fees-billing.month-end-summary",
+      "to": "xsl:Transforms/fee-rounding.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L24"
+    },
+    {
+      "from": "halvergate.fees-billing.month-end-summary",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L29"
+    },
+    {
+      "from": "halvergate.fees-billing.month-end-summary",
+      "to": "table:fee_summaries",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L29",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.fees-billing.month-end-summary",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L34"
+    },
+    {
+      "from": "halvergate.fees-billing.month-end-summary",
+      "to": "jms:HB.FEE.SUMMARY",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/fees-billing/month-end-summary.bwp:L34"
+    },
+    {
+      "from": "halvergate.payments.currency-routing",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L7"
+    },
+    {
+      "from": "halvergate.payments.currency-routing",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L14"
+    },
+    {
+      "from": "jms:HB.CURRENCY.ROUTING",
+      "to": "halvergate.payments.currency-routing",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/currency-routing.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/currency-routing.xsl:L3"
+    },
+    {
+      "from": "halvergate.payments.currency-routing",
+      "to": "xsl:Transforms/currency-routing.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L19"
+    },
+    {
+      "from": "halvergate.payments.currency-routing",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L25"
+    },
+    {
+      "from": "halvergate.payments.currency-routing",
+      "to": "jms:HB.CURRENCY.ROUTED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L25"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L7"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L16"
+    },
+    {
+      "from": "jms:HB.PAYMENT.INSTRUCTIONS",
+      "to": "halvergate.payments.instruction-intake",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L16"
+    },
+    {
+      "from": "xsl:Transforms/payments/base/clearing-policy.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/payments/base/clearing-policy.xsl:L3"
+    },
+    {
+      "from": "xsl:Transforms/payments/status-policy.xsl",
+      "to": "xsl:Transforms/payments/base/clearing-policy.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/payments/status-policy.xsl:L3"
+    },
+    {
+      "from": "xsl:Transforms/payment-status.xsl",
+      "to": "xsl:Transforms/payments/status-policy.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/payment-status.xsl:L3"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "xsl:Transforms/payment-status.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L21"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L26"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "table:payment_inbox",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L26",
+      "commit_mode": "TRANSACTION_GROUP"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L31"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "table:payment_ledger",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L31",
+      "commit_mode": "TRANSACTION_GROUP"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L36"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "jms:HB.PAYMENT.STATUS",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L36"
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "halvergate.payments.validation-enrichment",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L43",
+      "called_name": "payments.validation-enrichment",
+      "declared_name": "halvergate.payments.validation-enrichment",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "halvergate.payments.sanctions-screening",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L48",
+      "called_name": "payments.sanctions-screening",
+      "declared_name": "halvergate.payments.sanctions-screening",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "halvergate.payments.currency-routing",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L53",
+      "called_name": "payments.currency-routing",
+      "declared_name": "halvergate.payments.currency-routing",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/payments/currency-routing.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.payments.instruction-intake",
+      "to": "halvergate.payments.status-update",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L58",
+      "called_name": "payments.status-update",
+      "declared_name": "halvergate.payments.status-update",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/payments/status-update.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.payments.payment-returns",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L7"
+    },
+    {
+      "from": "halvergate.payments.payment-returns",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14"
+    },
+    {
+      "from": "jms:HB.PAYMENT.RETURNS",
+      "to": "halvergate.payments.payment-returns",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/payment-returns.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/payment-returns.xsl:L3"
+    },
+    {
+      "from": "halvergate.payments.payment-returns",
+      "to": "xsl:Transforms/payment-returns.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L19"
+    },
+    {
+      "from": "halvergate.payments.payment-returns",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L24"
+    },
+    {
+      "from": "halvergate.payments.payment-returns",
+      "to": "table:payment_returns",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.payments.payment-returns",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L29"
+    },
+    {
+      "from": "halvergate.payments.payment-returns",
+      "to": "jms:HB.RETURN.POSTED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/payments/payment-returns.bwp:L29"
+    },
+    {
+      "from": "halvergate.payments.sanctions-screening",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L7"
+    },
+    {
+      "from": "halvergate.payments.sanctions-screening",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L14"
+    },
+    {
+      "from": "jms:HB.SANCTIONS.REQUEST",
+      "to": "halvergate.payments.sanctions-screening",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/sanctions-screening.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/sanctions-screening.xsl:L3"
+    },
+    {
+      "from": "halvergate.payments.sanctions-screening",
+      "to": "xsl:Transforms/sanctions-screening.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L19"
+    },
+    {
+      "from": "halvergate.payments.sanctions-screening",
+      "to": "resource:ServiceHttp",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L24"
+    },
+    {
+      "from": "halvergate.payments.sanctions-screening",
+      "to": "http:${screening.url}",
+      "kind": "http_post",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L24"
+    },
+    {
+      "from": "halvergate.payments.sanctions-screening",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L29"
+    },
+    {
+      "from": "halvergate.payments.sanctions-screening",
+      "to": "table:screening_results",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L29",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.payments.sanctions-screening",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L34"
+    },
+    {
+      "from": "halvergate.payments.sanctions-screening",
+      "to": "jms:HB.SANCTIONS.RESPONSE",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L34"
+    },
+    {
+      "from": "halvergate.payments.status-update",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L7"
+    },
+    {
+      "from": "halvergate.payments.status-update",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L14"
+    },
+    {
+      "from": "jms:HB.STATUS.UPDATE",
+      "to": "halvergate.payments.status-update",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L14"
+    },
+    {
+      "from": "halvergate.payments.status-update",
+      "to": "xsl:Transforms/payment-status.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L19"
+    },
+    {
+      "from": "halvergate.payments.status-update",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L24"
+    },
+    {
+      "from": "halvergate.payments.status-update",
+      "to": "table:payment_status",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.payments.status-update",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L29"
+    },
+    {
+      "from": "halvergate.payments.status-update",
+      "to": "jms:HB.STATUS.PUBLISHED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/payments/status-update.bwp:L29"
+    },
+    {
+      "from": "halvergate.payments.validation-enrichment",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L7"
+    },
+    {
+      "from": "halvergate.payments.validation-enrichment",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L14"
+    },
+    {
+      "from": "jms:HB.PAYMENT.VALIDATION",
+      "to": "halvergate.payments.validation-enrichment",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/validation-enrichment.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/validation-enrichment.xsl:L3"
+    },
+    {
+      "from": "halvergate.payments.validation-enrichment",
+      "to": "xsl:Transforms/validation-enrichment.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L19"
+    },
+    {
+      "from": "halvergate.payments.validation-enrichment",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L24"
+    },
+    {
+      "from": "halvergate.payments.validation-enrichment",
+      "to": "table:payment_validation",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.payments.validation-enrichment",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L29"
+    },
+    {
+      "from": "halvergate.payments.validation-enrichment",
+      "to": "jms:HB.PAYMENT.ENRICHED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L29"
+    },
+    {
+      "from": "halvergate.statements-documents.delivery-notice",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L7"
+    },
+    {
+      "from": "halvergate.statements-documents.delivery-notice",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L14"
+    },
+    {
+      "from": "jms:HB.DELIVERY.NOTICE",
+      "to": "halvergate.statements-documents.delivery-notice",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/delivery-notice.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/delivery-notice.xsl:L3"
+    },
+    {
+      "from": "halvergate.statements-documents.delivery-notice",
+      "to": "xsl:Transforms/delivery-notice.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L19"
+    },
+    {
+      "from": "halvergate.statements-documents.delivery-notice",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L24"
+    },
+    {
+      "from": "halvergate.statements-documents.delivery-notice",
+      "to": "table:statement_deliveries",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.statements-documents.delivery-notice",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L29"
+    },
+    {
+      "from": "halvergate.statements-documents.delivery-notice",
+      "to": "jms:HB.DELIVERY.CONFIRMED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L29"
+    },
+    {
+      "from": "halvergate.statements-documents.document-store",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L7"
+    },
+    {
+      "from": "halvergate.statements-documents.document-store",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L14"
+    },
+    {
+      "from": "jms:HB.DOCUMENT.STORE",
+      "to": "halvergate.statements-documents.document-store",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/document-store.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/document-store.xsl:L3"
+    },
+    {
+      "from": "halvergate.statements-documents.document-store",
+      "to": "xsl:Transforms/document-store.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L19"
+    },
+    {
+      "from": "halvergate.statements-documents.document-store",
+      "to": "resource:ServiceHttp",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L24"
+    },
+    {
+      "from": "halvergate.statements-documents.document-store",
+      "to": "http:${files.url}",
+      "kind": "http_post",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L24"
+    },
+    {
+      "from": "halvergate.statements-documents.document-store",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L29"
+    },
+    {
+      "from": "halvergate.statements-documents.document-store",
+      "to": "table:document_registry",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L29",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.statements-documents.document-store",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L34"
+    },
+    {
+      "from": "halvergate.statements-documents.document-store",
+      "to": "jms:HB.DOCUMENT.STORED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L34"
+    },
+    {
+      "from": "halvergate.statements-documents.pdf-request",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L7"
+    },
+    {
+      "from": "halvergate.statements-documents.pdf-request",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L14"
+    },
+    {
+      "from": "jms:HB.PDF.REQUEST",
+      "to": "halvergate.statements-documents.pdf-request",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/pdf-request.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/pdf-request.xsl:L3"
+    },
+    {
+      "from": "halvergate.statements-documents.pdf-request",
+      "to": "xsl:Transforms/pdf-request.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L19"
+    },
+    {
+      "from": "halvergate.statements-documents.pdf-request",
+      "to": "resource:ServiceHttp",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L24"
+    },
+    {
+      "from": "halvergate.statements-documents.pdf-request",
+      "to": "http:${screening.url}",
+      "kind": "http_post",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L24"
+    },
+    {
+      "from": "halvergate.statements-documents.pdf-request",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L29"
+    },
+    {
+      "from": "halvergate.statements-documents.pdf-request",
+      "to": "jms:HB.PDF.REQUESTED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L29"
+    },
+    {
+      "from": "halvergate.statements-documents.split-enrich",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L7"
+    },
+    {
+      "from": "halvergate.statements-documents.split-enrich",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L14"
+    },
+    {
+      "from": "jms:HB.STATEMENT.SPLIT",
+      "to": "halvergate.statements-documents.split-enrich",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L14"
+    },
+    {
+      "from": "xsl:Transforms/split-enrich.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/split-enrich.xsl:L3"
+    },
+    {
+      "from": "halvergate.statements-documents.split-enrich",
+      "to": "xsl:Transforms/split-enrich.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L19"
+    },
+    {
+      "from": "halvergate.statements-documents.split-enrich",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L24"
+    },
+    {
+      "from": "halvergate.statements-documents.split-enrich",
+      "to": "table:statement_items",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.statements-documents.split-enrich",
+      "to": "resource:StatementSftp",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L29"
+    },
+    {
+      "from": "halvergate.statements-documents.split-enrich",
+      "to": "sftp:/upload/out/statements-documents.split-enrich",
+      "kind": "sftp_put",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L29",
+      "remote_file": "/upload/out/statements-documents.split-enrich/${requestId}.txt"
+    },
+    {
+      "from": "halvergate.statements-documents.split-enrich",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L34"
+    },
+    {
+      "from": "halvergate.statements-documents.split-enrich",
+      "to": "jms:HB.STATEMENT.ENRICHED",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L34"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "jms:HB.UNDLV",
+      "kind": "fault_to",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L7"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "resource:StatementSftp",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L14"
+    },
+    {
+      "from": "jms:HB.STATEMENT.DROP",
+      "to": "halvergate.statements-documents.statement-drop",
+      "kind": "consumes",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L14",
+      "note": "destination field on bw.sftp.SFTPGet; not evidence of a JMS receiver"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "sftp:/upload/in",
+      "kind": "sftp_get",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L14",
+      "citations": [
+        "integration/legacy-bw6/SharedResources/StatementSftp.sharedresource:L2"
+      ]
+    },
+    {
+      "from": "xsl:Transforms/statements/base/timezone.xsl",
+      "to": "xsl:Transforms/common/receipt.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/statements/base/timezone.xsl:L3"
+    },
+    {
+      "from": "xsl:Transforms/statements/layout.xsl",
+      "to": "xsl:Transforms/statements/base/timezone.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/statements/layout.xsl:L3"
+    },
+    {
+      "from": "xsl:Transforms/statement.xsl",
+      "to": "xsl:Transforms/statements/layout.xsl",
+      "kind": "xsl_import",
+      "citation": "integration/legacy-bw6/Transforms/statement.xsl:L3"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "xsl:Transforms/statement.xsl",
+      "kind": "transforms_with",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L19"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "resource:LedgerJdbc",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L24"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "table:statement_jobs",
+      "kind": "writes_table",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L24",
+      "commit_mode": "AUTO_COMMIT"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "resource:StatementSftp",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L29"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "sftp:/upload/out/statements-documents.statement-drop",
+      "kind": "sftp_put",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L29",
+      "remote_file": "/upload/out/statements-documents.statement-drop/${requestId}.txt"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "resource:EmsConnection",
+      "kind": "uses_resource",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L34"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "jms:HB.STATEMENT.READY",
+      "kind": "produces",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L34"
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "halvergate.statements-documents.split-enrich",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L39",
+      "called_name": "statements-documents.split-enrich",
+      "declared_name": "halvergate.statements-documents.split-enrich",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/statements-documents/split-enrich.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "halvergate.statements-documents.pdf-request",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L44",
+      "called_name": "statements-documents.pdf-request",
+      "declared_name": "halvergate.statements-documents.pdf-request",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/statements-documents/pdf-request.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "halvergate.statements-documents.document-store",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L49",
+      "called_name": "statements-documents.document-store",
+      "declared_name": "halvergate.statements-documents.document-store",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/statements-documents/document-store.bwp:L2"
+      ]
+    },
+    {
+      "from": "halvergate.statements-documents.statement-drop",
+      "to": "halvergate.statements-documents.delivery-notice",
+      "kind": "call_process",
+      "citation": "integration/legacy-bw6/Processes/statements-documents/statement-drop.bwp:L54",
+      "called_name": "statements-documents.delivery-notice",
+      "declared_name": "halvergate.statements-documents.delivery-notice",
+      "name_matches": false,
+      "note": "binding unresolved (see decisions)",
+      "citations": [
+        "integration/legacy-bw6/Processes/statements-documents/delivery-notice.bwp:L2"
+      ]
+    }
+  ],
+  "summary": {
+    "producer_consumer_matches": [],
+    "processes_without_incoming_call_or_starter_producer": [
+      "halvergate.account-events.event-fanout",
+      "halvergate.customer-alerts.card-dispute",
+      "halvergate.customer-alerts.large-transaction",
+      "halvergate.customer-alerts.low-balance",
+      "halvergate.customer-alerts.preference-sync",
+      "halvergate.fees-billing.daily-fee",
+      "halvergate.fees-billing.fee-posting",
+      "halvergate.fees-billing.fee-reversal",
+      "halvergate.fees-billing.month-end-summary",
+      "halvergate.payments.instruction-intake",
+      "halvergate.payments.payment-returns",
+      "halvergate.statements-documents.statement-drop"
+    ],
+    "destinations_without_in_project_consumer": [
+      "jms:HB.ACCOUNT.ARCHIVED",
+      "jms:HB.ACCOUNT.CREATED",
+      "jms:HB.ACCOUNT.EVENTS",
+      "jms:HB.ADDRESS.UPDATED",
+      "jms:HB.CURRENCY.ROUTED",
+      "jms:HB.DELIVERY.CONFIRMED",
+      "jms:HB.DISPUTE.RECEIVED",
+      "jms:HB.DOCUMENT.STORED",
+      "jms:HB.FEE.CALCULATED",
+      "jms:HB.FEE.POSTED",
+      "jms:HB.FEE.REVERSED",
+      "jms:HB.FEE.SUMMARY",
+      "jms:HB.LARGE.TRANSACTION.ALERTED",
+      "jms:HB.LIMIT.UPDATED",
+      "jms:HB.LOW.BALANCE.ALERTED",
+      "jms:HB.PAYMENT.ENRICHED",
+      "jms:HB.PAYMENT.STATUS",
+      "jms:HB.PDF.REQUESTED",
+      "jms:HB.PREFERENCES.SYNCED",
+      "jms:HB.RETURN.POSTED",
+      "jms:HB.SANCTIONS.RESPONSE",
+      "jms:HB.STATEMENT.ENRICHED",
+      "jms:HB.STATEMENT.READY",
+      "jms:HB.STATUS.PUBLISHED",
+      "jms:HB.UNDLV"
+    ],
+    "profile_differences": [
+      {
+        "id": "http:${screening.url}",
+        "dev_value": "http://screening:8080/v1/screen",
+        "prod_value": "http://screening:8080/v2/screen",
+        "citations": [
+          "integration/legacy-bw6/Profiles/dev.substvar:L2",
+          "integration/legacy-bw6/Profiles/prod.substvar:L2"
+        ]
+      }
+    ]
+  }
+}
