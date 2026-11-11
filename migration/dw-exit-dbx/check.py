@@ -29,8 +29,11 @@ def main():
         if any(e['target'] not in ALLOWED for e in entries):
             failures.append('invalid target')
         dead, hidden = dbql()
-        if sum(e['target'] == 'retire' for e in entries) != len(dead):
+        if {e['object_name'] for e in entries if e['target'] == 'retire'} != {name for name, evidence in dead.items() if not evidence['code_readers']}:
             failures.append('dead count mismatch')
+        if {e['object_name']: e['unread_tier'] for e in entries if e['unread_tier']} != {name: evidence['tier'] for name, evidence in dead.items()}:
+            failures.append('unread tier mismatch')
+        print(f'DBQL unread={len(dead)} dormant={sum(d["tier"] == "dormant" for d in dead.values())} write_only={sum(d["tier"] == "write-only" for d in dead.values())} retire={sum(e["target"] == "retire" for e in entries)} hidden={len(hidden)}')
         if sum(e['kind'] == 'hidden consumer' for e in entries) != len(hidden):
             failures.append('hidden count mismatch')
         if 'etl/spark/jobs.txt' in assess.spark_files():

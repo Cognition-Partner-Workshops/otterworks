@@ -6,119 +6,194 @@ metadata:
     SFX_AUDIT.ACCESS_REVIEW:
       last_access: '2026-11-09 01:01:52'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - warehouse/teradata/scripts/audit/02_load_controls.bteq
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
     SFX_AUDIT.AUDIT_EVENT_ARCHIVE:
       last_access: '2026-07-01 17:30:00'
       access_count: '0'
+      tier: dormant
+      code_readers:
+      - etl/spark/jobs/py/audit_archive_resort.py
+      - warehouse/teradata/macros/archive_overview.sql
     SFX_AUDIT.COMPLIANCE_FLAG:
       last_access: '2026-11-09 01:04:00'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala
+      - warehouse/teradata/scripts/audit/02_load_controls.bteq
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
     SFX_AUDIT.DATA_EXPORT_REQ:
       last_access: '2026-11-09 01:03:35'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - warehouse/teradata/scripts/audit/02_load_controls.bteq
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
     SFX_AUDIT.LEGAL_HOLD:
       last_access: '2026-11-09 01:06:36'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - warehouse/teradata/scripts/audit/03_load_reviews.bteq
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
     SFX_AUDIT.M_ARCHIVE_OVERVIEW:
       last_access: '2026-07-01 17:30:00'
       access_count: '0'
+      tier: dormant
+      code_readers: []
     SFX_AUDIT.RETENTION_POLICY:
       last_access: '2026-11-09 01:02:03'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - warehouse/teradata/scripts/audit/02_load_controls.bteq
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
     SFX_AUDIT.SECURITY_ALERT:
       last_access: '2026-11-09 01:05:47'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - etl/spark/jobs/py/security_alert_anomaly.py
+      - warehouse/teradata/scripts/audit/03_load_reviews.bteq
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
     SFX_BILLING.STG_GL_JOURNAL_LINE:
       last_access: '2026-11-08 00:36:03'
       access_count: '21'
+      tier: write-only
+      code_readers: []
     SFX_BILLING.USAGE_DAILY:
       last_access: '2026-11-09 01:19:53'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - etl/spark/jobs/py/billing_usage_append_daily.py
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/billing/05_load_usage.bteq
+      - warehouse/teradata/scripts/documents/10_storage_monthly.bteq
     SFX_DOCUMENTS.COLLAB_SESSION:
       last_access: '2026-11-09 01:27:16'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - etl/spark/jobs/py/collab_session_sessionize.py
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/documents/05_load_sessions.bteq
     SFX_DOCUMENTS.DOC_COMMENT:
       last_access: '2026-11-09 01:26:58'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/documents/04_load_objects.bteq
     SFX_DOCUMENTS.DOC_SHARE:
       last_access: '2026-11-09 01:23:09'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - etl/spark/jobs/py/doc_share_graph_reach.py
+      - etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/documents/03_load_access.bteq
     SFX_DOCUMENTS.DOC_TAG:
       last_access: '2026-11-09 01:24:41'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - etl/spark/jobs/py/docs_tag_normalize.py
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/documents/03_load_access.bteq
     SFX_DOCUMENTS.FILE_OBJECT:
       last_access: '2026-11-09 01:25:25'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - etl/spark/jobs/py/docs_storage_by_owner.py
+      - etl/spark/jobs/py/file_object_binary_extract.py
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/documents/04_load_objects.bteq
     SFX_DOCUMENTS.FOLDER:
       last_access: '2026-11-09 01:20:47'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - etl/spark/jobs/py/docs_folder_legacy_report.py
+      - etl/spark/jobs/py/docs_folder_tree_walk.py
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/documents/01_load_folders.bteq
     SFX_DOCUMENTS.SEARCH_INDEX_LOG:
       last_access: '2026-07-01 17:30:00'
       access_count: '0'
+      tier: dormant
+      code_readers:
+      - etl/spark/jobs/py/docs_search_log_parse.py
+      - warehouse/teradata/ddl/documents/10_views.sql
     SFX_DOCUMENTS.V_SEARCH_HISTORY:
       last_access: '2026-07-01 17:30:00'
       access_count: '0'
+      tier: dormant
+      code_readers: []
     SFX_USERS.ROLE_GRANT:
       last_access: '2026-11-09 01:33:34'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOC_SHARE.XML
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/users/02_load_teams.bteq
     SFX_USERS.SSO_IDENTITY:
       last_access: '2026-11-09 01:34:33'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/users/03_load_identity.bteq
     SFX_USERS.STG_USER_PREF:
       last_access: '2026-11-07 00:18:06'
       access_count: '20'
+      tier: write-only
+      code_readers: []
     SFX_USERS.USER_PREF:
       last_access: '2026-07-01 17:30:00'
       access_count: '0'
+      tier: dormant
+      code_readers:
+      - etl/spark/jobs/py/user_pref_json_flatten.py
+      - warehouse/teradata/ddl/users/10_views.sql
     SFX_USERS.USER_PROFILE:
       last_access: '2026-11-09 01:30:47'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/users/01_load_users.bteq
     SFX_USERS.USER_STATUS_HIST:
       last_access: '2026-11-09 01:35:05'
       access_count: '90'
+      tier: write-only
+      code_readers:
+      - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+      - warehouse/teradata/scripts/users/03_load_identity.bteq
     SFX_USERS.V_USER_SETTINGS:
       last_access: '2026-07-01 17:30:00'
       access_count: '0'
+      tier: dormant
+      code_readers: []
   hidden:
-  - user: svc_etl_audit
-    queries: 90
+  - user: FIN_ANALYST_J*****
+    queries: 232
     clients:
-    - etl-audit-01
+    - Microsoft Excel; workstation=FIN-WS-014
     apps:
-    - BTEQ
-    first: '2026-08-12 04:05:28'
-    last: '2026-11-09 04:05:57'
+    - ODBC
+    first: '2026-08-17 09:14:51'
+    last: '2026-11-09 16:21:00'
     objects:
-    - SFX_AUDIT.AUDIT_EVENT
-  - user: svc_etl_billing
-    queries: 90
-    clients:
-    - etl-billing-01
-    apps:
-    - BTEQ
-    first: '2026-08-12 04:05:01'
-    last: '2026-11-09 04:05:01'
-    objects:
+    - SFX_BILLING.GL_ACCOUNT
+    - SFX_BILLING.GL_JOURNAL_LINE
     - SFX_BILLING.INVOICE_HDR
-  - user: svc_etl_docs
-    queries: 90
-    clients:
-    - etl-docs-01
-    apps:
-    - BTEQ
-    first: '2026-08-12 04:05:22'
-    last: '2026-11-09 04:05:18'
-    objects:
-    - SFX_DOCUMENTS.DOCUMENT
-  - user: svc_etl_users
-    queries: 90
-    clients:
-    - etl-users-01
-    apps:
-    - BTEQ
-    first: '2026-08-12 04:05:20'
-    last: '2026-11-09 04:05:01'
-    objects:
-    - SFX_USERS.APP_USER
 objects:
 - id: a909992f8ceaa9bd
   source: consumers/registry.yaml#admin-service
@@ -136,6 +211,8 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 9e2ce2c51819032a
   source: consumers/registry.yaml#analytics-service
   object_name: analytics-service
@@ -152,6 +229,8 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: bf33abab4ce38b31
   source: consumers/registry.yaml#bi-semantic
   object_name: bi-semantic
@@ -168,6 +247,8 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 16438a926eb0e873
   source: consumers/registry.yaml#billing-service
   object_name: billing-service
@@ -184,6 +265,8 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 7eb14bba4f2af3d6
   source: consumers/registry.yaml#finance-notebook
   object_name: finance-notebook
@@ -200,6 +283,8 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6f836b8324aa2c82
   source: consumers/registry.yaml#legacy-billing
   object_name: legacy-billing
@@ -216,6 +301,8 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: d75b52256e226198
   source: consumers/registry.yaml#partner-extract
   object_name: partner-extract
@@ -232,6 +319,8 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 0e1ced9b9626ba06
   source: consumers/registry.yaml#report-service
   object_name: report-service
@@ -248,6 +337,8 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 354abade067f64e6
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_DAILY_SUMMARY.XML#m_SFX_AUDIT_DAILY_SUMMARY
   object_name: m_SFX_AUDIT_DAILY_SUMMARY
@@ -264,6 +355,8 @@ objects:
   loc: 83
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: cbbc2b86fa9abcc6
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT.XML#m_SFX_AUDIT_EVENT
   object_name: m_SFX_AUDIT_EVENT
@@ -280,6 +373,8 @@ objects:
   loc: 68
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: d8f1e3896430f0d9
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_AUDIT_EVENT_ARCHIVE.XML#m_SFX_AUDIT_EVENT_ARCHIVE
   object_name: m_SFX_AUDIT_EVENT_ARCHIVE
@@ -296,6 +391,8 @@ objects:
   loc: 54
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6484c61ca18be3c2
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_SECURITY_ALERT.XML#m_SFX_SECURITY_ALERT
   object_name: m_SFX_SECURITY_ALERT
@@ -312,6 +409,8 @@ objects:
   loc: 187
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: bf6bf6a52df28366
   source: etl/informatica/repository/SFX_AUDIT/mappings/m_SFX_STG_AUDIT_EVENT.XML#m_SFX_STG_AUDIT_EVENT
   object_name: m_SFX_STG_AUDIT_EVENT
@@ -328,6 +427,8 @@ objects:
   loc: 68
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: aad1921a81f7f413
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML#s_m_SFX_AUDIT_DAILY_SUMMARY
   object_name: s_m_SFX_AUDIT_DAILY_SUMMARY
@@ -344,6 +445,8 @@ objects:
   loc: 47
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 96546c245091fda2
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML#s_m_SFX_AUDIT_EVENT
   object_name: s_m_SFX_AUDIT_EVENT
@@ -360,6 +463,8 @@ objects:
   loc: 45
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 8d60d9fb2c9a6ebd
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML#s_m_SFX_AUDIT_EVENT_ARCHIVE
   object_name: s_m_SFX_AUDIT_EVENT_ARCHIVE
@@ -376,6 +481,8 @@ objects:
   loc: 45
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 51661fe576aa04d2
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML#s_m_SFX_SECURITY_ALERT
   object_name: s_m_SFX_SECURITY_ALERT
@@ -392,6 +499,8 @@ objects:
   loc: 80
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 5eb7d8e2a0b40f4f
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML#s_m_SFX_STG_AUDIT_EVENT
   object_name: s_m_SFX_STG_AUDIT_EVENT
@@ -408,6 +517,8 @@ objects:
   loc: 49
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 58663ae35c087490
   source: etl/informatica/repository/SFX_AUDIT/wf_SFX_AUDIT_DAILY.XML#wf_SFX_AUDIT_DAILY
   object_name: wf_SFX_AUDIT_DAILY
@@ -424,6 +535,8 @@ objects:
   loc: 45
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: f0361b4304bd38fa
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_CUSTOMER_ACCOUNT.XML#m_SFX_CUSTOMER_ACCOUNT
   object_name: m_SFX_CUSTOMER_ACCOUNT
@@ -440,6 +553,8 @@ objects:
   loc: 95
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 2fd0764be73a1733
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_GL_JOURNAL_LINE.XML#m_SFX_GL_JOURNAL_LINE
   object_name: m_SFX_GL_JOURNAL_LINE
@@ -456,6 +571,8 @@ objects:
   loc: 288
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 67f41d67d59f42ba
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_INVOICE_HDR.XML#m_SFX_INVOICE_HDR
   object_name: m_SFX_INVOICE_HDR
@@ -472,6 +589,8 @@ objects:
   loc: 221
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 42981ab27802d974
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_INVOICE_LINE.XML#m_SFX_INVOICE_LINE
   object_name: m_SFX_INVOICE_LINE
@@ -488,6 +607,8 @@ objects:
   loc: 87
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 1c99845abc02a0ee
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_PAYMENT.XML#m_SFX_PAYMENT
   object_name: m_SFX_PAYMENT
@@ -504,6 +625,8 @@ objects:
   loc: 79
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 10f4c1497e21c2e2
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_STG_CUSTOMER_ACCOUNT.XML#m_SFX_STG_CUSTOMER_ACCOUNT
   object_name: m_SFX_STG_CUSTOMER_ACCOUNT
@@ -520,6 +643,8 @@ objects:
   loc: 69
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: c90225d3fe85ae15
   source: etl/informatica/repository/SFX_BILLING/mappings/m_SFX_STG_INVOICE_HDR.XML#m_SFX_STG_INVOICE_HDR
   object_name: m_SFX_STG_INVOICE_HDR
@@ -536,6 +661,8 @@ objects:
   loc: 81
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6bf212ac726f9d16
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML#s_m_SFX_CUSTOMER_ACCOUNT
   object_name: s_m_SFX_CUSTOMER_ACCOUNT
@@ -552,6 +679,8 @@ objects:
   loc: 46
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: d92301cd103aaf7e
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML#s_m_SFX_GL_JOURNAL_LINE
   object_name: s_m_SFX_GL_JOURNAL_LINE
@@ -568,6 +697,8 @@ objects:
   loc: 79
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 9dbca25e8b3c0529
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML#s_m_SFX_INVOICE_HDR
   object_name: s_m_SFX_INVOICE_HDR
@@ -584,6 +715,8 @@ objects:
   loc: 62
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 204baef335c76ecf
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML#s_m_SFX_INVOICE_LINE
   object_name: s_m_SFX_INVOICE_LINE
@@ -600,6 +733,8 @@ objects:
   loc: 50
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 05c44ea1ed57e9f2
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML#s_m_SFX_PAYMENT
   object_name: s_m_SFX_PAYMENT
@@ -616,6 +751,8 @@ objects:
   loc: 50
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: d471527193e9f419
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML#s_m_SFX_STG_CUSTOMER_ACCOUNT
   object_name: s_m_SFX_STG_CUSTOMER_ACCOUNT
@@ -632,6 +769,8 @@ objects:
   loc: 49
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 0e5b4b487c1cdaa2
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML#s_m_SFX_STG_INVOICE_HDR
   object_name: s_m_SFX_STG_INVOICE_HDR
@@ -648,6 +787,8 @@ objects:
   loc: 49
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: ac43010e0f2ea1ca
   source: etl/informatica/repository/SFX_BILLING/wf_SFX_BILLING_DAILY.XML#wf_SFX_BILLING_DAILY
   object_name: wf_SFX_BILLING_DAILY
@@ -664,6 +805,8 @@ objects:
   loc: 55
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 28768d7b47d87de6
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_APP_USER.XML#m_SFX_APP_USER
   object_name: m_SFX_APP_USER
@@ -680,6 +823,8 @@ objects:
   loc: 85
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: fc2757668ae7cdcd
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOCUMENT.XML#m_SFX_DOCUMENT
   object_name: m_SFX_DOCUMENT
@@ -696,6 +841,8 @@ objects:
   loc: 165
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 5fb967a05c4c2fd1
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOC_SHARE.XML#m_SFX_DOC_SHARE
   object_name: m_SFX_DOC_SHARE
@@ -712,6 +859,8 @@ objects:
   loc: 104
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 7f9df5c8b86c3e3f
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_LOGIN_EVENT.XML#m_SFX_LOGIN_EVENT
   object_name: m_SFX_LOGIN_EVENT
@@ -728,6 +877,8 @@ objects:
   loc: 96
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 9a53446062f55171
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_ROLE_GRANT.XML#m_SFX_ROLE_GRANT
   object_name: m_SFX_ROLE_GRANT
@@ -744,6 +895,8 @@ objects:
   loc: 50
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 8717fb5b8e9b0976
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_APP_USER.XML#m_SFX_STG_APP_USER
   object_name: m_SFX_STG_APP_USER
@@ -760,6 +913,8 @@ objects:
   loc: 56
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 146f470fd9ad85b0
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_STG_DOCUMENT.XML#m_SFX_STG_DOCUMENT
   object_name: m_SFX_STG_DOCUMENT
@@ -776,6 +931,8 @@ objects:
   loc: 68
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 1d0dc07a379f785e
   source: etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_TEAM_MEMBER.XML#m_SFX_TEAM_MEMBER
   object_name: m_SFX_TEAM_MEMBER
@@ -792,6 +949,8 @@ objects:
   loc: 56
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: d5f292fcf2fefe83
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#s_m_SFX_APP_USER
   object_name: s_m_SFX_APP_USER
@@ -808,6 +967,8 @@ objects:
   loc: 46
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 647a5d89aa3dbe39
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#s_m_SFX_DOCUMENT
   object_name: s_m_SFX_DOCUMENT
@@ -824,6 +985,8 @@ objects:
   loc: 49
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: db20500dba39274a
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#s_m_SFX_DOC_SHARE
   object_name: s_m_SFX_DOC_SHARE
@@ -840,6 +1003,8 @@ objects:
   loc: 51
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: fdd995eb428a56d5
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#s_m_SFX_LOGIN_EVENT
   object_name: s_m_SFX_LOGIN_EVENT
@@ -856,6 +1021,8 @@ objects:
   loc: 63
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: fdb2dc812729f4c9
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#s_m_SFX_ROLE_GRANT
   object_name: s_m_SFX_ROLE_GRANT
@@ -872,6 +1039,8 @@ objects:
   loc: 49
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 188bc698f66d9eb7
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#s_m_SFX_STG_APP_USER
   object_name: s_m_SFX_STG_APP_USER
@@ -888,6 +1057,8 @@ objects:
   loc: 49
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 9470cfb1780f7a70
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#s_m_SFX_STG_DOCUMENT
   object_name: s_m_SFX_STG_DOCUMENT
@@ -904,6 +1075,8 @@ objects:
   loc: 49
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 3e251eb426417b24
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#s_m_SFX_TEAM_MEMBER
   object_name: s_m_SFX_TEAM_MEMBER
@@ -920,6 +1093,8 @@ objects:
   loc: 49
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 28f95671f659d7c1
   source: etl/informatica/repository/SFX_CONTENT/wf_SFX_CONTENT_DAILY.XML#wf_SFX_CONTENT_DAILY
   object_name: wf_SFX_CONTENT_DAILY
@@ -936,6 +1111,8 @@ objects:
   loc: 61
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: e69084121edc8cfb
   source: etl/scripts/analytics_daily.py#analytics_daily
   object_name: analytics_daily
@@ -952,6 +1129,8 @@ objects:
   loc: 353
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: d0172a7a55b2b8df
   source: etl/scripts/audit_archive_weekly.py#audit_archive_weekly
   object_name: audit_archive_weekly
@@ -968,6 +1147,8 @@ objects:
   loc: 171
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 5176c69c45b1ba27
   source: etl/scripts/search_reindex_weekly.py#search_reindex_weekly
   object_name: search_reindex_weekly
@@ -984,6 +1165,8 @@ objects:
   loc: 261
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 148c3f17f66431be
   source: etl/scripts/storage_cleanup_daily.py#storage_cleanup_daily
   object_name: storage_cleanup_daily
@@ -1000,6 +1183,8 @@ objects:
   loc: 164
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 2c1fe9f593a5af43
   source: etl/scripts/user_activity_daily.py#user_activity_daily
   object_name: user_activity_daily
@@ -1016,6 +1201,8 @@ objects:
   loc: 197
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 3239a0ca48ca7071
   source: etl/spark/jobs/py/audit_actor_activity_join.py#audit_actor_activity_join
   object_name: audit_actor_activity_join
@@ -1034,6 +1221,8 @@ objects:
   loc: 25
   complexity: medium
   executor_hours: 0.004015278
+  unread_tier: null
+  code_readers: []
 - id: d505e2c0c31cf608
   source: etl/spark/jobs/py/audit_archive_resort.py#audit_archive_resort
   object_name: audit_archive_resort
@@ -1052,6 +1241,8 @@ objects:
   loc: 10
   complexity: low
   executor_hours: 0.003700556
+  unread_tier: null
+  code_readers: []
 - id: 36e420fc9dda9a4a
   source: etl/spark/jobs/py/billing_churn_score.py#billing_churn_score
   object_name: billing_churn_score
@@ -1070,6 +1261,8 @@ objects:
   loc: 12
   complexity: medium
   executor_hours: 0.00381
+  unread_tier: null
+  code_readers: []
 - id: 81f43bb8d0b21309
   source: etl/spark/jobs/py/billing_gl_trial_balance.py#billing_gl_trial_balance
   object_name: billing_gl_trial_balance
@@ -1088,6 +1281,8 @@ objects:
   loc: 32
   complexity: medium
   executor_hours: 0.006288056
+  unread_tier: null
+  code_readers: []
 - id: 31b693473f0cfb89
   source: etl/spark/jobs/py/billing_invoice_summary_daily.py#billing_invoice_summary_daily
   object_name: billing_invoice_summary_daily
@@ -1106,6 +1301,8 @@ objects:
   loc: 10
   complexity: low
   executor_hours: 0.005417778
+  unread_tier: null
+  code_readers: []
 - id: 240545304dd0cca3
   source: etl/spark/jobs/py/billing_payment_aging.py#billing_payment_aging
   object_name: billing_payment_aging
@@ -1124,6 +1321,8 @@ objects:
   loc: 11
   complexity: low
   executor_hours: 0.005603889
+  unread_tier: null
+  code_readers: []
 - id: 3e8b07384080134a
   source: etl/spark/jobs/py/billing_revenue_by_plan.py#billing_revenue_by_plan
   object_name: billing_revenue_by_plan
@@ -1142,6 +1341,8 @@ objects:
   loc: 13
   complexity: low
   executor_hours: 0.001860556
+  unread_tier: null
+  code_readers: []
 - id: c5c27426ee958835
   source: etl/spark/jobs/py/billing_usage_append_daily.py#billing_usage_append_daily
   object_name: billing_usage_append_daily
@@ -1160,6 +1361,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: 0.003107778
+  unread_tier: null
+  code_readers: []
 - id: ec470285f065ed9c
   source: etl/spark/jobs/py/collab_session_sessionize.py#collab_session_sessionize
   object_name: collab_session_sessionize
@@ -1178,6 +1381,8 @@ objects:
   loc: 20
   complexity: low
   executor_hours: 0.002546944
+  unread_tier: null
+  code_readers: []
 - id: 632af93945f9cc8d
   source: etl/spark/jobs/py/common/__init__.py#__init__
   object_name: __init__
@@ -1194,6 +1399,8 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6ec7edd191d094fd
   source: etl/spark/jobs/py/common/binary_documents.py#binary_documents
   object_name: binary_documents
@@ -1210,6 +1417,8 @@ objects:
   loc: 50
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: fa7d3350fff5f513
   source: etl/spark/jobs/py/common/package.py#package
   object_name: package
@@ -1226,6 +1435,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: b869df193880eac0
   source: etl/spark/jobs/py/common/runtime.py#runtime
   object_name: runtime
@@ -1242,6 +1453,8 @@ objects:
   loc: 39
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: a41fb0305ebd412f
   source: etl/spark/jobs/py/common/schemas.py#schemas
   object_name: schemas
@@ -1258,6 +1471,8 @@ objects:
   loc: 62
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 3656e055e27f9062
   source: etl/spark/jobs/py/doc_share_graph_reach.py#doc_share_graph_reach
   object_name: doc_share_graph_reach
@@ -1276,6 +1491,8 @@ objects:
   loc: 11
   complexity: medium
   executor_hours: 0.004417778
+  unread_tier: null
+  code_readers: []
 - id: df9f11d44d3ae705
   source: etl/spark/jobs/py/doc_version_diff_stats.py#doc_version_diff_stats
   object_name: doc_version_diff_stats
@@ -1294,6 +1511,8 @@ objects:
   loc: 14
   complexity: medium
   executor_hours: 0.030714722
+  unread_tier: null
+  code_readers: []
 - id: 449d7f13d2102104
   source: etl/spark/jobs/py/docs_event_export_hourly.py#docs_event_export_hourly
   object_name: docs_event_export_hourly
@@ -1312,6 +1531,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: 0.013149444
+  unread_tier: null
+  code_readers: []
 - id: 804e1a6d4791df03
   source: etl/spark/jobs/py/docs_folder_legacy_report.py#docs_folder_legacy_report
   object_name: docs_folder_legacy_report
@@ -1330,6 +1551,8 @@ objects:
   loc: 13
   complexity: low
   executor_hours: 0.007445833
+  unread_tier: null
+  code_readers: []
 - id: e2b2fad1957273cb
   source: etl/spark/jobs/py/docs_folder_tree_walk.py#docs_folder_tree_walk
   object_name: docs_folder_tree_walk
@@ -1348,6 +1571,8 @@ objects:
   loc: 10
   complexity: low
   executor_hours: 0.008423056
+  unread_tier: null
+  code_readers: []
 - id: 226fcb6125cd01af
   source: etl/spark/jobs/py/docs_search_log_parse.py#docs_search_log_parse
   object_name: docs_search_log_parse
@@ -1366,6 +1591,8 @@ objects:
   loc: 12
   complexity: medium
   executor_hours: 0.001591111
+  unread_tier: null
+  code_readers: []
 - id: 2b7a6d8d0e305a41
   source: etl/spark/jobs/py/docs_storage_by_owner.py#docs_storage_by_owner
   object_name: docs_storage_by_owner
@@ -1384,6 +1611,8 @@ objects:
   loc: 10
   complexity: medium
   executor_hours: 0.002620833
+  unread_tier: null
+  code_readers: []
 - id: 1eb0f51fa396565a
   source: etl/spark/jobs/py/docs_tag_normalize.py#docs_tag_normalize
   object_name: docs_tag_normalize
@@ -1402,6 +1631,8 @@ objects:
   loc: 11
   complexity: medium
   executor_hours: 0.001232222
+  unread_tier: null
+  code_readers: []
 - id: 5378603daa2875d5
   source: etl/spark/jobs/py/file_object_binary_extract.py#file_object_binary_extract
   object_name: file_object_binary_extract
@@ -1420,6 +1651,8 @@ objects:
   loc: 24
   complexity: medium
   executor_hours: 0.008545
+  unread_tier: null
+  code_readers: []
 - id: 21023332aa8b55ce
   source: etl/spark/jobs/py/lake_compaction_audit.py#lake_compaction_audit
   object_name: lake_compaction_audit
@@ -1438,6 +1671,8 @@ objects:
   loc: 5
   complexity: low
   executor_hours: 0.001205833
+  unread_tier: null
+  code_readers: []
 - id: 348248e32efac0da
   source: etl/spark/jobs/py/security_alert_anomaly.py#security_alert_anomaly
   object_name: security_alert_anomaly
@@ -1456,6 +1691,8 @@ objects:
   loc: 13
   complexity: low
   executor_hours: 0.013226667
+  unread_tier: null
+  code_readers: []
 - id: 82e7b20b053c63d2
   source: etl/spark/jobs/py/user_pref_json_flatten.py#user_pref_json_flatten
   object_name: user_pref_json_flatten
@@ -1474,6 +1711,8 @@ objects:
   loc: 16
   complexity: medium
   executor_hours: 0.001498611
+  unread_tier: null
+  code_readers: []
 - id: 5202404d1a5ee738
   source: etl/spark/jobs/py/users_active_daily.py#users_active_daily
   object_name: users_active_daily
@@ -1492,6 +1731,8 @@ objects:
   loc: 12
   complexity: low
   executor_hours: 0.002261111
+  unread_tier: null
+  code_readers: []
 - id: 93b3d7ca84bbf546
   source: etl/spark/jobs/py/users_login_useragent_parse.py#users_login_useragent_parse
   object_name: users_login_useragent_parse
@@ -1510,6 +1751,8 @@ objects:
   loc: 12
   complexity: medium
   executor_hours: 0.005469167
+  unread_tier: null
+  code_readers: []
 - id: 67c0593354ffde0a
   source: etl/spark/jobs/py/users_team_rollup.py#users_team_rollup
   object_name: users_team_rollup
@@ -1528,6 +1771,8 @@ objects:
   loc: 10
   complexity: medium
   executor_hours: 0.003556111
+  unread_tier: null
+  code_readers: []
 - id: e2e681f4b1b8c75f
   source: etl/spark/scala/src/main/scala/sfx/AuditDailySummary.scala#audit_daily_summary
   object_name: audit_daily_summary
@@ -1546,6 +1791,8 @@ objects:
   loc: 14
   complexity: low
   executor_hours: 0.015961667
+  unread_tier: null
+  code_readers: []
 - id: 13f93f09aa459913
   source: etl/spark/scala/src/main/scala/sfx/BatchSupport.scala#BatchSupport
   object_name: BatchSupport
@@ -1562,6 +1809,8 @@ objects:
   loc: 20
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: f8710c1a5ac6d3c9
   source: etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala#compliance_flag_rules
   object_name: compliance_flag_rules
@@ -1580,6 +1829,8 @@ objects:
   loc: 22
   complexity: low
   executor_hours: 0.010249167
+  unread_tier: null
+  code_readers: []
 - id: 71b09ce48eacf50e
   source: etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala#docs_share_activity
   object_name: docs_share_activity
@@ -1598,6 +1849,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: 0.015369167
+  unread_tier: null
+  code_readers: []
 - id: 2848accf505abb70
   source: etl/spark/scala/src/main/scala/sfx/LakeCompactionDocuments.scala#lake_compaction_documents
   object_name: lake_compaction_documents
@@ -1616,6 +1869,8 @@ objects:
   loc: 10
   complexity: low
   executor_hours: 0.012373611
+  unread_tier: null
+  code_readers: []
 - id: e74cf4a953626a7e
   source: etl/spark/scala/src/main/scala/sfx/TeamGraphComponents.scala#team_graph_components
   object_name: team_graph_components
@@ -1634,6 +1889,8 @@ objects:
   loc: 23
   complexity: medium
   executor_hours: 0.006136667
+  unread_tier: null
+  code_readers: []
 - id: 3b611fa411d110e0
   source: etl/spark/scala/src/main/scala/sfx/UsersRiskScore.scala#users_risk_score
   object_name: users_risk_score
@@ -1652,6 +1909,8 @@ objects:
   loc: 13
   complexity: medium
   executor_hours: 0.004293889
+  unread_tier: null
+  code_readers: []
 - id: b8b1251727eaf8e7
   source: migration/job/ldm/engines/spark_load.py#spark_load
   object_name: spark_load
@@ -1668,6 +1927,8 @@ objects:
   loc: 197
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: ca058e80ece397c2
   source: warehouse/teradata/README.md#teradata-powercenter-decommission
   object_name: teradata-powercenter-decommission
@@ -1684,86 +1945,173 @@ objects:
   loc: 0
   complexity: low
   executor_hours: null
-- id: 55f3cf6005bca525
-  source: warehouse/teradata/dbql/qrylog.csv#svc_etl_audit
-  object_name: svc_etl_audit
+  unread_tier: null
+  code_readers: []
+- id: 17f0e73e65909faa
+  source: warehouse/teradata/dbql/objectusage.csv#FIN_ANALYST_J*****:SFX_BILLING.GL_ACCOUNT
+  object_name: FIN_ANALYST_J*****:SFX_BILLING.GL_ACCOUNT
   source_paths:
-  - warehouse/teradata/dbql/qrylog.csv
-  kind: hidden consumer
-  target: Databricks SQL script
+  - warehouse/teradata/dbql/objectusage.csv
+  kind: hidden consumer object
+  target: compatibility view
   wave: 4
-  owner: '@otterworks/audit'
+  owner: '@otterworks/finance-ops'
   risk: high
-  risk_reason: Consumer cutover and owner signoff required
-  subject_area: audit
-  source_system: teradata
-  loc: 0
-  complexity: low
-  executor_hours: null
-- id: 737474869fbc08de
-  source: warehouse/teradata/dbql/qrylog.csv#svc_etl_billing
-  object_name: svc_etl_billing
-  source_paths:
-  - warehouse/teradata/dbql/qrylog.csv
-  kind: hidden consumer
-  target: Databricks SQL script
-  wave: 4
-  owner: '@otterworks/billing'
-  risk: high
-  risk_reason: Consumer cutover and owner signoff required
+  risk_reason: Unregistered ODBC/Excel reader requires contract-preserving cutover
   subject_area: billing
   source_system: teradata
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
+- id: 663dd04e6342141d
+  source: warehouse/teradata/dbql/objectusage.csv#FIN_ANALYST_J*****:SFX_BILLING.GL_JOURNAL_LINE
+  object_name: FIN_ANALYST_J*****:SFX_BILLING.GL_JOURNAL_LINE
+  source_paths:
+  - warehouse/teradata/dbql/objectusage.csv
+  kind: hidden consumer object
+  target: compatibility view
+  wave: 4
+  owner: '@otterworks/finance-ops'
+  risk: high
+  risk_reason: Unregistered ODBC/Excel reader requires contract-preserving cutover
+  subject_area: billing
+  source_system: teradata
+  loc: 0
+  complexity: low
+  executor_hours: null
+  unread_tier: null
+  code_readers: []
+- id: dbd83f8f5fc51b6f
+  source: warehouse/teradata/dbql/objectusage.csv#FIN_ANALYST_J*****:SFX_BILLING.INVOICE_HDR
+  object_name: FIN_ANALYST_J*****:SFX_BILLING.INVOICE_HDR
+  source_paths:
+  - warehouse/teradata/dbql/objectusage.csv
+  kind: hidden consumer object
+  target: compatibility view
+  wave: 4
+  owner: '@otterworks/finance-ops'
+  risk: high
+  risk_reason: Unregistered ODBC/Excel reader requires contract-preserving cutover
+  subject_area: billing
+  source_system: teradata
+  loc: 0
+  complexity: low
+  executor_hours: null
+  unread_tier: null
+  code_readers: []
+- id: 9f815a2a6107edb1
+  source: warehouse/teradata/dbql/qrylog.csv#FIN_ANALYST_J*****
+  object_name: FIN_ANALYST_J*****
+  source_paths:
+  - warehouse/teradata/dbql/qrylog.csv
+  kind: hidden consumer
+  target: Databricks SQL script
+  wave: 4
+  owner: '@otterworks/finance-ops'
+  risk: high
+  risk_reason: Consumer cutover and owner signoff required
+  subject_area: data-platform
+  source_system: teradata
+  loc: 0
+  complexity: low
+  executor_hours: null
+  unread_tier: null
+  code_readers: []
+- id: 55f3cf6005bca525
+  source: warehouse/teradata/dbql/qrylog.csv#svc_etl_audit
+  object_name: svc_etl_audit
+  source_paths:
+  - warehouse/teradata/dbql/qrylog.csv
+  kind: internal ETL
+  target: Databricks SQL script
+  wave: 3
+  owner: '@otterworks/audit'
+  risk: low
+  risk_reason: Dialect and orchestration parity requires replay
+  subject_area: audit
+  source_system: teradata
+  loc: 0
+  complexity: low
+  executor_hours: null
+  unread_tier: null
+  code_readers: []
+- id: 737474869fbc08de
+  source: warehouse/teradata/dbql/qrylog.csv#svc_etl_billing
+  object_name: svc_etl_billing
+  source_paths:
+  - warehouse/teradata/dbql/qrylog.csv
+  kind: internal ETL
+  target: Databricks SQL script
+  wave: 3
+  owner: '@otterworks/billing'
+  risk: low
+  risk_reason: Dialect and orchestration parity requires replay
+  subject_area: billing
+  source_system: teradata
+  loc: 0
+  complexity: low
+  executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: c8666fc446e33c07
   source: warehouse/teradata/dbql/qrylog.csv#svc_etl_docs
   object_name: svc_etl_docs
   source_paths:
   - warehouse/teradata/dbql/qrylog.csv
-  kind: hidden consumer
+  kind: internal ETL
   target: Databricks SQL script
-  wave: 4
+  wave: 3
   owner: '@otterworks/documents'
-  risk: high
-  risk_reason: Consumer cutover and owner signoff required
+  risk: low
+  risk_reason: Dialect and orchestration parity requires replay
   subject_area: documents
   source_system: teradata
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 23abadae3f14e53c
   source: warehouse/teradata/dbql/qrylog.csv#svc_etl_users
   object_name: svc_etl_users
   source_paths:
   - warehouse/teradata/dbql/qrylog.csv
-  kind: hidden consumer
+  kind: internal ETL
   target: Databricks SQL script
-  wave: 4
+  wave: 3
   owner: '@otterworks/users'
-  risk: high
-  risk_reason: Consumer cutover and owner signoff required
+  risk: low
+  risk_reason: Dialect and orchestration parity requires replay
   subject_area: users
   source_system: teradata
   loc: 0
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 35c04282f57ac610
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.ACCESS_REVIEW
   object_name: SFX_AUDIT.ACCESS_REVIEW
   source_paths:
   - warehouse/teradata/ddl/audit/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/audit'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by warehouse/teradata/scripts/audit/02_load_controls.bteq,
+    warehouse/teradata/scripts/audit/11_reconciliation.bteq
   subject_area: audit
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - warehouse/teradata/scripts/audit/02_load_controls.bteq
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
 - id: 28c19ed9e7c20387
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.AUDIT_DAILY_SUMMARY
   object_name: SFX_AUDIT.AUDIT_DAILY_SUMMARY
@@ -1780,6 +2128,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 80dfd25af1fd3987
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.AUDIT_EVENT
   object_name: SFX_AUDIT.AUDIT_EVENT
@@ -1796,22 +2146,29 @@ objects:
   loc: 9
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 25a308875475b110
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.AUDIT_EVENT_ARCHIVE
   object_name: SFX_AUDIT.AUDIT_EVENT_ARCHIVE
   source_paths:
   - warehouse/teradata/ddl/audit/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/audit'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/audit_archive_resort.py,
+    warehouse/teradata/macros/archive_overview.sql
   subject_area: audit
   source_system: teradata
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: dormant
+  code_readers:
+  - etl/spark/jobs/py/audit_archive_resort.py
+  - warehouse/teradata/macros/archive_overview.sql
 - id: e3da403e2d013745
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.AUDIT_RECON
   object_name: SFX_AUDIT.AUDIT_RECON
@@ -1828,86 +2185,115 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: d06244943a34b912
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.COMPLIANCE_FLAG
   object_name: SFX_AUDIT.COMPLIANCE_FLAG
   source_paths:
   - warehouse/teradata/ddl/audit/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/audit'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala,
+    warehouse/teradata/scripts/audit/02_load_controls.bteq, warehouse/teradata/scripts/audit/11_reconciliation.bteq
   subject_area: audit
   source_system: teradata
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala
+  - warehouse/teradata/scripts/audit/02_load_controls.bteq
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
 - id: da8897dd0100f620
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.DATA_EXPORT_REQ
   object_name: SFX_AUDIT.DATA_EXPORT_REQ
   source_paths:
   - warehouse/teradata/ddl/audit/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/audit'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by warehouse/teradata/scripts/audit/02_load_controls.bteq,
+    warehouse/teradata/scripts/audit/11_reconciliation.bteq
   subject_area: audit
   source_system: teradata
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - warehouse/teradata/scripts/audit/02_load_controls.bteq
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
 - id: dea68c201f960de7
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.LEGAL_HOLD
   object_name: SFX_AUDIT.LEGAL_HOLD
   source_paths:
   - warehouse/teradata/ddl/audit/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/audit'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by warehouse/teradata/scripts/audit/03_load_reviews.bteq,
+    warehouse/teradata/scripts/audit/11_reconciliation.bteq
   subject_area: audit
   source_system: teradata
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - warehouse/teradata/scripts/audit/03_load_reviews.bteq
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
 - id: d759371edbf1693d
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.RETENTION_POLICY
   object_name: SFX_AUDIT.RETENTION_POLICY
   source_paths:
   - warehouse/teradata/ddl/audit/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/audit'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by warehouse/teradata/scripts/audit/02_load_controls.bteq,
+    warehouse/teradata/scripts/audit/11_reconciliation.bteq
   subject_area: audit
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - warehouse/teradata/scripts/audit/02_load_controls.bteq
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
 - id: eee9e0173b5a3fca
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.SECURITY_ALERT
   object_name: SFX_AUDIT.SECURITY_ALERT
   source_paths:
   - warehouse/teradata/ddl/audit/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/audit'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/security_alert_anomaly.py,
+    warehouse/teradata/scripts/audit/03_load_reviews.bteq, warehouse/teradata/scripts/audit/11_reconciliation.bteq
   subject_area: audit
   source_system: teradata
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - etl/spark/jobs/py/security_alert_anomaly.py
+  - warehouse/teradata/scripts/audit/03_load_reviews.bteq
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
 - id: 5aac05b72c57bdda
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_ACCESS_REVIEW
   object_name: SFX_AUDIT.STG_ACCESS_REVIEW
@@ -1924,6 +2310,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 894781c7661de251
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_AUDIT_DAILY_SUMMARY
   object_name: SFX_AUDIT.STG_AUDIT_DAILY_SUMMARY
@@ -1940,6 +2328,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: adc3be82b567cd1d
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_AUDIT_EVENT
   object_name: SFX_AUDIT.STG_AUDIT_EVENT
@@ -1956,6 +2346,8 @@ objects:
   loc: 9
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: e3dac7e75d402500
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
   object_name: SFX_AUDIT.STG_AUDIT_EVENT_ARCHIVE
@@ -1972,6 +2364,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 9d8003620f4f7051
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_AUDIT_RECON
   object_name: SFX_AUDIT.STG_AUDIT_RECON
@@ -1988,6 +2382,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 0b721aed92396039
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_COMPLIANCE_FLAG
   object_name: SFX_AUDIT.STG_COMPLIANCE_FLAG
@@ -2004,6 +2400,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 2e4804340b581fed
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_DATA_EXPORT_REQ
   object_name: SFX_AUDIT.STG_DATA_EXPORT_REQ
@@ -2020,6 +2418,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: a15c766f83885c70
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_LEGAL_HOLD
   object_name: SFX_AUDIT.STG_LEGAL_HOLD
@@ -2036,6 +2436,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: cce110aa6e7d3f21
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_RETENTION_POLICY
   object_name: SFX_AUDIT.STG_RETENTION_POLICY
@@ -2052,6 +2454,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: c4524c6c3af6b616
   source: warehouse/teradata/ddl/audit/00_tables.sql#SFX_AUDIT.STG_SECURITY_ALERT
   object_name: SFX_AUDIT.STG_SECURITY_ALERT
@@ -2068,6 +2472,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 72d922d577e13a62
   source: warehouse/teradata/ddl/audit/10_views.sql#SFX_AUDIT.V_CUSTOMER_RECON
   object_name: SFX_AUDIT.V_CUSTOMER_RECON
@@ -2084,6 +2490,8 @@ objects:
   loc: 2
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 81fc42b9852b4d97
   source: warehouse/teradata/ddl/audit/10_views.sql#SFX_AUDIT.V_EVENT_ACTORS
   object_name: SFX_AUDIT.V_EVENT_ACTORS
@@ -2100,6 +2508,8 @@ objects:
   loc: 2
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 1f89a01b729ad26c
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.BILLING_ADJ
   object_name: SFX_BILLING.BILLING_ADJ
@@ -2116,6 +2526,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 343549d074c290ea
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.CREDIT_NOTE
   object_name: SFX_BILLING.CREDIT_NOTE
@@ -2132,6 +2544,8 @@ objects:
   loc: 10
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 40e8344d0701095e
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.CUSTOMER_ACCOUNT
   object_name: SFX_BILLING.CUSTOMER_ACCOUNT
@@ -2148,6 +2562,8 @@ objects:
   loc: 11
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: e993070079ab76bd
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.GL_ACCOUNT
   object_name: SFX_BILLING.GL_ACCOUNT
@@ -2164,6 +2580,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 53b480de7d80198a
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.GL_JOURNAL_LINE
   object_name: SFX_BILLING.GL_JOURNAL_LINE
@@ -2180,6 +2598,8 @@ objects:
   loc: 11
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 5a664df05a931dd3
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.INVOICE_HDR
   object_name: SFX_BILLING.INVOICE_HDR
@@ -2196,6 +2616,8 @@ objects:
   loc: 20
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: c18c15189273db5e
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.INVOICE_LINE
   object_name: SFX_BILLING.INVOICE_LINE
@@ -2212,6 +2634,8 @@ objects:
   loc: 9
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 3639b13843f2f321
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.PAYMENT
   object_name: SFX_BILLING.PAYMENT
@@ -2228,6 +2652,8 @@ objects:
   loc: 9
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 9ebc7403d5bf65f1
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.PLAN_CATALOG
   object_name: SFX_BILLING.PLAN_CATALOG
@@ -2244,6 +2670,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 0e9cc82567981b16
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_BILLING_ADJ
   object_name: SFX_BILLING.STG_BILLING_ADJ
@@ -2260,6 +2688,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: b8f9aadf608eab0d
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_CREDIT_NOTE
   object_name: SFX_BILLING.STG_CREDIT_NOTE
@@ -2276,6 +2706,8 @@ objects:
   loc: 10
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 776637605de7e0d8
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_CUSTOMER_ACCOUNT
   object_name: SFX_BILLING.STG_CUSTOMER_ACCOUNT
@@ -2292,6 +2724,8 @@ objects:
   loc: 11
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 8ef1b87863c14557
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_GL_ACCOUNT
   object_name: SFX_BILLING.STG_GL_ACCOUNT
@@ -2308,6 +2742,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 4d13adebd2f8f6ff
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_GL_JOURNAL_LINE
   object_name: SFX_BILLING.STG_GL_JOURNAL_LINE
@@ -2318,12 +2754,14 @@ objects:
   wave: 1
   owner: '@otterworks/billing'
   risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk_reason: No DBQL read in 90d and no static code reader found
   subject_area: billing
   source_system: teradata
   loc: 11
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers: []
 - id: 5f8cb6bde7b19a73
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_INVOICE_HDR
   object_name: SFX_BILLING.STG_INVOICE_HDR
@@ -2340,6 +2778,8 @@ objects:
   loc: 20
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: b84d8efbf2d38a6e
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_INVOICE_LINE
   object_name: SFX_BILLING.STG_INVOICE_LINE
@@ -2356,6 +2796,8 @@ objects:
   loc: 9
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 9f1a9ba358916a2f
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_PAYMENT
   object_name: SFX_BILLING.STG_PAYMENT
@@ -2372,6 +2814,8 @@ objects:
   loc: 9
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 9209bdb925adb847
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_PLAN_CATALOG
   object_name: SFX_BILLING.STG_PLAN_CATALOG
@@ -2388,6 +2832,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 44d844e254eb3a15
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_SUBSCRIPTION
   object_name: SFX_BILLING.STG_SUBSCRIPTION
@@ -2404,6 +2850,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: ffab39f5843a993a
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_TAX_RATE
   object_name: SFX_BILLING.STG_TAX_RATE
@@ -2420,6 +2868,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 93817d4c723472bb
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.STG_USAGE_DAILY
   object_name: SFX_BILLING.STG_USAGE_DAILY
@@ -2436,6 +2886,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: ea86c97ce670d588
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.SUBSCRIPTION
   object_name: SFX_BILLING.SUBSCRIPTION
@@ -2452,6 +2904,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: a05d0e7915a13c9b
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.TAX_RATE
   object_name: SFX_BILLING.TAX_RATE
@@ -2468,22 +2922,32 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: f295fdbf55d21c59
   source: warehouse/teradata/ddl/billing/00_tables.sql#SFX_BILLING.USAGE_DAILY
   object_name: SFX_BILLING.USAGE_DAILY
   source_paths:
   - warehouse/teradata/ddl/billing/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/billing'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/billing_usage_append_daily.py,
+    warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/scripts/billing/05_load_usage.bteq,
+    warehouse/teradata/scripts/documents/10_storage_monthly.bteq
   subject_area: billing
   source_system: teradata
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - etl/spark/jobs/py/billing_usage_append_daily.py
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/billing/05_load_usage.bteq
+  - warehouse/teradata/scripts/documents/10_storage_monthly.bteq
 - id: dac5b3968e6f9aa2
   source: warehouse/teradata/ddl/billing/10_views.sql#SFX_BILLING.V_ACCOUNT_INVOICES
   object_name: SFX_BILLING.V_ACCOUNT_INVOICES
@@ -2500,6 +2964,8 @@ objects:
   loc: 2
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: cf40718eaf14787d
   source: warehouse/teradata/ddl/billing/10_views.sql#SFX_BILLING.V_SUBSCRIPTION_PLANS
   object_name: SFX_BILLING.V_SUBSCRIPTION_PLANS
@@ -2516,6 +2982,8 @@ objects:
   loc: 2
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 01e9f5e8aae106df
   source: warehouse/teradata/ddl/billing/20_views.sql#SFX_BILLING.V_INVOICE_BASE
   object_name: SFX_BILLING.V_INVOICE_BASE
@@ -2532,6 +3000,8 @@ objects:
   loc: 3
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: c1307bc5ae458c83
   source: warehouse/teradata/ddl/billing/20_views.sql#SFX_BILLING.V_INVOICE_REVENUE
   object_name: SFX_BILLING.V_INVOICE_REVENUE
@@ -2548,22 +3018,30 @@ objects:
   loc: 5
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 92f724e2d1fdb031
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.COLLAB_SESSION
   object_name: SFX_DOCUMENTS.COLLAB_SESSION
   source_paths:
   - warehouse/teradata/ddl/documents/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/documents'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/collab_session_sessionize.py,
+    warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/scripts/documents/05_load_sessions.bteq
   subject_area: documents
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - etl/spark/jobs/py/collab_session_sessionize.py
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/documents/05_load_sessions.bteq
 - id: 96180c72ae954e6b
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.DOCUMENT
   object_name: SFX_DOCUMENTS.DOCUMENT
@@ -2580,54 +3058,75 @@ objects:
   loc: 10
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: e2f761b8f23d24d3
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.DOC_COMMENT
   object_name: SFX_DOCUMENTS.DOC_COMMENT
   source_paths:
   - warehouse/teradata/ddl/documents/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/documents'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by warehouse/teradata/scripts/audit/11_reconciliation.bteq,
+    warehouse/teradata/scripts/documents/04_load_objects.bteq
   subject_area: documents
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/documents/04_load_objects.bteq
 - id: a8811b17ca880a40
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.DOC_SHARE
   object_name: SFX_DOCUMENTS.DOC_SHARE
   source_paths:
   - warehouse/teradata/ddl/documents/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/documents'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/doc_share_graph_reach.py,
+    etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala, warehouse/teradata/scripts/audit/11_reconciliation.bteq,
+    warehouse/teradata/scripts/documents/03_load_access.bteq
   subject_area: documents
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - etl/spark/jobs/py/doc_share_graph_reach.py
+  - etl/spark/scala/src/main/scala/sfx/DocsShareActivity.scala
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/documents/03_load_access.bteq
 - id: bc0d8757945a1e58
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.DOC_TAG
   object_name: SFX_DOCUMENTS.DOC_TAG
   source_paths:
   - warehouse/teradata/ddl/documents/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/documents'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/docs_tag_normalize.py,
+    warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/scripts/documents/03_load_access.bteq
   subject_area: documents
   source_system: teradata
   loc: 6
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - etl/spark/jobs/py/docs_tag_normalize.py
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/documents/03_load_access.bteq
 - id: 8eacda213ff74e1e
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.DOC_VERSION
   object_name: SFX_DOCUMENTS.DOC_VERSION
@@ -2644,54 +3143,77 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 2d020ba215858a4a
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.FILE_OBJECT
   object_name: SFX_DOCUMENTS.FILE_OBJECT
   source_paths:
   - warehouse/teradata/ddl/documents/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/documents'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/docs_storage_by_owner.py,
+    etl/spark/jobs/py/file_object_binary_extract.py, warehouse/teradata/scripts/audit/11_reconciliation.bteq,
+    warehouse/teradata/scripts/documents/04_load_objects.bteq
   subject_area: documents
   source_system: teradata
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - etl/spark/jobs/py/docs_storage_by_owner.py
+  - etl/spark/jobs/py/file_object_binary_extract.py
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/documents/04_load_objects.bteq
 - id: c9e9982f5a76cea8
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.FOLDER
   object_name: SFX_DOCUMENTS.FOLDER
   source_paths:
   - warehouse/teradata/ddl/documents/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/documents'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/docs_folder_legacy_report.py,
+    etl/spark/jobs/py/docs_folder_tree_walk.py, warehouse/teradata/scripts/audit/11_reconciliation.bteq,
+    warehouse/teradata/scripts/documents/01_load_folders.bteq
   subject_area: documents
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - etl/spark/jobs/py/docs_folder_legacy_report.py
+  - etl/spark/jobs/py/docs_folder_tree_walk.py
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/documents/01_load_folders.bteq
 - id: a56a91de7e1bd0b5
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.SEARCH_INDEX_LOG
   object_name: SFX_DOCUMENTS.SEARCH_INDEX_LOG
   source_paths:
   - warehouse/teradata/ddl/documents/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/documents'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/docs_search_log_parse.py,
+    warehouse/teradata/ddl/documents/10_views.sql
   subject_area: documents
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: dormant
+  code_readers:
+  - etl/spark/jobs/py/docs_search_log_parse.py
+  - warehouse/teradata/ddl/documents/10_views.sql
 - id: 031ebfaf761c97cd
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_COLLAB_SESSION
   object_name: SFX_DOCUMENTS.STG_COLLAB_SESSION
@@ -2708,6 +3230,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: d33cb9183e7eca7e
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_DOCUMENT
   object_name: SFX_DOCUMENTS.STG_DOCUMENT
@@ -2724,6 +3248,8 @@ objects:
   loc: 10
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 74382e59f45ec59f
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_DOC_COMMENT
   object_name: SFX_DOCUMENTS.STG_DOC_COMMENT
@@ -2740,6 +3266,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 58dc50258f8e95ea
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_DOC_SHARE
   object_name: SFX_DOCUMENTS.STG_DOC_SHARE
@@ -2756,6 +3284,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: cd194dd6b36b8cdf
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_DOC_TAG
   object_name: SFX_DOCUMENTS.STG_DOC_TAG
@@ -2772,6 +3302,8 @@ objects:
   loc: 6
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 73e0bd9bd3b73427
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_DOC_VERSION
   object_name: SFX_DOCUMENTS.STG_DOC_VERSION
@@ -2788,6 +3320,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 26a33f2e549222b7
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_FILE_OBJECT
   object_name: SFX_DOCUMENTS.STG_FILE_OBJECT
@@ -2804,6 +3338,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: e5d5b69d7bb9536d
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_FOLDER
   object_name: SFX_DOCUMENTS.STG_FOLDER
@@ -2820,6 +3356,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 399d52818c3398ce
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
   object_name: SFX_DOCUMENTS.STG_SEARCH_INDEX_LOG
@@ -2836,6 +3374,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 05e743113f0d368c
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY
   object_name: SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY
@@ -2852,6 +3392,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 14378caee0c6eb77
   source: warehouse/teradata/ddl/documents/00_tables.sql#SFX_DOCUMENTS.STORAGE_USAGE_DAILY
   object_name: SFX_DOCUMENTS.STORAGE_USAGE_DAILY
@@ -2868,6 +3410,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 4ae93edd867e6075
   source: warehouse/teradata/ddl/documents/10_views.sql#SFX_DOCUMENTS.V_DOCUMENT_VERSIONS
   object_name: SFX_DOCUMENTS.V_DOCUMENT_VERSIONS
@@ -2884,6 +3428,8 @@ objects:
   loc: 2
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6e88e7f8b2f62b3e
   source: warehouse/teradata/ddl/documents/10_views.sql#SFX_DOCUMENTS.V_SEARCH_HISTORY
   object_name: SFX_DOCUMENTS.V_SEARCH_HISTORY
@@ -2894,12 +3440,14 @@ objects:
   wave: 1
   owner: '@otterworks/documents'
   risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk_reason: No DBQL read in 90d and no static code reader found
   subject_area: documents
   source_system: teradata
   loc: 2
   complexity: low
   executor_hours: null
+  unread_tier: dormant
+  code_readers: []
 - id: 44f741f05dec1550
   source: warehouse/teradata/ddl/documents/20_views.sql#SFX_DOCUMENTS.V_WORKSPACE_STORAGE
   object_name: SFX_DOCUMENTS.V_WORKSPACE_STORAGE
@@ -2916,6 +3464,8 @@ objects:
   loc: 3
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: cc6936d09f9c882e
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.APP_USER
   object_name: SFX_USERS.APP_USER
@@ -2932,6 +3482,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 7b697a43c85de67b
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.LOGIN_EVENT
   object_name: SFX_USERS.LOGIN_EVENT
@@ -2948,38 +3500,51 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: ff3c35b76d1d5d3d
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.ROLE_GRANT
   object_name: SFX_USERS.ROLE_GRANT
   source_paths:
   - warehouse/teradata/ddl/users/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/users'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOC_SHARE.XML,
+    warehouse/teradata/scripts/audit/11_reconciliation.bteq, warehouse/teradata/scripts/users/02_load_teams.bteq
   subject_area: users
   source_system: teradata
   loc: 6
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - etl/informatica/repository/SFX_CONTENT/mappings/m_SFX_DOC_SHARE.XML
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/users/02_load_teams.bteq
 - id: 04927afd29a0bc02
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.SSO_IDENTITY
   object_name: SFX_USERS.SSO_IDENTITY
   source_paths:
   - warehouse/teradata/ddl/users/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/users'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by warehouse/teradata/scripts/audit/11_reconciliation.bteq,
+    warehouse/teradata/scripts/users/03_load_identity.bteq
   subject_area: users
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/users/03_load_identity.bteq
 - id: a1c0d822dae2039f
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_APP_USER
   object_name: SFX_USERS.STG_APP_USER
@@ -2996,6 +3561,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: b541e25c63c48e64
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_LOGIN_EVENT
   object_name: SFX_USERS.STG_LOGIN_EVENT
@@ -3012,6 +3579,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 1877367617c6195d
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_ROLE_GRANT
   object_name: SFX_USERS.STG_ROLE_GRANT
@@ -3028,6 +3597,8 @@ objects:
   loc: 6
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 86dcdd09127bff62
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_SSO_IDENTITY
   object_name: SFX_USERS.STG_SSO_IDENTITY
@@ -3044,6 +3615,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 5768af583c7cba29
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_TEAM
   object_name: SFX_USERS.STG_TEAM
@@ -3060,6 +3633,8 @@ objects:
   loc: 6
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: d8bd46fd7898d7f1
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_TEAM_MEMBER
   object_name: SFX_USERS.STG_TEAM_MEMBER
@@ -3076,6 +3651,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 5ee5928a00562987
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_USER_ACTIVITY_DAILY
   object_name: SFX_USERS.STG_USER_ACTIVITY_DAILY
@@ -3092,6 +3669,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 3b00e1c1beaf0a87
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_USER_PREF
   object_name: SFX_USERS.STG_USER_PREF
@@ -3102,12 +3681,14 @@ objects:
   wave: 1
   owner: '@otterworks/users'
   risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk_reason: No DBQL read in 90d and no static code reader found
   subject_area: users
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers: []
 - id: 98d4ce76b2847e98
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_USER_PROFILE
   object_name: SFX_USERS.STG_USER_PROFILE
@@ -3124,6 +3705,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 7a742b030bce8495
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.STG_USER_STATUS_HIST
   object_name: SFX_USERS.STG_USER_STATUS_HIST
@@ -3140,6 +3723,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 1534c27ab8f1d762
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.TEAM
   object_name: SFX_USERS.TEAM
@@ -3156,6 +3741,8 @@ objects:
   loc: 6
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 205e473b926dfc37
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.TEAM_MEMBER
   object_name: SFX_USERS.TEAM_MEMBER
@@ -3172,6 +3759,8 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 835f3ffecffedede
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.USER_ACTIVITY_DAILY
   object_name: SFX_USERS.USER_ACTIVITY_DAILY
@@ -3188,54 +3777,71 @@ objects:
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: ea9f155a2c1b6a86
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.USER_PREF
   object_name: SFX_USERS.USER_PREF
   source_paths:
   - warehouse/teradata/ddl/users/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/users'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by etl/spark/jobs/py/user_pref_json_flatten.py,
+    warehouse/teradata/ddl/users/10_views.sql
   subject_area: users
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: dormant
+  code_readers:
+  - etl/spark/jobs/py/user_pref_json_flatten.py
+  - warehouse/teradata/ddl/users/10_views.sql
 - id: 21a597b92bc3b668
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.USER_PROFILE
   object_name: SFX_USERS.USER_PROFILE
   source_paths:
   - warehouse/teradata/ddl/users/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/users'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by warehouse/teradata/scripts/audit/11_reconciliation.bteq,
+    warehouse/teradata/scripts/users/01_load_users.bteq
   subject_area: users
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/users/01_load_users.bteq
 - id: 28a1c7a566fd55c6
   source: warehouse/teradata/ddl/users/00_tables.sql#SFX_USERS.USER_STATUS_HIST
   object_name: SFX_USERS.USER_STATUS_HIST
   source_paths:
   - warehouse/teradata/ddl/users/00_tables.sql
   kind: table
-  target: retire
+  target: Delta table
   wave: 1
   owner: '@otterworks/users'
-  risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk: high
+  risk_reason: no DBQL read in 90d; read by warehouse/teradata/scripts/audit/11_reconciliation.bteq,
+    warehouse/teradata/scripts/users/03_load_identity.bteq
   subject_area: users
   source_system: teradata
   loc: 7
   complexity: low
   executor_hours: null
+  unread_tier: write-only
+  code_readers:
+  - warehouse/teradata/scripts/audit/11_reconciliation.bteq
+  - warehouse/teradata/scripts/users/03_load_identity.bteq
 - id: fd40ab52aecd53a8
   source: warehouse/teradata/ddl/users/10_views.sql#SFX_USERS.V_TEAM_MEMBERS
   object_name: SFX_USERS.V_TEAM_MEMBERS
@@ -3252,6 +3858,8 @@ objects:
   loc: 2
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 98eb74a18433b68b
   source: warehouse/teradata/ddl/users/10_views.sql#SFX_USERS.V_USER_SETTINGS
   object_name: SFX_USERS.V_USER_SETTINGS
@@ -3262,12 +3870,14 @@ objects:
   wave: 1
   owner: '@otterworks/users'
   risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk_reason: No DBQL read in 90d and no static code reader found
   subject_area: users
   source_system: teradata
   loc: 2
   complexity: low
   executor_hours: null
+  unread_tier: dormant
+  code_readers: []
 - id: bf85e5b0bbf61a25
   source: warehouse/teradata/jobs/daily_chain#daily_chain
   object_name: daily_chain
@@ -3284,6 +3894,8 @@ objects:
   loc: 101
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: c61711c800e88154
   source: warehouse/teradata/jobs/reconcile#reconcile
   object_name: reconcile
@@ -3300,6 +3912,8 @@ objects:
   loc: 28
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 38138994e9a8795d
   source: warehouse/teradata/jobs/snowconvert.py#snowconvert
   object_name: snowconvert
@@ -3316,6 +3930,8 @@ objects:
   loc: 59
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: a574aa93041b2fc1
   source: warehouse/teradata/load/fastload/billing_billing_adj.fl#billing_billing_adj
   object_name: billing_billing_adj
@@ -3332,6 +3948,8 @@ objects:
   loc: 16
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 75b928c4846f03e8
   source: warehouse/teradata/load/fastload/billing_credit_note.fl#billing_credit_note
   object_name: billing_credit_note
@@ -3348,6 +3966,8 @@ objects:
   loc: 18
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 06bc85e7b904a223
   source: warehouse/teradata/load/fastload/billing_customer_account.fl#billing_customer_account
   object_name: billing_customer_account
@@ -3364,6 +3984,8 @@ objects:
   loc: 19
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6c29dad8218a0d51
   source: warehouse/teradata/load/fastload/billing_gl_account.fl#billing_gl_account
   object_name: billing_gl_account
@@ -3380,6 +4002,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 7b9272904bcb88f6
   source: warehouse/teradata/load/fastload/billing_gl_journal_line.fl#billing_gl_journal_line
   object_name: billing_gl_journal_line
@@ -3396,6 +4020,8 @@ objects:
   loc: 19
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 906bbee68b32b159
   source: warehouse/teradata/load/fastload/billing_invoice_hdr.fl#billing_invoice_hdr
   object_name: billing_invoice_hdr
@@ -3412,6 +4038,8 @@ objects:
   loc: 28
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 33921815325c3214
   source: warehouse/teradata/load/fastload/billing_invoice_line.fl#billing_invoice_line
   object_name: billing_invoice_line
@@ -3428,6 +4056,8 @@ objects:
   loc: 17
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: b5a57ea24140a139
   source: warehouse/teradata/load/fastload/billing_payment.fl#billing_payment
   object_name: billing_payment
@@ -3444,6 +4074,8 @@ objects:
   loc: 17
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: b910539852c00bc3
   source: warehouse/teradata/load/fastload/billing_plan_catalog.fl#billing_plan_catalog
   object_name: billing_plan_catalog
@@ -3460,6 +4092,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 3f46cb9489d02869
   source: warehouse/teradata/load/fastload/billing_subscription.fl#billing_subscription
   object_name: billing_subscription
@@ -3476,6 +4110,8 @@ objects:
   loc: 16
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 0bc69f19b78ee576
   source: warehouse/teradata/load/fastload/billing_tax_rate.fl#billing_tax_rate
   object_name: billing_tax_rate
@@ -3492,6 +4128,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 65ea421e5a94b867
   source: warehouse/teradata/load/fastload/billing_usage_daily.fl#billing_usage_daily
   object_name: billing_usage_daily
@@ -3508,6 +4146,8 @@ objects:
   loc: 16
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 32eee863dde88e65
   source: warehouse/teradata/load/fastload/users_app_user.fl#users_app_user
   object_name: users_app_user
@@ -3524,6 +4164,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 0c1557f82360cc11
   source: warehouse/teradata/load/fastload/users_login_event.fl#users_login_event
   object_name: users_login_event
@@ -3540,6 +4182,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 25fa422f32bf8a0e
   source: warehouse/teradata/load/fastload/users_role_grant.fl#users_role_grant
   object_name: users_role_grant
@@ -3556,6 +4200,8 @@ objects:
   loc: 14
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 4b46f9a471056df3
   source: warehouse/teradata/load/fastload/users_sso_identity.fl#users_sso_identity
   object_name: users_sso_identity
@@ -3572,6 +4218,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 02aed0cae34669cc
   source: warehouse/teradata/load/fastload/users_team.fl#users_team
   object_name: users_team
@@ -3588,6 +4236,8 @@ objects:
   loc: 14
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 231ffef5da0e4b8a
   source: warehouse/teradata/load/fastload/users_team_member.fl#users_team_member
   object_name: users_team_member
@@ -3604,6 +4254,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: a67881ce06756fa1
   source: warehouse/teradata/load/fastload/users_user_activity_daily.fl#users_user_activity_daily
   object_name: users_user_activity_daily
@@ -3620,6 +4272,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 983f6d8919c57769
   source: warehouse/teradata/load/fastload/users_user_pref.fl#users_user_pref
   object_name: users_user_pref
@@ -3636,6 +4290,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 7866469135aac90a
   source: warehouse/teradata/load/fastload/users_user_profile.fl#users_user_profile
   object_name: users_user_profile
@@ -3652,6 +4308,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 2255daba7f370297
   source: warehouse/teradata/load/fastload/users_user_status_hist.fl#users_user_status_hist
   object_name: users_user_status_hist
@@ -3668,6 +4326,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 239031dca5d9a63b
   source: warehouse/teradata/load/tpt/audit_access_review.tpt#audit_access_review
   object_name: audit_access_review
@@ -3684,6 +4344,8 @@ objects:
   loc: 37
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 1bbaa77af8c4ea08
   source: warehouse/teradata/load/tpt/audit_audit_daily_summary.tpt#audit_audit_daily_summary
   object_name: audit_audit_daily_summary
@@ -3700,6 +4362,8 @@ objects:
   loc: 37
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: e349fc2f5fcb80ce
   source: warehouse/teradata/load/tpt/audit_audit_event.tpt#audit_audit_event
   object_name: audit_audit_event
@@ -3716,6 +4380,8 @@ objects:
   loc: 39
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 14acfd1bcfd28196
   source: warehouse/teradata/load/tpt/audit_audit_event_archive.tpt#audit_audit_event_archive
   object_name: audit_audit_event_archive
@@ -3732,6 +4398,8 @@ objects:
   loc: 38
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 3474ce6922def222
   source: warehouse/teradata/load/tpt/audit_audit_recon.tpt#audit_audit_recon
   object_name: audit_audit_recon
@@ -3748,6 +4416,8 @@ objects:
   loc: 38
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 05b50068f9d6645f
   source: warehouse/teradata/load/tpt/audit_compliance_flag.tpt#audit_compliance_flag
   object_name: audit_compliance_flag
@@ -3764,6 +4434,8 @@ objects:
   loc: 38
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 74c6498768b63207
   source: warehouse/teradata/load/tpt/audit_data_export_req.tpt#audit_data_export_req
   object_name: audit_data_export_req
@@ -3780,6 +4452,8 @@ objects:
   loc: 38
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 213c12b8ac0ef12e
   source: warehouse/teradata/load/tpt/audit_legal_hold.tpt#audit_legal_hold
   object_name: audit_legal_hold
@@ -3796,6 +4470,8 @@ objects:
   loc: 38
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 0a53dea80aadd304
   source: warehouse/teradata/load/tpt/audit_retention_policy.tpt#audit_retention_policy
   object_name: audit_retention_policy
@@ -3812,6 +4488,8 @@ objects:
   loc: 37
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: f204c13724016dca
   source: warehouse/teradata/load/tpt/audit_security_alert.tpt#audit_security_alert
   object_name: audit_security_alert
@@ -3828,6 +4506,8 @@ objects:
   loc: 38
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: fcc5dce18b311e29
   source: warehouse/teradata/load/tpt/documents_collab_session.tpt#documents_collab_session
   object_name: documents_collab_session
@@ -3844,6 +4524,8 @@ objects:
   loc: 37
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 84b2f55d846ad17e
   source: warehouse/teradata/load/tpt/documents_doc_comment.tpt#documents_doc_comment
   object_name: documents_doc_comment
@@ -3860,6 +4542,8 @@ objects:
   loc: 37
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 66ef575a7c835730
   source: warehouse/teradata/load/tpt/documents_doc_share.tpt#documents_doc_share
   object_name: documents_doc_share
@@ -3876,6 +4560,8 @@ objects:
   loc: 37
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 99c2a150e8bdc71c
   source: warehouse/teradata/load/tpt/documents_doc_tag.tpt#documents_doc_tag
   object_name: documents_doc_tag
@@ -3892,6 +4578,8 @@ objects:
   loc: 36
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 256035cd81a746dc
   source: warehouse/teradata/load/tpt/documents_doc_version.tpt#documents_doc_version
   object_name: documents_doc_version
@@ -3908,6 +4596,8 @@ objects:
   loc: 38
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: a2862a9b5e73e064
   source: warehouse/teradata/load/tpt/documents_document.tpt#documents_document
   object_name: documents_document
@@ -3924,6 +4614,8 @@ objects:
   loc: 40
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 5cbc7b9cf44eda0d
   source: warehouse/teradata/load/tpt/documents_file_object.tpt#documents_file_object
   object_name: documents_file_object
@@ -3940,6 +4632,8 @@ objects:
   loc: 38
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: cce4f21a3b502308
   source: warehouse/teradata/load/tpt/documents_folder.tpt#documents_folder
   object_name: documents_folder
@@ -3956,6 +4650,8 @@ objects:
   loc: 37
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6ecb36950fc92f5c
   source: warehouse/teradata/load/tpt/documents_search_index_log.tpt#documents_search_index_log
   object_name: documents_search_index_log
@@ -3972,6 +4668,8 @@ objects:
   loc: 37
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 29dc20910afe48d5
   source: warehouse/teradata/load/tpt/documents_storage_usage_daily.tpt#documents_storage_usage_daily
   object_name: documents_storage_usage_daily
@@ -3988,6 +4686,8 @@ objects:
   loc: 38
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 89df85a1a4d1e331
   source: warehouse/teradata/macros/archive_overview.sql#SFX_AUDIT.M_ARCHIVE_OVERVIEW
   object_name: SFX_AUDIT.M_ARCHIVE_OVERVIEW
@@ -3998,12 +4698,14 @@ objects:
   wave: 1
   owner: '@otterworks/audit'
   risk: low
-  risk_reason: No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md
+  risk_reason: No DBQL read in 90d and no static code reader found
   subject_area: audit
   source_system: teradata
   loc: 4
   complexity: low
   executor_hours: null
+  unread_tier: dormant
+  code_readers: []
 - id: 4f43086bbb5e3127
   source: warehouse/teradata/macros/currency_totals.sql#SFX_BILLING.M_CURRENCY_TOTALS
   object_name: SFX_BILLING.M_CURRENCY_TOTALS
@@ -4020,6 +4722,8 @@ objects:
   loc: 5
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: ab688251ff4072f5
   source: warehouse/teradata/macros/recon_totals.sql#SFX_AUDIT.M_RECON_TOTALS
   object_name: SFX_AUDIT.M_RECON_TOTALS
@@ -4036,6 +4740,8 @@ objects:
   loc: 6
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 20e477004cd0bc6a
   source: warehouse/teradata/macros/storage_totals.sql#SFX_DOCUMENTS.M_STORAGE_TOTALS
   object_name: SFX_DOCUMENTS.M_STORAGE_TOTALS
@@ -4052,6 +4758,8 @@ objects:
   loc: 6
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 8d060ca5aec2fa36
   source: warehouse/teradata/macros/subscription_plans.sql#SFX_BILLING.M_SUBSCRIPTION_PLANS
   object_name: SFX_BILLING.M_SUBSCRIPTION_PLANS
@@ -4068,6 +4776,8 @@ objects:
   loc: 5
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6d4d665deb59c2ff
   source: warehouse/teradata/macros/team_counts.sql#SFX_USERS.M_TEAM_COUNTS
   object_name: SFX_USERS.M_TEAM_COUNTS
@@ -4084,6 +4794,8 @@ objects:
   loc: 5
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 43ea48119f2c4fc6
   source: warehouse/teradata/procedures/activity_daily.sql#SFX_USERS.P_ACTIVITY_DAILY
   object_name: SFX_USERS.P_ACTIVITY_DAILY
@@ -4100,6 +4812,8 @@ objects:
   loc: 10
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: fc9f2b97fcc2b7a8
   source: warehouse/teradata/procedures/monthly_invoice.sql#SFX_BILLING.P_MONTHLY_INVOICE
   object_name: SFX_BILLING.P_MONTHLY_INVOICE
@@ -4116,6 +4830,8 @@ objects:
   loc: 82
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 0a281b6fcfb16b92
   source: warehouse/teradata/procedures/recon_counts.sql#SFX_AUDIT.P_RECON_COUNTS
   object_name: SFX_AUDIT.P_RECON_COUNTS
@@ -4132,6 +4848,8 @@ objects:
   loc: 8
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6d28eab2e9742dc1
   source: warehouse/teradata/procedures/summary_daily.sql#SFX_AUDIT.P_DAILY_SUMMARY
   object_name: SFX_AUDIT.P_DAILY_SUMMARY
@@ -4148,6 +4866,8 @@ objects:
   loc: 10
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: ebbbeedb8625b2d8
   source: warehouse/teradata/scripts/audit/01_load_events.bteq#01_load_events
   object_name: 01_load_events
@@ -4164,6 +4884,8 @@ objects:
   loc: 11
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 3d94865cb2c0c904
   source: warehouse/teradata/scripts/audit/02_load_controls.bteq#02_load_controls
   object_name: 02_load_controls
@@ -4180,6 +4902,8 @@ objects:
   loc: 23
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 1be887575accec1d
   source: warehouse/teradata/scripts/audit/03_load_reviews.bteq#03_load_reviews
   object_name: 03_load_reviews
@@ -4196,6 +4920,8 @@ objects:
   loc: 23
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 7700e9c92a5d84be
   source: warehouse/teradata/scripts/audit/10_summary_daily.bteq#10_summary_daily
   object_name: 10_summary_daily
@@ -4212,6 +4938,8 @@ objects:
   loc: 9
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 86f14aba1da86a0a
   source: warehouse/teradata/scripts/audit/11_reconciliation.bteq#11_reconciliation
   object_name: 11_reconciliation
@@ -4228,6 +4956,8 @@ objects:
   loc: 272
   complexity: high
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 04854caaa01a2906
   source: warehouse/teradata/scripts/billing/01_load_accounts.bteq#01_load_accounts
   object_name: 01_load_accounts
@@ -4244,6 +4974,8 @@ objects:
   loc: 23
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: a1138d967755da26
   source: warehouse/teradata/scripts/billing/02_load_subscriptions.bteq#02_load_subscriptions
   object_name: 02_load_subscriptions
@@ -4260,6 +4992,8 @@ objects:
   loc: 11
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 2636d5378d2786c8
   source: warehouse/teradata/scripts/billing/03_load_invoices.bteq#03_load_invoices
   object_name: 03_load_invoices
@@ -4276,6 +5010,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 39a5a161210c6306
   source: warehouse/teradata/scripts/billing/04_load_payments.bteq#04_load_payments
   object_name: 04_load_payments
@@ -4292,6 +5028,8 @@ objects:
   loc: 19
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: f83b343b1024def7
   source: warehouse/teradata/scripts/billing/05_load_usage.bteq#05_load_usage
   object_name: 05_load_usage
@@ -4308,6 +5046,8 @@ objects:
   loc: 11
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 33b49b73d33ec4d6
   source: warehouse/teradata/scripts/billing/10_subscription_report.bteq#10_subscription_report
   object_name: 10_subscription_report
@@ -4324,6 +5064,8 @@ objects:
   loc: 11
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 18d2f9ac68217f01
   source: warehouse/teradata/scripts/billing/11_currency_daily.bteq#11_currency_daily
   object_name: 11_currency_daily
@@ -4340,6 +5082,8 @@ objects:
   loc: 11
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: fe442f2b24135584
   source: warehouse/teradata/scripts/billing/12_invoice_monthly.bteq#12_invoice_monthly
   object_name: 12_invoice_monthly
@@ -4356,6 +5100,8 @@ objects:
   loc: 13
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 14380da9e48fadf2
   source: warehouse/teradata/scripts/billing/13_period_close.bteq#13_period_close
   object_name: 13_period_close
@@ -4372,6 +5118,8 @@ objects:
   loc: 32
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 8b0a13be49e58032
   source: warehouse/teradata/scripts/documents/01_load_folders.bteq#01_load_folders
   object_name: 01_load_folders
@@ -4388,6 +5136,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 0a15058abb244cbf
   source: warehouse/teradata/scripts/documents/02_current_versions.bteq#02_current_versions
   object_name: 02_current_versions
@@ -4404,6 +5154,8 @@ objects:
   loc: 14
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: aa1d8cc5bf660889
   source: warehouse/teradata/scripts/documents/03_load_access.bteq#03_load_access
   object_name: 03_load_access
@@ -4420,6 +5172,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 91804ab50f17facf
   source: warehouse/teradata/scripts/documents/04_load_objects.bteq#04_load_objects
   object_name: 04_load_objects
@@ -4436,6 +5190,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 7fe3cf8907e23811
   source: warehouse/teradata/scripts/documents/05_load_sessions.bteq#05_load_sessions
   object_name: 05_load_sessions
@@ -4452,6 +5208,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: e19218787e71c843
   source: warehouse/teradata/scripts/documents/10_storage_monthly.bteq#10_storage_monthly
   object_name: 10_storage_monthly
@@ -4468,6 +5226,8 @@ objects:
   loc: 34
   complexity: medium
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 3fc05dc43cac0b1f
   source: warehouse/teradata/scripts/users/01_load_users.bteq#01_load_users
   object_name: 01_load_users
@@ -4484,6 +5244,8 @@ objects:
   loc: 17
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 1d493f50a62fd8e0
   source: warehouse/teradata/scripts/users/02_load_teams.bteq#02_load_teams
   object_name: 02_load_teams
@@ -4500,6 +5262,8 @@ objects:
   loc: 19
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 22aa9c9e0997ec82
   source: warehouse/teradata/scripts/users/03_load_identity.bteq#03_load_identity
   object_name: 03_load_identity
@@ -4516,6 +5280,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: 6cc5999a0c78052d
   source: warehouse/teradata/scripts/users/04_load_events.bteq#04_load_events
   object_name: 04_load_events
@@ -4532,6 +5298,8 @@ objects:
   loc: 15
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []
 - id: b01bd3599275a6f1
   source: warehouse/teradata/scripts/users/10_activity_daily.bteq#10_activity_daily
   object_name: 10_activity_daily
@@ -4548,3 +5316,5 @@ objects:
   loc: 13
   complexity: low
   executor_hours: null
+  unread_tier: null
+  code_readers: []

@@ -7,7 +7,7 @@
   "waves": {
     "1": 87,
     "2": 70,
-    "3": 100,
+    "3": 104,
     "4": 16
   },
   "kinds": {
@@ -22,7 +22,9 @@
     "batch job": 6,
     "consumer": 8,
     "decommission": 1,
-    "hidden consumer": 4,
+    "hidden consumer": 1,
+    "hidden consumer object": 3,
+    "internal ETL": 4,
     "macro": 6,
     "procedure": 4,
     "scheduler": 3,
@@ -35,7 +37,19 @@
     "powercenter_mappings": 20,
     "spark_executor_hours": 0.206092502
   },
-  "spark_applications": 30
+  "spark_applications": 30,
+  "unread_in_90d": 25,
+  "unread_tiers": {
+    "write-only": 19,
+    "dormant": 6
+  },
+  "retire": [
+    "SFX_BILLING.STG_GL_JOURNAL_LINE",
+    "SFX_DOCUMENTS.V_SEARCH_HISTORY",
+    "SFX_USERS.STG_USER_PREF",
+    "SFX_USERS.V_USER_SETTINGS",
+    "SFX_AUDIT.M_ARCHIVE_OVERVIEW"
+  ]
 }
 ```
 

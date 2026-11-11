@@ -64,11 +64,17 @@ def dbql():
     usages = [r for r in rows('objectusage') if r['QueryID'] in queries]
     live = {r['ObjectDatabaseName'] + '.' + r['ObjectTableName'] for r in usages if r['UsageType'] in ('READ', 'EXECUTE')}
     tables = {r['DatabaseName'] + '.' + r['TableName']: r for r in rows('tablesv') if r['DatabaseName'].startswith('SFX_')}
-    dead = {name: {'last_access': row['LastAccessTimeStamp'], 'access_count': row['AccessCount']} for name, row in tables.items() if name not in live}
+    dead = {name: {'last_access': row['LastAccessTimeStamp'], 'access_count': row['AccessCount'],
+                   'tier': 'dormant' if row['AccessCount'] == '0' else 'write-only'} for name, row in tables.items() if name not in live}
+    readers = code_readers(dead)
+    for name, evidence in dead.items():
+        evidence['code_readers'] = readers[name]
     tracked = git('ls-files', '-z').split('\0')
-    corpus = '\n'.join((ROOT / p).read_text(errors='ignore') for p in tracked if p and not p.startswith(('warehouse/teradata/dbql/', 'migration/dw-exit-dbx/')) and (ROOT / p).is_file())
+    corpus = '\n'.join((ROOT / p).read_text(errors='ignore') for p in tracked if p and p != 'warehouse/teradata/tests/test_dbql.py' and not p.startswith(('warehouse/teradata/dbql/', 'migration/dw-exit-dbx/')) and (ROOT / p).is_file())
     hidden = []
     for user in sorted({r['UserName'] for r in queries.values() if r['StatementType'] == 'SELECT'}):
+        if user.startswith('svc_etl_'):
+            continue
         selected = [r for r in queries.values() if r['UserName'] == user and r['StatementType'] == 'SELECT']
         clients = sorted({r['ClientID'] for r in selected})
         if user.lower() in corpus.lower() or any(c.lower() in corpus.lower() for c in clients):
@@ -79,6 +85,59 @@ def dbql():
                        'first': min(r['StartTime'] for r in selected), 'last': max(r['StartTime'] for r in selected),
                        'objects': sorted({r['ObjectDatabaseName'] + '.' + r['ObjectTableName'] for r in usages if r['QueryID'] in ids and r['UsageType'] == 'READ'})})
     return dead, hidden
+
+
+def code_readers(names):
+    """Static read evidence, excluding definitions, writes and DBQL fixtures."""
+    result = {name: [] for name in names}
+    paths = [p for p in source_files() if '/ddl/' in p or '/macros/' in p or '/procedures/' in p or '/scripts/' in p or '/mappings/' in p]
+    tracked = git('ls-files', '-z').split('\0')
+    paths += [p for p in tracked if p.startswith(('consumers/', 'services/')) and '/test' not in p and '/contract' not in p and Path(p).suffix in ('.py', '.java', '.scala', '.rb', '.sql', '.sh', '.yaml', '.lkml', '.ipynb')]
+    paths += [p for p in spark_files() if p.endswith(('.py', '.scala')) and ('/jobs/' in p or '/scala/src/' in p)]
+    for path in sorted(set(paths)):
+        text = read(path)
+        text = re.sub(r'/\*.*?\*/|<!--.*?-->|--[^\n]*|#[^\n]*', '', text, flags=re.S)
+        reads = set(re.findall(r'\b(?:FROM|JOIN|CALL|EXEC(?:UTE)?)\s+(' + OBJECT.replace(r'\b', '') + ')', text, re.I))
+        if path.endswith('.XML'):
+            tree = ET.fromstring(read(path))
+            reads.update(e.attrib['OWNERNAME'] + '.' + e.attrib['NAME'] for e in tree.iter('SOURCE') if e.attrib.get('DATABASETYPE') == 'Teradata')
+            for e in tree.iter('TABLEATTRIBUTE'):
+                if e.attrib.get('NAME') in ('Lookup table name', 'Lookup Sql Override', 'Sql Query'):
+                    reads.update(re.findall(OBJECT, e.attrib.get('VALUE', ''), re.I))
+        if path.startswith('etl/spark/'):
+            for name in names:
+                table = name.split('.')[1]
+                # Spark register() reads equivalent landing feeds, so retain the logical object.
+                if re.search(r'\b(?:FROM|JOIN)\s+' + re.escape(table) + r'\b', text, re.I) or re.search(r'(?:register|landing|jdbc_read)\([^\n]*["\']' + re.escape(table) + r'["\']', text, re.I):
+                    reads.add(name)
+                if re.search(r'jdbc_read\([^\n]*' + re.escape(name), text, re.I):
+                    reads.add(name)
+        for name in names:
+            if name in {r.upper() for r in reads}:
+                result[name].append(path)
+    return result
+
+
+def dbql_exceptions():
+    folder = ROOT / 'warehouse/teradata/dbql'
+    with (folder / 'qrylog.csv').open() as stream:
+        queries = list(csv.DictReader(stream))
+    with (folder / 'objectusage.csv').open() as stream:
+        usage = list(csv.DictReader(stream))
+    counts = Counter()
+    for q in queries:
+        if q['ErrorCode'] == '0' or q['StatementType'] != 'SELECT':
+            continue
+        objects = {u['ObjectDatabaseName'] + '.' + u['ObjectTableName'] for u in usage if u['QueryID'] == q['QueryID'] and u['UsageType'] == 'READ'}
+        objects.update(re.findall(OBJECT, q['QueryText'], re.I))
+        for name in sorted(objects):
+            counts[(mask(q['UserName']), q['ErrorCode'], name)] += 1
+    partner = [q for q in queries if q['UserName'] == 'svc_partner_sftp']
+    return {'partner_extract': {'registered': True, 'registry': 'consumers/registry.yaml', 'code': 'consumers/partner-extract',
+                               'registry_cadence': next(c['cadence'] for c in registry() if c['teradata_service_account'] == 'svc_partner_sftp'),
+                               'query_count': len(partner), 'observed_times': dict(sorted(Counter(q['StartTime'][11:16] for q in partner).items())),
+                               'first': min(q['StartTime'] for q in partner), 'last': max(q['StartTime'] for q in partner)},
+            'failed_reads': [{'user': user, 'error_code': code, 'object': name, 'count': count} for (user, code, name), count in sorted(counts.items())]}
 
 
 def loc(text):
@@ -122,21 +181,31 @@ def build():
         elif kind in ('Spark job', 'Spark shared', 'batch job'):
             target = 'Lakeflow pipeline' if hint == 'dbt' else 'PySpark job'
             reason = 'Relational dbt hint becomes Lakeflow SQL transform' if hint == 'dbt' else 'Python/Scala distributed behavior requires PySpark parity'
-        elif kind in ('consumer', 'hidden consumer', 'decommission'):
+        elif kind in ('consumer', 'hidden consumer', 'hidden consumer object', 'decommission'):
             target, wave = 'Databricks SQL script', 4
             reason = 'Consumer cutover and owner signoff required'
+            if kind == 'hidden consumer object':
+                target = 'compatibility view'
+                reason = 'Unregistered ODBC/Excel reader requires contract-preserving cutover'
         if name in dead:
-            target, wave, reason = 'retire', 1, 'No READ/EXECUTE in 90-day DBQL; last access cross-checked in dbql.md'
+            if dead[name]['code_readers']:
+                reason = 'no DBQL read in 90d; read by ' + ', '.join(dead[name]['code_readers'])
+            else:
+                target, wave, reason = 'retire', 1, 'No DBQL read in 90d and no static code reader found'
         owner = next((c['team'] for c in consumers if name in c['tables']), '@otterworks/' + subject)
         if kind == 'consumer':
             owner = next(c['team'] for c in consumers if c['name'] == name)
+        if kind.startswith('hidden consumer'):
+            owner = '@otterworks/finance-ops'
         source_paths = paths or [path]
         entry = dict(id=hashlib.sha256((path + '#' + name).encode()).hexdigest()[:16], source=path + '#' + name,
                      object_name=name, source_paths=source_paths, kind=kind, target=target, wave=wave, owner=owner,
-                     risk='high' if kind == 'hidden consumer' or target == 'compatibility view' else complexity,
+                     risk='high' if kind.startswith('hidden consumer') or target == 'compatibility view' or name in dead and dead[name]['code_readers'] else complexity,
                      risk_reason=reason, subject_area=subject,
                      source_system='powercenter' if kind.startswith('PowerCenter') else 'spark-batch' if kind.startswith(('Spark', 'batch')) else 'teradata',
-                     loc=count, complexity=complexity, executor_hours=hours)
+                     loc=count, complexity=complexity, executor_hours=hours,
+                     unread_tier=dead[name]['tier'] if name in dead else None,
+                     code_readers=dead[name]['code_readers'] if name in dead else [])
         entries.append(entry)
 
     for path in source_files():
@@ -175,6 +244,10 @@ def build():
         add('consumers/registry.yaml', consumer['name'], 'consumer', '')
     for consumer in hidden:
         add('warehouse/teradata/dbql/qrylog.csv', consumer['user'], 'hidden consumer', '')
+        for name in consumer['objects']:
+            add('warehouse/teradata/dbql/objectusage.csv', consumer['user'] + ':' + name, 'hidden consumer object', '')
+    for user in ('svc_etl_audit', 'svc_etl_billing', 'svc_etl_docs', 'svc_etl_users'):
+        add('warehouse/teradata/dbql/qrylog.csv', user, 'internal ETL', '')
     add('warehouse/teradata/README.md', 'teradata-powercenter-decommission', 'decommission', '')
     return sorted(entries, key=lambda e: (e['source'], e['id']))
 
@@ -202,10 +275,11 @@ def main():
         writer.writeheader()
         for entry in entries:
             writer.writerow({k: mask(str(v)) if v is not None else '' for k, v in entry.items() if k in columns})
-    write('dbql.md', '# DBQL assessment\n\n' + yaml.safe_dump(metadata, sort_keys=False) + '\nDead objects are SFX_* tablesv objects without READ/EXECUTE from queries in [2026-08-12, 2026-11-11). WRITE-only is not use. LastAccessTimeStamp and AccessCount are shown even if they disagree (writes can update them). Hidden users issue SELECT and neither their username nor any observed ClientID occurs in git-tracked repository text excluding DBQL and this output directory. AppID is evidence, not an exclusion key. Registered partner-extract is not hidden: its account is in consumers/registry.yaml. FIN_ANALYST_J***** is NOT hidden under the literal repository-wide rule: warehouse/teradata/tests/test_dbql.py contains its username. This is test evidence, not an operational integration: treat the analyst as an additional discovery risk. Its DBQL evidence is recorded below.\n\n' + analyst_evidence())
+    write('dbql.md', '# DBQL assessment\n\n25 unread in 90 days: 6 dormant (AccessCount 0, last access 2026-07-01); 19 write-only (recent writes, no reads). Only objects without static code readers are proposed for retirement. Spark landing-feed reads are conservatively treated as logical object readers, not observed JDBC reads.\n\n' + yaml.safe_dump(metadata, sort_keys=False) + '\nHidden discovery excludes warehouse/teradata/dbql/**, warehouse/teradata/tests/test_dbql.py and this output directory. svc_etl_* are internal producer row-count checks, not consumers; they remain in ETL lineage. The single hidden consumer is FIN_ANALYST_J***** (ODBC/Excel).\n\nPartner SFTP extract svc_partner_sftp IS registered in consumers/registry.yaml with code in consumers/partner-extract. It is not hidden. Registry cadence is nightly 02:15; DBQL instead shows 05:xx reads (timestamps have no timezone, so scheduling/timezone drift requires owner confirmation). Failed read counts below are per user/error/object; multi-object queries contribute to each object.\n\n' + yaml.safe_dump(dbql_exceptions(), sort_keys=False))
     waves = dict(sorted(Counter(e['wave'] for e in entries).items()))
     counters = {'teradata_objects': sum(e['kind'] in ('table', 'view', 'macro', 'procedure') for e in entries), 'powercenter_mappings': sum(e['kind'] == 'PowerCenter mapping' for e in entries), 'spark_executor_hours': measured['totals']['executor_hours'] if measured else 'not measured'}
-    board = dict(provenance, waves=waves, kinds=dict(sorted(Counter(e['kind'] for e in entries).items())), loc=sum(e['loc'] for e in entries), counters=counters, spark_applications=len(measured['jobs']) if measured else 0)
+    board = dict(provenance, waves=waves, kinds=dict(sorted(Counter(e['kind'] for e in entries).items())), loc=sum(e['loc'] for e in entries), counters=counters, spark_applications=len(measured['jobs']) if measured else 0,
+                 unread_in_90d=len(dead), unread_tiers=dict(Counter(d['tier'] for d in dead.values())), retire=[e['object_name'] for e in entries if e['target'] == 'retire'])
     write('board/board.json', json.dumps(board, indent=2) + '\n')
     sql = """/* run=dbx-d1111 act=assess step=counter */
 SELECT
@@ -224,6 +298,8 @@ def lineage(entries, hidden, provenance):
     for subject in ('billing', 'documents', 'users', 'audit', 'data-platform'):
         key = subject.replace('-', '_')
         lines += [f'subgraph {key}["{subject}"]', f'{key}_landing["landing feeds"] --> {key}_stg["staging"] --> {key}_core["core"] --> {key}_api["views / macros / procedures"] --> {key}_etl["PowerCenter / BTEQ / Spark"]', 'end']
+    for key, user in [('billing', 'billing'), ('documents', 'docs'), ('users', 'users'), ('audit', 'audit')]:
+        lines += [f'{key}_etl --> internal_{user}["svc_etl_{user}: internal row-count check"]']
     lines += ['subgraph consumers["Consumers"]']
     for i, c in enumerate(registry()):
         lines += [f'c{i}["{c["name"]}"]']
@@ -243,7 +319,7 @@ def lineage(entries, hidden, provenance):
             if e['kind'] != 'Spark job' or e['subject_area'] != subject:
                 continue
             text = read(e['source_paths'][0])
-            registered = re.findall(r'(?:register\(spark,)([^\n]*)', text)
+            registered = re.findall(r'(?:(?:register|landing|jdbc_read)\(spark,)([^\n]*)', text)
             refs = sorted(set(re.findall(r'"([A-Z][A-Z_0-9]+)"', ' '.join(registered))))
             node = 'j' + e['id']
             lines += [f'{node}["{e["object_name"]}"]']

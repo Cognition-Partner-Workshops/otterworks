@@ -21,6 +21,10 @@ end
 subgraph data_platform["data-platform"]
 data_platform_landing["landing feeds"] --> data_platform_stg["staging"] --> data_platform_core["core"] --> data_platform_api["views / macros / procedures"] --> data_platform_etl["PowerCenter / BTEQ / Spark"]
 end
+billing_etl --> internal_billing["svc_etl_billing: internal row-count check"]
+documents_etl --> internal_docs["svc_etl_docs: internal row-count check"]
+users_etl --> internal_users["svc_etl_users: internal row-count check"]
+audit_etl --> internal_audit["svc_etl_audit: internal row-count check"]
 subgraph consumers["Consumers"]
 c0["report-service"]
 c1["analytics-service"]
@@ -30,10 +34,7 @@ c4["admin-service"]
 c5["bi-semantic"]
 c6["finance-notebook"]
 c7["partner-extract"]
-h0["svc_etl_audit"]:::hidden
-h1["svc_etl_billing"]:::hidden
-h2["svc_etl_docs"]:::hidden
-h3["svc_etl_users"]:::hidden
+h0["FIN_ANALYST_J*****"]:::hidden
 end
 classDef hidden fill:#ffe0e0,stroke:#b00020,stroke-width:3px
 billing_etl --> c0
@@ -44,10 +45,7 @@ billing_etl --> c4
 billing_etl --> c5
 billing_etl --> c6
 billing_etl --> c7
-audit_etl --> h0
-billing_etl --> h1
-documents_etl --> h2
-users_etl --> h3
+billing_etl --> h0
 ```
 
 ## Spark code-level lineage
@@ -58,7 +56,10 @@ register/BatchSupport.register literals identify reads; save target literals ide
 flowchart LR
 subgraph spark_billing["billing Spark transforms"]
 j36e420fc9dda9a4a["billing_churn_score"]
-tc539fadbfa["external lake/blob input"] --> j36e420fc9dda9a4a
+tfb6778e7a4["CHURN_SCORE"] --> j36e420fc9dda9a4a
+t53a59e93f1["CUSTOMER_ID"] --> j36e420fc9dda9a4a
+t5ecf9fb777["STATUS"] --> j36e420fc9dda9a4a
+tcb3926c739["SUBSCRIPTION"] --> j36e420fc9dda9a4a
 j36e420fc9dda9a4a --> o36e420fc9dda9a4a["billing_churn_score lake output"]
 j81f43bb8d0b21309["billing_gl_trial_balance"]
 t305769d92e["CREDIT_NOTE"] --> j81f43bb8d0b21309
@@ -70,10 +71,12 @@ t2231ca65af["INVOICE_HDR"] --> j31b693473f0cfb89
 tb57dd7a56b["INVOICE_LINE"] --> j31b693473f0cfb89
 j31b693473f0cfb89 --> o31b693473f0cfb89["sfx_billing.SPARK_INVOICE_SUMMARY"]
 j240545304dd0cca3["billing_payment_aging"]
-tc539fadbfa["external lake/blob input"] --> j240545304dd0cca3
+t2231ca65af["INVOICE_HDR"] --> j240545304dd0cca3
+t0c2b00074e["PAYMENT"] --> j240545304dd0cca3
 j240545304dd0cca3 --> o240545304dd0cca3["sfx_billing.INVOICE_HDR, sfx_billing.PAYMENT"]
 j3e8b07384080134a["billing_revenue_by_plan"]
-tc539fadbfa["external lake/blob input"] --> j3e8b07384080134a
+tb57dd7a56b["INVOICE_LINE"] --> j3e8b07384080134a
+t24c5a26e2d["PLAN_CATALOG"] --> j3e8b07384080134a
 j3e8b07384080134a --> o3e8b07384080134a["billing_revenue_by_plan lake output"]
 jc5c27426ee958835["billing_usage_append_daily"]
 tdebfb8c14b["USAGE_DAILY"] --> jc5c27426ee958835
@@ -81,22 +84,27 @@ jc5c27426ee958835 --> oc5c27426ee958835["sfx_billing.SPARK_USAGE_DAILY"]
 end
 subgraph spark_documents["documents Spark transforms"]
 j3656e055e27f9062["doc_share_graph_reach"]
-t40cfc38d37["external lake/blob input"] --> j3656e055e27f9062
+t33f3b7af0e["DOC_SHARE"] --> j3656e055e27f9062
 j3656e055e27f9062 --> o3656e055e27f9062["doc_share_graph_reach lake output"]
 jdf9f11d44d3ae705["doc_version_diff_stats"]
-t40cfc38d37["external lake/blob input"] --> jdf9f11d44d3ae705
+t2ee89e6d0c["DOC_VERSION"] --> jdf9f11d44d3ae705
 jdf9f11d44d3ae705 --> odf9f11d44d3ae705["doc_version_diff_stats lake output"]
 j449d7f13d2102104["docs_event_export_hourly"]
-t40cfc38d37["external lake/blob input"] --> j449d7f13d2102104
+t41e6750b47["DOCUMENT"] --> j449d7f13d2102104
+t27a968e6ef["DOCUMENT_ID"] --> j449d7f13d2102104
+ta8f569920d["EXPORT_BUCKET"] --> j449d7f13d2102104
 j449d7f13d2102104 --> o449d7f13d2102104["docs_event_export_hourly lake output"]
 j804e1a6d4791df03["docs_folder_legacy_report"]
-t40cfc38d37["external lake/blob input"] --> j804e1a6d4791df03
+t41e6750b47["DOCUMENT"] --> j804e1a6d4791df03
+tf93826b262["FOLDER"] --> j804e1a6d4791df03
 j804e1a6d4791df03 --> o804e1a6d4791df03["docs_folder_legacy_report lake output"]
 je2b2fad1957273cb["docs_folder_tree_walk"]
-t40cfc38d37["external lake/blob input"] --> je2b2fad1957273cb
+tf93826b262["FOLDER"] --> je2b2fad1957273cb
 je2b2fad1957273cb --> oe2b2fad1957273cb["docs_folder_tree_walk lake output"]
 j226fcb6125cd01af["docs_search_log_parse"]
-t40cfc38d37["external lake/blob input"] --> j226fcb6125cd01af
+t9503954c4b["PARSED_ACTION"] --> j226fcb6125cd01af
+t811e4be7eb["RAW_LINE"] --> j226fcb6125cd01af
+tc76c8079eb["SEARCH_INDEX_LOG"] --> j226fcb6125cd01af
 j226fcb6125cd01af --> o226fcb6125cd01af["docs_search_log_parse lake output"]
 j2b7a6d8d0e305a41["docs_storage_by_owner"]
 t0718787605["APP_USER"] --> j2b7a6d8d0e305a41
@@ -104,7 +112,9 @@ t41e6750b47["DOCUMENT"] --> j2b7a6d8d0e305a41
 t95c5430357["FILE_OBJECT"] --> j2b7a6d8d0e305a41
 j2b7a6d8d0e305a41 --> o2b7a6d8d0e305a41["docs_storage_by_owner lake output"]
 j1eb0f51fa396565a["docs_tag_normalize"]
-t40cfc38d37["external lake/blob input"] --> j1eb0f51fa396565a
+t5bf2a03ffe["DOC_TAG"] --> j1eb0f51fa396565a
+t4da9bf2048["NORMALIZED_TAG"] --> j1eb0f51fa396565a
+t256a274a18["TAG"] --> j1eb0f51fa396565a
 j1eb0f51fa396565a --> o1eb0f51fa396565a["docs_tag_normalize lake output"]
 j71b09ce48eacf50e["docs_share_activity"]
 t41e6750b47["DOCUMENT"] --> j71b09ce48eacf50e
@@ -116,13 +126,15 @@ j2848accf505abb70 --> o2848accf505abb70["lake_compaction_documents lake output"]
 end
 subgraph spark_users["users Spark transforms"]
 j82e7b20b053c63d2["user_pref_json_flatten"]
-t06497fa033["external lake/blob input"] --> j82e7b20b053c63d2
+t99733b879f["USER_PREF"] --> j82e7b20b053c63d2
 j82e7b20b053c63d2 --> o82e7b20b053c63d2["user_pref_json_flatten lake output"]
 j5202404d1a5ee738["users_active_daily"]
-t06497fa033["external lake/blob input"] --> j5202404d1a5ee738
+teda186b239["USER_ACTIVITY_DAILY"] --> j5202404d1a5ee738
 j5202404d1a5ee738 --> o5202404d1a5ee738["users_active_daily lake output"]
 j93b3d7ca84bbf546["users_login_useragent_parse"]
-t06497fa033["external lake/blob input"] --> j93b3d7ca84bbf546
+t460ac4f350["BROWSER"] --> j93b3d7ca84bbf546
+t8ef141a47b["LOGIN_EVENT"] --> j93b3d7ca84bbf546
+t7c2a8af89c["USER_AGENT"] --> j93b3d7ca84bbf546
 j93b3d7ca84bbf546 --> o93b3d7ca84bbf546["users_login_useragent_parse lake output"]
 j67c0593354ffde0a["users_team_rollup"]
 tc7541aa91a["APP_USER"] --> j67c0593354ffde0a
@@ -130,10 +142,10 @@ t52980fc34e["TEAM"] --> j67c0593354ffde0a
 tc838759863["TEAM_MEMBER"] --> j67c0593354ffde0a
 j67c0593354ffde0a --> o67c0593354ffde0a["sfx_users.SPARK_TEAM_ROLLUP"]
 je74cf4a953626a7e["team_graph_components"]
-t06497fa033["external lake/blob input"] --> je74cf4a953626a7e
+tc838759863["TEAM_MEMBER"] --> je74cf4a953626a7e
 je74cf4a953626a7e --> oe74cf4a953626a7e["team_graph_components lake output"]
 j3b611fa411d110e0["users_risk_score"]
-t06497fa033["external lake/blob input"] --> j3b611fa411d110e0
+teda186b239["USER_ACTIVITY_DAILY"] --> j3b611fa411d110e0
 j3b611fa411d110e0 --> o3b611fa411d110e0["sfx_users.SPARK_RISK_SCORE"]
 end
 subgraph spark_audit["audit Spark transforms"]
@@ -143,7 +155,7 @@ tedbd430f84["LOGIN_EVENT"] --> j3239a0ca48ca7071
 t8bdac745f3["USER_ACTIVITY_DAILY"] --> j3239a0ca48ca7071
 j3239a0ca48ca7071 --> o3239a0ca48ca7071["audit_actor_activity_join lake output"]
 jd505e2c0c31cf608["audit_archive_resort"]
-t3878c3c83d["external lake/blob input"] --> jd505e2c0c31cf608
+te6f1816027["AUDIT_EVENT_ARCHIVE"] --> jd505e2c0c31cf608
 jd505e2c0c31cf608 --> od505e2c0c31cf608["audit_archive_resort lake output"]
 j21023332aa8b55ce["lake_compaction_audit"]
 t3878c3c83d["external lake/blob input"] --> j21023332aa8b55ce
@@ -154,16 +166,16 @@ je2e681f4b1b8c75f --> oe2e681f4b1b8c75f["sfx_audit.SPARK_AUDIT_SUMMARY"]
 end
 subgraph spark_data_platform["data-platform Spark transforms"]
 jec470285f065ed9c["collab_session_sessionize"]
-tc469687dbd["external lake/blob input"] --> jec470285f065ed9c
+t169ca0104a["COLLAB_SESSION"] --> jec470285f065ed9c
 jec470285f065ed9c --> oec470285f065ed9c["collab_session_sessionize lake output"]
 j5378603daa2875d5["file_object_binary_extract"]
-tc469687dbd["external lake/blob input"] --> j5378603daa2875d5
+tea979f1939["FILE_OBJECT"] --> j5378603daa2875d5
 j5378603daa2875d5 --> o5378603daa2875d5["file_object_binary_extract lake output"]
 j348248e32efac0da["security_alert_anomaly"]
-tc469687dbd["external lake/blob input"] --> j348248e32efac0da
+tdc65409be1["SECURITY_ALERT"] --> j348248e32efac0da
 j348248e32efac0da --> o348248e32efac0da["sfx_audit.SPARK_ALERT_ANOMALY"]
 jf8710c1a5ac6d3c9["compliance_flag_rules"]
-tc469687dbd["external lake/blob input"] --> jf8710c1a5ac6d3c9
+t7f7b2ee26e["COMPLIANCE_FLAG"] --> jf8710c1a5ac6d3c9
 jf8710c1a5ac6d3c9 --> of8710c1a5ac6d3c9["sfx_audit.SPARK_COMPLIANCE_REVIEW"]
 end
 ```

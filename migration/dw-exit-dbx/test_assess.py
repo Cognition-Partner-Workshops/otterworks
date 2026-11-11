@@ -3,6 +3,7 @@ import os
 from unittest.mock import patch
 
 from assess import area, loc, mask
+import assess
 from load_control import connect
 
 
@@ -24,6 +25,22 @@ class AssessmentHelpers(unittest.TestCase):
         with patch.dict(os.environ, {'DATABRICKS_CATALOG': 'other'}):
             with self.assertRaisesRegex(ValueError, 'Only catalog cpw'):
                 connect()
+
+    def test_code_reader_and_writer(self):
+        path = 'warehouse/teradata/macros/example.sql'
+        with patch.object(assess, 'source_files', return_value=[path]), patch.object(assess, 'spark_files', return_value=[]), patch.object(assess, 'git', return_value=''), patch.object(assess, 'read', return_value='INSERT INTO SFX_AUDIT.LEGAL_HOLD SELECT * FROM SFX_AUDIT.ACCESS_REVIEW;'):
+            readers = assess.code_readers(['SFX_AUDIT.LEGAL_HOLD', 'SFX_AUDIT.ACCESS_REVIEW'])
+        self.assertEqual(readers['SFX_AUDIT.LEGAL_HOLD'], [])
+        self.assertEqual(readers['SFX_AUDIT.ACCESS_REVIEW'], [path])
+
+    def test_no_reader_sources(self):
+        with patch.object(assess, 'source_files', return_value=[]), patch.object(assess, 'spark_files', return_value=[]), patch.object(assess, 'git', return_value=''):
+            self.assertEqual(assess.code_readers(['SFX_AUDIT.LEGAL_HOLD']), {'SFX_AUDIT.LEGAL_HOLD': []})
+
+    def test_spark_landing_reader(self):
+        path = 'etl/spark/jobs/py/example.py'
+        with patch.object(assess, 'source_files', return_value=[]), patch.object(assess, 'spark_files', return_value=[path]), patch.object(assess, 'git', return_value=''), patch.object(assess, 'read', return_value='result = landing(spark, "USER_PREF")'):
+            self.assertEqual(assess.code_readers(['SFX_USERS.USER_PREF']), {'SFX_USERS.USER_PREF': [path]})
 
 
 if __name__ == '__main__':

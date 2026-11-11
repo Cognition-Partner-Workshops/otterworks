@@ -52,9 +52,16 @@ retained. Control IDs are hashes of source path plus object, not source names.
 
 Wave 1 = DBQL retirement and Delta tables; wave 2 = ingestion; wave 3 =
 transformations and orchestration; wave 4 = compatibility/cutover/decommission.
-Retirement follows the specified no READ/EXECUTE rule, even for write-active
-objects. This is a recommendation needing dependency review: Spark code may read
-objects absent from Teradata DBQL. Do not automatically delete based on this plan.
+Unread candidates follow the specified no READ/EXECUTE rule, even for write-active
+objects: 6 dormant and 19 write-only. Retirement additionally requires no static
+code reader. Objects read by code keep their migration target, high risk and a
+reader-path reason. Reader checks cover SQL FROM/JOIN/CALL/EXEC, PowerCenter
+Teradata SOURCE/lookup declarations, consumer SQL, and Spark SQL/register/landing/jdbc_read.
+Spark landing reads conservatively retain the corresponding logical Teradata object;
+this does not claim the job reads Teradata JDBC. References used only as write
+targets, declarations, fixtures or schema constants are not readers. Evidence is
+stored per object in the manifest and dbql.md. Do not automatically delete based
+on this static assessment alone.
 lineage.md has an area-level flow overview plus Spark code-derived graph/detail;
 it is static source lineage, not a claim of observed execution.
 
@@ -67,11 +74,13 @@ therefore qualify even with recent timestamps. DBC system tables are excluded.
 
 Hidden discovery uses literal case-insensitive username OR full ClientID search
 over git-tracked repository text, excluding warehouse/teradata/dbql/ and this
-directory. Tests count as code. The finance analyst appears in a DBQL test, so is
-not hidden by that exact rule; dbql.md nevertheless flags and measures it. The
-registered SFTP consumer is not hidden. Four dynamically configured ETL users are
-hidden by the literal rule (their constructed names are not explicit in code).
-This is a limitation of string matching, not proof of four unknown integrations.
+directory, plus warehouse/teradata/tests/test_dbql.py (the emulator test, not
+consumer code). svc_etl_* are internal producer row-count checks, not consumers;
+their stable IDs are retained and reclassified as internal ETL, wave 3. The one
+hidden consumer is the finance analyst. It gets a wave 4 discovery entry plus
+one compatibility-view cutover entry per object read, owned by finance-ops with
+high risk. The registered SFTP consumer is not hidden; DBQL timing mismatch and
+failed read paths are documented in dbql.md.
 Person-name username suffixes are masked in all generated files. No source SQL,
 customer/partner data records or raw XML descriptions are copied to output.
 

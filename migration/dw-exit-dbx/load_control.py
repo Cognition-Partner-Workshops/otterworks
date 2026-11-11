@@ -31,7 +31,7 @@ def main():
         execute(cursor, 'schema', f"CREATE SCHEMA IF NOT EXISTS cpw.dbx_d1111_control COMMENT '{COMMENT}'")
         execute(cursor, 'table', f"CREATE TABLE IF NOT EXISTS {TABLE} (object_name STRING, subject_area STRING, source_system STRING, target STRING, status STRING, parity STRING, pr STRING, updated_at TIMESTAMP) USING DELTA COMMENT '{COMMENT}'")
         existing = {row[0] for row in execute(cursor, 'columns', f'DESCRIBE TABLE {TABLE}').fetchall()}
-        additions = {'wave': 'INT', 'owner': 'STRING', 'risk': 'STRING', 'risk_reason': 'STRING', 'kind': 'STRING', 'source_path': 'STRING', 'loc': 'INT', 'complexity': 'STRING', 'executor_hours': 'DECIMAL(18,9)'}
+        additions = {'wave': 'INT', 'owner': 'STRING', 'risk': 'STRING', 'risk_reason': 'STRING', 'kind': 'STRING', 'source_path': 'STRING', 'loc': 'INT', 'complexity': 'STRING', 'executor_hours': 'DECIMAL(18,9)', 'unread_tier': 'STRING', 'code_readers': 'STRING'}
         missing = [f'{name} {dtype}' for name, dtype in additions.items() if name not in existing]
         if missing:
             execute(cursor, 'extend', f'ALTER TABLE {TABLE} ADD COLUMNS (' + ', '.join(missing) + ')')
@@ -39,7 +39,7 @@ def main():
         values = ','.join('(' + ','.join('?' for _ in columns) + ')' for _ in entries)
         parameters = []
         for entry in entries:
-            row = dict(entry, object_name=entry['id'], source_path=';'.join(entry['source_paths']))
+            row = dict(entry, object_name=entry['id'], source_path=';'.join(entry['source_paths']), code_readers=';'.join(entry['code_readers']))
             parameters.extend(row[c] for c in columns)
         updates = ', '.join(f't.{c}=s.{c}' for c in columns if c != 'object_name')
         execute(cursor, 'load', f"MERGE INTO {TABLE} t USING (SELECT * FROM VALUES {values} AS v({','.join(columns)})) s ON t.object_name=s.object_name WHEN MATCHED THEN UPDATE SET {updates}, t.updated_at=current_timestamp() WHEN NOT MATCHED THEN INSERT ({','.join(columns)},status,parity,pr,updated_at) VALUES ({','.join('s.' + c for c in columns)},'planned',NULL,NULL,current_timestamp())", parameters)
