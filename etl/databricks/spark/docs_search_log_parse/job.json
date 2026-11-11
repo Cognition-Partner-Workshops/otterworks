@@ -1,0 +1,24 @@
+{
+  "name": "dbx-d1111-spark-docs_search_log_parse",
+  "description": "Serverless PySpark port of etl/spark/jobs/py/docs_search_log_parse.py (not deployed: no live input, see README). run_token=dbx-d1111 expires=2026-11-24",
+  "tags": {"run_token": "dbx-d1111", "expires": "2026-11-24", "act": "spark"},
+  "max_concurrent_runs": 1,
+  "timeout_seconds": 1800,
+  "tasks": [
+    {
+      "task_key": "docs_search_log_parse",
+      "spark_python_task": {
+        "python_file": "/Workspace/Shared/dbx-d1111-spark/docs_search_log_parse/docs_search_log_parse.py",
+        "parameters": ["--inputs", "/Workspace/Shared/dbx-d1111-spark/docs_search_log_parse/inputs.sql", "--target", "cpw.dbx_d1111_after.documents__spark_docs_search_log_parse"]
+      },
+      "environment_key": "default",
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    }
+  ],
+  "environments": [
+    {"environment_key": "default", "spec": {"environment_version": "2"}}
+  ]
+}
