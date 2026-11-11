@@ -1,5 +1,5 @@
 /* gitleaks:allow */
-.LOGON tdprod-fin.otterworks.internal/svc_partner_sftp,not-a-real-password
+.LOGON tdprod-fin.otterworks.internal/svc_exit_parity,not-a-real-password
 .IF ERRORCODE <> 0 THEN .QUIT 8
 .SET SEPARATOR ','
 .SET WIDTH 65531
