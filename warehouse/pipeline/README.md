@@ -47,3 +47,9 @@ local file, and rebuilds dbt. November 9 remains loaded. Observation joins back
 to source markers so the 200k legacy seed rows with null USAGE_DATE do not
 distort daily metrics. Query-history filtering normalizes JSON whitespace
 because the existing dbt tag macro merges workload/phase/run_token keys.
+
+Notifications use `DEVIN_PIPELINE_WEBHOOK_URL` and
+`DEVIN_PIPELINE_WEBHOOK_SECRET`. Configure the final HTTPS receiver URL without
+embedded credentials or a fragment. The sender rejects plaintext URLs and all
+redirects so its bearer credential cannot be forwarded to another endpoint.
+Dry runs (no URL) still print the payload without sending a request.
