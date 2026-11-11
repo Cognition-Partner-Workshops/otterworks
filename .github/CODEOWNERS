@@ -1,0 +1,17 @@
+/services/report-service/ @otterworks/finance-reporting
+/services/analytics-service/ @otterworks/analytics
+/services/billing-service/ @otterworks/billing
+/services/legacy-billing/ @otterworks/legacy-billing
+/services/admin-service/ @otterworks/finance-ops
+/consumers/bi/ @otterworks/bi
+/consumers/notebooks/ @otterworks/data-science
+/consumers/partner-extract/ @otterworks/partner-integrations
+/consumers/registry.yaml @otterworks/finance-reporting @otterworks/analytics @otterworks/billing @otterworks/legacy-billing @otterworks/finance-ops @otterworks/bi @otterworks/data-science @otterworks/partner-integrations
+/.github/workflows/consumer-report-service.yml @otterworks/finance-reporting
+/.github/workflows/consumer-analytics-service.yml @otterworks/analytics
+/.github/workflows/consumer-billing-service.yml @otterworks/billing
+/.github/workflows/consumer-legacy-billing.yml @otterworks/legacy-billing
+/.github/workflows/consumer-admin-service.yml @otterworks/finance-ops
+/.github/workflows/consumer-bi-semantic.yml @otterworks/bi
+/.github/workflows/consumer-finance-notebook.yml @otterworks/data-science
+/.github/workflows/consumer-partner-extract.yml @otterworks/partner-integrations

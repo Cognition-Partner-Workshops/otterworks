@@ -5,8 +5,30 @@ from decimal import Decimal
 
 import psycopg
 from flask import Flask, jsonify, redirect, render_template, request, url_for
+from finance_warehouse import COLUMNS, ReceivablesWarehouse, SnowflakeReceivablesWarehouse
 
 app = Flask(__name__)
+app.config["FINANCE_WAREHOUSE_ENABLED"] = (
+    os.getenv("FINANCE_WAREHOUSE_ENABLED", "true").lower() not in {"false", "0", "no", "off"}
+)
+app.extensions["finance_warehouse"] = SnowflakeReceivablesWarehouse()
+
+
+@app.get("/finance/ar-aging")
+def finance_ar_aging():
+    if not app.config["FINANCE_WAREHOUSE_ENABLED"]:
+        return jsonify(error="finance warehouse is disabled"), 404
+    output = request.args.get("format", "json")
+    if output not in {"json", "html"}:
+        return jsonify(error="format must be json or html"), 400
+    warehouse: ReceivablesWarehouse = app.extensions["finance_warehouse"]
+    try:
+        aging = warehouse.ar_aging()
+    except Exception:
+        return jsonify(error="finance warehouse unavailable"), 503
+    if output == "html":
+        return render_template("ar_aging.html", aging=aging, columns=COLUMNS)
+    return jsonify(aging)
 
 
 def db_connect():

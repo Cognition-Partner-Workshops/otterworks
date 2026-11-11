@@ -10,6 +10,7 @@ vars:
   governance_policies: {}
 on-run-end:
   - "{{ reapply_governance(results) }}"
+  - "{{ pc_finalize_comments(results) }}"
 models:
   sfx_warehouse:
     +persist_docs:
@@ -23,3 +24,11 @@ models:
     spark:
       +schema: MART_SPARK
       +materialized: table
+    pc:
+      +post-hook: "{{ pc_relation_comment() }}"
+      billing:
+        +schema: PC_BILLING
+      content:
+        +schema: PC_CONTENT
+      audit:
+        +schema: PC_AUDIT

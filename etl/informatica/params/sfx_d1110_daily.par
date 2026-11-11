@@ -1,0 +1,24 @@
+# Parameter file for the daily batch (Integration Service IS_SFX_D1110).
+# Sections follow [folder.WF:workflow] / [folder.WF:workflow.ST:session] precedence.
+[Global]
+$DBConnection_SRC=TD_SFX_EDW
+$DBConnection_TGT=TD_SFX_EDW
+$DBConnection_LKP=TD_SFX_EDW
+$$LOAD_DATE=20261109
+$PMSessionLogCount=10
+
+[SFX_BILLING.WF:wf_SFX_BILLING_DAILY]
+$$CURRENCY_DEFAULT=USD
+$$SALES_TAX_RATE=0.0825
+
+[SFX_BILLING.WF:wf_SFX_BILLING_DAILY.ST:s_m_SFX_GL_JOURNAL_LINE]
+$$SALES_TAX_RATE=0.0825
+
+[SFX_CONTENT.WF:wf_SFX_CONTENT_DAILY]
+$$CURRENCY_DEFAULT=USD
+
+[SFX_AUDIT.WF:wf_SFX_AUDIT_DAILY]
+$$ARCHIVE_DAYS=730
+
+[SFX_AUDIT.WF:wf_SFX_AUDIT_DAILY.ST:s_m_SFX_AUDIT_EVENT_ARCHIVE]
+$$ARCHIVE_DAYS=2555

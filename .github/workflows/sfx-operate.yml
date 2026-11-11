@@ -1,0 +1,41 @@
+name: sfx-d1110 pipeline operations
+
+on:
+  pull_request:
+    paths:
+      - 'warehouse/pipeline/**'
+      - 'observability/pipeline/**'
+      - 'observability/grafana/provisioning/alerting/**'
+      - 'observability/prometheus/prometheus.yml'
+      - '.github/workflows/sfx-operate.yml'
+  push:
+    paths:
+      - 'warehouse/pipeline/**'
+      - 'observability/pipeline/**'
+      - 'observability/grafana/provisioning/alerting/**'
+      - 'observability/prometheus/prometheus.yml'
+      - '.github/workflows/sfx-operate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sfx-operate:
+    name: sfx-operate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
+        with:
+          python-version: '3.10'
+      - run: python -m pip install pytest==8.3.5 PyYAML==6.0.2 prometheus_client==0.21.1 tomlkit==0.15.2
+      - run: python -m pytest warehouse/pipeline/test_pipeline.py -q
+      - name: Parse Grafana alerting provisioning
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+          for path in sorted(Path('observability/grafana/provisioning/alerting').glob('*.yml')):
+              yaml.safe_load(path.read_text())
+              print(f'YAML OK: {path}')
+          PY

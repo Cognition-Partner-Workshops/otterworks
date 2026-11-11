@@ -14,6 +14,8 @@ def main():
     parser.add_argument("command", choices=["parse", "build"])
     parser.add_argument("--phase", default="dbt")
     parser.add_argument("--job")
+    parser.add_argument("--step")
+    parser.add_argument("--mapping")
     parser.add_argument("--select", dest="selection", default="staging.billing")
     args = parser.parse_args()
     env = os.environ.copy()
@@ -28,7 +30,10 @@ def main():
             ) != "SFX_D1110_TRANSFORM_WH":
                 raise ValueError("Spark dbt requires SFX_D1110_AFTER and SFX_D1110_TRANSFORM_WH")
         env["DBT_ENV_SECRET_SNOWFLAKE_PRIVATE_KEY"] = env["SNOWFLAKE_PRIVATE_KEY"]
-    tag = json.loads(query_tag("transform", args.phase, job=args.job))
+    extra = ({"run": "sfx-d1110", "act": "scale", "step": args.step} if args.step else {})
+    if args.mapping:
+        extra["mapping"] = args.mapping
+    tag = json.loads(query_tag("transform", args.phase, extra, job=args.job))
     env["SFX_QUERY_TAG"] = json.dumps(tag, separators=(",", ":"))
     env["DBT_SEND_ANONYMOUS_USAGE_STATS"] = "false"
     project = ROOT.parent / "dbt"

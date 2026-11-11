@@ -1,0 +1,66 @@
+name: Consumer bi-semantic
+
+on:
+  push:
+    branches: [demo-snowflake-dw-exit, 'devin/sfx-d1110-**']
+    paths: ['consumers/bi/**', '.github/workflows/consumer-bi-semantic.yml']
+  pull_request:
+    paths: ['consumers/bi/**', '.github/workflows/consumer-bi-semantic.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r consumers/bi/requirements-dev.txt
+      - run: "cd consumers/bi && python -m pytest"
+
+  contract-replay:
+    needs: unit
+    env:
+      WAREHOUSE_CONTRACT_TARGET: replay
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r consumers/bi/requirements-dev.txt
+      - run: "cd consumers/bi && python -m pytest contract"
+
+  snowflake-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - id: check
+        env:
+          PRESENT: ${{ secrets.SNOWFLAKE_ACCOUNT != '' && secrets.SNOWFLAKE_PRIVATE_KEY != '' }}
+        run: echo "present=$PRESENT" >> "$GITHUB_OUTPUT"
+
+  contract:
+    needs: [unit, snowflake-secrets]
+    if: needs.snowflake-secrets.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    env:
+      WAREHOUSE_CONTRACT_TARGET: ${{ vars.CONSUMER_CONTRACT_TARGET || 'teradata-emulator' }}
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_PRIVATE_KEY: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+      SNOWFLAKE_QUERY_TAG: '{"run":"sfx-d1110","act":"consumers","consumer":"bi-semantic"}'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r consumers/bi/requirements-dev.txt
+      - run: "cd consumers/bi && python -m pytest contract"

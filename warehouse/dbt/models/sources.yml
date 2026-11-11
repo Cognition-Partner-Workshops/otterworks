@@ -15,6 +15,12 @@ sources:
     - name: PAYMENT_TERMS_DAYS
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: ACCOUNT_NAME
+    - name: STATUS_CD
+    - name: CURRENCY_CD
+    - name: CREATED_DT
+    - name: COUNTRY_CD
+    - name: REGION_CD
   - name: PLAN_CATALOG
     columns:
     - name: PLAN_CATALOG_ID
@@ -27,6 +33,9 @@ sources:
     - name: SEAT_LIMIT
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: PLAN_ID
+    - name: MONTHLY_FEE
+    - name: CURRENCY_CD
   - name: SUBSCRIPTION
     columns:
     - name: SUBSCRIPTION_ID
@@ -39,6 +48,10 @@ sources:
     - name: CURRENCY_CODE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: PLAN_CODE
+    - name: START_DT
+    - name: END_DT
+    - name: STATUS_CD
   - name: INVOICE_HDR
     columns:
     - name: INVOICE_HDR_ID
@@ -51,6 +64,19 @@ sources:
     - name: TOTAL_AMOUNT
     - name: CURRENCY_CODE
     - name: STATUS
+    - name: INVOICE_ID
+    - name: SUBSCRIPTION_ID
+    - name: INVOICE_DT
+    - name: BILL_DT
+    - name: PERIOD_START_DT
+    - name: CURRENCY_CD
+    - name: TAX_RATE_ID
+    - name: INVOICE_PERIOD
+    - name: PERIOD_KEY
+    - name: PRIOR_PERIOD_END_DT
+    - name: INVOICE_MONTH
+    - name: PERIOD_CLOSED_CD
+    - name: CURRENCY_CONTROL_TOTAL
   - name: INVOICE_LINE
     columns:
     - name: INVOICE_LINE_ID
@@ -63,6 +89,8 @@ sources:
     - name: TAX_AMOUNT
     - name: CURRENCY_CODE
     - name: SERVICE_DATE
+    - name: INVOICE_ID
+    - name: LINE_NO
   - name: PAYMENT
     columns:
     - name: PAYMENT_ID
@@ -75,6 +103,10 @@ sources:
     - name: METHOD
     - name: STATUS
     - name: CREATED_AT
+    - name: INVOICE_ID
+    - name: PAYMENT_DT
+    - name: METHOD_CD
+    - name: PAYMENT_REFERENCE
   - name: CREDIT_NOTE
     columns:
     - name: CREDIT_NOTE_ID
@@ -87,6 +119,10 @@ sources:
     - name: REASON
     - name: STATUS
     - name: CREATED_AT
+    - name: INVOICE_ID
+    - name: CREDIT_DT
+    - name: REASON_CD
+    - name: REASON_TEXT
   - name: TAX_RATE
     columns:
     - name: TAX_RATE_ID
@@ -98,6 +134,9 @@ sources:
     - name: EFFECTIVE_DATE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: COUNTRY_CD
+    - name: REGION_CD
+    - name: EFFECTIVE_DT
   - name: USAGE_DAILY
     columns:
     - name: USAGE_DAILY_ID
@@ -106,9 +145,30 @@ sources:
     - name: QUANTITY
     - name: UNIT_PRICE
     - name: AMOUNT
+      tests:
+      - not_null:
+          config:
+            where: _SRC_FILE like 'pipeline/%'
     - name: CURRENCY_CODE
+      tests:
+      - not_null:
+          config:
+            where: _SRC_FILE like 'pipeline/%'
     - name: CREATED_AT
+      tests:
+      - not_null:
+          config:
+            where: _SRC_FILE like 'pipeline/%'
     - name: IS_ACTIVE
+      tests:
+      - not_null:
+          config:
+            where: _SRC_FILE like 'pipeline/%'
+    - name: USAGE_ID
+    - name: SUBSCRIPTION_ID
+    - name: USAGE_DT
+    - name: UNITS
+    - name: USAGE_TYPE
   - name: BILLING_ADJ
     columns:
     - name: BILLING_ADJ_ID
@@ -120,6 +180,10 @@ sources:
     - name: REASON
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: ADJUSTMENT_ID
+    - name: INVOICE_ID
+    - name: ADJUSTMENT_DT
+    - name: REASON_CD
   - name: GL_ACCOUNT
     columns:
     - name: GL_ACCOUNT_ID
@@ -130,6 +194,7 @@ sources:
     - name: NORMAL_BALANCE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: ACCOUNT_NUMBER
   - name: GL_JOURNAL_LINE
     columns:
     - name: GL_JOURNAL_LINE_ID
@@ -141,6 +206,11 @@ sources:
     - name: DEBIT_AMOUNT
     - name: CREDIT_AMOUNT
     - name: CURRENCY_CODE
+    - name: JOURNAL_LINE_ID
+    - name: INVOICE_ID
+    - name: CREDIT_NOTE_ID
+    - name: POSTING_DT
+    - name: CURRENCY_CD
 - name: documents
   schema: RAW_DOCUMENTS
   tables:
@@ -153,6 +223,8 @@ sources:
     - name: VISIBILITY
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: CUSTOMER_ID
+    - name: CREATED_DT
   - name: DOCUMENT
     columns:
     - name: DOCUMENT_ID
@@ -163,6 +235,11 @@ sources:
     - name: STATUS
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: CUSTOMER_ID
+    - name: DOCUMENT_NAME
+    - name: CREATED_DT
+    - name: STATUS_CD
+    - name: FILE_TYPE
   - name: DOC_VERSION
     columns:
     - name: DOC_VERSION_ID
@@ -172,6 +249,11 @@ sources:
     - name: FILE_OBJECT_ID
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: VERSION_ID
+    - name: VERSION_NO
+    - name: VERSION_TS
+    - name: FILE_SIZE
+    - name: CONTENT_HASH
   - name: DOC_SHARE
     columns:
     - name: DOC_SHARE_ID
@@ -181,6 +263,9 @@ sources:
     - name: EXPIRES_DATE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: SHARE_ID
+    - name: ACCESS_LEVEL
+    - name: SHARED_DT
   - name: DOC_TAG
     columns:
     - name: DOC_TAG_ID
@@ -189,6 +274,8 @@ sources:
     - name: TAG_CATEGORY
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: TAG_ID
+    - name: CREATED_DT
   - name: FILE_OBJECT
     columns:
     - name: FILE_OBJECT_ID
@@ -199,6 +286,9 @@ sources:
     - name: CHECKSUM
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: BYTES_USED
+    - name: STORAGE_CLASS
+    - name: CREATED_DT
   - name: DOC_COMMENT
     columns:
     - name: DOC_COMMENT_ID
@@ -208,6 +298,9 @@ sources:
     - name: RESOLVED
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: COMMENT_ID
+    - name: COMMENT_TEXT
+    - name: CREATED_TS
   - name: COLLAB_SESSION
     columns:
     - name: COLLAB_SESSION_ID
@@ -219,6 +312,9 @@ sources:
     - name: CLIENT_TYPE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: SESSION_ID
+    - name: START_TS
+    - name: END_TS
   - name: STORAGE_USAGE_DAILY
     columns:
     - name: STORAGE_USAGE_DAILY_ID
@@ -229,6 +325,12 @@ sources:
     - name: QUOTA_BYTES
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: STORAGE_USAGE_ID
+    - name: CUSTOMER_ID
+    - name: OWNER_USER_ID
+    - name: USAGE_DT
+    - name: BYTES_USED
+    - name: OBJECT_COUNT
   - name: SEARCH_INDEX_LOG
     columns:
     - name: SEARCH_INDEX_LOG_ID
@@ -239,6 +341,10 @@ sources:
     - name: DURATION_MS
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: INDEX_LOG_ID
+    - name: INDEXED_TS
+    - name: STATUS_CD
+    - name: TOKEN_COUNT
 - name: users
   schema: RAW_USERS
   tables:
@@ -253,6 +359,9 @@ sources:
     - name: STATUS
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: DISPLAY_NAME
+    - name: STATUS_CD
+    - name: CREATED_DT
   - name: USER_PROFILE
     columns:
     - name: USER_PROFILE_ID
@@ -263,6 +372,10 @@ sources:
     - name: LOCALE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: PROFILE_ID
+    - name: TITLE
+    - name: COUNTRY_CD
+    - name: TIMEZONE
   - name: TEAM
     columns:
     - name: TEAM_ID
@@ -271,6 +384,7 @@ sources:
     - name: DESCRIPTION
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: CREATED_DT
   - name: TEAM_MEMBER
     columns:
     - name: TEAM_MEMBER_ID
@@ -280,6 +394,8 @@ sources:
     - name: JOINED_DATE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: ROLE_CD
+    - name: JOINED_DT
   - name: ROLE_GRANT
     columns:
     - name: ROLE_GRANT_ID
@@ -289,6 +405,9 @@ sources:
     - name: GRANTED_AT
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: GRANT_ID
+    - name: ROLE_CD
+    - name: GRANTED_DT
   - name: SSO_IDENTITY
     columns:
     - name: SSO_IDENTITY_ID
@@ -298,6 +417,10 @@ sources:
     - name: EMAIL
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: IDENTITY_ID
+    - name: PROVIDER_CD
+    - name: SUBJECT_ID
+    - name: CREATED_DT
   - name: LOGIN_EVENT
     columns:
     - name: LOGIN_EVENT_ID
@@ -308,6 +431,10 @@ sources:
     - name: COUNTRY_CODE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: LOGIN_ID
+    - name: LOGIN_TS
+    - name: RESULT_CD
+    - name: CLIENT_TYPE
   - name: USER_ACTIVITY_DAILY
     columns:
     - name: USER_ACTIVITY_DAILY_ID
@@ -318,6 +445,10 @@ sources:
     - name: ACTIVE_MINUTES
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: ACTIVITY_ID
+    - name: ACTIVITY_DT
+    - name: LOGIN_COUNT
+    - name: DOCUMENT_COUNT
   - name: USER_PREF
     columns:
     - name: USER_PREF_ID
@@ -327,6 +458,9 @@ sources:
     - name: UPDATED_AT
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: PREF_ID
+    - name: PREF_NAME
+    - name: UPDATED_DT
   - name: USER_STATUS_HIST
     columns:
     - name: USER_STATUS_HIST_ID
@@ -336,6 +470,10 @@ sources:
     - name: EFFECTIVE_DATE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: STATUS_HISTORY_ID
+    - name: STATUS_CD
+    - name: VALID_FROM
+    - name: VALID_TO
 - name: audit
   schema: RAW_AUDIT
   tables:
@@ -349,6 +487,11 @@ sources:
     - name: RESOURCE_TYPE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: EVENT_ID
+    - name: CUSTOMER_ID
+    - name: EVENT_TS
+    - name: EVENT_TYPE
+    - name: DETAILS
   - name: AUDIT_EVENT_ARCHIVE
     columns:
     - name: AUDIT_EVENT_ARCHIVE_ID
@@ -358,6 +501,12 @@ sources:
     - name: RETENTION_UNTIL
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: ARCHIVE_ID
+    - name: ACTOR_USER_ID
+    - name: DOCUMENT_ID
+    - name: EVENT_TS
+    - name: EVENT_TYPE
+    - name: DETAILS
   - name: ACCESS_REVIEW
     columns:
     - name: ACCESS_REVIEW_ID
@@ -368,6 +517,10 @@ sources:
     - name: REVIEW_NOTES
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: REVIEW_ID
+    - name: DOCUMENT_ID
+    - name: REVIEW_DT
+    - name: DECISION_CD
   - name: RETENTION_POLICY
     columns:
     - name: RETENTION_POLICY_ID
@@ -377,6 +530,9 @@ sources:
     - name: DISPOSITION
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: POLICY_ID
+    - name: EFFECTIVE_DT
+    - name: STATUS_CD
   - name: DATA_EXPORT_REQ
     columns:
     - name: DATA_EXPORT_REQ_ID
@@ -387,6 +543,11 @@ sources:
     - name: PURPOSE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: EXPORT_ID
+    - name: CUSTOMER_ID
+    - name: REQUEST_DT
+    - name: STATUS_CD
+    - name: ROW_COUNT
   - name: COMPLIANCE_FLAG
     columns:
     - name: COMPLIANCE_FLAG_ID
@@ -396,6 +557,12 @@ sources:
     - name: REVIEW_STATUS
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: FLAG_ID
+    - name: CUSTOMER_ID
+    - name: DOCUMENT_ID
+    - name: FLAG_TYPE
+    - name: FLAG_DT
+    - name: STATUS_CD
   - name: SECURITY_ALERT
     columns:
     - name: SECURITY_ALERT_ID
@@ -405,6 +572,11 @@ sources:
     - name: RESOLUTION
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: ALERT_ID
+    - name: DOCUMENT_ID
+    - name: ALERT_TS
+    - name: SEVERITY_CD
+    - name: STATUS_CD
   - name: LEGAL_HOLD
     columns:
     - name: LEGAL_HOLD_ID
@@ -414,6 +586,11 @@ sources:
     - name: RELEASE_DATE
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: HOLD_ID
+    - name: CUSTOMER_ID
+    - name: START_DT
+    - name: REASON_TEXT
+    - name: STATUS_CD
   - name: AUDIT_DAILY_SUMMARY
     columns:
     - name: AUDIT_DAILY_SUMMARY_ID
@@ -423,6 +600,10 @@ sources:
     - name: FAILURE_COUNT
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: SUMMARY_ID
+    - name: SUMMARY_DT
+    - name: CUSTOMER_ID
+    - name: EXPORT_COUNT
   - name: AUDIT_RECON
     columns:
     - name: AUDIT_RECON_ID
@@ -433,3 +614,8 @@ sources:
     - name: DIFFERENCE_COUNT
     - name: CREATED_AT
     - name: IS_ACTIVE
+    - name: RECON_ID
+    - name: BUSINESS_DT
+    - name: CUSTOMER_ID
+    - name: SOURCE_COUNT
+    - name: TARGET_COUNT

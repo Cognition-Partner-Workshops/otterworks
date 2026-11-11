@@ -1,0 +1,93 @@
+# PowerCenter licence and option entitlements for the Integration Service IS_SFX_D1110 (run token sfx-d1110).
+# Commercial values are variables so they can be set per environment; defaults are the current contract.
+variables:
+  LICENSED_CORES: 16
+  EDITION: PowerCenter Advanced Edition
+  PRODUCT_VERSION: "10.5.4"
+  CONTRACT_ID: PC-AE-2023-118842
+  LICENCE_START_DATE: "2023-12-01"
+  RENEWAL_DATE: "2026-12-01"
+  RENEWAL_NOTICE_DAYS: 90
+  ANNUAL_COST: 412000
+  ANNUAL_COST_CURRENCY: USD
+  SUPPORT_TIER: Premium
+
+licence:
+  edition: ${EDITION}
+  version: ${PRODUCT_VERSION}
+  contract_id: ${CONTRACT_ID}
+  licensed_cores: ${LICENSED_CORES}
+  core_metric: physical cores, 2 nodes x 8 (node01_sfx, node02_sfx)
+  start_date: ${LICENCE_START_DATE}
+  renewal_date: ${RENEWAL_DATE}
+  renewal_notice_days: ${RENEWAL_NOTICE_DAYS}
+  annual_cost: ${ANNUAL_COST}
+  currency: ${ANNUAL_COST_CURRENCY}
+  support: ${SUPPORT_TIER}
+  domain: Domain_sfx_d1110
+  repository: REP_SFX_PROD
+  integration_service: IS_SFX_D1110
+
+features:
+  base_engine:
+    name: PowerCenter Integration Service (base)
+    included_in_edition: true
+  flat_file_reader:
+    name: Flat file sources (delimited/fixed width)
+    included_in_edition: true
+  teradata_odbc:
+    name: PowerExchange for Teradata (ODBC relational connection)
+    included_in_edition: false
+    annual_cost: 38000
+  lookup_cache:
+    name: Connected/unconnected Lookup with persistent cache
+    included_in_edition: true
+  sequence_generator:
+    name: Sequence Generator transformation
+    included_in_edition: true
+  partitioning:
+    name: Partitioning Option (pass-through/key range partitions)
+    included_in_edition: false
+    annual_cost: 54000
+  pushdown_optimization:
+    name: Pushdown Optimization Option
+    included_in_edition: false
+    annual_cost: 61000
+  workflow_worklets:
+    name: Worklets, Decision and Email tasks
+    included_in_edition: true
+  high_availability:
+    name: High Availability / grid option
+    included_in_edition: false
+    annual_cost: 47000
+
+# Which licensed features each mapping depends on (feature keys above).
+mapping_features:
+  SFX_BILLING:
+    m_SFX_STG_CUSTOMER_ACCOUNT: [base_engine, flat_file_reader, teradata_odbc]
+    m_SFX_CUSTOMER_ACCOUNT: [base_engine, teradata_odbc, lookup_cache]
+    m_SFX_STG_INVOICE_HDR: [base_engine, flat_file_reader, teradata_odbc, partitioning]
+    m_SFX_INVOICE_HDR: [base_engine, teradata_odbc, lookup_cache, partitioning]
+    m_SFX_INVOICE_LINE: [base_engine, flat_file_reader, teradata_odbc, partitioning]
+    m_SFX_PAYMENT: [base_engine, flat_file_reader, teradata_odbc]
+    m_SFX_GL_JOURNAL_LINE: [base_engine, teradata_odbc, lookup_cache, sequence_generator, pushdown_optimization]
+  SFX_CONTENT:
+    m_SFX_STG_APP_USER: [base_engine, flat_file_reader, teradata_odbc]
+    m_SFX_APP_USER: [base_engine, teradata_odbc, lookup_cache]
+    m_SFX_ROLE_GRANT: [base_engine, flat_file_reader, teradata_odbc]
+    m_SFX_LOGIN_EVENT: [base_engine, flat_file_reader, teradata_odbc, partitioning]
+    m_SFX_TEAM_MEMBER: [base_engine, flat_file_reader, teradata_odbc]
+    m_SFX_STG_DOCUMENT: [base_engine, flat_file_reader, teradata_odbc]
+    m_SFX_DOCUMENT: [base_engine, teradata_odbc, lookup_cache]
+    m_SFX_DOC_SHARE: [base_engine, flat_file_reader, teradata_odbc, lookup_cache]
+  SFX_AUDIT:
+    m_SFX_STG_AUDIT_EVENT: [base_engine, flat_file_reader, teradata_odbc, partitioning]
+    m_SFX_AUDIT_EVENT: [base_engine, teradata_odbc, partitioning]
+    m_SFX_AUDIT_DAILY_SUMMARY: [base_engine, teradata_odbc, sequence_generator, pushdown_optimization]
+    m_SFX_SECURITY_ALERT: [base_engine, flat_file_reader, teradata_odbc]
+    m_SFX_AUDIT_EVENT_ARCHIVE: [base_engine, teradata_odbc, sequence_generator]
+
+workflow_features:
+  wf_SFX_BILLING_DAILY: [workflow_worklets, high_availability]
+  wf_SFX_CONTENT_DAILY: [high_availability]
+  wf_SFX_AUDIT_DAILY: [high_availability]

@@ -1,6 +1,49 @@
 # Snowflake scaffold
 
-Use Python 3.10. Supply SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE,
+## Processed Teradata billing handoff
+
+To land invoiced before-state outputs without implementing legacy invoice logic
+in Snowflake, first run the emulator, then replace only the three billing outputs:
+
+```sh
+make sfx-teradata-run NS=sfx-d1110-before BUSINESS_DATE=20261109
+make sfx-snowflake-deploy
+make sfx-snowflake-load-before NS=sfx-d1110-before BUSINESS_DATE=20261109
+make sfx-snowflake-dbt
+```
+
+The additive `load.py --source teradata-before --area billing --date 20261109`
+mode exports processed SFX_BILLING.INVOICE_HDR, INVOICE_LINE and GL_JOURNAL_LINE
+using the separate Teradata interpreter (`--teradata-python`). Headered,
+pipe-delimited gzip files remain under ignored warehouse/landing/.teradata-before.
+All exports must be nonempty and match the RAW contract before connecting to
+Snowflake. This mode atomically DELETEs and COPYs exactly those three tables with
+explicit date filenames and FORCE=TRUE, replacing rather than appending. Other RAW data stays
+on the shared seed. Fixture and seed loading, including seed-derived journals,
+are unchanged. Journal IDs and fixture column aliases are naming adapters;
+invoice amounts and journal debits/credits come unchanged from the emulator.
+
+V004 codifies the consumer views using only V001–V003 columns; governance tags
+are applied after the tag exists in V006. V008 is the idempotent live upgrade:
+applied V004 edits are logged as checksum drift and skipped by schemachange 4.0.1.
+COMPAT.CREDIT_NOTE mirrors the Teradata credit shape plus ISSUE_DATE;
+COMPAT.V_INVOICE_REVENUE mirrors its currency/month revenue view, with
+COMPAT.INVOICE_REVENUE retained as an alias. Currency grouping preserves case
+and trims trailing CHAR padding, matching the emulator revenue view. V009 applies
+that fidelity correction to an already-applied initial V008 without rewriting
+history; V008 itself also contains the final definition for fresh deployments.
+Deploy governance reapply covers every COMPAT view.
+
+Invoice due dates preserve actual DUE_DATE first, otherwise use customer
+PAYMENT_TERMS_DAYS with INVOICE_DATE/INVOICE_DT, and use **net 30 only as the final
+fallback** when customer terms are absent. The current processed emulator has no
+due-date column and the shared seed supplies no terms, so its rows use that
+approved final fallback. Credit ISSUE_DATE falls back to CREDIT_DT. The same
+date rules apply in dbt staging. No invoice-run procedure is translated here.
+
+Use Python 3.10. Snowflake targets install into warehouse/snowflake/.venv,
+separate from Teradata's warehouse/.venv; SFX_VENV overrides that location.
+Supply SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_ROLE,
 SNOWFLAKE_DATABASE, SNOWFLAKE_PRIVATE_KEY (unencrypted PEM text), and
 SNOWFLAKE_RUN_TOKEN through environment injection. Never put credentials in files.
 The database is SFX_D1110_AFTER; workloads.yml selects the warehouse.
@@ -9,8 +52,11 @@ The database is SFX_D1110_AFTER; workloads.yml selects the warehouse.
 make sfx-snowflake-test
 SFX_EXECUTED_BY=devin make sfx-snowflake-deploy
 SFX_EXECUTED_BY=devin make sfx-snowflake-load
-warehouse/.venv/bin/python warehouse/snowflake/sfx_conn.py
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/sfx_conn.py
 ```
+
+For an existing alternate Python environment, run
+make sfx-snowflake-test SFX_TEST_PYTHON=/path/to/python3.11.
 
 Deploy uses schemachange 4's Python API with an in-memory JWT session (no key
 file). Its history table is bootstrapped with a run-token comment. Versioned
@@ -23,15 +69,13 @@ Scheduled task tags use a stable run_id of "scheduled" to avoid checksum drift
 between otherwise identical deployments.
 
 ```sh
-warehouse/.venv/bin/python warehouse/snowflake/fixtures/make_fixture.py --rows 20 --seed 1110
-warehouse/.venv/bin/python warehouse/snowflake/tools/render_raw.py
-warehouse/.venv/bin/python warehouse/snowflake/load.py --area billing --date 20261101
-warehouse/.venv/bin/python warehouse/snowflake/load.py --area all --landing-dir warehouse/snowflake/fixtures/landing
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/fixtures/make_fixture.py --rows 20 --seed 1110
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/load.py --area billing --date 20261101
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/load.py --area all --landing-dir warehouse/snowflake/fixtures/landing
 ```
 
-Landing paths are warehouse/landing/<area>/<TABLE>/<yyyymmdd>.psv, with a
-pipe-delimited header in landing_columns.yml order. If warehouse/landing does
-not exist, load.py uses the committed fixture. PUT preserves filenames and COPY
+The default source is the committed headered fixture, whose frozen V002 contract
+is fixture_columns.yml. PUT preserves filenames and COPY
 history skips already loaded files; use new date filenames for new batches.
 A date limits COPY to that file; without a date all staged files are considered.
 Metadata columns record source filename and scan timestamp. The fixture uses
@@ -40,18 +84,67 @@ run and settled receipts separately by currency. SOURCE_BATCH_NUMBER identifies
 the fixture batch; each currency has invoice and receipt journals. Reconcile them
 to invoice subtotal/tax/total and payment amounts in the same currency, rather
 than joining a summary ledger line to an individual customer or invoice.
-Reconcile the column contract
-when warehouse/seed/generate.py arrives. No legacy transformations run here.
+No legacy transformations run here.
+
+## Shared seeded RAW data
+
+```sh
+python3 warehouse/seed/generate.py --rows 200000 --seed 1110
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/deploy.py
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/load.py --source seed --area all --date 20261109 --truncate
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/run_dbt.py build
+warehouse/snowflake/.venv/bin/python warehouse/snowflake/sfx_conn.py
+```
+
+The shared generator writes headerless PSV under warehouse/landing/<area>/<TABLE>/.
+The seed loader validates every input and produces headered gzip files under
+ignored warehouse/landing/.snowflake before connecting. It keeps all rows and
+values, including reserved-key edge cases, mixed-case codes and duplicate SET
+rows; it does not emulate Teradata truncation, collation or deduplication.
+APP_USER.DISPLAY_NAME is VARCHAR(256) to preserve the generator's overlength names.
+Uploads use a stable area/table/date seed stage prefix and COPY selects only that
+date's filename. Reruns preserve the staged file and COPY history, so they are
+no-ops; use --truncate to replace a date's staged data and RAW rows.
+The --truncate flag retains its name but uses transactional DELETE, never TRUNCATE.
+All selected tables are replaced in one BEGIN/COMMIT; COPY exceptions, unsuccessful
+statuses, reported errors or row-count mismatches trigger ROLLBACK for the whole
+batch. Uploads and local validation precede BEGIN, and the transaction contains no
+DDL or session changes. Replacement COPYs use FORCE=TRUE to reload existing files
+despite retained COPY history. Fixture --truncate uses this same helper with explicit
+date files; non-replacement fixture procedure loading is unchanged. Each committed
+output row reports area, table, COPY rows and COUNT(*).
+Without --truncate, existing RAW rows are not removed. --landing-dir overrides
+the input directory; --source seed requires --date. No generated files are committed.
+
+landing_columns.yml is the additive superset of both formats. V007 adds the seed
+columns and only widens existing types where necessary. V001–V003 and V005–V007
+remain unchanged; V004 codifies the initial COMPAT contract in place, with live
+replacements supplied by V008/V009 rather than replaying the applied V004.
+tools/render_seed.py renders V007/the superset; render_raw.py remains bound to the
+frozen fixture/V002 contract. dbt exposes both column sets and tests the shared
+primary/foreign keys, using legacy fixture IDs as fallbacks. Legacy-only fields
+absent from shared RAW seed data remain NULL; the approved COMPAT/staging date
+fallbacks above are explicit exceptions at projection time. Catalog, chart and
+tax records have no customer association in the shared seed, so customer FK tests
+apply only to tables whose actual seed contract includes CUSTOMER_ID.
+
+The shared generator supplies GL_ACCOUNT but currently writes an empty
+GL_JOURNAL_LINE. The seed loader supplements only that empty journal using scaled
+fixture postings from the actual seeded invoices, payments and credit notes:
+invoice DR AR / CR revenue / CR sales tax, payment DR cash / CR AR, credit-note
+DR revenue / CR AR. It uses the seed chart IDs and invoice currencies, validates
+each journal's decimal balance, and retains INVOICE_ID/CREDIT_NOTE_ID provenance.
+This is fixture construction, not converted legacy accounting logic.
 
 ## Compatibility reads
 
 COMPAT views expose CUSTOMER (account columns plus owner name/email), ACCOUNT
 (CUSTOMER_ACCOUNT), INVOICE (INVOICE_HDR), INVOICE_LINE, PAYMENT, GL_JOURNAL_LINE
-and DAILY_USAGE (customer/date/currency quantity and amount sums). Columns mirror
-landing_columns.yml, excluding load metadata. No Teradata builder branch was
-available at implementation time. Reconcile COMPAT names and shapes with the
-SFX_BILLING Teradata DDL when it lands; these are projections, not an emulation
-of Teradata semantics.
+and DAILY_USAGE (customer/date/currency rollup). V007 adds the shared Teradata
+column names while retaining the original aliases and adds GL_ACCOUNT,
+CUSTOMER_ACCOUNT and INVOICE_HDR views. Quantity comes from seeded UNITS;
+DAILY_USAGE.AMOUNT remains NULL when the source has no amount. These are plain
+projections, joins and aggregates, not Teradata-semantics emulation.
 
 Tag consumer SELECT sessions with JSON containing run=sfx-d1110, act=consumers,
 and consumer=<service-name>. Additional run_id/executed_by/built_with fields allow
@@ -103,6 +196,10 @@ these three lifecycle targets are no-ops. The test target always runs.
 
 roles/dry_run.py validates and prints the ordered SQL plan. --check-live inspects
 SHOW GRANTS without applying DDL. --apply refuses unless CREATE ROLE is held.
+Analysts retain database and transform-warehouse USAGE, with schema USAGE and
+SELECT on current/future tables and views only in CORE_*, MART and COMPAT.
+Validation rejects analyst write grants, inherited functional roles, and access
+to RAW_*, LANDING or SCHEMACHANGE.
 
 ledger.py --token sfx-d1110 --days 14 [--json] allocates warehouse-hour compute
 credits using tagged execution time divided by all queries' execution time in
@@ -115,9 +212,11 @@ ACCOUNT_USAGE can lag up to about 3h. This is attribution, not a billing invoice
 TEARDOWN_ARGS=--dry-run to preview. It preserves the provisioned role, user,
 database, warehouses and resource monitor unless --include-provisioned is
 explicitly passed. That flag can remove the active service identity and database.
-Cleanup suspends before dropping; token-matched schemas/databases are dropped
-with CASCADE, including their contents. It also removes token-matched
-non-provisioned roles, users, warehouses and resource monitors. Discovery is
+Cleanup suspends before dropping. Database and account-level object names must
+start with SFX_D1110_ (or the scoped token prefix); comment-only matches remain
+in the inventory and affect the exit code but are never modified. Schema-local
+comment matches may be removed only inside a name-scoped database. Eligible
+schemas/databases are dropped with CASCADE, including their contents. Discovery is
 limited to objects visible to the current role; explicit permission failures are
 reported and cause a nonzero exit. Remaining non-exempt objects also cause a
 nonzero exit, including in dry-run mode. No real teardown is needed for normal
@@ -157,8 +256,19 @@ a dropped token user. The GOVERNANCE schema is included in cleanup.
 
 ## SnowConvert CLI
 
-Install the SnowConvert AI CLI (`scai`) from Snowflake's distribution; it is not
-available on PyPI. Run `make sfx-snowflake-snowconvert`. The wrapper looks for SQL,
+Install the SnowConvert AI CLI (`scai`) using the same public installer as the
+PowerCenter builder (PR #2654); it is not available on PyPI:
+
+```sh
+curl -fsSL https://snowconvert.snowflake.com/storage/linux/prod/cli/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+scai --version
+make sfx-snowflake-snowconvert
+```
+
+The user-local installer verifies its archive checksum and bundles the runtime;
+no license, login, Java change or separate runtime installation was needed for
+stable CLI 2.52.5 on this VM. The wrapper looks for SQL,
 BTEQ and BTQ files under `warehouse/teradata/`, and PowerCenter XML under
 `etl/informatica/` (the path on `origin/devin/sfx-d1110-informatica`). It does not
 fetch or check out sibling builders automatically. With no input it reports the
@@ -174,8 +284,17 @@ umask; symlink destinations are refused. These credential files are outside the
 repository. `scai` receives `SNOWFLAKE_CONNECTION=sfx_d1110`, not the credential
 bindings. Key-pair rejection stops the run; no password fallback is attempted.
 
-The wrapper runs `scai init <project> -l Teradata`, `scai code add -i <input>` for
-each input root, then `scai code convert`. XML is detected by the CLI. Original
+The wrapper creates separate Teradata and Informatica projects with
+`scai init <project> -l Teradata -c sfx_d1110`, adds staged inputs, and runs
+`scai code convert --show-ewis` in each project. Teradata DDL, macros, procedures
+and `dbql/schema.sql` (the DBC schema used by `dbql/consumer_reads.bteq`)
+are split into individual statements using the builder's parser, then added with
+`--code-already-split`; BTEQ/BTQ scripts are copied unchanged. PostgreSQL emulator
+bootstrap SQL is excluded. Informatica uses the self-contained `wf_*.XML` exports
+when present, as the PowerCenter builder does, avoiding duplicate standalone
+mapping imports; XML is added without the split flag. No source files are edited.
+`inputs.json` lists the original inputs and `summary.json` records commands,
+working directories and exit codes. Original
 stdout/stderr, the tool project/output and a short `summary.json` remain under
 `warehouse/snowconvert/raw/<UTC timestamp>/`, which is gitignored. Nothing is
 deployed, edited into the target scaffold, or committed. Output containing private

@@ -1,0 +1,14 @@
+{
+  "query": "revenue",
+  "row_count": 4,
+  "sums": {
+    "REVENUE": "277959.74"
+  },
+  "key_column": "MONTH_LABEL",
+  "keys": [
+    "2025-12",
+    "2026-01",
+    "2026-10",
+    "2026-11"
+  ]
+}

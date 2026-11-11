@@ -14,6 +14,10 @@ def objects():
     result.append(('PROCEDURE', 'ORCH.RUN_STEP(VARCHAR)'))
     steps = yaml.safe_load((ROOT / 'task_dag.yml').read_text())['steps']
     result.extend(('TASK', 'ORCH.' + step['task']) for step in steps.values())
+    result.extend(('VIEW', 'COMPAT.' + name) for name in (
+        'CUSTOMER', 'ACCOUNT', 'INVOICE', 'INVOICE_LINE', 'PAYMENT', 'GL_JOURNAL_LINE',
+        'DAILY_USAGE', 'GL_ACCOUNT', 'CUSTOMER_ACCOUNT', 'INVOICE_HDR', 'CREDIT_NOTE',
+        'V_INVOICE_REVENUE', 'INVOICE_REVENUE'))
     return result
 
 

@@ -1,0 +1,8 @@
+shared:
+  enabled: <%= ENV.fetch('FINANCE_WAREHOUSE_ENABLED', 'true') %>
+  snowflake:
+    database: SFX_D1110_AFTER
+    schema: COMPAT
+    warehouse: SFX_D1110_PARITY_WH
+    query_tag: '{"run":"sfx-d1110","act":"consumers","consumer":"admin-service"}'
+    timeout: 120

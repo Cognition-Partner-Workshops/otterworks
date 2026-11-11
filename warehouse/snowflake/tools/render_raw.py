@@ -8,7 +8,7 @@ TARGET = ROOT / "migrations/V002__raw_tables.sql"
 
 
 def render():
-    spec = yaml.safe_load((ROOT / "landing_columns.yml").read_text())
+    spec = yaml.safe_load((ROOT / "fixture_columns.yml").read_text())
     statements = []
     for area, tables in spec.items():
         for table, columns in tables.items():

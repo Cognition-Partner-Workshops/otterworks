@@ -31,28 +31,34 @@ Host ports can be changed before up:
 
 | Variable | Default | Endpoint |
 | --- | --- | --- |
-| SFX_SPARK_MASTER_PORT | 7077 | Spark master |
+| SFX_SPARK_MASTER_PORT | 7077 | Spark master (127.0.0.1 only) |
 | SFX_SPARK_MASTER_UI_PORT | 8080 | Master web UI |
 | SFX_SPARK_HISTORY_PORT | 18080 | History Server and /api/v1/applications |
-| SFX_TDEMU_PORT | 55432 | PostgreSQL |
+| SFX_TDEMU_PORT | 55432 | PostgreSQL (127.0.0.1 only) |
 
-Runtime files are under `etl/spark/.data/`: `landing/` contains PSV tables and
+Runtime files are under `etl/spark/.data/<NS>/`: `landing/` contains PSV tables and
 `documents/FILE_OBJECT_BLOBS/`; `lake/<area>/<job>/` contains parquet output;
 `logs/` contains submission output; `eventlogs/` is read by History Server.
-Jars, compiled classes and common.zip are under `etl/spark/.cache/`.
-These two directories are not versioned.
+Jars, compiled classes and common.zip are under `etl/spark/.cache/<NS>/`.
+These directories are not versioned. Each Compose project uses its own runtime
+and build directories; container paths remain /opt/landing, /opt/lake,
+/opt/spark-events and /opt/sfx/spark/.cache. Choose distinct host ports when
+running multiple namespaces concurrently. Packaged event logs are copied into
+only the selected namespace's eventlogs directory.
 
 ## Input and database configuration
 
-If `warehouse/seed/generate.py` exists, up invokes it with `--rows` and
-`--seed 1110` and mounts `warehouse/landing`. Otherwise it invokes
-`fixture/generate_fixture.py` and mounts `etl/spark/.data/landing`.
+If `warehouse/seed/generate.py` exists, up invokes it with `--rows`,
+`--seed 1110` and `--output`. Otherwise it invokes
+`fixture/generate_fixture.py` with the same arguments. The default output
+and mount source is `etl/spark/.data/<NS>/landing`.
 Both layouts use `<area>/<TABLE>/<yyyymmdd>.psv`, with a header and pipe separator.
 Table definitions are in `jobs/py/common/schemas.py`.
 
-`SFX_SPARK_LANDING=/absolute/path` overrides the directory mounted by Make.
-When using a different generator, populate that directory with the same table
-layout. In container jobs, `LANDING_DIR` defaults to `/opt/landing` and
+`SFX_SPARK_LANDING=/absolute/path` selects the generator output, Compose landing
+mount and PostgreSQL loader input together. A replacement generator must accept
+the same arguments and produce the same table layout. In container jobs,
+`LANDING_DIR` defaults to `/opt/landing` and
 `LAKE_DIR` defaults to `/opt/lake`; these variables also support local-mode runs.
 
 The PostgreSQL emulator database is `sfx_teradata`, with schemas
@@ -97,8 +103,10 @@ by the Make targets. An existing Spark Operator supporting
 has its own application and kustomization.
 
 The workspace claim requires a ReadWriteMany storage class. Populate its root with
-the contents of etl/spark, including .cache/common.zip, the compiled Scala jar,
-JDBC jars, and the .data/landing, .data/lake and .data/eventlogs directories.
+the contents of etl/spark, then copy the selected namespace's cache contents to
+.cache/ and its runtime contents to .data/ at the claim root. This supplies
+.cache/common.zip, the compiled Scala jar, JDBC jars, and .data/landing,
+.data/lake and .data/eventlogs as referenced by the manifests.
 Supply the referenced sfx-d1110-jdbc object with a password entry and a PostgreSQL
 service reachable as sfx-tdemu, or adjust the JDBC environment references.
 Driver and executor pods mount the same workspace. Legacy schedules are in

@@ -1,0 +1,493 @@
+{
+  "query": "finance-rollups",
+  "columns": [
+    "MONTH_LABEL",
+    "REGION_CD",
+    "PLAN_NAME",
+    "BILLED_REVENUE",
+    "COLLECTED_CASH",
+    "ACTIVE_ACCOUNTS"
+  ],
+  "rows": [
+    [
+      "2025-12",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "395.01",
+      "0",
+      13
+    ],
+    [
+      "2025-12",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2025-12",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2025-12",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "316.01",
+      "0",
+      12
+    ],
+    [
+      "2025-12",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-01",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-01",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "316.01",
+      "0",
+      13
+    ],
+    [
+      "2026-01",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-01",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-01",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "395.01",
+      "0",
+      13
+    ],
+    [
+      "2026-02",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-02",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-02",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-02",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-02",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-03",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-03",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-03",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-03",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-03",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-04",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-04",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-04",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-04",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-04",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-05",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-05",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-05",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-05",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-05",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-06",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-06",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-06",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-06",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-06",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-07",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-07",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-07",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-07",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-07",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-08",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-08",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-08",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-08",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-08",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-09",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-09",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-09",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-09",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-09",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-10",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "316.01",
+      "0",
+      13
+    ],
+    [
+      "2026-10",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-10",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      1
+    ],
+    [
+      "2026-10",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "316.01",
+      "0",
+      12
+    ],
+    [
+      "2026-10",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-11",
+      "Bavaria",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      13
+    ],
+    [
+      "2026-11",
+      "Ile-de-France",
+      "Workspace Team - Monthly",
+      "1357.88",
+      "592.88",
+      13
+    ],
+    [
+      "2026-11",
+      "New South Wales",
+      "Workspace Team - Monthly",
+      "699.11",
+      "370.62",
+      1
+    ],
+    [
+      "2026-11",
+      "Oregon",
+      "Workspace Team - Monthly",
+      "0",
+      "0",
+      12
+    ],
+    [
+      "2026-11",
+      "Oslo",
+      "Workspace Team - Monthly",
+      "392.39",
+      "0",
+      13
+    ]
+  ]
+}

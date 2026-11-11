@@ -9,3 +9,8 @@ policies:
     repeat_interval: 4h
     matchers:
       - team=otterworks
+    routes:
+      - receiver: devin-pipeline-webhook
+        object_matchers:
+          - ['pipeline', '=', 'sfx-d1110']
+        group_by: ['pipeline']

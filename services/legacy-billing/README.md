@@ -66,3 +66,33 @@ models the legacy application running with its own PostgreSQL database.
 - `db/schema.sql` — tables and constraints
 - `db/procs/` — database entrypoints
 - `db/seed.sql` — deterministic starting state
+
+## Finance warehouse consumer
+
+Separate repository owned by **@otterworks/legacy-billing**. The default-on
+FINANCE_WAREHOUSE_ENABLED flag exposes /finance/ar-aging as JSON, or
+?format=html as an escaped table. Invalid formats return 400; disabled returns
+404, warehouse failures a sanitized 503. Startup opens no warehouse connection.
+AR aging reads Snowflake SFX_D1110_AFTER.COMPAT with net-30 aging, returning
+up to 100 account/currency balances. Set SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER,
+SNOWFLAKE_ROLE and SNOWFLAKE_PRIVATE_KEY (unencrypted PEM) for JWT key-pair
+authentication, plus SNOWFLAKE_WAREHOUSE. SNOWFLAKE_DATABASE overrides the
+default session database SFX_D1110_AFTER; the query uses fully qualified tables.
+Sessions use UTC and query tag
+`{"run":"sfx-d1110","act":"consumers","consumer":"legacy-billing"}`.
+
+```sh
+pip install -r requirements-dev.txt
+pytest
+WAREHOUSE_CONTRACT_TARGET=replay pytest contract -rs
+WAREHOUSE_CONTRACT_TARGET=snowflake pytest contract -s
+```
+
+Contract tests are excluded from default discovery. Replay, teradata-emulator
+(the default), and snowflake-semantics retain the contract-only legacy SQL and
+the shared kit at ../../consumers/contract-kit. Recorded/expected fixtures cover
+the original 800-row estate and remain unchanged. The live Snowflake contract
+uses the production client, SFX_D1110_PARITY_WH and SFX_D1110_AFTER, checking
+columns, formatting, ordering and reconciliation rather than exact fixture sums
+or keys. It skips without the four authentication variables, regardless of
+target, and prints the query id with pytest -s.

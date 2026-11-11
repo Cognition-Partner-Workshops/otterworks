@@ -6,5 +6,6 @@ select
     cast(CURRENCY_CODE as CHAR(3)) as currency_code,
     cast(NORMAL_BALANCE as CHAR(2)) as normal_balance,
     cast(CREATED_AT as TIMESTAMP_NTZ) as created_at,
-    cast(IS_ACTIVE as CHAR(1)) as is_active
+    cast(IS_ACTIVE as CHAR(1)) as is_active,
+    cast(ACCOUNT_NUMBER as VARCHAR(4)) as account_number
 from {{ source('billing', 'GL_ACCOUNT') }}

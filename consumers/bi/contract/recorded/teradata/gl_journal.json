@@ -1,0 +1,13 @@
+{
+  "query": "gl_journal",
+  "columns": [
+    "LABEL",
+    "AMOUNT"
+  ],
+  "rows": [
+    [
+      "202611",
+      "0.00"
+    ]
+  ]
+}

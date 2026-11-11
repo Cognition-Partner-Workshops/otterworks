@@ -1,0 +1,2622 @@
+{
+  "schema_version": 1,
+  "area": "teradata",
+  "run_token": "sfx-d1110",
+  "classes": [
+    {
+      "id": "SFX-01",
+      "instances": [
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 29,
+          "object": "SFX_BILLING.PLAN_CATALOG",
+          "anchor": "PLAN_CODE CHAR(10)",
+          "planted_keys": {
+            "table": "SFX_BILLING.SUBSCRIPTION",
+            "column": "SUBSCRIPTION_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 46,
+          "object": "SFX_BILLING.SUBSCRIPTION",
+          "anchor": "PLAN_CODE VARCHAR(10)",
+          "planted_keys": {
+            "table": "SFX_BILLING.SUBSCRIPTION",
+            "column": "SUBSCRIPTION_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 119,
+          "object": "SFX_BILLING.SUBSCRIPTION",
+          "anchor": "PLAN_CODE=('pro'",
+          "planted_keys": {
+            "table": "SFX_BILLING.SUBSCRIPTION",
+            "column": "SUBSCRIPTION_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
+        },
+        {
+          "file": "warehouse/teradata/macros/subscription_plans.sql",
+          "line": 4,
+          "object": "SFX_BILLING.M_SUBSCRIPTION_PLANS",
+          "anchor": "s.PLAN_CODE = p.PLAN_CODE",
+          "planted_keys": {
+            "table": "SFX_BILLING.SUBSCRIPTION",
+            "column": "SUBSCRIPTION_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 12,
+          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "anchor": "s.PLAN_CODE=p.PLAN_CODE",
+          "planted_keys": {
+            "table": "SFX_BILLING.SUBSCRIPTION",
+            "column": "SUBSCRIPTION_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 20,
+          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "anchor": "s.PLAN_CODE=p.PLAN_CODE",
+          "planted_keys": {
+            "table": "SFX_BILLING.SUBSCRIPTION",
+            "column": "SUBSCRIPTION_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 28,
+          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "anchor": "s.PLAN_CODE=p.PLAN_CODE",
+          "planted_keys": {
+            "table": "SFX_BILLING.SUBSCRIPTION",
+            "column": "SUBSCRIPTION_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 56,
+          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "anchor": "s.PLAN_CODE=p.PLAN_CODE",
+          "planted_keys": {
+            "table": "SFX_BILLING.SUBSCRIPTION",
+            "column": "SUBSCRIPTION_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 75,
+          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "anchor": "s.PLAN_CODE=p.PLAN_CODE",
+          "planted_keys": {
+            "table": "SFX_BILLING.SUBSCRIPTION",
+            "column": "SUBSCRIPTION_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Plan matching ignores case and trailing spaces; matching charges feed invoice totals and journal entries."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 68,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "CURRENCY_CD CHAR(3)",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 239,
+          "object": "SFX_BILLING.GL_JOURNAL_LINE",
+          "anchor": "CURRENCY_CD CHAR(3)",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 122,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "CURRENCY_CD=('usd'",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/macros/currency_totals.sql",
+          "line": 4,
+          "object": "SFX_BILLING.M_CURRENCY_TOTALS",
+          "anchor": "GROUP BY CURRENCY_CD",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 39,
+          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "anchor": "PARTITION BY CURRENCY_CD",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 42,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "CURRENCY_CONTROL_TOTAL=c.CONTROL_TOTAL",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 45,
+          "object": "SFX_BILLING.GL_JOURNAL_LINE",
+          "anchor": "x.CURRENCY_CD",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 57,
+          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "anchor": "GROUP BY CURRENCY_CD",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 64,
+          "object": "SFX_BILLING.GL_JOURNAL_LINE",
+          "anchor": "x.CURRENCY_CD",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 77,
+          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "anchor": "GROUP BY CURRENCY_CD",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 26,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "GROUP BY CURRENCY_CD",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/20_views.sql",
+          "line": 9,
+          "object": "SFX_BILLING.V_INVOICE_REVENUE",
+          "anchor": "GROUP BY CURRENCY_CD",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Currency variants form one group; grouped values feed persisted control totals and journal currencies."
+        }
+      ]
+    },
+    {
+      "id": "SFX-02",
+      "instances": [
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 65,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "INVOICE_DT DATE FORMAT",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 66,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "BILL_DT DATE FORMAT",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 67,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "PERIOD_START_DT DATE FORMAT",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 74,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "INVOICE_PERIOD CHAR(7)",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 75,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "PERIOD_KEY INTEGER",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 76,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "PRIOR_PERIOD_END_DT DATE",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/00_tables.sql",
+          "line": 77,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "INVOICE_MONTH INTEGER",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 26,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "DATE_POINTS =",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 121,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "DATE_POINTS[index",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 123,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "PERIOD_START_DT=date.replace",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/procedures/monthly_invoice.sql",
+          "line": 4,
+          "object": "SFX_BILLING.P_MONTHLY_INVOICE",
+          "anchor": "CAST(p_day AS DATE FORMAT",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 5,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "INVOICE_DT - 1",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 6,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "MOD 100",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 7,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "CAST(PERIOD_START_DT AS INTEGER)",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 8,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "CAST(CAST(INVOICE_DT AS FORMAT",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 11,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "BILL_DT BETWEEN",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 14,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "INVOICE_DT - 1",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 15,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "MOD 100",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 16,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "CAST(PERIOD_START_DT AS INTEGER)",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 17,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "CAST(CAST(INVOICE_DT AS FORMAT",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 18,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "AS DATE FORMAT",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/scripts/billing/13_period_close.bteq",
+          "line": 25,
+          "object": "SFX_BILLING.INVOICE_HDR",
+          "anchor": "BILL_DT BETWEEN",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/20_views.sql",
+          "line": 6,
+          "object": "SFX_BILLING.V_INVOICE_REVENUE",
+          "anchor": "CAST(CAST(INVOICE_DT AS FORMAT",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        },
+        {
+          "file": "warehouse/teradata/ddl/billing/20_views.sql",
+          "line": 9,
+          "object": "SFX_BILLING.V_INVOICE_REVENUE",
+          "anchor": "CAST(CAST(INVOICE_DT AS FORMAT",
+          "planted_keys": {
+            "table": "SFX_BILLING.INVOICE_HDR",
+            "column": "INVOICE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Teradata integer-date encoding, day arithmetic and FORMAT expressions determine stored periods, keys and calendar-range membership."
+        }
+      ]
+    },
+    {
+      "id": "SFX-03",
+      "instances": [
+        {
+          "file": "warehouse/teradata/ddl/documents/00_tables.sql",
+          "line": 45,
+          "object": "SFX_DOCUMENTS.DOC_VERSION",
+          "anchor": "VERSION_TS TIMESTAMP(0)",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.DOC_VERSION",
+            "column": "DOCUMENT_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Two distinct versions share each document timestamp; current-version selection has no secondary ordering."
+        },
+        {
+          "file": "warehouse/teradata/ddl/documents/00_tables.sql",
+          "line": 54,
+          "object": "SFX_DOCUMENTS.STG_DOC_VERSION",
+          "anchor": "VERSION_TS TIMESTAMP(0)",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.DOC_VERSION",
+            "column": "DOCUMENT_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Two distinct versions share each document timestamp; current-version selection has no secondary ordering."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 128,
+          "object": "SFX_DOCUMENTS.STG_DOC_VERSION",
+          "anchor": "DOCUMENT_ID=RESERVED_START + index // 2",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.DOC_VERSION",
+            "column": "DOCUMENT_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Two distinct versions share each document timestamp; current-version selection has no secondary ordering."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 129,
+          "object": "SFX_DOCUMENTS.STG_DOC_VERSION",
+          "anchor": "VERSION_TS=business_date",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.DOC_VERSION",
+            "column": "DOCUMENT_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Two distinct versions share each document timestamp; current-version selection has no secondary ordering."
+        },
+        {
+          "file": "warehouse/teradata/scripts/documents/02_current_versions.bteq",
+          "line": 9,
+          "object": "SFX_DOCUMENTS.DOC_VERSION",
+          "anchor": "PARTITION BY DOCUMENT_ID ORDER BY VERSION_TS DESC",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.DOC_VERSION",
+            "column": "DOCUMENT_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Two distinct versions share each document timestamp; current-version selection has no secondary ordering."
+        }
+      ]
+    },
+    {
+      "id": "SFX-04",
+      "instances": [
+        {
+          "file": "warehouse/teradata/ddl/users/00_tables.sql",
+          "line": 5,
+          "object": "SFX_USERS.APP_USER",
+          "anchor": "DISPLAY_NAME VARCHAR(60)",
+          "planted_keys": {
+            "table": "SFX_USERS.APP_USER",
+            "column": "USER_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Direct staging-to-core assignment silently truncates display names to sixty characters."
+        },
+        {
+          "file": "warehouse/teradata/ddl/users/00_tables.sql",
+          "line": 13,
+          "object": "SFX_USERS.STG_APP_USER",
+          "anchor": "DISPLAY_NAME VARCHAR(200)",
+          "planted_keys": {
+            "table": "SFX_USERS.APP_USER",
+            "column": "USER_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Direct staging-to-core assignment silently truncates display names to sixty characters."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 114,
+          "object": "SFX_USERS.STG_APP_USER",
+          "anchor": "Senior Workspace Operations",
+          "planted_keys": {
+            "table": "SFX_USERS.APP_USER",
+            "column": "USER_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Direct staging-to-core assignment silently truncates display names to sixty characters."
+        },
+        {
+          "file": "warehouse/teradata/scripts/users/01_load_users.bteq",
+          "line": 6,
+          "object": "SFX_USERS.APP_USER",
+          "anchor": "INSERT INTO SFX_USERS.APP_USER",
+          "planted_keys": {
+            "table": "SFX_USERS.APP_USER",
+            "column": "USER_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Direct staging-to-core assignment silently truncates display names to sixty characters."
+        },
+        {
+          "file": "warehouse/teradata/scripts/users/01_load_users.bteq",
+          "line": 7,
+          "object": "SFX_USERS.APP_USER",
+          "anchor": "SELECT USER_ID, DISPLAY_NAME",
+          "planted_keys": {
+            "table": "SFX_USERS.APP_USER",
+            "column": "USER_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Direct staging-to-core assignment silently truncates display names to sixty characters."
+        },
+        {
+          "file": "warehouse/teradata/scripts/users/01_load_users.bteq",
+          "line": 8,
+          "object": "SFX_USERS.APP_USER",
+          "anchor": "FROM SFX_USERS.STG_APP_USER",
+          "planted_keys": {
+            "table": "SFX_USERS.APP_USER",
+            "column": "USER_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 100,
+            "range": [
+              9000000001,
+              9000000100
+            ]
+          },
+          "expected_effect": "Direct staging-to-core assignment silently truncates display names to sixty characters."
+        }
+      ]
+    },
+    {
+      "id": "SFX-05",
+      "instances": [
+        {
+          "file": "warehouse/teradata/ddl/documents/00_tables.sql",
+          "line": 139,
+          "object": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY",
+          "anchor": "CREATE SET TABLE",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/teradata/ddl/documents/00_tables.sql",
+          "line": 148,
+          "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+          "anchor": "CREATE MULTISET TABLE",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 109,
+          "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+          "anchor": "RESERVED_START + index // 2",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 110,
+          "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+          "anchor": "random.Random(key + seed)",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 132,
+          "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+          "anchor": "row.update(CUSTOMER_ID=key",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/seed/generate.py",
+          "line": 133,
+          "object": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+          "anchor": "BYTES_USED=1048576",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/teradata/scripts/documents/05_load_sessions.bteq",
+          "line": 10,
+          "object": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY",
+          "anchor": "INSERT INTO SFX_DOCUMENTS.STORAGE_USAGE_DAILY",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/teradata/scripts/documents/10_storage_monthly.bteq",
+          "line": 6,
+          "object": "SFX_BILLING.USAGE_DAILY",
+          "anchor": "INSERT INTO SFX_BILLING.USAGE_DAILY",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/teradata/scripts/documents/10_storage_monthly.bteq",
+          "line": 10,
+          "object": "SFX_DOCUMENTS.STORAGE_USAGE_DAILY",
+          "anchor": "SUM(BYTES_USED)",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/teradata/scripts/documents/10_storage_monthly.bteq",
+          "line": 20,
+          "object": "SFX_BILLING.INVOICE_LINE",
+          "anchor": "INSERT INTO SFX_BILLING.INVOICE_LINE",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        },
+        {
+          "file": "warehouse/teradata/macros/storage_totals.sql",
+          "line": 2,
+          "object": "SFX_DOCUMENTS.M_STORAGE_TOTALS",
+          "anchor": "SUM(BYTES_USED)",
+          "planted_keys": {
+            "table": "SFX_DOCUMENTS.STG_STORAGE_USAGE_DAILY",
+            "column": "STORAGE_USAGE_ID",
+            "keys": [
+              9000000001,
+              9000000002,
+              9000000003,
+              9000000004,
+              9000000005,
+              9000000006,
+              9000000007,
+              9000000008,
+              9000000009,
+              9000000010,
+              9000000011,
+              9000000012,
+              9000000013,
+              9000000014,
+              9000000015,
+              9000000016,
+              9000000017,
+              9000000018,
+              9000000019,
+              9000000020
+            ],
+            "count": 50,
+            "range": [
+              9000000001,
+              9000000050
+            ]
+          },
+          "expected_effect": "Fifty exact resend pairs become fifty core rows; monthly byte totals and storage billing use the deduplicated core."
+        }
+      ]
+    }
+  ],
+  "retire_candidates": [
+    {
+      "system": "teradata",
+      "object": "SFX_AUDIT.AUDIT_EVENT_ARCHIVE",
+      "kind": "table",
+      "last_access": "2026-07-01 17:30:00",
+      "evidence": "warehouse/teradata/dbql/tablesv.csv"
+    },
+    {
+      "system": "teradata",
+      "object": "SFX_DOCUMENTS.SEARCH_INDEX_LOG",
+      "kind": "table",
+      "last_access": "2026-07-01 17:30:00",
+      "evidence": "warehouse/teradata/dbql/tablesv.csv"
+    },
+    {
+      "system": "teradata",
+      "object": "SFX_USERS.USER_PREF",
+      "kind": "table",
+      "last_access": "2026-07-01 17:30:00",
+      "evidence": "warehouse/teradata/dbql/tablesv.csv"
+    },
+    {
+      "system": "teradata",
+      "object": "SFX_DOCUMENTS.V_SEARCH_HISTORY",
+      "kind": "view",
+      "last_access": "2026-07-01 17:30:00",
+      "evidence": "warehouse/teradata/dbql/tablesv.csv"
+    },
+    {
+      "system": "teradata",
+      "object": "SFX_USERS.V_USER_SETTINGS",
+      "kind": "view",
+      "last_access": "2026-07-01 17:30:00",
+      "evidence": "warehouse/teradata/dbql/tablesv.csv"
+    },
+    {
+      "system": "teradata",
+      "object": "SFX_AUDIT.M_ARCHIVE_OVERVIEW",
+      "kind": "macro",
+      "last_access": "2026-07-01 17:30:00",
+      "evidence": "warehouse/teradata/dbql/tablesv.csv"
+    }
+  ]
+}
