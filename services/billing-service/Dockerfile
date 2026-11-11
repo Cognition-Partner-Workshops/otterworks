@@ -8,7 +8,8 @@ RUN pip install --no-cache-dir \
     "pydantic>=2.6,<3" \
     "pydantic-settings>=2.2,<3" \
     "psycopg[binary]>=3.2,<4" \
-    "teradatasql>=20,<21"
+    "teradatasql>=20,<21" \
+    "databricks-sql-connector==3.7.2"
 COPY app ./app
 COPY db ./db
 COPY scripts ./scripts
