@@ -1,0 +1,9 @@
+{
+  "pr": 2760,
+  "job": "lake_compaction_documents",
+  "file": "etl/databricks/spark/lake_compaction_documents/parity.sql",
+  "table": "cpw.dbx_d1111_after.documents__spark_lake_compaction_documents",
+  "statement": "/* run=dbx-d1111 act=spark step=idempotence consumer=lake_compaction_documents */\nDESCRIBE HISTORY cpw.dbx_d1111_after.documents__spark_lake_compaction_documents LIMIT 2;",
+  "statement_id": "01f1dd8d-a881-1a37-9b18-988fb821f7d7",
+  "state": "SUCCEEDED"
+}

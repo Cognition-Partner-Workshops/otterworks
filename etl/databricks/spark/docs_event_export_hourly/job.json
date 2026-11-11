@@ -1,0 +1,26 @@
+{
+  "name": "dbx-d1111-spark-docs_event_export_hourly",
+  "description": "run_token=dbx-d1111 expires=2026-11-24. Migrated docs_event_export_hourly (source cron 18 * * * *). Upstream of dbx-d1111-spark-lake_compaction_documents: export must finish before compaction. No schedule; orchestration is combined later.",
+  "tags": {
+    "run_token": "dbx-d1111",
+    "expires": "2026-11-24",
+    "act": "spark"
+  },
+  "max_concurrent_runs": 1,
+  "tasks": [
+    {
+      "task_key": "export",
+      "sql_task": {
+        "file": {
+          "path": "/Workspace/Shared/dbx-d1111-spark/docs_event_export_hourly/docs_event_export_hourly.sql",
+          "source": "WORKSPACE"
+        },
+        "warehouse_id": "${DATABRICKS_WAREHOUSE_ID}"
+      },
+      "timeout_seconds": 1800,
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false
+    }
+  ]
+}

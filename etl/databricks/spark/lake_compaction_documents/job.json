@@ -1,0 +1,45 @@
+{
+  "name": "dbx-d1111-spark-lake_compaction_documents",
+  "description": "run_token=dbx-d1111 expires=2026-11-24. Migrated lake_compaction_documents (source cron 19 2 * * *). Depends on dbx-d1111-spark-docs_event_export_hourly having completed (export -> compaction). No schedule; orchestration is combined later.",
+  "tags": {
+    "run_token": "dbx-d1111",
+    "expires": "2026-11-24",
+    "act": "spark"
+  },
+  "max_concurrent_runs": 1,
+  "tasks": [
+    {
+      "task_key": "optimize_export",
+      "sql_task": {
+        "file": {
+          "path": "/Workspace/Shared/dbx-d1111-spark/lake_compaction_documents/optimize_export.sql",
+          "source": "WORKSPACE"
+        },
+        "warehouse_id": "${DATABRICKS_WAREHOUSE_ID}"
+      },
+      "timeout_seconds": 1800,
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false
+    },
+    {
+      "task_key": "compact",
+      "sql_task": {
+        "file": {
+          "path": "/Workspace/Shared/dbx-d1111-spark/lake_compaction_documents/lake_compaction_documents.sql",
+          "source": "WORKSPACE"
+        },
+        "warehouse_id": "${DATABRICKS_WAREHOUSE_ID}"
+      },
+      "timeout_seconds": 1800,
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "depends_on": [
+        {
+          "task_key": "optimize_export"
+        }
+      ]
+    }
+  ]
+}
