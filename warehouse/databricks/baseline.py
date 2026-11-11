@@ -1,7 +1,7 @@
 """Land completed Teradata emulator tables as Delta without changing values.
 
 TD_DSN is read from the environment; never pass source credentials as arguments.
-python -m warehouse.databricks.baseline --subject billing
+python -m warehouse.databricks.baseline --subject billing --run-date 2026-11-09
 The caller runs the BTEQ daily chain before invoking the loader.
 """
 import argparse
@@ -34,14 +34,19 @@ class MacroConnection:
         return cursor
 
 
-def macro_result(source, subject, name):
+def macro_result(source, subject, name, run_date):
     from warehouse.teradata.bteq.runner import Runner
 
     source.commit()
     source.autocommit = True
     connection = MacroConnection(source)
     runner = Runner(connection=connection, output=io.StringIO())
-    params = "DATE '2026-11-01', DATE '2026-12-01'" if name == "m_storage_totals" else "'20261109'"
+    if name == "m_storage_totals":
+        start = run_date.replace(day=1)
+        end = date(start.year + (start.month == 12), start.month % 12 + 1, 1)
+        params = f"DATE '{start.isoformat()}', DATE '{end.isoformat()}'"
+    else:
+        params = "'" + run_date.strftime("%Y%m%d") + "'"
     runner.execute(f"EXEC SFX_{subject}.{name}({params})")
     if runner.errorcode:
         raise RuntimeError(f"baseline macro {subject}.{name}: {runner.output.getvalue()}")
@@ -89,7 +94,7 @@ def literal(value):
     return "'" + str(value).replace("\\", "\\\\").replace("'", "''") + "'"
 
 
-def load(source, target, subject, *, catalog="cpw", schema="dbx_d1111_before", batch=2000):
+def load(source, target, subject, *, run_date: date, catalog="cpw", schema="dbx_d1111_before", batch=2000):
     from psycopg import sql
 
     if catalog != "cpw" or schema != "dbx_d1111_before":
@@ -113,7 +118,7 @@ def load(source, target, subject, *, catalog="cpw", schema="dbx_d1111_before", b
         # Name every subject to prevent collisions between source databases.
         destination = f"{identifier(catalog)}.{identifier(schema)}.{identifier(subject + '__' + table)}"
         if is_macro:
-            columns, macro_rows = macro_result(source, subject, table)
+            columns, macro_rows = macro_result(source, subject, table, run_date)
         else:
             columns = source.execute("SELECT a.attname,format_type(a.atttypid,a.atttypmod) "
                                  "FROM pg_attribute a JOIN pg_class c ON a.attrelid=c.oid "
@@ -147,6 +152,7 @@ def load(source, target, subject, *, catalog="cpw", schema="dbx_d1111_before", b
         finally:
             target.execute(f"DROP TABLE IF EXISTS {staging}", step="baseline-stage-cleanup")
         receipts.append({"source": source_schema + "." + table, "target": destination,
+                         "run_date": run_date.isoformat(),
                          "rows": count, "statement_id": published["statement_id"],
                          "count_statement_id": actual["statement_id"]})
     if not receipts:
@@ -161,6 +167,8 @@ def main():
     parser.add_argument("--subject", choices=["billing", "users", "documents", "audit"], required=True,
                         action="append")
     parser.add_argument("--batch", type=int, default=2000)
+    parser.add_argument("--run-date", type=date.fromisoformat, required=True,
+                        help="business date used by the source daily chain (YYYY-MM-DD)")
     args = parser.parse_args()
     source_dsn = os.getenv("TD_DSN")
     if not source_dsn:
@@ -169,7 +177,7 @@ def main():
         target = Warehouse(act="prove", consumer="billing")
         receipts = []
         for subject in dict.fromkeys(args.subject):
-            receipts.extend(load(source, target, subject, batch=args.batch))
+            receipts.extend(load(source, target, subject, run_date=args.run_date, batch=args.batch))
         print(json.dumps(receipts, indent=2))
 
 
