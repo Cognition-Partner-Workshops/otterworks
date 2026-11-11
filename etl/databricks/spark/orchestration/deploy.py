@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 import time
 import urllib.parse
@@ -71,27 +72,50 @@ def sql(statement):
     return response
 
 
+CONTROL = 'cpw.dbx_d1111_control.migration_control'
+
+
+def control(path):
+    statement = Path(path).read_text()
+    insert_cols = re.search(r'INSERT \(([^)]*)\)', statement).group(1)
+    wanted = [c.strip() for c in insert_cols.split(',')]
+    rows = sql('/* run=dbx-d1111 act=spark step=control-describe consumer=orchestration */ '
+               f'DESCRIBE TABLE {CONTROL}')['result'].get('data_array', [])
+    existing = {r[0].lower() for r in rows if r[0] and not r[0].startswith('#')}
+    missing = [c for c in wanted if c.lower() not in existing]
+    result = {'added_columns': missing}
+    if missing:
+        types = ', '.join(c + (' TIMESTAMP' if c == 'updated_at' else ' STRING') for c in missing)
+        result['alter'] = sql('/* run=dbx-d1111 act=spark step=control-ddl consumer=orchestration */ '
+                              f'ALTER TABLE {CONTROL} ADD COLUMNS ({types})')['statement_id']
+    result['merge'] = sql(statement)['statement_id']
+    return result
+
+
 def status(run_id):
     return api('GET', f'2.1/jobs/runs/get?run_id={run_id}')
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('command', choices=['deploy', 'run-now', 'status', 'sql'])
+    parser.add_argument('command', choices=['deploy', 'run-now', 'status', 'sql', 'control'])
     parser.add_argument('value', nargs='?')
     args = parser.parse_args()
     if args.command == 'deploy':
         result = deploy()
     elif args.command == 'run-now':
-        marker = ROOT / 'daily-run.json'
-        if marker.exists():
-            raise RuntimeError('Daily run already recorded; refusing a second trigger')
         job_id = json.loads((ROOT / 'deployment.json').read_text())['daily']['job_id']
+        marker = ROOT / 'daily-run.json'
+        if marker.exists() and json.loads(marker.read_text()).get('job_id') == job_id:
+            raise RuntimeError('Daily run already recorded for this job; refusing a second trigger')
         result = api('POST', '2.1/jobs/run-now', {
-            'job_id': job_id, 'idempotency_token': 'dbx-d1111-spark-orchestration-daily-once'})
-        save('daily-run.json', result)
+            'job_id': job_id,
+            'idempotency_token': f'dbx-d1111-spark-orchestration-daily-once-{job_id}'})
+        save('daily-run.json', {'job_id': job_id, **result})
     elif args.command == 'status':
         result = status(int(args.value))
+    elif args.command == 'control':
+        result = control(args.value)
     else:
         result = sql(Path(args.value).read_text())
     print(json.dumps(result, indent=2))

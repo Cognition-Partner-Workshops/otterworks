@@ -46,6 +46,7 @@ round-one.json; corrected revenue parity supersedes round-one parity.
 ## Billing and history
 
 Execute SQL files with `python etl/databricks/spark/orchestration/deploy.py sql <file>`.
+Update the control row with `python etl/databricks/spark/orchestration/deploy.py control etl/databricks/spark/orchestration/control.sql`: it DESCRIBEs `migration_control`, runs a prefixed `ALTER TABLE ... ADD COLUMNS` for only the MERGE columns the table lacks (e.g. a fresh `warehouse/databricks/bootstrap.sql` table has no `object_name`), then runs the MERGE. The table is never replaced. `run-now` refuses only when `daily-run.json` records the same daily `job_id` as `deployment.json`.
 Substitute a job name and its real job ID. The permitted per-job query is:
 
 ```sql
