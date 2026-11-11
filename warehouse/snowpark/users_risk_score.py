@@ -28,5 +28,6 @@ $$
     result.write.save_as_table(
         [database, "MART_SPARK", "USERS_RISK_SCORE"],
         mode="overwrite",
+        copy_grants=True,
         comment="sfx-d1110 Replaces the Spark lake output users/users_risk_score.",
     )
