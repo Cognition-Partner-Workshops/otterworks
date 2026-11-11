@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from assess import area, loc, mask
 import assess
+from check import live_differences
 from load_control import connect
 
 
@@ -48,6 +49,13 @@ class AssessmentHelpers(unittest.TestCase):
             self.assertEqual(assess.spark_subject('register(spark, "SECURITY_ALERT", "DOCUMENT")'), 'data-platform')
             with self.assertRaisesRegex(ValueError, 'no grounded'):
                 assess.spark_subject('')
+
+    def test_live_field_parity(self):
+        entry = dict(id='alert', target='PySpark job', wave=3, owner='@otterworks/audit', risk='medium')
+        self.assertEqual(live_differences([entry], [('alert', 'PySpark job', 3, '@otterworks/audit', 'medium')]), [])
+        self.assertEqual(live_differences([entry], [('alert', 'retire', 3, '@otterworks/audit', 'medium')]), ['alert'])
+        self.assertEqual(live_differences([entry], []), ['alert'])
+        self.assertEqual(live_differences([], []), [])
 
 
 if __name__ == '__main__':

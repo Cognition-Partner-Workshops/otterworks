@@ -277,19 +277,26 @@ def write(name, value):
     (BASE / name).write_text(mask(value))
 
 
+def manifest_document():
+    dead, hidden = dbql()
+    provenance = {'spark_ref': SPARK_REF or 'working tree', 'spark_commit': git('rev-parse', SPARK_REF or 'HEAD').strip()}
+    return {'metadata': dict(provenance, as_of='2026-11-10', dead=dead, hidden=hidden), 'objects': build()}
+
+
 def main():
     global SPARK_REF
     parser = argparse.ArgumentParser()
     parser.add_argument('--spark-ref')
     args = parser.parse_args()
     SPARK_REF = args.spark_ref
-    entries = build()
-    dead, hidden = dbql()
+    document = manifest_document()
+    entries = document['objects']
+    metadata = document['metadata']
+    dead, hidden = metadata['dead'], metadata['hidden']
     files = spark_files()
     provenance = {'spark_ref': SPARK_REF or 'working tree', 'spark_commit': git('rev-parse', SPARK_REF or 'HEAD').strip()}
     measured = json.loads(read('etl/spark/history/baseline.json')) if 'etl/spark/history/baseline.json' in files else None
-    metadata = dict(provenance, as_of='2026-11-10', dead=dead, hidden=hidden)
-    write('manifest.yaml', yaml.safe_dump(dict(metadata=metadata, objects=entries), sort_keys=False))
+    write('manifest.yaml', yaml.safe_dump(document, sort_keys=False))
     with (BASE / 'inventory.csv').open('w') as stream:
         columns = ['id', 'source', 'object_name', 'kind', 'loc', 'complexity', 'source_paths', 'executor_hours']
         writer = csv.DictWriter(stream, fieldnames=columns, extrasaction='ignore', lineterminator='\n')

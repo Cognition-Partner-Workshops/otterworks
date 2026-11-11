@@ -10,6 +10,12 @@ import assess
 from load_control import BASE, TABLE, connect, execute
 
 
+def live_differences(entries, rows):
+    expected = {e['id']: tuple(e[c] for c in ('target', 'wave', 'owner', 'risk')) for e in entries}
+    actual = {row[0]: tuple(row[1:]) for row in rows}
+    return sorted(key for key in expected.keys() | actual.keys() if expected.get(key) != actual.get(key))
+
+
 def main():
     failures = []
     path = BASE / 'manifest.yaml'
@@ -17,12 +23,12 @@ def main():
     if not path.exists():
         failures.append('manifest.yaml missing')
     else:
-        from assess import ALLOWED, build, dbql, source_files
+        from assess import ALLOWED, dbql, source_files
         metadata = yaml.safe_load(path.read_text())['metadata']
         assess.SPARK_REF = None if metadata['spark_ref'] == 'working tree' else metadata['spark_ref']
-        expected = build()
-        if {e['id'] for e in entries} != {e['id'] for e in expected}:
-            failures.append('manifest object coverage differs from estate')
+        expected = assess.manifest_document()
+        if yaml.safe_load(path.read_text()) != expected:
+            failures.append('manifest fields differ from regenerated estate assessment')
         covered = {p for e in entries for p in e['source_paths']}
         if not set(source_files()) <= covered:
             failures.append('source file coverage incomplete')
@@ -50,6 +56,11 @@ def main():
             print(f'LIVE count={sum(actual.values())} waves={actual}')
             if actual != dict(sorted(Counter(e['wave'] for e in entries).items())):
                 failures.append('live counts differ from manifest')
+            details = execute(cursor, 'check_fields', f'SELECT object_name, target, wave, owner, risk FROM {TABLE} ORDER BY object_name').fetchall()
+            differences = live_differences(entries, details)
+            print(f'LIVE field_mismatches={len(differences)}')
+            if differences:
+                failures.append('live target/wave/owner/risk mismatch: ' + ', '.join(differences))
             measured = execute(cursor, 'check_hours', f'SELECT sum(executor_hours) FROM {TABLE}').fetchone()[0]
             print(f'LIVE executor_hours={measured}')
             expected_hours = sum(Decimal(str(e['executor_hours'])) for e in entries if e['executor_hours'] is not None)

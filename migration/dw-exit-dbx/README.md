@@ -100,6 +100,9 @@ three demo-managed fields. Retirement targets remain planned until actually
 retired. updated_at changes on reload. No DELETE or replacement is performed.
 Changing the inventory to remove entries requires explicit operator reconciliation;
 check.py rejects stale row counts rather than deleting demo-owned state.
+It regenerates the complete manifest document in memory and compares every field,
+then compares live target/wave/owner/risk per ID. Demo-managed status, parity, pr
+and updated_at are intentionally not compared to planned defaults.
 
 board/README.md contains counter SQL. Spark hours come only from
 etl/spark/history/baseline.json (30 applications), with per-job hours loaded as
