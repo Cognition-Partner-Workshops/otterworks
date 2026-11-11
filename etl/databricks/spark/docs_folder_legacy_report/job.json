@@ -1,0 +1,27 @@
+{
+  "name": "dbx-d1111-spark-docs_folder_legacy_report",
+  "description": "Migrated self-run Spark job docs_folder_legacy_report (serverless SQL). run_token=dbx-d1111 expires=2026-11-24",
+  "tags": {
+    "run_token": "dbx-d1111",
+    "expires": "2026-11-24",
+    "act": "spark"
+  },
+  "max_concurrent_runs": 1,
+  "timeout_seconds": 3600,
+  "tasks": [
+    {
+      "task_key": "docs_folder_legacy_report",
+      "sql_task": {
+        "warehouse_id": "${DATABRICKS_WAREHOUSE_ID}",
+        "file": {
+          "path": "/Workspace/Shared/dbx-d1111-spark/docs_folder_legacy_report/docs_folder_legacy_report.sql",
+          "source": "WORKSPACE"
+        }
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}
