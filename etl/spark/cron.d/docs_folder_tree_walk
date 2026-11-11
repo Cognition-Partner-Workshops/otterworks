@@ -1,1 +1,0 @@
-21 3 * * * /opt/etl/spark/submit/docs_folder_tree_walk.sh >> /var/log/etl/spark-docs_folder_tree_walk.log 2>&1
