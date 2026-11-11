@@ -7,6 +7,7 @@ from pathlib import Path
 import uuid
 
 import psycopg
+from psycopg import sql
 
 from .evidence import OUT, cell, dump, full_compare, scope, sha, local_params, snapshot
 from .harness import connection, control_table
@@ -207,15 +208,16 @@ def live(preflight_only=False):
                 db = 'unt2_types_' + uuid.uuid4().hex[:12]
                 params = local_params()
                 with psycopg.connect(dbname='postgres', **params) as admin:
-                    admin.execute(f'CREATE DATABASE {db}')
+                    admin.execute(sql.Composed([sql.SQL('CREATE DATABASE '), sql.Identifier(db)]))
                     try:
                         with psycopg.connect(dbname=db, **params) as pg:
                             pg.execute('CREATE SCHEMA source_types')
                             body = table_definitions()[target_relation('STG_' + table)]
-                            pg.execute(f'CREATE TABLE source_types.input ({body})')
+                            # body is column DDL from the repository's own bootstrap file.
+                            pg.execute(sql.Composed([sql.SQL('CREATE TABLE source_types.input ('), sql.SQL(body), sql.SQL(')')]))
                             template = snapshot(pg, 'source_types.input')
                     finally:
-                        admin.execute(f'DROP DATABASE {db} WITH (FORCE)')
+                        admin.execute(sql.Composed([sql.SQL('DROP DATABASE '), sql.Identifier(db), sql.SQL(' WITH (FORCE)')]))
                 expected = expected_landing(manifest, row, template)
                 actual = fetched(q, 'SFX_D1110_AFTER.PC_SRC.' + table, template, source_loading=True)
                 comparisons[table] = full_compare(expected, actual, template['columns'])

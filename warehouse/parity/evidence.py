@@ -11,9 +11,10 @@ from pathlib import Path
 import subprocess
 import sys
 import uuid
-import xml.etree.ElementTree as ET
 import zlib
 
+import defusedxml.ElementTree as ET
+from psycopg import sql
 import yaml
 
 from .compare import normal
@@ -88,7 +89,7 @@ def snapshot(pg, relation):
     if not cols:
         raise ValueError('Missing table: ' + relation)
     names = [c[0].upper() for c in cols]
-    data = pg.execute(f'SELECT * FROM {schema}.{table}').fetchall()
+    data = pg.execute(sql.Composed([sql.SQL('SELECT * FROM '), sql.Identifier(schema, table)])).fetchall()
     return {'columns': names, 'types': {c[0].upper(): list(c[1:]) for c in cols},
             'rows': sorted([[cell(v) for v in r] for r in data], key=json.dumps)}
 
@@ -220,7 +221,7 @@ def capture(command):
         runroot = (OUT / db).resolve()
         runroot.mkdir(parents=True)
         with psycopg.connect(dbname='postgres', **params) as admin:
-            admin.execute(f'CREATE DATABASE {db}')
+            admin.execute(sql.Composed([sql.SQL('CREATE DATABASE '), sql.Identifier(db)]))
             try:
                 with psycopg.connect(dbname=db, **params) as pg:
                     pg.execute(BOOTSTRAP.read_text())
@@ -296,7 +297,7 @@ def capture(command):
                     if any(r['returncode'] for r in results):
                         raise RuntimeError('PowerCenter command failed; retained logs: ' + str(runroot))
             finally:
-                admin.execute(f'DROP DATABASE {db} WITH (FORCE)')
+                admin.execute(sql.Composed([sql.SQL('DROP DATABASE '), sql.Identifier(db), sql.SQL(' WITH (FORCE)')]))
     reports = {}
     for r in scope():
         report = full_compare(captures[0][r['mapping']], captures[1][r['mapping']], r['key_columns'])

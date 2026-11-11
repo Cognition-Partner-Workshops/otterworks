@@ -162,3 +162,28 @@ def test_baselines_require_verified_oracle_artifacts(tmp_path, monkeypatch):
     (oracle / 'rejects.json').unlink()
     with pytest.raises(ValueError, match='artifact missing'):
         verify_provenance()
+
+
+def test_repository_xml_rejects_entity_expansion(tmp_path):
+    doc = tmp_path / 'bomb.XML'
+    doc.write_text('<?xml version="1.0"?><!DOCTYPE r [<!ENTITY a "aaaa"><!ENTITY b "&a;&a;&a;">]><r>&b;</r>')
+    with pytest.raises(Exception, match='[Ee]ntit'):
+        evidence.ET.parse(doc)
+
+
+def test_snapshot_quotes_relation_identifiers():
+    from psycopg import sql
+
+    class Fake:
+        def __init__(self):
+            self.queries = []
+
+        def execute(self, query, params=None):
+            self.queries.append(query)
+            rows = [('id', 'integer', None, 32, 0, None)] if params else []
+            return type('Result', (), {'fetchall': lambda _self: rows})()
+
+    pg = Fake()
+    evidence.snapshot(pg, 'STG.T')
+    assert isinstance(pg.queries[-1], sql.Composed)
+    assert sql.Identifier('stg', 't') in pg.queries[-1]._obj
