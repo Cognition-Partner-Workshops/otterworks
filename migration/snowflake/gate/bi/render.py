@@ -58,7 +58,9 @@ pre{margin:0;padding:10px;background:#f6f8fa;border:1px solid #eaeef2;border-rad
 """
 
 LIVE = (
-    "<script>if(location.search.includes('live')){setTimeout(()=>location.reload(),4000)}</script>"
+    "<script>if(location.search.includes('live')){setTimeout(()=>location.reload(),4000);"
+    "addEventListener('DOMContentLoaded',()=>document.querySelectorAll('a[href$=\".html\"]')"
+    ".forEach(a=>a.href+=location.search))}</script>"
 )
 
 
@@ -108,7 +110,7 @@ def bars(sheet: dict[str, Any], side: str) -> str:
     for row in rows:
         data = row[side]
         bad = side == "target" and measure in row["diff"]
-        width = 0 if data is None else 300 * abs(data[measure]) / top
+        width = 0 if data is None else 220 * abs(data[measure]) / top
         label = row["label"] if len(row["label"]) <= 30 else row["label"][:29] + "…"
         value = "missing" if data is None else fmt(data[measure])
         if bad and row["legacy"] is not None:
@@ -273,7 +275,7 @@ def render() -> None:
             (OUT / f"{slug(entry['name'])}.html").write_text(workbook_page(data))
             sheets = len(data["sheets"])
             bad = sum(s["differing_marks"] for s in data["sheets"])
-            meta = f"{sheets} sheets · {len(entry['datasources'])} datasources" + (
+            meta = f"{data['date']} · {sheets} sheets · {len(entry['datasources'])} datasources" + (
                 f" · <span class='bad-text'>{bad} marks differ</span>" if bad else ""
             )
             link = f"{slug(entry['name'])}.html"
@@ -284,13 +286,18 @@ def render() -> None:
             f"{chip(status)} <span class='meta'>{meta}</span><div class='meta'>{esc(', '.join(entry['legacy_tables']))}</div></a>"
         )
     dates = sorted({d["date"] for d in results.values() if d})
+    mixed = (
+        " <span class='bad-text'>· mixed dates, run make sfm-bi-parity without WORKBOOK to refresh all</span>"
+        if len(dates) > 1
+        else ""
+    )
     score = "".join(
         f"<div><b style='color:{COLORS[s]}'>{counts.get(s, 0)}</b>{esc(LABELS[s])}</div>"
-        for s in ["PASS", "DIVERGE", "PENDING", "NOT MIGRATED"]
+        for s in ["PASS", "DIVERGE", "PENDING", "NOT REPOINTED", "NOT MIGRATED", "NOT RUN"]
         if counts.get(s) or s in {"PASS", "NOT MIGRATED"}
     )
     body = (
-        f"<div style='color:#57606a;margin-bottom:8px'>{len(spec['workbooks'])} workbooks · business date {esc(', '.join(dates) or 'not run')}</div>"
+        f"<div style='color:#57606a;margin-bottom:8px'>{len(spec['workbooks'])} workbooks · business date {esc(', '.join(dates) or 'not run')}{mixed}</div>"
         f"<div class='score'>{score}</div>"
         + "".join(
             f"<div class='folder'>{esc(folder)}</div><div class='tiles'>{''.join(tiles)}</div>"

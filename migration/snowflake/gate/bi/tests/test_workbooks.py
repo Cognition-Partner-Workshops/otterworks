@@ -74,3 +74,31 @@ def test_compare_reports_missing_rows_and_columns():
     legacy = pd.DataFrame({"k": [1, 2], "v": [1, 2]})
     assert parity.compare_datasource(legacy, legacy.iloc[:1], ["k"], {})["differing_keys"] == 1
     assert parity.compare_datasource(legacy, legacy[["k"]], ["k"], {})["status"] == "DIVERGE"
+
+
+class _EmptyCursor:
+    description = [("tenant_id",)]
+
+    def execute(self, sql):
+        pass
+
+    def fetchall(self):
+        return []
+
+
+class _FakeSnowflake:
+    def cursor(self):
+        return _EmptyCursor()
+
+
+def test_missing_legacy_result_is_never_parity(tmp_path, monkeypatch):
+    entry = next(w for w in SPEC["workbooks"] if w["name"] == "Storage Overage")
+    target_dir = tmp_path / "target"
+    target_dir.mkdir()
+    xml = (LEGACY / entry["file"]).read_text().replace("class='sqlserver'", "class='snowflake'")
+    (target_dir / entry["file"]).write_text(xml)
+    monkeypatch.setattr(parity, "OUT", tmp_path / "out")
+    monkeypatch.setattr(parity, "TARGET_DIR", target_dir)
+    result = parity.run_workbook(entry, "2026-09-30", "sfm-test", None, _FakeSnowflake(), {})
+    assert result["status"] == "PENDING"
+    assert all(ds["status"] == "PENDING" for ds in result["datasources"])

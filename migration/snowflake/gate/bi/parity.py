@@ -298,8 +298,15 @@ def run_workbook(
                     Exception
                 ) as error:  # surfaced in the console, e.g. a model that is not built yet
                     item.update(status="PENDING", message=str(error).splitlines()[0][:300])
-                if target_frame is not None and legacy_frame is not None:
+                if target_frame is not None:
                     item["target_rows"] = len(target_frame)
+                if target_frame is not None and legacy_frame is None:
+                    item.update(
+                        status="PENDING",
+                        message="no SQL Server result for this date: "
+                        "SQL Server is unreachable and nothing is cached",
+                    )
+                elif target_frame is not None:
                     item.update(
                         compare_datasource(
                             legacy_frame, target_frame, spec["keys"], spec.get("tolerance", {})
