@@ -3,7 +3,13 @@ import json
 import os
 import re
 import time
-from urllib.request import Request, urlopen
+from urllib.parse import urlsplit
+from urllib.request import HTTPRedirectHandler, Request, build_opener
+
+
+class NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise RuntimeError("Databricks API redirects are not permitted")
 
 
 def identifier(value):
@@ -16,8 +22,12 @@ class Warehouse:
     def __init__(self, *, act, consumer="platform", host=None, warehouse_id=None,
                  token=None, run=None):
         self.host = (host or os.environ["DATABRICKS_HOST"]).rstrip("/")
-        if not self.host.startswith("https://"):
-            raise ValueError("DATABRICKS_HOST must use HTTPS")
+        endpoint = urlsplit(self.host)
+        if (endpoint.scheme != "https" or not endpoint.hostname
+                or not endpoint.hostname.endswith(".databricks.com")
+                or endpoint.username or endpoint.password or endpoint.path
+                or endpoint.query or endpoint.fragment or endpoint.port not in {None, 443}):
+            raise ValueError("DATABRICKS_HOST must be an HTTPS Databricks workspace origin")
         self.warehouse_id = warehouse_id or os.environ["DATABRICKS_WAREHOUSE_ID"]
         self.token = token or os.environ["DATABRICKS_TOKEN"]
         self.run = run or os.environ.get("DATABRICKS_RUN_TOKEN", "dbx-d1111")
@@ -35,7 +45,7 @@ class Warehouse:
                       data=json.dumps(body).encode() if body is not None else None,
                       headers={"Authorization": "Bearer " + self.token,
                                "Content-Type": "application/json"})
-        with urlopen(req, timeout=60) as response:
+        with build_opener(NoRedirect()).open(req, timeout=60) as response:
             return json.load(response)
 
     def execute(self, statement, *, step, parameters=None, timeout=600):

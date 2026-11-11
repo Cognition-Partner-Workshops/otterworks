@@ -7,7 +7,7 @@ from warehouse.databricks.sql import Warehouse, identifier
 
 
 def client():
-    return Warehouse(host="https://example.invalid", token="test", warehouse_id="test",
+    return Warehouse(host="https://test.cloud.databricks.com", token="test", warehouse_id="test",
                      act="prove", run="dbx-d1111")
 
 
@@ -41,3 +41,12 @@ def test_type_and_literal_preserve_decimal_null_and_padding():
         delta_type("jsonb")
     with pytest.raises(ValueError):
         identifier("table; DROP TABLE x")
+
+
+def test_credential_transport_rejects_redirects_and_foreign_origins():
+    from warehouse.databricks.sql import NoRedirect
+
+    with pytest.raises(RuntimeError, match="redirects"):
+        NoRedirect().redirect_request(None, None, 302, "redirect", {}, "https://example.invalid")
+    with pytest.raises(ValueError, match="workspace origin"):
+        Warehouse(host="https://example.invalid", token="test", warehouse_id="test", act="prove")
