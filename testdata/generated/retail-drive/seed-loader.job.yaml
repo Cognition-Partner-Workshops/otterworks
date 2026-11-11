@@ -33,6 +33,7 @@ spec:
         app.kubernetes.io/name: retail-drive-seed-loader
     spec:
       restartPolicy: Never
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000

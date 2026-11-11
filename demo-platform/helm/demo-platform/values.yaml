@@ -18,6 +18,8 @@ environment: dev
 awsRegion: us-east-1
 eksCluster: otterworks-dev
 platformNamespace: otterworks-platform
+# Namespace of the shared ingress-nginx controller (idle-suspend metrics scrape).
+ingressNamespace: ingress-nginx
 controlTable: otterworks-demo-control
 
 # Ingress host suffix for tenant frontends/APIs (t-<id>.<suffix> /

@@ -66,8 +66,8 @@ ingress_request_counts() {
              -l app.kubernetes.io/component=controller \
              -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)"
     [ -n "${pod}" ] || return 1
-    raw="$(kubectl -n "${INGRESS_NAMESPACE}" exec "${pod}" -- \
-             curl -sf --max-time 10 http://127.0.0.1:10254/metrics 2>/dev/null)"
+    raw="$(kubectl get --raw \
+             "/api/v1/namespaces/${INGRESS_NAMESPACE}/pods/${pod}:10254/proxy/metrics" 2>/dev/null)"
   fi
   [ -n "${raw}" ] || return 1
 
@@ -127,10 +127,14 @@ running_deployments() {
 # Does the tenant have an injected chaos scenario running? Such a tenant is a
 # lab in progress: its Redis holds the bug, and Redis has no persistence, so
 # suspending would quietly un-inject the scenario the attendee is debugging.
+# Loaded at top level so reaper.sh, which sources this file, gets it too.
+# shellcheck source=/dev/null
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/scripts/lib/tenant-redis.sh"
+
 tenant_has_chaos() {
   local ns="$1"
   # Same access path inject-bug.sh uses, so the two agree on what "injected" means.
-  kubectl -n "${ns}" exec deploy/redis -- redis-cli --scan --pattern 'chaos:*' 2>/dev/null | grep -q .
+  tenant_redis "${ns}" --scan --pattern 'chaos:*' 2>/dev/null | grep -q .
 }
 
 # Returns non-zero if the tenant is still running afterwards. The caller records

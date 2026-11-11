@@ -17,6 +17,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck source=lib/tenant-common.sh
 source "${SCRIPT_DIR}/lib/tenant-common.sh"
+# shellcheck source=lib/tenant-redis.sh
+source "${SCRIPT_DIR}/lib/tenant-redis.sh"
 
 ATTENDEE_ID="${1:-}"
 SCENARIO="${2:-}"
@@ -52,7 +54,7 @@ declare -A CHAOS_SCENARIO_TTL=(
   [mobile-latency]=1200
 )
 
-redis_exec() { kubectl -n "${NS}" exec deploy/redis -- redis-cli "$@"; }
+redis_exec() { tenant_redis "${NS}" "$@"; }
 
 case "${SCENARIO}" in
   list)
@@ -63,7 +65,8 @@ case "${SCENARIO}" in
     kubectl get ns "${NS}" >/dev/null 2>&1 || { err "Namespace ${NS} not found; deploy the tenant first."; exit 1; }
     log "Clearing all chaos flags in ${NS}..."
     keys="$(redis_exec --scan --pattern 'chaos:*' 2>/dev/null || true)"
-    if [ -n "${keys}" ]; then echo "${keys}" | xargs -r -n1 kubectl -n "${NS}" exec deploy/redis -- redis-cli DEL >/dev/null; fi
+    # shellcheck disable=SC2086  # one key per word
+    if [ -n "${keys}" ]; then redis_exec DEL ${keys} >/dev/null; fi
     log "Cleared: ${keys:-<none>}"
     exit 0 ;;
 esac

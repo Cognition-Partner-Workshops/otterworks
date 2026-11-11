@@ -161,6 +161,7 @@ spec:
         # PgBouncer reads both only at startup.
         checksum/config: __CONFIG_CHECKSUM__
     spec:
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 70

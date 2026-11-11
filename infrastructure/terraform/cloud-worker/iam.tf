@@ -73,7 +73,7 @@ resource "aws_iam_role_policy" "notification_service" {
       {
         Effect   = "Allow"
         Action   = ["ses:SendEmail"]
-        Resource = ["*"]
+        Resource = ["arn:${local.partition}:ses:${local.region}:${local.account_id}:identity/*"]
       },
     ]
   })
@@ -231,7 +231,20 @@ resource "aws_iam_role_policy" "devin_engineer_iam" {
           "iam:Get*",
           "iam:List*",
           "iam:SimulatePrincipalPolicy",
-          "iam:SimulateCustomPolicy",
+        ]
+        Resource = "arn:${local.partition}:iam::${local.account_id}:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:GetAccountSummary",
+          "iam:ListAccountAliases",
+          "iam:ListGroups",
+          "iam:ListInstanceProfiles",
+          "iam:ListOpenIDConnectProviders",
+          "iam:ListPolicies",
+          "iam:ListRoles",
+          "iam:ListUsers",
         ]
         Resource = "*"
       },
