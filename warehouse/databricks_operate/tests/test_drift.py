@@ -80,3 +80,10 @@ def test_seed_preserves_numeric_amounts_and_rejects_repeat_seeding(tmp_path):
     assert '"amount":120.00' in landing.read_text()
     with pytest.raises(ValueError, match="already seeded"):
         seed(landing)
+
+
+def test_total_of_valid_cent_amounts_is_exact():
+    schema = json.loads((ROOT / "schema.json").read_text())
+    rows = [{"invoice_id": i, "customer_id": 10, "amount": "99999999999999999999999999.99",
+             "currency": "USD"} for i in (1, 2)]
+    assert validate(rows, schema)["amount"] == "199999999999999999999999999.98"
