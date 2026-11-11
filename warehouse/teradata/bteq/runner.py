@@ -51,6 +51,20 @@ class Runner:
         self.rows, self.headers, self.settings = [], [], {}
         self.export = self.import_file = None
         self.repeat = False
+        self.logon_user = self.variables.get('TD_USER', 'unknown')
+        self.conn.execute('CREATE SCHEMA IF NOT EXISTS dbc')
+        self.conn.execute('CREATE SEQUENCE IF NOT EXISTS dbc.live_query_id START 900000000000000000')
+        self.conn.execute('''CREATE TABLE IF NOT EXISTS dbc.dbc_qrylog (
+            procid integer, collecttimestamp timestamp, queryid bigint NOT NULL,
+            username varchar(64), defaultdatabase varchar(64), appid varchar(64),
+            clientid varchar(100), starttime timestamp, firstresptime timestamp,
+            statementtype varchar(20), statementgroup varchar(20), querytext varchar(16000),
+            numresultrows bigint, ampcputime decimal(14,6), totaliocount bigint, errorcode integer)''')
+        self.conn.execute('''CREATE TABLE IF NOT EXISTS dbc.dbc_qrylogobjects (
+            queryid bigint, objectdatabasename varchar(64), objecttablename varchar(64),
+            objecttype char(1), usagetype varchar(12))''')
+        self.conn.execute('CREATE OR REPLACE VIEW dbc.qrylogv AS SELECT * FROM dbc.dbc_qrylog')
+        self.conn.execute('CREATE OR REPLACE VIEW dbc.qrylogobjectsv AS SELECT * FROM dbc.dbc_qrylogobjects')
 
     def __enter__(self):
         return self
@@ -98,6 +112,9 @@ class Runner:
     def dot(self, command):
         name, _, rest = command[1:].partition(' ')
         name, rest = name.upper(), rest.strip()
+        if name == 'LOGON':
+            credentials = rest.partition('/')[2] or rest
+            self.logon_user = credentials.split(',')[0].strip()
         if name in ('QUIT', 'EXIT'):
             return ('quit', int(rest or 0))
         if name == 'GOTO':
@@ -134,6 +151,7 @@ class Runner:
             self.say('*** Warning: unsupported command ' + name)
 
     def execute(self, source):
+        started = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None)
         self.errorcode = self.errorlevel = self.activitycount = 0
         self.sqlstate = '00000'
         self.rows, self.headers = [], []
@@ -166,6 +184,42 @@ class Runner:
             self.errorlevel = 8
             self.sqlstate = getattr(exc, 'sqlstate', None) or '42000'
             self.say(f'*** Failure {self.errorcode} {exc}')
+        finally:
+            self.log_statement(source, started)
+
+    def log_statement(self, source, started):
+        request = source
+        while True:
+            unlocked = re.sub(r'^\s*LOCKING\s+.+?\s+(?:FOR|IN)\s+(?:ACCESS|READ|WRITE|EXCLUSIVE|CHECKSUM|LOAD\s+COMMITTED)\b(?:\s+NOWAIT\b)?\s*', '', request, count=1, flags=re.I | re.S)
+            if unlocked == request:
+                break
+            request = unlocked
+        tokens = request.split()
+        if not tokens:
+            return
+        kind = tokens[0].upper()
+        kind = {'SEL': 'SELECT', 'INS': 'INSERT', 'UPD': 'UPDATE', 'DEL': 'DELETE'}.get(kind, kind)
+        objects = []
+        try:
+            tree = sqlglot.parse_one(request, read='teradata')
+            if isinstance(tree, exp.Select) or isinstance(tree, exp.Union):
+                kind = 'SELECT'
+            objects = [(t.db or 'public', t.name) for t in tree.find_all(exp.Table)]
+        except (sqlglot.errors.SqlglotError, ValueError):
+            pass
+        # A separate connection preserves failed and rolled-back request history.
+        with psycopg.connect(self.conn.info.dsn, autocommit=True) as log:
+            query_id = log.execute("SELECT nextval('dbc.live_query_id')").fetchone()[0]
+            log.execute('''INSERT INTO dbc.dbc_qrylog
+                (queryid,username,appid,clientid,starttime,collecttimestamp,statementtype,
+                 querytext,numresultrows,errorcode) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',
+                (query_id, self.logon_user, self.variables.get('TD_APP_ID', self.variables.get('AppID', 'BTEQ')),
+                 self.variables.get('TD_CLIENT_ID', self.variables.get('ClientID', '')), started,
+                 datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None), kind,
+                 source[:16000], self.activitycount, self.errorcode))
+            for database, table in set(objects):
+                log.execute('INSERT INTO dbc.dbc_qrylogobjects VALUES (%s,%s,%s,%s,%s)',
+                            (query_id, database, table, 'T', 'READ' if kind == 'SELECT' else 'WRITE'))
 
     def render(self):
         separator = self.settings.get('SEPARATOR', '|')
