@@ -4,7 +4,7 @@
   seed:  replace the emulator's rows for these tables with cpw.dbx_d1111_before rows, then check.
 Needs DATABRICKS_HOST/TOKEN/WAREHOUSE_ID and TD_PG_PORT (emulator); never prints secrets.
 """
-import argparse, json, os
+import argparse, json, os, sys
 from databricks import sql
 import psycopg
 
@@ -76,4 +76,6 @@ if __name__ == "__main__":
     a = ap.parse_args()
     if a.action == "seed":
         seed()
-    print(json.dumps(check(a.step), indent=1))
+    result = check(a.step)
+    print(json.dumps(result, indent=1))
+    sys.exit(0 if all(v["equal"] for v in result.values()) else 1)
