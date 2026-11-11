@@ -4,7 +4,7 @@ The full runbook, the presenter guide and the session links live in the Field Ki
 
 ## Scope
 
-Run token `dbx-d1111` moved the OtterWorks estate off a Teradata warehouse, 20 PowerCenter mappings and 30 Spark jobs onto Databricks. Thirteen golden sessions in the `EXT - Core - OtterWorks` organization are owned by the Databricks Field Kit persona. Every pull request targets `demo-databricks-dw-exit`: 12 are merged there, 19 stay open as evidence, and none target `main`.
+Run token `dbx-d1111` started moving the OtterWorks estate off a Teradata warehouse, 20 PowerCenter mappings and 30 Spark jobs onto Databricks. The move is partial: 11 mappings run green on Databricks and nine stay on PowerCenter, and 15 of the 30 Spark jobs are green while 15 stay red. Thirteen golden sessions in the `EXT - Core - OtterWorks` organization are owned by the Databricks Field Kit persona. Every pull request targets `demo-databricks-dw-exit`: 12 are merged there, 19 stay open as evidence, and none target `main`.
 
 ## Storyline
 
