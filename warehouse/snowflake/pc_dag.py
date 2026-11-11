@@ -120,8 +120,8 @@ def run_once(cursor, folder, root, tasks, timeout=180, load_date=None, build=Non
         if build:
             build()
         if load_date:
-            cursor.execute(f"ALTER TASK {schema}.{tasks[root]['task']} SET CONFIG=%s",
-                           (json.dumps({'load_date': load_date}),))
+            cursor.execute("ALTER TASK IDENTIFIER(%s) SET CONFIG=%s",
+                           (f"{schema}.{tasks[root]['task']}", json.dumps({'load_date': load_date})))
         for name, step in reversed(list(tasks.items())):
             if name != root:
                 cursor.execute(f"ALTER TASK {schema}.{step['task']} RESUME")

@@ -82,8 +82,9 @@ def test_run_once_builds_then_sets_batch_date(monkeypatch):
     config = next(i for i, sql in enumerate(names) if 'SET CONFIG' in sql)
     started = next(i for i, sql in enumerate(names) if sql.startswith('EXECUTE TASK'))
     assert names.index('BUILD') < config < started
-    assert names[config].startswith('ALTER TASK SFX_D1110_AFTER.PC_BILLING.SFX_D1110_PC_BILLING_START ')
-    assert json.loads(calls[config][1][0]) == {'load_date': '20261110'}
+    assert names[config] == 'ALTER TASK IDENTIFIER(%s) SET CONFIG=%s'
+    assert calls[config][1][0] == 'SFX_D1110_AFTER.PC_BILLING.SFX_D1110_PC_BILLING_START'
+    assert json.loads(calls[config][1][1]) == {'load_date': '20261110'}
 
 
 def test_failed_build_skips_graph(monkeypatch):
