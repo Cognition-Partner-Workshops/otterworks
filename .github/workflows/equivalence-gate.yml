@@ -15,6 +15,8 @@ on:
 jobs:
   equivalence:
     runs-on: ubuntu-latest
+    env:
+      UV_PYTHON: '3.12'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5
@@ -26,7 +28,7 @@ jobs:
       # The harness shells into the module and runs its emitter and its suite with
       # the module's own toolchain, so document-service must be installed.
       - run: pipx install poetry==1.8.5
-      - run: poetry install --no-interaction
+      - run: poetry env use 3.12 && poetry install --no-interaction
         working-directory: services/document-service
       - run: uv run --with ruff==0.9.10 ruff check --config security/equivalence/harness/ruff.toml security/equivalence/harness
       - run: make eq-list
