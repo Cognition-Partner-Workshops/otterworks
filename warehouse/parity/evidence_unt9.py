@@ -223,7 +223,7 @@ def preflight():
 
 
 def targets(q, template):
-    return {s: fetched(q, f'{FQ_SCHEMA}.{t[2]}', template[s]) for s, t in TARGETS.items()}
+    return {s: fetched(q, f'{FQ_SCHEMA}.{t[2]}', template[s], source_loading=True) for s, t in TARGETS.items()}
 
 
 def history(q, start, path):
@@ -271,7 +271,6 @@ def replay(number):
     if number == 2 and not (previous / 'execution.json').exists():
         raise ValueError('run1 must complete first')
     fresh(path)
-    template = load(DEST / 'oracle/run1/targets.json')
     with queries(path / 'pre', f'unt9-run{number}-pre') as q:
         before = {'isolation': isolation(q),
                   'targets': {s: target_state(q, f'{FQ_SCHEMA}.{t[2]}') for s, t in TARGETS.items()}}
@@ -284,20 +283,30 @@ def replay(number):
     (path / 'stdout_stderr.log').write_text(result.stdout + result.stderr)
     dump(path / 'execution.json', {'argv': command, 'returncode': result.returncode, 'history_start': start,
                                    'end_utc': utc()})
-    with queries(path / 'post', f'unt9-run{number}-post') as q:
-        after = {'targets': {s: target_state(q, f'{FQ_SCHEMA}.{t[2]}') for s, t in TARGETS.items()}}
-        dump(path / 'post/state.json', after)
-        dump(path / 'targets.json', targets(q, template))
-        dump(path / 'write_scope.json', write_scope(history(q, start, path)))
-    print(json.dumps({'returncode': result.returncode, 'write_scope_passed': load(path / 'write_scope.json')['passed'],
-                      'rows': {s: len(v['rows']) for s, v in load(path / 'targets.json').items()}}, indent=2))
+    collect(number)
     if result.returncode:
         raise ValueError('dbt workflow run failed')
 
 
-def session_status(path):
-    result = load(path / 'sessions/workflow_result.json')
-    return result
+def collect(number):
+    """Post-run evidence only; rerunnable without executing dbt again."""
+    path = DEST / 'dbt' / f'run{number}'
+    execution = load(path / 'execution.json')
+    template = load(DEST / 'oracle/run1/targets.json')
+    post = path / 'post'
+    if post.exists():
+        attempts = sorted(path.glob('post_failed_attempt*'))
+        post.rename(path / f'post_failed_attempt{len(attempts) + 1}')
+    post.mkdir()
+    dump(post / 'collector_binding.json', binding())
+    with queries(post, f'unt9-run{number}-post') as q:
+        after = {'targets': {s: target_state(q, f'{FQ_SCHEMA}.{t[2]}') for s, t in TARGETS.items()}}
+        dump(post / 'state.json', after)
+        dump(path / 'targets.json', targets(q, template))
+        dump(path / 'write_scope.json', write_scope(history(q, execution['history_start'], post)))
+    print(json.dumps({'returncode': execution['returncode'],
+                      'write_scope_passed': load(path / 'write_scope.json')['passed'],
+                      'rows': {s: len(v['rows']) for s, v in load(path / 'targets.json').items()}}, indent=2))
 
 
 def compare():
@@ -355,10 +364,10 @@ def compare():
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('step', choices=['oracle', 'preflight', 'run1', 'run2', 'compare'])
+    parser.add_argument('step', choices=['oracle', 'preflight', 'run1', 'run2', 'collect1', 'collect2', 'compare'])
     args = parser.parse_args(argv)
     {'oracle': oracle, 'preflight': preflight, 'run1': lambda: replay(1), 'run2': lambda: replay(2),
-     'compare': compare}[args.step]()
+     'collect1': lambda: collect(1), 'collect2': lambda: collect(2), 'compare': compare}[args.step]()
 
 
 if __name__ == '__main__':
