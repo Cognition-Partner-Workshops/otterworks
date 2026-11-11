@@ -45,3 +45,22 @@ def test_post_with_valid_token_is_accepted(client):
     resp = http.post("/api/dunning/schedule", data={"as_of": "2026-01-01"}, headers={"X-CSRFToken": token})
     assert resp.status_code != 400
     assert calls
+
+
+def test_http_client_can_bootstrap_token_and_post(client):
+    http, calls = client
+    resp = http.get("/api/csrf-token")
+    assert resp.status_code == 200
+    token = resp.get_json()["csrf_token"]
+    resp = http.post("/api/dunning/schedule", data={"as_of": "2026-01-01"}, headers={"X-CSRFToken": token})
+    assert resp.status_code != 400
+    assert calls
+
+
+def test_bootstrapped_token_needs_its_session_cookie(client):
+    http, calls = client
+    token = http.get("/api/csrf-token").get_json()["csrf_token"]
+    http._cookies.clear()
+    resp = http.post("/api/dunning/schedule", data={"as_of": "2026-01-01"}, headers={"X-CSRFToken": token})
+    assert resp.status_code == 400
+    assert calls == []

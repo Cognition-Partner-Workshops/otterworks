@@ -7,7 +7,7 @@ from decimal import Decimal
 import psycopg
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 from finance_warehouse import COLUMNS, ReceivablesWarehouse, SnowflakeReceivablesWarehouse
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf
 
 app = Flask(__name__)
 # Signs CSRF tokens. Set LEGACY_BILLING_SECRET_KEY when running more than one worker;
@@ -18,6 +18,12 @@ app.config["FINANCE_WAREHOUSE_ENABLED"] = (
     os.getenv("FINANCE_WAREHOUSE_ENABLED", "true").lower() not in {"false", "0", "no", "off"}
 )
 app.extensions["finance_warehouse"] = SnowflakeReceivablesWarehouse()
+
+
+@app.get("/api/csrf-token")
+def csrf_token():
+    """Token for X-CSRFToken; clients must keep the session cookie set by this response."""
+    return jsonify(csrf_token=generate_csrf())
 
 
 @app.get("/finance/ar-aging")
