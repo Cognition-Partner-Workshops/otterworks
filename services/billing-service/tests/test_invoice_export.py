@@ -157,6 +157,8 @@ def test_dal_closes_on_query_failure():
 def test_cli_calls_export_and_rejects_bad_date(tmp_path, monkeypatch, capsys):
     import app.export_invoices as module
 
+    monkeypatch.setenv("FINANCE_WAREHOUSE_TARGET", "teradata")
+
     warehouse = FakeWarehouse()
     monkeypatch.setattr(module, "TeradataInvoiceWarehouse", lambda settings: warehouse)
     out = tmp_path / "invoices.csv"
@@ -170,6 +172,8 @@ def test_cli_calls_export_and_rejects_bad_date(tmp_path, monkeypatch, capsys):
 
 def test_cli_disabled_and_errors_are_sanitized(tmp_path, monkeypatch, capsys):
     import app.export_invoices as module
+
+    monkeypatch.setenv("FINANCE_WAREHOUSE_TARGET", "teradata")
 
     monkeypatch.setenv("FINANCE_WAREHOUSE_ENABLED", "false")
     assert main(["--out", str(tmp_path / "invoices.csv")]) == 1
