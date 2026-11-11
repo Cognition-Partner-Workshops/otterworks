@@ -51,3 +51,12 @@ def test_invalid_record_emits_alert(tmp_path, record):
     event = json.loads(result.stdout)
     assert event["status"] == "firing"
     assert event["alerts"][0]["labels"]["alertname"] == "LandingSchemaDrift"
+
+
+def test_json_amount_keeps_sub_cent_precision(tmp_path):
+    landing = tmp_path / "amount.jsonl"
+    landing.write_text('{"invoice_id":1,"customer_id":10,"amount":120.000000000000001,'
+                       '"currency":"USD"}\n')
+    schema = json.loads((ROOT / "schema.json").read_text())
+    with pytest.raises(SchemaDrift, match="cent"):
+        validate(read_rows(landing), schema)

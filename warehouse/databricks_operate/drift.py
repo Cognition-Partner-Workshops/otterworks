@@ -22,7 +22,7 @@ def read_rows(path):
         if not line.strip():
             continue
         try:
-            row = json.loads(line)
+            row = json.loads(line, parse_float=Decimal)
         except json.JSONDecodeError:
             raise SchemaDrift(f"line {index}: invalid JSON") from None
         if not isinstance(row, dict):
@@ -69,7 +69,7 @@ def seed(path):
     rows = read_rows(path)
     for row in rows:
         row["tax_region"] = "domestic" if row["currency"] == "USD" else "export"
-    path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    path.write_text("".join(json.dumps(row, default=str) + "\n" for row in rows))
 
 
 def main():
