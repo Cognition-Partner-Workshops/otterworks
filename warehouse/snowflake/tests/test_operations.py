@@ -141,7 +141,7 @@ def test_analyst_dry_run_is_read_only_and_curated():
         "GRANT USAGE ON DATABASE SFX_D1110_AFTER TO ROLE SFX_D1110_ANALYST;",
         "GRANT USAGE ON WAREHOUSE SFX_D1110_TRANSFORM_WH TO ROLE SFX_D1110_ANALYST;",
     }
-    for schema in ("CORE_BILLING", "CORE_DOCUMENTS", "CORE_USERS", "CORE_AUDIT", "MART", "MART_SPARK", "COMPAT"):
+    for schema in ("MART", "MART_SPARK", "COMPAT"):
         expected.add(f"GRANT USAGE ON SCHEMA SFX_D1110_AFTER.{schema} TO ROLE SFX_D1110_ANALYST;")
         for scope in ("ALL", "FUTURE"):
             for kind in ("TABLES", "VIEWS"):
@@ -170,6 +170,7 @@ def test_analyst_dry_run_rejects_write_privileges(privilege, scope):
 
 @pytest.mark.parametrize("schema", [
     "RAW_BILLING", "RAW_DOCUMENTS", "RAW_USERS", "RAW_AUDIT", "LANDING", "SCHEMACHANGE",
+    "CORE_BILLING", "CORE_DOCUMENTS", "CORE_USERS", "CORE_AUDIT", "SPARK_RAW_USERS",
 ])
 @pytest.mark.parametrize("privilege,kind", [("USAGE", "SCHEMA"), ("SELECT", "FUTURE TABLES IN SCHEMA")])
 def test_analyst_dry_run_rejects_non_curated_schemas(schema, privilege, kind):
@@ -184,6 +185,39 @@ def test_analyst_dry_run_rejects_non_curated_schemas(schema, privilege, kind):
     "GRANT ROLE SFX_D1110_LOADER TO ROLE SFX_D1110_ANALYST;",
 ])
 def test_analyst_dry_run_rejects_broad_scopes_and_inheritance(sql):
+    with pytest.raises(ValueError):
+        roles.validate([("bad.sql", 1, sql)])
+
+
+def test_role_plan_removes_existing_and_future_analyst_privileges():
+    plan = roles.statements()
+    reset = [sql for _, _, sql in plan if sql.startswith("REVOKE ")]
+    assert reset
+    for scope in ("DATABASE SFX_D1110_AFTER", "ALL SCHEMAS IN DATABASE SFX_D1110_AFTER",
+                  "FUTURE SCHEMAS IN DATABASE SFX_D1110_AFTER",
+                  "ALL TABLES IN DATABASE SFX_D1110_AFTER", "ALL VIEWS IN DATABASE SFX_D1110_AFTER",
+                  "FUTURE TABLES IN DATABASE SFX_D1110_AFTER", "FUTURE VIEWS IN DATABASE SFX_D1110_AFTER"):
+        assert f"REVOKE ALL PRIVILEGES ON {scope} FROM ROLE SFX_D1110_ANALYST;" in reset
+    schemas = set()
+    for path in (ROOT / "migrations").glob("V*.sql"):
+        schemas.update(re.findall(r"CREATE SCHEMA IF NOT EXISTS (\w+)", path.read_text()))
+    for schema in schemas:
+        for kind in ("TABLES", "VIEWS"):
+            assert (f"REVOKE ALL PRIVILEGES ON FUTURE {kind} IN SCHEMA "
+                    f"SFX_D1110_AFTER.{schema} FROM ROLE SFX_D1110_ANALYST;") in reset
+    assert all(sql.endswith(" FROM ROLE SFX_D1110_ANALYST;") for sql in reset)
+    schema_plan = [sql for path, _, sql in plan if path == "03_schema_grants.sql"]
+    assert all(sql.startswith("REVOKE ") for sql in schema_plan[:len(reset)])
+
+
+@pytest.mark.parametrize("sql", [
+    "REVOKE ALL PRIVILEGES ON DATABASE OTHER FROM ROLE SFX_D1110_ANALYST;",
+    "REVOKE ALL PRIVILEGES ON DATABASE SFX_D1110_AFTER FROM ROLE SFX_D1110_TRANSFORMER;",
+    "REVOKE ALL PRIVILEGES ON FUTURE TABLES IN SCHEMA SFX_D1110_AFTER.MISSING FROM ROLE SFX_D1110_ANALYST;",
+    "REVOKE ALL PRIVILEGES ON FUTURE TABLES IN DATABASE SFX_D1110_AFTER.MART FROM ROLE SFX_D1110_ANALYST;",
+    "REVOKE OWNERSHIP ON DATABASE SFX_D1110_AFTER FROM ROLE SFX_D1110_ANALYST;",
+])
+def test_role_plan_rejects_unscoped_resets(sql):
     with pytest.raises(ValueError):
         roles.validate([("bad.sql", 1, sql)])
 

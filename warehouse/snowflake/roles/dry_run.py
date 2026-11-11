@@ -34,6 +34,18 @@ def validate(plan):
         upper = sql.upper()
         if re.search(r"\bON\s+ACCOUNT\b", upper):
             raise ValueError("ON ACCOUNT grants are forbidden")
+        if upper.startswith("REVOKE "):
+            match = re.fullmatch(
+                r"REVOKE ALL PRIVILEGES ON (DATABASE|(?:ALL|FUTURE) (?:SCHEMAS|TABLES|VIEWS) IN DATABASE|FUTURE (?:TABLES|VIEWS) IN SCHEMA) (SFX_D1110_AFTER(?:\.[A-Z0-9_]+)?) FROM ROLE SFX_D1110_ANALYST;",
+                upper,
+            )
+            if not match:
+                raise ValueError(f"Unsupported analyst reset: {filename}:{line}")
+            kind, obj = match.groups()
+            if ((kind.endswith("IN SCHEMA") and obj.split(".")[-1] not in schemas) or
+                    (not kind.endswith("IN SCHEMA") and obj != "SFX_D1110_AFTER")):
+                raise ValueError(f"Object outside scaffold: {filename}:{line}")
+            continue
         if not (upper.startswith("CREATE ROLE ") or upper.startswith("GRANT ")):
             raise ValueError(f"Unsupported statement: {filename}:{line}")
         referenced_roles = re.findall(r"(?:CREATE ROLE(?: IF NOT EXISTS)?|TO ROLE|GRANT ROLE)\s+(\w+)", upper)
@@ -61,7 +73,7 @@ def validate(plan):
                 allowed = privileges == "USAGE"
             else:
                 schema = obj.split(".")[-1]
-                curated = schema in {"MART", "MART_SPARK", "COMPAT"} or schema.startswith("CORE_")
+                curated = schema in {"MART", "MART_SPARK", "COMPAT"}
                 allowed = curated and (
                     (kind == "SCHEMA" and privileges == "USAGE") or
                     (kind in ("ALL TABLES IN SCHEMA", "FUTURE TABLES IN SCHEMA",

@@ -197,7 +197,20 @@ these three lifecycle targets are no-ops. The test target always runs.
 roles/dry_run.py validates and prints the ordered SQL plan. --check-live inspects
 SHOW GRANTS without applying DDL. --apply refuses unless CREATE ROLE is held.
 Analysts retain database and transform-warehouse USAGE, with schema USAGE and
-SELECT on current/future tables and views only in CORE_*, MART and COMPAT.
+SELECT on current/future tables and views only in MART, MART_SPARK and COMPAT.
+The role plan first revokes existing and future analyst database/schema/table/view
+privileges before restoring that allowlist, so upgrades remove legacy broad grants.
+Deploy V010 before applying the role plan; it provisions the Spark landing and mart
+schemas. The loader writes SPARK_RAW_*; the transformer reads those sources and
+retains table/view creation and table writes in MART and MART_SPARK.
+After an administrator provisions the functional roles, run
+`python warehouse/snowflake/roles/verify.py --apply` with the injected credentials.
+It applies only V010 and the scoped grants as SFX_D1110_ROLE, disables secondary
+roles, then tests analyst reads/denials and transformer writes using tagged scratch
+objects. It prints query IDs and drops its scratch objects. Omit `--apply` to check
+the already-deployed plan. Snowflake permits session-local temporary tables with
+USAGE alone; this plan prevents persistent DDL and writes to published data, not
+session-local scratch creation.
 Validation rejects analyst write grants, inherited functional roles, and access
 to RAW_*, LANDING or SCHEMACHANGE.
 
