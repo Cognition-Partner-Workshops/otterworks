@@ -1,0 +1,18 @@
+{
+  "source": "etl/spark/jobs/py/audit_actor_activity_join.py",
+  "target": "cpw.dbx_d1111_after.audit__spark_audit_actor_activity_join",
+  "status": "red",
+  "red_reason": "missing live baseline",
+  "first_failure": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14",
+  "first_failure_statement_id": "01f1dd84-1d40-1344-acb9-8789377f93a3",
+  "corrected_parity": "BLOCKED: no live-adapted original result; fixture evidence is not live parity",
+  "parity_statement_id": null,
+  "idempotence": "BLOCKED: no successful live runs",
+  "idempotence_statement_ids": [],
+  "job_id": "1091978784638813",
+  "job_run_ids": [],
+  "executor_hours": 0.004015278,
+  "baseline_app_id": "app-20261110202505-0009",
+  "dbu_after": "PENDING: no live run; no zero-cost claim",
+  "pr": ""
+}

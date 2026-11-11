@@ -1,0 +1,8 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "act": "spark",
+  "job_id": 763368305743207,
+  "run_ids": [],
+  "run_status": "BLOCKED: missing live baseline; no fixture data uploaded"
+}

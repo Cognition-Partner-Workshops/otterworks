@@ -1,0 +1,133 @@
+[
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSELECT * FROM cpw.dbx_d1111_before.audit__compliance_flag LIMIT 1",
+    "statement_id": "01f1dd84-1f73-1d90-b5cf-bf3587046203",
+    "status": {
+      "state": "FAILED",
+      "error": {
+        "error_code": "BAD_REQUEST",
+        "message": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14"
+      },
+      "sql_state": "42P01"
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSHOW TABLES IN cpw.dbx_d1111_before LIKE '*audit*|*security_alert*|*compliance_flag*'",
+    "statement_id": "01f1dd84-1fc7-1afb-a492-7375438f64b3",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "database",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "tableName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "isTemporary",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSHOW TABLES IN cpw.dbx_d1111_after LIKE '*audit*|*security_alert*|*compliance_flag*'",
+    "statement_id": "01f1dd84-35a9-165f-ac01-65694ae7df7d",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "database",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "tableName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "isTemporary",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSHOW TABLES IN cpw.dbx_d1111_parity LIKE '*audit*|*security_alert*|*compliance_flag*'",
+    "statement_id": "01f1dd84-35ef-1584-8b09-0d11c5588c2e",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "database",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "tableName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "isTemporary",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  }
+]

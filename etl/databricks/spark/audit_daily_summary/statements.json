@@ -1,0 +1,442 @@
+[
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nSELECT * FROM cpw.dbx_d1111_before.audit__audit_event LIMIT 1",
+    "statement_id": "01f1dd84-1cc3-1225-bf2a-84ed7af57330",
+    "status": {
+      "state": "FAILED",
+      "error": {
+        "error_code": "BAD_REQUEST",
+        "message": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__audit_event` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14"
+      },
+      "sql_state": "42P01"
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nSHOW TABLES IN cpw.dbx_d1111_before LIKE '*audit*|*security_alert*|*compliance_flag*'",
+    "statement_id": "01f1dd84-1cfd-1209-9dcc-ada0ac31906d",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "database",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "tableName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "isTemporary",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nDESCRIBE TABLE cpw.dbx_d1111_control.migration_control",
+    "statement_id": "01f1dd84-201e-1d86-a9b2-a7e373b8678f",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 32
+        }
+      ],
+      "total_row_count": 32,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 32,
+      "data_array": [
+        [
+          "object_name",
+          "string",
+          null
+        ],
+        [
+          "subject_area",
+          "string",
+          null
+        ],
+        [
+          "source_system",
+          "string",
+          null
+        ],
+        [
+          "target",
+          "string",
+          null
+        ],
+        [
+          "status",
+          "string",
+          null
+        ],
+        [
+          "parity",
+          "string",
+          null
+        ],
+        [
+          "pr",
+          "string",
+          null
+        ],
+        [
+          "updated_at",
+          "timestamp",
+          null
+        ],
+        [
+          "wave",
+          "int",
+          null
+        ],
+        [
+          "owner",
+          "string",
+          null
+        ],
+        [
+          "risk",
+          "string",
+          null
+        ],
+        [
+          "risk_reason",
+          "string",
+          null
+        ],
+        [
+          "kind",
+          "string",
+          null
+        ],
+        [
+          "source_path",
+          "string",
+          null
+        ],
+        [
+          "loc",
+          "int",
+          null
+        ],
+        [
+          "complexity",
+          "string",
+          null
+        ],
+        [
+          "executor_hours",
+          "decimal(18,9)",
+          null
+        ],
+        [
+          "unread_tier",
+          "string",
+          null
+        ],
+        [
+          "code_readers",
+          "string",
+          null
+        ],
+        [
+          "first_failure",
+          "string",
+          null
+        ],
+        [
+          "first_failure_statement_id",
+          "string",
+          null
+        ],
+        [
+          "corrected_parity",
+          "string",
+          null
+        ],
+        [
+          "parity_statement_id",
+          "string",
+          null
+        ],
+        [
+          "idempotence",
+          "string",
+          null
+        ],
+        [
+          "idempotence_statement_ids",
+          "string",
+          null
+        ],
+        [
+          "licence_features",
+          "string",
+          null
+        ],
+        [
+          "red_reason",
+          "string",
+          null
+        ],
+        [
+          "run_token",
+          "string",
+          null
+        ],
+        [
+          "expires",
+          "string",
+          null
+        ],
+        [
+          "job_id",
+          "string",
+          null
+        ],
+        [
+          "job_run_ids",
+          "string",
+          null
+        ],
+        [
+          "cross_folder_dependencies",
+          "string",
+          null
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nDESCRIBE TABLE cpw.dbx_d1111_parity.results",
+    "statement_id": "01f1dd84-208c-1570-a734-4c10790f20f9",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 9
+        }
+      ],
+      "total_row_count": 9,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 9,
+      "data_array": [
+        [
+          "run_label",
+          "string",
+          null
+        ],
+        [
+          "object",
+          "string",
+          null
+        ],
+        [
+          "rung",
+          "string",
+          null
+        ],
+        [
+          "status",
+          "string",
+          null
+        ],
+        [
+          "detail",
+          "string",
+          null
+        ],
+        [
+          "statement_id",
+          "string",
+          null
+        ],
+        [
+          "measured_at",
+          "timestamp",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nSHOW TABLES IN cpw.dbx_d1111_after LIKE '*audit*|*security_alert*|*compliance_flag*'",
+    "statement_id": "01f1dd84-32c1-1db9-bdca-bff7ae453b85",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "database",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "tableName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "isTemporary",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "audit_daily_summary",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=audit_daily_summary */\nSHOW TABLES IN cpw.dbx_d1111_parity LIKE '*audit*|*security_alert*|*compliance_flag*'",
+    "statement_id": "01f1dd84-3301-10b8-95e4-5b690988be18",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "database",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "tableName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "isTemporary",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  }
+]
