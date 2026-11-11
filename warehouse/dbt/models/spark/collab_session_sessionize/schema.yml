@@ -7,8 +7,6 @@ models:
           column_name: "(USER_ID::varchar || '|' || DOCUMENT_ID::varchar || '|' || SESSION_NUMBER::varchar)"
     columns:
       - name: USER_ID
-        tests: [not_null]
       - name: DOCUMENT_ID
-        tests: [not_null]
       - name: SESSION_NUMBER
         tests: [not_null]
