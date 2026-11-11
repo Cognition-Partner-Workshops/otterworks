@@ -492,7 +492,7 @@ deploy_service() {
   fi
   tag="${tag}@${digest}"
 
-  build_helm_args "${service}"
+  build_helm_args "${service}" || return 1
   # Optional per-tenant values overlay (e.g. monitoring/tracing opt-in).
   local overlay
   overlay="${REPO_ROOT}/infrastructure/helm/tenant-values/$(sanitize_id "${ATTENDEE_ID}")/${service}.yaml"
