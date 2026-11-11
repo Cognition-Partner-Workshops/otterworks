@@ -1,0 +1,10 @@
+version: 1
+flows:
+  payments.payment-returns:
+    source_sha256: b4e4c66bc11c6c0cc0ef412738b5af3cc1ba91c460f3400a2c8167642204d292
+    faults:
+      broker-kill:
+        after_message: 1
+        identity_header: requestId
+        container_env: REPLAY_BROKER_CONTAINER
+        ready_timeout: 45
