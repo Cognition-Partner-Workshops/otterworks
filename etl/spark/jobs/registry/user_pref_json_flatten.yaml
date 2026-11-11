@@ -5,5 +5,6 @@
   "status": "snowflake",
   "schedule": "28 3 * * *",
   "profile": "small",
+  "ingest": ["users.USER_PREF"],
   "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job user_pref_json_flatten"
 }
