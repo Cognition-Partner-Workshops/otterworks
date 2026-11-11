@@ -10,7 +10,7 @@ import subprocess
 import sys
 import uuid
 
-from .evidence import BOOTSTRAP, ESTATE, OUT, cell, dump, full_compare, sha, snapshot
+from .evidence import BOOTSTRAP, ESTATE, OUT, dump, full_compare, sha, snapshot
 from .evidence_unt3 import load
 from .inventory import ROOT
 
