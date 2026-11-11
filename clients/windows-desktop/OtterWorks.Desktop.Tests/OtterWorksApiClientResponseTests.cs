@@ -17,7 +17,7 @@ namespace OtterWorks.Desktop.Tests
             "\"total\":1,\"page\":1,\"page_size\":50}";
 
         [TestMethod]
-        public async Task GetFiles_FileServiceShape_MapsIdNameDateButSizeAndContentTypeAreNull()
+        public async Task GetFiles_FileServiceShape_MapsAllDisplayedFields()
         {
             var handler = FakeHttpMessageHandler.Returning(HttpStatusCode.OK, FileServiceListBody);
             var client = TestClients.Create(handler);
@@ -33,9 +33,9 @@ namespace OtterWorks.Desktop.Tests
             Assert.AreEqual("a.pdf", file.Name);
             Assert.AreEqual(new DateTimeOffset(2026, 11, 11, 10, 0, 0, TimeSpan.Zero), file.CreatedAt);
 
-            // The model binds "size" and "content_type"; the service sends "size_bytes" and "mime_type".
-            Assert.IsNull(file.Size);
-            Assert.IsNull(file.ContentType);
+            Assert.AreEqual(1234L, file.Size);
+            Assert.AreEqual("application/pdf", file.ContentType);
+            Assert.AreEqual("1.2 KB", file.SizeText);
         }
 
         [TestMethod]

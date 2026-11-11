@@ -16,6 +16,14 @@ namespace OtterWorks.Desktop.Services
     /// </summary>
     public class OtterWorksApiClient
     {
+        internal const string BackendUnreachableMessage =
+            "Could not reach the OtterWorks backend. Verify it is running and that the " +
+            "API base URL is correct.";
+
+        internal const string ServiceUnavailableMessage =
+            "The OtterWorks service is temporarily unavailable. Your data has not been changed; " +
+            "try again in a moment.";
+
         private readonly HttpClient _http;
         private readonly SessionState _session;
         private readonly string _baseUrl;
@@ -102,12 +110,9 @@ namespace OtterWorks.Desktop.Services
             {
                 response = await _http.SendAsync(request).ConfigureAwait(false);
             }
-            catch (HttpRequestException ex)
+            catch (HttpRequestException)
             {
-                throw new ApiException(
-                    0,
-                    "Could not reach the OtterWorks backend. Verify it is running and that the " +
-                    "API base URL is correct.\n\n" + ex.Message);
+                throw new ApiException(0, BackendUnreachableMessage);
             }
             catch (TaskCanceledException)
             {
@@ -122,6 +127,11 @@ namespace OtterWorks.Desktop.Services
                 string content = response.Content == null
                     ? string.Empty
                     : await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+                if (IsServiceUnavailable(response.StatusCode))
+                {
+                    throw new ApiException(response.StatusCode, ServiceUnavailableMessage);
+                }
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -157,6 +167,13 @@ namespace OtterWorks.Desktop.Services
         private Uri BuildUri(string path)
         {
             return new Uri(_baseUrl + "/" + path.TrimStart('/'));
+        }
+
+        private static bool IsServiceUnavailable(HttpStatusCode statusCode)
+        {
+            return statusCode == HttpStatusCode.BadGateway
+                || statusCode == HttpStatusCode.ServiceUnavailable
+                || statusCode == HttpStatusCode.GatewayTimeout;
         }
 
         private static string ExtractError(string content, HttpStatusCode statusCode)

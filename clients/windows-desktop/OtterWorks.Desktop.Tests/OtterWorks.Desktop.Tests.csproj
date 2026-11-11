@@ -53,7 +53,9 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DocumentsViewModelTests.cs" />
     <Compile Include="FakeHttpMessageHandler.cs" />
+    <Compile Include="FileItemTests.cs" />
     <Compile Include="OtterWorksApiClientErrorTests.cs" />
     <Compile Include="OtterWorksApiClientRequestTests.cs" />
     <Compile Include="OtterWorksApiClientResponseTests.cs" />

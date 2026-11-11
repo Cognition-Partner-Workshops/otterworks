@@ -15,7 +15,7 @@ namespace OtterWorks.Desktop.Tests
     public class OtterWorksApiClientErrorTests
     {
         [TestMethod]
-        public async Task ConnectionFailure_WrapsHttpRequestExceptionWithStatusZero()
+        public async Task ConnectionFailure_ShowsPlainMessageWithoutTransportDetail()
         {
             var handler = FakeHttpMessageHandler.Throwing(
                 new HttpRequestException("An error occurred while sending the request."));
@@ -26,7 +26,7 @@ namespace OtterWorks.Desktop.Tests
             Assert.AreEqual((HttpStatusCode)0, ex.StatusCode);
             Assert.AreEqual(
                 "Could not reach the OtterWorks backend. Verify it is running and that the " +
-                "API base URL is correct.\n\nAn error occurred while sending the request.",
+                "API base URL is correct.",
                 ex.Message);
         }
 
@@ -60,7 +60,7 @@ namespace OtterWorks.Desktop.Tests
         }
 
         [TestMethod]
-        public async Task Gateway502_ServiceUnavailableBody_UsesErrorField()
+        public async Task Gateway502_ServiceUnavailableBody_ShowsFriendlyUnavailableMessage()
         {
             var handler = FakeHttpMessageHandler.Returning(
                 HttpStatusCode.BadGateway,
@@ -70,11 +70,11 @@ namespace OtterWorks.Desktop.Tests
             var ex = await Assert.ThrowsExceptionAsync<ApiException>(() => client.GetDocumentsAsync());
 
             Assert.AreEqual(HttpStatusCode.BadGateway, ex.StatusCode);
-            Assert.AreEqual("service unavailable", ex.Message);
+            Assert.AreEqual(OtterWorksApiClient.ServiceUnavailableMessage, ex.Message);
         }
 
         [TestMethod]
-        public async Task Gateway503_CircuitBreakerBody_UsesErrorFieldAndDropsReason()
+        public async Task Gateway503_CircuitBreakerBody_ShowsFriendlyUnavailableMessage()
         {
             var handler = FakeHttpMessageHandler.Returning(
                 HttpStatusCode.ServiceUnavailable,
@@ -84,7 +84,7 @@ namespace OtterWorks.Desktop.Tests
             var ex = await Assert.ThrowsExceptionAsync<ApiException>(() => client.GetDocumentsAsync());
 
             Assert.AreEqual(HttpStatusCode.ServiceUnavailable, ex.StatusCode);
-            Assert.AreEqual("service temporarily unavailable", ex.Message);
+            Assert.AreEqual(OtterWorksApiClient.ServiceUnavailableMessage, ex.Message);
         }
 
         [TestMethod]
@@ -158,7 +158,7 @@ namespace OtterWorks.Desktop.Tests
         }
 
         [TestMethod]
-        public async Task Error502_HtmlBody_PassesRawHtmlThroughAsMessage()
+        public async Task Error502_HtmlBody_DoesNotLeakHtmlIntoMessage()
         {
             const string html =
                 "<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n" +
@@ -169,7 +169,19 @@ namespace OtterWorks.Desktop.Tests
             var ex = await Assert.ThrowsExceptionAsync<ApiException>(() => client.GetDocumentsAsync());
 
             Assert.AreEqual(HttpStatusCode.BadGateway, ex.StatusCode);
-            Assert.AreEqual(html, ex.Message);
+            Assert.AreEqual(OtterWorksApiClient.ServiceUnavailableMessage, ex.Message);
+        }
+
+        [TestMethod]
+        public async Task Error504_GatewayTimeout_ShowsFriendlyUnavailableMessage()
+        {
+            var handler = FakeHttpMessageHandler.Returning(HttpStatusCode.GatewayTimeout, string.Empty);
+            var client = TestClients.Create(handler);
+
+            var ex = await Assert.ThrowsExceptionAsync<ApiException>(() => client.GetFilesAsync());
+
+            Assert.AreEqual(HttpStatusCode.GatewayTimeout, ex.StatusCode);
+            Assert.AreEqual(OtterWorksApiClient.ServiceUnavailableMessage, ex.Message);
         }
 
         [TestMethod]

@@ -17,19 +17,23 @@ namespace OtterWorks.Desktop.ViewModels
         private string _statusMessage;
         private bool _isBusy;
         private bool _hasLoaded;
+        private bool _hasLoadedFiles;
+        private bool _loadFailed;
+        private bool _isShowingFiles;
 
         public DocumentsViewModel(OtterWorksApiClient api, MainViewModel main)
         {
             _api = api;
             _main = main;
 
-            RefreshCommand = new AsyncRelayCommand(LoadDocumentsAsync, () => !IsBusy);
+            RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy);
             CreateCommand = new AsyncRelayCommand(CreateDocumentAsync, CanCreate);
             LoadFilesCommand = new AsyncRelayCommand(LoadFilesAsync, () => !IsBusy);
+            ShowDocumentsCommand = new AsyncRelayCommand(LoadDocumentsAsync, () => !IsBusy);
             LogoutCommand = new RelayCommand(() => _main.Logout());
 
             // Fire-and-forget initial load; UI shows a busy indicator meanwhile.
-            _ = LoadDocumentsAsync();
+            InitialLoad = LoadDocumentsAsync();
         }
 
         public ObservableCollection<Document> Documents { get; } = new ObservableCollection<Document>();
@@ -38,7 +42,29 @@ namespace OtterWorks.Desktop.ViewModels
 
         public string UserName => _main.CurrentUserName;
 
-        public bool IsEmpty => _hasLoaded && Documents.Count == 0 && !IsBusy;
+        public string Heading => IsShowingFiles ? "Files" : "Documents";
+
+        public bool IsShowingFiles
+        {
+            get => _isShowingFiles;
+            private set
+            {
+                if (SetProperty(ref _isShowingFiles, value))
+                {
+                    OnPropertyChanged(nameof(IsShowingDocuments));
+                    OnPropertyChanged(nameof(Heading));
+                    RaiseStateChanged();
+                }
+            }
+        }
+
+        public bool IsShowingDocuments => !IsShowingFiles;
+
+        public bool IsEmpty => IsShowingDocuments && _hasLoaded && !_loadFailed && Documents.Count == 0 && !IsBusy;
+
+        public bool IsFilesEmpty => IsShowingFiles && _hasLoadedFiles && !_loadFailed && Files.Count == 0 && !IsBusy;
+
+        public bool IsLoadFailed => _loadFailed && !IsBusy;
 
         public string NewTitle
         {
@@ -65,7 +91,7 @@ namespace OtterWorks.Desktop.ViewModels
             {
                 if (SetProperty(ref _isBusy, value))
                 {
-                    OnPropertyChanged(nameof(IsEmpty));
+                    RaiseStateChanged();
                 }
             }
         }
@@ -76,13 +102,20 @@ namespace OtterWorks.Desktop.ViewModels
 
         public ICommand LoadFilesCommand { get; }
 
+        public ICommand ShowDocumentsCommand { get; }
+
         public ICommand LogoutCommand { get; }
+
+        internal Task InitialLoad { get; }
 
         private bool CanCreate() => !IsBusy && !string.IsNullOrWhiteSpace(NewTitle);
 
-        private async Task LoadDocumentsAsync()
+        private Task RefreshAsync() => IsShowingFiles ? LoadFilesAsync() : LoadDocumentsAsync();
+
+        internal async Task LoadDocumentsAsync()
         {
             ErrorMessage = null;
+            IsShowingFiles = false;
             IsBusy = true;
             try
             {
@@ -96,17 +129,21 @@ namespace OtterWorks.Desktop.ViewModels
                     }
                 }
 
+                _loadFailed = false;
                 StatusMessage = $"{Documents.Count} document(s).";
             }
             catch (ApiException ex)
             {
+                Documents.Clear();
+                _loadFailed = true;
+                StatusMessage = null;
                 ErrorMessage = ex.Message;
             }
             finally
             {
                 _hasLoaded = true;
                 IsBusy = false;
-                OnPropertyChanged(nameof(IsEmpty));
+                RaiseStateChanged();
             }
         }
 
@@ -135,9 +172,10 @@ namespace OtterWorks.Desktop.ViewModels
             }
         }
 
-        private async Task LoadFilesAsync()
+        internal async Task LoadFilesAsync()
         {
             ErrorMessage = null;
+            IsShowingFiles = true;
             IsBusy = true;
             try
             {
@@ -151,16 +189,29 @@ namespace OtterWorks.Desktop.ViewModels
                     }
                 }
 
+                _loadFailed = false;
                 StatusMessage = $"{Files.Count} file(s).";
             }
             catch (ApiException ex)
             {
+                Files.Clear();
+                _loadFailed = true;
+                StatusMessage = null;
                 ErrorMessage = ex.Message;
             }
             finally
             {
+                _hasLoadedFiles = true;
                 IsBusy = false;
+                RaiseStateChanged();
             }
+        }
+
+        private void RaiseStateChanged()
+        {
+            OnPropertyChanged(nameof(IsEmpty));
+            OnPropertyChanged(nameof(IsFilesEmpty));
+            OnPropertyChanged(nameof(IsLoadFailed));
         }
     }
 }
