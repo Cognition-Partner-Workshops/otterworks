@@ -32,4 +32,4 @@ models:
       content:
         +schema: PC_CONTENT
       audit:
-        +schema: PC_AUDIT
+        +schema: "{{ var('pc_audit_schema', 'PC_AUDIT') }}"
