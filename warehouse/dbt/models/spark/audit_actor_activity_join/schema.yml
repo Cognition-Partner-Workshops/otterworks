@@ -1,0 +1,19 @@
+version: 2
+models:
+- name: audit_actor_activity_join
+  description: >-
+    Spark job audit_actor_activity_join: audit events joined to the actor's
+    daily activity and login aggregate. Replaces lake output audit/audit_actor_activity_join.
+  columns:
+  - name: user_key
+    tests:
+    - not_null
+  - name: audit_event_id
+    tests:
+    - not_null
+  - name: activity_date
+    tests:
+    - not_null
+  - name: login_text_bytes
+    tests:
+    - not_null
