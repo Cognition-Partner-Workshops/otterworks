@@ -25,7 +25,7 @@
       <default-address-routing-type>ANYCAST</default-address-routing-type><default-queue-routing-type>ANYCAST</default-queue-routing-type>
     </address-setting></address-settings>
     <addresses>
-      <address name="HB.PAYMENT.STATUS"><anycast><queue name="HB.PAYMENT.STATUS" durable="true"/></anycast></address>
+      <address name="HB.PAYMENT.STATUS"><anycast><queue name="HB.PAYMENT.STATUS"><durable>true</durable></queue></anycast></address>
       <address name="HB.UNDLV"><anycast><queue name="HB.UNDLV"/></anycast></address>
       <address name="HB.EXPIRY"><anycast><queue name="HB.EXPIRY"/></anycast></address>
       <address name="HB.ACCOUNT.EVENTS.IN"><multicast><queue name="records-event-fanout"/></multicast></address>
