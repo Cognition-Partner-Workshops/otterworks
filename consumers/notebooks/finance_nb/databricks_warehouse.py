@@ -10,8 +10,14 @@ for parent in Path(__file__).resolve().parents:
 else:
     raise RuntimeError("consumer contract kit not found")
 
+import re
+
 from databricks_client import execute as _execute
 
 
-def execute(native_sql, parameters=()):
-    return _execute(native_sql, parameters, consumer="finance-notebook")
+def execute(native_sql, parameters=(), *, step="contract", label=None):
+    if label is not None:
+        if not re.fullmatch(r"[A-Za-z0-9_:.-]+", label):
+            raise ValueError("invalid statement label")
+        native_sql += f"\n/* q={label} */"
+    return _execute(native_sql, parameters, consumer="finance-notebook", step=step)
