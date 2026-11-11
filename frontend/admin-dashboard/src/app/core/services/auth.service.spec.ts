@@ -9,9 +9,11 @@ describe('AuthService', () => {
   let router: Router;
   let httpMock: HttpTestingController;
 
-  /** Fails the gateway login request so the service takes the offline mock path. */
-  const gatewayOffline = () =>
-    httpMock.expectOne('/api/v1/auth/login').error(new ProgressEvent('error'));
+  const gatewayOk = () =>
+    httpMock.expectOne('/api/v1/auth/login').flush({
+      accessToken: 'gateway.jwt.token',
+      user: { id: 'u-1', email: 'admin@otterworks.io', displayName: 'Admin User' },
+    });
 
   beforeEach(() => {
     localStorage.clear();
@@ -41,8 +43,8 @@ describe('AuthService', () => {
     service.login('admin@otterworks.io', 'admin123').subscribe(user => {
       loggedInUser = user;
     });
-    gatewayOffline();
-    tick(900);
+    gatewayOk();
+    tick();
     expect(loggedInUser).toBeTruthy();
     expect(loggedInUser!.email).toBe('admin@otterworks.io');
     expect(loggedInUser!.role).toBe('admin');
@@ -70,16 +72,16 @@ describe('AuthService', () => {
 
   it('should store token in localStorage after login', fakeAsync(() => {
     service.login('admin@otterworks.io', 'admin123').subscribe();
-    gatewayOffline();
-    tick(900);
+    gatewayOk();
+    tick();
     expect(localStorage.getItem('ow_admin_token')).toBeTruthy();
     expect(localStorage.getItem('ow_admin_user')).toBeTruthy();
   }));
 
   it('should clear auth state on logout', fakeAsync(() => {
     service.login('admin@otterworks.io', 'admin123').subscribe();
-    gatewayOffline();
-    tick(900);
+    gatewayOk();
+    tick();
     spyOn(router, 'navigate');
     service.logout();
     expect(service.isAuthenticated).toBeFalse();
@@ -92,8 +94,8 @@ describe('AuthService', () => {
     const emitted: (AuthUser | null)[] = [];
     service.currentUser$.subscribe(user => emitted.push(user));
     service.login('admin@otterworks.io', 'admin123').subscribe();
-    gatewayOffline();
-    tick(900);
+    gatewayOk();
+    tick();
     expect(emitted.length).toBeGreaterThanOrEqual(2);
     expect(emitted[emitted.length - 1]).toBeTruthy();
   }));
@@ -101,20 +103,31 @@ describe('AuthService', () => {
   it('should return token from getToken()', fakeAsync(() => {
     expect(service.getToken()).toBeNull();
     service.login('admin@otterworks.io', 'admin123').subscribe();
-    gatewayOffline();
-    tick(900);
-    expect(service.getToken()).toBeTruthy();
-    expect(service.getToken()!.startsWith('mock-jwt-token-')).toBeTrue();
+    gatewayOk();
+    tick();
+    expect(service.getToken()).toBe('gateway.jwt.token');
   }));
 
-  it('should reject login with empty password', fakeAsync(() => {
+  it('should surface rejected credentials as a login error', fakeAsync(() => {
     let error: Error | undefined;
-    service.login('admin@otterworks.io', '').subscribe({
+    service.login('admin@otterworks.io', 'wrong').subscribe({
       error: (e: Error) => { error = e; },
     });
-    gatewayOffline();
-    tick(900);
-    expect(error).toBeTruthy();
+    httpMock.expectOne('/api/v1/auth/login').flush({}, { status: 401, statusText: 'Unauthorized' });
+    tick();
     expect(error!.message).toBe('Invalid credentials');
+    expect(service.isAuthenticated).toBeFalse();
+  }));
+
+  it('should fail login without storing a token when the gateway is unreachable', fakeAsync(() => {
+    let error: Error | undefined;
+    service.login('admin@otterworks.io', 'admin123').subscribe({
+      error: (e: Error) => { error = e; },
+    });
+    httpMock.expectOne('/api/v1/auth/login').error(new ProgressEvent('error'));
+    tick();
+    expect(error).toBeTruthy();
+    expect(service.getToken()).toBeNull();
+    expect(service.currentUser).toBeNull();
   }));
 });
