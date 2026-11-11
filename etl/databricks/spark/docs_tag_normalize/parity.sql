@@ -1,10 +1,9 @@
+/* run=dbx-d1111 act=spark step=parity consumer=docs_tag_normalize */
 -- run_token=dbx-d1111 expires=2026-11-24
 -- Parity for docs_tag_normalize. Each statement is sent on its own via the Statement Execution API;
 -- the leading comment of each block is the required statement prefix.
 -- Canonical row: concat_ws('|', coalesce(cast(col AS STRING),'<NULL>') ...) over
 -- DOC_TAG_ID, DOCUMENT_ID, TAG, NORMALIZED_TAG; hash summed as DECIMAL(38,0) (no float rounding).
-
-/* run=dbx-d1111 act=spark step=parity consumer=docs_tag_normalize */
 SELECT 'before' AS side, count(*) AS row_count,
   sum(cast(conv(substr(md5(concat_ws('|', coalesce(cast(DOC_TAG_ID AS STRING),'<NULL>'), coalesce(cast(DOCUMENT_ID AS STRING),'<NULL>'), coalesce(cast(TAG AS STRING),'<NULL>'), coalesce(cast(NORMALIZED_TAG AS STRING),'<NULL>'))),1,15),16,10) AS DECIMAL(38,0))) AS row_hash
 FROM cpw.dbx_d1111_parity.documents__spark_docs_tag_normalize__spark_before
