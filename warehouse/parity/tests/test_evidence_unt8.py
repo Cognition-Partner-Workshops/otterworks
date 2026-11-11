@@ -4,6 +4,7 @@ import importlib.util
 from pathlib import Path
 import re
 import subprocess
+import unicodedata
 
 from jinja2 import Environment
 import pytest
@@ -98,6 +99,9 @@ def test_generated_unicode_is_reproducible():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     actual = (u.ROOT / 'warehouse/dbt/macros/unt8_python_unicode.sql').read_text()
+    recorded_version = re.search(r'; Unicode ([0-9.]+)\. #}', actual.splitlines()[0]).group(1)
+    if unicodedata.unidata_version != recorded_version:
+        pytest.skip(f'Committed macro uses Unicode {recorded_version}; runtime uses Unicode {unicodedata.unidata_version}')
     assert actual == module.macro()
     assert 'chr(28)' in actual and 'chr(133)' in actual and 'chr(12288)' in actual
     assert '"\\u00df":"SS"' in actual
