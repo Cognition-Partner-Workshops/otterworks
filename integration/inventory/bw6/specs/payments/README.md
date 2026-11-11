@@ -1,0 +1,14 @@
+# payments domain: BW6 process inventory (run tib-d1111)
+
+Source: `integration/legacy-bw6/Processes/payments/` at commit `5c2ba511babbfacaba94c93a10d3e6b0542a7c4c`.
+
+| Process | Spec | One line | Proposed classification |
+|---|---|---|---|
+| `halvergate.payments.instruction-intake` | [instruction-intake.md](instruction-intake.md) | `HB.PAYMENT.INSTRUCTIONS` → XA scope (`payment_inbox` + `payment_ledger` inserts, publish `HB.PAYMENT.STATUS`) → then calls the four processes below outside the scope [`integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L12-L58`](../../../../legacy-bw6/Processes/payments/instruction-intake.bwp#L12-L58) | needs-human-decision |
+| `halvergate.payments.validation-enrichment` | [validation-enrichment.md](validation-enrichment.md) | `HB.PAYMENT.VALIDATION` → `validation-enrichment.xsl` → `payment_validation` (AUTO_COMMIT) → `HB.PAYMENT.ENRICHED` [`integration/legacy-bw6/Processes/payments/validation-enrichment.bwp:L14-L29`](../../../../legacy-bw6/Processes/payments/validation-enrichment.bwp#L14-L29) | needs-human-decision |
+| `halvergate.payments.sanctions-screening` | [sanctions-screening.md](sanctions-screening.md) | `HB.SANCTIONS.REQUEST` → `sanctions-screening.xsl` → HTTP POST `${screening.url}` (v1 dev / v2 prod) → `screening_results` (AUTO_COMMIT) → `HB.SANCTIONS.RESPONSE` [`integration/legacy-bw6/Processes/payments/sanctions-screening.bwp:L14-L34`](../../../../legacy-bw6/Processes/payments/sanctions-screening.bwp#L14-L34) | needs-human-decision |
+| `halvergate.payments.currency-routing` | [currency-routing.md](currency-routing.md) | `HB.CURRENCY.ROUTING` → `currency-routing.xsl` (USD → DOMESTIC, else CROSS_BORDER) → `HB.CURRENCY.ROUTED`; no DB [`integration/legacy-bw6/Processes/payments/currency-routing.bwp:L14-L25`](../../../../legacy-bw6/Processes/payments/currency-routing.bwp#L14-L25) | needs-human-decision |
+| `halvergate.payments.status-update` | [status-update.md](status-update.md) | `HB.STATUS.UPDATE` → `payment-status.xsl` (3-level import chain, effective `ACCEPTED_RETAIL`) → `payment_status` (AUTO_COMMIT) → `HB.STATUS.PUBLISHED` [`integration/legacy-bw6/Processes/payments/status-update.bwp:L14-L29`](../../../../legacy-bw6/Processes/payments/status-update.bwp#L14-L29) | needs-human-decision |
+| `halvergate.payments.payment-returns` | [payment-returns.md](payment-returns.md) | `HB.PAYMENT.RETURNS` → `payment-returns.xsl` → `payment_returns` (AUTO_COMMIT) → `HB.RETURN.POSTED`; no caller in the project [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14-L29`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14-L29) | needs-human-decision |
+
+Citation format: [`path:Ln`](relative-link#Ln), 1-based lines at the base commit. Every citation in these files was mechanically checked: the file exists, the line is in range, and the cited line(s) contain the asserted token(s).

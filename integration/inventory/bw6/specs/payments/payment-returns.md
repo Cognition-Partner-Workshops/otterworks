@@ -1,0 +1,101 @@
+# payment-returns
+
+## 1. Summary
+
+- Declared name: `halvergate.payments.payment-returns` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L2`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L2).
+- File: `integration/legacy-bw6/Processes/payments/payment-returns.bwp`.
+- Description: receives a message from queue `HB.PAYMENT.RETURNS` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14), transforms it with `Transforms/payment-returns.xsl` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L19`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L19), inserts a row into `payment_returns` with `AUTO_COMMIT` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L24`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L24) and publishes to queue `HB.RETURN.POSTED` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L29`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L29). The process has no transaction scope [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L11-L32`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L11-L32).
+- **Inference** (from the destination, table and stylesheet names only): this is the `payment returns` step of the payments domain. Nothing in the project states a business purpose.
+
+## 2. Trigger / starter activity
+
+| Item | Value | Evidence |
+|---|---|---|
+| Activity | `Receive`, type `bw.jms.JMSQueueReceiver` | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L13-L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L13-L14) |
+| Destination | queue `HB.PAYMENT.RETURNS` | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14) |
+| Connection | `SharedResources/EmsConnection.sharedresource` | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14) |
+| Ack mode | `CLIENT_ACKNOWLEDGE` | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14) |
+| Delivery mode | `PERSISTENT` | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14) |
+| Selector | empty | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14) |
+| Durable subscriber | empty (queue receiver) | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14) |
+| Sequencing key | `accountId` | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14) |
+| Input variable | `Receive`, element `request`, schema `Schemas/request.xsd` | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L3-L4`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L3-L4) |
+
+- No producer to `HB.PAYMENT.RETURNS` exists in the project. Each destination name occurs exactly once across all `integration/legacy-bw6/Processes/**/*.bwp` files (this receiver). The name appears elsewhere only in the reference/corpus metadata: [`integration/legacy-bw6/reference/cases.json:L192`](../../../../legacy-bw6/reference/cases.json#L192) [`integration/corpus/payments.payment-returns/flow.json:L5`](../../../../corpus/payments.payment-returns/flow.json#L5).
+- The schema declares `request` in namespace `urn:halvergate:integration:request`, qualified [`integration/legacy-bw6/Schemas/request.xsd:L2`](../../../../legacy-bw6/Schemas/request.xsd#L2). The recorded inputs use an un-namespaced `<request>` [`integration/legacy-bw6/reference/inputs/payments.payment-returns/payment-returns-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.payment-returns/payment-returns-01.xml#L2). **Inference:** schema validation, if enforced, would not match.
+
+## 3. Transports
+
+| Direction | Endpoint | Activity | Shared resource | Evidence |
+|---|---|---|---|---|
+| In | JMS queue `HB.PAYMENT.RETURNS` | `Receive` | EmsConnection | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14) |
+| Out | JDBC `INSERT INTO payment_returns (flow,request_id,account_id,amount,currency,status) VALUES (?,?,?,?,?,?)`, commitMode `AUTO_COMMIT` | `Insertpaymentreturns` (`bw.jdbc.JDBCUpdate`) | LedgerJdbc | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L23-L24`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L23-L24) |
+| Out | JMS queue `HB.RETURN.POSTED` (QUEUE, PERSISTENT, properties `requestId,accountId,JMSXGroupID,sequence`) | `Publish` (`bw.jms.JMSSendMessage`) | EmsConnection | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L29`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L29) |
+| Out (on fault) | JMS queue `HB.UNDLV` | `RejectDelivery` | (fault handler) | [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L7`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L7) |
+
+Shared resource settings:
+- **EmsConnection**: url `tcp://broker:61616` (literal), user/password `${EMS_USER}`/`${EMS_PASSWORD}`, clientID `halvergate-records`, xaConnectionFactory `XAConnectionFactory`, deliveryMode `PERSISTENT`, durableSubscription `records-event-fanout`, maxRedelivery `3`, undeliveredQueue `HB.UNDLV` [`integration/legacy-bw6/SharedResources/EmsConnection.sharedresource:L2`](../../../../legacy-bw6/SharedResources/EmsConnection.sharedresource#L2).
+- **LedgerJdbc**: `org.postgresql.xa.PGXADataSource`, `jdbc:postgresql://integration-db:5432/integration`, `${DB_USER}`/`${DB_PASSWORD}`, transactionType `XA` [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2). The resource is XA-capable, but this process uses it with `AUTO_COMMIT` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L24`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L24).
+- Table `payment_returns`: columns flow, request_id, account_id, amount `numeric(18,2)`, currency, status, primary key `(flow, request_id)` [`integration/legacy-bw6/Database/schema.sql:L51-L59`](../../../../legacy-bw6/Database/schema.sql#L51-L59).
+- Parameter binding and message mapping are **not present in the project** (the activity config has none). **Inference** from the reference recorder: the body is the transform's `<body>` [`integration/legacy-bw6/reference/record.py:L56`](../../../../legacy-bw6/reference/record.py#L56), the properties come from the input [`integration/legacy-bw6/reference/record.py:L55`](../../../../legacy-bw6/reference/record.py#L55), and row values come from the request plus the transform result [`integration/legacy-bw6/reference/record.py:L65-L68`](../../../../legacy-bw6/reference/record.py#L65-L68).
+
+## 4. Transaction boundaries
+
+- No `bpws:scope` and no transaction declaration: the activities sit directly in the `Execute` sequence [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L11`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L11).
+- Order: Receive → MapRecord → Insertpaymentreturns (`AUTO_COMMIT`, committed on execution) → Publish [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L13-L29`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L13-L29).
+- **Not covered:** the DB insert commits before the publish. **Inference:** a failure in Publish leaves the `payment_returns` row committed with no outbound message. Redelivery then re-runs the insert, which violates the `(flow, request_id)` primary key [`integration/legacy-bw6/Database/schema.sql:L51-L59`](../../../../legacy-bw6/Database/schema.sql#L51-L59), so the message ends in `HB.UNDLV`.
+
+## 5. XSLT chain
+
+1. `MapRecord` (`bw.xml.TransformXML`), stylesheet `Transforms/payment-returns.xsl`, input `Receive` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L18-L19`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L18-L19).
+
+| Stylesheet | Imports | Templates / role |
+|---|---|---|
+| `Transforms/payment-returns.xsl` | `common/receipt.xsl` [`integration/legacy-bw6/Transforms/payment-returns.xsl:L3`](../../../../legacy-bw6/Transforms/payment-returns.xsl#L3) | overrides param `status` with `'PAYMENT_RETURNS'` [`integration/legacy-bw6/Transforms/payment-returns.xsl:L4`](../../../../legacy-bw6/Transforms/payment-returns.xsl#L4); defines no templates of its own [`integration/legacy-bw6/Transforms/payment-returns.xsl:L1-L5`](../../../../legacy-bw6/Transforms/payment-returns.xsl#L1-L5) |
+| `Transforms/common/receipt.xsl` | none | `xsl:output` xml, no declaration [`integration/legacy-bw6/Transforms/common/receipt.xsl:L3`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L3); param `status`='RECEIVED' [`integration/legacy-bw6/Transforms/common/receipt.xsl:L4`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L4); named `status` → `$status` [`integration/legacy-bw6/Transforms/common/receipt.xsl:L5`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L5); `amount` → `@amount` [`integration/legacy-bw6/Transforms/common/receipt.xsl:L6`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L6); `date` → `@timestamp` [`integration/legacy-bw6/Transforms/common/receipt.xsl:L7`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L7); `/` → apply to `request` [`integration/legacy-bw6/Transforms/common/receipt.xsl:L8`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L8); `request` → `<result id account currency sequence>` with `<status>`, `<amount>`, `<timestamp>` and `<body>` = `flow|id|account|status|amount|timestamp` [`integration/legacy-bw6/Transforms/common/receipt.xsl:L9-L16`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L9-L16) |
+
+- Effective output: status is always `PAYMENT_RETURNS`, a constant derived from the flow name. Corpus: [`integration/corpus/payments.payment-returns/flow.json:L60`](../../../../corpus/payments.payment-returns/flow.json#L60) [`integration/corpus/payments.payment-returns/flow.json:L70`](../../../../corpus/payments.payment-returns/flow.json#L70). The stylesheet name matches the process, so there is no mismatch.
+
+## 6. Custom Java activities
+
+None. The activities are only JMS, TransformXML, JDBC and JMSConfirm [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L1-L33`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L1-L33). The project's custom Java (`FeeActivities` [`integration/legacy-bw6/src/com/halvergate/integration/FeeActivities.java:L8`](../../../../legacy-bw6/src/com/halvergate/integration/FeeActivities.java#L8)) is referenced only by `Processes/fees-billing/daily-fee.bwp` and `month-end-summary.bwp` (from a project-wide grep for `FeeActivities`/`bw.java`). The reference model has Java branches only for kinds `java-cache` and `rounding` [`integration/legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java:L24-L29`](../../../../legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java#L24-L29), and this flow's kind is "" [`integration/legacy-bw6/reference/cases.json:L194`](../../../../legacy-bw6/reference/cases.json#L194).
+
+## 7. Error paths
+
+- `catchAll` → `RollbackAndRedeliver` → `RejectDelivery` (`bw.jms.JMSConfirm`, `acknowledge=false`, `maxRedelivery=3`, `undeliveredQueue=HB.UNDLV`) [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L5-L10`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L5-L10). EmsConnection uses the same values [`integration/legacy-bw6/SharedResources/EmsConnection.sharedresource:L2`](../../../../legacy-bw6/SharedResources/EmsConnection.sharedresource#L2). Test broker: DLA `HB.UNDLV`, `max-delivery-attempts` 4 [`integration/fixture/broker.xml:L20-L21`](../../../../fixture/broker.xml#L20-L21).
+- No success-path `JMSConfirm` (acknowledge=true) exists in `Execute` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L11-L32`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L11-L32). How a `CLIENT_ACKNOWLEDGE` message gets acknowledged on success is **not present in the project**.
+- Failure in Publish after the insert: **Inference:** the row is already committed (`AUTO_COMMIT`), redelivery hits a duplicate key on `(flow, request_id)`, and after the redelivery limit the message goes to `HB.UNDLV` with no outbound message ever sent.
+
+## 8. Module properties per environment
+
+| Property | Used via | dev | prod | Differs? |
+|---|---|---|---|---|
+| `${EMS_USER}` / `${EMS_PASSWORD}` | EmsConnection [`integration/legacy-bw6/SharedResources/EmsConnection.sharedresource:L2`](../../../../legacy-bw6/SharedResources/EmsConnection.sharedresource#L2) | not present in `dev.substvar` [`integration/legacy-bw6/Profiles/dev.substvar:L2`](../../../../legacy-bw6/Profiles/dev.substvar#L2) | not present in `prod.substvar` [`integration/legacy-bw6/Profiles/prod.substvar:L2`](../../../../legacy-bw6/Profiles/prod.substvar#L2) | n/a. **Inference:** OS environment |
+| `${DB_USER}` / `${DB_PASSWORD}` | LedgerJdbc [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2) | not present [`integration/legacy-bw6/Profiles/dev.substvar:L2`](../../../../legacy-bw6/Profiles/dev.substvar#L2) | not present [`integration/legacy-bw6/Profiles/prod.substvar:L2`](../../../../legacy-bw6/Profiles/prod.substvar#L2) | n/a |
+| broker URL / JDBC URL | literals [`integration/legacy-bw6/SharedResources/EmsConnection.sharedresource:L2`](../../../../legacy-bw6/SharedResources/EmsConnection.sharedresource#L2) [`integration/legacy-bw6/SharedResources/LedgerJdbc.sharedresource:L2`](../../../../legacy-bw6/SharedResources/LedgerJdbc.sharedresource#L2) | same | same | no (not profiled) |
+
+No `%%…%%` variables are used: a grep for `%%` across `integration/legacy-bw6/` returns nothing. The process references no `${…}` profile variable directly [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L1-L33`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L1-L33).
+
+## 9. Callers and callees
+
+- **Callees:** none. The process has no `callprocess` activity [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L11-L32`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L11-L32).
+- **Callers:** none. No call-process in the project names `payments.payment-returns` (searched all `integration/legacy-bw6/Processes/**/*.bwp`; the only call-process edges are `payments/instruction-intake.bwp` [`integration/legacy-bw6/Processes/payments/instruction-intake.bwp:L43-L58`](../../../../legacy-bw6/Processes/payments/instruction-intake.bwp#L43-L58), `account-events/event-fanout.bwp` and `statements-documents/statement-drop.bwp`). **Orphan at the call level.**
+- **Message-level:** `HB.PAYMENT.RETURNS`: no producer in the project. `HB.RETURN.POSTED`: no consumer in the project. Each name occurs exactly once among the `<destination>` values of all 24 `.bwp` files. `HB.UNDLV`: written by every process's fault handler, with no consumer.
+
+## 10. Reference evidence
+
+- Inputs: [`integration/legacy-bw6/reference/inputs/payments.payment-returns/payment-returns-01.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.payment-returns/payment-returns-01.xml#L2) and [`integration/legacy-bw6/reference/inputs/payments.payment-returns/payment-returns-02.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.payment-returns/payment-returns-02.xml#L2), account `CHK-1042`. In case 02 the embedded ISO 20022 amount has `Ccy="USD"` while the request says EUR [`integration/legacy-bw6/reference/inputs/payments.payment-returns/payment-returns-02.xml:L2`](../../../../legacy-bw6/reference/inputs/payments.payment-returns/payment-returns-02.xml#L2).
+- `cases.json`: id, stylesheet, queues, kind "", table `payment_returns` [`integration/legacy-bw6/reference/cases.json:L187-L196`](../../../../legacy-bw6/reference/cases.json#L187-L196).
+- Corpus `flow.json`: two inputs on `HB.PAYMENT.RETURNS` [`integration/corpus/payments.payment-returns/flow.json:L5`](../../../../corpus/payments.payment-returns/flow.json#L5) [`integration/corpus/payments.payment-returns/flow.json:L20`](../../../../corpus/payments.payment-returns/flow.json#L20), capture of `HB.RETURN.POSTED` and `payment_returns` [`integration/corpus/payments.payment-returns/flow.json:L41`](../../../../corpus/payments.payment-returns/flow.json#L41), expected bodies [`integration/corpus/payments.payment-returns/flow.json:L60`](../../../../corpus/payments.payment-returns/flow.json#L60) [`integration/corpus/payments.payment-returns/flow.json:L70`](../../../../corpus/payments.payment-returns/flow.json#L70), expected rows with status `PAYMENT_RETURNS` [`integration/corpus/payments.payment-returns/flow.json:L87`](../../../../corpus/payments.payment-returns/flow.json#L87) [`integration/corpus/payments.payment-returns/flow.json:L95`](../../../../corpus/payments.payment-returns/flow.json#L95), and no faults [`integration/corpus/payments.payment-returns/flow.json:L101`](../../../../corpus/payments.payment-returns/flow.json#L101).
+- `record.py` expectations come from the stylesheet plus source configuration, not from a BW runtime capture [`integration/legacy-bw6/reference/record.py:L1`](../../../../legacy-bw6/reference/record.py#L1).
+- `LegacyReference.java`: no flow-specific branch. A plain Saxon transform [`integration/legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java:L20`](../../../../legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java#L20) [`integration/legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java:L30`](../../../../legacy-bw6/reference/src/main/java/com/halvergate/reference/LegacyReference.java#L30).
+
+## 11. Conversion notes
+
+**Proposed classification: `needs-human-decision`.**
+
+Decision candidates:
+1. **Nothing calls it / orphan:** no call-process names it and no project process produces to `HB.PAYMENT.RETURNS` [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14). **Inference:** it is either fed externally or dead. Confirm that an external producer exists.
+2. **Insert-then-publish gap:** `AUTO_COMMIT` insert [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L24`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L24) before the publish [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L29`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L29), with the primary key `(flow, request_id)` [`integration/legacy-bw6/Database/schema.sql:L51-L59`](../../../../legacy-bw6/Database/schema.sql#L51-L59). Decide on idempotency and outbox semantics, or a deliberate move to an XA/local transaction.
+
+Straight-conversion parts: queue receive with `accountId` sequencing [`integration/legacy-bw6/Processes/payments/payment-returns.bwp:L14`](../../../../legacy-bw6/Processes/payments/payment-returns.bwp#L14), a constant-status receipt transform [`integration/legacy-bw6/Transforms/common/receipt.xsl:L14`](../../../../legacy-bw6/Transforms/common/receipt.xsl#L14), a single insert and a single publish.
