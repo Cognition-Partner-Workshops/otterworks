@@ -1,0 +1,265 @@
+{
+  "scope": "default local fixture ONLY; not live parity",
+  "aqe": "true",
+  "edge_tests": "passed",
+  "before_schema": "struct<ALERT_ID:bigint,USER_ID:bigint,SCORE:double,Z_SCORE:double>",
+  "after_schema": "struct<ALERT_ID:bigint,USER_ID:bigint,SCORE:double,Z_SCORE:double>",
+  "before": {
+    "count": 200000,
+    "hash": "115319834002649889538599"
+  },
+  "run1": {
+    "count": 200000,
+    "hash": "115430313183348309472891"
+  },
+  "run2": {
+    "count": 200000,
+    "hash": "115430313183348309472891"
+  },
+  "before_minus_after": [
+    {
+      "ALERT_ID": 23,
+      "USER_ID": 23,
+      "SCORE": 48.61,
+      "Z_SCORE": 0.8022499753600808
+    },
+    {
+      "ALERT_ID": 356,
+      "USER_ID": 356,
+      "SCORE": 42.94,
+      "Z_SCORE": 0.4623905590464119
+    },
+    {
+      "ALERT_ID": 463,
+      "USER_ID": 463,
+      "SCORE": 14.64,
+      "Z_SCORE": -1.2339095259054094
+    },
+    {
+      "ALERT_ID": 509,
+      "USER_ID": 509,
+      "SCORE": 13.23,
+      "Z_SCORE": -1.3184248304913482
+    },
+    {
+      "ALERT_ID": 713,
+      "USER_ID": 713,
+      "SCORE": 37.63,
+      "Z_SCORE": 0.1441095183717065
+    },
+    {
+      "ALERT_ID": 842,
+      "USER_ID": 842,
+      "SCORE": 17.76,
+      "Z_SCORE": -1.0468969370343957
+    },
+    {
+      "ALERT_ID": 1257,
+      "USER_ID": 1257,
+      "SCORE": 23.63,
+      "Z_SCORE": -0.6950495342546364
+    },
+    {
+      "ALERT_ID": 1383,
+      "USER_ID": 1383,
+      "SCORE": 66.58,
+      "Z_SCORE": 1.879370559338322
+    },
+    {
+      "ALERT_ID": 1479,
+      "USER_ID": 1479,
+      "SCORE": 47.1,
+      "Z_SCORE": 0.7117406775410968
+    },
+    {
+      "ALERT_ID": 1712,
+      "USER_ID": 1712,
+      "SCORE": 5.55,
+      "Z_SCORE": -1.7787635107892277
+    },
+    {
+      "ALERT_ID": 1788,
+      "USER_ID": 1788,
+      "SCORE": 36.0,
+      "Z_SCORE": 0.04640742867306787
+    },
+    {
+      "ALERT_ID": 2057,
+      "USER_ID": 2057,
+      "SCORE": 40.47,
+      "Z_SCORE": 0.31433892619019294
+    },
+    {
+      "ALERT_ID": 2447,
+      "USER_ID": 2447,
+      "SCORE": 61.66,
+      "Z_SCORE": 1.5844660922724931
+    },
+    {
+      "ALERT_ID": 2666,
+      "USER_ID": 2666,
+      "SCORE": 23.25,
+      "Z_SCORE": -0.7178267085402086
+    },
+    {
+      "ALERT_ID": 2699,
+      "USER_ID": 2699,
+      "SCORE": 19.5,
+      "Z_SCORE": -0.9426014547794075
+    },
+    {
+      "ALERT_ID": 2860,
+      "USER_ID": 2860,
+      "SCORE": 31.93,
+      "Z_SCORE": -0.19754809591187608
+    },
+    {
+      "ALERT_ID": 3028,
+      "USER_ID": 3028,
+      "SCORE": 0.0,
+      "Z_SCORE": -2.1114301352232423
+    },
+    {
+      "ALERT_ID": 3151,
+      "USER_ID": 3151,
+      "SCORE": 15.33,
+      "Z_SCORE": -1.1925509725973968
+    },
+    {
+      "ALERT_ID": 3152,
+      "USER_ID": 3152,
+      "SCORE": 25.01,
+      "Z_SCORE": -0.6123324276386111
+    },
+    {
+      "ALERT_ID": 3328,
+      "USER_ID": 3328,
+      "SCORE": 16.88,
+      "Z_SCORE": -1.0996440774851945
+    }
+  ],
+  "after_minus_before": [
+    {
+      "ALERT_ID": 85,
+      "USER_ID": 85,
+      "SCORE": 39.89,
+      "Z_SCORE": 0.27957376543852774
+    },
+    {
+      "ALERT_ID": 169,
+      "USER_ID": 169,
+      "SCORE": 62.33,
+      "Z_SCORE": 1.6246258469339538
+    },
+    {
+      "ALERT_ID": 173,
+      "USER_ID": 173,
+      "SCORE": 20.3,
+      "Z_SCORE": -0.8946495089150995
+    },
+    {
+      "ALERT_ID": 177,
+      "USER_ID": 177,
+      "SCORE": 25.61,
+      "Z_SCORE": -0.5763684682403798
+    },
+    {
+      "ALERT_ID": 350,
+      "USER_ID": 350,
+      "SCORE": 32.31,
+      "Z_SCORE": -0.1747709216263264
+    },
+    {
+      "ALERT_ID": 777,
+      "USER_ID": 777,
+      "SCORE": 13.06,
+      "Z_SCORE": -1.328614618987599
+    },
+    {
+      "ALERT_ID": 913,
+      "USER_ID": 913,
+      "SCORE": 15.59,
+      "Z_SCORE": -1.176966590191546
+    },
+    {
+      "ALERT_ID": 999,
+      "USER_ID": 999,
+      "SCORE": 57.97,
+      "Z_SCORE": 1.3632877419731668
+    },
+    {
+      "ALERT_ID": 1050,
+      "USER_ID": 1050,
+      "SCORE": 71.26,
+      "Z_SCORE": 2.1598894426449236
+    },
+    {
+      "ALERT_ID": 1719,
+      "USER_ID": 1719,
+      "SCORE": 26.44,
+      "Z_SCORE": -0.5266183244061015
+    },
+    {
+      "ALERT_ID": 1989,
+      "USER_ID": 1989,
+      "SCORE": 39.74,
+      "Z_SCORE": 0.2705827755889595
+    },
+    {
+      "ALERT_ID": 3509,
+      "USER_ID": 3509,
+      "SCORE": 21.13,
+      "Z_SCORE": -0.8448993650808214
+    },
+    {
+      "ALERT_ID": 3801,
+      "USER_ID": 3801,
+      "SCORE": 37.36,
+      "Z_SCORE": 0.12792573664247475
+    },
+    {
+      "ALERT_ID": 4344,
+      "USER_ID": 4344,
+      "SCORE": 35.05,
+      "Z_SCORE": -0.010535507040878073
+    },
+    {
+      "ALERT_ID": 4640,
+      "USER_ID": 4640,
+      "SCORE": 32.69,
+      "Z_SCORE": -0.15199374734075352
+    },
+    {
+      "ALERT_ID": 4665,
+      "USER_ID": 4665,
+      "SCORE": 18.24,
+      "Z_SCORE": -1.0181257695158386
+    },
+    {
+      "ALERT_ID": 4984,
+      "USER_ID": 4984,
+      "SCORE": 13.62,
+      "Z_SCORE": -1.2950482568825439
+    },
+    {
+      "ALERT_ID": 5494,
+      "USER_ID": 5494,
+      "SCORE": 29.94,
+      "Z_SCORE": -0.3168285612495065
+    },
+    {
+      "ALERT_ID": 5992,
+      "USER_ID": 5992,
+      "SCORE": 13.1,
+      "Z_SCORE": -1.3262170216943807
+    },
+    {
+      "ALERT_ID": 6043,
+      "USER_ID": 6043,
+      "SCORE": 1.06,
+      "Z_SCORE": -2.047893806953067
+    }
+  ],
+  "exact_parity": false,
+  "idempotent": true
+}

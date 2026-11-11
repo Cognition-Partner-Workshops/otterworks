@@ -1,0 +1,144 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "before_load_statement_id": "01f1dd86-c59a-1d3d-9280-f346f01abf4c",
+  "local_original_fingerprint": {
+    "n": 200,
+    "h": "111302969519797801821"
+  },
+  "job_id": "718985920991406",
+  "run_ids": [
+    "335490112883267",
+    "937972557074798"
+  ],
+  "parity_statement_ids": [
+    "01f1dd87-acc7-160b-9a8c-71f8c5db5ba7",
+    "01f1dd87-ac01-1e7f-81e1-08ed15cb2ded",
+    "01f1dd87-ad45-1636-81e6-040612c24b64",
+    "01f1dd87-adb5-1448-bece-1bb82c13f2fc"
+  ],
+  "idempotence_statement_ids": [
+    "01f1dd87-ac01-1e7f-81e1-08ed15cb2ded",
+    "01f1dd87-c6a6-1285-993e-9d68c4d18e33",
+    "01f1dd87-c73d-1b9f-9377-4667d7b74d4a"
+  ],
+  "prior_failed_run_ids": [
+    "924222549327122"
+  ],
+  "prior_failure_evidence": "serverless-failures.json",
+  "run1_state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "run1_task_runs": [
+    {
+      "run_id": 978903424574765,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "FAILED",
+        "state_message": "Workload failed, see run output for details",
+        "user_cancelled_or_timedout": false
+      },
+      "sql_output": null
+    },
+    {
+      "run_id": 533441401533883,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "sql_output": null
+    },
+    {
+      "run_id": 870739518771452,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "FAILED",
+        "state_message": "Workload failed, see run output for details",
+        "user_cancelled_or_timedout": false
+      },
+      "sql_output": null
+    }
+  ],
+  "run1_fingerprint": [
+    "200",
+    "111302969519797801821"
+  ],
+  "run2_state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "run2_task_runs": [
+    {
+      "run_id": 286849995578268,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "sql_output": null
+    }
+  ],
+  "run2_fingerprint": [
+    "200",
+    "111302969519797801821"
+  ],
+  "status": "green",
+  "parity": "PASS: input count/hash, output count/hash and EXCEPT ALL both ways",
+  "parity_statement_id": "01f1dd87-ac01-1e7f-81e1-08ed15cb2ded",
+  "idempotence": "PASS: two real serverless runs, identical count/hash; full replacement, not MERGE; numOutputRows identical in both Delta history operations; MERGE metrics not applicable",
+  "ordering_statement_id": "01f1dd87-de4d-136d-b184-5f88348743de",
+  "ordering": "PASS: ordered read matches all 200 original Spark keys",
+  "delta_operations": [
+    {
+      "version": "1",
+      "operation": "CREATE OR REPLACE TABLE AS SELECT",
+      "operationMetrics": {
+        "numFiles": "1",
+        "numRemovedFiles": "1",
+        "numRemovedBytes": "5072",
+        "numDeletionVectorsRemoved": "0",
+        "numOutputRows": "200",
+        "numOutputBytes": "5080"
+      },
+      "job": {
+        "jobName": "dbx-d1111-spark-audit_archive_resort",
+        "jobOwnerId": "77743380186763",
+        "workspaceId": "7474652505890469",
+        "jobId": "718985920991406",
+        "jobRunId": "937972557074798",
+        "runId": "286849995578268",
+        "triggerType": "manual"
+      }
+    },
+    {
+      "version": "0",
+      "operation": "CREATE OR REPLACE TABLE AS SELECT",
+      "operationMetrics": {
+        "numFiles": "1",
+        "numRemovedFiles": "0",
+        "numRemovedBytes": "0",
+        "numDeletionVectorsRemoved": "0",
+        "numOutputRows": "200",
+        "numOutputBytes": "5072"
+      },
+      "job": {
+        "jobName": "dbx-d1111-spark-audit_archive_resort",
+        "jobOwnerId": "77743380186763",
+        "workspaceId": "7474652505890469",
+        "jobId": "718985920991406",
+        "jobRunId": "335490112883267",
+        "runId": "533441401533883",
+        "triggerType": "retry"
+      }
+    }
+  ],
+  "job_sql_statement_ids": []
+}

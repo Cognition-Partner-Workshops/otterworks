@@ -1,0 +1,22 @@
+{
+  "source": "etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala",
+  "target": "cpw.dbx_d1111_after.audit__spark_compliance_flag_rules",
+  "status": "red",
+  "red_reason": "Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.",
+  "first_failure": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14",
+  "first_failure_statement_id": "01f1dd84-1f73-1d90-b5cf-bf3587046203",
+  "corrected_parity": "BLOCKED: Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.",
+  "parity_statement_id": null,
+  "idempotence": "BLOCKED: no complete live input contract; no job run submitted",
+  "idempotence_statement_ids": [],
+  "job_id": "763368305743207",
+  "job_run_ids": [],
+  "executor_hours": 0.010249167,
+  "baseline_app_id": "app-20261110202929-0029",
+  "dbu_after": "PENDING: no live job run; never a zero-cost claim",
+  "pr": "https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756",
+  "local_fixture_exact_parity": true,
+  "local_fixture_idempotence": true,
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24"
+}

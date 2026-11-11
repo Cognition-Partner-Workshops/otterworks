@@ -1,0 +1,8 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "act": "spark",
+  "job_id": 763368305743207,
+  "run_ids": [],
+  "run_status": "BLOCKED: Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity."
+}

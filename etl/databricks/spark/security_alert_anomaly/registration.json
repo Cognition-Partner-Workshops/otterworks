@@ -1,0 +1,8 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "act": "spark",
+  "job_id": 859825881744874,
+  "run_ids": [],
+  "run_status": "BLOCKED: Missing SCORE and ALERT_TYPE in audit__security_alert and audit__stg_security_alert; categorical SEVERITY_CD is not a numeric anomaly score. Exact local Z_SCORE parity also remains failed."
+}

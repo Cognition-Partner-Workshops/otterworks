@@ -1,0 +1,13 @@
+{
+  "source_equality_statement_id": "01f1dd86-b880-1559-8506-381eaa91a521",
+  "source": "cpw.dbx_d1111_after.audit__spark_audit_daily_summary",
+  "source_count_hash": [
+    "24",
+    "11889509446007135789"
+  ],
+  "local_count_hash": [
+    "24",
+    "11889509446007135789"
+  ],
+  "equality": "PASS"
+}

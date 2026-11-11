@@ -1,0 +1,108 @@
+{
+  "paired_rows": 200000,
+  "max_abs_delta": 1.5720758028692217e-13,
+  "different_rows": 199859,
+  "paired_samples": [
+    {
+      "ALERT_ID": 1,
+      "before_z_score": -0.7232213024499493,
+      "after_z_score": -0.7232213024499963
+    },
+    {
+      "ALERT_ID": 2,
+      "before_z_score": -0.6243204141047018,
+      "after_z_score": -0.6243204141047445
+    },
+    {
+      "ALERT_ID": 3,
+      "before_z_score": 0.47258034754258904,
+      "after_z_score": 0.4725803475425951
+    },
+    {
+      "ALERT_ID": 4,
+      "before_z_score": 0.9461058129531681,
+      "after_z_score": 0.9461058129531951
+    },
+    {
+      "ALERT_ID": 5,
+      "before_z_score": -0.09025561704036517,
+      "after_z_score": -0.09025561704038407
+    },
+    {
+      "ALERT_ID": 6,
+      "before_z_score": -1.1853581807177425,
+      "after_z_score": -1.1853581807178097
+    },
+    {
+      "ALERT_ID": 7,
+      "before_z_score": -0.8982459048548723,
+      "after_z_score": -0.8982459048549271
+    },
+    {
+      "ALERT_ID": 8,
+      "before_z_score": 0.5193334947603425,
+      "after_z_score": 0.5193334947603506
+    },
+    {
+      "ALERT_ID": 9,
+      "before_z_score": 0.1027509650636936,
+      "after_z_score": 0.10275096506368325
+    },
+    {
+      "ALERT_ID": 10,
+      "before_z_score": -0.00274331583790365,
+      "after_z_score": -0.002743315837918678
+    },
+    {
+      "ALERT_ID": 11,
+      "before_z_score": -1.0564873262072683,
+      "after_z_score": -1.05648732620733
+    },
+    {
+      "ALERT_ID": 12,
+      "before_z_score": 0.3622908720545557,
+      "after_z_score": 0.3622908720545568
+    },
+    {
+      "ALERT_ID": 13,
+      "before_z_score": -0.038707275236175565,
+      "after_z_score": -0.03870727523619219
+    },
+    {
+      "ALERT_ID": 14,
+      "before_z_score": -0.47986517718831,
+      "after_z_score": -0.47986517718834615
+    },
+    {
+      "ALERT_ID": 15,
+      "before_z_score": -0.1465991534309909,
+      "after_z_score": -0.1465991534310123
+    },
+    {
+      "ALERT_ID": 16,
+      "before_z_score": 1.5802702970093618,
+      "after_z_score": 1.580270297009417
+    },
+    {
+      "ALERT_ID": 17,
+      "before_z_score": 0.1339197298755294,
+      "after_z_score": 0.1339197298755204
+    },
+    {
+      "ALERT_ID": 18,
+      "before_z_score": -1.3651779777091015,
+      "after_z_score": -1.365177977709177
+    },
+    {
+      "ALERT_ID": 19,
+      "before_z_score": -0.705838722074118,
+      "after_z_score": -0.7058387220741642
+    },
+    {
+      "ALERT_ID": 20,
+      "before_z_score": 0.17467888386023744,
+      "after_z_score": 0.17467888386023028
+    }
+  ],
+  "verdict": "FAIL: exact comparison; no tolerance applied and no correction claimed"
+}

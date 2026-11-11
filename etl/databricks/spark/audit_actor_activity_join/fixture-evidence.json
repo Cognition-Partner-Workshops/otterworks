@@ -1,0 +1,23 @@
+{
+  "scope": "default local fixture ONLY; not live parity",
+  "aqe": "true",
+  "edge_tests": "passed",
+  "before_schema": "struct<USER_KEY:bigint,AUDIT_EVENT_ID:bigint,EVENT_AT:timestamp,ACTIVITY_DATE:date,ACTION_COUNT:bigint,USER_AGENT:string,LOGIN_TEXT_BYTES:int>",
+  "after_schema": "struct<USER_KEY:bigint,AUDIT_EVENT_ID:bigint,EVENT_AT:timestamp,ACTIVITY_DATE:date,ACTION_COUNT:bigint,USER_AGENT:string,LOGIN_TEXT_BYTES:int>",
+  "before": {
+    "count": 466296,
+    "hash": "269021183884531047825102"
+  },
+  "run1": {
+    "count": 466296,
+    "hash": "269021183884531047825102"
+  },
+  "run2": {
+    "count": 466296,
+    "hash": "269021183884531047825102"
+  },
+  "before_minus_after": [],
+  "after_minus_before": [],
+  "exact_parity": true,
+  "idempotent": true
+}

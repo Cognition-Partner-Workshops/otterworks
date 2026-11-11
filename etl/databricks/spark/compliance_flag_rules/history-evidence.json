@@ -1,0 +1,1069 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "baseline": {
+    "app_id": "app-20261110202929-0029",
+    "start": "2026-11-10T20:29:29.185Z",
+    "end": "2026-11-10T20:29:39.470Z",
+    "runtime_seconds": 10.285,
+    "executor_count": 6,
+    "executor_hours": 0.010249167,
+    "core_hours": 0.010249167,
+    "failed_tasks": 0,
+    "memory_bytes_spilled": 0,
+    "disk_bytes_spilled": 0,
+    "output_files_written": 3
+  },
+  "baseline_is_packaged": true,
+  "local_fixture_applications": [
+    {
+      "application": {
+        "id": "app-20261111040734-0005",
+        "name": "compliance_flag_rules",
+        "attempts": [
+          {
+            "startTime": "2026-11-11T04:07:33.794GMT",
+            "endTime": "1969-12-31T23:59:59.999GMT",
+            "lastUpdated": "2026-11-11T04:07:49.712GMT",
+            "duration": 0,
+            "sparkUser": "spark",
+            "completed": false,
+            "appSparkVersion": "3.5.3",
+            "startTimeEpoch": 1794370053794,
+            "endTimeEpoch": -1,
+            "lastUpdatedEpoch": 1794370069712
+          }
+        ]
+      },
+      "executors": [
+        {
+          "id": "0",
+          "hostPort": "<local>",
+          "isActive": true,
+          "rddBlocks": 0,
+          "memoryUsed": 0,
+          "diskUsed": 0,
+          "totalCores": 1,
+          "maxTasks": 1,
+          "activeTasks": 0,
+          "failedTasks": 0,
+          "completedTasks": 2,
+          "totalTasks": 2,
+          "totalDuration": 3658,
+          "totalGCTime": 58,
+          "totalInputBytes": 2445332,
+          "totalShuffleRead": 0,
+          "totalShuffleWrite": 0,
+          "isBlacklisted": false,
+          "maxMemory": 455501414,
+          "addTime": "2026-11-11T04:07:40.752GMT",
+          "executorLogs": {
+            "stdout": "<local>",
+            "stderr": "<local>"
+          },
+          "memoryMetrics": {
+            "usedOnHeapStorageMemory": 0,
+            "usedOffHeapStorageMemory": 0,
+            "totalOnHeapStorageMemory": 455501414,
+            "totalOffHeapStorageMemory": 0
+          },
+          "blacklistedInStages": [],
+          "peakMemoryMetrics": {
+            "JVMHeapMemory": 0,
+            "JVMOffHeapMemory": 0,
+            "OnHeapExecutionMemory": 0,
+            "OffHeapExecutionMemory": 0,
+            "OnHeapStorageMemory": 0,
+            "OffHeapStorageMemory": 0,
+            "OnHeapUnifiedMemory": 0,
+            "OffHeapUnifiedMemory": 0,
+            "DirectPoolMemory": 0,
+            "MappedPoolMemory": 0,
+            "ProcessTreeJVMVMemory": 0,
+            "ProcessTreeJVMRSSMemory": 0,
+            "ProcessTreePythonVMemory": 0,
+            "ProcessTreePythonRSSMemory": 0,
+            "ProcessTreeOtherVMemory": 0,
+            "ProcessTreeOtherRSSMemory": 0,
+            "MinorGCCount": 0,
+            "MinorGCTime": 0,
+            "MajorGCCount": 0,
+            "MajorGCTime": 0,
+            "TotalGCTime": 0
+          },
+          "attributes": {},
+          "resources": {},
+          "resourceProfileId": 0,
+          "isExcluded": false,
+          "excludedInStages": []
+        },
+        {
+          "id": "1",
+          "hostPort": "<local>",
+          "isActive": true,
+          "rddBlocks": 0,
+          "memoryUsed": 0,
+          "diskUsed": 0,
+          "totalCores": 1,
+          "maxTasks": 1,
+          "activeTasks": 0,
+          "failedTasks": 0,
+          "completedTasks": 2,
+          "totalTasks": 2,
+          "totalDuration": 3570,
+          "totalGCTime": 73,
+          "totalInputBytes": 8519680,
+          "totalShuffleRead": 0,
+          "totalShuffleWrite": 0,
+          "isBlacklisted": false,
+          "maxMemory": 455501414,
+          "addTime": "2026-11-11T04:07:41.139GMT",
+          "executorLogs": {
+            "stdout": "<local>",
+            "stderr": "<local>"
+          },
+          "memoryMetrics": {
+            "usedOnHeapStorageMemory": 0,
+            "usedOffHeapStorageMemory": 0,
+            "totalOnHeapStorageMemory": 455501414,
+            "totalOffHeapStorageMemory": 0
+          },
+          "blacklistedInStages": [],
+          "peakMemoryMetrics": {
+            "JVMHeapMemory": 0,
+            "JVMOffHeapMemory": 0,
+            "OnHeapExecutionMemory": 0,
+            "OffHeapExecutionMemory": 0,
+            "OnHeapStorageMemory": 0,
+            "OffHeapStorageMemory": 0,
+            "OnHeapUnifiedMemory": 0,
+            "OffHeapUnifiedMemory": 0,
+            "DirectPoolMemory": 0,
+            "MappedPoolMemory": 0,
+            "ProcessTreeJVMVMemory": 0,
+            "ProcessTreeJVMRSSMemory": 0,
+            "ProcessTreePythonVMemory": 0,
+            "ProcessTreePythonRSSMemory": 0,
+            "ProcessTreeOtherVMemory": 0,
+            "ProcessTreeOtherRSSMemory": 0,
+            "MinorGCCount": 0,
+            "MinorGCTime": 0,
+            "MajorGCCount": 0,
+            "MajorGCTime": 0,
+            "TotalGCTime": 0
+          },
+          "attributes": {},
+          "resources": {},
+          "resourceProfileId": 0,
+          "isExcluded": false,
+          "excludedInStages": []
+        },
+        {
+          "id": "2",
+          "hostPort": "<local>",
+          "isActive": true,
+          "rddBlocks": 0,
+          "memoryUsed": 0,
+          "diskUsed": 0,
+          "totalCores": 1,
+          "maxTasks": 1,
+          "activeTasks": 0,
+          "failedTasks": 0,
+          "completedTasks": 2,
+          "totalTasks": 2,
+          "totalDuration": 3457,
+          "totalGCTime": 59,
+          "totalInputBytes": 8519680,
+          "totalShuffleRead": 0,
+          "totalShuffleWrite": 0,
+          "isBlacklisted": false,
+          "maxMemory": 455501414,
+          "addTime": "2026-11-11T04:07:40.998GMT",
+          "executorLogs": {
+            "stdout": "<local>",
+            "stderr": "<local>"
+          },
+          "memoryMetrics": {
+            "usedOnHeapStorageMemory": 0,
+            "usedOffHeapStorageMemory": 0,
+            "totalOnHeapStorageMemory": 455501414,
+            "totalOffHeapStorageMemory": 0
+          },
+          "blacklistedInStages": [],
+          "peakMemoryMetrics": {
+            "JVMHeapMemory": 0,
+            "JVMOffHeapMemory": 0,
+            "OnHeapExecutionMemory": 0,
+            "OffHeapExecutionMemory": 0,
+            "OnHeapStorageMemory": 0,
+            "OffHeapStorageMemory": 0,
+            "OnHeapUnifiedMemory": 0,
+            "OffHeapUnifiedMemory": 0,
+            "DirectPoolMemory": 0,
+            "MappedPoolMemory": 0,
+            "ProcessTreeJVMVMemory": 0,
+            "ProcessTreeJVMRSSMemory": 0,
+            "ProcessTreePythonVMemory": 0,
+            "ProcessTreePythonRSSMemory": 0,
+            "ProcessTreeOtherVMemory": 0,
+            "ProcessTreeOtherRSSMemory": 0,
+            "MinorGCCount": 0,
+            "MinorGCTime": 0,
+            "MajorGCCount": 0,
+            "MajorGCTime": 0,
+            "TotalGCTime": 0
+          },
+          "attributes": {},
+          "resources": {},
+          "resourceProfileId": 0,
+          "isExcluded": false,
+          "excludedInStages": []
+        },
+        {
+          "id": "3",
+          "hostPort": "<local>",
+          "isActive": true,
+          "rddBlocks": 0,
+          "memoryUsed": 0,
+          "diskUsed": 0,
+          "totalCores": 1,
+          "maxTasks": 1,
+          "activeTasks": 0,
+          "failedTasks": 0,
+          "completedTasks": 1,
+          "totalTasks": 1,
+          "totalDuration": 2648,
+          "totalGCTime": 51,
+          "totalInputBytes": 4259840,
+          "totalShuffleRead": 0,
+          "totalShuffleWrite": 0,
+          "isBlacklisted": false,
+          "maxMemory": 455501414,
+          "addTime": "2026-11-11T04:07:40.363GMT",
+          "executorLogs": {
+            "stdout": "<local>",
+            "stderr": "<local>"
+          },
+          "memoryMetrics": {
+            "usedOnHeapStorageMemory": 0,
+            "usedOffHeapStorageMemory": 0,
+            "totalOnHeapStorageMemory": 455501414,
+            "totalOffHeapStorageMemory": 0
+          },
+          "blacklistedInStages": [],
+          "peakMemoryMetrics": {
+            "JVMHeapMemory": 0,
+            "JVMOffHeapMemory": 0,
+            "OnHeapExecutionMemory": 0,
+            "OffHeapExecutionMemory": 0,
+            "OnHeapStorageMemory": 0,
+            "OffHeapStorageMemory": 0,
+            "OnHeapUnifiedMemory": 0,
+            "OffHeapUnifiedMemory": 0,
+            "DirectPoolMemory": 0,
+            "MappedPoolMemory": 0,
+            "ProcessTreeJVMVMemory": 0,
+            "ProcessTreeJVMRSSMemory": 0,
+            "ProcessTreePythonVMemory": 0,
+            "ProcessTreePythonRSSMemory": 0,
+            "ProcessTreeOtherVMemory": 0,
+            "ProcessTreeOtherRSSMemory": 0,
+            "MinorGCCount": 0,
+            "MinorGCTime": 0,
+            "MajorGCCount": 0,
+            "MajorGCTime": 0,
+            "TotalGCTime": 0
+          },
+          "attributes": {},
+          "resources": {},
+          "resourceProfileId": 0,
+          "isExcluded": false,
+          "excludedInStages": []
+        },
+        {
+          "id": "4",
+          "hostPort": "<local>",
+          "isActive": true,
+          "rddBlocks": 0,
+          "memoryUsed": 0,
+          "diskUsed": 0,
+          "totalCores": 1,
+          "maxTasks": 1,
+          "activeTasks": 0,
+          "failedTasks": 0,
+          "completedTasks": 1,
+          "totalTasks": 1,
+          "totalDuration": 3275,
+          "totalGCTime": 64,
+          "totalInputBytes": 5482506,
+          "totalShuffleRead": 0,
+          "totalShuffleWrite": 0,
+          "isBlacklisted": false,
+          "maxMemory": 455501414,
+          "addTime": "2026-11-11T04:07:40.818GMT",
+          "executorLogs": {
+            "stdout": "<local>",
+            "stderr": "<local>"
+          },
+          "memoryMetrics": {
+            "usedOnHeapStorageMemory": 0,
+            "usedOffHeapStorageMemory": 0,
+            "totalOnHeapStorageMemory": 455501414,
+            "totalOffHeapStorageMemory": 0
+          },
+          "blacklistedInStages": [],
+          "peakMemoryMetrics": {
+            "JVMHeapMemory": 0,
+            "JVMOffHeapMemory": 0,
+            "OnHeapExecutionMemory": 0,
+            "OffHeapExecutionMemory": 0,
+            "OnHeapStorageMemory": 0,
+            "OffHeapStorageMemory": 0,
+            "OnHeapUnifiedMemory": 0,
+            "OffHeapUnifiedMemory": 0,
+            "DirectPoolMemory": 0,
+            "MappedPoolMemory": 0,
+            "ProcessTreeJVMVMemory": 0,
+            "ProcessTreeJVMRSSMemory": 0,
+            "ProcessTreePythonVMemory": 0,
+            "ProcessTreePythonRSSMemory": 0,
+            "ProcessTreeOtherVMemory": 0,
+            "ProcessTreeOtherRSSMemory": 0,
+            "MinorGCCount": 0,
+            "MinorGCTime": 0,
+            "MajorGCCount": 0,
+            "MajorGCTime": 0,
+            "TotalGCTime": 0
+          },
+          "attributes": {},
+          "resources": {},
+          "resourceProfileId": 0,
+          "isExcluded": false,
+          "excludedInStages": []
+        },
+        {
+          "id": "5",
+          "hostPort": "<local>",
+          "isActive": true,
+          "rddBlocks": 0,
+          "memoryUsed": 0,
+          "diskUsed": 0,
+          "totalCores": 1,
+          "maxTasks": 1,
+          "activeTasks": 0,
+          "failedTasks": 0,
+          "completedTasks": 1,
+          "totalTasks": 1,
+          "totalDuration": 1162,
+          "totalGCTime": 13,
+          "totalInputBytes": 65536,
+          "totalShuffleRead": 0,
+          "totalShuffleWrite": 0,
+          "isBlacklisted": false,
+          "maxMemory": 455501414,
+          "addTime": "2026-11-11T04:07:40.242GMT",
+          "executorLogs": {
+            "stdout": "<local>",
+            "stderr": "<local>"
+          },
+          "memoryMetrics": {
+            "usedOnHeapStorageMemory": 0,
+            "usedOffHeapStorageMemory": 0,
+            "totalOnHeapStorageMemory": 455501414,
+            "totalOffHeapStorageMemory": 0
+          },
+          "blacklistedInStages": [],
+          "peakMemoryMetrics": {
+            "JVMHeapMemory": 0,
+            "JVMOffHeapMemory": 0,
+            "OnHeapExecutionMemory": 0,
+            "OffHeapExecutionMemory": 0,
+            "OnHeapStorageMemory": 0,
+            "OffHeapStorageMemory": 0,
+            "OnHeapUnifiedMemory": 0,
+            "OffHeapUnifiedMemory": 0,
+            "DirectPoolMemory": 0,
+            "MappedPoolMemory": 0,
+            "ProcessTreeJVMVMemory": 0,
+            "ProcessTreeJVMRSSMemory": 0,
+            "ProcessTreePythonVMemory": 0,
+            "ProcessTreePythonRSSMemory": 0,
+            "ProcessTreeOtherVMemory": 0,
+            "ProcessTreeOtherRSSMemory": 0,
+            "MinorGCCount": 0,
+            "MinorGCTime": 0,
+            "MajorGCCount": 0,
+            "MajorGCTime": 0,
+            "TotalGCTime": 0
+          },
+          "attributes": {},
+          "resources": {},
+          "resourceProfileId": 0,
+          "isExcluded": false,
+          "excludedInStages": []
+        },
+        {
+          "id": "driver",
+          "hostPort": "spark-master:39001",
+          "isActive": true,
+          "rddBlocks": 0,
+          "memoryUsed": 0,
+          "diskUsed": 0,
+          "totalCores": 0,
+          "maxTasks": 0,
+          "activeTasks": 0,
+          "failedTasks": 0,
+          "completedTasks": 0,
+          "totalTasks": 0,
+          "totalDuration": 17337,
+          "totalGCTime": 0,
+          "totalInputBytes": 0,
+          "totalShuffleRead": 0,
+          "totalShuffleWrite": 0,
+          "isBlacklisted": false,
+          "maxMemory": 455501414,
+          "addTime": "2026-11-11T04:07:34.969GMT",
+          "executorLogs": {},
+          "memoryMetrics": {
+            "usedOnHeapStorageMemory": 0,
+            "usedOffHeapStorageMemory": 0,
+            "totalOnHeapStorageMemory": 455501414,
+            "totalOffHeapStorageMemory": 0
+          },
+          "blacklistedInStages": [],
+          "attributes": {},
+          "resources": {},
+          "resourceProfileId": 0,
+          "isExcluded": false,
+          "excludedInStages": []
+        }
+      ],
+      "failed_tasks": 0,
+      "memory_bytes_spilled": 0,
+      "disk_bytes_spilled": 0,
+      "stage_skew": [
+        {
+          "stage_id": 3,
+          "quantiles": [
+            0.0,
+            0.5,
+            0.95,
+            1.0
+          ],
+          "executor_run_time_ms": [
+            1225.0,
+            2672.0,
+            2672.0,
+            2672.0
+          ],
+          "memory_bytes_spilled": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "disk_bytes_spilled": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "stage_id": 2,
+          "quantiles": [
+            0.0,
+            0.5,
+            0.95,
+            1.0
+          ],
+          "executor_run_time_ms": [
+            875.0,
+            1265.0,
+            2153.0,
+            2153.0
+          ],
+          "memory_bytes_spilled": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "disk_bytes_spilled": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "stage_id": 1,
+          "quantiles": [
+            0.0,
+            0.5,
+            0.95,
+            1.0
+          ],
+          "executor_run_time_ms": [
+            1528.0,
+            1592.0,
+            1917.0,
+            1917.0
+          ],
+          "memory_bytes_spilled": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "disk_bytes_spilled": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        {
+          "stage_id": 0,
+          "quantiles": [
+            0.0,
+            0.5,
+            0.95,
+            1.0
+          ],
+          "executor_run_time_ms": [
+            491.0,
+            491.0,
+            491.0,
+            491.0
+          ],
+          "memory_bytes_spilled": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "disk_bytes_spilled": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    }
+  ],
+  "packaged_history_rest": {
+    "application": {
+      "id": "app-20261110202929-0029",
+      "name": "compliance_flag_rules",
+      "attempts": [
+        {
+          "startTime": "2026-11-10T20:29:29.185GMT",
+          "endTime": "2026-11-10T20:29:39.470GMT",
+          "lastUpdated": "2026-11-11T03:57:44.855GMT",
+          "duration": 10285,
+          "sparkUser": "spark",
+          "completed": true,
+          "appSparkVersion": "3.5.3",
+          "startTimeEpoch": 1794342569185,
+          "endTimeEpoch": 1794342579470,
+          "lastUpdatedEpoch": 1794369464855
+        }
+      ]
+    },
+    "executors": [
+      {
+        "id": "0",
+        "hostPort": "<local>",
+        "isActive": true,
+        "rddBlocks": 0,
+        "memoryUsed": 0,
+        "diskUsed": 0,
+        "totalCores": 1,
+        "maxTasks": 1,
+        "activeTasks": 0,
+        "failedTasks": 0,
+        "completedTasks": 1,
+        "totalTasks": 1,
+        "totalDuration": 1926,
+        "totalGCTime": 49,
+        "totalInputBytes": 1222666,
+        "totalShuffleRead": 0,
+        "totalShuffleWrite": 0,
+        "isBlacklisted": false,
+        "maxMemory": 455501414,
+        "addTime": "2026-11-10T20:29:33.396GMT",
+        "executorLogs": {
+          "stdout": "<local>",
+          "stderr": "<local>"
+        },
+        "memoryMetrics": {
+          "usedOnHeapStorageMemory": 0,
+          "usedOffHeapStorageMemory": 0,
+          "totalOnHeapStorageMemory": 455501414,
+          "totalOffHeapStorageMemory": 0
+        },
+        "blacklistedInStages": [],
+        "peakMemoryMetrics": {
+          "JVMHeapMemory": 0,
+          "JVMOffHeapMemory": 0,
+          "OnHeapExecutionMemory": 0,
+          "OffHeapExecutionMemory": 0,
+          "OnHeapStorageMemory": 0,
+          "OffHeapStorageMemory": 0,
+          "OnHeapUnifiedMemory": 0,
+          "OffHeapUnifiedMemory": 0,
+          "DirectPoolMemory": 0,
+          "MappedPoolMemory": 0,
+          "ProcessTreeJVMVMemory": 0,
+          "ProcessTreeJVMRSSMemory": 0,
+          "ProcessTreePythonVMemory": 0,
+          "ProcessTreePythonRSSMemory": 0,
+          "ProcessTreeOtherVMemory": 0,
+          "ProcessTreeOtherRSSMemory": 0,
+          "MinorGCCount": 0,
+          "MinorGCTime": 0,
+          "MajorGCCount": 0,
+          "MajorGCTime": 0,
+          "TotalGCTime": 0
+        },
+        "attributes": {},
+        "resources": {},
+        "resourceProfileId": 0,
+        "isExcluded": false,
+        "excludedInStages": []
+      },
+      {
+        "id": "1",
+        "hostPort": "<local>",
+        "isActive": true,
+        "rddBlocks": 0,
+        "memoryUsed": 0,
+        "diskUsed": 0,
+        "totalCores": 1,
+        "maxTasks": 1,
+        "activeTasks": 0,
+        "failedTasks": 0,
+        "completedTasks": 2,
+        "totalTasks": 2,
+        "totalDuration": 2600,
+        "totalGCTime": 74,
+        "totalInputBytes": 5482506,
+        "totalShuffleRead": 0,
+        "totalShuffleWrite": 0,
+        "isBlacklisted": false,
+        "maxMemory": 455501414,
+        "addTime": "2026-11-10T20:29:33.514GMT",
+        "executorLogs": {
+          "stdout": "<local>",
+          "stderr": "<local>"
+        },
+        "memoryMetrics": {
+          "usedOnHeapStorageMemory": 0,
+          "usedOffHeapStorageMemory": 0,
+          "totalOnHeapStorageMemory": 455501414,
+          "totalOffHeapStorageMemory": 0
+        },
+        "blacklistedInStages": [],
+        "peakMemoryMetrics": {
+          "JVMHeapMemory": 0,
+          "JVMOffHeapMemory": 0,
+          "OnHeapExecutionMemory": 0,
+          "OffHeapExecutionMemory": 0,
+          "OnHeapStorageMemory": 0,
+          "OffHeapStorageMemory": 0,
+          "OnHeapUnifiedMemory": 0,
+          "OffHeapUnifiedMemory": 0,
+          "DirectPoolMemory": 0,
+          "MappedPoolMemory": 0,
+          "ProcessTreeJVMVMemory": 0,
+          "ProcessTreeJVMRSSMemory": 0,
+          "ProcessTreePythonVMemory": 0,
+          "ProcessTreePythonRSSMemory": 0,
+          "ProcessTreeOtherVMemory": 0,
+          "ProcessTreeOtherRSSMemory": 0,
+          "MinorGCCount": 0,
+          "MinorGCTime": 0,
+          "MajorGCCount": 0,
+          "MajorGCTime": 0,
+          "TotalGCTime": 0
+        },
+        "attributes": {},
+        "resources": {},
+        "resourceProfileId": 0,
+        "isExcluded": false,
+        "excludedInStages": []
+      },
+      {
+        "id": "2",
+        "hostPort": "<local>",
+        "isActive": true,
+        "rddBlocks": 0,
+        "memoryUsed": 0,
+        "diskUsed": 0,
+        "totalCores": 1,
+        "maxTasks": 1,
+        "activeTasks": 0,
+        "failedTasks": 0,
+        "completedTasks": 1,
+        "totalTasks": 1,
+        "totalDuration": 844,
+        "totalGCTime": 16,
+        "totalInputBytes": 65536,
+        "totalShuffleRead": 0,
+        "totalShuffleWrite": 0,
+        "isBlacklisted": false,
+        "maxMemory": 455501414,
+        "addTime": "2026-11-10T20:29:33.104GMT",
+        "executorLogs": {
+          "stdout": "<local>",
+          "stderr": "<local>"
+        },
+        "memoryMetrics": {
+          "usedOnHeapStorageMemory": 0,
+          "usedOffHeapStorageMemory": 0,
+          "totalOnHeapStorageMemory": 455501414,
+          "totalOffHeapStorageMemory": 0
+        },
+        "blacklistedInStages": [],
+        "peakMemoryMetrics": {
+          "JVMHeapMemory": 0,
+          "JVMOffHeapMemory": 0,
+          "OnHeapExecutionMemory": 0,
+          "OffHeapExecutionMemory": 0,
+          "OnHeapStorageMemory": 0,
+          "OffHeapStorageMemory": 0,
+          "OnHeapUnifiedMemory": 0,
+          "OffHeapUnifiedMemory": 0,
+          "DirectPoolMemory": 0,
+          "MappedPoolMemory": 0,
+          "ProcessTreeJVMVMemory": 0,
+          "ProcessTreeJVMRSSMemory": 0,
+          "ProcessTreePythonVMemory": 0,
+          "ProcessTreePythonRSSMemory": 0,
+          "ProcessTreeOtherVMemory": 0,
+          "ProcessTreeOtherRSSMemory": 0,
+          "MinorGCCount": 0,
+          "MinorGCTime": 0,
+          "MajorGCCount": 0,
+          "MajorGCTime": 0,
+          "TotalGCTime": 0
+        },
+        "attributes": {},
+        "resources": {},
+        "resourceProfileId": 0,
+        "isExcluded": false,
+        "excludedInStages": []
+      },
+      {
+        "id": "3",
+        "hostPort": "<local>",
+        "isActive": true,
+        "rddBlocks": 0,
+        "memoryUsed": 0,
+        "diskUsed": 0,
+        "totalCores": 1,
+        "maxTasks": 1,
+        "activeTasks": 0,
+        "failedTasks": 0,
+        "completedTasks": 3,
+        "totalTasks": 3,
+        "totalDuration": 3519,
+        "totalGCTime": 62,
+        "totalInputBytes": 14002186,
+        "totalShuffleRead": 0,
+        "totalShuffleWrite": 0,
+        "isBlacklisted": false,
+        "maxMemory": 455501414,
+        "addTime": "2026-11-10T20:29:33.107GMT",
+        "executorLogs": {
+          "stdout": "<local>",
+          "stderr": "<local>"
+        },
+        "memoryMetrics": {
+          "usedOnHeapStorageMemory": 0,
+          "usedOffHeapStorageMemory": 0,
+          "totalOnHeapStorageMemory": 455501414,
+          "totalOffHeapStorageMemory": 0
+        },
+        "blacklistedInStages": [],
+        "peakMemoryMetrics": {
+          "JVMHeapMemory": 0,
+          "JVMOffHeapMemory": 0,
+          "OnHeapExecutionMemory": 0,
+          "OffHeapExecutionMemory": 0,
+          "OnHeapStorageMemory": 0,
+          "OffHeapStorageMemory": 0,
+          "OnHeapUnifiedMemory": 0,
+          "OffHeapUnifiedMemory": 0,
+          "DirectPoolMemory": 0,
+          "MappedPoolMemory": 0,
+          "ProcessTreeJVMVMemory": 0,
+          "ProcessTreeJVMRSSMemory": 0,
+          "ProcessTreePythonVMemory": 0,
+          "ProcessTreePythonRSSMemory": 0,
+          "ProcessTreeOtherVMemory": 0,
+          "ProcessTreeOtherRSSMemory": 0,
+          "MinorGCCount": 0,
+          "MinorGCTime": 0,
+          "MajorGCCount": 0,
+          "MajorGCTime": 0,
+          "TotalGCTime": 0
+        },
+        "attributes": {},
+        "resources": {},
+        "resourceProfileId": 0,
+        "isExcluded": false,
+        "excludedInStages": []
+      },
+      {
+        "id": "4",
+        "hostPort": "<local>",
+        "isActive": true,
+        "rddBlocks": 0,
+        "memoryUsed": 0,
+        "diskUsed": 0,
+        "totalCores": 1,
+        "maxTasks": 1,
+        "activeTasks": 0,
+        "failedTasks": 0,
+        "completedTasks": 2,
+        "totalTasks": 2,
+        "totalDuration": 2724,
+        "totalGCTime": 57,
+        "totalInputBytes": 8519680,
+        "totalShuffleRead": 0,
+        "totalShuffleWrite": 0,
+        "isBlacklisted": false,
+        "maxMemory": 455501414,
+        "addTime": "2026-11-10T20:29:33.324GMT",
+        "executorLogs": {
+          "stdout": "<local>",
+          "stderr": "<local>"
+        },
+        "memoryMetrics": {
+          "usedOnHeapStorageMemory": 0,
+          "usedOffHeapStorageMemory": 0,
+          "totalOnHeapStorageMemory": 455501414,
+          "totalOffHeapStorageMemory": 0
+        },
+        "blacklistedInStages": [],
+        "peakMemoryMetrics": {
+          "JVMHeapMemory": 0,
+          "JVMOffHeapMemory": 0,
+          "OnHeapExecutionMemory": 0,
+          "OffHeapExecutionMemory": 0,
+          "OnHeapStorageMemory": 0,
+          "OffHeapStorageMemory": 0,
+          "OnHeapUnifiedMemory": 0,
+          "OffHeapUnifiedMemory": 0,
+          "DirectPoolMemory": 0,
+          "MappedPoolMemory": 0,
+          "ProcessTreeJVMVMemory": 0,
+          "ProcessTreeJVMRSSMemory": 0,
+          "ProcessTreePythonVMemory": 0,
+          "ProcessTreePythonRSSMemory": 0,
+          "ProcessTreeOtherVMemory": 0,
+          "ProcessTreeOtherRSSMemory": 0,
+          "MinorGCCount": 0,
+          "MinorGCTime": 0,
+          "MajorGCCount": 0,
+          "MajorGCTime": 0,
+          "TotalGCTime": 0
+        },
+        "attributes": {},
+        "resources": {},
+        "resourceProfileId": 0,
+        "isExcluded": false,
+        "excludedInStages": []
+      },
+      {
+        "id": "5",
+        "hostPort": "<local>",
+        "isActive": true,
+        "rddBlocks": 0,
+        "memoryUsed": 0,
+        "diskUsed": 0,
+        "totalCores": 1,
+        "maxTasks": 1,
+        "activeTasks": 0,
+        "failedTasks": 0,
+        "completedTasks": 0,
+        "totalTasks": 0,
+        "totalDuration": 0,
+        "totalGCTime": 0,
+        "totalInputBytes": 0,
+        "totalShuffleRead": 0,
+        "totalShuffleWrite": 0,
+        "isBlacklisted": false,
+        "maxMemory": 455501414,
+        "addTime": "2026-11-10T20:29:33.478GMT",
+        "executorLogs": {
+          "stdout": "<local>",
+          "stderr": "<local>"
+        },
+        "memoryMetrics": {
+          "usedOnHeapStorageMemory": 0,
+          "usedOffHeapStorageMemory": 0,
+          "totalOnHeapStorageMemory": 455501414,
+          "totalOffHeapStorageMemory": 0
+        },
+        "blacklistedInStages": [],
+        "attributes": {},
+        "resources": {},
+        "resourceProfileId": 0,
+        "isExcluded": false,
+        "excludedInStages": []
+      },
+      {
+        "id": "driver",
+        "hostPort": "spark-master:44127",
+        "isActive": true,
+        "rddBlocks": 0,
+        "memoryUsed": 0,
+        "diskUsed": 0,
+        "totalCores": 0,
+        "maxTasks": 0,
+        "activeTasks": 0,
+        "failedTasks": 0,
+        "completedTasks": 0,
+        "totalTasks": 0,
+        "totalDuration": 10285,
+        "totalGCTime": 0,
+        "totalInputBytes": 0,
+        "totalShuffleRead": 0,
+        "totalShuffleWrite": 0,
+        "isBlacklisted": false,
+        "maxMemory": 455501414,
+        "addTime": "2026-11-10T20:29:29.768GMT",
+        "executorLogs": {},
+        "memoryMetrics": {
+          "usedOnHeapStorageMemory": 0,
+          "usedOffHeapStorageMemory": 0,
+          "totalOnHeapStorageMemory": 455501414,
+          "totalOffHeapStorageMemory": 0
+        },
+        "blacklistedInStages": [],
+        "attributes": {},
+        "resources": {},
+        "resourceProfileId": 0,
+        "isExcluded": false,
+        "excludedInStages": []
+      }
+    ],
+    "failed_tasks": 0,
+    "memory_bytes_spilled": 0,
+    "disk_bytes_spilled": 0,
+    "stage_skew": [
+      {
+        "stage_id": 3,
+        "quantiles": [
+          0.0,
+          0.5,
+          0.95,
+          1.0
+        ],
+        "executor_run_time_ms": [
+          758.0,
+          795.0,
+          795.0,
+          795.0
+        ],
+        "memory_bytes_spilled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "disk_bytes_spilled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "stage_id": 2,
+        "quantiles": [
+          0.0,
+          0.5,
+          0.95,
+          1.0
+        ],
+        "executor_run_time_ms": [
+          865.0,
+          960.0,
+          1491.0,
+          1491.0
+        ],
+        "memory_bytes_spilled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "disk_bytes_spilled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "stage_id": 1,
+        "quantiles": [
+          0.0,
+          0.5,
+          0.95,
+          1.0
+        ],
+        "executor_run_time_ms": [
+          1159.0,
+          1375.0,
+          1472.0,
+          1472.0
+        ],
+        "memory_bytes_spilled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "disk_bytes_spilled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "stage_id": 0,
+        "quantiles": [
+          0.0,
+          0.5,
+          0.95,
+          1.0
+        ],
+        "executor_run_time_ms": [
+          382.0,
+          382.0,
+          382.0,
+          382.0
+        ],
+        "memory_bytes_spilled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "disk_bytes_spilled": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ]
+  }
+}

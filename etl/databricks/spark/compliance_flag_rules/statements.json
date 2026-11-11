@@ -1,0 +1,1915 @@
+[
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSELECT * FROM cpw.dbx_d1111_before.audit__compliance_flag LIMIT 1",
+    "statement_id": "01f1dd84-1f73-1d90-b5cf-bf3587046203",
+    "status": {
+      "state": "FAILED",
+      "error": {
+        "error_code": "BAD_REQUEST",
+        "message": "[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14"
+      },
+      "sql_state": "42P01"
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSHOW TABLES IN cpw.dbx_d1111_before LIKE '*audit*|*security_alert*|*compliance_flag*'",
+    "statement_id": "01f1dd84-1fc7-1afb-a492-7375438f64b3",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "database",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "tableName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "isTemporary",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSHOW TABLES IN cpw.dbx_d1111_after LIKE '*audit*|*security_alert*|*compliance_flag*'",
+    "statement_id": "01f1dd84-35a9-165f-ac01-65694ae7df7d",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "database",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "tableName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "isTemporary",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSHOW TABLES IN cpw.dbx_d1111_parity LIKE '*audit*|*security_alert*|*compliance_flag*'",
+    "statement_id": "01f1dd84-35ef-1584-8b09-0d11c5588c2e",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "database",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "tableName",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "isTemporary",
+            "type_text": "BOOLEAN",
+            "type_name": "BOOLEAN",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'inputs' rung, 'red' status, '[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' detail, '01f1dd84-1f73-1d90-b5cf-bf3587046203' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-0ba0-186d-b595-a4a0bd0d52fc",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'input-alternatives' rung, 'red' status, 'No audit baseline or staging alternatives in allowed before/after/parity schemas' detail, '01f1dd84-1f73-1d90-b5cf-bf3587046203' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-0d38-1af5-bb11-ad473b4ca4e0",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'input-equality' rung, 'blocked' status, 'Cannot export missing live inputs; default fixture is not live data' detail, '01f1dd84-1f73-1d90-b5cf-bf3587046203' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-0ef6-1ab1-91e2-da56f7189845",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'run1' rung, 'blocked' status, 'Job registered without schedule; not run with missing live inputs' detail, '01f1dd84-1f73-1d90-b5cf-bf3587046203' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-1088-1055-bcfb-8c0a3504ce66",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'counts' rung, 'blocked' status, 'No genuine live Spark before-result or migrated target' detail, '01f1dd84-1f73-1d90-b5cf-bf3587046203' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-1229-150b-8c90-c4e8e2fe7f48",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'hash' rung, 'blocked' status, 'Canonical MD5 comparison blocked by missing live baseline' detail, '01f1dd84-1f73-1d90-b5cf-bf3587046203' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-13cb-13e8-8744-34bd2f04fcc1",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'except-all' rung, 'blocked' status, 'Both sampled differences blocked by missing live baseline' detail, '01f1dd84-1f73-1d90-b5cf-bf3587046203' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-15ac-1340-9727-298882182d4c",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'run2-idempotence' rung, 'blocked' status, 'No successful live runs to compare; no MERGE metric claim' detail, '01f1dd84-1f73-1d90-b5cf-bf3587046203' statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-1724-1820-9c0c-b40f8b8dab14",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_control.migration_control t\nUSING (SELECT 'spark:compliance_flag_rules' AS object_name,\n'audit' AS subject_area,\n'spark' AS source_system,\n'etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala' AS source_path,\n'cpw.dbx_d1111_after.audit__spark_compliance_flag_rules' AS target,\n'red' AS status,\n'BLOCKED: missing live baseline' AS parity,\n'https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756' AS pr,\n'[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' AS first_failure,\n'01f1dd84-1f73-1d90-b5cf-bf3587046203' AS first_failure_statement_id,\n'BLOCKED: no live-adapted original result; fixture evidence is not live parity' AS corrected_parity,\nCAST(NULL AS STRING) AS parity_statement_id,\n'BLOCKED: no successful live runs' AS idempotence,\n'[]' AS idempotence_statement_ids,\n'0.010249167' AS executor_hours,\n'763368305743207' AS job_id,\n'[]' AS job_run_ids,\n'missing live baseline' AS red_reason,\n'dbx-d1111' AS run_token,\n'2026-11-24' AS expires, current_timestamp() updated_at) s\nON t.object_name=s.object_name\nWHEN MATCHED THEN UPDATE SET t.subject_area=s.subject_area, t.source_system=s.source_system, t.source_path=s.source_path, t.target=s.target, t.status=s.status, t.parity=s.parity, t.pr=s.pr, t.first_failure=s.first_failure, t.first_failure_statement_id=s.first_failure_statement_id, t.corrected_parity=s.corrected_parity, t.parity_statement_id=s.parity_statement_id, t.idempotence=s.idempotence, t.idempotence_statement_ids=s.idempotence_statement_ids, t.executor_hours=s.executor_hours, t.job_id=s.job_id, t.job_run_ids=s.job_run_ids, t.red_reason=s.red_reason, t.run_token=s.run_token, t.expires=s.expires, t.updated_at=s.updated_at\nWHEN NOT MATCHED THEN INSERT (object_name, subject_area, source_system, source_path, target, status, parity, pr, first_failure, first_failure_statement_id, corrected_parity, parity_statement_id, idempotence, idempotence_statement_ids, executor_hours, job_id, job_run_ids, red_reason, run_token, expires, updated_at) VALUES (s.object_name, s.subject_area, s.source_system, s.source_path, s.target, s.status, s.parity, s.pr, s.first_failure, s.first_failure_statement_id, s.corrected_parity, s.parity_statement_id, s.idempotence, s.idempotence_statement_ids, s.executor_hours, s.job_id, s.job_run_ids, s.red_reason, s.run_token, s.expires, s.updated_at)",
+    "statement_id": "01f1dd85-18ac-1de3-a1ef-35daa807bae3",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=compliance_flag_rules */\nSELECT object_name,status,red_reason,job_id,job_run_ids FROM cpw.dbx_d1111_control.migration_control WHERE object_name='spark:compliance_flag_rules'",
+    "statement_id": "01f1dd85-2588-147d-9bf5-483e5a3d436e",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 5,
+        "columns": [
+          {
+            "name": "object_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "red_reason",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          },
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 3
+          },
+          {
+            "name": "job_run_ids",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 4
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "spark:compliance_flag_rules",
+          "red",
+          "missing live baseline",
+          "763368305743207",
+          "[]"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "history",
+    "sql": "/* run=dbx-d1111 act=spark step=history consumer=compliance_flag_rules */\nSELECT statement_id, start_time, total_duration_ms, read_rows, produced_rows, execution_status\nFROM system.query.history\nWHERE statement_text LIKE '/* run=dbx-d1111 act=spark step=%consumer=compliance_flag_rules */%'\nORDER BY start_time",
+    "statement_id": "01f1dd85-8fdf-10e1-8f79-caf943c91c6a",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 6,
+        "columns": [
+          {
+            "name": "statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "start_time",
+            "type_text": "TIMESTAMP",
+            "type_name": "TIMESTAMP",
+            "position": 1
+          },
+          {
+            "name": "total_duration_ms",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "read_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          },
+          {
+            "name": "produced_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 4
+          },
+          {
+            "name": "execution_status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 4
+        }
+      ],
+      "total_row_count": 4,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 4,
+      "data_array": [
+        [
+          "01f1dd84-1f73-1d90-b5cf-bf3587046203",
+          "2026-11-11T03:58:15.835Z",
+          "190",
+          "0",
+          null,
+          "FAILED"
+        ],
+        [
+          "01f1dd84-1fc7-1afb-a492-7375438f64b3",
+          "2026-11-11T03:58:16.384Z",
+          "319",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-35a9-165f-ac01-65694ae7df7d",
+          "2026-11-11T03:58:53.095Z",
+          "231",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-35ef-1584-8b09-0d11c5588c2e",
+          "2026-11-11T03:58:53.553Z",
+          "233",
+          "0",
+          "0",
+          "FINISHED"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "billing",
+    "sql": "/* run=dbx-d1111 act=spark step=billing consumer=compliance_flag_rules */\nSELECT usage_metadata.job_id, usage_metadata.job_run_id, sum(usage_quantity) AS dbu\nFROM system.billing.usage\nWHERE usage_metadata.job_id='763368305743207' AND usage_unit='DBU'\nGROUP BY usage_metadata.job_id, usage_metadata.job_run_id",
+    "statement_id": "01f1dd85-91df-18f3-95f9-455f514454b1",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "job_run_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "dbu",
+            "type_text": "DECIMAL(38,18)",
+            "type_name": "DECIMAL",
+            "position": 2,
+            "type_precision": 38,
+            "type_scale": 18
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'local-fixture' rung, 'pass' status, '{\n  \"scope\": \"default local fixture ONLY; not live parity\",\n  \"aqe\": \"true\",\n  \"edge_tests\": \"passed\",\n  \"before_schema\": \"struct<FLAG_ID:bigint,DOCUMENT_ID:bigint,SEVERITY:int,DISPOSITION:string>\",\n  \"after_schema\": \"struct<FLAG_ID:bigint,DOCUMENT_ID:bigint,SEVERITY:int,DISPOSITION:string>\",\n  \"before\": {\n    \"count\": 200000,\n    \"hash\": \"115260492655033151445541\"\n  },\n  \"run1\": {\n    \"count\": 200000,\n    \"hash\": \"115260492655033151445541\"\n  },\n  \"run2\": {\n    \"count\": 200000,\n    \"hash\": \"115260492655033151445541\"\n  },\n  \"before_minus_after\": [],\n  \"after_minus_before\": [],\n  \"exact_parity\": true,\n  \"idempotent\": true\n}\n' detail, CAST(NULL AS STRING) statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-d7d8-13b2-b0d2-1bf441cc1604",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "parity",
+    "sql": "/* run=dbx-d1111 act=spark step=parity consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT 'spark-compliance_flag_rules' run_label, 'spark:compliance_flag_rules' object,\n 'local-history' rung, 'info' status, '{\n  \"run_token\": \"dbx-d1111\",\n  \"expires\": \"2026-11-24\",\n  \"baseline\": {\n    \"app_id\": \"app-20261110202929-0029\",\n    \"start\": \"2026-11-10T20:29:29.185Z\",\n    \"end\": \"2026-11-10T20:29:39.470Z\",\n    \"runtime_seconds\": 10.285,\n    \"executor_count\": 6,\n    \"executor_hours\": 0.010249167,\n    \"core_hours\": 0.010249167,\n    \"failed_tasks\": 0,\n    \"memory_bytes_spilled\": 0,\n    \"disk_bytes_spilled\": 0,\n    \"output_files_written\": 3\n  },\n  \"baseline_is_packaged\": true,\n  \"local_fixture_applications\": [\n    {\n      \"application\": {\n        \"id\": \"app-20261111040734-0005\",\n        \"name\": \"compliance_flag_rules\",\n        \"attempts\": [\n          {\n            \"startTime\": \"2026-11-11T04:07:33.794GMT\",\n            \"endTime\": \"1969-12-31T23:59:59.999GMT\",\n            \"lastUpdated\": \"2026-11-11T04:07:49.712GMT\",\n            \"duration\": 0,\n            \"sparkUser\": \"spark\",\n            \"completed\": false,\n            \"appSparkVersion\": \"3.5.3\",\n            \"startTimeEpoch\": 1794370053794,\n            \"endTimeEpoch\": -1,\n            \"lastUpdatedEpoch\": 1794370069712\n          }\n        ]\n      },\n      \"executors\": [\n        {\n          \"id\": \"0\",\n          \"hostPort\": \"172.18.0.5:41777\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 1,\n          \"maxTasks\": 1,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 2,\n          \"totalTasks\": 2,\n          \"totalDuration\": 3658,\n          \"totalGCTime\": 58,\n          \"totalInputBytes\": 2445332,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 455501414,\n          \"addTime\": \"2026-11-11T04:07:40.752GMT\",\n          \"executorLogs\": {\n            \"stdout\": \"http://172.18.0.5:8081/logPage/?appId=app-20261111040734-0005&executorId=0&logType=stdout\",\n            \"stderr\": \"http://172.18.0.5:8081/logPage/?appId=app-20261111040734-0005&executorId=0&logType=stderr\"\n          },\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 455501414,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"peakMemoryMetrics\": {\n            \"JVMHeapMemory\": 0,\n            \"JVMOffHeapMemory\": 0,\n            \"OnHeapExecutionMemory\": 0,\n            \"OffHeapExecutionMemory\": 0,\n            \"OnHeapStorageMemory\": 0,\n            \"OffHeapStorageMemory\": 0,\n            \"OnHeapUnifiedMemory\": 0,\n            \"OffHeapUnifiedMemory\": 0,\n            \"DirectPoolMemory\": 0,\n            \"MappedPoolMemory\": 0,\n            \"ProcessTreeJVMVMemory\": 0,\n            \"ProcessTreeJVMRSSMemory\": 0,\n            \"ProcessTreePythonVMemory\": 0,\n            \"ProcessTreePythonRSSMemory\": 0,\n            \"ProcessTreeOtherVMemory\": 0,\n            \"ProcessTreeOtherRSSMemory\": 0,\n            \"MinorGCCount\": 0,\n            \"MinorGCTime\": 0,\n            \"MajorGCCount\": 0,\n            \"MajorGCTime\": 0,\n            \"TotalGCTime\": 0\n          },\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        },\n        {\n          \"id\": \"1\",\n          \"hostPort\": \"172.18.0.5:39539\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 1,\n          \"maxTasks\": 1,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 2,\n          \"totalTasks\": 2,\n          \"totalDuration\": 3570,\n          \"totalGCTime\": 73,\n          \"totalInputBytes\": 8519680,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 455501414,\n          \"addTime\": \"2026-11-11T04:07:41.139GMT\",\n          \"executorLogs\": {\n            \"stdout\": \"http://172.18.0.5:8081/logPage/?appId=app-20261111040734-0005&executorId=1&logType=stdout\",\n            \"stderr\": \"http://172.18.0.5:8081/logPage/?appId=app-20261111040734-0005&executorId=1&logType=stderr\"\n          },\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 455501414,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"peakMemoryMetrics\": {\n            \"JVMHeapMemory\": 0,\n            \"JVMOffHeapMemory\": 0,\n            \"OnHeapExecutionMemory\": 0,\n            \"OffHeapExecutionMemory\": 0,\n            \"OnHeapStorageMemory\": 0,\n            \"OffHeapStorageMemory\": 0,\n            \"OnHeapUnifiedMemory\": 0,\n            \"OffHeapUnifiedMemory\": 0,\n            \"DirectPoolMemory\": 0,\n            \"MappedPoolMemory\": 0,\n            \"ProcessTreeJVMVMemory\": 0,\n            \"ProcessTreeJVMRSSMemory\": 0,\n            \"ProcessTreePythonVMemory\": 0,\n            \"ProcessTreePythonRSSMemory\": 0,\n            \"ProcessTreeOtherVMemory\": 0,\n            \"ProcessTreeOtherRSSMemory\": 0,\n            \"MinorGCCount\": 0,\n            \"MinorGCTime\": 0,\n            \"MajorGCCount\": 0,\n            \"MajorGCTime\": 0,\n            \"TotalGCTime\": 0\n          },\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        },\n        {\n          \"id\": \"2\",\n          \"hostPort\": \"172.18.0.5:35621\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 1,\n          \"maxTasks\": 1,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 2,\n          \"totalTasks\": 2,\n          \"totalDuration\": 3457,\n          \"totalGCTime\": 59,\n          \"totalInputBytes\": 8519680,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 455501414,\n          \"addTime\": \"2026-11-11T04:07:40.998GMT\",\n          \"executorLogs\": {\n            \"stdout\": \"http://172.18.0.5:8081/logPage/?appId=app-20261111040734-0005&executorId=2&logType=stdout\",\n            \"stderr\": \"http://172.18.0.5:8081/logPage/?appId=app-20261111040734-0005&executorId=2&logType=stderr\"\n          },\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 455501414,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"peakMemoryMetrics\": {\n            \"JVMHeapMemory\": 0,\n            \"JVMOffHeapMemory\": 0,\n            \"OnHeapExecutionMemory\": 0,\n            \"OffHeapExecutionMemory\": 0,\n            \"OnHeapStorageMemory\": 0,\n            \"OffHeapStorageMemory\": 0,\n            \"OnHeapUnifiedMemory\": 0,\n            \"OffHeapUnifiedMemory\": 0,\n            \"DirectPoolMemory\": 0,\n            \"MappedPoolMemory\": 0,\n            \"ProcessTreeJVMVMemory\": 0,\n            \"ProcessTreeJVMRSSMemory\": 0,\n            \"ProcessTreePythonVMemory\": 0,\n            \"ProcessTreePythonRSSMemory\": 0,\n            \"ProcessTreeOtherVMemory\": 0,\n            \"ProcessTreeOtherRSSMemory\": 0,\n            \"MinorGCCount\": 0,\n            \"MinorGCTime\": 0,\n            \"MajorGCCount\": 0,\n            \"MajorGCTime\": 0,\n            \"TotalGCTime\": 0\n          },\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        },\n        {\n          \"id\": \"3\",\n          \"hostPort\": \"172.18.0.6:43371\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 1,\n          \"maxTasks\": 1,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 1,\n          \"totalTasks\": 1,\n          \"totalDuration\": 2648,\n          \"totalGCTime\": 51,\n          \"totalInputBytes\": 4259840,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 455501414,\n          \"addTime\": \"2026-11-11T04:07:40.363GMT\",\n          \"executorLogs\": {\n            \"stdout\": \"http://172.18.0.6:8081/logPage/?appId=app-20261111040734-0005&executorId=3&logType=stdout\",\n            \"stderr\": \"http://172.18.0.6:8081/logPage/?appId=app-20261111040734-0005&executorId=3&logType=stderr\"\n          },\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 455501414,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"peakMemoryMetrics\": {\n            \"JVMHeapMemory\": 0,\n            \"JVMOffHeapMemory\": 0,\n            \"OnHeapExecutionMemory\": 0,\n            \"OffHeapExecutionMemory\": 0,\n            \"OnHeapStorageMemory\": 0,\n            \"OffHeapStorageMemory\": 0,\n            \"OnHeapUnifiedMemory\": 0,\n            \"OffHeapUnifiedMemory\": 0,\n            \"DirectPoolMemory\": 0,\n            \"MappedPoolMemory\": 0,\n            \"ProcessTreeJVMVMemory\": 0,\n            \"ProcessTreeJVMRSSMemory\": 0,\n            \"ProcessTreePythonVMemory\": 0,\n            \"ProcessTreePythonRSSMemory\": 0,\n            \"ProcessTreeOtherVMemory\": 0,\n            \"ProcessTreeOtherRSSMemory\": 0,\n            \"MinorGCCount\": 0,\n            \"MinorGCTime\": 0,\n            \"MajorGCCount\": 0,\n            \"MajorGCTime\": 0,\n            \"TotalGCTime\": 0\n          },\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        },\n        {\n          \"id\": \"4\",\n          \"hostPort\": \"172.18.0.6:41739\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 1,\n          \"maxTasks\": 1,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 1,\n          \"totalTasks\": 1,\n          \"totalDuration\": 3275,\n          \"totalGCTime\": 64,\n          \"totalInputBytes\": 5482506,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 455501414,\n          \"addTime\": \"2026-11-11T04:07:40.818GMT\",\n          \"executorLogs\": {\n            \"stdout\": \"http://172.18.0.6:8081/logPage/?appId=app-20261111040734-0005&executorId=4&logType=stdout\",\n            \"stderr\": \"http://172.18.0.6:8081/logPage/?appId=app-20261111040734-0005&executorId=4&logType=stderr\"\n          },\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 455501414,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"peakMemoryMetrics\": {\n            \"JVMHeapMemory\": 0,\n            \"JVMOffHeapMemory\": 0,\n            \"OnHeapExecutionMemory\": 0,\n            \"OffHeapExecutionMemory\": 0,\n            \"OnHeapStorageMemory\": 0,\n            \"OffHeapStorageMemory\": 0,\n            \"OnHeapUnifiedMemory\": 0,\n            \"OffHeapUnifiedMemory\": 0,\n            \"DirectPoolMemory\": 0,\n            \"MappedPoolMemory\": 0,\n            \"ProcessTreeJVMVMemory\": 0,\n            \"ProcessTreeJVMRSSMemory\": 0,\n            \"ProcessTreePythonVMemory\": 0,\n            \"ProcessTreePythonRSSMemory\": 0,\n            \"ProcessTreeOtherVMemory\": 0,\n            \"ProcessTreeOtherRSSMemory\": 0,\n            \"MinorGCCount\": 0,\n            \"MinorGCTime\": 0,\n            \"MajorGCCount\": 0,\n            \"MajorGCTime\": 0,\n            \"TotalGCTime\": 0\n          },\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        },\n        {\n          \"id\": \"5\",\n          \"hostPort\": \"172.18.0.6:43407\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 1,\n          \"maxTasks\": 1,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 1,\n          \"totalTasks\": 1,\n          \"totalDuration\": 1162,\n          \"totalGCTime\": 13,\n          \"totalInputBytes\": 65536,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 455501414,\n          \"addTime\": \"2026-11-11T04:07:40.242GMT\",\n          \"executorLogs\": {\n            \"stdout\": \"http://172.18.0.6:8081/logPage/?appId=app-20261111040734-0005&executorId=5&logType=stdout\",\n            \"stderr\": \"http://172.18.0.6:8081/logPage/?appId=app-20261111040734-0005&executorId=5&logType=stderr\"\n          },\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 455501414,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"peakMemoryMetrics\": {\n            \"JVMHeapMemory\": 0,\n            \"JVMOffHeapMemory\": 0,\n            \"OnHeapExecutionMemory\": 0,\n            \"OffHeapExecutionMemory\": 0,\n            \"OnHeapStorageMemory\": 0,\n            \"OffHeapStorageMemory\": 0,\n            \"OnHeapUnifiedMemory\": 0,\n            \"OffHeapUnifiedMemory\": 0,\n            \"DirectPoolMemory\": 0,\n            \"MappedPoolMemory\": 0,\n            \"ProcessTreeJVMVMemory\": 0,\n            \"ProcessTreeJVMRSSMemory\": 0,\n            \"ProcessTreePythonVMemory\": 0,\n            \"ProcessTreePythonRSSMemory\": 0,\n            \"ProcessTreeOtherVMemory\": 0,\n            \"ProcessTreeOtherRSSMemory\": 0,\n            \"MinorGCCount\": 0,\n            \"MinorGCTime\": 0,\n            \"MajorGCCount\": 0,\n            \"MajorGCTime\": 0,\n            \"TotalGCTime\": 0\n          },\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        },\n        {\n          \"id\": \"driver\",\n          \"hostPort\": \"spark-master:39001\",\n          \"isActive\": true,\n          \"rddBlocks\": 0,\n          \"memoryUsed\": 0,\n          \"diskUsed\": 0,\n          \"totalCores\": 0,\n          \"maxTasks\": 0,\n          \"activeTasks\": 0,\n          \"failedTasks\": 0,\n          \"completedTasks\": 0,\n          \"totalTasks\": 0,\n          \"totalDuration\": 17337,\n          \"totalGCTime\": 0,\n          \"totalInputBytes\": 0,\n          \"totalShuffleRead\": 0,\n          \"totalShuffleWrite\": 0,\n          \"isBlacklisted\": false,\n          \"maxMemory\": 455501414,\n          \"addTime\": \"2026-11-11T04:07:34.969GMT\",\n          \"executorLogs\": {},\n          \"memoryMetrics\": {\n            \"usedOnHeapStorageMemory\": 0,\n            \"usedOffHeapStorageMemory\": 0,\n            \"totalOnHeapStorageMemory\": 455501414,\n            \"totalOffHeapStorageMemory\": 0\n          },\n          \"blacklistedInStages\": [],\n          \"attributes\": {},\n          \"resources\": {},\n          \"resourceProfileId\": 0,\n          \"isExcluded\": false,\n          \"excludedInStages\": []\n        }\n      ],\n      \"failed_tasks\": 0,\n      \"memory_bytes_spilled\": 0,\n      \"disk_bytes_spilled\": 0,\n      \"stage_skew\": [\n        {\n          \"stage_id\": 3,\n          \"quantiles\": [\n            0.0,\n            0.5,\n            0.95,\n            1.0\n          ],\n          \"executor_run_time_ms\": [\n            1225.0,\n            2672.0,\n            2672.0,\n            2672.0\n          ],\n          \"memory_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ],\n          \"disk_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ]\n        },\n        {\n          \"stage_id\": 2,\n          \"quantiles\": [\n            0.0,\n            0.5,\n            0.95,\n            1.0\n          ],\n          \"executor_run_time_ms\": [\n            875.0,\n            1265.0,\n            2153.0,\n            2153.0\n          ],\n          \"memory_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ],\n          \"disk_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ]\n        },\n        {\n          \"stage_id\": 1,\n          \"quantiles\": [\n            0.0,\n            0.5,\n            0.95,\n            1.0\n          ],\n          \"executor_run_time_ms\": [\n            1528.0,\n            1592.0,\n            1917.0,\n            1917.0\n          ],\n          \"memory_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ],\n          \"disk_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ]\n        },\n        {\n          \"stage_id\": 0,\n          \"quantiles\": [\n            0.0,\n            0.5,\n            0.95,\n            1.0\n          ],\n          \"executor_run_time_ms\": [\n            491.0,\n            491.0,\n            491.0,\n            491.0\n          ],\n          \"memory_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ],\n          \"disk_bytes_spilled\": [\n            0.0,\n            0.0,\n            0.0,\n            0.0\n          ]\n        }\n      ]\n    }\n  ],\n  \"packaged_history_rest\": {\n    \"application\": {\n      \"id\": \"app-20261110202929-0029\",\n      \"name\": \"compliance_flag_rules\",\n      \"attempts\": [\n        {\n          \"startTime\": \"2026-11-10T20:29:29.185GMT\",\n          \"endTime\": \"2026-11-10T20:29:39.470GMT\",\n          \"lastUpdated\": \"2026-11-11T03:57:44.855GMT\",\n          \"duration\": 10285,\n          \"sparkUser\": \"spark\",\n          \"completed\": true,\n          \"appSparkVersion\": \"3.5.3\",\n          \"startTimeEpoch\": 1794342569185,\n          \"endTimeEpoch\": 1794342579470,\n          \"lastUpdatedEpoch\": 1794369464855\n        }\n      ]\n    },\n    \"executors\": [\n      {\n        \"id\": \"0\",\n        \"hostPort\": \"172.18.0.5:43667\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 1,\n        \"maxTasks\": 1,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 1,\n        \"totalTasks\": 1,\n        \"totalDuration\": 1926,\n        \"totalGCTime\": 49,\n        \"totalInputBytes\": 1222666,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 455501414,\n        \"addTime\": \"2026-11-10T20:29:33.396GMT\",\n        \"executorLogs\": {\n          \"stdout\": \"http://172.18.0.5:8081/logPage/?appId=app-20261110202929-0029&executorId=0&logType=stdout\",\n          \"stderr\": \"http://172.18.0.5:8081/logPage/?appId=app-20261110202929-0029&executorId=0&logType=stderr\"\n        },\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 455501414,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"peakMemoryMetrics\": {\n          \"JVMHeapMemory\": 0,\n          \"JVMOffHeapMemory\": 0,\n          \"OnHeapExecutionMemory\": 0,\n          \"OffHeapExecutionMemory\": 0,\n          \"OnHeapStorageMemory\": 0,\n          \"OffHeapStorageMemory\": 0,\n          \"OnHeapUnifiedMemory\": 0,\n          \"OffHeapUnifiedMemory\": 0,\n          \"DirectPoolMemory\": 0,\n          \"MappedPoolMemory\": 0,\n          \"ProcessTreeJVMVMemory\": 0,\n          \"ProcessTreeJVMRSSMemory\": 0,\n          \"ProcessTreePythonVMemory\": 0,\n          \"ProcessTreePythonRSSMemory\": 0,\n          \"ProcessTreeOtherVMemory\": 0,\n          \"ProcessTreeOtherRSSMemory\": 0,\n          \"MinorGCCount\": 0,\n          \"MinorGCTime\": 0,\n          \"MajorGCCount\": 0,\n          \"MajorGCTime\": 0,\n          \"TotalGCTime\": 0\n        },\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      },\n      {\n        \"id\": \"1\",\n        \"hostPort\": \"172.18.0.5:38855\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 1,\n        \"maxTasks\": 1,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 2,\n        \"totalTasks\": 2,\n        \"totalDuration\": 2600,\n        \"totalGCTime\": 74,\n        \"totalInputBytes\": 5482506,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 455501414,\n        \"addTime\": \"2026-11-10T20:29:33.514GMT\",\n        \"executorLogs\": {\n          \"stdout\": \"http://172.18.0.5:8081/logPage/?appId=app-20261110202929-0029&executorId=1&logType=stdout\",\n          \"stderr\": \"http://172.18.0.5:8081/logPage/?appId=app-20261110202929-0029&executorId=1&logType=stderr\"\n        },\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 455501414,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"peakMemoryMetrics\": {\n          \"JVMHeapMemory\": 0,\n          \"JVMOffHeapMemory\": 0,\n          \"OnHeapExecutionMemory\": 0,\n          \"OffHeapExecutionMemory\": 0,\n          \"OnHeapStorageMemory\": 0,\n          \"OffHeapStorageMemory\": 0,\n          \"OnHeapUnifiedMemory\": 0,\n          \"OffHeapUnifiedMemory\": 0,\n          \"DirectPoolMemory\": 0,\n          \"MappedPoolMemory\": 0,\n          \"ProcessTreeJVMVMemory\": 0,\n          \"ProcessTreeJVMRSSMemory\": 0,\n          \"ProcessTreePythonVMemory\": 0,\n          \"ProcessTreePythonRSSMemory\": 0,\n          \"ProcessTreeOtherVMemory\": 0,\n          \"ProcessTreeOtherRSSMemory\": 0,\n          \"MinorGCCount\": 0,\n          \"MinorGCTime\": 0,\n          \"MajorGCCount\": 0,\n          \"MajorGCTime\": 0,\n          \"TotalGCTime\": 0\n        },\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      },\n      {\n        \"id\": \"2\",\n        \"hostPort\": \"172.18.0.5:34257\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 1,\n        \"maxTasks\": 1,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 1,\n        \"totalTasks\": 1,\n        \"totalDuration\": 844,\n        \"totalGCTime\": 16,\n        \"totalInputBytes\": 65536,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 455501414,\n        \"addTime\": \"2026-11-10T20:29:33.104GMT\",\n        \"executorLogs\": {\n          \"stdout\": \"http://172.18.0.5:8081/logPage/?appId=app-20261110202929-0029&executorId=2&logType=stdout\",\n          \"stderr\": \"http://172.18.0.5:8081/logPage/?appId=app-20261110202929-0029&executorId=2&logType=stderr\"\n        },\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 455501414,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"peakMemoryMetrics\": {\n          \"JVMHeapMemory\": 0,\n          \"JVMOffHeapMemory\": 0,\n          \"OnHeapExecutionMemory\": 0,\n          \"OffHeapExecutionMemory\": 0,\n          \"OnHeapStorageMemory\": 0,\n          \"OffHeapStorageMemory\": 0,\n          \"OnHeapUnifiedMemory\": 0,\n          \"OffHeapUnifiedMemory\": 0,\n          \"DirectPoolMemory\": 0,\n          \"MappedPoolMemory\": 0,\n          \"ProcessTreeJVMVMemory\": 0,\n          \"ProcessTreeJVMRSSMemory\": 0,\n          \"ProcessTreePythonVMemory\": 0,\n          \"ProcessTreePythonRSSMemory\": 0,\n          \"ProcessTreeOtherVMemory\": 0,\n          \"ProcessTreeOtherRSSMemory\": 0,\n          \"MinorGCCount\": 0,\n          \"MinorGCTime\": 0,\n          \"MajorGCCount\": 0,\n          \"MajorGCTime\": 0,\n          \"TotalGCTime\": 0\n        },\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      },\n      {\n        \"id\": \"3\",\n        \"hostPort\": \"172.18.0.6:46509\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 1,\n        \"maxTasks\": 1,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 3,\n        \"totalTasks\": 3,\n        \"totalDuration\": 3519,\n        \"totalGCTime\": 62,\n        \"totalInputBytes\": 14002186,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 455501414,\n        \"addTime\": \"2026-11-10T20:29:33.107GMT\",\n        \"executorLogs\": {\n          \"stdout\": \"http://172.18.0.6:8081/logPage/?appId=app-20261110202929-0029&executorId=3&logType=stdout\",\n          \"stderr\": \"http://172.18.0.6:8081/logPage/?appId=app-20261110202929-0029&executorId=3&logType=stderr\"\n        },\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 455501414,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"peakMemoryMetrics\": {\n          \"JVMHeapMemory\": 0,\n          \"JVMOffHeapMemory\": 0,\n          \"OnHeapExecutionMemory\": 0,\n          \"OffHeapExecutionMemory\": 0,\n          \"OnHeapStorageMemory\": 0,\n          \"OffHeapStorageMemory\": 0,\n          \"OnHeapUnifiedMemory\": 0,\n          \"OffHeapUnifiedMemory\": 0,\n          \"DirectPoolMemory\": 0,\n          \"MappedPoolMemory\": 0,\n          \"ProcessTreeJVMVMemory\": 0,\n          \"ProcessTreeJVMRSSMemory\": 0,\n          \"ProcessTreePythonVMemory\": 0,\n          \"ProcessTreePythonRSSMemory\": 0,\n          \"ProcessTreeOtherVMemory\": 0,\n          \"ProcessTreeOtherRSSMemory\": 0,\n          \"MinorGCCount\": 0,\n          \"MinorGCTime\": 0,\n          \"MajorGCCount\": 0,\n          \"MajorGCTime\": 0,\n          \"TotalGCTime\": 0\n        },\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      },\n      {\n        \"id\": \"4\",\n        \"hostPort\": \"172.18.0.6:44179\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 1,\n        \"maxTasks\": 1,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 2,\n        \"totalTasks\": 2,\n        \"totalDuration\": 2724,\n        \"totalGCTime\": 57,\n        \"totalInputBytes\": 8519680,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 455501414,\n        \"addTime\": \"2026-11-10T20:29:33.324GMT\",\n        \"executorLogs\": {\n          \"stdout\": \"http://172.18.0.6:8081/logPage/?appId=app-20261110202929-0029&executorId=4&logType=stdout\",\n          \"stderr\": \"http://172.18.0.6:8081/logPage/?appId=app-20261110202929-0029&executorId=4&logType=stderr\"\n        },\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 455501414,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"peakMemoryMetrics\": {\n          \"JVMHeapMemory\": 0,\n          \"JVMOffHeapMemory\": 0,\n          \"OnHeapExecutionMemory\": 0,\n          \"OffHeapExecutionMemory\": 0,\n          \"OnHeapStorageMemory\": 0,\n          \"OffHeapStorageMemory\": 0,\n          \"OnHeapUnifiedMemory\": 0,\n          \"OffHeapUnifiedMemory\": 0,\n          \"DirectPoolMemory\": 0,\n          \"MappedPoolMemory\": 0,\n          \"ProcessTreeJVMVMemory\": 0,\n          \"ProcessTreeJVMRSSMemory\": 0,\n          \"ProcessTreePythonVMemory\": 0,\n          \"ProcessTreePythonRSSMemory\": 0,\n          \"ProcessTreeOtherVMemory\": 0,\n          \"ProcessTreeOtherRSSMemory\": 0,\n          \"MinorGCCount\": 0,\n          \"MinorGCTime\": 0,\n          \"MajorGCCount\": 0,\n          \"MajorGCTime\": 0,\n          \"TotalGCTime\": 0\n        },\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      },\n      {\n        \"id\": \"5\",\n        \"hostPort\": \"172.18.0.6:43315\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 1,\n        \"maxTasks\": 1,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 0,\n        \"totalTasks\": 0,\n        \"totalDuration\": 0,\n        \"totalGCTime\": 0,\n        \"totalInputBytes\": 0,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 455501414,\n        \"addTime\": \"2026-11-10T20:29:33.478GMT\",\n        \"executorLogs\": {\n          \"stdout\": \"http://172.18.0.6:8081/logPage/?appId=app-20261110202929-0029&executorId=5&logType=stdout\",\n          \"stderr\": \"http://172.18.0.6:8081/logPage/?appId=app-20261110202929-0029&executorId=5&logType=stderr\"\n        },\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 455501414,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      },\n      {\n        \"id\": \"driver\",\n        \"hostPort\": \"spark-master:44127\",\n        \"isActive\": true,\n        \"rddBlocks\": 0,\n        \"memoryUsed\": 0,\n        \"diskUsed\": 0,\n        \"totalCores\": 0,\n        \"maxTasks\": 0,\n        \"activeTasks\": 0,\n        \"failedTasks\": 0,\n        \"completedTasks\": 0,\n        \"totalTasks\": 0,\n        \"totalDuration\": 10285,\n        \"totalGCTime\": 0,\n        \"totalInputBytes\": 0,\n        \"totalShuffleRead\": 0,\n        \"totalShuffleWrite\": 0,\n        \"isBlacklisted\": false,\n        \"maxMemory\": 455501414,\n        \"addTime\": \"2026-11-10T20:29:29.768GMT\",\n        \"executorLogs\": {},\n        \"memoryMetrics\": {\n          \"usedOnHeapStorageMemory\": 0,\n          \"usedOffHeapStorageMemory\": 0,\n          \"totalOnHeapStorageMemory\": 455501414,\n          \"totalOffHeapStorageMemory\": 0\n        },\n        \"blacklistedInStages\": [],\n        \"attributes\": {},\n        \"resources\": {},\n        \"resourceProfileId\": 0,\n        \"isExcluded\": false,\n        \"excludedInStages\": []\n      }\n    ],\n    \"failed_tasks\": 0,\n    \"memory_bytes_spilled\": 0,\n    \"disk_bytes_spilled\": 0,\n    \"stage_skew\": [\n      {\n        \"stage_id\": 3,\n        \"quantiles\": [\n          0.0,\n          0.5,\n          0.95,\n          1.0\n        ],\n        \"executor_run_time_ms\": [\n          758.0,\n          795.0,\n          795.0,\n          795.0\n        ],\n        \"memory_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ],\n        \"disk_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ]\n      },\n      {\n        \"stage_id\": 2,\n        \"quantiles\": [\n          0.0,\n          0.5,\n          0.95,\n          1.0\n        ],\n        \"executor_run_time_ms\": [\n          865.0,\n          960.0,\n          1491.0,\n          1491.0\n        ],\n        \"memory_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ],\n        \"disk_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ]\n      },\n      {\n        \"stage_id\": 1,\n        \"quantiles\": [\n          0.0,\n          0.5,\n          0.95,\n          1.0\n        ],\n        \"executor_run_time_ms\": [\n          1159.0,\n          1375.0,\n          1472.0,\n          1472.0\n        ],\n        \"memory_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ],\n        \"disk_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ]\n      },\n      {\n        \"stage_id\": 0,\n        \"quantiles\": [\n          0.0,\n          0.5,\n          0.95,\n          1.0\n        ],\n        \"executor_run_time_ms\": [\n          382.0,\n          382.0,\n          382.0,\n          382.0\n        ],\n        \"memory_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ],\n        \"disk_bytes_spilled\": [\n          0.0,\n          0.0,\n          0.0,\n          0.0\n        ]\n      }\n    ]\n  }\n}\n' detail, CAST(NULL AS STRING) statement_id) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd85-d93f-1f1e-ac73-2c34dbfed7ad",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "0",
+          "0",
+          "1"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_control.migration_control t\nUSING (SELECT 'spark:compliance_flag_rules' AS object_name,\n'audit' AS subject_area,\n'spark' AS source_system,\n'etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala' AS source_path,\n'cpw.dbx_d1111_after.audit__spark_compliance_flag_rules' AS target,\n'red' AS status,\n'BLOCKED: missing live baseline; local exact parity=True' AS parity,\n'https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756' AS pr,\n'[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' AS first_failure,\n'01f1dd84-1f73-1d90-b5cf-bf3587046203' AS first_failure_statement_id,\n'BLOCKED: no live-adapted original result; fixture evidence is not live parity' AS corrected_parity,\nCAST(NULL AS STRING) AS parity_statement_id,\n'BLOCKED: no successful live runs' AS idempotence,\n'[]' AS idempotence_statement_ids,\n'0.010249167' AS executor_hours,\n'763368305743207' AS job_id,\n'[]' AS job_run_ids,\n'missing live baseline' AS red_reason,\n'dbx-d1111' AS run_token,\n'2026-11-24' AS expires, current_timestamp() updated_at) s\nON t.object_name=s.object_name\nWHEN MATCHED THEN UPDATE SET t.subject_area=s.subject_area, t.source_system=s.source_system, t.source_path=s.source_path, t.target=s.target, t.status=s.status, t.parity=s.parity, t.pr=s.pr, t.first_failure=s.first_failure, t.first_failure_statement_id=s.first_failure_statement_id, t.corrected_parity=s.corrected_parity, t.parity_statement_id=s.parity_statement_id, t.idempotence=s.idempotence, t.idempotence_statement_ids=s.idempotence_statement_ids, t.executor_hours=s.executor_hours, t.job_id=s.job_id, t.job_run_ids=s.job_run_ids, t.red_reason=s.red_reason, t.run_token=s.run_token, t.expires=s.expires, t.updated_at=s.updated_at\nWHEN NOT MATCHED THEN INSERT (object_name, subject_area, source_system, source_path, target, status, parity, pr, first_failure, first_failure_statement_id, corrected_parity, parity_statement_id, idempotence, idempotence_statement_ids, executor_hours, job_id, job_run_ids, red_reason, run_token, expires, updated_at) VALUES (s.object_name, s.subject_area, s.source_system, s.source_path, s.target, s.status, s.parity, s.pr, s.first_failure, s.first_failure_statement_id, s.corrected_parity, s.parity_statement_id, s.idempotence, s.idempotence_statement_ids, s.executor_hours, s.job_id, s.job_run_ids, s.red_reason, s.run_token, s.expires, s.updated_at)",
+    "statement_id": "01f1dd85-daa8-1940-b61c-a893e99be3f2",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nDESCRIBE TABLE cpw.dbx_d1111_before.audit__compliance_flag",
+    "statement_id": "01f1dd86-3362-124f-a663-3ff94568b260",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 8
+        }
+      ],
+      "total_row_count": 8,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 8,
+      "data_array": [
+        [
+          "flag_id",
+          "bigint",
+          null
+        ],
+        [
+          "customer_id",
+          "bigint",
+          null
+        ],
+        [
+          "document_id",
+          "bigint",
+          null
+        ],
+        [
+          "flag_type",
+          "string",
+          null
+        ],
+        [
+          "flag_dt",
+          "date",
+          null
+        ],
+        [
+          "status_cd",
+          "string",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSELECT count(*) row_count FROM cpw.dbx_d1111_before.audit__compliance_flag",
+    "statement_id": "01f1dd86-33c3-1bc2-a055-a635ebd910d9",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 1,
+        "columns": [
+          {
+            "name": "row_count",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "100"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nDESCRIBE TABLE cpw.dbx_d1111_before.audit__stg_compliance_flag",
+    "statement_id": "01f1dd86-4b33-13a3-a944-4fac359ba195",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "col_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "data_type",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "comment",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 8
+        }
+      ],
+      "total_row_count": 8,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 8,
+      "data_array": [
+        [
+          "flag_id",
+          "bigint",
+          null
+        ],
+        [
+          "customer_id",
+          "bigint",
+          null
+        ],
+        [
+          "document_id",
+          "bigint",
+          null
+        ],
+        [
+          "flag_type",
+          "string",
+          null
+        ],
+        [
+          "flag_dt",
+          "date",
+          null
+        ],
+        [
+          "status_cd",
+          "string",
+          null
+        ],
+        [
+          "# Clustering Information",
+          "",
+          ""
+        ],
+        [
+          "# col_name",
+          "data_type",
+          "comment"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSELECT count(*) row_count FROM cpw.dbx_d1111_before.audit__stg_compliance_flag",
+    "statement_id": "01f1dd86-4b94-14a5-8471-dd9ca89247be",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 1,
+        "columns": [
+          {
+            "name": "row_count",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "100"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "inputs",
+    "sql": "/* run=dbx-d1111 act=spark step=inputs consumer=compliance_flag_rules */\nSELECT SEVERITY FROM cpw.dbx_d1111_before.audit__compliance_flag LIMIT 1",
+    "statement_id": "01f1dd86-61c9-1429-ac95-0f26f9af6ed7",
+    "status": {
+      "state": "FAILED",
+      "error": {
+        "error_code": "BAD_REQUEST",
+        "message": "[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SEVERITY` cannot be resolved. Did you mean one of the following? [`flag_dt`, `flag_id`, `flag_type`, `status_cd`, `customer_id`]. SQLSTATE: 42703; line 2 pos 7"
+      },
+      "sql_state": "42703"
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "history",
+    "sql": "/* run=dbx-d1111 act=spark step=history consumer=compliance_flag_rules */\nSELECT statement_id, start_time, total_duration_ms, read_rows, produced_rows, execution_status\nFROM system.query.history\nWHERE statement_text LIKE '/* run=dbx-d1111 act=spark step=%consumer=compliance_flag_rules */%'\nORDER BY start_time",
+    "statement_id": "01f1dd87-f507-1c60-bccc-16c38b75df43",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 6,
+        "columns": [
+          {
+            "name": "statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "start_time",
+            "type_text": "TIMESTAMP",
+            "type_name": "TIMESTAMP",
+            "position": 1
+          },
+          {
+            "name": "total_duration_ms",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "read_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          },
+          {
+            "name": "produced_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 4
+          },
+          {
+            "name": "execution_status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 24
+        }
+      ],
+      "total_row_count": 24,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 24,
+      "data_array": [
+        [
+          "01f1dd84-1f73-1d90-b5cf-bf3587046203",
+          "2026-11-11T03:58:15.835Z",
+          "190",
+          "0",
+          null,
+          "FAILED"
+        ],
+        [
+          "01f1dd84-1fc7-1afb-a492-7375438f64b3",
+          "2026-11-11T03:58:16.384Z",
+          "319",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-35a9-165f-ac01-65694ae7df7d",
+          "2026-11-11T03:58:53.095Z",
+          "231",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd84-35ef-1584-8b09-0d11c5588c2e",
+          "2026-11-11T03:58:53.553Z",
+          "233",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-0ba0-186d-b595-a4a0bd0d52fc",
+          "2026-11-11T04:04:52.072Z",
+          "2289",
+          "281",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-0d38-1af5-bb11-ad473b4ca4e0",
+          "2026-11-11T04:04:54.745Z",
+          "2596",
+          "282",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-0ef6-1ab1-91e2-da56f7189845",
+          "2026-11-11T04:04:57.672Z",
+          "2332",
+          "283",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-1088-1055-bcfb-8c0a3504ce66",
+          "2026-11-11T04:05:00.298Z",
+          "2401",
+          "284",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-1229-150b-8c90-c4e8e2fe7f48",
+          "2026-11-11T04:05:03.032Z",
+          "2412",
+          "285",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-13cb-13e8-8744-34bd2f04fcc1",
+          "2026-11-11T04:05:05.772Z",
+          "2734",
+          "286",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-15ac-1340-9727-298882182d4c",
+          "2026-11-11T04:05:08.925Z",
+          "2196",
+          "287",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-1724-1820-9c0c-b40f8b8dab14",
+          "2026-11-11T04:05:11.391Z",
+          "2211",
+          "288",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-18ac-1de3-a1ef-35daa807bae3",
+          "2026-11-11T04:05:13.961Z",
+          "2222",
+          "2",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-2588-147d-9bf5-483e5a3d436e",
+          "2026-11-11T04:05:35.533Z",
+          "437",
+          "1",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-8fdf-10e1-8f79-caf943c91c6a",
+          "2026-11-11T04:08:33.940Z",
+          "3001",
+          "4",
+          "4",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-91df-18f3-95f9-455f514454b1",
+          "2026-11-11T04:08:37.299Z",
+          "2623",
+          "0",
+          "0",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-d7d8-13b2-b0d2-1bf441cc1604",
+          "2026-11-11T04:10:34.691Z",
+          "2020",
+          "316",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-d93f-1f1e-ac73-2c34dbfed7ad",
+          "2026-11-11T04:10:37.049Z",
+          "2030",
+          "317",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd85-daa8-1940-b61c-a893e99be3f2",
+          "2026-11-11T04:10:39.413Z",
+          "4046",
+          "4",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-3362-124f-a663-3ff94568b260",
+          "2026-11-11T04:13:08.266Z",
+          "328",
+          "0",
+          "8",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-33c3-1bc2-a055-a635ebd910d9",
+          "2026-11-11T04:13:08.906Z",
+          "398",
+          "0",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-4b33-13a3-a944-4fac359ba195",
+          "2026-11-11T04:13:48.224Z",
+          "318",
+          "0",
+          "8",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-4b94-14a5-8471-dd9ca89247be",
+          "2026-11-11T04:13:48.862Z",
+          "374",
+          "0",
+          "1",
+          "FINISHED"
+        ],
+        [
+          "01f1dd86-61c9-1429-ac95-0f26f9af6ed7",
+          "2026-11-11T04:14:26.119Z",
+          "189",
+          "0",
+          null,
+          "FAILED"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "billing",
+    "sql": "/* run=dbx-d1111 act=spark step=billing consumer=compliance_flag_rules */\nSELECT usage_metadata.job_id, usage_metadata.job_run_id, sum(usage_quantity) AS dbu\nFROM system.billing.usage\nWHERE usage_metadata.job_id='763368305743207' AND usage_unit='DBU'\nGROUP BY usage_metadata.job_id, usage_metadata.job_run_id",
+    "statement_id": "01f1dd87-f706-100b-bdc1-0b4090cd804d",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 3,
+        "columns": [
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "job_run_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "dbu",
+            "type_text": "DECIMAL(38,18)",
+            "type_name": "DECIMAL",
+            "position": 2,
+            "type_precision": 38,
+            "type_scale": 18
+          }
+        ]
+      },
+      "total_chunk_count": 0,
+      "total_row_count": 0,
+      "truncated": false
+    },
+    "result": {}
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "evidence",
+    "sql": "/* run=dbx-d1111 act=spark step=evidence consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_parity.results t\nUSING (SELECT * FROM VALUES ('spark-compliance_flag_rules','spark:compliance_flag_rules','first-failure','red','[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14','01f1dd84-1f73-1d90-b5cf-bf3587046203'),('spark-compliance_flag_rules','spark:compliance_flag_rules','input-recheck','red','Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.','01f1dd86-61c9-1429-ac95-0f26f9af6ed7'),('spark-compliance_flag_rules','spark:compliance_flag_rules','input-alternatives','red','Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.','01f1dd86-61c9-1429-ac95-0f26f9af6ed7'),('spark-compliance_flag_rules','spark:compliance_flag_rules','input-equality','blocked','Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.','01f1dd86-61c9-1429-ac95-0f26f9af6ed7'),('spark-compliance_flag_rules','spark:compliance_flag_rules','run1','blocked','Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.','01f1dd86-61c9-1429-ac95-0f26f9af6ed7'),('spark-compliance_flag_rules','spark:compliance_flag_rules','counts','blocked','Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.','01f1dd86-61c9-1429-ac95-0f26f9af6ed7'),('spark-compliance_flag_rules','spark:compliance_flag_rules','hash','blocked','Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.','01f1dd86-61c9-1429-ac95-0f26f9af6ed7'),('spark-compliance_flag_rules','spark:compliance_flag_rules','except-all','blocked','Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.','01f1dd86-61c9-1429-ac95-0f26f9af6ed7'),('spark-compliance_flag_rules','spark:compliance_flag_rules','run2-idempotence','blocked','Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.','01f1dd86-61c9-1429-ac95-0f26f9af6ed7'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd84-1f73-1d90-b5cf-bf3587046203','red','{\"step\": \"inputs\", \"status\": {\"state\": \"FAILED\", \"error\": {\"error_code\": \"BAD_REQUEST\", \"message\": \"[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\\\\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\\\\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\\\\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14\"}, \"sql_state\": \"42P01\"}, \"result\": {}}','01f1dd84-1f73-1d90-b5cf-bf3587046203'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd84-1fc7-1afb-a492-7375438f64b3','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-1fc7-1afb-a492-7375438f64b3'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd84-35a9-165f-ac01-65694ae7df7d','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-35a9-165f-ac01-65694ae7df7d'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd84-35ef-1584-8b09-0d11c5588c2e','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd84-35ef-1584-8b09-0d11c5588c2e'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd85-8fdf-10e1-8f79-caf943c91c6a','info','{\"step\": \"history\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 4, \"data_array\": [[\"01f1dd84-1f73-1d90-b5cf-bf3587046203\", \"2026-11-11T03:58:15.835Z\", \"190\", \"0\", null, \"FAILED\"], [\"01f1dd84-1fc7-1afb-a492-7375438f64b3\", \"2026-11-11T03:58:16.384Z\", \"319\", \"0\", \"0\", \"FINISHED\"], [\"01f1dd84-35a9-165f-ac01-65694ae7df7d\", \"2026-11-11T03:58:53.095Z\", \"231\", \"0\", \"0\", \"FINISHED\"], [\"01f1dd84-35ef-1584-8b09-0d11c5588c2e\", \"2026-11-11T03:58:53.553Z\", \"233\", \"0\", \"0\", \"FINISHED\"]]}}','01f1dd85-8fdf-10e1-8f79-caf943c91c6a'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd85-91df-18f3-95f9-455f514454b1','info','{\"step\": \"billing\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd85-91df-18f3-95f9-455f514454b1'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd86-3362-124f-a663-3ff94568b260','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 8, \"data_array\": [[\"flag_id\", \"bigint\", null], [\"customer_id\", \"bigint\", null], [\"document_id\", \"bigint\", null], [\"flag_type\", \"string\", null], [\"flag_dt\", \"date\", null], [\"status_cd\", \"string\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd86-3362-124f-a663-3ff94568b260'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd86-33c3-1bc2-a055-a635ebd910d9','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"100\"]]}}','01f1dd86-33c3-1bc2-a055-a635ebd910d9'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd86-4b33-13a3-a944-4fac359ba195','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 8, \"data_array\": [[\"flag_id\", \"bigint\", null], [\"customer_id\", \"bigint\", null], [\"document_id\", \"bigint\", null], [\"flag_type\", \"string\", null], [\"flag_dt\", \"date\", null], [\"status_cd\", \"string\", null], [\"# Clustering Information\", \"\", \"\"], [\"# col_name\", \"data_type\", \"comment\"]]}}','01f1dd86-4b33-13a3-a944-4fac359ba195'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd86-4b94-14a5-8471-dd9ca89247be','info','{\"step\": \"inputs\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"chunk_index\": 0, \"row_offset\": 0, \"row_count\": 1, \"data_array\": [[\"100\"]]}}','01f1dd86-4b94-14a5-8471-dd9ca89247be'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd86-61c9-1429-ac95-0f26f9af6ed7','red','{\"step\": \"inputs\", \"status\": {\"state\": \"FAILED\", \"error\": {\"error_code\": \"BAD_REQUEST\", \"message\": \"[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SEVERITY` cannot be resolved. Did you mean one of the following? [`flag_dt`, `flag_id`, `flag_type`, `status_cd`, `customer_id`]. SQLSTATE: 42703; line 2 pos 7\"}, \"sql_state\": \"42703\"}, \"result\": {}}','01f1dd86-61c9-1429-ac95-0f26f9af6ed7'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd87-f507-1c60-bccc-16c38b75df43','info','{\"step\": \"history\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {\"row_count\": 24, \"note\": \"Full query result retained in statement evidence\"}}','01f1dd87-f507-1c60-bccc-16c38b75df43'),('spark-compliance_flag_rules','spark:compliance_flag_rules','statement:01f1dd87-f706-100b-bdc1-0b4090cd804d','info','{\"step\": \"billing\", \"status\": {\"state\": \"SUCCEEDED\"}, \"result\": {}}','01f1dd87-f706-100b-bdc1-0b4090cd804d') AS v(run_label,object,rung,status,detail,statement_id)) s\nON t.run_label=s.run_label AND t.object=s.object AND t.rung=s.rung\nWHEN MATCHED THEN UPDATE SET status=s.status, detail=s.detail, statement_id=s.statement_id, measured_at=current_timestamp()\nWHEN NOT MATCHED THEN INSERT (run_label,object,rung,status,detail,statement_id,measured_at)\nVALUES(s.run_label,s.object,s.rung,s.status,s.detail,s.statement_id,current_timestamp())",
+    "statement_id": "01f1dd88-140c-18cc-a139-e0bd1a6eb2c9",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "22",
+          "7",
+          "0",
+          "15"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "control",
+    "sql": "/* run=dbx-d1111 act=spark step=control consumer=compliance_flag_rules */\nMERGE INTO cpw.dbx_d1111_control.migration_control t\nUSING (SELECT 'spark:compliance_flag_rules' AS object_name,\n'audit' AS subject_area,\n'spark' AS source_system,\n'etl/spark/scala/src/main/scala/sfx/ComplianceFlagRules.scala' AS source_path,\n'cpw.dbx_d1111_after.audit__spark_compliance_flag_rules' AS target,\n'red' AS status,\n'BLOCKED: Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.' AS parity,\n'https://github.com/Cognition-Partner-Workshops/otterworks/pull/2756' AS pr,\n'[TABLE_OR_VIEW_NOT_FOUND] The table or view `cpw`.`dbx_d1111_before`.`audit__compliance_flag` cannot be found. Verify the spelling and correctness of the schema and catalog.\nSearch path: [`system`.`session`, `system`.`builtin`, `system`.`ai`, `workspace`.`default`].\nIf you did not qualify the name with a schema, verify the current_schema() output, or qualify the name with the correct schema and catalog.\nTo tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS. SQLSTATE: 42P01; line 2 pos 14' AS first_failure,\n'01f1dd84-1f73-1d90-b5cf-bf3587046203' AS first_failure_statement_id,\n'BLOCKED: Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.' AS corrected_parity,\nCAST(NULL AS STRING) AS parity_statement_id,\n'BLOCKED: no complete live input contract; no job run submitted' AS idempotence,\n'[]' AS idempotence_statement_ids,\n'0.010249167' AS executor_hours,\n'763368305743207' AS job_id,\n'[]' AS job_run_ids,\n'Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity.' AS red_reason,\n'dbx-d1111' AS run_token,\n'2026-11-24' AS expires, current_timestamp() updated_at) s\nON t.object_name=s.object_name\nWHEN MATCHED THEN UPDATE SET t.subject_area=s.subject_area, t.source_system=s.source_system, t.source_path=s.source_path, t.target=s.target, t.status=s.status, t.parity=s.parity, t.pr=s.pr, t.first_failure=s.first_failure, t.first_failure_statement_id=s.first_failure_statement_id, t.corrected_parity=s.corrected_parity, t.parity_statement_id=s.parity_statement_id, t.idempotence=s.idempotence, t.idempotence_statement_ids=s.idempotence_statement_ids, t.executor_hours=s.executor_hours, t.job_id=s.job_id, t.job_run_ids=s.job_run_ids, t.red_reason=s.red_reason, t.run_token=s.run_token, t.expires=s.expires, t.updated_at=s.updated_at\nWHEN NOT MATCHED THEN INSERT (object_name, subject_area, source_system, source_path, target, status, parity, pr, first_failure, first_failure_statement_id, corrected_parity, parity_statement_id, idempotence, idempotence_statement_ids, executor_hours, job_id, job_run_ids, red_reason, run_token, expires, updated_at) VALUES (s.object_name, s.subject_area, s.source_system, s.source_path, s.target, s.status, s.parity, s.pr, s.first_failure, s.first_failure_statement_id, s.corrected_parity, s.parity_statement_id, s.idempotence, s.idempotence_statement_ids, s.executor_hours, s.job_id, s.job_run_ids, s.red_reason, s.run_token, s.expires, s.updated_at)",
+    "statement_id": "01f1dd88-1636-1d77-9de7-114f00831390",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 4,
+        "columns": [
+          {
+            "name": "num_affected_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 0
+          },
+          {
+            "name": "num_updated_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 1
+          },
+          {
+            "name": "num_deleted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 2
+          },
+          {
+            "name": "num_inserted_rows",
+            "type_text": "BIGINT",
+            "type_name": "LONG",
+            "position": 3
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "1",
+          "1",
+          "0",
+          "0"
+        ]
+      ]
+    }
+  },
+  {
+    "job": "compliance_flag_rules",
+    "step": "verify",
+    "sql": "/* run=dbx-d1111 act=spark step=verify consumer=compliance_flag_rules */\nSELECT object_name,status,first_failure_statement_id,parity_statement_id,job_id,job_run_ids,red_reason\nFROM cpw.dbx_d1111_control.migration_control WHERE object_name='spark:compliance_flag_rules' ",
+    "statement_id": "01f1dd88-1878-138a-8621-04a4344be907",
+    "status": {
+      "state": "SUCCEEDED"
+    },
+    "manifest": {
+      "format": "JSON_ARRAY",
+      "schema": {
+        "column_count": 7,
+        "columns": [
+          {
+            "name": "object_name",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 0
+          },
+          {
+            "name": "status",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 1
+          },
+          {
+            "name": "first_failure_statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 2
+          },
+          {
+            "name": "parity_statement_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 3
+          },
+          {
+            "name": "job_id",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 4
+          },
+          {
+            "name": "job_run_ids",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 5
+          },
+          {
+            "name": "red_reason",
+            "type_text": "STRING",
+            "type_name": "STRING",
+            "position": 6
+          }
+        ]
+      },
+      "total_chunk_count": 1,
+      "chunks": [
+        {
+          "chunk_index": 0,
+          "row_offset": 0,
+          "row_count": 1
+        }
+      ],
+      "total_row_count": 1,
+      "truncated": false
+    },
+    "result": {
+      "chunk_index": 0,
+      "row_offset": 0,
+      "row_count": 1,
+      "data_array": [
+        [
+          "spark:compliance_flag_rules",
+          "red",
+          "01f1dd84-1f73-1d90-b5cf-bf3587046203",
+          null,
+          "763368305743207",
+          "[]",
+          "Missing SEVERITY and USER_ID in audit__compliance_flag and audit__stg_compliance_flag; FLAG_TYPE is not a numeric severity or user identity."
+        ]
+      ]
+    }
+  }
+]
