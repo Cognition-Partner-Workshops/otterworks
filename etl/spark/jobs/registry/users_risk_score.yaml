@@ -5,6 +5,7 @@
   "status": "snowflake",
   "schedule": "16 2 * * *",
   "profile": "small",
+  "ingest": ["users.USER_ACTIVITY_DAILY"],
   "class": "sfx.UsersRiskScore",
   "command": "warehouse/.venv/bin/python warehouse/snowpark/run_job.py --job users_risk_score"
 }
