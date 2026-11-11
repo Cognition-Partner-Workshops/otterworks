@@ -48,6 +48,9 @@ jobs:
       - if: steps.changes.outputs.warehouse == 'true'
         run: python -m pytest -q warehouse/seed/tests warehouse/teradata/tests
       - if: steps.changes.outputs.warehouse == 'true'
+        name: Reject XML entities in warehouse exports
+        run: python -m pytest -q warehouse/parity/tests/test_xml_security.py
+      - if: steps.changes.outputs.warehouse == 'true'
         name: Warehouse smoke
         run: |
           python warehouse/seed/generate.py --rows 2000 --seed 1110 --business-date 20261109

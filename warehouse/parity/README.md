@@ -9,6 +9,11 @@ its GL_ACCOUNT reference seed. LANDING_DIR or `python -m parity setup
 --landing-dir PATH` overrides the fixture root. Run the module from warehouse/.
 Setup truncates/reloads only PC_SRC tables; it does not execute mappings.
 
+Workflow and mapping XML exports are parsed with `defusedxml`: entity
+declarations and external entity references are rejected before inventory or
+landing-file discovery. An ordinary PowerCenter `DOCTYPE` remains supported
+without retrieving its DTD.
+
 Workers own `mappings/sfx_billing.yml`, `sfx_content.yml`, `sfx_audit.yml`.
 The YAML is a dictionary keyed by exact mapping name, with optional fields:
 `key_columns` (list), `exclude_columns` (column-to-explicit-reason dictionary),
