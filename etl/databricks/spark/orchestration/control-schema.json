@@ -1,0 +1,209 @@
+{
+  "statement_id": "01f1dd8d-16ca-1dbb-bd8d-c9a7bee0668f",
+  "status": {
+    "state": "SUCCEEDED"
+  },
+  "manifest": {
+    "format": "JSON_ARRAY",
+    "schema": {
+      "column_count": 3,
+      "columns": [
+        {
+          "name": "col_name",
+          "type_text": "STRING",
+          "type_name": "STRING",
+          "position": 0
+        },
+        {
+          "name": "data_type",
+          "type_text": "STRING",
+          "type_name": "STRING",
+          "position": 1
+        },
+        {
+          "name": "comment",
+          "type_text": "STRING",
+          "type_name": "STRING",
+          "position": 2
+        }
+      ]
+    },
+    "total_chunk_count": 1,
+    "chunks": [
+      {
+        "chunk_index": 0,
+        "row_offset": 0,
+        "row_count": 32
+      }
+    ],
+    "total_row_count": 32,
+    "truncated": false
+  },
+  "result": {
+    "chunk_index": 0,
+    "row_offset": 0,
+    "row_count": 32,
+    "data_array": [
+      [
+        "object_name",
+        "string",
+        null
+      ],
+      [
+        "subject_area",
+        "string",
+        null
+      ],
+      [
+        "source_system",
+        "string",
+        null
+      ],
+      [
+        "target",
+        "string",
+        null
+      ],
+      [
+        "status",
+        "string",
+        null
+      ],
+      [
+        "parity",
+        "string",
+        null
+      ],
+      [
+        "pr",
+        "string",
+        null
+      ],
+      [
+        "updated_at",
+        "timestamp",
+        null
+      ],
+      [
+        "wave",
+        "int",
+        null
+      ],
+      [
+        "owner",
+        "string",
+        null
+      ],
+      [
+        "risk",
+        "string",
+        null
+      ],
+      [
+        "risk_reason",
+        "string",
+        null
+      ],
+      [
+        "kind",
+        "string",
+        null
+      ],
+      [
+        "source_path",
+        "string",
+        null
+      ],
+      [
+        "loc",
+        "int",
+        null
+      ],
+      [
+        "complexity",
+        "string",
+        null
+      ],
+      [
+        "executor_hours",
+        "decimal(18,9)",
+        null
+      ],
+      [
+        "unread_tier",
+        "string",
+        null
+      ],
+      [
+        "code_readers",
+        "string",
+        null
+      ],
+      [
+        "first_failure",
+        "string",
+        null
+      ],
+      [
+        "first_failure_statement_id",
+        "string",
+        null
+      ],
+      [
+        "corrected_parity",
+        "string",
+        null
+      ],
+      [
+        "parity_statement_id",
+        "string",
+        null
+      ],
+      [
+        "idempotence",
+        "string",
+        null
+      ],
+      [
+        "idempotence_statement_ids",
+        "string",
+        null
+      ],
+      [
+        "licence_features",
+        "string",
+        null
+      ],
+      [
+        "red_reason",
+        "string",
+        null
+      ],
+      [
+        "run_token",
+        "string",
+        null
+      ],
+      [
+        "expires",
+        "string",
+        null
+      ],
+      [
+        "job_id",
+        "string",
+        null
+      ],
+      [
+        "job_run_ids",
+        "string",
+        null
+      ],
+      [
+        "cross_folder_dependencies",
+        "string",
+        null
+      ]
+    ]
+  }
+}

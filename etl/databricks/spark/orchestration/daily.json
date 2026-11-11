@@ -1,0 +1,176 @@
+{
+  "name": "dbx-d1111-spark-daily",
+  "tasks": [
+    {
+      "task_key": "billing_invoice_summary_daily",
+      "run_job_task": {
+        "job_id": 822926870681999
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "billing_revenue_by_plan",
+      "run_job_task": {
+        "job_id": 697530729305392
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "docs_storage_by_owner",
+      "run_job_task": {
+        "job_id": 237874230352071
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "docs_share_activity",
+      "run_job_task": {
+        "job_id": 14491151277670
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "users_team_rollup",
+      "run_job_task": {
+        "job_id": 627663219394880
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "audit_daily_summary",
+      "run_job_task": {
+        "job_id": 891657763613522
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "lake_compaction_audit",
+      "run_job_task": {
+        "job_id": 495078759320783
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800,
+      "depends_on": [
+        {
+          "task_key": "audit_daily_summary"
+        }
+      ]
+    },
+    {
+      "task_key": "audit_archive_resort",
+      "run_job_task": {
+        "job_id": 718985920991406
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "docs_tag_normalize",
+      "run_job_task": {
+        "job_id": 885937093057247
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "billing_churn_score",
+      "run_job_task": {
+        "job_id": 843322654414524
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "team_graph_components",
+      "run_job_task": {
+        "job_id": 296844896049163
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "doc_share_graph_reach",
+      "run_job_task": {
+        "job_id": 689940778537169
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "collab_session_sessionize",
+      "run_job_task": {
+        "job_id": 514823186668830
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "docs_event_export_hourly",
+      "run_job_task": {
+        "job_id": 274170347871647
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "task_key": "lake_compaction_documents",
+      "run_job_task": {
+        "job_id": 258461135155454
+      },
+      "max_retries": 2,
+      "min_retry_interval_millis": 60000,
+      "retry_on_timeout": false,
+      "timeout_seconds": 1800,
+      "depends_on": [
+        {
+          "task_key": "docs_event_export_hourly"
+        }
+      ]
+    }
+  ],
+  "max_concurrent_runs": 1,
+  "tags": {
+    "run_token": "dbx-d1111",
+    "expires": "2026-11-24",
+    "act": "spark"
+  },
+  "schedule": {
+    "quartz_cron_expression": "0 0 1 * * ?",
+    "timezone_id": "UTC",
+    "pause_status": "PAUSED"
+  }
+}

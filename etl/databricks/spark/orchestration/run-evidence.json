@@ -1,0 +1,191 @@
+{
+  "parent_run_id": 1083346942393644,
+  "state": {
+    "life_cycle_state": "TERMINATED",
+    "result_state": "SUCCESS",
+    "state_message": "",
+    "user_cancelled_or_timedout": false
+  },
+  "tasks": [
+    {
+      "task_key": "billing_invoice_summary_daily",
+      "task_run_id": 504516093952859,
+      "child_run_id": 403468133576086,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "billing_revenue_by_plan",
+      "task_run_id": 174121963788047,
+      "child_run_id": 60675237721325,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "docs_storage_by_owner",
+      "task_run_id": 758365703183304,
+      "child_run_id": 163787701323591,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "docs_share_activity",
+      "task_run_id": 754374640423814,
+      "child_run_id": 749964825729480,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "users_team_rollup",
+      "task_run_id": 621441465153749,
+      "child_run_id": 442436784205100,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "audit_daily_summary",
+      "task_run_id": 818777507589534,
+      "child_run_id": 946007882127239,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "lake_compaction_audit",
+      "task_run_id": 707482881905304,
+      "child_run_id": 1047456591541885,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "audit_archive_resort",
+      "task_run_id": 86911153014672,
+      "child_run_id": 856858664783164,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "docs_tag_normalize",
+      "task_run_id": 287595666279861,
+      "child_run_id": 639121112343376,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "billing_churn_score",
+      "task_run_id": 111014670198183,
+      "child_run_id": 188643743865926,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "team_graph_components",
+      "task_run_id": 794773512705752,
+      "child_run_id": 865018653679880,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "doc_share_graph_reach",
+      "task_run_id": 689137426430627,
+      "child_run_id": 278974645918486,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "collab_session_sessionize",
+      "task_run_id": 709183525159527,
+      "child_run_id": 330429595214757,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "docs_event_export_hourly",
+      "task_run_id": 359630360828549,
+      "child_run_id": 775915795339877,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    },
+    {
+      "task_key": "lake_compaction_documents",
+      "task_run_id": 238960939954253,
+      "child_run_id": 619176478439359,
+      "state": {
+        "life_cycle_state": "TERMINATED",
+        "result_state": "SUCCESS",
+        "state_message": "",
+        "user_cancelled_or_timedout": false
+      },
+      "error": "Please refer to the logs for this run on the triggered run details page."
+    }
+  ]
+}
