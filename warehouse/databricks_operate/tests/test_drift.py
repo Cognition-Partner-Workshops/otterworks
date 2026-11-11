@@ -1,5 +1,6 @@
 from copy import deepcopy
 import json
+import re
 import subprocess
 import sys
 
@@ -8,26 +9,66 @@ import pytest
 from warehouse.databricks_operate.drift import ROOT, SchemaDrift, read_rows, seed, validate
 
 
-def test_landing_change_fails_until_the_contract_and_loader_are_repaired(tmp_path):
-    rows = read_rows(ROOT / "landing/invoices.jsonl")
-    schema = json.loads((ROOT / "schema.json").read_text())
-    before = validate(rows, schema)
+FIXTURE = ROOT / "landing/invoices.jsonl"
+SCHEMA = json.loads((ROOT / "schema.json").read_text())
+PRE_DRIFT_SCHEMA = {k: v for k, v in SCHEMA.items() if k != "tax_region"}
+DRIFTED = ('{"invoice_id":7,"customer_id":10,"amount":"120.00","currency":"USD",'
+           '"tax_region":"domestic"}\n')
+
+
+def pre_drift_copy(tmp_path):
+    # Strip only the appended field so existing literals stay byte-identical.
     landing = tmp_path / "invoices.jsonl"
-    landing.write_text((ROOT / "landing/invoices.jsonl").read_text())
+    landing.write_text("".join(re.sub(r',"tax_region":"[^"]*"}$', "}", line) + "\n"
+                               for line in FIXTURE.read_text().splitlines()))
+    return landing
+
+
+def test_landing_change_fails_until_the_contract_and_loader_are_repaired(tmp_path):
+    assert list(SCHEMA) == ["invoice_id", "customer_id", "amount", "currency", "tax_region"]
+    landing = pre_drift_copy(tmp_path)
+    rows = read_rows(landing)
+    before = validate(rows, PRE_DRIFT_SCHEMA)
+    with pytest.raises(SchemaDrift, match=r"missing=\['tax_region'\]"):
+        validate(rows, SCHEMA)
     seed(landing)
+    assert landing.read_text() == FIXTURE.read_text()
     changed = read_rows(landing)
-    with pytest.raises(SchemaDrift, match="tax_region"):
-        validate(changed, schema)
-    # Proves the fixture can be repaired without hiding or dropping existing values.
-    fixed_schema = dict(schema, tax_region="string")
-    after = validate(changed, fixed_schema)
+    with pytest.raises(SchemaDrift, match=r"added=\['tax_region'\]"):
+        validate(changed, PRE_DRIFT_SCHEMA)
+    # The repaired contract accepts the drift without hiding or dropping existing values.
+    after = validate(changed, SCHEMA)
     assert before == after
-    assert [{k: row[k] for k in schema} for row in changed] == rows
+    assert [{k: row[k] for k in PRE_DRIFT_SCHEMA} for row in changed] == rows
+    assert [list(row) for row in changed] == [list(SCHEMA)] * len(changed)
+
+
+def test_contract_accepts_drifted_record_shape(tmp_path):
+    landing = tmp_path / "drifted.jsonl"
+    landing.write_text(DRIFTED)
+    result = subprocess.run([sys.executable, "-m", "warehouse.databricks_operate.drift",
+                             "check", "--landing", str(landing)], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout) == {"rows": 1, "invoice_ids": [7], "amount": "120.00"}
+    row = read_rows(landing)[0]
+    assert row["amount"] == "120.00" and row["tax_region"] == "domestic"
+    event = subprocess.run([sys.executable, "-m", "warehouse.databricks_operate.drift",
+                            "event", "--landing", str(landing)], capture_output=True, text=True)
+    assert event.returncode != 0 and "healthy" in event.stderr
+
+
+@pytest.mark.parametrize("region", ["null", "1", '["domestic"]'])
+def test_tax_region_must_be_a_string(tmp_path, region):
+    landing = tmp_path / "region.jsonl"
+    landing.write_text(DRIFTED.replace('"domestic"', region))
+    with pytest.raises(SchemaDrift, match="tax_region is not a string"):
+        validate(read_rows(landing), SCHEMA)
 
 
 def test_duplicate_and_cent_changes_fail():
-    rows = read_rows(ROOT / "landing/invoices.jsonl")
-    schema = json.loads((ROOT / "schema.json").read_text())
+    rows = read_rows(FIXTURE)
+    schema = SCHEMA
+    validate(rows, schema)
     with pytest.raises(SchemaDrift, match="duplicate"):
         validate(rows + rows[:1], schema)
     bad = deepcopy(rows)
@@ -38,7 +79,7 @@ def test_duplicate_and_cent_changes_fail():
 
 def test_seed_refuses_source_fixture():
     with pytest.raises(ValueError, match="outside"):
-        seed(ROOT / "landing/invoices.jsonl")
+        seed(FIXTURE)
 
 
 @pytest.mark.parametrize("record", ['{"amount":', 'null', '[]'])
@@ -56,8 +97,8 @@ def test_invalid_record_emits_alert(tmp_path, record):
 def test_json_amount_keeps_sub_cent_precision(tmp_path):
     landing = tmp_path / "amount.jsonl"
     landing.write_text('{"invoice_id":1,"customer_id":10,"amount":120.000000000000001,'
-                       '"currency":"USD"}\n')
-    schema = json.loads((ROOT / "schema.json").read_text())
+                       '"currency":"USD","tax_region":"domestic"}\n')
+    schema = SCHEMA
     with pytest.raises(SchemaDrift, match="cent"):
         validate(read_rows(landing), schema)
 

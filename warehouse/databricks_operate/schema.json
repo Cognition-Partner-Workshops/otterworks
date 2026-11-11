@@ -1,1 +1,1 @@
-{"invoice_id":"integer","customer_id":"integer","amount":"decimal","currency":"string"}
+{"invoice_id":"integer","customer_id":"integer","amount":"decimal","currency":"string","tax_region":"string"}
