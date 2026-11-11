@@ -5,6 +5,9 @@ warehouse/exports/
 .DS_Store
 Thumbs.db
 
+etl/spark/.data/
+etl/spark/.cache/
+
 # IDEs
 .idea/
 .vscode/

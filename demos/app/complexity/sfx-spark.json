@@ -1,0 +1,410 @@
+{
+  "schema_version": 1,
+  "demo": "sfx-d1110",
+  "classes": [
+    {
+      "id": "SFX-08",
+      "title": "Spark execution and file layout",
+      "instances": [
+        {
+          "job": "audit_actor_activity_join",
+          "kind": "hot-key join with OOM task retry",
+          "file": "etl/spark/jobs/py/audit_actor_activity_join.py",
+          "line": 18,
+          "submit": {
+            "file": "etl/spark/submit/audit_actor_activity_join.sh",
+            "line": 6
+          },
+          "planted_keys": {
+            "field": "AUDIT_EVENT.ACTOR_USER_ID",
+            "expression": "coalesce(ACTOR_USER_ID, 0)",
+            "value": 0,
+            "fixture_rows": 200000,
+            "null_actor_rows": 59972,
+            "null_actor_share": 0.29986
+          },
+          "evidence": {
+            "app_id": "app-20261110202505-0009",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202505-0009.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.audit_actor_activity_join.failed_tasks",
+              "jobs.audit_actor_activity_join.memory_bytes_spilled",
+              "jobs.audit_actor_activity_join.disk_bytes_spilled",
+              "jobs.audit_actor_activity_join.runtime_seconds"
+            ]
+          }
+        },
+        {
+          "job": "docs_event_export_hourly",
+          "kind": "10000 parquet files",
+          "file": "etl/spark/jobs/py/docs_event_export_hourly.py",
+          "line": 6,
+          "planted_keys": {
+            "output_files": 10000
+          },
+          "evidence": {
+            "app_id": "app-20261110202641-0018",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202641-0018.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.docs_event_export_hourly.output_files_written"
+            ]
+          }
+        },
+        {
+          "job": "audit_actor_activity_join",
+          "kind": "memory and disk spill",
+          "file": "etl/spark/submit/audit_actor_activity_join.sh",
+          "line": 6,
+          "implementation": {
+            "file": "etl/spark/jobs/py/audit_actor_activity_join.py",
+            "line": 18
+          },
+          "evidence": {
+            "app_id": "app-20261110202505-0009",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202505-0009.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.audit_actor_activity_join.memory_bytes_spilled",
+              "jobs.audit_actor_activity_join.disk_bytes_spilled"
+            ]
+          }
+        },
+        {
+          "job": "audit_archive_resort",
+          "kind": "memory and disk spill",
+          "file": "etl/spark/submit/audit_archive_resort.sh",
+          "line": 6,
+          "implementation": {
+            "file": "etl/spark/jobs/py/audit_archive_resort.py",
+            "line": 7
+          },
+          "evidence": {
+            "app_id": "app-20261110202911-0027",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202911-0027.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.audit_archive_resort.memory_bytes_spilled",
+              "jobs.audit_archive_resort.disk_bytes_spilled"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "SFX-09",
+      "title": "Daily append outputs",
+      "instances": [
+        {
+          "job": "billing_usage_append_daily",
+          "file": "etl/spark/jobs/py/billing_usage_append_daily.py",
+          "line": 8,
+          "planted_keys": {
+            "USAGE_DATE": "2026-11-09",
+            "parquet_target": "/opt/lake/billing/billing_usage_append_daily",
+            "jdbc_target": "sfx_billing.SPARK_USAGE_DAILY"
+          },
+          "evidence": {
+            "app_id": "app-20261110202352-0003",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202352-0003.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.billing_usage_append_daily.output_files_written",
+              "jobs.billing_usage_append_daily.start",
+              "jobs.billing_usage_append_daily.end"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "SFX-10",
+      "title": "Inline batch credentials",
+      "instances": [
+        {
+          "job": "billing_payment_aging",
+          "planted_keys": [
+            "TD_JDBC_PASSWORD"
+          ],
+          "locations": [
+            {
+              "file": "etl/spark/submit/billing_payment_aging.sh",
+              "line": 3
+            },
+            {
+              "file": "etl/spark/k8s/billing_payment_aging.yaml",
+              "line": 47
+            },
+            {
+              "file": "etl/spark/k8s/billing_payment_aging.yaml",
+              "line": 78
+            }
+          ],
+          "evidence": {
+            "app_id": "app-20261110202342-0002",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202342-0002.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.billing_payment_aging.app_id",
+              "jobs.billing_payment_aging.start"
+            ]
+          }
+        },
+        {
+          "job": "billing_payment_aging",
+          "planted_keys": [
+            "AWS_ACCESS_KEY_ID"
+          ],
+          "locations": [
+            {
+              "file": "etl/spark/submit/billing_payment_aging.sh",
+              "line": 4
+            },
+            {
+              "file": "etl/spark/k8s/billing_payment_aging.yaml",
+              "line": 49
+            },
+            {
+              "file": "etl/spark/k8s/billing_payment_aging.yaml",
+              "line": 80
+            }
+          ],
+          "evidence": {
+            "app_id": "app-20261110202342-0002",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202342-0002.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.billing_payment_aging.app_id",
+              "jobs.billing_payment_aging.start"
+            ]
+          }
+        },
+        {
+          "job": "billing_payment_aging",
+          "planted_keys": [
+            "AWS_SECRET_ACCESS_KEY"
+          ],
+          "locations": [
+            {
+              "file": "etl/spark/submit/billing_payment_aging.sh",
+              "line": 5
+            },
+            {
+              "file": "etl/spark/k8s/billing_payment_aging.yaml",
+              "line": 51
+            },
+            {
+              "file": "etl/spark/k8s/billing_payment_aging.yaml",
+              "line": 82
+            }
+          ],
+          "evidence": {
+            "app_id": "app-20261110202342-0002",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202342-0002.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.billing_payment_aging.app_id",
+              "jobs.billing_payment_aging.start"
+            ]
+          }
+        },
+        {
+          "job": "audit_daily_summary",
+          "planted_keys": [
+            "TD_JDBC_PASSWORD"
+          ],
+          "locations": [
+            {
+              "file": "etl/spark/submit/audit_daily_summary.sh",
+              "line": 3
+            },
+            {
+              "file": "etl/spark/k8s/audit_daily_summary.yaml",
+              "line": 44
+            },
+            {
+              "file": "etl/spark/k8s/audit_daily_summary.yaml",
+              "line": 75
+            }
+          ],
+          "evidence": {
+            "app_id": "app-20261110202448-0008",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202448-0008.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.audit_daily_summary.app_id",
+              "jobs.audit_daily_summary.start"
+            ]
+          }
+        },
+        {
+          "job": "audit_daily_summary",
+          "planted_keys": [
+            "AWS_ACCESS_KEY_ID"
+          ],
+          "locations": [
+            {
+              "file": "etl/spark/submit/audit_daily_summary.sh",
+              "line": 4
+            },
+            {
+              "file": "etl/spark/k8s/audit_daily_summary.yaml",
+              "line": 46
+            },
+            {
+              "file": "etl/spark/k8s/audit_daily_summary.yaml",
+              "line": 77
+            }
+          ],
+          "evidence": {
+            "app_id": "app-20261110202448-0008",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202448-0008.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.audit_daily_summary.app_id",
+              "jobs.audit_daily_summary.start"
+            ]
+          }
+        },
+        {
+          "job": "audit_daily_summary",
+          "planted_keys": [
+            "AWS_SECRET_ACCESS_KEY"
+          ],
+          "locations": [
+            {
+              "file": "etl/spark/submit/audit_daily_summary.sh",
+              "line": 5
+            },
+            {
+              "file": "etl/spark/k8s/audit_daily_summary.yaml",
+              "line": 48
+            },
+            {
+              "file": "etl/spark/k8s/audit_daily_summary.yaml",
+              "line": 79
+            }
+          ],
+          "evidence": {
+            "app_id": "app-20261110202448-0008",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202448-0008.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.audit_daily_summary.app_id",
+              "jobs.audit_daily_summary.start"
+            ]
+          }
+        },
+        {
+          "job": "compliance_flag_rules",
+          "planted_keys": [
+            "TD_JDBC_PASSWORD"
+          ],
+          "locations": [
+            {
+              "file": "etl/spark/submit/compliance_flag_rules.sh",
+              "line": 3
+            },
+            {
+              "file": "etl/spark/k8s/compliance_flag_rules.yaml",
+              "line": 44
+            },
+            {
+              "file": "etl/spark/k8s/compliance_flag_rules.yaml",
+              "line": 75
+            }
+          ],
+          "evidence": {
+            "app_id": "app-20261110202929-0029",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202929-0029.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.compliance_flag_rules.app_id",
+              "jobs.compliance_flag_rules.start"
+            ]
+          }
+        },
+        {
+          "job": "compliance_flag_rules",
+          "planted_keys": [
+            "AWS_ACCESS_KEY_ID"
+          ],
+          "locations": [
+            {
+              "file": "etl/spark/submit/compliance_flag_rules.sh",
+              "line": 4
+            },
+            {
+              "file": "etl/spark/k8s/compliance_flag_rules.yaml",
+              "line": 46
+            },
+            {
+              "file": "etl/spark/k8s/compliance_flag_rules.yaml",
+              "line": 77
+            }
+          ],
+          "evidence": {
+            "app_id": "app-20261110202929-0029",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202929-0029.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.compliance_flag_rules.app_id",
+              "jobs.compliance_flag_rules.start"
+            ]
+          }
+        },
+        {
+          "job": "compliance_flag_rules",
+          "planted_keys": [
+            "AWS_SECRET_ACCESS_KEY"
+          ],
+          "locations": [
+            {
+              "file": "etl/spark/submit/compliance_flag_rules.sh",
+              "line": 5
+            },
+            {
+              "file": "etl/spark/k8s/compliance_flag_rules.yaml",
+              "line": 48
+            },
+            {
+              "file": "etl/spark/k8s/compliance_flag_rules.yaml",
+              "line": 79
+            }
+          ],
+          "evidence": {
+            "app_id": "app-20261110202929-0029",
+            "event_log": "etl/spark/history/eventlogs/app-20261110202929-0029.zstd",
+            "baseline": "etl/spark/history/baseline.json",
+            "fields": [
+              "jobs.compliance_flag_rules.app_id",
+              "jobs.compliance_flag_rules.start"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "retire_candidates": [
+    {
+      "job": "docs_folder_legacy_report",
+      "crontab": {
+        "file": "etl/crontab",
+        "line": 21
+      },
+      "app_id": "app-20260715202529-0011",
+      "last_run_date": "2026-07-15",
+      "evidence": {
+        "app_id": "app-20260715202529-0011",
+        "event_log": "etl/spark/history/eventlogs/app-20260715202529-0011.zstd",
+        "baseline": "etl/spark/history/baseline.json",
+        "fields": [
+          "jobs.docs_folder_legacy_report.app_id",
+          "jobs.docs_folder_legacy_report.start",
+          "jobs.docs_folder_legacy_report.end"
+        ]
+      }
+    }
+  ]
+}

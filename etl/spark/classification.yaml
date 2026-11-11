@@ -1,0 +1,120 @@
+- job: billing_invoice_summary_daily
+  language: python
+  target: dbt
+  reason: "Aggregates invoice headers and lines by customer and invoice date; the result is a relational summary."
+- job: billing_revenue_by_plan
+  language: python
+  target: dbt
+  reason: "Joins invoice lines to the plan catalog and sums revenue per plan."
+- job: billing_payment_aging
+  language: python
+  target: dbt
+  reason: "Computes payment aging with a left join and date arithmetic over billing tables."
+- job: billing_usage_append_daily
+  language: python
+  target: dbt
+  reason: "Selects the latest usage date and materializes its rows; all transformations are SQL."
+- job: docs_storage_by_owner
+  language: python
+  target: dbt
+  reason: "Joins documents, files and users to aggregate storage by owner."
+- job: docs_share_activity
+  language: scala
+  target: dbt
+  reason: "Groups document shares by owner and permission using relational joins and distinct counts."
+- job: users_active_daily
+  language: python
+  target: dbt
+  reason: "Groups daily activity into active-user, login and action totals."
+- job: users_team_rollup
+  language: python
+  target: dbt
+  reason: "Builds team membership totals with left joins and grouped counts."
+- job: audit_daily_summary
+  language: scala
+  target: dbt
+  reason: "Summarizes event dates and types with counts and distinct actor counts."
+- job: audit_actor_activity_join
+  language: python
+  target: dbt
+  reason: "Combines audit actors, daily activity and login aggregates through SQL joins and string aggregation."
+- job: billing_gl_trial_balance
+  language: python
+  target: dbt
+  reason: "Aggregates journal debits, credits and net by account, period and currency, then joins credit-note adjustments."
+- job: docs_folder_legacy_report
+  language: python
+  target: dbt
+  reason: "Counts documents per folder with a left join and grouped folder attributes."
+- job: docs_search_log_parse
+  language: python
+  target: snowpark_python
+  reason: "Applies a Python regular-expression parser to raw search-index log records."
+- job: users_login_useragent_parse
+  language: python
+  target: snowpark_python
+  reason: "Parses browser families and versions from raw user-agent strings in a Python UDF."
+- job: docs_tag_normalize
+  language: python
+  target: snowpark_python
+  reason: "Uses Python regular expressions to normalize document tags."
+- job: billing_churn_score
+  language: python
+  target: snowpark_python
+  reason: "Evaluates a logistic churn-scoring function in Python for each subscription."
+- job: users_risk_score
+  language: scala
+  target: snowpark_python
+  reason: "Applies a logistic risk model to per-user activity features rather than a relational aggregation."
+- job: security_alert_anomaly
+  language: python
+  target: snowpark_python
+  reason: "Computes distributed score moments and applies a z-score function through RDD transformations."
+- job: docs_event_export_hourly
+  language: python
+  target: spark_standard_template
+  reason: "Produces a physical high-cardinality directory and parquet-file layout for document exports."
+- job: lake_compaction_documents
+  language: scala
+  target: spark_standard_template
+  reason: "Reads partitioned parquet directories and rewrites their physical file layout into fewer files."
+- job: lake_compaction_audit
+  language: python
+  target: spark_standard_template
+  reason: "Coalesces audit parquet files to maintain a physical lake file layout."
+- job: docs_folder_tree_walk
+  language: python
+  target: snowpark_python
+  reason: "Walks parent pointers iteratively with RDDs and a broadcast parent lookup."
+- job: team_graph_components
+  language: scala
+  target: snowpark_python
+  reason: "Propagates component labels iteratively across a team-membership graph."
+- job: doc_share_graph_reach
+  language: python
+  target: snowpark_python
+  reason: "Performs bounded breadth-first expansion over document-sharing edges with visited-node tracking."
+- job: collab_session_sessionize
+  language: python
+  target: snowpark_python
+  reason: "Groups and orders collaboration timestamps to split sessions at inactivity boundaries."
+- job: doc_version_diff_stats
+  language: python
+  target: snowpark_python
+  reason: "Compares adjacent document bodies using Python difflib sequence matching."
+- job: file_object_binary_extract
+  language: python
+  target: spark_standard_template
+  reason: "Uses the binaryFile source to distribute PDF, DOCX and ZIP content extraction, page counting and checksums over a blob store."
+- job: audit_archive_resort
+  language: python
+  target: snowpark_python
+  reason: "Sorts keyed archived-event records through the legacy RDD interface."
+- job: user_pref_json_flatten
+  language: python
+  target: snowpark_python
+  reason: "Parses nested preference JSON with Python error handling and extracts selected fields."
+- job: compliance_flag_rules
+  language: scala
+  target: snowpark_python
+  reason: "Evaluates severity and status rules per partition to assign review dispositions."

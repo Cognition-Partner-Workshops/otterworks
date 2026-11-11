@@ -1,0 +1,84 @@
+name: sfx-d1110-spark-${NS:-sfx-d1110-before}
+x-spark: &spark
+  image: mirror.gcr.io/library/spark:3.5.3-scala2.12-java17-python3-ubuntu
+  pull_policy: never
+  labels:
+    otterworks.run-token: sfx-d1110
+  environment:
+    SPARK_CONF_DIR: /opt/sfx/spark/conf
+    TD_JDBC_URL: jdbc:postgresql://sfx-tdemu:5432/sfx_teradata
+    TD_JDBC_USER: etl_batch
+    TD_JDBC_PASSWORD: etl_batch_dev
+  volumes:
+    - ./etl/spark:/opt/sfx/spark:ro
+    - ${LANDING_DIR:-./etl/spark/.data/landing}:/opt/landing:ro
+    - ./etl/spark/.data/lake:/opt/lake
+    - ./etl/spark/.data/eventlogs:/opt/spark-events
+    - ./etl/spark/.cache:/opt/sfx/spark/.cache
+services:
+  spark-master:
+    <<: *spark
+    hostname: spark-master
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master", "--host", "spark-master"]
+    ports:
+      - "${SFX_SPARK_MASTER_PORT:-7077}:7077"
+      - "${SFX_SPARK_MASTER_UI_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/spark-master/7077"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  spark-worker-1: &worker
+    <<: *spark
+    environment:
+      SPARK_CONF_DIR: /opt/sfx/spark/conf
+      SPARK_WORKER_MEMORY: 6g
+      SPARK_WORKER_CORES: "3"
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8081"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  spark-worker-2:
+    <<: *worker
+  spark-history:
+    <<: *spark
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.history.HistoryServer"]
+    ports:
+      - "${SFX_SPARK_HISTORY_PORT:-18080}:18080"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/18080"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  sfx-tdemu:
+    image: mirror.gcr.io/library/postgres:16
+    pull_policy: never
+    labels:
+      otterworks.run-token: sfx-d1110
+    environment:
+      POSTGRES_DB: sfx_teradata
+      POSTGRES_USER: etl_batch
+      POSTGRES_PASSWORD: etl_batch_dev
+    ports:
+      - "${SFX_TDEMU_PORT:-55432}:5432"
+    volumes:
+      - tdemu:/var/lib/postgresql/data
+      - ${LANDING_DIR:-./etl/spark/.data/landing}:/opt/landing:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U etl_batch -d sfx_teradata"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+volumes:
+  tdemu:
+    labels:
+      otterworks.run-token: sfx-d1110
+networks:
+  default:
+    labels:
+      otterworks.run-token: sfx-d1110
