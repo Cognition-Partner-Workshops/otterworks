@@ -16,7 +16,7 @@ from .inventory import BOOTSTRAP, ESTATE, ROOT, inventory, target_relation
 OUT = Path(__file__).parent / 'out'
 
 
-def build(mapping=None, folder=None):
+def build(mapping=None, folder=None, load_date=None):
     if os.environ.get('SNOWFLAKE_DATABASE') != DATABASE:
         raise ValueError('SNOWFLAKE_DATABASE must be SFX_D1110_AFTER')
     rows = inventory()
@@ -34,6 +34,8 @@ def build(mapping=None, folder=None):
                '--select', selection, '--step', 'dbt']
     if mapping:
         command += ['--mapping', mapping]
+    if load_date:
+        command += ['--load-date', load_date]
     subprocess.run(command, check=True)
 
 

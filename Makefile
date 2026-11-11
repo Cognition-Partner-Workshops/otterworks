@@ -107,7 +107,7 @@ sfx-pc-before sfx-pc-parity sfx-pc-idempotence: $(SFX_VENV)/.sfx-installed ## Ca
 	cd warehouse && $(SFX_PC_PY) -m parity $(patsubst sfx-pc-%,%,$@) --mapping "$(MAPPING)"
 
 sfx-pc-dbt: $(SFX_VENV)/.sfx-installed ## Build MAPPING or all PC models in FOLDER
-	cd warehouse && $(SFX_PC_PY) -m parity dbt $(if $(MAPPING),--mapping "$(MAPPING)",--folder "$(FOLDER)")
+	cd warehouse && $(SFX_PC_PY) -m parity dbt $(if $(MAPPING),--mapping "$(MAPPING)",--folder "$(FOLDER)") $(if $(LOAD_DATE),--load-date "$(LOAD_DATE)")
 
 sfx-pc-mark: $(SFX_VENV)/.sfx-installed ## Publish evidence for MAPPING (AMBER/OWNER/PR_URL optional)
 	@test -n "$(MAPPING)" || (echo 'MAPPING is required'; exit 2)
@@ -117,7 +117,7 @@ sfx-pc-licence: $(SFX_VENV)/.sfx-installed ## Count remaining PowerCenter mappin
 	cd warehouse && $(SFX_PC_PY) -m parity licence
 
 sfx-pc-dag: $(SFX_VENV)/.sfx-installed ## Deploy suspended FOLDER DAG (RUN_ONCE=1 to execute)
-	$(SFX_PC_PY) warehouse/snowflake/pc_dag.py --folder "$(FOLDER)" $(if $(filter 1,$(RUN_ONCE)),--run-once)
+	$(SFX_PC_PY) warehouse/snowflake/pc_dag.py --folder "$(FOLDER)" $(if $(filter 1,$(RUN_ONCE)),--run-once) $(if $(LOAD_DATE),--load-date "$(LOAD_DATE)")
 
 sfx-pc-test: $(SFX_VENV)/.sfx-installed ## Offline migration harness and PC DAG tests
 	cd warehouse && $(SFX_PC_PY) -m pytest parity/tests -q

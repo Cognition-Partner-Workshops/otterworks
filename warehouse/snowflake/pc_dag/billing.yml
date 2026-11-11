@@ -1,0 +1,182 @@
+root: START
+tasks:
+  START:
+    after: []
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      SELECT 1
+  WKLT_STAGE_START:
+    after: [START]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      SELECT 1
+  STG_CUSTOMER_ACCOUNT:
+    after: [WKLT_STAGE_START]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      EXECUTE IMMEDIATE $$
+      DECLARE
+          row_count INTEGER;
+          invalid_target EXCEPTION (-20001, 'STG_CUSTOMER_ACCOUNT validation failed');
+      BEGIN
+          SELECT COUNT(*) INTO :row_count FROM SFX_D1110_AFTER.PC_BILLING.STG_CUSTOMER_ACCOUNT;
+          IF (row_count = 0) THEN
+              RAISE invalid_target;
+          END IF;
+          RETURN row_count::VARCHAR;
+      END;
+      $$
+  CUSTOMER_ACCOUNT:
+    after: [STG_CUSTOMER_ACCOUNT]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      EXECUTE IMMEDIATE $$
+      DECLARE
+          row_count INTEGER;
+          invalid_target EXCEPTION (-20001, 'CUSTOMER_ACCOUNT validation failed');
+      BEGIN
+          SELECT COUNT(*) INTO :row_count FROM SFX_D1110_AFTER.PC_BILLING.CUSTOMER_ACCOUNT;
+          IF (row_count = 0) THEN
+              RAISE invalid_target;
+          END IF;
+          IF (EXISTS (SELECT CUSTOMER_ID FROM SFX_D1110_AFTER.PC_BILLING.CUSTOMER_ACCOUNT
+              GROUP BY CUSTOMER_ID HAVING COUNT(*) > 1)) THEN
+              RAISE invalid_target;
+          END IF;
+          RETURN row_count::VARCHAR;
+      END;
+      $$
+  STG_INVOICE_HDR:
+    after: [WKLT_STAGE_START]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      EXECUTE IMMEDIATE $$
+      DECLARE
+          row_count INTEGER;
+          invalid_target EXCEPTION (-20001, 'STG_INVOICE_HDR validation failed');
+      BEGIN
+          SELECT COUNT(*) INTO :row_count FROM SFX_D1110_AFTER.PC_BILLING.STG_INVOICE_HDR;
+          IF (row_count = 0) THEN
+              RAISE invalid_target;
+          END IF;
+          RETURN row_count::VARCHAR;
+      END;
+      $$
+  WKLT_STAGE_END:
+    after: [CUSTOMER_ACCOUNT, STG_INVOICE_HDR]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      SELECT 1
+  INVOICE_HDR:
+    after: [WKLT_STAGE_END]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      EXECUTE IMMEDIATE $$
+      DECLARE
+          row_count INTEGER;
+          invalid_target EXCEPTION (-20001, 'INVOICE_HDR validation failed');
+      BEGIN
+          SELECT COUNT(*) INTO :row_count FROM SFX_D1110_AFTER.PC_BILLING.INVOICE_HDR;
+          IF (row_count = 0) THEN
+              RAISE invalid_target;
+          END IF;
+          IF (EXISTS (SELECT INVOICE_ID FROM SFX_D1110_AFTER.PC_BILLING.INVOICE_HDR
+              GROUP BY INVOICE_ID HAVING COUNT(*) > 1)) THEN
+              RAISE invalid_target;
+          END IF;
+          RETURN row_count::VARCHAR;
+      END;
+      $$
+  INVOICE_LINE:
+    after: [WKLT_STAGE_END]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      EXECUTE IMMEDIATE $$
+      DECLARE
+          row_count INTEGER;
+          invalid_target EXCEPTION (-20001, 'INVOICE_LINE validation failed');
+      BEGIN
+          SELECT COUNT(*) INTO :row_count FROM SFX_D1110_AFTER.PC_BILLING.INVOICE_LINE;
+          IF (row_count = 0) THEN
+              RAISE invalid_target;
+          END IF;
+          IF (EXISTS (SELECT INVOICE_LINE_ID FROM SFX_D1110_AFTER.PC_BILLING.INVOICE_LINE
+              GROUP BY INVOICE_LINE_ID HAVING COUNT(*) > 1)) THEN
+              RAISE invalid_target;
+          END IF;
+          RETURN row_count::VARCHAR;
+      END;
+      $$
+  GL_JOURNAL_LINE:
+    after: [INVOICE_HDR, INVOICE_LINE]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      EXECUTE IMMEDIATE $$
+      DECLARE
+          row_count INTEGER;
+          invalid_target EXCEPTION (-20001, 'GL_JOURNAL_LINE validation failed');
+      BEGIN
+          SELECT COUNT(*) INTO :row_count FROM SFX_D1110_AFTER.PC_BILLING.GL_JOURNAL_LINE;
+          IF (row_count = 0) THEN
+              RAISE invalid_target;
+          END IF;
+          IF (EXISTS (SELECT JOURNAL_LINE_ID FROM SFX_D1110_AFTER.PC_BILLING.GL_JOURNAL_LINE
+              GROUP BY JOURNAL_LINE_ID HAVING COUNT(*) > 1)) THEN
+              RAISE invalid_target;
+          END IF;
+          RETURN row_count::VARCHAR;
+      END;
+      $$
+  DEC_GL_POSTED:
+    after: [GL_JOURNAL_LINE]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      EXECUTE IMMEDIATE $$
+      DECLARE
+          load_date VARCHAR;
+          expected_count INTEGER;
+          actual_count INTEGER;
+          debit_total NUMBER(38,2);
+          credit_total NUMBER(38,2);
+          posting_failed EXCEPTION (-20002, 'GL posting for the batch date did not balance');
+      BEGIN
+          SELECT SYSTEM$GET_TASK_GRAPH_CONFIG('load_date')::VARCHAR INTO :load_date;
+          SELECT COALESCE(SUM(2 + IFF(ROUND(TOTAL_AMOUNT * 0.0825 / 1.0825, 2) <> 0, 1, 0)), 0)
+              INTO :expected_count
+          FROM SFX_D1110_AFTER.PC_BILLING.STG_INVOICE_HDR
+          WHERE TOTAL_AMOUNT IS NOT NULL AND TOTAL_AMOUNT <> 0;
+          SELECT COUNT(*), COALESCE(SUM(DEBIT_AMOUNT), 0), COALESCE(SUM(CREDIT_AMOUNT), 0)
+              INTO :actual_count, :debit_total, :credit_total
+          FROM SFX_D1110_AFTER.PC_BILLING.GL_JOURNAL_LINE
+          WHERE JOURNAL_NO LIKE 'JE-' || :load_date || '-%';
+          IF (load_date IS NULL OR NOT REGEXP_LIKE(load_date, '[0-9]{8}') OR actual_count <> expected_count OR debit_total <> credit_total) THEN
+              RAISE posting_failed;
+          END IF;
+          RETURN actual_count::VARCHAR;
+      END;
+      $$
+  PAYMENT:
+    after: [DEC_GL_POSTED]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      EXECUTE IMMEDIATE $$
+      DECLARE
+          row_count INTEGER;
+          invalid_target EXCEPTION (-20001, 'PAYMENT validation failed');
+      BEGIN
+          SELECT COUNT(*) INTO :row_count FROM SFX_D1110_AFTER.PC_BILLING.PAYMENT;
+          IF (row_count = 0) THEN
+              RAISE invalid_target;
+          END IF;
+          IF (EXISTS (SELECT PAYMENT_ID FROM SFX_D1110_AFTER.PC_BILLING.PAYMENT
+              GROUP BY PAYMENT_ID HAVING COUNT(*) > 1)) THEN
+              RAISE invalid_target;
+          END IF;
+          RETURN row_count::VARCHAR;
+      END;
+      $$
+  FINISH:
+    after: [PAYMENT]
+    warehouse: SFX_D1110_TRANSFORM_WH
+    sql: |
+      SELECT 1

@@ -2,6 +2,7 @@
 import argparse
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -17,7 +18,10 @@ def main():
     parser.add_argument("--step")
     parser.add_argument("--mapping")
     parser.add_argument("--select", dest="selection", default="staging.billing")
+    parser.add_argument("--load-date")
     args = parser.parse_args()
+    if args.load_date is not None and not re.fullmatch(r"[0-9]{8}", args.load_date):
+        parser.error("--load-date must be YYYYMMDD")
     env = os.environ.copy()
     if args.command == "parse":
         for key in ("ACCOUNT", "USER", "ROLE", "DATABASE"):
@@ -41,7 +45,10 @@ def main():
                "--project-dir", str(project), "--profiles-dir", str(project)]
     if args.command == "build":
         command += ["--select", args.selection]
-    command += ["--vars", json.dumps({"phase": args.phase})]
+    variables = {"phase": args.phase}
+    if args.load_date:
+        variables["load_date"] = args.load_date
+    command += ["--vars", json.dumps(variables)]
     # Fixed adjacent dbt executable and argv; secret-bearing environment is intentionally inherited.
     # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-tainted-env-args.dangerous-subprocess-use-tainted-env-args
     subprocess.run(command, env=env, check=True)
