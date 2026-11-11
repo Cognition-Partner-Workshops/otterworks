@@ -5,8 +5,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang.time.DateUtils;
 
 import java.text.ParseException;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -25,11 +24,18 @@ import java.util.TimeZone;
  */
 public final class ReportDateUtils {
 
-    // DateTimeFormatter is immutable and thread-safe, unlike a shared SimpleDateFormat.
-    private static final DateTimeFormatter DISPLAY_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm").withZone(ZoneOffset.UTC);
-    private static final DateTimeFormatter FILE_NAME_FORMAT =
-            DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss").withZone(ZoneOffset.UTC);
+    // One SimpleDateFormat per thread: thread-safe, and keeps the locale's calendar
+    // and digits (e.g. Buddhist years under th_TH) that DateTimeFormatter would drop.
+    private static final ThreadLocal<SimpleDateFormat> DISPLAY_FORMAT = utcFormat("MMM dd, yyyy HH:mm");
+    private static final ThreadLocal<SimpleDateFormat> FILE_NAME_FORMAT = utcFormat("yyyyMMdd_HHmmss");
+
+    private static ThreadLocal<SimpleDateFormat> utcFormat(String pattern) {
+        return ThreadLocal.withInitial(() -> {
+            SimpleDateFormat format = new SimpleDateFormat(pattern);
+            format.setTimeZone(TimeZone.getTimeZone("UTC"));
+            return format;
+        });
+    }
 
     private ReportDateUtils() {
         // Utility class
@@ -54,7 +60,7 @@ public final class ReportDateUtils {
         if (date == null) {
             return "N/A";
         }
-        return DISPLAY_FORMAT.format(date.toInstant());
+        return DISPLAY_FORMAT.get().format(date);
     }
 
     /**
@@ -64,7 +70,7 @@ public final class ReportDateUtils {
         if (date == null) {
             date = new Date();
         }
-        return FILE_NAME_FORMAT.format(date.toInstant());
+        return FILE_NAME_FORMAT.get().format(date);
     }
 
     /**
