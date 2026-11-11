@@ -217,6 +217,8 @@ load_infra_outputs() {
   SQS_NOTIF="$(terraform -chdir="$d" output -raw sqs_notification_queue_url 2>/dev/null || echo "")"
   EVENT_BUS="$(terraform -chdir="$d" output -raw event_bus_name 2>/dev/null || echo "")"
   SQS_AUDIT="$(terraform -chdir="$d" output -raw sqs_audit_queue_url 2>/dev/null || echo "")"
+  SQS_SEARCH="$(terraform -chdir="$d" output -raw sqs_search_queue_url 2>/dev/null || echo "")"
+  SQS_ANALYTICS="$(terraform -chdir="$d" output -raw sqs_analytics_queue_url 2>/dev/null || echo "")"
   IRSA_JSON="$(terraform -chdir="$d" output -json irsa_role_arns 2>/dev/null || echo "{}")"
   DB_NAME="${DB_NAME:-otterworks}"; DB_USER="${DB_USER:-otterworks_admin}"
   # MeiliSearch runs in-cluster (see deploy_meilisearch); search-service reaches it by Service DNS.
@@ -369,6 +371,8 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.DOC_SVC_SNS_TOPIC_ARN=${SNS_TOPIC}")
       EXTRA_ARGS+=(--set-string "config.DOC_SVC_EVENT_BUS_NAME=${EVENT_BUS}")
       EXTRA_ARGS+=(--set-string "config.DOC_SVC_EVENT_TRANSPORT=${EVENT_TRANSPORT:-sns}")
+      # DOC_SVC_SNS_ENABLED is document-service's publish switch for every transport.
+      [[ -n "${EVENT_TRANSPORT:-}" ]] && EXTRA_ARGS+=(--set-string "config.DOC_SVC_SNS_ENABLED=true")
       add_secret DOC_SVC_DATABASE_URL "postgresql+asyncpg://$(urlencode "${DB_USER}"):$(urlencode "${DB_PASSWORD}")@${DB_ENDPOINT_HOST}:${DB_ENDPOINT_PORT}/${DB_NAME}" ;;
     collab-service)
       EXTRA_ARGS+=(--set-string "config.HTTP_PORT=8084" --set-string "config.NODE_ENV=production")
@@ -384,10 +388,12 @@ build_helm_args() {
       EXTRA_ARGS+=(--set-string "config.REDIS_HOST=${REDIS_HOST}" --set-string "config.REDIS_PORT=6379")
       EXTRA_ARGS+=(--set-string "config.HOST=0.0.0.0" --set-string "config.PORT=8087")
       EXTRA_ARGS+=(--set-string "config.MEILISEARCH_URL=${MEILISEARCH_URL}")
-      EXTRA_ARGS+=(--set-string "config.REQUIRE_AUTH=false" --set-string "config.SQS_ENABLED=false") ;;
+      EXTRA_ARGS+=(--set-string "config.REQUIRE_AUTH=false" --set-string "config.SQS_ENABLED=false")
+      EXTRA_ARGS+=(--set-string "config.SQS_QUEUE_URL=${SQS_SEARCH}") ;;
     analytics-service)
       EXTRA_ARGS+=(--set-string "config.AWS_REGION=${AWS_REGION}")
       EXTRA_ARGS+=(--set-string "config.ANALYTICS_HOST=0.0.0.0" --set-string "config.PORT=8088")
+      EXTRA_ARGS+=(--set-string "config.SQS_ANALYTICS_QUEUE_URL=${SQS_ANALYTICS}")
       # Flyway again, from the same URL as the Slick pool (AnalyticsDb.migrate),
       # and a failed migration silently falls back to the in-memory store --
       # so the session port for the whole service, as with Rails.
