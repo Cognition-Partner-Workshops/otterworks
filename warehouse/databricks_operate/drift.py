@@ -5,7 +5,7 @@ python -m warehouse.databricks_operate.drift seed --landing <run-copy>
 The seed command refuses to modify checked-in landing files.
 """
 import argparse
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, Inexact, InvalidOperation, localcontext
 import json
 from pathlib import Path
 
@@ -67,8 +67,15 @@ def validate(rows, schema):
         if key in seen:
             raise SchemaDrift(f"duplicate invoice_id {key}")
         seen.add(key)
-    return {"rows": len(rows), "invoice_ids": sorted(seen),
-            "amount": str(sum(Decimal(str(row["amount"])) for row in rows))}
+    # Each validated amount fits the context precision; widen it so the total is exact.
+    with localcontext() as ctx:
+        ctx.prec += len(str(len(rows)))
+        ctx.traps[Inexact] = True
+        try:
+            total = sum(Decimal(str(row["amount"])) for row in rows)
+        except Inexact:
+            raise SchemaDrift("amount total exceeds supported precision") from None
+    return {"rows": len(rows), "invoice_ids": sorted(seen), "amount": str(total)}
 
 
 def seed(path):
