@@ -1,0 +1,507 @@
+{
+  "run_token": "dbx-d1111",
+  "expires": "2026-11-24",
+  "board": {
+    "job": "billing_churn_score",
+    "status": "green",
+    "target_kind": "PySpark serverless",
+    "live_inputs": [
+      "cpw.dbx_d1111_before.billing__subscription",
+      "cpw.dbx_d1111_before.billing__plan_catalog"
+    ],
+    "after_object": "cpw.dbx_d1111_after.billing__spark_billing_churn_score",
+    "first_failure": "PLAN_ID absent in subscription; first case-sensitive lookup left 100 rows unmapped. Case/padding-aware lookup justified by Teradata NOT CASESPECIFIC DDL.",
+    "first_failure_statement_id": "01f1dd84-2ed4-1ab0-937d-b9b65246431e",
+    "parity": "500 rows; hash 278703278045701988246; EXCEPT ALL empty both directions",
+    "parity_statement_id": "01f1dd84-fe60-1677-8c33-5dd66762bf3a",
+    "idempotence_statement_ids": [
+      "01f1dd85-26a6-1fd1-b36f-866a62c44413",
+      "01f1dd85-2760-1b56-8278-6c28dac35fe8",
+      "01f1dd85-27bf-1a67-9a12-afed8c7e0c91",
+      "01f1dd84-fffa-1f62-970c-5babf2918b4c",
+      "01f1dd85-281e-1091-b2d7-03e6d03dee01"
+    ],
+    "executor_hours_before": 0.00381,
+    "local_history_app_id": "app-20261111040237-0001",
+    "databricks_job_id": "843322654414524",
+    "run_ids": [
+      "487564212166246",
+      "1039480886636949",
+      "151365825676628"
+    ],
+    "dbu_after": "PENDING",
+    "red_reason": "",
+    "outputs": [
+      "etl/databricks/spark/billing_churn_score/"
+    ],
+    "source_path": "etl/spark/jobs/py/billing_churn_score.py",
+    "baseline_app_id": "app-20261110202605-0015",
+    "area": "billing",
+    "pr": ""
+  },
+  "statements": [
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-1b07-1566-a043-74b23dd2f601",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-1b7d-1d5a-a394-f682498ed6ff",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-2ed4-1ab0-937d-b9b65246431e",
+      "execution_status": "FAILED",
+      "error": "[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `plan_id` cannot be resolved. Did you mean one of the following? [`plan_code`, `end_dt`, `start_dt`, `status_cd`, `customer_id`]. SQLSTATE: 42703; line 2 pos 37"
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-2f7c-186f-b27b-cc30f2886b8e",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-2feb-1572-9527-4af6cfebb5a1",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-303b-1407-9ead-d802768006ab",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-3092-1696-b8a7-60414770614e",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-30e5-1aef-b6f3-0d428e5f8bd7",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-3157-10d2-980b-821899e5424b",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-33bd-10a6-bce7-b103d74b515f",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-3432-1922-9315-40d0a4b7b2b7",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-41be-13ac-b4e6-0656623bfea0",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-4233-19fd-8013-578d4d800a72",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-42c5-1593-bfa6-f17ead0b53e0",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-4351-176b-9803-90e587fabd85",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-6db9-1a8b-9ce0-9cae09b52540",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-6ef0-10bd-be0d-6fbac01cdda2",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-6ff3-1019-9f87-35a14084cd3f",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-70c1-1f0c-8809-6dc6f1328f30",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-717e-1ce3-b565-d4fbde8c52ed",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-7240-1ad9-b311-caeb5f910f3a",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "history",
+      "statement_id": "01f1dd84-7b7d-1917-8064-8faaba6470b1",
+      "execution_status": "FAILED",
+      "error": "[CONFIG_NOT_AVAILABLE.WITHOUT_SUGGESTION] Configuration spark.sql.adaptive.enabled is not available.  SQLSTATE: 42K0I"
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-956e-11a8-a984-f02fc3d4929b",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-a0a9-19c9-b178-b13f0f64f03b",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-a123-1d46-8619-cc852055a56b",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-a185-1bde-a880-fa8dcb0c7f8b",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-b273-1282-97d7-bbc2c12e7dde",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "inputs",
+      "statement_id": "01f1dd84-b303-1a92-8fa4-994c4094aca0",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-c4cc-1f76-9c97-59b34e109713",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-c5b3-16ea-972a-e4e2289e5b90",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-c68e-158e-b589-f66009ee3548",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-c750-19cc-9ca3-da0cb3fa8e40",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-c840-12a4-ac72-ccc199e85838",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "before-load",
+      "statement_id": "01f1dd84-c92c-1b73-ab7d-9a4b42ac7e23",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "first-parity",
+      "statement_id": "01f1dd84-ca24-16c3-b775-223287183dfa",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "first-parity",
+      "statement_id": "01f1dd84-cb00-1ddb-9c61-279c429f77ed",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "first-parity",
+      "statement_id": "01f1dd84-cba6-1511-bce0-99ffeea698ad",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "history",
+      "statement_id": "01f1dd84-e97b-1ff2-8e9f-f7f77cf7a971",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "parity",
+      "statement_id": "01f1dd84-fe60-1677-8c33-5dd66762bf3a",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "parity",
+      "statement_id": "01f1dd84-ff0b-11d1-8808-4cf5a13bb3fb",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "ddl",
+      "statement_id": "01f1dd84-ff41-1a31-b948-42e6266f2f86",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "parity",
+      "statement_id": "01f1dd84-ff87-1816-be8b-f1804de65546",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "idempotence",
+      "statement_id": "01f1dd84-fffa-1f62-970c-5babf2918b4c",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "billing",
+      "statement_id": "01f1dd85-1f45-19a4-af30-1b46c9763e53",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "idempotence",
+      "statement_id": "01f1dd85-26a6-1fd1-b36f-866a62c44413",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "idempotence",
+      "statement_id": "01f1dd85-2760-1b56-8278-6c28dac35fe8",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "idempotence",
+      "statement_id": "01f1dd85-27bf-1a67-9a12-afed8c7e0c91",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "idempotence",
+      "statement_id": "01f1dd85-281e-1091-b2d7-03e6d03dee01",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    },
+    {
+      "step": "control",
+      "statement_id": "01f1dd85-49da-13d2-95dc-3739fd8f669f",
+      "execution_status": "SUCCEEDED",
+      "error": null
+    }
+  ],
+  "input_proof": {
+    "live_statement_id": "01f1dd84-b303-1a92-8fa4-994c4094aca0",
+    "live_count": 500,
+    "local_count": 500,
+    "live_hash": "295281877648089008306",
+    "local_hash": "295281877648089008306"
+  },
+  "first_comparison": [
+    {
+      "statement_id": "01f1dd84-ca24-16c3-b775-223287183dfa",
+      "status": {
+        "state": "SUCCEEDED"
+      },
+      "rows": [
+        {
+          "side": "before",
+          "n": "500",
+          "hash": "278703278045701988246"
+        },
+        {
+          "side": "after",
+          "n": "500",
+          "hash": "286978378137064830591"
+        }
+      ]
+    },
+    {
+      "statement_id": "01f1dd84-cb00-1ddb-9c61-279c429f77ed",
+      "status": {
+        "state": "SUCCEEDED"
+      },
+      "rows": [
+        {
+          "SUBSCRIPTION_ID": "9000000007",
+          "CUSTOMER_ID": "9000000007",
+          "PLAN_ID": "2",
+          "START_DATE": "2024-11-09",
+          "END_DATE": "2027-11-09",
+          "STATUS": "ACTIVE      ",
+          "CHURN_SCORE": "0.17946151940732682"
+        },
+        {
+          "SUBSCRIPTION_ID": "9000000016",
+          "CUSTOMER_ID": "9000000016",
+          "PLAN_ID": "2",
+          "START_DATE": "2024-11-09",
+          "END_DATE": "2027-11-09",
+          "STATUS": "ACTIVE      ",
+          "CHURN_SCORE": "0.23866728515708957"
+        }
+      ]
+    },
+    {
+      "statement_id": "01f1dd84-cba6-1511-bce0-99ffeea698ad",
+      "status": {
+        "state": "SUCCEEDED"
+      },
+      "rows": [
+        {
+          "SUBSCRIPTION_ID": "9000000008",
+          "CUSTOMER_ID": "9000000008",
+          "PLAN_ID": null,
+          "START_DATE": "2024-11-09",
+          "END_DATE": "2027-11-09",
+          "STATUS": "ACTIVE      ",
+          "CHURN_SCORE": "0.18542741929298223"
+        },
+        {
+          "SUBSCRIPTION_ID": "9000000017",
+          "CUSTOMER_ID": "9000000017",
+          "PLAN_ID": null,
+          "START_DATE": "2024-11-09",
+          "END_DATE": "2027-11-09",
+          "STATUS": "ACTIVE      ",
+          "CHURN_SCORE": "0.2460112835510519"
+        }
+      ]
+    }
+  ],
+  "corrected_parity": [
+    {
+      "statement_id": "01f1dd84-fe60-1677-8c33-5dd66762bf3a",
+      "status": {
+        "state": "SUCCEEDED"
+      },
+      "rows": [
+        {
+          "side": "before",
+          "n": "500",
+          "hash": "278703278045701988246"
+        },
+        {
+          "side": "after",
+          "n": "500",
+          "hash": "278703278045701988246"
+        }
+      ]
+    },
+    {
+      "statement_id": "01f1dd84-ff0b-11d1-8808-4cf5a13bb3fb",
+      "status": {
+        "state": "SUCCEEDED"
+      },
+      "rows": []
+    },
+    {
+      "statement_id": "01f1dd84-ff87-1816-be8b-f1804de65546",
+      "status": {
+        "state": "SUCCEEDED"
+      },
+      "rows": []
+    }
+  ],
+  "idempotence": [
+    {
+      "statement_id": "01f1dd85-26a6-1fd1-b36f-866a62c44413",
+      "status": {
+        "state": "SUCCEEDED"
+      },
+      "rows": [
+        {
+          "side": "before",
+          "n": "500",
+          "hash": "278703278045701988246"
+        },
+        {
+          "side": "after",
+          "n": "500",
+          "hash": "278703278045701988246"
+        }
+      ]
+    },
+    {
+      "statement_id": "01f1dd85-2760-1b56-8278-6c28dac35fe8",
+      "status": {
+        "state": "SUCCEEDED"
+      },
+      "rows": []
+    },
+    {
+      "statement_id": "01f1dd85-27bf-1a67-9a12-afed8c7e0c91",
+      "status": {
+        "state": "SUCCEEDED"
+      },
+      "rows": []
+    }
+  ],
+  "delta_metrics": [
+    {
+      "version": "1",
+      "timestamp": "2026-11-11T04:03:57.000Z",
+      "operation": "CREATE OR REPLACE TABLE AS SELECT",
+      "operationMetrics": "{\"numFiles\":\"1\",\"numRemovedFiles\":\"1\",\"numRemovedBytes\":\"4173\",\"numDeletionVectorsRemoved\":\"0\",\"numOutputRows\":\"500\",\"numOutputBytes\":\"4186\"}"
+    },
+    {
+      "version": "2",
+      "timestamp": "2026-11-11T04:05:24.000Z",
+      "operation": "CREATE OR REPLACE TABLE AS SELECT",
+      "operationMetrics": "{\"numFiles\":\"1\",\"numRemovedFiles\":\"1\",\"numRemovedBytes\":\"4186\",\"numDeletionVectorsRemoved\":\"0\",\"numOutputRows\":\"500\",\"numOutputBytes\":\"4186\"}"
+    }
+  ],
+  "local_history": {
+    "app_id": "app-20261111040237-0001",
+    "duration_ms": 8177,
+    "executor_count": 6,
+    "failed_tasks": 0,
+    "memory_bytes_spilled": 0,
+    "disk_bytes_spilled": 0
+  }
+}
