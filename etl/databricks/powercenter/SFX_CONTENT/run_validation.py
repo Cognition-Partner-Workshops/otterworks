@@ -16,6 +16,12 @@ def statements(path):
     return [s.strip() for s in path.read_text().split(';') if s.strip()]
 
 
+def failed_runs(result):
+    runs = result.get('runs', [])
+    return (len(runs) != 2 or any(not run or any(
+        call.get('status', {}).get('state') != 'SUCCEEDED' for call in run) for run in runs))
+
+
 def setup(execute=True):
     ddl = []
     for mapping, (target, cols) in MAPS.items():
@@ -106,7 +112,7 @@ def execute(only=None):
         (EVIDENCE / 'validation.json').write_text(json.dumps(results,indent=2))
         first_path = EVIDENCE / 'validation-first.json'
         first = json.loads(first_path.read_text()) if first_path.exists() else {}
-        failed = any(p['rows'][0]['pc_minus_after'] != '0' or p['rows'][0]['after_minus_pc'] != '0'
+        failed = failed_runs(result) or any(p['rows'][0]['pc_minus_after'] != '0' or p['rows'][0]['after_minus_pc'] != '0'
                      for p in result['parity'])
         if failed and mapping not in first:
             first[mapping] = result

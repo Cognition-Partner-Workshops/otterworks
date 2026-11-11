@@ -5,6 +5,7 @@ import yaml
 
 from dbx import EVIDENCE, ROOT
 from validate import MAPS, REPO
+from run_validation import failed_runs
 
 
 def read(name):
@@ -62,12 +63,16 @@ def collect():
         reason = ('Standalone parity and idempotence pass, but the workflow requires reserved '
                   's_m_SFX_ROLE_GRANT=SUCCEEDED. Both runs leave DOC_SHARE UPSTREAM_FAILED; '
                   'no licence retirement claimed for this row.') if red else ''
+        if failed_runs(result):
+            red = True
+            reason = 'Conversion failed or run evidence is incomplete; matching target rows do not prove successful conversion.'
         board.append({'mapping': mapping, 'source': f'etl/informatica/repository/SFX_CONTENT/mappings/{mapping}.XML',
                       'target': f'cpw.dbx_d1111_after.{target}', 'status': 'red' if red else 'green',
                       'first_failure': first, 'first_failure_statement_id': first_sid,
-                      'corrected_parity': f"{p['pc_count']} rows; hash {p['pc_hash']}; 0 EXCEPT ALL differences each way",
+                      'corrected_parity': ('FAILED conversion; ' if failed_runs(result) else '') + f"{p['pc_count']} rows; hash {p['pc_hash']}; 0 EXCEPT ALL differences each way",
                       'parity_statement_id': parity['statement_id'],
-                      'idempotence': 'Run 2 equals run 1 on counts, hash and EXCEPT ALL; unchanged MERGEs affect zero rows.',
+                      'idempotence': ('Not established: conversion failed or run evidence is incomplete.' if failed_runs(result) else
+                                      'Run 2 equals run 1 on counts, hash and EXCEPT ALL; unchanged MERGEs affect zero rows.'),
                       'idempotence_statement_ids': [result['parity'][1]['statement_id'], result['idempotence']['statement_id']],
                       'red_reason': reason, 'licence_features': [] if red else features[mapping]})
     public_validation = {m: {'runs': v['runs'], 'parity': [metrics(p) for p in v['parity']],
@@ -81,11 +86,11 @@ def collect():
               'cross_folder_dependencies': [], 'query_history_statement_id': history['statement_id'],
               'query_history_note': 'Entries without query_history have Statement Execution API evidence; history ingestion is pending (30-40 minute lag). Re-run query_history.sql.',
               'statements': statements,
-              'licence_note': 'Four green mappings in this scoped PR. Global counter must be computed from all 20 mapping rows; DOC_SHARE remains red due to its reserved workflow predecessor.'}
+              'licence_note': f"{sum(r['status'] == 'green' for r in board)} green mappings in this scoped PR. Global counter must be computed from all 20 mapping rows; red rows do not retire licences."}
     if (EVIDENCE / 'control.json').exists():
         output['control'] = read('control.json')
     (ROOT / 'evidence.json').write_text(json.dumps(output, indent=2) + '\n')
-    print('Published five board rows; four green and one reserved-dependency red.')
+    print(f"Published {len(board)} board rows; {sum(r['status'] == 'green' for r in board)} green.")
 
 
 if __name__ == '__main__':
